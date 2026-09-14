@@ -23,7 +23,7 @@ class PurchaseButtonComponentViewModel {
     var componentName: String? {
         component.name
     }
-    private let component: PaywallComponent.PurchaseButtonComponent
+    let component: PaywallComponent.PurchaseButtonComponent
     private let offering: Offering
     let stackViewModel: StackComponentViewModel
 

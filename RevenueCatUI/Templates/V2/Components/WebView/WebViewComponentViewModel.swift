@@ -13,7 +13,7 @@ final class WebViewComponentViewModel: Hashable {
 
     let componentID: String
 
-    private let component: PaywallComponent.WebViewComponent
+    let component: PaywallComponent.WebViewComponent
     private let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedWebViewPartial>?
 
