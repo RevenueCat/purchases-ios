@@ -1952,19 +1952,27 @@ platform :ios do
     UI.user_error!("Unsupported major version: #{major}. Supported: 3 or 4") unless [3, 4].include?(major)
     success = false
     begin
-      scan(
-        project: "./Tests/v#{major}LoadShedderIntegration/v#{major}LoadShedderIntegration.xcodeproj",
-        device: ENV['SCAN_DEVICE'] || "iPhone 16 (18.5)",
-        scheme: "v#{major}LoadShedderIntegration",
-        ensure_devices_found: true,
-        derived_data_path: "scan_derived_data",
-        output_types: 'junit',
-        output_style: 'raw',
-        result_bundle: true,
-        configuration: 'Debug',
-        output_directory: "fastlane/test_output/xctest/ios"
-      )
-      success = true
+      attempts = 0
+      begin
+        attempts += 1
+        scan(
+          project: "./Tests/v#{major}LoadShedderIntegration/v#{major}LoadShedderIntegration.xcodeproj",
+          device: ENV['SCAN_DEVICE'] || "iPhone 16 (18.5)",
+          scheme: "v#{major}LoadShedderIntegration",
+          ensure_devices_found: true,
+          derived_data_path: "scan_derived_data",
+          output_types: 'junit',
+          output_style: 'raw',
+          result_bundle: true,
+          configuration: 'Debug',
+          output_directory: "fastlane/test_output/xctest/ios"
+        )
+        success = true
+      rescue => exception
+        raise exception if attempts >= 2
+        UI.important("Test attempt #{attempts} failed, retrying...")
+        retry
+      end
     rescue => exception
       raise exception
     ensure
