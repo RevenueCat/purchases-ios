@@ -130,7 +130,7 @@ let package = Package(
                     .process("Resources/icons.xcassets"),
                     .process("Resources/Media.xcassets")
                 ],
-                swiftSettings: ciCompilerFlags + additionalCompilerFlags),
+                swiftSettings: [.define("ENABLE_PAYWALL_MIN_MAX_SIZING")] + ciCompilerFlags + additionalCompilerFlags),
         .testTarget(name: "RevenueCatUITests",
                     dependencies: [
                         "RevenueCatUI",
