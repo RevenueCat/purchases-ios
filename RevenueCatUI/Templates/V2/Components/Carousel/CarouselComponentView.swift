@@ -270,7 +270,9 @@ private struct CarouselView<Content: View>: View {
                 )
             }
 
-            // Main horizontal "strip" of pages:
+            // Main horizontal "strip" of pages. Grouped and adjustable so a screen reader can
+            // page through it: a swipe moves focus rather than the carousel, and the page dots
+            // are not interactive.
             HStack(alignment: self.pageAlignment, spacing: spacing) {
                 ForEach(Array(data.enumerated()), id: \.element.id) { pageIndex, item in
                     let isNextInEitherDirection = abs(index - pageIndex) <= 2
@@ -280,6 +282,9 @@ private struct CarouselView<Content: View>: View {
                             pageIndex: pageIndex,
                             originalCount: originalCount
                         ))
+                        // Every page is mounted, and looping mounts three copies of each, so
+                        // without this VoiceOver reads slides that are off screen, repeatedly.
+                        .accessibilityHidden(pageIndex != index)
                         // ensure rendering doesn't need to wait on size calculations as the item
                         // attempts to enter the view
                         .environment(\.requestSizeCalculation, !isNextInEitherDirection)
@@ -292,6 +297,17 @@ private struct CarouselView<Content: View>: View {
             .frame(width: self.width, alignment: .leading)
             .offset(x: xOffset(in: self.width) + dragOffset) // Apply drag offset
             .opacity(opacity)
+            .accessibilityElement(children: .contain)
+            .accessibilityAdjustableAction { direction in
+                switch direction {
+                case .increment:
+                    self.pageForAccessibility(by: 1)
+                case .decrement:
+                    self.pageForAccessibility(by: -1)
+                @unknown default:
+                    break
+                }
+            }
             .applyIf(autoAdvanceTransitionType == .slide, apply: { view in
                 // Animate only final snaps (or auto transitions), not real-time dragging
                 view.animation(.easeInOut(duration: self.transitionTime), value: index)
@@ -370,6 +386,20 @@ private struct CarouselView<Content: View>: View {
 
     /// When `loop` is `true`, and `fadeTransition` is turned on we don't setUp the animation view modifier
     private let autoAdvanceTransitionType: PaywallComponent.CarouselComponent.AutoAdvanceTransitionType
+
+    /// Paging for a screen reader, which cannot drag.
+    private func pageForAccessibility(by delta: Int) {
+        withAnimation(.easeInOut(duration: 0.25)) {
+            self.index = CarouselPaging.index(from: self.index, by: delta, count: self.data.count, loop: self.loop)
+
+            if self.loop {
+                self.expandDataIfNeeded()
+                self.pruneDataIfNeeded()
+            }
+        }
+
+        self.pauseAutoPlay(for: 10)
+    }
 
     private func setupData() {
         guard !originalPages.isEmpty else { return }
@@ -491,20 +521,20 @@ private struct CarouselView<Content: View>: View {
         withAnimation(.easeInOut(duration: 0.25)) {
             self.dragOffset = 0
 
+            let delta: Int
             if translation < -threshold {
-                // Swipe left => next
-                index += 1
+                delta = 1      // Swipe left => next
             } else if translation > threshold {
-                // Swipe right => prev
-                index -= 1
+                delta = -1     // Swipe right => prev
+            } else {
+                delta = 0
             }
+
+            index = CarouselPaging.index(from: index, by: delta, count: data.count, loop: loop)
 
             if loop {
                 expandDataIfNeeded()
                 pruneDataIfNeeded()
-            } else {
-                // Non-loop clamp
-                index = max(0, min(index, data.count - 1))
             }
         }
 
@@ -594,6 +624,23 @@ private struct CarouselView<Content: View>: View {
         guard let lastID = data.last?.id else { return 0 }
         return lastID / originalCount
     }
+}
+
+/// Where paging lands, so the drag path and the screen-reader path cannot drift apart.
+/// Pure so it can be unit tested, like ``SheetPresentationPlan``.
+enum CarouselPaging {
+
+    /// Looping carousels keep expanding their data, so only the non-looping case is clamped.
+    static func index(from current: Int, by delta: Int, count: Int, loop: Bool) -> Int {
+        let moved = current + delta
+
+        guard !loop else {
+            return moved
+        }
+
+        return max(0, min(moved, count - 1))
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
