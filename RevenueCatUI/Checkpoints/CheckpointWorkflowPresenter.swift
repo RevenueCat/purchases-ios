@@ -33,7 +33,6 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
 
     #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
     private weak var presentedViewController: UIViewController?
-    private var dismissalReasonBeforeExitOffer: WorkflowDismissalReason?
     #endif
 
     init(
@@ -49,9 +48,6 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         presentation: CheckpointPresentation,
         delegate: CheckpointPresentationDelegate
     ) throws {
-        #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
-        self.dismissalReasonBeforeExitOffer = nil
-        #endif
         self.callStore.store(presentation: presentation, delegate: delegate)
 
         do {
@@ -66,24 +62,23 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
             _ = self.callStore.remove()
             #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
             self.presentedViewController = nil
-            self.dismissalReasonBeforeExitOffer = nil
             #endif
             throw error
         }
     }
 
-    func stage(_ update: CheckpointCallStore.OutcomeUpdate) {
+    func stage(_ update: CheckpointCallStore.CallUpdate) {
         self.callStore.stage(update)
     }
 
-    func presentationDidDismiss(reason: WorkflowDismissalReason = .close) {
-        self.complete(reason: reason)
+    func presentationDidDismiss(reason: WorkflowDismissalReason? = nil) {
+        if let reason {
+            self.stage(.dismissalReason(reason))
+        }
+        self.complete()
     }
 
     func dismiss(completion: @escaping () -> Void) {
-        #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
-        self.dismissalReasonBeforeExitOffer = nil
-        #endif
         guard self.callStore.remove() != nil else {
             completion()
             return
@@ -102,7 +97,7 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         #endif
     }
 
-    private func complete(reason: WorkflowDismissalReason) {
+    private func complete() {
         guard let call = self.callStore.remove() else { return }
 
         #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
@@ -110,7 +105,7 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         #endif
 
         let execution: CheckpointExecutionResult<CheckpointPaywallOutcome>
-        switch (reason, call.stagedOutcome) {
+        switch (call.dismissalReason, call.stagedOutcome) {
         case (.navigatedBack, is CheckpointPaywallOutcome.Purchased),
              (.navigatedBack, is CheckpointPaywallOutcome.Restored):
             execution = .completed(call.stagedOutcome)
@@ -124,17 +119,21 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
 
     #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
     private func handleDismissal(of controller: PaywallViewController) {
-        let reason = self.dismissalReasonBeforeExitOffer ?? controller.workflowDismissalReason
-        self.dismissalReasonBeforeExitOffer = nil
-        self.presentationDidDismiss(reason: reason)
+        self.stageDismissalReasonIfNeeded(controller.workflowDismissalReason)
+        self.presentationDidDismiss()
     }
 
     private func handleExitOfferPresentation(
         from controller: PaywallViewController,
         exitOfferController: PaywallViewController
     ) {
-        self.dismissalReasonBeforeExitOffer = controller.workflowDismissalReason
+        self.stageDismissalReasonIfNeeded(controller.workflowDismissalReason)
         self.presentedViewController = exitOfferController
+    }
+
+    private func stageDismissalReasonIfNeeded(_ reason: WorkflowDismissalReason) {
+        guard reason == .navigatedBack else { return }
+        self.stage(.dismissalReason(reason))
     }
     #endif
 

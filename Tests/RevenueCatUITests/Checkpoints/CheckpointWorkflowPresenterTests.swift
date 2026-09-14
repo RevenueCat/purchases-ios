@@ -259,6 +259,17 @@ final class CheckpointWorkflowPresenterTests: TestCase {
         XCTAssertNil(store.call)
     }
 
+    func testCallStoreStagesWorkflowDismissalReason() {
+        let store = CheckpointCallStore()
+        store.store(presentation: Self.presentation(), delegate: MockCheckpointPresenterDelegate())
+
+        XCTAssertEqual(store.call?.dismissalReason, .close)
+
+        store.stage(.dismissalReason(.navigatedBack))
+
+        XCTAssertEqual(store.call?.dismissalReason, .navigatedBack)
+    }
+
     func testDismissRemovesCallWithoutReportingAnOutcome() throws {
         let store = CheckpointCallStore()
         let delegate = MockCheckpointPresenterDelegate()
