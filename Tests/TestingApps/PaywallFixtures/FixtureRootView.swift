@@ -80,6 +80,11 @@ struct FixturePaywallView: View {
         Dictionary(uniqueKeysWithValues: packages.map { ($0, IntroEligibilityStatus.eligible) })
     }
 
+    /// XCUITest cannot turn VoiceOver on, so a test says so through the override instead.
+    private var pretendsVoiceOverIsRunning: Bool {
+        ProcessInfo.processInfo.environment["PAYWALL_VOICE_OVER"] == "1"
+    }
+
     var body: some View {
         PaywallView(
             offering: self.fixture.offering,
@@ -88,6 +93,7 @@ struct FixturePaywallView: View {
             performPurchase: { _ in (userCancelled: true, error: nil) },
             performRestore: { (success: false, error: nil) }
         )
+        .environment(\.voiceOverEnabledOverride, self.pretendsVoiceOverIsRunning)
     }
 
 }

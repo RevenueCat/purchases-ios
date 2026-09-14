@@ -63,6 +63,23 @@ struct TextComponentView: View {
     @Environment(\.isPaywallLoading)
     private var isPaywallLoading
 
+    @Environment(\.accessibilityVoiceOverEnabled)
+    private var accessibilityVoiceOverEnabled
+
+#if DEBUG
+    @Environment(\.voiceOverEnabledOverride)
+    private var voiceOverEnabledOverride
+#endif
+
+    private var isVoiceOverRunning: Bool {
+#if DEBUG
+        if let override = self.voiceOverEnabledOverride {
+            return override
+        }
+#endif
+        return self.accessibilityVoiceOverEnabled
+    }
+
     private let viewModel: TextComponentViewModel
 
     internal init(viewModel: TextComponentViewModel) {
@@ -85,7 +102,8 @@ struct TextComponentView: View {
             customVariables: self.customVariables,
             stateValues: self.paywallStateValues,
             stateDefaults: self.paywallStateDefaults,
-            windowSize: self.paywallWindowSize
+            windowSize: self.paywallWindowSize,
+            isVoiceOverRunning: self.isVoiceOverRunning
         ) { style in
             if style.visible {
                 NonLocalizedMarkdownText(

@@ -97,6 +97,7 @@ final class PaywallAccessibilityUITests: XCTestCase {
     private func launchSpokenText() -> XCUIApplication {
         let app = XCUIApplication()
         app.launchEnvironment["PAYWALL_FIXTURE"] = "spoken_text_and_links"
+        app.launchEnvironment["PAYWALL_VOICE_OVER"] = "1"
         app.launch()
 
         XCTAssertTrue(

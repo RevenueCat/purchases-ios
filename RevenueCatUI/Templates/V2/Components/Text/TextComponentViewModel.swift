@@ -79,6 +79,7 @@ class TextComponentViewModel {
         stateValues: [String: PaywallComponent.ConditionValue] = [:],
         stateDefaults: [String: PaywallComponent.ConditionValue] = [:],
         windowSize: CGSize? = nil,
+        isVoiceOverRunning: Bool = false,
         @ViewBuilder apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
         let isEligibleForPromoOffer = promoOffer != nil
@@ -113,7 +114,11 @@ class TextComponentViewModel {
         )
 
         let processedText = Self.processText(text, config: config)
-        let spokenText = Self.processText(text, config: config, spoken: true)
+        // Resolved only when something will read it. This runs on every body evaluation, so
+        // countdown ticks and selection changes would otherwise pay for it with nobody listening.
+        let spokenText = isVoiceOverRunning
+            ? Self.processText(text, config: config, spoken: true)
+            : processedText
 
         let style = TextComponentStyle(
             uiConfigProvider: self.uiConfigProvider,
