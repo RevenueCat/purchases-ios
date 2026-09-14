@@ -17,8 +17,7 @@ import Foundation
 /// when the customer has come back from it.
 @_spi(Internal) public struct HostedCheckoutSession {
 
-    /// Identifies the session for the whole of its life, including when asking the backend what became of it
-    /// once the checkout page is gone.
+    /// Identifies the session.
     @_spi(Internal) public let operationSessionID: String
 
     /// The provider-hosted page to present.
@@ -30,7 +29,7 @@ import Foundation
     /// Where the provider sends the customer once checkout is abandoned.
     @_spi(Internal) public let cancelURL: URL
 
-    /// Creates a session. Public so that `RevenueCatUI` can build one for its tests and previews.
+    /// Creates a session.
     @_spi(Internal) public init(operationSessionID: String,
                                 checkoutURL: URL,
                                 successURL: URL,

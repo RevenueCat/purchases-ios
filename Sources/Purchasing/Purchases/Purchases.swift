@@ -970,8 +970,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             systemInfo: systemInfo
         )
         self.externalPurchaseManager = externalPurchaseManager
-        // The same manager as the link-out flow uses, so that a single preparation runs at a time however the
-        // customer is taken to the checkout.
         self.hostedCheckoutManager = HostedCheckoutManager(
             externalPurchaseManager: externalPurchaseManager,
             webBillingAPI: backend.webBilling,
