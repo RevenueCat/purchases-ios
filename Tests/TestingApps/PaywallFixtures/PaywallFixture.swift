@@ -34,6 +34,13 @@ enum PaywallFixture: String, CaseIterable {
     /// the accessibility tree.
     case decorativeMedia = "decorative_media"
 
+    /// A 22x22 pill radio ring with `overflow: scroll`, the one setting that used to stretch it to
+    /// the height of its row.
+    case fixedPillOverflowScroll = "fixed_pill_overflow_scroll"
+
+    /// A paragraph carrying two markdown links, plus a price whose copy types "/mo" literally.
+    /// Both need a screen reader to verify, so there is no test asserting them.
+    case spokenTextAndLinks = "spoken_text_and_links"
     /// Every offer price variable next to its `_with_zero` twin, on a free trial. The pair is the
     /// point: the plain ones render the localized word, the `_with_zero` ones render the amount.
     case offerPriceWithZero = "offer_price_with_zero"
@@ -48,6 +55,10 @@ enum PaywallFixture: String, CaseIterable {
             return "Badge rules per offer type"
         case .decorativeMedia:
             return "Decorative media"
+        case .fixedPillOverflowScroll:
+            return "Fixed pill with overflow scroll"
+        case .spokenTextAndLinks:
+            return "Spoken text and markdown links"
         case .offerPriceWithZero:
             return "Offer price with zero"
         }
@@ -63,6 +74,10 @@ enum PaywallFixture: String, CaseIterable {
             return Self.badgeRulesPerOfferComponentsData()
         case .decorativeMedia:
             return Self.decorativeMediaComponentsData()
+        case .fixedPillOverflowScroll:
+            return Self.fixedPillOverflowScrollComponentsData()
+        case .spokenTextAndLinks:
+            return Self.spokenTextAndLinksComponentsData()
         case .offerPriceWithZero:
             return Self.offerPriceWithZeroComponentsData()
         }
@@ -71,8 +86,10 @@ enum PaywallFixture: String, CaseIterable {
     /// A component referencing a package the offering lacks renders with no product.
     var packages: [Package] {
         switch self {
-        case .iconOnlyButton:
+        case .iconOnlyButton, .fixedPillOverflowScroll:
             return [Self.monthlyPackage(offeringIdentifier: self.rawValue)]
+        case .spokenTextAndLinks:
+            return [Self.annualPackage(offeringIdentifier: self.rawValue)]
         case .badgeRulesPerOffer:
             return [Self.annualPackageWithPromoOffer(offeringIdentifier: self.rawValue)]
         case .offerPriceWithZero:
@@ -542,6 +559,117 @@ private extension PaywallFixture {
                     "badge_placeholder": .string("Badge"),
                     "badge_trial": .string("TRIAL BADGE"),
                     "badge_promo": .string("PROMO BADGE")
+                ]
+            ],
+            revision: 1,
+            defaultLocaleIdentifier: "en_US"
+        )
+    }
+
+    /// The only green on screen, so a test can find the ring by color.
+    static let radioGreen = "#7CB518"
+
+    /// A package row with a fixed 22x22 pill ring and a 10x10 dot. `overflow: scroll` wraps the
+    /// ring in a scroll view, which must not change its size.
+    static func spokenTextAndLinksComponentsData() -> PaywallComponentsData {
+        return .init(
+            templateName: "fixture-spoken-text-and-links",
+            assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
+            componentsConfig: .init(base: .init(
+                stack: .init(
+                    components: [
+                        .text(.init(text: "title_lid", color: .init(light: .hex("#000000")))),
+                        .text(.init(text: "price_lid", color: .init(light: .hex("#000000")))),
+                        .text(.init(text: "literal_price_lid", color: .init(light: .hex("#000000")))),
+                        .text(.init(text: "two_links_lid", color: .init(light: .hex("#000000")))),
+                        .text(.init(text: "no_links_lid", color: .init(light: .hex("#000000"))))
+                    ],
+                    dimension: .vertical(.center, .start),
+                    size: .init(width: .fill, height: .fill),
+                    spacing: 24,
+                    backgroundColor: .init(light: .hex("#ffffff")),
+                    padding: .init(top: 80, bottom: 24, leading: 16, trailing: 16)
+                ),
+                stickyFooter: nil,
+                background: .color(.init(light: .hex("#ffffff")))
+            )),
+            componentsLocalizations: [
+                "en_US": [
+                    "title_lid": .string("Spoken text and links"),
+                    // Resolves through variable substitution, which the accessibility pass sees.
+                    "price_lid": .string("{{ product.price_per_period_abbreviated }}"),
+                    // Types the separator itself, which no variable substitution reaches.
+                    "literal_price_lid": .string("{{ product.price_per_month }}/mo"),
+                    "two_links_lid": .string(
+                        "Read the [terms of service](https://www.revenuecat.com/terms) " +
+                        "and the [privacy policy](https://www.revenuecat.com/privacy)."
+                    ),
+                    "no_links_lid": .string("This paragraph has no links, so it gains no actions.")
+                ]
+            ],
+            revision: 1,
+            defaultLocaleIdentifier: "en_US"
+        )
+    }
+
+    static func fixedPillOverflowScrollComponentsData() -> PaywallComponentsData {
+        let ring: PaywallComponent = .stack(.init(
+            components: [
+                .stack(.init(
+                    components: [],
+                    size: .init(width: .fixed(10), height: .fixed(10)),
+                    backgroundColor: .init(light: .hex(Self.radioGreen)),
+                    shape: .pill
+                ))
+            ],
+            dimension: .vertical(.center, .center),
+            size: .init(width: .fixed(22), height: .fixed(22)),
+            shape: .pill,
+            border: .init(color: .init(light: .hex(Self.radioGreen)), width: 2),
+            overflow: .scroll
+        ))
+
+        return .init(
+            templateName: "fixture-fixed-pill-overflow-scroll",
+            assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
+            componentsConfig: .init(base: .init(
+                stack: .init(
+                    components: [
+                        .package(.init(
+                            packageID: "$rc_monthly",
+                            isSelectedByDefault: true,
+                            applePromoOfferProductCode: nil,
+                            stack: .init(
+                                components: [
+                                    ring,
+                                    .text(.init(
+                                        text: "monthly",
+                                        color: .init(light: .hex("#000000")),
+                                        horizontalAlignment: .leading
+                                    ))
+                                ],
+                                dimension: .horizontal(.center, .start),
+                                size: .init(width: .fill, height: .fit(nil)),
+                                spacing: 12,
+                                padding: .init(top: 16, bottom: 16, leading: 16, trailing: 16),
+                                shape: .rectangle(.init(topLeading: 12, topTrailing: 12,
+                                                        bottomLeading: 12, bottomTrailing: 12)),
+                                border: .init(color: .init(light: .hex("#c7c7cc")), width: 1)
+                            )
+                        ))
+                    ],
+                    dimension: .vertical(.center, .start),
+                    size: .init(width: .fill, height: .fill),
+                    spacing: 16,
+                    backgroundColor: .init(light: .hex("#ffffff")),
+                    padding: .init(top: 80, bottom: 24, leading: 16, trailing: 16)
+                ),
+                stickyFooter: nil,
+                background: .color(.init(light: .hex("#ffffff")))
+            )),
+            componentsLocalizations: [
+                "en_US": [
+                    "monthly": .string("Monthly plan\nBilled every month, cancel anytime")
                 ]
             ],
             revision: 1,

@@ -32,6 +32,8 @@ enum IdentityStrings {
 
     case identifying_app_user_id
 
+    case configured_app_user_id_differs_from_cached
+
     case null_currentappuserid
 
     case deleting_attributes_none_found
@@ -72,6 +74,10 @@ extension IdentityStrings: LogMessage {
             return "Log out successful"
         case .identifying_app_user_id:
             return "Identifying App User ID"
+        case .configured_app_user_id_differs_from_cached:
+            return "The App User ID passed to configure differs from the cached App User ID. " +
+                "This does not automatically log in or alias the cached user. " +
+                "Call logIn with the new App User ID to transfer purchases and attributes."
         case .null_currentappuserid:
             return "currentAppUserID is nil. This might happen if the cache in UserDefaults is unintentionally cleared."
         case .deleting_attributes_none_found:
