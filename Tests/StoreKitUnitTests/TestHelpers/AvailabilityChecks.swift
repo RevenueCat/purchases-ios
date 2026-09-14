@@ -112,4 +112,10 @@ enum AvailabilityChecks {
             throw XCTSkip("Required API is not available for this test.")
         }
     }
+
+    static func skipIfSwift63OrLater() throws {
+        #if swift(>=6.3)
+        throw XCTSkip("Unavailable on Swift 6.3 or later")
+        #endif
+    }
 }

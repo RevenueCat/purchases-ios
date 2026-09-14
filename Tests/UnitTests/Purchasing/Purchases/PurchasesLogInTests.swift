@@ -271,6 +271,7 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
     }
 
     func testLogInWithStaticStringLogsMessage() async throws {
+        try AvailabilityChecks.skipIfSwift63OrLater()
         self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
 
         _ = try await self.purchases.logIn("Static string")
@@ -294,6 +295,7 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
 
     @available(*, deprecated)
     func testCompletionBlockLogInWithStaticStringLogsMessage() {
+        try AvailabilityChecks.skipIfSwift63OrLater()
         self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
 
         waitUntil { completed in
