@@ -563,13 +563,37 @@ class VariableHandlerV2Test: TestCase {
         expect(twice).to(equal(once))
     }
 
-    func testSpelledOutPeriodIsNotTreatedAsAnAbbreviation() {
-        let result = VariableHandlerV2.expandPeriodAbbreviations(
+    /// Long forms expand too: paywall copy writes "/month" more often than "/mo", and
+    /// `product.period_abbreviated` resolves to the long form when spoken.
+    func testSpelledOutPeriodIsExpanded() {
+        expect(VariableHandlerV2.expandPeriodAbbreviations(
             in: "$4.16/month",
-            localizations: localizations["en_US"]!
-        )
+            localizations: self.localizations["en_US"]!
+        )).to(equal("$4.16 monthly"))
 
-        expect(result).to(equal("$4.16/month"))
+        expect(VariableHandlerV2.expandPeriodAbbreviations(
+            in: "$1.99/week",
+            localizations: self.localizations["en_US"]!
+        )).to(equal("$1.99 weekly"))
+
+        expect(VariableHandlerV2.expandPeriodAbbreviations(
+            in: "$69.99/year",
+            localizations: self.localizations["en_US"]!
+        )).to(equal("$69.99 yearly"))
+    }
+
+    /// `day_short` is "day", so the short and long paths were already inconsistent between units.
+    func testShortAndLongFormsAgreeAcrossUnits() {
+        let localizations = self.localizations["en_US"]!
+
+        for (written, spoken) in [("mo", "monthly"), ("month", "monthly"),
+                                  ("wk", "weekly"), ("week", "weekly"),
+                                  ("day", "daily")] {
+            expect(VariableHandlerV2.expandPeriodAbbreviations(
+                in: "$1/\(written)",
+                localizations: localizations
+            )).to(equal("$1 \(spoken)"))
+        }
     }
 
     func testPeriodAbbreviationExpansionUsesPaywallLocalizations() {

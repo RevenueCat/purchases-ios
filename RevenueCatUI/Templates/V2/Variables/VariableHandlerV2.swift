@@ -101,36 +101,43 @@ struct VariableHandlerV2 {
     }
 
     /// Both sides come from the paywall's localizations, so expansion stays in its language.
-    private static let periodAbbreviationKeys: [(short: String, spoken: String)] = [
+    /// Long forms as well as abbreviations: `product.period_abbreviated` resolves to the long form
+    /// when spoken, and paywall copy writes "/month" more often than "/mo".
+    private static let periodKeys: [(written: String, spoken: String)] = [
         ("day_short", "daily"),
         ("week_short", "weekly"),
         ("month_short", "monthly"),
         ("year_short", "yearly"),
-        ("annual_short", "annually")
+        ("annual_short", "annually"),
+        ("day", "daily"),
+        ("week", "weekly"),
+        ("month", "monthly"),
+        ("year", "yearly"),
+        ("annual", "annually")
     ]
 
     /// Rewrites "$5.83/mo" as "$5.83 monthly". Paywall copy types the separator literally
     /// ("{{ product.price_per_month }}/mo"), which no variable substitution reaches.
     static func expandPeriodAbbreviations(in text: String, localizations: [String: String]) -> String {
-        let replacements = self.periodAbbreviationKeys.compactMap { keys -> (String, String)? in
-            guard let short = localizations[keys.short], !short.isEmpty,
+        let replacements = self.periodKeys.compactMap { keys -> (String, String)? in
+            guard let written = localizations[keys.written], !written.isEmpty,
                   let spoken = localizations[keys.spoken], !spoken.isEmpty else {
                 return nil
             }
 
-            return (short, spoken)
+            return (written, spoken)
         }
 
         // A URL path segment can read exactly like an abbreviation ("day" is `day_short` in
         // English), and rewriting one breaks the link.
         return Self.outsideURLs(of: text) { segment in
-            // Longest first: a shorter abbreviation can be a prefix of a longer one.
+            // Longest first, so "/month" is taken by the long form and not left to "mo".
             replacements
                 .sorted { $0.0.count > $1.0.count }
                 .reduce(segment) { partial, replacement in
-                    let (short, spoken) = replacement
+                    let (written, spoken) = replacement
                     // Trailing guard so "/mo" does not match inside a spelled-out "/month".
-                    let pattern = "/\\s*" + NSRegularExpression.escapedPattern(for: short) + "(?![\\p{L}])"
+                    let pattern = "/\\s*" + NSRegularExpression.escapedPattern(for: written) + "(?![\\p{L}])"
 
                     return partial.replacingOccurrences(
                         of: pattern,
