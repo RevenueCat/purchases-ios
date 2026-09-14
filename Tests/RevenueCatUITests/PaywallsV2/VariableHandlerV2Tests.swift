@@ -346,7 +346,7 @@ class VariableHandlerV2Test: TestCase {
             locale: locale,
             localizations: localizations["en_US"]!,
             isEligibleForIntroOffer: true,
-            forAccessibility: true
+            spoken: true
         )
         expect(result).to(equal("$6.99 monthly"))
     }
@@ -358,7 +358,7 @@ class VariableHandlerV2Test: TestCase {
             locale: locale,
             localizations: localizations["en_US"]!,
             isEligibleForIntroOffer: true,
-            forAccessibility: true
+            spoken: true
         )
         expect(result).to(equal("$4.99 3 months"))
     }
@@ -370,7 +370,7 @@ class VariableHandlerV2Test: TestCase {
             locale: locale,
             localizations: localizations["en_US"]!,
             isEligibleForIntroOffer: true,
-            forAccessibility: true
+            spoken: true
         )
         expect(result).to(equal("$6.99 monthly"))
     }
@@ -471,7 +471,7 @@ class VariableHandlerV2Test: TestCase {
             locale: locale,
             localizations: localizations["en_US"]!,
             isEligibleForIntroOffer: true,
-            forAccessibility: true
+            spoken: true
         )
 
         expect(result).to(equal("$4.49 monthly"))
@@ -533,7 +533,7 @@ class VariableHandlerV2Test: TestCase {
             locale: locale,
             localizations: localizations["en_US"]!,
             isEligibleForIntroOffer: true,
-            forAccessibility: true
+            spoken: true
         )
         expect(result).to(equal("month"))
     }
