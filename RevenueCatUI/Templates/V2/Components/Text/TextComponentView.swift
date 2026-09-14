@@ -63,6 +63,23 @@ struct TextComponentView: View {
     @Environment(\.isPaywallLoading)
     private var isPaywallLoading
 
+    @Environment(\.accessibilityVoiceOverEnabled)
+    private var accessibilityVoiceOverEnabled
+
+#if DEBUG
+    @Environment(\.voiceOverEnabledOverride)
+    private var voiceOverEnabledOverride
+#endif
+
+    private var isVoiceOverRunning: Bool {
+#if DEBUG
+        if let override = self.voiceOverEnabledOverride {
+            return override
+        }
+#endif
+        return self.accessibilityVoiceOverEnabled
+    }
+
     private let viewModel: TextComponentViewModel
 
     internal init(viewModel: TextComponentViewModel) {
@@ -85,11 +102,13 @@ struct TextComponentView: View {
             customVariables: self.customVariables,
             stateValues: self.paywallStateValues,
             stateDefaults: self.paywallStateDefaults,
-            windowSize: self.paywallWindowSize
+            windowSize: self.paywallWindowSize,
+            isVoiceOverRunning: self.isVoiceOverRunning
         ) { style in
             if style.visible {
                 NonLocalizedMarkdownText(
                     text: style.text,
+                    accessibilityText: style.accessibilityText,
                     font: style.font,
                     fontWeight: style.fontWeight,
                     componentName: style.name
@@ -123,17 +142,21 @@ struct NonLocalizedMarkdownText: View {
     private var urlOpenedNotifier
 
     let text: String
+    /// Spoken replacement for `text` when the displayed form reads poorly (e.g. "$1.24/mo").
+    var accessibilityText: String?
     let font: Font
     let fontWeight: Font.Weight
     let componentName: String?
 
     init(
         text: String,
+        accessibilityText: String? = nil,
         font: Font,
         fontWeight: Font.Weight,
         componentName: String? = nil
     ) {
         self.text = text
+        self.accessibilityText = accessibilityText
         self.font = font
         self.fontWeight = fontWeight
         self.componentName = componentName
@@ -187,6 +210,9 @@ struct NonLocalizedMarkdownText: View {
                         self.openLink(url)
                         return .handled
                     })
+                    .applyIfLet(self.spokenAccessibilityLabel) { view, label in
+                        view.accessibilityLabel(label)
+                    }
                     .markdownLinkAccessibilityActions(
                         Self.markdownLinks(in: markdownText),
                         openLink: self.openLink
@@ -196,6 +222,9 @@ struct NonLocalizedMarkdownText: View {
                 Text(self.text)
                     .font(self.font)
                     .fontWeight(self.fontWeight)
+                    .applyIfLet(self.spokenAccessibilityLabel) { view, label in
+                        view.accessibilityLabel(label)
+                    }
             }
         }
     }
@@ -231,6 +260,24 @@ struct NonLocalizedMarkdownText: View {
                 url: url
             )
         }
+    }
+
+    /// A `Text` rather than a `String`: the spoken variant is built from the source copy, so it
+    /// still carries markdown, and `Text` is what knows how to drop it.
+    private var spokenAccessibilityLabel: Text? {
+        guard let accessibilityText = self.accessibilityText else {
+            return nil
+        }
+
+        guard let markdown = try? AttributedString(
+            markdown: accessibilityText,
+            options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnly)
+        ) else {
+            return Text(accessibilityText)
+        }
+
+        // `<u>` is ours, not markdown, so the parser leaves the tags in the characters.
+        return Text(MarkdownUnderlineFormatter.apply(to: markdown))
     }
 }
 
