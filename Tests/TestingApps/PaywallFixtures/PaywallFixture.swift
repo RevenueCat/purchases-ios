@@ -494,7 +494,7 @@ private extension PaywallFixture {
                     // that still carries markdown.
                     "link_and_price_lid": .string(
                         "Just {{ product.price_per_month }}/mo. " +
-                        "See the [terms of service](https://www.revenuecat.com/terms)."
+                        "See the <u>[terms of service](https://www.revenuecat.com/terms)</u>."
                     )
                 ]
             ],

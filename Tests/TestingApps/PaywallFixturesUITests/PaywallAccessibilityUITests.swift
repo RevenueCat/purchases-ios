@@ -80,6 +80,7 @@ final class PaywallAccessibilityUITests: XCTestCase {
         XCTAssertTrue(paragraph.waitForExistence(timeout: 30), app.debugDescription)
         XCTAssertFalse(paragraph.label.contains("["), "Markdown reached VoiceOver: \(paragraph.label)")
         XCTAssertFalse(paragraph.label.contains("https://"), "A link URL is spoken: \(paragraph.label)")
+        XCTAssertFalse(paragraph.label.contains("<u>"), "Underline tags are spoken: \(paragraph.label)")
     }
 
     /// The displayed price keeps "/mo"; only what is spoken expands.

@@ -258,7 +258,8 @@ struct NonLocalizedMarkdownText: View {
             return Text(accessibilityText)
         }
 
-        return Text(markdown)
+        // `<u>` is ours, not markdown, so the parser leaves the tags in the characters.
+        return Text(MarkdownUnderlineFormatter.apply(to: markdown))
     }
 }
 
