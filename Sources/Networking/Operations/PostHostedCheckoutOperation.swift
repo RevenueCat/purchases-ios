@@ -131,7 +131,9 @@ extension PostHostedCheckoutOperation {
 
     struct Paywall {
 
-        let paywallID: String
+        /// `nil` where the paywall has no identifier of its own, which the backend takes: the session
+        /// identifier is what joins the checkout to the paywall's events.
+        let paywallID: String?
         let sessionID: String
 
         // Sent at the top level of the body as `presented_workflow_id`/`presented_step_id`, not inside

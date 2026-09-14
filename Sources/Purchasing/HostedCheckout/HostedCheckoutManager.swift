@@ -74,7 +74,7 @@ final class HostedCheckoutManager {
     /// Another checkout was already being started, and that one carries the purchase.
     case alreadyStarting
 
-    /// The checkout could not be started. Why is logged where it happened, and a retry may well work.
+    /// The checkout could not be started.
     case failed
 
 }
@@ -93,7 +93,7 @@ private extension HostedCheckoutManager {
                 appUserID: self.currentUserProvider.currentAppUserID,
                 packageID: package.identifier,
                 presentedOfferingContext: package.presentedOfferingContext,
-                paywall: paywall.flatMap { .init(paywallEventData: $0) },
+                paywall: paywall.map { .init(paywallEventData: $0) },
                 externalPurchaseTokenID: externalPurchaseTokenID,
                 completion: completion
             )
@@ -132,13 +132,8 @@ private extension HostedCheckoutStartResult {
 
 private extension PostHostedCheckoutOperation.Paywall {
 
-    /// `nil` where the paywall has no identifier, which the backend requires to attribute the checkout to it.
-    init?(paywallEventData data: PaywallEvent.Data) {
-        guard let paywallID = data.paywallIdentifier else {
-            return nil
-        }
-
-        self.init(paywallID: paywallID,
+    init(paywallEventData data: PaywallEvent.Data) {
+        self.init(paywallID: data.paywallIdentifier,
                   sessionID: data.sessionIdentifier.uuidString,
                   workflowID: data.workflowId,
                   stepID: data.stepId)
