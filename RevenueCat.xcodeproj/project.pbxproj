@@ -231,6 +231,7 @@
 		2C08B3352CDD165B0024857B /* PaywallComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C08B3342CDD16550024857B /* PaywallComponentViewModel.swift */; };
 		2C0B98CD2797070B00C5874F /* PromotionalOffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C0B98CC2797070B00C5874F /* PromotionalOffer.swift */; };
 		2C2AEB0F2CA64E0E00A50F38 /* Template1Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2AEB0E2CA64E0E00A50F38 /* Template1Preview.swift */; };
+		D20000003C90000100000001 /* MinMaxPaywallPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000003C90000100000003 /* MinMaxPaywallPreview.swift */; };
 		2C2AEB3B2CA7209F00A50F38 /* PaywallPackageComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2AEB3A2CA7209F00A50F38 /* PaywallPackageComponent.swift */; };
 		2C2AEB3F2CA7235300A50F38 /* PaywallPurchaseButtonComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2AEB3E2CA7235300A50F38 /* PaywallPurchaseButtonComponent.swift */; };
 		2C6CC1162B8D2B6900432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6CC1152B8D2B6800432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift */; };
@@ -1941,6 +1942,7 @@
 		2C08B3342CDD16550024857B /* PaywallComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallComponentViewModel.swift; sourceTree = "<group>"; };
 		2C0B98CC2797070B00C5874F /* PromotionalOffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromotionalOffer.swift; sourceTree = "<group>"; };
 		2C2AEB0E2CA64E0E00A50F38 /* Template1Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Template1Preview.swift; sourceTree = "<group>"; };
+		D20000003C90000100000003 /* MinMaxPaywallPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinMaxPaywallPreview.swift; sourceTree = "<group>"; };
 		2C2AEB3A2CA7209F00A50F38 /* PaywallPackageComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallPackageComponent.swift; sourceTree = "<group>"; };
 		2C2AEB3E2CA7235300A50F38 /* PaywallPurchaseButtonComponent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallPurchaseButtonComponent.swift; sourceTree = "<group>"; };
 		2C5F71F52C3D6C2600B0FE4B /* header.heic */ = {isa = PBXFileReference; lastKnownFileType = file; path = header.heic; sourceTree = "<group>"; };
@@ -3900,6 +3902,7 @@
 				038211962DCA730C003C02C3 /* PurchaseButtonInPackagePreview.swift */,
 				03A98CF02D222F53009BCA61 /* FallbackComponentPreview.swift */,
 				2C2AEB0E2CA64E0E00A50F38 /* Template1Preview.swift */,
+				D20000003C90000100000003 /* MinMaxPaywallPreview.swift */,
 				2C8EC6DA2CCC23B700D6CCF8 /* MultiTierPreview.swift */,
 				03C72F6C2D32CDFB00297FEC /* FamilySharingTogglePreview.swift */,
 				F55ACA2F51E289B5E660E362 /* ConditionalConfigurabilityPreview.swift */,
@@ -8857,6 +8860,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D20000003C90000100000001 /* MinMaxPaywallPreview.swift in Sources */,
 				16A5DD10302E609A00E04386 /* WebBundleCacheCoordinator.swift in Sources */,
 				16B7EE02302F210200E04386 /* WebBundlePrewarmer.swift in Sources */,
 				16A5DD14302E611700E04386 /* WebViewWebsiteDataStoreSweeper.swift in Sources */,
