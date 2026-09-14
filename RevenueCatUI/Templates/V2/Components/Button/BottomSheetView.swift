@@ -12,6 +12,9 @@
 //  Created by Will Taylor on 5/5/25.
 
 import SwiftUI
+#if os(iOS)
+import UIKit
+#endif
 
 @_spi(Internal) import RevenueCat
 
@@ -116,6 +119,14 @@ struct BottomSheetOverlayModifier: ViewModifier {
         )
     }
 
+    /// A sheet is not a new screen as far as UIKit is concerned, so VoiceOver keeps whatever it
+    /// was focused on behind it until it is told otherwise.
+    private static func announceScreenChange() {
+#if os(iOS)
+        UIAccessibility.post(notification: .screenChanged, argument: nil)
+#endif
+    }
+
     /// One hop so the content's own measurements land before anything moves.
     private func settleAfterLayout(sheetID: String) {
         DispatchQueue.main.async {
@@ -149,6 +160,9 @@ struct BottomSheetOverlayModifier: ViewModifier {
             content
                 .blur(radius: sheetViewModel?.sheet.backgroundBlur == true ? 10 : 0)
                 .animation(.easeInOut(duration: 0.25), value: sheetViewModel?.sheet.backgroundBlur)
+                // Blurring leaves it on screen but still reachable, so VoiceOver walks the paywall
+                // underneath the sheet along with the sheet itself.
+                .accessibilityHidden(self.sheetViewModel != nil)
 
             // Invisible tap area that covers the screen
             if sheetViewModel != nil {
@@ -157,6 +171,8 @@ struct BottomSheetOverlayModifier: ViewModifier {
                     .onTapGesture {
                         sheetViewModel = nil
                     }
+                    // Nothing to announce: dismissal is reachable from inside the sheet.
+                    .accessibilityHidden(true)
             }
 
             // Sheet content
@@ -191,10 +207,14 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         insertion: .identity,
                         removal: .move(edge: .bottom).combined(with: .opacity)
                     ))
+                    // Modal, so focus is confined to the sheet rather than wandering the
+                    // paywall behind it.
+                    .accessibilityAddTraits(.isModal)
                     .onAppear {
                         self.onSheetContentAppear?()
                         self.mountedSheetID = sheetViewModel.sheet.id
                         self.settleAfterLayout(sheetID: sheetViewModel.sheet.id)
+                        Self.announceScreenChange()
                     }
                     .onDisappear {
                         if self.mountedSheetID == sheetViewModel.sheet.id {

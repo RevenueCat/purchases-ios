@@ -45,6 +45,10 @@ enum PaywallFixture: String, CaseIterable {
     /// point: the plain ones render the localized word, the `_with_zero` ones render the amount.
     case offerPriceWithZero = "offer_price_with_zero"
 
+    /// A button opening a bottom sheet. The paywall behind it must leave the accessibility tree
+    /// while the sheet is up.
+    case sheetOverContent = "sheet_over_content"
+
     var title: String {
         switch self {
         case .iconOnlyButton:
@@ -61,6 +65,8 @@ enum PaywallFixture: String, CaseIterable {
             return "Spoken text and markdown links"
         case .offerPriceWithZero:
             return "Offer price with zero"
+        case .sheetOverContent:
+            return "Sheet over content"
         }
     }
 
@@ -80,6 +86,8 @@ enum PaywallFixture: String, CaseIterable {
             return Self.spokenTextAndLinksComponentsData()
         case .offerPriceWithZero:
             return Self.offerPriceWithZeroComponentsData()
+        case .sheetOverContent:
+            return Self.sheetOverContentComponentsData()
         }
     }
 
@@ -88,7 +96,7 @@ enum PaywallFixture: String, CaseIterable {
         switch self {
         case .iconOnlyButton, .fixedPillOverflowScroll:
             return [Self.monthlyPackage(offeringIdentifier: self.rawValue)]
-        case .spokenTextAndLinks:
+        case .spokenTextAndLinks, .sheetOverContent:
             return [Self.annualPackage(offeringIdentifier: self.rawValue)]
         case .badgeRulesPerOffer:
             return [Self.annualPackageWithPromoOffer(offeringIdentifier: self.rawValue)]
@@ -571,6 +579,61 @@ private extension PaywallFixture {
 
     /// A package row with a fixed 22x22 pill ring and a 10x10 dot. `overflow: scroll` wraps the
     /// ring in a scroll view, which must not change its size.
+    static func sheetOverContentComponentsData() -> PaywallComponentsData {
+        let sheet = PaywallComponent.ButtonComponent.Sheet(
+            id: "sheet-over-content",
+            name: "Sheet",
+            stack: .init(
+                components: [
+                    .text(.init(text: "sheet_text_lid", color: .init(light: .hex("#000000"))))
+                ],
+                size: .init(width: .fill, height: .fit(nil)),
+                backgroundColor: .init(light: .hex("#ffffff")),
+                padding: .init(top: 32, bottom: 32, leading: 24, trailing: 24)
+            ),
+            backgroundBlur: true,
+            size: .init(width: .fill, height: .fixed(240))
+        )
+
+        return .init(
+            templateName: "fixture-sheet-over-content",
+            assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
+            componentsConfig: .init(base: .init(
+                stack: .init(
+                    components: [
+                        .text(.init(text: "behind_text_lid", color: .init(light: .hex("#000000")))),
+                        .button(.init(
+                            action: .navigateTo(destination: .sheet(sheet: sheet)),
+                            stack: .init(
+                                components: [
+                                    .text(.init(text: "open_lid", color: .init(light: .hex("#000000"))))
+                                ],
+                                size: .init(width: .fit(nil), height: .fit(nil)),
+                                padding: .init(top: 12, bottom: 12, leading: 16, trailing: 16)
+                            )
+                        ))
+                    ],
+                    dimension: .vertical(.center, .start),
+                    size: .init(width: .fill, height: .fill),
+                    spacing: 24,
+                    backgroundColor: .init(light: .hex("#ffffff")),
+                    padding: .init(top: 80, bottom: 24, leading: 16, trailing: 16)
+                ),
+                stickyFooter: nil,
+                background: .color(.init(light: .hex("#ffffff")))
+            )),
+            componentsLocalizations: [
+                "en_US": [
+                    "behind_text_lid": .string("Text behind the sheet"),
+                    "open_lid": .string("Open the sheet"),
+                    "sheet_text_lid": .string("Text inside the sheet")
+                ]
+            ],
+            revision: 1,
+            defaultLocaleIdentifier: "en_US"
+        )
+    }
+
     static func spokenTextAndLinksComponentsData() -> PaywallComponentsData {
         return .init(
             templateName: "fixture-spoken-text-and-links",
