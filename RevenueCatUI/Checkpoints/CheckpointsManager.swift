@@ -28,6 +28,7 @@ final class CheckpointsManager {
     private let checkpointPresenter: CheckpointPresenterType
     var paywallPresenter: PaywallPresenter?
     var errorPresenter: ErrorPresenter?
+    var adPresenter: AdPresenter?
 
     init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
@@ -69,6 +70,10 @@ final class CheckpointsManager {
         return makeDefaultHandler()
     }
 
+    func setAdPresenter(_ presenter: AdPresenter?) {
+        self.adPresenter = presenter
+    }
+
     func executeCheckpoint(
         identifier: String,
         params: CheckpointCallParams
@@ -83,6 +88,7 @@ final class CheckpointsManager {
                 }
             }
         )
+        let adPresenter = self.adPresenter
 
         guard CheckpointIdentifierValidator.isValid(identifier) else {
             Logger.error(CheckpointIdentifierValidator.invalidIdentifierLogMessage(identifier))
@@ -112,6 +118,20 @@ final class CheckpointsManager {
                 globalPaywallPresenter: globalPaywallPresenter,
                 localPaywallPresentationHandler: params.localPaywallPresentationHandler
             )
+        case let .matchedAd(adStep):
+            guard let adPresenter else {
+                Logger.warning(Strings.checkpoint_ad_step_without_ad_presenter(checkpointIdentifier: identifier))
+                return .nothingPresented
+            }
+            return try await self.checkpointPresenter.presentAd(
+                params: .init(
+                    checkpointIdentifier: identifier,
+                    customVariables: params.customVariables,
+                    adUnitId: adStep.adUnitId,
+                    mediator: adStep.mediator
+                ),
+                adPresenter: adPresenter
+            )
         case .noAction:
             return .nothingPresented
         }
@@ -132,6 +152,8 @@ final class CheckpointsManager {
                     customerInfo: customerInfo,
                     initialActiveEntitlementIdentifiers: initialActiveEntitlementIdentifiers
                 ))
+            case let .adPresented(adOutcome):
+                return .completed(adOutcome is CheckpointAdOutcome.Failed ? nil : FlowResult())
             case .failed, .nothingPresented:
                 return .completed(nil)
             }
