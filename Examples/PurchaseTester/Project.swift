@@ -54,7 +54,7 @@ let project = Project(
             additionalFiles: [
                 "../../Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTester.entitlements",
                 "../../Tests/TestingApps/PurchaseTesterSwiftUI/PurchaseTesterStoreKitConfiguration.storekit"
-            ],
+            ]
         ),
 
         .target(

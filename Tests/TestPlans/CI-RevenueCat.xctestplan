@@ -21,8 +21,8 @@
   "testTargets" : [
     {
       "target" : {
-        "containerPath" : "container:RevenueCat.xcodeproj",
-        "identifier" : "2DC5621D24EC63430031F69B",
+        "containerPath" : "container:RevenueCatTests.xcodeproj",
+        "identifier" : "35B291DDDEB8B02EB546EFC8",
         "name" : "UnitTests"
       }
     }
