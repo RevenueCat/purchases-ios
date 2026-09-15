@@ -153,6 +153,22 @@ final class CheckpointWorkflowPresenterTests: TestCase {
         XCTAssertTrue(delegate.didBackOut)
     }
 
+    func testNavigatingBackAfterRestoreCompletesWithRestoredOutcome() throws {
+        let store = CheckpointCallStore()
+        let delegate = MockCheckpointPresenterDelegate()
+        let presenter = CheckpointWorkflowPresenter(callStore: store) { _ in true }
+
+        try presenter.present(presentation: Self.presentation(), delegate: delegate)
+        presenter.stage(.outcome(CheckpointPaywallOutcome.Restored(customerInfo: TestData.customerInfo)))
+        presenter.presentationDidDismiss(reason: .navigatedBack)
+
+        guard let outcome = delegate.outcome as? CheckpointPaywallOutcome.Restored else {
+            return XCTFail("Expected the restore outcome")
+        }
+        XCTAssertEqual(outcome.customerInfo, TestData.customerInfo)
+        XCTAssertFalse(delegate.didBackOut)
+    }
+
     func testInteractiveDismissalIsNotReportedAsBackingOut() throws {
         let store = CheckpointCallStore()
         let delegate = MockCheckpointPresenterDelegate()
