@@ -152,6 +152,7 @@ class StoreKit1ObserverModeWithExistingPurchasesTests: BaseStoreKitObserverModeI
     func testDoesNotSyncExistingSK1Purchases() async throws {
         // 1. Purchase product directly from StoreKit
         try await self.manager.purchaseProductFromStoreKit1()
+        try await self.waitUntilNoUnfinishedTransactions()
 
         // 2. Configure SDK
         try await super.setUp()
@@ -164,6 +165,7 @@ class StoreKit1ObserverModeWithExistingPurchasesTests: BaseStoreKitObserverModeI
     func testDoesNotSyncExistingSK2Purchases() async throws {
         // 1. Purchase product directly from StoreKit
         try await self.manager.purchaseProductFromStoreKit2()
+        try await self.waitUntilNoUnfinishedTransactions()
 
         // 2. Configure SDK
         try await super.setUp()
