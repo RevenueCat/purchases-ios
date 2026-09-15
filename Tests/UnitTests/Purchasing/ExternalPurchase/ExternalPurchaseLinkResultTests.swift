@@ -31,6 +31,13 @@ final class ExternalPurchaseLinkResultTests: TestCase {
             == .proceed(externalPurchaseTokenID: nil)
     }
 
+    /// Nothing was asked of the customer, so the link opens as any other link would.
+    func testAPurchaseOutsideApplesProgrammeKeepsTheLink() {
+        let result = ExternalPurchaseLinkResult(preparationResult: .notRequired)
+
+        expect(result) == .proceed(externalPurchaseTokenID: nil)
+    }
+
     func testAnIneligibleCustomerKeepsTheLink() {
         let result = ExternalPurchaseLinkResult(preparationResult: .stopped(.notEligible))
 

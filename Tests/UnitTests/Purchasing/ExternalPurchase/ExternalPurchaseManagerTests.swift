@@ -46,7 +46,7 @@ class ExternalPurchaseManagerTests: TestCase {
     /// Also covers the case where the system suppresses the notice because the customer chose not to see it
     /// again: `showNotice` returns `.continued` with no interaction, which is what the mock does.
     func testInAppPurchasesShowTheWithinAppNoticeAndRequestAnInAppToken() async {
-        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+        let result = await self.manager.prepareExternalPurchase(requirement: .required(.inApp))
 
         expect(result) == .registered(tokenID: Self.tokenID)
         expect(self.customLink.invokedNoticeTypes) == [.withinApp]
@@ -59,7 +59,7 @@ class ExternalPurchaseManagerTests: TestCase {
     }
 
     func testLinkOutPurchasesShowTheBrowserNoticeAndRequestALinkOutToken() async {
-        let result = await self.manager.prepareExternalPurchase(flow: .linkOut)
+        let result = await self.manager.prepareExternalPurchase(requirement: .required(.linkOut))
 
         expect(result) == .registered(tokenID: Self.tokenID)
         expect(self.customLink.invokedNoticeTypes) == [.browser]
@@ -72,7 +72,7 @@ class ExternalPurchaseManagerTests: TestCase {
     func testMintsNothingWhenTheAppIsNotEligible() async {
         self.customLink.stubbedAvailability = .notEligible
 
-        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+        let result = await self.manager.prepareExternalPurchase(requirement: .required(.inApp))
 
         expect(result) == .stopped(.notEligible)
         expect(result.shouldProceed) == false
@@ -86,7 +86,7 @@ class ExternalPurchaseManagerTests: TestCase {
     func testMintsNothingWhenTheDeviceDoesNotAuthorizePayments() async {
         self.customLink.stubbedAvailability = .paymentsNotAuthorized
 
-        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+        let result = await self.manager.prepareExternalPurchase(requirement: .required(.inApp))
 
         expect(result) == .stopped(.paymentsNotAuthorized)
         expect(result.shouldProceed) == false
@@ -99,7 +99,7 @@ class ExternalPurchaseManagerTests: TestCase {
     func testMintsNothingWhenTheCustomerDeclinesTheNotice() async {
         self.customLink.stubbedNoticeResult = .success(.cancelled)
 
-        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+        let result = await self.manager.prepareExternalPurchase(requirement: .required(.inApp))
 
         expect(result) == .stopped(.customerCancelledNotice)
         expect(result.shouldProceed) == false
@@ -112,7 +112,7 @@ class ExternalPurchaseManagerTests: TestCase {
     func testStopsWhenTheNoticeCannotBeShown() async {
         self.customLink.stubbedNoticeResult = .failure(ExternalPurchaseError.apiUnavailable)
 
-        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+        let result = await self.manager.prepareExternalPurchase(requirement: .required(.inApp))
 
         expect(result) == .stopped(.noticeFailed)
         expect(result.shouldProceed) == false
@@ -127,7 +127,7 @@ class ExternalPurchaseManagerTests: TestCase {
     func testRegistersWithoutATokenWhenStoreKitHasNone() async {
         self.customLink.stubbedTokenResult = .success(nil)
 
-        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+        let result = await self.manager.prepareExternalPurchase(requirement: .required(.inApp))
 
         expect(result) == .registered(tokenID: Self.tokenID)
         expect(result.shouldProceed) == true
@@ -140,7 +140,7 @@ class ExternalPurchaseManagerTests: TestCase {
     func testProceedsWithoutRegisteringWhenTheTokenRequestFails() async {
         self.customLink.stubbedTokenResult = .failure(ErrorUtils.storeProblemError())
 
-        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+        let result = await self.manager.prepareExternalPurchase(requirement: .required(.inApp))
 
         expect(result) == .unregistered(.tokenRequestFailed)
         expect(result.shouldProceed) == true
@@ -155,12 +155,38 @@ class ExternalPurchaseManagerTests: TestCase {
             .networkError(.offlineConnection())
         )
 
-        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+        let result = await self.manager.prepareExternalPurchase(requirement: .required(.inApp))
 
         expect(result) == .unregistered(.registrationFailed)
         expect(result.shouldProceed) == true
         expect(result.tokenID).to(beNil())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenCount) == 1
+    }
+
+    // MARK: - Purchases the programme does not cover
+
+    /// A physical good, for one, is outside Apple's programme, so there is nothing to disclose and nothing to
+    /// report, and the customer is sent to the checkout without being asked anything.
+    func testAsksForNothingWhenTheProgrammeDoesNotCoverThePurchase() async {
+        let result = await self.manager.prepareExternalPurchase(requirement: .notRequired)
+
+        expect(result) == .notRequired
+        expect(result.shouldProceed) == true
+        expect(result.tokenID).to(beNil())
+        expect(self.customLink.invokedAvailabilityCount) == 0
+        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
+        expect(self.customLink.invokedTokenTypes).to(beEmpty())
+        expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
+    }
+
+    /// Whether the app takes part in the programme says nothing about a purchase the programme leaves alone.
+    func testAsksForNothingWhenTheProgrammeDoesNotCoverThePurchaseAndTheSettingIsDisabled() async {
+        self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
+        self.manager = self.makeManager()
+
+        let result = await self.manager.prepareExternalPurchase(requirement: .notRequired)
+
+        expect(result) == .notRequired
     }
 
     // MARK: - Dangerous setting
@@ -174,7 +200,7 @@ class ExternalPurchaseManagerTests: TestCase {
         let availability = await self.manager.externalPurchaseAvailability()
         expect(availability) == .notEligible
 
-        let result = await self.manager.prepareExternalPurchase(flow: .linkOut)
+        let result = await self.manager.prepareExternalPurchase(requirement: .required(.linkOut))
 
         expect(result) == .stopped(.notEligible)
         expect(self.customLink.invokedAvailabilityCount) == 0
@@ -189,7 +215,7 @@ class ExternalPurchaseManagerTests: TestCase {
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
         self.manager = self.makeManager()
 
-        _ = await self.manager.prepareExternalPurchase(flow: .linkOut)
+        _ = await self.manager.prepareExternalPurchase(requirement: .required(.linkOut))
 
         self.logger.verifyMessageWasNotLogged(Strings.externalPurchase.cannot_make_external_purchases,
                                               allowNoMessages: true)
@@ -211,7 +237,7 @@ class ExternalPurchaseManagerTests: TestCase {
     func testTheTestStoreSkipsTheWholeSequence() async {
         self.systemInfo.stubbedApiKeyValidationResult = .simulatedStore
 
-        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+        let result = await self.manager.prepareExternalPurchase(requirement: .required(.inApp))
 
         expect(result) == .stopped(.notEligible)
         expect(self.customLink.invokedNoticeTypes).to(beEmpty())
@@ -225,12 +251,12 @@ class ExternalPurchaseManagerTests: TestCase {
     func testResolvesEligibilityOnEveryPurchase() async {
         self.customLink.stubbedAvailability = .notEligible
 
-        let whileIneligible = await self.manager.prepareExternalPurchase(flow: .inApp)
+        let whileIneligible = await self.manager.prepareExternalPurchase(requirement: .required(.inApp))
         expect(whileIneligible) == .stopped(.notEligible)
 
         self.customLink.stubbedAvailability = .available
 
-        let onceEligible = await self.manager.prepareExternalPurchase(flow: .inApp)
+        let onceEligible = await self.manager.prepareExternalPurchase(requirement: .required(.inApp))
         expect(onceEligible) == .registered(tokenID: Self.tokenID)
 
         expect(self.customLink.invokedAvailabilityCount) == 2
@@ -245,10 +271,10 @@ class ExternalPurchaseManagerTests: TestCase {
         let secondResult: Atomic<ExternalPurchasePreparationResult?> = nil
 
         self.customLink.whileShowingNotice = {
-            secondResult.value = await manager.prepareExternalPurchase(flow: .linkOut)
+            secondResult.value = await manager.prepareExternalPurchase(requirement: .required(.linkOut))
         }
 
-        let firstResult = await manager.prepareExternalPurchase(flow: .linkOut)
+        let firstResult = await manager.prepareExternalPurchase(requirement: .required(.linkOut))
 
         expect(secondResult.value) == .stopped(.alreadyPreparing)
         expect(firstResult) == .registered(tokenID: Self.tokenID)
@@ -258,8 +284,8 @@ class ExternalPurchaseManagerTests: TestCase {
     }
 
     func testPreparesAgainOnceTheFirstOneIsDone() async {
-        let first = await self.manager.prepareExternalPurchase(flow: .linkOut)
-        let second = await self.manager.prepareExternalPurchase(flow: .linkOut)
+        let first = await self.manager.prepareExternalPurchase(requirement: .required(.linkOut))
+        let second = await self.manager.prepareExternalPurchase(requirement: .required(.linkOut))
 
         expect(first) == .registered(tokenID: Self.tokenID)
         expect(second) == .registered(tokenID: Self.tokenID)

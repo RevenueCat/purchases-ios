@@ -24,15 +24,18 @@ enum ExternalPurchaseLink {
     ///
     /// The paywall is marked as busy while Apple's flow runs, so the button the customer tapped cannot start a
     /// second one. Links that open straight away are not marked, to save a blink of a disabled button.
+    /// - Parameter package: What the link buys, where that is known. The SDK reads from it whether Apple's
+    /// programme covers the purchase at all.
     static func urlToOpen(_ url: URL,
                           method: PaywallComponent.ButtonComponent.URLMethod,
+                          package: Package?,
                           purchaseHandler: PurchaseHandler) async -> URL? {
         guard self.applies(to: method) else {
             return url
         }
 
         return await purchaseHandler.withExternalPurchasePreparation {
-            await self.urlToOpen(url)
+            await self.urlToOpen(url, package: package)
         }
     }
 
@@ -47,8 +50,8 @@ enum ExternalPurchaseLink {
         return Purchases.shared.useExternalPurchaseCustomLinks
     }
 
-    private static func urlToOpen(_ url: URL) async -> URL? {
-        switch await Purchases.shared.prepareExternalPurchaseLink() {
+    private static func urlToOpen(_ url: URL, package: Package?) async -> URL? {
+        switch await Purchases.shared.prepareExternalPurchaseLink(package: package) {
         case let .proceed(externalPurchaseTokenID):
             guard let externalPurchaseTokenID else {
                 return url

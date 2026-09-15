@@ -973,7 +973,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.hostedCheckoutManager = HostedCheckoutManager(
             externalPurchaseManager: externalPurchaseManager,
             webBillingAPI: backend.webBilling,
-            currentUserProvider: identityManager
+            currentUserProvider: identityManager,
+            systemInfo: systemInfo
         )
 
         super.init()
@@ -1938,14 +1939,22 @@ public extension Purchases {
     /// Only to be called when the customer has deliberately asked to buy: it shows Apple's disclosure notice,
     /// and every token minted is one Apple expects a report for.
     ///
-    /// Does nothing while ``DangerousSettings/useExternalPurchaseCustomLinks`` is disabled: the caller is told to
-    /// proceed with no token id to hand over, so the link keeps opening as it did before.
-    @_spi(Internal) func prepareExternalPurchaseLink() async -> ExternalPurchaseLinkResult {
-        return .init(preparationResult: await self.externalPurchaseManager.prepareExternalPurchase(flow: .linkOut))
+    /// Does nothing while ``DangerousSettings/useExternalPurchaseCustomLinks`` is disabled, or where Apple's
+    /// programme does not cover `package`: the caller is told to proceed with no token id to hand over, so the
+    /// link keeps opening as it did before.
+    ///
+    /// - Parameter package: What the link buys. Pass `nil` where that is not known, which is read as Apple's
+    /// programme applying.
+    @_spi(Internal) func prepareExternalPurchaseLink(package: Package?) async -> ExternalPurchaseLinkResult {
+        let appleExternalPurchase = package?.appleExternalPurchase ?? .required
+
+        return .init(preparationResult: await self.externalPurchaseManager.prepareExternalPurchase(
+            requirement: appleExternalPurchase.requirement(for: .linkOut)
+        ))
     }
 
     /// ``DangerousSettings/useExternalPurchaseCustomLinks``, so that `RevenueCatUI` only tells the customer
-    /// something is under way when ``prepareExternalPurchaseLink()`` has work to do.
+    /// something is under way when ``prepareExternalPurchaseLink(package:)`` has work to do.
     @_spi(Internal) var useExternalPurchaseCustomLinks: Bool {
         return self.systemInfo.dangerousSettings.useExternalPurchaseCustomLinks
     }
