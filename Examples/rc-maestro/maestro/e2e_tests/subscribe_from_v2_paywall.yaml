@@ -15,6 +15,7 @@ name: Subscribe to product through V2 Paywall for default offering
 - launchApp:
     arguments:
         e2e_test_flow: subscribe_from_v2_paywall
+        maestro_store: ${MAESTRO_STORE}
 - assertVisible: "entitlement (pro): nil"
 - extendedWaitUntil:
     visible: "Present Paywall"

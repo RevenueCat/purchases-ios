@@ -1,10 +1,33 @@
 import SwiftUI
 @testable import RevenueCat
+#if DEBUG && targetEnvironment(simulator) && canImport(StoreKitTest)
+import StoreKitTest
+#endif
 
 @main
 struct RcMaestroApp: App {
 
+    #if DEBUG && targetEnvironment(simulator) && canImport(StoreKitTest)
+    private let storeKitTestSession: SKTestSession?
+    #endif
+
     init() {
+        #if DEBUG && targetEnvironment(simulator) && canImport(StoreKitTest)
+        if UserDefaults.standard.string(forKey: "maestro_store") == "app_store" {
+            do {
+                let session = try SKTestSession(configurationFileNamed: "app787ddb07e6")
+                session.resetToDefaultState()
+                session.clearTransactions()
+                session.disableDialogs = false
+                self.storeKitTestSession = session
+            } catch {
+                fatalError("Unable to initialize Maestro StoreKit configuration: \(error)")
+            }
+        } else {
+            self.storeKitTestSession = nil
+        }
+        #endif
+
         Purchases.logLevel = .verbose
         Purchases.proxyURL = Constants.proxyURL.flatMap { URL(string: $0) }
 
