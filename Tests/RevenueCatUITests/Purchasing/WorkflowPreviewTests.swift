@@ -69,19 +69,30 @@ final class WorkflowPreviewTests: TestCase {
         expect(context.offering(for: "offering_b")?.identifier) == "offering_b"
     }
 
-    func testMakeContextThrowsWhenScreenOfferingMissingFromOfferings() throws {
-        // The workflow screen resolves to "offering_b", but only "offering_a" is supplied.
+    func testMakeContextAllowsInitialDeclaredOfferingMissingFromOfferings() throws {
+        // The workflow screen resolves to "offering_b", but only "offering_a" is supplied. The
+        // workflow should reach the UI so it can surface its configuration error to the customer.
         let workflow = try Self.makeWorkflow(screenOfferingIdentifier: "offering_b")
 
-        do {
-            _ = try WorkflowPreview.makeContext(
-                workflow: workflow,
-                offerings: [Self.makeOffering(identifier: "offering_a")]
-            )
-            XCTFail("Expected makeContext to throw")
-        } catch let PaywallError.offeringNotFound(identifier) {
-            expect(identifier) == "offering_b"
-        }
+        let context = try WorkflowPreview.makeContext(
+            workflow: workflow,
+            offerings: [Self.makeOffering(identifier: "offering_a")]
+        )
+
+        expect(context.initialOffering.identifier) == ""
+        expect(WorkflowPaywallView.presentationError(for: "step_1", in: context)?.code)
+            == ErrorCode.configurationError.rawValue
+    }
+
+    func testMakeContextAllowsAnInitialContentOnlyScreen() throws {
+        let workflow = try Self.makeWorkflow(screenOfferingIdentifier: nil)
+
+        let context = try WorkflowPreview.makeContext(workflow: workflow, offerings: [])
+
+        expect(context.initialOffering.identifier) == ""
+        expect(context.initialOffering.availablePackages).to(beEmpty())
+        expect(context.initialOffering.internalPaywallComponents).toNot(beNil())
+        expect(context.offering(for: try XCTUnwrap(workflow.steps["step_1"]))).to(beNil())
     }
 
 }
@@ -104,7 +115,7 @@ private extension WorkflowPreviewTests {
     /// Builds a single-screen workflow using the `@_spi(Internal)` initializers (C-1), sourcing the
     /// `componentsConfig` sub-object from JSON since hand-building it is impractical.
     static func makeWorkflow(
-        screenOfferingIdentifier: String,
+        screenOfferingIdentifier: String?,
         zeroDecimalPlaceCountries: [String] = []
     ) throws -> PublishedWorkflow {
         let screen = WorkflowScreen(

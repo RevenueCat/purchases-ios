@@ -61,6 +61,7 @@ struct ButtonComponentView: View {
     @Environment(\.urlOpenedNotifier) private var urlOpenedNotifier
     @Environment(\.workflowTriggerAction) private var workflowTriggerAction
     @Environment(\.closeWorkflowAction) private var closeWorkflowAction
+    @Environment(\.workflowNavigateBackHandler) private var workflowNavigateBackHandler
     @Environment(\.workflowRenderingContext) private var workflowRenderingContext
 
     private let viewModel: ButtonComponentViewModel
@@ -155,9 +156,14 @@ struct ButtonComponentView: View {
             hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession
         )
 
-        return self.viewModel.derivedAccessibilityLabel(
-            dismissesPaywall: dismissal == .dismissWorkflow
-        )
+        let dismissesWorkflow: Bool
+        if case .dismissWorkflow = dismissal {
+            dismissesWorkflow = true
+        } else {
+            dismissesWorkflow = false
+        }
+
+        return self.viewModel.derivedAccessibilityLabel(dismissesPaywall: dismissesWorkflow)
     }
 
     private var headerPageOffset: CGFloat {
@@ -186,15 +192,9 @@ struct ButtonComponentView: View {
         case .navigateTo(let destination):
             await navigateTo(destination: destination)
         case .navigateBack:
-            onDismiss()
+            self.navigateBack()
         case .closeWorkflow:
-            if let closeWorkflowAction {
-                closeWorkflowAction()
-            } else {
-                Logger.warning(
-                    Strings.paywall_close_workflow_action_not_handled(componentName: self.viewModel.component.name)
-                )
-            }
+            self.closeWorkflow()
         case .workflowTrigger:
             Logger.warning(
                 Strings.paywall_workflow_trigger_not_handled(componentName: self.viewModel.component.name)
@@ -214,6 +214,24 @@ struct ButtonComponentView: View {
                 )
                 openSheet(sheetViewModel)
             }
+        }
+    }
+
+    private func navigateBack() {
+        if let workflowNavigateBackHandler {
+            workflowNavigateBackHandler()
+        } else {
+            onDismiss()
+        }
+    }
+
+    private func closeWorkflow() {
+        if let closeWorkflowAction {
+            closeWorkflowAction()
+        } else {
+            Logger.warning(
+                Strings.paywall_close_workflow_action_not_handled(componentName: self.viewModel.component.name)
+            )
         }
     }
 
