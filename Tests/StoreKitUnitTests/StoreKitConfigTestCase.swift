@@ -51,6 +51,14 @@ class StoreKitConfigTestCase: TestCase {
         await self.waitForStoreKitTestIfNeeded()
 
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            // Initialize the test session before observing StoreKit. Otherwise the first connection
+            // can use Sandbox instead of XcodeTest, leaving fixture product requests empty on iOS 27.
+            if Self.transactionsObservation == nil {
+                Self.transactionsObservation = Task {
+                    await Self.listenToTransactionUpdates()
+                }
+            }
+
             try await self.deleteAllTransactions(session: self.testSession)
         }
 
@@ -76,17 +84,6 @@ class StoreKitConfigTestCase: TestCase {
     // MARK: - Transactions observation
 
     private static var transactionsObservation: Task<Void, Never>?
-
-    override class func setUp() {
-        super.setUp()
-
-        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-            Self.transactionsObservation?.cancel()
-            Self.transactionsObservation = Task {
-                await Self.listenToTransactionUpdates()
-            }
-        }
-    }
 
     override class func tearDown() {
         Self.transactionsObservation?.cancel()
