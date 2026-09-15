@@ -1908,6 +1908,18 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
     }
 
+    func testPrimarySignatureVerificationFailureDoesNotTriggerFallbackAndAllowsLaterRefresh() {
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(.networkError(.signatureVerificationFailed(
+            path: HTTPRequest.Path.remoteConfig(domain: "app"),
+            code: .success
+        ))))
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigFallbackCount) == 0
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+    }
+
     func testFallbackConfigSuccessPersistsConfigurationWithoutRequestTimeOrInlineBlobExtraction() {
         self.dateProvider.advance(by: 123)
         let serverRequestTime = Date(timeIntervalSince1970: 456)
