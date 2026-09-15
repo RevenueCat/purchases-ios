@@ -583,6 +583,12 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testPurchaseAfterSigningIntoNewUser() async throws {
+        #if os(iOS)
+        try XCTSkipIf(Self.storeKitVersion == .storeKit2 &&
+                      ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
+                      "iOS 27 StoreKitTest shows an already-subscribed dialog despite disableDialogs when repurchasing")
+        #endif
+
         let prefix = UUID().uuidString
         let userID1 = "\(prefix)-user-1"
         let userID2 = "\(prefix)-user-2"
@@ -644,6 +650,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
                                 timeout: .seconds(30)) {
                 await subscription.isEligibleForIntroOffer
             }
+            await self.resetSingleton()
         }
 
         let eligibility = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: product)
@@ -692,6 +699,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         #if os(iOS)
         if Self.storeKitVersion == .storeKit2,
            ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27 {
+            self.continueAfterFailure = true
             XCTExpectFailure("iOS 27 StoreKitTest still reports intro eligibility after a same-group purchase") {
                 expect(eligibility) == .ineligible
             }
