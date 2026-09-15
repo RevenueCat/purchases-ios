@@ -588,29 +588,94 @@ private struct OnWebCheckoutOpenedModifier: ViewModifier {
     let handler: WebCheckoutOpenedHandler
 
     func body(content: Content) -> some View {
-        content
-            .onPreferenceChange(WebCheckoutOpenedPreferenceKey.self) { id in
-                if id != nil {
-                    self.handler()
-                }
-            }
+        content.transformEnvironment(\.webCheckoutOpenedHandlers) { handlers in
+            handlers.append(self.handler)
+        }
     }
 
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@MainActor
 private struct OnURLOpenedModifier: ViewModifier {
 
     let handler: URLOpenedHandler
 
     func body(content: Content) -> some View {
-        content
-            .onPreferenceChange(URLOpenedPreferenceKey.self) { signal in
-                if let signal {
-                    self.handler(signal.url)
+        content.transformEnvironment(\.urlOpenedHandlers) { handlers in
+            handlers.append(self.handler)
+        }
+    }
+
+}
+
+/// Owns URL event delivery for a paywall, above any retained workflow pages. Standalone V2 views
+/// also install this modifier, but inherit the owner when embedded inside a PaywallView.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@MainActor
+struct PaywallURLEventsModifier: ViewModifier {
+
+    let purchaseHandler: PurchaseHandler
+
+    @Environment(\.urlEventOwner) private var owner
+    @Environment(\.urlOpenedHandlers) private var urlOpenedHandlers
+    @Environment(\.webCheckoutOpenedHandlers) private var webCheckoutOpenedHandlers
+
+    // A hosting controller can retain its SwiftUI graph after dismissal. Its subscription must
+    // not forward events when another presentation starts using the same purchase handler.
+    @State private var isVisible = false
+
+    func body(content: Content) -> some View {
+        if self.owner == ObjectIdentifier(self.purchaseHandler) {
+            content
+        } else {
+            content
+                .environment(\.urlEventOwner, ObjectIdentifier(self.purchaseHandler))
+                .onAppear { self.isVisible = true }
+                .onDisappear { self.isVisible = false }
+                .onReceive(self.purchaseHandler.urlOpenedPublisher) { url in
+                    guard self.isVisible else { return }
+                    for handler in self.urlOpenedHandlers {
+                        handler(url)
+                    }
                 }
-            }
+                .onReceive(self.purchaseHandler.webCheckoutOpenedPublisher) {
+                    guard self.isVisible else { return }
+                    for handler in self.webCheckoutOpenedHandlers {
+                        handler()
+                    }
+                }
+        }
+    }
+
+}
+
+private struct URLOpenedHandlersKey: EnvironmentKey {
+    static let defaultValue: [URLOpenedHandler] = []
+}
+
+private struct WebCheckoutOpenedHandlersKey: EnvironmentKey {
+    static let defaultValue: [WebCheckoutOpenedHandler] = []
+}
+
+private struct URLEventOwnerKey: EnvironmentKey {
+    static let defaultValue: ObjectIdentifier? = nil
+}
+
+private extension EnvironmentValues {
+
+    var urlOpenedHandlers: [URLOpenedHandler] {
+        get { self[URLOpenedHandlersKey.self] }
+        set { self[URLOpenedHandlersKey.self] = newValue }
+    }
+
+    var webCheckoutOpenedHandlers: [WebCheckoutOpenedHandler] {
+        get { self[WebCheckoutOpenedHandlersKey.self] }
+        set { self[WebCheckoutOpenedHandlersKey.self] = newValue }
+    }
+
+    var urlEventOwner: ObjectIdentifier? {
+        get { self[URLEventOwnerKey.self] }
+        set { self[URLEventOwnerKey.self] = newValue }
     }
 
 }

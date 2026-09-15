@@ -459,6 +459,7 @@ struct WorkflowPaywallView: View {
         .environment(\.paywallStateValues, self.stateStore.values)
         .environment(\.paywallStateDefaults, self.stateStore.defaults)
         .displayError(self.workflowPresentationError, onDismiss: self.onDismiss)
+        .modifier(PaywallURLEventsModifier(purchaseHandler: self.purchaseHandler))
     }
 
     // MARK: - Helpers
