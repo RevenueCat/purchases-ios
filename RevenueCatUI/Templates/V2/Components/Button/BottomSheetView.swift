@@ -119,8 +119,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
         )
     }
 
-    /// A sheet is not a new screen as far as UIKit is concerned, so VoiceOver keeps whatever it
-    /// was focused on behind it until it is told otherwise.
+    /// A sheet is not a new screen to UIKit, so VoiceOver holds its focus until told otherwise.
     private static func announceScreenChange() {
 #if os(iOS)
         UIAccessibility.post(notification: .screenChanged, argument: nil)
@@ -160,8 +159,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
             content
                 .blur(radius: sheetViewModel?.sheet.backgroundBlur == true ? 10 : 0)
                 .animation(.easeInOut(duration: 0.25), value: sheetViewModel?.sheet.backgroundBlur)
-                // Blurring leaves it on screen but still reachable, so VoiceOver walks the paywall
-                // underneath the sheet along with the sheet itself.
+                // Blur is visual only: without this VoiceOver still walks what is behind.
                 .accessibilityHidden(self.sheetViewModel != nil)
 
             // Invisible tap area that covers the screen
@@ -207,8 +205,6 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         insertion: .identity,
                         removal: .move(edge: .bottom).combined(with: .opacity)
                     ))
-                    // Modal, so focus is confined to the sheet rather than wandering the
-                    // paywall behind it.
                     .accessibilityAddTraits(.isModal)
                     .onAppear {
                         self.onSheetContentAppear?()

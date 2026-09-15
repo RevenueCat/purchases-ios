@@ -45,8 +45,7 @@ enum PaywallFixture: String, CaseIterable {
     /// point: the plain ones render the localized word, the `_with_zero` ones render the amount.
     case offerPriceWithZero = "offer_price_with_zero"
 
-    /// A button opening a bottom sheet. The paywall behind it must leave the accessibility tree
-    /// while the sheet is up.
+    /// A button opening a bottom sheet, for checking what is reachable while it is up.
     case sheetOverContent = "sheet_over_content"
 
     var title: String {

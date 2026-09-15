@@ -11,13 +11,9 @@
 
 import XCTest
 
-/// Whether the paywall behind a sheet leaves the accessibility tree cannot be asserted here:
-/// XCUITest lists elements that carry `accessibilityHidden`, and reports them as accessibility
-/// elements, which `PaywallAccessibilityUITests.testElementQueriesListEvenHiddenImages` pins down.
-/// `performAccessibilityAudit` has no check for reachability behind a modal either.
-///
-/// So this only holds the fixture open for a VoiceOver pass on device: open the sheet, then swipe
-/// through. Focus should stay inside the sheet and never reach "Text behind the sheet".
+/// XCUITest reports elements carrying `accessibilityHidden` as present and as accessibility
+/// elements (see `testElementQueriesListEvenHiddenImages`), so what this PR changes can only be
+/// checked with VoiceOver on device. This keeps the fixture working for that pass.
 final class SheetAccessibilityUITests: XCTestCase {
 
     override func setUp() {
@@ -25,7 +21,6 @@ final class SheetAccessibilityUITests: XCTestCase {
         self.continueAfterFailure = false
     }
 
-    /// The fixture itself still has to work, or the manual pass has nothing to look at.
     func testTheSheetOpensOverTheContent() throws {
         let app = XCUIApplication()
         app.launchEnvironment["PAYWALL_FIXTURE"] = "sheet_over_content"
