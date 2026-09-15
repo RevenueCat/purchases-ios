@@ -18,11 +18,9 @@ import Foundation
 
     struct PackageSelection: Codable, Hashable, Sendable {
         public let mode: String
-        public let defaultPackageComponentId: String?
 
-        public init(mode: String = "local", defaultPackageComponentId: String? = nil) {
+        public init(mode: String = "local") {
             self.mode = mode
-            self.defaultPackageComponentId = defaultPackageComponentId
         }
     }
 
