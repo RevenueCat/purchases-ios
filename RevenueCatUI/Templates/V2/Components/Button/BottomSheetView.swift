@@ -215,6 +215,11 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         if self.mountedSheetID == sheetViewModel.sheet.id {
                             self.mountedSheetID = nil
                         }
+                        // Hand focus back to the paywall. Skipped when another sheet took its
+                        // place, since that one announces itself once it settles.
+                        if self.sheetViewModel == nil {
+                            Self.announceScreenChange()
+                        }
                     }
                     // A sheet need not author a close button, so without this a screen reader
                     // could have no way out.
