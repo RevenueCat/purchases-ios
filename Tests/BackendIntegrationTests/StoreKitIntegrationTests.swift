@@ -361,6 +361,11 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testPurchaseFailuresAreReportedCorrectly() async throws {
         try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
 
+        #if os(iOS)
+        try XCTSkipIf(ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
+                      "iOS 27 StoreKitTest returns .unknown instead of the simulated .purchaseNotAllowed error")
+        #endif
+
         try await self.testSession.setSimulatedError(
             .purchase(Product.PurchaseError.purchaseNotAllowed),
             forAPI: .purchase
@@ -379,6 +384,11 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     @available(iOS 17.0, tvOS 17.0, watchOS 10.0, macOS 14.0, *)
     func testPurchaseCancellationsAreReportedCorrectly() async throws {
         try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
+
+        #if os(iOS)
+        try XCTSkipIf(ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
+                      "iOS 27 StoreKitTest returns .unknown instead of the simulated .userCancelled error")
+        #endif
 
         try await self.testSession.setSimulatedError(.generic(.userCancelled), forAPI: .purchase)
 
@@ -628,6 +638,14 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         let product = try await self.monthlyPackage.storeProduct
 
+        if Self.storeKitVersion == .storeKit2, #available(iOS 27.0, tvOS 27.0, macOS 27.0, watchOS 27.0, *) {
+            let subscription = try XCTUnwrap(product.sk2Product?.subscription)
+            try await asyncWait(description: "Intro eligibility did not reset for \(product.productIdentifier)",
+                                timeout: .seconds(30)) {
+                await subscription.isEligibleForIntroOffer
+            }
+        }
+
         let eligibility = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: product)
         expect(eligibility) == .eligible
     }
@@ -671,6 +689,15 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         _ = try await self.purchases.purchase(product: productWithNoTrial)
 
         let eligibility = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: productWithTrial)
+        #if os(iOS)
+        if Self.storeKitVersion == .storeKit2,
+           ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27 {
+            XCTExpectFailure("iOS 27 StoreKitTest still reports intro eligibility after a same-group purchase") {
+                expect(eligibility) == .ineligible
+            }
+            return
+        }
+        #endif
         expect(eligibility) == .ineligible
     }
 
@@ -746,6 +773,12 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testResubscribeAfterExpiration() async throws {
+        #if os(iOS)
+        try XCTSkipIf(Self.storeKitVersion == .storeKit2 &&
+                      ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
+                      "iOS 27 StoreKitTest returns the expired SK2 transaction when repurchasing")
+        #endif
+
         @discardableResult
         func subscribe() async throws -> CustomerInfo {
             return try await self.purchaseMonthlyOffering().customerInfo
@@ -872,6 +905,12 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testPurchaseWithPromotionalOffer() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
+        #if os(iOS)
+        try XCTSkipIf(Self.storeKitVersion == .storeKit2 &&
+                      ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
+                      "iOS 27 StoreKitTest returns the expired SK2 transaction when repurchasing")
+        #endif
+
         let user = UUID().uuidString
 
         let (_, created) = try await self.purchases.logIn(user)
@@ -911,6 +950,12 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     @available(iOS 15.2, tvOS 15.2, macOS 12.1, watchOS 8.3, *)
     func testPurchaseWithPromotionalOfferWithNonUUIDappUserId() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        #if os(iOS)
+        try XCTSkipIf(Self.storeKitVersion == .storeKit2 &&
+                      ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
+                      "iOS 27 StoreKitTest returns the expired SK2 transaction when repurchasing")
+        #endif
 
         let user = "not_a_uuid.\(UUID().uuidString)"
 

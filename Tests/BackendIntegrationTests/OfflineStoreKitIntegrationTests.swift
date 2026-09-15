@@ -448,6 +448,11 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchasingMultipleProductsWhileServerIsDownHandlesAllTransactionsWhenForegroundingApp() async throws {
+        #if os(iOS)
+        try XCTSkipIf(ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
+                      "iOS 27 StoreKitTest omits purchased, unfinished transactions from Transaction.unfinished")
+        #endif
+
         self.continueAfterFailure = true
 
         // To prevent the subscription renewal from happening during the test. Otherwise,
