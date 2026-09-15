@@ -20,6 +20,93 @@ import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct StackComponentView: View {
+    let viewModel: StackComponentViewModel
+    var localSelectionContext: PackageContext?
+    var isScrollableByDefault: Bool = false
+    let onDismiss: () -> Void
+    var additionalPadding: EdgeInsets?
+    var showActivityIndicatorOverContent: Bool = false
+
+    var body: some View {
+        let content = StackComponentContentView(
+            viewModel: viewModel,
+            isScrollableByDefault: isScrollableByDefault,
+            onDismiss: onDismiss,
+            additionalPadding: additionalPadding,
+            showActivityIndicatorOverContent: showActivityIndicatorOverContent
+        )
+        if let validator = viewModel.localPackageValidator,
+           validator.hasDeclaredPackages || !validator.packageInfos.isEmpty {
+            LocalPackageSelectionView(validator: validator, selection: localSelectionContext) { content }
+        } else {
+            content
+        }
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct LocalPackageSelectionView<Content: View>: View {
+    @EnvironmentObject private var parentContext: PackageContext
+    @EnvironmentObject private var introOfferEligibilityContext: IntroOfferEligibilityContext
+    @EnvironmentObject private var paywallPromoOfferCache: PaywallPromoOfferCache
+    @Environment(\.screenCondition) private var screenCondition
+    @Environment(\.paywallWindowSize) private var windowSize
+    @Environment(\.customPaywallVariables) private var customVariables
+    @StateObject private var selection: PackageContext
+    @State private var didInitializeSelection = false
+    let validator: PackageValidator
+    let content: () -> Content
+
+    init(
+        validator: PackageValidator,
+        selection: PackageContext?,
+        @ViewBuilder content: @escaping () -> Content
+    ) {
+        self.validator = validator
+        self.content = content
+        self._selection = StateObject(wrappedValue: selection ?? PackageContext(
+            package: validator.defaultSelectedPackage(in: .provisional),
+            variableContext: .init(packages: validator.packages)
+        ))
+    }
+
+    private var context: PackageSelectionContext {
+        .init(
+            condition: screenCondition,
+            customVariables: customVariables,
+            windowSize: windowSize,
+            isEligibleForIntroOffer: { introOfferEligibilityContext.isEligible(package: $0) },
+            isEligibleForPromoOffer: { paywallPromoOfferCache.isMostLikelyEligible(for: $0) }
+        )
+    }
+
+    var body: some View {
+        let visibleIds = validator.visiblePackages(in: context).map(\.identifier)
+        let defaultPackage = validator.defaultSelectedPackage(in: context)
+        content()
+            .environmentObject(selection)
+            .environment(\.selectedPackageId, selection.package?.identifier)
+            .environment(\.planSelectionDefaultPackage, defaultPackage)
+            .environment(\.workflowPackageContext, nil)
+            .onAppear { reconcile() }
+            .onChangeOf(visibleIds) { _ in reconcile() }
+    }
+
+    private func reconcile() {
+        let initializePageSelection = !didInitializeSelection && validator.hasPageScopedPackages
+        didInitializeSelection = true
+        guard initializePageSelection ||
+                selection.package.map({ validator.isRendering($0, in: context) }) != true else { return }
+        selection.update(
+            package: validator.defaultSelectedPackage(in: context),
+            variableContext: parentContext.variableContext,
+            isReconcile: true
+        )
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct StackComponentContentView: View {
 
     @EnvironmentObject
     private var packageContext: PackageContext
