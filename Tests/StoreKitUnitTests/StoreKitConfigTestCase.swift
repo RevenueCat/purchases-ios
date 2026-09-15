@@ -101,6 +101,18 @@ class StoreKitConfigTestCase: TestCase {
 
 }
 
+/// Run in a separate test process before the iOS 27 CI suite. The first StoreKit purchase connection
+/// can remain in Sandbox even after SKTestSession is configured; a new process uses XcodeTest correctly.
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+class StoreKitTestSessionInitializationTests: StoreKitConfigTestCase {
+
+    func testInitializesLocalStoreKitSession() async throws {
+        let product = try await self.fetchSk2Product()
+        XCTAssertEqual(product.id, Self.productID)
+    }
+
+}
+
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
 private extension StoreKitConfigTestCase {
 

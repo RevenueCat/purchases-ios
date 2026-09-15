@@ -843,7 +843,7 @@ platform :ios do
       test_plan = "CI-AllTests"
     end
 
-    scan(
+    scan_options = {
       step_name: "scan - iPhone",
       device: ENV['SCAN_DEVICE'] || "iPhone 12 (15.2)",
       ensure_devices_found: true,
@@ -856,7 +856,24 @@ platform :ios do
       output_directory: "fastlane/test_output/xctest/ios",
       number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
       fail_build: !generate_snapshots
-    )
+    }
+
+    if ENV["RC_STOREKIT_TEST_PREFLIGHT"] == "1" && !skip_sk_tests
+      # iOS 27 can bind the first process's purchase connection to Sandbox even after
+      # SKTestSession initialization. Configure StoreKitTest in a separate process so
+      # the full suite starts with XcodeTest active, without bypassing real purchases.
+      # Keep both runs on the same simulator and preserve its StoreKit configuration.
+      scan_options.merge!(reset_simulator: false, reinstall_app: false, parallel_testing: false, only_testing: [])
+      scan(scan_options.merge(
+        step_name: "scan - StoreKitTest preflight",
+        only_testing: ["StoreKitUnitTests/StoreKitTestSessionInitializationTests"],
+        output_directory: "fastlane/test_output/xctest/ios/storekit-preflight",
+        number_of_retries: 0,
+        fail_build: true
+      ))
+    end
+
+    scan(scan_options)
   end
 
   # Screen reader behavior can only be asserted against the real accessibility tree, which SwiftUI
