@@ -64,8 +64,7 @@ class PurchasesCheckpointEventsTests: BasePurchasesTests {
         expect(event.data.checkpointRuleID) == "rule_123"
     }
 
-    /// The hit reports what the checkpoint resolved to, so a resolution that never completes has nothing to
-    /// report. Registering the identifier is lost only in that case.
+    /// A resolution that never completes has no outcome to report, so the identifier goes unregistered.
     func testTracksNothingWhenResolutionFails() async throws {
         self.setUpCheckpointPurchases(resolver: ThrowingCheckpointWorkflowResolver())
 

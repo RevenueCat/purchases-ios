@@ -86,7 +86,9 @@ class EventsManagerTests: TestCase {
 
     func testTrackCheckpointEvent() async throws {
         let event = CheckpointEvent.hit(
-            .init(identifier: "onboarding_complete", date: Date(timeIntervalSince1970: 1_699_270_688.995))
+            .init(identifier: "onboarding_complete",
+                  date: Date(timeIntervalSince1970: 1_699_270_688.995),
+                  result: .noMatch)
         )
 
         await self.manager.track(featureEvent: event)
@@ -144,7 +146,6 @@ class EventsManagerTests: TestCase {
         let event = CheckpointEvent.hit(
             .init(identifier: "onboarding_complete",
                   date: Date(timeIntervalSince1970: 1_699_270_688.995),
-                  checkpointType: .custom,
                   result: .presentUI,
                   workflowID: "wf_123",
                   checkpointRuleID: "rule_123")
@@ -162,19 +163,6 @@ class EventsManagerTests: TestCase {
         expect(map["workflow_id"] as? String) == "wf_123"
         expect(map["checkpoint_rule_id"] as? String) == "rule_123"
         expect(map["offering_id"]).to(beNil())
-    }
-
-    /// Hybrid SDKs read this map, so a hit with no outcome must not surface the keys at all.
-    func testCheckpointHitToMapOmitsAbsentOutcome() {
-        let event = CheckpointEvent.hit(
-            .init(identifier: "onboarding_complete", date: Date(timeIntervalSince1970: 1_699_270_688.995))
-        )
-
-        let map = event.toMap()
-
-        expect(map["identifier"] as? String) == "onboarding_complete"
-        expect(map["checkpoint_type"]).to(beNil())
-        expect(map["result"]).to(beNil())
     }
 
     func testPaywallCloseToMap() {

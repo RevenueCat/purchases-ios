@@ -284,11 +284,11 @@ private extension CheckpointEvent {
             "type": self.eventType,
             "id": self.data.id.uuidString,
             "timestamp": self.data.date.millisecondsSince1970,
-            "identifier": self.data.identifier
+            "identifier": self.data.identifier,
+            "checkpoint_type": self.data.checkpointType.rawValue,
+            "result": self.data.result.rawValue
         ]
 
-        if let type = self.data.checkpointType { result["checkpoint_type"] = type.rawValue }
-        if let hitResult = self.data.result { result["result"] = hitResult.rawValue }
         if let workflowID = self.data.workflowID { result["workflow_id"] = workflowID }
         if let offeringID = self.data.offeringID { result["offering_id"] = offeringID }
         if let ruleID = self.data.checkpointRuleID { result["checkpoint_rule_id"] = ruleID }

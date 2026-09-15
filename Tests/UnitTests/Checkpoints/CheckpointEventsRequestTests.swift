@@ -76,16 +76,14 @@ class CheckpointEventsRequestTests: TestCase {
             let json = try self.encodedJSON(data: .init(id: self.id,
                                                         identifier: "onboarding_complete",
                                                         date: self.date,
-                                                        checkpointType: .custom,
                                                         result: result))
 
             expect(json).to(contain("\"result\":\"\(wireValue)\""))
         }
     }
 
-    /// The ids go through the store's `convertToSnakeCase` on the way out and `convertFromSnakeCase` on the
-    /// way back, which turns `workflow_id` into `workflowId`. Without explicit coding keys they decode as nil
-    /// and the hit reaches the backend with no outcome attached.
+    /// `workflow_id` comes back from the store as `workflowId`, so without explicit coding keys the ids
+    /// decode as nil and the hit reaches the backend with no outcome.
     func testOutcomeIdsSurviveTheStoreRoundTrip() throws {
         let request = try XCTUnwrap(FeatureEventsRequest.CheckpointEvent(storedEvent: try self.storedEvent()))
 
@@ -94,27 +92,13 @@ class CheckpointEventsRequestTests: TestCase {
         expect(request.checkpointRuleID) == "rule_123"
     }
 
-    /// A hit stored by an SDK version that recorded it before resolving carries no outcome, and still has to
-    /// reach the backend: the hit is how the checkpoint gets registered.
-    func testReadsStoredEventWithoutOutcomeFields() throws {
-        let stored = try self.storedEvent(data: .init(id: self.id,
-                                                      identifier: "onboarding_complete",
-                                                      date: self.date))
-        let request = try XCTUnwrap(FeatureEventsRequest.CheckpointEvent(storedEvent: stored))
-
-        expect(request.identifier) == "onboarding_complete"
-        expect(request.checkpointType).to(beNil())
-        expect(request.result).to(beNil())
-    }
-
-    /// `checkpoint_hit` keeps the shape it had before the outcome was attached when there is none to report.
-    func testOmitsOutcomeFieldsWhenAbsent() throws {
+    func testOmitsIdsThatDidNotResolve() throws {
         let json = try self.encodedJSON(data: .init(id: self.id,
                                                     identifier: "onboarding_complete",
-                                                    date: self.date))
+                                                    date: self.date,
+                                                    result: .noMatch))
 
-        expect(json).toNot(contain("checkpoint_type"))
-        expect(json).toNot(contain("result"))
+        expect(json).to(contain("\"result\":\"no_match\""))
         expect(json).toNot(contain("workflow_id"))
         expect(json).toNot(contain("offering_id"))
         expect(json).toNot(contain("checkpoint_rule_id"))
@@ -134,7 +118,7 @@ class CheckpointEventsRequestTests: TestCase {
     }
 
     func testReturnsNilForNonCheckpointStoredEvent() throws {
-        let event = CheckpointEvent.hit(.init(id: self.id, identifier: "onboarding_complete", date: self.date))
+        let event = CheckpointEvent.hit(self.resolvedData)
         let stored = try XCTUnwrap(StoredFeatureEvent(
             event: event,
             userID: Self.userID,
@@ -152,7 +136,6 @@ class CheckpointEventsRequestTests: TestCase {
         .init(id: self.id,
               identifier: "onboarding_complete",
               date: self.date,
-              checkpointType: .custom,
               result: .presentUI,
               workflowID: "wf_123",
               offeringID: "offering_id",

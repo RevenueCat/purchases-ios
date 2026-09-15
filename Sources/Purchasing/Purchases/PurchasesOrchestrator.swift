@@ -303,8 +303,8 @@ final class PurchasesOrchestrator {
         identifier: String,
         params: CheckpointParams
     ) async throws -> CheckpointResolution {
-        // Tracked after resolving so the hit can report what the checkpoint resolved to. Every outcome is
-        // reported, including an unconfigured checkpoint: the hit is also how the backend learns it exists.
+        // Tracked after resolving so the hit carries the outcome, and for every outcome: the hit is also
+        // how the backend learns the checkpoint exists.
         let resolved = try await self.checkpointResolver.resolve(
             identifier: identifier,
             params: params

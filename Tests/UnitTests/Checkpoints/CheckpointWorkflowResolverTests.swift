@@ -153,8 +153,6 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertNil(resolved.checkpointRuleID)
     }
 
-    /// A rule that matched but could not be served describes this SDK's state, not the rule, so it reports
-    /// no rule id.
     func testUnservableRuleReportsNoRuleID() async throws {
         self.workflowsProvider.stubbedGetWorkflowResult = [:]
 

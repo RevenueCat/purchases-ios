@@ -26,8 +26,8 @@ extension FeatureEventsRequest {
         let appUserID: String
         let appSessionID: String
         let timestamp: UInt64
-        let checkpointType: String?
-        let result: String?
+        let checkpointType: String
+        let result: String
         let workflowID: String?
         let offeringID: String?
         let checkpointRuleID: String?
@@ -63,8 +63,8 @@ extension FeatureEventsRequest.CheckpointEvent {
                 appUserID: storedEvent.userID,
                 appSessionID: appSessionID.uuidString,
                 timestamp: event.data.date.millisecondsSince1970,
-                checkpointType: event.data.checkpointType?.rawValue,
-                result: event.data.result?.rawValue,
+                checkpointType: event.data.checkpointType.rawValue,
+                result: event.data.result.rawValue,
                 workflowID: event.data.workflowID,
                 offeringID: event.data.offeringID,
                 checkpointRuleID: event.data.checkpointRuleID
@@ -109,8 +109,8 @@ extension FeatureEventsRequest.CheckpointEvent: Encodable {
         try container.encode(self.appUserID, forKey: .appUserID)
         try container.encode(self.appSessionID, forKey: .appSessionID)
         try container.encode(self.timestamp, forKey: .timestamp)
-        try container.encodeIfPresent(self.checkpointType, forKey: .checkpointType)
-        try container.encodeIfPresent(self.result, forKey: .result)
+        try container.encode(self.checkpointType, forKey: .checkpointType)
+        try container.encode(self.result, forKey: .result)
         try container.encodeIfPresent(self.workflowID, forKey: .workflowID)
         try container.encodeIfPresent(self.offeringID, forKey: .offeringID)
         try container.encodeIfPresent(self.checkpointRuleID, forKey: .checkpointRuleID)

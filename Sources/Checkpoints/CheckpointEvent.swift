@@ -24,7 +24,6 @@ enum CheckpointEvent: FeatureEvent {
 
 }
 
-/// How the checkpoint was declared.
 enum CheckpointType: String, Equatable, Codable, Sendable {
 
     case standard
@@ -32,8 +31,6 @@ enum CheckpointType: String, Equatable, Codable, Sendable {
 
 }
 
-/// What the SDK did with the checkpoint. Named after the action rather than the match, so the backend
-/// can tell a presented UI from data handed back to the app.
 enum CheckpointHitResult: String, Equatable, Codable, Sendable {
 
     case presentUI = "present_ui"
@@ -52,23 +49,18 @@ extension CheckpointEvent {
         var id: UUID
         var identifier: String
         var date: Date
-        /// `nil` only for hits stored by an SDK version that predates the field.
-        var checkpointType: CheckpointType?
-        /// `nil` only for hits stored by an SDK version that recorded the hit before resolving it.
-        var result: CheckpointHitResult?
-        /// Set only when the checkpoint resolved to a workflow.
+        var checkpointType: CheckpointType
+        var result: CheckpointHitResult
         var workflowID: String?
-        /// Set only when the checkpoint resolved to an offering.
         var offeringID: String?
-        /// Set only when a rule was actually served.
         var checkpointRuleID: String?
 
         init(
             id: UUID = .init(),
             identifier: String,
             date: Date,
-            checkpointType: CheckpointType? = nil,
-            result: CheckpointHitResult? = nil,
+            checkpointType: CheckpointType = .custom,
+            result: CheckpointHitResult,
             workflowID: String? = nil,
             offeringID: String? = nil,
             checkpointRuleID: String? = nil
@@ -108,8 +100,8 @@ extension CheckpointEvent {
 
 extension CheckpointEvent.Data {
 
-    // The `ID` suffix has to be spelled out: the events store encodes with `convertToSnakeCase` and decodes
-    // with `convertFromSnakeCase`, so `workflow_id` comes back as `workflowId` and would miss these keys.
+    // The store encodes with `convertToSnakeCase` and decodes with `convertFromSnakeCase`, so `workflowID`
+    // comes back as `workflowId`. Without these the ids decode as nil.
     private enum CodingKeys: String, CodingKey {
 
         case id
@@ -130,14 +122,12 @@ extension CheckpointEvent: Equatable, Codable, Sendable {}
 
 extension CheckpointEvent.Data {
 
-    /// Builds the hit content for a resolved checkpoint.
     init(identifier: String, date: Date, resolved: ResolvedCheckpoint) {
         switch resolved.resolution {
         case let .matchedWorkflow(matched):
             self.init(
                 identifier: identifier,
                 date: date,
-                checkpointType: .custom,
                 result: .presentUI,
                 workflowID: matched.workflow.id,
                 checkpointRuleID: resolved.checkpointRuleID
@@ -147,7 +137,6 @@ extension CheckpointEvent.Data {
             self.init(
                 identifier: identifier,
                 date: date,
-                checkpointType: .custom,
                 result: .returnData,
                 offeringID: offering.identifier,
                 checkpointRuleID: resolved.checkpointRuleID
@@ -157,7 +146,6 @@ extension CheckpointEvent.Data {
             self.init(
                 identifier: identifier,
                 date: date,
-                checkpointType: .custom,
                 result: .init(reason)
             )
         }

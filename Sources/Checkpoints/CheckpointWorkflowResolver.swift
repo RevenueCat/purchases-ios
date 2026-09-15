@@ -39,10 +39,8 @@ import Foundation
 
 }
 
-/// A ``CheckpointResolution`` together with the checkpoint rule that produced it, when a rule matched.
-///
-/// The rule id is only needed to attribute the hit event, so it travels here rather than on
-/// ``CheckpointResolution``, which RevenueCatUI consumes and which stays free of event-only fields.
+/// A ``CheckpointResolution`` together with the rule that produced it. The rule id only attributes the hit
+/// event, so it travels here rather than on ``CheckpointResolution``, which RevenueCatUI consumes.
 struct ResolvedCheckpoint {
 
     let resolution: CheckpointResolution
@@ -53,8 +51,7 @@ struct ResolvedCheckpoint {
         self.checkpointRuleID = checkpointRuleID
     }
 
-    /// Reports `rule` only when it was actually served. A rule that matched but could not be served resolves
-    /// to `configurationUnavailable`, which describes this SDK's state rather than the rule.
+    /// Reports `rule` only when it was actually served.
     init(_ resolution: CheckpointResolution, servedBy rule: CheckpointRule) {
         switch resolution {
         case .matchedWorkflow, .matchedOffering:
