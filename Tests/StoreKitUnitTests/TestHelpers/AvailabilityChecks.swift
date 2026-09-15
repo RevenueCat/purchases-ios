@@ -123,39 +123,37 @@ enum AvailabilityChecks {
 
     static func skipIfCompiler63OrLater() throws {
         /*
-         Beginning with Xcode 26.4 beta 1 and compiler version 6.3.0.119.2, the compiler stopped resolving
-         StaticString overloads correctly.
+         Our `.logIn(...)` and `.identifyCurrentUser(...)` APIs pair a `StaticString` overload with a
+         `@_disfavoredOverload String` one: we try to push developers to use the `String`-taking versions by
+         marking the `StaticString` versions as deprecated, but favored by the typechecker, so that hardcoding
+         an app user ID — which would identify every user as the same person — warns at compile time.
 
-         For example, given:
+         Beginning with Xcode 26.4 beta 1 and compiler version 6.3.0.119.2, `@_disfavoredOverload` stopped
+         steering string literals toward those `StaticString` overloads, so the warning is silently lost:
+         `logging_in_with_static_string` is no longer logged and the tests asserting it fail.
+
+         As of compiler 6.4 (Xcode 27.0) the attribute is still honored, but only for an unlabeled,
+         closure-free call to a member:
 
          ```swift
-         @_disfavoredOverload
-         func thing(_ str: String) { print("REGULAR", str) }
+         class Subject {
+             func unlabeled(_ s: StaticString) -> String { "STATIC" }
+             @_disfavoredOverload func unlabeled(_ s: String) -> String { "REGULAR" }
 
-         func thing(_ str: StaticString) { print("STATIC", str) }
+             func labeled(as s: StaticString) -> String { "STATIC" }
+             @_disfavoredOverload func labeled(as s: String) -> String { "REGULAR" }
+         }
 
-         thing("hello") // should be of type "StaticString"
-
-         let s = "world" // inferred to be of type "String"
-         thing(s)
+         subject.unlabeled("literal")    // "STATIC"  — as intended
+         subject.labeled(as: "literal")  // "REGULAR" — literal binds to the String overload
          ```
 
-         This should print
-         ```
-         STATIC hello
-         REGULAR world
-         ```
+         It is also ignored when the call passes a closure, and when the overloads are global functions.
+         Pairs whose `String` sibling is optional (`String?`) are unaffected: reaching `String?` from a
+         literal costs an extra optional injection, so `StaticString` wins on conversion ranking regardless.
 
-         But, starting with v6.3, always prints
-         ```
-         REGULAR hello
-         REGULAR world
-         ```
-
-         This affects our `.logIn(...)` APIs, where we try to push developers to use the `String`-taking versions
-         by marking the `StaticString` versions as deprecated, but favored by the typechecker. Until we determine
-         the correct way to deal with this, we'll leave the APIs in place but skip the unit tests that are verifying
-         this functionality.
+         The tests still gated here are the labeled and closure-taking APIs. Until we determine the correct
+         way to deal with this, we'll leave the APIs in place but skip those tests.
          */
         #if compiler(>=6.3)
         throw XCTSkip("Unavailable on Swift 6.3 or later")
