@@ -1939,10 +1939,11 @@ platform :ios do
         output_style: 'raw',
         result_bundle: true,
         testplan: options[:test_plan],
+        only_testing: ENV["RC_XCODE27_FOCUSED_TESTS"]&.split(","),
         only_test_configurations: [test_configuration],
         configuration: 'Debug',
         output_directory: "fastlane/test_output/xctest/ios",
-        number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
+        number_of_retries: (generate_snapshots || ENV["RC_XCODE27_FOCUSED_TESTS"]) ? 0 : 5,
         fail_build: !generate_snapshots,
       )
       success = true
