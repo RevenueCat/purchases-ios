@@ -22,19 +22,26 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
 
     private let executor: CheckpointExecutor
     private let defaultPaywallPresenter: DefaultPaywallPresenting
+    private let customerInfoSynchronizer: CheckpointsManager.CustomerInfoSynchronizer
     var paywallPresenter: PaywallPresenter?
 
-    init(executor: CheckpointExecutor) {
+    init(
+        executor: CheckpointExecutor,
+        customerInfoSynchronizer: @escaping CheckpointsManager.CustomerInfoSynchronizer = { throw CancellationError() }
+    ) {
         self.executor = executor
         self.defaultPaywallPresenter = DefaultPaywallPresenter()
+        self.customerInfoSynchronizer = customerInfoSynchronizer
     }
 
     init(
         executor: CheckpointExecutor,
-        defaultPaywallPresenter: DefaultPaywallPresenting
+        defaultPaywallPresenter: DefaultPaywallPresenting,
+        customerInfoSynchronizer: @escaping CheckpointsManager.CustomerInfoSynchronizer = { throw CancellationError() }
     ) {
         self.executor = executor
         self.defaultPaywallPresenter = defaultPaywallPresenter
+        self.customerInfoSynchronizer = customerInfoSynchronizer
     }
 
     func presentWorkflow(
@@ -55,7 +62,10 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
         guard let paywallPresentationHandler else {
             return try await self.defaultPaywallPresenter.present(params: params, session: session)
         }
-        return try await OfferingPresentation(session: session).present(
+        return try await OfferingPresentation(
+            session: session,
+            customerInfoSynchronizer: self.customerInfoSynchronizer
+        ).present(
             params: params,
             presentationHandler: paywallPresentationHandler
         )
@@ -66,13 +76,18 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
     private final class OfferingPresentation {
 
         private let session: CheckpointPresentationCoordinator.Session
+        private let customerInfoSynchronizer: CheckpointsManager.CustomerInfoSynchronizer
         private var pendingContinuation: CheckedContinuation<
             CheckpointExecution, Error
         >?
         private var hasReportedCompletion = false
 
-        init(session: CheckpointPresentationCoordinator.Session) {
+        init(
+            session: CheckpointPresentationCoordinator.Session,
+            customerInfoSynchronizer: @escaping CheckpointsManager.CustomerInfoSynchronizer
+        ) {
             self.session = session
+            self.customerInfoSynchronizer = customerInfoSynchronizer
         }
 
         func present(
@@ -107,15 +122,24 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
                   self.pendingContinuation != nil else { return }
             self.hasReportedCompletion = true
 
-            if let purchaseResult = result.purchaseResult {
-                self.complete(execution: .completed(.purchased(
-                    transaction: purchaseResult.transaction,
-                    customerInfo: purchaseResult.customerInfo
-                )))
-            } else if result === PaywallPresentationResult.navigatedBack {
+            switch result.kind {
+            case .navigatedBack:
                 self.complete(execution: .backedOut(.dismissed))
-            } else {
-                self.complete(execution: .completed(.dismissed))
+            case .purchased, .closed, .continued:
+                self.synchronizeCustomerInfo()
+            }
+        }
+
+        private func synchronizeCustomerInfo() {
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+
+                do {
+                    let customerInfo = try await self.customerInfoSynchronizer()
+                    self.complete(execution: .completed(.finished(customerInfo: customerInfo)))
+                } catch {
+                    self.complete(execution: .completed(.error(error as NSError)))
+                }
             }
         }
 

@@ -45,9 +45,7 @@ func checkCheckpointAPI(_ purchases: Purchases) {
 
 @MainActor
 private func checkPaywallPresentationAPI(
-    _ purchases: Purchases,
-    customerInfo: CustomerInfo,
-    transaction: StoreTransaction?
+    _ purchases: Purchases
 ) {
     let globalPresenter = CheckpointAPIPaywallPresenter()
     purchases.checkpointPaywallPresenter = globalPresenter
@@ -63,13 +61,10 @@ private func checkPaywallPresentationAPI(
     purchases.checkpoint("test_checkpoint", paywallPresenter: presenter)
     purchases.checkpoint("test_checkpoint", paywallPresenter: presenter) { _ in }
 
-    let _: PaywallPresentationResult = .purchased(
-        customerInfo: customerInfo,
-        transaction: transaction
-    )
+    let _: PaywallPresentationResult = .purchased
     let _: PaywallPresentationResult = .closed
     let _: PaywallPresentationResult = .navigatedBack
-    let _: PaywallPresentationResult = .continuedWithoutPurchasing
+    let _: PaywallPresentationResult = .continued
 }
 
 @MainActor

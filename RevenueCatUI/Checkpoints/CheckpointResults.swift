@@ -64,11 +64,12 @@ enum CheckpointFlowOutcome {
     case webCheckoutOpened
     case purchased(transaction: StoreTransaction?, customerInfo: CustomerInfo)
     case restored(customerInfo: CustomerInfo)
+    case finished(customerInfo: CustomerInfo)
     case error(PublicError)
 
     var isSuccessful: Bool {
         switch self {
-        case .purchased, .restored:
+        case .purchased, .restored, .finished:
             return true
         default:
             return false

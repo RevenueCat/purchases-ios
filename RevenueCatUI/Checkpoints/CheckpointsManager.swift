@@ -19,11 +19,15 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointsManager {
 
+    typealias CustomerInfoSynchronizer = @MainActor () async throws -> CustomerInfo
+
     private let resolveCheckpoint: (String, CheckpointCallParams) async throws -> CheckpointResolution
     private let cachedCustomerInfoProvider: @MainActor () -> CustomerInfo?
+    private let customerInfoSynchronizer: CustomerInfoSynchronizer
     @MainActor private lazy var executor: CheckpointExecutor = CheckpointWorkflowExecutor()
     @MainActor private lazy var presentationHandler = DefaultCheckpointPresentationHandler(
-        executor: self.executor
+        executor: self.executor,
+        customerInfoSynchronizer: self.customerInfoSynchronizer
     )
     @MainActor private lazy var presentationCoordinator = CheckpointPresentationCoordinator(
         handler: self.presentationHandler
@@ -31,20 +35,24 @@ final class CheckpointsManager {
 
     init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
-        cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil }
+        cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil },
+        customerInfoSynchronizer: @escaping CustomerInfoSynchronizer = { throw CancellationError() }
     ) {
         self.resolveCheckpoint = resolveCheckpoint
         self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
+        self.customerInfoSynchronizer = customerInfoSynchronizer
     }
 
     @MainActor
     init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
         executor: CheckpointExecutor,
-        cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil }
+        cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil },
+        customerInfoSynchronizer: @escaping CustomerInfoSynchronizer = { throw CancellationError() }
     ) {
         self.resolveCheckpoint = resolveCheckpoint
         self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
+        self.customerInfoSynchronizer = customerInfoSynchronizer
         self.executor = executor
     }
 
@@ -53,14 +61,17 @@ final class CheckpointsManager {
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
         executor: CheckpointExecutor,
         defaultPaywallPresenter: DefaultPaywallPresenting,
-        cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil }
+        cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil },
+        customerInfoSynchronizer: @escaping CustomerInfoSynchronizer = { throw CancellationError() }
     ) {
         self.resolveCheckpoint = resolveCheckpoint
         self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
+        self.customerInfoSynchronizer = customerInfoSynchronizer
         self.executor = executor
         self.presentationHandler = DefaultCheckpointPresentationHandler(
             executor: executor,
-            defaultPaywallPresenter: defaultPaywallPresenter
+            defaultPaywallPresenter: defaultPaywallPresenter,
+            customerInfoSynchronizer: customerInfoSynchronizer
         )
     }
 
@@ -146,7 +157,9 @@ final class CheckpointsManager {
     ) -> FlowResult? {
         let entitlements: [EntitlementInfo]
         switch outcome {
-        case let .purchased(_, customerInfo), let .restored(customerInfo):
+        case let .purchased(_, customerInfo),
+             let .restored(customerInfo),
+             let .finished(customerInfo):
             entitlements = Array(customerInfo.entitlements.active.values)
         case .error:
             return nil

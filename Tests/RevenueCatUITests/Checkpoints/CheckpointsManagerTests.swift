@@ -346,7 +346,8 @@ final class CheckpointsManagerTests: TestCase {
         let executor = MockCheckpointWorkflowExecutor()
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
-            executor: executor
+            executor: executor,
+            customerInfoSynchronizer: { try Self.customerInfo(activeEntitlements: []) }
         )
         var receivedParams: PaywallPresentationParams?
         let execution = try await manager.executeCheckpoint(
@@ -357,8 +358,8 @@ final class CheckpointsManagerTests: TestCase {
             })
         )
 
-        guard case .completed(.dismissed) = execution else {
-            return XCTFail("Expected a dismissed presentation")
+        guard case .completed(.finished) = execution else {
+            return XCTFail("Expected a completed custom presentation")
         }
         XCTAssertEqual(receivedParams?.checkpointIdentifier, "onboarding")
         XCTAssertEqual(receivedParams?.customVariables, ["source": "test"])
@@ -440,9 +441,14 @@ final class CheckpointsManagerTests: TestCase {
     }
 
     func testNavigatedBackSuppressesCheckpointCallback() async {
+        var customerInfoSynchronizerCallCount = 0
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
-            executor: MockCheckpointWorkflowExecutor()
+            executor: MockCheckpointWorkflowExecutor(),
+            customerInfoSynchronizer: {
+                customerInfoSynchronizerCallCount += 1
+                return try Self.customerInfo(activeEntitlements: ["premium"])
+            }
         )
 
         let result = await manager.checkpointForCallback(
@@ -453,12 +459,21 @@ final class CheckpointsManagerTests: TestCase {
         guard case .suppressed = result else {
             return XCTFail("Expected a backed-out presentation to suppress the callback")
         }
+        XCTAssertEqual(customerInfoSynchronizerCallCount, 0)
     }
 
-    func testClosedCompletesCheckpointCallbackWithoutEntitlements() async {
+    func testClosedSynchronizesCustomerInfoAndReturnsNewEntitlements() async throws {
+        var customerInfoSynchronizerCallCount = 0
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
-            executor: MockCheckpointWorkflowExecutor()
+            executor: MockCheckpointWorkflowExecutor(),
+            cachedCustomerInfoProvider: {
+                try? Self.customerInfo(activeEntitlements: ["pro"])
+            },
+            customerInfoSynchronizer: {
+                customerInfoSynchronizerCallCount += 1
+                return try Self.customerInfo(activeEntitlements: ["premium", "pro"])
+            }
         )
 
         let result = await manager.checkpointForCallback(
@@ -469,37 +484,48 @@ final class CheckpointsManagerTests: TestCase {
         guard case let .completed(flowResult) = result else {
             return XCTFail("Expected a completed callback")
         }
-        XCTAssertEqual(flowResult?.obtainedEntitlements, [])
+        XCTAssertEqual(flowResult?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
+        XCTAssertEqual(customerInfoSynchronizerCallCount, 1)
     }
 
-    func testContinuedWithoutPurchasingCompletesCheckpointCallbackWithoutEntitlements() async {
+    func testContinuedSynchronizesCustomerInfo() async throws {
+        var customerInfoSynchronizerCallCount = 0
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
-            executor: MockCheckpointWorkflowExecutor()
+            executor: MockCheckpointWorkflowExecutor(),
+            customerInfoSynchronizer: {
+                customerInfoSynchronizerCallCount += 1
+                return try Self.customerInfo(activeEntitlements: ["premium"])
+            }
         )
 
         let result = await manager.checkpointForCallback(
             identifier: "onboarding",
-            params: .init(paywallPresenter: { _, completion in completion(.continuedWithoutPurchasing) })
+            params: .init(paywallPresenter: { _, completion in completion(.continued) })
         )
 
         guard case let .completed(flowResult) = result else {
             return XCTFail("Expected a completed callback")
         }
-        XCTAssertEqual(flowResult?.obtainedEntitlements, [])
+        XCTAssertEqual(flowResult?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
+        XCTAssertEqual(customerInfoSynchronizerCallCount, 1)
     }
 
-    func testPurchasedUsesCustomerInfoReportedByPaywallPresenter() async throws {
-        let customerInfo = try Self.customerInfo(activeEntitlements: ["premium"])
+    func testPurchasedSynchronizesCustomerInfo() async throws {
+        var customerInfoSynchronizerCallCount = 0
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
-            executor: MockCheckpointWorkflowExecutor()
+            executor: MockCheckpointWorkflowExecutor(),
+            customerInfoSynchronizer: {
+                customerInfoSynchronizerCallCount += 1
+                return try Self.customerInfo(activeEntitlements: ["premium"])
+            }
         )
 
         let result = await manager.checkpointForCallback(
             identifier: "onboarding",
             params: .init(paywallPresenter: { _, completion in
-                completion(.purchased(customerInfo: customerInfo, transaction: nil))
+                completion(.purchased)
             })
         )
 
@@ -507,6 +533,126 @@ final class CheckpointsManagerTests: TestCase {
             return XCTFail("Expected a completed callback")
         }
         XCTAssertEqual(flowResult?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
+        XCTAssertEqual(customerInfoSynchronizerCallCount, 1)
+    }
+
+    func testCustomerInfoSynchronizationFailureReturnsNil() async {
+        let expectedError = NSError(domain: "test", code: 42)
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            executor: MockCheckpointWorkflowExecutor(),
+            customerInfoSynchronizer: { throw expectedError }
+        )
+
+        let result = await manager.checkpointForCallback(
+            identifier: "onboarding",
+            params: .init(paywallPresenter: { _, completion in completion(.closed) })
+        )
+
+        guard case let .completed(flowResult) = result else {
+            return XCTFail("Expected a completed callback")
+        }
+        XCTAssertNil(flowResult)
+    }
+
+    func testOnlyFirstPresenterCompletionSynchronizesCustomerInfo() async throws {
+        let presentationStarted = self.expectation(description: "Custom presentation starts")
+        let synchronizationStarted = self.expectation(description: "Customer info synchronization starts")
+        var presenterCompletion: PaywallPresentationCompletion?
+        var synchronizationContinuation: CheckedContinuation<CustomerInfo, Error>?
+        var customerInfoSynchronizerCallCount = 0
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            executor: MockCheckpointWorkflowExecutor(),
+            customerInfoSynchronizer: {
+                customerInfoSynchronizerCallCount += 1
+                synchronizationStarted.fulfill()
+                return try await withCheckedThrowingContinuation { continuation in
+                    synchronizationContinuation = continuation
+                }
+            }
+        )
+
+        let checkpoint = Task {
+            await manager.checkpointForCallback(
+                identifier: "onboarding",
+                params: .init(paywallPresenter: { _, completion in
+                    presenterCompletion = completion
+                    presentationStarted.fulfill()
+                })
+            )
+        }
+        await self.fulfillment(of: [presentationStarted], timeout: 1)
+
+        presenterCompletion?(.closed)
+        await self.fulfillment(of: [synchronizationStarted], timeout: 1)
+        presenterCompletion?(.purchased)
+        presenterCompletion?(.continued)
+        presenterCompletion?(.navigatedBack)
+
+        XCTAssertEqual(customerInfoSynchronizerCallCount, 1)
+        synchronizationContinuation?.resume(
+            returning: try Self.customerInfo(activeEntitlements: ["premium"])
+        )
+
+        guard case let .completed(flowResult) = await checkpoint.value else {
+            return XCTFail("Expected the first completion to finish the checkpoint")
+        }
+        XCTAssertEqual(flowResult?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
+    }
+
+    func testCancellationDuringSynchronizationIgnoresLateResultAndReleasesPresentationSlot() async throws {
+        let presentationStarted = self.expectation(description: "Custom presentation starts")
+        let synchronizationStarted = self.expectation(description: "Customer info synchronization starts")
+        let lateSynchronizationFinished = self.expectation(description: "Late synchronization finishes")
+        var presenterCompletion: PaywallPresentationCompletion?
+        var synchronizationContinuation: CheckedContinuation<CustomerInfo, Error>?
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            executor: MockCheckpointWorkflowExecutor(),
+            customerInfoSynchronizer: {
+                let customerInfo = try await withCheckedThrowingContinuation { continuation in
+                    synchronizationContinuation = continuation
+                    synchronizationStarted.fulfill()
+                }
+                lateSynchronizationFinished.fulfill()
+                return customerInfo
+            }
+        )
+
+        let firstCheckpoint = Task {
+            try await manager.executeCheckpoint(
+                identifier: "onboarding",
+                params: .init(paywallPresenter: { _, completion in
+                    presenterCompletion = completion
+                    presentationStarted.fulfill()
+                })
+            )
+        }
+        await self.fulfillment(of: [presentationStarted], timeout: 1)
+        presenterCompletion?(.closed)
+        await self.fulfillment(of: [synchronizationStarted], timeout: 1)
+
+        firstCheckpoint.cancel()
+        do {
+            _ = try await firstCheckpoint.value
+            XCTFail("Expected cancellation")
+        } catch is CancellationError {
+            // Expected.
+        }
+
+        let secondExecution = try await manager.executeCheckpoint(
+            identifier: "onboarding",
+            params: .init(paywallPresenter: { _, completion in completion(.navigatedBack) })
+        )
+        guard case .backedOut = secondExecution else {
+            return XCTFail("Expected a new presentation after cancellation")
+        }
+
+        synchronizationContinuation?.resume(
+            returning: try Self.customerInfo(activeEntitlements: ["premium"])
+        )
+        await self.fulfillment(of: [lateSynchronizationFinished], timeout: 1)
     }
 
     func testResolutionErrorIsForwarded() async {

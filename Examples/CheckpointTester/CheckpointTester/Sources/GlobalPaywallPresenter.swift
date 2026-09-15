@@ -114,8 +114,8 @@ private enum PaywallPresenterDemo {
                 onBack: {
                     finish(.navigatedBack)
                 },
-                onPurchase: { result in
-                    finish(.purchased(customerInfo: result.customerInfo, transaction: result.transaction))
+                onPurchase: { _ in
+                    finish(.purchased)
                 }
             )
         )
@@ -141,8 +141,8 @@ private enum PaywallPresenterDemo {
                 onBack: {
                     finish(.navigatedBack)
                 },
-                onPurchase: { result in
-                    finish(.purchased(customerInfo: result.customerInfo, transaction: result.transaction))
+                onPurchase: { _ in
+                    finish(.purchased)
                 }
             )
         )
