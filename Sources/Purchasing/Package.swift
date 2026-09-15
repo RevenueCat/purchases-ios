@@ -118,6 +118,9 @@ import Foundation
     /// The url to purchase this package on the web
     @objc public let webCheckoutUrl: URL?
 
+    /// Whether Apple's external purchase programme covers a purchase of this package.
+    internal let appleExternalPurchase: AppleExternalPurchase
+
     /// Initialize a ``Package``.
     @objc
     public convenience init(
@@ -150,6 +153,25 @@ import Foundation
         self.storeProduct = storeProduct
         self.presentedOfferingContext = presentedOfferingContext
         self.webCheckoutUrl = webCheckoutUrl
+        self.appleExternalPurchase = .required
+
+        super.init()
+    }
+
+    internal init(
+        identifier: String,
+        packageType: PackageType,
+        storeProduct: StoreProduct,
+        presentedOfferingContext: PresentedOfferingContext,
+        webCheckoutUrl: URL?,
+        appleExternalPurchase: AppleExternalPurchase
+    ) {
+        self.identifier = identifier
+        self.packageType = packageType
+        self.storeProduct = storeProduct
+        self.presentedOfferingContext = presentedOfferingContext
+        self.webCheckoutUrl = webCheckoutUrl
+        self.appleExternalPurchase = appleExternalPurchase
 
         super.init()
     }

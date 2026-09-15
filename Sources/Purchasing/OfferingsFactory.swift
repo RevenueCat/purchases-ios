@@ -135,8 +135,9 @@ private extension Package {
         self.init(identifier: package.identifier,
                   packageType: Package.packageType(from: package.identifier),
                   storeProduct: product,
-                  offeringIdentifier: offeringIdentifier,
-                  webCheckoutUrl: webCheckoutUrl)
+                  presentedOfferingContext: .init(offeringIdentifier: offeringIdentifier),
+                  webCheckoutUrl: webCheckoutUrl,
+                  appleExternalPurchase: package.appleExternalPurchase ?? .required)
     }
 
 }

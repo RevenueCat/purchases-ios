@@ -25,6 +25,9 @@ struct OfferingsResponse {
             let platformProductPlanIdentifier: String?
             let webCheckoutUrl: URL?
 
+            /// Absent for a purchase Apple's external purchase programme covers, which is nearly every purchase.
+            var appleExternalPurchase: AppleExternalPurchase?
+
         }
 
         let identifier: String

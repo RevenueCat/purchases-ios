@@ -624,6 +624,7 @@
 		EF0100000000000000000052 /* MockExternalPurchaseCustomLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0100000000000000000051 /* MockExternalPurchaseCustomLink.swift */; };
 		EF0100000000000000000053 /* MockExternalPurchaseCustomLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0100000000000000000051 /* MockExternalPurchaseCustomLink.swift */; };
 		EF0100000000000000000062 /* ExternalPurchaseCustomLinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0100000000000000000061 /* ExternalPurchaseCustomLinkTests.swift */; };
+		AAAA45020000000000000002 /* AppleExternalPurchase.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA45020000000000000001 /* AppleExternalPurchase.swift */; };
 		AAAA44740000000000000002 /* ExternalPurchaseFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44740000000000000001 /* ExternalPurchaseFlow.swift */; };
 		AAAA44750000000000000002 /* ExternalPurchaseLinkResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44750000000000000001 /* ExternalPurchaseLinkResult.swift */; };
 		AAAA44750000000000000012 /* ExternalPurchaseLinkResultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44750000000000000011 /* ExternalPurchaseLinkResultTests.swift */; };
@@ -2434,6 +2435,7 @@
 		EF0100000000000000000031 /* StoreKitExternalPurchaseCustomLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitExternalPurchaseCustomLink.swift; sourceTree = "<group>"; };
 		EF0100000000000000000051 /* MockExternalPurchaseCustomLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockExternalPurchaseCustomLink.swift; sourceTree = "<group>"; };
 		EF0100000000000000000061 /* ExternalPurchaseCustomLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseCustomLinkTests.swift; sourceTree = "<group>"; };
+		AAAA45020000000000000001 /* AppleExternalPurchase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleExternalPurchase.swift; sourceTree = "<group>"; };
 		AAAA44740000000000000001 /* ExternalPurchaseFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseFlow.swift; sourceTree = "<group>"; };
 		AAAA44750000000000000001 /* ExternalPurchaseLinkResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseLinkResult.swift; sourceTree = "<group>"; };
 		AAAA44750000000000000011 /* ExternalPurchaseLinkResultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseLinkResultTests.swift; sourceTree = "<group>"; };
@@ -5078,6 +5080,7 @@
 			isa = PBXGroup;
 			children = (
 				EF0100000000000000000021 /* ExternalPurchaseCustomLinkType.swift */,
+				AAAA45020000000000000001 /* AppleExternalPurchase.swift */,
 				AAAA44740000000000000001 /* ExternalPurchaseFlow.swift */,
 				AAAA44750000000000000001 /* ExternalPurchaseLinkResult.swift */,
 				AAAA44740000000000000011 /* ExternalPurchaseManager.swift */,
@@ -8372,6 +8375,7 @@
 				FDA6F96F2E035544008BF232 /* VirtualCurrencyStrings.swift in Sources */,
 				53AAD34F2E09857300605F51 /* PaymentAuthorizationProvider.swift in Sources */,
 				EF0100000000000000000022 /* ExternalPurchaseCustomLinkType.swift in Sources */,
+				AAAA45020000000000000002 /* AppleExternalPurchase.swift in Sources */,
 				AAAA44740000000000000002 /* ExternalPurchaseFlow.swift in Sources */,
 				AAAA44750000000000000002 /* ExternalPurchaseLinkResult.swift in Sources */,
 				AAAA44740000000000000012 /* ExternalPurchaseManager.swift in Sources */,
