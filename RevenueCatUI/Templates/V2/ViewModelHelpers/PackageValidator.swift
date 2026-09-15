@@ -65,12 +65,7 @@ class PackageValidator {
         promotionalOfferProductCode: String?
     )
 
-    let selectionConfiguration: PaywallComponent.PackageSelection?
     var hasDeclaredPackages = false
-
-    init(selectionConfiguration: PaywallComponent.PackageSelection? = nil) {
-        self.selectionConfiguration = selectionConfiguration
-    }
 
     func addLocalScope(_ validator: PackageValidator) {
         for packageInfo in validator.scopedPackageInfos {
