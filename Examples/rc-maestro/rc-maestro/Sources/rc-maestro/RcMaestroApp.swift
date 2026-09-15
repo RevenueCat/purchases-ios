@@ -1,18 +1,18 @@
 import SwiftUI
 @testable import RevenueCat
-#if DEBUG && targetEnvironment(simulator) && canImport(StoreKitTest)
+#if DEBUG && targetEnvironment(simulator)
 import StoreKitTest
 #endif
 
 @main
 struct RcMaestroApp: App {
 
-    #if DEBUG && targetEnvironment(simulator) && canImport(StoreKitTest)
+    #if DEBUG && targetEnvironment(simulator)
     private let storeKitTestSession: SKTestSession?
     #endif
 
     init() {
-        #if DEBUG && targetEnvironment(simulator) && canImport(StoreKitTest)
+        #if DEBUG && targetEnvironment(simulator)
         if UserDefaults.standard.string(forKey: "maestro_store") == "app_store" {
             do {
                 let session = try SKTestSession(configurationFileNamed: "app787ddb07e6")

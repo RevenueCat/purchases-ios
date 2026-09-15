@@ -37,7 +37,9 @@ let project = Project(
                 .revenueCatUI,
                 .storeKit
             ],
-            settings: .appTarget
+            settings: .appTarget(including: [
+                "ENABLE_TESTING_SEARCH_PATHS[sdk=iphonesimulator*]": "YES",
+            ])
         )
     ],
     schemes: [
