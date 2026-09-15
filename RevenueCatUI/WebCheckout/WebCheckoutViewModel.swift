@@ -49,8 +49,11 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
 
     @Published private(set) var loadState: LoadState = .idle
 
-    /// Called once, when the page navigates to the return URL.
-    var onFinished: ((WebCheckoutReturnStatus) -> Void)?
+    private(set) var returnStatus: WebCheckoutReturnStatus?
+
+    /// Called once, when the page navigates to the return URL, for whoever is listening by then. What
+    /// the page returned with is `returnStatus`, which outlives the call.
+    var onFinished: (() -> Void)?
 
     /// Called for links the page opens outside the checkout, for the host to hand to the browser.
     var onOpenExternalURL: ((URL) -> Void)?
@@ -138,16 +141,17 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
 
         self.loadState = .finished
 
-        guard let status = self.returnURL?.status(of: url) else {
+        if let status = self.returnURL?.status(of: url) {
+            self.returnStatus = status
+        } else {
             Logger.warning(Strings.web_checkout_return_status_missing)
             // Reported as a cancel rather than guessed optimistically: the caller confirms the outcome
             // against the backend either way, and a wrong `success` would show the customer a purchase
             // that never happened.
-            self.onFinished?(.cancel)
-            return
+            self.returnStatus = .cancel
         }
 
-        self.onFinished?(status)
+        self.onFinished?()
     }
 
 }
