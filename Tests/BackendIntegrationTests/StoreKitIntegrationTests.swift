@@ -523,10 +523,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         // 3. Renew subscription
         self.logger.clearMessages()
-        // swiftlint:disable:next force_try
-        try! await Task.sleep(nanoseconds: 3 * 1_000_000_000)
-
-        try await self.verifyReceiptIsEventuallyPosted()
+        try await self.verifyReceiptIsEventuallyPosted(timeout: .seconds(30))
 
         // 4. Verify new user does not have entitlement
         let currentCustomerInfo = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
@@ -557,11 +554,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         // 3. Renew subscription
         self.logger.clearMessages()
-
-        // swiftlint:disable:next force_try
-        try! await Task.sleep(nanoseconds: 3 * 1_000_000_000)
-
-        try await self.verifyReceiptIsEventuallyPosted()
+        try await self.verifyReceiptIsEventuallyPosted(timeout: .seconds(30))
 
         // 4. Verify new user does not have entitlement
         var currentCustomerInfo = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)

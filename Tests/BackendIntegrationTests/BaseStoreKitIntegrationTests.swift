@@ -219,6 +219,12 @@ extension BaseStoreKitIntegrationTests {
         file: FileString = #file,
         line: UInt = #line
     ) async throws -> PurchaseResultData {
+        let previousTimeRate = self.testSession.timeRate
+        defer { self.testSession.timeRate = previousTimeRate }
+        if #available(iOS 16.4, tvOS 16.4, macOS 13.3, watchOS 9.4, *), previousTimeRate.rawValue == 6 {
+            self.testSession.timeRate = .oneRenewalEveryTenSeconds
+        }
+
         let product = try await StoreKit.Product.products(for: [Self.weeklyWith3DayTrial]).first!
 
         let data = try await self.purchase(product: StoreProduct(sk2Product: product), file: file, line: line)

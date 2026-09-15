@@ -43,6 +43,9 @@ extension BaseStoreKitIntegrationTests {
 
             await self.printReceiptContent()
 
+            let previousContinueAfterFailure = self.continueAfterFailure
+            self.continueAfterFailure = true
+            defer { self.continueAfterFailure = previousContinueAfterFailure }
             fail(message, file: file, line: line)
             throw ExpectationFailure()
         }
