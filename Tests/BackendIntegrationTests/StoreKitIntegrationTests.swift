@@ -650,6 +650,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
                                 timeout: .seconds(30)) {
                 await subscription.isEligibleForIntroOffer
             }
+            await self.resetSingleton()
         }
 
         let eligibility = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: product)
