@@ -1343,7 +1343,8 @@ platform :ios do
       run_maestro_e2e_tests(
         flow_dir: flow_dir,
         output_dir: output_dir,
-        environment_name: environment_name
+        environment_name: environment_name,
+        max_retries: Integer(options.fetch(:max_retries, 5))
       )
       success = true
     rescue => e
