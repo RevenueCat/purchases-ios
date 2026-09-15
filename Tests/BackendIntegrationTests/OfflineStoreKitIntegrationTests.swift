@@ -239,9 +239,11 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         let info2 = try await task2.value
         try await self.verifyEntitlementWentThrough(info1)
         try await self.verifyEntitlementWentThrough(info2)
+        XCTAssertFalse(info1.isComputedOffline)
+        XCTAssertFalse(info2.isComputedOffline)
 
         self.logger.verifyMessageWasLogged(
-            "API request completed: POST '/v1/receipts'",
+            "API request started: POST '/v1/receipts'",
             level: .debug,
             expectedCount: 1
         )
