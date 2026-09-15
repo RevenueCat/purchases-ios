@@ -112,6 +112,8 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
         Purchases.shared.adTracker.trackAdDisplayed(displayedData)
         Purchases.shared.adTracker.trackAdDisplayed(displayedData)
 
+        try await self.waitForEventsToBeStored(3)
+
         // Simulate app will resign active to trigger flush
         self.simulateAppWillResignActive()
 
