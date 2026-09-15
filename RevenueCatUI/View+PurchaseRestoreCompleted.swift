@@ -589,7 +589,9 @@ private struct OnWebCheckoutOpenedModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content.transformEnvironment(\.webCheckoutOpenedHandlers) { handlers in
-            handlers.append(self.handler)
+            handlers.append { @MainActor @Sendable [handler = self.handler] in
+                handler()
+            }
         }
     }
 
@@ -602,7 +604,9 @@ private struct OnURLOpenedModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content.transformEnvironment(\.urlOpenedHandlers) { handlers in
-            handlers.append(self.handler)
+            handlers.append { @MainActor @Sendable [handler = self.handler] url in
+                handler(url)
+            }
         }
     }
 
