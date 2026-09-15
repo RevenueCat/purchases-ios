@@ -132,3 +132,66 @@ private extension StoreKitConfigTestCase {
     }
 
 }
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+class StoreKitFixtureProductLookupTests: StoreKitConfigTestCase {
+
+    func testRetriesEmptyFixtureLookupUntilProductAppears() async throws {
+        let product = try await self.fetchSk2Product()
+        var calls = 0
+        let products = try await self.fetchSk2ProductsForFixture(Self.productID, retryTimeout: 2) { identifiers in
+            XCTAssertEqual(identifiers, [Self.productID])
+            calls += 1
+            return calls < 3 ? [] : [product]
+        }
+        XCTAssertEqual(products.map(\.id), [product.id])
+        XCTAssertEqual(calls, 3)
+    }
+
+    func testDoesNotRetrySuccessfulFixtureLookup() async throws {
+        let product = try await self.fetchSk2Product()
+        var calls = 0
+        let products = try await self.fetchSk2ProductsForFixture(Self.productID, retryTimeout: 2) { _ in
+            calls += 1
+            return [product]
+        }
+        XCTAssertEqual(products.map(\.id), [product.id])
+        XCTAssertEqual(calls, 1)
+    }
+
+    func testEmptyFixtureLookupStopsAtTimeout() async throws {
+        var calls = 0
+        let products = try await self.fetchSk2ProductsForFixture(Self.productID, retryTimeout: 0.15) { _ in
+            calls += 1
+            return []
+        }
+        XCTAssertTrue(products.isEmpty)
+        XCTAssertGreaterThanOrEqual(calls, 1)
+    }
+
+    func testZeroTimeoutDoesNotRetryEmptyFixtureLookup() async throws {
+        var calls = 0
+        let products = try await self.fetchSk2ProductsForFixture(Self.productID, retryTimeout: 0) { _ in
+            calls += 1
+            return []
+        }
+        XCTAssertTrue(products.isEmpty)
+        XCTAssertEqual(calls, 1)
+    }
+
+    func testFixtureLookupErrorsAreNotRetried() async throws {
+        let expectedError = NSError(domain: "FixtureLookup", code: 1)
+        var calls = 0
+        do {
+            _ = try await self.fetchSk2ProductsForFixture(Self.productID, retryTimeout: 2) { _ in
+                calls += 1
+                throw expectedError
+            }
+            XCTFail("Expected the product lookup error")
+        } catch {
+            XCTAssertEqual(error as NSError, expectedError)
+        }
+        XCTAssertEqual(calls, 1)
+    }
+
+}
