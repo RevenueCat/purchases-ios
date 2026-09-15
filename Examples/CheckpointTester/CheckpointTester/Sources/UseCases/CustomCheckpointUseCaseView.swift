@@ -68,12 +68,12 @@ struct CustomCheckpointUseCaseView: View {
         }
     }
 
-    private static func describe(_ result: CheckpointFlowResult?) -> String {
+    private static func describe(_ result: FlowResult?) -> String {
         guard let result else {
             return "No flow was presented or the flow could not complete."
         }
 
-        let entitlementIdentifiers = result.obtainedEntitlements.map(\.entitlement.identifier).sorted()
+        let entitlementIdentifiers = result.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted()
         guard !entitlementIdentifiers.isEmpty else {
             return "Checkpoint flow completed without granting a new entitlement."
         }
