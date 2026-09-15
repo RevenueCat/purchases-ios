@@ -23,7 +23,7 @@ final class PackageValidatorTests: TestCase {
 
     func testLocalScopePackagesAreAvailableButCannotBecomeParentDefault() {
         let parent = PackageValidator()
-        let child = PackageValidator(selectionConfiguration: .init())
+        let child = PackageValidator()
         parent.add(Self.makePackageInfo(package: TestData.annualPackage, isSelectedByDefault: true, visible: true))
         child.add(Self.makePackageInfo(package: TestData.monthlyPackage, isSelectedByDefault: true, visible: true))
         parent.addLocalScope(child)
@@ -36,7 +36,7 @@ final class PackageValidatorTests: TestCase {
 
     func testPaywallWithOnlyLocalPackagesIsValidWithoutSelectingThemInParent() {
         let parent = PackageValidator()
-        let child = PackageValidator(selectionConfiguration: .init())
+        let child = PackageValidator()
         child.add(Self.makePackageInfo(package: TestData.monthlyPackage, isSelectedByDefault: true, visible: true))
         parent.addLocalScope(child)
 
@@ -426,25 +426,34 @@ final class PackageValidatorTests: TestCase {
         )
     }
 
-    func testFactoryResolvesLocalDefaultByComponentIDAndPreservesParentSelection() throws {
+    func testFactoryResolvesLocalDefaultFromPackageFlagAndPreservesParentSelection() throws {
         let monthly = PaywallComponent.PackageComponent(
             packageID: TestData.monthlyPackage.identifier,
-            isSelectedByDefault: false,
+            isSelectedByDefault: true,
             visible: nil,
             applePromoOfferProductCode: nil,
             stack: .init(components: []),
             id: "monthly-card"
         )
+        let annual = PaywallComponent.PackageComponent(
+            packageID: TestData.annualPackage.identifier,
+            isSelectedByDefault: false,
+            visible: nil,
+            applePromoOfferProductCode: nil,
+            stack: .init(components: []),
+            id: "annual-card"
+        )
         let validator = PackageValidator()
         let result = try ViewModelFactory().toViewModel(
             component: .stack(.init(
-                components: [.package(monthly)],
-                packageSelection: .init(defaultPackageComponentId: "monthly-card")
+                components: [.package(annual), .package(monthly)],
+                packageSelection: .init()
             )),
             packageValidator: validator,
             purchaseButtonCollector: nil,
             offering: Offering(identifier: "default", serverDescription: "",
-                               availablePackages: [TestData.monthlyPackage], webCheckoutUrl: nil),
+                               availablePackages: [TestData.annualPackage, TestData.monthlyPackage],
+                               webCheckoutUrl: nil),
             localizationProvider: LocalizationProvider(locale: Locale(identifier: "en_US"), localizedStrings: [:]),
             uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()),
             colorScheme: .light
@@ -455,7 +464,7 @@ final class PackageValidatorTests: TestCase {
         XCTAssertEqual(local.defaultSelectedPackage(in: Self.context())?.identifier,
                        TestData.monthlyPackage.identifier)
         XCTAssertNil(validator.defaultSelectedPackage(in: Self.context()))
-        XCTAssertEqual(validator.packages.count, 1)
+        XCTAssertEqual(validator.packages.count, 2)
 
         let sheet = PaywallComponent.ButtonComponent.Sheet(
             id: "sheet", name: nil, stack: stack.component, backgroundBlur: false, size: nil
