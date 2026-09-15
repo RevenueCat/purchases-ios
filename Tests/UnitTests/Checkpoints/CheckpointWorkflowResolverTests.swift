@@ -859,6 +859,95 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.resolvedOffering(resolution)?.identifier, self.offeringID)
     }
 
+    // MARK: - Terminal ad workflows
+
+    func testTerminalAdWorkflowResolvesItsAdWithoutAWorkflowToPresent() async throws {
+        self.stubAdWorkflow(adUnitId: "ad_unit_1", mediator: "admob")
+
+        let resolution = try await self.resolve()
+
+        let adStep = Self.resolvedAd(resolution)
+        XCTAssertEqual(adStep?.adUnitId, "ad_unit_1")
+        XCTAssertEqual(adStep?.mediator, MediatorName(rawValue: "admob"))
+        XCTAssertNil(Self.resolvedWorkflow(resolution))
+    }
+
+    func testAdStepWithoutAnAdUnitIdentifierResolvesConfigurationUnavailable() async throws {
+        self.stubAdWorkflow(adUnitId: nil, mediator: "admob")
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    func testAdStepWithoutAMediatorResolvesConfigurationUnavailable() async throws {
+        self.stubAdWorkflow(adUnitId: "ad_unit_1", mediator: nil)
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    func testAdStepMixedWithAnotherStepResolvesConfigurationUnavailable() async throws {
+        self.stubAdWorkflow(
+            adUnitId: "ad_unit_1",
+            mediator: "admob",
+            extraSteps: ["step_2": WorkflowStep(id: "step_2", type: "screen", screenId: nil)]
+        )
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    func testUIWorkflowContainingAnAdStepResolvesConfigurationUnavailable() async throws {
+        // Initial step is the screen step, so the ad step is an unreachable extra.
+        self.stubAdWorkflow(
+            adUnitId: "ad_unit_1",
+            mediator: "admob",
+            initialStepID: "step_2",
+            extraSteps: ["step_2": WorkflowStep(id: "step_2", type: "screen", screenId: nil)]
+        )
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    private func stubAdWorkflow(
+        adUnitId: String?,
+        mediator: String?,
+        initialStepID: String? = nil,
+        extraSteps: [String: WorkflowStep] = [:]
+    ) {
+        let stepID = "step_1"
+        var step = WorkflowStep(id: stepID, type: "ad", screenId: nil)
+        var paramValues: [String: AnyDecodable] = [:]
+        if let adUnitId {
+            paramValues["ad_unit_id"] = .string(adUnitId)
+        }
+        if let mediator {
+            paramValues["mediator"] = .string(mediator)
+        }
+        step.paramValues = paramValues
+
+        var steps = extraSteps
+        steps[stepID] = step
+
+        self.workflowsProvider.stubbedGetWorkflowResult[self.workflowID] = WorkflowDataResult(
+            workflow: PublishedWorkflow(
+                id: self.workflowID,
+                displayName: "Test",
+                initialStepId: initialStepID ?? stepID,
+                singleStepFallbackId: nil,
+                steps: steps,
+                screens: [:]
+            ),
+            uiConfig: .empty,
+            enrolledVariants: nil
+        )
+    }
+
     private func stubOfferingWorkflow(
         offeringID: String?,
         initialStepID: String? = nil,
@@ -936,6 +1025,11 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     private static func resolvedOffering(_ resolution: CheckpointResolution) -> Offering? {
         guard case let .matchedOffering(offering) = resolution else { return nil }
         return offering
+    }
+
+    private static func resolvedAd(_ resolution: CheckpointResolution) -> ResolvedAdStep? {
+        guard case let .matchedAd(step) = resolution else { return nil }
+        return step
     }
 
     private static func rule(workflowID: String, audienceID: String = "audience") -> CheckpointRule {
