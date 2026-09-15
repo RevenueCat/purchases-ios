@@ -45,8 +45,8 @@ class EventsManagerTests: TestCase {
         )
     }
 
-    func createManagerWithAdEvents() {
-        let adEventStore = MockAdEventStore()
+    func createManagerWithAdEvents(onClear: @escaping @Sendable () -> Void = {}) {
+        let adEventStore = MockAdEventStore(onClear: onClear)
         self.manager = .init(
             internalAPI: self.api,
             userProvider: self.userProvider,
@@ -929,6 +929,19 @@ class EventsManagerTests: TestCase {
         expect(self.api.invokedPostAdEvents) == true
     }
 
+    func testAdFlushSuccessIsLoggedAfterClearingStoredEvents() async throws {
+        let logger = try XCTUnwrap(self.logger)
+        self.createManagerWithAdEvents {
+            logger.verifyMessageWasNotLogged(EventsManagerStrings.ad_events_flushed_successfully)
+        }
+        await self.manager.track(adEvent: .randomDisplayedEvent())
+
+        let result = try await self.manager.flushAllEvents(batchSize: 10)
+
+        expect(result) == 1
+        self.logger.verifyMessageWasLogged(EventsManagerStrings.ad_events_flushed_successfully)
+    }
+
     func testFlushAllEventsReturnsZeroWhenBothStoresEmpty() async throws {
         self.createManagerWithAdEvents()
 
@@ -1539,6 +1552,11 @@ private actor MockFeatureEventStore: FeatureEventStoreType {
 private actor MockAdEventStore: AdEventStoreType {
 
     var storedEvents: [StoredAdEvent] = []
+    private let onClear: @Sendable () -> Void
+
+    init(onClear: @escaping @Sendable () -> Void = {}) {
+        self.onClear = onClear
+    }
 
     func store(_ storedEvent: StoredAdEvent) {
         self.storedEvents.append(storedEvent)
@@ -1550,6 +1568,7 @@ private actor MockAdEventStore: AdEventStoreType {
 
     func clear(_ count: Int) {
         self.storedEvents.removeFirst(min(count, self.storedEvents.count))
+        self.onClear()
     }
 
 }
