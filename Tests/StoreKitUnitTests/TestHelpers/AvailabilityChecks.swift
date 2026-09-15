@@ -123,9 +123,14 @@ enum AvailabilityChecks {
 
     static func skipIfCompiler63OrLater() throws {
         /*
+         Our `.logIn(...)` and `.identifyCurrentUser(...)` APIs pair a `StaticString` overload with a
+         `@_disfavoredOverload String` one: we try to push developers to use the `String`-taking versions by
+         marking the `StaticString` versions as deprecated, but favored by the typechecker, so that hardcoding
+         an app user ID — which would identify every user as the same person — warns at compile time.
+
          Beginning with Xcode 26.4 beta 1 and compiler version 6.3.0.119.2, `@_disfavoredOverload` stopped
-         steering string literals toward our `StaticString` overloads, so `logging_in_with_static_string`
-         is no longer logged and the tests asserting it fail.
+         steering string literals toward those `StaticString` overloads, so the warning is silently lost:
+         `logging_in_with_static_string` is no longer logged and the tests asserting it fail.
 
          As of compiler 6.4 (Xcode 27.0) the attribute is still honored, but only for an unlabeled,
          closure-free call to a member:
