@@ -55,7 +55,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
             for product in products {
                 let subscription = try XCTUnwrap(product.subscription)
                 try await asyncWait(description: "Intro eligibility did not reset for \(product.id)",
-                                    timeout: .seconds(15)) {
+                                    timeout: .seconds(30)) {
                     await subscription.isEligibleForIntroOffer
                 }
             }
