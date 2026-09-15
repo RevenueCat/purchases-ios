@@ -1871,17 +1871,17 @@ public extension Purchases {
 
     /// Used by `RevenueCatUI` to keep track of ``CustomerCenterEvent``s.
     @_spi(Internal) func track(customerCenterEvent: any CustomerCenterEventType) {
-        Logger.debug("RC7726 Customer Center track submitted")
+        NSLog("RC7726 Customer Center track submitted")
         operationDispatcher.dispatchOnWorkerThread {
-            Logger.debug("RC7726 Customer Center worker started")
+            NSLog("RC7726 Customer Center worker started")
             // If we make CustomerCenterEventType implement FeatureEvent, we have to make FeatureEvent public
             guard let event = customerCenterEvent as? FeatureEvent else {
-                Logger.debug("RC7726 Customer Center event cast failed")
+                NSLog("RC7726 Customer Center event cast failed")
                 return
             }
-            Logger.debug("RC7726 Customer Center manager present: \(self.eventsManager != nil)")
+            NSLog("RC7726 Customer Center manager present: \(self.eventsManager != nil)")
             await self.eventsManager?.track(featureEvent: event)
-            Logger.debug("RC7726 Customer Center track completed")
+            NSLog("RC7726 Customer Center track completed")
         }
     }
 

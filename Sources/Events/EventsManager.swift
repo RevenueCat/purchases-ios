@@ -92,9 +92,9 @@ actor EventsManager: EventsManagerType {
     }
 
     func track(featureEvent: FeatureEvent) async {
-        Logger.debug("RC7726 EventsManager track entered")
+        NSLog("RC7726 EventsManager track entered")
         guard featureEvent.shouldStoreEvent else {
-            Logger.debug("RC7726 EventsManager event excluded")
+            NSLog("RC7726 EventsManager event excluded")
             return
         }
 
@@ -106,9 +106,9 @@ actor EventsManager: EventsManagerType {
             Logger.error(Strings.paywalls.event_cannot_serialize)
             return
         }
-        Logger.debug("RC7726 EventsManager store starting")
+        NSLog("RC7726 EventsManager store starting")
         await self.store.store(event)
-        Logger.debug("RC7726 EventsManager store completed, listener present: \(self.eventsListener != nil)")
+        NSLog("RC7726 EventsManager store completed, listener present: \(self.eventsListener != nil)")
         self.eventsListener?.onEventTracked(featureEvent.toMap())
 
         if featureEvent.isPriorityEvent {
