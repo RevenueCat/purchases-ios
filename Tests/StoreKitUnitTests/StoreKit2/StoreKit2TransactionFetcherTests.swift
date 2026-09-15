@@ -226,8 +226,9 @@ private extension StoreKit2TransactionFetcherTests {
 
     func createTransactionInTestSession(productID: String, finished: Bool) async throws -> StoreKit.Transaction {
         // Create fixtures through StoreKitTest: on iOS 27, Product.purchase() can leave transaction query state
-        // inconsistent across consecutive purchases or after finishing a consumable.
-        if #available(iOS 17.0, tvOS 17.0, watchOS 10.0, macOS 14.0, *) {
+        // inconsistent across consecutive purchases or after finishing a consumable. Keep the original
+        // purchase fixtures on older OS versions, where buyProduct does not reliably leave purchases unfinished.
+        if #available(iOS 27.0, tvOS 27.0, watchOS 27.0, macOS 27.0, *) {
             let transaction = try await self.testSession.buyProduct(identifier: productID)
             if finished {
                 try await asyncWait(description: "Fixture transaction did not appear in StoreKit's unfinished queue") {
