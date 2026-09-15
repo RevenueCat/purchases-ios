@@ -265,9 +265,11 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
     func testCanPurchaseConsumableMultipleTimes() async throws {
         let count = 2
+        var transactions: [StoreTransaction] = []
 
         for _ in 0..<count {
-            try await self.purchaseConsumablePackage()
+            let result = try await self.purchaseConsumablePackage()
+            transactions.append(try XCTUnwrap(result.transaction))
         }
 
         let info = try await self.purchases.customerInfo()
@@ -275,7 +277,17 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         expect(info.nonSubscriptions.map(\.productIdentifier)) == Array(repeating: Self.consumable10Coins,
                                                                         count: count)
 
-        self.verifyAnyTransactionWasFinished(count: count)
+        for transaction in transactions {
+            self.verifySpecificTransactionWasFinished(transaction, count: nil)
+            if Self.storeKitVersion == .storeKit1 {
+                await expect {
+                    SKPaymentQueue.default().transactions.contains {
+                        $0.transactionIdentifier == transaction.transactionIdentifier &&
+                            $0.payment.productIdentifier == transaction.productIdentifier
+                    }
+                }.toEventually(beFalse(), timeout: .seconds(5))
+            }
+        }
     }
 
     func testCanPurchaseConsumableWithMultipleUsers() async throws {
