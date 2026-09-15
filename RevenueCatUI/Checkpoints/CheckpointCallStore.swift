@@ -21,7 +21,7 @@ import Foundation
 final class CheckpointCallStore {
 
     enum CallUpdate {
-        case outcome(CheckpointPaywallOutcome)
+        case outcome(CheckpointFlowOutcome)
         case workflowPresentationError(NSError)
         case dismissalReason(WorkflowDismissalReason)
     }
@@ -29,13 +29,13 @@ final class CheckpointCallStore {
     final class Call {
         let presentation: CheckpointPresentation
         let delegate: CheckpointPresentationDelegate
-        fileprivate(set) var stagedOutcome: CheckpointPaywallOutcome
+        fileprivate(set) var stagedOutcome: CheckpointFlowOutcome
         fileprivate(set) var dismissalReason: WorkflowDismissalReason = .close
 
         init(
             presentation: CheckpointPresentation,
             delegate: CheckpointPresentationDelegate,
-            stagedOutcome: CheckpointPaywallOutcome = CheckpointPaywallOutcome.Dismissed.shared
+            stagedOutcome: CheckpointFlowOutcome = .dismissed
         ) {
             self.presentation = presentation
             self.delegate = delegate
@@ -59,16 +59,16 @@ final class CheckpointCallStore {
         case let .outcome(outcome):
             // Once the customer has purchased or restored, a later non-success outcome must not erase it.
             // A later purchase or restore may replace it with newer CustomerInfo.
-            guard !Self.isSuccessful(call.stagedOutcome) || Self.isSuccessful(outcome) else {
+            guard !call.stagedOutcome.isSuccessful || outcome.isSuccessful else {
                 return
             }
             call.stagedOutcome = outcome
         case let .workflowPresentationError(error):
             // A workflow error does not supersede an outcome that was already reported by the customer.
-            guard call.stagedOutcome is CheckpointPaywallOutcome.Dismissed else {
+            guard case .dismissed = call.stagedOutcome else {
                 return
             }
-            call.stagedOutcome = CheckpointPaywallOutcome.Error(error: error)
+            call.stagedOutcome = .error(error)
         case let .dismissalReason(reason):
             call.dismissalReason = reason
         }
@@ -77,10 +77,6 @@ final class CheckpointCallStore {
     func remove() -> Call? {
         defer { self.call = nil }
         return self.call
-    }
-
-    private static func isSuccessful(_ outcome: CheckpointPaywallOutcome) -> Bool {
-        return outcome is CheckpointPaywallOutcome.Purchased || outcome is CheckpointPaywallOutcome.Restored
     }
 
 }

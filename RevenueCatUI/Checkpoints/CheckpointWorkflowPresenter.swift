@@ -104,10 +104,10 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         self.presentedViewController = nil
         #endif
 
-        let execution: CheckpointExecutionResult<CheckpointPaywallOutcome>
+        let execution: CheckpointExecution
         switch (call.dismissalReason, call.stagedOutcome) {
-        case (.navigatedBack, is CheckpointPaywallOutcome.Purchased),
-             (.navigatedBack, is CheckpointPaywallOutcome.Restored):
+        case (.navigatedBack, .purchased),
+             (.navigatedBack, .restored):
             execution = .completed(call.stagedOutcome)
         case (.navigatedBack, _):
             execution = .backedOut(call.stagedOutcome)
@@ -191,7 +191,7 @@ extension CheckpointWorkflowPresenter {
     ) {
         MainActor.assumeIsolated {
             self.stage(
-                .outcome(CheckpointPaywallOutcome.Purchased(
+                .outcome(.purchased(
                     transaction: transaction,
                     customerInfo: customerInfo
                 ))
@@ -204,7 +204,7 @@ extension CheckpointWorkflowPresenter {
         didFinishRestoringWith customerInfo: CustomerInfo
     ) {
         MainActor.assumeIsolated {
-            self.stage(.outcome(CheckpointPaywallOutcome.Restored(customerInfo: customerInfo)))
+            self.stage(.outcome(.restored(customerInfo: customerInfo)))
         }
     }
 
@@ -213,7 +213,7 @@ extension CheckpointWorkflowPresenter {
         didFailPurchasingWith error: NSError
     ) {
         MainActor.assumeIsolated {
-            self.stage(.outcome(CheckpointPaywallOutcome.Error(error: error)))
+            self.stage(.outcome(.error(error)))
         }
     }
 
@@ -222,13 +222,13 @@ extension CheckpointWorkflowPresenter {
         didFailRestoringWith error: NSError
     ) {
         MainActor.assumeIsolated {
-            self.stage(.outcome(CheckpointPaywallOutcome.Error(error: error)))
+            self.stage(.outcome(.error(error)))
         }
     }
 
     nonisolated func paywallViewControllerDidOpenWebCheckout(_ controller: PaywallViewController) {
         MainActor.assumeIsolated {
-            self.stage(.outcome(CheckpointPaywallOutcome.WebCheckoutOpened.shared))
+            self.stage(.outcome(.webCheckoutOpened))
         }
     }
 
@@ -253,7 +253,7 @@ extension CheckpointWorkflowPresenter {
         transaction: StoreTransaction?
     ) {
         self.stage(
-            .outcome(CheckpointPaywallOutcome.Purchased(
+            .outcome(.purchased(
                 transaction: transaction,
                 customerInfo: customerInfo
             ))
@@ -264,25 +264,25 @@ extension CheckpointWorkflowPresenter {
         _ controller: PaywallViewController,
         didFinishRestoringWith customerInfo: CustomerInfo
     ) {
-        self.stage(.outcome(CheckpointPaywallOutcome.Restored(customerInfo: customerInfo)))
+        self.stage(.outcome(.restored(customerInfo: customerInfo)))
     }
 
     func paywallViewController(
         _ controller: PaywallViewController,
         didFailPurchasingWith error: NSError
     ) {
-        self.stage(.outcome(CheckpointPaywallOutcome.Error(error: error)))
+        self.stage(.outcome(.error(error)))
     }
 
     func paywallViewController(
         _ controller: PaywallViewController,
         didFailRestoringWith error: NSError
     ) {
-        self.stage(.outcome(CheckpointPaywallOutcome.Error(error: error)))
+        self.stage(.outcome(.error(error)))
     }
 
     func paywallViewControllerDidOpenWebCheckout(_ controller: PaywallViewController) {
-        self.stage(.outcome(CheckpointPaywallOutcome.WebCheckoutOpened.shared))
+        self.stage(.outcome(.webCheckoutOpened))
     }
 
     func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {

@@ -116,16 +116,16 @@ private final class MockCheckpointPresentationHandler: CheckpointPresentationHan
     func presentWorkflow(
         _: CheckpointPresentation,
         session _: CheckpointPresentationCoordinator.Session
-    ) async throws -> CheckpointExecutionResult<CheckpointPaywallOutcome> {
-        return .completed(CheckpointPaywallOutcome.Dismissed.shared)
+    ) async throws -> CheckpointExecution {
+        return .completed(CheckpointFlowOutcome.dismissed)
     }
 
     func presentOffering(
         params _: PaywallPresentationParams,
         session _: CheckpointPresentationCoordinator.Session,
         paywallPresentationHandler _: PaywallPresentationHandler?
-    ) async throws -> CheckpointExecutionResult<CheckpointPaywallOutcome> {
-        return .completed(CheckpointPaywallOutcome.Dismissed.shared)
+    ) async throws -> CheckpointExecution {
+        return .completed(CheckpointFlowOutcome.dismissed)
     }
 
 }

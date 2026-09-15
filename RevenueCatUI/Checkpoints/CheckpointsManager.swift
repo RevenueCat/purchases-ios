@@ -49,6 +49,22 @@ final class CheckpointsManager {
     }
 
     @MainActor
+    init(
+        resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
+        executor: CheckpointExecutor,
+        defaultPaywallPresenter: DefaultPaywallPresenting,
+        cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil }
+    ) {
+        self.resolveCheckpoint = resolveCheckpoint
+        self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
+        self.executor = executor
+        self.presentationHandler = DefaultCheckpointPresentationHandler(
+            executor: executor,
+            defaultPaywallPresenter: defaultPaywallPresenter
+        )
+    }
+
+    @MainActor
     func setPaywallPresenter(_ presenter: PaywallPresenter?) {
         self.presentationHandler.paywallPresenter = presenter
     }
@@ -59,43 +75,14 @@ final class CheckpointsManager {
         set { self.setPaywallPresenter(newValue) }
     }
 
-    func checkpoint(
-        identifier: String,
-        params: CheckpointCallParams,
-        completion: @escaping (Result<CheckpointResult, PublicError>) -> Void
-    ) {
-        Task { @MainActor in
-            do {
-                completion(
-                    .success(
-                        try await self.checkpoint(
-                            identifier: identifier,
-                            params: params
-                        )
-                    )
-                )
-            } catch {
-                completion(.failure(error as NSError))
-            }
-        }
-    }
-
-    @MainActor
-    func checkpoint(
-        identifier: String,
-        params: CheckpointCallParams
-    ) async throws -> CheckpointResult {
-        return try await self.executeCheckpoint(identifier: identifier, params: params).value
-    }
-
     @MainActor
     func executeCheckpoint(
         identifier: String,
         params: CheckpointCallParams
-    ) async throws -> CheckpointExecutionResult<CheckpointResult> {
+    ) async throws -> CheckpointExecution {
         guard CheckpointIdentifierValidator.isValid(identifier) else {
             Logger.error(CheckpointIdentifierValidator.invalidIdentifierLogMessage(identifier))
-            return .completed(CheckpointResult.NoAction(reason: .invalidCheckpointIdentifier))
+            return .nothingPresented
         }
 
         switch try await self.resolveCheckpoint(identifier, params) {
@@ -104,16 +91,14 @@ final class CheckpointsManager {
                 workflow: workflow,
                 customVariables: params.customVariables
             )
-            return try await self.presentationCoordinator.presentWorkflow(presentation).map {
-                CheckpointResult.PaywallPresented(paywallOutcome: $0)
-            }
+            return try await self.presentationCoordinator.presentWorkflow(presentation)
         case let .matchedOffering(offering):
             let globalPresentationHandler: PaywallPresentationHandler? = self.paywallPresenter.map { presenter in
                 { params, completion in
                     presenter.present(params: params, completion: completion)
                 }
             }
-            let execution = try await self.presentationCoordinator.presentOffering(
+            return try await self.presentationCoordinator.presentOffering(
                 params: .init(
                     checkpointIdentifier: identifier,
                     customVariables: params.customVariables,
@@ -121,9 +106,8 @@ final class CheckpointsManager {
                 ),
                 paywallPresentationHandler: params.paywallPresentationHandler ?? globalPresentationHandler
             )
-            return execution.map { CheckpointResult.PaywallPresented(paywallOutcome: $0) }
-        case let .noAction(reason):
-            return .completed(CheckpointResult.NoAction(reason: reason.noActionReason))
+        case .noAction:
+            return .nothingPresented
         }
     }
 
@@ -140,14 +124,13 @@ final class CheckpointsManager {
             switch try await self.executeCheckpoint(identifier: identifier, params: params) {
             case .backedOut:
                 return .suppressed
-            case let .completed(result):
-                guard let presented = result as? CheckpointResult.PaywallPresented else {
-                    return .completed(nil)
-                }
+            case let .completed(outcome):
                 return .completed(self.flowResult(
-                    for: presented.paywallOutcome,
+                    for: outcome,
                     initialEntitlementIdentifiers: initialEntitlementIdentifiers
                 ))
+            case .nothingPresented:
+                return .completed(nil)
             }
         } catch CheckpointError.operationAlreadyInProgress {
             return .suppressed
@@ -158,18 +141,16 @@ final class CheckpointsManager {
 
     @MainActor
     private func flowResult(
-        for outcome: CheckpointPaywallOutcome,
+        for outcome: CheckpointFlowOutcome,
         initialEntitlementIdentifiers: Set<String>?
     ) -> FlowResult? {
         let entitlements: [EntitlementInfo]
         switch outcome {
-        case let purchased as CheckpointPaywallOutcome.Purchased:
-            entitlements = Array(purchased.customerInfo.entitlements.active.values)
-        case let restored as CheckpointPaywallOutcome.Restored:
-            entitlements = Array(restored.customerInfo.entitlements.active.values)
-        case is CheckpointPaywallOutcome.Error:
+        case let .purchased(_, customerInfo), let .restored(customerInfo):
+            entitlements = Array(customerInfo.entitlements.active.values)
+        case .error:
             return nil
-        default:
+        case .dismissed, .webCheckoutOpened:
             entitlements = []
         }
 
@@ -189,20 +170,4 @@ final class CheckpointsManager {
 enum CheckpointCallbackResult {
     case completed(FlowResult?)
     case suppressed
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension CheckpointResolutionReason {
-
-    var noActionReason: CheckpointNoActionReason {
-        switch self {
-        case .noMatch:
-            return .noMatch
-        case .configurationUnavailable:
-            return .configurationUnavailable
-        case .unknownCheckpoint:
-            return .unknownCheckpoint
-        }
-    }
-
 }

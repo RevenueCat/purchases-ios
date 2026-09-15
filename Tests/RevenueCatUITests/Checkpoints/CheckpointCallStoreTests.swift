@@ -25,30 +25,30 @@ final class CheckpointCallStoreTests: TestCase {
         let transaction = StoreTransaction(MockStoreTransaction())
         store.store(presentation: Self.presentation(), delegate: Delegate())
 
-        store.stage(.outcome(CheckpointPaywallOutcome.Purchased(
+        store.stage(.outcome(CheckpointFlowOutcome.purchased(
             transaction: transaction,
             customerInfo: TestData.customerInfo
         )))
-        store.stage(.outcome(CheckpointPaywallOutcome.Error(error: NSError(domain: "test", code: 1))))
+        store.stage(.outcome(CheckpointFlowOutcome.error(NSError(domain: "test", code: 1))))
 
-        guard let outcome = store.call?.stagedOutcome as? CheckpointPaywallOutcome.Purchased else {
+        guard case let .purchased(outcomeTransaction, customerInfo)? = store.call?.stagedOutcome else {
             return XCTFail("Expected the earlier purchase outcome to win")
         }
-        XCTAssertEqual(outcome.transaction, transaction)
-        XCTAssertEqual(outcome.customerInfo, TestData.customerInfo)
+        XCTAssertEqual(outcomeTransaction, transaction)
+        XCTAssertEqual(customerInfo, TestData.customerInfo)
     }
 
     func testErrorDoesNotReplaceRestoreOutcome() {
         let store = CheckpointCallStore()
         store.store(presentation: Self.presentation(), delegate: Delegate())
 
-        store.stage(.outcome(CheckpointPaywallOutcome.Restored(customerInfo: TestData.customerInfo)))
-        store.stage(.outcome(CheckpointPaywallOutcome.Error(error: NSError(domain: "test", code: 1))))
+        store.stage(.outcome(CheckpointFlowOutcome.restored(customerInfo: TestData.customerInfo)))
+        store.stage(.outcome(CheckpointFlowOutcome.error(NSError(domain: "test", code: 1))))
 
-        guard let outcome = store.call?.stagedOutcome as? CheckpointPaywallOutcome.Restored else {
+        guard case let .restored(customerInfo)? = store.call?.stagedOutcome else {
             return XCTFail("Expected the earlier restore outcome to win")
         }
-        XCTAssertEqual(outcome.customerInfo, TestData.customerInfo)
+        XCTAssertEqual(customerInfo, TestData.customerInfo)
     }
 
     private static func presentation() -> CheckpointPresentation {
@@ -75,6 +75,6 @@ final class CheckpointCallStoreTests: TestCase {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class Delegate: CheckpointPresentationDelegate {
 
-    func checkpointPresentationFinished(_ execution: CheckpointExecutionResult<CheckpointPaywallOutcome>) {}
+    func checkpointPresentationFinished(_ execution: CheckpointExecution) {}
 
 }

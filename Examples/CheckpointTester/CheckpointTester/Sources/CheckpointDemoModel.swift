@@ -57,13 +57,6 @@ final class CheckpointDemoModel: ObservableObject {
 
     private var pendingOutcomeAlerts: [OutcomeAlert] = []
 
-    func showOutcome(_ result: CheckpointResult, checkpointIdentifier: String) {
-        self.showOutcomeAlert(
-            title: "Checkpoint result",
-            message: Self.describe(result, checkpointIdentifier: checkpointIdentifier)
-        )
-    }
-
     func showOutcome(_ result: FlowResult?, checkpointIdentifier: String) {
         guard let result else {
             self.showOutcomeAlert(
@@ -132,37 +125,6 @@ final class CheckpointDemoModel: ObservableObject {
             return
         }
         self.outcomeAlert = self.pendingOutcomeAlerts.removeFirst()
-    }
-
-    private static func describe(_ result: CheckpointResult, checkpointIdentifier: String) -> String {
-        switch result {
-        case let presented as CheckpointResult.PaywallPresented:
-            return "Paywall presented · \(checkpointIdentifier)\n\n" +
-                "Paywall outcome: \(Self.describe(presented.paywallOutcome))"
-        case let received as CheckpointResult.ReceivedOffering:
-            return "Received offering · \(checkpointIdentifier) · \(received.offering.identifier)"
-        case let noAction as CheckpointResult.NoAction:
-            return "No action · \(checkpointIdentifier) · \(noAction.reason)"
-        default:
-            return "Unknown checkpoint result · \(checkpointIdentifier)"
-        }
-    }
-
-    private static func describe(_ result: CheckpointPaywallOutcome) -> String {
-        switch result {
-        case is CheckpointPaywallOutcome.Dismissed:
-            return "Dismissed"
-        case is CheckpointPaywallOutcome.WebCheckoutOpened:
-            return "Web checkout opened"
-        case is CheckpointPaywallOutcome.Purchased:
-            return "Purchased"
-        case is CheckpointPaywallOutcome.Restored:
-            return "Restored"
-        case let error as CheckpointPaywallOutcome.Error:
-            return "Error · \(error.error.localizedDescription)"
-        default:
-            return "Unknown paywall outcome"
-        }
     }
 
 }

@@ -115,36 +115,6 @@ struct OnboardingUseCaseView: View {
         self.step = .done
     }
 
-    private static func describe(_ result: CheckpointResult) -> String {
-        switch result {
-        case let presented as CheckpointResult.PaywallPresented:
-            return Self.describe(presented.paywallOutcome)
-        case let received as CheckpointResult.ReceivedOffering:
-            return "Received offering '\(received.offering.identifier)'."
-        case let noAction as CheckpointResult.NoAction:
-            return "No paywall shown (\(noAction.reason))."
-        default:
-            return "Unknown checkpoint result."
-        }
-    }
-
-    private static func describe(_ outcome: CheckpointPaywallOutcome) -> String {
-        switch outcome {
-        case is CheckpointPaywallOutcome.Purchased:
-            return "Purchased during onboarding."
-        case is CheckpointPaywallOutcome.Restored:
-            return "Restored during onboarding."
-        case is CheckpointPaywallOutcome.Dismissed:
-            return "Paywall dismissed."
-        case is CheckpointPaywallOutcome.WebCheckoutOpened:
-            return "Web checkout opened."
-        case let failed as CheckpointPaywallOutcome.Error:
-            return "Paywall failed: \(failed.error.localizedDescription)"
-        default:
-            return "Unknown paywall outcome."
-        }
-    }
-
     private var personalizationCheckpointCustomVariables: [String: CustomVariableValue] {
         var customVariables = self.customVariables.checkpointCustomVariables
         customVariables["step"] = .string("personalize")

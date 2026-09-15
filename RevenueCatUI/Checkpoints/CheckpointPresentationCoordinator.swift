@@ -28,7 +28,7 @@ final class CheckpointPresentationCoordinator {
 
     func presentWorkflow(
         _ presentation: CheckpointPresentation
-    ) async throws -> CheckpointExecutionResult<CheckpointPaywallOutcome> {
+    ) async throws -> CheckpointExecution {
         return try await self.withPresentationSession { session in
             try await self.handler.presentWorkflow(presentation, session: session)
         }
@@ -37,7 +37,7 @@ final class CheckpointPresentationCoordinator {
     func presentOffering(
         params: PaywallPresentationParams,
         paywallPresentationHandler: PaywallPresentationHandler?
-    ) async throws -> CheckpointExecutionResult<CheckpointPaywallOutcome> {
+    ) async throws -> CheckpointExecution {
         return try await self.withPresentationSession { session in
             try await self.handler.presentOffering(
                 params: params,
@@ -105,12 +105,12 @@ protocol CheckpointPresentationHandler: AnyObject {
     func presentWorkflow(
         _ presentation: CheckpointPresentation,
         session: CheckpointPresentationCoordinator.Session
-    ) async throws -> CheckpointExecutionResult<CheckpointPaywallOutcome>
+    ) async throws -> CheckpointExecution
 
     func presentOffering(
         params: PaywallPresentationParams,
         session: CheckpointPresentationCoordinator.Session,
         paywallPresentationHandler: PaywallPresentationHandler?
-    ) async throws -> CheckpointExecutionResult<CheckpointPaywallOutcome>
+    ) async throws -> CheckpointExecution
 
 }
