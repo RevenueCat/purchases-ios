@@ -228,6 +228,8 @@ private extension StoreKit2TransactionFetcherTests {
         // Create fixtures through StoreKitTest: on iOS 27, Product.purchase() can leave transaction query state
         // inconsistent across consecutive purchases or after finishing a consumable. Keep the original
         // purchase fixtures on older OS versions, where buyProduct does not reliably leave purchases unfinished.
+        // buyProduct(identifier:) was added in Xcode 15.
+        #if compiler(>=5.9)
         if #available(iOS 27.0, tvOS 27.0, watchOS 27.0, macOS 27.0, *) {
             let transaction = try await self.testSession.buyProduct(identifier: productID)
             if finished {
@@ -240,10 +242,10 @@ private extension StoreKit2TransactionFetcherTests {
                 }
             }
             return transaction
-        } else {
-            let transaction = try await self.createTransaction(productID: productID, finished: finished)
-            return try XCTUnwrap(transaction.sk2Transaction)
         }
+        #endif
+        let transaction = try await self.createTransaction(productID: productID, finished: finished)
+        return try XCTUnwrap(transaction.sk2Transaction)
     }
 
     static let product1 = "com.revenuecat.monthly_4.99.1_week_intro"

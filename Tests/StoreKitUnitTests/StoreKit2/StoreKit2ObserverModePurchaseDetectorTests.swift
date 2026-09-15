@@ -113,20 +113,23 @@ class StoreKit2ObserverModePurchaseDetectorTests: StoreKitConfigTestCase {
     }
 
     private func createFinishedTransactionFixture() async throws -> StoreKit.VerificationResult<StoreKit.Transaction> {
+        // buyProduct(identifier:) was added in Xcode 15.
+        #if compiler(>=5.9)
         if #available(iOS 27.0, tvOS 27.0, watchOS 27.0, macOS 27.0, *) {
             // On a fresh iOS 27 test host, Product.purchase() can attempt Sandbox authentication
             // despite an active SKTestSession. These tests need a signed transaction, not the purchase UI.
             let transaction = try await self.testSession.buyProduct(identifier: Self.productID)
-            var result: StoreKit.VerificationResult<StoreKit.Transaction>?
+            let result: Atomic<StoreKit.VerificationResult<StoreKit.Transaction>?> = .init(nil)
             try await asyncWait(description: "Fixture transaction did not become available to StoreKit") {
-                result = await StoreKit.Transaction.latest(for: Self.productID)
-                return result?.verifiedTransaction?.id == transaction.id
+                let latest = await StoreKit.Transaction.latest(for: Self.productID)
+                result.value = latest
+                return latest?.verifiedTransaction?.id == transaction.id
             }
             await transaction.finish()
-            return try XCTUnwrap(result)
-        } else {
-            return try await self.simulateAnyPurchase(finishTransaction: true)
+            return try XCTUnwrap(result.value)
         }
+        #endif
+        return try await self.simulateAnyPurchase(finishTransaction: true)
     }
 }
 
