@@ -249,9 +249,6 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testCallToGetCustomerInfoWithPendingPurchaseAndRenewalPostsReceiptAtLeastTwice() async throws {
-        // This test requires the "production" behavior to make sure
-        // we don't refresh the receipt a second time when posting the second transaction.
-        self.enableReceiptFetchRetry = false
         self.setLongestTestSessionTimeRate(self.testSession)
 
         self.serverDown()
@@ -308,9 +305,6 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testCallToGetCustomerInfoWithPendingRenewalsPostsReceiptOnlyOnce() async throws {
-        // This test requires the "production" behavior to make sure
-        // we don't refresh the receipt a second time when posting the second transaction.
-        self.enableReceiptFetchRetry = false
         self.setLongestTestSessionTimeRate(self.testSession)
 
         // 1. Make a successful purchase while the server is up
@@ -360,10 +354,6 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testCallToGetCustomerInfoWithPendingTransactionsPostsReceiptIncludingTransactionId() async throws {
-        // This test requires the "production" behavior to make sure
-        // we don't refresh the receipt a second time when posting the second transaction.
-        self.enableReceiptFetchRetry = false
-
         self.serverDown()
 
         let purchaseResult = try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
