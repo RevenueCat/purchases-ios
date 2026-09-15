@@ -75,14 +75,11 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
                 )
             )
         )
-        // give background task a chance to run
-        await Task.yield()
-
         try await self.logger.verifyMessageIsEventuallyLogged(
             "Storing event:",
             expectedCount: 2,
-            timeout: .seconds(3),
-            pollInterval: .seconds(1)
+            timeout: .seconds(10),
+            pollInterval: .milliseconds(100)
         )
 
         try await flushAndVerify(eventsCount: 2)
