@@ -12,7 +12,7 @@
 //  Created by Will Taylor on 5/5/25.
 
 import SwiftUI
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 #endif
 
@@ -121,7 +121,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
 
     /// A sheet is not a new screen to UIKit, so VoiceOver holds its focus until told otherwise.
     private static func announceScreenChange() {
-#if os(iOS)
+#if os(iOS) || os(visionOS)
         UIAccessibility.post(notification: .screenChanged, argument: nil)
 #endif
     }
@@ -160,7 +160,9 @@ struct BottomSheetOverlayModifier: ViewModifier {
                 .blur(radius: sheetViewModel?.sheet.backgroundBlur == true ? 10 : 0)
                 .animation(.easeInOut(duration: 0.25), value: sheetViewModel?.sheet.backgroundBlur)
                 // Blur is visual only: without this VoiceOver still walks what is behind.
-                .accessibilityHidden(self.sheetViewModel != nil)
+                // Covers both edges: requested before the sheet mounts, still mounted while the
+                // dismissal transition plays out.
+                .accessibilityHidden(self.sheetViewModel != nil || self.mountedSheetID != nil)
 
             // Invisible tap area that covers the screen
             if sheetViewModel != nil {
