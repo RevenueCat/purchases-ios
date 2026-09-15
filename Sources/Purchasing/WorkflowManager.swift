@@ -239,9 +239,9 @@ extension WorkflowStep {
 
 extension PublishedWorkflow {
 
-    /// The offering a step presents: the step's own offering, or the offering configured on its screen.
+    /// The offering a step presents, as configured on the step itself.
     @_spi(Internal) public func offeringIdentifier(for step: WorkflowStep) -> String? {
-        return step.offeringIdentifier ?? step.screenId.flatMap { self.screens[$0]?.offeringIdentifier }
+        return step.offeringIdentifier
     }
 
 }

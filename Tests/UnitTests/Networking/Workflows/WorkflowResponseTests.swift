@@ -630,7 +630,7 @@ class WorkflowResponseTests: TestCase {
         expect(step.offeringIdentifier).to(beNil())
     }
 
-    func testWorkflowOfferingIdentifierPrefersTheStepAndFallsBackToItsScreen() throws {
+    func testWorkflowOfferingIdentifierUsesOnlyTheStepOffering() throws {
         let screen = try Self.decodeWorkflowScreen(offeringIdentifier: "screen-offering")
         var step = WorkflowStep(id: "step_1", type: "screen", screenId: "screen_1")
         let workflow = PublishedWorkflow(
@@ -642,7 +642,7 @@ class WorkflowResponseTests: TestCase {
             screens: ["screen_1": screen]
         )
 
-        expect(workflow.offeringIdentifier(for: step)) == "screen-offering"
+        expect(workflow.offeringIdentifier(for: step)).to(beNil())
 
         step.paramValues = ["offering": .object(["identifier": .string("step-offering")])]
         expect(workflow.offeringIdentifier(for: step)) == "step-offering"
