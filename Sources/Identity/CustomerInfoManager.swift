@@ -462,7 +462,7 @@ private extension CustomerInfoManager {
                     // Post everything but the first transaction in the background
                     // in parallel so they can be de-duped
                     let otherTransactionsToPostInParalel = Array(transactions.dropFirst())
-                    Task.detached(priority: .background) {
+                    Task.detached(priority: Task.currentPriority) {
                         await self.postTransactions(
                             otherTransactionsToPostInParalel,
                             transactionData,
