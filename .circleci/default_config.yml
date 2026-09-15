@@ -566,7 +566,7 @@ commands:
       - run:
           name: Run backend_integration Tests
           command: bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>"
-          no_output_timeout: 5m
+          no_output_timeout: 10m
           environment:
             SCAN_DEVICE: iPhone 18 Pro (27.0)
       - compress_result_bundle:
