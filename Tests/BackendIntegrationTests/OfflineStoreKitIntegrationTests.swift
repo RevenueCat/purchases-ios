@@ -531,13 +531,21 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
             level: .verbose
         )
 
-        let transactionId = transaction.transactionIdentifier
-        let regex = "Enqueing network operation 'PostReceiptDataOperation' with cache key: .*-\(transactionId)'"
+        let transactionId: String
+        if Self.storeKitVersion == .storeKit1, !transaction.hasKnownTransactionIdentifier {
+            transactionId = try XCTUnwrap(transaction.sk1Transaction?.transactionIdentifier)
+        } else {
+            transactionId = transaction.transactionIdentifier
+        }
+        let offeringId = NSRegularExpression.escapedPattern(for: package.presentedOfferingContext.offeringIdentifier)
+        let regex = "Enqueing network operation 'PostReceiptDataOperation' with cache key: "
+            + ".*-\(offeringId)-false.*-\(transactionId)'"
         self.logger.verifyMessageWasLogged(regexPattern: regex,
                                            level: .verbose,
                                            expectedCount: 1)
 
-        self.verifySpecificTransactionWasFinished(transaction)
+        self.verifySpecificTransactionWasFinished(transactionId: transactionId,
+                                                  productId: transaction.productIdentifier)
         self.logger.verifyMessageWasLogged(
             "API request completed: POST '/v1/receipts'",
             level: .debug
