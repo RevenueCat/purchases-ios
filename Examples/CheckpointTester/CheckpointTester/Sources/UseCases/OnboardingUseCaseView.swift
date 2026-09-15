@@ -44,6 +44,7 @@ struct OnboardingUseCaseView: View {
         }
     }
 
+    @ObservedObject var model: CheckpointDemoModel
     @ObservedObject var customVariables: CustomVariables
 
     @State private var step: Step = .welcome
@@ -104,7 +105,8 @@ struct OnboardingUseCaseView: View {
     private func finishOnboarding() {
         Purchases.shared.checkpoint(
             "onboarding_complete",
-            customVariables: self.personalizationCheckpointCustomVariables
+            customVariables: self.personalizationCheckpointCustomVariables,
+            paywallPresenter: self.model.localPaywallPresenter
         ) { result in
             self.checkpointResult = result == nil
                 ? "No completed flow."
