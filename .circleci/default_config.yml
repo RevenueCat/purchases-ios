@@ -574,13 +574,34 @@ commands:
           include_test_dependencies: true
       - run:
           name: Run backend_integration Tests
-          command: bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>"
+          command: |
+            if [ "${RC_CAPTURE_STOREKIT_SCREENS:-0}" = "1" ]; then
+              mkdir -p /tmp/rc-storekit-screenshots
+              (
+                capture_child_pid=""
+                trap 'if [ -n "$capture_child_pid" ]; then kill "$capture_child_pid" 2>/dev/null || true; wait "$capture_child_pid" 2>/dev/null || true; fi; exit 0' TERM INT
+                while true; do
+                  xcrun simctl io booted screenshot "/tmp/rc-storekit-screenshots/$(date -u +%Y%m%dT%H%M%SZ).png" >/dev/null 2>&1 &
+                  capture_child_pid=$!
+                  wait "$capture_child_pid" || true
+                  sleep 20 &
+                  capture_child_pid=$!
+                  wait "$capture_child_pid" || true
+                done
+              ) &
+              storekit_capture_pid=$!
+              trap 'kill "$storekit_capture_pid" 2>/dev/null || true; wait "$storekit_capture_pid" 2>/dev/null || true' EXIT
+            fi
+            bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>"
           no_output_timeout: 5m
           environment:
             SCAN_DEVICE: << parameters.device >>
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
+      - store_artifacts:
+          path: /tmp/rc-storekit-screenshots
+          destination: storekit-screenshots
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_snapshots >>
           job: "create_snapshot_pr"
@@ -1451,6 +1472,7 @@ jobs:
   backend-integration-tests-SK1:
     environment:
       RC_STOREKIT_TEST_PREFLIGHT: "1"
+      RC_CAPTURE_STOREKIT_SCREENS: "1"
     executor:
       name: macos-executor
       xcode_version: "27.0.0"
