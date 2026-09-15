@@ -141,14 +141,28 @@ class ResultOptionalSuccessInitTests: TestCase {
 }
 
 /// Covers `Result.init(_:_:)` where `Success` is inferred as part of an enclosing generic call
-/// rather than from the argument alone. That is the shape in which `Success` can be inferred as
-/// optional, so a change in how the compiler resolves it is caught here rather than as a silently
+/// rather than from the argument alone, which is the shape in which `Success` can be inferred as
+/// optional. A change in how the compiler resolves it is caught here rather than as a silently
 /// dropped error at a call site.
 class ResultInitNestedInferenceTests: TestCase {
 
     private typealias Error = ResultExtensionsTests.Error
 
     func testErrorIsThrownWhenNestedInContinuationReturningOptional() async throws {
+        do {
+            _ = try await self.asyncOptionalValue(nil, .error1)
+            fail("Expected an error to be thrown")
+        } catch {
+            expect(error).to(matchError(Error.error1))
+        }
+    }
+
+    func testValueIsReturnedWhenNestedInContinuationReturningOptional() async throws {
+        let value = try await self.asyncOptionalValue("1", nil)
+        expect(value) == "1"
+    }
+
+    func testErrorIsThrownWhenNestedInContinuationReturningNonOptional() async throws {
         do {
             _ = try await self.asyncValue(nil, .error1)
             fail("Expected an error to be thrown")
@@ -157,7 +171,7 @@ class ResultInitNestedInferenceTests: TestCase {
         }
     }
 
-    func testValueIsReturnedWhenNestedInContinuationReturningOptional() async throws {
+    func testValueIsReturnedWhenNestedInContinuationReturningNonOptional() async throws {
         let value = try await self.asyncValue("1", nil)
         expect(value) == "1"
     }
@@ -168,7 +182,18 @@ class ResultInitNestedInferenceTests: TestCase {
         completion(value, error)
     }
 
-    private func asyncValue(_ value: String?, _ error: Error?) async throws -> String? {
+    /// `Success` can be inferred as either `String` or `String?` here.
+    private func asyncOptionalValue(_ value: String?, _ error: Error?) async throws -> String? {
+        return try await withUnsafeThrowingContinuation { continuation in
+            self.completionAPI(value, error) { value, error in
+                continuation.resume(with: Result(value, error))
+            }
+        }
+    }
+
+    /// `Success` can only be inferred as `String`. This is the shape of most of the SDK's
+    /// completion-handler-to-`async` wrappers.
+    private func asyncValue(_ value: String?, _ error: Error?) async throws -> String {
         return try await withUnsafeThrowingContinuation { continuation in
             self.completionAPI(value, error) { value, error in
                 continuation.resume(with: Result(value, error))
