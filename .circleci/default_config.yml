@@ -557,6 +557,9 @@ commands:
     parameters:
       test_plan:
         type: string
+      device:
+        type: string
+        default: iPhone 16 (18.5)
     steps:
       - checkout
       - install-dependencies
@@ -568,7 +571,7 @@ commands:
           command: bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>"
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 16 (18.5)
+            SCAN_DEVICE: << parameters.device >>
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
@@ -605,6 +608,7 @@ jobs:
   pod-lib-lint:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - checkout
       - install-dependencies
@@ -615,7 +619,7 @@ jobs:
   api-tests:
     executor:
       name: macos-executor
-      xcode_version: "16.4"
+      xcode_version: "27.0.0"
     environment:
       TUIST_SWIFT_CONDITIONS: ENABLE_CHECKPOINTS_OBJC
       TUIST_RC_XCODE_PROJECT: "true"
@@ -630,7 +634,7 @@ jobs:
   revenuecat-admob-tests:
     executor:
       name: macos-executor
-      xcode_version: "26.5"
+      xcode_version: "27.0.0"
     steps:
       - checkout
       - install-dependencies:
@@ -645,7 +649,7 @@ jobs:
           command: bundle exec fastlane test_revenuecat_admob
           no_output_timeout: 10m
           environment:
-            DEVICE: iPhone 17,OS=26.5
+            DEVICE: iPhone 17,OS=27.0
       - compress_result_bundle:
           directory: fastlane/test_output
           bundle_name: revenuecat_admob
@@ -658,6 +662,7 @@ jobs:
   spm-receipt-parser:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - checkout
       - run:
@@ -924,6 +929,7 @@ jobs:
   spm-revenuecat-ui-watchos:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - checkout
       # xcbeautify not needed: test_revenuecatui uses xcodebuild directly
@@ -937,7 +943,7 @@ jobs:
           no_output_timeout: 15m
           environment:
             PLATFORM: watchOS Simulator
-            DEVICE: Apple Watch Series 10 (46mm),OS=11.5
+            DEVICE: Apple Watch Series 12 (46mm),OS=27.0
             BUILD_SDK: watchsimulator
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
@@ -955,6 +961,7 @@ jobs:
   run-test-tvos-and-macos:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
 
     steps:
       - checkout
@@ -962,6 +969,8 @@ jobs:
       - run:
           name: Run tvOS tests
           command: bundle exec fastlane test_tvos
+          environment:
+            SCAN_DEVICE: Apple TV 4K (3rd generation) (27.0)
           no_output_timeout: 5m
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/tvos
@@ -1084,6 +1093,7 @@ jobs:
   build-checkpoint-tester:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - checkout
       - tuist-generate-workspace:
@@ -1102,7 +1112,7 @@ jobs:
   check-app-extension-safe-api-usage:
     executor:
       name: macos-executor
-      xcode_version: "26.5"
+      xcode_version: "27.0.0"
     steps:
       - checkout
       - install-dependencies
@@ -1364,6 +1374,7 @@ jobs:
   run-test-watchos:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - checkout
       - install-dependencies
@@ -1373,7 +1384,7 @@ jobs:
           no_output_timeout: 5m
           environment:
             SCAN_PLATFORM: watchOS Simulator
-            SCAN_DEVICE: Apple Watch Series 10 (46mm) (11.5)
+            SCAN_DEVICE: Apple Watch Series 12 (46mm) (27.0)
             BUILD_SDK: watchsimulator
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/watchos
@@ -1391,6 +1402,7 @@ jobs:
   build-tv-watch-mac-and-visionos:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - checkout
       - install-dependencies
@@ -1428,47 +1440,57 @@ jobs:
   backend-integration-tests-SK1:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-SK1"
+          device: iPhone 17 (27.0)
 
   backend-integration-tests-SK2:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-SK2"
+          device: iPhone 17 (27.0)
 
   backend-integration-tests-other:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-Other"
+          device: iPhone 17 (27.0)
 
   backend-integration-tests-offline:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-Offline"
+          device: iPhone 17 (27.0)
 
   backend-integration-tests-custom-entitlements:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-CustomEntitlements"
+          device: iPhone 17 (27.0)
 
   run-all-maestro-e2e-tests:
     executor:
       name: macos-executor
-      xcode_version: "26.5"
+      xcode_version: "27.0.0"
     steps:
       - macos/preboot-simulator:
-          version: "18.6"
+          version: "27.0"
           platform: "iOS"
-          device: "iPhone 16 Pro"
+          device: "iPhone 17"
       - checkout
       - install-dependencies
       - revenuecat/install-maestro
@@ -1565,12 +1587,12 @@ jobs:
     description: "Assert paywall accessibility labels against the real accessibility tree"
     executor:
       name: macos-executor
-      xcode_version: "26.5"
+      xcode_version: "27.0.0"
     steps:
       - macos/preboot-simulator:
-          version: "18.6"
+          version: "27.0"
           platform: "iOS"
-          device: "iPhone 16 Pro"
+          device: "iPhone 17"
       - checkout
       - install-dependencies
       - tuist-generate-workspace:
@@ -1579,6 +1601,8 @@ jobs:
           name: Run paywall accessibility UI tests
           command: |
             bundle exec fastlane paywall_accessibility_ui_tests
+          environment:
+            SCAN_DEVICE: iPhone 17 (27.0)
           no_output_timeout: 15m
       - store_test_results:
           path: fastlane/test_output
@@ -1586,12 +1610,12 @@ jobs:
   run-workflow-maestro-tests:
     executor:
       name: macos-executor
-      xcode_version: "26.5"
+      xcode_version: "27.0.0"
     steps:
       - macos/preboot-simulator:
-          version: "18.6"
+          version: "27.0"
           platform: "iOS"
-          device: "iPhone 16 Pro"
+          device: "iPhone 17"
       - checkout
       - install-dependencies
       - revenuecat/install-maestro
@@ -1751,6 +1775,7 @@ jobs:
   installation-tests-all-but-carthage:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       # === Common setup ===
       - checkout-with-minimal-permissions
@@ -1854,7 +1879,7 @@ jobs:
     parameters:
       xcode_version:
         type: string
-        default: "26.5"
+        default: "27.0.0"
     executor:
       name: macos-executor-large
       xcode_version: << parameters.xcode_version >>
@@ -1930,9 +1955,11 @@ jobs:
   integration-tests-all:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-All-CI"
+          device: iPhone 17 (27.0)
 
   loadshedder-integration-tests-old-major:
     parameters:
@@ -1993,6 +2020,7 @@ jobs:
   emerge_purchases_ui_snapshot_tests:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - checkout
       - revenuecat/setup-git-credentials
@@ -2006,6 +2034,7 @@ jobs:
   emerge_binary_size_analysis:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - checkout
       - revenuecat/setup-git-credentials
