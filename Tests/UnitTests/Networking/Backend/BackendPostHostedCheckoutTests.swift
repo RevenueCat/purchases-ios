@@ -61,12 +61,49 @@ class BackendPostHostedCheckoutTests: BaseBackendTests {
                                workflowID: "wf_123",
                                stepID: "step_456"),
                 tokenID: Self.tokenID,
+                email: nil,
                 completion: completed
             )
         }
 
         expect(result).to(beSuccess())
         expect(self.httpClient.calls).to(haveCount(1))
+    }
+
+    func testSendsTheCustomerEmail() throws {
+        self.httpClient.disableSnapshotTesting()
+        self.httpClient.mock(
+            requestPath: .postHostedCheckout,
+            response: .init(statusCode: .success, response: Self.response)
+        )
+
+        let result = waitUntilValue { completed in
+            self.postHostedCheckout(email: "customer@example.com", completion: completed)
+        }
+
+        expect(result).to(beSuccess())
+
+        let call = try XCTUnwrap(self.httpClient.calls.first)
+        let body = try XCTUnwrap(call.request.requestBody?.asJSONDictionary())
+        expect(body["email"] as? String) == "customer@example.com"
+    }
+
+    func testOmitsTheCustomerEmailWhenThereIsNone() throws {
+        self.httpClient.disableSnapshotTesting()
+        self.httpClient.mock(
+            requestPath: .postHostedCheckout,
+            response: .init(statusCode: .success, response: Self.response)
+        )
+
+        let result = waitUntilValue { completed in
+            self.postHostedCheckout(email: nil, completion: completed)
+        }
+
+        expect(result).to(beSuccess())
+
+        let call = try XCTUnwrap(self.httpClient.calls.first)
+        let body = try XCTUnwrap(call.request.requestBody?.asJSONDictionary())
+        expect(body.keys).toNot(contain("email"))
     }
 
     func testIsNotDelayed() {
@@ -240,11 +277,18 @@ private extension BackendPostHostedCheckoutTests {
 
     /// The same request throughout, so that a test only spells out what it is varying.
     func postHostedCheckout(completion: @escaping WebBillingAPI.HostedCheckoutResponseHandler) {
+        self.postHostedCheckout(email: nil, completion: completion)
+    }
+
+    func postHostedCheckout(email: String?,
+                            completion: @escaping WebBillingAPI.HostedCheckoutResponseHandler) {
         self.postHostedCheckout(
             appUserID: BackendPostHostedCheckoutTests.userID,
             packageID: BackendPostHostedCheckoutTests.packageID,
-            offeringID: BackendPostHostedCheckoutTests.offeringID,
+            presentedOfferingContext: .init(offeringIdentifier: BackendPostHostedCheckoutTests.offeringID),
+            paywall: nil,
             tokenID: BackendPostHostedCheckoutTests.tokenID,
+            email: email,
             completion: completion
         )
     }
@@ -262,6 +306,7 @@ private extension BackendPostHostedCheckoutTests {
             presentedOfferingContext: .init(offeringIdentifier: offeringID),
             paywall: nil,
             tokenID: tokenID,
+            email: nil,
             completion: completion
         )
     }
@@ -273,6 +318,7 @@ private extension BackendPostHostedCheckoutTests {
         presentedOfferingContext: PresentedOfferingContext,
         paywall: PostHostedCheckoutOperation.Paywall?,
         tokenID: String?,
+        email: String?,
         completion: @escaping WebBillingAPI.HostedCheckoutResponseHandler
     ) {
         self.webBilling.postHostedCheckout(
@@ -281,6 +327,7 @@ private extension BackendPostHostedCheckoutTests {
             presentedOfferingContext: presentedOfferingContext,
             paywall: paywall,
             externalPurchaseTokenID: tokenID,
+            email: email,
             completion: completion
         )
     }

@@ -52,6 +52,10 @@ class SubscriberAttributesManager {
         setReservedAttribute(.email, value: email, appUserID: appUserID)
     }
 
+    func email(appUserID: String) -> String? {
+        return currentValueForAttribute(key: ReservedSubscriberAttribute.email.key, appUserID: appUserID)
+    }
+
     func setPhoneNumber(_ phoneNumber: String?, appUserID: String) {
         setReservedAttribute(.phoneNumber, value: phoneNumber, appUserID: appUserID)
     }

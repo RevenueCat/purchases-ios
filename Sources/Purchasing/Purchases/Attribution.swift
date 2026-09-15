@@ -584,6 +584,14 @@ public extension Attribution {
 // - It contains mutable state (`weak var delegate`).
 extension Attribution: @unchecked Sendable {}
 
+extension Attribution: CustomerEmailProvider {
+
+    var currentCustomerEmail: String? {
+        return self.subscriberAttributesManager.email(appUserID: self.appUserID)
+    }
+
+}
+
 extension Attribution: SubscriberAttributesManagerDelegate {
 
     func subscriberAttributesManager(

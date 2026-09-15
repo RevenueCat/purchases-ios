@@ -27,6 +27,7 @@ class HostedCheckoutManagerTests: TestCase {
     private var externalPurchaseTokenAPI: MockExternalPurchaseTokenAPI!
     private var webBillingAPI: MockWebBillingAPI!
     private var systemInfo: MockSystemInfo!
+    private var emailProvider: StubCustomerEmailProvider!
     private var manager: HostedCheckoutManager!
 
     override func setUp() {
@@ -41,6 +42,7 @@ class HostedCheckoutManagerTests: TestCase {
         self.webBillingAPI.stubbedPostHostedCheckoutCompletionResult = .success(Self.response)
 
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: true)
+        self.emailProvider = StubCustomerEmailProvider(email: nil)
         self.manager = self.makeManager()
     }
 
@@ -59,6 +61,22 @@ class HostedCheckoutManagerTests: TestCase {
         expect(parameters?.presentedOfferingContext) == Self.package.presentedOfferingContext
         expect(parameters?.externalPurchaseTokenID) == Self.tokenID
         expect(parameters?.paywall).to(beNil())
+    }
+
+    /// The provider prefills its page with it, sparing the customer from typing an address the app already
+    /// knows.
+    func testSendsTheEmailTheAppHasSetForTheCustomer() async {
+        self.emailProvider.email = "customer@example.com"
+
+        _ = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(self.webBillingAPI.invokedPostHostedCheckoutParameters?.email) == "customer@example.com"
+    }
+
+    func testSendsNoEmailWhenTheAppHasNotSetOne() async {
+        _ = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(self.webBillingAPI.invokedPostHostedCheckoutParameters?.email).to(beNil())
     }
 
     func testAttributesTheCheckoutToThePaywallItWasStartedFrom() async {
@@ -220,7 +238,8 @@ private extension HostedCheckoutManagerTests {
                 systemInfo: self.systemInfo
             ),
             webBillingAPI: self.webBillingAPI,
-            currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID)
+            currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID),
+            customerEmailProvider: self.emailProvider
         )
     }
 
@@ -259,6 +278,18 @@ private extension HostedCheckoutManagerTests {
                      darkMode: false,
                      workflowId: "test-workflow-id",
                      stepId: "test-step-id")
+    }
+
+}
+
+private final class StubCustomerEmailProvider: CustomerEmailProvider {
+
+    var email: String?
+
+    var currentCustomerEmail: String? { self.email }
+
+    init(email: String?) {
+        self.email = email
     }
 
 }

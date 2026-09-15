@@ -120,6 +120,10 @@ extension PostHostedCheckoutOperation {
         /// tie the checkout session to it. Omitted where no token applies (e.g. Test Store).
         let externalPurchaseTokenID: String?
 
+        /// The customer's email, for the provider to prefill its page with. Omitted unless the app has told
+        /// the SDK one.
+        let email: String?
+
     }
 
     struct AppliedTargetingRule {
@@ -158,6 +162,7 @@ extension PostHostedCheckoutOperation.PostData: Encodable {
         case appliedTargetingRule = "applied_targeting_rule"
         case paywall
         case externalPurchaseTokenID = "external_purchase_token_id"
+        case email
 
     }
 
@@ -173,6 +178,7 @@ extension PostHostedCheckoutOperation.PostData: Encodable {
         try container.encodeIfPresent(self.paywall?.workflowID, forKey: .presentedWorkflowID)
         try container.encodeIfPresent(self.paywall?.stepID, forKey: .presentedStepID)
         try container.encodeIfPresent(self.externalPurchaseTokenID, forKey: .externalPurchaseTokenID)
+        try container.encodeIfPresent(self.email, forKey: .email)
     }
 
 }
