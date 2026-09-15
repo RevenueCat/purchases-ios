@@ -109,6 +109,14 @@ enum AvailabilityChecks {
         }
     }
 
+    static func skipIfiOS27OrLater() throws {
+        #if os(iOS)
+        if #available(iOS 27.0, *) {
+            throw XCTSkip("Test unavailable on iOS 27 or later")
+        }
+        #endif
+    }
+
     static func skipIfTVOrWatchOSOrMacOS() throws {
         #if os(watchOS) || os(tvOS) || os(macOS)
         throw XCTSkip("Test not for watchOS or tvOS or macOS")

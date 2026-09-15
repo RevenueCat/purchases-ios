@@ -103,6 +103,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
     @MainActor
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSK2CheckEligibilityAsync() async throws {
+        try AvailabilityChecks.skipIfiOS27OrLater()
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let products: Set<String> = ["product_id",
@@ -126,6 +127,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testCheckEligibilityNoAsync() throws {
+        try AvailabilityChecks.skipIfiOS27OrLater()
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let products: Set<String> = ["product_id",
