@@ -15,7 +15,7 @@ import Foundation
 
 class ExternalPurchaseTokenAPI {
 
-    typealias ExternalPurchaseTokenResponseHandler = Backend.ResponseHandler<ExternalPurchaseTokenResponse>
+    typealias SimpleResponseHandler = @Sendable (BackendError?) -> Void
 
     private let externalPurchaseTokenCallbacksCache: CallbackCache<ExternalPurchaseTokenCallback>
     private let backendConfig: BackendConfiguration
@@ -27,14 +27,18 @@ class ExternalPurchaseTokenAPI {
 
     func postExternalPurchaseToken(appUserID: String,
                                    purchaseType: ExternalPurchaseTokenType,
+                                   tokenID: String,
                                    token: String?,
-                                   completion: @escaping ExternalPurchaseTokenResponseHandler) {
+                                   completion: @escaping SimpleResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
 
         let factory = PostExternalPurchaseTokenOperation.createFactory(
             configuration: config,
-            postData: .init(appUserID: appUserID, purchaseType: purchaseType, token: token),
+            postData: .init(appUserID: appUserID,
+                            purchaseType: purchaseType,
+                            tokenID: tokenID,
+                            token: token),
             externalPurchaseTokenCallbackCache: self.externalPurchaseTokenCallbacksCache
         )
 
