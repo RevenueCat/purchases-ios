@@ -303,25 +303,27 @@ final class PurchasesOrchestrator {
         identifier: String,
         params: CheckpointParams
     ) async throws -> CheckpointResolution {
-        // Tracked after resolving so the hit carries the outcome, and for every outcome: the hit is also
-        // how the backend learns the checkpoint exists.
+        // Dated before resolving, which awaits the network, and tracked after so the hit carries what it
+        // resolved to.
+        let date = self.dateProvider.now()
+
         let resolved = try await self.checkpointResolver.resolve(
             identifier: identifier,
             params: params
         )
 
-        await self.trackCheckpointHit(identifier: identifier, resolved: resolved)
+        await self.trackCheckpointHit(identifier: identifier, date: date, resolved: resolved)
 
         return resolved.resolution
     }
 
-    private func trackCheckpointHit(identifier: String, resolved: ResolvedCheckpoint) async {
+    private func trackCheckpointHit(identifier: String, date: Date, resolved: ResolvedCheckpoint) async {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
               let manager = self.eventsManager else { return }
 
         await manager.track(
             featureEvent: CheckpointEvent.hit(
-                .init(identifier: identifier, date: self.dateProvider.now(), resolved: resolved)
+                .init(identifier: identifier, date: date, resolved: resolved)
             )
         )
     }

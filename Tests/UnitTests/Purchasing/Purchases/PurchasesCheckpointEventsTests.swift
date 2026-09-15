@@ -64,6 +64,22 @@ class PurchasesCheckpointEventsTests: BasePurchasesTests {
         expect(event.data.checkpointRuleID) == "rule_123"
     }
 
+    /// Resolution awaits the network, so the hit has to be dated when the checkpoint was reached.
+    func testDatesTheHitBeforeResolving() async throws {
+        let afterResolving = Self.hitDate.addingTimeInterval(30)
+        self.identityManager.mockIsAnonymous = false
+        self.initializePurchasesInstance(
+            appUserId: self.identityManager.currentAppUserID,
+            checkpointResolver: MatchingCheckpointWorkflowResolver(),
+            dateProvider: MockDateProvider(stubbedNow: Self.hitDate, subsequentNows: afterResolving)
+        )
+
+        _ = try await self.purchases.resolveCheckpoint(identifier: "onboarding_complete", params: .init())
+
+        let event = try await self.singleTrackedCheckpointEvent()
+        expect(event.data.date) == Self.hitDate
+    }
+
     /// A resolution that never completes has no outcome to report, so the identifier goes unregistered.
     func testTracksNothingWhenResolutionFails() async throws {
         self.setUpCheckpointPurchases(resolver: ThrowingCheckpointWorkflowResolver())
