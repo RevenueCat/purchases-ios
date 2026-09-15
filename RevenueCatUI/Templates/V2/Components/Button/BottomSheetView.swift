@@ -133,6 +133,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
             withAnimation(Self.presentationAnimation) {
                 self.settledSheetID = sheetID
             }
+            Self.announceScreenChange()
         }
     }
 
@@ -160,9 +161,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
                 .blur(radius: sheetViewModel?.sheet.backgroundBlur == true ? 10 : 0)
                 .animation(.easeInOut(duration: 0.25), value: sheetViewModel?.sheet.backgroundBlur)
                 // Blur is visual only: without this VoiceOver still walks what is behind.
-                // Covers both edges: requested before the sheet mounts, still mounted while the
-                // dismissal transition plays out.
-                .accessibilityHidden(self.sheetViewModel != nil || self.mountedSheetID != nil)
+                .accessibilityHidden(self.sheetViewModel != nil)
 
             // Invisible tap area that covers the screen
             if sheetViewModel != nil {
@@ -207,17 +206,20 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         insertion: .identity,
                         removal: .move(edge: .bottom).combined(with: .opacity)
                     ))
-                    .accessibilityAddTraits(.isModal)
                     .onAppear {
                         self.onSheetContentAppear?()
                         self.mountedSheetID = sheetViewModel.sheet.id
                         self.settleAfterLayout(sheetID: sheetViewModel.sheet.id)
-                        Self.announceScreenChange()
                     }
                     .onDisappear {
                         if self.mountedSheetID == sheetViewModel.sheet.id {
                             self.mountedSheetID = nil
                         }
+                    }
+                    // A sheet need not author a close button, so without this a screen reader
+                    // could have no way out.
+                    .accessibilityAction(.escape) {
+                        self.sheetViewModel = nil
                     }
                     // Tie the sheet content's identity to the sheet's `id` so that
                     // switching to a different sheet disposes the previous sheet's
