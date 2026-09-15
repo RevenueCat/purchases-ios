@@ -1950,10 +1950,15 @@ platform :ios do
         fail_build: !generate_snapshots,
       }
       if ENV["RC_STOREKIT_TEST_PREFLIGHT"] == "1"
+        test_plan_name = options[:test_plan] || "BackendIntegrationTests-All"
+        test_plan_path = File.join(__dir__, "..", "BackendIntegrationTests", "#{test_plan_name}.xctestplan")
+        preflight_tests = JSON.parse(File.read(test_plan_path)).fetch("testTargets").map do |target|
+          "#{target.fetch("target").fetch("name")}/BackendStoreKitPreflightTests"
+        end
         scan_options.merge!(reset_simulator: false, reinstall_app: false, parallel_testing: false)
         scan(scan_options.merge(
           step_name: "scan - backend StoreKitTest preflight",
-          only_testing: ["BackendIntegrationTests/BackendStoreKitPreflightTests"],
+          only_testing: preflight_tests,
           xcargs: "-collect-test-diagnostics never",
           output_directory: "fastlane/test_output/xctest/ios/storekit-preflight",
           number_of_retries: 0,
