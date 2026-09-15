@@ -84,9 +84,7 @@ struct OnboardingUseCaseView: View {
                     .buttonStyle(.borderedProminent)
                 case .personalize:
                     Button("Finish onboarding") {
-                        Task { @MainActor in
-                            await self.finishOnboarding()
-                        }
+                        self.finishOnboarding()
                     }
                     .buttonStyle(.borderedProminent)
                 case .done:
@@ -103,7 +101,7 @@ struct OnboardingUseCaseView: View {
     }
 
     @MainActor
-    private func finishOnboarding() async {
+    private func finishOnboarding() {
         Purchases.shared.checkpoint(
             "onboarding_complete",
             customVariables: self.personalizationCheckpointCustomVariables
