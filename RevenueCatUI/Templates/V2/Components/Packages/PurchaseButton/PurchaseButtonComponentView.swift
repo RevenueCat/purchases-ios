@@ -40,6 +40,10 @@ struct PurchaseButtonComponentView: View {
 
     @State private var inAppBrowserURL: URL?
 
+    #if os(iOS) && canImport(WebKit)
+    @State private var hostedCheckoutViewModel: WebCheckoutViewModel?
+    #endif
+
     private let viewModel: PurchaseButtonComponentViewModel
     private let onDismiss: () -> Void
 
@@ -85,6 +89,11 @@ struct PurchaseButtonComponentView: View {
             SafariView(url: self.inAppBrowserURL!)
         }
         #endif
+        #if os(iOS) && canImport(WebKit)
+        .webCheckoutSheet(viewModel: self.$hostedCheckoutViewModel) { outcome in
+            self.handleHostedCheckoutOutcome(outcome)
+        }
+        #endif
     }
 
     private func purchase() async throws {
@@ -94,10 +103,10 @@ struct PurchaseButtonComponentView: View {
         }
 
         switch method {
-        // Hosted checkout needs a URL minted on tap, which is wired up in a follow-up. Until then it
-        // behaves like an SDK that does not know the method, which is what `action` falls back to.
-        case .inAppCheckout, .hostedWebCheckout, .unknown:
+        case .inAppCheckout, .unknown:
             try await self.purchaseInApp()
+        case .hostedWebCheckout:
+            try await self.purchaseInHostedCheckout()
         case .webCheckout, .webProductSelection, .customWebCheckout:
             try await self.purchaseInWeb()
         }
@@ -117,6 +126,10 @@ struct PurchaseButtonComponentView: View {
 
         self.logPurchaseButtonInteractionForInApp(selectedPackage: selectedPackage)
 
+        try await self.performInAppPurchase(selectedPackage: selectedPackage)
+    }
+
+    private func performInAppPurchase(selectedPackage: Package) async throws {
         // Check if there's a purchase interceptor
         if let interceptor = self.purchaseInitiatedAction {
             let result = await self.purchaseHandler.withPendingPurchaseContinuation {
@@ -133,6 +146,68 @@ struct PurchaseButtonComponentView: View {
 
         _ = try await self.purchaseHandler.purchase(package: selectedPackage, promotionalOffer: promoOffer)
     }
+
+    private func purchaseInHostedCheckout() async throws {
+        #if os(iOS) && canImport(WebKit)
+        self.logIfInPreview(package: self.packageContext.package)
+
+        guard !self.purchaseHandler.actionInProgress else {
+            return
+        }
+
+        guard let selectedPackage = self.packageContext.package else {
+            Logger.error(Strings.no_selected_package_found)
+            return
+        }
+
+        self.logPurchaseButtonInteractionForInApp(selectedPackage: selectedPackage)
+
+        guard !self.isInPreview else {
+            return
+        }
+
+        switch await HostedCheckout.start(for: selectedPackage, purchaseHandler: self.purchaseHandler) {
+        case let .present(session):
+            await self.presentHostedCheckout(session)
+        case .buyThroughStoreKit:
+            try await self.performInAppPurchase(selectedPackage: selectedPackage)
+        case .nothing:
+            break
+        }
+        #else
+        // The sheet the checkout is presented in is iOS only, so everywhere else this behaves like an SDK
+        // that does not know the method.
+        try await self.purchaseInApp()
+        #endif
+    }
+
+    #if os(iOS) && canImport(WebKit)
+    @MainActor
+    private func presentHostedCheckout(_ session: HostedCheckoutSession) {
+        let viewModel = WebCheckoutViewModel(
+            checkoutURL: session.checkoutURL,
+            successURL: session.successURL,
+            cancelURL: session.cancelURL,
+            dataStoreIdentifierStore: .init()
+        )
+        viewModel.onOpenExternalURL = { self.openURL($0) }
+
+        self.hostedCheckoutViewModel = viewModel
+    }
+
+    private func handleHostedCheckoutOutcome(_ outcome: WebCheckoutSheetOutcome) {
+        switch outcome {
+        case .returned(.success):
+            Task { await self.purchaseHandler.handleHostedCheckoutPurchase() }
+        case .returned(.cancel):
+            Task { await self.purchaseHandler.handleHostedCheckoutCancellation(package: self.packageContext.package) }
+        case .dismissed:
+            // A payment may have gone through moments before the customer closed the sheet. Settling that
+            // means asking the backend what became of the session, which is not wired up yet.
+            Logger.debug(Strings.hosted_checkout_dismissed_without_returning)
+        }
+    }
+    #endif
 
     private func purchaseInWeb() async throws {
         self.logIfInPreview(package: self.packageContext.package)
