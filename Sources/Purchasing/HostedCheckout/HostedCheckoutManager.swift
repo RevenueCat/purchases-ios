@@ -40,12 +40,30 @@ final class HostedCheckoutManager {
                        paywall: PaywallEvent.Data?) async -> HostedCheckoutStartResult {
         Logger.debug(Strings.hostedCheckout.starting_checkout(package.identifier))
 
-        switch package.appleExternalPurchase {
-        case .required:
-            return await self.startCheckoutWithinApplesProgramme(package: package, paywall: paywall)
-        case .notRequired:
-            return await self.startCheckoutOutsideApplesProgramme(package: package, paywall: paywall)
+        guard !self.systemInfo.isSimulatedStoreAPIKey else {
+            Logger.debug(Strings.hostedCheckout.unsupported_with_test_store)
+            return .externalPurchaseUnavailable
         }
+
+        let externalPurchaseTokenID: String?
+
+        switch await self.externalPurchaseManager.prepareExternalPurchase(
+            requirement: package.appleExternalPurchase.requirement(for: .inApp)
+        ) {
+        case let .registered(tokenID):
+            externalPurchaseTokenID = tokenID
+        case .notRequired:
+            externalPurchaseTokenID = nil
+        case .unregistered:
+            Logger.error(Strings.hostedCheckout.no_registered_token)
+            return .failed
+        case let .stopped(reason):
+            return .init(stopReason: reason)
+        }
+
+        return await self.createSession(package: package,
+                                        paywall: paywall,
+                                        externalPurchaseTokenID: externalPurchaseTokenID)
     }
 
 }
@@ -78,39 +96,6 @@ extension HostedCheckoutStartResult: Equatable, Sendable {}
 // MARK: - Private
 
 private extension HostedCheckoutManager {
-
-    func startCheckoutWithinApplesProgramme(package: Package,
-                                            paywall: PaywallEvent.Data?) async -> HostedCheckoutStartResult {
-        let externalPurchaseTokenID: String
-
-        switch await self.externalPurchaseManager.prepareExternalPurchase(flow: .inApp) {
-        case let .registered(tokenID):
-            externalPurchaseTokenID = tokenID
-        case .unregistered:
-            Logger.error(Strings.hostedCheckout.no_registered_token)
-            return .failed
-        case let .stopped(reason):
-            return .init(stopReason: reason)
-        }
-
-        return await self.createSession(package: package,
-                                        paywall: paywall,
-                                        externalPurchaseTokenID: externalPurchaseTokenID)
-    }
-
-    /// Apple asks for nothing around a purchase its programme leaves alone, so there is no notice to show and
-    /// no token to mint, and the checkout opens on the strength of the package alone.
-    func startCheckoutOutsideApplesProgramme(package: Package,
-                                             paywall: PaywallEvent.Data?) async -> HostedCheckoutStartResult {
-        Logger.debug(Strings.hostedCheckout.external_purchase_not_required(package.identifier))
-
-        guard !self.systemInfo.isSimulatedStoreAPIKey else {
-            Logger.debug(Strings.externalPurchase.unsupported_with_test_store)
-            return .externalPurchaseUnavailable
-        }
-
-        return await self.createSession(package: package, paywall: paywall, externalPurchaseTokenID: nil)
-    }
 
     func createSession(package: Package,
                        paywall: PaywallEvent.Data?,
