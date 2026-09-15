@@ -162,6 +162,13 @@ class ResultInitNestedInferenceTests: TestCase {
         expect(value) == "1"
     }
 
+    /// An optional `Success` reaches the preserving initializer, for which this is a valid success,
+    /// rather than the unwrapping initializer, which traps.
+    func testNoValueOrErrorReturnsNilWhenNestedInContinuationReturningOptional() async throws {
+        let value = try await self.asyncOptionalValue(nil, nil)
+        expect(value).to(beNil())
+    }
+
     func testErrorIsThrownWhenNestedInContinuationReturningNonOptional() async throws {
         do {
             _ = try await self.asyncValue(nil, .error1)
