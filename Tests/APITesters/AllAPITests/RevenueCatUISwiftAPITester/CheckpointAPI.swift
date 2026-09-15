@@ -35,7 +35,7 @@ func checkCheckpointAPI(_ purchases: Purchases) {
     ) { (_: FlowResult?) in }
 
     purchases.checkpoint("test_checkpoint") { (_: FlowResult?) in }
-    purchases.checkpoint("test_checkpoint", customVariables: explicitCustomVariables)
+    purchases.checkpoint("test_checkpoint", customVariables: explicitCustomVariables) { _ in }
 
     let entitlement: ObtainedEntitlement? = nil
     let _: EntitlementInfo? = entitlement?.entitlementInfo
