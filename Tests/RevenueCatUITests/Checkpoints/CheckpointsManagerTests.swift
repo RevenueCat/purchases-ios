@@ -391,6 +391,74 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(global.receivedParams?.offering.identifier, "offering-id")
     }
 
+    func testResolvedAdWithoutARegisteredPresenterPresentsNothing() async throws {
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedAd(Self.adStep()) },
+            workflowPresenter: MockWorkflowPresenter()
+        )
+
+        let execution = try await manager.executeCheckpoint(identifier: "onboarding", params: .init())
+
+        guard case .nothingPresented = execution else {
+            return XCTFail("Expected nothing to be presented")
+        }
+        self.logger.verifyMessageWasLogged(
+            Strings.checkpoint_ad_step_without_ad_presenter(checkpointIdentifier: "onboarding"),
+            level: .warn
+        )
+    }
+
+    func testResolvedAdUsesRegisteredAdPresenter() async throws {
+        let presenter = MockAdPresenter()
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedAd(Self.adStep()) },
+            workflowPresenter: MockWorkflowPresenter()
+        )
+        manager.adPresenter = presenter
+
+        let execution = try await manager.executeCheckpoint(
+            identifier: "onboarding",
+            params: .init(customVariables: ["source": "test"])
+        )
+
+        guard case let .adPresented(outcome) = execution else {
+            return XCTFail("Expected a presented-ad execution")
+        }
+        XCTAssertTrue(outcome is CheckpointAdOutcome.Shown)
+        XCTAssertEqual(presenter.callCount, 1)
+        XCTAssertEqual(presenter.receivedParams?.checkpointIdentifier, "onboarding")
+        XCTAssertEqual(presenter.receivedParams?.customVariables, ["source": "test"])
+        XCTAssertEqual(presenter.receivedParams?.adUnitId, "ad-unit-id")
+        XCTAssertEqual(presenter.receivedParams?.mediator, MediatorName(rawValue: "admob"))
+    }
+
+    func testAdPresenterIsCapturedBeforeCheckpointResolution() async throws {
+        let resolutionStarted = self.expectation(description: "Checkpoint resolution starts")
+        var resolutionContinuation: CheckedContinuation<CheckpointResolution, Never>?
+        let initialPresenter = MockAdPresenter()
+        let replacementPresenter = MockAdPresenter()
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in
+                await withCheckedContinuation { continuation in
+                    resolutionContinuation = continuation
+                    resolutionStarted.fulfill()
+                }
+            }
+        )
+        manager.adPresenter = initialPresenter
+
+        let checkpoint = Task {
+            try await manager.executeCheckpoint(identifier: "onboarding", params: .init())
+        }
+        await self.fulfillment(of: [resolutionStarted], timeout: 1)
+        manager.adPresenter = replacementPresenter
+        resolutionContinuation?.resume(returning: .matchedAd(Self.adStep()))
+        _ = try await checkpoint.value
+
+        XCTAssertEqual(initialPresenter.callCount, 1)
+        XCTAssertEqual(replacementPresenter.callCount, 0)
+    }
+
     func testGlobalPaywallPresenterIsCapturedBeforeCheckpointResolution() async throws {
         let resolutionStarted = self.expectation(description: "Checkpoint resolution starts")
         var resolutionContinuation: CheckedContinuation<CheckpointResolution, Never>?
@@ -791,6 +859,10 @@ final class CheckpointsManagerTests: TestCase {
         )
     }
 
+    private static func adStep(adUnitId: String = "ad-unit-id") -> ResolvedAdStep {
+        return ResolvedAdStep(adUnitId: adUnitId, mediator: MediatorName(rawValue: "admob"))
+    }
+
     private static func workflow() -> ResolvedCheckpointWorkflow {
         let offering = Self.offering()
         return ResolvedCheckpointWorkflow(
@@ -876,6 +948,24 @@ private final class MockPaywallPresenter: PaywallPresenter {
         self.callCount += 1
         self.receivedParams = params
         completion(.continued)
+    }
+
+}
+
+@MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class MockAdPresenter: AdPresenter {
+
+    private(set) var callCount = 0
+    private(set) var receivedParams: AdPresentationParams?
+
+    func present(
+        params: AdPresentationParams,
+        completion: @escaping AdPresentationCompletion
+    ) {
+        self.callCount += 1
+        self.receivedParams = params
+        completion(.shown)
     }
 
 }

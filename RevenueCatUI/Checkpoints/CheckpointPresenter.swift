@@ -85,6 +85,60 @@ final class CheckpointPresenter: CheckpointPresenterType {
         )
     }
 
+    func presentAd(
+        params: AdPresentationParams,
+        adPresenter: AdPresenter
+    ) async throws -> CheckpointPresentationOutcome {
+        guard let token = self.slot.claim() else {
+            throw CheckpointError.operationAlreadyInProgress
+        }
+        defer { self.slot.release(token) }
+
+        return await AdPresentation(slot: self.slot, token: token).present(
+            params: params,
+            presenter: adPresenter
+        )
+    }
+
+    /// Bridges an ad presenter's completion callback into the checkpoint lifecycle.
+    @MainActor
+    private final class AdPresentation {
+
+        private let slot: CheckpointPresentationSlot
+        private let token: CheckpointPresentationSlot.Token
+        private var pendingContinuation: CheckedContinuation<CheckpointPresentationOutcome, Never>?
+
+        init(slot: CheckpointPresentationSlot, token: CheckpointPresentationSlot.Token) {
+            self.slot = slot
+            self.token = token
+        }
+
+        func present(
+            params: AdPresentationParams,
+            presenter: AdPresenter
+        ) async -> CheckpointPresentationOutcome {
+            return await withCheckedContinuation { continuation in
+                self.pendingContinuation = continuation
+                presenter.present(params: params) { [weak self] result in
+                    self?.completed(result)
+                }
+            }
+        }
+
+        private func completed(_ result: AdPresentationResult) {
+            guard self.slot.contains(self.token),
+                  let continuation = self.takeContinuation() else { return }
+            self.slot.release(self.token)
+            continuation.resume(returning: .adPresented(result.outcome))
+        }
+
+        private func takeContinuation() -> CheckedContinuation<CheckpointPresentationOutcome, Never>? {
+            defer { self.pendingContinuation = nil }
+            return self.pendingContinuation
+        }
+
+    }
+
     /// Bridges a paywall presenter's completion callback into the checkpoint lifecycle.
     @MainActor
     private final class OfferingPresentation {
@@ -169,6 +223,11 @@ protocol CheckpointPresenterType: AnyObject {
         params: PaywallPresentationParams,
         globalPaywallPresenter: PaywallPresenter?,
         localPaywallPresentationHandler: PaywallPresentationHandler?
+    ) async throws -> CheckpointPresentationOutcome
+
+    func presentAd(
+        params: AdPresentationParams,
+        adPresenter: AdPresenter
     ) async throws -> CheckpointPresentationOutcome
 
 }

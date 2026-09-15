@@ -28,6 +28,7 @@ struct WorkflowPresentationRequest {
 enum CheckpointPresentationOutcome {
     case nothingPresented
     case completed(customerInfo: CustomerInfo?)
+    case adPresented(CheckpointAdOutcome)
     case backedOut
     case failed
 

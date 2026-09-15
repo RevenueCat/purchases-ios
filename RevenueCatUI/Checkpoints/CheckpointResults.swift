@@ -56,3 +56,55 @@ public struct FlowResult: @unchecked Sendable {
     }
 
 }
+
+/// Base class for the terminal outcome of a checkpoint-presented ad.
+///
+/// Inspect the concrete outcome type to determine how the ad finished:
+///
+/// ```swift
+/// switch adOutcome {
+/// case is CheckpointAdOutcome.Shown:
+///     handleShown()
+/// case let outcome as CheckpointAdOutcome.Failed:
+///     handleError(outcome.error)
+/// default:
+///     // Handle outcome types added in future SDK versions.
+///     break
+/// }
+/// ```
+@_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public class CheckpointAdOutcome: CustomStringConvertible {
+
+    fileprivate init() {}
+
+    /// A debug description of the ad outcome.
+    public var description: String { return "CheckpointAdOutcome" }
+
+    /// The ad was shown and dismissed, with no reward earned.
+    public final class Shown: CheckpointAdOutcome {
+
+        static let shared = Shown()
+
+        private override init() { super.init() }
+
+        public override var description: String { return "Shown" }
+
+    }
+
+    /// The ad could not be shown, for example because it failed to load or the mediator had no fill.
+    public final class Failed: CheckpointAdOutcome {
+
+        /// The error that prevented the ad from being shown.
+        public let error: PublicError
+
+        init(error: PublicError) {
+            self.error = error
+            super.init()
+        }
+
+        public override var description: String { return "Failed(error=\(self.error))" }
+
+    }
+
+}
