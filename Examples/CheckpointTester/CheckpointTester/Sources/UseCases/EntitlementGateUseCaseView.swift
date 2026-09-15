@@ -94,13 +94,13 @@ struct EntitlementGateUseCaseView: View {
     }
 
     @MainActor
-    private func handle(_ result: CheckpointFlowResult?) {
+    private func handle(_ result: FlowResult?) {
         guard let result else {
             self.status = "No completed flow. Content remains locked."
             return
         }
 
-        let obtained = result.obtainedEntitlements.map(\.entitlement.identifier).sorted()
+        let obtained = result.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted()
         self.activeEntitlementIdentifiers = Array(Set(self.activeEntitlementIdentifiers + obtained)).sorted()
         self.status = obtained.isEmpty
             ? "Checkpoint completed without an active entitlement. Content remains locked."

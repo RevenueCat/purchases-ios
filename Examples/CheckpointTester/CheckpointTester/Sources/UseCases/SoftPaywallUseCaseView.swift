@@ -72,7 +72,7 @@ struct SoftPaywallUseCaseView: View {
                 return
             }
 
-            let obtained = result.obtainedEntitlements.map(\.entitlement.identifier).sorted()
+            let obtained = result.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted()
             self.isSubscriber = self.isSubscriber || !obtained.isEmpty
             self.status = obtained.isEmpty
                 ? "Checkpoint completed. Content remains available."

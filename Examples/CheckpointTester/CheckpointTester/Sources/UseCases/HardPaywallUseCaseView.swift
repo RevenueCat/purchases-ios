@@ -76,7 +76,7 @@ struct HardPaywallUseCaseView: View {
             "hard_paywall",
             customVariables: self.customVariablesForNextAttempt()
         ) { result in
-            let obtained = result?.obtainedEntitlements.map(\.entitlement.identifier).sorted() ?? []
+            let obtained = result?.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted() ?? []
             guard !obtained.isEmpty else {
                 self.status = result == nil
                     ? "No completed flow. Content remains locked."

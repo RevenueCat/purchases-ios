@@ -114,7 +114,7 @@ final class CheckpointsManager {
     }
 
     @MainActor
-    private func flowResult(for outcome: CheckpointPaywallOutcome) -> CheckpointFlowResult? {
+    private func flowResult(for outcome: CheckpointPaywallOutcome) -> FlowResult? {
         let entitlements: [EntitlementInfo]
         switch outcome {
         case let purchased as CheckpointPaywallOutcome.Purchased:
@@ -127,8 +127,8 @@ final class CheckpointsManager {
             entitlements = []
         }
 
-        return CheckpointFlowResult(
-            obtainedEntitlements: Set(entitlements.map(CheckpointObtainedEntitlement.init))
+        return FlowResult(
+            obtainedEntitlements: Set(entitlements.map(ObtainedEntitlement.init))
         )
     }
 
@@ -136,7 +136,7 @@ final class CheckpointsManager {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum CheckpointCallbackResult {
-    case completed(CheckpointFlowResult?)
+    case completed(FlowResult?)
     case suppressed
 }
 

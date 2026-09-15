@@ -18,23 +18,23 @@ import Foundation
 /// An active entitlement reported after completing a checkpoint flow.
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public struct CheckpointObtainedEntitlement: Hashable, @unchecked Sendable {
+public struct ObtainedEntitlement: Hashable, @unchecked Sendable {
 
     /// Information about the active entitlement reported after the flow.
-    public let entitlement: EntitlementInfo
+    public let entitlementInfo: EntitlementInfo
 
-    init(entitlement: EntitlementInfo) {
-        self.entitlement = entitlement
+    init(entitlementInfo: EntitlementInfo) {
+        self.entitlementInfo = entitlementInfo
     }
 
     /// Returns whether two obtained entitlements represent the same entitlement identifier.
     public static func == (lhs: Self, rhs: Self) -> Bool {
-        return lhs.entitlement.identifier == rhs.entitlement.identifier
+        return lhs.entitlementInfo.identifier == rhs.entitlementInfo.identifier
     }
 
     /// Hashes the entitlement identifier.
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(self.entitlement.identifier)
+        hasher.combine(self.entitlementInfo.identifier)
     }
 
 }
@@ -42,15 +42,15 @@ public struct CheckpointObtainedEntitlement: Hashable, @unchecked Sendable {
 /// The result of completing a checkpoint flow.
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public struct CheckpointFlowResult: @unchecked Sendable {
+public struct FlowResult: @unchecked Sendable {
 
     /// Active entitlements reported by the purchase or restore that completed the flow.
     ///
     /// Because the SDK does not capture the user's entitlements before presenting the flow, this can include
     /// entitlements that were already active or were obtained from another source.
-    public let obtainedEntitlements: Set<CheckpointObtainedEntitlement>
+    public let obtainedEntitlements: Set<ObtainedEntitlement>
 
-    init(obtainedEntitlements: Set<CheckpointObtainedEntitlement> = []) {
+    init(obtainedEntitlements: Set<ObtainedEntitlement> = []) {
         self.obtainedEntitlements = obtainedEntitlements
     }
 

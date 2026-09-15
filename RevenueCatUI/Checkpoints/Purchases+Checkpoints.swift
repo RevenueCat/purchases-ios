@@ -47,7 +47,7 @@ public extension Purchases {
     func checkpoint(
         _ identifier: String,
         customVariables: [String: CustomVariableValue] = [:],
-        _ onPassed: @escaping (CheckpointFlowResult?) -> Void
+        _ onPassed: @escaping (FlowResult?) -> Void
     ) {
         self.performCheckpoint(identifier, customVariables: customVariables, onPassed: onPassed)
     }
@@ -60,7 +60,7 @@ private extension Purchases {
     func performCheckpoint(
         _ identifier: String,
         customVariables: [String: CustomVariableValue],
-        onPassed: ((CheckpointFlowResult?) -> Void)?
+        onPassed: ((FlowResult?) -> Void)?
     ) {
         Task { @MainActor in
             switch await self.checkpointsManager.checkpointForCallback(
