@@ -36,6 +36,7 @@ class PurchasesFallbackURLBackendStoreKit2IntegrationTests: BaseStoreKitIntegrat
         self.mainServerDown()
 
         try await super.setUp() // Initially for these tests, the main server is down
+        self.testSession.timeRate = .realTime
     }
 
     func testWhenOnlyFallbackURLThenCustomerInfoIsComputedOffline() async throws {
