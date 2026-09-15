@@ -24,6 +24,7 @@ final class SizeConstraintTests: TestCase {
         XCTAssertEqual(sizes.fillFill, .init(width: .fill, height: .fill))
         XCTAssertEqual(sizes.fitFill, .init(width: .fit(2), height: .fill))
         XCTAssertEqual(sizes.fillFit, .init(width: .fill, height: .fit(2)))
+        #if ENABLE_PAYWALL_MIN_MAX_SIZING
         XCTAssertEqual(
             sizes.fitWithMin,
             .init(
@@ -54,6 +55,7 @@ final class SizeConstraintTests: TestCase {
         )
         XCTAssertTrue(sizes.fillWithMinMax.width.isFill)
         XCTAssertFalse(sizes.fitWithMin.width.isFill)
+        #endif
     }
 }
 

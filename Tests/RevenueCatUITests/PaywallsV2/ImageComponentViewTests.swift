@@ -165,6 +165,47 @@ final class ImageComponentViewTests: TestCase {
         XCTAssertEqual(ImageComponentView.calculateMaxWidth(parentWidth: 10, style: style), 0)
     }
 
+    func testEstimatedFitWidthRespectsMinimum() {
+        let size = ImageComponentView_Previews.estimatedImageComponentSize(
+            previewWidth: 100,
+            width: 10,
+            height: 10,
+            size: .init(
+                width: .fit(nil, .init(min: 20, max: nil)),
+                height: .fit(nil)
+            ),
+            fitMode: .fit
+        )
+
+        XCTAssertEqual(size.width, 20)
+    }
+
+    func testEstimatedRelativeWidthRespectsMinimumAndMaximum() {
+        let minimumSize = ImageComponentView_Previews.estimatedImageComponentSize(
+            previewWidth: 100,
+            width: 10,
+            height: 10,
+            size: .init(
+                width: .relative(0.8, .init(min: 120, max: nil)),
+                height: .fit(nil)
+            ),
+            fitMode: .fit
+        )
+        let maximumSize = ImageComponentView_Previews.estimatedImageComponentSize(
+            previewWidth: 100,
+            width: 10,
+            height: 10,
+            size: .init(
+                width: .relative(0.8, .init(min: nil, max: 20)),
+                height: .fit(nil)
+            ),
+            fitMode: .fit
+        )
+
+        XCTAssertEqual(minimumSize.width, 120)
+        XCTAssertEqual(maximumSize.width, 20)
+    }
+
     // MARK: - Helpers
 
     private static func makeStyle(
