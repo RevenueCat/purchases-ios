@@ -191,7 +191,7 @@ private final class WorkflowPresenterHarness {
         switch execution {
         case .nothingPresented:
             self.workflowPresenter.presentationDidDismiss()
-        case .completed, .failed:
+        case .completed, .adPresented, .failed:
             self.workflowPresenter.stage(.outcome(execution))
             self.workflowPresenter.presentationDidDismiss(reason: .close)
         case .backedOut:

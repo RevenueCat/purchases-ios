@@ -148,6 +148,16 @@ extension CheckpointEvent.Data {
                 traceID: resolved.traceID
             )
 
+        case .matchedAd:
+            // Like an offering, an ad step is handed to the app's registered presenter rather than presented
+            // by RevenueCat UI.
+            self.init(
+                identifier: identifier,
+                date: date,
+                result: .returnData,
+                checkpointRuleID: resolved.checkpointRuleID
+            )
+
         case let .noAction(reason):
             self.init(
                 identifier: identifier,
