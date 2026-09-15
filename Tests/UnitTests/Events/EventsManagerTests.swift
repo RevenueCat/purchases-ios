@@ -931,6 +931,7 @@ class EventsManagerTests: TestCase {
 
     func testAdFlushSuccessIsLoggedAfterClearingStoredEvents() async throws {
         let logger = try XCTUnwrap(self.logger)
+        defer { self.manager = nil }
         self.createManagerWithAdEvents {
             logger.verifyMessageWasNotLogged(EventsManagerStrings.ad_events_flushed_successfully)
         }
