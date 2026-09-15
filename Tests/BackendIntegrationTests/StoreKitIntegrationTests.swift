@@ -698,6 +698,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         #if os(iOS)
         if Self.storeKitVersion == .storeKit2,
            ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27 {
+            self.continueAfterFailure = true
             XCTExpectFailure("iOS 27 StoreKitTest still reports intro eligibility after a same-group purchase") {
                 expect(eligibility) == .ineligible
             }
