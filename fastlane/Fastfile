@@ -884,7 +884,7 @@ platform :ios do
       test_plan = "CI-AllTests"
     end
 
-    scan(
+    scan_options = {
       step_name: "scan - Apple TV",
       device: ENV['SCAN_DEVICE'] || "Apple TV",
       ensure_devices_found: true,
@@ -897,7 +897,20 @@ platform :ios do
       output_directory: "fastlane/test_output/xctest/tvos",
       number_of_retries: generate_snapshots ? 0 : 5,
       fail_build: !generate_snapshots
-    )
+    }
+
+    if ENV["RC_STOREKIT_TEST_PREFLIGHT"] == "1" && !generate_snapshots
+      scan_options.merge!(reset_simulator: false, reinstall_app: false, parallel_testing: false, only_testing: [])
+      scan(scan_options.merge(
+        step_name: "scan - StoreKitTest preflight",
+        only_testing: ["StoreKitUnitTests/StoreKitTestSessionInitializationTests"],
+        output_directory: "fastlane/test_output/xctest/tvos/storekit-preflight",
+        number_of_retries: 0,
+        fail_build: true
+      ))
+    end
+
+    scan(scan_options)
   end
 
   desc "Runs all the watchOS tests"

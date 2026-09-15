@@ -979,6 +979,7 @@ jobs:
           environment:
             SCAN_DEVICE: Apple TV 4K (3rd generation) (27.0)
             SCAN_XCARGS: -collect-test-diagnostics never
+            RC_STOREKIT_TEST_PREFLIGHT: "1"
           no_output_timeout: 5m
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/tvos
