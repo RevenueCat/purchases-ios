@@ -229,6 +229,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         _ = try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
 
+        self.logger.clearMessages()
         self.allServersUp()
 
         let task1 = Task { try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent) }
