@@ -920,9 +920,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         #if os(iOS)
-        try XCTSkipIf(Self.storeKitVersion == .storeKit2 &&
-                      ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
-                      "iOS 27 StoreKitTest returns the expired SK2 transaction when repurchasing")
+        try XCTSkipIf(ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
+                      "iOS 27 StoreKitTest returns a stale SK2 transaction or blocks SK1 with a dialog for expired offers")
         #endif
 
         let user = UUID().uuidString
@@ -966,9 +965,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         #if os(iOS)
-        try XCTSkipIf(Self.storeKitVersion == .storeKit2 &&
-                      ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
-                      "iOS 27 StoreKitTest returns the expired SK2 transaction when repurchasing")
+        try XCTSkipIf(ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
+                      "iOS 27 StoreKitTest returns a stale SK2 transaction or blocks SK1 with a dialog for expired offers")
         #endif
 
         let user = "not_a_uuid.\(UUID().uuidString)"
