@@ -68,18 +68,23 @@ private struct WebCheckoutSheetModifier: ViewModifier {
     @State private var presentedViewModel: WebCheckoutViewModel?
 
     func body(content: Content) -> some View {
-        content.sheet(item: self.$viewModel, onDismiss: self.reportOutcome) { viewModel in
-            WebCheckoutView(viewModel: viewModel)
-                .modifier(WebCheckoutSheetPresentation())
-                .onAppear {
-                    self.presentedViewModel = viewModel
-                    viewModel.onFinished = { self.viewModel = nil }
+        content.sheet(
+            item: self.$viewModel,
+            onDismiss: { self.reportOutcome() },
+            content: { viewModel in
+                WebCheckoutView(viewModel: viewModel)
+                    .modifier(WebCheckoutSheetPresentation())
+                    .onAppear {
+                        self.presentedViewModel = viewModel
+                        viewModel.onFinished = { self.viewModel = nil }
 
-                    self.dismissIfAlreadyReturned(viewModel)
-                }
-        }
+                        self.dismissIfAlreadyReturned(viewModel)
+                    }
+            }
+        )
     }
 
+    @MainActor
     private func reportOutcome() {
         let outcome = WebCheckoutSheetOutcome(returnedStatus: self.presentedViewModel?.returnStatus)
         self.presentedViewModel = nil
@@ -87,6 +92,7 @@ private struct WebCheckoutSheetModifier: ViewModifier {
         self.onOutcome(outcome)
     }
 
+    @MainActor
     private func dismissIfAlreadyReturned(_ viewModel: WebCheckoutViewModel) {
         guard viewModel.returnStatus != nil else {
             return
