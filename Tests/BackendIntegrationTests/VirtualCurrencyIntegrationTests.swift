@@ -39,7 +39,13 @@ class VirtualCurrencyStoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         let resultData = try await self.purchaseConsumablePackage()
         let transaction = try XCTUnwrap(resultData.transaction)
-        self.verifySpecificTransactionWasFinished(transaction)
+        self.verifySpecificTransactionWasFinished(transaction, count: nil)
+        await expect {
+            SKPaymentQueue.default().transactions.contains {
+                $0.transactionIdentifier == transaction.transactionIdentifier &&
+                    $0.payment.productIdentifier == transaction.productIdentifier
+            }
+        }.toEventually(beFalse(), timeout: .seconds(5))
 
         try self.purchases.invalidateVirtualCurrenciesCache()
 
