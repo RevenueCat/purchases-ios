@@ -48,6 +48,7 @@ class MockWebBillingAPI: WebBillingAPI {
         let presentedOfferingContext: PresentedOfferingContext
         let paywall: PostHostedCheckoutOperation.Paywall?
         let externalPurchaseTokenID: String?
+        let email: String?
 
     }
 
@@ -62,6 +63,7 @@ class MockWebBillingAPI: WebBillingAPI {
         presentedOfferingContext: PresentedOfferingContext,
         paywall: PostHostedCheckoutOperation.Paywall?,
         externalPurchaseTokenID: String?,
+        email: String?,
         completion: @escaping HostedCheckoutResponseHandler
     ) {
         self.invokedPostHostedCheckout = true
@@ -70,7 +72,8 @@ class MockWebBillingAPI: WebBillingAPI {
                                                          packageID: packageID,
                                                          presentedOfferingContext: presentedOfferingContext,
                                                          paywall: paywall,
-                                                         externalPurchaseTokenID: externalPurchaseTokenID)
+                                                         externalPurchaseTokenID: externalPurchaseTokenID,
+                                                         email: email)
 
         if let result = self.stubbedPostHostedCheckoutCompletionResult {
             completion(result)

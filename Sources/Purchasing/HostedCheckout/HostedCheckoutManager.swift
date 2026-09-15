@@ -20,13 +20,16 @@ final class HostedCheckoutManager {
     private let externalPurchaseManager: ExternalPurchaseManager
     private let webBillingAPI: WebBillingAPI
     private let currentUserProvider: CurrentUserProvider
+    private let customerEmailProvider: CustomerEmailProvider
 
     init(externalPurchaseManager: ExternalPurchaseManager,
          webBillingAPI: WebBillingAPI,
-         currentUserProvider: CurrentUserProvider) {
+         currentUserProvider: CurrentUserProvider,
+         customerEmailProvider: CustomerEmailProvider) {
         self.externalPurchaseManager = externalPurchaseManager
         self.webBillingAPI = webBillingAPI
         self.currentUserProvider = currentUserProvider
+        self.customerEmailProvider = customerEmailProvider
     }
 
     /// Starts a checkout for `package`, in response to the customer deliberately asking to buy.
@@ -53,6 +56,13 @@ final class HostedCheckoutManager {
                                         paywall: paywall,
                                         externalPurchaseTokenID: externalPurchaseTokenID)
     }
+
+}
+
+/// Reads the email the app has told the SDK about the current customer.
+protocol CustomerEmailProvider {
+
+    var currentCustomerEmail: String? { get }
 
 }
 
@@ -95,6 +105,7 @@ private extension HostedCheckoutManager {
                 presentedOfferingContext: package.presentedOfferingContext,
                 paywall: paywall.map { .init(paywallEventData: $0) },
                 externalPurchaseTokenID: externalPurchaseTokenID,
+                email: self.customerEmailProvider.currentCustomerEmail,
                 completion: completion
             )
         }
