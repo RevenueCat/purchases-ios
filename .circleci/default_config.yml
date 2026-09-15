@@ -1448,6 +1448,7 @@ jobs:
 
   backend-integration-tests-SK1:
     environment:
+      RC_STOREKIT_TEST_PREFLIGHT: "1"
       RC_XCODE27_FOCUSED_TESTS: "BackendIntegrationTests/StoreKit1ObserverModeWithExistingPurchasesTests,BackendIntegrationTests/StoreKit1IntegrationTests/testEligibleForIntroForDifferentProductAfterPurchase,BackendIntegrationTests/StoreKit1IntegrationTests/testPurchaseFailuresAreReportedCorrectly,BackendIntegrationTests/StoreKit1IntegrationTests/testPurchaseCancellationsAreReportedCorrectly"
     executor:
       name: macos-executor
@@ -1459,6 +1460,7 @@ jobs:
 
   backend-integration-tests-SK2:
     environment:
+      RC_STOREKIT_TEST_PREFLIGHT: "1"
       RC_XCODE27_FOCUSED_TESTS: "BackendIntegrationTests/StoreKit2ObserverModeWithExistingPurchasesTests,BackendIntegrationTests/StoreKit2IntegrationTests/testPurchaseWithPromotionalOffer,BackendIntegrationTests/StoreKit2IntegrationTests/testPurchaseCancellationsAreReportedCorrectly,BackendIntegrationTests/StoreKit2IntegrationTests/testPurchaseFailuresAreReportedCorrectly"
     executor:
       name: macos-executor
@@ -1469,6 +1471,8 @@ jobs:
           device: iPhone 17 (27.0)
 
   backend-integration-tests-other:
+    environment:
+      RC_STOREKIT_TEST_PREFLIGHT: "1"
     executor:
       name: macos-executor
       xcode_version: "27.0.0"
@@ -1478,6 +1482,8 @@ jobs:
           device: iPhone 17 (27.0)
 
   backend-integration-tests-offline:
+    environment:
+      RC_STOREKIT_TEST_PREFLIGHT: "1"
     executor:
       name: macos-executor
       xcode_version: "27.0.0"
@@ -1487,6 +1493,8 @@ jobs:
           device: iPhone 17 (27.0)
 
   backend-integration-tests-custom-entitlements:
+    environment:
+      RC_STOREKIT_TEST_PREFLIGHT: "1"
     executor:
       name: macos-executor
       xcode_version: "27.0.0"
@@ -1967,6 +1975,8 @@ jobs:
           command: bundle exec fastlane automatic_bump fallback_pr_lookup:<< pipeline.parameters.bump_with_fallback_pr_lookup >>
 
   integration-tests-all:
+    environment:
+      RC_STOREKIT_TEST_PREFLIGHT: "1"
     executor:
       name: macos-executor
       xcode_version: "27.0.0"

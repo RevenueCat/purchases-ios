@@ -80,6 +80,23 @@ class BaseStoreKitIntegrationTests: BaseBackendIntegrationTests {
 
 // MARK: - Helpers
 
+@MainActor
+class BackendStoreKitPreflightTests: TestCase {
+
+    func testInitializesLocalStoreKitSession() async throws {
+        let session = try SKTestSession(configurationFileNamed: Constants.storeKitConfigFileName)
+        session.resetToDefaultState()
+        session.disableDialogs = true
+        session.clearTransactions()
+
+        let productID = BaseStoreKitIntegrationTests.monthlyNoIntroProductID
+        let products = try await Product.products(for: [productID])
+        XCTAssertEqual(products.map(\.id), [productID])
+        withExtendedLifetime(session) {}
+    }
+
+}
+
 extension BaseStoreKitIntegrationTests {
 
     static let entitlementIdentifier = "premium"

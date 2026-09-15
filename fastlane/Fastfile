@@ -1930,7 +1930,7 @@ platform :ios do
 
     success = false
     begin
-      scan(
+      scan_options = {
         workspace: 'RevenueCat-Tuist.xcworkspace',
         scheme: "BackendIntegrationTests",
         ensure_devices_found: true,
@@ -1940,12 +1940,25 @@ platform :ios do
         result_bundle: true,
         testplan: options[:test_plan],
         only_testing: ENV["RC_XCODE27_FOCUSED_TESTS"]&.split(","),
+        xcargs: ENV["RC_XCODE27_FOCUSED_TESTS"] ? "-test-iterations 1" : nil,
         only_test_configurations: [test_configuration],
         configuration: 'Debug',
         output_directory: "fastlane/test_output/xctest/ios",
         number_of_retries: (generate_snapshots || ENV["RC_XCODE27_FOCUSED_TESTS"]) ? 0 : 5,
         fail_build: !generate_snapshots,
-      )
+      }
+      if ENV["RC_STOREKIT_TEST_PREFLIGHT"] == "1"
+        scan_options.merge!(reset_simulator: false, reinstall_app: false, parallel_testing: false)
+        scan(scan_options.merge(
+          step_name: "scan - backend StoreKitTest preflight",
+          only_testing: ["BackendIntegrationTests/BackendStoreKitPreflightTests"],
+          xcargs: "-test-iterations 1",
+          output_directory: "fastlane/test_output/xctest/ios/storekit-preflight",
+          number_of_retries: 0,
+          fail_build: true
+        ))
+      end
+      scan(scan_options)
       success = true
     rescue => exception
       raise exception
