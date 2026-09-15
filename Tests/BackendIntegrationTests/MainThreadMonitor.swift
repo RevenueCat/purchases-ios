@@ -47,6 +47,7 @@ final class MainThreadMonitor {
 
                 let deadline = DispatchTime.now() + Self.threshold + Self.checkInterval
                 let result = semaphore.wait(timeout: deadline)
+                guard self != nil else { return }
 
                 // `XCTest` sometimes blocks the main thread at the end of a test.
                 // We don't want to detect that as a deadlock.

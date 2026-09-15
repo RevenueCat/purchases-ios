@@ -1925,6 +1925,8 @@ platform :ios do
   lane :backend_integration_tests do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
     test_configuration = generate_snapshots ? "GenerateSnapshots" : "Default"
+    xcargs = "-collect-test-diagnostics never"
+    xcargs += " -retry-tests-on-failure -test-iterations 2" if ENV["RC_XCODE27_FOCUSED_TESTS"]
 
     replace_api_key_integration_tests
 
@@ -1940,7 +1942,7 @@ platform :ios do
         result_bundle: true,
         testplan: options[:test_plan],
         only_testing: ENV["RC_XCODE27_FOCUSED_TESTS"]&.split(","),
-        xcargs: ENV["RC_XCODE27_FOCUSED_TESTS"] ? "-retry-tests-on-failure -test-iterations 2" : nil,
+        xcargs: xcargs,
         only_test_configurations: [test_configuration],
         configuration: 'Debug',
         output_directory: "fastlane/test_output/xctest/ios",
@@ -1952,7 +1954,7 @@ platform :ios do
         scan(scan_options.merge(
           step_name: "scan - backend StoreKitTest preflight",
           only_testing: ["BackendIntegrationTests/BackendStoreKitPreflightTests"],
-          xcargs: nil,
+          xcargs: "-collect-test-diagnostics never",
           output_directory: "fastlane/test_output/xctest/ios/storekit-preflight",
           number_of_retries: 0,
           fail_build: true
