@@ -181,16 +181,16 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(self.backend.invokedPostReceiptData) == false
     }
 
-    #if swift(>=5.9)
-    @available(iOS 17.0, tvOS 17.0, watchOS 10.0, macOS 14.0, *)
-    func testPurchaseSK2CancelledWithSimulatedError() async throws {
-        try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
-
-        try await self.testSession.setSimulatedError(.generic(.userCancelled), forAPI: .purchase)
+    func testPurchaseSK2CancelledWithPurchaseResult() async throws {
+        // StoreKitTest on iOS 27 throws .unknown when configured to simulate .userCancelled.
+        // Inject the result at the purchaser boundary to test the orchestrator's cancellation handling.
+        self.mockStoreKit2ProductPurchaser = MockStoreKit2ProductPurchaser()
+        self.mockStoreKit2ProductPurchaser.stubbedPurchaseResult = .init(.success(.userCancelled))
+        self.setUpOrchestrator(storeKit2ProductPurchaser: self.mockStoreKit2ProductPurchaser)
+        self.setUpStoreKit2Listener()
 
         self.customerInfoManager.stubbedCustomerInfoResult = .success(self.mockCustomerInfo)
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
-        self.mockStoreKit2TransactionListener?.mockCancelled = true
 
         let product = try await self.fetchSk2Product()
 
@@ -202,6 +202,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                                                                   billingPlanType: nil,
                                                                                   promotionalOfferOptions: nil)
 
+        expect(self.mockStoreKit2ProductPurchaser.invokedPurchaseCount) == 1
         expect(self.mockStoreKit2TransactionListener?.invokedHandle) == true
         let purchaseResult = try XCTUnwrap(
             self.mockStoreKit2TransactionListener?.invokedHandleParameters?.purchaseResult.value)
@@ -219,7 +220,34 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(cancelled) == true
         expect(self.backend.invokedPostReceiptData) == false
     }
-    #endif
+
+    func testPurchaseSK2CancelledWithThrownStoreKitError() async throws {
+        self.mockStoreKit2ProductPurchaser = MockStoreKit2ProductPurchaser()
+        self.mockStoreKit2ProductPurchaser.stubbedPurchaseResult = .init(.failure(StoreKitError.userCancelled))
+        self.setUpOrchestrator(storeKit2ProductPurchaser: self.mockStoreKit2ProductPurchaser)
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCustomerInfoResult = .success(self.mockCustomerInfo)
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        let product = try await self.fetchSk2Product()
+        let (transaction, info, cancelled) = try await self.orchestrator.purchase(
+            sk2Product: product,
+            package: nil,
+            promotionalOffer: nil,
+            winBackOffer: nil,
+            introductoryOfferEligibilityJWS: nil,
+            billingPlanType: nil,
+            promotionalOfferOptions: nil
+        )
+
+        expect(self.mockStoreKit2ProductPurchaser.invokedPurchaseCount) == 1
+        expect(self.mockStoreKit2TransactionListener?.invokedHandle) == false
+        expect(transaction).to(beNil())
+        expect(info) === self.mockCustomerInfo
+        expect(cancelled) == true
+        expect(self.backend.invokedPostReceiptData) == false
+    }
 
     // MARK: - Purchasing, StoreKit 2 only
 
