@@ -47,8 +47,14 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
 
     func testPostingCustomerCenterDoesNotFail() async throws {
         let locale = Locale(identifier: "es_ES")
+        let purchases = try self.purchases
+        let eventsStored = expectation(description: "Customer Center events stored")
+        eventsStored.expectedFulfillmentCount = 2
+        let listener = EventStorageListener(expectation: eventsStored)
+        purchases.eventsListener = listener
+        defer { purchases.eventsListener = nil }
 
-        Purchases.shared.track(
+        purchases.track(
             customerCenterEvent: CustomerCenterEvent.impression(
                 Self.customerCenterCreationData,
                 CustomerCenterEvent.Data(
@@ -60,7 +66,7 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
             )
         )
 
-        Purchases.shared.track(
+        purchases.track(
             customerCenterEvent: CustomerCenterAnswerSubmittedEvent.answerSubmitted(
                 Self.customerCenterCreationData,
                 CustomerCenterAnswerSubmittedEvent.Data(
@@ -75,12 +81,7 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
                 )
             )
         )
-        try await self.logger.verifyMessageIsEventuallyLogged(
-            "Storing event:",
-            expectedCount: 2,
-            timeout: .seconds(10),
-            pollInterval: .milliseconds(100)
-        )
+        await fulfillment(of: [eventsStored], timeout: 10)
 
         try await flushAndVerify(eventsCount: 2)
     }
@@ -119,4 +120,16 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
         darkMode: true,
         source: nil
     )
+}
+
+private final class EventStorageListener: EventsListener {
+    private let expectation: XCTestExpectation
+
+    init(expectation: XCTestExpectation) {
+        self.expectation = expectation
+    }
+
+    func onEventTracked(_ event: [String: Any]) {
+        self.expectation.fulfill()
+    }
 }
