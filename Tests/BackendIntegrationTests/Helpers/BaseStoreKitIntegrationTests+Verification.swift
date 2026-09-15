@@ -246,12 +246,13 @@ extension BaseStoreKitIntegrationTests {
     }
 
     func verifyReceiptIsEventuallyPosted(
+        timeout: NimbleTimeInterval = .seconds(3),
         file: FileString = #file,
         line: UInt = #line
     ) async throws {
         try await self.logger.verifyMessageIsEventuallyLogged(
             Strings.network.operation_state(PostReceiptDataOperation.self, state: "Finished").description,
-            timeout: .seconds(3),
+            timeout: timeout,
             pollInterval: .milliseconds(100),
             file: file,
             line: line
