@@ -568,7 +568,7 @@ commands:
           command: bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>"
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 16 (18.5)
+            SCAN_DEVICE: iPhone 18 (27.0)
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
@@ -1378,6 +1378,7 @@ jobs:
   backend-integration-tests-SK1:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-SK1"
@@ -1385,6 +1386,7 @@ jobs:
   backend-integration-tests-SK2:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-SK2"
@@ -1392,6 +1394,7 @@ jobs:
   backend-integration-tests-other:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-Other"
@@ -1399,6 +1402,7 @@ jobs:
   backend-integration-tests-offline:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-Offline"
@@ -1406,6 +1410,7 @@ jobs:
   backend-integration-tests-custom-entitlements:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-CustomEntitlements"
@@ -1880,6 +1885,7 @@ jobs:
   integration-tests-all:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-All-CI"
