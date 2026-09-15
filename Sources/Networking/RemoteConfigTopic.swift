@@ -18,6 +18,7 @@ enum RemoteConfigTopic: String {
     case sources
     case checkpointRules = "checkpoint_rules"
     case audiences
+    case transformations
 
     var wireName: String {
         return self.rawValue
