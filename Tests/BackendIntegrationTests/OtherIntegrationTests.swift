@@ -234,7 +234,14 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
 
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
     func testEnableAdServicesAttributionTokenCollection() async throws {
+        try self.captureAdServicesDiagnostics(stage: "beforeEnable")
         try self.purchases.attribution.enableAdServicesAttributionTokenCollection()
+        try self.captureAdServicesDiagnostics(stage: "afterEnable")
+        let witness = Task.detached(priority: .background) {
+            guard !Task.isCancelled else { return }
+            print("RC_CI_ADSERVICES backgroundWitnessEntered=true")
+        }
+        defer { witness.cancel() }
 
         try await self.logger.verifyMessageIsEventuallyLogged(
             Strings.attribution.adservices_token_post_succeeded.description,
@@ -242,6 +249,17 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
             timeout: .seconds(3),
             pollInterval: .milliseconds(200)
         )
+        try self.captureAdServicesDiagnostics(stage: "afterSuccess")
+    }
+
+    private func captureAdServicesDiagnostics(stage: String) throws {
+        let purchases = try self.purchases
+        let cacheKey = DeviceCache.CacheKey.attributionDataDefaults(purchases.appUserID).rawValue
+        let cached = UserDefaults(suiteName: Constants.userDefaultsSuiteName)?.dictionary(forKey: cacheKey)
+        let cachePresent = cached?[String(AttributionNetwork.adServices.rawValue)] != nil
+        print("RC_CI_ADSERVICES stage=\(stage) " +
+              "enabled=\(purchases.attribution.automaticAdServicesAttributionTokenCollection) " +
+              "mockPresent=\(ProcessInfo.mockAdServicesToken != nil) cachePresent=\(cachePresent)")
     }
 
     func testRequestV1PaywallImages() async throws {
