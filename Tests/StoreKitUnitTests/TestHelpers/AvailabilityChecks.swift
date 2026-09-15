@@ -120,4 +120,45 @@ enum AvailabilityChecks {
             throw XCTSkip("Required API is not available for this test.")
         }
     }
+
+    static func skipIfCompiler63OrLater() throws {
+        /*
+         Beginning with Xcode 26.4 beta 1 and compiler version 6.3.0.119.2, the compiler stopped resolving
+         StaticString overloads correctly.
+
+         For example, given:
+
+         ```swift
+         @_disfavoredOverload
+         func thing(_ str: String) { print("REGULAR", str) }
+
+         func thing(_ str: StaticString) { print("STATIC", str) }
+
+         thing("hello") // should be of type "StaticString"
+
+         let s = "world" // inferred to be of type "String"
+         thing(s)
+         ```
+
+         This should print
+         ```
+         STATIC hello
+         REGULAR world
+         ```
+
+         But, starting with v6.3, always prints
+         ```
+         REGULAR hello
+         REGULAR world
+         ```
+
+         This affects our `.logIn(...)` APIs, where we try to push developers to use the `String`-taking versions
+         by marking the `StaticString` versions as deprecated, but favored by the typechecker. Until we determine
+         the correct way to deal with this, we'll leave the APIs in place but skip the unit tests that are verifying
+         this functionality.
+         */
+        #if compiler(>=6.3)
+        throw XCTSkip("Unavailable on Swift 6.3 or later")
+        #endif
+    }
 }
