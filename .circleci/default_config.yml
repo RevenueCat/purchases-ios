@@ -1392,6 +1392,8 @@ jobs:
           environment:
             SCAN_PLATFORM: watchOS Simulator
             SCAN_DEVICE: Apple Watch Series 12 (46mm) (27.0)
+            # Xcode 27 can hang in simctl diagnose after all watchOS tests pass.
+            SCAN_XCARGS: -collect-test-diagnostics never
             BUILD_SDK: watchsimulator
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/watchos
