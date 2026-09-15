@@ -12,6 +12,17 @@
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
+/// Describes how a workflow was dismissed.
+///
+/// This is shared with checkpoint presentation state, which is compiled on every supported platform.
+enum WorkflowDismissalReason: Equatable {
+    /// The workflow was dismissed through its normal close path.
+    case close
+
+    /// The workflow was dismissed by navigating back from its initial step.
+    case navigatedBack
+}
+
 #if !os(tvOS)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -94,14 +105,6 @@ private struct CloseWorkflowActionKey: EnvironmentKey {
 
 private struct WorkflowNavigateBackHandlerKey: EnvironmentKey {
     static let defaultValue: (() -> Void)? = nil
-}
-
-enum WorkflowDismissalReason: Equatable {
-    /// The workflow was dismissed through its normal close path.
-    case close
-
-    /// The workflow was dismissed by navigating back from its initial step.
-    case navigatedBack
 }
 
 private struct WorkflowDismissalObserverKey: EnvironmentKey {
