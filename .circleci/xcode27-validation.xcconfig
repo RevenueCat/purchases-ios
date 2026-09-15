@@ -3,3 +3,6 @@ IPHONEOS_DEPLOYMENT_TARGET = 15.0
 TVOS_DEPLOYMENT_TARGET = 15.0
 WATCHOS_DEPLOYMENT_TARGET = 9.0
 MACOSX_DEPLOYMENT_TARGET = 12.0
+
+// Generated Objective-C headers still expose supported StoreKit 1 APIs.
+OTHER_SWIFT_FLAGS[sdk=watch*] = $(inherited) -Xcc -Wno-deprecated-declarations
