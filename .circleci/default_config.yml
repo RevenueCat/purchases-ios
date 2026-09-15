@@ -124,6 +124,12 @@ aliases:
         only: main
   swiftinterface-xcode-version: &swiftinterface-xcode-version "26.5"
 commands:
+  configure-xcode27-validation:
+    steps:
+      - run:
+          name: Use Xcode 27 deployment targets for build validation
+          command: printf 'export XCODE_XCCONFIG_FILE=%q\n' "$PWD/.circleci/xcode27-validation.xcconfig" >> "$BASH_ENV"
+
   github-notify-pr-on-fail:
     steps:
       - run:
@@ -611,6 +617,7 @@ jobs:
       xcode_version: "27.0.0"
     steps:
       - checkout
+      - configure-xcode27-validation
       - install-dependencies
       - run:
           name: Check pods and deployment targets
@@ -1779,6 +1786,7 @@ jobs:
     steps:
       # === Common setup ===
       - checkout-with-minimal-permissions
+      - configure-xcode27-validation
       - install-dependencies
       - update-spm-installation-commit
       - run:
@@ -2037,6 +2045,7 @@ jobs:
       xcode_version: "27.0.0"
     steps:
       - checkout
+      - configure-xcode27-validation
       - revenuecat/setup-git-credentials
       - revenuecat/trust-github-key
       - install-dependencies
