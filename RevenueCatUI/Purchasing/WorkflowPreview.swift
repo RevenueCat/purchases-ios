@@ -59,7 +59,6 @@ import Foundation
             uiConfig: uiConfig,
             allOfferings: offerings,
             presentedOfferingContext: presentedOfferingContext,
-            triggerOfferingIdentifier: workflow.id,
             workflowBlobRef: workflowBlobRef
         )
     }

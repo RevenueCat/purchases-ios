@@ -38,6 +38,13 @@ enum PaywallFixture: String, CaseIterable {
     /// the height of its row.
     case fixedPillOverflowScroll = "fixed_pill_overflow_scroll"
 
+    /// A paragraph carrying two markdown links, plus a price whose copy types "/mo" literally.
+    /// Both need a screen reader to verify, so there is no test asserting them.
+    case spokenTextAndLinks = "spoken_text_and_links"
+    /// Every offer price variable next to its `_with_zero` twin, on a free trial. The pair is the
+    /// point: the plain ones render the localized word, the `_with_zero` ones render the amount.
+    case offerPriceWithZero = "offer_price_with_zero"
+
     var title: String {
         switch self {
         case .iconOnlyButton:
@@ -50,6 +57,10 @@ enum PaywallFixture: String, CaseIterable {
             return "Decorative media"
         case .fixedPillOverflowScroll:
             return "Fixed pill with overflow scroll"
+        case .spokenTextAndLinks:
+            return "Spoken text and markdown links"
+        case .offerPriceWithZero:
+            return "Offer price with zero"
         }
     }
 
@@ -65,6 +76,10 @@ enum PaywallFixture: String, CaseIterable {
             return Self.decorativeMediaComponentsData()
         case .fixedPillOverflowScroll:
             return Self.fixedPillOverflowScrollComponentsData()
+        case .spokenTextAndLinks:
+            return Self.spokenTextAndLinksComponentsData()
+        case .offerPriceWithZero:
+            return Self.offerPriceWithZeroComponentsData()
         }
     }
 
@@ -73,8 +88,12 @@ enum PaywallFixture: String, CaseIterable {
         switch self {
         case .iconOnlyButton, .fixedPillOverflowScroll:
             return [Self.monthlyPackage(offeringIdentifier: self.rawValue)]
+        case .spokenTextAndLinks:
+            return [Self.annualPackage(offeringIdentifier: self.rawValue)]
         case .badgeRulesPerOffer:
             return [Self.annualPackageWithPromoOffer(offeringIdentifier: self.rawValue)]
+        case .offerPriceWithZero:
+            return [Self.annualPackageWithFreeTrial(offeringIdentifier: self.rawValue)]
         case .mixedTabsPageDefault:
             return [
                 Self.annualPackage(offeringIdentifier: self.rawValue),
@@ -120,11 +139,118 @@ private extension PaywallFixture {
                 "month": "month", "monthly": "monthly", "month_short": "mo",
                 "year": "year", "yearly": "yearly", "year_short": "yr",
                 "annual": "annual", "annually": "annually", "annual_short": "yr",
-                "free": "free", "percent": "%d%%"
+                "free": "free", "free_price": "Free", "percent": "%d%%"
             ]
         ],
         variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
     )
+
+    /// A one month free trial on an annual product, so the `_with_zero` variables have a zero
+    /// amount to format and the plain ones have a free trial to substitute the word for.
+    static func annualPackageWithFreeTrial(offeringIdentifier: String) -> Package {
+        let trial = TestStoreProductDiscount(
+            identifier: "trial",
+            price: 0,
+            localizedPriceString: "$0.00",
+            paymentMode: .freeTrial,
+            subscriptionPeriod: .init(value: 1, unit: .month),
+            numberOfPeriods: 1,
+            type: .introductory
+        )
+        let product = TestStoreProduct(
+            localizedTitle: "Annual",
+            price: 39.99,
+            localizedPriceString: "$39.99",
+            productIdentifier: "com.revenuecat.fixtures.annual.trial",
+            productType: .autoRenewableSubscription,
+            localizedDescription: "Annual subscription",
+            subscriptionGroupIdentifier: "group",
+            subscriptionPeriod: .init(value: 1, unit: .year),
+            introductoryDiscount: trial
+        )
+
+        return Package(
+            identifier: "$rc_annual",
+            packageType: .annual,
+            storeProduct: product.toStoreProduct(),
+            offeringIdentifier: offeringIdentifier,
+            webCheckoutUrl: nil
+        )
+    }
+
+    static let offerPriceWithZeroVariableNames = [
+        "product.offer_price",
+        "product.offer_price_with_zero",
+        "product.offer_price_per_day",
+        "product.offer_price_with_zero_per_day",
+        "product.offer_price_per_week",
+        "product.offer_price_with_zero_per_week",
+        "product.offer_price_per_month",
+        "product.offer_price_with_zero_per_month",
+        "product.offer_price_per_year",
+        "product.offer_price_with_zero_per_year"
+    ]
+
+    /// Renders each variable as `name=value` on its own row, so a UI test reads the resolved value
+    /// off the paywall rather than trusting the function that produced it.
+    static func offerPriceWithZeroComponentsData() -> PaywallComponentsData {
+        // Offer price variables resolve against the selected package, so without a package
+        // component every row renders empty.
+        let rows: [PaywallComponent] = [
+            Self.offerPriceWithZeroPackageCard()
+        ] + Self.offerPriceWithZeroVariableNames.map { name in
+            .text(.init(
+                text: name,
+                color: .init(light: .hex("#000000")),
+                fontSize: 13
+            ))
+        }
+
+        var localizations = Self.offerPriceWithZeroVariableNames
+            .reduce(into: PaywallComponent.LocalizationDictionary()) {
+                $0[$1] = .string("\($1)={{ \($1) }}")
+            }
+        localizations["annual"] = .string("Annual")
+
+        return .init(
+            templateName: "fixture-offer-price-with-zero",
+            assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
+            componentsConfig: .init(base: .init(
+                stack: .init(
+                    components: rows,
+                    dimension: .vertical(.leading, .start),
+                    size: .init(width: .fill, height: .fill),
+                    spacing: 6,
+                    backgroundColor: .init(light: .hex("#ffffff")),
+                    padding: .init(top: 80, bottom: 24, leading: 16, trailing: 16)
+                ),
+                stickyFooter: nil,
+                background: .color(.init(light: .hex("#ffffff")))
+            )),
+            componentsLocalizations: ["en_US": localizations],
+            revision: 1,
+            defaultLocaleIdentifier: "en_US"
+        )
+    }
+
+    static func offerPriceWithZeroPackageCard() -> PaywallComponent {
+        return .package(.init(
+            packageID: "$rc_annual",
+            isSelectedByDefault: true,
+            visible: nil,
+            applePromoOfferProductCode: nil,
+            stack: .init(
+                components: [
+                    .text(.init(
+                        text: "annual",
+                        color: .init(light: .hex("#000000"))
+                    ))
+                ],
+                size: .init(width: .fill, height: .fit(nil)),
+                padding: .init(top: 12, bottom: 12, leading: 12, trailing: 12)
+            )
+        ))
+    }
 
     /// Carries the `.promotional` discount the simulated promo cache looks for.
     static func annualPackageWithPromoOffer(offeringIdentifier: String) -> Package {
@@ -445,6 +571,54 @@ private extension PaywallFixture {
 
     /// A package row with a fixed 22x22 pill ring and a 10x10 dot. `overflow: scroll` wraps the
     /// ring in a scroll view, which must not change its size.
+    static func spokenTextAndLinksComponentsData() -> PaywallComponentsData {
+        return .init(
+            templateName: "fixture-spoken-text-and-links",
+            assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
+            componentsConfig: .init(base: .init(
+                stack: .init(
+                    components: [
+                        .text(.init(text: "title_lid", color: .init(light: .hex("#000000")))),
+                        .text(.init(text: "price_lid", color: .init(light: .hex("#000000")))),
+                        .text(.init(text: "literal_price_lid", color: .init(light: .hex("#000000")))),
+                        .text(.init(text: "two_links_lid", color: .init(light: .hex("#000000")))),
+                        .text(.init(text: "link_and_price_lid", color: .init(light: .hex("#000000")))),
+                        .text(.init(text: "no_links_lid", color: .init(light: .hex("#000000"))))
+                    ],
+                    dimension: .vertical(.center, .start),
+                    size: .init(width: .fill, height: .fill),
+                    spacing: 24,
+                    backgroundColor: .init(light: .hex("#ffffff")),
+                    padding: .init(top: 80, bottom: 24, leading: 16, trailing: 16)
+                ),
+                stickyFooter: nil,
+                background: .color(.init(light: .hex("#ffffff")))
+            )),
+            componentsLocalizations: [
+                "en_US": [
+                    "title_lid": .string("Spoken text and links"),
+                    // Resolves through variable substitution, which the accessibility pass sees.
+                    "price_lid": .string("{{ product.price_per_period_abbreviated }}"),
+                    // Types the separator itself, which no variable substitution reaches.
+                    "literal_price_lid": .string("{{ product.price_per_month }}/mo"),
+                    "two_links_lid": .string(
+                        "Read the [terms of service](https://www.revenuecat.com/terms) " +
+                        "and the [privacy policy](https://www.revenuecat.com/privacy)."
+                    ),
+                    "no_links_lid": .string("This paragraph has no links, so it gains no actions."),
+                    // Both in one paragraph: the only shape where the spoken label replaces text
+                    // that still carries markdown.
+                    "link_and_price_lid": .string(
+                        "Just {{ product.price_per_month }}/mo. " +
+                        "See the <u>[terms of service](https://www.revenuecat.com/terms)</u>."
+                    )
+                ]
+            ],
+            revision: 1,
+            defaultLocaleIdentifier: "en_US"
+        )
+    }
+
     static func fixedPillOverflowScrollComponentsData() -> PaywallComponentsData {
         let ring: PaywallComponent = .stack(.init(
             components: [

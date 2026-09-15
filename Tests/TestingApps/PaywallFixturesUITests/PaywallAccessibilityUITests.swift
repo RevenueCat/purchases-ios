@@ -65,6 +65,49 @@ final class PaywallAccessibilityUITests: XCTestCase {
         )
     }
 
+    // MARK: - Spoken text
+
+    /// The spoken variant is built from the source copy, so it still carries markdown when it
+    /// reaches the label. What VoiceOver receives must be the words, not the syntax.
+    func testSpokenLabelDropsMarkdownSyntax() throws {
+        let app = self.launchSpokenText()
+
+        // The paragraph carrying both a link and a price: only that shape gets a spoken label
+        // applied over text that still contains markdown.
+        let paragraph = app.staticTexts.matching(
+            NSPredicate(format: "label CONTAINS %@ AND label CONTAINS %@", "terms of service", "monthly")
+        ).firstMatch
+        XCTAssertTrue(paragraph.waitForExistence(timeout: 30), app.debugDescription)
+        XCTAssertFalse(paragraph.label.contains("["), "Markdown reached VoiceOver: \(paragraph.label)")
+        XCTAssertFalse(paragraph.label.contains("https://"), "A link URL is spoken: \(paragraph.label)")
+        XCTAssertFalse(paragraph.label.contains("<u>"), "Underline tags are spoken: \(paragraph.label)")
+    }
+
+    /// The displayed price keeps "/mo"; only what is spoken expands.
+    func testSpokenLabelExpandsThePeriod() throws {
+        let app = self.launchSpokenText()
+
+        let price = app.staticTexts.matching(
+            NSPredicate(format: "label CONTAINS %@", "monthly")
+        ).firstMatch
+        XCTAssertTrue(price.waitForExistence(timeout: 30), app.debugDescription)
+        XCTAssertFalse(price.label.contains("/mo"), "Still spoken as slash mo: \(price.label)")
+    }
+
+    private func launchSpokenText() -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchEnvironment["PAYWALL_FIXTURE"] = "spoken_text_and_links"
+        app.launchEnvironment["PAYWALL_VOICE_OVER"] = "1"
+        app.launch()
+
+        XCTAssertTrue(
+            app.staticTexts["Spoken text and links"].waitForExistence(timeout: 30),
+            "Fixture did not render."
+        )
+
+        return app
+    }
+
     private func launch(fixture: String) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchEnvironment["PAYWALL_FIXTURE"] = fixture
