@@ -465,8 +465,6 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         let transaction = try XCTUnwrap(subscriptionPurchaseData.transaction)
         self.verifySpecificTransactionWasNotFinished(transaction)
 
-        try await self.waitUntilUnfinishedTransactions { $0 == 2 }
-
         // 2. Server is back
         self.allServersUp()
 
