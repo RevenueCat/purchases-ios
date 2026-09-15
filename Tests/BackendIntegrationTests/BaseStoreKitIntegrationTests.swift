@@ -156,8 +156,6 @@ extension BaseStoreKitIntegrationTests {
         file: FileString = #file,
         line: UInt = #line
     ) async throws -> PurchaseResultData {
-        let logger = TestLogHandler(testIdentifier: self.name)
-
         let data = try await self.purchase(package: self.monthlyPackage, file: file, line: line)
 
         try await self.verifyEntitlementWentThrough(data.customerInfo,
@@ -179,8 +177,6 @@ extension BaseStoreKitIntegrationTests {
         file: FileString = #file,
         line: UInt = #line
     ) async throws -> PurchaseResultData {
-        let logger = TestLogHandler(testIdentifier: self.name)
-
         let data: PurchaseResultData
 
         #if ENABLE_TRANSACTION_METADATA
@@ -223,7 +219,6 @@ extension BaseStoreKitIntegrationTests {
         file: FileString = #file,
         line: UInt = #line
     ) async throws -> PurchaseResultData {
-        let logger = TestLogHandler(testIdentifier: self.name)
         let product = try await StoreKit.Product.products(for: [Self.weeklyWith3DayTrial]).first!
 
         let data = try await self.purchase(product: StoreProduct(sk2Product: product), file: file, line: line)
