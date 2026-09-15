@@ -389,6 +389,8 @@ private struct CarouselView<Content: View>: View {
 
     /// Paging for a screen reader, which cannot drag.
     private func pageForAccessibility(by delta: Int) {
+        let originalPageIndexBefore = self.originalPageIndex
+
         withAnimation(.easeInOut(duration: 0.25)) {
             self.index = CarouselPaging.index(from: self.index, by: delta, count: self.data.count, loop: self.loop)
 
@@ -399,6 +401,27 @@ private struct CarouselView<Content: View>: View {
         }
 
         self.pauseAutoPlay(for: 10)
+        self.reportPageChange(from: originalPageIndexBefore)
+    }
+
+    /// Which of the original pages is showing, ignoring the copies a looping carousel makes.
+    private var originalPageIndex: Int? {
+        guard self.originalCount > 0 else {
+            return nil
+        }
+
+        return self.loop ? self.index % self.originalCount : self.index
+    }
+
+    /// Paging the carousel is user-initiated however it was driven, so both paths report it.
+    /// Timer-driven auto-advance deliberately does not, see `startAutoPlayIfNeeded`.
+    private func reportPageChange(from originalPageIndexBefore: Int?) {
+        guard self.isInitialized,
+              let originalPageIndexBefore,
+              let originalPageIndexAfter = self.originalPageIndex,
+              originalPageIndexAfter != originalPageIndexBefore else { return }
+
+        self.onUserInitiatedPageIndexChange?(originalPageIndexBefore, originalPageIndexAfter)
     }
 
     private func setupData() {
@@ -514,9 +537,7 @@ private struct CarouselView<Content: View>: View {
 
     private func handleDragEnd(translation: CGFloat) {
         let threshold = cardWidth * 0.2
-        let originalPageIndexBefore: Int? = self.originalCount > 0
-            ? (self.loop ? self.index % self.originalCount : self.index)
-            : nil
+        let originalPageIndexBefore = self.originalPageIndex
 
         withAnimation(.easeInOut(duration: 0.25)) {
             self.dragOffset = 0
@@ -541,18 +562,7 @@ private struct CarouselView<Content: View>: View {
         // Pause auto-play for 10 seconds
         pauseAutoPlay(for: 10)
 
-        // `onUserInitiatedPageIndexChange` is only invoked from here so timer-driven auto-advance does not emit
-        // paywall_component_interacted events (see `startAutoPlayIfNeeded`).
-        guard self.isInitialized,
-              let originalPageIndexBefore,
-              self.originalCount > 0 else { return }
-
-        let originalPageIndexAfter = self.loop
-            ? self.index % self.originalCount
-            : self.index
-        guard originalPageIndexAfter != originalPageIndexBefore else { return }
-
-        self.onUserInitiatedPageIndexChange?(originalPageIndexBefore, originalPageIndexAfter)
+        self.reportPageChange(from: originalPageIndexBefore)
     }
 
     private var autoPlayEnabled: Bool {
