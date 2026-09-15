@@ -268,11 +268,13 @@ class StoreKit2TransactionListenerCustomStreamTests: StoreKit2TransactionListene
 
     override var updates: AsyncStream<TransactionResult> {
         get async throws {
+            // Use a consumable so each fixture purchase creates a new transaction without resubscribing.
+            let product = try await self.fetchSk2Product(Self.consumableProductId)
             return MockAsyncSequence<TransactionResult>(with: [
-                .verified(try await self.createTransactionWithPurchase()),
-                .verified(try await self.createTransactionWithPurchase()),
+                .verified(try await self.createTransactionWithPurchase(product: product)),
+                .verified(try await self.createTransactionWithPurchase(product: product)),
                 .unverified(
-                    try await self.createTransactionWithPurchase(),
+                    try await self.createTransactionWithPurchase(product: product),
                     .revokedCertificate
                 )
             ])
