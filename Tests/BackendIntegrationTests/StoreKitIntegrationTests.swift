@@ -914,7 +914,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         #if os(iOS)
         try XCTSkipIf(ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
-                      "iOS 27 StoreKitTest returns a stale SK2 transaction or blocks SK1 with a dialog for expired offers")
+                      "iOS 27 StoreKitTest returns a stale SK2 transaction " +
+                      "or blocks SK1 with a dialog for expired offers")
         #endif
 
         let user = UUID().uuidString
@@ -959,7 +960,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         #if os(iOS)
         try XCTSkipIf(ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
-                      "iOS 27 StoreKitTest returns a stale SK2 transaction or blocks SK1 with a dialog for expired offers")
+                      "iOS 27 StoreKitTest returns a stale SK2 transaction " +
+                      "or blocks SK1 with a dialog for expired offers")
         #endif
 
         let user = "not_a_uuid.\(UUID().uuidString)"
