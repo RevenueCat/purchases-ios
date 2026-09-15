@@ -263,6 +263,7 @@ public struct PaywallView: View {
             // If the parent view uses refreshable, it can be inherited by the paywall view
             // and pulling down in the paywall would execute the parent's refreshable action
             .refreshableDisabled()
+            .modifier(PaywallURLEventsModifier(purchaseHandler: self.purchaseHandler))
     }
 
     @MainActor
@@ -536,10 +537,6 @@ struct LoadedOfferingPaywallView: View {
                         value: self.purchaseHandler.purchaseError as NSError?)
             .preference(key: RestoreErrorPreferenceKey.self,
                         value: self.purchaseHandler.restoreError as NSError?)
-            .preference(key: WebCheckoutOpenedPreferenceKey.self,
-                        value: self.purchaseHandler.webCheckoutOpened)
-            .preference(key: URLOpenedPreferenceKey.self,
-                        value: self.purchaseHandler.urlOpened)
     }
 
     @ViewBuilder

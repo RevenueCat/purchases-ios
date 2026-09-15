@@ -51,12 +51,12 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
     }
 
     func testMultipleUnfinishedVerifiedTransaction() async throws {
-        let transaction1 = try await self.createTransaction(productID: Self.product1, finished: false)
-        let transaction2 = try await self.createTransaction(productID: Self.product2, finished: false)
+        let transaction1 = try await self.createTransactionInTestSession(productID: Self.product1, finished: false)
+        let transaction2 = try await self.createTransactionInTestSession(productID: Self.product2, finished: false)
 
         let result = await self.fetcher.unfinishedVerifiedTransactions
         expect(result).to(haveCount(2))
-        expect(result).to(contain([transaction1, transaction2]))
+        expect(result.map(\.transactionIdentifier)).to(contain([String(transaction1.id), String(transaction2.id)]))
     }
 
     func testFiltersOutFinishedTransaction() async throws {
@@ -82,7 +82,7 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
     }
 
     func testHasNoPendingConsumablePurchaseWithFinishedConsumable() async throws {
-        _ = try await self.createTransaction(productID: Self.consumableProductId, finished: true)
+        _ = try await self.createTransactionInTestSession(productID: Self.consumableProductId, finished: true)
 
         let result = await self.fetcher.hasPendingConsumablePurchase
         expect(result) == false
@@ -134,7 +134,7 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
     }
 
     func testFirstVerifiedTransactionDoesNotIncludeFinishedConsumableTransaction() async throws {
-        _ = try await self.createTransaction(productID: Self.consumableProductId, finished: true)
+        _ = try await self.createTransactionInTestSession(productID: Self.consumableProductId, finished: true)
         let result = await self.fetcher.firstVerifiedTransaction
         expect(result) == nil
     }
@@ -223,6 +223,28 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 private extension StoreKit2TransactionFetcherTests {
+
+    func createTransactionInTestSession(productID: String, finished: Bool) async throws -> StoreKit.Transaction {
+        // Create fixtures through StoreKitTest: on iOS 27, Product.purchase() can leave transaction query state
+        // inconsistent across consecutive purchases or after finishing a consumable. Keep the original
+        // purchase fixtures on older OS versions, where buyProduct does not reliably leave purchases unfinished.
+        if #available(iOS 27.0, tvOS 27.0, watchOS 27.0, macOS 27.0, *) {
+            let transaction = try await self.testSession.buyProduct(identifier: productID)
+            if finished {
+                try await asyncWait(description: "Fixture transaction did not appear in StoreKit's unfinished queue") {
+                    await StoreKit.Transaction.unfinished.contains { $0.underlyingTransaction.id == transaction.id }
+                }
+                await transaction.finish()
+                try await asyncWait(description: "Fixture transaction remained unfinished after finish()") {
+                    await !StoreKit.Transaction.unfinished.contains { $0.underlyingTransaction.id == transaction.id }
+                }
+            }
+            return transaction
+        } else {
+            let transaction = try await self.createTransaction(productID: productID, finished: finished)
+            return try XCTUnwrap(transaction.sk2Transaction)
+        }
+    }
 
     static let product1 = "com.revenuecat.monthly_4.99.1_week_intro"
     static let product2 = "com.revenuecat.annual_39.99_no_trial"

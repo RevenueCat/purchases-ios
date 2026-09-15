@@ -112,6 +112,7 @@ class StoreKit2StorefrontListenerTests: TestCase {
 
     /// The same storefront should not be emitted more than once
     func testDeduplicatesStorefrontUpdates() throws {
+        try AvailabilityChecks.switchingStorefrontWithSKTestWorksOrSkipTest()
         self.storefronts = [
             Storefront.from(storefront: MockStorefront(countryCode: "USA")),
             Storefront.from(storefront: MockStorefront(countryCode: "USA"))
