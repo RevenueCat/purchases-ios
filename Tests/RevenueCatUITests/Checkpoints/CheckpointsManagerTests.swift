@@ -213,6 +213,91 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertNil(flowResult)
     }
 
+    func testCallbackCheckpointOnlyReturnsEntitlementsAbsentFromCachedCustomerInfo() async throws {
+        let executor = MockCheckpointWorkflowExecutor()
+        executor.execution = .completed(
+            CheckpointPaywallOutcome.Purchased(
+                transaction: nil,
+                customerInfo: try Self.customerInfo(activeEntitlements: ["premium", "pro"])
+            )
+        )
+        var resolutionStarted = false
+        var cachedCustomerInfoCallCount = 0
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in
+                resolutionStarted = true
+                return .matchedWorkflow(Self.workflow())
+            },
+            executor: executor,
+            cachedCustomerInfo: {
+                XCTAssertFalse(resolutionStarted)
+                cachedCustomerInfoCallCount += 1
+                return try? Self.customerInfo(activeEntitlements: ["pro"])
+            }
+        )
+
+        let result = await manager.checkpointForCallback(identifier: "purchase", params: .init())
+
+        guard case let .completed(flowResult) = result else {
+            return XCTFail("Expected a completed callback")
+        }
+        XCTAssertEqual(flowResult?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
+        XCTAssertEqual(cachedCustomerInfoCallCount, 1)
+    }
+
+    func testCallbackCheckpointReturnsNoEntitlementsWhenAllWereAlreadyCached() async throws {
+        let executor = MockCheckpointWorkflowExecutor()
+        executor.execution = .completed(
+            CheckpointPaywallOutcome.Purchased(
+                transaction: nil,
+                customerInfo: try Self.customerInfo(activeEntitlements: ["premium", "pro"])
+            )
+        )
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
+            executor: executor,
+            cachedCustomerInfo: {
+                try? Self.customerInfo(activeEntitlements: ["premium", "pro"])
+            }
+        )
+
+        let result = await manager.checkpointForCallback(identifier: "purchase", params: .init())
+
+        guard case let .completed(flowResult) = result else {
+            return XCTFail("Expected a completed callback")
+        }
+        XCTAssertEqual(flowResult?.obtainedEntitlements, [])
+    }
+
+    func testCallbackCheckpointTreatsAllEntitlementsAsObtainedWithoutCachedCustomerInfo() async throws {
+        let executor = MockCheckpointWorkflowExecutor()
+        executor.execution = .completed(
+            CheckpointPaywallOutcome.Restored(
+                customerInfo: try Self.customerInfo(activeEntitlements: ["premium", "pro"])
+            )
+        )
+        var cachedCustomerInfoCallCount = 0
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
+            executor: executor,
+            cachedCustomerInfo: {
+                cachedCustomerInfoCallCount += 1
+                return nil
+            }
+        )
+
+        let result = await manager.checkpointForCallback(identifier: "restore", params: .init())
+
+        guard case let .completed(flowResult) = result else {
+            return XCTFail("Expected a completed callback")
+        }
+        XCTAssertEqual(
+            flowResult?.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted(),
+            ["premium", "pro"]
+        )
+        XCTAssertEqual(cachedCustomerInfoCallCount, 1)
+    }
+
     func testRunCheckpointRecordsBackOutWithoutChangingDismissedOutcome() async throws {
         let executor = MockCheckpointWorkflowExecutor()
         executor.execution = .backedOut(CheckpointPaywallOutcome.Dismissed.shared)
@@ -383,6 +468,33 @@ final class CheckpointsManagerTests: TestCase {
             serverDescription: "Test offering",
             availablePackages: [],
             webCheckoutUrl: nil
+        )
+    }
+
+    private static func customerInfo(activeEntitlements: [String]) throws -> CustomerInfo {
+        let infos = Dictionary(uniqueKeysWithValues: activeEntitlements.map { identifier in
+            (
+                identifier,
+                EntitlementInfo(
+                    identifier: identifier,
+                    isActive: true,
+                    willRenew: true,
+                    periodType: .normal,
+                    latestPurchaseDate: Date(timeIntervalSince1970: 0),
+                    expirationDate: Date(timeIntervalSince1970: 4_102_444_800),
+                    store: .appStore,
+                    productIdentifier: "\(identifier)-product",
+                    isSandbox: true,
+                    ownershipType: .purchased
+                )
+            )
+        })
+
+        return CustomerInfo(
+            entitlements: EntitlementInfos(entitlements: infos),
+            requestDate: Date(timeIntervalSince1970: 0),
+            firstSeen: Date(timeIntervalSince1970: 0),
+            originalAppUserId: "test-user"
         )
     }
 

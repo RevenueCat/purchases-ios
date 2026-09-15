@@ -20,18 +20,25 @@ import Foundation
 final class CheckpointsManager {
 
     private let resolveCheckpoint: (String, CheckpointCallParams) async throws -> CheckpointResolution
+    private let cachedCustomerInfo: @MainActor () -> CustomerInfo?
     @MainActor private lazy var executor: CheckpointExecutor = CheckpointWorkflowExecutor()
 
-    init(resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution) {
+    init(
+        resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
+        cachedCustomerInfo: @escaping @MainActor () -> CustomerInfo? = { nil }
+    ) {
         self.resolveCheckpoint = resolveCheckpoint
+        self.cachedCustomerInfo = cachedCustomerInfo
     }
 
     @MainActor
     init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
-        executor: CheckpointExecutor
+        executor: CheckpointExecutor,
+        cachedCustomerInfo: @escaping @MainActor () -> CustomerInfo? = { nil }
     ) {
         self.resolveCheckpoint = resolveCheckpoint
+        self.cachedCustomerInfo = cachedCustomerInfo
         self.executor = executor
     }
 
@@ -96,6 +103,10 @@ final class CheckpointsManager {
         identifier: String,
         params: CheckpointCallParams
     ) async -> CheckpointCallbackResult {
+        let initialEntitlementIdentifiers = self.cachedCustomerInfo().map { customerInfo in
+            Set(customerInfo.entitlements.active.keys)
+        }
+
         do {
             switch try await self.executeCheckpoint(identifier: identifier, params: params) {
             case .backedOut:
@@ -104,7 +115,10 @@ final class CheckpointsManager {
                 guard let presented = result as? CheckpointResult.PaywallPresented else {
                     return .completed(nil)
                 }
-                return .completed(self.flowResult(for: presented.paywallOutcome))
+                return .completed(self.flowResult(
+                    for: presented.paywallOutcome,
+                    initialEntitlementIdentifiers: initialEntitlementIdentifiers
+                ))
             }
         } catch CheckpointError.operationAlreadyInProgress {
             return .suppressed
@@ -114,7 +128,10 @@ final class CheckpointsManager {
     }
 
     @MainActor
-    private func flowResult(for outcome: CheckpointPaywallOutcome) -> FlowResult? {
+    private func flowResult(
+        for outcome: CheckpointPaywallOutcome,
+        initialEntitlementIdentifiers: Set<String>?
+    ) -> FlowResult? {
         let entitlements: [EntitlementInfo]
         switch outcome {
         case let purchased as CheckpointPaywallOutcome.Purchased:
@@ -127,9 +144,14 @@ final class CheckpointsManager {
             entitlements = []
         }
 
-        return FlowResult(
-            obtainedEntitlements: Set(entitlements.map(ObtainedEntitlement.init))
-        )
+        let obtainedEntitlements = entitlements.lazy
+            .filter { entitlement in
+                guard let initialEntitlementIdentifiers else { return true }
+                return !initialEntitlementIdentifiers.contains(entitlement.identifier)
+            }
+            .map(ObtainedEntitlement.init)
+
+        return FlowResult(obtainedEntitlements: Set(obtainedEntitlements))
     }
 
 }

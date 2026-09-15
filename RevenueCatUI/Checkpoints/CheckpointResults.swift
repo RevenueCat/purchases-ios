@@ -46,8 +46,9 @@ public struct FlowResult: @unchecked Sendable {
 
     /// Active entitlements reported by the purchase or restore that completed the flow.
     ///
-    /// Because the SDK does not capture the user's entitlements before presenting the flow, this can include
-    /// entitlements that were already active or were obtained from another source.
+    /// The SDK compares the final customer information with the customer information cached before presenting the
+    /// flow. When no cached customer information is available, this can include entitlements that were already active
+    /// or were obtained from another source.
     public let obtainedEntitlements: Set<ObtainedEntitlement>
 
     init(obtainedEntitlements: Set<ObtainedEntitlement> = []) {

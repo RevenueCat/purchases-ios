@@ -80,13 +80,16 @@ private extension Purchases {
     }
 
     func createCheckpointsManager() -> CheckpointsManager {
-        return CheckpointsManager(resolveCheckpoint: { [weak self] identifier, params in
-            guard let self else {
-                throw CancellationError()
-            }
+        return CheckpointsManager(
+            resolveCheckpoint: { [weak self] identifier, params in
+                guard let self else {
+                    throw CancellationError()
+                }
 
-            return try await self.resolveCheckpoint(identifier: identifier, params: params.coreParams)
-        })
+                return try await self.resolveCheckpoint(identifier: identifier, params: params.coreParams)
+            },
+            cachedCustomerInfo: { [weak self] in self?.cachedCustomerInfo }
+        )
     }
 
 }
