@@ -85,6 +85,8 @@ jobs:
 
 workflows:
   setup:
+    # Temporary for #7726: only explicitly requested jobs run during iteration.
+    when: << pipeline.parameters.requested_jobs >>
     jobs:
       - setup-dynamic-config:
           filters:
