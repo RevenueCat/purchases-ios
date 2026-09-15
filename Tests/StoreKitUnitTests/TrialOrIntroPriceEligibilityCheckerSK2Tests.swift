@@ -41,6 +41,27 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
     let mockDateProvider = MockDateProvider(stubbedNow: eventTimestamp1,
                                             subsequentNows: eventTimestamp2)
 
+    override func setUp() async throws {
+        try await super.setUp()
+
+        if #available(iOS 27.0, tvOS 27.0, macOS 27.0, watchOS 27.0, *) {
+            // StoreKitTest can keep stale intro eligibility for several seconds after clearTransactions()
+            // (FB24137836). Wait for the fixture to reset before testing the SDK's eligibility handling.
+            let products = try await StoreKit.Product.products(for: [
+                "com.revenuecat.monthly_4.99.1_week_intro",
+                "com.revenuecat.annual_39.99.2_week_intro"
+            ])
+            expect(products).to(haveCount(2))
+            for product in products {
+                let subscription = try XCTUnwrap(product.subscription)
+                try await asyncWait(description: "Intro eligibility did not reset for \(product.id)",
+                                    timeout: .seconds(15)) {
+                    await subscription.isEligibleForIntroOffer
+                }
+            }
+        }
+    }
+
     override func setUpWithError() throws {
         try super.setUpWithError()
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "123")
