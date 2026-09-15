@@ -30,6 +30,21 @@ import SwiftUI
 struct SheetViewModel: Equatable {
     let sheet: RevenueCat.PaywallComponent.ButtonComponent.Sheet
     let sheetStackViewModel: StackComponentViewModel
+    let localPackageContext: PackageContext?
+
+    init(sheet: RevenueCat.PaywallComponent.ButtonComponent.Sheet, sheetStackViewModel: StackComponentViewModel) {
+        self.sheet = sheet
+        self.sheetStackViewModel = sheetStackViewModel
+        if let validator = sheetStackViewModel.localPackageValidator,
+           validator.hasDeclaredPackages || !validator.packageInfos.isEmpty {
+            self.localPackageContext = PackageContext(
+                package: validator.defaultSelectedPackage(in: .provisional),
+                variableContext: .init(packages: validator.packages)
+            )
+        } else {
+            self.localPackageContext = nil
+        }
+    }
 
     static func == (lhs: SheetViewModel, rhs: SheetViewModel) -> Bool {
         lhs.sheet.id == rhs.sheet.id
@@ -165,6 +180,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
                 if let sheetViewModel {
                     StackComponentView(
                         viewModel: sheetViewModel.sheetStackViewModel,
+                        localSelectionContext: sheetViewModel.localPackageContext,
                         onDismiss: {
                             self.sheetViewModel = nil
                         },
