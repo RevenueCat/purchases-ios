@@ -28,4 +28,8 @@ final class MockExternalPurchaseTokenStore: ExternalPurchaseTokenStoreType {
         self.storage.modify { $0.removeAll { $0 == registration } }
     }
 
+    func allRegistrations() -> [ExternalPurchaseTokenRegistration] {
+        return self.storage.value
+    }
+
 }
