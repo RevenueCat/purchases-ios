@@ -196,6 +196,23 @@ private struct CarouselView<Content: View>: View {
     @GestureState private var translation: CGFloat = 0
     #endif
 
+    @Environment(\.accessibilityVoiceOverEnabled)
+    private var accessibilityVoiceOverEnabled
+
+#if DEBUG
+    @Environment(\.voiceOverEnabledOverride)
+    private var voiceOverEnabledOverride
+#endif
+
+    private var isVoiceOverRunning: Bool {
+#if DEBUG
+        if let override = self.voiceOverEnabledOverride {
+            return override
+        }
+#endif
+        return self.accessibilityVoiceOverEnabled
+    }
+
     /// A timer for auto-play, if enabled.
     @State private var autoTimer: Timer?
 
@@ -270,9 +287,7 @@ private struct CarouselView<Content: View>: View {
                 )
             }
 
-            // Main horizontal "strip" of pages. Grouped and adjustable so a screen reader can
-            // page through it: a swipe moves focus rather than the carousel, and the page dots
-            // are not interactive.
+            // Adjustable, because a swipe moves a screen reader's focus rather than the carousel.
             HStack(alignment: self.pageAlignment, spacing: spacing) {
                 ForEach(Array(data.enumerated()), id: \.element.id) { pageIndex, item in
                     let isNextInEitherDirection = abs(index - pageIndex) <= 2
@@ -298,6 +313,7 @@ private struct CarouselView<Content: View>: View {
             .offset(x: xOffset(in: self.width) + dragOffset) // Apply drag offset
             .opacity(opacity)
             .accessibilityElement(children: .contain)
+            .accessibilityValue(self.accessibilityPageDescription)
             .accessibilityAdjustableAction { direction in
                 switch direction {
                 case .increment:
@@ -389,6 +405,8 @@ private struct CarouselView<Content: View>: View {
 
     /// Paging for a screen reader, which cannot drag.
     private func pageForAccessibility(by delta: Int) {
+        guard !self.data.isEmpty else { return }
+
         let originalPageIndexBefore = self.originalPageIndex
 
         withAnimation(.easeInOut(duration: 0.25)) {
@@ -402,6 +420,15 @@ private struct CarouselView<Content: View>: View {
 
         self.pauseAutoPlay(for: 10)
         self.reportPageChange(from: originalPageIndexBefore)
+    }
+
+    /// What the adjustable control reads out, so a page change announces where it landed.
+    private var accessibilityPageDescription: String {
+        guard self.originalCount > 0, let page = self.originalPageIndex else {
+            return ""
+        }
+
+        return "\(page + 1) / \(self.originalCount)"
     }
 
     /// Which of the original pages is showing, ignoring the copies a looping carousel makes.
@@ -566,6 +593,12 @@ private struct CarouselView<Content: View>: View {
     }
 
     private var autoPlayEnabled: Bool {
+        // Advancing on a timer would pull the focused slide out of the accessibility tree
+        // mid-sentence, on a schedule the user cannot stop.
+        guard !self.isVoiceOverRunning else {
+            return false
+        }
+
         return self.msTimePerSlide != nil && self.msTransitionTime != nil
     }
 
@@ -637,7 +670,6 @@ private struct CarouselView<Content: View>: View {
 }
 
 /// Where paging lands, so the drag path and the screen-reader path cannot drift apart.
-/// Pure so it can be unit tested, like ``SheetPresentationPlan``.
 enum CarouselPaging {
 
     /// Looping carousels keep expanding their data, so only the non-looping case is clamped.

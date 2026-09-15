@@ -16,6 +16,11 @@ import XCTest
 
 /// The drag path and the screen-reader path share this, so a difference between them would show
 /// up as a carousel that pages differently depending on how you drive it.
+///
+/// Only the arithmetic is covered here. Whether an off-screen slide actually leaves the
+/// accessibility tree cannot be asserted: XCUITest reports elements carrying
+/// `accessibilityHidden` as present (see `PaywallAccessibilityUITests`), so that half is checked
+/// with VoiceOver on device.
 final class CarouselPagingTests: TestCase {
 
     func testMovesByTheDelta() {
@@ -29,7 +34,6 @@ final class CarouselPagingTests: TestCase {
         XCTAssertEqual(CarouselPaging.index(from: 0, by: -1, count: 5, loop: false), 0)
     }
 
-    /// A looping carousel grows its data as it goes, so clamping here would fight that.
     func testDoesNotClampWhenLooping() {
         XCTAssertEqual(CarouselPaging.index(from: 4, by: 1, count: 5, loop: true), 5)
         XCTAssertEqual(CarouselPaging.index(from: 0, by: -1, count: 5, loop: true), -1)
