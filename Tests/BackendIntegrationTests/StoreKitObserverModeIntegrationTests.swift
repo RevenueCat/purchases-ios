@@ -130,57 +130,45 @@ class StoreKit1ObserverModeWithExistingPurchasesTests: BaseStoreKitObserverModeI
 
     // MARK: - Transactions observation
 
-    private static var transactionsObservation: Task<Void, Never>?
+    private var transactionsObservation: Task<Void, Never>?
 
-    override class func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await self.configureTestSession()
 
-        Self.transactionsObservation?.cancel()
-        Self.transactionsObservation = Task {
+        self.transactionsObservation = Task {
             // Silence warning in tests:
             // "Making a purchase without listening for transaction updates risks missing successful purchases.
             for await _ in Transaction.updates {}
         }
     }
 
-    override class func tearDown() {
-        Self.transactionsObservation?.cancel()
-        Self.transactionsObservation = nil
+    override func tearDown() async throws {
+        self.transactionsObservation?.cancel()
+        self.transactionsObservation = nil
 
-        super.tearDown()
-    }
-
-    override func setUp() async throws {
-        // Not calling `super.setUp` so each test can
-        // do something else before initializing SDK.
+        try await super.tearDown()
     }
 
     func testDoesNotSyncExistingSK1Purchases() async throws {
-        // 1. Create `SKTestSession`
-        try await self.configureTestSession()
-
-        // 2. Purchase product directly from StoreKit
+        // 1. Purchase product directly from StoreKit
         try await self.manager.purchaseProductFromStoreKit1()
 
-        // 3. Configure SDK
+        // 2. Configure SDK
         try await super.setUp()
 
-        // 4. Sync customer info
+        // 3. Sync customer info
         let info = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
         self.assertNoPurchases(info)
     }
 
     func testDoesNotSyncExistingSK2Purchases() async throws {
-        // 1. Create `SKTestSession`
-        try await self.configureTestSession()
-
-        // 2. Purchase product directly from StoreKit
+        // 1. Purchase product directly from StoreKit
         try await self.manager.purchaseProductFromStoreKit2()
 
-        // 3. Configure SDK
+        // 2. Configure SDK
         try await super.setUp()
 
-        // 4. Sync customer info
+        // 3. Sync customer info
         let info = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
         self.assertNoPurchases(info)
     }
