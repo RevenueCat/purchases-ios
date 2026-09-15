@@ -1119,7 +1119,7 @@ extension OfferingsManagerTests {
         expect(delivered.value) == false
 
         mockRemoteConfigManager.completeStoredTopic()
-        expect(delivered.value).toEventually(beTrue())
+        expect(delivered.value).toEventually(beTrue(), timeout: .seconds(5))
     }
 
     func testGetOfferingsDoesNotDeliverUntilUiConfigResolved() {

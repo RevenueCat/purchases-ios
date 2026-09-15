@@ -3211,8 +3211,11 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         // Task delegate is only available after iOS 15.
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let pathA: HTTPRequest.Path = .logIn
-        let pathB: HTTPRequest.Path = .health
+        // Unique paths prevent unrelated HTTP stub tests from intercepting either side of the redirect
+        // when XCTest executes test classes concurrently.
+        let identifier = UUID().uuidString
+        let pathA: HTTPRequest.Path = .getCustomerInfo(appUserID: "redirect-source-\(identifier)")
+        let pathB: HTTPRequest.Path = .getOfferings(appUserID: "redirect-target-\(identifier)")
 
         let responseData = "{\"message\": \"something is great up in the cloud\"}".asData
 

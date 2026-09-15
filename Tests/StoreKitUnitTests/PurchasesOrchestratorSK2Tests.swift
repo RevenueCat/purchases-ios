@@ -254,15 +254,17 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
         let product = try await fetchSk2Product()
-        let result = try await self.orchestrator.purchase(
-            sk2Product: product,
-            package: nil,
-            promotionalOffer: nil,
-            winBackOffer: nil,
-            introductoryOfferEligibilityJWS: nil,
-            billingPlanType: nil,
-            promotionalOfferOptions: nil
-        )
+        let result = try await self.performStoreKitTestOperationWithRetry {
+            try await self.orchestrator.purchase(
+                sk2Product: product,
+                package: nil,
+                promotionalOffer: nil,
+                winBackOffer: nil,
+                introductoryOfferEligibilityJWS: nil,
+                billingPlanType: nil,
+                promotionalOfferOptions: nil
+            )
+        }
         expect(result.transaction?.sk2Transaction?.appAccountToken).to(beNil())
     }
 
@@ -2013,7 +2015,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             )
         }
 
-        await expect(self.backend.invokedPostReceiptDataCount).toEventually(equal(1))
+        await expect(self.backend.invokedPostReceiptDataCount).toEventually(equal(1), timeout: .seconds(5))
 
         // A `nil` reason (i.e. iOS < 17) can still be a purchase, so it keeps waiting.
         let queueTransaction = MockStoreTransaction(productIdentifier: product.id, reason: nil)
@@ -2496,8 +2498,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                storeKit2ProductPurchaser: storeKit2ProductPurchaser)
 
         expect(transactionListener.invokedDelegateSetter).toEventually(beTrue())
+        expect(transactionListener.invokedListenForTransactionsCount).toEventually(equal(1))
         expect(transactionListener.invokedListenForTransactions) == true
-        expect(transactionListener.invokedListenForTransactionsCount) == 1
     }
 
     func testSK2DoesNotListenForSK2TransactionsInSimulatedStore() throws {

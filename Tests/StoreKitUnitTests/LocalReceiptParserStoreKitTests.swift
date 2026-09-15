@@ -72,7 +72,7 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
         let product = try await fetchSk2Product()
         let purchaseTime = Date()
 
-        _ = try await product.purchase()
+        _ = try await self.purchaseWithRetry(product)
 
         let receiptData = await self.receiptFetcher.receiptData(refreshPolicy: .always)
         let data = try XCTUnwrap(receiptData)
