@@ -13,6 +13,7 @@
 require_relative 'api_diff_helper'
 require 'rexml/document'
 require 'json'
+require 'open3'
 
 default_platform(:ios)
 
@@ -1338,6 +1339,19 @@ platform :ios do
     begin
       flow_dir = "#{base_path}/Examples/rc-maestro/maestro/#{flow_subdir}"
 
+      previous_test_environment = {}
+      if store == "app_store"
+        platform_path = sh("xcrun", "--sdk", "iphonesimulator", "--show-sdk-platform-path", log: false).strip
+        {
+          "DYLD_FRAMEWORK_PATH" => "#{platform_path}/Developer/Library/Frameworks",
+          "DYLD_LIBRARY_PATH" => "#{platform_path}/Developer/usr/lib"
+        }.each do |key, value|
+          previous, status = Open3.capture2("xcrun", "simctl", "spawn", "booted", "launchctl", "getenv", key)
+          previous_test_environment[key] = status.success? ? previous.strip : nil
+          sh("xcrun", "simctl", "spawn", "booted", "launchctl", "setenv", key, value)
+        end
+      end
+
       UI.message("Using flow directory: #{flow_dir}")
 
       run_maestro_e2e_tests(
@@ -1350,6 +1364,13 @@ platform :ios do
     rescue => e
       raise e
     ensure
+      previous_test_environment&.each do |key, value|
+        if value
+          sh("xcrun", "simctl", "spawn", "booted", "launchctl", "setenv", key, value)
+        else
+          sh("xcrun", "simctl", "spawn", "booted", "launchctl", "unsetenv", key)
+        end
+      end
       unless skip_slack_notification
         slack_backend_integration_test_results(
           environment: backend_environment,
