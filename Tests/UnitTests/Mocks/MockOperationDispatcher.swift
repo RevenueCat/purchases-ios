@@ -88,11 +88,14 @@ class MockOperationDispatcher: OperationDispatcher {
         self.invokedDispatchAsyncOnWorkerThreadDelayParam = delay
         self.invokedDispatchAsyncOnWorkerThread = true
         self.invokedDispatchAsyncOnWorkerThreadCount += 1
-        self.dispatchedAsyncWorkerThreadBlocks.append(block)
-
         if self.forwardToOriginalDispatchOnWorkerThread {
             super.dispatchOnWorkerThread(jitterableDelay: delay, block: block)
-        } else if self.shouldInvokeDispatchOnWorkerThreadBlock {
+            return
+        }
+
+        self.dispatchedAsyncWorkerThreadBlocks.append(block)
+
+        if self.shouldInvokeDispatchOnWorkerThreadBlock {
             // We want to wait for the async task to finish before leaving this function
             // Use a dispatch group to wait for the async task to finish    
             let dispatchGroup = DispatchGroup()
