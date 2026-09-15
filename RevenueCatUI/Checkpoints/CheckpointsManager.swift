@@ -15,38 +15,30 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
-/// Orchestrates checkpoint resolution, workflow execution, and listener delivery.
+/// Orchestrates checkpoint resolution and workflow execution.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointsManager {
 
-    var listener: CheckpointListener? {
-        get {
-            self.listenerLock.lock()
-            defer { self.listenerLock.unlock() }
-            return self.storedListener
-        }
-        set {
-            self.listenerLock.lock()
-            self.storedListener = newValue
-            self.listenerLock.unlock()
-        }
-    }
-
-    private let listenerLock = NSLock()
-    private var storedListener: CheckpointListener?
     private let resolveCheckpoint: (String, CheckpointCallParams) async throws -> CheckpointResolution
+    private let cachedCustomerInfoProvider: @MainActor () -> CustomerInfo?
     @MainActor private lazy var executor: CheckpointExecutor = CheckpointWorkflowExecutor()
 
-    init(resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution) {
+    init(
+        resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
+        cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil }
+    ) {
         self.resolveCheckpoint = resolveCheckpoint
+        self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
     }
 
     @MainActor
     init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
-        executor: CheckpointExecutor
+        executor: CheckpointExecutor,
+        cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil }
     ) {
         self.resolveCheckpoint = resolveCheckpoint
+        self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
         self.executor = executor
     }
 
@@ -76,39 +68,98 @@ final class CheckpointsManager {
         identifier: String,
         params: CheckpointCallParams
     ) async throws -> CheckpointResult {
-        self.listener?.onCheckpointHit(CheckpointContext.Hit(identifier: identifier, params: params))
+        return try await self.executeCheckpoint(identifier: identifier, params: params).value
+    }
 
+    @MainActor
+    func executeCheckpoint(
+        identifier: String,
+        params: CheckpointCallParams
+    ) async throws -> CheckpointExecutionResult<CheckpointResult> {
         guard CheckpointIdentifierValidator.isValid(identifier) else {
             Logger.error(CheckpointIdentifierValidator.invalidIdentifierLogMessage(identifier))
-            let result = CheckpointResult.NoAction(reason: .invalidCheckpointIdentifier)
-            self.listener?.onCheckpointCompleted(
-                CheckpointContext.Completed(identifier: identifier, params: params, result: result)
-            )
-            return result
+            return .completed(CheckpointResult.NoAction(reason: .invalidCheckpointIdentifier))
         }
 
-        let result: CheckpointResult
         switch try await self.resolveCheckpoint(identifier, params) {
         case let .matchedWorkflow(workflow):
             let presentation = CheckpointPresentation(
                 workflow: workflow,
                 customVariables: params.customVariables
             )
-            let outcome = try await self.executor.execute(presentation)
-            result = CheckpointResult.PaywallPresented(paywallOutcome: outcome)
+            return try await self.executor.execute(presentation).map {
+                CheckpointResult.PaywallPresented(paywallOutcome: $0)
+            }
         case let .matchedOffering(offering):
             // Data-only, so this never claims the presentation slot the executor owns.
-            result = CheckpointResult.ReceivedOffering(offering: offering)
+            return .completed(CheckpointResult.ReceivedOffering(offering: offering))
         case let .noAction(reason):
-            result = CheckpointResult.NoAction(reason: reason.noActionReason)
+            return .completed(CheckpointResult.NoAction(reason: reason.noActionReason))
         }
-
-        self.listener?.onCheckpointCompleted(
-            CheckpointContext.Completed(identifier: identifier, params: params, result: result)
-        )
-        return result
     }
 
+    @MainActor
+    func checkpointForCallback(
+        identifier: String,
+        params: CheckpointCallParams
+    ) async -> CheckpointCallbackResult {
+        let initialEntitlementIdentifiers = self.cachedCustomerInfoProvider().map { customerInfo in
+            Set(customerInfo.entitlements.active.keys)
+        }
+
+        do {
+            switch try await self.executeCheckpoint(identifier: identifier, params: params) {
+            case .backedOut:
+                return .suppressed
+            case let .completed(result):
+                guard let presented = result as? CheckpointResult.PaywallPresented else {
+                    return .completed(nil)
+                }
+                return .completed(self.flowResult(
+                    for: presented.paywallOutcome,
+                    initialEntitlementIdentifiers: initialEntitlementIdentifiers
+                ))
+            }
+        } catch CheckpointError.operationAlreadyInProgress {
+            return .suppressed
+        } catch {
+            return .completed(nil)
+        }
+    }
+
+    @MainActor
+    private func flowResult(
+        for outcome: CheckpointPaywallOutcome,
+        initialEntitlementIdentifiers: Set<String>?
+    ) -> FlowResult? {
+        let entitlements: [EntitlementInfo]
+        switch outcome {
+        case let purchased as CheckpointPaywallOutcome.Purchased:
+            entitlements = Array(purchased.customerInfo.entitlements.active.values)
+        case let restored as CheckpointPaywallOutcome.Restored:
+            entitlements = Array(restored.customerInfo.entitlements.active.values)
+        case is CheckpointPaywallOutcome.Error:
+            return nil
+        default:
+            entitlements = []
+        }
+
+        let obtainedEntitlements = entitlements.lazy
+            .filter { entitlement in
+                guard let initialEntitlementIdentifiers else { return true }
+                return !initialEntitlementIdentifiers.contains(entitlement.identifier)
+            }
+            .map(ObtainedEntitlement.init)
+
+        return FlowResult(obtainedEntitlements: Set(obtainedEntitlements))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+enum CheckpointCallbackResult {
+    case completed(FlowResult?)
+    case suppressed
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

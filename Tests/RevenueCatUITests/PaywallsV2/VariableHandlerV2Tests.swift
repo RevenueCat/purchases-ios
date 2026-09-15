@@ -339,6 +339,42 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("$4.99/3mo"))
     }
 
+    func testProductPricePerPeriodAbbreviatedForAccessibility() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.price_per_period_abbreviated }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true,
+            spoken: true
+        )
+        expect(result).to(equal("$6.99 monthly"))
+    }
+
+    func testProductPricePerPeriodAbbreviatedForAccessibilityMultipleMonths() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.price_per_period_abbreviated }}",
+            with: TestData.threeMonthPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true,
+            spoken: true
+        )
+        expect(result).to(equal("$4.99 3 months"))
+    }
+
+    func testProductPricePerPeriodForAccessibility() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.price_per_period }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true,
+            spoken: true
+        )
+        expect(result).to(equal("$6.99 monthly"))
+    }
+
     func testProductPricePerDay() {
         let result = variableHandler.processVariables(
             in: "{{ product.price_per_day }}",
@@ -425,6 +461,164 @@ class VariableHandlerV2Test: TestCase {
             isEligibleForIntroOffer: true
         )
         expect(result).to(equal("3mo"))
+    }
+
+    /// Paywall copy types the separator literally, which no variable substitution reaches.
+    func testLiteralPeriodAbbreviationIsExpandedForAccessibility() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.price_per_month }}/mo",
+            with: TestData.annualPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true,
+            spoken: true
+        )
+
+        expect(result).to(equal("$4.49 monthly"))
+    }
+
+    func testLiteralPeriodAbbreviationIsLeftAloneForDisplay() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.price_per_month }}/mo",
+            with: TestData.annualPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(result).to(equal("$4.49/mo"))
+    }
+
+    /// The expansion runs after both the V2 and V1 passes, so it must be idempotent.
+    /// A URL path segment can look exactly like an abbreviation. Rewriting one breaks the link,
+    /// and a broken link makes VoiceOver read the literal `[title](url)` markdown.
+    func testLinkURLIsNotMistakenForAPeriod() {
+        let localizations = ["month_short": "mo", "monthly": "monthly"]
+
+        XCTAssertEqual(
+            VariableHandlerV2.expandPeriodAbbreviations(
+                in: "[Terms](https://rev.cat/mo)",
+                localizations: localizations
+            ),
+            "[Terms](https://rev.cat/mo)"
+        )
+        XCTAssertEqual(
+            VariableHandlerV2.expandPeriodAbbreviations(
+                in: "See https://rev.cat/mo for details",
+                localizations: localizations
+            ),
+            "See https://rev.cat/mo for details"
+        )
+        // A digit before the segment is what a price looks like, so the URL has to be skipped
+        // as a URL rather than by what precedes the slash.
+        XCTAssertEqual(
+            VariableHandlerV2.expandPeriodAbbreviations(
+                in: "[Docs](https://rev.cat/v2/mo)",
+                localizations: localizations
+            ),
+            "[Docs](https://rev.cat/v2/mo)"
+        )
+    }
+
+    /// `day_short` is "day" in English, so an ordinary URL path hits this.
+    func testLinkURLWithDayPathIsNotExpanded() {
+        XCTAssertEqual(
+            VariableHandlerV2.expandPeriodAbbreviations(
+                in: "See https://rev.cat/2024/day for details",
+                localizations: ["day_short": "day", "daily": "daily"]
+            ),
+            "See https://rev.cat/2024/day for details"
+        )
+        XCTAssertEqual(
+            VariableHandlerV2.expandPeriodAbbreviations(
+                in: "$1/day",
+                localizations: ["day_short": "day", "daily": "daily"]
+            ),
+            "$1 daily"
+        )
+    }
+
+    /// The guard keys on the character before the slash, so a price still expands.
+    func testPriceStillExpandsAlongsideALink() {
+        XCTAssertEqual(
+            VariableHandlerV2.expandPeriodAbbreviations(
+                in: "$5.83/mo. See [terms](https://rev.cat/mo).",
+                localizations: ["month_short": "mo", "monthly": "monthly"]
+            ),
+            "$5.83 monthly. See [terms](https://rev.cat/mo)."
+        )
+    }
+
+    func testPeriodAbbreviationExpansionIsIdempotent() {
+        let once = VariableHandlerV2.expandPeriodAbbreviations(
+            in: "$6.99/mo and $69.99/yr",
+            localizations: localizations["en_US"]!
+        )
+        let twice = VariableHandlerV2.expandPeriodAbbreviations(
+            in: once,
+            localizations: localizations["en_US"]!
+        )
+
+        expect(once).to(equal("$6.99 monthly and $69.99 yearly"))
+        expect(twice).to(equal(once))
+    }
+
+    /// Long forms expand too: paywall copy writes "/month" more often than "/mo", and
+    /// `product.period_abbreviated` resolves to the long form when spoken.
+    func testSpelledOutPeriodIsExpanded() {
+        expect(VariableHandlerV2.expandPeriodAbbreviations(
+            in: "$4.16/month",
+            localizations: self.localizations["en_US"]!
+        )).to(equal("$4.16 monthly"))
+
+        expect(VariableHandlerV2.expandPeriodAbbreviations(
+            in: "$1.99/week",
+            localizations: self.localizations["en_US"]!
+        )).to(equal("$1.99 weekly"))
+
+        expect(VariableHandlerV2.expandPeriodAbbreviations(
+            in: "$69.99/year",
+            localizations: self.localizations["en_US"]!
+        )).to(equal("$69.99 yearly"))
+    }
+
+    /// `day_short` is "day", so the short and long paths were already inconsistent between units.
+    func testShortAndLongFormsAgreeAcrossUnits() {
+        let localizations = self.localizations["en_US"]!
+
+        for (written, spoken) in [("mo", "monthly"), ("month", "monthly"),
+                                  ("wk", "weekly"), ("week", "weekly"),
+                                  ("day", "daily")] {
+            expect(VariableHandlerV2.expandPeriodAbbreviations(
+                in: "$1/\(written)",
+                localizations: localizations
+            )).to(equal("$1 \(spoken)"))
+        }
+    }
+
+    func testPeriodAbbreviationExpansionUsesPaywallLocalizations() {
+        var german = localizations["en_US"]!
+        german["month_short"] = "Mon."
+        german["monthly"] = "monatlich"
+
+        let result = VariableHandlerV2.expandPeriodAbbreviations(
+            in: "9,99 €/Mon.",
+            localizations: german
+        )
+
+        expect(result).to(equal("9,99 € monatlich"))
+    }
+
+    func testProductPeriodAbbreviatedForAccessibility() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.period_abbreviated }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true,
+            spoken: true
+        )
+        expect(result).to(equal("month"))
     }
 
     func testProductPeriodInDays() {
@@ -546,6 +740,77 @@ class VariableHandlerV2Test: TestCase {
             isEligibleForIntroOffer: true
         )
         expect(result).to(equal(""))
+    }
+
+    // MARK: - offer_price_with_zero
+
+    func testOfferPriceWithZeroRendersTheAmountForAFreeTrial() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_with_zero }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("$0.00"))
+    }
+
+    func testOfferPriceWithZeroPerDayRendersTheAmountForAFreeTrial() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_with_zero_per_day }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("$0.00"))
+    }
+
+    func testOfferPriceWithZeroPerWeekRendersTheAmountForAFreeTrial() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_with_zero_per_week }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("$0.00"))
+    }
+
+    /// Same period guard as `offer_price_per_month`: a one week trial has no monthly equivalent.
+    func testOfferPriceWithZeroPerMonthStillReturnsEmptyForAWeeklyTrial() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_with_zero_per_month }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal(""))
+    }
+
+    /// A paid offer is unaffected: `_with_zero` only changes what a free trial renders.
+    func testOfferPriceWithZeroMatchesOfferPriceForAPaidOffer() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_with_zero }}",
+            with: TestData.packageWithIntroOfferPayUpFront,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("$1.99"))
+    }
+
+    /// The existing variables keep substituting the word, that behavior is not changing.
+    func testOfferPriceStillRendersTheWordForAFreeTrial() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price }} {{ product.offer_price_per_day }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("free free"))
     }
 
     func testProductPayUpFrontOfferPrice() {
