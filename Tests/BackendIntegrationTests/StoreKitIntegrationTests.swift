@@ -366,6 +366,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
             forAPI: .purchase
         )
 
+        self.continueAfterFailure = true
         do {
             try await self.purchaseMonthlyOffering()
             fail("Expected error")
