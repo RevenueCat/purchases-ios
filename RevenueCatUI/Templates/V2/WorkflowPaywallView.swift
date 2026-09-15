@@ -250,9 +250,10 @@ struct WorkflowPaywallView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.workflowExitOfferOfferingBinding) private var exitOfferOfferingBinding
     @Environment(\.workflowCompletedInSessionBinding) private var workflowCompletedInSessionBinding
+    @Environment(\.workflowDismissalObserver) private var workflowDismissalObserver
 
     enum DismissalAction: Equatable {
-        case dismissWorkflow
+        case dismissWorkflow(WorkflowDismissalReason)
         case navigateBack
     }
 
@@ -541,7 +542,7 @@ struct WorkflowPaywallView: View {
             workflowPackages: page.effectiveWorkflowPackageContext?.packages,
             workflowPromoOfferProductCodes: page.effectiveWorkflowPackageContext?.promoOfferCodesByPackageId,
             displayCloseButton: page.showCloseButton,
-            onDismiss: self.handleDismiss,
+            onDismiss: { self.handleDismiss() },
             closeWorkflowAction: self.onDismiss,
             failedToLoadFont: self.failedToLoadFont,
             colorScheme: self.colorScheme,
@@ -564,6 +565,9 @@ struct WorkflowPaywallView: View {
         .environment(\.workflowTriggerAction, { componentId in
             return self.handleTriggeredNavigation(componentId: componentId)
         })
+        .environment(\.workflowNavigateBackHandler, {
+            self.handleDismiss(dismissalReason: .navigatedBack)
+        })
     }
 
     @ViewBuilder
@@ -579,7 +583,7 @@ struct WorkflowPaywallView: View {
                             introOfferEligibilityContext: displayedPage.page.introOfferEligibilityContext,
                             paywallPromoOfferCache: self.promoOfferCacheOwner.cache,
                             showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
-                            onDismiss: self.handleDismiss,
+                            onDismiss: { self.handleDismiss() },
                             closeWorkflowAction: self.onDismiss,
                             failedToLoadFont: self.failedToLoadFont,
                             colorScheme: self.colorScheme,
@@ -608,18 +612,22 @@ struct WorkflowPaywallView: View {
         }
     }
 
-    private func handleDismiss() {
+    private func handleDismiss(dismissalReason: WorkflowDismissalReason = .close) {
         guard !self.transitionState.isTransitioning else {
             return
         }
 
         switch Self.dismissalAction(
             canNavigateBack: self.navigator.canNavigateBack,
-            hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession
+            hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession,
+            dismissalReason: dismissalReason
         ) {
-        case .dismissWorkflow:
+        case let .dismissWorkflow(reason):
             if self.purchaseHandler.hasPurchasedInSession {
                 self.markWorkflowCompletedInSession()
+            }
+            if reason == .navigatedBack {
+                self.workflowDismissalObserver?(.navigatedBack)
             }
             self.onDismiss()
         case .navigateBack:
@@ -648,9 +656,11 @@ struct WorkflowPaywallView: View {
     }
 
     private func syncExitOfferBinding() {
-        self.exitOfferOfferingBinding.wrappedValue = Self.exitOfferContext(
-            for: self.context, currentStepId: self.navigator.currentStepId
-        )?.exitOfferOffering
+        self.exitOfferOfferingBinding.wrappedValue = self.presentationState.hasFailed
+            ? nil
+            : Self.exitOfferContext(
+                for: self.context, currentStepId: self.navigator.currentStepId
+            )?.exitOfferOffering
     }
 
     // MARK: - Workflow step event tracking
@@ -721,13 +731,14 @@ struct WorkflowPaywallView: View {
 
     static func dismissalAction(
         canNavigateBack: Bool,
-        hasPurchasedInSession: Bool
+        hasPurchasedInSession: Bool,
+        dismissalReason: WorkflowDismissalReason = .close
     ) -> DismissalAction {
         // After a purchase, always close the whole workflow regardless of back stack —
         // navigating back to a previous step post-purchase would be confusing and
         // could allow the user to purchase again.
         guard canNavigateBack, !hasPurchasedInSession else {
-            return .dismissWorkflow
+            return .dismissWorkflow(hasPurchasedInSession ? .close : dismissalReason)
         }
 
         return .navigateBack

@@ -20,15 +20,17 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointCallStore {
 
-    enum OutcomeUpdate {
+    enum CallUpdate {
         case outcome(CheckpointPaywallOutcome)
         case workflowPresentationError(NSError)
+        case dismissalReason(WorkflowDismissalReason)
     }
 
     final class Call {
         let presentation: CheckpointPresentation
         let delegate: CheckpointPresentationDelegate
         fileprivate(set) var stagedOutcome: CheckpointPaywallOutcome
+        fileprivate(set) var dismissalReason: WorkflowDismissalReason = .close
 
         init(
             presentation: CheckpointPresentation,
@@ -50,7 +52,7 @@ final class CheckpointCallStore {
         self.call = Call(presentation: presentation, delegate: delegate)
     }
 
-    func stage(_ update: OutcomeUpdate) {
+    func stage(_ update: CallUpdate) {
         guard let call = self.call else { return }
 
         switch update {
@@ -62,6 +64,8 @@ final class CheckpointCallStore {
                 return
             }
             call.stagedOutcome = CheckpointPaywallOutcome.Error(error: error)
+        case let .dismissalReason(reason):
+            call.dismissalReason = reason
         }
     }
 

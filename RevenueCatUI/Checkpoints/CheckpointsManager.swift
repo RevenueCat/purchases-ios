@@ -61,28 +61,34 @@ final class CheckpointsManager {
         identifier: String,
         params: CheckpointCallParams
     ) async throws -> CheckpointResult {
+        return try await self.executeCheckpoint(identifier: identifier, params: params).value
+    }
+
+    @MainActor
+    func executeCheckpoint(
+        identifier: String,
+        params: CheckpointCallParams
+    ) async throws -> CheckpointExecutionResult<CheckpointResult> {
         guard CheckpointIdentifierValidator.isValid(identifier) else {
             Logger.error(CheckpointIdentifierValidator.invalidIdentifierLogMessage(identifier))
-            return CheckpointResult.NoAction(reason: .invalidCheckpointIdentifier)
+            return .completed(CheckpointResult.NoAction(reason: .invalidCheckpointIdentifier))
         }
 
-        let result: CheckpointResult
         switch try await self.resolveCheckpoint(identifier, params) {
         case let .matchedWorkflow(workflow):
             let presentation = CheckpointPresentation(
                 workflow: workflow,
                 customVariables: params.customVariables
             )
-            let outcome = try await self.executor.execute(presentation)
-            result = CheckpointResult.PaywallPresented(paywallOutcome: outcome)
+            return try await self.executor.execute(presentation).map {
+                CheckpointResult.PaywallPresented(paywallOutcome: $0)
+            }
         case let .matchedOffering(offering):
             // Data-only, so this never claims the presentation slot the executor owns.
-            result = CheckpointResult.ReceivedOffering(offering: offering)
+            return .completed(CheckpointResult.ReceivedOffering(offering: offering))
         case let .noAction(reason):
-            result = CheckpointResult.NoAction(reason: reason.noActionReason)
+            return .completed(CheckpointResult.NoAction(reason: reason.noActionReason))
         }
-
-        return result
     }
 
 }
