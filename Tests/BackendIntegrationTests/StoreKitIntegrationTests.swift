@@ -628,6 +628,14 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         let product = try await self.monthlyPackage.storeProduct
 
+        if Self.storeKitVersion == .storeKit2, #available(iOS 27.0, tvOS 27.0, macOS 27.0, watchOS 27.0, *) {
+            let subscription = try XCTUnwrap(product.sk2Product?.subscription)
+            try await asyncWait(description: "Intro eligibility did not reset for \(product.productIdentifier)",
+                                timeout: .seconds(30)) {
+                await subscription.isEligibleForIntroOffer
+            }
+        }
+
         let eligibility = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: product)
         expect(eligibility) == .eligible
     }
