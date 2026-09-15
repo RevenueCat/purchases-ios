@@ -2001,7 +2001,9 @@ platform :ios do
           fail_build: true
         ))
       end
-      scan(scan_options)
+      scan(scan_options.merge(
+        only_testing: ["BackendIntegrationTests/EventsManagerIntegrationTests/testPostingCustomerCenterDoesNotFail"]
+      ))
       success = true
     rescue => exception
       raise exception

@@ -1872,7 +1872,7 @@ public extension Purchases {
     /// Used by `RevenueCatUI` to keep track of ``CustomerCenterEvent``s.
     @_spi(Internal) func track(customerCenterEvent: any CustomerCenterEventType) {
         NSLog("RC7726 Customer Center track submitted")
-        operationDispatcher.dispatchOnWorkerThread {
+        Task.detached(priority: Task.currentPriority) {
             NSLog("RC7726 Customer Center worker started")
             // If we make CustomerCenterEventType implement FeatureEvent, we have to make FeatureEvent public
             guard let event = customerCenterEvent as? FeatureEvent else {
