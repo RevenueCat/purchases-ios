@@ -257,9 +257,10 @@ class AdServicesAttributionPosterTests: BaseAttributionPosterTests {
 
     private func postAdServicesTokenOncePerInstallIfNeeded() throws {
         let result: Error?? = waitUntilValue { completion in
-            self.attributionPoster.postAdServicesTokenOncePerInstallIfNeeded(completion: completion)
+            self.attributionPoster.postAdServicesTokenOncePerInstallIfNeeded { error in
+                completion(.some(error))
+            }
         }
-        print(result)
         let error = try XCTUnwrap(result)
         expect(error).to(beNil())
     }
