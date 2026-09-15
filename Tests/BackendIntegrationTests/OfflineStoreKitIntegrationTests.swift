@@ -448,6 +448,8 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchasingMultipleProductsWhileServerIsDownHandlesAllTransactionsWhenForegroundingApp() async throws {
+        self.continueAfterFailure = true
+
         // To prevent the subscription renewal from happening during the test. Otherwise,
         // it could sometimes interfere with the consumable purchase verification, causing flakiness.
         self.setLongestTestSessionTimeRate(self.testSession)
@@ -482,7 +484,10 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         // 6. Ensure transactions are finished
         try await self.verifyAnyTransactionIsEventuallyFinished(count: 2)
 
-        self.verifySpecificTransactionWasFinished(transaction)
+        try await self.verifySpecificTransactionIsEventuallyFinished(
+            transactionId: transaction.transactionIdentifier,
+            productId: transaction.productIdentifier
+        )
         self.verifyTransactionWasFinishedForProductIdentifier(Self.consumable10Coins)
     }
 
