@@ -950,6 +950,9 @@ platform :ios do
     platform = ENV['PLATFORM'] || 'iOS Simulator'
     destination = ENV['DEVICE'] || "iPhone 14,OS=16.4"
     sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
+    test_plan = generate_snapshots ? "CI-Snapshots" : "CI-RevenueCatUI"
+    xcargs = "-testPlan #{test_plan}"
+    xcargs += " -collect-test-diagnostics never" if sdk == 'watchsimulator'
     begin
       # See https://forums.swift.org/t/i-made-a-little-spm-package-that-uses-uikit-how-can-i-run-tests-from-command-line/50399/2
       # Note: We use xcodebuild instead of scan because this is an SPM package (workspace: '.')
@@ -963,7 +966,7 @@ platform :ios do
         report_formats: [:junit],
         report_path: 'fastlane/test_output/revenuecatui/tests.xml',
         test: true,
-        xcargs: generate_snapshots ? "-testPlan CI-Snapshots" : "-testPlan CI-RevenueCatUI"
+        xcargs: xcargs
       )
     rescue => e
       # Equivalent to `fail_build: !generate_snapshots`
