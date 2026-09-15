@@ -89,14 +89,22 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
     private func flushAndVerify(eventsCount: Int) async throws {
         _ = try await Purchases.shared.flushPaywallEvents(count: eventsCount)
 
-        self.logger.verifyMessageWasLogged(
-            Strings.paywalls.event_flush_starting(count: eventsCount)
-        )
-
-        self.logger.verifyMessageWasLogged(
-            Strings.analytics.flush_events_success,
-            level: .debug,
-            expectedCount: 1
+        let logger = try XCTUnwrap(self.logger)
+        try await asyncWait(
+            timeout: .seconds(10),
+            description: { _ in "Expected all \(eventsCount) events to be posted successfully" },
+            until: { logger.messages },
+            condition: { messages in
+                let batchSizes = messages.compactMap { entry in
+                    (1...eventsCount).first { count in
+                        entry.message.contains(Strings.paywalls.event_flush_starting(count: count).description)
+                    }
+                }
+                let successfulBatches = messages.filter {
+                    $0.level == .debug && $0.message.contains(Strings.analytics.flush_events_success.description)
+                }.count
+                return batchSizes.reduce(0, +) == eventsCount && successfulBatches == batchSizes.count
+            }
         )
     }
 
