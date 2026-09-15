@@ -20,25 +20,25 @@ import Foundation
 final class CheckpointsManager {
 
     private let resolveCheckpoint: (String, CheckpointCallParams) async throws -> CheckpointResolution
-    private let cachedCustomerInfo: @MainActor () -> CustomerInfo?
+    private let cachedCustomerInfoProvider: @MainActor () -> CustomerInfo?
     @MainActor private lazy var executor: CheckpointExecutor = CheckpointWorkflowExecutor()
 
     init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
-        cachedCustomerInfo: @escaping @MainActor () -> CustomerInfo? = { nil }
+        cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil }
     ) {
         self.resolveCheckpoint = resolveCheckpoint
-        self.cachedCustomerInfo = cachedCustomerInfo
+        self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
     }
 
     @MainActor
     init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
         executor: CheckpointExecutor,
-        cachedCustomerInfo: @escaping @MainActor () -> CustomerInfo? = { nil }
+        cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil }
     ) {
         self.resolveCheckpoint = resolveCheckpoint
-        self.cachedCustomerInfo = cachedCustomerInfo
+        self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
         self.executor = executor
     }
 
@@ -103,7 +103,7 @@ final class CheckpointsManager {
         identifier: String,
         params: CheckpointCallParams
     ) async -> CheckpointCallbackResult {
-        let initialEntitlementIdentifiers = self.cachedCustomerInfo().map { customerInfo in
+        let initialEntitlementIdentifiers = self.cachedCustomerInfoProvider().map { customerInfo in
             Set(customerInfo.entitlements.active.keys)
         }
 

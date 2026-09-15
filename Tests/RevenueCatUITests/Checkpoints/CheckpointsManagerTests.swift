@@ -229,7 +229,7 @@ final class CheckpointsManagerTests: TestCase {
                 return .matchedWorkflow(Self.workflow())
             },
             executor: executor,
-            cachedCustomerInfo: {
+            cachedCustomerInfoProvider: {
                 XCTAssertFalse(resolutionStarted)
                 cachedCustomerInfoCallCount += 1
                 return try? Self.customerInfo(activeEntitlements: ["pro"])
@@ -256,7 +256,7 @@ final class CheckpointsManagerTests: TestCase {
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
             executor: executor,
-            cachedCustomerInfo: {
+            cachedCustomerInfoProvider: {
                 try? Self.customerInfo(activeEntitlements: ["premium", "pro"])
             }
         )
@@ -280,7 +280,7 @@ final class CheckpointsManagerTests: TestCase {
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
             executor: executor,
-            cachedCustomerInfo: {
+            cachedCustomerInfoProvider: {
                 cachedCustomerInfoCallCount += 1
                 return nil
             }

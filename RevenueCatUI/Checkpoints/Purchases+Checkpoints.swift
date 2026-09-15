@@ -75,7 +75,7 @@ private extension Purchases {
 
                 return try await self.resolveCheckpoint(identifier: identifier, params: params.coreParams)
             },
-            cachedCustomerInfo: { [weak self] in self?.cachedCustomerInfo }
+            cachedCustomerInfoProvider: { [weak self] in self?.cachedCustomerInfo }
         )
     }
 
