@@ -12,134 +12,174 @@
 
 import Nimble
 @_spi(Internal) @testable import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 import SwiftUI
 import XCTest
 
 #if os(iOS)
 
-/// Verifies the `.onWebCheckoutOpened` modifier's `PreferenceKey` plumbing.
+/// Exercises the production event bridge and public callback modifier in a hosted SwiftUI view.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 final class OnWebCheckoutOpenedModifierTests: TestCase {
 
-    func testOnWebCheckoutOpenedFiresForEachSignal() {
-        let handler: PurchaseHandler = .mock()
-        let fireCount: Atomic<Int> = .init(0)
-
-        let view = ProbeView(handler: handler) {
-            fireCount.modify { $0 += 1 }
-        }
-
-        let (window, _) = Self.host(view)
-        defer {
-            window.isHidden = true
-            window.rootViewController = nil
-        }
-
-        expect(fireCount.value) == 0
-
-        // Mutating the handler directly isolates the preference/modifier plumbing from gesture handling.
-        handler.signalWebCheckoutOpened()
-        RunLoop.main.run(until: Date().addingTimeInterval(0.2))
-        expect(fireCount.value) == 1
-
-        // Must fire again, not be deduped as an identical value.
-        handler.signalWebCheckoutOpened()
-        RunLoop.main.run(until: Date().addingTimeInterval(0.2))
-        expect(fireCount.value) == 2
-    }
-
     func testOnWebCheckoutOpenedFiresEvenWhenResetImmediatelyAfter() {
         let handler: PurchaseHandler = .mock()
-        let fireCount: Atomic<Int> = .init(0)
+        let received: Atomic<Int> = .init(0)
+        let window = Self.host(Self.probe(handler).onWebCheckoutOpened({ received.modify { $0 += 1 } }))
+        defer { Self.unhost(window) }
 
-        let view = ProbeView(handler: handler) {
-            fireCount.modify { $0 += 1 }
-        }
-
-        let (window, _) = Self.host(view)
-        defer {
-            window.isHidden = true
-            window.rootViewController = nil
-        }
-
-        expect(fireCount.value) == 0
-
-        // Mirrors handleMainPaywallDismiss: signal then immediately reset, no RunLoop spin in between.
         handler.signalWebCheckoutOpened()
         handler.resetForNewSession()
-        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
-        expect(fireCount.value) == 1
+
+        expect(received.value) == 1
     }
 
-    func testResetForNewSessionDeferredClearDoesNotWipeANewerSignal() {
-        // Reproduces a reviewer-flagged scenario: resetForNewSession's deferred clear is still
-        // pending when the same handler is reused for a new session that signals again within the
-        // same tick. The stale clear (targeting the old UUID) must not wipe the newer one.
+    func testRepeatedEventsWithoutRendering() {
         let handler: PurchaseHandler = .mock()
+        let received: Atomic<Int> = .init(0)
+        let window = Self.host(Self.probe(handler).onWebCheckoutOpened({ received.modify { $0 += 1 } }))
+        defer { Self.unhost(window) }
 
-        // Old session: signal, then dismiss (schedules a deferred clear for the old UUID).
+        handler.signalWebCheckoutOpened()
+        handler.signalWebCheckoutOpened()
+
+        expect(received.value) == 2
+    }
+
+    func testNewSessionImmediatelySignalsAgain() {
+        let handler: PurchaseHandler = .mock()
+        let received: Atomic<Int> = .init(0)
+        let window = Self.host(Self.probe(handler).onWebCheckoutOpened({ received.modify { $0 += 1 } }))
+        defer { Self.unhost(window) }
+
         handler.signalWebCheckoutOpened()
         handler.resetForNewSession()
-        // New session immediately reuses the same handler and signals again, same tick.
         handler.signalWebCheckoutOpened()
-        let newSessionID = handler.webCheckoutOpened
 
-        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
-
-        expect(handler.webCheckoutOpened) == newSessionID
+        expect(received.value) == 2
     }
 
-    func testOnWebCheckoutOpenedDoesNotFireOnNewViewAfterExitOfferClear() {
-        // clearWebCheckoutOpened() must complete synchronously so a new view reusing this handler
-        // (the exit offer) doesn't see the stale signal as its own fresh one.
+    func testNewPresentationDoesNotReplayAndReceivesNewEvents() {
+        let handler: PurchaseHandler = .mock()
+        let oldReceived: Atomic<Int> = .init(0)
+        let oldWindow = Self.host(Self.probe(handler).onWebCheckoutOpened({ oldReceived.modify { $0 += 1 } }))
+        handler.signalWebCheckoutOpened()
+        expect(oldReceived.value) == 1
+        Self.unhost(oldWindow)
+        handler.resetForNewSession()
+
+        let received: Atomic<Int> = .init(0)
+        let window = Self.host(Self.probe(handler).onWebCheckoutOpened({ received.modify { $0 += 1 } }))
+        defer { Self.unhost(window) }
+        expect(received.value) == 0
+        handler.signalWebCheckoutOpened()
+        expect(received.value) == 1
+        expect(oldReceived.value) == 1
+    }
+
+    func testEventBeforeMountDoesNotReplayWithoutReset() {
         let handler: PurchaseHandler = .mock()
         handler.signalWebCheckoutOpened()
-        handler.clearWebCheckoutOpened()
-
-        let fireCount: Atomic<Int> = .init(0)
-        let view = ProbeView(handler: handler) {
-            fireCount.modify { $0 += 1 }
-        }
-
-        let (window, _) = Self.host(view)
-        defer {
-            window.isHidden = true
-            window.rootViewController = nil
-        }
-
-        RunLoop.main.run(until: Date().addingTimeInterval(0.2))
-        expect(fireCount.value) == 0
+        let received: Atomic<Int> = .init(0)
+        let window = Self.host(Self.probe(handler).onWebCheckoutOpened({ received.modify { $0 += 1 } }))
+        defer { Self.unhost(window) }
+        expect(received.value) == 0
     }
 
-}
+    func testNestedBridgesAndRetainedPagesDeliverOnce() {
+        let handler: PurchaseHandler = .mock()
+        let received: Atomic<Int> = .init(0)
+        let view = VStack {
+            Self.probe(handler)
+            Self.probe(handler)
+        }
+        .modifier(PaywallURLEventsModifier(purchaseHandler: handler))
+        .onWebCheckoutOpened({ received.modify { $0 += 1 } })
+        let window = Self.host(view)
+        defer { Self.unhost(window) }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct ProbeView: View {
-
-    @ObservedObject var handler: PurchaseHandler
-    let onWebCheckoutOpened: WebCheckoutOpenedHandler
-
-    var body: some View {
-        Color.clear
-            .preference(key: WebCheckoutOpenedPreferenceKey.self, value: self.handler.webCheckoutOpened)
-            .onWebCheckoutOpened(self.onWebCheckoutOpened)
+        handler.signalWebCheckoutOpened()
+        expect(received.value) == 1
     }
 
-}
+    func testNestedCallbackModifiersEachReceiveEvent() {
+        let handler: PurchaseHandler = .mock()
+        let received: Atomic<Int> = .init(0)
+        let view = VStack {
+            Self.probe(handler).onWebCheckoutOpened({ received.modify { $0 += 1 } })
+        }
+        .onWebCheckoutOpened({ received.modify { $0 += 1 } })
+        let window = Self.host(view)
+        defer { Self.unhost(window) }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension OnWebCheckoutOpenedModifierTests {
+        handler.signalWebCheckoutOpened()
+        expect(received.value) == 2
+    }
 
-    static func host<Content: View>(_ view: Content) -> (UIWindow, UIView) {
+    func testCallbackCanResetSession() {
+        let handler: PurchaseHandler = .mock()
+        let received: Atomic<Int> = .init(0)
+        let view = Self.probe(handler).onWebCheckoutOpened {
+            handler.resetForNewSession()
+            received.modify { $0 += 1 }
+        }
+        let window = Self.host(view)
+        defer { Self.unhost(window) }
+
+        handler.signalWebCheckoutOpened()
+        expect(received.value) == 1
+    }
+
+    func testOtherEventDoesNotInvokeCallback() {
+        let handler: PurchaseHandler = .mock()
+        let received: Atomic<Int> = .init(0)
+        let window = Self.host(Self.probe(handler).onWebCheckoutOpened({ received.modify { $0 += 1 } }))
+        defer { Self.unhost(window) }
+
+        handler.signalURLOpened(URL(string: "https://revenuecat.com/terms")!)
+        expect(received.value) == 0
+    }
+
+    func testPaywallViewDeliversEventBeforeImmediateReset() {
+        let handler: PurchaseHandler = .mock()
+        let received: Atomic<Int> = .init(0)
+        let view = PaywallView(configuration: .init(
+            offering: TestData.offeringWithIntroOffer,
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: handler
+        ))
+        .onWebCheckoutOpened {
+            received.modify { $0 += 1 }
+        }
+        let window = Self.host(view)
+        defer { Self.unhost(window) }
+
+        handler.signalWebCheckoutOpened()
+        handler.resetForNewSession()
+        expect(received.value) == 1
+    }
+
+    private static func probe(_ handler: PurchaseHandler) -> some View {
+        Color.clear.modifier(PaywallURLEventsModifier(purchaseHandler: handler))
+    }
+
+    private static func host<Content: View>(_ view: Content) -> UIWindow {
         let controller = UIHostingController(rootView: view.frame(width: 100, height: 100))
         let window = UIWindow(frame: CGRect(origin: .zero, size: CGSize(width: 100, height: 100)))
         window.rootViewController = controller
         window.makeKeyAndVisible()
         controller.view.layoutIfNeeded()
         RunLoop.main.run(until: Date().addingTimeInterval(0.1))
-        return (window, controller.view)
+        return window
+    }
+
+    private static func unhost(_ window: UIWindow) {
+        window.isHidden = true
+        window.rootViewController = nil
+        // Let SwiftUI tear down subscriptions before presenting the next view. Event/reset
+        // sequences above deliberately never yield to the run loop.
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
     }
 
 }
