@@ -56,6 +56,8 @@ class StoreTransactionTests: StoreKitConfigTestCase {
         sk1Transaction.mockTransactionDate = Date()
         sk1Transaction.mockTransactionIdentifier = "store-transaction-id"
 
+        expect(transaction.sk1Transaction) === sk1Transaction
+        expect(transaction.sk1Transaction?.transactionIdentifier) == "store-transaction-id"
         expect(transaction.transactionIdentifier) == fallbackIdentifier
         expect(transaction.purchaseDate) == Date(timeIntervalSince1970: 0)
         expect(transaction.hasKnownTransactionIdentifier) == false

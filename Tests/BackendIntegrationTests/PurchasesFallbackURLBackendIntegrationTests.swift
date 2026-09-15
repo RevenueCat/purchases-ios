@@ -70,16 +70,34 @@ class PurchasesFallbackURLBackendStoreKit2IntegrationTests: BaseStoreKitIntegrat
         XCTAssertTrue(offlineEntitlementInfo.isActive)
         verifySpecificTransactionWasNotFinished(transaction)
 
+        let pendingNativeTransaction: SKPaymentTransaction?
+        if Self.storeKitVersion == .storeKit1, !transaction.hasKnownTransactionIdentifier {
+            // The captured fallback UUID may differ from the native identifier populated later by StoreKit.
+            let nativeTransaction = try XCTUnwrap(transaction.sk1Transaction)
+            await expect {
+                SKPaymentQueue.default().transactions.contains { $0 === nativeTransaction }
+            }.toEventually(beTrue(), timeout: .seconds(5))
+            pendingNativeTransaction = nativeTransaction
+        } else {
+            pendingNativeTransaction = nil
+        }
+
         self.allServersUp() // Simulate main server recovery
         logger.clearMessages()
 
         let onlineCustomerInfo = try await self.purchases.customerInfo()
 
         verifyCustomerInfoWasNotComputedOffline(customerInfo: onlineCustomerInfo)
-        try await self.verifySpecificTransactionIsEventuallyFinished(
-            transactionId: transaction.transactionIdentifier,
-            productId: transaction.productIdentifier
-        )
+        if let nativeTransaction = pendingNativeTransaction {
+            await expect {
+                SKPaymentQueue.default().transactions.contains { $0 === nativeTransaction }
+            }.toEventually(beFalse(), timeout: .seconds(5))
+        } else {
+            try await self.verifySpecificTransactionIsEventuallyFinished(
+                transactionId: transaction.transactionIdentifier,
+                productId: transaction.productIdentifier
+            )
+        }
 
         XCTAssertFalse(onlineCustomerInfo.isComputedOffline)
         let onlineEntitlementInfo = try XCTUnwrap(onlineCustomerInfo.entitlements[Self.entitlementIdentifier])
