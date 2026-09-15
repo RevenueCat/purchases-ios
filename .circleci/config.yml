@@ -79,8 +79,16 @@ jobs:
       - unless:
           condition: << pipeline.parameters.requested_jobs >>
           steps:
+            - run:
+                name: Generate temporary focused test configuration
+                command: |
+                  node - <<'NODE'
+                  const fs = require('fs');
+                  const base = fs.readFileSync('.circleci/default_config.yml', 'utf8').split('\nworkflows:\n')[0];
+                  fs.writeFileSync('/tmp/focused-tests.yml', base + '\n' + fs.readFileSync('.circleci/focused-tests.yml', 'utf8'));
+                  NODE
             - continuation/continue:
-                configuration_path: .circleci/default_config.yml
+                configuration_path: /tmp/focused-tests.yml
                 parameters: /tmp/continuation-parameters.json
 
 workflows:
