@@ -23,3 +23,5 @@
 "Default_offer_details_with_intro_offer" = "Rozpocznij okres próbny {{ sub_offer_duration }}, a następnie {{ total_price_and_per_month }}.";
 "Something went wrong" = "Coś poszło nie tak";
 "Purchase" = "Kup";
+"Selected" = "Wybrano";
+"Not selected" = "Nie wybrano";

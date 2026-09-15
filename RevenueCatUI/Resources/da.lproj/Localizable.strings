@@ -23,3 +23,5 @@
 "Default_offer_details_with_intro_offer" = "Start din prøveperiode på {{ sub_offer_duration }} og derefter {{ total_price_and_per_month }}.";
 "Something went wrong" = "Noget gik galt";
 "Purchase" = "Køb";
+"Selected" = "Valgt";
+"Not selected" = "Ikke valgt";

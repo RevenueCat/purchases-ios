@@ -23,3 +23,5 @@
 "Default_offer_details_with_intro_offer" = "Začnite svoje {{ sub_offer_duration }} preizkusno obdobje, nato {{ total_price_and_per_month }}.";
 "Something went wrong" = "Nekaj je šlo narobe";
 "Purchase" = "Kupi";
+"Selected" = "Izbrano";
+"Not selected" = "Ni izbrano";

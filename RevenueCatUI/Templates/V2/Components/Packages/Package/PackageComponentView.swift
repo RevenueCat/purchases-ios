@@ -87,7 +87,8 @@ struct PackageComponentView: View {
                 package: package,
                 componentName: self.viewModel.componentName,
                 hasPurchaseButton: self.viewModel.hasPurchaseButton,
-                hapticFeedbackEnabled: self.viewModel.hapticFeedbackEnabled
+                hapticFeedbackEnabled: self.viewModel.hapticFeedbackEnabled,
+                accessibilitySelectionValue: self.viewModel.accessibilitySelectionValue(isSelected:)
             )
         }
     }
@@ -97,19 +98,22 @@ struct PackageComponentView: View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension View {
 
+    // swiftlint:disable:next function_parameter_count
     func packageSelectorIfNeeded(
         packageContext: PackageContext,
         package: Package,
         componentName: String?,
         hasPurchaseButton: Bool,
-        hapticFeedbackEnabled: Bool
+        hapticFeedbackEnabled: Bool,
+        accessibilitySelectionValue: @escaping (Bool) -> String
     ) -> some View {
         modifier(PackageSelectorIfNeeded(
             packageContext: packageContext,
             package: package,
             componentName: componentName,
             hasPurchaseButton: hasPurchaseButton,
-            hapticFeedbackEnabled: hapticFeedbackEnabled
+            hapticFeedbackEnabled: hapticFeedbackEnabled,
+            accessibilitySelectionValue: accessibilitySelectionValue
         ))
     }
 
@@ -130,6 +134,11 @@ struct PackageSelectorIfNeeded: ViewModifier {
     let componentName: String?
     let hasPurchaseButton: Bool
     let hapticFeedbackEnabled: Bool
+    let accessibilitySelectionValue: (Bool) -> String
+
+    private var isSelected: Bool {
+        return self.packageContext.package?.identifier == self.package.identifier
+    }
 
     func body(content: Content) -> some View {
         if hasPurchaseButton {
@@ -164,6 +173,9 @@ struct PackageSelectorIfNeeded: ViewModifier {
             } label: {
                 content
             }
+            // On the row, which always renders. VoiceOver says nothing at all for an
+            // unselected package otherwise, since the trait is silent when false.
+            .accessibilityValue(self.accessibilitySelectionValue(self.isSelected))
             .onAppear {
                 if hapticFeedbackEnabled {
                     self.hapticFeedback.prepare()
@@ -342,7 +354,8 @@ fileprivate extension PackageComponentViewModel {
             offering: offering,
             stackViewModel: stackViewModel,
             hasPurchaseButton: hasPurchaseButton,
-            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+            localizationProvider: localizationProvider
         )
     }
 

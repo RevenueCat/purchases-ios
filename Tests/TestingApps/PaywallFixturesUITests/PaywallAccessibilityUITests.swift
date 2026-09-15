@@ -65,6 +65,30 @@ final class PaywallAccessibilityUITests: XCTestCase {
         )
     }
 
+    // MARK: - Package selection
+
+    /// The trait says nothing at all when a row is unselected, so the state is exposed as the
+    /// row's value instead.
+    func testSelectionStateIsAnnouncedOnTheRow() throws {
+        let app = self.launchDecorativeMedia()
+
+        let selected = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Yearly")).firstMatch
+        XCTAssertTrue(selected.waitForExistence(timeout: 30), app.debugDescription)
+        XCTAssertEqual(selected.value as? String, "Selected")
+
+        let unselected = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Monthly")).firstMatch
+        XCTAssertEqual(unselected.value as? String, "Not selected")
+    }
+
+    /// The label is left alone, so anything matching on card copy keeps working.
+    func testSelectionStateDoesNotChangeTheLabel() throws {
+        let app = self.launchDecorativeMedia()
+
+        let card = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Yearly")).firstMatch
+        XCTAssertTrue(card.waitForExistence(timeout: 30))
+        XCTAssertFalse(card.label.contains("Selected"), "State leaked into the label: \(card.label)")
+    }
+
     // MARK: - Spoken text
 
     /// The spoken variant is built from the source copy, so it still carries markdown when it
@@ -117,6 +141,20 @@ final class PaywallAccessibilityUITests: XCTestCase {
         // button's label is not gated by that same label.
         XCTAssertTrue(
             app.staticTexts["Everything you need, in one place."].waitForExistence(timeout: 30),
+            "Fixture did not render."
+        )
+
+        return app
+    }
+
+
+    private func launchDecorativeMedia() -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchEnvironment["PAYWALL_FIXTURE"] = "decorative_media"
+        app.launch()
+
+        XCTAssertTrue(
+            app.staticTexts["Unlock all Sundial Features"].waitForExistence(timeout: 30),
             "Fixture did not render."
         )
 
