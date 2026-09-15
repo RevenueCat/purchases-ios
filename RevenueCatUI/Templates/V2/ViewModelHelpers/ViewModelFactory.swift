@@ -201,9 +201,7 @@ struct ViewModelFactory {
                 packageValidator.add(
                     PackageValidator.PackageInfo(
                         package: package,
-                        isSelectedByDefault: packageValidator.selectionConfiguration.map {
-                            $0.defaultPackageComponentId != nil && $0.defaultPackageComponentId == component.id
-                        } ?? component.isSelectedByDefault,
+                        isSelectedByDefault: component.isSelectedByDefault,
                         visibilityResolver: PackageVisibilityResolver(
                             component: component,
                             uiConfigProvider: uiConfigProvider,
@@ -548,7 +546,7 @@ struct ViewModelFactory {
         colorScheme: ColorScheme
     ) throws -> StackComponentViewModel {
         let localValidator = component.packageSelection?.mode == "local"
-            ? PackageValidator(selectionConfiguration: component.packageSelection) : nil
+            ? PackageValidator() : nil
         let childValidator = localValidator ?? packageValidator
         let viewModels = try component.components.filter {
             // fallback_header is injected by the dashboard for old SDK compatibility.
