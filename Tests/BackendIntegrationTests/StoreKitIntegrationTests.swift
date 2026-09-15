@@ -881,6 +881,12 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testApplyPromotionalOfferDuringSubscription() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
+        #if os(iOS)
+        try XCTSkipIf(Self.storeKitVersion == .storeKit2 &&
+                      ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
+                      "iOS 27 StoreKitTest shows an already-subscribed dialog despite disableDialogs for active offers")
+        #endif
+
         let user = UUID().uuidString
 
         let (_, created) = try await self.purchases.logIn(user)

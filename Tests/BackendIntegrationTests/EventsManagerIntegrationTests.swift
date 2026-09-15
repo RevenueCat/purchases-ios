@@ -47,8 +47,14 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
 
     func testPostingCustomerCenterDoesNotFail() async throws {
         let locale = Locale(identifier: "es_ES")
+        let purchases = try self.purchases
+        let eventsStored = expectation(description: "Customer Center events stored")
+        eventsStored.expectedFulfillmentCount = 2
+        let listener = EventStorageListener(expectation: eventsStored)
+        purchases.eventsListener = listener
+        defer { purchases.eventsListener = nil }
 
-        Purchases.shared.track(
+        purchases.track(
             customerCenterEvent: CustomerCenterEvent.impression(
                 Self.customerCenterCreationData,
                 CustomerCenterEvent.Data(
@@ -60,7 +66,7 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
             )
         )
 
-        Purchases.shared.track(
+        purchases.track(
             customerCenterEvent: CustomerCenterAnswerSubmittedEvent.answerSubmitted(
                 Self.customerCenterCreationData,
                 CustomerCenterAnswerSubmittedEvent.Data(
@@ -75,12 +81,7 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
                 )
             )
         )
-        try await self.logger.verifyMessageIsEventuallyLogged(
-            "Storing event:",
-            expectedCount: 2,
-            timeout: .seconds(10),
-            pollInterval: .milliseconds(100)
-        )
+        await fulfillment(of: [eventsStored], timeout: 10)
 
         try await flushAndVerify(eventsCount: 2)
     }
@@ -88,14 +89,22 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
     private func flushAndVerify(eventsCount: Int) async throws {
         _ = try await Purchases.shared.flushPaywallEvents(count: eventsCount)
 
-        self.logger.verifyMessageWasLogged(
-            Strings.paywalls.event_flush_starting(count: eventsCount)
-        )
-
-        self.logger.verifyMessageWasLogged(
-            Strings.analytics.flush_events_success,
-            level: .debug,
-            expectedCount: 1
+        let logger = try XCTUnwrap(self.logger)
+        try await asyncWait(
+            timeout: .seconds(10),
+            description: { _ in "Expected all \(eventsCount) events to be posted successfully" },
+            until: { logger.messages },
+            condition: { messages in
+                let batchSizes = messages.compactMap { entry in
+                    (1...eventsCount).first { count in
+                        entry.message.contains(Strings.paywalls.event_flush_starting(count: count).description)
+                    }
+                }
+                let successfulBatches = messages.filter {
+                    $0.level == .debug && $0.message.contains(Strings.analytics.flush_events_success.description)
+                }.count
+                return batchSizes.reduce(0, +) == eventsCount && successfulBatches == batchSizes.count
+            }
         )
     }
 
@@ -119,4 +128,16 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
         darkMode: true,
         source: nil
     )
+}
+
+private final class EventStorageListener: EventsListener {
+    private let expectation: XCTestExpectation
+
+    init(expectation: XCTestExpectation) {
+        self.expectation = expectation
+    }
+
+    func onEventTracked(_ event: [String: Any]) {
+        self.expectation.fulfill()
+    }
 }
