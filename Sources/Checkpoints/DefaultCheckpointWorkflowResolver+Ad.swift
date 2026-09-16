@@ -31,12 +31,23 @@ extension DefaultCheckpointWorkflowResolver {
             return Self.unservable(rule, reason: "the ad step has no valid mediator")
         }
 
-        return .matchedAd(ResolvedAdStep(adUnitId: adUnitId, mediator: MediatorName(rawValue: mediator)))
+        return .matchedAd(ResolvedAdStep(adUnitId: adUnitId, mediator: Self.normalizedMediator(mediator)))
     }
 
     static func stringParam(_ key: String, in step: WorkflowStep) -> String? {
         guard case let .string(value)? = step.paramValues[key] else { return nil }
         return value
+    }
+
+    /// The backend serializes mediators in lowercase (`admob`) while the SDK's canonical constants are
+    /// mixed case (`AdMob`), and `MediatorName` equality is case-sensitive. Map known mediators onto their
+    /// canonical instance so presenters can match on them; anything unknown passes through untouched.
+    private static let knownMediators: [MediatorName] = [.adMob, .appLovin]
+
+    private static func normalizedMediator(_ rawValue: String) -> MediatorName {
+        return Self.knownMediators.first { known in
+            known.rawValue.caseInsensitiveCompare(rawValue) == .orderedSame
+        } ?? MediatorName(rawValue: rawValue)
     }
 
 }
