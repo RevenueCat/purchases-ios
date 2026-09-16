@@ -117,8 +117,7 @@ internal enum ExternalPurchasePreparationResult: Equatable {
     /// Route the customer to the checkout with no identifier to hand over, as the app would outside Apple's
     /// programme: it does not apply here, see ``ExternalPurchaseAvailability/notEligible``.
     ///
-    /// Nothing was shown and nothing was minted. Unlike the other outcomes, this one does not change while the
-    /// customer stays where they are.
+    /// Nothing was shown and nothing was minted.
     case notApplicable
 
     enum StopReason: Equatable {
