@@ -91,7 +91,7 @@ final class CheckpointsManagerTests: TestCase {
     }
 
     func testResolvedWorkflowProducesDismissedExecution() async throws {
-        let executor = MockCheckpointWorkflowPresenter()
+        let executor = MockWorkflowPresenter()
         executor.execution = .completed(customerInfo: nil)
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
@@ -121,7 +121,7 @@ final class CheckpointsManagerTests: TestCase {
     }
 
     func testCallbackCheckpointReturnsCompletedResultAfterWorkflowDismissal() async {
-        let executor = MockCheckpointWorkflowPresenter()
+        let executor = MockWorkflowPresenter()
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
             workflowPresenter: executor
@@ -136,7 +136,7 @@ final class CheckpointsManagerTests: TestCase {
     }
 
     func testCallbackCheckpointIsSuppressedWhenWorkflowBacksOut() async {
-        let executor = MockCheckpointWorkflowPresenter()
+        let executor = MockWorkflowPresenter()
         executor.execution = .backedOut
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
@@ -151,7 +151,7 @@ final class CheckpointsManagerTests: TestCase {
     }
 
     func testCallbackCheckpointIsSuppressedWhenAnotherFlowIsBeingPresented() async {
-        let executor = MockCheckpointWorkflowPresenter()
+        let executor = MockWorkflowPresenter()
         executor.error = CheckpointError.operationAlreadyInProgress
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
@@ -166,7 +166,7 @@ final class CheckpointsManagerTests: TestCase {
     }
 
     func testUnmatchedCallbackCheckpointStillCompletesWhileAnotherFlowIsBeingPresented() async {
-        let executor = MockCheckpointWorkflowPresenter()
+        let executor = MockWorkflowPresenter()
         executor.error = CheckpointError.operationAlreadyInProgress
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .noAction(.noMatch) },
@@ -194,7 +194,7 @@ final class CheckpointsManagerTests: TestCase {
     }
 
     func testCallbackCheckpointReturnsNilWhenWorkflowErrors() async {
-        let executor = MockCheckpointWorkflowPresenter()
+        let executor = MockWorkflowPresenter()
         executor.execution = .failed
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
@@ -210,7 +210,7 @@ final class CheckpointsManagerTests: TestCase {
     }
 
     func testCallbackCheckpointOnlyReturnsEntitlementsAbsentFromCachedCustomerInfo() async throws {
-        let executor = MockCheckpointWorkflowPresenter()
+        let executor = MockWorkflowPresenter()
         executor.execution = .completed(
             customerInfo: try Self.customerInfo(activeEntitlements: ["premium", "pro"])
         )
@@ -239,7 +239,7 @@ final class CheckpointsManagerTests: TestCase {
     }
 
     func testCallbackCheckpointReturnsNoEntitlementsWhenAllWereAlreadyCached() async throws {
-        let executor = MockCheckpointWorkflowPresenter()
+        let executor = MockWorkflowPresenter()
         executor.execution = .completed(
             customerInfo: try Self.customerInfo(activeEntitlements: ["premium", "pro"])
         )
@@ -260,7 +260,7 @@ final class CheckpointsManagerTests: TestCase {
     }
 
     func testCallbackCheckpointTreatsAllEntitlementsAsObtainedWithoutCachedCustomerInfo() async throws {
-        let executor = MockCheckpointWorkflowPresenter()
+        let executor = MockWorkflowPresenter()
         executor.execution = .completed(
             customerInfo: try Self.customerInfo(activeEntitlements: ["premium", "pro"])
         )
@@ -287,7 +287,7 @@ final class CheckpointsManagerTests: TestCase {
     }
 
     func testRunCheckpointRecordsBackOutWithoutChangingDismissedOutcome() async throws {
-        let executor = MockCheckpointWorkflowPresenter()
+        let executor = MockWorkflowPresenter()
         executor.execution = .backedOut
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
@@ -302,7 +302,7 @@ final class CheckpointsManagerTests: TestCase {
     }
 
     func testRunCheckpointReportsBackOutWithoutAnErrorPayload() async throws {
-        let executor = MockCheckpointWorkflowPresenter()
+        let executor = MockWorkflowPresenter()
         executor.execution = .backedOut
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
@@ -317,7 +317,7 @@ final class CheckpointsManagerTests: TestCase {
     }
 
     func testRunCheckpointDoesNotMarkNormalDismissalAsBackedOut() async throws {
-        let executor = MockCheckpointWorkflowPresenter()
+        let executor = MockWorkflowPresenter()
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
             workflowPresenter: executor
@@ -331,7 +331,7 @@ final class CheckpointsManagerTests: TestCase {
     }
 
     func testResolvedOfferingUsesCallSitePaywallPresenter() async throws {
-        let executor = MockCheckpointWorkflowPresenter()
+        let executor = MockWorkflowPresenter()
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
             workflowPresenter: executor,
@@ -359,7 +359,7 @@ final class CheckpointsManagerTests: TestCase {
         let global = MockPaywallPresenter()
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
-            workflowPresenter: MockCheckpointWorkflowPresenter()
+            workflowPresenter: MockWorkflowPresenter()
         )
         manager.paywallPresenter = global
         var localCallCount = 0
@@ -380,7 +380,7 @@ final class CheckpointsManagerTests: TestCase {
         let global = MockPaywallPresenter()
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
-            workflowPresenter: MockCheckpointWorkflowPresenter()
+            workflowPresenter: MockWorkflowPresenter()
         )
         manager.paywallPresenter = global
 
@@ -423,7 +423,7 @@ final class CheckpointsManagerTests: TestCase {
         var customerInfoSynchronizerCallCount = 0
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
-            workflowPresenter: MockCheckpointWorkflowPresenter(),
+            workflowPresenter: MockWorkflowPresenter(),
             defaultPaywallPresenter: defaultPresenter,
             customerInfoSynchronizer: {
                 customerInfoSynchronizerCallCount += 1
@@ -446,7 +446,7 @@ final class CheckpointsManagerTests: TestCase {
         let defaultPresenter = MockDefaultPaywallPresenter(result: .continue)
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
-            workflowPresenter: MockCheckpointWorkflowPresenter(),
+            workflowPresenter: MockWorkflowPresenter(),
             defaultPaywallPresenter: defaultPresenter,
             cachedCustomerInfoProvider: { try? Self.customerInfo(activeEntitlements: ["pro"]) },
             customerInfoSynchronizer: { terminalCustomerInfo }
@@ -464,7 +464,7 @@ final class CheckpointsManagerTests: TestCase {
         var customerInfoSynchronizerCallCount = 0
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
-            workflowPresenter: MockCheckpointWorkflowPresenter(),
+            workflowPresenter: MockWorkflowPresenter(),
             defaultPaywallPresenter: MockDefaultPaywallPresenter(result: .navigatedBack),
             customerInfoSynchronizer: {
                 customerInfoSynchronizerCallCount += 1
@@ -489,7 +489,7 @@ final class CheckpointsManagerTests: TestCase {
         defaultPresenter.onCancel = { cancellationStarted.fulfill() }
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
-            workflowPresenter: MockCheckpointWorkflowPresenter(),
+            workflowPresenter: MockWorkflowPresenter(),
             defaultPaywallPresenter: defaultPresenter
         )
 
@@ -531,7 +531,7 @@ final class CheckpointsManagerTests: TestCase {
         var customerInfoSynchronizerCallCount = 0
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
-            workflowPresenter: MockCheckpointWorkflowPresenter(),
+            workflowPresenter: MockWorkflowPresenter(),
             customerInfoSynchronizer: {
                 customerInfoSynchronizerCallCount += 1
                 return try Self.customerInfo(activeEntitlements: ["premium"])
@@ -553,7 +553,7 @@ final class CheckpointsManagerTests: TestCase {
         var customerInfoSynchronizerCallCount = 0
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
-            workflowPresenter: MockCheckpointWorkflowPresenter(),
+            workflowPresenter: MockWorkflowPresenter(),
             cachedCustomerInfoProvider: {
                 try? Self.customerInfo(activeEntitlements: ["pro"])
             },
@@ -579,7 +579,7 @@ final class CheckpointsManagerTests: TestCase {
         let expectedError = NSError(domain: "test", code: 42)
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
-            workflowPresenter: MockCheckpointWorkflowPresenter(),
+            workflowPresenter: MockWorkflowPresenter(),
             customerInfoSynchronizer: { throw expectedError }
         )
 
@@ -602,7 +602,7 @@ final class CheckpointsManagerTests: TestCase {
         var customerInfoSynchronizerCallCount = 0
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
-            workflowPresenter: MockCheckpointWorkflowPresenter(),
+            workflowPresenter: MockWorkflowPresenter(),
             customerInfoSynchronizer: {
                 customerInfoSynchronizerCallCount += 1
                 synchronizationStarted.fulfill()
@@ -646,7 +646,7 @@ final class CheckpointsManagerTests: TestCase {
         var replacementCompletion: PaywallPresentationCompletion?
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
-            workflowPresenter: MockCheckpointWorkflowPresenter(),
+            workflowPresenter: MockWorkflowPresenter(),
             customerInfoSynchronizer: { try Self.customerInfo(activeEntitlements: []) }
         )
 
@@ -699,7 +699,7 @@ final class CheckpointsManagerTests: TestCase {
         var synchronizationContinuation: CheckedContinuation<CustomerInfo, Error>?
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
-            workflowPresenter: MockCheckpointWorkflowPresenter(),
+            workflowPresenter: MockWorkflowPresenter(),
             customerInfoSynchronizer: {
                 synchronizationStarted.fulfill()
                 return try await withCheckedThrowingContinuation { continuation in
@@ -721,7 +721,7 @@ final class CheckpointsManagerTests: TestCase {
         presenterCompletion?(.continue)
         await self.fulfillment(of: [synchronizationStarted], timeout: 1)
 
-        let secondResult: Result<CheckpointExecution, Error>
+        let secondResult: Result<CheckpointPresentationOutcome, Error>
         do {
             secondResult = .success(try await manager.executeCheckpoint(
                 identifier: "onboarding",
@@ -749,7 +749,7 @@ final class CheckpointsManagerTests: TestCase {
         var synchronizationContinuation: CheckedContinuation<CustomerInfo, Error>?
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
-            workflowPresenter: MockCheckpointWorkflowPresenter(),
+            workflowPresenter: MockWorkflowPresenter(),
             customerInfoSynchronizer: {
                 let customerInfo = try await withCheckedThrowingContinuation { continuation in
                     synchronizationContinuation = continuation
@@ -810,7 +810,7 @@ final class CheckpointsManagerTests: TestCase {
 
     func testPresentationErrorIsForwardedWithoutPresentedResult() async {
         let expectedError = NSError(domain: "test", code: 42)
-        let executor = MockCheckpointWorkflowPresenter()
+        let executor = MockWorkflowPresenter()
         executor.error = expectedError
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
@@ -912,222 +912,11 @@ final class CheckpointsManagerTests: TestCase {
 
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-final class CheckpointWorkflowExecutionTests: TestCase {
-
-    func testCustomVariablesAreForwardedToThePresenter() async throws {
-        let expected: [String: CustomVariableValue] = [
-            "name": "Rick",
-            "attempt": 2,
-            "enabled": true
-        ]
-        let presenter = CheckpointWorkflowPresenterHarness()
-        presenter.onPresent = { presentation in
-            presentation.finish(.completed(customerInfo: nil))
-        }
-        let workflowPresenter = presenter.workflowPresenter
-
-        _ = try await workflowPresenter.present(Self.presentation(customVariables: expected))
-
-        XCTAssertEqual(
-            presenter.presentations.first?.checkpointPresentation.customVariables,
-            expected
-        )
-    }
-
-    func testExecutionForwardsBackOutFromThePresenter() async throws {
-        let presenter = CheckpointWorkflowPresenterHarness()
-        presenter.onPresent = { presentation in
-            presentation.finish(.backedOut)
-        }
-        let workflowPresenter = presenter.workflowPresenter
-
-        let execution = try await workflowPresenter.present(Self.presentation())
-
-        guard case .backedOut = execution else {
-            return XCTFail("Expected a backed-out workflow execution")
-        }
-    }
-
-    func testPresentationFailureResumesExecutionAndAllowsRetry() async throws {
-        let presenter = CheckpointWorkflowPresenterHarness()
-        let expectedError = NSError(domain: "test", code: 42)
-        presenter.presentationError = expectedError
-        let workflowPresenter = presenter.workflowPresenter
-
-        let failure = try await workflowPresenter.present(Self.presentation())
-        guard case .failed = failure else {
-            return XCTFail("Expected presentation failure")
-        }
-
-        presenter.presentationError = nil
-        presenter.onPresent = { presentation in
-            presentation.finish(.completed(customerInfo: nil))
-        }
-        _ = try await workflowPresenter.present(Self.presentation())
-
-        XCTAssertEqual(presenter.presentations.count, 1)
-    }
-
-    func testConcurrentExecutionFailsWhilePresentationIsActive() async throws {
-        let presenter = CheckpointWorkflowPresenterHarness()
-        let presentationStarted = self.expectation(description: "Presentation starts")
-        presenter.onPresent = { _ in presentationStarted.fulfill() }
-        let workflowPresenter = presenter.workflowPresenter
-        let firstExecution = Task { try await workflowPresenter.present(Self.presentation()) }
-        await self.fulfillment(of: [presentationStarted], timeout: 1)
-
-        do {
-            _ = try await workflowPresenter.present(Self.presentation())
-            XCTFail("Expected concurrent execution to throw")
-        } catch {
-            XCTAssertEqual(
-                (error as NSError).code,
-                ErrorCode.operationAlreadyInProgressForProductError.rawValue
-            )
-        }
-
-        let presentation = try XCTUnwrap(presenter.presentations.first)
-        presentation.finish(.completed(customerInfo: nil))
-        _ = try await firstExecution.value
-    }
-
-    func testExecutionCanRestartAfterPresentationFinishes() async throws {
-        let presenter = CheckpointWorkflowPresenterHarness()
-        presenter.onPresent = { presentation in
-            presentation.finish(.completed(customerInfo: nil))
-        }
-        let workflowPresenter = presenter.workflowPresenter
-
-        _ = try await workflowPresenter.present(Self.presentation())
-        _ = try await workflowPresenter.present(Self.presentation())
-
-        XCTAssertEqual(presenter.presentations.count, 2)
-    }
-
-    func testExecutionCanRestartAfterCancellation() async throws {
-        let presenter = CheckpointWorkflowPresenterHarness()
-        let presentationStarted = self.expectation(description: "Presentation starts")
-        presenter.onPresent = { _ in presentationStarted.fulfill() }
-        let workflowPresenter = presenter.workflowPresenter
-        let firstExecution = Task { try await workflowPresenter.present(Self.presentation()) }
-        await self.fulfillment(of: [presentationStarted], timeout: 1)
-
-        firstExecution.cancel()
-        do {
-            _ = try await firstExecution.value
-            XCTFail("Expected cancellation")
-        } catch is CancellationError {
-            // Expected.
-        }
-
-        presenter.onPresent = { presentation in
-            presentation.finish(.completed(customerInfo: nil))
-        }
-        _ = try await workflowPresenter.present(Self.presentation())
-
-        XCTAssertEqual(presenter.presentations.count, 2)
-        XCTAssertEqual(presenter.dismissCallCount, 1)
-    }
-
-    func testCancellationKeepsExecutionActiveUntilPresentationFinishesDismissing() async throws {
-        let presenter = CheckpointWorkflowPresenterHarness()
-        presenter.automaticallyFinishesDismissing = false
-        let presentationStarted = self.expectation(description: "Presentation starts")
-        let dismissalStarted = self.expectation(description: "Dismissal starts")
-        presenter.onPresent = { _ in presentationStarted.fulfill() }
-        presenter.onDismiss = { dismissalStarted.fulfill() }
-        let workflowPresenter = presenter.workflowPresenter
-        let firstExecution = Task { try await workflowPresenter.present(Self.presentation()) }
-        await self.fulfillment(of: [presentationStarted], timeout: 1)
-
-        firstExecution.cancel()
-        await self.fulfillment(of: [dismissalStarted], timeout: 1)
-
-        do {
-            _ = try await workflowPresenter.present(Self.presentation())
-            XCTFail("Expected execution to remain active while dismissing")
-        } catch {
-            XCTAssertEqual(
-                (error as NSError).code,
-                ErrorCode.operationAlreadyInProgressForProductError.rawValue
-            )
-        }
-
-        presenter.finishDismissing()
-        do {
-            _ = try await firstExecution.value
-            XCTFail("Expected cancellation")
-        } catch is CancellationError {
-            // Expected.
-        }
-    }
-
-    func testCompletedOutcomeWinsBeforeScheduledCancellationRuns() async throws {
-        let presenter = CheckpointWorkflowPresenterHarness()
-        var execution: Task<CheckpointExecution, Error>?
-        presenter.onPresent = { presentation in
-            execution?.cancel()
-            presentation.finish(.failed)
-        }
-        let workflowPresenter = presenter.workflowPresenter
-
-        execution = Task { try await workflowPresenter.present(Self.presentation()) }
-        let result = try await XCTUnwrap(execution).value
-
-        guard case .failed = result else {
-            return XCTFail("Expected the completed presentation outcome")
-        }
-        XCTAssertEqual(presenter.dismissCallCount, 0)
-    }
-
-    func testPresentationCompletionWithoutPendingExecutionIsIgnored() {
-        let presenter = CheckpointWorkflowPresenterHarness()
-        let workflowPresenter = presenter.workflowPresenter
-
-        XCTAssertNil(workflowPresenter.presentationDidDismiss())
-
-        XCTAssertTrue(presenter.presentations.isEmpty)
-    }
-
-    private static func presentation(
-        customVariables: [String: CustomVariableValue] = [:]
-    ) -> CheckpointPresentation {
-        return CheckpointPresentation(
-            workflow: self.workflow(),
-            customVariables: customVariables
-        )
-    }
-
-    private static func workflow() -> ResolvedCheckpointWorkflow {
-        let offering = Offering(
-            identifier: "offering-id",
-            serverDescription: "Test offering",
-            availablePackages: [],
-            webCheckoutUrl: nil
-        )
-        return ResolvedCheckpointWorkflow(
-            workflow: PublishedWorkflow(
-                id: "workflow-id",
-                displayName: "Test",
-                initialStepId: "step-id",
-                singleStepFallbackId: nil,
-                steps: ["step-id": WorkflowStep(id: "step-id", type: "screen", screenId: nil)],
-                screens: [:]
-            ),
-            uiConfig: .empty,
-            offerings: .preview(offerings: [offering])
-        )
-    }
-
-}
-
-@MainActor
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension CheckpointsManager {
 
     convenience init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
-        workflowPresenter: CheckpointWorkflowPresenterProtocol,
+        workflowPresenter: WorkflowPresenterProtocol,
         defaultPaywallPresenter: DefaultPaywallPresenterProtocol? = nil,
         cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil },
         customerInfoSynchronizer: @escaping CustomerInfoSynchronizer = { throw CancellationError() }
@@ -1156,15 +945,15 @@ private extension CheckpointsManager {
 
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private final class MockCheckpointWorkflowPresenter: CheckpointWorkflowPresenterProtocol {
+private final class MockWorkflowPresenter: WorkflowPresenterProtocol {
 
-    var execution: CheckpointExecution = .completed(customerInfo: nil)
+    var execution: CheckpointPresentationOutcome = .completed(customerInfo: nil)
     var error: Error?
-    private(set) var presentations: [CheckpointPresentation] = []
+    private(set) var presentations: [WorkflowPresentationRequest] = []
 
     func present(
-        _ presentation: CheckpointPresentation
-    ) async throws -> CheckpointExecution {
+        _ presentation: WorkflowPresentationRequest
+    ) async throws -> CheckpointPresentationOutcome {
         self.presentations.append(presentation)
         if let error {
             throw error
@@ -1231,75 +1020,6 @@ private final class MockDefaultPaywallPresenter: DefaultPaywallPresenterProtocol
 
     func finishCancellation() {
         self.cancellationCompletions.removeFirst()()
-    }
-
-}
-
-@MainActor
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private final class CheckpointWorkflowPresenterHarness {
-
-    struct Presentation {
-        let checkpointPresentation: CheckpointPresentation
-        let finish: (CheckpointExecution) -> Void
-    }
-
-    var onPresent: ((Presentation) -> Void)?
-    var onDismiss: (() -> Void)?
-    var automaticallyFinishesDismissing = true
-    var presentationError: Error?
-    private(set) var presentations: [Presentation] = []
-    private(set) var dismissCallCount = 0
-    private var dismissalCompletions: [() -> Void] = []
-
-    lazy var workflowPresenter = CheckpointWorkflowPresenter(
-        dismissalHandler: { [weak self] completion in
-            self?.handleDismissal(completion: completion)
-        },
-        presentationHandler: { [weak self] presentation in
-            return try self?.handlePresentation(presentation) ?? false
-        }
-    )
-
-    private func handlePresentation(_ presentation: CheckpointPresentation) throws -> Bool {
-        if let presentationError {
-            throw presentationError
-        }
-        let record = Presentation(
-            checkpointPresentation: presentation,
-            finish: { [weak self] execution in
-                self?.finish(execution)
-            }
-        )
-        self.presentations.append(record)
-        self.onPresent?(record)
-        return true
-    }
-
-    private func handleDismissal(completion: @escaping () -> Void) {
-        self.dismissCallCount += 1
-        self.onDismiss?()
-        if self.automaticallyFinishesDismissing {
-            completion()
-        } else {
-            self.dismissalCompletions.append(completion)
-        }
-    }
-
-    private func finish(_ execution: CheckpointExecution) {
-        switch execution {
-        case .nothingPresented:
-            self.workflowPresenter.presentationDidDismiss()
-        case .completed, .failed:
-            self.workflowPresenter.stage(.outcome(execution))
-            self.workflowPresenter.presentationDidDismiss(reason: .close)
-        case .backedOut:
-            self.workflowPresenter.presentationDidDismiss(reason: .navigatedBack)
-        }
-    }
-
-    func finishDismissing() {
-        self.dismissalCompletions.removeFirst()()
     }
 
 }

@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  CheckpointWorkflowPresenterTests.swift
+//  WorkflowPresenterTests.swift
 //
 //  Created by Rick van der Linden.
 //
@@ -21,10 +21,10 @@ import UIKit
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
-final class CheckpointWorkflowPresenterTests: TestCase {
+final class WorkflowPresenterTests: TestCase {
 
     func testPresenterStagesOutcomeUntilPresentationFinishesDismissing() throws {
-        let presenter = CheckpointWorkflowPresenter() { _ in true }
+        let presenter = WorkflowPresenter { _ in true }
         try presenter.startPresentation(Self.presentation())
         presenter.stage(.outcome(.failed))
 
@@ -38,7 +38,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
 
     func testWorkflowPresentationErrorProducesErrorOutcomeAfterDismissal() throws {
         let presentation = try Self.renderablePresentation(customVariables: [:])
-        let presenter = CheckpointWorkflowPresenter() { _ in true }
+        let presenter = WorkflowPresenter { _ in true }
         let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
 
         try presenter.startPresentation(presentation)
@@ -53,7 +53,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
 
     func testWorkflowPresentationErrorDoesNotReplaceEarlierPurchaseOutcome() throws {
         let presentation = try Self.renderablePresentation(customVariables: [:])
-        let presenter = CheckpointWorkflowPresenter() { _ in true }
+        let presenter = WorkflowPresenter { _ in true }
         let controller = try presenter.makePaywallViewController(for: presentation)
         let transaction = StoreTransaction(MockStoreTransaction())
         let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
@@ -75,7 +75,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
 
     func testWorkflowPresentationErrorDoesNotReplaceEarlierRestoreOutcome() throws {
         let presentation = try Self.renderablePresentation(customVariables: [:])
-        let presenter = CheckpointWorkflowPresenter() { _ in true }
+        let presenter = WorkflowPresenter { _ in true }
         let controller = try presenter.makePaywallViewController(for: presentation)
         let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
 
@@ -92,7 +92,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
 
     func testWorkflowPresentationErrorDoesNotReplaceEarlierWebCheckoutOutcome() throws {
         let presentation = try Self.renderablePresentation(customVariables: [:])
-        let presenter = CheckpointWorkflowPresenter() { _ in true }
+        let presenter = WorkflowPresenter { _ in true }
         let controller = try presenter.makePaywallViewController(for: presentation)
         let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
 
@@ -107,7 +107,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
     }
 
     func testBackingOutReportsDismissedOutcomeAndBackedOut() throws {
-        let presenter = CheckpointWorkflowPresenter() { _ in true }
+        let presenter = WorkflowPresenter { _ in true }
 
         try presenter.startPresentation(Self.presentation())
         let execution = presenter.presentationDidDismiss(reason: .navigatedBack)
@@ -118,7 +118,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
     }
 
     func testBackingOutKeepsAStagedErrorOutcome() throws {
-        let presenter = CheckpointWorkflowPresenter() { _ in true }
+        let presenter = WorkflowPresenter { _ in true }
         try presenter.startPresentation(Self.presentation())
         presenter.stage(.outcome(.failed))
         let execution = presenter.presentationDidDismiss(reason: .navigatedBack)
@@ -129,7 +129,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
     }
 
     func testNavigatingBackAfterRestoreCompletesWithRestoredOutcome() throws {
-        let presenter = CheckpointWorkflowPresenter() { _ in true }
+        let presenter = WorkflowPresenter { _ in true }
 
         try presenter.startPresentation(Self.presentation())
         presenter.stage(.outcome(.completed(customerInfo: TestData.customerInfo)))
@@ -143,7 +143,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
 
     func testInteractiveDismissalIsNotReportedAsBackingOut() throws {
         let presentation = Self.presentation()
-        let presenter = CheckpointWorkflowPresenter() { _ in true }
+        let presenter = WorkflowPresenter { _ in true }
         let controller = PaywallViewController(offering: presentation.workflow.offerings.all["offering-id"])
         let presentationController = UIPresentationController(
             presentedViewController: controller,
@@ -161,7 +161,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
 
     func testPurchaseCallbackPreservesCustomerInfo() throws {
         let presentation = Self.presentation()
-        let presenter = CheckpointWorkflowPresenter() { _ in true }
+        let presenter = WorkflowPresenter { _ in true }
         let transaction = StoreTransaction(MockStoreTransaction())
 
         try presenter.startPresentation(presentation)
@@ -181,7 +181,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
 
     func testWebCheckoutCallbackStagesOutcomeUntilPresentationFinishesDismissing() throws {
         let presentation = Self.presentation()
-        let presenter = CheckpointWorkflowPresenter() { _ in true }
+        let presenter = WorkflowPresenter { _ in true }
 
         try presenter.startPresentation(presentation)
         presenter.paywallViewControllerDidOpenWebCheckout(
@@ -198,7 +198,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
 
     func testPurchaseOutcomeReplacesEarlierWebCheckoutOutcome() throws {
         let presentation = Self.presentation()
-        let presenter = CheckpointWorkflowPresenter() { _ in true }
+        let presenter = WorkflowPresenter { _ in true }
         let controller = PaywallViewController(offering: presentation.workflow.offerings.all["offering-id"])
         let transaction = StoreTransaction(MockStoreTransaction())
 
@@ -218,7 +218,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
     }
 
     func testDismissRemovesCallWithoutReportingAnOutcome() throws {
-        let presenter = CheckpointWorkflowPresenter() { _ in true }
+        let presenter = WorkflowPresenter { _ in true }
         var didFinishDismissing = false
         try presenter.startPresentation(Self.presentation())
 
@@ -234,7 +234,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
 
     func testDismissTargetsPresentedExitOfferController() throws {
         let presentation = Self.presentation()
-        let presenter = CheckpointWorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _ in true }
         try presenter.startPresentation(presentation)
         let originalController = PaywallViewController(offering: presentation.workflow.offerings.all["offering-id"])
         let exitOfferController = DismissRecordingPaywallController(
@@ -252,7 +252,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
 
     func testBackOutReasonIsPreservedWhenExitOfferDismisses() throws {
         let presentation = Self.presentation()
-        let presenter = CheckpointWorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _ in true }
         let offering = try XCTUnwrap(presentation.workflow.offerings.all["offering-id"])
         let originalController = DismissRecordingPaywallController(
             offering: offering,
@@ -274,7 +274,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
 
     func testRejectedPresentationThrowsAndCleansStoredCall() {
         var shouldAcceptPresentation = false
-        let presenter = CheckpointWorkflowPresenter() { _ in shouldAcceptPresentation }
+        let presenter = WorkflowPresenter { _ in shouldAcceptPresentation }
 
         XCTAssertThrowsError(
             try presenter.startPresentation(Self.presentation())
@@ -291,7 +291,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
     func testPresentationSetupErrorIsPropagatedAndCleansStoredCall() {
         let expectedError = NSError(domain: "test", code: 42)
         var presentationError: Error? = expectedError
-        let presenter = CheckpointWorkflowPresenter() { _ in
+        let presenter = WorkflowPresenter { _ in
             if let presentationError {
                 throw presentationError
             }
@@ -316,8 +316,8 @@ final class CheckpointWorkflowPresenterTests: TestCase {
             "attempt": 2,
             "enabled": true
         ]
-        var receivedPresentation: CheckpointPresentation?
-        let presenter = CheckpointWorkflowPresenter() { presentation in
+        var receivedPresentation: WorkflowPresentationRequest?
+        let presenter = WorkflowPresenter { presentation in
             receivedPresentation = presentation
             return true
         }
@@ -333,7 +333,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
             "attempt": 2,
             "enabled": true
         ]
-        let presenter = CheckpointWorkflowPresenter { _ in true }
+        let presenter = WorkflowPresenter { _ in true }
 
         let viewController = try presenter.makePaywallViewController(
             for: Self.renderablePresentation(customVariables: expected)
@@ -344,8 +344,8 @@ final class CheckpointWorkflowPresenterTests: TestCase {
 
     private static func presentation(
         customVariables: [String: CustomVariableValue] = [:]
-    ) -> CheckpointPresentation {
-        return CheckpointPresentation(
+    ) -> WorkflowPresentationRequest {
+        return WorkflowPresentationRequest(
             workflow: self.workflow(),
             customVariables: customVariables
         )
@@ -353,7 +353,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
 
     private static func renderablePresentation(
         customVariables: [String: CustomVariableValue]
-    ) throws -> CheckpointPresentation {
+    ) throws -> WorkflowPresentationRequest {
         let resolvedWorkflow = self.workflow()
         let screen = WorkflowScreen(
             name: nil,
@@ -372,7 +372,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
             steps: ["step-id": WorkflowStep(id: "step-id", type: "screen", screenId: "screen-id")],
             screens: ["screen-id": screen]
         )
-        return CheckpointPresentation(
+        return WorkflowPresentationRequest(
             workflow: ResolvedCheckpointWorkflow(
                 workflow: workflow,
                 uiConfig: resolvedWorkflow.uiConfig,

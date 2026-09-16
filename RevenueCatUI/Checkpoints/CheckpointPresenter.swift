@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  CheckpointPresentationHandler.swift
+//  CheckpointPresenter.swift
 //
 //  Created by Rick van der Linden.
 //
@@ -20,13 +20,13 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointPresenter: CheckpointPresenterProtocol {
 
-    private let workflowPresenter: CheckpointWorkflowPresenterProtocol
+    private let workflowPresenter: WorkflowPresenterProtocol
     private let defaultPaywallPresenter: DefaultPaywallPresenterProtocol
     private let customerInfoSynchronizer: CheckpointsManager.CustomerInfoSynchronizer
     private let slot = CheckpointPresentationSlot()
 
     init(
-        workflowPresenter: CheckpointWorkflowPresenterProtocol,
+        workflowPresenter: WorkflowPresenterProtocol,
         customerInfoSynchronizer: @escaping CheckpointsManager.CustomerInfoSynchronizer = { throw CancellationError() }
     ) {
         self.workflowPresenter = workflowPresenter
@@ -35,7 +35,7 @@ final class CheckpointPresenter: CheckpointPresenterProtocol {
     }
 
     init(
-        workflowPresenter: CheckpointWorkflowPresenterProtocol,
+        workflowPresenter: WorkflowPresenterProtocol,
         defaultPaywallPresenter: DefaultPaywallPresenterProtocol,
         customerInfoSynchronizer: @escaping CheckpointsManager.CustomerInfoSynchronizer = { throw CancellationError() }
     ) {
@@ -44,7 +44,7 @@ final class CheckpointPresenter: CheckpointPresenterProtocol {
         self.customerInfoSynchronizer = customerInfoSynchronizer
     }
 
-    func presentWorkflow(_ presentation: CheckpointPresentation) async throws -> CheckpointExecution {
+    func presentWorkflow(_ presentation: WorkflowPresentationRequest) async throws -> CheckpointPresentationOutcome {
         guard let token = self.slot.claim() else {
             throw CheckpointError.operationAlreadyInProgress
         }
@@ -56,7 +56,7 @@ final class CheckpointPresenter: CheckpointPresenterProtocol {
         params: PaywallPresentationParams,
         globalPaywallPresenter: PaywallPresenter?,
         localPaywallPresentationHandler: PaywallPresentationHandler?
-    ) async throws -> CheckpointExecution {
+    ) async throws -> CheckpointPresentationOutcome {
         guard let token = self.slot.claim() else {
             throw CheckpointError.operationAlreadyInProgress
         }
@@ -101,7 +101,7 @@ final class CheckpointPresenter: CheckpointPresenterProtocol {
         private let customerInfoSynchronizer: CheckpointsManager.CustomerInfoSynchronizer
         private let cancellationHandler: ((@escaping () -> Void) -> Void)?
         private var pendingContinuation: CheckedContinuation<
-            CheckpointExecution, Error
+            CheckpointPresentationOutcome, Error
         >?
         private var hasReportedCompletion = false
 
@@ -120,7 +120,7 @@ final class CheckpointPresenter: CheckpointPresenterProtocol {
         func present(
             params: PaywallPresentationParams,
             presentationHandler: PaywallPresentationHandler
-        ) async throws -> CheckpointExecution {
+        ) async throws -> CheckpointPresentationOutcome {
             return try await withTaskCancellationHandler {
                 try await withCheckedThrowingContinuation { continuation in
                     guard !Task.isCancelled else {
@@ -178,7 +178,7 @@ final class CheckpointPresenter: CheckpointPresenterProtocol {
             }
         }
 
-        private func complete(execution: CheckpointExecution) {
+        private func complete(execution: CheckpointPresentationOutcome) {
             guard let continuation = self.takeContinuation() else { return }
             continuation.resume(returning: execution)
         }
@@ -192,7 +192,7 @@ final class CheckpointPresenter: CheckpointPresenterProtocol {
         }
 
         private func takeContinuation() -> CheckedContinuation<
-            CheckpointExecution, Error
+            CheckpointPresentationOutcome, Error
         >? {
             defer { self.pendingContinuation = nil }
             return self.pendingContinuation
@@ -206,13 +206,13 @@ final class CheckpointPresenter: CheckpointPresenterProtocol {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 protocol CheckpointPresenterProtocol: AnyObject {
 
-    func presentWorkflow(_ presentation: CheckpointPresentation) async throws -> CheckpointExecution
+    func presentWorkflow(_ presentation: WorkflowPresentationRequest) async throws -> CheckpointPresentationOutcome
 
     func presentOffering(
         params: PaywallPresentationParams,
         globalPaywallPresenter: PaywallPresenter?,
         localPaywallPresentationHandler: PaywallPresentationHandler?
-    ) async throws -> CheckpointExecution
+    ) async throws -> CheckpointPresentationOutcome
 
 }
 

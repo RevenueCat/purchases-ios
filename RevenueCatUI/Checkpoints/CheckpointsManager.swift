@@ -36,7 +36,7 @@ final class CheckpointsManager {
         self.resolveCheckpoint = resolveCheckpoint
         self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
         self.checkpointPresenter = checkpointPresenter ?? CheckpointPresenter(
-            workflowPresenter: CheckpointWorkflowPresenter(),
+            workflowPresenter: WorkflowPresenter(),
             customerInfoSynchronizer: customerInfoSynchronizer
         )
     }
@@ -48,7 +48,7 @@ final class CheckpointsManager {
     func executeCheckpoint(
         identifier: String,
         params: CheckpointCallParams
-    ) async throws -> CheckpointExecution {
+    ) async throws -> CheckpointPresentationOutcome {
         let globalPaywallPresenter = self.paywallPresenter
 
         guard CheckpointIdentifierValidator.isValid(identifier) else {
@@ -58,7 +58,7 @@ final class CheckpointsManager {
 
         switch try await self.resolveCheckpoint(identifier, params) {
         case let .matchedWorkflow(workflow):
-            let presentation = CheckpointPresentation(
+            let presentation = WorkflowPresentationRequest(
                 workflow: workflow,
                 customVariables: params.customVariables
             )

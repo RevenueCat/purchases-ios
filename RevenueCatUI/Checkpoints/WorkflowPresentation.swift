@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  CheckpointWorkflowPresentation.swift
+//  WorkflowPresentation.swift
 //
 //  Created by Rick van der Linden.
 //
@@ -17,7 +17,7 @@ import Foundation
 
 /// Everything needed to present a checkpoint workflow.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct CheckpointPresentation {
+struct WorkflowPresentationRequest {
 
     let workflow: ResolvedCheckpointWorkflow
     let customVariables: [String: CustomVariableValue]
@@ -25,7 +25,7 @@ struct CheckpointPresentation {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-enum CheckpointExecution {
+enum CheckpointPresentationOutcome {
     case nothingPresented
     case completed(customerInfo: CustomerInfo?)
     case backedOut
@@ -40,17 +40,17 @@ enum CheckpointExecution {
 /// Presents a resolved checkpoint workflow and returns its terminal execution.
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-protocol CheckpointWorkflowPresenterProtocol: AnyObject {
+protocol WorkflowPresenterProtocol: AnyObject {
 
     func cancel()
     func present(
-        _ presentation: CheckpointPresentation
-    ) async throws -> CheckpointExecution
+        _ presentation: WorkflowPresentationRequest
+    ) async throws -> CheckpointPresentationOutcome
 
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension CheckpointWorkflowPresenterProtocol {
+extension WorkflowPresenterProtocol {
 
     func cancel() {}
 
