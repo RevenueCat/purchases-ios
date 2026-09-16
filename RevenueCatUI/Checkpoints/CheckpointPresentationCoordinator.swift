@@ -20,7 +20,7 @@ import Foundation
 final class CheckpointPresentationCoordinator {
 
     private let handler: CheckpointPresentationHandlerProtocol
-    private var activePresentation: Session?
+    private let slot = CheckpointPresentationSlot()
 
     init(handler: CheckpointPresentationHandlerProtocol) {
         self.handler = handler
@@ -50,16 +50,13 @@ final class CheckpointPresentationCoordinator {
     }
 
     func withPresentationSession<T>(operation: (Session) async throws -> T) async throws -> T {
-        guard self.activePresentation == nil else {
+        guard let token = self.slot.claim() else {
             throw CheckpointError.operationAlreadyInProgress
         }
 
-        let session = Session(coordinator: self)
-        self.activePresentation = session
+        let session = Session(coordinator: self, token: token)
         defer {
-            if self.activePresentation === session {
-                self.activePresentation = nil
-            }
+            self.slot.release(token)
             session.setCancellationHandler(nil)
         }
         return try await withTaskCancellationHandler(operation: {
@@ -72,20 +69,24 @@ final class CheckpointPresentationCoordinator {
     }
 
     fileprivate func isActive(_ session: Session) -> Bool {
-        return self.activePresentation === session
+        return self.slot.contains(session.token)
     }
 
     fileprivate func releasePresentationSlot(for session: Session) {
-        guard self.activePresentation === session else { return }
-        self.activePresentation = nil
+        self.slot.release(session.token)
     }
 
     final class Session {
         private weak var coordinator: CheckpointPresentationCoordinator?
+        fileprivate let token: CheckpointPresentationSlot.Token
         private var cancellationHandler: (() -> Void)?
 
-        fileprivate init(coordinator: CheckpointPresentationCoordinator) {
+        fileprivate init(
+            coordinator: CheckpointPresentationCoordinator,
+            token: CheckpointPresentationSlot.Token
+        ) {
             self.coordinator = coordinator
+            self.token = token
         }
 
         @MainActor
