@@ -23,10 +23,15 @@ import Foundation
     /// The mediation network configured to serve this ad unit.
     public let mediator: MediatorName
 
+    /// The ad format the ad unit was created for. Ad units are format-locked, so a presenter must load
+    /// this ad unit through the matching format's loader.
+    public let adFormat: AdFormat
+
     /// Creates a resolved ad step.
-    @_spi(Internal) public init(adUnitId: String, mediator: MediatorName) {
+    @_spi(Internal) public init(adUnitId: String, mediator: MediatorName, adFormat: AdFormat) {
         self.adUnitId = adUnitId
         self.mediator = mediator
+        self.adFormat = adFormat
     }
 
 }

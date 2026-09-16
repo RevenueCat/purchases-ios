@@ -45,7 +45,7 @@ extension GoogleMobileAds.RewardedAd: RewardedPresentableAd {
 
 }
 
-/// Errors produced by ``AdMobRewardedPresenter`` itself, as opposed to errors forwarded from AdMob.
+/// Errors produced by ``RewardedPresentation`` itself, as opposed to errors forwarded from AdMob.
 @available(iOS 15.0, *)
 internal enum RewardedPresentationError: Error, CustomNSError {
 
@@ -68,7 +68,7 @@ internal enum RewardedPresentationError: Error, CustomNSError {
     var localizedDescription: String {
         switch self {
         case let .unsupportedMediator(mediator):
-            return "AdMobRewardedPresenter only presents AdMob ad units, but the checkpoint ad step " +
+            return "AdMobPresenter only presents AdMob ad units, but the checkpoint ad step " +
                 "is configured for mediator '\(mediator)'."
         case .noPresentationContext:
             return "No view controller is available to present the rewarded ad from."
