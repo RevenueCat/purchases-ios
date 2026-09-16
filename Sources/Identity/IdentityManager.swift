@@ -80,9 +80,17 @@ class IdentityManager: CurrentUserProvider {
             if appUserID?.isEmpty == true {
                 Logger.warn(Strings.identity.logging_in_with_empty_appuserid)
             }
-            finalAppUserID = appUserID?.notEmptyOrWhitespaces
-            ?? deviceCache.cachedAppUserID
-            ?? deviceCache.cachedLegacyAppUserID
+            let configuredAppUserID = appUserID?.notEmptyOrWhitespaces
+            let cachedAppUserID = deviceCache.cachedAppUserID ?? deviceCache.cachedLegacyAppUserID
+
+            if let configuredAppUserID,
+               let cachedAppUserID,
+               configuredAppUserID != cachedAppUserID {
+                Logger.warn(Strings.identity.configured_app_user_id_differs_from_cached)
+            }
+
+            finalAppUserID = configuredAppUserID
+            ?? cachedAppUserID
             ?? Self.generateRandomID()
         }
 

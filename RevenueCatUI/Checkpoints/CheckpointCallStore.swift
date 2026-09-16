@@ -20,10 +20,17 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointCallStore {
 
+    enum CallUpdate {
+        case outcome(CheckpointPaywallOutcome)
+        case workflowPresentationError(NSError)
+        case dismissalReason(WorkflowDismissalReason)
+    }
+
     final class Call {
         let presentation: CheckpointPresentation
         let delegate: CheckpointPresentationDelegate
         fileprivate(set) var stagedOutcome: CheckpointPaywallOutcome
+        fileprivate(set) var dismissalReason: WorkflowDismissalReason = .close
 
         init(
             presentation: CheckpointPresentation,
@@ -45,13 +52,35 @@ final class CheckpointCallStore {
         self.call = Call(presentation: presentation, delegate: delegate)
     }
 
-    func stage(outcome: CheckpointPaywallOutcome) {
-        self.call?.stagedOutcome = outcome
+    func stage(_ update: CallUpdate) {
+        guard let call = self.call else { return }
+
+        switch update {
+        case let .outcome(outcome):
+            // Once the customer has purchased or restored, a later non-success outcome must not erase it.
+            // A later purchase or restore may replace it with newer CustomerInfo.
+            guard !Self.isSuccessful(call.stagedOutcome) || Self.isSuccessful(outcome) else {
+                return
+            }
+            call.stagedOutcome = outcome
+        case let .workflowPresentationError(error):
+            // A workflow error does not supersede an outcome that was already reported by the customer.
+            guard call.stagedOutcome is CheckpointPaywallOutcome.Dismissed else {
+                return
+            }
+            call.stagedOutcome = CheckpointPaywallOutcome.Error(error: error)
+        case let .dismissalReason(reason):
+            call.dismissalReason = reason
+        }
     }
 
     func remove() -> Call? {
         defer { self.call = nil }
         return self.call
+    }
+
+    private static func isSuccessful(_ outcome: CheckpointPaywallOutcome) -> Bool {
+        return outcome is CheckpointPaywallOutcome.Purchased || outcome is CheckpointPaywallOutcome.Restored
     }
 
 }

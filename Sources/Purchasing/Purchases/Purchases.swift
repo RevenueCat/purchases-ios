@@ -328,6 +328,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let overridePreferredUILocaleRateLimiter = RateLimiter(maxCalls: 2, period: 60)
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let virtualCurrencyManager: VirtualCurrencyManagerType
+    private let hostedCheckoutManager: HostedCheckoutManager
 
     private let webBundleEventBus: WebBundleEventBus
 
@@ -962,11 +963,17 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               tokenManager: tokenManager,
                                               operationDispatcher: operationDispatcher,
                                               systemInfo: systemInfo)
-        self.externalPurchaseManager = ExternalPurchaseManager(
+        let externalPurchaseManager = ExternalPurchaseManager(
             customLink: StoreKitExternalPurchaseCustomLink(),
             externalPurchaseTokenAPI: backend.externalPurchaseTokenAPI,
             currentUserProvider: identityManager,
             systemInfo: systemInfo
+        )
+        self.externalPurchaseManager = externalPurchaseManager
+        self.hostedCheckoutManager = HostedCheckoutManager(
+            externalPurchaseManager: externalPurchaseManager,
+            webBillingAPI: backend.webBilling,
+            currentUserProvider: identityManager
         )
 
         super.init()
@@ -1932,6 +1939,17 @@ public extension Purchases {
         }
 
         return CustomerCenterConfigData(from: response)
+    }
+
+    /// Used by `RevenueCatUI` to start a checkout the customer completes without leaving the app.
+    ///
+    /// Only to be called when the customer has deliberately asked to buy: it shows Apple's disclosure notice
+    /// and mints an external purchase token, which Apple expects a report for.
+    @_spi(Internal) func startHostedCheckout(
+        package: Package,
+        paywallEvent: PaywallEvent?
+    ) async -> HostedCheckoutStartResult {
+        return await self.hostedCheckoutManager.startCheckout(package: package, paywall: paywallEvent?.data)
     }
 
     /// Used by `RevenueCatUI` to create a support ticket
