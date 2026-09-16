@@ -15,7 +15,7 @@
 import Foundation
 
 /// A `branch` trigger action. The first audience that matches decides the route.
-@_spi(Internal) public struct WorkflowBranch: Equatable, Sendable {
+@_spi(Internal) public struct WorkflowBranch: Equatable, Sendable, Codable {
 
     @_spi(Internal) public struct Route: Equatable, Sendable, Codable {
 
@@ -30,25 +30,12 @@ import Foundation
 
     }
 
-    /// Ordered.
     public let branches: [Route]
-    /// Where everyone else goes, so navigation is never blocked.
     public let fallbackStepId: String
 
     @_spi(Internal) public init(branches: [Route], fallbackStepId: String) {
         self.branches = branches
         self.fallbackStepId = fallbackStepId
-    }
-
-}
-
-// MARK: - Codable
-
-extension WorkflowBranch: Codable {
-
-    private enum CodingKeys: String, CodingKey {
-        case branches
-        case fallbackStepId
     }
 
 }

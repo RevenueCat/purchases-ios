@@ -14,10 +14,8 @@
 
 import Foundation
 
-/// What a step's exit does when it is taken.
 @_spi(Internal) public enum WorkflowTriggerAction: Equatable, Sendable {
     case step(stepId: String)
-    /// An audience decides between two steps.
     case branch(WorkflowBranch)
     case unknown
 }
@@ -29,28 +27,27 @@ extension WorkflowTriggerAction: Codable {
     private enum CodingKeys: String, CodingKey {
         case type
         case stepId
-        case branches
-        case fallbackStepId
     }
 
     public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        let type = try container.decode(String.self, forKey: .type)
-        switch type {
-        case "step":
-            let stepId = try container.decode(String.self, forKey: .stepId)
-            self = .step(stepId: stepId)
-        case "branch":
-            // Never throws: a throw here would fail the whole workflow, not just this action.
-            guard let branches = try? container.decode([WorkflowBranch.Route].self, forKey: .branches),
-                  let fallbackStepId = try? container.decode(String.self, forKey: .fallbackStepId) else {
+        // Never throws: `WorkflowStep.triggerActions` propagates a throw, so one bad action would fail the
+        // whole workflow rather than just itself.
+        var decodedType: String?
+        do {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            let type = try container.decode(String.self, forKey: .type)
+            decodedType = type
+            switch type {
+            case "step":
+                self = .step(stepId: try container.decode(String.self, forKey: .stepId))
+            case "branch":
+                self = .branch(try WorkflowBranch(from: decoder))
+            default:
                 Logger.warn(Strings.backendError.unknown_workflow_trigger_action_type(type: type))
                 self = .unknown
-                return
             }
-            self = .branch(.init(branches: branches, fallbackStepId: fallbackStepId))
-        default:
-            Logger.warn(Strings.backendError.unknown_workflow_trigger_action_type(type: type))
+        } catch {
+            Logger.warn(Strings.backendError.malformed_workflow_trigger_action(type: decodedType ?? "nil"))
             self = .unknown
         }
     }
@@ -63,8 +60,7 @@ extension WorkflowTriggerAction: Codable {
             try container.encode(stepId, forKey: .stepId)
         case .branch(let branch):
             try container.encode("branch", forKey: .type)
-            try container.encode(branch.branches, forKey: .branches)
-            try container.encode(branch.fallbackStepId, forKey: .fallbackStepId)
+            try branch.encode(to: encoder)
         case .unknown:
             try container.encode("unknown", forKey: .type)
         }

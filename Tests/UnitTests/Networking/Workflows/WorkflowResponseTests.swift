@@ -224,6 +224,59 @@ class WorkflowResponseTests: TestCase {
         expect(action) == .branch(.init(branches: [], fallbackStepId: "step_default"))
     }
 
+    func testDecodeStepTriggerActionMissingItsStepIdDecodesToUnknown() throws {
+        let json = """
+        { "type": "step" }
+        """.data(using: .utf8)!
+
+        let action = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: json)
+
+        expect(action) == .unknown
+    }
+
+    func testDecodeTriggerActionWithNoTypeDecodesToUnknown() throws {
+        let json = """
+        { "step_id": "step_2" }
+        """.data(using: .utf8)!
+
+        let action = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: json)
+
+        expect(action) == .unknown
+    }
+
+    /// A malformed `step` action has to degrade the same way a malformed `branch` does: the dictionary it
+    /// decodes into propagates a throw, so either one would otherwise take down the whole workflow.
+    func testDecodeWorkflowWithMalformedStepActionKeepsTheRestOfTheWorkflow() throws {
+        let json = """
+        {
+          "id": "wf_bad_step",
+          "display_name": "Step",
+          "initial_step_id": "step_1",
+          "steps": {
+            "step_1": {
+              "id": "step_1",
+              "type": "screen",
+              "trigger_actions": {
+                "btn_1": { "type": "step", "step_id": "step_2" },
+                "btn_2": { "type": "step" }
+              }
+            }
+          },
+          "screens": {},
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {},
+            "variable_config": { "variable_compatibility_map": {}, "function_compatibility_map": {} }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: json)
+
+        expect(workflow.steps["step_1"]?.triggerActions["btn_1"]) == .step(stepId: "step_2")
+        expect(workflow.steps["step_1"]?.triggerActions["btn_2"]) == .unknown
+    }
+
     func testDecodeWorkflowWithMalformedBranchKeepsTheRestOfTheWorkflow() throws {
         // Trigger actions decode inside a dictionary that propagates a throw, so one bad branch must
         // not take down the workflow.

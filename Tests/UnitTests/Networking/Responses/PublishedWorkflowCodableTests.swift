@@ -40,22 +40,36 @@ class PublishedWorkflowCodableTests: TestCase {
 
     func testBranchTriggerActionSurvivesAnEncodeDecodeRoundTrip() throws {
         // Workflows are cached as encoded models, so a branch has to come back intact.
-        let json = """
-        {
-          "type": "branch",
-          "branches": [
-            { "audience_id": "aud_a", "step_id": "step_a" },
-            { "audience_id": "aud_b", "step_id": "step_b" }
-          ],
-          "fallback_step_id": "step_default"
-        }
-        """.data(using: .utf8)!
+        let original = WorkflowTriggerAction.branch(.init(
+            branches: [
+                .init(audienceId: "aud_a", stepId: "step_a"),
+                .init(audienceId: "aud_b", stepId: "step_b")
+            ],
+            fallbackStepId: "step_default"
+        ))
 
-        let original = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: json)
         let encoded = try JSONEncoder.default.encode(value: original)
         let decoded = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: encoded)
 
         expect(decoded) == original
+    }
+
+    /// The branch encodes itself into the action's own container, so its fields have to land beside `type`
+    /// rather than nested under one of its own.
+    func testBranchTriggerActionEncodesFlat() throws {
+        let action = WorkflowTriggerAction.branch(.init(
+            branches: [.init(audienceId: "aud_a", stepId: "step_a")],
+            fallbackStepId: "step_default"
+        ))
+
+        let encoded = try JSONEncoder.default.encode(value: action)
+        let json = try XCTUnwrap(
+            try JSONSerialization.jsonObject(with: encoded) as? [String: Any]
+        )
+
+        expect(json["type"] as? String) == "branch"
+        expect(json["fallback_step_id"] as? String) == "step_default"
+        expect(json["branches"] as? [[String: String]]).to(haveCount(1))
     }
 
     func testEncodingOmitsUiConfig() throws {
