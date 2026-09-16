@@ -30,19 +30,19 @@ import SwiftUI
 struct SheetViewModel: Equatable {
     let sheet: RevenueCat.PaywallComponent.ButtonComponent.Sheet
     let sheetStackViewModel: StackComponentViewModel
-    let localPackageContext: PackageContext?
+    let independentPackageContext: PackageContext?
 
     init(sheet: RevenueCat.PaywallComponent.ButtonComponent.Sheet, sheetStackViewModel: StackComponentViewModel) {
         self.sheet = sheet
         self.sheetStackViewModel = sheetStackViewModel
-        if let validator = sheetStackViewModel.localPackageValidator,
+        if let validator = sheetStackViewModel.independentPackageValidator,
            validator.hasDeclaredPackages || !validator.packageInfos.isEmpty {
-            self.localPackageContext = PackageContext(
+            self.independentPackageContext = PackageContext(
                 package: validator.defaultSelectedPackage(in: .provisional),
                 variableContext: .init(packages: validator.packages)
             )
         } else {
-            self.localPackageContext = nil
+            self.independentPackageContext = nil
         }
     }
 
@@ -180,7 +180,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
                 if let sheetViewModel {
                     StackComponentView(
                         viewModel: sheetViewModel.sheetStackViewModel,
-                        localSelectionContext: sheetViewModel.localPackageContext,
+                        independentSelectionContext: sheetViewModel.independentPackageContext,
                         onDismiss: {
                             self.sheetViewModel = nil
                         },

@@ -43,7 +43,7 @@ struct RootView: View {
     private let defaultPackage: Package?
 
     @State private var sheetViewModel: SheetViewModel?
-    @State private var sheetHasLocalSelection = false
+    @State private var sheetHasIndependentSelection = false
     @State private var sheetPackageContext: PackageContext?
     @State private var packageSelectionSheetComponentName: String?
     @State private var packageBeforeOpeningSheet: Package?
@@ -166,8 +166,8 @@ struct RootView: View {
         )
         .onChangeOf(sheetViewModel) { newValue in
             if let newValue {
-                self.sheetHasLocalSelection = newValue.sheetStackViewModel.localPackageValidator != nil
-                self.sheetPackageContext = newValue.localPackageContext
+                self.sheetHasIndependentSelection = newValue.sheetStackViewModel.independentPackageValidator != nil
+                self.sheetPackageContext = newValue.independentPackageContext
                 self.packageSelectionSheetComponentName = newValue.sheet.name
                 if self.workflowPackageContext != nil {
                     self.packageBeforeOpeningSheet = self.packageContext.package
@@ -175,14 +175,14 @@ struct RootView: View {
             } else {
                 // Reset package selection when sheet is dismissed; snapshot sheet name before clear for analytics.
                 let selectionInSheetContext = self.sheetPackageContext.map { $0.package } ?? self.packageContext.package
-                if !self.sheetHasLocalSelection {
+                if !self.sheetHasIndependentSelection {
                     self.packageContext.package = Self.restoredPackageAfterSheetDismissal(
                         workflowPackageContext: self.workflowPackageContext,
                         packageBeforeOpeningSheet: self.packageBeforeOpeningSheet,
                         defaultPackage: self.defaultPackage
                     )
                 }
-                self.sheetHasLocalSelection = false
+                self.sheetHasIndependentSelection = false
                 self.sheetPackageContext = nil
                 self.packageBeforeOpeningSheet = nil
                 let resultingRootPackage = self.packageContext.package
