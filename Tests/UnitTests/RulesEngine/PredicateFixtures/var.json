@@ -180,6 +180,20 @@
       "predicate": { "===": [{ "var": ["missing_key", { "and": [] }] }, null] },
       "variables": {},
       "expected": true
+    },
+    {
+      "id": "var_path_must_match_the_key_spelling",
+      "description": "The key spells café with e (U+0065) followed by a combining acute accent (U+0301); the path spells the same glyph as é (U+00E9). Object keys are compared as UTF-16 code units, so the path does not resolve and the default applies",
+      "predicate": { "===": [{ "var": ["caf\u00e9", "fallback"] }, "fallback"] },
+      "variables": { "cafe\u0301": "sub" },
+      "expected": true
+    },
+    {
+      "id": "var_resolves_when_the_path_matches_the_key_spelling",
+      "description": "Same key as var_path_must_match_the_key_spelling, café spelled e (U+0065) + combining acute accent (U+0301), with a path spelled the same way",
+      "predicate": { "===": [{ "var": ["cafe\u0301", "fallback"] }, "sub"] },
+      "variables": { "cafe\u0301": "sub" },
+      "expected": true
     }
   ]
 }

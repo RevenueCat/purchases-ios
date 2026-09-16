@@ -37,7 +37,6 @@ class OfferingsAPI {
 
     func getOfferings(appUserID: String,
                       isAppBackgrounded: Bool,
-                      decodingMode: OfferingsResponse.DecodingMode = .withPaywallComponents,
                       completion: @escaping OfferingsResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
@@ -48,7 +47,6 @@ class OfferingsAPI {
 
         let offeringsCallback = OfferingsCallback(
             cacheKey: factory.cacheKey,
-            decodingMode: decodingMode,
             completion: completion
         )
         let cacheStatus = self.offeringsCallbacksCache.add(offeringsCallback)

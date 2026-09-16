@@ -112,11 +112,12 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.first(where: { $0.type == .refundRequest })).toNot(beNil())
     }
 
-    func testCancelledDoesNotShowCancel() {
+    func testCancelledShowsResubscribeInsteadOfCancel() throws {
         let purchase = PurchaseInformation.mock(
             isSubscription: true,
             productType: .autoRenewableSubscription,
-            isCancelled: true
+            isCancelled: true,
+            renewalDate: nil
         )
 
         let viewModel = BaseManageSubscriptionViewModel(
@@ -125,9 +126,102 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases())
 
-        expect(viewModel.relevantPathsForPurchase.count) == 2
-        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).toNot(beNil())
-        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).toNot(beNil())
+        let cancelPath = try XCTUnwrap(viewModel.relevantPathsForPurchase.first { $0.type == .cancel })
+        expect(cancelPath.title) == "Resubscribe"
+    }
+
+    func testResubscribeDropsSurveyAndPromotionalOffer() throws {
+        let purchase = PurchaseInformation.mock(
+            isSubscription: true,
+            productType: .autoRenewableSubscription,
+            isCancelled: true,
+            renewalDate: nil
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
+
+        // the configured cancel path carries a feedback survey, resubscribing shouldn't ask why
+        let cancelPath = try XCTUnwrap(viewModel.relevantPathsForPurchase.first { $0.type == .cancel })
+        expect(cancelPath.detail).to(beNil())
+    }
+
+    func testExpiredCancelledDoesNotShowCancel() {
+        let purchase = PurchaseInformation.mock(
+            isSubscription: true,
+            productType: .autoRenewableSubscription,
+            isCancelled: true,
+            isExpired: true,
+            renewalDate: nil
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
+
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
+    }
+
+    func testResubscribeUsesConfiguredLocalizedString() throws {
+        let purchase = PurchaseInformation.mock(
+            isSubscription: true,
+            productType: .autoRenewableSubscription,
+            isCancelled: true,
+            renewalDate: nil
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases(),
+            localization: .init(locale: "en_US", localizedStrings: ["resubscribe": "Come back"]))
+
+        let cancelPath = try XCTUnwrap(viewModel.relevantPathsForPurchase.first { $0.type == .cancel })
+        expect(cancelPath.title) == "Come back"
+    }
+
+    func testExpiredRenewingSubscriptionDoesNotShowCancel() {
+        // willRenew hasn't flipped yet but the entitlement already lapsed
+        let purchase = PurchaseInformation.mock(
+            isSubscription: true,
+            productType: .autoRenewableSubscription,
+            isCancelled: false,
+            isExpired: true,
+            renewalDate: Date().addingTimeInterval(86400)
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
+
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
+    }
+
+    func testActiveSubscriptionKeepsCancelTitleAndSurvey() throws {
+        let purchase = PurchaseInformation.mock(
+            isSubscription: true,
+            productType: .autoRenewableSubscription,
+            isCancelled: false,
+            renewalDate: Date().addingTimeInterval(86400)
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
+
+        let cancelPath = try XCTUnwrap(viewModel.relevantPathsForPurchase.first { $0.type == .cancel })
+        expect(cancelPath.title) == "Cancel subscription"
+        expect(cancelPath.detail).toNot(beNil())
     }
 
     func testShowsRefundIfRefundWindowIsForever() {
@@ -904,6 +998,68 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).to(beFalse())
     }
 
+    // MARK: - Family Sharing Path Filtering Tests
+
+    func testFamilySharedSubscriptionDoesNotShowRefundRequest() {
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: Self.appStoreSubscription(ownershipType: .familyShared),
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        // Only the purchaser can request a refund, Apple rejects it for family members
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
+    }
+
+    func testFamilySharedSubscriptionDoesNotShowChangePlans() {
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: Self.appStoreSubscription(ownershipType: .familyShared),
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        // Only the purchaser can change the plan, Apple rejects it for family members
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).to(beFalse())
+    }
+
+    func testFamilySharedSubscriptionStillShowsCancel() {
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: Self.appStoreSubscription(ownershipType: .familyShared),
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beTrue())
+    }
+
+    func testPurchasedSubscriptionShowsRefundRequestAndChangePlans() {
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: Self.appStoreSubscription(ownershipType: .purchased),
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).to(beTrue())
+    }
+
+    func testUnknownOwnershipSubscriptionShowsRefundRequestAndChangePlans() {
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: Self.appStoreSubscription(ownershipType: .unknown),
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        // We only hide these when we know the purchase is shared
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).to(beTrue())
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -911,6 +1067,17 @@ private extension BaseManageSubscriptionViewModelTests {
 
     static let `default`: CustomerCenterConfigData.Screen =
     CustomerCenterConfigData.default.screens[.management]!
+
+    static func appStoreSubscription(ownershipType: PurchaseOwnershipType) -> PurchaseInformation {
+        PurchaseInformation.mock(
+            store: .appStore,
+            isSubscription: true,
+            productType: .autoRenewableSubscription,
+            isCancelled: false,
+            renewalDate: Date().addingTimeInterval(86400),
+            ownershipType: ownershipType
+        )
+    }
 
     static func managementScreen(
         refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration

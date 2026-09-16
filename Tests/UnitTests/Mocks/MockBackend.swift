@@ -49,6 +49,7 @@ class MockBackend: Backend {
         let internalAPI = InternalAPI(backendConfig: backendConfig)
         let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
         let redeemWebPurchaseAPI = MockRedeemWebPurchaseAPI()
+        let externalPurchaseTokenAPI = MockExternalPurchaseTokenAPI()
         let virtualCurrenciesAPI = MockVirtualCurrenciesAPI()
         let adsAPI = MockAdsAPI()
         let remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
@@ -63,6 +64,7 @@ class MockBackend: Backend {
                   internalAPI: internalAPI,
                   customerCenterConfig: customerCenterConfig,
                   redeemWebPurchaseAPI: redeemWebPurchaseAPI,
+                  externalPurchaseTokenAPI: externalPurchaseTokenAPI,
                   virtualCurrenciesAPI: virtualCurrenciesAPI,
                   adsAPI: adsAPI,
                   remoteConfigAPI: remoteConfigAPI)

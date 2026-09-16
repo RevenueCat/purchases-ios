@@ -92,7 +92,7 @@ private struct SkippableRule: Decodable {
         do {
             self.rule = try CheckpointRule(from: decoder)
         } catch {
-            Logger.warn(Strings.remoteConfig.checkpointRuleSkipped(reason: "\(error)"))
+            Logger.warn(Strings.checkpoints.ruleSkipped(reason: "\(error)"))
             self.rule = nil
         }
     }

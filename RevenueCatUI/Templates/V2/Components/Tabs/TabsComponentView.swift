@@ -105,6 +105,9 @@ struct LoadedTabsComponentView: View {
     @Environment(\.screenCondition)
     private var screenCondition
 
+    @Environment(\.paywallWindowSize)
+    private var paywallWindowSize
+
     @Environment(\.colorScheme)
     private var colorScheme
 
@@ -238,6 +241,7 @@ struct LoadedTabsComponentView: View {
         return PackageSelectionContext(
             condition: self.screenCondition,
             customVariables: self.customVariables,
+            windowSize: self.paywallWindowSize,
             isEligibleForIntroOffer: { [introOfferEligibilityContext] in
                 introOfferEligibilityContext.isEligible(package: $0)
             },
@@ -316,6 +320,7 @@ struct LoadedTabsComponentView: View {
             ),
             selectedPackageId: self.selectedPackageId,
             customVariables: self.customVariables,
+            windowSize: self.paywallWindowSize,
             colorScheme: self.colorScheme
         )
 
@@ -352,6 +357,11 @@ struct LoadedTabsComponentView: View {
             // Intro and promo eligibility both land after first render and can flip a package's
             // visibility. `isPaywallLoading` goes false once both have resolved.
             .onChangeOf(self.isPaywallLoading) { _ in
+                self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
+            }
+            // A window resize (rotation, Split View, Stage Manager) can hide the
+            // selected package via a window size condition.
+            .onChangeOf(self.paywallWindowSize) { _ in
                 self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
             }
             .onAppear {

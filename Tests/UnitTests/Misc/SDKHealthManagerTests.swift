@@ -969,7 +969,7 @@ fileprivate extension SDKHealthManagerTests {
 fileprivate extension PaymentAuthorizationProvider {
     static func mock(canMakePayments: Bool = true) -> PaymentAuthorizationProvider {
         return PaymentAuthorizationProvider(
-            isAuthorized: { canMakePayments }
+            canMakePayments: { canMakePayments }
         )
     }
 }

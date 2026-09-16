@@ -21,6 +21,12 @@ struct WorkflowBackNavigationDestination {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct WorkflowForwardNavigationDestination {
+    let step: WorkflowStep
+    let canNavigateBackAfterNavigation: Bool
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class WorkflowNavigator: ObservableObject {
 
     @Published private(set) var currentStepId: String
@@ -58,6 +64,21 @@ final class WorkflowNavigator: ObservableObject {
 
     @discardableResult
     func triggerAction(componentId: String, triggerType: WorkflowTriggerType = .onPress) -> WorkflowStep? {
+        guard let nextStep = self.triggerActionDestination(componentId: componentId, triggerType: triggerType) else {
+            return nil
+        }
+
+        backStack.append(currentStepId)
+        moveTo(nextStep.step.id)
+        return nextStep.step
+    }
+
+    /// Resolves the step targeted by an action without changing the current step or back stack.
+    /// Callers that need to ensure the target can be rendered should use this before `triggerAction`.
+    func triggerActionDestination(
+        componentId: String,
+        triggerType: WorkflowTriggerType = .onPress
+    ) -> WorkflowForwardNavigationDestination? {
         guard let step = currentStep,
               let trigger = step.stepTriggers.first(where: {
                   $0.componentId == componentId && $0.type == triggerType
@@ -68,9 +89,10 @@ final class WorkflowNavigator: ObservableObject {
             return nil
         }
 
-        backStack.append(currentStepId)
-        moveTo(nextStep.id)
-        return nextStep
+        return .init(
+            step: nextStep,
+            canNavigateBackAfterNavigation: true
+        )
     }
 
     @discardableResult
@@ -87,8 +109,8 @@ final class WorkflowNavigator: ObservableObject {
         resolvedExits = Self.resolveExits(for: workflow.steps[stepId], in: workflow)
     }
 
-    /// Only `.step` exits resolve today. A `.conditions` exit needs the rules engine, which this
-    /// layer cannot reach yet, so it is left unresolved and does not navigate.
+    /// Only `.step` exits resolve here. An exit whose destination has to be evaluated is left out, so it
+    /// does not navigate yet.
     private static func resolveExits(
         for step: WorkflowStep?,
         in workflow: PublishedWorkflow

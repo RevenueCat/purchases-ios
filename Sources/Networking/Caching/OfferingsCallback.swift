@@ -16,7 +16,6 @@ import Foundation
 struct OfferingsCallback: CacheKeyProviding {
 
     let cacheKey: String
-    let decodingMode: OfferingsResponse.DecodingMode
     let completion: (Result<OfferingsFetchResult, BackendError>) -> Void
 
 }

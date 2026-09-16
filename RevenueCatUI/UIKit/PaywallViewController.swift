@@ -44,6 +44,8 @@ import UIKit
 // swiftlint:disable:next type_body_length
 public class PaywallViewController: UIViewController {
 
+    private(set) var workflowDismissalReason: WorkflowDismissalReason = .close
+
     /// See ``PaywallViewControllerDelegate`` for receiving purchase events.
     @objc public final weak var delegate: PaywallViewControllerDelegate?
 
@@ -137,6 +139,10 @@ public class PaywallViewController: UIViewController {
         self.applyOfferingBasedExitOffer(offering)
     }
 
+    func simulateWorkflowPresentationError(_ error: NSError) {
+        self.configuration.workflowPresentationErrorHandler?(error)
+    }
+
     /// Whether we're currently showing an exit offer (to prevent multiple presentations).
     private var isShowingExitOffer: Bool = false
 
@@ -185,7 +191,8 @@ public class PaywallViewController: UIViewController {
         displayCloseButton: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         performPurchase: PerformPurchase? = nil,
-        performRestore: PerformRestore? = nil
+        performRestore: PerformRestore? = nil,
+        workflowPresentationErrorHandler: ((NSError) -> Void)? = nil
     ) {
         self.init(
             content: .offering(workflowContext.initialOffering),
@@ -200,6 +207,7 @@ public class PaywallViewController: UIViewController {
         var configuration = self.configuration
         configuration.introEligibility = introEligibility
         configuration.injectedWorkflowContext = workflowContext
+        configuration.workflowPresentationErrorHandler = workflowPresentationErrorHandler
         self.configuration = configuration
     }
     #endif
@@ -771,6 +779,11 @@ public protocol PaywallViewControllerDelegate: AnyObject {
     optional func paywallViewController(_ controller: PaywallViewController,
                                         didOpenURL url: URL)
 
+    /// Notifies that the user interacted with a paywall control.
+    @objc(paywallViewController:didTrackInteraction:)
+    optional func paywallViewController(_ controller: PaywallViewController,
+                                        didTrackInteraction event: PaywallInteractionEvent)
+
     /// Notifies that the purchase operation has failed in a ``PaywallViewController``.
     @objc(paywallViewController:didFailPurchasingWithError:)
     optional func paywallViewController(_ controller: PaywallViewController,
@@ -878,6 +891,9 @@ private extension PaywallViewController {
             urlOpened: { [weak self] url in
                 self?.notifyDelegateURLOpened(url)
             },
+            interaction: { [weak self] event in
+                self?.notifyDelegateInteraction(event)
+            },
             restoreCompleted: { [weak self] customerInfo in
                 guard let self else { return }
                 self.delegate?.paywallViewController?(self, didFinishRestoringWith: customerInfo)
@@ -895,6 +911,9 @@ private extension PaywallViewController {
                 self.delegate?.paywallViewController?(self, didFailRestoringWith: error)
             },
             requestedDismissal: onRequestedDismissal,
+            onWorkflowDismissal: { [weak self] reason in
+                self?.workflowDismissalReason = reason
+            },
             onSizeChange: { [weak self] in
                 guard let self else { return }
                 self.delegate?.paywallViewController?(self, didChangeSizeTo: $0)
@@ -918,6 +937,10 @@ private extension PaywallViewController {
     /// `createHostingController`'s cyclomatic complexity within the linter's limit.
     private func notifyDelegateURLOpened(_ url: URL) {
         self.delegate?.paywallViewController?(self, didOpenURL: url)
+    }
+
+    private func notifyDelegateInteraction(_ event: PaywallInteractionEvent) {
+        self.delegate?.paywallViewController?(self, didTrackInteraction: event)
     }
 
     private func createPurchaseInitiatedHandler() -> (Package, @escaping (Bool) -> Void) -> Void {
@@ -1017,11 +1040,13 @@ private struct PaywallContainerView: View {
     let purchaseCancelled: PurchaseCancelledHandler
     let webCheckoutOpened: WebCheckoutOpenedHandler
     let urlOpened: URLOpenedHandler
+    let interaction: PaywallInteractionHandler
     let restoreCompleted: PurchaseOrRestoreCompletedHandler
     let purchaseFailure: PurchaseFailureHandler
     let restoreStarted: RestoreStartedHandler
     let restoreFailure: PurchaseFailureHandler
     let requestedDismissal: () -> Void
+    let onWorkflowDismissal: (WorkflowDismissalReason) -> Void
 
     let onSizeChange: (CGSize) -> Void
 
@@ -1039,12 +1064,14 @@ private struct PaywallContainerView: View {
             .onPurchaseCancelled(self.purchaseCancelled)
             .onWebCheckoutOpened(self.webCheckoutOpened)
             .onURLOpened(self.urlOpened)
+            .onPaywallInteraction(self.interaction)
             .onPurchaseFailure(self.purchaseFailure)
             .onRestoreStarted(self.restoreStarted)
             .onRestoreCompleted(self.restoreCompleted)
             .onRestoreFailure(self.restoreFailure)
             .onSizeChange(self.onSizeChange)
             .onRequestedDismissal(self.requestedDismissal)
+            .environment(\.workflowDismissalObserver, self.onWorkflowDismissal)
             .onPurchaseInitiated { package, resumeAction in
                 self.purchaseInitiated(package) { shouldProceed in
                     Task { @MainActor in

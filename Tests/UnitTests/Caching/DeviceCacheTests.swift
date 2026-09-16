@@ -237,6 +237,27 @@ class DeviceCacheTests: TestCase {
         expect(self.deviceCache.isCustomerInfoCacheStale(appUserID: "cesar", isAppBackgrounded: false)) == false
     }
 
+    func testSubscriberDimensionsAreCachedPerAppUserID() {
+        let data = Data(#"{"plan":"annual"}"#.utf8)
+
+        self.deviceCache.cache(subscriberDimensions: data, appUserID: "cesar")
+
+        expect(self.deviceCache.cachedSubscriberDimensionsData(appUserID: "cesar")) == data
+        expect(self.deviceCache.cachedSubscriberDimensionsData(appUserID: "other")).to(beNil())
+    }
+
+    func testClearCachesRemovesSubscriberDimensionsForOldAppUserID() {
+        let appUserID = "cesar"
+        self.deviceCache.cache(
+            subscriberDimensions: Data(#"{"plan":"annual"}"#.utf8),
+            appUserID: appUserID
+        )
+
+        self.deviceCache.clearCaches(oldAppUserID: appUserID, andSaveWithNewUserID: "newUser")
+
+        expect(self.deviceCache.cachedSubscriberDimensionsData(appUserID: appUserID)).to(beNil())
+    }
+
     func testOfferingsAreProperlyCached() throws {
         let expectedOfferings = try Self.createSampleOfferings()
 
@@ -480,16 +501,13 @@ class DeviceCacheTests: TestCase {
         expect(cachedContents?.response.offerings.count) == offerings.contents.response.offerings.count
     }
 
-    func testRawNetworkResponseIsStoredInExistingCacheFormatAndDecodedUsingRequestedMode() throws {
+    func testRawNetworkResponseIsStoredInExistingCacheFormatAndDecodedWithoutComponents() throws {
         let appUserID = "testUser"
         let fixtureData = try BaseHTTPResponseTest.data(for: "OfferingsWithPaywallComponents")
         var rawObject = try XCTUnwrap(JSONSerialization.jsonObject(with: fixtureData) as? [String: Any])
         rawObject["future_backend_field"] = ["preserved": true]
         let responseData = try JSONSerialization.data(withJSONObject: rawObject)
-        let response = try OfferingsResponse.create(
-            with: responseData,
-            decodingMode: .withoutPaywallComponents
-        )
+        let response = try OfferingsResponse.create(with: responseData)
         let contents = Offerings.Contents(
             response: response,
             httpResponseOriginalSource: .fallbackUrl
@@ -518,26 +536,16 @@ class DeviceCacheTests: TestCase {
         self.mockFileCache.stubLoadFile(at: 0, with: .success(cachedData))
         self.mockFileCache.stubLoadFile(at: 1, with: .success(cachedData))
 
-        let pruned = self.deviceCache.cachedOfferingsContents(
-            appUserID: appUserID,
-            decodingMode: .withoutPaywallComponents
-        )
-        let full = self.deviceCache.cachedOfferingsContents(
-            appUserID: appUserID,
-            decodingMode: .withPaywallComponents
-        )
+        let pruned = self.deviceCache.cachedOfferingsContents(appUserID: appUserID)
 
         expect(pruned?.originalSource) == .fallbackUrl
         expect(pruned?.response.offerings.first?.paywallComponents).to(beNil())
         expect(pruned?.response.offerings.first?.hasPaywallComponents) == true
-        expect(full?.originalSource) == .fallbackUrl
-        expect(full?.response.offerings.first?.paywallComponents).toNot(beNil())
     }
 
     func testInvalidRawResponseDoesNotOverwriteCacheWithPrunedContents() throws {
         let response = try OfferingsResponse.create(
-            with: BaseHTTPResponseTest.data(for: "OfferingsWithPaywallComponents"),
-            decodingMode: .withoutPaywallComponents
+            with: BaseHTTPResponseTest.data(for: "OfferingsWithPaywallComponents")
         )
         let contents = Offerings.Contents(
             response: response,
@@ -1294,25 +1302,12 @@ class DeviceCacheTests: TestCase {
             cache: fileManager
         )
 
-        let prunedContents = try XCTUnwrap(
-            deviceCache.cachedOfferingsContents(
-                appUserID: appUserID,
-                decodingMode: .withoutPaywallComponents
-            )
-        )
+        let prunedContents = try XCTUnwrap(deviceCache.cachedOfferingsContents(appUserID: appUserID))
         expect(prunedContents.originalSource) == .fallbackUrl
         expect(prunedContents.response.offerings.first?.paywallComponents).to(beNil())
         expect(prunedContents.response.offerings.first?.hasPaywallComponents) == true
         XCTAssertFalse(fileManager.fileExists(atPath: oldFileURL.path))
 
-        let fullContents = try XCTUnwrap(
-            deviceCache.cachedOfferingsContents(
-                appUserID: appUserID,
-                decodingMode: .withPaywallComponents
-            )
-        )
-        expect(fullContents.originalSource) == .fallbackUrl
-        expect(fullContents.response.offerings.first?.paywallComponents?.id) == "pw_test_1"
     }
 }
 

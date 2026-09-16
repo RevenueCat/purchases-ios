@@ -1,6 +1,6 @@
 import Foundation
-@_spi(Experimental) import RevenueCat
-@_spi(Experimental) import RevenueCatAdMob
+import RevenueCat
+import RevenueCatAdMob
 
 struct Message: Equatable {
     let text: String

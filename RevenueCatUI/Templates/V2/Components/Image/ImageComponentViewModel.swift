@@ -59,13 +59,15 @@ class ImageComponentViewModel {
         customVariables: [String: CustomVariableValue],
         stateValues: [String: PaywallComponent.ConditionValue] = [:],
         stateDefaults: [String: PaywallComponent.ConditionValue] = [:],
+        windowSize: CGSize? = nil,
         colorScheme: ColorScheme
     ) -> ImageComponentStyle {
         let conditionContext = self.uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
             customVariables: customVariables,
             stateValues: stateValues,
-            stateDefaults: stateDefaults
+            stateDefaults: stateDefaults,
+            windowSize: windowSize
         )
 
         let localizedPartial = LocalizedImagePartial.buildPartial(
@@ -105,6 +107,7 @@ class ImageComponentViewModel {
         customVariables: [String: CustomVariableValue],
         stateValues: [String: PaywallComponent.ConditionValue] = [:],
         stateDefaults: [String: PaywallComponent.ConditionValue] = [:],
+        windowSize: CGSize? = nil,
         colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (ImageComponentStyle) -> some View
     ) -> some View {
@@ -117,6 +120,7 @@ class ImageComponentViewModel {
             customVariables: customVariables,
             stateValues: stateValues,
             stateDefaults: stateDefaults,
+            windowSize: windowSize,
             colorScheme: colorScheme
         )
         apply(style)

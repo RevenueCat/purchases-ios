@@ -49,22 +49,22 @@ internal protocol AdImpressionEventData: AdEventData {
 ///
 /// Use the predefined static properties for common mediators, or create custom values
 /// for other mediation networks.
-@_spi(Experimental) @objc(RCMediatorName) public final class MediatorName: NSObject, Codable, @unchecked Sendable {
+public final class MediatorName: NSObject, Codable, @unchecked Sendable {
 
     /// The raw string value of the mediator name
-    @objc public let rawValue: String
+    public let rawValue: String
 
     /// Creates a mediator name with the specified raw value
-    @objc public init(rawValue: String) {
+    public init(rawValue: String) {
         self.rawValue = rawValue
         super.init()
     }
 
     /// Google AdMob mediation network
-    @objc public static let adMob = MediatorName(rawValue: "AdMob")
+    public static let adMob = MediatorName(rawValue: "AdMob")
 
     /// AppLovin MAX mediation network
-    @objc public static let appLovin = MediatorName(rawValue: "AppLovin")
+    public static let appLovin = MediatorName(rawValue: "AppLovin")
 
     // MARK: - NSObject overrides for equality
 
@@ -83,37 +83,37 @@ internal protocol AdImpressionEventData: AdEventData {
 ///
 /// Use the predefined static properties for common ad formats, or create custom values
 /// for other ad format types.
-@_spi(Experimental) @objc(RCAdFormat) public final class AdFormat: NSObject, Codable, @unchecked Sendable {
+public final class AdFormat: NSObject, Codable, @unchecked Sendable {
 
     /// The raw string value of the ad format
-    @objc public let rawValue: String
+    public let rawValue: String
 
     /// Creates an ad format with the specified raw value
-    @objc public init(rawValue: String) {
+    public init(rawValue: String) {
         self.rawValue = rawValue
         super.init()
     }
 
     /// Ad format type not in our predefined list
-    @objc public static let other = AdFormat(rawValue: "other")
+    public static let other = AdFormat(rawValue: "other")
 
     /// Standard banner ad format
-    @objc public static let banner = AdFormat(rawValue: "banner")
+    public static let banner = AdFormat(rawValue: "banner")
 
     /// Full-screen interstitial ad format
-    @objc public static let interstitial = AdFormat(rawValue: "interstitial")
+    public static let interstitial = AdFormat(rawValue: "interstitial")
 
     /// Rewarded video ad format
-    @objc public static let rewarded = AdFormat(rawValue: "rewarded")
+    public static let rewarded = AdFormat(rawValue: "rewarded")
 
     /// Rewarded interstitial ad format
-    @objc public static let rewardedInterstitial = AdFormat(rawValue: "rewarded_interstitial")
+    public static let rewardedInterstitial = AdFormat(rawValue: "rewarded_interstitial")
 
     /// Native ad format that matches app design
-    @objc public static let native = AdFormat(rawValue: "native")
+    public static let native = AdFormat(rawValue: "native")
 
     /// App open ad format displayed at app launch
-    @objc public static let appOpen = AdFormat(rawValue: "app_open")
+    public static let appOpen = AdFormat(rawValue: "app_open")
 
     // MARK: - NSObject overrides for equality
 
@@ -129,70 +129,41 @@ internal protocol AdImpressionEventData: AdEventData {
 }
 
 /// Data for ad failed to load events.
-@_spi(Experimental) @objc(RCAdFailedToLoad) public final class AdFailedToLoad: NSObject,
-                                                                                AdEventData,
-                                                                                Codable,
-                                                                                @unchecked Sendable {
+public final class AdFailedToLoad: NSObject,
+                                   AdEventData,
+                                   Codable,
+                                   @unchecked Sendable {
 
-    // swiftlint:disable missing_docs
-    @objc public private(set) var mediatorName: MediatorName
-    @objc public private(set) var adFormat: AdFormat
-    @objc public private(set) var placement: String?
-    @objc public private(set) var adUnitId: String
-    private let mediatorErrorCodeRawValue: Int?
-    @objc public var mediatorErrorCode: NSNumber? {
-        return self.mediatorErrorCodeRawValue.map(NSNumber.init(value:))
-    }
-    public var mediatorErrorCodeValue: Int? {
-        return self.mediatorErrorCodeRawValue
-    }
+    /// The mediation network that reported the load failure.
+    public let mediatorName: MediatorName
 
-    @objc public init(
+    /// The format of the ad that failed to load.
+    public let adFormat: AdFormat
+
+    /// The developer-defined placement where the ad was requested, if provided.
+    public let placement: String?
+
+    /// The ad unit identifier of the ad that failed to load.
+    public let adUnitId: String
+
+    /// The error code reported by the mediation SDK for the failure, if it provided one.
+    public let mediatorErrorCode: Int?
+
+    // swiftlint:disable:next missing_docs
+    public init(
         mediatorName: MediatorName,
         adFormat: AdFormat,
-        placement: String?,
+        placement: String? = nil,
         adUnitId: String,
-        mediatorErrorCode: NSNumber?
+        mediatorErrorCode: Int?
     ) {
         self.mediatorName = mediatorName
         self.adFormat = adFormat
         self.placement = placement
         self.adUnitId = adUnitId
-        self.mediatorErrorCodeRawValue = mediatorErrorCode?.intValue
+        self.mediatorErrorCode = mediatorErrorCode
         super.init()
     }
-
-    public convenience init(
-        mediatorName: MediatorName,
-        adFormat: AdFormat,
-        placement: String?,
-        adUnitId: String,
-        mediatorErrorCode: Int?
-    ) {
-        self.init(
-            mediatorName: mediatorName,
-            adFormat: adFormat,
-            placement: placement,
-            adUnitId: adUnitId,
-            mediatorErrorCode: mediatorErrorCode.map(NSNumber.init(value:))
-        )
-    }
-
-    @objc public convenience init(
-        mediatorName: MediatorName,
-        adFormat: AdFormat,
-        adUnitId: String,
-        mediatorErrorCode: NSNumber? = nil
-    ) {
-        self.init(
-            mediatorName: mediatorName,
-            adFormat: adFormat,
-            placement: nil,
-            adUnitId: adUnitId,
-            mediatorErrorCode: mediatorErrorCode
-        )
-    }
-    // swiftlint:enable missing_docs
 
     // MARK: - NSObject overrides for equality
 
@@ -220,26 +191,37 @@ internal protocol AdImpressionEventData: AdEventData {
         case adFormat
         case placement
         case adUnitId
-        case mediatorErrorCodeRawValue = "mediatorErrorCode"
+        case mediatorErrorCode
     }
 
 }
 
 /// Data for ad loaded events.
-@_spi(Experimental) @objc(RCAdLoaded) public final class AdLoaded: NSObject,
-                                                                    AdImpressionEventData,
-                                                                    Codable,
-                                                                    @unchecked Sendable {
+public final class AdLoaded: NSObject,
+                             AdImpressionEventData,
+                             Codable,
+                             @unchecked Sendable {
+
+    /// The ad network that served the ad, as reported by the mediator, if available.
+    public let networkName: String?
+
+    /// The mediation network that brokered the ad.
+    public let mediatorName: MediatorName
+
+    /// The format of the ad (for example, banner, interstitial, or rewarded).
+    public let adFormat: AdFormat
+
+    /// The developer-defined placement where the ad was shown, if provided.
+    public let placement: String?
+
+    /// The ad unit identifier for the ad.
+    public let adUnitId: String
+
+    /// Identifier that correlates this event with other events for the same ad impression.
+    public let impressionId: String
 
     // swiftlint:disable missing_docs
-    @objc public private(set) var networkName: String?
-    @objc public private(set) var mediatorName: MediatorName
-    @objc public private(set) var adFormat: AdFormat
-    @objc public private(set) var placement: String?
-    @objc public private(set) var adUnitId: String
-    @objc public private(set) var impressionId: String
-
-    @objc public init(
+    public init(
         networkName: String?,
         mediatorName: MediatorName,
         adFormat: AdFormat,
@@ -256,7 +238,7 @@ internal protocol AdImpressionEventData: AdEventData {
         super.init()
     }
 
-    @objc public convenience init(
+    public convenience init(
         networkName: String?,
         mediatorName: MediatorName,
         adFormat: AdFormat,
@@ -300,20 +282,31 @@ internal protocol AdImpressionEventData: AdEventData {
 }
 
 /// Data for ad displayed events.
-@_spi(Experimental) @objc(RCAdDisplayed) public final class AdDisplayed: NSObject,
-                                                                          AdImpressionEventData,
-                                                                          Codable,
-                                                                          @unchecked Sendable {
+public final class AdDisplayed: NSObject,
+                                AdImpressionEventData,
+                                Codable,
+                                @unchecked Sendable {
+
+    /// The ad network that served the ad, as reported by the mediator, if available.
+    public let networkName: String?
+
+    /// The mediation network that brokered the ad.
+    public let mediatorName: MediatorName
+
+    /// The format of the ad (for example, banner, interstitial, or rewarded).
+    public let adFormat: AdFormat
+
+    /// The developer-defined placement where the ad was shown, if provided.
+    public let placement: String?
+
+    /// The ad unit identifier for the ad.
+    public let adUnitId: String
+
+    /// Identifier that correlates this event with other events for the same ad impression.
+    public let impressionId: String
 
     // swiftlint:disable missing_docs
-    @objc public private(set) var networkName: String?
-    @objc public private(set) var mediatorName: MediatorName
-    @objc public private(set) var adFormat: AdFormat
-    @objc public private(set) var placement: String?
-    @objc public private(set) var adUnitId: String
-    @objc public private(set) var impressionId: String
-
-    @objc public init(
+    public init(
         networkName: String?,
         mediatorName: MediatorName,
         adFormat: AdFormat,
@@ -330,7 +323,7 @@ internal protocol AdImpressionEventData: AdEventData {
         super.init()
     }
 
-    @objc public convenience init(
+    public convenience init(
         networkName: String?,
         mediatorName: MediatorName,
         adFormat: AdFormat,
@@ -374,20 +367,31 @@ internal protocol AdImpressionEventData: AdEventData {
 }
 
 /// Data for ad opened/clicked events.
-@_spi(Experimental) @objc(RCAdOpened) public final class AdOpened: NSObject,
-                                                                    AdImpressionEventData,
-                                                                    Codable,
-                                                                    @unchecked Sendable {
+public final class AdOpened: NSObject,
+                             AdImpressionEventData,
+                             Codable,
+                             @unchecked Sendable {
+
+    /// The ad network that served the ad, as reported by the mediator, if available.
+    public let networkName: String?
+
+    /// The mediation network that brokered the ad.
+    public let mediatorName: MediatorName
+
+    /// The format of the ad (for example, banner, interstitial, or rewarded).
+    public let adFormat: AdFormat
+
+    /// The developer-defined placement where the ad was shown, if provided.
+    public let placement: String?
+
+    /// The ad unit identifier for the ad.
+    public let adUnitId: String
+
+    /// Identifier that correlates this event with other events for the same ad impression.
+    public let impressionId: String
 
     // swiftlint:disable missing_docs
-    @objc public private(set) var networkName: String?
-    @objc public private(set) var mediatorName: MediatorName
-    @objc public private(set) var adFormat: AdFormat
-    @objc public private(set) var placement: String?
-    @objc public private(set) var adUnitId: String
-    @objc public private(set) var impressionId: String
-
-    @objc public init(
+    public init(
         networkName: String?,
         mediatorName: MediatorName,
         adFormat: AdFormat,
@@ -404,7 +408,7 @@ internal protocol AdImpressionEventData: AdEventData {
         super.init()
     }
 
-    @objc public convenience init(
+    public convenience init(
         networkName: String?,
         mediatorName: MediatorName,
         adFormat: AdFormat,
@@ -448,23 +452,40 @@ internal protocol AdImpressionEventData: AdEventData {
 }
 
 /// Data for ad revenue events.
-@_spi(Experimental) @objc(RCAdRevenue) public final class AdRevenue: NSObject,
-                                                                      AdImpressionEventData,
-                                                                      Codable,
-                                                                      @unchecked Sendable {
+public final class AdRevenue: NSObject,
+                              AdImpressionEventData,
+                              Codable,
+                              @unchecked Sendable {
+
+    /// The ad network that served the ad, as reported by the mediator, if available.
+    public let networkName: String?
+
+    /// The mediation network that brokered the ad.
+    public let mediatorName: MediatorName
+
+    /// The format of the ad (for example, banner, interstitial, or rewarded).
+    public let adFormat: AdFormat
+
+    /// The developer-defined placement where the ad was shown, if provided.
+    public let placement: String?
+
+    /// The ad unit identifier for the ad.
+    public let adUnitId: String
+
+    /// Identifier that correlates this event with other events for the same ad impression.
+    public let impressionId: String
+
+    /// The estimated ad revenue, expressed in micros (millionths) of ``currency``.
+    public let revenueMicros: Int
+
+    /// The ISO 4217 currency code for ``revenueMicros``.
+    public let currency: String
+
+    /// The accuracy level of the reported ``revenueMicros``.
+    public let precision: Precision
 
     // swiftlint:disable missing_docs
-    @objc public private(set) var networkName: String?
-    @objc public private(set) var mediatorName: MediatorName
-    @objc public private(set) var adFormat: AdFormat
-    @objc public private(set) var placement: String?
-    @objc public private(set) var adUnitId: String
-    @objc public private(set) var impressionId: String
-    @objc public private(set) var revenueMicros: Int
-    @objc public private(set) var currency: String
-    @objc public private(set) var precision: Precision
-
-    @objc public init(
+    public init(
         networkName: String?,
         mediatorName: MediatorName,
         adFormat: AdFormat,
@@ -487,7 +508,7 @@ internal protocol AdImpressionEventData: AdEventData {
         super.init()
     }
 
-    @objc public convenience init(
+    public convenience init(
         networkName: String?,
         mediatorName: MediatorName,
         adFormat: AdFormat,
@@ -545,28 +566,28 @@ internal protocol AdImpressionEventData: AdEventData {
 extension AdRevenue {
 
     /// Type representing the level of accuracy for reported revenue values.
-    @_spi(Experimental) @objc(RCAdRevenuePrecision) public final class Precision: NSObject, Codable {
+    public final class Precision: NSObject, Codable {
 
         /// The raw string value of the precision type
-        @objc public let rawValue: String
+        public let rawValue: String
 
         /// Creates a precision value with the specified raw value
-        @objc public init(rawValue: String) {
+        public init(rawValue: String) {
             self.rawValue = rawValue
             super.init()
         }
 
         /// Revenue value is exact and confirmed
-        @objc public static let exact = Precision(rawValue: "exact")
+        public static let exact = Precision(rawValue: "exact")
 
         /// Revenue value is defined by the publisher
-        @objc public static let publisherDefined = Precision(rawValue: "publisher_defined")
+        public static let publisherDefined = Precision(rawValue: "publisher_defined")
 
         /// Revenue value is an estimate
-        @objc public static let estimated = Precision(rawValue: "estimated")
+        public static let estimated = Precision(rawValue: "estimated")
 
         /// Revenue value accuracy cannot be determined
-        @objc public static let unknown = Precision(rawValue: "unknown")
+        public static let unknown = Precision(rawValue: "unknown")
 
         // MARK: - NSObject overrides for equality
 
@@ -756,7 +777,7 @@ extension AdEvent {
     internal var mediatorErrorCode: Int? {
         switch self {
         case let .failedToLoad(_, data):
-            return data.mediatorErrorCode?.intValue
+            return data.mediatorErrorCode
         case .loaded, .displayed, .opened, .revenue,
              .rewardEarnedUnverified, .rewardVerified, .rewardFailedToVerify, .rewardGranted:
             return nil

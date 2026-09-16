@@ -43,6 +43,94 @@ final class PaywallAccessibilityUITests: XCTestCase {
         try app.performAccessibilityAudit(for: [.sufficientElementDescription])
     }
 
+    /// XCUITest lists elements that carry `accessibilityHidden(true)`, so element queries cannot
+    /// answer "is this hidden from VoiceOver". Fails once XCUITest starts honoring the modifier.
+    func testElementQueriesListEvenHiddenImages() throws {
+        let app = XCUIApplication()
+        // Matches AccessibilityHiddenControlView.fixtureName; the test bundle can't link it.
+        app.launchEnvironment["PAYWALL_FIXTURE"] = "a11y_control"
+        app.launch()
+
+        XCTAssertTrue(app.staticTexts["Control"].waitForExistence(timeout: 30))
+
+        let identifiers = app.images.allElementsBoundByIndex.map { $0.identifier }
+        XCTAssertTrue(identifiers.contains("star.fill"), "Visible control image missing.")
+        XCTAssertTrue(
+            identifiers.contains("heart.fill"),
+            "XCUITest now hides accessibilityHidden elements; element queries can be trusted again."
+        )
+        XCTAssertTrue(
+            identifiers.contains("bolt.fill"),
+            "XCUITest now hides collapsed-and-hidden elements; element queries can be trusted again."
+        )
+    }
+
+    // MARK: - Package selection
+
+    /// The selected card carries the trait, so VoiceOver speaks the system's own word for it.
+    func testSelectedPackageCarriesTheTrait() throws {
+        let app = self.launchDecorativeMedia()
+
+        let selected = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Yearly")).firstMatch
+        XCTAssertTrue(selected.waitForExistence(timeout: 30), app.debugDescription)
+        XCTAssertTrue(selected.isSelected)
+
+        let unselected = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Monthly")).firstMatch
+        XCTAssertFalse(unselected.isSelected)
+    }
+
+    /// The label is left alone, so anything matching on card copy keeps working.
+    func testSelectionDoesNotChangeTheLabel() throws {
+        let app = self.launchDecorativeMedia()
+
+        let card = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Yearly")).firstMatch
+        XCTAssertTrue(card.waitForExistence(timeout: 30))
+        XCTAssertFalse(card.label.contains("Selected"), "State leaked into the label: \(card.label)")
+    }
+
+    // MARK: - Spoken text
+
+    /// The spoken variant is built from the source copy, so it still carries markdown when it
+    /// reaches the label. What VoiceOver receives must be the words, not the syntax.
+    func testSpokenLabelDropsMarkdownSyntax() throws {
+        let app = self.launchSpokenText()
+
+        // The paragraph carrying both a link and a price: only that shape gets a spoken label
+        // applied over text that still contains markdown.
+        let paragraph = app.staticTexts.matching(
+            NSPredicate(format: "label CONTAINS %@ AND label CONTAINS %@", "terms of service", "monthly")
+        ).firstMatch
+        XCTAssertTrue(paragraph.waitForExistence(timeout: 30), app.debugDescription)
+        XCTAssertFalse(paragraph.label.contains("["), "Markdown reached VoiceOver: \(paragraph.label)")
+        XCTAssertFalse(paragraph.label.contains("https://"), "A link URL is spoken: \(paragraph.label)")
+        XCTAssertFalse(paragraph.label.contains("<u>"), "Underline tags are spoken: \(paragraph.label)")
+    }
+
+    /// The displayed price keeps "/mo"; only what is spoken expands.
+    func testSpokenLabelExpandsThePeriod() throws {
+        let app = self.launchSpokenText()
+
+        let price = app.staticTexts.matching(
+            NSPredicate(format: "label CONTAINS %@", "monthly")
+        ).firstMatch
+        XCTAssertTrue(price.waitForExistence(timeout: 30), app.debugDescription)
+        XCTAssertFalse(price.label.contains("/mo"), "Still spoken as slash mo: \(price.label)")
+    }
+
+    private func launchSpokenText() -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchEnvironment["PAYWALL_FIXTURE"] = "spoken_text_and_links"
+        app.launchEnvironment["PAYWALL_VOICE_OVER"] = "1"
+        app.launch()
+
+        XCTAssertTrue(
+            app.staticTexts["Spoken text and links"].waitForExistence(timeout: 30),
+            "Fixture did not render."
+        )
+
+        return app
+    }
+
     private func launch(fixture: String) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchEnvironment["PAYWALL_FIXTURE"] = fixture
@@ -52,6 +140,20 @@ final class PaywallAccessibilityUITests: XCTestCase {
         // button's label is not gated by that same label.
         XCTAssertTrue(
             app.staticTexts["Everything you need, in one place."].waitForExistence(timeout: 30),
+            "Fixture did not render."
+        )
+
+        return app
+    }
+
+
+    private func launchDecorativeMedia() -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchEnvironment["PAYWALL_FIXTURE"] = "decorative_media"
+        app.launch()
+
+        XCTAssertTrue(
+            app.staticTexts["Unlock all Sundial Features"].waitForExistence(timeout: 30),
             "Fixture did not render."
         )
 

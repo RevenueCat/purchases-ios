@@ -65,6 +65,7 @@ import Foundation
             case tryCheckRestore = "try_check_restore"
             case restorePurchases = "restore_purchases"
             case cancel = "cancel"
+            case resubscribe = "resubscribe"
             case billingCycle = "billing_cycle"
             case currentPrice = "current_price"
             case expired = "expired"
@@ -220,6 +221,8 @@ import Foundation
                     "If you think this is an error, please contact support."
                 case .cancel:
                     return "Cancel"
+                case .resubscribe:
+                    return "Resubscribe"
                 case .billingCycle:
                     return "Billing cycle"
                 case .currentPrice:
@@ -727,7 +730,6 @@ import Foundation
         @_spi(Internal) public let displayPurchaseHistoryLink: Bool
         @_spi(Internal) public let displayUserDetailsSection: Bool
         @_spi(Internal) public let displayVirtualCurrencies: Bool
-        @_spi(Internal) public let shouldWarnCustomersAboutMultipleSubscriptions: Bool
         @_spi(Internal) public let supportTickets: SupportTickets?
 
         @_spi(Internal) public init(
@@ -736,7 +738,6 @@ import Foundation
             displayPurchaseHistoryLink: Bool,
             displayUserDetailsSection: Bool,
             displayVirtualCurrencies: Bool,
-            shouldWarnCustomersAboutMultipleSubscriptions: Bool,
             supportTickets: SupportTickets? = nil
         ) {
             self.email = email
@@ -744,7 +745,6 @@ import Foundation
             self.displayPurchaseHistoryLink = displayPurchaseHistoryLink
             self.displayUserDetailsSection = displayUserDetailsSection
             self.displayVirtualCurrencies = displayVirtualCurrencies
-            self.shouldWarnCustomersAboutMultipleSubscriptions = shouldWarnCustomersAboutMultipleSubscriptions
             self.supportTickets = supportTickets
         }
 
@@ -1048,8 +1048,6 @@ extension CustomerCenterConfigData.Support {
         self.displayPurchaseHistoryLink = response.displayPurchaseHistoryLink ?? false
         self.displayUserDetailsSection = response.displayUserDetailsSection ?? true
         self.displayVirtualCurrencies = response.displayVirtualCurrencies ?? false
-        self.shouldWarnCustomersAboutMultipleSubscriptions = response.shouldWarnCustomersAboutMultipleSubscriptions
-            ?? false
         self.supportTickets = response.supportTickets.map { SupportTickets(from: $0) }
     }
 

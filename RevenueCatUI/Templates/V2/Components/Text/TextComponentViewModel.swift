@@ -78,6 +78,8 @@ class TextComponentViewModel {
         customVariables: [String: CustomVariableValue] = [:],
         stateValues: [String: PaywallComponent.ConditionValue] = [:],
         stateDefaults: [String: PaywallComponent.ConditionValue] = [:],
+        windowSize: CGSize? = nil,
+        isVoiceOverRunning: Bool = false,
         @ViewBuilder apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
         let isEligibleForPromoOffer = promoOffer != nil
@@ -85,7 +87,8 @@ class TextComponentViewModel {
             selectedPackageId: selectedPackageId,
             customVariables: customVariables,
             stateValues: stateValues,
-            stateDefaults: stateDefaults
+            stateDefaults: stateDefaults,
+            windowSize: windowSize
         )
         let localizedPartial = LocalizedTextPartial.buildPartial(
             state: state,
@@ -110,11 +113,19 @@ class TextComponentViewModel {
             defaultCustomVariables: uiConfigProvider.defaultCustomVariables
         )
 
+        let processedText = Self.processText(text, config: config)
+        // Resolved only when something will read it. This runs on every body evaluation, so
+        // countdown ticks and selection changes would otherwise pay for it with nobody listening.
+        let spokenText = isVoiceOverRunning
+            ? Self.processText(text, config: config, spoken: true)
+            : processedText
+
         let style = TextComponentStyle(
             uiConfigProvider: self.uiConfigProvider,
             visible: partial?.visible ?? self.component.visible ?? true,
             name: partial?.name ?? self.component.name,
-            text: Self.processText(text, config: config),
+            text: processedText,
+            accessibilityText: spokenText == processedText ? nil : spokenText,
             fontName: partial?.fontName ?? self.component.fontName,
             fontWeight: partial?.fontWeightResolved ?? self.component.fontWeightResolved,
             color: partial?.color ?? self.component.color,
@@ -141,8 +152,12 @@ class TextComponentViewModel {
         let defaultCustomVariables: [String: CustomVariableValue]
     }
 
-    private static func processText(_ text: String, config: TextProcessingConfig) -> String {
-        let processedWithV2 = Self.processTextV2(text, config: config)
+    private static func processText(
+        _ text: String,
+        config: TextProcessingConfig,
+        spoken: Bool = false
+    ) -> String {
+        let processedWithV2 = Self.processTextV2(text, config: config, spoken: spoken)
 
         let processedWithV2AndV1 = Self.processTextV1(
             processedWithV2,
@@ -150,10 +165,23 @@ class TextComponentViewModel {
             locale: config.locale
         )
 
-        return processedWithV2AndV1
+        guard spoken else {
+            return processedWithV2AndV1
+        }
+
+        // V1 placeholders only resolve to forms like "$6.99/mo" here, after the V2 pass.
+        // The expansion is idempotent, so what V2 already handled is left alone.
+        return VariableHandlerV2.expandPeriodAbbreviations(
+            in: processedWithV2AndV1,
+            localizations: config.localizations
+        )
     }
 
-    private static func processTextV2(_ text: String, config: TextProcessingConfig) -> String {
+    private static func processTextV2(
+        _ text: String,
+        config: TextProcessingConfig,
+        spoken: Bool = false
+    ) -> String {
         let pkg = config.packageContext.package
 
         let discount = pkg.flatMap { package in
@@ -179,7 +207,8 @@ class TextComponentViewModel {
             localizations: config.localizations,
             isEligibleForIntroOffer: config.isEligibleForIntroOffer,
             promoOffer: config.promoOffer,
-            countdownTime: config.countdownTime
+            countdownTime: config.countdownTime,
+            spoken: spoken
         )
     }
 
@@ -271,6 +300,8 @@ struct TextComponentStyle {
     let visible: Bool
     let name: String?
     let text: String
+    /// Nil when the spoken and displayed forms are identical.
+    let accessibilityText: String?
     let fontWeight: Font.Weight
     let color: DisplayableColorScheme
     let font: Font
@@ -286,6 +317,7 @@ struct TextComponentStyle {
         visible: Bool,
         name: String?,
         text: String,
+        accessibilityText: String? = nil,
         fontName: String?,
         fontWeight: PaywallComponent.FontWeight,
         color: PaywallComponent.ColorScheme,
@@ -299,6 +331,7 @@ struct TextComponentStyle {
         self.visible = visible
         self.name = name
         self.text = text
+        self.accessibilityText = accessibilityText
         self.fontWeight = fontWeight.fontWeight
         self.color = color.asDisplayable(uiConfigProvider: uiConfigProvider)
 

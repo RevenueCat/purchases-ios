@@ -9,11 +9,9 @@ import Foundation
 
 enum RemoteConfigStrings {
 
-    case audienceMetadataBeforeDecoding(identifier: String, metadata: String)
+    case audienceConfigurationDecodeFailed(Error)
+    case audienceDecodeFailed(identifier: String, error: Error)
     case cacheURLNotAvailable
-    case checkpointAudiencesNotEvaluated(checkpointID: String, reason: String)
-    case checkpointRuleSkipped(reason: String)
-    case checkpointWorkflowRuleSkipped(workflowID: String, reason: String)
     case failedToClearBlobStore(Error)
     case failedToDeleteBlob(String, Error)
     case failedToReadBlob(String, Error)
@@ -26,7 +24,6 @@ enum RemoteConfigStrings {
     case duplicateSourceURL(String)
     case failedToParseResponse(Error)
     case malformedBlobRef(String)
-    case mergeItemsBlobDataDisabled(topic: RemoteConfigTopic, itemKeys: [String])
     case mergeItemsBlobDataEmpty(topic: RemoteConfigTopic)
     case mergeItemsBlobDataUnavailableItems(topic: RemoteConfigTopic, itemKeys: [String])
     case notModified
@@ -34,16 +31,13 @@ enum RemoteConfigStrings {
     case prefetchingBlobCount(Int)
     case receivedConfiguration(activeTopics: [String], changedTopics: [String])
     case refreshing(domain: String, manifestPresent: Bool, isAppBackgrounded: Bool)
-    case disablingRefresh(BackendError)
+    case remoteConfigReadRetry
     case refreshFailed(BackendError)
-    case refreshSkippedDisabled
     case skippingInvalidBlob(String)
     case persistedConfiguration(domain: String, activeTopicCount: Int, referencedBlobCount: Int)
     case sourceUnhealthy(ref: String, hasNextSource: Bool)
     case storedBlob(String, byteCount: Int, URL)
     case storedInlineBlob(String, byteCount: Int)
-    case subscriberAttributesUnavailable(Error)
-    case invalidDimensionName(String, parentPath: String)
     case uiConfigDecodeFailed(Error)
     case uiConfigMissingRequiredPart
 
@@ -53,16 +47,13 @@ extension RemoteConfigStrings: LogMessage {
 
     var description: String {
         switch self {
-        case let .audienceMetadataBeforeDecoding(identifier, metadata):
-            return "Raw audience remote config metadata for '\(identifier)' before decoding: \(metadata)"
+        case let .audienceConfigurationDecodeFailed(error):
+            return "Failed to decode canonical audience configuration: \(error.localizedDescription)"
+        case let .audienceDecodeFailed(identifier, error):
+            return "Ignoring audience '\(identifier)' in the canonical audience configuration: " +
+                "\(error.localizedDescription)"
         case .cacheURLNotAvailable:
             return "Remote config cache URL is not available."
-        case let .checkpointAudiencesNotEvaluated(checkpointID, reason):
-            return "The audiences for checkpoint '\(checkpointID)' could not be evaluated: \(reason)."
-        case let .checkpointRuleSkipped(reason):
-            return "Skipping malformed checkpoint rule: \(reason)."
-        case let .checkpointWorkflowRuleSkipped(workflowID, reason):
-            return "Skipping checkpoint rule for workflow '\(workflowID)': \(reason)."
         case let .failedToClearBlobStore(error):
             return "Failed to clear remote config blob store: \(error.localizedDescription)"
         case let .failedToDeleteBlob(ref, error):
@@ -90,9 +81,6 @@ extension RemoteConfigStrings: LogMessage {
             "\(error.localizedDescription)"
         case let .malformedBlobRef(ref):
             return "Refusing remote config blob operation with malformed ref '\(ref)'."
-        case let .mergeItemsBlobDataDisabled(topic, itemKeys):
-            return "Unable to merge remote config blob data for topic '\(topic.wireName)': " +
-                "remote config is disabled. Requested item keys: \(itemKeys.sorted().joined(separator: ", "))."
         case let .mergeItemsBlobDataEmpty(topic):
             return "Unable to merge remote config blob data for topic '\(topic.wireName)': no item keys requested."
         case let .mergeItemsBlobDataUnavailableItems(topic, itemKeys):
@@ -111,12 +99,10 @@ extension RemoteConfigStrings: LogMessage {
         case let .refreshing(domain, manifestPresent, isAppBackgrounded):
             return "Refreshing remote config for domain '\(domain)' " +
                 "(manifestPresent: \(manifestPresent), isAppBackgrounded: \(isAppBackgrounded))."
-        case let .disablingRefresh(error):
-            return "Disabling remote config for this session after receiving a 4xx response. Error: \(error)"
+        case .remoteConfigReadRetry:
+            return "Remote configuration changed during a read; retrying once."
         case let .refreshFailed(error):
             return "Remote config refresh failed. Keeping cached configuration. Error: \(error)"
-        case .refreshSkippedDisabled:
-            return "Remote config is disabled for this session (4xx). Skipping refresh."
         case let .skippingInvalidBlob(ref):
             return "Skipping remote config blob '\(ref)': checksum verification failed."
         case let .persistedConfiguration(domain, activeTopicCount, referencedBlobCount):
@@ -129,11 +115,6 @@ extension RemoteConfigStrings: LogMessage {
             return "Stored remote config blob '\(ref)' with \(byteCount) bytes downloaded from \(url.absoluteString)."
         case let .storedInlineBlob(ref, byteCount):
             return "Stored inline remote config blob '\(ref)' with \(byteCount) bytes."
-        case let .subscriberAttributesUnavailable(error):
-            return "The subscriber attributes are unavailable, so they cannot be evaluated: \(error)."
-        case let .invalidDimensionName(name, parentPath):
-            return "Ignoring dimension name '\(name)' under '\(parentPath)': " +
-                "a dimension name cannot be empty, whitespace-only, or contain '.'."
         case let .uiConfigDecodeFailed(error):
             return "Failed to decode merged ui_config: \(error.localizedDescription)"
         case .uiConfigMissingRequiredPart:

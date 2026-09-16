@@ -108,9 +108,12 @@ class ViewModelFactoryBadgeTests: TestCase {
         expect(viewModel.badgeViewModels).to(beEmpty())
     }
 
-    /// When multiple overrides have badges, the first one should be used.
+    /// When multiple overrides have badges, each one's contents are prepared, so whichever rule
+    /// wins presents its own badge rather than the first rule's. Rules are last-match-wins, so
+    /// preparing only the first meant any later rule showed its own badge filled with the first
+    /// badge's contents.
     @MainActor
-    func testMultipleOverridesWithBadges_UsesFirstOne() throws {
+    func testMultipleOverridesWithBadges_PreparesContentsForEach() throws {
         // Given: Multiple overrides with badges
         let firstBadgeStack = PaywallComponent.StackComponent(
             components: [
@@ -159,8 +162,9 @@ class ViewModelFactoryBadgeTests: TestCase {
         // When: Creating StackComponentViewModel
         let viewModel = try makeStackViewModel(component: stackComponent)
 
-        // Then: Should use first override's badge (1 component, not 2)
-        expect(viewModel.badgeViewModels.count).to(equal(1))
+        // Then: both badges have their own contents ready, 1 component and 2 components
+        expect(viewModel.badgeViewModels.count).to(equal(2))
+        expect(viewModel.badgeViewModels.map(\.viewModels.count).sorted()).to(equal([1, 2]))
     }
 
     /// When base badge is nil but override has badge, and override also has other properties,

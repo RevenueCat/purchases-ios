@@ -8,10 +8,10 @@ import Foundation
 
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
-@_spi(Internal) @_spi(Experimental) import RevenueCat
+@_spi(Internal) import RevenueCat
 
 @available(iOS 15.0, *)
-@_spi(Experimental) public extension GoogleMobileAds.RewardedAd {
+public extension GoogleMobileAds.RewardedAd {
 
     /// Enables RevenueCat reward verification for this ad.
     ///
@@ -84,7 +84,7 @@ import GoogleMobileAds
 }
 
 @available(iOS 15.0, *)
-@_spi(Experimental) public extension GoogleMobileAds.RewardedInterstitialAd {
+public extension GoogleMobileAds.RewardedInterstitialAd {
 
     /// Enables RevenueCat reward verification for this ad.
     ///

@@ -71,32 +71,18 @@ private extension GetOfferingsOperation {
                 completion()
             }
 
-            var resultsByDecodingMode: [OfferingsResponse.DecodingMode: OfferingsResponseHandlerResult] = [:]
-
             self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
-                let decodingMode = callbackObject.decodingMode
-                let result: OfferingsResponseHandlerResult
-                if let cachedResult = resultsByDecodingMode[decodingMode] {
-                    result = cachedResult
-                } else {
-                    result = Self.decode(response, using: decodingMode)
-                    resultsByDecodingMode[decodingMode] = result
-                }
-
-                callbackObject.completion(result)
+                callbackObject.completion(Self.decode(response))
             }
         }
     }
 
     typealias OfferingsResponseHandlerResult = Result<OfferingsFetchResult, BackendError>
 
-    static func decode(
-        _ response: VerifiedHTTPResponse<Data>.Result,
-        using decodingMode: OfferingsResponse.DecodingMode
-    ) -> OfferingsResponseHandlerResult {
+    static func decode(_ response: VerifiedHTTPResponse<Data>.Result) -> OfferingsResponseHandlerResult {
         let rawResponseData = try? response.get().body
         let decodedResponse: VerifiedHTTPResponse<OfferingsResponse>.Result = response.parseResponse { data, _ in
-            try OfferingsResponse.create(with: data, decodingMode: decodingMode)
+            try OfferingsResponse.create(with: data)
         }
 
         return decodedResponse

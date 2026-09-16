@@ -21,7 +21,9 @@ struct FixtureRootView: View {
 
     var body: some View {
         if let requestedFixture {
-            if let fixture = PaywallFixture(rawValue: requestedFixture) {
+            if requestedFixture == AccessibilityHiddenControlView.fixtureName {
+                AccessibilityHiddenControlView()
+            } else if let fixture = PaywallFixture(rawValue: requestedFixture) {
                 FixturePaywallView(fixture: fixture)
             } else {
                 // Named as text so a failing test reports the bad name instead of timing out.
@@ -41,6 +43,33 @@ struct FixtureRootView: View {
 
 }
 
+struct AccessibilityHiddenControlView: View {
+
+    static let fixtureName = "a11y_control"
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Control")
+
+            Image(systemName: "star.fill")
+                .resizable()
+                .frame(width: 40, height: 40)
+
+            Image(systemName: "heart.fill")
+                .resizable()
+                .frame(width: 41, height: 41)
+                .accessibilityHidden(true)
+
+            Image(systemName: "bolt.fill")
+                .resizable()
+                .frame(width: 42, height: 42)
+                .accessibilityElement(children: .ignore)
+                .accessibilityHidden(true)
+        }
+    }
+
+}
+
 struct FixturePaywallView: View {
 
     let fixture: PaywallFixture
@@ -51,13 +80,21 @@ struct FixturePaywallView: View {
         Dictionary(uniqueKeysWithValues: packages.map { ($0, IntroEligibilityStatus.eligible) })
     }
 
+    /// XCUITest cannot turn VoiceOver on, so a test says so through the override instead.
+    /// Stays `nil` otherwise, or it would answer for the real thing and force it off on device.
+    private var pretendsVoiceOverIsRunning: Bool? {
+        ProcessInfo.processInfo.environment["PAYWALL_VOICE_OVER"] == "1" ? true : nil
+    }
+
     var body: some View {
         PaywallView(
             offering: self.fixture.offering,
             introEligibility: Self.eligibility,
+            simulatePromoEligible: true,
             performPurchase: { _ in (userCancelled: true, error: nil) },
             performRestore: { (success: false, error: nil) }
         )
+        .environment(\.voiceOverEnabledOverride, self.pretendsVoiceOverIsRunning)
     }
 
 }

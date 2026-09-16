@@ -36,6 +36,25 @@ final class CheckpointDemoModel: ObservableObject {
         )
     }
 
+    func showOutcome(_ result: FlowResult?, checkpointIdentifier: String) {
+        guard let result else {
+            self.showOutcomeAlert(
+                title: "No completed flow",
+                message: "Checkpoint · \(checkpointIdentifier)\n\n" +
+                    "No matching flow was found, or the flow could not complete."
+            )
+            return
+        }
+
+        let identifiers = result.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted()
+        self.showOutcomeAlert(
+            title: "Checkpoint completed",
+            message: identifiers.isEmpty
+                ? "Checkpoint · \(checkpointIdentifier)\n\nNo active entitlements reported."
+                : "Checkpoint · \(checkpointIdentifier)\n\nObtained: \(identifiers.joined(separator: ", "))"
+        )
+    }
+
     func showError(_ error: Error) {
         self.showOutcomeAlert(
             title: "Checkpoint failed",
@@ -75,12 +94,12 @@ final class CheckpointDemoModel: ObservableObject {
 
     private static func describe(_ result: CheckpointResult, checkpointIdentifier: String) -> String {
         switch result {
-        case let presented as CheckpointPaywallPresentedResult:
+        case let presented as CheckpointResult.PaywallPresented:
             return "Paywall presented · \(checkpointIdentifier)\n\n" +
                 "Paywall outcome: \(Self.describe(presented.paywallOutcome))"
-        case let received as CheckpointReceivedOfferingResult:
+        case let received as CheckpointResult.ReceivedOffering:
             return "Received offering · \(checkpointIdentifier) · \(received.offering.identifier)"
-        case let noAction as CheckpointNoActionResult:
+        case let noAction as CheckpointResult.NoAction:
             return "No action · \(checkpointIdentifier) · \(noAction.reason)"
         default:
             return "Unknown checkpoint result · \(checkpointIdentifier)"

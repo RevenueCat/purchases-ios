@@ -129,7 +129,7 @@ class HTTPClient {
             "X-StoreKit-Version": "\(self.systemInfo.storeKitVersion.effectiveVersion)",
             "X-Observer-Mode-Enabled": "\(self.systemInfo.observerMode)",
             RequestHeader.retryCount.rawValue: "0",
-            RequestHeader.sandbox.rawValue: "\(self.systemInfo.isSandbox)",
+            RequestHeader.sandbox.rawValue: "\(self.systemInfo.isSandbox || self.systemInfo.isSimulatedStoreAPIKey)",
             "X-Is-Backgrounded": "\(self.systemInfo.isAppBackgroundedState)",
             "X-Is-Debug-Build": "\(self.systemInfo.isDebugBuild)",
             "X-Installation-Method": SystemInfo.installationMethod
@@ -863,12 +863,6 @@ private extension HTTPClient {
             Logger.warn(Strings.network.api_request_forcing_server_error(request.httpRequest,
                                                                          serverErrorURL: serverErrorURL))
             urlRequest = URLRequest(url: serverErrorURL)
-
-        case let .appendQueryItems(queryItems):
-            Logger.warn(Strings.network.api_request_appending_query_items(request.httpRequest, queryItems: queryItems))
-            if let url = urlRequest.url?.appendingQueryItems(queryItems) {
-                urlRequest.url = url
-            }
 
         case .performRequest:
             break

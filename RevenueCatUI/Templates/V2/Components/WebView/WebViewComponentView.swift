@@ -29,6 +29,9 @@ struct WebViewComponentView: View {
     @Environment(\.screenCondition)
     private var screenCondition
 
+    @Environment(\.paywallWindowSize)
+    private var paywallWindowSize
+
     @Environment(\.customPaywallVariables)
     private var customVariables
 
@@ -62,7 +65,8 @@ struct WebViewComponentView: View {
             selectedPackageId: self.selectedPackageId,
             customVariables: self.customVariables,
             stateValues: self.paywallStateValues,
-            stateDefaults: self.paywallStateDefaults
+            stateDefaults: self.paywallStateDefaults,
+            windowSize: self.paywallWindowSize
         )
     }
 
@@ -407,16 +411,10 @@ struct WebViewRepresentable: PlatformViewRepresentable {
         /// surfaces here) as a reason to remove the web view. Cancellations are ignored: we
         /// deliberately cancel cross-origin navigations in `decidePolicyFor`, and those surface here.
         private func handleLoadFailure(_ error: Error) {
-            let nsError = error as NSError
-            if nsError.domain == NSURLErrorDomain, nsError.code == NSURLErrorCancelled {
+            guard !WebViewNavigationFailure.isCancellation(error) else {
                 return
             }
-            // Cancelling via the navigation policy can also surface as WebKitErrorDomain 102
-            // ("frame load interrupted by a policy change"), which is not a real failure.
-            if nsError.domain == "WebKitErrorDomain", nsError.code == 102 {
-                return
-            }
-            Logger.error(Strings.paywall_web_view_load_failed(nsError.localizedDescription))
+            Logger.error(Strings.paywall_web_view_load_failed((error as NSError).localizedDescription))
             self.onLoadFailed?()
         }
 

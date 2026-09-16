@@ -7,7 +7,7 @@
 import Foundation
 
 #if os(iOS) && canImport(GoogleMobileAds)
-@_spi(Experimental) @_spi(Internal) import RevenueCat
+@_spi(Internal) import RevenueCat
 
 @available(iOS 15.0, *)
 internal extension Tracking {
