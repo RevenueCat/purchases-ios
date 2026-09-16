@@ -868,8 +868,35 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
 
         let adStep = Self.resolvedAd(resolution)
         XCTAssertEqual(adStep?.adUnitId, "ad_unit_1")
-        XCTAssertEqual(adStep?.mediator, MediatorName(rawValue: "admob"))
+        XCTAssertEqual(adStep?.mediator, .adMob)
         XCTAssertNil(Self.resolvedWorkflow(resolution))
+    }
+
+    func testLowercaseWireMediatorResolvesToCanonicalMediatorName() async throws {
+        // The backend serializes the mediator as `admob`; presenters match against `MediatorName.adMob`.
+        self.stubAdWorkflow(adUnitId: "ad_unit_1", mediator: "admob")
+
+        let resolution = try await self.resolve()
+
+        let mediator = Self.resolvedAd(resolution)?.mediator
+        XCTAssertEqual(mediator, .adMob)
+        XCTAssertEqual(mediator?.rawValue, MediatorName.adMob.rawValue)
+    }
+
+    func testCanonicallyCasedMediatorResolvesToCanonicalMediatorName() async throws {
+        self.stubAdWorkflow(adUnitId: "ad_unit_1", mediator: MediatorName.adMob.rawValue)
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedAd(resolution)?.mediator, .adMob)
+    }
+
+    func testUnknownMediatorResolvesAsItsRawValue() async throws {
+        self.stubAdWorkflow(adUnitId: "ad_unit_1", mediator: "Some_Future_Mediator")
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedAd(resolution)?.mediator, MediatorName(rawValue: "Some_Future_Mediator"))
     }
 
     func testAdStepWithoutAnAdUnitIdentifierResolvesConfigurationUnavailable() async throws {
