@@ -111,6 +111,17 @@ class HostedCheckoutManagerTests: TestCase {
         expect(self.webBillingAPI.invokedPostHostedCheckoutParameters?.externalPurchaseTokenID).to(beNil())
     }
 
+    /// An app outside the programme did not try to make an external purchase, so telling it anything about
+    /// one is noise in its console.
+    func testSaysNothingAboutExternalPurchasesWhileTheSettingIsDisabled() async {
+        self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
+        self.manager = self.makeManager()
+
+        _ = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        self.logger.verifyMessageWasNotLogged(Strings.externalPurchase.cannot_make_external_purchases)
+    }
+
     /// The backend creates a sandbox session for a `test_` key, and there is no App Store behind such a key
     /// for Apple's programme to apply to.
     func testCreatesTheSessionWithoutATokenWithATestStoreKey() async {
@@ -167,6 +178,24 @@ class HostedCheckoutManagerTests: TestCase {
         let secondResult: Atomic<HostedCheckoutStartResult?> = nil
 
         self.customLink.whileShowingNotice = {
+            secondResult.value = await manager.startCheckout(package: Self.package, paywall: nil)
+        }
+
+        let firstResult = await manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(secondResult.value) == .alreadyStarting
+        expect(firstResult) == .started(Self.session)
+        expect(self.webBillingAPI.invokedPostHostedCheckoutCount) == 1
+    }
+
+    /// Eligibility is resolved before anything is shown, so the rule covers a customer who taps twice
+    /// before the notice comes up, including where the checkout ends up opening without one.
+    func testStopsACheckoutAskedForWhileEligibilityIsBeingResolved() async {
+        let manager = self.manager!
+        self.customLink.stubbedAvailability = .notEligible
+        let secondResult: Atomic<HostedCheckoutStartResult?> = nil
+
+        self.customLink.whileResolvingAvailability = {
             secondResult.value = await manager.startCheckout(package: Self.package, paywall: nil)
         }
 

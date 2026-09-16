@@ -43,7 +43,6 @@ final class HostedCheckoutManager {
         case let .registered(tokenID):
             externalPurchaseTokenID = tokenID
         case .notApplicable:
-            Logger.debug(Strings.hostedCheckout.no_external_purchase_applies)
             externalPurchaseTokenID = nil
         case .unregistered:
             Logger.error(Strings.hostedCheckout.no_registered_token)

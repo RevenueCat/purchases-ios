@@ -18,7 +18,6 @@ import Foundation
 enum HostedCheckoutStrings {
 
     case starting_checkout(_ packageID: String)
-    case no_external_purchase_applies
     case no_registered_token
     case session_created(_ operationSessionID: String)
     case error_creating_session(_ error: BackendError)
@@ -31,9 +30,6 @@ extension HostedCheckoutStrings: LogMessage {
         switch self {
         case let .starting_checkout(packageID):
             return "Starting a checkout for package \(packageID)."
-        case .no_external_purchase_applies:
-            return "Starting a checkout with no external purchase token: Apple's external purchase programme " +
-            "does not apply here."
         case .no_registered_token:
             return "Not starting a checkout: there is no registered external purchase token to attribute it to."
         case let .session_created(operationSessionID):
