@@ -32,7 +32,7 @@ final class ExternalPurchaseLinkResultTests: TestCase {
     }
 
     func testAnIneligibleCustomerKeepsTheLink() {
-        let result = ExternalPurchaseLinkResult(preparationResult: .stopped(.notEligible))
+        let result = ExternalPurchaseLinkResult(preparationResult: .notApplicable)
 
         expect(result) == .proceed(externalPurchaseTokenID: nil)
     }
