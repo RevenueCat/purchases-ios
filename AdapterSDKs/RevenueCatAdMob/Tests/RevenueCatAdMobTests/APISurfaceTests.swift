@@ -35,6 +35,20 @@ final class APISurfaceTests: AdapterTestCase {
         XCTAssertNotNil(present)
     }
 
+    @MainActor
+    func testRewardedInterstitialCheckpointPresenterEntryPointsRemainAvailableInSwift() {
+        let presenter: AdPresenter = AdMobRewardedInterstitialPresenter()
+        let present: (
+            AdMobRewardedInterstitialPresenter
+        ) -> (AdPresentationParams, @escaping AdPresentationCompletion) -> Void
+            = AdMobRewardedInterstitialPresenter.present(
+                params:completion:
+            )
+
+        XCTAssertNotNil(presenter)
+        XCTAssertNotNil(present)
+    }
+
     func testBannerAndNativeEntryPointsRemainAvailableInSwift() {
         let bannerLoadAndTrack: (GoogleMobileAds.BannerView) -> (
             GoogleMobileAds.Request,
