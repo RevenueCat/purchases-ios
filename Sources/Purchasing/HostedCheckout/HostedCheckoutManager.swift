@@ -31,17 +31,19 @@ final class HostedCheckoutManager {
 
     /// Starts a checkout for `package`, in response to the customer deliberately asking to buy.
     ///
-    /// Must not be called before then: this mints an external purchase token, and every token minted is one
-    /// Apple expects a report for.
+    /// Must not be called before then: this may mint an external purchase token, and every token minted is
+    /// one Apple expects a report for.
     func startCheckout(package: Package,
                        paywall: PaywallEvent.Data?) async -> HostedCheckoutStartResult {
         Logger.debug(Strings.hostedCheckout.starting_checkout(package.identifier))
 
-        let externalPurchaseTokenID: String
+        let externalPurchaseTokenID: String?
 
         switch await self.externalPurchaseManager.prepareExternalPurchase(flow: .inApp) {
         case let .registered(tokenID):
             externalPurchaseTokenID = tokenID
+        case .notApplicable:
+            externalPurchaseTokenID = nil
         case .unregistered:
             Logger.error(Strings.hostedCheckout.no_registered_token)
             return .failed
@@ -65,9 +67,6 @@ final class HostedCheckoutManager {
     /// The customer declined Apple's disclosure notice.
     case declinedByCustomer
 
-    /// This customer cannot pay outside the App Store.
-    case externalPurchaseUnavailable
-
     /// The device does not authorize payments.
     case paymentsNotAuthorized
 
@@ -87,7 +86,7 @@ private extension HostedCheckoutManager {
 
     func createSession(package: Package,
                        paywall: PaywallEvent.Data?,
-                       externalPurchaseTokenID: String) async -> HostedCheckoutStartResult {
+                       externalPurchaseTokenID: String?) async -> HostedCheckoutStartResult {
         let result: Result<HostedCheckoutResponse, BackendError> = await Async.call { completion in
             self.webBillingAPI.postHostedCheckout(
                 appUserID: self.currentUserProvider.currentAppUserID,
@@ -115,8 +114,6 @@ private extension HostedCheckoutStartResult {
 
     init(stopReason: ExternalPurchasePreparationResult.StopReason) {
         switch stopReason {
-        case .notEligible:
-            self = .externalPurchaseUnavailable
         case .paymentsNotAuthorized:
             self = .paymentsNotAuthorized
         case .customerCancelledNotice:
