@@ -146,6 +146,7 @@ final class CheckpointPresentationHandler: CheckpointPresentationHandlerProtocol
             case .navigatedBack:
                 self.complete(execution: .backedOut(.dismissed))
             case .continue, .closed:
+                self.session.releasePresentationSlot()
                 self.synchronizeCustomerInfo()
             }
         }
@@ -169,8 +170,7 @@ final class CheckpointPresentationHandler: CheckpointPresentationHandlerProtocol
         }
 
         private func complete(execution: CheckpointExecution) {
-            guard self.session.isActive,
-                  let continuation = self.takeContinuation() else { return }
+            guard let continuation = self.takeContinuation() else { return }
             continuation.resume(returning: execution)
         }
 
@@ -178,8 +178,7 @@ final class CheckpointPresentationHandler: CheckpointPresentationHandlerProtocol
             guard self.pendingContinuation != nil,
                   force || !self.hasReportedCompletion else { return }
             self.hasReportedCompletion = true
-            guard self.session.isActive,
-                  let continuation = self.takeContinuation() else { return }
+            guard let continuation = self.takeContinuation() else { return }
             continuation.resume(throwing: error)
         }
 

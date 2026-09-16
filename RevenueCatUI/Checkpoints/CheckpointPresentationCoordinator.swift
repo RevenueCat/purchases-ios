@@ -73,6 +73,11 @@ final class CheckpointPresentationCoordinator {
         return self.activePresentation === session
     }
 
+    fileprivate func releasePresentationSlot(for session: Session) {
+        guard self.activePresentation === session else { return }
+        self.activePresentation = nil
+    }
+
     final class Session {
         private weak var coordinator: CheckpointPresentationCoordinator?
         private var cancellationHandler: (() -> Void)?
@@ -88,6 +93,11 @@ final class CheckpointPresentationCoordinator {
 
         func setCancellationHandler(_ handler: (() -> Void)?) {
             self.cancellationHandler = handler
+        }
+
+        @MainActor
+        func releasePresentationSlot() {
+            self.coordinator?.releasePresentationSlot(for: self)
         }
 
         fileprivate func cancel() {

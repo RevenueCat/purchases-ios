@@ -577,6 +577,55 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(flowResult?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
     }
 
+    func testPresenterCompletionReleasesPresentationSlotBeforeSynchronizationCompletes() async throws {
+        let presentationStarted = self.expectation(description: "Custom presentation starts")
+        let synchronizationStarted = self.expectation(description: "Customer info synchronization starts")
+        var presenterCompletion: PaywallPresentationCompletion?
+        var synchronizationContinuation: CheckedContinuation<CustomerInfo, Error>?
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            workflowPresenter: MockCheckpointWorkflowPresenter(),
+            customerInfoSynchronizer: {
+                synchronizationStarted.fulfill()
+                return try await withCheckedThrowingContinuation { continuation in
+                    synchronizationContinuation = continuation
+                }
+            }
+        )
+
+        let firstCheckpoint = Task {
+            try await manager.executeCheckpoint(
+                identifier: "onboarding",
+                params: .init(paywallPresenter: { _, completion in
+                    presenterCompletion = completion
+                    presentationStarted.fulfill()
+                })
+            )
+        }
+        await self.fulfillment(of: [presentationStarted], timeout: 1)
+        presenterCompletion?(.continue)
+        await self.fulfillment(of: [synchronizationStarted], timeout: 1)
+
+        let secondResult: Result<CheckpointExecution, Error>
+        do {
+            secondResult = .success(try await manager.executeCheckpoint(
+                identifier: "onboarding",
+                params: .init(paywallPresenter: { _, completion in completion(.navigatedBack) })
+            ))
+        } catch {
+            secondResult = .failure(error)
+        }
+
+        synchronizationContinuation?.resume(
+            returning: try Self.customerInfo(activeEntitlements: ["premium"])
+        )
+        _ = try await firstCheckpoint.value
+
+        guard case .success(.backedOut) = secondResult else {
+            return XCTFail("Expected another checkpoint to present while customer information synchronizes")
+        }
+    }
+
     func testCancellationDuringSynchronizationIgnoresLateResultAndReleasesPresentationSlot() async throws {
         let presentationStarted = self.expectation(description: "Custom presentation starts")
         let synchronizationStarted = self.expectation(description: "Customer info synchronization starts")
