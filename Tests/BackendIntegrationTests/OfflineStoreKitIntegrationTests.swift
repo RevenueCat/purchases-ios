@@ -156,6 +156,42 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testLogInImmediatelyAfterLaunchWithUnfinishedTransactionDoesNotCacheAnonymousCustomerInfo() async throws {
+        // 1. Create an identified user. It gets aliased to the initial anonymous user.
+        let identifiedUserID = UUID().uuidString
+        _ = try await self.purchases.logIn(identifiedUserID)
+
+        // 2. Log out to create a new anonymous user, which won't be aliased when logging in again.
+        _ = try await self.purchases.logOut()
+        let anonymousUserID = try self.purchases.appUserID
+
+        // 3. Purchase while the server is down so the transaction remains unfinished.
+        self.serverDown()
+        try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
+        self.verifyNoTransactionsWereFinished()
+        self.allServersUp()
+
+        // 4. Relaunch: the unfinished transaction is posted for the anonymous user. Log in immediately.
+        self.resetSingletonWithoutWaitingForInitialRequests()
+        let (_, created) = try await self.purchases.logIn(identifiedUserID)
+
+        expect(created) == false
+        expect(try self.purchases.appUserID) == identifiedUserID
+
+        // 5. Wait for the receipt post to finish.
+        try await self.verifyAnyTransactionIsEventuallyFinished()
+
+        // 6. The anonymous user's CustomerInfo must not be surfaced or cached as the identified user's.
+        await expect(self.purchasesDelegate.customerInfo?.originalAppUserId).toEventuallyNot(equal(anonymousUserID))
+        await expect(self.purchasesDelegate.customerInfo?.originalAppUserId)
+            .toNever(equal(anonymousUserID), until: .seconds(2))
+
+        let cachedInfo = try await self.purchases.customerInfo(fetchPolicy: .fromCacheOnly)
+        expect(cachedInfo.originalAppUserId) != anonymousUserID
+        expect(try self.purchases.isAnonymous) == false
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testReopeningAppWithOfflineEntitlementsDoesNotReturnStaleCache() async throws {
         // 1. Purchase while server is down
         self.serverDown()

@@ -193,6 +193,33 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         expect(info3.isLoadedFromCache) == false
     }
 
+    func testLogInImmediatelyAfterLaunchDoesNotSurfaceAnonymousCustomerInfo() async throws {
+        // 1. Create an identified user. It gets aliased to the initial anonymous user.
+        let identifiedUserID = UUID().uuidString
+        _ = try await self.purchases.logIn(identifiedUserID)
+
+        // 2. Log out to create a new anonymous user, which won't be aliased when logging in again.
+        _ = try await self.purchases.logOut()
+        let anonymousUserID = try self.purchases.appUserID
+
+        // 3. Relaunch and log in immediately, while the anonymous user's CustomerInfo is being fetched.
+        self.resetSingletonWithoutWaitingForInitialRequests()
+        let (info, created) = try await self.purchases.logIn(identifiedUserID)
+
+        expect(created) == false
+        expect(info.originalAppUserId) != anonymousUserID
+        expect(try self.purchases.appUserID) == identifiedUserID
+
+        // 4. Once the identified user's CustomerInfo is delivered, the anonymous one must never replace it.
+        await expect(self.purchasesDelegate.customerInfo?.originalAppUserId).toEventuallyNot(equal(anonymousUserID))
+        await expect(self.purchasesDelegate.customerInfo?.originalAppUserId)
+            .toNever(equal(anonymousUserID), until: .seconds(3))
+
+        let cachedInfo = try await self.purchases.customerInfo(fetchPolicy: .fromCacheOnly)
+        expect(cachedInfo.originalAppUserId) != anonymousUserID
+        expect(try self.purchases.isAnonymous) == false
+    }
+
     func testOfferingsAreOnlyFetchedOnceOnSDKInitialization() async throws {
         self.logger.verifyMessageWasLogged(Strings.offering.offerings_stale_updating_in_foreground,
                                            level: .debug,

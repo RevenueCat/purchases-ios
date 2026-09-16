@@ -139,6 +139,21 @@ class BaseBackendIntegrationTests: TestCase {
         await self.createPurchases()
     }
 
+    /// Simulates closing the app and re-opening with a fresh instance of `Purchases`, without waiting
+    /// for the requests made during initialization. This allows testing races between those requests
+    /// and calls made right after `configure`, like `logIn`.
+    final func resetSingletonWithoutWaitingForInitialRequests() {
+        Logger.warn(TestMessage.resetting_purchases_singleton)
+
+        Purchases.clearSingleton()
+
+        self.purchasesDelegate = TestPurchaseDelegate()
+        self.configurePurchases()
+        self.simulateForegroundingApp()
+
+        Purchases.shared.delegate = self.purchasesDelegate
+    }
+
     /// - Returns: `Purchases.shared` if it's currently configured
     /// - Throws: `ErrorCode` if it's not
     /// - Note: This is the recomended way of accessing `Purchases.shared`, as it won't make the test crash.
