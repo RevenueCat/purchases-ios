@@ -117,7 +117,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         XCTAssertEqual(purchaseData.customerInfo.entitlements.verification, .verifiedOnDevice)
         self.verifyCustomerInfoWasComputedOffline(customerInfo: purchaseData.customerInfo)
-        self.verifyNoTransactionsWereFinished()
+        self.verifySpecificTransactionWasNotFinished(try XCTUnwrap(purchaseData.transaction))
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -126,9 +126,10 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         // 1. Purchase while server is down
         self.serverDown()
-        try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
+        let purchase = try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
+        let transaction = try XCTUnwrap(purchase.transaction)
 
-        self.verifyNoTransactionsWereFinished()
+        self.verifySpecificTransactionWasNotFinished(transaction)
 
         // 2. "Re-open" the app after the server is back
         self.allServersUp()
@@ -145,7 +146,11 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         }
 
         // 4. Ensure transaction is eventually finished
-        try await self.verifyAnyTransactionIsEventuallyFinished()
+        try await self.verifySpecificTransactionIsEventuallyFinished(
+            transactionId: transaction.transactionIdentifier,
+            productId: transaction.productIdentifier,
+            count: nil
+        )
 
         // 5. Restart app again
         try self.purchases.invalidateCustomerInfoCache()
