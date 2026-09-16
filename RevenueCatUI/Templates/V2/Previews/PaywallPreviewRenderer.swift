@@ -166,6 +166,7 @@ enum PaywallPreviewRenderer {
         ]
     }
 
+    // swiftlint:disable:next function_parameter_count
     private static func package(
         identifier: String,
         type: PackageType,
