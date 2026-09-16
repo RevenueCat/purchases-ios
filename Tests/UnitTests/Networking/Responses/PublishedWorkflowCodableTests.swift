@@ -39,7 +39,6 @@ class PublishedWorkflowCodableTests: TestCase {
     }
 
     func testBranchTriggerActionSurvivesAnEncodeDecodeRoundTrip() throws {
-        // Workflows are cached as encoded models, so a branch has to come back intact.
         let original = WorkflowTriggerAction.branch(.init(
             branches: [
                 .init(audienceId: "aud_a", stepId: "step_a"),
@@ -54,8 +53,6 @@ class PublishedWorkflowCodableTests: TestCase {
         expect(decoded) == original
     }
 
-    /// The branch encodes itself into the action's own container, so its fields have to land beside `type`
-    /// rather than nested under one of its own.
     func testBranchTriggerActionEncodesFlat() throws {
         let action = WorkflowTriggerAction.branch(.init(
             branches: [.init(audienceId: "aud_a", stepId: "step_a")],

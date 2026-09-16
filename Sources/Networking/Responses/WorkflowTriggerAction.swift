@@ -30,8 +30,7 @@ extension WorkflowTriggerAction: Codable {
     }
 
     public init(from decoder: Decoder) throws {
-        // Never throws: `WorkflowStep.triggerActions` propagates a throw, so one bad action would fail the
-        // whole workflow rather than just itself.
+        // Never throws: `triggerActions` propagates, so one bad action would fail the whole workflow.
         var decodedType: String?
         do {
             let container = try decoder.container(keyedBy: CodingKeys.self)

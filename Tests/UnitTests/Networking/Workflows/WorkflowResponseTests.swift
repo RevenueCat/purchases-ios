@@ -203,7 +203,6 @@ class WorkflowResponseTests: TestCase {
     }
 
     func testDecodeBranchTriggerActionMissingTheFallbackDecodesToUnknown() throws {
-        // Without a fallback there is nowhere to send someone who matches nothing.
         let json = """
         { "type": "branch", "branches": [{ "audience_id": "aud_a", "step_id": "step_a" }] }
         """.data(using: .utf8)!
@@ -214,7 +213,6 @@ class WorkflowResponseTests: TestCase {
     }
 
     func testDecodeBranchTriggerActionWithNoBranchesStillRoutesToTheFallback() throws {
-        // An empty list is routable: everyone takes the fallback.
         let json = """
         { "type": "branch", "branches": [], "fallback_step_id": "step_default" }
         """.data(using: .utf8)!
@@ -244,8 +242,7 @@ class WorkflowResponseTests: TestCase {
         expect(action) == .unknown
     }
 
-    /// A malformed `step` action has to degrade the same way a malformed `branch` does: the dictionary it
-    /// decodes into propagates a throw, so either one would otherwise take down the whole workflow.
+    /// `triggerActions` propagates a throw, so one bad action would otherwise fail the whole workflow.
     func testDecodeWorkflowWithMalformedStepActionKeepsTheRestOfTheWorkflow() throws {
         let json = """
         {
@@ -278,8 +275,6 @@ class WorkflowResponseTests: TestCase {
     }
 
     func testDecodeWorkflowWithMalformedBranchKeepsTheRestOfTheWorkflow() throws {
-        // Trigger actions decode inside a dictionary that propagates a throw, so one bad branch must
-        // not take down the workflow.
         let json = """
         {
           "id": "wf_bad_branch",
