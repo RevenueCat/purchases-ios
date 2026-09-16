@@ -51,6 +51,13 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
     }
 
     func testMultipleUnfinishedVerifiedTransaction() async throws {
+        #if os(iOS) || os(tvOS)
+        try XCTSkipIf(
+            ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
+            "StoreKitTest does not expose both fixture purchases in Transaction.unfinished on iOS and tvOS 27"
+        )
+        #endif
+
         let transaction1 = try await self.createTransactionInTestSession(productID: Self.product1, finished: false)
         let transaction2 = try await self.createTransactionInTestSession(productID: Self.product2, finished: false)
         let transactionIdentifiers = [String(transaction1.id), String(transaction2.id)]
