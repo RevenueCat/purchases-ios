@@ -295,14 +295,14 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             return Self.unservable(rule, reason: "its initial step was not found")
         }
 
-        if initialStep.type == Self.offeringStepType {
+        if initialStep.isOfferingStep {
             guard workflow.steps.count == 1 else {
                 return Self.unservable(rule, reason: "an offering step cannot be mixed with other steps")
             }
             return await self.resolveOffering(rule, workflow: workflow, step: initialStep)
         }
 
-        if workflow.steps.values.contains(where: { $0.type == Self.offeringStepType }) {
+        if workflow.steps.values.contains(where: \.isOfferingStep) {
             return Self.unservable(rule, reason: "a UI workflow cannot contain offering steps")
         }
 
@@ -369,7 +369,6 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         return .noAction(.configurationUnavailable)
     }
 
-    private static let offeringStepType = "offering"
     #if DEBUG
     private static let simulatedErrorCheckpointIdentifier = "error_checkpoint"
     #endif
