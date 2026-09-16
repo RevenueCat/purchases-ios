@@ -20,9 +20,9 @@ import Foundation
     case unknown
 }
 
-// MARK: - Codable
+// MARK: - Decodable
 
-extension WorkflowTriggerAction: Codable {
+extension WorkflowTriggerAction: Decodable {
 
     private enum CodingKeys: String, CodingKey {
         case type
@@ -48,20 +48,6 @@ extension WorkflowTriggerAction: Codable {
         } catch {
             Logger.warn(Strings.backendError.malformed_workflow_trigger_action(type: decodedType ?? "nil"))
             self = .unknown
-        }
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        switch self {
-        case .step(let stepId):
-            try container.encode("step", forKey: .type)
-            try container.encode(stepId, forKey: .stepId)
-        case .branch(let branch):
-            try container.encode("branch", forKey: .type)
-            try branch.encode(to: encoder)
-        case .unknown:
-            try container.encode("unknown", forKey: .type)
         }
     }
 

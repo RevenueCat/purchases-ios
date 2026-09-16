@@ -277,11 +277,11 @@ import Foundation
 
 // MARK: - Codable
 
-extension WorkflowTrigger: Codable, Equatable, Sendable {}
+extension WorkflowTrigger: Decodable, Equatable, Sendable {}
 
-extension WorkflowStep: Codable, Equatable, Sendable {}
+extension WorkflowStep: Decodable, Equatable, Sendable {}
 
-extension WorkflowScreen: Codable, Equatable, Sendable {
+extension WorkflowScreen: Decodable, Equatable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case name
@@ -306,7 +306,7 @@ extension WorkflowScreen: Codable, Equatable, Sendable {
 
 }
 
-extension PublishedWorkflow: Codable, Equatable, Sendable {
+extension PublishedWorkflow: Decodable, Equatable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case id
@@ -331,20 +331,8 @@ extension PublishedWorkflow: Codable, Equatable, Sendable {
         self.metadata = try container.decodeIfPresent([String: AnyDecodable].self, forKey: .metadata)
     }
 
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(self.id, forKey: .id)
-        try container.encode(self.displayName, forKey: .displayName)
-        try container.encode(self.initialStepId, forKey: .initialStepId)
-        try container.encodeIfPresent(self.singleStepFallbackId, forKey: .singleStepFallbackId)
-        try container.encode(self.steps, forKey: .steps)
-        try container.encode(self.screens, forKey: .screens)
-        try container.encodeIfPresent(self.contentMaxWidth, forKey: .contentMaxWidth)
-        try container.encodeIfPresent(self.metadata, forKey: .metadata)
-    }
-
 }
 
-extension WorkflowDataResult: Codable, Equatable, Sendable {}
+extension WorkflowDataResult: Decodable, Equatable, Sendable {}
 
 extension PublishedWorkflow: HTTPResponseBody {}

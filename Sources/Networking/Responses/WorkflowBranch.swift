@@ -15,9 +15,9 @@
 import Foundation
 
 /// A `branch` trigger action. The first audience that matches decides the route.
-@_spi(Internal) public struct WorkflowBranch: Equatable, Sendable, Codable {
+@_spi(Internal) public struct WorkflowBranch: Equatable, Sendable, Decodable {
 
-    @_spi(Internal) public struct Route: Equatable, Sendable, Codable {
+    @_spi(Internal) public struct Route: Equatable, Sendable, Decodable {
 
         /// Rules live in the `audiences` topic.
         public let audienceId: String
