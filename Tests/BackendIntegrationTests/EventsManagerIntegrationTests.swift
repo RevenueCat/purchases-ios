@@ -23,6 +23,49 @@ import XCTest
 @MainActor
 final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
 
+    private var eventsManager: EventsManager!
+
+    override func setUp() async throws {
+        try await super.setUp()
+
+        let systemInfo = SystemInfo(
+            platformInfo: nil,
+            finishTransactions: true,
+            storeKitVersion: Self.storeKitVersion,
+            apiKey: self.apiKey,
+            responseVerificationMode: Self.responseVerificationMode,
+            dangerousSettings: self.dangerousSettings,
+            isAppBackgrounded: false,
+            preferredLocalesProvider: PreferredLocalesProvider(preferredLocaleOverride: nil)
+        )
+        let backend = Backend(
+            systemInfo: systemInfo,
+            eTagManager: ETagManager(),
+            tokenManager: TokenManager(enabled: false, storage: Keychain(access: nil)),
+            operationDispatcher: .default,
+            attributionFetcher: AttributionFetcher(
+                attributionFactory: AttributionTypeFactory(),
+                systemInfo: systemInfo
+            ),
+            offlineCustomerInfoCreator: nil,
+            diagnosticsTracker: nil,
+            apiSourceProvider: nil,
+            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .default)
+        )
+        let storeURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let store = try FeatureEventStore(handler: FileHandler(storeURL))
+        self.eventsManager = EventsManager(
+            internalAPI: backend.internalAPI,
+            userProvider: EventUserProvider(currentAppUserID: try self.purchases.appUserID),
+            store: store,
+            systemInfo: systemInfo
+        )
+        self.addTeardownBlock {
+            self.eventsManager = nil
+            try FileManager.default.removeItem(at: storeURL)
+        }
+    }
+
     func testPostingPaywallsDoesNotFail() async throws {
         let events = [
             PaywallEvent.cancel(
@@ -37,8 +80,8 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
         ]
 
         for event in events {
-            await Purchases.shared.track(
-                paywallEvent: event
+            await self.eventsManager.track(
+                featureEvent: event
             )
         }
 
@@ -47,10 +90,7 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
 
     func testPostingCustomerCenterDoesNotFail() async throws {
         let locale = Locale(identifier: "es_ES")
-        let purchases = try self.purchases
-        let eventsManager = try XCTUnwrap(purchases.eventsManagerForTesting)
-
-        await eventsManager.track(
+        await self.eventsManager.track(
             featureEvent: CustomerCenterEvent.impression(
                 Self.customerCenterCreationData,
                 CustomerCenterEvent.Data(
@@ -62,7 +102,7 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
             )
         )
 
-        await eventsManager.track(
+        await self.eventsManager.track(
             featureEvent: CustomerCenterAnswerSubmittedEvent.answerSubmitted(
                 Self.customerCenterCreationData,
                 CustomerCenterAnswerSubmittedEvent.Data(
@@ -81,7 +121,7 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
     }
 
     private func flushAndVerify(eventsCount: Int) async throws {
-        _ = try await Purchases.shared.flushPaywallEvents(count: eventsCount)
+        _ = try await self.eventsManager.flushFeatureEvents(batchSize: eventsCount)
 
         let logger = try XCTUnwrap(self.logger)
         try await asyncWait(
@@ -122,4 +162,15 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
         darkMode: true,
         source: nil
     )
+}
+
+private final class EventUserProvider: CurrentUserProvider {
+
+    let currentAppUserID: String
+    let currentUserIsAnonymous = true
+
+    init(currentAppUserID: String) {
+        self.currentAppUserID = currentAppUserID
+    }
+
 }
