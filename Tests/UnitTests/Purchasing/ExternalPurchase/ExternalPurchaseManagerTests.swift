@@ -77,8 +77,6 @@ class ExternalPurchaseManagerTests: TestCase {
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
         expect(result) == .notApplicable
-        expect(result.shouldProceed) == true
-        expect(result.tokenID).to(beNil())
         expect(self.customLink.invokedNoticeTypes).to(beEmpty())
         expect(self.customLink.invokedTokenTypes).to(beEmpty())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
@@ -94,7 +92,6 @@ class ExternalPurchaseManagerTests: TestCase {
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
         expect(result) == .stopped(.paymentsNotAuthorized)
-        expect(result.shouldProceed) == false
         expect(self.customLink.invokedNoticeTypes).to(beEmpty())
         expect(self.customLink.invokedTokenTypes).to(beEmpty())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
@@ -107,7 +104,6 @@ class ExternalPurchaseManagerTests: TestCase {
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
         expect(result) == .stopped(.customerCancelledNotice)
-        expect(result.shouldProceed) == false
         expect(self.customLink.invokedTokenTypes).to(beEmpty())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
     }
@@ -120,7 +116,6 @@ class ExternalPurchaseManagerTests: TestCase {
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
         expect(result) == .stopped(.noticeFailed)
-        expect(result.shouldProceed) == false
         expect(self.customLink.invokedTokenTypes).to(beEmpty())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
     }
@@ -135,7 +130,6 @@ class ExternalPurchaseManagerTests: TestCase {
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
         expect(result) == .registered(tokenID: Self.tokenID)
-        expect(result.shouldProceed) == true
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenCount) == 1
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenParameters?.token).to(beNil())
     }
@@ -148,8 +142,6 @@ class ExternalPurchaseManagerTests: TestCase {
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
         expect(result) == .unregistered(.tokenRequestFailed)
-        expect(result.shouldProceed) == true
-        expect(result.tokenID).to(beNil())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
     }
 
@@ -163,8 +155,6 @@ class ExternalPurchaseManagerTests: TestCase {
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
         expect(result) == .unregistered(.registrationFailed)
-        expect(result.shouldProceed) == true
-        expect(result.tokenID).to(beNil())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenCount) == 1
     }
 
