@@ -100,26 +100,24 @@ private enum PaywallPresenterDemo {
         params: PaywallPresentationParams,
         completion: @escaping PaywallPresentationCompletion
     ) {
-        let finish: (PaywallPresentationResult) -> Void = { result in
-            completion(result)
-            presenter.dismiss(animated: true)
-        }
+        let session = PaywallPresentationSession(completion: completion)
         let controller = UIHostingController(
             rootView: PaywallView(
                 style: .global,
                 offering: params.offering,
                 onClose: {
-                    finish(.closed)
+                    session.finish(with: .closed)
                 },
                 onBack: {
-                    finish(.navigatedBack)
+                    session.finish(with: .navigatedBack)
                 },
                 onPurchase: { _ in
-                    finish(.continue)
+                    session.finish(with: .continue)
                 }
             )
         )
         controller.modalPresentationStyle = .pageSheet
+        session.bind(to: controller)
         presenter.present(controller, animated: true)
     }
 
@@ -128,26 +126,24 @@ private enum PaywallPresenterDemo {
         params: PaywallPresentationParams,
         completion: @escaping PaywallPresentationCompletion
     ) {
-        let finish: (PaywallPresentationResult) -> Void = { result in
-            completion(result)
-            presenter.dismiss(animated: true)
-        }
+        let session = PaywallPresentationSession(completion: completion)
         let controller = UIHostingController(
             rootView: LocalOverridePaywallPopup(
                 offering: params.offering,
                 onClose: {
-                    finish(.closed)
+                    session.finish(with: .closed)
                 },
                 onBack: {
-                    finish(.navigatedBack)
+                    session.finish(with: .navigatedBack)
                 },
                 onPurchase: { _ in
-                    finish(.continue)
+                    session.finish(with: .continue)
                 }
             )
         )
         controller.modalPresentationStyle = .overFullScreen
         controller.view.backgroundColor = .clear
+        session.bind(to: controller)
         presenter.present(controller, animated: false)
     }
 
@@ -164,6 +160,44 @@ private enum PaywallPresenterDemo {
             viewController = presentedViewController
         }
         return viewController
+    }
+
+}
+
+@MainActor
+private final class PaywallPresentationSession: NSObject, UIAdaptivePresentationControllerDelegate {
+
+    private weak var controller: UIViewController?
+    private let completion: PaywallPresentationCompletion
+    private var hasCompleted = false
+
+    init(completion: @escaping PaywallPresentationCompletion) {
+        self.completion = completion
+    }
+
+    func bind(to controller: UIViewController) {
+        self.controller = controller
+        controller.presentationController?.delegate = self
+    }
+
+    func finish(with result: PaywallPresentationResult) {
+        guard !self.hasCompleted else { return }
+        self.hasCompleted = true
+
+        guard let controller, controller.presentingViewController != nil else {
+            self.completion(result)
+            return
+        }
+
+        controller.dismiss(animated: true) {
+            self.completion(result)
+        }
+    }
+
+    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+        guard !self.hasCompleted else { return }
+        self.hasCompleted = true
+        self.completion(.closed)
     }
 
 }
