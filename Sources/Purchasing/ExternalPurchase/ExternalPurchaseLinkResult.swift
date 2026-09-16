@@ -37,7 +37,7 @@ extension ExternalPurchaseLinkResult {
         case .unregistered:
             // The customer is still allowed to buy, with nothing for the checkout to tie the purchase back to.
             self = .proceed(externalPurchaseTokenID: nil)
-        case .stopped(.notEligible):
+        case .notApplicable:
             // Nothing was shown and nothing was minted, so the link keeps working exactly as it did before
             // this app took part in the programme.
             self = .proceed(externalPurchaseTokenID: nil)
