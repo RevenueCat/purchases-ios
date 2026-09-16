@@ -95,6 +95,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testOfflineCustomerInfoWithOnePurchase() async throws {
+        self.setLongestTestSessionTimeRate(self.testSession)
         try await self.purchaseMonthlyOffering()
 
         try self.purchases.invalidateCustomerInfoCache()
