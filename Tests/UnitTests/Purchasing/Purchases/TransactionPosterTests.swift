@@ -12,6 +12,7 @@
 //  Created by Nacho Soto on 5/26/23.
 
 import Nimble
+import StoreKit
 import XCTest
 
 @_spi(Internal) @testable import RevenueCat
@@ -370,6 +371,27 @@ class TransactionPosterTests: TestCase {
         expect(
             TransactionPoster.shouldFinish(
                 transaction: self.mockTransaction,
+                for: product.toStoreProduct(),
+                customerInfo: customerInfo)
+        ) == true
+    }
+
+    func testShouldFinishTransactionWithFallbackIdentifierAfterStoreKitUpdatesIdentifier() {
+        let product = Self.createTestProduct(.nonConsumable)
+        let customerInfo = self.createCustomerInfo(nonSubscriptionProductID: nil)
+        let sk1Transaction = MockTransaction()
+        sk1Transaction.mockPayment = SKPayment(
+            product: MockSK1Product(mockProductIdentifier: product.productIdentifier)
+        )
+        sk1Transaction.mockState = .purchased
+        sk1Transaction.mockTransactionIdentifier = nil
+
+        let transaction = StoreTransaction(sk1Transaction: sk1Transaction)
+        sk1Transaction.mockTransactionIdentifier = "store-transaction-id"
+
+        expect(
+            TransactionPoster.shouldFinish(
+                transaction: transaction,
                 for: product.toStoreProduct(),
                 customerInfo: customerInfo)
         ) == true

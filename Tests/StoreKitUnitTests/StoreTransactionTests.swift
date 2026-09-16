@@ -43,6 +43,46 @@ class StoreTransactionTests: StoreKitConfigTestCase {
         expect(transaction.environment).to(beNil())
     }
 
+    func testSK1MissingMetadataRemainsUnknownAfterUnderlyingTransactionUpdates() {
+        let sk1Transaction = MockTransaction()
+        sk1Transaction.mockPayment = SKPayment(product: MockSK1Product(mockProductIdentifier: Self.productID))
+        sk1Transaction.mockState = .purchased
+        sk1Transaction.mockTransactionDate = nil
+        sk1Transaction.mockTransactionIdentifier = nil
+
+        let transaction = StoreTransaction(sk1Transaction: sk1Transaction)
+        let fallbackIdentifier = transaction.transactionIdentifier
+
+        sk1Transaction.mockTransactionDate = Date()
+        sk1Transaction.mockTransactionIdentifier = "store-transaction-id"
+
+        expect(transaction.sk1Transaction) === sk1Transaction
+        expect(transaction.sk1Transaction?.transactionIdentifier) == "store-transaction-id"
+        expect(transaction.transactionIdentifier) == fallbackIdentifier
+        expect(transaction.purchaseDate) == Date(timeIntervalSince1970: 0)
+        expect(transaction.hasKnownTransactionIdentifier) == false
+        expect(transaction.hasKnownPurchaseDate) == false
+    }
+
+    func testSK1KnownMetadataRemainsKnownAfterUnderlyingTransactionUpdates() {
+        let sk1Transaction = MockTransaction()
+        sk1Transaction.mockPayment = SKPayment(product: MockSK1Product(mockProductIdentifier: Self.productID))
+        sk1Transaction.mockState = .purchased
+        let purchaseDate = Date()
+        sk1Transaction.mockTransactionDate = purchaseDate
+        sk1Transaction.mockTransactionIdentifier = "store-transaction-id"
+
+        let transaction = StoreTransaction(sk1Transaction: sk1Transaction)
+
+        sk1Transaction.mockTransactionDate = nil
+        sk1Transaction.mockTransactionIdentifier = nil
+
+        expect(transaction.transactionIdentifier) == "store-transaction-id"
+        expect(transaction.purchaseDate) == purchaseDate
+        expect(transaction.hasKnownTransactionIdentifier) == true
+        expect(transaction.hasKnownPurchaseDate) == true
+    }
+
     func testSK1TransactionReturnsNilRevocationFields() async throws {
         let product = MockSK1Product(mockProductIdentifier: Self.productID)
         let payment = SKPayment(product: product)

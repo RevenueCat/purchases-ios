@@ -19,7 +19,7 @@ import XCTest
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class StoreKit2StorefrontListenerTests: TestCase {
 
-    private static let userDefaultsSuiteName = "StoreKit2StorefrontListenerTests"
+    private let userDefaultsSuiteName = "StoreKit2StorefrontListenerTests.\(UUID().uuidString)"
 
     private var delegate: MockStoreKit2StorefrontListenerDelegate! = nil
     private var listener: StoreKit2StorefrontListener! = nil
@@ -35,8 +35,8 @@ class StoreKit2StorefrontListenerTests: TestCase {
         try super.setUpWithError()
 
         // Create isolated UserDefaults for each test
-        self.userDefaults = UserDefaults(suiteName: Self.userDefaultsSuiteName)
-        self.userDefaults.removePersistentDomain(forName: Self.userDefaultsSuiteName)
+        self.userDefaults = UserDefaults(suiteName: self.userDefaultsSuiteName)
+        self.userDefaults.removePersistentDomain(forName: self.userDefaultsSuiteName)
         self.userDefaults.synchronize()
 
         self.delegate = .init()
@@ -45,8 +45,10 @@ class StoreKit2StorefrontListenerTests: TestCase {
     }
 
     override func tearDown() {
+        self.listener = nil
+
         // Clean up UserDefaults after each test
-        self.userDefaults.removePersistentDomain(forName: Self.userDefaultsSuiteName)
+        self.userDefaults.removePersistentDomain(forName: self.userDefaultsSuiteName)
         self.userDefaults.synchronize()
 
         super.tearDown()

@@ -62,6 +62,34 @@ func waitUntilValue<Value>(
 
 private struct ConditionFailedError: Error {}
 
+@MainActor
+final class EligibilityWarmupTracker {
+
+    private var pendingWarmups: [Atomic<Int>] = []
+
+    func track(_ counter: Atomic<Int>) {
+        self.pendingWarmups.append(counter)
+    }
+
+    var pendingCount: Int {
+        self.pendingWarmups.reduce(0) { $0 + $1.value }
+    }
+
+    func waitForCompletion(timeout: NimbleTimeInterval) async throws {
+        let start = Date()
+        try await asyncWait(
+            timeout: timeout,
+            description: { pending in
+                "Eligibility cache warmup did not finish after \(Date().timeIntervalSince(start))s; " +
+                "\(pending ?? 0) operations remain"
+            },
+            until: { await MainActor.run { self.pendingCount } },
+            condition: { $0 == 0 }
+        )
+    }
+
+}
+
 func asyncWait(
     description: String? = nil,
     timeout: NimbleTimeInterval = defaultTimeout,

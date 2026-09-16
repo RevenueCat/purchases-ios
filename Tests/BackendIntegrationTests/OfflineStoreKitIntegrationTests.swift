@@ -95,6 +95,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testOfflineCustomerInfoWithOnePurchase() async throws {
+        self.setLongestTestSessionTimeRate(self.testSession)
         try await self.purchaseMonthlyOffering()
 
         try self.purchases.invalidateCustomerInfoCache()
@@ -229,6 +230,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         _ = try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
 
+        self.logger.clearMessages()
         self.allServersUp()
 
         let task1 = Task { try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent) }
@@ -238,9 +240,11 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         let info2 = try await task2.value
         try await self.verifyEntitlementWentThrough(info1)
         try await self.verifyEntitlementWentThrough(info2)
+        XCTAssertFalse(info1.isComputedOffline)
+        XCTAssertFalse(info2.isComputedOffline)
 
         self.logger.verifyMessageWasLogged(
-            "API request completed: POST '/v1/receipts'",
+            "API request started: POST '/v1/receipts'",
             level: .debug,
             expectedCount: 1
         )
@@ -447,6 +451,13 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchasingMultipleProductsWhileServerIsDownHandlesAllTransactionsWhenForegroundingApp() async throws {
+        #if os(iOS)
+        try XCTSkipIf(ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
+                      "iOS 27 StoreKitTest omits purchased, unfinished transactions from Transaction.unfinished")
+        #endif
+
+        self.continueAfterFailure = true
+
         // To prevent the subscription renewal from happening during the test. Otherwise,
         // it could sometimes interfere with the consumable purchase verification, causing flakiness.
         self.setLongestTestSessionTimeRate(self.testSession)
@@ -481,7 +492,10 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         // 6. Ensure transactions are finished
         try await self.verifyAnyTransactionIsEventuallyFinished(count: 2)
 
-        self.verifySpecificTransactionWasFinished(transaction)
+        try await self.verifySpecificTransactionIsEventuallyFinished(
+            transactionId: transaction.transactionIdentifier,
+            productId: transaction.productIdentifier
+        )
         self.verifyTransactionWasFinishedForProductIdentifier(Self.consumable10Coins)
     }
 
@@ -518,13 +532,21 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
             level: .verbose
         )
 
-        let transactionId = transaction.transactionIdentifier
-        let regex = "Enqueing network operation 'PostReceiptDataOperation' with cache key: .*-\(transactionId)'"
+        let transactionId: String
+        if Self.storeKitVersion == .storeKit1, !transaction.hasKnownTransactionIdentifier {
+            transactionId = try XCTUnwrap(transaction.sk1Transaction?.transactionIdentifier)
+        } else {
+            transactionId = transaction.transactionIdentifier
+        }
+        let offeringId = NSRegularExpression.escapedPattern(for: package.presentedOfferingContext.offeringIdentifier)
+        let regex = "Enqueing network operation 'PostReceiptDataOperation' with cache key: "
+            + ".*-\(offeringId)-false.*-\(transactionId)'"
         self.logger.verifyMessageWasLogged(regexPattern: regex,
                                            level: .verbose,
                                            expectedCount: 1)
 
-        self.verifySpecificTransactionWasFinished(transaction)
+        self.verifySpecificTransactionWasFinished(transactionId: transactionId,
+                                                  productId: transaction.productIdentifier)
         self.logger.verifyMessageWasLogged(
             "API request completed: POST '/v1/receipts'",
             level: .debug

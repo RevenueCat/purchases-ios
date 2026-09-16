@@ -51,12 +51,20 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
     }
 
     func testMultipleUnfinishedVerifiedTransaction() async throws {
-        let transaction1 = try await self.createTransactionInTestSession(productID: Self.product1, finished: false)
-        let transaction2 = try await self.createTransactionInTestSession(productID: Self.product2, finished: false)
+        let transactionIdentifiers: [String]
+        if #available(iOS 27.0, tvOS 27.0, watchOS 27.0, macOS 27.0, *) {
+            try self.testSession.buyProduct(productIdentifier: Self.product1)
+            try self.testSession.buyProduct(productIdentifier: Self.product2)
+            transactionIdentifiers = self.testSession.allTransactions().map { String($0.identifier) }
+        } else {
+            let transaction1 = try await self.createTransactionInTestSession(productID: Self.product1, finished: false)
+            let transaction2 = try await self.createTransactionInTestSession(productID: Self.product2, finished: false)
+            transactionIdentifiers = [String(transaction1.id), String(transaction2.id)]
+        }
 
         let result = await self.fetcher.unfinishedVerifiedTransactions
         expect(result).to(haveCount(2))
-        expect(result.map(\.transactionIdentifier)).to(contain([String(transaction1.id), String(transaction2.id)]))
+        expect(result.map(\.transactionIdentifier)).to(contain(transactionIdentifiers))
     }
 
     func testFiltersOutFinishedTransaction() async throws {
