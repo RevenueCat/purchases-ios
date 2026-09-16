@@ -291,6 +291,12 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testCanPurchaseConsumableWithMultipleUsers() async throws {
+        #if os(iOS)
+        try XCTSkipIf(Self.storeKitVersion == .storeKit1 &&
+                     ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
+                     "Late SK1 transaction identifiers can prevent finishing; tracked separately in #7739")
+        #endif
+
         func verifyPurchase(_ info: CustomerInfo) {
             expect(info.nonSubscriptions).to(haveCount(1))
             expect(info.nonSubscriptions.onlyElement?.productIdentifier) == Self.consumable10Coins
