@@ -207,14 +207,6 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterProtocol {
         _ = self.presentationDidDismiss()
     }
 
-    private func handleExitOfferPresentation(
-        from controller: PaywallViewController,
-        exitOfferController: PaywallViewController
-    ) {
-        self.stageDismissalReasonIfNeeded(controller.workflowDismissalReason)
-        self.presentedViewController = exitOfferController
-    }
-
     private func stageDismissalReasonIfNeeded(_ reason: WorkflowDismissalReason) {
         guard reason == .navigatedBack else { return }
         self.stage(.dismissalReason(reason))
@@ -249,6 +241,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterProtocol {
                 self?.stage(.workflowPresentationError(error))
             }
         )
+        viewController.disableExitOffers()
         viewController.customVariables = presentation.customVariables
         return viewController
     }
@@ -312,14 +305,6 @@ extension WorkflowPresenter {
         }
     }
 
-    nonisolated func paywallViewController(
-        _ controller: PaywallViewController,
-        willPresentExitOfferController exitOfferController: PaywallViewController
-    ) {
-        MainActor.assumeIsolated {
-            self.handleExitOfferPresentation(from: controller, exitOfferController: exitOfferController)
-        }
-    }
     #else
     func paywallViewController(
         _ controller: PaywallViewController,
@@ -360,12 +345,6 @@ extension WorkflowPresenter {
         self.handleDismissal(of: controller)
     }
 
-    func paywallViewController(
-        _ controller: PaywallViewController,
-        willPresentExitOfferController exitOfferController: PaywallViewController
-    ) {
-        self.handleExitOfferPresentation(from: controller, exitOfferController: exitOfferController)
-    }
     #endif
 
 }

@@ -232,46 +232,6 @@ final class WorkflowPresenterTests: TestCase {
 
     #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
 
-    func testDismissTargetsPresentedExitOfferController() throws {
-        let presentation = Self.presentation()
-        let presenter = WorkflowPresenter { _ in true }
-        try presenter.startPresentation(presentation)
-        let originalController = PaywallViewController(offering: presentation.workflow.offerings.all["offering-id"])
-        let exitOfferController = DismissRecordingPaywallController(
-            offering: try XCTUnwrap(presentation.workflow.offerings.all["offering-id"])
-        )
-
-        presenter.paywallViewController(
-            originalController,
-            willPresentExitOfferController: exitOfferController
-        )
-        presenter.dismiss {}
-
-        XCTAssertEqual(exitOfferController.dismissCallCount, 1)
-    }
-
-    func testBackOutReasonIsPreservedWhenExitOfferDismisses() throws {
-        let presentation = Self.presentation()
-        let presenter = WorkflowPresenter { _ in true }
-        let offering = try XCTUnwrap(presentation.workflow.offerings.all["offering-id"])
-        let originalController = DismissRecordingPaywallController(
-            offering: offering,
-            workflowDismissalReason: .navigatedBack
-        )
-        let exitOfferController = DismissRecordingPaywallController(offering: offering)
-
-        try presenter.startPresentation(presentation)
-        presenter.paywallViewController(
-            originalController,
-            willPresentExitOfferController: exitOfferController
-        )
-        let execution = presenter.presentationDidDismiss()
-
-        guard case .backedOut? = execution else {
-            return XCTFail("Expected a dismissed outcome")
-        }
-    }
-
     func testRejectedPresentationThrowsAndCleansStoredCall() {
         var shouldAcceptPresentation = false
         let presenter = WorkflowPresenter { _ in shouldAcceptPresentation }
@@ -340,6 +300,20 @@ final class WorkflowPresenterTests: TestCase {
         )
 
         XCTAssertEqual(viewController.customVariables, expected)
+    }
+
+    func testCheckpointWorkflowPaywallDoesNotAcceptExitOffers() throws {
+        let presentation = try Self.renderablePresentation(customVariables: [:])
+        let presenter = WorkflowPresenter { _ in true }
+        let viewController = try presenter.makePaywallViewController(for: presentation)
+        let exitOffering = try XCTUnwrap(presentation.workflow.offerings.all["offering-id"])
+        viewController.remoteConfigEnabledForTesting = true
+
+        viewController.simulateWorkflowExitOfferUpdate(exitOffering)
+        XCTAssertNil(viewController.exitOfferOfferingForTesting)
+
+        viewController.simulateOfferingBasedExitOfferPrefetchResult(exitOffering)
+        XCTAssertNil(viewController.exitOfferOfferingForTesting)
     }
 
     private static func presentation(
@@ -429,50 +403,29 @@ final class WorkflowPresenterTests: TestCase {
 
 }
 
-#if canImport(UIKit) && !os(tvOS) && !os(watchOS)
-
 @available(iOS 15.0, macOS 12.0, *)
-private final class DismissRecordingPaywallController: PaywallViewController {
+@MainActor
+final class DefaultPaywallPresenterTests: TestCase {
 
-    private(set) var dismissCallCount = 0
-    private let stubbedPresentingViewController = UIViewController()
-    private let dismissalReason: WorkflowDismissalReason
-
-    override var presentingViewController: UIViewController? {
-        return self.stubbedPresentingViewController
-    }
-
-    override var workflowDismissalReason: WorkflowDismissalReason {
-        return self.dismissalReason
-    }
-
-    init(
-        offering: Offering,
-        workflowDismissalReason: WorkflowDismissalReason = .close
-    ) {
-        self.dismissalReason = workflowDismissalReason
-        super.init(
-            content: .offering(offering),
-            fonts: DefaultPaywallFontProvider(),
-            displayCloseButton: false,
-            shouldBlockTouchEvents: false,
-            performPurchase: nil,
-            performRestore: nil,
-            dismissRequestedHandler: nil
+    func testDefaultCheckpointPaywallDoesNotAcceptExitOffers() throws {
+        let offering = Offering(
+            identifier: "offering-id",
+            serverDescription: "Test offering",
+            availablePackages: [],
+            webCheckoutUrl: nil
         )
-    }
+        let controller = makeDefaultCheckpointPaywallViewController(
+            params: .init(checkpointIdentifier: "checkpoint", customVariables: [:], offering: offering)
+        )
+        controller.remoteConfigEnabledForTesting = true
 
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+        controller.simulateWorkflowExitOfferUpdate(offering)
+        XCTAssertNil(controller.exitOfferOfferingForTesting)
 
-    override func dismiss(animated flag: Bool, completion: (() -> Void)?) {
-        self.dismissCallCount += 1
-        completion?()
+        controller.simulateOfferingBasedExitOfferPrefetchResult(offering)
+        XCTAssertNil(controller.exitOfferOfferingForTesting)
     }
 
 }
-
-#endif
 
 #endif
