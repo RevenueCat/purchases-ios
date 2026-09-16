@@ -1042,6 +1042,7 @@ jobs:
           environment:
             SCAN_DEVICE: iPhone 17 (27.0)
             RC_STOREKIT_TEST_PREFLIGHT: "1"
+            SCAN_XCARGS: -collect-test-diagnostics never
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: RevenueCat
