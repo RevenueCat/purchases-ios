@@ -87,8 +87,7 @@ struct PackageComponentView: View {
                 package: package,
                 componentName: self.viewModel.componentName,
                 hasPurchaseButton: self.viewModel.hasPurchaseButton,
-                hapticFeedbackEnabled: self.viewModel.hapticFeedbackEnabled,
-                accessibilitySelectionValue: self.viewModel.accessibilitySelectionValue(isSelected:)
+                hapticFeedbackEnabled: self.viewModel.hapticFeedbackEnabled
             )
         }
     }
@@ -98,22 +97,19 @@ struct PackageComponentView: View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension View {
 
-    // swiftlint:disable:next function_parameter_count
     func packageSelectorIfNeeded(
         packageContext: PackageContext,
         package: Package,
         componentName: String?,
         hasPurchaseButton: Bool,
-        hapticFeedbackEnabled: Bool,
-        accessibilitySelectionValue: @escaping (Bool) -> String
+        hapticFeedbackEnabled: Bool
     ) -> some View {
         modifier(PackageSelectorIfNeeded(
             packageContext: packageContext,
             package: package,
             componentName: componentName,
             hasPurchaseButton: hasPurchaseButton,
-            hapticFeedbackEnabled: hapticFeedbackEnabled,
-            accessibilitySelectionValue: accessibilitySelectionValue
+            hapticFeedbackEnabled: hapticFeedbackEnabled
         ))
     }
 
@@ -134,7 +130,6 @@ struct PackageSelectorIfNeeded: ViewModifier {
     let componentName: String?
     let hasPurchaseButton: Bool
     let hapticFeedbackEnabled: Bool
-    let accessibilitySelectionValue: (Bool) -> String
 
     private var isSelected: Bool {
         return self.packageContext.package?.identifier == self.package.identifier
@@ -173,7 +168,7 @@ struct PackageSelectorIfNeeded: ViewModifier {
             } label: {
                 content
             }
-            .accessibilityValue(self.accessibilitySelectionValue(self.isSelected))
+            .accessibilityAddTraits(self.isSelected ? .isSelected : [])
             .onAppear {
                 if hapticFeedbackEnabled {
                     self.hapticFeedback.prepare()
@@ -352,8 +347,7 @@ fileprivate extension PackageComponentViewModel {
             offering: offering,
             stackViewModel: stackViewModel,
             hasPurchaseButton: hasPurchaseButton,
-            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-            localizationProvider: localizationProvider
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
         )
     }
 

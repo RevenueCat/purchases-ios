@@ -67,20 +67,20 @@ final class PaywallAccessibilityUITests: XCTestCase {
 
     // MARK: - Package selection
 
-    /// The unselected row is the case that was silent before.
-    func testSelectionStateIsAnnouncedOnTheRow() throws {
+    /// The selected card carries the trait, so VoiceOver speaks the system's own word for it.
+    func testSelectedPackageCarriesTheTrait() throws {
         let app = self.launchDecorativeMedia()
 
         let selected = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Yearly")).firstMatch
         XCTAssertTrue(selected.waitForExistence(timeout: 30), app.debugDescription)
-        XCTAssertEqual(selected.value as? String, "Selected")
+        XCTAssertTrue(selected.isSelected)
 
         let unselected = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Monthly")).firstMatch
-        XCTAssertEqual(unselected.value as? String, "Not selected")
+        XCTAssertFalse(unselected.isSelected)
     }
 
     /// The label is left alone, so anything matching on card copy keeps working.
-    func testSelectionStateDoesNotChangeTheLabel() throws {
+    func testSelectionDoesNotChangeTheLabel() throws {
         let app = self.launchDecorativeMedia()
 
         let card = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Yearly")).firstMatch

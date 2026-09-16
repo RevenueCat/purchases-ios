@@ -233,7 +233,6 @@ struct ViewModelFactory {
                 stackViewModel: stackViewModel,
                 hasPurchaseButton: hasPurchaseButton,
                 uiConfigProvider: uiConfigProvider,
-                localizationProvider: localizationProvider,
                 discardRules: discardRules
             )
 

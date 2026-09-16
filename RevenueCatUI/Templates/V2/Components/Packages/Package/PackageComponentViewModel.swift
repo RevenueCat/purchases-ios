@@ -31,15 +31,12 @@ class PackageComponentViewModel {
 
     let visibilityResolver: PackageVisibilityResolver
 
-    private let localizedBundle: Bundle
-
     init(
         component: PaywallComponent.PackageComponent,
         offering: Offering,
         stackViewModel: StackComponentViewModel,
         hasPurchaseButton: Bool,
         uiConfigProvider: UIConfigProvider,
-        localizationProvider: LocalizationProvider,
         discardRules: Bool = false
     ) {
         self.visibilityResolver = PackageVisibilityResolver(
@@ -59,17 +56,6 @@ class PackageComponentViewModel {
 
         self.stackViewModel = stackViewModel
         self.hasPurchaseButton = hasPurchaseButton
-        self.localizedBundle = Localization.localizedBundle(localizationProvider.locale)
-    }
-
-    /// The row's accessibility value. VoiceOver reads it after the label, so nothing here
-    /// composes a sentence.
-    func accessibilitySelectionValue(isSelected: Bool) -> String {
-        return self.localizedBundle.localizedString(
-            forKey: isSelected ? "Selected" : "Not selected",
-            value: nil,
-            table: nil
-        )
     }
 
     // swiftlint:disable:next function_parameter_count
