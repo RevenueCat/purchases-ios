@@ -611,7 +611,7 @@ platform :ios do
     if pr_number
       args[:pr_number] = pr_number
 
-      github_token = ENV["GITHUB_TOKEN"]
+      github_token = ENV["DANGER_GITHUB_API_TOKEN"]
       if github_token && !github_token.empty?
         response = github_api(
           server_url: "https://api.github.com",
@@ -625,7 +625,7 @@ platform :ios do
         args[:base_sha] = pull_request.dig("base", "sha")
         args[:base_ref] = pull_request.dig("base", "ref")
       else
-        UI.important("GITHUB_TOKEN is unavailable; Sentry CLI will infer snapshot base metadata")
+        UI.important("DANGER_GITHUB_API_TOKEN is unavailable; Sentry CLI will infer snapshot base metadata")
       end
     end
 
