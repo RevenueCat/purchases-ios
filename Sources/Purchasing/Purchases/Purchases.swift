@@ -2939,10 +2939,6 @@ internal extension Purchases {
 
 internal extension Purchases {
 
-    var eventsManagerForTesting: EventsManagerType? {
-        self.eventsManager
-    }
-
     var networkTimeout: TimeInterval {
         return self.backend.networkTimeout
     }
