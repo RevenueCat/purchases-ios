@@ -80,6 +80,28 @@ final class OnURLOpenedModifierTests: TestCase {
         expect(oldReceived.value) == [Self.url]
     }
 
+    func testUnmountedViewDoesNotReceiveEventsWhileControllerIsRetained() throws {
+        let handler: PurchaseHandler = .mock()
+        let received: Atomic<[URL]> = .init([])
+        let disappeared: Atomic<Bool> = .init(false)
+        let view = Self.probe(handler)
+            .onURLOpened({ url in received.modify { $0.append(url) } })
+            .onDisappear { disappeared.value = true }
+        let window = Self.host(view)
+        defer { Self.unhost(window) }
+        let controller = try XCTUnwrap(window.rootViewController)
+
+        handler.signalURLOpened(Self.url)
+        expect(received.value) == [Self.url]
+        Self.unhost(window)
+        expect(disappeared.value) == true
+
+        handler.resetForNewSession()
+        handler.signalURLOpened(Self.url)
+        expect(received.value) == [Self.url]
+        withExtendedLifetime(controller) {}
+    }
+
     func testEventBeforeMountDoesNotReplayWithoutReset() {
         let handler: PurchaseHandler = .mock()
         handler.signalURLOpened(Self.url)
@@ -167,7 +189,7 @@ final class OnURLOpenedModifierTests: TestCase {
     }
 
     private static func host<Content: View>(_ view: Content) -> UIWindow {
-        let controller = UIHostingController(rootView: view.frame(width: 100, height: 100))
+        let controller = UIHostingController(rootView: AnyView(view.frame(width: 100, height: 100)))
         let window = UIWindow(frame: CGRect(origin: .zero, size: CGSize(width: 100, height: 100)))
         window.rootViewController = controller
         window.makeKeyAndVisible()
@@ -177,10 +199,14 @@ final class OnURLOpenedModifierTests: TestCase {
     }
 
     private static func unhost(_ window: UIWindow) {
+        // Hiding a test window alone does not trigger onDisappear on older iOS.
+        if let controller = window.rootViewController as? UIHostingController<AnyView> {
+            controller.rootView = AnyView(EmptyView())
+            controller.view.layoutIfNeeded()
+        }
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
         window.isHidden = true
         window.rootViewController = nil
-        // Let SwiftUI tear down subscriptions before presenting the next view. Event/reset
-        // sequences above deliberately never yield to the run loop.
         RunLoop.main.run(until: Date().addingTimeInterval(0.1))
     }
 

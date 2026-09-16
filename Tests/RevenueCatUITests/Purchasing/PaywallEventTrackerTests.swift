@@ -22,6 +22,21 @@ import XCTest
 @MainActor
 class PaywallEventTrackerTests: TestCase {
 
+    func testDispatcherPreservesSubmissionOrderWhenWorkSuspends() async {
+        let dispatcher = PaywallEventTrackerTestDispatcher.value
+        let completed: Atomic<[Int]> = .init([])
+
+        dispatcher {
+            try? await Task.sleep(nanoseconds: 100_000_000)
+            completed.modify { $0.append(1) }
+        }
+        dispatcher {
+            completed.modify { $0.append(2) }
+        }
+
+        await expect(completed.value).toEventually(equal([1, 2]), timeout: .seconds(2))
+    }
+
     func testTrackPaywallCloseDeduplicatesWithinSession() async throws {
         let (tracker, trackedEvents) = Self.makeTracker()
         let sessionID = Self.eventData.sessionIdentifier
