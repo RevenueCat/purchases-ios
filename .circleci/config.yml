@@ -85,7 +85,6 @@ jobs:
 
 workflows:
   setup:
-    when: << pipeline.parameters.requested_jobs >>
     jobs:
       - setup-dynamic-config:
           filters:
