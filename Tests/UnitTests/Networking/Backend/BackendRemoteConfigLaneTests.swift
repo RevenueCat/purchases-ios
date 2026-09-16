@@ -186,7 +186,10 @@ final class BackendRemoteConfigLaneParallelTests: TestCase {
             )
         }
 
-        expect(configResult).to(beSuccess())
+        // The transport fixture does not provide a response signature. The completed request still
+        // demonstrates that the remote-config lane runs independently; enforcement rejects its
+        // unsigned response after it returns.
+        expect(configResult).to(beFailure())
         expect(offeringsDispatched.value).toEventually(beTrue())
         expect(offeringsCompleted.value) == false
     }
@@ -242,7 +245,9 @@ final class BackendRemoteConfigLaneParallelTests: TestCase {
             )
         }
 
-        expect(configResult).to(beSuccess())
+        // The unsigned fixture still lets this test observe the timeout selected for the shared
+        // API source. Response verification rejects it once the request completes.
+        expect(configResult).to(beFailure())
         expect(remoteConfigTimeout.value) == HTTPRequestTimeoutManager.Timeout.mainSourceNoFallbackReduced
     }
 
