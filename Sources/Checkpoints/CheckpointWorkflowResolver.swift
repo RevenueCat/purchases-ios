@@ -39,17 +39,42 @@ import Foundation
 
 }
 
+/// A ``CheckpointResolution`` together with the rule that produced it. The rule id only attributes the hit
+/// event, so it travels here rather than on ``CheckpointResolution``, which RevenueCatUI consumes.
+struct ResolvedCheckpoint {
+
+    let resolution: CheckpointResolution
+    let checkpointRuleID: String?
+
+    init(_ resolution: CheckpointResolution, checkpointRuleID: String? = nil) {
+        self.resolution = resolution
+        self.checkpointRuleID = checkpointRuleID
+    }
+
+    /// Reports `rule` only when it was actually served.
+    init(_ resolution: CheckpointResolution, servedBy rule: CheckpointRule) {
+        switch resolution {
+        case .matchedWorkflow, .matchedOffering:
+            self.init(resolution, checkpointRuleID: rule.id)
+
+        case .noAction:
+            self.init(resolution)
+        }
+    }
+
+}
+
 /// Resolves a checkpoint to the workflow that should run, or the reason no workflow should run.
 protocol CheckpointWorkflowResolver: AnyObject {
 
-    func resolve(identifier: String, params: CheckpointParams) async throws -> CheckpointResolution
+    func resolve(identifier: String, params: CheckpointParams) async throws -> ResolvedCheckpoint
 
 }
 
 final class DisabledCheckpointWorkflowResolver: CheckpointWorkflowResolver {
 
-    func resolve(identifier: String, params: CheckpointParams) async throws -> CheckpointResolution {
-        return .noAction(.configurationUnavailable)
+    func resolve(identifier: String, params: CheckpointParams) async throws -> ResolvedCheckpoint {
+        return .init(.noAction(.configurationUnavailable))
     }
 
 }
@@ -87,7 +112,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         self.offeringsProvider = offeringsProvider
     }
 
-    func resolve(identifier: String, params: CheckpointParams) async throws -> CheckpointResolution {
+    func resolve(identifier: String, params: CheckpointParams) async throws -> ResolvedCheckpoint {
         #if DEBUG
         // Temporary CheckpointTester escape hatch. Config-backed resolution has no natural throwing case yet.
         if identifier == Self.simulatedErrorCheckpointIdentifier {
@@ -97,18 +122,18 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         }
         #endif
 
-        if let resolution = try await self.attemptResolveConfiguredWorkflow(identifier: identifier, params: params) {
-            return resolution
+        if let resolved = try await self.attemptResolveConfiguredWorkflow(identifier: identifier, params: params) {
+            return resolved
         }
         Logger.verbose(Strings.checkpoints.resolutionRetry(identifier: identifier))
 
         // A `nil` attempt means its configuration became stale while resolving.
         // Retry once against the latest generation before treating repeated staleness as unavailable.
-        if let resolution = try await self.attemptResolveConfiguredWorkflow(identifier: identifier, params: params) {
-            return resolution
+        if let resolved = try await self.attemptResolveConfiguredWorkflow(identifier: identifier, params: params) {
+            return resolved
         }
         Logger.error(Strings.checkpoints.resolutionRepeatedlyStale(identifier: identifier))
-        return .noAction(.configurationUnavailable)
+        return .init(.noAction(.configurationUnavailable))
     }
 
     // A resolution attempt has several distinct terminal states plus the stale sentinel (`nil`).
@@ -116,11 +141,11 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
     private func attemptResolveConfiguredWorkflow(
         identifier: String,
         params: CheckpointParams
-    ) async throws -> CheckpointResolution? {
+    ) async throws -> ResolvedCheckpoint? {
         let rulesSnapshot: CheckpointRulesSnapshot
         do {
             guard let snapshot = try await self.checkpointsConfigProvider.rules(for: identifier) else {
-                return .noAction(.unknownCheckpoint)
+                return .init(.noAction(.unknownCheckpoint))
             }
             rulesSnapshot = snapshot
         } catch let error as CancellationError {
@@ -128,19 +153,19 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         } catch CheckpointRulesProviderError.stale {
             return nil
         } catch {
-            return .noAction(.configurationUnavailable)
+            return .init(.noAction(.configurationUnavailable))
         }
 
         guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot) else { return nil }
         guard !rulesSnapshot.ruleSet.rules.isEmpty else {
-            return .noAction(.noMatch)
+            return .init(.noAction(.noMatch))
         }
 
         let audienceConfiguration: AudienceConfigurationSnapshot
         do {
             guard let configuration = try await self.audiencesConfigProvider.configuration() else {
                 guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot) else { return nil }
-                return .noAction(.configurationUnavailable)
+                return .init(.noAction(.configurationUnavailable))
             }
             audienceConfiguration = configuration
         } catch let error as CancellationError {
@@ -151,7 +176,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
                 checkpointID: identifier,
                 reason: "\(error)"
             ))
-            return .noAction(.configurationUnavailable)
+            return .init(.noAction(.configurationUnavailable))
         }
 
         guard self.isCurrent(rulesSnapshot, audienceConfiguration) else {
@@ -180,18 +205,18 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
                 checkpointID: identifier,
                 reason: "\(error)"
             ))
-            return .noAction(.configurationUnavailable)
+            return .init(.noAction(.configurationUnavailable))
         }
 
         // The offering mapping is resolved per branch now, since only a UI workflow needs it.
-        guard let rule else { return .noAction(.noMatch) }
+        guard let rule else { return .init(.noAction(.noMatch)) }
 
         let resolution = try await self.resolve(rule)
         guard self.isCurrent(rulesSnapshot, audienceConfiguration) else {
             return nil
         }
 
-        return resolution
+        return .init(resolution, servedBy: rule)
     }
 
     private func isCurrent(
