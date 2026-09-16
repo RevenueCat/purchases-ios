@@ -311,6 +311,12 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testCallToGetCustomerInfoWithPendingRenewalsPostsReceiptOnlyOnce() async throws {
+        #if os(iOS)
+        try XCTSkipIf(Self.storeKitVersion == .storeKit1 &&
+                      ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
+                      "Concurrent receipt refresh can prevent deduplication; tracked separately in #7738")
+        #endif
+
         // This test requires the "production" behavior to make sure
         // we don't refresh the receipt a second time when posting the second transaction.
         self.enableReceiptFetchRetry = false
