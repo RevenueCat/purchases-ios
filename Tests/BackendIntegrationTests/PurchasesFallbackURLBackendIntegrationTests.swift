@@ -70,18 +70,6 @@ class PurchasesFallbackURLBackendStoreKit2IntegrationTests: BaseStoreKitIntegrat
         XCTAssertTrue(offlineEntitlementInfo.isActive)
         verifySpecificTransactionWasNotFinished(transaction)
 
-        let pendingNativeTransaction: SKPaymentTransaction?
-        if Self.storeKitVersion == .storeKit1 {
-            // The captured fallback UUID may differ from the native identifier populated later by StoreKit.
-            let nativeTransaction = try XCTUnwrap(transaction.sk1Transaction)
-            await expect {
-                SKPaymentQueue.default().transactions.contains { $0 === nativeTransaction }
-            }.toEventually(beTrue(), timeout: .seconds(5))
-            pendingNativeTransaction = nativeTransaction
-        } else {
-            pendingNativeTransaction = nil
-        }
-
         let usesStoreKit1 = Self.storeKitVersion == .storeKit1
         try await asyncWait(description: "Purchased transaction is not available for recovery") {
             let expectedIdentifier = usesStoreKit1
@@ -98,6 +86,9 @@ class PurchasesFallbackURLBackendStoreKit2IntegrationTests: BaseStoreKitIntegrat
             }
             return false
         }
+        let transactionIdentifier = try XCTUnwrap(
+            usesStoreKit1 ? transaction.sk1Transaction?.transactionIdentifier : transaction.transactionIdentifier
+        )
 
         self.allServersUp() // Simulate main server recovery
         logger.clearMessages()
@@ -105,15 +96,20 @@ class PurchasesFallbackURLBackendStoreKit2IntegrationTests: BaseStoreKitIntegrat
         let onlineCustomerInfo = try await self.purchases.customerInfo()
 
         verifyCustomerInfoWasNotComputedOffline(customerInfo: onlineCustomerInfo)
-        if let nativeTransaction = pendingNativeTransaction {
-            await expect {
-                SKPaymentQueue.default().transactions.contains { $0 === nativeTransaction }
-            }.toEventually(beFalse(), timeout: .seconds(5))
-        } else {
-            try await self.verifySpecificTransactionIsEventuallyFinished(
-                transactionId: transaction.transactionIdentifier,
-                productId: transaction.productIdentifier
-            )
+        try await self.verifySpecificTransactionIsEventuallyFinished(
+            transactionId: transactionIdentifier,
+            productId: transaction.productIdentifier
+        )
+        try await asyncWait(description: "Recovered transaction is still unfinished", timeout: .seconds(5)) {
+            for await result in StoreKit.Transaction.unfinished {
+                switch result {
+                case let .verified(pending), let .unverified(pending, _):
+                    if String(pending.id) == transactionIdentifier {
+                        return false
+                    }
+                }
+            }
+            return true
         }
 
         XCTAssertFalse(onlineCustomerInfo.isComputedOffline)
