@@ -58,7 +58,6 @@ private func checkPaywallPresentationAPI(
         completion(.continue)
     }
 
-    purchases.checkpoint("test_checkpoint", paywallPresenter: presenter)
     purchases.checkpoint("test_checkpoint", paywallPresenter: presenter) { _ in }
 
     let _: PaywallPresentationResult = .continue
