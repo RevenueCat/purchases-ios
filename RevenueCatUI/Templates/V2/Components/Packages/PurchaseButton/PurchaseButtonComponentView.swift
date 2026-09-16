@@ -103,9 +103,7 @@ struct PurchaseButtonComponentView: View {
         }
 
         switch method {
-        // Hosted checkout needs a URL minted on tap, which is wired up in a follow-up. Until then it
-        // behaves like an SDK that does not know the method, which is what `action` falls back to.
-        case .inAppCheckout, .hostedWebCheckout, .unknown:
+        case .inAppCheckout, .unknown:
             try await self.purchaseInApp()
         case .hostedWebCheckout:
             try await self.purchaseInHostedCheckout()

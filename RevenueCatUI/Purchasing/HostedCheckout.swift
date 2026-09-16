@@ -26,8 +26,8 @@ enum HostedCheckout {
         /// Present this checkout to the customer.
         case present(HostedCheckoutSession)
 
-        /// The customer cannot be taken to a checkout of ours, so the purchase goes through StoreKit, as it
-        /// would on an SDK that does not know this purchase method.
+        /// There is no SDK to ask for a checkout, so the purchase goes through StoreKit, as it would on an
+        /// SDK that does not know this purchase method.
         case buyThroughStoreKit
 
         /// Nothing to present, and nothing to offer instead: the customer declined Apple's notice, the device
@@ -39,8 +39,6 @@ enum HostedCheckout {
             switch result {
             case let .started(session):
                 self = .present(session)
-            case .externalPurchaseUnavailable:
-                self = .buyThroughStoreKit
             case .declinedByCustomer, .paymentsNotAuthorized, .alreadyStarting, .failed:
                 self = .nothing
             }

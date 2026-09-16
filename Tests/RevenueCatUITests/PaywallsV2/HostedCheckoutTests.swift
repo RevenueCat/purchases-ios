@@ -32,11 +32,6 @@ final class HostedCheckoutTests: TestCase {
         expect(HostedCheckout.Start(.started(Self.session))) == .present(Self.session)
     }
 
-    /// The customer is offered the purchase Apple's way rather than none at all.
-    func testBuysThroughStoreKitWhenThereIsNoExternalPurchaseToMake() {
-        expect(HostedCheckout.Start(.externalPurchaseUnavailable)) == .buyThroughStoreKit
-    }
-
     /// A customer who said no to Apple's notice said no to the purchase.
     func testOffersNothingWhenTheCustomerDeclinedTheNotice() {
         expect(HostedCheckout.Start(.declinedByCustomer)) == .nothing
