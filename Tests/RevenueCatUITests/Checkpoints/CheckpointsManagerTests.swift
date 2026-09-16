@@ -1140,6 +1140,39 @@ final class CheckpointWorkflowExecutionTests: TestCase {
 
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension CheckpointsManager {
+
+    convenience init(
+        resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
+        workflowPresenter: CheckpointWorkflowPresenterProtocol,
+        defaultPaywallPresenter: DefaultPaywallPresenterProtocol? = nil,
+        cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil },
+        customerInfoSynchronizer: @escaping CustomerInfoSynchronizer = { throw CancellationError() }
+    ) {
+        let checkpointPresenter: CheckpointPresenter
+        if let defaultPaywallPresenter {
+            checkpointPresenter = CheckpointPresenter(
+                workflowPresenter: workflowPresenter,
+                defaultPaywallPresenter: defaultPaywallPresenter,
+                customerInfoSynchronizer: customerInfoSynchronizer
+            )
+        } else {
+            checkpointPresenter = CheckpointPresenter(
+                workflowPresenter: workflowPresenter,
+                customerInfoSynchronizer: customerInfoSynchronizer
+            )
+        }
+        self.init(
+            resolveCheckpoint: resolveCheckpoint,
+            checkpointPresenter: checkpointPresenter,
+            cachedCustomerInfoProvider: cachedCustomerInfoProvider
+        )
+    }
+
+}
+
+@MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class MockCheckpointWorkflowPresenter: CheckpointWorkflowPresenterProtocol {
 
     var execution: CheckpointExecution = .completed(

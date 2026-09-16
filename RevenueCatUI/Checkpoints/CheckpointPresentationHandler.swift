@@ -18,13 +18,12 @@ import Foundation
 /// Owns and routes the single active checkpoint presentation.
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-final class CheckpointPresenter {
+final class CheckpointPresenter: CheckpointPresenterProtocol {
 
     private let workflowPresenter: CheckpointWorkflowPresenterProtocol
     private let defaultPaywallPresenter: DefaultPaywallPresenterProtocol
     private let customerInfoSynchronizer: CheckpointsManager.CustomerInfoSynchronizer
     private let slot = CheckpointPresentationSlot()
-    var paywallPresenter: PaywallPresenter?
 
     init(
         workflowPresenter: CheckpointWorkflowPresenterProtocol,
@@ -199,6 +198,20 @@ final class CheckpointPresenter {
         }
 
     }
+
+}
+
+@MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+protocol CheckpointPresenterProtocol: AnyObject {
+
+    func presentWorkflow(_ presentation: CheckpointPresentation) async throws -> CheckpointExecution
+
+    func presentOffering(
+        params: PaywallPresentationParams,
+        globalPaywallPresenter: PaywallPresenter?,
+        localPaywallPresentationHandler: PaywallPresentationHandler?
+    ) async throws -> CheckpointExecution
 
 }
 

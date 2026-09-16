@@ -16,6 +16,7 @@ import Foundation
 @_spi(Internal) import RevenueCat
 
 /// Orchestrates checkpoint resolution and workflow execution.
+@MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointsManager {
 
@@ -23,67 +24,27 @@ final class CheckpointsManager {
 
     private let resolveCheckpoint: (String, CheckpointCallParams) async throws -> CheckpointResolution
     private let cachedCustomerInfoProvider: @MainActor () -> CustomerInfo?
-    private let customerInfoSynchronizer: CustomerInfoSynchronizer
-    @MainActor private lazy var workflowPresenter: CheckpointWorkflowPresenterProtocol = CheckpointWorkflowPresenter()
-    @MainActor private lazy var checkpointPresenter = CheckpointPresenter(
-        workflowPresenter: self.workflowPresenter,
-        customerInfoSynchronizer: self.customerInfoSynchronizer
-    )
+    private let checkpointPresenter: CheckpointPresenterProtocol
+    var paywallPresenter: PaywallPresenter?
 
     init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
+        checkpointPresenter: CheckpointPresenterProtocol? = nil,
         cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil },
         customerInfoSynchronizer: @escaping CustomerInfoSynchronizer = { throw CancellationError() }
     ) {
         self.resolveCheckpoint = resolveCheckpoint
         self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
-        self.customerInfoSynchronizer = customerInfoSynchronizer
-    }
-
-    @MainActor
-    init(
-        resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
-        workflowPresenter: CheckpointWorkflowPresenterProtocol,
-        cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil },
-        customerInfoSynchronizer: @escaping CustomerInfoSynchronizer = { throw CancellationError() }
-    ) {
-        self.resolveCheckpoint = resolveCheckpoint
-        self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
-        self.customerInfoSynchronizer = customerInfoSynchronizer
-        self.workflowPresenter = workflowPresenter
-    }
-
-    @MainActor
-    init(
-        resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
-        workflowPresenter: CheckpointWorkflowPresenterProtocol,
-        defaultPaywallPresenter: DefaultPaywallPresenterProtocol,
-        cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil },
-        customerInfoSynchronizer: @escaping CustomerInfoSynchronizer = { throw CancellationError() }
-    ) {
-        self.resolveCheckpoint = resolveCheckpoint
-        self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
-        self.customerInfoSynchronizer = customerInfoSynchronizer
-        self.workflowPresenter = workflowPresenter
-        self.checkpointPresenter = CheckpointPresenter(
-            workflowPresenter: workflowPresenter,
-            defaultPaywallPresenter: defaultPaywallPresenter,
+        self.checkpointPresenter = checkpointPresenter ?? CheckpointPresenter(
+            workflowPresenter: CheckpointWorkflowPresenter(),
             customerInfoSynchronizer: customerInfoSynchronizer
         )
     }
 
-    @MainActor
     func setPaywallPresenter(_ presenter: PaywallPresenter?) {
-        self.checkpointPresenter.paywallPresenter = presenter
+        self.paywallPresenter = presenter
     }
 
-    @MainActor
-    var paywallPresenter: PaywallPresenter? {
-        get { return self.checkpointPresenter.paywallPresenter }
-        set { self.setPaywallPresenter(newValue) }
-    }
-
-    @MainActor
     func executeCheckpoint(
         identifier: String,
         params: CheckpointCallParams
@@ -117,7 +78,6 @@ final class CheckpointsManager {
         }
     }
 
-    @MainActor
     func checkpointForCallback(
         identifier: String,
         params: CheckpointCallParams
@@ -145,7 +105,6 @@ final class CheckpointsManager {
         }
     }
 
-    @MainActor
     private func flowResult(
         for outcome: CheckpointFlowOutcome,
         initialEntitlementIdentifiers: Set<String>?

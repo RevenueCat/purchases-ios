@@ -97,12 +97,14 @@ private extension Purchases {
         }
     }
 
+    @MainActor
     var checkpointsManager: CheckpointsManager {
         return self.getOrCreateCheckpointsManager {
             self.createCheckpointsManager()
         }
     }
 
+    @MainActor
     func createCheckpointsManager() -> CheckpointsManager {
         return CheckpointsManager(
             resolveCheckpoint: { [weak self] identifier, params in
