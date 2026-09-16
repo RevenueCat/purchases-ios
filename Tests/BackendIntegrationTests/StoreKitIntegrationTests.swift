@@ -886,9 +886,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         #if os(iOS)
-        try XCTSkipIf(Self.storeKitVersion == .storeKit2 &&
-                      ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
-                      "iOS 27 StoreKitTest shows an already-subscribed dialog despite disableDialogs for active offers")
+        try XCTSkipIf(ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
+                      "iOS 27 StoreKitTest shows a blocking purchase dialog despite disableDialogs for active offers")
         #endif
 
         let user = UUID().uuidString
