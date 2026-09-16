@@ -152,30 +152,6 @@ internal enum ExternalPurchasePreparationResult: Equatable {
 
 }
 
-extension ExternalPurchasePreparationResult {
-
-    /// Whether the customer should be routed to the checkout.
-    var shouldProceed: Bool {
-        switch self {
-        case .stopped:
-            return false
-        case .registered, .unregistered, .notApplicable:
-            return true
-        }
-    }
-
-    /// The identifier to hand to the checkout page, when there is one.
-    var tokenID: String? {
-        switch self {
-        case let .registered(tokenID):
-            return tokenID
-        case .stopped, .unregistered, .notApplicable:
-            return nil
-        }
-    }
-
-}
-
 // MARK: - Private
 
 private extension ExternalPurchaseManager {
