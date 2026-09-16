@@ -21,6 +21,7 @@ class ReceiptFetcher {
     private let fileReader: FileReader
 
     private let lastReceiptRefreshRequest: Atomic<Date?> = nil
+    private let receiptRefreshCompletions: Atomic<[(Data, URL?) -> Void]?> = nil
 
     let systemInfo: SystemInfo
 
@@ -41,16 +42,7 @@ class ReceiptFetcher {
 
         switch refreshPolicy {
         case .always:
-            if self.shouldThrottleRefreshRequest() {
-                Logger.debug(Strings.receipt.throttling_force_refreshing_receipt)
-
-                // If requested to refresh again within the throttle duration
-                // Use `ReceiptRefreshPolicy.onlyIfEmpty` so receipt is not refreshed if it's already loaded.
-                self.receiptData(refreshPolicy: .onlyIfEmpty, completion: completion)
-            } else {
-                Logger.debug(Strings.receipt.force_refreshing_receipt)
-                self.refreshReceipt(completion)
-            }
+            self.refreshReceipt(completion, allowThrottling: true)
 
         case .onlyIfEmpty:
             let receiptData = self.receiptData()
@@ -148,11 +140,47 @@ private extension ReceiptFetcher {
         }
     }
 
-    func refreshReceipt(_ completion: @escaping (Data, URL?) -> Void) {
-        self.lastReceiptRefreshRequest.value = self.systemInfo.clock.now
+    enum RefreshAction {
+        case start
+        case joined
+        case useCached
+    }
+
+    func refreshReceipt(_ completion: @escaping (Data, URL?) -> Void, allowThrottling: Bool = false) {
+        let action = self.receiptRefreshCompletions.modify { completions in
+            if completions != nil {
+                completions?.append(completion)
+                return RefreshAction.joined
+            }
+            if allowThrottling && self.shouldThrottleRefreshRequest() {
+                return RefreshAction.useCached
+            }
+
+            completions = [completion]
+            self.lastReceiptRefreshRequest.value = self.systemInfo.clock.now
+            return RefreshAction.start
+        }
+
+        switch action {
+        case .joined:
+            return
+        case .useCached:
+            Logger.debug(Strings.receipt.throttling_force_refreshing_receipt)
+            self.receiptData(refreshPolicy: .onlyIfEmpty) { data, url in completion(data ?? Data(), url) }
+            return
+        case .start:
+            if allowThrottling {
+                Logger.debug(Strings.receipt.force_refreshing_receipt)
+            }
+        }
 
         self.requestFetcher.fetchReceiptData {
-            completion(self.receiptData() ?? Data(), self.receiptURL)
+            let data = self.receiptData() ?? Data()
+            let receiptURL = self.receiptURL
+            let completions = self.receiptRefreshCompletions.getAndSet(nil) ?? []
+            for completion in completions {
+                completion(data, receiptURL)
+            }
         }
     }
 
