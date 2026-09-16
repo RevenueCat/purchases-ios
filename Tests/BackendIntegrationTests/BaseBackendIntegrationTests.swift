@@ -230,6 +230,9 @@ private extension BaseBackendIntegrationTests {
         // - These run *before* `tearDown`.
         // - They run in LIFO order.
         self.addTeardownBlock { @MainActor in
+            try await self.eligibilityWarmups.waitForCompletion(timeout: .seconds(60))
+        }
+        self.addTeardownBlock { @MainActor in
             Purchases.clearSingleton()
 
             // Note: this captures the boolean to avoid race conditions when Nimble tries
@@ -237,7 +240,6 @@ private extension BaseBackendIntegrationTests {
             try await asyncWait(description: "Purchases has leaked") {
                 await MainActor.run { self.purchasesInstances.allSatisfy { $0.value == nil } }
             }
-            try await self.eligibilityWarmups.waitForCompletion(timeout: .seconds(60))
         }
     }
 
