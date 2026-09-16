@@ -24,10 +24,15 @@ import Foundation
     /// The mediation network configured to serve ``adIdentifier``.
     public let mediator: MediatorName
 
+    /// The ad format ``adIdentifier`` was created for. Ads are format-locked, so a presenter must load
+    /// this ad through the matching format's loader.
+    public let adFormat: AdFormat
+
     /// Creates a resolved ad step.
-    @_spi(Internal) public init(adIdentifier: String, mediator: MediatorName) {
+    @_spi(Internal) public init(adIdentifier: String, mediator: MediatorName, adFormat: AdFormat) {
         self.adIdentifier = adIdentifier
         self.mediator = mediator
+        self.adFormat = adFormat
     }
 
 }
