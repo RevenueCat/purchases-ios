@@ -67,19 +67,24 @@ class ExternalPurchaseManagerTests: TestCase {
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenParameters?.purchaseType) == .linkOut
     }
 
-    // MARK: - Stopping
+    // MARK: - Outside the programme
 
-    func testMintsNothingWhenTheAppIsNotEligible() async {
+    /// Nothing is disclosed and nothing is minted, so the caller is left to take the customer where it took
+    /// them before the app had anything to do with Apple's programme.
+    func testMintsNothingAndProceedsWhenTheAppIsNotEligible() async {
         self.customLink.stubbedAvailability = .notEligible
 
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
-        expect(result) == .stopped(.notEligible)
-        expect(result.shouldProceed) == false
+        expect(result) == .notApplicable
+        expect(result.shouldProceed) == true
+        expect(result.tokenID).to(beNil())
         expect(self.customLink.invokedNoticeTypes).to(beEmpty())
         expect(self.customLink.invokedTokenTypes).to(beEmpty())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
     }
+
+    // MARK: - Stopping
 
     /// Kept apart from being ineligible: the caller has nothing to offer instead, so it must not fall back to a
     /// purchase of any kind.
@@ -176,7 +181,7 @@ class ExternalPurchaseManagerTests: TestCase {
 
         let result = await self.manager.prepareExternalPurchase(flow: .linkOut)
 
-        expect(result) == .stopped(.notEligible)
+        expect(result) == .notApplicable
         expect(self.customLink.invokedAvailabilityCount) == 0
         expect(self.customLink.invokedNoticeTypes).to(beEmpty())
         expect(self.customLink.invokedTokenTypes).to(beEmpty())
@@ -213,7 +218,7 @@ class ExternalPurchaseManagerTests: TestCase {
 
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
-        expect(result) == .stopped(.notEligible)
+        expect(result) == .notApplicable
         expect(self.customLink.invokedNoticeTypes).to(beEmpty())
         expect(self.customLink.invokedTokenTypes).to(beEmpty())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
@@ -226,7 +231,7 @@ class ExternalPurchaseManagerTests: TestCase {
         self.customLink.stubbedAvailability = .notEligible
 
         let whileIneligible = await self.manager.prepareExternalPurchase(flow: .inApp)
-        expect(whileIneligible) == .stopped(.notEligible)
+        expect(whileIneligible) == .notApplicable
 
         self.customLink.stubbedAvailability = .available
 
