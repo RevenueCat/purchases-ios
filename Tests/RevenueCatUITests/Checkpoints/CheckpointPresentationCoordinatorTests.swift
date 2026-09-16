@@ -123,7 +123,7 @@ private final class MockCheckpointPresentationHandler: CheckpointPresentationHan
     func presentOffering(
         params _: PaywallPresentationParams,
         session _: CheckpointPresentationCoordinator.Session,
-        paywallPresentationHandler _: PaywallPresentationHandler?
+        localPaywallPresentationHandler _: PaywallPresentationHandler?
     ) async throws -> CheckpointExecution {
         return .completed(CheckpointFlowOutcome.dismissed)
     }

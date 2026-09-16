@@ -104,18 +104,13 @@ final class CheckpointsManager {
             )
             return try await self.presentationCoordinator.presentWorkflow(presentation)
         case let .matchedOffering(offering):
-            let globalPresentationHandler: PaywallPresentationHandler? = self.paywallPresenter.map { presenter in
-                { params, completion in
-                    presenter.present(params: params, completion: completion)
-                }
-            }
             return try await self.presentationCoordinator.presentOffering(
                 params: .init(
                     checkpointIdentifier: identifier,
                     customVariables: params.customVariables,
                     offering: offering
                 ),
-                paywallPresentationHandler: params.paywallPresentationHandler ?? globalPresentationHandler
+                localPaywallPresentationHandler: params.localPaywallPresentationHandler
             )
         case .noAction:
             return .nothingPresented

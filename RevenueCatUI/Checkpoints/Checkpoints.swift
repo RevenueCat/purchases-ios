@@ -31,14 +31,14 @@ extension CustomVariableValue {
 final class CheckpointCallParams: @unchecked Sendable {
 
     let customVariables: [String: CustomVariableValue]
-    let paywallPresentationHandler: PaywallPresentationHandler?
+    let localPaywallPresentationHandler: PaywallPresentationHandler?
 
     init(
         customVariables: [String: CustomVariableValue] = [:],
         paywallPresenter: PaywallPresentationHandler? = nil
     ) {
         self.customVariables = RevenueCat.CustomVariableKeyValidator.validateAndFilter(customVariables)
-        self.paywallPresentationHandler = paywallPresenter
+        self.localPaywallPresentationHandler = paywallPresenter
     }
 
     var coreParams: RevenueCat.CheckpointParams {
