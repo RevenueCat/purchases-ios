@@ -32,6 +32,12 @@ final class HostedCheckoutTests: TestCase {
         expect(HostedCheckout.Start(.started(Self.session))) == .present(Self.session)
     }
 
+    /// There is no checkout to open for something the customer already has, and they are told so rather than
+    /// left with a button that appears to do nothing.
+    func testTellsTheCustomerWhenTheyAlreadyOwnTheProduct() {
+        expect(HostedCheckout.Start(.alreadyPurchased)) == .tellCustomerTheyAlreadyOwnIt
+    }
+
     /// A customer who said no to Apple's notice said no to the purchase.
     func testOffersNothingWhenTheCustomerDeclinedTheNotice() {
         expect(HostedCheckout.Start(.declinedByCustomer)) == .nothing

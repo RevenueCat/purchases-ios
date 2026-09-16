@@ -29,6 +29,9 @@ class PurchaseButtonComponentViewModel {
 
     let customWebCheckoutUrl: URL?
 
+    /// The bundle the SDK's own strings come from, as opposed to the paywall's configured copy.
+    let localizedBundle: Bundle
+
     init(
         localizationProvider: LocalizationProvider,
         component: PaywallComponent.PurchaseButtonComponent,
@@ -38,6 +41,7 @@ class PurchaseButtonComponentViewModel {
         self.component = component
         self.offering = offering
         self.stackViewModel = stackViewModel
+        self.localizedBundle = Localization.localizedBundle(localizationProvider.locale)
 
         if case let .customWebCheckout(customWebCheckout)? = component.method {
             self.customWebCheckoutUrl = try localizationProvider

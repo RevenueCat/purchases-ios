@@ -42,6 +42,7 @@ struct PurchaseButtonComponentView: View {
 
     #if os(iOS) && canImport(WebKit)
     @State private var hostedCheckoutViewModel: WebCheckoutViewModel?
+    @State private var isShowingAlreadyPurchasedAlert = false
     #endif
 
     private let viewModel: PurchaseButtonComponentViewModel
@@ -92,6 +93,18 @@ struct PurchaseButtonComponentView: View {
         #if os(iOS) && canImport(WebKit)
         .webCheckoutSheet(viewModel: self.$hostedCheckoutViewModel) { outcome in
             self.handleHostedCheckoutOutcome(outcome)
+        }
+        .alert(
+            Text("You've Already Purchased This", bundle: self.viewModel.localizedBundle),
+            isPresented: self.$isShowingAlreadyPurchasedAlert
+        ) {
+            Button {
+                self.isShowingAlreadyPurchasedAlert = false
+            } label: {
+                Text("OK", bundle: self.viewModel.localizedBundle)
+            }
+        } message: {
+            Text("This purchase is already active on your account.", bundle: self.viewModel.localizedBundle)
         }
         #endif
     }
@@ -171,6 +184,8 @@ struct PurchaseButtonComponentView: View {
             await self.presentHostedCheckout(session)
         case .buyThroughStoreKit:
             try await self.performInAppPurchase(selectedPackage: selectedPackage)
+        case .tellCustomerTheyAlreadyOwnIt:
+            await self.showAlreadyPurchasedAlert()
         case .nothing:
             break
         }
@@ -182,6 +197,11 @@ struct PurchaseButtonComponentView: View {
     }
 
     #if os(iOS) && canImport(WebKit)
+    @MainActor
+    private func showAlreadyPurchasedAlert() {
+        self.isShowingAlreadyPurchasedAlert = true
+    }
+
     @MainActor
     private func presentHostedCheckout(_ session: HostedCheckoutSession) {
         let viewModel = WebCheckoutViewModel(
