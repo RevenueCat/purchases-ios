@@ -403,6 +403,33 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(global.receivedParams?.offering.identifier, "offering-id")
     }
 
+    func testGlobalPaywallPresenterIsCapturedBeforeCheckpointResolution() async throws {
+        let resolutionStarted = self.expectation(description: "Checkpoint resolution starts")
+        var resolutionContinuation: CheckedContinuation<CheckpointResolution, Never>?
+        let initialPresenter = MockPaywallPresenter()
+        let replacementPresenter = MockPaywallPresenter()
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in
+                await withCheckedContinuation { continuation in
+                    resolutionContinuation = continuation
+                    resolutionStarted.fulfill()
+                }
+            }
+        )
+        manager.paywallPresenter = initialPresenter
+
+        let checkpoint = Task {
+            try await manager.executeCheckpoint(identifier: "onboarding", params: .init())
+        }
+        await self.fulfillment(of: [resolutionStarted], timeout: 1)
+        manager.paywallPresenter = replacementPresenter
+        resolutionContinuation?.resume(returning: .matchedOffering(Self.offering()))
+        _ = try await checkpoint.value
+
+        XCTAssertEqual(initialPresenter.callCount, 1)
+        XCTAssertEqual(replacementPresenter.callCount, 0)
+    }
+
     func testResolvedOfferingUsesDefaultPaywallPresenterWithoutAnOverride() async throws {
         let defaultPresenter = MockDefaultPaywallPresenter(result: .closed)
         var customerInfoSynchronizerCallCount = 0

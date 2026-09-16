@@ -91,6 +91,8 @@ final class CheckpointsManager {
         identifier: String,
         params: CheckpointCallParams
     ) async throws -> CheckpointExecution {
+        let globalPaywallPresenter = self.paywallPresenter
+
         guard CheckpointIdentifierValidator.isValid(identifier) else {
             Logger.error(CheckpointIdentifierValidator.invalidIdentifierLogMessage(identifier))
             return .nothingPresented
@@ -110,6 +112,7 @@ final class CheckpointsManager {
                     customVariables: params.customVariables,
                     offering: offering
                 ),
+                globalPaywallPresenter: globalPaywallPresenter,
                 localPaywallPresentationHandler: params.localPaywallPresentationHandler
             )
         case .noAction:

@@ -57,6 +57,7 @@ final class CheckpointPresentationHandler: CheckpointPresentationHandlerProtocol
     func presentOffering(
         params: PaywallPresentationParams,
         session: CheckpointPresentationCoordinator.Session,
+        globalPaywallPresenter: PaywallPresenter?,
         localPaywallPresentationHandler: PaywallPresentationHandler?
     ) async throws -> CheckpointExecution {
         let presentationHandler: PaywallPresentationHandler
@@ -64,7 +65,7 @@ final class CheckpointPresentationHandler: CheckpointPresentationHandlerProtocol
         if let localPaywallPresentationHandler {
             presentationHandler = localPaywallPresentationHandler
             cancellationHandler = nil
-        } else if let paywallPresenter = self.paywallPresenter {
+        } else if let paywallPresenter = globalPaywallPresenter {
             presentationHandler = { params, completion in
                 paywallPresenter.present(params: params, completion: completion)
             }

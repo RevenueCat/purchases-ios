@@ -36,12 +36,14 @@ final class CheckpointPresentationCoordinator {
 
     func presentOffering(
         params: PaywallPresentationParams,
+        globalPaywallPresenter: PaywallPresenter?,
         localPaywallPresentationHandler: PaywallPresentationHandler?
     ) async throws -> CheckpointExecution {
         return try await self.withPresentationSession { session in
             try await self.handler.presentOffering(
                 params: params,
                 session: session,
+                globalPaywallPresenter: globalPaywallPresenter,
                 localPaywallPresentationHandler: localPaywallPresentationHandler
             )
         }
@@ -120,6 +122,7 @@ protocol CheckpointPresentationHandlerProtocol: AnyObject {
     func presentOffering(
         params: PaywallPresentationParams,
         session: CheckpointPresentationCoordinator.Session,
+        globalPaywallPresenter: PaywallPresenter?,
         localPaywallPresentationHandler: PaywallPresentationHandler?
     ) async throws -> CheckpointExecution
 
