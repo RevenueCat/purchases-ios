@@ -46,6 +46,7 @@ class BaseBackendIntegrationTests: TestCase {
     private(set) var purchasesDelegate: TestPurchaseDelegate!
 
     private var mainThreadMonitor: MainThreadMonitor!
+    private let paywallCacheLifetimes = DeallocationTracker()
 
     var forceServerErrorStrategy: ForceServerErrorStrategy?
 
@@ -211,6 +212,9 @@ private extension BaseBackendIntegrationTests {
     func createPurchases() async {
         self.purchasesDelegate = TestPurchaseDelegate()
         self.configurePurchases()
+        if let cache = Purchases.shared.paywallCache {
+            self.paywallCacheLifetimes.track(cache as AnyObject)
+        }
         self.simulateForegroundingApp()
 
         Purchases.shared.delegate = self.purchasesDelegate
@@ -224,12 +228,13 @@ private extension BaseBackendIntegrationTests {
         // See `addTeardownBlock` docs:
         // - These run *before* `tearDown`.
         // - They run in LIFO order.
-        self.addTeardownBlock {
+        self.addTeardownBlock { @MainActor in
             Purchases.clearSingleton()
 
             // Note: this captures the boolean to avoid race conditions when Nimble tries
             // to print `purchases` while it's being deallocated.
-            expect { purchases == nil }.toEventually(beTrue(), description: "Purchases has leaked")
+            await expect { purchases == nil }.toEventually(beTrue(), description: "Purchases has leaked")
+            try await self.paywallCacheLifetimes.waitForDeallocation(timeout: .seconds(60))
         }
     }
 

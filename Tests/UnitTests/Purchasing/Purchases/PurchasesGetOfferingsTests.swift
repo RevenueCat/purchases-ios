@@ -17,6 +17,23 @@ import XCTest
 
 @testable import RevenueCat
 
+private final class HeldEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType {
+
+    let requests: Atomic<[Set<String>]> = .init([])
+    private let completions: Atomic<[ReceiveIntroEligibilityBlock]> = .init([])
+
+    func checkEligibility(productIdentifiers: Set<String>, completion: @escaping ReceiveIntroEligibilityBlock) {
+        self.completions.modify { $0.append(completion) }
+        self.requests.modify { $0.append(productIdentifiers) }
+    }
+
+    func completeNext() {
+        let completion = self.completions.modify { $0.isEmpty ? nil : $0.removeFirst() }
+        completion?([:])
+    }
+
+}
+
 class PurchasesGetOfferingsTests: BasePurchasesTests {
 
     func testFirstInitializationGetsOfferingsIfAppActive() {
@@ -191,6 +208,96 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
     }
 
     // MARK: - overridePreferredUILocale
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    @MainActor
+    func testEligibilityWarmupOutlivesPurchasesUntilBothOfferingChecksComplete() async throws {
+        let checker = HeldEligibilityChecker()
+        var cache: PaywallCacheWarming? = PaywallCacheWarming(introEligibiltyChecker: checker)
+        weak var observedCache = cache
+        let lifetimes = DeallocationTracker()
+        do {
+            let cacheInterface: PaywallCacheWarmingType = try XCTUnwrap(cache)
+            XCTAssertTrue(cacheInterface as AnyObject === cache)
+            lifetimes.track(cacheInterface as AnyObject)
+        }
+        let offerings = ["current", "remaining"].map { identifier in
+            Offering(
+                identifier: identifier,
+                serverDescription: identifier,
+                paywall: nil,
+                availablePackages: [.init(
+                    identifier: "$rc_monthly",
+                    packageType: .monthly,
+                    storeProduct: StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: identifier)),
+                    offeringIdentifier: identifier,
+                    webCheckoutUrl: nil
+                )],
+                webCheckoutUrl: nil
+            )
+        }
+        self.systemInfo.stubbedIsApplicationBackgrounded = true
+        self.mockOperationDispatcher.forwardToOriginalDispatchOnWorkerThread = true
+        self.initializePurchasesInstance(appUserId: "test", paywallCache: cache)
+        self.mockOfferingsManager.stubbedOfferingsCompletionResult = .success(.init(
+            offerings: Dictionary(uniqueKeysWithValues: offerings.map { ($0.identifier, $0) }),
+            currentOfferingID: "current",
+            placements: nil,
+            targeting: nil,
+            contents: .mockContents,
+            loadedFromDiskCache: false
+        ))
+
+        _ = try await self.purchases.offerings()
+        await expect { checker.requests.value }.toEventually(equal([["current"]]))
+        weak var observedPurchases = self.purchases
+        Purchases.clearSingleton()
+        self.purchases = nil
+        cache = nil
+
+        await expect { observedPurchases == nil }.toEventually(beTrue())
+        expect(observedCache).toNot(beNil())
+        let barrierStarted: Atomic<Bool> = false
+        let barrierFinished: Atomic<Bool> = false
+        let barrier = Task { @MainActor in
+            barrierStarted.value = true
+            try await lifetimes.waitForDeallocation(timeout: .seconds(2))
+            barrierFinished.value = true
+        }
+        await expect { barrierStarted.value }.toEventually(beTrue())
+        expect(barrierFinished.value) == false
+        checker.completeNext()
+
+        await expect { checker.requests.value }.toEventually(equal([["current"], ["remaining"]]))
+        expect(observedCache).toNot(beNil())
+        expect(barrierFinished.value) == false
+        checker.completeNext()
+        try await barrier.value
+        expect(barrierFinished.value) == true
+        await expect { observedCache == nil }.toEventually(beTrue())
+    }
+
+    @MainActor
+    func testCacheLifetimeBarrierFailsWhenAnInstanceRemainsAlive() async throws {
+        let lifetimes = DeallocationTracker()
+        let object = NSObject()
+        lifetimes.track(object)
+        defer { withExtendedLifetime(object) {} }
+        var threw = false
+        let assertions = await gatherExpectations(silently: true) {
+            do {
+                try await lifetimes.waitForDeallocation(timeout: .milliseconds(10))
+            } catch {
+                threw = true
+            }
+        }
+
+        expect(threw) == true
+        expect(lifetimes.pendingCount) == 1
+        let failure = try XCTUnwrap(assertions.onlyElement)
+        expect(failure.success) == false
+        expect(failure.message.stringValue).to(contain("1 cache instances remain"))
+    }
 
     func testOverridePreferredUILocaleInvalidatesInMemoryCache() {
         self.setupPurchases()

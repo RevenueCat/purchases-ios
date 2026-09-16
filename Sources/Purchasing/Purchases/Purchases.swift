@@ -285,7 +285,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let externalPurchaseManager: ExternalPurchaseManager
     private let backend: Backend
     private let deviceCache: DeviceCache
-    private let paywallCache: PaywallCacheWarmingType?
+    let paywallCache: PaywallCacheWarmingType?
     private let identityManager: IdentityManager
     private let tokenManager: TokenManager
     private let userDefaults: UserDefaults
