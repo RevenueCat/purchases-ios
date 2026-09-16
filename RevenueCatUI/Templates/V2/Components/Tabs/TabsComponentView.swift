@@ -395,7 +395,10 @@ struct LoadedTabsComponentView: View {
             //    - If user made an explicit selection AND it's in the tab → keep it
             //    - Otherwise → use tab's default
             //
-            .onChangeOf(self.tabControlContext.selectedTabId) { newTabId in
+            // Observed with `onReceive` and not `onChange`: this sits inside a branch that
+            // reads `selectedTabId`, so a switch rebuilds the subtree and re-installs
+            // `onChange` with the new id already as its baseline, and it never fires.
+            .onReceive(self.tabControlContext.$selectedTabId.dropFirst()) { newTabId in
                 // Publish the new selection before the package-restoration guard so dependent
                 // components re-resolve their `state` conditions even for tabs without packages.
                 self.publishSelectedTabState(newTabId)
