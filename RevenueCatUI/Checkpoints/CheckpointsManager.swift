@@ -144,7 +144,8 @@ final class CheckpointsManager {
                 params: .init(
                     checkpointIdentifier: identifier,
                     adIdentifier: adStep.adIdentifier,
-                    mediator: adStep.mediator
+                    mediator: adStep.mediator,
+                    adFormat: adStep.adFormat
                 ),
                 customVariables: params.customVariables,
                 errorPresentationHandler: errorPresentationHandler
