@@ -148,7 +148,7 @@ final class CheckpointPresenter: CheckpointPresenterProtocol {
             self.slot.release(self.token)
 
             if result == .navigatedBack {
-                self.complete(execution: .backedOut(.dismissed))
+                self.complete(execution: .backedOut)
             } else {
                 self.synchronizeCustomerInfo()
             }
@@ -156,11 +156,11 @@ final class CheckpointPresenter: CheckpointPresenterProtocol {
 
         private func cancel() {
             guard let cancellationHandler else {
-                self.fail(error: CancellationError(), force: true)
+                self.finishCancellation(force: true)
                 return
             }
             cancellationHandler { [weak self] in
-                self?.fail(error: CancellationError(), force: true)
+                self?.finishCancellation(force: true)
             }
         }
 
@@ -170,9 +170,10 @@ final class CheckpointPresenter: CheckpointPresenterProtocol {
 
                 do {
                     let customerInfo = try await self.customerInfoSynchronizer()
-                    self.complete(execution: .completed(.finished(customerInfo: customerInfo)))
+                    self.complete(execution: .completed(customerInfo: customerInfo))
                 } catch {
-                    self.complete(execution: .completed(.error(error as NSError)))
+                    Logger.error(error.localizedDescription)
+                    self.complete(execution: .failed)
                 }
             }
         }
@@ -182,12 +183,12 @@ final class CheckpointPresenter: CheckpointPresenterProtocol {
             continuation.resume(returning: execution)
         }
 
-        private func fail(error: Error, force: Bool = false) {
+        private func finishCancellation(force: Bool = false) {
             guard self.pendingContinuation != nil,
                   force || !self.hasReportedCompletion else { return }
             self.hasReportedCompletion = true
             guard let continuation = self.takeContinuation() else { return }
-            continuation.resume(throwing: error)
+            continuation.resume(throwing: CancellationError())
         }
 
         private func takeContinuation() -> CheckedContinuation<

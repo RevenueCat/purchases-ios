@@ -90,12 +90,12 @@ final class CheckpointsManager {
             switch try await self.executeCheckpoint(identifier: identifier, params: params) {
             case .backedOut:
                 return .suppressed
-            case let .completed(outcome):
+            case let .completed(customerInfo):
                 return .completed(self.flowResult(
-                    for: outcome,
+                    customerInfo: customerInfo,
                     initialEntitlementIdentifiers: initialEntitlementIdentifiers
                 ))
-            case .nothingPresented:
+            case .failed, .nothingPresented:
                 return .completed(nil)
             }
         } catch CheckpointError.operationAlreadyInProgress {
@@ -106,20 +106,10 @@ final class CheckpointsManager {
     }
 
     private func flowResult(
-        for outcome: CheckpointFlowOutcome,
+        customerInfo: CustomerInfo?,
         initialEntitlementIdentifiers: Set<String>?
     ) -> FlowResult? {
-        let entitlements: [EntitlementInfo]
-        switch outcome {
-        case let .purchased(_, customerInfo),
-             let .restored(customerInfo),
-             let .finished(customerInfo):
-            entitlements = Array(customerInfo.entitlements.active.values)
-        case .error:
-            return nil
-        case .dismissed, .webCheckoutOpened:
-            entitlements = []
-        }
+        let entitlements = customerInfo.map { Array($0.entitlements.active.values) } ?? []
 
         let obtainedEntitlements = entitlements.lazy
             .filter { entitlement in

@@ -56,23 +56,3 @@ public struct FlowResult: @unchecked Sendable {
     }
 
 }
-
-/// Terminal outcome of checkpoint-presented UI. This is intentionally internal: callers only receive `FlowResult`.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-enum CheckpointFlowOutcome {
-    case dismissed
-    case webCheckoutOpened
-    case purchased(transaction: StoreTransaction?, customerInfo: CustomerInfo)
-    case restored(customerInfo: CustomerInfo)
-    case finished(customerInfo: CustomerInfo)
-    case error(PublicError)
-
-    var isSuccessful: Bool {
-        switch self {
-        case .purchased, .restored, .finished:
-            return true
-        default:
-            return false
-        }
-    }
-}

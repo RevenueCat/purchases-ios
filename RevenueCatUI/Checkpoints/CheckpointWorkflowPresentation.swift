@@ -27,8 +27,14 @@ struct CheckpointPresentation {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum CheckpointExecution {
     case nothingPresented
-    case completed(CheckpointFlowOutcome)
-    case backedOut(CheckpointFlowOutcome)
+    case completed(customerInfo: CustomerInfo?)
+    case backedOut
+    case failed
+
+    var hasCustomerInfo: Bool {
+        guard case .completed(.some) = self else { return false }
+        return true
+    }
 }
 
 /// Presents a resolved checkpoint workflow and returns its terminal execution.

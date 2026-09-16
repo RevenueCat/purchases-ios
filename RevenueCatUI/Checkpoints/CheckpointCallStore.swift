@@ -21,19 +21,20 @@ import Foundation
 final class CheckpointCallStore {
 
     enum CallUpdate {
-        case outcome(CheckpointFlowOutcome)
+        case outcome(CheckpointExecution)
         case workflowPresentationError(NSError)
         case dismissalReason(WorkflowDismissalReason)
     }
 
     final class Call {
         let presentation: CheckpointPresentation
-        fileprivate(set) var stagedOutcome: CheckpointFlowOutcome
+        fileprivate(set) var stagedOutcome: CheckpointExecution
+        fileprivate(set) var hasReportedOutcome = false
         fileprivate(set) var dismissalReason: WorkflowDismissalReason = .close
 
         init(
             presentation: CheckpointPresentation,
-            stagedOutcome: CheckpointFlowOutcome = .dismissed
+            stagedOutcome: CheckpointExecution = .completed(customerInfo: nil)
         ) {
             self.presentation = presentation
             self.stagedOutcome = stagedOutcome
@@ -53,16 +54,17 @@ final class CheckpointCallStore {
         case let .outcome(outcome):
             // Once the customer has purchased or restored, a later non-success outcome must not erase it.
             // A later purchase or restore may replace it with newer CustomerInfo.
-            guard !call.stagedOutcome.isSuccessful || outcome.isSuccessful else {
+            guard !call.stagedOutcome.hasCustomerInfo || outcome.hasCustomerInfo else {
                 return
             }
             call.stagedOutcome = outcome
+            call.hasReportedOutcome = true
         case let .workflowPresentationError(error):
             // A workflow error does not supersede an outcome that was already reported by the customer.
-            guard case .dismissed = call.stagedOutcome else {
-                return
-            }
-            call.stagedOutcome = .error(error)
+            guard !call.hasReportedOutcome else { return }
+            Logger.error(error.localizedDescription)
+            call.stagedOutcome = .failed
+            call.hasReportedOutcome = true
         case let .dismissalReason(reason):
             call.dismissalReason = reason
         }

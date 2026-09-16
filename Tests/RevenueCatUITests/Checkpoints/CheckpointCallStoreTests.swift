@@ -22,19 +22,14 @@ final class CheckpointCallStoreTests: TestCase {
 
     func testErrorDoesNotReplacePurchaseOutcome() {
         let store = CheckpointCallStore()
-        let transaction = StoreTransaction(MockStoreTransaction())
         store.store(presentation: Self.presentation())
 
-        store.stage(.outcome(CheckpointFlowOutcome.purchased(
-            transaction: transaction,
-            customerInfo: TestData.customerInfo
-        )))
-        store.stage(.outcome(CheckpointFlowOutcome.error(NSError(domain: "test", code: 1))))
+        store.stage(.outcome(.completed(customerInfo: TestData.customerInfo)))
+        store.stage(.outcome(.failed))
 
-        guard case let .purchased(outcomeTransaction, customerInfo)? = store.call?.stagedOutcome else {
+        guard case let .completed(customerInfo)? = store.call?.stagedOutcome else {
             return XCTFail("Expected the earlier purchase outcome to win")
         }
-        XCTAssertEqual(outcomeTransaction, transaction)
         XCTAssertEqual(customerInfo, TestData.customerInfo)
     }
 
@@ -42,10 +37,10 @@ final class CheckpointCallStoreTests: TestCase {
         let store = CheckpointCallStore()
         store.store(presentation: Self.presentation())
 
-        store.stage(.outcome(CheckpointFlowOutcome.restored(customerInfo: TestData.customerInfo)))
-        store.stage(.outcome(CheckpointFlowOutcome.error(NSError(domain: "test", code: 1))))
+        store.stage(.outcome(.completed(customerInfo: TestData.customerInfo)))
+        store.stage(.outcome(.failed))
 
-        guard case let .restored(customerInfo)? = store.call?.stagedOutcome else {
+        guard case let .completed(customerInfo)? = store.call?.stagedOutcome else {
             return XCTFail("Expected the earlier restore outcome to win")
         }
         XCTAssertEqual(customerInfo, TestData.customerInfo)
