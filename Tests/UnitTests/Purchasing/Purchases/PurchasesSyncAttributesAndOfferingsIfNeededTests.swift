@@ -19,6 +19,68 @@ import XCTest
 
 class PurchasesSyncAttributesAndOfferingsTests: BasePurchasesTests {
 
+    func testAsyncWrapperReturnsOfferingsFromCallback() async throws {
+        self.setupPurchases()
+        let offerings = try XCTUnwrap(
+            self.offeringsFactory.createOfferings(
+                from: [:],
+                contents: .mockContents,
+                loadedFromDiskCache: false
+            )
+        )
+
+        let result = try await self.purchases.syncAttributesAndOfferingsIfNeededAsync { completion in
+            completion(offerings, nil)
+        }
+
+        expect(result) === offerings
+    }
+
+    func testAsyncWrapperThrowsCallbackError() async {
+        self.setupPurchases()
+        let expectedError = ErrorUtils.networkError().asPublicError
+
+        do {
+            _ = try await self.purchases.syncAttributesAndOfferingsIfNeededAsync { completion in
+                completion(nil, expectedError)
+            }
+            fail("Expected callback error")
+        } catch {
+            expect(error).to(matchError(expectedError))
+        }
+    }
+
+    func testAsyncWrapperReturnsNilWhenCallbackHasNoValueOrError() async throws {
+        self.setupPurchases()
+
+        let result = try await self.purchases.syncAttributesAndOfferingsIfNeededAsync { completion in
+            completion(nil, nil)
+        }
+
+        expect(result).to(beNil())
+    }
+
+    func testAsyncWrapperPrioritizesErrorOverOfferings() async throws {
+        self.setupPurchases()
+        let offerings = try XCTUnwrap(
+            self.offeringsFactory.createOfferings(
+                from: [:],
+                contents: .mockContents,
+                loadedFromDiskCache: false
+            )
+        )
+        let expectedError = ErrorUtils.networkError().asPublicError
+
+        do {
+            _ = try await self.purchases.syncAttributesAndOfferingsIfNeededAsync { completion in
+                completion(offerings, expectedError)
+            }
+            fail("Expected callback error despite non-nil offerings")
+        } catch {
+            expect(error).to(matchError(expectedError))
+        }
+    }
+
     func testAttributesSyncedAndOfferingsFetched() throws {
         self.setupPurchases()
 

@@ -30,9 +30,11 @@ extension Purchases {
         }
     }
 
-    func syncAttributesAndOfferingsIfNeededAsync() async throws -> Offerings? {
+    func syncAttributesAndOfferingsIfNeededAsync(
+        _ sync: (@escaping (Offerings?, PublicError?) -> Void) -> Void
+    ) async throws -> Offerings? {
         return try await withUnsafeThrowingContinuation { continuation in
-            syncAttributesAndOfferingsIfNeeded { offerings, error in
+            sync { offerings, error in
                 if let error {
                     continuation.resume(throwing: error)
                 } else {

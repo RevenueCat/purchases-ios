@@ -124,8 +124,10 @@ class CustomerInfoManager {
                 let result = Result { try self.cachedCustomerInfo(appUserID: appUserID) }
 
                 // We want the specific error for diagnostics
-                let resultForDiagnostics = Result(result.value as? CustomerInfo,
-                                                  result.error ?? BackendError.missingCachedCustomerInfo())
+                let resultForDiagnostics: Result<CustomerInfo, Error> = Result(
+                    result.value as? CustomerInfo,
+                    result.error ?? BackendError.missingCachedCustomerInfo()
+                )
                 self.trackGetCustomerInfoResultIfNeeded(trackDiagnostics: trackDiagnostics,
                                                         startTime: startTime,
                                                         cacheFetchPolicy: fetchPolicy,
