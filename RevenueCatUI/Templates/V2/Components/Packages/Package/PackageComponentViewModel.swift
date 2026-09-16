@@ -31,7 +31,6 @@ class PackageComponentViewModel {
 
     let visibilityResolver: PackageVisibilityResolver
 
-    /// Resolved once: the bundle lookup repeats a path search on every render.
     private let localizedBundle: Bundle
 
     init(

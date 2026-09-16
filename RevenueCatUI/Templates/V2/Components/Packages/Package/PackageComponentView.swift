@@ -173,8 +173,6 @@ struct PackageSelectorIfNeeded: ViewModifier {
             } label: {
                 content
             }
-            // On the row, which always renders. VoiceOver says nothing at all for an
-            // unselected package otherwise, since the trait is silent when false.
             .accessibilityValue(self.accessibilitySelectionValue(self.isSelected))
             .onAppear {
                 if hapticFeedbackEnabled {
