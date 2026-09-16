@@ -212,6 +212,7 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     @MainActor
     func testEligibilityWarmupBarrierWaitsForBothStagesButNotCacheDeallocation() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         let checker = HeldEligibilityChecker()
         let cache = PaywallCacheWarming(introEligibiltyChecker: checker)
         let warmups = EligibilityWarmupTracker()
