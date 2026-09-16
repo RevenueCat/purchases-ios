@@ -188,15 +188,15 @@ class ExternalPurchaseManagerTests: TestCase {
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
     }
 
-    /// Apps outside the programme did not try to make an external purchase, so telling them they cannot is
-    /// noise in their console.
+    /// Apps outside the programme did not try to make an external purchase, so telling them anything about
+    /// Apple's custom link is noise in their console.
     func testNothingIsLoggedWhileTheSettingIsDisabled() async {
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
         self.manager = self.makeManager()
 
         _ = await self.manager.prepareExternalPurchase(flow: .linkOut)
 
-        self.logger.verifyMessageWasNotLogged(Strings.externalPurchase.cannot_make_external_purchases,
+        self.logger.verifyMessageWasNotLogged(Strings.externalPurchase.custom_link_does_not_apply,
                                               allowNoMessages: true)
     }
 
