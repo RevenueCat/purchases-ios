@@ -68,7 +68,8 @@ final class CustomEntitlementsComputationIntegrationTests: BaseStoreKitIntegrati
     func testPurchasingPostsAdAttributionToken() async throws {
         try self.purchases.attribution.enableAdServicesAttributionTokenCollection()
 
-        let info = try await self.purchaseMonthlyOffering().customerInfo
+        let product = try await self.product(Self.consumable10Coins)
+        let info = try await self.purchase(product: product, file: #file, line: #line).customerInfo
 
         self.logger.verifyMessageWasLogged(
             Strings.attribution.adservices_marking_as_synced(appUserID: info.originalAppUserId),
