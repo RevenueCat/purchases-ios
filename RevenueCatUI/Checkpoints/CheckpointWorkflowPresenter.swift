@@ -30,9 +30,37 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointWorkflowPresenterPr
     typealias DismissalHandler = (@escaping () -> Void) -> Void
     private typealias Continuation = CheckedContinuation<CheckpointExecution, Error>
 
-    private let callStore: CheckpointCallStore
+    enum PresentationUpdate {
+        case outcome(CheckpointExecution)
+        case workflowPresentationError(NSError)
+        case dismissalReason(WorkflowDismissalReason)
+    }
+
+    private struct PresentationState {
+        var outcome: CheckpointExecution = .completed(customerInfo: nil)
+        var hasReportedOutcome = false
+        var dismissalReason: WorkflowDismissalReason = .close
+
+        mutating func record(_ update: PresentationUpdate) {
+            switch update {
+            case let .outcome(outcome):
+                guard !self.outcome.hasCustomerInfo || outcome.hasCustomerInfo else { return }
+                self.outcome = outcome
+                self.hasReportedOutcome = true
+            case let .workflowPresentationError(error):
+                guard !self.hasReportedOutcome else { return }
+                Logger.error(error.localizedDescription)
+                self.outcome = .failed
+                self.hasReportedOutcome = true
+            case let .dismissalReason(reason):
+                self.dismissalReason = reason
+            }
+        }
+    }
+
     private let presentationHandler: PresentationHandler?
     private let dismissalHandler: DismissalHandler?
+    private var presentationState: PresentationState?
     private var pendingContinuation: Continuation?
 
     #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
@@ -40,22 +68,18 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointWorkflowPresenterPr
     #endif
 
     init(
-        callStore: CheckpointCallStore? = nil,
         dismissalHandler: DismissalHandler? = nil,
         presentationHandler: PresentationHandler? = nil
     ) {
-        self.callStore = callStore ?? CheckpointCallStore()
         self.presentationHandler = presentationHandler
         self.dismissalHandler = dismissalHandler
         super.init()
     }
 
     convenience init(
-        callStore: CheckpointCallStore? = nil,
         presentationHandler: @escaping PresentationHandler
     ) {
         self.init(
-            callStore: callStore,
             dismissalHandler: nil,
             presentationHandler: presentationHandler
         )
@@ -89,10 +113,10 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointWorkflowPresenterPr
     }
 
     func startPresentation(_ presentation: CheckpointPresentation) throws {
-        guard self.callStore.call == nil else {
+        guard self.presentationState == nil else {
             throw CheckpointError.operationAlreadyInProgress
         }
-        self.callStore.store(presentation: presentation)
+        self.presentationState = PresentationState()
 
         do {
             if let presentationHandler = self.presentationHandler {
@@ -103,14 +127,14 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointWorkflowPresenterPr
                 try self.presentAutomatically(presentation)
             }
         } catch {
-            _ = self.callStore.remove()
+            self.presentationState = nil
             self.presentedViewController = nil
             throw error
         }
     }
 
-    func stage(_ update: CheckpointCallStore.CallUpdate) {
-        self.callStore.stage(update)
+    func stage(_ update: PresentationUpdate) {
+        self.presentationState?.record(update)
     }
 
     @discardableResult
@@ -129,7 +153,7 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointWorkflowPresenterPr
     }
 
     func dismiss(completion: @escaping () -> Void) {
-        _ = self.callStore.remove()
+        self.presentationState = nil
 
         if let dismissalHandler = self.dismissalHandler {
             dismissalHandler(completion)
@@ -150,17 +174,17 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointWorkflowPresenterPr
     }
 
     private func complete() -> CheckpointExecution? {
-        guard let call = self.callStore.remove() else { return nil }
+        guard let state = self.takePresentationState() else { return nil }
 
         #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
         self.presentedViewController = nil
         #endif
 
-        let execution: CheckpointExecution = if call.dismissalReason == .navigatedBack,
-                                                !call.stagedOutcome.hasCustomerInfo {
+        let execution: CheckpointExecution = if state.dismissalReason == .navigatedBack,
+                                                !state.outcome.hasCustomerInfo {
             .backedOut
         } else {
-            call.stagedOutcome
+            state.outcome
         }
         self.finish(execution)
         return execution
@@ -179,6 +203,11 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointWorkflowPresenterPr
     private func takePendingContinuation() -> Continuation? {
         defer { self.pendingContinuation = nil }
         return self.pendingContinuation
+    }
+
+    private func takePresentationState() -> PresentationState? {
+        defer { self.presentationState = nil }
+        return self.presentationState
     }
 
     #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
