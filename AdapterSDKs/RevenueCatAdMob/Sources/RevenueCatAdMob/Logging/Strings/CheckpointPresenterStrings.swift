@@ -21,6 +21,11 @@ enum CheckpointPresenterStrings {
     case rewarded_no_presentation_context
     case rewarded_present_failed(error: Error)
     case rewarded_verification_failed(adUnitID: String)
+    case rewarded_interstitial_unsupported_mediator(mediator: String)
+    case rewarded_interstitial_load_failed(adUnitID: String, error: Error)
+    case rewarded_interstitial_no_presentation_context
+    case rewarded_interstitial_present_failed(error: Error)
+    case rewarded_interstitial_verification_failed(adUnitID: String)
 }
 
 extension CheckpointPresenterStrings: LogMessage {
@@ -48,6 +53,19 @@ extension CheckpointPresenterStrings: LogMessage {
         case let .rewarded_verification_failed(adUnitID):
             return "Checkpoint rewarded ad for ad unit '\(adUnitID)' was watched but reward verification failed; " +
                 "no reward was granted."
+        case let .rewarded_interstitial_unsupported_mediator(mediator):
+            return "Checkpoint ad step is configured for mediator '\(mediator)'; " +
+                "AdMobRewardedInterstitialPresenter only presents AdMob ad units."
+        case let .rewarded_interstitial_load_failed(adUnitID, error):
+            return "Checkpoint rewarded interstitial failed to load for ad unit '\(adUnitID)': " +
+                "\(error.localizedDescription)"
+        case .rewarded_interstitial_no_presentation_context:
+            return "Checkpoint rewarded interstitial loaded but no view controller is available to present it from."
+        case let .rewarded_interstitial_present_failed(error):
+            return "Checkpoint rewarded interstitial failed to present: \(error.localizedDescription)"
+        case let .rewarded_interstitial_verification_failed(adUnitID):
+            return "Checkpoint rewarded interstitial for ad unit '\(adUnitID)' was watched but reward verification " +
+                "failed; no reward was granted."
         }
     }
 
