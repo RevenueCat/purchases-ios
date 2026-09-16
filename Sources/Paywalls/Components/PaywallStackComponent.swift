@@ -17,10 +17,10 @@ import Foundation
 @_spi(Internal) public extension PaywallComponent {
 
     struct PackageSelection: Codable, Hashable, Sendable {
-        public let mode: String
+        public let defaultScope: String
 
-        public init(mode: String = "independent") {
-            self.mode = mode
+        public init(defaultScope: String = "container") {
+            self.defaultScope = defaultScope
         }
     }
 

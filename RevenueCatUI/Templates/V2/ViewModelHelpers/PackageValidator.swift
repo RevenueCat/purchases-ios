@@ -67,27 +67,27 @@ class PackageValidator {
 
     var hasDeclaredPackages = false
 
-    func addIndependentScope(_ validator: PackageValidator) {
+    func addDefaultScope(_ validator: PackageValidator) {
         for packageInfo in validator.scopedPackageInfos {
-            self.scopedPackageInfos.append((packageInfo.info, .independent))
+            self.scopedPackageInfos.append((packageInfo.info, .defaultScope))
         }
     }
 
     func addNestedScopes(from validator: PackageValidator) {
-        self.scopedPackageInfos.append(contentsOf: validator.scopedPackageInfos.filter { $0.scope == .independent })
+        self.scopedPackageInfos.append(contentsOf: validator.scopedPackageInfos.filter { $0.scope == .defaultScope })
     }
 
     /// Where a package was declared: a page-level resolution must never return a tab-only package.
     private enum Scope {
         case page
         case tab
-        case independent
+        case defaultScope
     }
 
     private var scopedPackageInfos: [(info: PackageInfo, scope: Scope)] = []
 
     var packageInfos: [PackageInfo] {
-        self.scopedPackageInfos.filter { $0.scope != .independent }.map(\.info)
+        self.scopedPackageInfos.filter { $0.scope != .defaultScope }.map(\.info)
     }
 
     var hasPageScopedPackages: Bool {
@@ -152,11 +152,31 @@ class PackageValidator {
         return self.defaultSelectedPackage(among: self.packageInfos, in: context)
     }
 
+    /// Applies this container's default to the same context used by the paywall's purchase button.
+    @MainActor
+    func applyDefault(to context: PackageContext, in selectionContext: PackageSelectionContext) {
+        guard self.hasDeclaredPackages || !self.packageInfos.isEmpty else { return }
+        context.update(
+            package: self.defaultSelectedPackage(in: selectionContext),
+            variableContext: .init(
+                packages: self.packages,
+                showZeroDecimalPlacePrices: context.variableContext.showZeroDecimalPlacePrices
+            ),
+            isReconcile: true
+        )
+    }
+
     /// The selection that should be in effect, or `nil` when nothing needs to change: only moves a
     /// selection nothing is rendering, and only to a package declared outside the tabs.
     func reconciledSelection(current: Package?, in context: PackageSelectionContext) -> Package? {
         guard self.hasPageScopedPackages else {
             // Every package lives in a tab, and each tab reconciles its own selection.
+            return nil
+        }
+
+        if let current, self.scopedPackageInfos.contains(where: {
+            $0.scope == .defaultScope && $0.info.package.identifier == current.identifier
+        }) {
             return nil
         }
 
@@ -173,7 +193,7 @@ class PackageValidator {
     /// cost of the limitation pinned by `testDuplicateInAnotherTabMasksAHiddenPageDefault`.
     func isRendering(_ package: Package, in context: PackageSelectionContext) -> Bool {
         return self.scopedPackageInfos.contains { scoped in
-            guard scoped.scope != .independent else { return false }
+            guard scoped.scope != .defaultScope else { return false }
             return scoped.info.package.identifier == package.identifier && self.isVisible(scoped.info, in: context)
         }
     }
