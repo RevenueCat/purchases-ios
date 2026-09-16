@@ -264,7 +264,7 @@ private final class DefaultPaywallPresenter: NSObject, DefaultPaywallPresenterPr
             return
         }
         self.presentedViewController = nil
-        controller.dismiss(animated: true, completion: completion)
+        dismissCheckpointPaywallViewController(controller, completion: completion)
     }
 
     private func finish(_ controller: PaywallViewController) {
@@ -297,6 +297,18 @@ func makeDefaultCheckpointPaywallViewController(params: PaywallPresentationParam
     controller.disableExitOffers()
     controller.customVariables = params.customVariables
     return controller
+}
+
+@MainActor
+func dismissCheckpointPaywallViewController(
+    _ controller: UIViewController,
+    completion: @escaping () -> Void
+) {
+    guard controller.presentingViewController != nil else {
+        completion()
+        return
+    }
+    controller.dismiss(animated: true, completion: completion)
 }
 #else
 @MainActor

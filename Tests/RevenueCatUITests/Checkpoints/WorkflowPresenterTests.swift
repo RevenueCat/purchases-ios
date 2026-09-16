@@ -426,6 +426,28 @@ final class DefaultPaywallPresenterTests: TestCase {
         XCTAssertNil(controller.exitOfferOfferingForTesting)
     }
 
+    func testDismissingDetachedViewControllerCompletesWithoutCallingDismiss() {
+        let controller = DetachedDismissRecordingViewController()
+        var didComplete = false
+
+        dismissCheckpointPaywallViewController(controller) {
+            didComplete = true
+        }
+
+        XCTAssertTrue(didComplete)
+        XCTAssertEqual(controller.dismissCallCount, 0)
+    }
+
+}
+
+private final class DetachedDismissRecordingViewController: UIViewController {
+
+    private(set) var dismissCallCount = 0
+
+    override func dismiss(animated flag: Bool, completion: (() -> Void)?) {
+        self.dismissCallCount += 1
+    }
+
 }
 
 #endif
