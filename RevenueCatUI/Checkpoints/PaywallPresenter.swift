@@ -79,7 +79,7 @@ public struct PaywallPresentationParams {
     ///   - checkpointIdentifier: The identifier of the checkpoint that selected the offering.
     ///   - customVariables: The custom variables supplied to the checkpoint.
     ///   - offering: The offering for which to present the paywall.
-    public init(
+    init(
         checkpointIdentifier: String,
         customVariables: [String: CustomVariableValue] = [:],
         offering: Offering
