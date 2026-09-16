@@ -119,7 +119,7 @@ class HostedCheckoutManagerTests: TestCase {
 
         _ = await self.manager.startCheckout(package: Self.package, paywall: nil)
 
-        self.logger.verifyMessageWasNotLogged(Strings.externalPurchase.cannot_make_external_purchases)
+        self.logger.verifyMessageWasNotLogged(Strings.externalPurchase.custom_link_does_not_apply)
     }
 
     // MARK: - Not starting
