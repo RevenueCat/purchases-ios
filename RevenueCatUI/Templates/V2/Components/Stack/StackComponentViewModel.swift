@@ -31,7 +31,7 @@ struct BadgeContents {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class StackComponentViewModel {
 
-    let localPackageValidator: PackageValidator?
+    let independentPackageValidator: PackageValidator?
     let component: PaywallComponent.StackComponent
     let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedStackPartial>?
@@ -99,9 +99,9 @@ class StackComponentViewModel {
         badgeViewModels: [BadgeContents],
         uiConfigProvider: UIConfigProvider,
         discardRules: Bool = false,
-        localPackageValidator: PackageValidator? = nil
+        independentPackageValidator: PackageValidator? = nil
     ) {
-        self.localPackageValidator = localPackageValidator
+        self.independentPackageValidator = independentPackageValidator
         self.component = component
         self.viewModels = viewModels
         self.uiConfigProvider = uiConfigProvider
@@ -117,7 +117,7 @@ class StackComponentViewModel {
             badgeViewModels: self.badgeViewModels,
             uiConfigProvider: self.uiConfigProvider,
             discardRules: self.discardRules,
-            localPackageValidator: self.localPackageValidator
+            independentPackageValidator: self.independentPackageValidator
         )
     }
 

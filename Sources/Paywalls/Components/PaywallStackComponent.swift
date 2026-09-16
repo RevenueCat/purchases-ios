@@ -19,7 +19,7 @@ import Foundation
     struct PackageSelection: Codable, Hashable, Sendable {
         public let mode: String
 
-        public init(mode: String = "local") {
+        public init(mode: String = "independent") {
             self.mode = mode
         }
     }

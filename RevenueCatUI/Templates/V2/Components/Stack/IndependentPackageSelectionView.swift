@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  LocalPackageSelectionView.swift
+//  IndependentPackageSelectionView.swift
 //
 
 @_spi(Internal) import RevenueCat
@@ -15,9 +15,9 @@ import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
 
-/// Owns selection for one local stack while inheriting the surrounding paywall environment.
+/// Owns selection for one independent stack while inheriting the surrounding paywall environment.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct LocalPackageSelectionView<Content: View>: View {
+struct IndependentPackageSelectionView<Content: View>: View {
     @EnvironmentObject private var parentContext: PackageContext
     @EnvironmentObject private var introOfferEligibilityContext: IntroOfferEligibilityContext
     @EnvironmentObject private var paywallPromoOfferCache: PaywallPromoOfferCache

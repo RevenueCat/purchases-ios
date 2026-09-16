@@ -67,27 +67,27 @@ class PackageValidator {
 
     var hasDeclaredPackages = false
 
-    func addLocalScope(_ validator: PackageValidator) {
+    func addIndependentScope(_ validator: PackageValidator) {
         for packageInfo in validator.scopedPackageInfos {
-            self.scopedPackageInfos.append((packageInfo.info, .local))
+            self.scopedPackageInfos.append((packageInfo.info, .independent))
         }
     }
 
     func addNestedScopes(from validator: PackageValidator) {
-        self.scopedPackageInfos.append(contentsOf: validator.scopedPackageInfos.filter { $0.scope == .local })
+        self.scopedPackageInfos.append(contentsOf: validator.scopedPackageInfos.filter { $0.scope == .independent })
     }
 
     /// Where a package was declared: a page-level resolution must never return a tab-only package.
     private enum Scope {
         case page
         case tab
-        case local
+        case independent
     }
 
     private var scopedPackageInfos: [(info: PackageInfo, scope: Scope)] = []
 
     var packageInfos: [PackageInfo] {
-        self.scopedPackageInfos.filter { $0.scope != .local }.map(\.info)
+        self.scopedPackageInfos.filter { $0.scope != .independent }.map(\.info)
     }
 
     var hasPageScopedPackages: Bool {
@@ -173,7 +173,7 @@ class PackageValidator {
     /// cost of the limitation pinned by `testDuplicateInAnotherTabMasksAHiddenPageDefault`.
     func isRendering(_ package: Package, in context: PackageSelectionContext) -> Bool {
         return self.scopedPackageInfos.contains { scoped in
-            guard scoped.scope != .local else { return false }
+            guard scoped.scope != .independent else { return false }
             return scoped.info.package.identifier == package.identifier && self.isVisible(scoped.info, in: context)
         }
     }
