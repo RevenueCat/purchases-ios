@@ -87,6 +87,10 @@ extension CustomerInfo {
 /// switch adOutcome {
 /// case is CheckpointAdOutcome.Shown:
 ///     handleShown()
+/// case let outcome as CheckpointAdOutcome.Rewarded:
+///     handleReward(outcome.reward, outcome.moreRewards)
+/// case is CheckpointAdOutcome.RewardVerificationFailed:
+///     handleUnverifiedReward()
 /// case let outcome as CheckpointAdOutcome.Failed:
 ///     handleError(outcome.error)
 /// default:
@@ -111,6 +115,42 @@ public class CheckpointAdOutcome: CustomStringConvertible {
         private override init() { super.init() }
 
         public override var description: String { return "Shown" }
+
+    }
+
+    /// The customer earned the ad's reward and RevenueCat verified it. Any configured virtual currency or
+    /// entitlement has already been granted by the time this outcome is reported.
+    public final class Rewarded: CheckpointAdOutcome {
+
+        /// The primary verified reward. Can be ``AdReward/noReward`` when verification succeeded but the
+        /// ad unit has no reward configured.
+        public let reward: AdReward
+
+        /// Additional verified rewards, not repeating ``reward``.
+        public let moreRewards: [AdReward]
+
+        init(reward: AdReward, moreRewards: [AdReward]) {
+            self.reward = reward
+            self.moreRewards = moreRewards
+            super.init()
+        }
+
+        public override var description: String {
+            return "Rewarded(reward=\(self.reward), moreRewards=\(self.moreRewards))"
+        }
+
+    }
+
+    /// The customer earned the ad's reward, but RevenueCat could not verify it, so nothing was granted.
+    ///
+    /// Unlike ``Failed``, the ad was shown in full; presenting another ad is not an appropriate recovery.
+    public final class RewardVerificationFailed: CheckpointAdOutcome {
+
+        static let shared = RewardVerificationFailed()
+
+        private override init() { super.init() }
+
+        public override var description: String { return "RewardVerificationFailed" }
 
     }
 
