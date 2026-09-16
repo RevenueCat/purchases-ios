@@ -260,7 +260,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         expect(nonSubscription.storeTransactionIdentifier) == transaction.transactionIdentifier
         expect(info.allPurchasedProductIdentifiers).to(contain(Self.consumable10Coins))
 
-        self.verifyAnyTransactionWasFinished()
+        self.verifySpecificTransactionWasFinished(transaction)
     }
 
     func testCanPurchaseConsumableMultipleTimes() async throws {
@@ -334,7 +334,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         try await self.verifyEntitlementWentThrough(info)
 
-        self.verifyAnyTransactionWasFinished()
+        self.verifySpecificTransactionWasFinished(transaction)
     }
 
     func testCanPurchaseNonRenewingSubscription() async throws {
@@ -349,7 +349,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         try await self.verifyEntitlementWentThrough(info)
 
-        self.verifyAnyTransactionWasFinished()
+        self.verifySpecificTransactionWasFinished(transaction)
     }
 
     func testCanPurchaseMultipleSubscriptions() async throws {
@@ -1147,9 +1147,9 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         let result = try await self.purchase(params: params, file: #file, line: #line)
 
-        expect(result.transaction).toNot(beNil())
+        let transaction = try XCTUnwrap(result.transaction)
         try await self.verifyEntitlementWentThrough(result.customerInfo)
-        self.verifyAnyTransactionWasFinished()
+        self.verifySpecificTransactionWasFinished(transaction)
     }
     #endif
 }
