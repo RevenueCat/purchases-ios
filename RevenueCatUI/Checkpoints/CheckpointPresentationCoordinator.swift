@@ -19,10 +19,10 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointPresentationCoordinator {
 
-    private let handler: CheckpointPresentationHandler
+    private let handler: CheckpointPresentationHandlerProtocol
     private var activePresentation: Session?
 
-    init(handler: CheckpointPresentationHandler) {
+    init(handler: CheckpointPresentationHandlerProtocol) {
         self.handler = handler
     }
 
@@ -100,7 +100,7 @@ final class CheckpointPresentationCoordinator {
 /// Owns the strategy used to render a checkpoint presentation.
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-protocol CheckpointPresentationHandler: AnyObject {
+protocol CheckpointPresentationHandlerProtocol: AnyObject {
 
     func presentWorkflow(
         _ presentation: CheckpointPresentation,

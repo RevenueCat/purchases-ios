@@ -25,7 +25,7 @@ final class CheckpointsManager {
     private let cachedCustomerInfoProvider: @MainActor () -> CustomerInfo?
     private let customerInfoSynchronizer: CustomerInfoSynchronizer
     @MainActor private lazy var executor: CheckpointExecutor = CheckpointWorkflowExecutor()
-    @MainActor private lazy var presentationHandler = DefaultCheckpointPresentationHandler(
+    @MainActor private lazy var presentationHandler = CheckpointPresentationHandler(
         executor: self.executor,
         customerInfoSynchronizer: self.customerInfoSynchronizer
     )
@@ -60,7 +60,7 @@ final class CheckpointsManager {
     init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
         executor: CheckpointExecutor,
-        defaultPaywallPresenter: DefaultPaywallPresenting,
+        defaultPaywallPresenter: DefaultPaywallPresenterProtocol,
         cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil },
         customerInfoSynchronizer: @escaping CustomerInfoSynchronizer = { throw CancellationError() }
     ) {
@@ -68,7 +68,7 @@ final class CheckpointsManager {
         self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
         self.customerInfoSynchronizer = customerInfoSynchronizer
         self.executor = executor
-        self.presentationHandler = DefaultCheckpointPresentationHandler(
+        self.presentationHandler = CheckpointPresentationHandler(
             executor: executor,
             defaultPaywallPresenter: defaultPaywallPresenter,
             customerInfoSynchronizer: customerInfoSynchronizer

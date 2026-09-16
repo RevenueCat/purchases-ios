@@ -115,7 +115,7 @@ private enum PaywallPresenterDemo {
                     finish(.navigatedBack)
                 },
                 onPurchase: { _ in
-                    finish(.purchased)
+                    finish(.continue)
                 }
             )
         )
@@ -142,7 +142,7 @@ private enum PaywallPresenterDemo {
                     finish(.navigatedBack)
                 },
                 onPurchase: { _ in
-                    finish(.purchased)
+                    finish(.continue)
                 }
             )
         )

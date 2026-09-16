@@ -62,7 +62,7 @@ public typealias PaywallPresentationHandler = @MainActor (
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
-public final class PaywallPresentationParams {
+public struct PaywallPresentationParams {
 
     /// The identifier of the checkpoint that selected this offering.
     public let checkpointIdentifier: String
@@ -93,49 +93,29 @@ public final class PaywallPresentationParams {
 
 /// Describes how a custom checkpoint paywall presentation ended.
 ///
-/// After ``purchased``, ``closed``, or ``continued``, RevenueCat synchronizes purchases and refreshes
-/// customer information before completing the checkpoint. ``navigatedBack`` skips synchronization and does not invoke
-/// the checkpoint's passed callback.
+/// After ``continue`` or ``closed``, RevenueCat synchronizes purchases and refreshes customer information before
+/// completing the checkpoint. ``navigatedBack`` skips synchronization and does not invoke the checkpoint's passed
+/// callback.
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
-public final class PaywallPresentationResult {
+public enum PaywallPresentationResult {
 
-    /// The customer purchased or restored from the custom paywall and completed the presentation.
+    /// The customer completed the custom paywall presentation and should continue through the checkpoint.
+    ///
+    /// RevenueCat synchronizes purchases and refreshes customer information before completing the checkpoint, so the
+    /// presenter does not need to report whether the customer purchased or restored.
+    case `continue`
+
+    /// The customer closed the custom paywall, or the presentation could not be completed.
     ///
     /// RevenueCat synchronizes purchases and refreshes customer information before completing the checkpoint.
-    public static let purchased = PaywallPresentationResult(kind: .purchased)
-
-    /// The customer left through a close action.
-    ///
-    /// The customer passes the checkpoint. RevenueCat still synchronizes purchases before invoking the checkpoint's
-    /// passed callback, so a purchase completed during the presentation can be reflected in its result.
-    public static let closed = PaywallPresentationResult(kind: .closed)
+    case closed
 
     /// The customer backed out of the paywall.
     ///
     /// RevenueCat does not synchronize purchases or invoke the checkpoint's passed callback, leaving the app at the
     /// point from which it presented the checkpoint.
-    public static let navigatedBack = PaywallPresentationResult(kind: .navigatedBack)
-
-    /// The customer chose to continue.
-    ///
-    /// This behaves like ``closed`` today. It remains distinct so a future multi-step checkpoint can continue after
-    /// the custom paywall instead of ending the presentation. RevenueCat synchronizes purchases before completing the
-    /// checkpoint.
-    public static let continued = PaywallPresentationResult(kind: .continued)
-
-    enum Kind {
-        case purchased
-        case closed
-        case navigatedBack
-        case continued
-    }
-
-    let kind: Kind
-
-    private init(kind: Kind) {
-        self.kind = kind
-    }
+    case navigatedBack
 
 }
