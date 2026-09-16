@@ -604,6 +604,59 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(flowResult?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
     }
 
+    func testStalePresenterCompletionCannotReleaseReplacementPresentation() async throws {
+        let firstStarted = self.expectation(description: "First custom presentation starts")
+        let replacementStarted = self.expectation(description: "Replacement custom presentation starts")
+        var firstCompletion: PaywallPresentationCompletion?
+        var replacementCompletion: PaywallPresentationCompletion?
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            workflowPresenter: MockCheckpointWorkflowPresenter(),
+            customerInfoSynchronizer: { try Self.customerInfo(activeEntitlements: []) }
+        )
+
+        let first = Task {
+            try await manager.executeCheckpoint(
+                identifier: "onboarding",
+                params: .init(paywallPresenter: { _, completion in
+                    firstCompletion = completion
+                    firstStarted.fulfill()
+                })
+            )
+        }
+        await self.fulfillment(of: [firstStarted], timeout: 1)
+        firstCompletion?(.continue)
+        _ = try await first.value
+
+        let replacement = Task {
+            try await manager.executeCheckpoint(
+                identifier: "onboarding",
+                params: .init(paywallPresenter: { _, completion in
+                    replacementCompletion = completion
+                    replacementStarted.fulfill()
+                })
+            )
+        }
+        await self.fulfillment(of: [replacementStarted], timeout: 1)
+
+        firstCompletion?(.navigatedBack)
+
+        do {
+            _ = try await manager.executeCheckpoint(
+                identifier: "onboarding",
+                params: .init(paywallPresenter: { _, completion in completion(.navigatedBack) })
+            )
+            XCTFail("Expected the replacement presentation to keep owning the slot")
+        } catch {
+            XCTAssertEqual((error as NSError).code, ErrorCode.operationAlreadyInProgressForProductError.rawValue)
+        }
+
+        replacementCompletion?(.navigatedBack)
+        guard case .backedOut = try await replacement.value else {
+            return XCTFail("Expected the replacement presentation to back out")
+        }
+    }
+
     func testPresenterCompletionReleasesPresentationSlotBeforeSynchronizationCompletes() async throws {
         let presentationStarted = self.expectation(description: "Custom presentation starts")
         let synchronizationStarted = self.expectation(description: "Customer info synchronization starts")

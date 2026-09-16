@@ -78,6 +78,40 @@ final class CheckpointPresentationCoordinatorTests: TestCase {
         _ = try await coordinator.withPresentationSession { _ in () }
     }
 
+    func testStaleSessionCannotReleaseReplacementPresentation() async throws {
+        let coordinator = CheckpointPresentationCoordinator(handler: MockCheckpointPresentationHandler())
+        var staleSession: CheckpointPresentationCoordinator.Session?
+
+        _ = try await coordinator.withPresentationSession { session in
+            staleSession = session
+            session.releasePresentationSlot()
+        }
+
+        let replacementStarted = self.expectation(description: "Replacement presentation starts")
+        var finishReplacement: CheckedContinuation<Void, Never>?
+        let replacement = Task {
+            try await coordinator.withPresentationSession { _ in
+                replacementStarted.fulfill()
+                await withCheckedContinuation { continuation in
+                    finishReplacement = continuation
+                }
+            }
+        }
+        await self.fulfillment(of: [replacementStarted], timeout: 1)
+
+        staleSession?.releasePresentationSlot()
+
+        do {
+            _ = try await coordinator.withPresentationSession { _ in () }
+            XCTFail("Expected the replacement presentation to keep owning the slot")
+        } catch {
+            XCTAssertEqual((error as NSError).code, ErrorCode.operationAlreadyInProgressForProductError.rawValue)
+        }
+
+        finishReplacement?.resume()
+        _ = try await replacement.value
+    }
+
     func testCancellingPresentationCancelsActiveSession() async throws {
         let coordinator = CheckpointPresentationCoordinator(handler: MockCheckpointPresentationHandler())
         let started = self.expectation(description: "Presentation starts")
