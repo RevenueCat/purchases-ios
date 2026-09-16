@@ -43,11 +43,6 @@ final class ExternalPurchaseManager {
             return .notEligible
         }
 
-        guard !self.systemInfo.isSimulatedStoreAPIKey else {
-            Logger.debug(Strings.externalPurchase.unsupported_with_test_store)
-            return .notEligible
-        }
-
         let availability = await self.customLink.externalPurchaseAvailability()
         Logger.debug(Strings.externalPurchase.eligibility_resolved(availability))
 

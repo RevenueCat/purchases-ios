@@ -122,18 +122,16 @@ class HostedCheckoutManagerTests: TestCase {
         self.logger.verifyMessageWasNotLogged(Strings.externalPurchase.custom_link_does_not_apply)
     }
 
-    /// The backend creates a sandbox session for a `test_` key, and there is no App Store behind such a key
-    /// for Apple's programme to apply to.
-    func testCreatesTheSessionWithoutATokenWithATestStoreKey() async {
+    /// The backend creates a sandbox session for a `test_` key, and Apple's flow follows the app and the
+    /// device rather than the key the SDK was configured with, so a Test Store key changes nothing here.
+    func testCreatesTheSessionWithATokenWithATestStoreKey() async {
         self.systemInfo.stubbedApiKeyValidationResult = .simulatedStore
 
         let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
 
         expect(result) == .started(Self.session)
-        expect(self.customLink.invokedAvailabilityCount) == 0
-        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
-        expect(self.customLink.invokedTokenTypes).to(beEmpty())
-        expect(self.webBillingAPI.invokedPostHostedCheckoutParameters?.externalPurchaseTokenID).to(beNil())
+        expect(self.customLink.invokedNoticeTypes) == [.withinApp]
+        expect(self.webBillingAPI.invokedPostHostedCheckoutParameters?.externalPurchaseTokenID) == Self.tokenID
     }
 
     // MARK: - Not starting
