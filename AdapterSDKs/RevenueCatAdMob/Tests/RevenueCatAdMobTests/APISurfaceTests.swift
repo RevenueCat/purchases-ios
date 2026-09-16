@@ -3,10 +3,24 @@ import XCTest
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
 import RevenueCat
-@testable import RevenueCatAdMob
+@_spi(CheckpointsInternal) @testable import RevenueCatAdMob
+@_spi(CheckpointsInternal) import RevenueCatUI
 
 @available(iOS 15.0, *)
 final class APISurfaceTests: AdapterTestCase {
+
+    @MainActor
+    func testInterstitialCheckpointPresenterEntryPointsRemainAvailableInSwift() {
+        let presenter: AdPresenter = AdMobInterstitialPresenter()
+        let present: (
+            AdMobInterstitialPresenter
+        ) -> (AdPresentationParams, @escaping AdPresentationCompletion) -> Void = AdMobInterstitialPresenter.present(
+            params:completion:
+        )
+
+        XCTAssertNotNil(presenter)
+        XCTAssertNotNil(present)
+    }
 
     func testBannerAndNativeEntryPointsRemainAvailableInSwift() {
         let bannerLoadAndTrack: (GoogleMobileAds.BannerView) -> (
