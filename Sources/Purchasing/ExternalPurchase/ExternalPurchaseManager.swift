@@ -77,7 +77,7 @@ final class ExternalPurchaseManager {
         case .available:
             break
         case .notEligible:
-            Logger.warn(Strings.externalPurchase.cannot_make_external_purchases)
+            Logger.debug(Strings.externalPurchase.custom_link_does_not_apply)
             return .notApplicable
         case .paymentsNotAuthorized:
             Logger.warn(Strings.externalPurchase.payments_not_authorized)
