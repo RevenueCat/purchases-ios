@@ -111,6 +111,20 @@ class HostedCheckoutManagerTests: TestCase {
         expect(self.webBillingAPI.invokedPostHostedCheckoutParameters?.externalPurchaseTokenID).to(beNil())
     }
 
+    /// The backend creates a sandbox session for a `test_` key, and there is no App Store behind such a key
+    /// for Apple's programme to apply to.
+    func testCreatesTheSessionWithoutATokenWithATestStoreKey() async {
+        self.systemInfo.stubbedApiKeyValidationResult = .simulatedStore
+
+        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(result) == .started(Self.session)
+        expect(self.customLink.invokedAvailabilityCount) == 0
+        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
+        expect(self.customLink.invokedTokenTypes).to(beEmpty())
+        expect(self.webBillingAPI.invokedPostHostedCheckoutParameters?.externalPurchaseTokenID).to(beNil())
+    }
+
     // MARK: - Not starting
 
     /// A checkout with no token behind it is a purchase Apple is never told about.
@@ -191,18 +205,6 @@ class HostedCheckoutManagerTests: TestCase {
         expect(result) == .failed
     }
 
-    /// The Test Store is not supported for now, so a `test_` key leaves the caller to buy through StoreKit.
-    func testCreatesNoSessionWithATestStoreKey() async {
-        self.systemInfo.stubbedApiKeyValidationResult = .simulatedStore
-
-        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
-
-        expect(result) == .unsupportedStore
-        expect(self.customLink.invokedAvailabilityCount) == 0
-        expect(self.customLink.invokedTokenTypes).to(beEmpty())
-        expect(self.webBillingAPI.invokedPostHostedCheckout) == false
-    }
-
 }
 
 private extension HostedCheckoutManagerTests {
@@ -226,8 +228,7 @@ private extension HostedCheckoutManagerTests {
                 systemInfo: self.systemInfo
             ),
             webBillingAPI: self.webBillingAPI,
-            currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID),
-            systemInfo: self.systemInfo
+            currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID)
         )
     }
 

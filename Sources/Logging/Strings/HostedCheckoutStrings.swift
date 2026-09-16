@@ -18,7 +18,6 @@ import Foundation
 enum HostedCheckoutStrings {
 
     case starting_checkout(_ packageID: String)
-    case unsupported_with_test_store
     case no_external_purchase_applies
     case no_registered_token
     case session_created(_ operationSessionID: String)
@@ -32,9 +31,6 @@ extension HostedCheckoutStrings: LogMessage {
         switch self {
         case let .starting_checkout(packageID):
             return "Starting a checkout for package \(packageID)."
-        case .unsupported_with_test_store:
-            return "Not starting a checkout: in-app web checkout is not supported when the SDK is configured " +
-            "with a Test Store API key."
         case .no_external_purchase_applies:
             return "Starting a checkout with no external purchase token: Apple's external purchase programme " +
             "does not apply here."

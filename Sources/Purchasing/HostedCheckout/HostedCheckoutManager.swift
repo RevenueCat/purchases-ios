@@ -20,16 +20,13 @@ final class HostedCheckoutManager {
     private let externalPurchaseManager: ExternalPurchaseManager
     private let webBillingAPI: WebBillingAPI
     private let currentUserProvider: CurrentUserProvider
-    private let systemInfo: SystemInfo
 
     init(externalPurchaseManager: ExternalPurchaseManager,
          webBillingAPI: WebBillingAPI,
-         currentUserProvider: CurrentUserProvider,
-         systemInfo: SystemInfo) {
+         currentUserProvider: CurrentUserProvider) {
         self.externalPurchaseManager = externalPurchaseManager
         self.webBillingAPI = webBillingAPI
         self.currentUserProvider = currentUserProvider
-        self.systemInfo = systemInfo
     }
 
     /// Starts a checkout for `package`, in response to the customer deliberately asking to buy.
@@ -39,11 +36,6 @@ final class HostedCheckoutManager {
     func startCheckout(package: Package,
                        paywall: PaywallEvent.Data?) async -> HostedCheckoutStartResult {
         Logger.debug(Strings.hostedCheckout.starting_checkout(package.identifier))
-
-        guard !self.systemInfo.isSimulatedStoreAPIKey else {
-            Logger.warn(Strings.hostedCheckout.unsupported_with_test_store)
-            return .unsupportedStore
-        }
 
         let externalPurchaseTokenID: String?
 
@@ -75,9 +67,6 @@ final class HostedCheckoutManager {
 
     /// The customer declined Apple's disclosure notice.
     case declinedByCustomer
-
-    /// This store cannot host a checkout, so the caller is expected to buy through StoreKit instead.
-    case unsupportedStore
 
     /// The device does not authorize payments.
     case paymentsNotAuthorized
