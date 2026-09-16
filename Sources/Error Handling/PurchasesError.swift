@@ -155,6 +155,12 @@ private extension PurchasesError {
                     "systemErrorDescription": systemError.localizedDescription
                 ])
 
+            #if compiler(>=6.4)
+            case .invalidPresentationContext:
+                Logger.warn(Strings.storeKit.unknown_storekit_error(storeKitError))
+                return resultMap
+            #endif
+
             @unknown default:
                 Logger.warn(Strings.storeKit.unknown_storekit_error(storeKitError))
                 return resultMap
