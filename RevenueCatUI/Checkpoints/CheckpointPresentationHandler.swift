@@ -20,26 +20,26 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointPresentationHandler: CheckpointPresentationHandlerProtocol {
 
-    private let executor: CheckpointExecutor
+    private let workflowPresenter: CheckpointWorkflowPresenterProtocol
     private let defaultPaywallPresenter: DefaultPaywallPresenterProtocol
     private let customerInfoSynchronizer: CheckpointsManager.CustomerInfoSynchronizer
     var paywallPresenter: PaywallPresenter?
 
     init(
-        executor: CheckpointExecutor,
+        workflowPresenter: CheckpointWorkflowPresenterProtocol,
         customerInfoSynchronizer: @escaping CheckpointsManager.CustomerInfoSynchronizer = { throw CancellationError() }
     ) {
-        self.executor = executor
+        self.workflowPresenter = workflowPresenter
         self.defaultPaywallPresenter = DefaultPaywallPresenter()
         self.customerInfoSynchronizer = customerInfoSynchronizer
     }
 
     init(
-        executor: CheckpointExecutor,
+        workflowPresenter: CheckpointWorkflowPresenterProtocol,
         defaultPaywallPresenter: DefaultPaywallPresenterProtocol,
         customerInfoSynchronizer: @escaping CheckpointsManager.CustomerInfoSynchronizer = { throw CancellationError() }
     ) {
-        self.executor = executor
+        self.workflowPresenter = workflowPresenter
         self.defaultPaywallPresenter = defaultPaywallPresenter
         self.customerInfoSynchronizer = customerInfoSynchronizer
     }
@@ -49,9 +49,9 @@ final class CheckpointPresentationHandler: CheckpointPresentationHandlerProtocol
         session: CheckpointPresentationCoordinator.Session
     ) async throws -> CheckpointExecution {
         session.setCancellationHandler { [weak self] in
-            self?.executor.cancel()
+            self?.workflowPresenter.cancel()
         }
-        return try await self.executor.execute(presentation)
+        return try await self.workflowPresenter.present(presentation)
     }
 
     func presentOffering(

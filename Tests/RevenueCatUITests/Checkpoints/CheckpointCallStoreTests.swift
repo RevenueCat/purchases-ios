@@ -23,7 +23,7 @@ final class CheckpointCallStoreTests: TestCase {
     func testErrorDoesNotReplacePurchaseOutcome() {
         let store = CheckpointCallStore()
         let transaction = StoreTransaction(MockStoreTransaction())
-        store.store(presentation: Self.presentation(), delegate: Delegate())
+        store.store(presentation: Self.presentation())
 
         store.stage(.outcome(CheckpointFlowOutcome.purchased(
             transaction: transaction,
@@ -40,7 +40,7 @@ final class CheckpointCallStoreTests: TestCase {
 
     func testErrorDoesNotReplaceRestoreOutcome() {
         let store = CheckpointCallStore()
-        store.store(presentation: Self.presentation(), delegate: Delegate())
+        store.store(presentation: Self.presentation())
 
         store.stage(.outcome(CheckpointFlowOutcome.restored(customerInfo: TestData.customerInfo)))
         store.stage(.outcome(CheckpointFlowOutcome.error(NSError(domain: "test", code: 1))))
@@ -68,13 +68,5 @@ final class CheckpointCallStoreTests: TestCase {
             customVariables: [:]
         )
     }
-
-}
-
-@MainActor
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private final class Delegate: CheckpointPresentationDelegate {
-
-    func checkpointPresentationFinished(_ execution: CheckpointExecution) {}
 
 }

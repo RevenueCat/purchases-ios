@@ -24,12 +24,16 @@ import UIKit
 /// only after the presented UI has fully dismissed.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
-final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
+final class CheckpointWorkflowPresenter: NSObject, CheckpointWorkflowPresenterProtocol {
 
     typealias PresentationHandler = (CheckpointPresentation) throws -> Bool
+    typealias DismissalHandler = (@escaping () -> Void) -> Void
+    private typealias Continuation = CheckedContinuation<CheckpointExecution, Error>
 
     private let callStore: CheckpointCallStore
     private let presentationHandler: PresentationHandler?
+    private let dismissalHandler: DismissalHandler?
+    private var pendingContinuation: Continuation?
 
     #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
     private weak var presentedViewController: UIViewController?
@@ -37,18 +41,57 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
 
     init(
         callStore: CheckpointCallStore? = nil,
+        dismissalHandler: DismissalHandler? = nil,
         presentationHandler: PresentationHandler? = nil
     ) {
         self.callStore = callStore ?? CheckpointCallStore()
         self.presentationHandler = presentationHandler
+        self.dismissalHandler = dismissalHandler
         super.init()
     }
 
-    func present(
-        presentation: CheckpointPresentation,
-        delegate: CheckpointPresentationDelegate
-    ) throws {
-        self.callStore.store(presentation: presentation, delegate: delegate)
+    convenience init(
+        callStore: CheckpointCallStore? = nil,
+        presentationHandler: @escaping PresentationHandler
+    ) {
+        self.init(
+            callStore: callStore,
+            dismissalHandler: nil,
+            presentationHandler: presentationHandler
+        )
+    }
+
+    func present(_ presentation: CheckpointPresentation) async throws -> CheckpointExecution {
+        guard self.pendingContinuation == nil else {
+            throw CheckpointError.operationAlreadyInProgress
+        }
+
+        return try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+                guard !Task.isCancelled else {
+                    continuation.resume(throwing: CancellationError())
+                    return
+                }
+
+                self.pendingContinuation = continuation
+                do {
+                    try self.startPresentation(presentation)
+                } catch {
+                    self.fail(error: error)
+                }
+            }
+        } onCancel: {
+            Task { @MainActor [weak self] in
+                self?.cancel()
+            }
+        }
+    }
+
+    func startPresentation(_ presentation: CheckpointPresentation) throws {
+        guard self.callStore.call == nil else {
+            throw CheckpointError.operationAlreadyInProgress
+        }
+        self.callStore.store(presentation: presentation)
 
         do {
             if let presentationHandler = self.presentationHandler {
@@ -60,9 +103,7 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
             }
         } catch {
             _ = self.callStore.remove()
-            #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
             self.presentedViewController = nil
-            #endif
             throw error
         }
     }
@@ -71,16 +112,26 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         self.callStore.stage(update)
     }
 
-    func presentationDidDismiss(reason: WorkflowDismissalReason? = nil) {
+    @discardableResult
+    func presentationDidDismiss(reason: WorkflowDismissalReason? = nil) -> CheckpointExecution? {
         if let reason {
             self.stage(.dismissalReason(reason))
         }
-        self.complete()
+        return self.complete()
+    }
+
+    func cancel() {
+        guard self.pendingContinuation != nil else { return }
+        self.dismiss { [weak self] in
+            self?.finishCancellation()
+        }
     }
 
     func dismiss(completion: @escaping () -> Void) {
-        guard self.callStore.remove() != nil else {
-            completion()
+        _ = self.callStore.remove()
+
+        if let dismissalHandler = self.dismissalHandler {
+            dismissalHandler(completion)
             return
         }
 
@@ -97,8 +148,8 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         #endif
     }
 
-    private func complete() {
-        guard let call = self.callStore.remove() else { return }
+    private func complete() -> CheckpointExecution? {
+        guard let call = self.callStore.remove() else { return nil }
 
         #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
         self.presentedViewController = nil
@@ -114,13 +165,34 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         case (.close, _):
             execution = .completed(call.stagedOutcome)
         }
-        call.delegate.checkpointPresentationFinished(execution)
+        self.finish(execution)
+        return execution
+    }
+
+    private func finish(_ execution: CheckpointExecution) {
+        guard let continuation = self.takePendingContinuation() else { return }
+        continuation.resume(returning: execution)
+    }
+
+    private func fail(error: Error) {
+        guard let continuation = self.takePendingContinuation() else { return }
+        continuation.resume(throwing: error)
+    }
+
+    private func finishCancellation() {
+        guard let continuation = self.takePendingContinuation() else { return }
+        continuation.resume(throwing: CancellationError())
+    }
+
+    private func takePendingContinuation() -> Continuation? {
+        defer { self.pendingContinuation = nil }
+        return self.pendingContinuation
     }
 
     #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
     private func handleDismissal(of controller: PaywallViewController) {
         self.stageDismissalReasonIfNeeded(controller.workflowDismissalReason)
-        self.presentationDidDismiss()
+        _ = self.presentationDidDismiss()
     }
 
     private func handleExitOfferPresentation(
@@ -303,5 +375,17 @@ extension CheckpointWorkflowPresenter {
 extension CheckpointWorkflowPresenter: PaywallViewControllerDelegate {}
 
 #endif
+
+#else
+
+@MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+final class CheckpointWorkflowPresenter: CheckpointWorkflowPresenterProtocol {
+
+    func present(_ presentation: CheckpointPresentation) async throws -> CheckpointExecution {
+        throw CheckpointError.missingPresenter
+    }
+
+}
 
 #endif

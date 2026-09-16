@@ -24,9 +24,9 @@ final class CheckpointsManager {
     private let resolveCheckpoint: (String, CheckpointCallParams) async throws -> CheckpointResolution
     private let cachedCustomerInfoProvider: @MainActor () -> CustomerInfo?
     private let customerInfoSynchronizer: CustomerInfoSynchronizer
-    @MainActor private lazy var executor: CheckpointExecutor = CheckpointWorkflowExecutor()
+    @MainActor private lazy var workflowPresenter: CheckpointWorkflowPresenterProtocol = CheckpointWorkflowPresenter()
     @MainActor private lazy var presentationHandler = CheckpointPresentationHandler(
-        executor: self.executor,
+        workflowPresenter: self.workflowPresenter,
         customerInfoSynchronizer: self.customerInfoSynchronizer
     )
     @MainActor private lazy var presentationCoordinator = CheckpointPresentationCoordinator(
@@ -46,20 +46,20 @@ final class CheckpointsManager {
     @MainActor
     init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
-        executor: CheckpointExecutor,
+        workflowPresenter: CheckpointWorkflowPresenterProtocol,
         cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil },
         customerInfoSynchronizer: @escaping CustomerInfoSynchronizer = { throw CancellationError() }
     ) {
         self.resolveCheckpoint = resolveCheckpoint
         self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
         self.customerInfoSynchronizer = customerInfoSynchronizer
-        self.executor = executor
+        self.workflowPresenter = workflowPresenter
     }
 
     @MainActor
     init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
-        executor: CheckpointExecutor,
+        workflowPresenter: CheckpointWorkflowPresenterProtocol,
         defaultPaywallPresenter: DefaultPaywallPresenterProtocol,
         cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil },
         customerInfoSynchronizer: @escaping CustomerInfoSynchronizer = { throw CancellationError() }
@@ -67,9 +67,9 @@ final class CheckpointsManager {
         self.resolveCheckpoint = resolveCheckpoint
         self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
         self.customerInfoSynchronizer = customerInfoSynchronizer
-        self.executor = executor
+        self.workflowPresenter = workflowPresenter
         self.presentationHandler = CheckpointPresentationHandler(
-            executor: executor,
+            workflowPresenter: workflowPresenter,
             defaultPaywallPresenter: defaultPaywallPresenter,
             customerInfoSynchronizer: customerInfoSynchronizer
         )

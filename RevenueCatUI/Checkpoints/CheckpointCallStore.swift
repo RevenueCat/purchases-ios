@@ -28,28 +28,22 @@ final class CheckpointCallStore {
 
     final class Call {
         let presentation: CheckpointPresentation
-        let delegate: CheckpointPresentationDelegate
         fileprivate(set) var stagedOutcome: CheckpointFlowOutcome
         fileprivate(set) var dismissalReason: WorkflowDismissalReason = .close
 
         init(
             presentation: CheckpointPresentation,
-            delegate: CheckpointPresentationDelegate,
             stagedOutcome: CheckpointFlowOutcome = .dismissed
         ) {
             self.presentation = presentation
-            self.delegate = delegate
             self.stagedOutcome = stagedOutcome
         }
     }
 
     private(set) var call: Call?
 
-    func store(
-        presentation: CheckpointPresentation,
-        delegate: CheckpointPresentationDelegate
-    ) {
-        self.call = Call(presentation: presentation, delegate: delegate)
+    func store(presentation: CheckpointPresentation) {
+        self.call = Call(presentation: presentation)
     }
 
     func stage(_ update: CallUpdate) {
