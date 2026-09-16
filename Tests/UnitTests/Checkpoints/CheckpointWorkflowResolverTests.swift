@@ -869,6 +869,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         let adStep = Self.resolvedAd(resolution)
         XCTAssertEqual(adStep?.adIdentifier, "ad_unit_1")
         XCTAssertEqual(adStep?.mediator, .adMob)
+        XCTAssertEqual(adStep?.adFormat, .interstitial)
         XCTAssertNil(Self.resolvedWorkflow(resolution))
     }
 
@@ -915,6 +916,47 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
     }
 
+    func testAdStepFormatsResolveToCanonicalAdFormats() async throws {
+        // The backend serializes the same raw values as core's `AdFormat` statics, so no normalization applies.
+        let expectations: [(wire: String, format: AdFormat)] = [
+            ("interstitial", .interstitial),
+            ("rewarded", .rewarded),
+            ("rewarded_interstitial", .rewardedInterstitial)
+        ]
+
+        for (wire, format) in expectations {
+            self.stubAdWorkflow(adIdentifier: "ad_unit_1", mediator: "admob", adFormat: wire)
+
+            let resolution = try await self.resolve()
+
+            XCTAssertEqual(Self.resolvedAd(resolution)?.adFormat, format, "wire value '\(wire)'")
+        }
+    }
+
+    func testUnknownAdFormatResolvesAsItsRawValue() async throws {
+        self.stubAdWorkflow(adIdentifier: "ad_unit_1", mediator: "admob", adFormat: "some_future_format")
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedAd(resolution)?.adFormat, AdFormat(rawValue: "some_future_format"))
+    }
+
+    func testAdStepWithoutAnAdFormatResolvesConfigurationUnavailable() async throws {
+        self.stubAdWorkflow(adIdentifier: "ad_unit_1", mediator: "admob", adFormat: nil)
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    func testAdStepWithAnEmptyAdFormatResolvesConfigurationUnavailable() async throws {
+        self.stubAdWorkflow(adIdentifier: "ad_unit_1", mediator: "admob", adFormat: "")
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
     func testAdStepMixedWithAnotherStepResolvesConfigurationUnavailable() async throws {
         self.stubAdWorkflow(
             adIdentifier: "ad_unit_1",
@@ -944,6 +986,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     private func stubAdWorkflow(
         adIdentifier: String?,
         mediator: String?,
+        adFormat: String? = "interstitial",
         initialStepID: String? = nil,
         extraSteps: [String: WorkflowStep] = [:]
     ) {
@@ -955,6 +998,9 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         }
         if let mediator {
             paramValues["mediator"] = .string(mediator)
+        }
+        if let adFormat {
+            paramValues["ad_format"] = .string(adFormat)
         }
         step.paramValues = paramValues
 

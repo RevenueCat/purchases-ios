@@ -30,7 +30,7 @@ extension GoogleMobileAds.InterstitialAd: InterstitialPresentableAd {
 
 }
 
-/// Errors produced by ``AdMobInterstitialPresenter`` itself, as opposed to errors forwarded from AdMob.
+/// Errors produced by ``InterstitialPresentation`` itself, as opposed to errors forwarded from AdMob.
 @available(iOS 15.0, *)
 internal enum InterstitialPresentationError: Error, CustomNSError {
 
@@ -53,7 +53,7 @@ internal enum InterstitialPresentationError: Error, CustomNSError {
     var localizedDescription: String {
         switch self {
         case let .unsupportedMediator(mediator):
-            return "AdMobInterstitialPresenter only presents AdMob ad units, but the checkpoint ad step " +
+            return "AdMobPresenter only presents AdMob ad units, but the checkpoint ad step " +
                 "is configured for mediator '\(mediator)'."
         case .noPresentationContext:
             return "No view controller is available to present the interstitial ad from."

@@ -128,7 +128,8 @@ final class CheckpointsManager {
                     checkpointIdentifier: identifier,
                     customVariables: params.customVariables,
                     adIdentifier: adStep.adIdentifier,
-                    mediator: adStep.mediator
+                    mediator: adStep.mediator,
+                    adFormat: adStep.adFormat
                 ),
                 adPresenter: adPresenter
             )
