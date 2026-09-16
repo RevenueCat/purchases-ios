@@ -294,9 +294,9 @@ private extension EventsManager {
 
         do {
             try await self.internalAPI.postAdEvents(events: events)
-            Logger.debug(EventsManagerStrings.ad_events_flushed_successfully)
 
             await store.clear(count)
+            Logger.debug(EventsManagerStrings.ad_events_flushed_successfully)
 
             return events.count
         } catch {

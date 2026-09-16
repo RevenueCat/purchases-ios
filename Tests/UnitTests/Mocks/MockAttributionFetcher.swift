@@ -3,6 +3,8 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
+import Foundation
+
 @testable import RevenueCat
 
 class MockAttributionFetcher: AttributionFetcher {
@@ -23,12 +25,16 @@ class MockAttributionFetcher: AttributionFetcher {
 
     var adServicesTokenCollectionCalled = false
     var adServicesTokenToReturn: String? = "mockAdServicesToken"
+    let adServicesTokenCollectionContexts: Atomic<[(priority: TaskPriority, isMainThread: Bool)]> = .init([])
 
     @available(iOS 14.3, tvOS 14.3, macOS 11.1, watchOS 6.2, macCatalyst 14.3, *)
     override var adServicesToken: String? {
         // Note: this needs to be `async` to avoid a crash
         // See https://github.com/apple/swift/issues/68998
         get async {
+            self.adServicesTokenCollectionContexts.modify {
+                $0.append((Task.currentPriority, Thread.isMainThread))
+            }
             self.adServicesTokenCollectionCalled = true
             return self.adServicesTokenToReturn
         }
