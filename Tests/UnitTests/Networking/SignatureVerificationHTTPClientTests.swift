@@ -1227,6 +1227,34 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
         expect(response).to(beSuccess())
     }
 
+    func testFallbackRemoteConfigNotModifiedResponseUsesVerifiedCachedResponse() {
+        let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app")
+        let cachedResponse = "cached fallback config".asData
+
+        self.mockPath(
+            path,
+            statusCode: .notModified,
+            requestDate: Self.date2,
+            eTagResponse: .init(
+                eTag: Self.eTag,
+                statusCode: .success,
+                data: cachedResponse,
+                verificationResult: .verified,
+                isLoadShedderResponse: false,
+                isFallbackUrlResponse: false
+            )
+        )
+        self.signing.stubbedVerificationResult = true
+
+        let response: DataResponse? = waitUntilValue { completion in
+            self.client.perform(.init(method: .get, path: path), completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.body) == cachedResponse
+        expect(response?.value?.verificationResult) == .verified
+    }
+
     func testFakeSignatureFailuresInEnforcedMode() {
         self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
         self.signing.stubbedVerificationResult = true
