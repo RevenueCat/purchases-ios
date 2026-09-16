@@ -21,12 +21,12 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class PackageValidatorTests: TestCase {
 
-    func testLocalScopePackagesAreAvailableButCannotBecomeParentDefault() {
+    func testIndependentScopePackagesAreAvailableButCannotBecomeParentDefault() {
         let parent = PackageValidator()
         let child = PackageValidator()
         parent.add(Self.makePackageInfo(package: TestData.annualPackage, isSelectedByDefault: true, visible: true))
         child.add(Self.makePackageInfo(package: TestData.monthlyPackage, isSelectedByDefault: true, visible: true))
-        parent.addLocalScope(child)
+        parent.addIndependentScope(child)
 
         XCTAssertEqual(parent.packages.count, 2)
         XCTAssertEqual(parent.defaultSelectedPackage(in: Self.context())?.identifier, TestData.annualPackage.identifier)
@@ -34,11 +34,11 @@ final class PackageValidatorTests: TestCase {
         XCTAssertFalse(parent.isRendering(TestData.monthlyPackage, in: Self.context()))
     }
 
-    func testPaywallWithOnlyLocalPackagesIsValidWithoutSelectingThemInParent() {
+    func testPaywallWithOnlyIndependentPackagesIsValidWithoutSelectingThemInParent() {
         let parent = PackageValidator()
         let child = PackageValidator()
         child.add(Self.makePackageInfo(package: TestData.monthlyPackage, isSelectedByDefault: true, visible: true))
-        parent.addLocalScope(child)
+        parent.addIndependentScope(child)
 
         XCTAssertTrue(parent.isValid)
         XCTAssertNil(parent.defaultSelectedPackage(in: Self.context()))
@@ -426,7 +426,7 @@ final class PackageValidatorTests: TestCase {
         )
     }
 
-    func testFactoryResolvesLocalDefaultFromPackageFlagAndPreservesParentSelection() throws {
+    func testFactoryResolvesIndependentDefaultFromPackageFlagAndPreservesParentSelection() throws {
         let monthly = PaywallComponent.PackageComponent(
             packageID: TestData.monthlyPackage.identifier,
             isSelectedByDefault: true,
@@ -459,9 +459,9 @@ final class PackageValidatorTests: TestCase {
             colorScheme: .light
         )
         guard case .stack(let stack) = result else { return XCTFail("Expected stack") }
-        let local = try XCTUnwrap(stack.localPackageValidator)
-        XCTAssertTrue(local.hasDeclaredPackages)
-        XCTAssertEqual(local.defaultSelectedPackage(in: Self.context())?.identifier,
+        let independent = try XCTUnwrap(stack.independentPackageValidator)
+        XCTAssertTrue(independent.hasDeclaredPackages)
+        XCTAssertEqual(independent.defaultSelectedPackage(in: Self.context())?.identifier,
                        TestData.monthlyPackage.identifier)
         XCTAssertNil(validator.defaultSelectedPackage(in: Self.context()))
         XCTAssertEqual(validator.packages.count, 2)
@@ -470,10 +470,10 @@ final class PackageValidatorTests: TestCase {
             id: "sheet", name: nil, stack: stack.component, backgroundBlur: false, size: nil
         )
         let firstPresentation = SheetViewModel(sheet: sheet, sheetStackViewModel: stack)
-        firstPresentation.localPackageContext?.package = TestData.annualPackage
+        firstPresentation.independentPackageContext?.package = TestData.annualPackage
         let reopened = SheetViewModel(sheet: sheet, sheetStackViewModel: stack)
-        XCTAssertEqual(reopened.localPackageContext?.package?.identifier, TestData.monthlyPackage.identifier)
-        XCTAssertFalse(firstPresentation.localPackageContext === reopened.localPackageContext)
+        XCTAssertEqual(reopened.independentPackageContext?.package?.identifier, TestData.monthlyPackage.identifier)
+        XCTAssertFalse(firstPresentation.independentPackageContext === reopened.independentPackageContext)
     }
 
     func testViewModelFactoryResolvesOverrideVisibilityForDefaultSelection() throws {

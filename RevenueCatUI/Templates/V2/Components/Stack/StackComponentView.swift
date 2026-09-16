@@ -21,7 +21,7 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct StackComponentView: View {
     let viewModel: StackComponentViewModel
-    var localSelectionContext: PackageContext?
+    var independentSelectionContext: PackageContext?
     var isScrollableByDefault: Bool = false
     let onDismiss: () -> Void
     var additionalPadding: EdgeInsets?
@@ -35,9 +35,9 @@ struct StackComponentView: View {
             additionalPadding: additionalPadding,
             showActivityIndicatorOverContent: showActivityIndicatorOverContent
         )
-        if let validator = viewModel.localPackageValidator,
+        if let validator = viewModel.independentPackageValidator,
            validator.hasDeclaredPackages || !validator.packageInfos.isEmpty {
-            LocalPackageSelectionView(validator: validator, selection: localSelectionContext) { content }
+            IndependentPackageSelectionView(validator: validator, selection: independentSelectionContext) { content }
         } else {
             content
         }

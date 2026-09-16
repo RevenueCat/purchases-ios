@@ -545,9 +545,9 @@ struct ViewModelFactory {
         offering: Offering,
         colorScheme: ColorScheme
     ) throws -> StackComponentViewModel {
-        let localValidator = component.packageSelection?.mode == "local"
+        let independentValidator = component.packageSelection?.mode == "independent"
             ? PackageValidator() : nil
-        let childValidator = localValidator ?? packageValidator
+        let childValidator = independentValidator ?? packageValidator
         let viewModels = try component.components.filter {
             // fallback_header is injected by the dashboard for old SDK compatibility.
             // New SDKs render the header from PaywallComponentsConfig.header instead.
@@ -593,8 +593,8 @@ struct ViewModelFactory {
             try appendBadge(override.properties.badge)
         }
 
-        if let localValidator {
-            packageValidator.addLocalScope(localValidator)
+        if let independentValidator {
+            packageValidator.addIndependentScope(independentValidator)
         }
 
         return StackComponentViewModel(
@@ -603,7 +603,7 @@ struct ViewModelFactory {
             badgeViewModels: badgeViewModels,
             uiConfigProvider: uiConfigProvider,
             discardRules: discardRules,
-            localPackageValidator: localValidator
+            independentPackageValidator: independentValidator
         )
     }
 
