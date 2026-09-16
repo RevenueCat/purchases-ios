@@ -34,7 +34,7 @@ struct CompatibilityContentUnavailableView: View {
         contentUnavailableView
         #else
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
-            #if swift(>=5.9)
+            #if compiler(>=5.9)
             contentUnavailableView
             #else
                 // In Xcode 14, any references to ContentUnavailableView would fail to compile since that entity
@@ -59,7 +59,7 @@ struct CompatibilityContentUnavailableView: View {
 
     }
 
-    #if swift(>=5.9)
+    #if compiler(>=5.9)
     @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
     private var contentUnavailableView: some View {
         ContentUnavailableView {
