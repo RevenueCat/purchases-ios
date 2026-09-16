@@ -46,20 +46,27 @@ enum PaywallPreviewRenderer {
 
     enum LoadingError: LocalizedError {
         case decoding(Error)
+        case paywallErrors(String)
 
         var errorDescription: String? {
             switch self {
             case .decoding(let error):
                 return "Unable to decode paywall preview JSON: \(error.localizedDescription)"
+            case .paywallErrors(let details):
+                return "Unable to decode paywall preview JSON:\n\(details)"
             }
         }
     }
 
     /// Dashboard-shaped `PaywallComponentsData` JSON for the sample preview and unit tests.
+    /// Includes required fields (`revision`, `padding`, `margin`) so the resilient decoder
+    /// does not record `errorInfo` and fall back to the default paywall.
     static let sampleJSON = """
     {
       "template_name": "components",
       "asset_base_url": "https://assets.pawwalls.com",
+      "revision": 1,
+      "default_locale": "en_US",
       "components_config": {
         "base": {
           "background": {
@@ -83,7 +90,9 @@ enum PaywallPreviewRenderer {
                 "size": {
                   "width": { "type": "fit" },
                   "height": { "type": "fit" }
-                }
+                },
+                "padding": { "leading": 0, "trailing": 0, "top": 0, "bottom": 0 },
+                "margin": { "leading": 0, "trailing": 0, "top": 0, "bottom": 0 }
               }
             ],
             "size": {
@@ -94,14 +103,15 @@ enum PaywallPreviewRenderer {
               "type": "vertical",
               "alignment": "center",
               "distribution": "center"
-            }
+            },
+            "padding": { "leading": 0, "trailing": 0, "top": 0, "bottom": 0 },
+            "margin": { "leading": 0, "trailing": 0, "top": 0, "bottom": 0 }
           }
         }
       },
       "components_localizations": {
         "en_US": { "title": "JSON paywall preview" }
-      },
-      "default_locale": "en_US"
+      }
     }
     """
 
@@ -122,6 +132,14 @@ enum PaywallPreviewRenderer {
             data = try decoder.decode(PaywallComponentsData.self, from: jsonData)
         } catch {
             throw LoadingError.decoding(error)
+        }
+
+        if let errorInfo = data.errorInfo, !errorInfo.isEmpty {
+            let details = errorInfo
+                .map { "\($0.key): \($0.value)" }
+                .sorted()
+                .joined(separator: "\n")
+            throw LoadingError.paywallErrors(details)
         }
 
         let paywallComponents = Offering.PaywallComponents(uiConfig: uiConfig, data: data)

@@ -32,6 +32,8 @@ final class PaywallPreviewRendererTests: TestCase {
         ]
         expect(fixture.paywallComponents.data.templateName) == "components"
         expect(fixture.paywallComponents.data.defaultLocale) == "en_US"
+        expect(fixture.paywallComponents.data.revision) == 1
+        expect(fixture.paywallComponents.data.errorInfo).to(beNil())
         expect(
             fixture.paywallComponents.data.componentsLocalizations["en_US"]?["title"]
         ) == .string("JSON paywall preview")
@@ -61,7 +63,44 @@ final class PaywallPreviewRendererTests: TestCase {
         {
           "template_name": "components",
           "asset_base_url": "https://assets.pawwalls.com",
-          "generated_by": "unit-test",
+          "revision": 1,
+          "generated_by": "dashboard",
+          "published_revision": 9,
+          "components_config": {
+            "base": {
+              "background": {
+                "type": "color",
+                "value": { "light": { "type": "hex", "value": "#ffffffff" } }
+              },
+              "stack": {
+                "type": "stack",
+                "components": [],
+                "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+                "dimension": {
+                  "type": "vertical",
+                  "alignment": "center",
+                  "distribution": "center"
+                },
+                "padding": { "leading": 0, "trailing": 0, "top": 0, "bottom": 0 },
+                "margin": { "leading": 0, "trailing": 0, "top": 0, "bottom": 0 }
+              }
+            }
+          },
+          "components_localizations": { "en_US": {} },
+          "default_locale": "en_US"
+        }
+        """
+
+        let fixture = try PaywallPreviewRenderer.load(json: json, packages: [])
+        expect(fixture.paywallComponents.data.templateName) == "components"
+        expect(fixture.paywallComponents.data.errorInfo).to(beNil())
+    }
+
+    func testLoadThrowsWhenRequiredComponentFieldsAreMissing() {
+        let json = """
+        {
+          "template_name": "components",
+          "asset_base_url": "https://assets.pawwalls.com",
           "components_config": {
             "base": {
               "background": {
@@ -85,8 +124,9 @@ final class PaywallPreviewRendererTests: TestCase {
         }
         """
 
-        let fixture = try PaywallPreviewRenderer.load(json: json, packages: [])
-        expect(fixture.paywallComponents.data.templateName) == "components"
+        expect {
+            try PaywallPreviewRenderer.load(json: json, packages: [])
+        }.to(throwError())
     }
 
 }
