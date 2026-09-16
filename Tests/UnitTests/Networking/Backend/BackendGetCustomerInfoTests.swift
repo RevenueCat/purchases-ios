@@ -71,6 +71,42 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         expect(customerInfo?.value?.entitlements.verification) == .notRequested
     }
 
+    func testGetCustomerInfoPreservesUnparsedResponseDataOfEveryJSONType() throws {
+        self.httpClient.disableSnapshotTesting()
+        var response = Self.validCustomerResponse
+        response["future_data"] = [
+            "string": "value",
+            "boolean": true,
+            "integer": 3,
+            "double": 0.75,
+            "object": ["nested": "value"],
+            "array": ["a", "b"],
+            "null": NSNull()
+        ]
+        self.httpClient.mock(
+            requestPath: .getCustomerInfo(appUserID: Self.userID),
+            response: .init(statusCode: .success, response: response)
+        )
+
+        let result = waitUntilValue { completed in
+            self.backend.getCustomerInfo(
+                appUserID: Self.userID,
+                isAppBackgrounded: false,
+                completion: completed
+            )
+        }
+        expect(result).to(beSuccess())
+
+        let futureData = try XCTUnwrap(result?.value?.rawData["future_data"] as? [String: Any])
+        expect(futureData["string"] as? String) == "value"
+        expect(futureData["boolean"] as? Bool) == true
+        expect(futureData["integer"] as? Int) == 3
+        expect(futureData["double"] as? Double) == 0.75
+        expect(futureData["object"] as? [String: String]) == ["nested": "value"]
+        expect(futureData["array"] as? [String]) == ["a", "b"]
+        expect(futureData["null"] is NSNull) == true
+    }
+
     func testHandlesGetCustomerInfoErrors() throws {
         let mockedError = NetworkError.unexpectedResponse(nil)
 

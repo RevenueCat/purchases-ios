@@ -121,6 +121,13 @@ enum Strings {
     case web_view_data_store_removal_failed(UUID, Error)
     case web_view_context_encoding_failed(Error)
 
+    // Web checkout
+    case web_checkout_unusable_return_urls(success: URL, cancel: URL)
+    case web_checkout_return_status_missing
+    case web_checkout_load_failed(String)
+    case web_checkout_http_error(statusCode: Int)
+    case web_checkout_content_process_terminated
+
     // Exit Offers
     case errorFetchingOfferings(Error)
     case exitOfferNotFound(String)
@@ -135,8 +142,7 @@ enum Strings {
     case paywall_close_workflow_action_not_handled(componentName: String?)
     case paywall_workflow_trigger_not_handled(componentName: String?)
     case workflow_package_context_unresolvable(stepId: String)
-    case workflow_fetch_failed_falling_back_to_offerings_paywall(offeringIdentifier: String, error: Error)
-    case restored_paywall_components_for_disabled_remote_config(offeringIdentifier: String)
+    case offering_has_no_workflow_falling_back_to_default_paywall(offeringIdentifier: String)
     case purchases_did_configure
 
 }
@@ -399,6 +405,18 @@ extension Strings: CustomStringConvertible {
         case let .web_view_data_store_removal_failed(identifier, error):
             return "Failed to remove web view website data store '\(identifier)': \(error)"
 
+        case .web_checkout_unusable_return_urls(let success, let cancel):
+            return "Web checkout return URLs '\(success.absoluteString)' and '\(cancel.absoluteString)' " +
+                "must both have a resolvable origin. The end of the checkout will not be detected."
+        case .web_checkout_return_status_missing:
+            return "Web checkout returned without a recognizable status. Treating it as a cancellation."
+        case .web_checkout_load_failed(let error):
+            return "Web checkout failed to load. Error: \(error)"
+        case .web_checkout_http_error(let statusCode):
+            return "Web checkout failed to load. The server responded with HTTP status code \(statusCode)."
+        case .web_checkout_content_process_terminated:
+            return "Web checkout content process terminated."
+
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"
         case .exitOfferNotFound(let offeringId):
@@ -435,12 +453,8 @@ extension Strings: CustomStringConvertible {
         case let .workflow_package_context_unresolvable(stepId):
             return "Could not resolve package context for singleStepFallbackId '\(stepId)'. " +
             "Price/period variables may not resolve on packageless screens."
-        case let .workflow_fetch_failed_falling_back_to_offerings_paywall(offeringIdentifier, error):
-            return "Failed to fetch workflow for offering '\(offeringIdentifier)' (\(error)). " +
-            "Falling back to the offerings-provided paywall."
-        case let .restored_paywall_components_for_disabled_remote_config(offeringIdentifier):
-            return "Remote config is disabled, so offering '\(offeringIdentifier)' was re-resolved to restore " +
-            "its offerings-provided paywall."
+        case let .offering_has_no_workflow_falling_back_to_default_paywall(offeringIdentifier):
+            return "Offering '\(offeringIdentifier)' has no workflow. Falling back to the default paywall."
         case .purchases_did_configure:
             return "Purchases notified purchases-ui of configuration"
         case .web_view_context_encoding_failed(let error):

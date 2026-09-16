@@ -170,24 +170,6 @@ final class TokenRevocationOperation: CacheableNetworkOperation, @unchecked Send
                      individualizedCacheKeyPart: appUserID)
     }
 
-    static func createFactory(
-        configuration: UserSpecificConfiguration,
-        accessToken: String,
-        appUserID: String,
-        callbackCache: CallbackCache<TokenRevokeCallback>
-    ) -> CacheableNetworkOperationFactory<TokenRevocationOperation> {
-        return .init({
-            .init(
-                configuration: configuration,
-                token: accessToken,
-                tokenTypeHint: "access_token",
-                appUserID: appUserID,
-                callbackCache: callbackCache,
-                cacheKey: $0
-            ) },
-                     individualizedCacheKeyPart: appUserID)
-    }
-
     private init(
         configuration: UserSpecificConfiguration,
         token: String,

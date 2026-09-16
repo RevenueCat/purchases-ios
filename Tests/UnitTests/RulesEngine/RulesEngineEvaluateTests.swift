@@ -53,54 +53,6 @@ struct RulesEngineEvaluateTests {
             return
         }
     }
-
-    @Test
-    func transformReturnsPredicateResult() throws {
-        let result = RulesEngine.transform(
-            predicate: #"{"var":"nested"}"#,
-            variables: ["nested": .object(["x": .int(1)])]
-        )
-        #expect(try result.get() == ["x": .int(1)])
-    }
-
-    @Test
-    func transformWithIdentityPredicateReturnsVariablesUnchanged() throws {
-        let variables: [String: RulesEngine.Value] = ["x": .int(1)]
-        let result = RulesEngine.transform(predicate: #"{"var":""}"#, variables: variables)
-        #expect(try result.get() == variables)
-    }
-
-    @Test
-    func transformAndEvaluateUseIndependentPredicates() throws {
-        let raw: [String: RulesEngine.Value] = ["x": .int(1)]
-        let transformed = try RulesEngine.transform(
-            predicate: #"{"var":""}"#,
-            variables: raw
-        ).get()
-        let result = RulesEngine.evaluate(
-            predicate: #"{"==":[{"var":"x"},1]}"#,
-            variables: transformed
-        )
-        #expect(try result.get() == true)
-    }
-
-    @Test
-    func transformToNonObjectReturnsTypeMismatchFailure() {
-        let result = RulesEngine.transform(predicate: #"{"var":"x"}"#, variables: ["x": .int(1)])
-        guard case .failure(.typeMismatch) = result else {
-            Issue.record("expected .failure(.typeMismatch), got \(result)")
-            return
-        }
-    }
-
-    @Test
-    func transformMalformedJSONReturnsParseFailure() {
-        let result = RulesEngine.transform(predicate: "{not json", variables: [:])
-        guard case .failure(.parse) = result else {
-            Issue.record("expected .failure(.parse), got \(result)")
-            return
-        }
-    }
 }
 
 #endif

@@ -13,23 +13,16 @@ struct RcMaestroApp: App {
             SystemInfo.apiBaseURL = apiBaseURL
         }
 
-        // Used in E2E tests. The strategy is read on every request rather than captured here, so that
-        // tests can change it mid-session through `ForceServerErrorStrategyStore`.
+        let forceServerErrorStrategy = Constants.forceServerErrorStrategy
         Purchases.configure(
             with: .builder(withAPIKey: Constants.apiKey)
                 .with(dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(
                         forceServerErrorStrategy: .init { request in
-                            switch ForceServerErrorStrategyStore.current {
+                            switch forceServerErrorStrategy {
                             case .never:
                                 return .performRequest
-
-                            case .remoteConfigKillswitch:
-                                // Let the backend serve the real kill-switch response for this request only,
-                                // so we can exercise the classic-paywall fallback for workflow offerings.
-                                guard request.path.contains("config/") else { return .performRequest }
-                                return .appendQueryItems([URLQueryItem(name: "force_killswitch", value: "true")])
 
                             case .primaryBackendDown:
                                 // Remote config uses a separate request path whose primary URL is already

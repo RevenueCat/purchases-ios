@@ -14,5 +14,45 @@
     "fill_fit_withDefault": {
         "width": { "type": "fill" },
         "height": { "type": "fit", "default": 2 }
+    },
+    "fit_withMin": {
+        "width": { "type": "fit", "min": 2 },
+        "height": { "type": "fit", "min": 2 }
+    },
+    "fit_withMax": {
+        "width": { "type": "fit", "max": 2 },
+        "height": { "type": "fit", "max": 2 }
+    },
+    "fit_withMinMax": {
+        "width": { "type": "fit", "min": 2, "max": 3 },
+        "height": { "type": "fit", "min": 2, "max": 3 }
+    },
+    "fill_withMin": {
+        "width": { "type": "fill", "min": 2 },
+        "height": { "type": "fill", "min": 2 }
+    },
+    "fill_withMax": {
+        "width": { "type": "fill", "max": 2 },
+        "height": { "type": "fill", "max": 2 }
+    },
+    "fill_withMinMax": {
+        "width": { "type": "fill", "min": 2, "max": 3 },
+        "height": { "type": "fill", "min": 2, "max": 3 }
+    },
+    "relative_withMin": {
+        "width": { "type": "relative", "min": 2, "value": 0.8 },
+        "height": { "type": "relative", "min": 2, "value": 0.8 }
+    },
+    "relative_withMax": {
+        "width": { "type": "relative", "max": 3, "value": 0.8 },
+        "height": { "type": "relative", "max": 3, "value": 0.8 }
+    },
+    "relative_withMinMax": {
+        "width": { "type": "relative", "min": 2, "max": 3, "value": 0.8 },
+        "height": { "type": "relative", "min": 2, "max": 3, "value": 0.8 }
+    },
+    "fixed_fit": {
+        "width": { "type": "fixed", "value": 80 },
+        "height": { "type": "fit" }
     }
 }

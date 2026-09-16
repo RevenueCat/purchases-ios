@@ -15,7 +15,7 @@ import Foundation
 import Nimble
 import XCTest
 
-@_spi(Internal) @testable import RevenueCat
+@_spi(Experimental) @_spi(Internal) @testable import RevenueCat
 
 final class DangerousSettingsTests: TestCase {
 
@@ -50,6 +50,16 @@ final class DangerousSettingsTests: TestCase {
             != DangerousSettings(uiPreviewMode: false)
     }
 
+    func testDifferentForceAllowTestStoreInReleaseBuildsIsNotEqual() {
+        expect(DangerousSettings(autoSyncPurchases: true, forceAllowTestStoreInReleaseBuilds: true))
+            != DangerousSettings(autoSyncPurchases: true, forceAllowTestStoreInReleaseBuilds: false)
+    }
+
+    func testDifferentUseExternalPurchaseCustomLinksIsNotEqual() {
+        expect(DangerousSettings(autoSyncPurchases: true, useExternalPurchaseCustomLinks: true))
+            != DangerousSettings(autoSyncPurchases: true, useExternalPurchaseCustomLinks: false)
+    }
+
     func testInternalSettingsAreExcludedFromEquality() {
         let defaultInternal: InternalDangerousSettingsType = DangerousSettings.Internal.default
         let customInternal: InternalDangerousSettingsType = DangerousSettings.Internal(enableReceiptFetchRetry: true)
@@ -59,6 +69,41 @@ final class DangerousSettingsTests: TestCase {
 
         expect(lhs) == rhs
         expect(lhs.hashValue) == rhs.hashValue
+    }
+
+    // MARK: - forceAllowTestStoreInReleaseBuilds
+
+    func testForceAllowTestStoreInReleaseBuildsIsDisabledByDefault() {
+        expect(DangerousSettings().forceAllowTestStoreInReleaseBuilds) == false
+        expect(DangerousSettings(autoSyncPurchases: false).forceAllowTestStoreInReleaseBuilds) == false
+        expect(DangerousSettings(uiPreviewMode: true).forceAllowTestStoreInReleaseBuilds) == false
+    }
+
+    func testForceAllowTestStoreInReleaseBuildsCanBeEnabled() {
+        let settings = DangerousSettings(autoSyncPurchases: false, forceAllowTestStoreInReleaseBuilds: true)
+
+        expect(settings.forceAllowTestStoreInReleaseBuilds) == true
+        expect(settings.autoSyncPurchases) == false
+        expect(settings.uiPreviewMode) == false
+        expect(settings.customEntitlementComputation) == false
+    }
+
+    // MARK: - useExternalPurchaseCustomLinks
+
+    func testUseExternalPurchaseCustomLinksIsDisabledByDefault() {
+        expect(DangerousSettings().useExternalPurchaseCustomLinks) == false
+        expect(DangerousSettings(autoSyncPurchases: false).useExternalPurchaseCustomLinks) == false
+        expect(DangerousSettings(uiPreviewMode: true).useExternalPurchaseCustomLinks) == false
+    }
+
+    func testUseExternalPurchaseCustomLinksCanBeEnabled() {
+        let settings = DangerousSettings(autoSyncPurchases: false, useExternalPurchaseCustomLinks: true)
+
+        expect(settings.useExternalPurchaseCustomLinks) == true
+        expect(settings.autoSyncPurchases) == false
+        expect(settings.uiPreviewMode) == false
+        expect(settings.customEntitlementComputation) == false
+        expect(settings.forceAllowTestStoreInReleaseBuilds) == false
     }
 
     // MARK: - Internal settings

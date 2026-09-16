@@ -67,11 +67,14 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         }
     }
 
-    func stage(outcome: CheckpointPaywallOutcome) {
-        self.callStore.stage(outcome: outcome)
+    func stage(_ update: CheckpointCallStore.CallUpdate) {
+        self.callStore.stage(update)
     }
 
-    func presentationDidDismiss() {
+    func presentationDidDismiss(reason: WorkflowDismissalReason? = nil) {
+        if let reason {
+            self.stage(.dismissalReason(reason))
+        }
         self.complete()
     }
 
@@ -101,8 +104,38 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         self.presentedViewController = nil
         #endif
 
-        call.delegate.checkpointPresentationFinished(outcome: call.stagedOutcome)
+        let execution: CheckpointExecutionResult<CheckpointPaywallOutcome>
+        switch (call.dismissalReason, call.stagedOutcome) {
+        case (.navigatedBack, is CheckpointPaywallOutcome.Purchased),
+             (.navigatedBack, is CheckpointPaywallOutcome.Restored):
+            execution = .completed(call.stagedOutcome)
+        case (.navigatedBack, _):
+            execution = .backedOut(call.stagedOutcome)
+        case (.close, _):
+            execution = .completed(call.stagedOutcome)
+        }
+        call.delegate.checkpointPresentationFinished(execution)
     }
+
+    #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
+    private func handleDismissal(of controller: PaywallViewController) {
+        self.stageDismissalReasonIfNeeded(controller.workflowDismissalReason)
+        self.presentationDidDismiss()
+    }
+
+    private func handleExitOfferPresentation(
+        from controller: PaywallViewController,
+        exitOfferController: PaywallViewController
+    ) {
+        self.stageDismissalReasonIfNeeded(controller.workflowDismissalReason)
+        self.presentedViewController = exitOfferController
+    }
+
+    private func stageDismissalReasonIfNeeded(_ reason: WorkflowDismissalReason) {
+        guard reason == .navigatedBack else { return }
+        self.stage(.dismissalReason(reason))
+    }
+    #endif
 
     private func presentAutomatically(_ presentation: CheckpointPresentation) throws {
         #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
@@ -127,11 +160,15 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         let workflowContext = try WorkflowPreview.makeContext(
             workflow: presentation.workflow.workflow,
             offerings: presentation.workflow.offerings,
-            uiConfig: presentation.workflow.uiConfig
+            uiConfig: presentation.workflow.uiConfig,
+            workflowBlobRef: presentation.workflow.workflowBlobRef
         )
         let viewController = PaywallViewController(
             workflowContext: workflowContext,
-            displayCloseButton: true
+            displayCloseButton: true,
+            workflowPresentationErrorHandler: { [weak self] error in
+                self?.stage(.workflowPresentationError(error))
+            }
         )
         viewController.customVariables = presentation.customVariables
         return viewController
@@ -154,10 +191,10 @@ extension CheckpointWorkflowPresenter {
     ) {
         MainActor.assumeIsolated {
             self.stage(
-                outcome: CheckpointPaywallOutcome.Purchased(
+                .outcome(CheckpointPaywallOutcome.Purchased(
                     transaction: transaction,
                     customerInfo: customerInfo
-                )
+                ))
             )
         }
     }
@@ -167,7 +204,7 @@ extension CheckpointWorkflowPresenter {
         didFinishRestoringWith customerInfo: CustomerInfo
     ) {
         MainActor.assumeIsolated {
-            self.stage(outcome: CheckpointPaywallOutcome.Restored(customerInfo: customerInfo))
+            self.stage(.outcome(CheckpointPaywallOutcome.Restored(customerInfo: customerInfo)))
         }
     }
 
@@ -176,7 +213,7 @@ extension CheckpointWorkflowPresenter {
         didFailPurchasingWith error: NSError
     ) {
         MainActor.assumeIsolated {
-            self.stage(outcome: CheckpointPaywallOutcome.Error(error: error))
+            self.stage(.outcome(CheckpointPaywallOutcome.Error(error: error)))
         }
     }
 
@@ -185,19 +222,19 @@ extension CheckpointWorkflowPresenter {
         didFailRestoringWith error: NSError
     ) {
         MainActor.assumeIsolated {
-            self.stage(outcome: CheckpointPaywallOutcome.Error(error: error))
+            self.stage(.outcome(CheckpointPaywallOutcome.Error(error: error)))
         }
     }
 
     nonisolated func paywallViewControllerDidOpenWebCheckout(_ controller: PaywallViewController) {
         MainActor.assumeIsolated {
-            self.stage(outcome: CheckpointPaywallOutcome.WebCheckoutOpened.shared)
+            self.stage(.outcome(CheckpointPaywallOutcome.WebCheckoutOpened.shared))
         }
     }
 
     nonisolated func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {
         MainActor.assumeIsolated {
-            self.presentationDidDismiss()
+            self.handleDismissal(of: controller)
         }
     }
 
@@ -206,7 +243,7 @@ extension CheckpointWorkflowPresenter {
         willPresentExitOfferController exitOfferController: PaywallViewController
     ) {
         MainActor.assumeIsolated {
-            self.presentedViewController = exitOfferController
+            self.handleExitOfferPresentation(from: controller, exitOfferController: exitOfferController)
         }
     }
     #else
@@ -216,10 +253,10 @@ extension CheckpointWorkflowPresenter {
         transaction: StoreTransaction?
     ) {
         self.stage(
-            outcome: CheckpointPaywallOutcome.Purchased(
+            .outcome(CheckpointPaywallOutcome.Purchased(
                 transaction: transaction,
                 customerInfo: customerInfo
-            )
+            ))
         )
     }
 
@@ -227,36 +264,36 @@ extension CheckpointWorkflowPresenter {
         _ controller: PaywallViewController,
         didFinishRestoringWith customerInfo: CustomerInfo
     ) {
-        self.stage(outcome: CheckpointPaywallOutcome.Restored(customerInfo: customerInfo))
+        self.stage(.outcome(CheckpointPaywallOutcome.Restored(customerInfo: customerInfo)))
     }
 
     func paywallViewController(
         _ controller: PaywallViewController,
         didFailPurchasingWith error: NSError
     ) {
-        self.stage(outcome: CheckpointPaywallOutcome.Error(error: error))
+        self.stage(.outcome(CheckpointPaywallOutcome.Error(error: error)))
     }
 
     func paywallViewController(
         _ controller: PaywallViewController,
         didFailRestoringWith error: NSError
     ) {
-        self.stage(outcome: CheckpointPaywallOutcome.Error(error: error))
+        self.stage(.outcome(CheckpointPaywallOutcome.Error(error: error)))
     }
 
     func paywallViewControllerDidOpenWebCheckout(_ controller: PaywallViewController) {
-        self.stage(outcome: CheckpointPaywallOutcome.WebCheckoutOpened.shared)
+        self.stage(.outcome(CheckpointPaywallOutcome.WebCheckoutOpened.shared))
     }
 
     func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {
-        self.presentationDidDismiss()
+        self.handleDismissal(of: controller)
     }
 
     func paywallViewController(
         _ controller: PaywallViewController,
         willPresentExitOfferController exitOfferController: PaywallViewController
     ) {
-        self.presentedViewController = exitOfferController
+        self.handleExitOfferPresentation(from: controller, exitOfferController: exitOfferController)
     }
     #endif
 

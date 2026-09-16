@@ -4,7 +4,7 @@
 //
 
 import Foundation
-@_spi(Experimental) import RevenueCat
+import RevenueCat
 
 var adReward: AdReward!
 var virtualCurrencyReward: VirtualCurrencyReward!

@@ -16,16 +16,27 @@ import Foundation
 ///
 /// Pass this to ``pollRewardVerification(clientTransactionID:trackingMetadata:)`` to have the
 /// SDK automatically track those events.
-@_spi(Experimental) public struct RewardedAdTrackingMetadata: Sendable {
+public struct RewardedAdTrackingMetadata: Sendable {
 
-    // swiftlint:disable missing_docs
+    /// The ad network that served the rewarded ad, as reported by the mediator, if available.
     public let networkName: String?
+
+    /// The mediation network that brokered the rewarded ad.
     public let mediatorName: MediatorName
+
+    /// The format of the rewarded ad.
     public let adFormat: AdFormat
+
+    /// The developer-defined placement where the rewarded ad was shown, if provided.
     public let placement: String?
+
+    /// The ad unit identifier for the rewarded ad.
     public let adUnitId: String
+
+    /// Identifier that correlates the tracked reward events with the same ad impression.
     public let impressionId: String
 
+    // swiftlint:disable missing_docs
     public init(
         networkName: String?,
         mediatorName: MediatorName,

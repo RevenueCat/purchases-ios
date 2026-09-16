@@ -81,5 +81,7 @@ func main() -> Int {
     checkVirtualCurrencyRewardAPI()
     checkEntitlementRewardAPI()
 
+    checkAdTrackerAPI()
+
     return 0
 }

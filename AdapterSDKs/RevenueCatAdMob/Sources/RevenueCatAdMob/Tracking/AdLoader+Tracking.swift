@@ -8,7 +8,7 @@ import Foundation
 
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
-@_spi(Experimental) import RevenueCat
+import RevenueCat
 
 @available(iOS 15.0, *)
 internal extension GoogleMobileAds.AdLoader {
@@ -37,7 +37,7 @@ internal extension GoogleMobileAds.AdLoader {
 }
 
 @available(iOS 15.0, *)
-@_spi(Experimental) public extension GoogleMobileAds.AdLoader {
+public extension GoogleMobileAds.AdLoader {
 
     /// Loads a native ad request, tracks lifecycle events with RevenueCat, and forwards callbacks.
     ///

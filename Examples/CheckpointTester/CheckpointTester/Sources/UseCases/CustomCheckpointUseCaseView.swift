@@ -22,7 +22,6 @@ struct CustomCheckpointUseCaseView: View {
     @ObservedObject var customVariables: CustomVariables
 
     @State private var identifier = ""
-    @State private var isRunning = false
 
     private var trimmedIdentifier: String {
         return self.identifier.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -40,7 +39,7 @@ struct CustomCheckpointUseCaseView: View {
                         await self.hitCheckpoint()
                     }
                 }
-                .disabled(self.trimmedIdentifier.isEmpty || self.isRunning)
+                .disabled(self.trimmedIdentifier.isEmpty)
             } footer: {
                 Text("The current custom variables are passed to the checkpoint.")
             }
@@ -50,19 +49,13 @@ struct CustomCheckpointUseCaseView: View {
 
     @MainActor
     private func hitCheckpoint() async {
-        guard !self.trimmedIdentifier.isEmpty, !self.isRunning else { return }
+        guard !self.trimmedIdentifier.isEmpty else { return }
 
-        self.isRunning = true
-        defer { self.isRunning = false }
-
-        do {
-            let result = try await Purchases.shared.checkpoint(
-                self.trimmedIdentifier,
-                customVariables: self.customVariables.checkpointCustomVariables
-            )
+        Purchases.shared.checkpoint(
+            self.trimmedIdentifier,
+            customVariables: self.customVariables.checkpointCustomVariables
+        ) { result in
             self.model.showOutcome(result, checkpointIdentifier: self.trimmedIdentifier)
-        } catch {
-            self.model.showError(error)
         }
     }
 

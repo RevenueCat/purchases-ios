@@ -15,6 +15,48 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
+/// An active entitlement reported after completing a checkpoint flow.
+@_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public struct ObtainedEntitlement: Hashable, @unchecked Sendable {
+
+    /// Information about the active entitlement reported after the flow.
+    public let entitlementInfo: EntitlementInfo
+
+    init(entitlementInfo: EntitlementInfo) {
+        self.entitlementInfo = entitlementInfo
+    }
+
+    /// Returns whether two obtained entitlements represent the same entitlement identifier.
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        return lhs.entitlementInfo.identifier == rhs.entitlementInfo.identifier
+    }
+
+    /// Hashes the entitlement identifier.
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.entitlementInfo.identifier)
+    }
+
+}
+
+/// The result of completing a checkpoint flow.
+@_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public struct FlowResult: @unchecked Sendable {
+
+    /// Active entitlements reported by the purchase or restore that completed the flow.
+    ///
+    /// The SDK compares the final customer information with the customer information cached before presenting the
+    /// flow. When no cached customer information is available, this can include entitlements that were already active
+    /// or were obtained from another source.
+    public let obtainedEntitlements: Set<ObtainedEntitlement>
+
+    init(obtainedEntitlements: Set<ObtainedEntitlement> = []) {
+        self.obtainedEntitlements = obtainedEntitlements
+    }
+
+}
+
 /// Base class for the result of evaluating a checkpoint.
 ///
 /// Inspect the concrete result type to determine what happened:
@@ -23,11 +65,11 @@ import Foundation
 /// let result = try await Purchases.shared.checkpoint("onboarding_complete")
 ///
 /// switch result {
-/// case let result as CheckpointPaywallPresentedResult:
+/// case let result as CheckpointResult.PaywallPresented:
 ///     handlePaywallOutcome(result.paywallOutcome)
-/// case let result as CheckpointReceivedOfferingResult:
+/// case let result as CheckpointResult.ReceivedOffering:
 ///     showOffering(result.offering)
-/// case let result as CheckpointNoActionResult:
+/// case let result as CheckpointResult.NoAction:
 ///     handleNoAction(result.reason)
 /// default:
 ///     // Handle result types added in future SDK versions.
@@ -45,62 +87,56 @@ public class CheckpointResult: CustomStringConvertible {
         return "CheckpointResult"
     }
 
-}
+    /// Nothing was served for a checkpoint.
+    public final class NoAction: CheckpointResult {
 
-/// Nothing was served for a checkpoint.
-@_spi(CheckpointsInternal)
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public final class CheckpointNoActionResult: CheckpointResult {
+        /// The reason no experience was served.
+        public let reason: CheckpointNoActionReason
 
-    /// The reason no experience was served.
-    public let reason: CheckpointNoActionReason
+        init(reason: CheckpointNoActionReason) {
+            self.reason = reason
+            super.init()
+        }
 
-    init(reason: CheckpointNoActionReason) {
-        self.reason = reason
-        super.init()
+        public override var description: String {
+            return "NoAction(reason=\(self.reason))"
+        }
+
     }
 
-    public override var description: String {
-        return "NoAction(reason=\(self.reason))"
+    /// An offering was selected for a checkpoint, with no RevenueCat-managed UI presented. The app decides
+    /// whether and how to use it.
+    public final class ReceivedOffering: CheckpointResult {
+
+        /// The offering the checkpoint selected.
+        public let offering: Offering
+
+        init(offering: Offering) {
+            self.offering = offering
+            super.init()
+        }
+
+        public override var description: String {
+            return "ReceivedOffering(offering=\(self.offering.identifier))"
+        }
+
     }
 
-}
+    /// A checkpoint-triggered paywall was presented and finished.
+    public final class PaywallPresented: CheckpointResult {
 
-/// An offering was selected for a checkpoint, with no RevenueCat-managed UI presented. The app decides
-/// whether and how to use it.
-@_spi(CheckpointsInternal)
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public final class CheckpointReceivedOfferingResult: CheckpointResult {
+        /// The terminal outcome of the presented paywall.
+        public let paywallOutcome: CheckpointPaywallOutcome
 
-    /// The offering the checkpoint selected.
-    public let offering: Offering
+        init(paywallOutcome: CheckpointPaywallOutcome) {
+            self.paywallOutcome = paywallOutcome
+            super.init()
+        }
 
-    init(offering: Offering) {
-        self.offering = offering
-        super.init()
-    }
+        public override var description: String {
+            return "PaywallPresented(paywallOutcome=\(self.paywallOutcome))"
+        }
 
-    public override var description: String {
-        return "ReceivedOffering(offering=\(self.offering.identifier))"
-    }
-
-}
-
-/// A checkpoint-triggered paywall was presented and finished.
-@_spi(CheckpointsInternal)
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public final class CheckpointPaywallPresentedResult: CheckpointResult {
-
-    /// The terminal outcome of the presented paywall.
-    public let paywallOutcome: CheckpointPaywallOutcome
-
-    init(paywallOutcome: CheckpointPaywallOutcome) {
-        self.paywallOutcome = paywallOutcome
-        super.init()
-    }
-
-    public override var description: String {
-        return "PaywallPresented(paywallOutcome=\(self.paywallOutcome))"
     }
 
 }

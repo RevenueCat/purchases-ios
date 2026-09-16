@@ -32,6 +32,9 @@ struct PackageComponentView: View {
     @Environment(\.screenCondition)
     private var screenCondition
 
+    @Environment(\.paywallWindowSize)
+    private var paywallWindowSize
+
     @Environment(\.customPaywallVariables)
     private var customVariables
 
@@ -63,7 +66,8 @@ struct PackageComponentView: View {
                    for: package
                ),
                selectedPackageId: selectedPackageId,
-               customVariables: customVariables
+               customVariables: customVariables,
+               windowSize: paywallWindowSize
            ) {
             StackComponentView(
                 viewModel: self.viewModel.stackViewModel,
@@ -127,6 +131,10 @@ struct PackageSelectorIfNeeded: ViewModifier {
     let hasPurchaseButton: Bool
     let hapticFeedbackEnabled: Bool
 
+    private var isSelected: Bool {
+        return self.packageContext.package?.identifier == self.package.identifier
+    }
+
     func body(content: Content) -> some View {
         if hasPurchaseButton {
             content
@@ -160,6 +168,7 @@ struct PackageSelectorIfNeeded: ViewModifier {
             } label: {
                 content
             }
+            .accessibilityAddTraits(self.isSelected ? .isSelected : [])
             .onAppear {
                 if hapticFeedbackEnabled {
                     self.hapticFeedback.prepare()

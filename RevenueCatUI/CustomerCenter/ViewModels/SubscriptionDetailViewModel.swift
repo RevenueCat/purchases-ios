@@ -81,7 +81,8 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
         purchaseInformation: PurchaseInformation? = nil,
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: CustomerCenterPurchasesType,
-        loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
+        loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil,
+        localization: CustomerCenterConfigData.Localization = .default) {
             self.showVirtualCurrencies = showVirtualCurrencies
             self.showPurchaseHistory = showPurchaseHistory
             self.allowsMissingPurchaseAction = allowsMissingPurchaseAction
@@ -93,7 +94,8 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
             purchaseInformation: purchaseInformation,
             refundRequestStatus: refundRequestStatus,
             purchasesProvider: purchasesProvider,
-            loadPromotionalOfferUseCase: loadPromotionalOfferUseCase
+            loadPromotionalOfferUseCase: loadPromotionalOfferUseCase,
+            localization: localization
         )
     }
 

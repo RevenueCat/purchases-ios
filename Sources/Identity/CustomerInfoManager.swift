@@ -124,8 +124,10 @@ class CustomerInfoManager {
                 let result = Result { try self.cachedCustomerInfo(appUserID: appUserID) }
 
                 // We want the specific error for diagnostics
-                let resultForDiagnostics = Result(result.value as? CustomerInfo,
-                                                  result.error ?? BackendError.missingCachedCustomerInfo())
+                let resultForDiagnostics: Result<CustomerInfo, Error> = Result(
+                    result.value as? CustomerInfo,
+                    result.error ?? BackendError.missingCachedCustomerInfo()
+                )
                 self.trackGetCustomerInfoResultIfNeeded(trackDiagnostics: trackDiagnostics,
                                                         startTime: startTime,
                                                         cacheFetchPolicy: fetchPolicy,
@@ -266,6 +268,7 @@ class CustomerInfoManager {
 
         if customerInfo.shouldCache {
             do {
+                self.cacheSubscriberDimensionsIfPresent(from: customerInfo, appUserID: appUserID)
                 let jsonData = try JSONEncoder.default.encode(customerInfo)
                 self.deviceCache.cache(customerInfo: jsonData, appUserID: appUserID)
             } catch {
@@ -277,6 +280,24 @@ class CustomerInfoManager {
         }
 
         self.sendUpdateIfChanged(customerInfo: customerInfo)
+    }
+
+    private func cacheSubscriberDimensionsIfPresent(
+        from customerInfo: CustomerInfo,
+        appUserID: String
+    ) {
+        guard !customerInfo.isLoadedFromCache,
+              let dimensions = customerInfo.rawData["dimensions"] as? [String: Any],
+              !dimensions.isEmpty else {
+            return
+        }
+
+        do {
+            let data = try JSONSerialization.data(withJSONObject: dimensions)
+            self.deviceCache.cache(subscriberDimensions: data, appUserID: appUserID)
+        } catch {
+            Logger.warn(Strings.localRules.subscriberDimensionsUnavailable(error))
+        }
     }
 
     func clearCustomerInfoCache(forAppUserID appUserID: String) {

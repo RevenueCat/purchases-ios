@@ -371,6 +371,25 @@ final class RemoteConfigurationDecodingTests: TestCase {
         expect(json["prefetch"]).to(beNil())
     }
 
+    func testConfigItemPreservesOpaqueKeysAcrossRoundTrip() throws {
+        let conditionHash = "349OzehoTyCAdiZblj9w0J0yD-Uow8X3"
+        let data = """
+        {
+          "blob_ref": "audiences-ref",
+          "prefetch": true,
+          "\(conditionHash)": false
+        }
+        """.asData
+
+        let decoded = try JSONDecoder.default.decode(RemoteConfiguration.ConfigItem.self, from: data)
+        let persisted = try JSONEncoder.default.encode(decoded)
+        let restored = try JSONDecoder.default.decode(RemoteConfiguration.ConfigItem.self, from: persisted)
+
+        expect(restored.content) == [conditionHash: false]
+        expect(restored.blobRef) == "audiences-ref"
+        expect(restored.prefetch) == true
+    }
+
     func testRequestEncodingOmitsDomain() throws {
         let request = RemoteConfigRequest(
             fetchContext: .appStart,

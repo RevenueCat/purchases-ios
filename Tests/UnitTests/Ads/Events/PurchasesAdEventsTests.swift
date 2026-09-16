@@ -15,7 +15,7 @@ import Nimble
 import StoreKit
 import XCTest
 
-@_spi(Internal) @_spi(Experimental) @testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 class PurchasesAdEventsTests: BasePurchasesTests {
@@ -52,7 +52,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.adFormat) == .banner
         expect(eventData.placement) == "home_screen"
         expect(eventData.adUnitId) == "ca-app-pub-123"
-        expect(eventData.mediatorErrorCode?.intValue) == 3
+        expect(eventData.mediatorErrorCode) == 3
     }
 
     func testTrackAdLoadedStoresEvent() async throws {

@@ -60,9 +60,17 @@ class IdentityManager: CurrentUserProvider {
             if appUserID?.isEmpty == true {
                 Logger.warn(Strings.identity.logging_in_with_empty_appuserid)
             }
-            finalAppUserID = appUserID?.notEmptyOrWhitespaces
-            ?? deviceCache.cachedAppUserID
-            ?? deviceCache.cachedLegacyAppUserID
+            let configuredAppUserID = appUserID?.notEmptyOrWhitespaces
+            let cachedAppUserID = deviceCache.cachedAppUserID ?? deviceCache.cachedLegacyAppUserID
+
+            if let configuredAppUserID,
+               let cachedAppUserID,
+               configuredAppUserID != cachedAppUserID {
+                Logger.warn(Strings.identity.configured_app_user_id_differs_from_cached)
+            }
+
+            finalAppUserID = configuredAppUserID
+            ?? cachedAppUserID
             ?? Self.generateRandomID()
         }
 
@@ -84,11 +92,24 @@ class IdentityManager: CurrentUserProvider {
     var currentUserIsAnonymous: Bool {
         let userID = self.currentAppUserID
 
-        lazy var currentAppUserIDLooksAnonymous = Self.userIsAnonymous(userID)
-        lazy var isLegacyAnonymousAppUserID = userID == self.deviceCache.cachedLegacyAppUserID
-        lazy var isAnonymousIdentity = tokenManager.isCurrentIdentityAnonymous
+        if Self.userIsAnonymous(userID) {
+            return true
+        }
 
-        return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID || isAnonymousIdentity
+        if self.deviceCache.cachedLegacyAppUserID == userID {
+            return true
+        }
+
+        if let info = try? self.customerInfoManager.cachedCustomerInfo(appUserID: userID),
+           info.allIdentitiesAreAnonymous {
+            return true
+        }
+
+        if tokenManager.isCurrentIdentityAnonymous {
+            return true
+        }
+
+        return false
     }
 
     var needsIAMLogin: Bool {
@@ -132,19 +153,6 @@ class IdentityManager: CurrentUserProvider {
             } else {
                 self.performLogOut(completion: completion)
             }
-        }
-    }
-
-    func revokeCurrentAccessToken(completion: @escaping (PurchasesError?) -> Void) {
-        guard self.currentAppUserID != Self.uiPreviewModeAppUserID else {
-            completion(ErrorUtils.unsupportedInUIPreviewModeError())
-            return
-        }
-
-        if self.tokenManager.enabled {
-            self.performAccessTokenRevocation(for: self.currentAppUserID, completion: completion)
-        } else {
-            completion(nil)
         }
     }
 
@@ -231,12 +239,6 @@ private extension IdentityManager {
             case .failure(let error):
                 completion(.failure(error))
             }
-        }
-    }
-
-    func performAccessTokenRevocation(for appUserID: String, completion: @escaping (PurchasesError?) -> Void) {
-        self.backend.token.revokeAccessTokens(for: appUserID) { error in
-            completion(error?.asPurchasesError)
         }
     }
 

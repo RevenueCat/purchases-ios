@@ -96,10 +96,6 @@ class SystemInfo {
     /// Whether remote config lifecycle wiring is enabled. Paywall workflows read entirely through
     /// remote config, so this is also the gate for workflows: there's no separate workflows switch,
     /// since the two ship together.
-    ///
-    /// Enabled for everyone except under custom entitlement computation. Once enabled here, remote
-    /// config can still be turned off at runtime by the backend kill switch
-    /// (see `Purchases.remoteConfigEnabled`).
     var remoteConfigEnabled: Bool {
         return !self.dangerousSettings.customEntitlementComputation
     }
@@ -117,7 +113,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.88.0-SNAPSHOT"
+        return "5.90.0-SNAPSHOT"
     }
 
     static var installationMethod: String {

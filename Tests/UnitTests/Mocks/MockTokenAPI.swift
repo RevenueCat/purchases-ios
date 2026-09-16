@@ -52,20 +52,6 @@ class MockTokenAPI: TokenAPI {
         completion(stubbedRevokeTokensResult)
     }
 
-    // MARK: - revokeAccessTokens(for:completion:)
-
-    var invokedRevokeAccessTokens = false
-    var invokedRevokeAccessTokensCount = 0
-    var invokedRevokeAccessTokensParametersList: [String] = []
-    var stubbedRevokeAccessTokensResult: BackendError?
-
-    override func revokeAccessTokens(for appUserID: String, completion: @escaping (BackendError?) -> Void) {
-        invokedRevokeAccessTokens = true
-        invokedRevokeAccessTokensCount += 1
-        invokedRevokeAccessTokensParametersList.append(appUserID)
-        completion(stubbedRevokeAccessTokensResult)
-    }
-
 }
 
 extension MockTokenAPI: @unchecked Sendable {}

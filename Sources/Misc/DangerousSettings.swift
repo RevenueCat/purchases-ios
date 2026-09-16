@@ -60,6 +60,8 @@ import Foundation
         let autoSyncPurchases: Bool
         let uiPreviewMode: Bool
         let customEntitlementComputation: Bool
+        let forceAllowTestStoreInReleaseBuilds: Bool
+        let useExternalPurchaseCustomLinks: Bool
     }
 
     internal let storage: Storage
@@ -95,6 +97,28 @@ import Foundation
      */
     @objc public var customEntitlementComputation: Bool { self.storage.customEntitlementComputation }
 
+    /**
+     * Forces the SDK to allow using a Test Store API key in Release builds.
+     * By default, configuring the SDK with a Test Store API key in a Release build crashes the app to prevent
+     * uploading it to the App Store.
+     *
+     * - Important: Avoid enabling this except when necessary (e.g. internal builds compiled in Release that are
+     * never uploaded to the App Store), to make sure no builds using the Test Store reach the stores.
+     */
+    @objc public var forceAllowTestStoreInReleaseBuilds: Bool { self.storage.forceAllowTestStoreInReleaseBuilds }
+
+    /**
+     * Whether a web purchase button that opens its link in the external browser takes part in Apple's
+     * external purchase custom link programme: the customer is shown Apple's disclosure notice, and the
+     * purchase is reported to Apple.
+     *
+     * Disabled by default. Enabling it requires the app to be enrolled in the programme and to carry the
+     * corresponding entitlement.
+     */
+    @_spi(Experimental) public var useExternalPurchaseCustomLinks: Bool {
+        self.storage.useExternalPurchaseCustomLinks
+    }
+
     @objc public override convenience init() {
         self.init(autoSyncPurchases: true)
     }
@@ -112,6 +136,24 @@ import Foundation
 
     }
 
+    /**
+     * Only use a Dangerous Setting if suggested by RevenueCat support team.
+     *
+     * - Parameter autoSyncPurchases: Disable or enable subscribing to the StoreKit queue.
+     * If this is disabled, RevenueCat won't observe the StoreKit queue, and it will not sync any purchase
+     * automatically.
+     * - Parameter forceAllowTestStoreInReleaseBuilds: Forces the SDK to allow using a Test Store API key in
+     * Release builds. Avoid enabling this except when necessary, to make sure no builds using the Test Store
+     * reach the stores.
+     */
+    @objc public convenience init(autoSyncPurchases: Bool,
+                                  forceAllowTestStoreInReleaseBuilds: Bool) {
+        self.init(autoSyncPurchases: autoSyncPurchases,
+                  customEntitlementComputation: false,
+                  internalSettings: Internal.default,
+                  forceAllowTestStoreInReleaseBuilds: forceAllowTestStoreInReleaseBuilds)
+    }
+
     /// - Note: this is `internal` only so the only `public` way to enable `customEntitlementComputation`
     /// is through ``Purchases/configureInCustomEntitlementsComputationMode(apiKey:appUserID:)``.
     @objc internal convenience init(autoSyncPurchases: Bool = true,
@@ -120,6 +162,21 @@ import Foundation
                   customEntitlementComputation: customEntitlementComputation,
                   internalSettings: Internal.default)
 
+    }
+
+    /**
+     * - Parameter autoSyncPurchases: Disable or enable subscribing to the StoreKit queue.
+     * If this is disabled, RevenueCat won't observe the StoreKit queue, and it will not sync any purchase
+     * automatically.
+     * - Parameter useExternalPurchaseCustomLinks: Whether a web purchase button that opens its link in the
+     * external browser takes part in Apple's external purchase custom link programme.
+     */
+    @_spi(Experimental) public convenience init(autoSyncPurchases: Bool,
+                                                useExternalPurchaseCustomLinks: Bool) {
+        self.init(autoSyncPurchases: autoSyncPurchases,
+                  customEntitlementComputation: false,
+                  internalSettings: Internal.default,
+                  useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks)
     }
 
     /**
@@ -136,11 +193,15 @@ import Foundation
     internal init(autoSyncPurchases: Bool,
                   customEntitlementComputation: Bool = false,
                   internalSettings: InternalDangerousSettingsType,
-                  uiPreviewMode: Bool = false) {
+                  uiPreviewMode: Bool = false,
+                  forceAllowTestStoreInReleaseBuilds: Bool = false,
+                  useExternalPurchaseCustomLinks: Bool = false) {
         self.storage = Storage(
             autoSyncPurchases: autoSyncPurchases,
             uiPreviewMode: uiPreviewMode,
-            customEntitlementComputation: customEntitlementComputation
+            customEntitlementComputation: customEntitlementComputation,
+            forceAllowTestStoreInReleaseBuilds: forceAllowTestStoreInReleaseBuilds,
+            useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks
         )
         self.internalSettings = internalSettings
     }
@@ -200,12 +261,8 @@ struct ForceServerErrorStrategy {
 
         /// The request is performed against this URL instead of its original one.
         ///
-        /// - Warning: the original method, headers and body are dropped. Use `appendQueryItems` when the
-        /// backend needs to receive the request as the SDK built it.
+        /// - Warning: the original method, headers and body are dropped.
         case serverErrorURL(URL)
-
-        /// The request is performed as usual, with these query items appended to its URL.
-        case appendQueryItems([URLQueryItem])
 
         /// The request is performed as usual, without interception.
         case performRequest

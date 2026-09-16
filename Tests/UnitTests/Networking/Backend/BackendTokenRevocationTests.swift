@@ -84,47 +84,4 @@ class BackendTokenRevocationTests: BaseBackendTokenRevocationTests {
         expect(self.tokenManager.invokedDeleteTokens) == false
     }
 
-    // MARK: - revokeAccessTokens(for:completion:)
-
-    func testRevokeAccessTokensDoesNothingWithoutANetworkCallWhenThereIsNoAccessToken() {
-        self.tokenManager.stubbedCurrentAccessToken = nil
-
-        let receivedError = waitUntilValue { completed in
-            self.token.revokeAccessTokens(for: "user-id", completion: completed)
-        }
-
-        expect(receivedError).to(beNil())
-        expect(self.httpClient.calls).to(beEmpty())
-        expect(self.tokenManager.invokedDeleteAccessToken) == false
-    }
-
-    func testRevokeAccessTokensSendsTheAccessTokenAndDeletesItLocallyOnSuccess() throws {
-        self.tokenManager.stubbedCurrentAccessToken = "access-token-value"
-        self.httpClient.mock(requestPath: .tokenLogOut, response: .init(statusCode: .success))
-
-        let receivedError = waitUntilValue { completed in
-            self.token.revokeAccessTokens(for: "user-id", completion: completed)
-        }
-
-        expect(receivedError).to(beNil())
-        expect(self.tokenManager.invokedDeleteAccessTokenParametersList) == ["user-id"]
-
-        let body = try XCTUnwrap(self.httpClient.calls.first?.request.requestBody as? TokenRevocationOperation.Body)
-        expect(body.token) == "access-token-value"
-        expect(body.tokenTypeHint) == "access_token"
-    }
-
-    func testRevokeAccessTokensPassesNetworkErrorsAndDoesNotDeleteItLocally() {
-        self.tokenManager.stubbedCurrentAccessToken = "access-token-value"
-        let stubbedError: NetworkError = .unexpectedResponse(nil)
-        self.httpClient.mock(requestPath: .tokenLogOut, response: .init(error: stubbedError))
-
-        let receivedError = waitUntilValue { completed in
-            self.token.revokeAccessTokens(for: "user-id", completion: completed)
-        }
-
-        expect(receivedError) == .networkError(stubbedError)
-        expect(self.tokenManager.invokedDeleteAccessToken) == false
-    }
-
 }

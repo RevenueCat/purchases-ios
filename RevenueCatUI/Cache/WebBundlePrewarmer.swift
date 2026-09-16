@@ -180,7 +180,7 @@ private extension WebBundlePrewarmer {
             decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void
         ) {
             if let response = navigationResponse.response as? HTTPURLResponse,
-               WebViewNavigationPolicy.isTerminalHTTPError(
+               WebViewHTTPStatus.isTerminalError(
                 statusCode: response.statusCode,
                 isMainFrame: navigationResponse.isForMainFrame
                ) {

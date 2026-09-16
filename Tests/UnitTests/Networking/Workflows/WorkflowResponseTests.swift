@@ -470,6 +470,139 @@ class WorkflowResponseTests: TestCase {
         expect(step.metadata).to(beNil())
     }
 
+    func testDecodeWorkflowStepWithoutType() throws {
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: Data(#"{ "id": "step_1" }"#.utf8))
+
+        expect(step.type).to(beNil())
+    }
+
+    func testDecodeWorkflowStepOfferingIdentifier() throws {
+        let step = try JSONDecoder.default.decode(
+            WorkflowStep.self,
+            from: Data(#"{ "id": "step_1", "param_values": { "offering": { "identifier": "default" } } }"#.utf8)
+        )
+
+        expect(step.offeringIdentifier) == "default"
+    }
+
+    func testDecodeWorkflowStepOfferingIdentifierFallsBackToFlatValue() throws {
+        let step = try JSONDecoder.default.decode(
+            WorkflowStep.self,
+            from: Data(#"{ "id": "step_1", "param_values": { "offering_identifier": "default" } }"#.utf8)
+        )
+
+        expect(step.offeringIdentifier) == "default"
+    }
+
+    func testDecodeWorkflowStepOfferingIdentifierIsNilWithoutAValidValue() throws {
+        let values = [
+            "{}",
+            #"{ "offering_identifier": "   " }"#,
+            #"{ "offering_identifier": 123 }"#
+        ]
+
+        for paramValues in values {
+            let json = #"{ "id": "step_1", "param_values": "# + paramValues + " }"
+            let step = try JSONDecoder.default.decode(
+                WorkflowStep.self,
+                from: Data(json.utf8)
+            )
+
+            expect(step.offeringIdentifier).to(beNil())
+        }
+    }
+
+    func testDecodeWorkflowStepOfferingIdentifierPrefersNestedValueOverFlatFallback() throws {
+        let step = try JSONDecoder.default.decode(
+            WorkflowStep.self,
+            from: Data(#"""
+            { "id": "step_1", "param_values": {
+                "offering": { "identifier": "nested" },
+                "offering_identifier": "flat"
+            } }
+            """#.utf8)
+        )
+
+        expect(step.offeringIdentifier) == "nested"
+    }
+
+    func testDecodeWorkflowStepOfferingIdentifierUsesFlatFallbackWhenNestedOfferingHasNoIdentifier() throws {
+        let step = try JSONDecoder.default.decode(
+            WorkflowStep.self,
+            from: Data(#"""
+            { "id": "step_1", "param_values": {
+                "offering": {},
+                "offering_identifier": "flat"
+            } }
+            """#.utf8)
+        )
+
+        expect(step.offeringIdentifier) == "flat"
+    }
+
+    func testDecodeWorkflowStepOfferingIdentifierUsesFlatFallbackWhenOfferingIsNotAnObject() throws {
+        let step = try JSONDecoder.default.decode(
+            WorkflowStep.self,
+            from: Data(#"""
+            { "id": "step_1", "param_values": {
+                "offering": "not-an-object",
+                "offering_identifier": "flat"
+            } }
+            """#.utf8)
+        )
+
+        expect(step.offeringIdentifier) == "flat"
+    }
+
+    func testDecodeWorkflowStepOfferingIdentifierDoesNotFallBackWhenNestedIdentifierIsInvalid() throws {
+        let step = try JSONDecoder.default.decode(
+            WorkflowStep.self,
+            from: Data(#"""
+            { "id": "step_1", "param_values": {
+                "offering": { "identifier": "   " },
+                "offering_identifier": "flat"
+            } }
+            """#.utf8)
+        )
+
+        expect(step.offeringIdentifier).to(beNil())
+    }
+
+    func testDecodeWorkflowStepOfferingIdentifierDoesNotFallBackWhenNestedIdentifierIsNotAString() throws {
+        let step = try JSONDecoder.default.decode(
+            WorkflowStep.self,
+            from: Data(#"""
+            { "id": "step_1", "param_values": {
+                "offering": { "identifier": 123 },
+                "offering_identifier": "flat"
+            } }
+            """#.utf8)
+        )
+
+        expect(step.offeringIdentifier).to(beNil())
+    }
+
+    func testWorkflowOfferingIdentifierPrefersTheStepAndFallsBackToItsScreen() throws {
+        let screen = try Self.decodeWorkflowScreen(offeringIdentifier: "screen-offering")
+        var step = WorkflowStep(id: "step_1", type: "screen", screenId: "screen_1")
+        let workflow = PublishedWorkflow(
+            id: "workflow",
+            displayName: "Workflow",
+            initialStepId: step.id,
+            singleStepFallbackId: nil,
+            steps: [step.id: step],
+            screens: ["screen_1": screen]
+        )
+
+        expect(workflow.offeringIdentifier(for: step)) == "screen-offering"
+
+        step.paramValues = ["offering": .object(["identifier": .string("step-offering")])]
+        expect(workflow.offeringIdentifier(for: step)) == "step-offering"
+
+        step.paramValues = ["offering_identifier": .string("flat-step-offering")]
+        expect(workflow.offeringIdentifier(for: step)) == "flat-step-offering"
+    }
+
     func testDecodeWorkflowStepScreenTypeFromMetadata() throws {
         let json = """
         {
@@ -514,6 +647,66 @@ class WorkflowResponseTests: TestCase {
         let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
 
         expect(step.stepScreenType).to(beNil())
+    }
+
+    func testDecodeWorkflowStepExperimentParams() throws {
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "param_values": { "experiment_id": "exp_abc", "experiment_variant": "b", "other": 1 }
+        }
+        """.data(using: .utf8)!
+
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
+
+        expect(step.experimentId) == "exp_abc"
+        expect(step.experimentVariant) == "b"
+    }
+
+    func testDecodeWorkflowStepExperimentParamsNilWhenAbsent() throws {
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "param_values": { "offering_identifier": "premium" }
+        }
+        """.data(using: .utf8)!
+
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
+
+        expect(step.experimentId).to(beNil())
+        expect(step.experimentVariant).to(beNil())
+    }
+
+    func testDecodeWorkflowStepExperimentParamsReadIndependently() throws {
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "param_values": { "experiment_id": "exp_abc" }
+        }
+        """.data(using: .utf8)!
+
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
+
+        expect(step.experimentId) == "exp_abc"
+        expect(step.experimentVariant).to(beNil())
+    }
+
+    func testDecodeWorkflowStepExperimentParamsNilWhenNotStrings() throws {
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "param_values": { "experiment_id": 12, "experiment_variant": null }
+        }
+        """.data(using: .utf8)!
+
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
+
+        expect(step.experimentId).to(beNil())
+        expect(step.experimentVariant).to(beNil())
     }
 
     func testDecodeWorkflowStepScreenTypeNilWhenMetadataNull() throws {
@@ -616,7 +809,8 @@ private extension WorkflowResponseTests {
     static func decodeWorkflowScreen(
         defaultLocaleJSON: String? = "\"en_US\"",
         automaticallyScaleFontSize: Bool? = nil,
-        zeroDecimalPlaceCountriesJSON: String? = nil
+        zeroDecimalPlaceCountriesJSON: String? = nil,
+        offeringIdentifier: String? = nil
     ) throws -> WorkflowScreen {
         var defaultLocaleFragment = ""
         if let defaultLocaleJSON {
@@ -636,6 +830,7 @@ private extension WorkflowResponseTests {
             , "zero_decimal_place_countries": \(zeroDecimalPlaceCountriesJSON)
             """
         }
+        let offeringIdentifierFragment = offeringIdentifier.map { ", \"offering_identifier\": \"\($0)\"" } ?? ""
         let json = """
         {
           "template_name": "tmpl",
@@ -653,7 +848,7 @@ private extension WorkflowResponseTests {
               },
               "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } } }
             }
-          }\(automaticallyScaleFontSizeFragment)\(zeroDecimalFragment)
+          }\(automaticallyScaleFontSizeFragment)\(zeroDecimalFragment)\(offeringIdentifierFragment)
         }
         """.data(using: .utf8)!
 
