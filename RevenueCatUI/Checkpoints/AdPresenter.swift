@@ -89,6 +89,16 @@ public final class AdPresentationResult {
     /// The ad was shown and dismissed, with no reward earned.
     public static let shown = AdPresentationResult(outcome: CheckpointAdOutcome.Shown.shared)
 
+    /// The customer earned the ad's reward and RevenueCat verified it.
+    public static func rewarded(reward: AdReward, moreRewards: [AdReward] = []) -> AdPresentationResult {
+        return AdPresentationResult(outcome: CheckpointAdOutcome.Rewarded(reward: reward, moreRewards: moreRewards))
+    }
+
+    /// The customer earned the ad's reward, but RevenueCat could not verify it, so nothing was granted.
+    public static let rewardVerificationFailed = AdPresentationResult(
+        outcome: CheckpointAdOutcome.RewardVerificationFailed.shared
+    )
+
     /// The ad could not be shown, for example because it failed to load or the mediator had no fill.
     public static func failed(error: PublicError) -> AdPresentationResult {
         return AdPresentationResult(outcome: CheckpointAdOutcome.Failed(error: error))
