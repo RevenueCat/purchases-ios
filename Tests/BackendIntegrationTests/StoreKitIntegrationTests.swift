@@ -297,16 +297,29 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         }
 
         _ = try await self.purchases.logIn("user_1.\(UUID().uuidString)")
-        let info1 = try await self.purchaseConsumablePackage().customerInfo
-        verifyPurchase(info1)
+        let purchase1 = try await self.purchaseConsumablePackage()
+        let transaction1 = try XCTUnwrap(purchase1.transaction)
+        verifyPurchase(purchase1.customerInfo)
 
         let user2 = try await self.purchases.logIn("user_1.\(UUID().uuidString)").customerInfo
         expect(user2.nonSubscriptions).to(beEmpty())
 
-        let info2 = try await self.purchaseConsumablePackage().customerInfo
-        verifyPurchase(info2)
+        let purchase2 = try await self.purchaseConsumablePackage()
+        let transaction2 = try XCTUnwrap(purchase2.transaction)
+        verifyPurchase(purchase2.customerInfo)
 
-        self.verifyAnyTransactionWasFinished(count: 2)
+        expect(transaction1.transactionIdentifier).toNot(equal(transaction2.transactionIdentifier))
+        for transaction in [transaction1, transaction2] {
+            self.verifySpecificTransactionWasFinished(transaction)
+            if Self.storeKitVersion == .storeKit1 {
+                await expect {
+                    SKPaymentQueue.default().transactions.contains {
+                        $0.transactionIdentifier == transaction.transactionIdentifier &&
+                            $0.payment.productIdentifier == transaction.productIdentifier
+                    }
+                }.toEventually(beFalse(), timeout: .seconds(5))
+            }
+        }
     }
 
     func testCanPurchaseNonConsumable() async throws {
