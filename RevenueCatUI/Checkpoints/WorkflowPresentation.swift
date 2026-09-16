@@ -42,16 +42,8 @@ enum CheckpointPresentationOutcome {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 protocol WorkflowPresenterProtocol: AnyObject {
 
-    func cancel()
     func present(
         _ presentation: WorkflowPresentationRequest
     ) async throws -> CheckpointPresentationOutcome
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension WorkflowPresenterProtocol {
-
-    func cancel() {}
 
 }

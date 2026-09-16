@@ -156,11 +156,11 @@ final class CheckpointPresenter: CheckpointPresenterProtocol {
 
         private func cancel() {
             guard let cancellationHandler else {
-                self.finishCancellation(force: true)
+                self.finishCancellation()
                 return
             }
             cancellationHandler { [weak self] in
-                self?.finishCancellation(force: true)
+                self?.finishCancellation()
             }
         }
 
@@ -183,9 +183,8 @@ final class CheckpointPresenter: CheckpointPresenterProtocol {
             continuation.resume(returning: execution)
         }
 
-        private func finishCancellation(force: Bool = false) {
-            guard self.pendingContinuation != nil,
-                  force || !self.hasReportedCompletion else { return }
+        private func finishCancellation() {
+            guard self.pendingContinuation != nil else { return }
             self.hasReportedCompletion = true
             guard let continuation = self.takeContinuation() else { return }
             continuation.resume(throwing: CancellationError())

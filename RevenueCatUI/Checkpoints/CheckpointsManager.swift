@@ -108,7 +108,7 @@ final class CheckpointsManager {
     private func flowResult(
         customerInfo: CustomerInfo?,
         initialEntitlementIdentifiers: Set<String>?
-    ) -> FlowResult? {
+    ) -> FlowResult {
         let entitlements = customerInfo.map { Array($0.entitlements.active.values) } ?? []
 
         let obtainedEntitlements = entitlements.lazy
