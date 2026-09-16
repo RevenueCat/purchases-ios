@@ -25,12 +25,9 @@ final class CheckpointsManager {
     private let cachedCustomerInfoProvider: @MainActor () -> CustomerInfo?
     private let customerInfoSynchronizer: CustomerInfoSynchronizer
     @MainActor private lazy var workflowPresenter: CheckpointWorkflowPresenterProtocol = CheckpointWorkflowPresenter()
-    @MainActor private lazy var presentationHandler = CheckpointPresentationHandler(
+    @MainActor private lazy var checkpointPresenter = CheckpointPresenter(
         workflowPresenter: self.workflowPresenter,
         customerInfoSynchronizer: self.customerInfoSynchronizer
-    )
-    @MainActor private lazy var presentationCoordinator = CheckpointPresentationCoordinator(
-        handler: self.presentationHandler
     )
 
     init(
@@ -68,7 +65,7 @@ final class CheckpointsManager {
         self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
         self.customerInfoSynchronizer = customerInfoSynchronizer
         self.workflowPresenter = workflowPresenter
-        self.presentationHandler = CheckpointPresentationHandler(
+        self.checkpointPresenter = CheckpointPresenter(
             workflowPresenter: workflowPresenter,
             defaultPaywallPresenter: defaultPaywallPresenter,
             customerInfoSynchronizer: customerInfoSynchronizer
@@ -77,12 +74,12 @@ final class CheckpointsManager {
 
     @MainActor
     func setPaywallPresenter(_ presenter: PaywallPresenter?) {
-        self.presentationHandler.paywallPresenter = presenter
+        self.checkpointPresenter.paywallPresenter = presenter
     }
 
     @MainActor
     var paywallPresenter: PaywallPresenter? {
-        get { return self.presentationHandler.paywallPresenter }
+        get { return self.checkpointPresenter.paywallPresenter }
         set { self.setPaywallPresenter(newValue) }
     }
 
@@ -104,9 +101,9 @@ final class CheckpointsManager {
                 workflow: workflow,
                 customVariables: params.customVariables
             )
-            return try await self.presentationCoordinator.presentWorkflow(presentation)
+            return try await self.checkpointPresenter.presentWorkflow(presentation)
         case let .matchedOffering(offering):
-            return try await self.presentationCoordinator.presentOffering(
+            return try await self.checkpointPresenter.presentOffering(
                 params: .init(
                     checkpointIdentifier: identifier,
                     customVariables: params.customVariables,
