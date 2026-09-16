@@ -63,7 +63,8 @@ class PackageComponentViewModel {
         self.localizedBundle = Localization.localizedBundle(localizationProvider.locale)
     }
 
-    /// Spoken selection state for the row: "Yearly, Selected" vs "Monthly, Not selected".
+    /// The row's accessibility value. VoiceOver reads it after the label, so nothing here
+    /// composes a sentence.
     func accessibilitySelectionValue(isSelected: Bool) -> String {
         return self.localizedBundle.localizedString(
             forKey: isSelected ? "Selected" : "Not selected",

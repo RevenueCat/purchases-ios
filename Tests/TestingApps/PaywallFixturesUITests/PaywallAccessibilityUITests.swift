@@ -67,8 +67,7 @@ final class PaywallAccessibilityUITests: XCTestCase {
 
     // MARK: - Package selection
 
-    /// The trait says nothing at all when a row is unselected, so the state is exposed as the
-    /// row's value instead.
+    /// The unselected row is the case that was silent before.
     func testSelectionStateIsAnnouncedOnTheRow() throws {
         let app = self.launchDecorativeMedia()
 
