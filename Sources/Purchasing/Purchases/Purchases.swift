@@ -285,7 +285,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let externalPurchaseManager: ExternalPurchaseManager
     private let backend: Backend
     private let deviceCache: DeviceCache
-    let paywallCache: PaywallCacheWarmingType?
+    private let paywallCache: PaywallCacheWarmingType?
+    let pendingEligibilityCacheWarmups: Atomic<Int> = .init(0)
     private let identityManager: IdentityManager
     private let tokenManager: TokenManager
     private let userDefaults: UserDefaults
@@ -3229,7 +3230,10 @@ private extension Purchases {
         guard let cache = self.paywallCache else {
             return
         }
+        let pendingWarmups = self.pendingEligibilityCacheWarmups
+        pendingWarmups.modify { $0 += 1 }
         self.operationDispatcher.dispatchOnWorkerThread {
+            defer { pendingWarmups.modify { $0 -= 1 } }
             await cache.warmUpEligibilityCache(offerings: offerings)
         }
         self.operationDispatcher.dispatchOnWorkerThread {

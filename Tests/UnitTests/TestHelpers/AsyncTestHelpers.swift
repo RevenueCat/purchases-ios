@@ -63,25 +63,25 @@ func waitUntilValue<Value>(
 private struct ConditionFailedError: Error {}
 
 @MainActor
-final class DeallocationTracker {
+final class EligibilityWarmupTracker {
 
-    private var objects: [WeakBox<AnyObject>] = []
+    private var pendingWarmups: [Atomic<Int>] = []
 
-    func track(_ object: AnyObject) {
-        self.objects.append(WeakBox(object))
+    func track(_ counter: Atomic<Int>) {
+        self.pendingWarmups.append(counter)
     }
 
     var pendingCount: Int {
-        self.objects.filter { $0.value != nil }.count
+        self.pendingWarmups.reduce(0) { $0 + $1.value }
     }
 
-    func waitForDeallocation(timeout: NimbleTimeInterval) async throws {
+    func waitForCompletion(timeout: NimbleTimeInterval) async throws {
         let start = Date()
         try await asyncWait(
             timeout: timeout,
             description: { pending in
-                "Cache warmup did not finish after \(Date().timeIntervalSince(start))s; " +
-                "\(pending ?? 0) cache instances remain"
+                "Eligibility cache warmup did not finish after \(Date().timeIntervalSince(start))s; " +
+                "\(pending ?? 0) operations remain"
             },
             until: { await MainActor.run { self.pendingCount } },
             condition: { $0 == 0 }
