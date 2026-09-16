@@ -38,6 +38,47 @@ class PurchasesPaywallEventsTests: BasePurchasesTests {
         expect(self.mockOperationDispatcher.invokedDispatchOnWorkerThreadDelayParam) == .long
     }
 
+    func testCustomerCenterEventsReachManager() async throws {
+        self.mockOperationDispatcher.forwardToOriginalDispatchOnWorkerThread = true
+        let manager = try self.mockEventsManager
+        let creation = CustomerCenterEventCreationData()
+        let impression = CustomerCenterEvent.impression(
+            creation,
+            .init(locale: Locale(identifier: "es_ES"), darkMode: true, isSandbox: true, displayMode: .fullScreen)
+        )
+        let answer = CustomerCenterAnswerSubmittedEvent.answerSubmitted(
+            creation,
+            .init(locale: Locale(identifier: "es_ES"), darkMode: true, isSandbox: true,
+                  displayMode: .fullScreen, path: .cancel, url: nil, surveyOptionID: "", revisionID: 1)
+        )
+
+        self.purchases.track(customerCenterEvent: impression)
+        self.purchases.track(customerCenterEvent: answer)
+
+        await expect { await manager.trackedEvents.count }.toEventually(equal(2))
+        let events = await manager.trackedEvents
+        expect(events.compactMap { $0 as? CustomerCenterEvent }) == [impression]
+        expect(events.compactMap { $0 as? CustomerCenterAnswerSubmittedEvent }) == [answer]
+    }
+
+    func testCustomerCenterEventPreservesCallerPriority() async throws {
+        self.mockOperationDispatcher.forwardToOriginalDispatchOnWorkerThread = true
+        let manager = try self.mockEventsManager
+        let purchases = try XCTUnwrap(self.purchases)
+        let event = CustomerCenterEvent.impression(
+            .init(),
+            .init(locale: .current, darkMode: false, isSandbox: true, displayMode: .fullScreen)
+        )
+
+        await Task(priority: .userInitiated) {
+            purchases.track(customerCenterEvent: event)
+        }.value
+
+        await expect { await manager.trackedEvents.count }.toEventually(equal(1))
+        let priorities = await manager.trackedEventPriorities
+        expect(priorities) == [.userInitiated]
+    }
+
     func testApplicationWillResignActiveSendsEvents() async throws {
         self.notificationCenter.fireApplicationWillResignActiveNotification()
 

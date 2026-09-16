@@ -25,6 +25,7 @@ final class MockTransactionPoster: TransactionPosterType {
 
     let invokedHandlePurchasedTransaction: Atomic<Bool> = false
     let invokedHandlePurchasedTransactionCount: Atomic<Int> = .init(0)
+    let invokedHandlePurchasedTransactionPriorities: Atomic<[TaskPriority]> = .init([])
     let invokedHandlePurchasedTransactionParameters: Atomic<(transaction: StoreTransactionType,
                                                              data: PurchasedTransactionData,
                                                              postReceiptSource: PostReceiptSource,
@@ -57,6 +58,7 @@ final class MockTransactionPoster: TransactionPosterType {
         }
 
         self.invokedHandlePurchasedTransaction.value = true
+        self.invokedHandlePurchasedTransactionPriorities.modify { $0.append(Task.currentPriority) }
         self.invokedHandlePurchasedTransactionCount.modify { $0 += 1 }
         self.invokedHandlePurchasedTransactionParameters.value = (transaction, data, postReceiptSource, currentUserID)
         self.invokedHandlePurchasedTransactionParameterList.modify {

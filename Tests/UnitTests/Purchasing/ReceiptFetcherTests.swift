@@ -180,6 +180,107 @@ final class ReceiptFetcherTests: BaseReceiptFetcherTests {
 
 }
 
+final class ConcurrentReceiptFetcherTests: BaseReceiptFetcherTests {
+
+    private var fileReader: MockFileReader!
+    private var deferredRequestFetcher: DeferredReceiptRequestFetcher!
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        self.fileReader = MockFileReader()
+        self.deferredRequestFetcher = DeferredReceiptRequestFetcher()
+        self.receiptFetcher = ReceiptFetcher(requestFetcher: self.deferredRequestFetcher,
+                                             systemInfo: self.mockSystemInfo,
+                                             fileReader: self.fileReader)
+        self.fileReader.mock(url: self.mockBundle.appStoreReceiptURL!, with: Data("old".utf8))
+    }
+
+    @MainActor
+    func testConcurrentAlwaysRequestsWaitForTheSameRefreshedReceipt() {
+        let results: Atomic<[Data?]> = .init([])
+        self.receiptFetcher.receiptData(refreshPolicy: .always) { data, _ in results.modify { $0.append(data) } }
+        self.receiptFetcher.receiptData(refreshPolicy: .always) { data, _ in results.modify { $0.append(data) } }
+
+        expect(results.value).to(beEmpty())
+        expect(self.deferredRequestFetcher.pendingCount) == 1
+
+        let refreshed = Data("new".utf8)
+        self.fileReader.mock(url: self.mockBundle.appStoreReceiptURL!, with: refreshed)
+        self.deferredRequestFetcher.complete()
+        expect(results.value) == [refreshed, refreshed]
+    }
+
+    @MainActor
+    func testParallelAlwaysRequestsShareOneRefresh() {
+        let results: Atomic<[Data?]> = .init([])
+        let receiptFetcher = self.receiptFetcher!
+        DispatchQueue.concurrentPerform(iterations: 50) { _ in
+            receiptFetcher.receiptData(refreshPolicy: .always) { data, _ in results.modify { $0.append(data) } }
+        }
+        expect(results.value).to(beEmpty())
+        expect(self.deferredRequestFetcher.pendingCount) == 1
+
+        let refreshed = Data("new".utf8)
+        self.fileReader.mock(url: self.mockBundle.appStoreReceiptURL!, with: refreshed)
+        self.deferredRequestFetcher.complete()
+        expect(results.value) == Array(repeating: refreshed, count: 50)
+    }
+
+    @MainActor
+    func testConcurrentRefreshStillJoinsAfterThrottleDuration() {
+        let results: Atomic<[Data?]> = .init([])
+        self.receiptFetcher.receiptData(refreshPolicy: .always) { data, _ in results.modify { $0.append(data) } }
+        self.clock.advance(by: ReceiptRefreshPolicy.alwaysRefreshThrottleDuration + .seconds(1))
+        self.receiptFetcher.receiptData(refreshPolicy: .always) { data, _ in results.modify { $0.append(data) } }
+        expect(self.deferredRequestFetcher.pendingCount) == 1
+        self.fileReader.mock(url: self.mockBundle.appStoreReceiptURL!, with: Data())
+        self.deferredRequestFetcher.complete()
+        expect(results.value) == [Data(), Data()]
+    }
+
+    @MainActor
+    func testNonRefreshingPoliciesDoNotWaitForAnInFlightRefresh() {
+        self.receiptFetcher.receiptData(refreshPolicy: .always) { _, _ in }
+        for policy: ReceiptRefreshPolicy in [.never, .onlyIfEmpty] {
+            let result: Atomic<Data?> = nil
+            self.receiptFetcher.receiptData(refreshPolicy: policy) { data, _ in result.value = data }
+            expect(result.value) == Data("old".utf8)
+        }
+        self.deferredRequestFetcher.complete()
+    }
+
+    @MainActor
+    func testCompletedRefreshCanReenterWithoutStartingAnotherRefresh() {
+        let result: Atomic<Data?> = nil
+        self.receiptFetcher.receiptData(refreshPolicy: .always) { [receiptFetcher = self.receiptFetcher!] _, _ in
+            receiptFetcher.receiptData(refreshPolicy: .always) { data, _ in result.value = data }
+        }
+        let refreshed = Data("new".utf8)
+        self.fileReader.mock(url: self.mockBundle.appStoreReceiptURL!, with: refreshed)
+        self.deferredRequestFetcher.complete()
+        expect(result.value) == refreshed
+        expect(self.deferredRequestFetcher.pendingCount) == 0
+    }
+
+}
+
+private final class DeferredReceiptRequestFetcher: MockRequestFetcher, @unchecked Sendable {
+
+    private let completions: Atomic<[@MainActor @Sendable () -> Void]> = .init([])
+
+    var pendingCount: Int { self.completions.value.count }
+
+    override func fetchReceiptData(_ completion: @MainActor @Sendable @escaping () -> Void) {
+        self.completions.modify { $0.append(completion) }
+    }
+
+    @MainActor
+    func complete() {
+        for completion in self.completions.getAndSet([]) { completion() }
+    }
+
+}
+
 final class RetryingReceiptFetcherTests: BaseReceiptFetcherTests {
 
     private var mockFileReader: MockFileReader!

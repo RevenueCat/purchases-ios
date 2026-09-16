@@ -140,7 +140,7 @@ class CustomerInfoManager {
             }
 
         case .fetchCurrent:
-            self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+            self.systemInfo.isApplicationBackgrounded { [self] isAppBackgrounded in
                 self.fetchAndCacheCustomerInfoData(
                     appUserID: appUserID,
                     isAppBackgrounded: isAppBackgrounded
@@ -200,7 +200,7 @@ class CustomerInfoManager {
         case .notStaleCachedOrFetched:
             let infoFromCache = try? self.cachedCustomerInfo(appUserID: appUserID)
 
-            self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+            self.systemInfo.isApplicationBackgrounded { [self] isAppBackgrounded in
                 let isCacheStale = self.deviceCache.isCustomerInfoCacheStale(
                     appUserID: appUserID,
                     isAppBackgrounded: isAppBackgrounded
@@ -462,7 +462,7 @@ private extension CustomerInfoManager {
                     // Post everything but the first transaction in the background
                     // in parallel so they can be de-duped
                     let otherTransactionsToPostInParalel = Array(transactions.dropFirst())
-                    Task.detached(priority: .background) {
+                    Task.detached(priority: Task.currentPriority) {
                         await self.postTransactions(
                             otherTransactionsToPostInParalel,
                             transactionData,

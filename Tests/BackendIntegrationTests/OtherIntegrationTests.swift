@@ -82,7 +82,11 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         expect(info2.isComputedOffline) == false
 
         self.logger.verifyMessageWasLogged(Strings.customerInfo.vending_cache, level: .debug)
-        self.logger.verifyMessageWasNotLogged("API request started")
+        try self.logger.verifyMessageWasNotLogged(
+            Strings.network.api_request_started(
+                .init(method: .get, path: .getCustomerInfo(appUserID: self.purchases.appUserID))
+            )
+        )
     }
 
     func testGetOfferingsMultipleTimesInParallel() async throws {

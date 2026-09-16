@@ -286,6 +286,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let backend: Backend
     private let deviceCache: DeviceCache
     private let paywallCache: PaywallCacheWarmingType?
+    let pendingEligibilityCacheWarmups: Atomic<Int> = .init(0)
     private let identityManager: IdentityManager
     private let tokenManager: TokenManager
     private let userDefaults: UserDefaults
@@ -1871,7 +1872,7 @@ public extension Purchases {
 
     /// Used by `RevenueCatUI` to keep track of ``CustomerCenterEvent``s.
     @_spi(Internal) func track(customerCenterEvent: any CustomerCenterEventType) {
-        operationDispatcher.dispatchOnWorkerThread {
+        Task.detached(priority: Task.currentPriority) {
             // If we make CustomerCenterEventType implement FeatureEvent, we have to make FeatureEvent public
             guard let event = customerCenterEvent as? FeatureEvent else { return }
             await self.eventsManager?.track(featureEvent: event)
@@ -3229,7 +3230,10 @@ private extension Purchases {
         guard let cache = self.paywallCache else {
             return
         }
+        let pendingWarmups = self.pendingEligibilityCacheWarmups
+        pendingWarmups.modify { $0 += 1 }
         self.operationDispatcher.dispatchOnWorkerThread {
+            defer { pendingWarmups.modify { $0 -= 1 } }
             await cache.warmUpEligibilityCache(offerings: offerings)
         }
         self.operationDispatcher.dispatchOnWorkerThread {

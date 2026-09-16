@@ -19,8 +19,8 @@ internal struct SK1StoreTransaction: StoreTransactionType {
         self.underlyingSK1Transaction = sk1Transaction
 
         self.productIdentifier = sk1Transaction.productIdentifier ?? ""
-        self.purchaseDate = sk1Transaction.purchaseDate
-        self.transactionIdentifier = sk1Transaction.transactionID
+        (self.purchaseDate, self.hasKnownPurchaseDate) = sk1Transaction.purchaseDate
+        (self.transactionIdentifier, self.hasKnownTransactionIdentifier) = sk1Transaction.transactionID
         self.quantity = sk1Transaction.quantity
     }
 
@@ -30,6 +30,8 @@ internal struct SK1StoreTransaction: StoreTransactionType {
     let purchaseDate: Date
     let transactionIdentifier: String
     let quantity: Int
+    let hasKnownPurchaseDate: Bool
+    let hasKnownTransactionIdentifier: Bool
 
     var storefront: Storefront? {
         // This is only available on StoreKit 2 transactions.
@@ -61,16 +63,8 @@ internal struct SK1StoreTransaction: StoreTransactionType {
         return nil
     }
 
-    var hasKnownPurchaseDate: Bool {
-        return self.underlyingSK1Transaction.transactionDate != nil
-    }
-
     func finish(_ wrapper: PaymentQueueWrapperType, completion: @escaping @Sendable () -> Void) {
         wrapper.finishTransaction(self.underlyingSK1Transaction, completion: completion)
-    }
-
-    var hasKnownTransactionIdentifier: Bool {
-        return self.underlyingSK1Transaction.transactionIdentifier != nil
     }
 
 }
@@ -89,24 +83,24 @@ extension SKPaymentTransaction {
         return productIdentifier
     }
 
-    fileprivate var purchaseDate: Date {
+    fileprivate var purchaseDate: (value: Date, isKnown: Bool) {
         guard let date = self.transactionDate else {
             Logger.verbose(Strings.purchase.sktransaction_missing_transaction_date(self.transactionState))
 
-            return Date(timeIntervalSince1970: 0)
+            return (Date(timeIntervalSince1970: 0), false)
         }
 
-        return date
+        return (date, true)
     }
 
-    fileprivate var transactionID: String {
+    fileprivate var transactionID: (value: String, isKnown: Bool) {
         guard let identifier = self.transactionIdentifier else {
             Logger.verbose(Strings.purchase.sktransaction_missing_transaction_identifier)
 
-            return UUID().uuidString
+            return (UUID().uuidString, false)
         }
 
-        return identifier
+        return (identifier, true)
     }
 
     fileprivate var quantity: Int {

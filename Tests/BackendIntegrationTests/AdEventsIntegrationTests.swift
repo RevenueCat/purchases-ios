@@ -112,6 +112,8 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
         Purchases.shared.adTracker.trackAdDisplayed(displayedData)
         Purchases.shared.adTracker.trackAdDisplayed(displayedData)
 
+        try await self.waitForEventsToBeStored(3)
+
         // Simulate app will resign active to trigger flush
         self.simulateAppWillResignActive()
 
@@ -240,7 +242,8 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
 
         try await self.logger.verifyMessageIsEventuallyLogged(
             EventsManagerStrings.ad_events_flushed_successfully,
-            level: .debug
+            level: .debug,
+            timeout: .seconds(10)
         )
 
         self.logger.verifyMessageWasLogged(

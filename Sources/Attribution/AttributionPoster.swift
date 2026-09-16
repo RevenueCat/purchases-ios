@@ -107,7 +107,7 @@ final class AttributionPoster {
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     func postAdServicesTokenOncePerInstallIfNeeded(completion: ((Error?) -> Void)? = nil) {
-        Task.detached(priority: .background) {
+        Task.detached(priority: Task.currentPriority) {
             guard let attributionToken = await self.adServicesTokenToPostIfNeeded else {
                 completion?(nil)
                 return
