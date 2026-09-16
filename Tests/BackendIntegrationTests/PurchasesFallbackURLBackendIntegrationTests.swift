@@ -82,13 +82,11 @@ class PurchasesFallbackURLBackendStoreKit2IntegrationTests: BaseStoreKitIntegrat
             pendingNativeTransaction = nil
         }
 
-        await self.captureRecoveryDiagnostics(transaction: transaction, stage: "beforeRecovery")
         self.allServersUp() // Simulate main server recovery
         logger.clearMessages()
 
         let onlineCustomerInfo = try await self.purchases.customerInfo()
 
-        await self.captureRecoveryDiagnostics(transaction: transaction, stage: "afterRecovery")
         verifyCustomerInfoWasNotComputedOffline(customerInfo: onlineCustomerInfo)
         if let nativeTransaction = pendingNativeTransaction {
             await expect {
@@ -104,43 +102,6 @@ class PurchasesFallbackURLBackendStoreKit2IntegrationTests: BaseStoreKitIntegrat
         XCTAssertFalse(onlineCustomerInfo.isComputedOffline)
         let onlineEntitlementInfo = try XCTUnwrap(onlineCustomerInfo.entitlements[Self.entitlementIdentifier])
         XCTAssertTrue(onlineEntitlementInfo.isActive)
-    }
-
-    private func captureRecoveryDiagnostics(transaction: StoreTransaction, stage: String) async {
-        var verifiedCount = 0
-        var unverifiedCount = 0
-        var verifiedExpectedMatch = false
-        var unverifiedExpectedMatch = false
-        var verifiedProductMatch = false
-        for await result in StoreKit.Transaction.unfinished {
-            switch result {
-            case let .verified(pending):
-                verifiedCount += 1
-                verifiedExpectedMatch = verifiedExpectedMatch || String(pending.id) == transaction.transactionIdentifier
-                verifiedProductMatch = verifiedProductMatch || pending.productID == transaction.productIdentifier
-            case let .unverified(pending, _):
-                unverifiedCount += 1
-                unverifiedExpectedMatch = unverifiedExpectedMatch ||
-                    String(pending.id) == transaction.transactionIdentifier
-            }
-        }
-
-        let nativeTransaction = transaction.sk1Transaction
-        let queue = SKPaymentQueue.default().transactions
-        let queueExpectedMatchCount = queue.filter {
-            $0.transactionIdentifier == transaction.transactionIdentifier &&
-                $0.payment.productIdentifier == transaction.productIdentifier
-        }.count
-        let queueNativeObjectMatchCount = queue.filter { $0 === nativeTransaction }.count
-        let nativeIdentifierMatchesExpected = nativeTransaction?.transactionIdentifier ==
-            transaction.transactionIdentifier
-        print("RC_CI_FALLBACK stage=\(stage) sk1=\(Self.storeKitVersion == .storeKit1) " +
-              "knownIdentifier=\(transaction.hasKnownTransactionIdentifier) " +
-              "verifiedCount=\(verifiedCount) unverifiedCount=\(unverifiedCount) " +
-              "verifiedExpectedMatch=\(verifiedExpectedMatch) unverifiedExpectedMatch=\(unverifiedExpectedMatch) " +
-              "verifiedProductMatch=\(verifiedProductMatch) queueExpectedMatchCount=\(queueExpectedMatchCount) " +
-              "queueNativeObjectMatchCount=\(queueNativeObjectMatchCount) " +
-              "nativeIdentifierMatchesExpected=\(nativeIdentifierMatchesExpected)")
     }
 
     func testPostsPurchasePerformedOnFallbackURLWhenRecoveringAfterRestartToMainServer() async throws {
