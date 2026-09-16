@@ -48,8 +48,8 @@ private func checkPaywallPresentationAPI(
     _ purchases: Purchases
 ) {
     let globalPresenter = CheckpointAPIPaywallPresenter()
-    purchases.checkpointPaywallPresenter = globalPresenter
-    let _: PaywallPresenter? = purchases.checkpointPaywallPresenter
+    purchases.paywallPresenter = globalPresenter
+    let _: PaywallPresenter? = purchases.paywallPresenter
 
     let presenter: PaywallPresentationHandler = { params, completion in
         let _: String = params.checkpointIdentifier

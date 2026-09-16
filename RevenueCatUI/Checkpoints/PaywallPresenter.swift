@@ -24,7 +24,7 @@ public typealias PaywallPresentationCompletion = @MainActor (PaywallPresentation
 
 /// Presents a custom paywall for an offering selected by a checkpoint.
 ///
-/// Set an instance on ``Purchases/checkpointPaywallPresenter`` to use it for all checkpoint-selected offerings.
+/// Set an instance on ``Purchases/paywallPresenter`` to use it for all checkpoint-selected offerings.
 /// The presenter owns its UI and reports how the presentation ended; RevenueCat owns purchase synchronization and
 /// determines which entitlements were obtained while the checkpoint was presented.
 @_spi(CheckpointsInternal)

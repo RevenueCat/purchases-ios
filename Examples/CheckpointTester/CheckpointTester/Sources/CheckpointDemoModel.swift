@@ -85,7 +85,7 @@ final class CheckpointDemoModel: ObservableObject {
 
     @MainActor
     func configurePaywallPresenter() {
-        Purchases.shared.checkpointPaywallPresenter = switch self.paywallPresenterMode {
+        Purchases.shared.paywallPresenter = switch self.paywallPresenterMode {
         case .global: GlobalPaywallPresenter.shared
         case .default, .localOverride: nil
         }

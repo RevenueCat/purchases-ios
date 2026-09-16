@@ -23,7 +23,7 @@ public extension Purchases {
 
     /// Presents checkpoint-selected paywalls using a custom presenter.
     @MainActor
-    var checkpointPaywallPresenter: PaywallPresenter? {
+    var paywallPresenter: PaywallPresenter? {
         get { return self.checkpointsManager.paywallPresenter }
         set { self.checkpointsManager.setPaywallPresenter(newValue) }
     }
@@ -35,7 +35,7 @@ public extension Purchases {
     ///     contain only ASCII letters, numbers, underscores, and hyphens, and be no more than 255 characters.
     ///   - customVariables: Values usable in checkpoint targeting rules, feature events, and the presented flow.
     ///   - paywallPresenter: A custom presenter used if this checkpoint selects an offering. This overrides
-    ///     ``checkpointPaywallPresenter`` for this call.
+    ///     ``paywallPresenter`` for this call.
     func checkpoint(
         _ identifier: String,
         customVariables: [String: CustomVariableValue] = [:],
@@ -59,7 +59,7 @@ public extension Purchases {
     ///     contain only ASCII letters, numbers, underscores, and hyphens, and be no more than 255 characters.
     ///   - customVariables: Values usable in checkpoint targeting rules, feature events, and the presented flow.
     ///   - paywallPresenter: A custom presenter used if this checkpoint selects an offering. This overrides
-    ///     ``checkpointPaywallPresenter`` for this call.
+    ///     ``paywallPresenter`` for this call.
     ///   - onPassed: Called when the checkpoint completes.
     func checkpoint(
         _ identifier: String,
