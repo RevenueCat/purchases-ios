@@ -99,23 +99,29 @@ public struct PaywallPresentationParams {
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
-public enum PaywallPresentationResult {
+public struct PaywallPresentationResult: Hashable {
+
+    private let rawValue: Int
+
+    private init(rawValue: Int) {
+        self.rawValue = rawValue
+    }
 
     /// The customer completed the custom paywall presentation and should continue through the checkpoint.
     ///
     /// RevenueCat synchronizes purchases and refreshes customer information before completing the checkpoint, so the
     /// presenter does not need to report whether the customer purchased or restored.
-    case `continue`
+    public static let `continue` = Self(rawValue: 0)
 
     /// The customer closed the custom paywall, or the presentation could not be completed.
     ///
     /// RevenueCat synchronizes purchases and refreshes customer information before completing the checkpoint.
-    case closed
+    public static let closed = Self(rawValue: 1)
 
     /// The customer backed out of the paywall.
     ///
     /// RevenueCat does not synchronize purchases or invoke the checkpoint's passed callback, leaving the app at the
     /// point from which it presented the checkpoint.
-    case navigatedBack
+    public static let navigatedBack = Self(rawValue: 2)
 
 }

@@ -143,10 +143,9 @@ final class CheckpointPresentationHandler: CheckpointPresentationHandlerProtocol
                   self.pendingContinuation != nil else { return }
             self.hasReportedCompletion = true
 
-            switch result {
-            case .navigatedBack:
+            if result == .navigatedBack {
                 self.complete(execution: .backedOut(.dismissed))
-            case .continue, .closed:
+            } else {
                 self.session.releasePresentationSlot()
                 self.synchronizeCustomerInfo()
             }
