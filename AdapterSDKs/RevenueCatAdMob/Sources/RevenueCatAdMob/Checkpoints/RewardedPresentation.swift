@@ -59,7 +59,7 @@ internal enum RewardedPresentationError: Error, CustomNSError {
     var localizedDescription: String {
         switch self {
         case let .unsupportedMediator(mediator):
-            return "Only AdMob ad units can be presented, but the checkpoint ad step " +
+            return "AdMobPresenter only presents AdMob ad units, but the checkpoint ad step " +
                 "is configured for mediator '\(mediator)'."
         case .noPresentationContext:
             return "No view controller is available to present the rewarded ad from."

@@ -60,6 +60,9 @@ public struct AdPresentationParams {
     /// The mediation network configured to serve ``adIdentifier``.
     public let mediator: MediatorName
 
+    /// The ad format ``adIdentifier`` was created for, which decides how the presenter loads and shows it.
+    public let adFormat: AdFormat
+
     /// Creates presentation context for an ad step selected by a checkpoint.
     ///
     /// - Parameters:
@@ -67,16 +70,19 @@ public struct AdPresentationParams {
     ///   - customVariables: The custom variables supplied to the checkpoint.
     ///   - adIdentifier: The identifier of the ad configured for the ad step.
     ///   - mediator: The mediation network configured to serve `adIdentifier`.
-    init(
+    ///   - adFormat: The ad format `adIdentifier` was created for.
+    public init(
         checkpointIdentifier: String,
         customVariables: [String: CustomVariableValue] = [:],
         adIdentifier: String,
-        mediator: MediatorName
+        mediator: MediatorName,
+        adFormat: AdFormat
     ) {
         self.checkpointIdentifier = checkpointIdentifier
         self.customVariables = customVariables
         self.adIdentifier = adIdentifier
         self.mediator = mediator
+        self.adFormat = adFormat
     }
 
 }
