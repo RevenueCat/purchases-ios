@@ -165,7 +165,8 @@ final class AdEventsIntegrationTests: BaseBackendIntegrationTests {
         try await self.logger.verifyMessageIsEventuallyLogged(
             EventsManagerStrings.ad_events_flushed_successfully,
             level: .debug,
-            expectedCount: 1
+            expectedCount: 1,
+            timeout: .seconds(10)
         )
     }
 
