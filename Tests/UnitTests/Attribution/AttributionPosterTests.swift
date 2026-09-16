@@ -188,6 +188,29 @@ class AdServicesAttributionPosterTests: BaseAttributionPosterTests {
         try AvailabilityChecks.iOS14APIAvailableOrSkipTest()
     }
 
+    func testAdServicesTokenCollectionStaysBackgroundForUserInitiatedCaller() async throws {
+        try await self.verifyAdServicesTokenCollection(priority: .userInitiated)
+    }
+
+    func testAdServicesTokenCollectionPreservesBackgroundPriorityOffMainThread() async throws {
+        try await self.verifyAdServicesTokenCollection(priority: .background)
+    }
+
+    private func verifyAdServicesTokenCollection(priority: TaskPriority) async throws {
+        let poster = try XCTUnwrap(self.attributionPoster)
+        let completed = self.expectation(description: "AdServices token posted")
+
+        Task.detached(priority: priority) {
+            poster.postAdServicesTokenOncePerInstallIfNeeded { _ in completed.fulfill() }
+        }
+
+        await self.fulfillment(of: [completed], timeout: 2)
+        let contexts = self.attributionFetcher.adServicesTokenCollectionContexts.value
+        expect(contexts.map(\.priority)) == [.background]
+        expect(contexts.map(\.isMainThread)) == [false]
+        expect(self.backend.invokedPostAdServicesTokenCount) == 1
+    }
+
     func testAdServicesTokenToPostIfNeededReturnsNilIfAlreadySent() async throws {
         self.backend.stubbedPostAdServicesTokenCompletionResult = .success(())
 
