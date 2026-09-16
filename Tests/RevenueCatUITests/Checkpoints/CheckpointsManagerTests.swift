@@ -488,6 +488,60 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(presenter.receivedParams?.customVariables, ["source": "test"])
         XCTAssertEqual(presenter.receivedParams?.adIdentifier, "test-ad-identifier")
         XCTAssertEqual(presenter.receivedParams?.mediator, MediatorName(rawValue: "admob"))
+        XCTAssertEqual(presenter.receivedParams?.adFormat, .interstitial)
+    }
+
+    func testSequentialAdCheckpointsOfDifferentFormatsEachPresentAfterThePreviousCompletes() async throws {
+        // Each checkpoint resolves to a different ad step; the presenter reports a format-appropriate outcome
+        // only after an async hop, so a stale presentation slot would surface as operationAlreadyInProgress.
+        let steps: [String: ResolvedAdStep] = [
+            "level_complete": Self.adStep(adIdentifier: "interstitial-unit", adFormat: .interstitial),
+            "extra_life": Self.adStep(adIdentifier: "rewarded-unit", adFormat: .rewarded),
+            "next_level": Self.adStep(adIdentifier: "interstitial-unit-2", adFormat: .interstitial)
+        ]
+        let presenter = FormatAwareAdPresenter()
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { identifier, _ in .matchedAd(try XCTUnwrap(steps[identifier])) },
+            workflowPresenter: MockWorkflowPresenter()
+        )
+        manager.adPresenter = presenter
+
+        let first = try await manager.executeCheckpoint(identifier: "level_complete", params: .init())
+        let second = try await manager.executeCheckpoint(identifier: "extra_life", params: .init())
+        let third = try await manager.executeCheckpoint(identifier: "next_level", params: .init())
+
+        XCTAssertTrue(Self.adOutcome(first) is CheckpointAdOutcome.Shown)
+        XCTAssertTrue(Self.adOutcome(second) is CheckpointAdOutcome.Rewarded)
+        XCTAssertTrue(Self.adOutcome(third) is CheckpointAdOutcome.Shown)
+        XCTAssertEqual(
+            presenter.receivedParams.map(\.checkpointIdentifier),
+            ["level_complete", "extra_life", "next_level"]
+        )
+        XCTAssertEqual(
+            presenter.receivedParams.map(\.adFormat),
+            [.interstitial, .rewarded, .interstitial]
+        )
+        XCTAssertEqual(
+            presenter.receivedParams.map(\.adIdentifier),
+            ["interstitial-unit", "rewarded-unit", "interstitial-unit-2"]
+        )
+    }
+
+    func testAdCheckpointCanFollowOneWhosePresenterFailed() async throws {
+        let presenter = FormatAwareAdPresenter()
+        presenter.failNextPresentation = NSError(domain: "gma", code: 3)
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedAd(Self.adStep()) },
+            workflowPresenter: MockWorkflowPresenter()
+        )
+        manager.adPresenter = presenter
+
+        let failed = try await manager.executeCheckpoint(identifier: "level_complete", params: .init())
+        let shown = try await manager.executeCheckpoint(identifier: "next_level", params: .init())
+
+        XCTAssertTrue(Self.adOutcome(failed) is CheckpointAdOutcome.Failed)
+        XCTAssertTrue(Self.adOutcome(shown) is CheckpointAdOutcome.Shown)
+        XCTAssertEqual(presenter.receivedParams.count, 2)
     }
 
     func testAdPresenterIsCapturedBeforeCheckpointResolution() async throws {
@@ -917,8 +971,16 @@ final class CheckpointsManagerTests: TestCase {
         )
     }
 
-    private static func adStep(adIdentifier: String = "test-ad-identifier") -> ResolvedAdStep {
-        return ResolvedAdStep(adIdentifier: adIdentifier, mediator: MediatorName(rawValue: "admob"))
+    private static func adStep(
+        adIdentifier: String = "test-ad-identifier",
+        adFormat: AdFormat = .interstitial
+    ) -> ResolvedAdStep {
+        return ResolvedAdStep(adIdentifier: adIdentifier, mediator: MediatorName(rawValue: "admob"), adFormat: adFormat)
+    }
+
+    private static func adOutcome(_ execution: CheckpointPresentationOutcome) -> CheckpointAdOutcome? {
+        guard case let .adPresented(outcome) = execution else { return nil }
+        return outcome
     }
 
     private static func workflow() -> ResolvedCheckpointWorkflow {
@@ -1025,6 +1087,36 @@ private final class MockAdPresenter: AdPresenter {
         self.callCount += 1
         self.receivedParams = params
         completion(.shown)
+    }
+
+}
+
+/// Completes asynchronously with an outcome that matches the requested ad format, like a real presenter would.
+@MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class FormatAwareAdPresenter: AdPresenter {
+
+    private(set) var receivedParams: [AdPresentationParams] = []
+    var failNextPresentation: NSError?
+
+    func present(
+        params: AdPresentationParams,
+        completion: @escaping AdPresentationCompletion
+    ) {
+        self.receivedParams.append(params)
+        let error = self.failNextPresentation
+        self.failNextPresentation = nil
+
+        Task { @MainActor in
+            await Task.yield()
+            if let error {
+                completion(.failed(error: error))
+            } else if params.adFormat == .rewarded || params.adFormat == .rewardedInterstitial {
+                completion(.rewarded(reward: .noReward))
+            } else {
+                completion(.shown)
+            }
+        }
     }
 
 }
