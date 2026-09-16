@@ -44,7 +44,7 @@ public struct ObtainedEntitlement: Hashable, @unchecked Sendable {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct FlowResult: @unchecked Sendable {
 
-    /// Active entitlements reported by the purchase or restore that completed the flow.
+    /// Active entitlements present after the flow that were not active in cached customer information before it began.
     ///
     /// The SDK compares the final customer information with the customer information cached before presenting the
     /// flow. When no cached customer information is available, this can include entitlements that were already active
