@@ -56,7 +56,7 @@ private extension GetRemoteConfigFallbackOperation {
 
         self.httpClient.perform(
             request,
-            with: Signing.enforcedVerificationMode()
+            with: self.requiredSignatureVerificationMode
         ) { (response: VerifiedHTTPResponse<RemoteConfiguration>.Result) in
             defer {
                 completion()

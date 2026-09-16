@@ -24,8 +24,12 @@
     RCDangerousSettings *settings = [[RCDangerousSettings alloc] initWithAutoSyncPurchases:true];
     RCDangerousSettings *forceAllowSettings __unused = [[RCDangerousSettings alloc] initWithAutoSyncPurchases:true
                                                                         forceAllowTestStoreInReleaseBuilds:true];
+    RCDangerousSettings *disabledRequiredVerificationSettings __unused =
+        [[RCDangerousSettings alloc] initWithAutoSyncPurchases:true
+                             disableRequiredSignatureVerifications:true];
 
     BOOL autoSyncPurchases __unused = settings.autoSyncPurchases;
+    BOOL disableRequiredSignatureVerifications __unused = settings.disableRequiredSignatureVerifications;
     BOOL customEntitlementComputation __unused = settings.customEntitlementComputation;
     BOOL forceAllowTestStoreInReleaseBuilds __unused = settings.forceAllowTestStoreInReleaseBuilds;
 }

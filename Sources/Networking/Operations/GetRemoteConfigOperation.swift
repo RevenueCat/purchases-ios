@@ -130,7 +130,7 @@ private extension GetRemoteConfigOperation {
 
         self.httpClient.perform(
             request,
-            with: Signing.enforcedVerificationMode()
+            with: self.requiredSignatureVerificationMode
         ) { (response: VerifiedHTTPResponse<RemoteConfigContainer?>.Result) in
             defer {
                 completion()

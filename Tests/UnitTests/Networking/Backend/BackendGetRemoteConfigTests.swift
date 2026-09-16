@@ -209,6 +209,24 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(self.httpClient.verificationModes.first?.isEnforced).to(beTrue())
     }
 
+    func testGetRemoteConfigFallbackUsesConfiguredVerificationWhenRequiredVerificationIsDisabled() {
+        self.createDependencies(dangerousSettings: .init(
+            autoSyncPurchases: true,
+            disableRequiredSignatureVerifications: true
+        ))
+        self.httpClient.disableSnapshotTesting()
+        self.mockSuccessfulFallbackResponse()
+
+        waitUntil { completed in
+            self.remoteConfigAPI.getRemoteConfigFallback(
+                domain: "app",
+                isAppBackgrounded: false
+            ) { _ in completed() }
+        }
+
+        expect(self.httpClient.verificationModes.first?.isEnabled).to(beFalse())
+    }
+
     func testGetRemoteConfigFallbackDoesNotSendLastRefreshTimeHeader() {
         self.mockSuccessfulFallbackResponse()
 
@@ -237,6 +255,24 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(headers?[HTTPClient.RequestHeader.headerParametersForSignature.rawValue]).toNot(beNil())
         expect(headers?[HTTPClient.RequestHeader.postParameters.rawValue]).to(beNil())
         expect(self.httpClient.verificationModes.first?.isEnforced).to(beTrue())
+    }
+
+    func testGetRemoteConfigUsesConfiguredVerificationWhenRequiredVerificationIsDisabled() {
+        self.createDependencies(dangerousSettings: .init(
+            autoSyncPurchases: true,
+            disableRequiredSignatureVerifications: true
+        ))
+        self.httpClient.disableSnapshotTesting()
+        self.mockSuccessfulResponse()
+
+        waitUntil { completed in
+            self.remoteConfigAPI.getRemoteConfig(
+                request: Self.defaultRequest,
+                isAppBackgrounded: false
+            ) { _ in completed() }
+        }
+
+        expect(self.httpClient.verificationModes.first?.isEnabled).to(beFalse())
     }
 
     // MARK: - Jitterable delay
