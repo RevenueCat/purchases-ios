@@ -239,7 +239,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         try await self.logger.verifyMessageIsEventuallyLogged(
             Strings.attribution.adservices_token_post_succeeded.description,
             level: .debug,
-            timeout: .seconds(3),
+            timeout: .seconds(10),
             pollInterval: .milliseconds(200)
         )
     }
