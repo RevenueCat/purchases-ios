@@ -172,11 +172,11 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterProtocol {
 
         self.presentedViewController = nil
 
-        let execution: CheckpointPresentationOutcome = if state.dismissalReason == .navigatedBack,
-                                                !state.outcome.hasCustomerInfo {
-            .backedOut
+        let execution: CheckpointPresentationOutcome
+        if state.dismissalReason == .navigatedBack, !state.outcome.hasCustomerInfo {
+            execution = .backedOut
         } else {
-            state.outcome
+            execution = state.outcome
         }
         self.finish(execution)
         return execution
