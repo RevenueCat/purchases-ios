@@ -34,7 +34,7 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
             storeKitVersion: Self.storeKitVersion,
             apiKey: self.apiKey,
             responseVerificationMode: Self.responseVerificationMode,
-            dangerousSettings: self.dangerousSettings,
+            dangerousSettings: DangerousSettings(autoSyncPurchases: true, internalSettings: self),
             isAppBackgrounded: false,
             preferredLocalesProvider: PreferredLocalesProvider(preferredLocaleOverride: nil)
         )
