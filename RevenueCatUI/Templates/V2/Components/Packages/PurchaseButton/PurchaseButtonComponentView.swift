@@ -42,7 +42,10 @@ struct PurchaseButtonComponentView: View {
 
     #if os(iOS) && canImport(WebKit)
     @State private var hostedCheckoutViewModel: WebCheckoutViewModel?
-    @State private var isShowingAlreadyPurchasedAlert = false
+
+    /// The category of what the customer already owns, which decides the wording, and whose presence puts
+    /// the alert on screen. Held here rather than read from the selection, which they can change underneath.
+    @State private var alreadyOwnedCategory: StoreProduct.ProductCategory?
     #endif
 
     private let viewModel: PurchaseButtonComponentViewModel
@@ -95,16 +98,14 @@ struct PurchaseButtonComponentView: View {
             self.handleHostedCheckoutOutcome(outcome)
         }
         .alert(
-            Text("You've Already Purchased This", bundle: self.viewModel.localizedBundle),
-            isPresented: self.$isShowingAlreadyPurchasedAlert
+            self.alreadyOwnedTitle,
+            isPresented: .isNotNil(self.$alreadyOwnedCategory)
         ) {
             Button {
-                self.isShowingAlreadyPurchasedAlert = false
+                self.alreadyOwnedCategory = nil
             } label: {
                 Text("OK", bundle: self.viewModel.localizedBundle)
             }
-        } message: {
-            Text("This purchase is already active on your account.", bundle: self.viewModel.localizedBundle)
         }
         #endif
     }
@@ -185,7 +186,7 @@ struct PurchaseButtonComponentView: View {
         case .buyThroughStoreKit:
             try await self.performInAppPurchase(selectedPackage: selectedPackage)
         case .tellCustomerTheyAlreadyOwnIt:
-            await self.showAlreadyPurchasedAlert()
+            await self.showAlreadyOwnedAlert(for: selectedPackage)
         case .nothing:
             break
         }
@@ -197,9 +198,20 @@ struct PurchaseButtonComponentView: View {
     }
 
     #if os(iOS) && canImport(WebKit)
+    /// Only the title differs from Apple's own alert: the rest of what it says, from the renewal date to the
+    /// button that manages the subscription, is about a purchase made on the App Store.
+    private var alreadyOwnedTitle: Text {
+        switch self.alreadyOwnedCategory {
+        case .subscription:
+            return Text("You are currently subscribed to this", bundle: self.viewModel.localizedBundle)
+        case .nonSubscription, .none:
+            return Text("You've already purchased this", bundle: self.viewModel.localizedBundle)
+        }
+    }
+
     @MainActor
-    private func showAlreadyPurchasedAlert() {
-        self.isShowingAlreadyPurchasedAlert = true
+    private func showAlreadyOwnedAlert(for package: Package) {
+        self.alreadyOwnedCategory = package.storeProduct.productCategory
     }
 
     @MainActor
