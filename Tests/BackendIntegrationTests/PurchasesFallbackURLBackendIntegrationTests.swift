@@ -82,6 +82,22 @@ class PurchasesFallbackURLBackendStoreKit2IntegrationTests: BaseStoreKitIntegrat
             pendingNativeTransaction = nil
         }
 
+        try await asyncWait(description: "Purchased transaction is not available for recovery") {
+            let expectedIdentifier = transaction.hasKnownTransactionIdentifier
+                ? transaction.transactionIdentifier
+                : transaction.sk1Transaction?.transactionIdentifier
+            guard let expectedIdentifier else { return false }
+
+            for await result in StoreKit.Transaction.unfinished {
+                if case let .verified(pending) = result,
+                   String(pending.id) == expectedIdentifier,
+                   pending.productID == transaction.productIdentifier {
+                    return true
+                }
+            }
+            return false
+        }
+
         self.allServersUp() // Simulate main server recovery
         logger.clearMessages()
 
