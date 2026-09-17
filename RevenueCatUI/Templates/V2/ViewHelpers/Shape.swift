@@ -148,13 +148,34 @@ struct ShapeModifier: ViewModifier {
         self.contentClipping = contentClipping
     }
 
+    static func shouldClipContent(shape: Shape, hasBorder: Bool) -> Bool {
+        if hasBorder {
+            return true
+        }
+
+        switch shape {
+        case .rectangle(let radius):
+            return [
+                radius?.topLeft,
+                radius?.topRight,
+                radius?.bottomLeft,
+                radius?.bottomRight
+            ].contains { ($0 ?? 0) > 0 }
+        case .circle, .pill, .concave, .convex:
+            return true
+        }
+    }
+
     @ViewBuilder
     func body(content: Content) -> some View {
         switch self.shape {
         case .circle, .pill, .rectangle:
             if let shape = self.shape.toInsettableShape() {
                 let clipsContent = self.contentClipping.resolve(
-                    legacyValue: !shape.isRectangle() || border != nil
+                    legacyValue: Self.shouldClipContent(
+                        shape: self.shape,
+                        hasBorder: self.border != nil
+                    )
                 )
                 content
                     .backgroundStyle(background)

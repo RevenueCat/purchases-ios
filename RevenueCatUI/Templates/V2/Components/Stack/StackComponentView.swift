@@ -168,11 +168,10 @@ struct StackComponentView: View {
         return self.paywallUsesMinMaxSizing || self.viewModel.usesMinMaxSizing
     }
 
+    static let contentClippingPolicy = ShapeModifier.ContentClipping.automatic
+
     private func decorate<Content: View>(_ content: Content, style: StackComponentStyle) -> some View {
-        let contentClipping = Self.shapeContentClipping(
-            usesMinMaxSizing: self.usesMinMaxSizing,
-            hasExplicitShape: style.shape != nil
-        )
+        let contentClipping = Self.contentClippingPolicy
 
         return content
         .padding(additionalPadding)
@@ -199,17 +198,6 @@ struct StackComponentView: View {
             contentClipping: contentClipping
         )
         .padding(style.margin)
-    }
-
-    static func shapeContentClipping(
-        usesMinMaxSizing: Bool,
-        hasExplicitShape: Bool
-    ) -> ShapeModifier.ContentClipping {
-        guard usesMinMaxSizing else {
-            return .automatic
-        }
-
-        return hasExplicitShape ? .enabled : .disabled
     }
 
 }

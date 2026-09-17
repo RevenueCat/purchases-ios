@@ -512,37 +512,40 @@ final class SizeModifierTests: TestCase {
 
     // MARK: - Shape clipping
 
-    func testLegacyPaywallRetainsAutomaticShapeClipping() {
-        XCTAssertEqual(
-            StackComponentView.shapeContentClipping(
-                usesMinMaxSizing: false,
-                hasExplicitShape: false
-            ),
-            .automatic
+    func testStackUsesOriginalShapeClippingPolicy() {
+        XCTAssertEqual(StackComponentView.contentClippingPolicy, .automatic)
+    }
+
+    func testRectangleWithoutRoundedCornersDoesNotClipContent() {
+        XCTAssertFalse(
+            ShapeModifier.shouldClipContent(
+                shape: .rectangle(nil),
+                hasBorder: false
+            )
         )
-        XCTAssertEqual(
-            StackComponentView.shapeContentClipping(
-                usesMinMaxSizing: false,
-                hasExplicitShape: true
-            ),
-            .automatic
+        XCTAssertFalse(
+            ShapeModifier.shouldClipContent(
+                shape: .rectangle(.init(topLeft: 0, topRight: 0, bottomLeft: 0, bottomRight: 0)),
+                hasBorder: false
+            )
         )
     }
 
-    func testMinMaxPaywallOnlyClipsStacksWithExplicitShapes() {
-        XCTAssertEqual(
-            StackComponentView.shapeContentClipping(
-                usesMinMaxSizing: true,
-                hasExplicitShape: false
-            ),
-            .disabled
+    func testBorderClipsContentWithoutExplicitShape() {
+        XCTAssertTrue(
+            ShapeModifier.shouldClipContent(
+                shape: .rectangle(nil),
+                hasBorder: true
+            )
         )
-        XCTAssertEqual(
-            StackComponentView.shapeContentClipping(
-                usesMinMaxSizing: true,
-                hasExplicitShape: true
-            ),
-            .enabled
+    }
+
+    func testRoundedShapeClipsContent() {
+        XCTAssertTrue(
+            ShapeModifier.shouldClipContent(
+                shape: .rectangle(.init(topLeft: 8, topRight: 0, bottomLeft: 0, bottomRight: 0)),
+                hasBorder: false
+            )
         )
     }
 
