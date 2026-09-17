@@ -39,11 +39,12 @@ extension BaseStoreKitIntegrationTests {
         line: UInt = #line
     ) async {
         await expect(file: file, line: line) {
-            SKPaymentQueue.default().transactions.contains {
-                $0.transactionIdentifier == transaction.transactionIdentifier &&
+            guard let identifier = self.storeKitIdentifier(for: transaction) else { return false }
+            return !SKPaymentQueue.default().transactions.contains {
+                $0.transactionIdentifier == identifier &&
                     $0.payment.productIdentifier == transaction.productIdentifier
             }
-        }.toEventually(beFalse(), timeout: .seconds(5))
+        }.toEventually(beTrue(), timeout: .seconds(5))
     }
 
     @discardableResult

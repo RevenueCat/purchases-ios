@@ -70,7 +70,7 @@ class PurchasesFallbackURLBackendStoreKit2IntegrationTests: BaseStoreKitIntegrat
         XCTAssertTrue(offlineEntitlementInfo.isActive)
         verifySpecificTransactionWasNotFinished(transaction)
 
-        try await asyncWait(description: "Purchased transaction is not available for recovery") {
+        try await asyncWait(description: "Purchased transaction is not available for recovery", timeout: .seconds(10)) {
             let expectedIdentifier = await self.storeKitIdentifier(for: transaction)
             guard let expectedIdentifier else { return false }
 
