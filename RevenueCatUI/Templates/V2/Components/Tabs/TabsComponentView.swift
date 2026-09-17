@@ -395,12 +395,9 @@ struct LoadedTabsComponentView: View {
             //    - If user made an explicit selection AND it's in the tab → keep it
             //    - Otherwise → use tab's default
             //
-            // Observed with `onReceive` and not `onChange`: this sits inside a branch that
-            // reads `selectedTabId`, so a switch rebuilds the subtree and re-installs
-            // `onChange` with the new id already as its baseline, and it never fires.
-            // `removeDuplicates` keeps `onChange`'s semantics: tapping the selected tab
-            // republishes the same id, and restoring the tab default would discard the
-            // package the user just picked.
+            // `onChange` never fires here: its own branch reads `selectedTabId`, so a switch
+            // rebuilds the subtree and re-installs it with the new id as baseline.
+            // `removeDuplicates` keeps its semantics for taps on the selected tab.
             .onReceive(
                 self.tabControlContext.$selectedTabId.removeDuplicates().dropFirst()
             ) { newTabId in
