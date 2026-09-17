@@ -1253,6 +1253,41 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
         expect(response).to(beSuccess())
         expect(response?.value?.body) == cachedResponse
         expect(response?.value?.verificationResult) == .verified
+        expect(self.signing.requests).to(haveCount(1))
+        expect(self.signing.requests.onlyElement?.parameters.message).to(beNil())
+        expect(self.signing.requests.onlyElement?.parameters.nonce).to(beNil())
+        expect(self.signing.requests.onlyElement?.parameters.requestBody).to(beNil())
+        expect(self.signing.requests.onlyElement?.parameters.requestDate) == Self.date2.millisecondsSince1970
+        expect(self.signing.requests.onlyElement?.parameters.etag) == Self.eTag
+    }
+
+    func testFallbackRemoteConfigNotModifiedResponseWithInvalidSignatureFailsInEnforcedMode() {
+        let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app")
+
+        self.mockPath(
+            path,
+            statusCode: .notModified,
+            requestDate: Self.date2,
+            eTagResponse: .init(
+                eTag: Self.eTag,
+                statusCode: .success,
+                data: "cached fallback config".asData,
+                verificationResult: .verified,
+                isLoadShedderResponse: false,
+                isFallbackUrlResponse: false
+            )
+        )
+        self.signing.stubbedVerificationResult = false
+
+        let response: DataResponse? = waitUntilValue { completion in
+            self.client.perform(.init(method: .get, path: path), completionHandler: completion)
+        }
+
+        expect(response).to(beFailure())
+        expect(response?.error)
+            .to(matchError(NetworkError.signatureVerificationFailed(path: path, code: .success)))
+        expect(self.signing.requests).to(haveCount(1))
+        expect(self.signing.requests.onlyElement?.parameters.message).to(beNil())
     }
 
     func testFakeSignatureFailuresInEnforcedMode() {
