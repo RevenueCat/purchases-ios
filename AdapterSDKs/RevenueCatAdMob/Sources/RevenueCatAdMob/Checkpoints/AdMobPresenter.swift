@@ -91,6 +91,10 @@ public final class AdMobPresenter: AdPresenter {
         completion: @escaping AdPresentationCompletion
     ) {
         let placement = params.placement ?? params.checkpointIdentifier
+        Logger.debug(CheckpointPresenterStrings.presenting_with_placement(
+            adUnitID: params.adUnitId,
+            placement: placement
+        ))
         switch params.adFormat {
         case .interstitial:
             let presentation = self.makeInterstitialPresentation()

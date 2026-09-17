@@ -13,6 +13,7 @@ import Foundation
 enum CheckpointPresenterStrings {
 
     case unsupported_format(adFormat: String)
+    case presenting_with_placement(adUnitID: String, placement: String)
     case interstitial_unsupported_mediator(mediator: String)
     case interstitial_load_failed(adUnitID: String, error: Error)
     case interstitial_no_presentation_context
@@ -36,6 +37,8 @@ extension CheckpointPresenterStrings: LogMessage {
         case let .unsupported_format(adFormat):
             return "Checkpoint ad step is configured for ad format '\(adFormat)', which AdMobPresenter cannot " +
                 "present. Republish the workflow with an interstitial, rewarded or rewarded_interstitial ad unit."
+        case let .presenting_with_placement(adUnitID, placement):
+            return "Presenting checkpoint ad for ad unit '\(adUnitID)' with placement '\(placement)'."
         case let .interstitial_unsupported_mediator(mediator):
             return "Checkpoint ad step is configured for mediator '\(mediator)'; " +
                 "AdMobPresenter only presents AdMob ad units."
