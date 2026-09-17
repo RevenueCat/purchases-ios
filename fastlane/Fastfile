@@ -1365,10 +1365,14 @@ platform :ios do
       raise e
     ensure
       previous_test_environment&.each do |key, value|
-        if value
-          sh("xcrun", "simctl", "spawn", "booted", "launchctl", "setenv", key, value)
-        else
-          sh("xcrun", "simctl", "spawn", "booted", "launchctl", "unsetenv", key)
+        begin
+          if value
+            sh("xcrun", "simctl", "spawn", "booted", "launchctl", "setenv", key, value)
+          else
+            sh("xcrun", "simctl", "spawn", "booted", "launchctl", "unsetenv", key)
+          end
+        rescue StandardError
+          UI.important("Could not restore simulator environment variable #{key}; continuing cleanup.")
         end
       end
       unless skip_slack_notification
@@ -1985,7 +1989,7 @@ platform :ios do
         number_of_retries: generate_snapshots ? 0 : 5,
         fail_build: !generate_snapshots,
       }
-      if ENV["RC_STOREKIT_TEST_PREFLIGHT"] == "1"
+      if ENV["RC_STOREKIT_TEST_PREFLIGHT"] == "1" && !generate_snapshots
         test_plan_name = options[:test_plan] || "BackendIntegrationTests-All"
         test_plan_path = File.join(__dir__, "..", "BackendIntegrationTests", "#{test_plan_name}.xctestplan")
         preflight_tests = JSON.parse(File.read(test_plan_path)).fetch("testTargets").map do |target|
