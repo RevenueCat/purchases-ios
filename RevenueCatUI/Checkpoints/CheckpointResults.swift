@@ -51,8 +51,12 @@ public struct FlowResult: @unchecked Sendable {
     /// or were obtained from another source.
     public let obtainedEntitlements: Set<ObtainedEntitlement>
 
-    init(obtainedEntitlements: Set<ObtainedEntitlement> = []) {
+    /// How the ad finished when the checkpoint matched an ad step. `nil` for every other kind of flow.
+    public let adOutcome: CheckpointAdOutcome?
+
+    init(obtainedEntitlements: Set<ObtainedEntitlement> = [], adOutcome: CheckpointAdOutcome? = nil) {
         self.obtainedEntitlements = obtainedEntitlements
+        self.adOutcome = adOutcome
     }
 
 }

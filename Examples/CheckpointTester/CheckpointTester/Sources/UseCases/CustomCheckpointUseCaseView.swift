@@ -84,6 +84,10 @@ struct CustomCheckpointUseCaseView: View {
             return "No flow was presented or the flow could not complete."
         }
 
+        if let adOutcome = result.adOutcome {
+            return "Ad outcome: \(adOutcome)."
+        }
+
         let entitlementIdentifiers = result.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted()
         guard !entitlementIdentifiers.isEmpty else {
             return "Checkpoint flow completed without granting a new entitlement."
