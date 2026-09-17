@@ -19,6 +19,7 @@ extension DefaultCheckpointWorkflowResolver {
     static let adUnitIdParam = "ad_unit_id"
     static let mediatorParam = "mediator"
     static let adFormatParam = "ad_format"
+    static let placementParam = "placement"
 
     /// Serves a workflow whose only step is a terminal `ad` step as an ad the app owns.
     ///
@@ -34,11 +35,14 @@ extension DefaultCheckpointWorkflowResolver {
         guard let adFormat = Self.stringParam(Self.adFormatParam, in: step), !adFormat.isEmpty else {
             return Self.unservable(rule, reason: "the ad step has no valid ad format")
         }
+        // Placement is optional: steps saved before the dashboard exposed it must keep serving.
+        let placement = Self.stringParam(Self.placementParam, in: step).flatMap { $0.isEmpty ? nil : $0 }
 
         return .matchedAd(ResolvedAdStep(
             adUnitId: adUnitId,
             mediator: Self.normalizedMediator(mediator),
-            adFormat: AdFormat(rawValue: adFormat)
+            adFormat: AdFormat(rawValue: adFormat),
+            placement: placement
         ))
     }
 

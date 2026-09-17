@@ -27,11 +27,21 @@ import Foundation
     /// this ad unit through the matching format's loader.
     public let adFormat: AdFormat
 
+    /// The placement configured for this step, used to segment ad reporting. `nil` when the step doesn't
+    /// specify one.
+    public let placement: String?
+
     /// Creates a resolved ad step.
-    @_spi(Internal) public init(adUnitId: String, mediator: MediatorName, adFormat: AdFormat) {
+    @_spi(Internal) public init(
+        adUnitId: String,
+        mediator: MediatorName,
+        adFormat: AdFormat,
+        placement: String? = nil
+    ) {
         self.adUnitId = adUnitId
         self.mediator = mediator
         self.adFormat = adFormat
+        self.placement = placement
     }
 
 }

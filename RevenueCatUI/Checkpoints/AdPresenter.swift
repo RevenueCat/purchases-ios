@@ -62,6 +62,10 @@ public final class AdPresentationParams {
     /// The ad format ``adUnitId`` was created for, which decides how the presenter loads and shows it.
     public let adFormat: AdFormat
 
+    /// The placement configured for the ad step, used to segment ad reporting. `nil` when the step doesn't
+    /// specify one.
+    public let placement: String?
+
     /// Creates presentation context for an ad step selected by a checkpoint.
     ///
     /// - Parameters:
@@ -70,18 +74,21 @@ public final class AdPresentationParams {
     ///   - adUnitId: The ad unit identifier configured for the ad step.
     ///   - mediator: The mediation network configured to serve `adUnitId`.
     ///   - adFormat: The ad format `adUnitId` was created for.
+    ///   - placement: The placement configured for the ad step, if any.
     public init(
         checkpointIdentifier: String,
         customVariables: [String: CustomVariableValue] = [:],
         adUnitId: String,
         mediator: MediatorName,
-        adFormat: AdFormat
+        adFormat: AdFormat,
+        placement: String? = nil
     ) {
         self.checkpointIdentifier = checkpointIdentifier
         self.customVariables = customVariables
         self.adUnitId = adUnitId
         self.mediator = mediator
         self.adFormat = adFormat
+        self.placement = placement
     }
 
 }

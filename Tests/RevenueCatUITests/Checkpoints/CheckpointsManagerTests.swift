@@ -411,7 +411,7 @@ final class CheckpointsManagerTests: TestCase {
     func testResolvedAdUsesRegisteredAdPresenter() async throws {
         let presenter = MockAdPresenter()
         let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .matchedAd(Self.adStep()) },
+            resolveCheckpoint: { _, _ in .matchedAd(Self.adStep(placement: "level_complete")) },
             workflowPresenter: MockWorkflowPresenter()
         )
         manager.adPresenter = presenter
@@ -431,6 +431,7 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(presenter.receivedParams?.adUnitId, "ad-unit-id")
         XCTAssertEqual(presenter.receivedParams?.mediator, MediatorName(rawValue: "admob"))
         XCTAssertEqual(presenter.receivedParams?.adFormat, .interstitial)
+        XCTAssertEqual(presenter.receivedParams?.placement, "level_complete")
     }
 
     func testSequentialAdCheckpointsOfDifferentFormatsEachPresentAfterThePreviousCompletes() async throws {
@@ -915,9 +916,15 @@ final class CheckpointsManagerTests: TestCase {
 
     private static func adStep(
         adUnitId: String = "ad-unit-id",
-        adFormat: AdFormat = .interstitial
+        adFormat: AdFormat = .interstitial,
+        placement: String? = nil
     ) -> ResolvedAdStep {
-        return ResolvedAdStep(adUnitId: adUnitId, mediator: MediatorName(rawValue: "admob"), adFormat: adFormat)
+        return ResolvedAdStep(
+            adUnitId: adUnitId,
+            mediator: MediatorName(rawValue: "admob"),
+            adFormat: adFormat,
+            placement: placement
+        )
     }
 
     private static func adOutcome(_ execution: CheckpointPresentationOutcome) -> CheckpointAdOutcome? {
