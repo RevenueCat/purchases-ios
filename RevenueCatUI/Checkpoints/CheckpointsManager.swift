@@ -118,7 +118,10 @@ final class CheckpointsManager {
                     initialEntitlementIdentifiers: initialEntitlementIdentifiers
                 ))
             case let .adPresented(adOutcome):
-                return .completed(adOutcome is CheckpointAdOutcome.Failed ? nil : FlowResult())
+                // `Failed` is surfaced too, rather than collapsed to `nil` like `.failed`: it is the only way the
+                // app can receive the error, and unlike a failed workflow it is a hint that a fallback (such as
+                // another ad) may be appropriate.
+                return .completed(FlowResult(adOutcome: adOutcome))
             case .failed, .nothingPresented:
                 return .completed(nil)
             }
