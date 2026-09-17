@@ -957,6 +957,32 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
     }
 
+    func testAdStepPlacementResolves() async throws {
+        self.stubAdWorkflow(adIdentifier: "ad_unit_1", mediator: "admob", placement: "level_complete")
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedAd(resolution)?.placement, "level_complete")
+    }
+
+    func testAdStepWithoutAPlacementResolvesWithNoPlacement() async throws {
+        self.stubAdWorkflow(adIdentifier: "ad_unit_1", mediator: "admob", placement: nil)
+
+        let resolution = try await self.resolve()
+
+        XCTAssertNotNil(Self.resolvedAd(resolution))
+        XCTAssertNil(Self.resolvedAd(resolution)?.placement)
+    }
+
+    func testAdStepWithAnEmptyPlacementResolvesWithNoPlacement() async throws {
+        self.stubAdWorkflow(adIdentifier: "ad_unit_1", mediator: "admob", placement: "")
+
+        let resolution = try await self.resolve()
+
+        XCTAssertNotNil(Self.resolvedAd(resolution))
+        XCTAssertNil(Self.resolvedAd(resolution)?.placement)
+    }
+
     func testAdStepMixedWithAnotherStepResolvesConfigurationUnavailable() async throws {
         self.stubAdWorkflow(
             adIdentifier: "ad_unit_1",
@@ -987,6 +1013,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         adIdentifier: String?,
         mediator: String?,
         adFormat: String? = "interstitial",
+        placement: String? = nil,
         initialStepID: String? = nil,
         extraSteps: [String: WorkflowStep] = [:]
     ) {
@@ -1001,6 +1028,9 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         }
         if let adFormat {
             paramValues["ad_format"] = .string(adFormat)
+        }
+        if let placement {
+            paramValues["placement"] = .string(placement)
         }
         step.paramValues = paramValues
 

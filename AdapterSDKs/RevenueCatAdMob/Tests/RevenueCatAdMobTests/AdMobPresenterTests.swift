@@ -65,7 +65,23 @@ final class AdMobPresenterTests: AdapterTestCase {
         )
     }
 
-    func testUsesTheCheckpointIdentifierAsThePlacement() {
+    func testUsesTheStepPlacementAsThePlacement() {
+        let loaded = self.expectation(description: "loaded")
+        self.loaders.onLoad = { loaded.fulfill() }
+
+        self.presenter.present(
+            params: Self.params(
+                checkpointIdentifier: "level_complete",
+                adFormat: .interstitial,
+                placement: "between_levels"
+            )
+        ) { _ in }
+        self.wait(for: [loaded], timeout: 2.0)
+
+        XCTAssertEqual(self.loaders.requests, [.interstitial(adUnitID: "ad-unit", placement: "between_levels")])
+    }
+
+    func testFallsBackToTheCheckpointIdentifierAsThePlacement() {
         let loaded = self.expectation(description: "loaded")
         self.loaders.onLoad = { loaded.fulfill() }
 
@@ -181,13 +197,15 @@ final class AdMobPresenterTests: AdapterTestCase {
     private static func params(
         checkpointIdentifier: String = "checkpoint_id",
         adFormat: RevenueCat.AdFormat,
-        mediator: MediatorName = .adMob
+        mediator: MediatorName = .adMob,
+        placement: String? = nil
     ) -> AdPresentationParams {
         return AdPresentationParams(
             checkpointIdentifier: checkpointIdentifier,
             adIdentifier: "ad-unit",
             mediator: mediator,
-            adFormat: adFormat
+            adFormat: adFormat,
+            placement: placement
         )
     }
 

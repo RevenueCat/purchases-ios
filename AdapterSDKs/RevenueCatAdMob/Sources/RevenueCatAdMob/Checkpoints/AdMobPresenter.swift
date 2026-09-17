@@ -51,7 +51,8 @@ internal enum AdMobPresentationError: Error, CustomNSError {
 /// immediately with an error in the `RevenueCatAdMob.AdMobPresentationError` domain rather than being loaded
 /// through a loader that would only report a no-fill.
 ///
-/// The checkpoint identifier is used as the tracking placement.
+/// The step's placement is used as the tracking placement, falling back to the checkpoint identifier when
+/// the step doesn't specify one.
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, *)
 @MainActor
@@ -85,6 +86,7 @@ public final class AdMobPresenter: AdPresenter {
         params: AdPresentationParams,
         completion: @escaping AdPresentationCompletion
     ) {
+        let placement = params.placement ?? params.checkpointIdentifier
         switch params.adFormat {
         case .interstitial:
             let presentation = self.makeInterstitialPresentation()
@@ -92,7 +94,7 @@ public final class AdMobPresenter: AdPresenter {
             presentation.start(
                 adUnitID: params.adIdentifier,
                 mediator: params.mediator,
-                placement: params.checkpointIdentifier
+                placement: placement
             ) { finish($0.presentationResult) }
 
         case .rewarded, .rewardedInterstitial:
@@ -102,7 +104,7 @@ public final class AdMobPresenter: AdPresenter {
             presentation.start(
                 adUnitID: params.adIdentifier,
                 mediator: params.mediator,
-                placement: params.checkpointIdentifier
+                placement: placement
             ) { finish($0.presentationResult) }
 
         default:

@@ -63,6 +63,10 @@ public struct AdPresentationParams {
     /// The ad format ``adIdentifier`` was created for, which decides how the presenter loads and shows it.
     public let adFormat: AdFormat
 
+    /// The placement configured for the ad step, used to segment ad reporting. `nil` when the step doesn't
+    /// specify one.
+    public let placement: String?
+
     /// Creates presentation context for an ad step selected by a checkpoint.
     ///
     /// - Parameters:
@@ -71,18 +75,21 @@ public struct AdPresentationParams {
     ///   - adIdentifier: The identifier of the ad configured for the ad step.
     ///   - mediator: The mediation network configured to serve `adIdentifier`.
     ///   - adFormat: The ad format `adIdentifier` was created for.
+    ///   - placement: The placement configured for the ad step, if any.
     public init(
         checkpointIdentifier: String,
         customVariables: [String: CustomVariableValue] = [:],
         adIdentifier: String,
         mediator: MediatorName,
-        adFormat: AdFormat
+        adFormat: AdFormat,
+        placement: String? = nil
     ) {
         self.checkpointIdentifier = checkpointIdentifier
         self.customVariables = customVariables
         self.adIdentifier = adIdentifier
         self.mediator = mediator
         self.adFormat = adFormat
+        self.placement = placement
     }
 
 }
