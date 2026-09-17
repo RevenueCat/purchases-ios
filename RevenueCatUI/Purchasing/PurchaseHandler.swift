@@ -662,7 +662,8 @@ extension PurchaseHandler {
         presentedOfferingContext: PresentedOfferingContext?,
         workflowBlobRef: String? = nil
     ) throws -> WorkflowContext {
-        guard let step = workflow.steps[workflow.initialStepId] else {
+        // Routed, so a workflow that opens on a branch step starts on the step that branch leads to.
+        guard let step = workflow.routedInitialStep else {
             throw PaywallError.workflowInitialStepNotFound(
                 stepId: workflow.initialStepId,
                 workflowId: workflow.id

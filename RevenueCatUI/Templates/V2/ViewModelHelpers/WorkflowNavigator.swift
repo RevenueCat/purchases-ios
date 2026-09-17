@@ -35,8 +35,7 @@ final class WorkflowNavigator: ObservableObject {
 
     init(workflow: PublishedWorkflow) {
         self.workflow = workflow
-        self.currentStepId = Self.routed(from: workflow.initialStepId, in: workflow)?.id
-            ?? workflow.initialStepId
+        self.currentStepId = workflow.routedInitialStep?.id ?? workflow.initialStepId
     }
 
     var currentStep: WorkflowStep? {
@@ -82,7 +81,7 @@ final class WorkflowNavigator: ObservableObject {
               }),
               let actionId = trigger.actionId,
               case .step(let stepId) = step.stepTriggerActions[actionId],
-              let nextStep = Self.routed(from: stepId, in: workflow) else {
+              let nextStep = workflow.routedStep(from: stepId) else {
             return nil
         }
 
@@ -90,34 +89,6 @@ final class WorkflowNavigator: ObservableObject {
             step: nextStep,
             canNavigateBackAfterNavigation: true
         )
-    }
-
-    /// Follows `branch` steps to the first step that has a screen. A branch step carries no screen of its
-    /// own, so entering one would fail presentation: it exists only to route.
-    ///
-    /// Every branch takes its `fallbackStepId` for now. Evaluating the audiences that pick a different route
-    /// needs the rules engine, which this layer cannot reach yet.
-    static func routed(from stepId: String, in workflow: PublishedWorkflow) -> WorkflowStep? {
-        var visited: Set<String> = []
-        var stepId = stepId
-
-        while let step = workflow.steps[stepId], visited.insert(stepId).inserted {
-            guard let branch = Self.branch(on: step) else { return step }
-            stepId = branch.fallbackStepId
-        }
-
-        return nil
-    }
-
-    /// The branch a step routes through, if it is a routing step rather than a screen.
-    private static func branch(on step: WorkflowStep) -> WorkflowBranch? {
-        guard step.screenId == nil else { return nil }
-
-        for action in step.stepTriggerActions.values {
-            if case .branch(let branch) = action { return branch }
-        }
-
-        return nil
     }
 
     @discardableResult

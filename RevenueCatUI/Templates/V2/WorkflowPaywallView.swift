@@ -322,7 +322,7 @@ struct WorkflowPaywallView: View {
                 subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
             )
         ))
-        let initialStepId = context.workflow.initialStepId
+        let initialStepId = context.workflow.routedInitialStep?.id ?? context.workflow.initialStepId
         let initialPackageInput = Self.buildPackageInput(
             stepId: initialStepId,
             context: context,

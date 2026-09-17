@@ -109,7 +109,7 @@ struct WorkflowStepEventTracker {
             fromStepId: fromStepId,
             toStepId: toStepId,
             entryReason: entryReason,
-            isFirstStep: step.id == self.workflow.initialStepId,
+            isFirstStep: step.id == self.workflow.routedInitialStep?.id,
             isLastStep: Self.isTerminalStep(step),
             experiment: self.experimentData(for: step)
         )

@@ -19,6 +19,113 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class WorkflowContextTests: TestCase {
 
+    // MARK: - Branch initial step
+
+    /// A workflow can open on a branch step, which has no screen. Context creation is the gate that decides
+    /// whether the workflow presents at all, so it has to route before checking for a screen.
+    func testMakeWorkflowContextRoutesAnInitialBranchStep() throws {
+        let workflow = try Self.workflowOpeningOnABranch()
+
+        let context = try PurchaseHandler.makeWorkflowContext(
+            workflow: workflow,
+            uiConfig: .empty,
+            allOfferings: Self.offerings(),
+            presentedOfferingContext: nil
+        )
+
+        expect(context.workflow.routedInitialStep?.id) == "step_fallback"
+    }
+
+    func testMakeWorkflowContextStillFailsWhenTheBranchLeadsNowhere() throws {
+        let workflow = try Self.workflowOpeningOnABranch(fallbackStepId: "nope")
+
+        expect {
+            try PurchaseHandler.makeWorkflowContext(
+                workflow: workflow,
+                uiConfig: .empty,
+                allOfferings: Self.offerings(),
+                presentedOfferingContext: nil
+            )
+        }.to(throwError())
+    }
+
+    private static func workflowOpeningOnABranch(
+        fallbackStepId: String = "step_fallback"
+    ) throws -> PublishedWorkflow {
+        let json = """
+        {
+          "id": "wf_test",
+          "display_name": "Test",
+          "initial_step_id": "branch",
+          "steps": {
+            "branch": {
+              "id": "branch",
+              "type": "branch",
+              "trigger_actions": {
+                "branch": {
+                  "type": "branch",
+                  "branches": [{"audience_id": "aud_a", "step_id": "step_matched"}],
+                  "fallback_step_id": "\(fallbackStepId)"
+                }
+              }
+            },
+            "step_matched": { "id": "step_matched", "type": "screen", "screen_id": "screen_target" },
+            "step_fallback": { "id": "step_fallback", "type": "screen", "screen_id": "screen_target" }
+          },
+          "screens": {
+            "screen_target": {
+              "template_name": "tmpl",
+              "asset_base_url": "https://assets.revenuecat.com",
+              "default_locale": "en_US",
+              "offering_identifier": "offering_test",
+              "components_localizations": {},
+              "components_config": {
+                "base": {
+                  "stack": \(Self.minimalStackJSON()),
+                  "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } } }
+                }
+              }
+            }
+          },
+          "ui_config": { "app": { "colors": {}, "fonts": {} }, "localizations": {} }
+        }
+        """
+
+        return try JSONDecoder.default.decode(
+            PublishedWorkflow.self,
+            from: XCTUnwrap(json.data(using: .utf8))
+        )
+    }
+
+    private static func offerings() -> Offerings {
+        let offering = Offering(
+            identifier: "offering_test",
+            serverDescription: "Test",
+            metadata: [:],
+            paywall: nil,
+            availablePackages: [],
+            webCheckoutUrl: nil
+        )
+
+        return Offerings(
+            offerings: ["offering_test": offering],
+            currentOfferingID: nil,
+            placements: nil,
+            targeting: nil,
+            contents: .init(
+                response: .init(
+                    currentOfferingId: nil,
+                    offerings: [],
+                    placements: nil,
+                    targeting: nil,
+                    uiConfig: nil
+                ),
+                httpResponseOriginalSource: .mainServer
+            ),
+            loadedFromDiskCache: false
+        )
+    }
+
     // MARK: - WorkflowContext
 
     func testWorkflowContextStoresPresentedOfferingContext() throws {

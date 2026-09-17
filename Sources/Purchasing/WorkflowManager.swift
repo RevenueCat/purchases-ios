@@ -244,6 +244,38 @@ extension PublishedWorkflow {
         return step.offeringIdentifier ?? step.screenId.flatMap { self.screens[$0]?.offeringIdentifier }
     }
 
+    /// The step reached from `stepId`, following `branch` steps to the first one that has a screen. A branch
+    /// step carries no screen of its own: it only routes, so it can never be presented.
+    ///
+    /// Every branch takes its `fallbackStepId` for now. Evaluating the audiences that pick a different route
+    /// needs the rules engine, which is not wired to navigation yet.
+    @_spi(Internal) public func routedStep(from stepId: String) -> WorkflowStep? {
+        var visited: Set<String> = []
+        var stepId = stepId
+
+        while let step = self.steps[stepId], visited.insert(stepId).inserted {
+            guard let branch = self.branch(on: step) else { return step }
+            stepId = branch.fallbackStepId
+        }
+
+        return nil
+    }
+
+    /// The first step the workflow can present, which is the initial step unless that step only routes.
+    @_spi(Internal) public var routedInitialStep: WorkflowStep? {
+        return self.routedStep(from: self.initialStepId)
+    }
+
+    private func branch(on step: WorkflowStep) -> WorkflowBranch? {
+        guard step.screenId == nil else { return nil }
+
+        for action in step.triggerActions.values {
+            if case .branch(let branch) = action { return branch }
+        }
+
+        return nil
+    }
+
 }
 
 extension BackendError {
