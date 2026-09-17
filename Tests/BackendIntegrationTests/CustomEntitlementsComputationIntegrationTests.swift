@@ -82,10 +82,7 @@ final class CustomEntitlementsComputationIntegrationTests: BaseStoreKitIntegrati
     func testPurchaseCancellationsAreReportedCorrectly() async throws {
         try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
 
-        #if os(iOS)
-        try XCTSkipIf(ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
-                      "iOS 27 StoreKitTest returns .unknown instead of the simulated .userCancelled error")
-        #endif
+        try AvailabilityChecks.simulatedCancellationWithSKTestWorksOrSkipTest()
 
         try await self.testSession.setSimulatedError(.generic(.userCancelled), forAPI: .purchase)
 

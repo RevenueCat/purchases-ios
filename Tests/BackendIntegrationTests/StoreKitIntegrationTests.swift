@@ -280,22 +280,15 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         for transaction in transactions {
             self.verifySpecificTransactionWasFinished(transaction, count: nil)
             if Self.storeKitVersion == .storeKit1 {
-                await expect {
-                    SKPaymentQueue.default().transactions.contains {
-                        $0.transactionIdentifier == transaction.transactionIdentifier &&
-                            $0.payment.productIdentifier == transaction.productIdentifier
-                    }
-                }.toEventually(beFalse(), timeout: .seconds(5))
+                await self.verifyTransactionIsEventuallyRemovedFromSK1Queue(transaction)
             }
         }
     }
 
     func testCanPurchaseConsumableWithMultipleUsers() async throws {
-        #if os(iOS)
-        try XCTSkipIf(Self.storeKitVersion == .storeKit1 &&
-                     ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
-                     "Late SK1 transaction identifiers can prevent finishing; tracked separately in #7739")
-        #endif
+        if Self.storeKitVersion == .storeKit1 {
+            try AvailabilityChecks.lateSK1TransactionIdentifiersFinishOrSkipTest()
+        }
 
         func verifyPurchase(_ info: CustomerInfo) {
             expect(info.nonSubscriptions).to(haveCount(1))
@@ -318,12 +311,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         for transaction in [transaction1, transaction2] {
             self.verifySpecificTransactionWasFinished(transaction)
             if Self.storeKitVersion == .storeKit1 {
-                await expect {
-                    SKPaymentQueue.default().transactions.contains {
-                        $0.transactionIdentifier == transaction.transactionIdentifier &&
-                            $0.payment.productIdentifier == transaction.productIdentifier
-                    }
-                }.toEventually(beFalse(), timeout: .seconds(5))
+                await self.verifyTransactionIsEventuallyRemovedFromSK1Queue(transaction)
             }
         }
     }
@@ -392,10 +380,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testPurchaseFailuresAreReportedCorrectly() async throws {
         try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
 
-        #if os(iOS)
-        try XCTSkipIf(ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
-                      "iOS 27 StoreKitTest returns .unknown instead of the simulated .purchaseNotAllowed error")
-        #endif
+        try AvailabilityChecks.simulatedPurchaseFailureWithSKTestWorksOrSkipTest()
 
         try await self.testSession.setSimulatedError(
             .purchase(Product.PurchaseError.purchaseNotAllowed),
@@ -416,10 +401,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testPurchaseCancellationsAreReportedCorrectly() async throws {
         try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
 
-        #if os(iOS)
-        try XCTSkipIf(ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
-                      "iOS 27 StoreKitTest returns .unknown instead of the simulated .userCancelled error")
-        #endif
+        try AvailabilityChecks.simulatedCancellationWithSKTestWorksOrSkipTest()
 
         try await self.testSession.setSimulatedError(.generic(.userCancelled), forAPI: .purchase)
 
@@ -607,10 +589,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testPurchaseAfterSigningIntoNewUser() async throws {
-        #if os(iOS)
-        try XCTSkipIf(ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
-                      "iOS 27 StoreKitTest shows an already-subscribed dialog despite disableDialogs when repurchasing")
-        #endif
+        try AvailabilityChecks.activeRepurchaseWithoutSKTestDialogWorksOrSkipTest()
 
         let prefix = UUID().uuidString
         let userID1 = "\(prefix)-user-1"
@@ -804,11 +783,9 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testResubscribeAfterExpiration() async throws {
-        #if os(iOS)
-        try XCTSkipIf(Self.storeKitVersion == .storeKit2 &&
-                      ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
-                      "iOS 27 StoreKitTest returns the expired SK2 transaction when repurchasing")
-        #endif
+        if Self.storeKitVersion == .storeKit2 {
+            try AvailabilityChecks.expiredRepurchaseWithSKTestWorksOrSkipTest()
+        }
 
         @discardableResult
         func subscribe() async throws -> CustomerInfo {
@@ -904,10 +881,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testApplyPromotionalOfferDuringSubscription() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        #if os(iOS)
-        try XCTSkipIf(ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
-                      "iOS 27 StoreKitTest shows a blocking purchase dialog despite disableDialogs for active offers")
-        #endif
+        try AvailabilityChecks.activeRepurchaseWithoutSKTestDialogWorksOrSkipTest()
 
         let user = UUID().uuidString
 
@@ -941,11 +915,11 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testPurchaseWithPromotionalOffer() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        #if os(iOS)
-        try XCTSkipIf(ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
-                      "iOS 27 StoreKitTest returns a stale SK2 transaction " +
-                      "or blocks SK1 with a dialog for expired offers")
-        #endif
+        if Self.storeKitVersion == .storeKit1 {
+            try AvailabilityChecks.expiredPromotionalOfferWithoutSKTestDialogWorksOrSkipTest()
+        } else {
+            try AvailabilityChecks.expiredRepurchaseWithSKTestWorksOrSkipTest()
+        }
 
         let user = UUID().uuidString
 
@@ -987,11 +961,11 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testPurchaseWithPromotionalOfferWithNonUUIDappUserId() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        #if os(iOS)
-        try XCTSkipIf(ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
-                      "iOS 27 StoreKitTest returns a stale SK2 transaction " +
-                      "or blocks SK1 with a dialog for expired offers")
-        #endif
+        if Self.storeKitVersion == .storeKit1 {
+            try AvailabilityChecks.expiredPromotionalOfferWithoutSKTestDialogWorksOrSkipTest()
+        } else {
+            try AvailabilityChecks.expiredRepurchaseWithSKTestWorksOrSkipTest()
+        }
 
         let user = "not_a_uuid.\(UUID().uuidString)"
 

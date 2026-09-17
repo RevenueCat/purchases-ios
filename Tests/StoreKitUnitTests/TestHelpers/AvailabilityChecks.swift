@@ -87,6 +87,51 @@ enum AvailabilityChecks {
         }
     }
 
+    // StoreKitTest reproductions and affected tests: https://github.com/RevenueCat/purchases-ios/pull/7742.
+    // These observations do not establish an Apple acknowledgment; attach Feedback IDs when available.
+    static func simulatedCancellationWithSKTestWorksOrSkipTest() throws {
+        try Self.skipOnIOS27("StoreKitTest returns .unknown instead of simulated .userCancelled; PR #7717 / #7742")
+    }
+
+    static func simulatedPurchaseFailureWithSKTestWorksOrSkipTest() throws {
+        try Self.skipOnIOS27("StoreKitTest returns .unknown instead of simulated .purchaseNotAllowed; PR #7742")
+    }
+
+    static func activeRepurchaseWithoutSKTestDialogWorksOrSkipTest() throws {
+        try Self.skipOnIOS27("StoreKitTest shows an active purchase dialog despite disableDialogs; PR #7742")
+    }
+
+    static func expiredRepurchaseWithSKTestWorksOrSkipTest() throws {
+        try Self.skipOnIOS27("StoreKitTest returns the expired SK2 transaction when repurchasing; PR #7742")
+    }
+
+    static func expiredPromotionalOfferWithoutSKTestDialogWorksOrSkipTest() throws {
+        try Self.skipOnIOS27("StoreKitTest blocks an expired SK1 promotional offer on a purchase dialog; PR #7742")
+    }
+
+    static func unfinishedTransactionsWithSKTestWorkOrSkipTest(includingTVOS: Bool = false) throws {
+        #if os(tvOS)
+        try XCTSkipIf(includingTVOS && ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
+                      "StoreKitTest omits purchased transactions from Transaction.unfinished; PR #7742")
+        #endif
+        try Self.skipOnIOS27("StoreKitTest omits purchased transactions from Transaction.unfinished; PR #7742")
+    }
+
+    // Unresolved SDK behavior, not established StoreKitTest bugs. Production fixes are outside this stack.
+    static func concurrentSK1ReceiptRefreshDeduplicatesOrSkipTest() throws {
+        try Self.skipOnIOS27("Concurrent SK1 receipt refresh can prevent deduplication; SDK follow-up PR #7738")
+    }
+
+    static func lateSK1TransactionIdentifiersFinishOrSkipTest() throws {
+        try Self.skipOnIOS27("Late SK1 transaction identifiers can prevent finishing; SDK follow-up PR #7739")
+    }
+
+    private static func skipOnIOS27(_ reason: String) throws {
+        #if os(iOS)
+        try XCTSkipIf(ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27, reason)
+        #endif
+    }
+
     /// Opposite of `iOS15APIAvailableOrSkipTest`.
     static func iOS15APINotAvailableOrSkipTest() throws {
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {

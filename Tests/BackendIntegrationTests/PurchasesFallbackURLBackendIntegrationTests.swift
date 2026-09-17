@@ -70,11 +70,8 @@ class PurchasesFallbackURLBackendStoreKit2IntegrationTests: BaseStoreKitIntegrat
         XCTAssertTrue(offlineEntitlementInfo.isActive)
         verifySpecificTransactionWasNotFinished(transaction)
 
-        let usesStoreKit1 = Self.storeKitVersion == .storeKit1
         try await asyncWait(description: "Purchased transaction is not available for recovery") {
-            let expectedIdentifier = usesStoreKit1
-                ? transaction.sk1Transaction?.transactionIdentifier
-                : transaction.transactionIdentifier
+            let expectedIdentifier = await self.storeKitIdentifier(for: transaction)
             guard let expectedIdentifier else { return false }
 
             for await result in StoreKit.Transaction.unfinished {
@@ -86,9 +83,7 @@ class PurchasesFallbackURLBackendStoreKit2IntegrationTests: BaseStoreKitIntegrat
             }
             return false
         }
-        let transactionIdentifier = try XCTUnwrap(
-            usesStoreKit1 ? transaction.sk1Transaction?.transactionIdentifier : transaction.transactionIdentifier
-        )
+        let transactionIdentifier = try XCTUnwrap(self.storeKitIdentifier(for: transaction))
 
         self.allServersUp() // Simulate main server recovery
         logger.clearMessages()
