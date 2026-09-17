@@ -30,14 +30,9 @@ extension BaseStoreKitIntegrationTests {
         filename: StaticString = #file,
         line: UInt = #line
     ) async throws -> EntitlementInfo {
-        // This is used to throw an error when the test fails.
-        // For some reason XCTest is continuing execution even after a test failure
-        // despite having `self.continueAfterFailure = false`
-        //
-        // By doing this, instead of only calling `fail`, we ensure that
-        // Swift stops executing code when an assertion has failed,
-        // and therefore avoid code running after the test has already failed.
-        // This prevents test crashes from code calling `Purchases.shared` after the test has ended.
+        // Record the test failure, then stop this async helper by throwing a Swift error.
+        // Temporarily allow execution past `fail()` so we reach the explicit throw,
+        // and restore the original setting when leaving this scope.
         func failTest(_ message: String) async throws {
             struct ExpectationFailure: Swift.Error {}
 
