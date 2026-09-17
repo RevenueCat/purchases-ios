@@ -27,8 +27,7 @@ import UIKit
 final class WorkflowPresenter: NSObject, WorkflowPresenterType {
 
     typealias PresentationStarter = (WorkflowPresentationRequest) throws -> Bool
-    typealias DismissalPerformer = (@escaping () -> Void) -> Void
-    private typealias Continuation = CheckedContinuation<CheckpointPresentationOutcome, Error>
+    private typealias Continuation = CheckedContinuation<CheckpointPresentationOutcome, Never>
 
     enum PresentationUpdate {
         case outcome(CheckpointPresentationOutcome)
@@ -59,28 +58,12 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
     }
 
     private let presentationStarter: PresentationStarter?
-    private let dismissalPerformer: DismissalPerformer?
     private var presentationState: PresentationState?
     private var pendingContinuation: Continuation?
 
-    private weak var presentedViewController: UIViewController?
-
-    init(
-        dismissalPerformer: DismissalPerformer? = nil,
-        presentationStarter: PresentationStarter? = nil
-    ) {
+    init(presentationStarter: PresentationStarter? = nil) {
         self.presentationStarter = presentationStarter
-        self.dismissalPerformer = dismissalPerformer
         super.init()
-    }
-
-    convenience init(
-        presentationStarter: @escaping PresentationStarter
-    ) {
-        self.init(
-            dismissalPerformer: nil,
-            presentationStarter: presentationStarter
-        )
     }
 
     func present(_ presentation: WorkflowPresentationRequest) async throws -> CheckpointPresentationOutcome {
@@ -88,24 +71,13 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
             throw CheckpointError.operationAlreadyInProgress
         }
 
-        return try await withTaskCancellationHandler {
-            try await withCheckedThrowingContinuation { continuation in
-                guard !Task.isCancelled else {
-                    continuation.resume(throwing: CancellationError())
-                    return
-                }
-
-                self.pendingContinuation = continuation
-                do {
-                    try self.startPresentation(presentation)
-                } catch {
-                    Logger.error(error.localizedDescription)
-                    self.finish(.failed)
-                }
-            }
-        } onCancel: {
-            Task { @MainActor [weak self] in
-                self?.cancel()
+        return await withCheckedContinuation { continuation in
+            self.pendingContinuation = continuation
+            do {
+                try self.startPresentation(presentation)
+            } catch {
+                Logger.error(error.localizedDescription)
+                self.finish(.failed)
             }
         }
     }
@@ -126,7 +98,6 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
             }
         } catch {
             self.presentationState = nil
-            self.presentedViewController = nil
             throw error
         }
     }
@@ -143,34 +114,8 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         return self.complete()
     }
 
-    func cancel() {
-        guard self.pendingContinuation != nil else { return }
-        self.dismiss { [weak self] in
-            self?.finishCancellation()
-        }
-    }
-
-    func dismiss(completion: @escaping () -> Void) {
-        self.presentationState = nil
-
-        if let dismissalPerformer = self.dismissalPerformer {
-            dismissalPerformer(completion)
-            return
-        }
-
-        let viewController = self.presentedViewController
-        self.presentedViewController = nil
-        guard let viewController, viewController.presentingViewController != nil else {
-            completion()
-            return
-        }
-        viewController.dismiss(animated: true, completion: completion)
-    }
-
     private func complete() -> CheckpointPresentationOutcome? {
         guard let state = self.takePresentationState() else { return nil }
-
-        self.presentedViewController = nil
 
         let execution: CheckpointPresentationOutcome
         if state.dismissalReason == .navigatedBack, !state.outcome.hasCustomerInfo {
@@ -185,11 +130,6 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
     private func finish(_ execution: CheckpointPresentationOutcome) {
         guard let continuation = self.takePendingContinuation() else { return }
         continuation.resume(returning: execution)
-    }
-
-    private func finishCancellation() {
-        guard let continuation = self.takePendingContinuation() else { return }
-        continuation.resume(throwing: CancellationError())
     }
 
     private func takePendingContinuation() -> Continuation? {
@@ -208,11 +148,9 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
     }
 
     private func handleExitOfferPresentation(
-        from controller: PaywallViewController,
-        exitOfferController: PaywallViewController
+        from controller: PaywallViewController
     ) {
         self.stageDismissalReasonIfNeeded(controller.workflowDismissalReason)
-        self.presentedViewController = exitOfferController
     }
 
     private func stageDismissalReasonIfNeeded(_ reason: WorkflowDismissalReason) {
@@ -226,7 +164,6 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         }
         let viewController = try self.makePaywallViewController(for: presentation)
         viewController.delegate = self
-        self.presentedViewController = viewController
         presentationContext.present(viewController, animated: true)
         guard viewController.presentingViewController != nil else {
             throw CheckpointError.presentationFailed
@@ -317,7 +254,7 @@ extension WorkflowPresenter {
         willPresentExitOfferController exitOfferController: PaywallViewController
     ) {
         MainActor.assumeIsolated {
-            self.handleExitOfferPresentation(from: controller, exitOfferController: exitOfferController)
+            self.handleExitOfferPresentation(from: controller)
         }
     }
 
@@ -365,7 +302,7 @@ extension WorkflowPresenter {
         _ controller: PaywallViewController,
         willPresentExitOfferController exitOfferController: PaywallViewController
     ) {
-        self.handleExitOfferPresentation(from: controller, exitOfferController: exitOfferController)
+        self.handleExitOfferPresentation(from: controller)
     }
 
     #endif

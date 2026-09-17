@@ -217,48 +217,17 @@ final class WorkflowPresenterTests: TestCase {
         XCTAssertEqual(customerInfo, TestData.customerInfo)
     }
 
-    func testDismissRemovesCallWithoutReportingAnOutcome() throws {
-        let presenter = WorkflowPresenter { _ in true }
-        var didFinishDismissing = false
-        try presenter.startPresentation(Self.presentation())
-
-        presenter.dismiss {
-            didFinishDismissing = true
-        }
-        XCTAssertNil(presenter.presentationDidDismiss())
-
-        XCTAssertTrue(didFinishDismissing)
-    }
-
     #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
-
-    func testDismissTargetsPresentedExitOfferController() throws {
-        let presentation = Self.presentation()
-        let presenter = WorkflowPresenter { _ in true }
-        try presenter.startPresentation(presentation)
-        let originalController = PaywallViewController(offering: presentation.workflow.offerings.all["offering-id"])
-        let exitOfferController = DismissRecordingPaywallController(
-            offering: try XCTUnwrap(presentation.workflow.offerings.all["offering-id"])
-        )
-
-        presenter.paywallViewController(
-            originalController,
-            willPresentExitOfferController: exitOfferController
-        )
-        presenter.dismiss {}
-
-        XCTAssertEqual(exitOfferController.dismissCallCount, 1)
-    }
 
     func testBackOutReasonIsPreservedWhenExitOfferDismisses() throws {
         let presentation = Self.presentation()
         let presenter = WorkflowPresenter { _ in true }
         let offering = try XCTUnwrap(presentation.workflow.offerings.all["offering-id"])
-        let originalController = DismissRecordingPaywallController(
+        let originalController = WorkflowDismissalReasonPaywallController(
             offering: offering,
             workflowDismissalReason: .navigatedBack
         )
-        let exitOfferController = DismissRecordingPaywallController(offering: offering)
+        let exitOfferController = PaywallViewController(offering: offering)
 
         try presenter.startPresentation(presentation)
         presenter.paywallViewController(
@@ -430,15 +399,9 @@ final class WorkflowPresenterTests: TestCase {
 }
 
 @available(iOS 15.0, macOS 12.0, *)
-private final class DismissRecordingPaywallController: PaywallViewController {
+private final class WorkflowDismissalReasonPaywallController: PaywallViewController {
 
-    private(set) var dismissCallCount = 0
-    private let stubbedPresentingViewController = UIViewController()
     private let dismissalReason: WorkflowDismissalReason
-
-    override var presentingViewController: UIViewController? {
-        return self.stubbedPresentingViewController
-    }
 
     override var workflowDismissalReason: WorkflowDismissalReason {
         return self.dismissalReason
@@ -463,12 +426,6 @@ private final class DismissRecordingPaywallController: PaywallViewController {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
-    override func dismiss(animated flag: Bool, completion: (() -> Void)?) {
-        self.dismissCallCount += 1
-        completion?()
-    }
-
 }
 
 @available(iOS 15.0, macOS 12.0, *)
@@ -505,18 +462,6 @@ final class DefaultPaywallPresenterTests: TestCase {
         XCTAssertEqual(presenter.presentationResult(dismissalReason: .navigatedBack), .continued)
     }
 
-    func testDismissingDetachedViewControllerCompletesWithoutCallingDismiss() {
-        let controller = DetachedDismissRecordingViewController()
-        var didComplete = false
-
-        dismissCheckpointPaywallViewController(controller) {
-            didComplete = true
-        }
-
-        XCTAssertTrue(didComplete)
-        XCTAssertEqual(controller.dismissCallCount, 0)
-    }
-
     private func makePaywallViewController() -> PaywallViewController {
         return PaywallViewController(
             offering: Offering(
@@ -526,16 +471,6 @@ final class DefaultPaywallPresenterTests: TestCase {
                 webCheckoutUrl: nil
             )
         )
-    }
-
-}
-
-private final class DetachedDismissRecordingViewController: UIViewController {
-
-    private(set) var dismissCallCount = 0
-
-    override func dismiss(animated flag: Bool, completion: (() -> Void)?) {
-        self.dismissCallCount += 1
     }
 
 }

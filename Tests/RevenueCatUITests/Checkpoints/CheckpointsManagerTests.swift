@@ -480,53 +480,6 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(customerInfoSynchronizerCallCount, 0)
     }
 
-    func testCancellingDefaultPresenterKeepsSlotUntilDismissalFinishes() async throws {
-        let presentationStarted = self.expectation(description: "Default presentation starts")
-        let cancellationStarted = self.expectation(description: "Default presentation cancellation starts")
-        let defaultPresenter = MockDefaultPaywallPresenter(result: nil)
-        defaultPresenter.automaticallyFinishesCancellation = false
-        defaultPresenter.onPresent = { presentationStarted.fulfill() }
-        defaultPresenter.onCancel = { cancellationStarted.fulfill() }
-        let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
-            workflowPresenter: MockWorkflowPresenter(),
-            defaultPaywallPresenter: defaultPresenter
-        )
-
-        let first = Task {
-            try await manager.executeCheckpoint(identifier: "onboarding", params: .init())
-        }
-        await self.fulfillment(of: [presentationStarted], timeout: 1)
-        first.cancel()
-        await self.fulfillment(of: [cancellationStarted], timeout: 1)
-
-        do {
-            _ = try await manager.executeCheckpoint(
-                identifier: "onboarding",
-                params: .init(paywallPresenter: { _, completion in completion(.navigatedBack) })
-            )
-            XCTFail("Expected cancellation dismissal to keep owning the slot")
-        } catch {
-            XCTAssertEqual((error as NSError).code, ErrorCode.operationAlreadyInProgressForProductError.rawValue)
-        }
-
-        defaultPresenter.finishCancellation()
-        do {
-            _ = try await first.value
-            XCTFail("Expected cancellation")
-        } catch is CancellationError {
-            // Expected.
-        }
-
-        let retry = try await manager.executeCheckpoint(
-            identifier: "onboarding",
-            params: .init(paywallPresenter: { _, completion in completion(.navigatedBack) })
-        )
-        guard case .backedOut = retry else {
-            return XCTFail("Expected another presentation after cancellation dismissal")
-        }
-    }
-
     func testNavigatedBackSuppressesCheckpointCallback() async {
         var customerInfoSynchronizerCallCount = 0
         let manager = CheckpointsManager(
@@ -741,60 +694,6 @@ final class CheckpointsManagerTests: TestCase {
         }
     }
 
-    func testCancellationDuringSynchronizationIgnoresLateResultAndReleasesPresentationSlot() async throws {
-        let presentationStarted = self.expectation(description: "Custom presentation starts")
-        let synchronizationStarted = self.expectation(description: "Customer info synchronization starts")
-        let lateSynchronizationFinished = self.expectation(description: "Late synchronization finishes")
-        var presenterCompletion: PaywallPresentationCompletion?
-        var synchronizationContinuation: CheckedContinuation<CustomerInfo, Error>?
-        let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
-            workflowPresenter: MockWorkflowPresenter(),
-            customerInfoSynchronizer: {
-                let customerInfo = try await withCheckedThrowingContinuation { continuation in
-                    synchronizationContinuation = continuation
-                    synchronizationStarted.fulfill()
-                }
-                lateSynchronizationFinished.fulfill()
-                return customerInfo
-            }
-        )
-
-        let firstCheckpoint = Task {
-            try await manager.executeCheckpoint(
-                identifier: "onboarding",
-                params: .init(paywallPresenter: { _, completion in
-                    presenterCompletion = completion
-                    presentationStarted.fulfill()
-                })
-            )
-        }
-        await self.fulfillment(of: [presentationStarted], timeout: 1)
-        presenterCompletion?(.continued)
-        await self.fulfillment(of: [synchronizationStarted], timeout: 1)
-
-        firstCheckpoint.cancel()
-        do {
-            _ = try await firstCheckpoint.value
-            XCTFail("Expected cancellation")
-        } catch is CancellationError {
-            // Expected.
-        }
-
-        let secondExecution = try await manager.executeCheckpoint(
-            identifier: "onboarding",
-            params: .init(paywallPresenter: { _, completion in completion(.navigatedBack) })
-        )
-        guard case .backedOut = secondExecution else {
-            return XCTFail("Expected a new presentation after cancellation")
-        }
-
-        synchronizationContinuation?.resume(
-            returning: try Self.customerInfo(activeEntitlements: ["premium"])
-        )
-        await self.fulfillment(of: [lateSynchronizationFinished], timeout: 1)
-    }
-
     func testResolutionErrorIsForwarded() async {
         let expectedError = NSError(domain: "test", code: 42)
         let manager = CheckpointsManager { _, _ in throw expectedError }
@@ -917,7 +816,7 @@ private extension CheckpointsManager {
     convenience init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
         workflowPresenter: WorkflowPresenterType,
-        defaultPaywallPresenter: DefaultPaywallPresenterType? = nil,
+        defaultPaywallPresenter: PaywallPresenter? = nil,
         cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil },
         customerInfoSynchronizer: @escaping CustomerInfoSynchronizer = { throw CancellationError() }
     ) {
@@ -983,15 +882,11 @@ private final class MockPaywallPresenter: PaywallPresenter {
 
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private final class MockDefaultPaywallPresenter: DefaultPaywallPresenterType {
+private final class MockDefaultPaywallPresenter: PaywallPresenter {
 
     let result: PaywallPresentationResult?
     var onPresent: (() -> Void)?
-    var onCancel: (() -> Void)?
-    var automaticallyFinishesCancellation = true
     private(set) var receivedParams: PaywallPresentationParams?
-    private(set) var cancelCallCount = 0
-    private var cancellationCompletions: [() -> Void] = []
 
     init(result: PaywallPresentationResult?) {
         self.result = result
@@ -1007,19 +902,4 @@ private final class MockDefaultPaywallPresenter: DefaultPaywallPresenterType {
             completion(result)
         }
     }
-
-    func cancel(completion: @escaping () -> Void) {
-        self.cancelCallCount += 1
-        self.onCancel?()
-        if self.automaticallyFinishesCancellation {
-            completion()
-        } else {
-            self.cancellationCompletions.append(completion)
-        }
-    }
-
-    func finishCancellation() {
-        self.cancellationCompletions.removeFirst()()
-    }
-
 }

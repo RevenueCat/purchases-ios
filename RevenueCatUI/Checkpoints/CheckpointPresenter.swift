@@ -21,7 +21,7 @@ import Foundation
 final class CheckpointPresenter: CheckpointPresenterType {
 
     private let workflowPresenter: WorkflowPresenterType
-    private let defaultPaywallPresenter: DefaultPaywallPresenterType
+    private let defaultPaywallPresenter: PaywallPresenter
     private let customerInfoSynchronizer: CheckpointsManager.CustomerInfoSynchronizer
     private let slot = CheckpointPresentationSlot()
 
@@ -36,7 +36,7 @@ final class CheckpointPresenter: CheckpointPresenterType {
 
     init(
         workflowPresenter: WorkflowPresenterType,
-        defaultPaywallPresenter: DefaultPaywallPresenterType,
+        defaultPaywallPresenter: PaywallPresenter,
         customerInfoSynchronizer: @escaping CheckpointsManager.CustomerInfoSynchronizer = { throw CancellationError() }
     ) {
         self.workflowPresenter = workflowPresenter
@@ -63,29 +63,22 @@ final class CheckpointPresenter: CheckpointPresenterType {
         defer { self.slot.release(token) }
 
         let presentationHandler: PaywallPresentationHandler
-        let cancellationHandler: ((@escaping () -> Void) -> Void)?
         if let localPaywallPresentationHandler {
             presentationHandler = localPaywallPresentationHandler
-            cancellationHandler = nil
         } else if let paywallPresenter = globalPaywallPresenter {
             presentationHandler = { params, completion in
                 paywallPresenter.present(params: params, completion: completion)
             }
-            cancellationHandler = nil
         } else {
             presentationHandler = { [defaultPaywallPresenter] params, completion in
                 defaultPaywallPresenter.present(params: params, completion: completion)
             }
-            cancellationHandler = { [defaultPaywallPresenter] completion in
-                defaultPaywallPresenter.cancel(completion: completion)
-            }
         }
 
-        return try await OfferingPresentation(
+        return await OfferingPresentation(
             slot: self.slot,
             token: token,
-            customerInfoSynchronizer: self.customerInfoSynchronizer,
-            cancellationHandler: cancellationHandler
+            customerInfoSynchronizer: self.customerInfoSynchronizer
         ).present(
             params: params,
             presentationHandler: presentationHandler
@@ -99,43 +92,27 @@ final class CheckpointPresenter: CheckpointPresenterType {
         private let slot: CheckpointPresentationSlot
         private let token: CheckpointPresentationSlot.Token
         private let customerInfoSynchronizer: CheckpointsManager.CustomerInfoSynchronizer
-        private let cancellationHandler: ((@escaping () -> Void) -> Void)?
-        private var pendingContinuation: CheckedContinuation<
-            CheckpointPresentationOutcome, Error
-        >?
+        private var pendingContinuation: CheckedContinuation<CheckpointPresentationOutcome, Never>?
         private var hasReportedCompletion = false
 
         init(
             slot: CheckpointPresentationSlot,
             token: CheckpointPresentationSlot.Token,
-            customerInfoSynchronizer: @escaping CheckpointsManager.CustomerInfoSynchronizer,
-            cancellationHandler: ((@escaping () -> Void) -> Void)?
+            customerInfoSynchronizer: @escaping CheckpointsManager.CustomerInfoSynchronizer
         ) {
             self.slot = slot
             self.token = token
             self.customerInfoSynchronizer = customerInfoSynchronizer
-            self.cancellationHandler = cancellationHandler
         }
 
         func present(
             params: PaywallPresentationParams,
             presentationHandler: PaywallPresentationHandler
-        ) async throws -> CheckpointPresentationOutcome {
-            return try await withTaskCancellationHandler {
-                try await withCheckedThrowingContinuation { continuation in
-                    guard !Task.isCancelled else {
-                        continuation.resume(throwing: CancellationError())
-                        return
-                    }
-
-                    self.pendingContinuation = continuation
-                    presentationHandler(params) { [weak self] result in
-                        self?.completed(result)
-                    }
-                }
-            } onCancel: {
-                Task { @MainActor [weak self] in
-                    self?.cancel()
+        ) async -> CheckpointPresentationOutcome {
+            return await withCheckedContinuation { continuation in
+                self.pendingContinuation = continuation
+                presentationHandler(params) { [weak self] result in
+                    self?.completed(result)
                 }
             }
         }
@@ -151,16 +128,6 @@ final class CheckpointPresenter: CheckpointPresenterType {
                 self.complete(execution: .backedOut)
             } else {
                 self.synchronizeCustomerInfo()
-            }
-        }
-
-        private func cancel() {
-            guard let cancellationHandler else {
-                self.finishCancellation()
-                return
-            }
-            cancellationHandler { [weak self] in
-                self?.finishCancellation()
             }
         }
 
@@ -183,16 +150,7 @@ final class CheckpointPresenter: CheckpointPresenterType {
             continuation.resume(returning: execution)
         }
 
-        private func finishCancellation() {
-            guard self.pendingContinuation != nil else { return }
-            self.hasReportedCompletion = true
-            guard let continuation = self.takeContinuation() else { return }
-            continuation.resume(throwing: CancellationError())
-        }
-
-        private func takeContinuation() -> CheckedContinuation<
-            CheckpointPresentationOutcome, Error
-        >? {
+        private func takeContinuation() -> CheckedContinuation<CheckpointPresentationOutcome, Never>? {
             defer { self.pendingContinuation = nil }
             return self.pendingContinuation
         }
@@ -215,21 +173,14 @@ protocol CheckpointPresenterType: AnyObject {
 
 }
 
-@MainActor
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-protocol DefaultPaywallPresenterType: PaywallPresenter {
-    func cancel(completion: @escaping () -> Void)
-}
-
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
 import UIKit
 
 @MainActor
 @available(iOS 15.0, macOS 12.0, *)
-final class DefaultPaywallPresenter: NSObject, DefaultPaywallPresenterType, PaywallViewControllerDelegate {
+final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewControllerDelegate {
 
     private var completion: PaywallPresentationCompletion?
-    private weak var presentedViewController: PaywallViewController?
     private var didCompletePurchaseOrRestore = false
 
     func present(
@@ -250,29 +201,14 @@ final class DefaultPaywallPresenter: NSObject, DefaultPaywallPresenterType, Payw
         controller.customVariables = params.customVariables
         controller.delegate = self
         self.completion = completion
-        self.presentedViewController = controller
         presentationContext.present(controller, animated: true)
         if controller.presentingViewController == nil {
             self.completeAsClosed()
         }
     }
 
-    func cancel(completion: @escaping () -> Void) {
-        guard self.takeCompletion() != nil else {
-            completion()
-            return
-        }
-        guard let controller = self.presentedViewController else {
-            completion()
-            return
-        }
-        self.presentedViewController = nil
-        dismissCheckpointPaywallViewController(controller, completion: completion)
-    }
-
     private func finish(_ controller: PaywallViewController) {
         guard let completion = self.takeCompletion() else { return }
-        self.presentedViewController = nil
         completion(self.presentationResult(dismissalReason: controller.workflowDismissalReason))
     }
 
@@ -283,7 +219,6 @@ final class DefaultPaywallPresenter: NSObject, DefaultPaywallPresenterType, Payw
 
     private func completeAsClosed() {
         guard let completion = self.takeCompletion() else { return }
-        self.presentedViewController = nil
         completion(.closed)
     }
 
@@ -334,30 +269,15 @@ final class DefaultPaywallPresenter: NSObject, DefaultPaywallPresenterType, Payw
 
 }
 
-@MainActor
-func dismissCheckpointPaywallViewController(
-    _ controller: UIViewController,
-    completion: @escaping () -> Void
-) {
-    guard controller.presentingViewController != nil else {
-        completion()
-        return
-    }
-    controller.dismiss(animated: true, completion: completion)
-}
 #else
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private final class DefaultPaywallPresenter: DefaultPaywallPresenterType {
+private final class DefaultPaywallPresenter: PaywallPresenter {
     func present(
         params: PaywallPresentationParams,
         completion: @escaping PaywallPresentationCompletion
     ) {
         completion(.closed)
-    }
-
-    func cancel(completion: @escaping () -> Void) {
-        completion()
     }
 }
 #endif

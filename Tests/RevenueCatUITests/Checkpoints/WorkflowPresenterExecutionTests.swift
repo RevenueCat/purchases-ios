@@ -112,82 +112,6 @@ final class WorkflowPresenterExecutionTests: TestCase {
         XCTAssertEqual(presenter.presentations.count, 2)
     }
 
-    func testExecutionCanRestartAfterCancellation() async throws {
-        let presenter = WorkflowPresenterHarness()
-        let presentationStarted = self.expectation(description: "Presentation starts")
-        presenter.onPresent = { _ in presentationStarted.fulfill() }
-        let workflowPresenter = presenter.workflowPresenter
-        let firstExecution = Task { try await workflowPresenter.present(Self.presentation()) }
-        await self.fulfillment(of: [presentationStarted], timeout: 1)
-
-        firstExecution.cancel()
-        do {
-            _ = try await firstExecution.value
-            XCTFail("Expected cancellation")
-        } catch is CancellationError {
-            // Expected.
-        }
-
-        presenter.onPresent = { presentation in
-            presentation.finish(.completed(customerInfo: nil))
-        }
-        _ = try await workflowPresenter.present(Self.presentation())
-
-        XCTAssertEqual(presenter.presentations.count, 2)
-        XCTAssertEqual(presenter.dismissCallCount, 1)
-    }
-
-    func testCancellationKeepsExecutionActiveUntilPresentationFinishesDismissing() async throws {
-        let presenter = WorkflowPresenterHarness()
-        presenter.automaticallyFinishesDismissing = false
-        let presentationStarted = self.expectation(description: "Presentation starts")
-        let dismissalStarted = self.expectation(description: "Dismissal starts")
-        presenter.onPresent = { _ in presentationStarted.fulfill() }
-        presenter.onDismiss = { dismissalStarted.fulfill() }
-        let workflowPresenter = presenter.workflowPresenter
-        let firstExecution = Task { try await workflowPresenter.present(Self.presentation()) }
-        await self.fulfillment(of: [presentationStarted], timeout: 1)
-
-        firstExecution.cancel()
-        await self.fulfillment(of: [dismissalStarted], timeout: 1)
-
-        do {
-            _ = try await workflowPresenter.present(Self.presentation())
-            XCTFail("Expected execution to remain active while dismissing")
-        } catch {
-            XCTAssertEqual(
-                (error as NSError).code,
-                ErrorCode.operationAlreadyInProgressForProductError.rawValue
-            )
-        }
-
-        presenter.finishDismissing()
-        do {
-            _ = try await firstExecution.value
-            XCTFail("Expected cancellation")
-        } catch is CancellationError {
-            // Expected.
-        }
-    }
-
-    func testCompletedOutcomeWinsBeforeScheduledCancellationRuns() async throws {
-        let presenter = WorkflowPresenterHarness()
-        var execution: Task<CheckpointPresentationOutcome, Error>?
-        presenter.onPresent = { presentation in
-            execution?.cancel()
-            presentation.finish(.failed)
-        }
-        let workflowPresenter = presenter.workflowPresenter
-
-        execution = Task { try await workflowPresenter.present(Self.presentation()) }
-        let result = try await XCTUnwrap(execution).value
-
-        guard case .failed = result else {
-            return XCTFail("Expected the completed presentation outcome")
-        }
-        XCTAssertEqual(presenter.dismissCallCount, 0)
-    }
-
     func testPresentationCompletionWithoutPendingExecutionIsIgnored() {
         let presenter = WorkflowPresenterHarness()
         let workflowPresenter = presenter.workflowPresenter
@@ -239,17 +163,10 @@ private final class WorkflowPresenterHarness {
     }
 
     var onPresent: ((Presentation) -> Void)?
-    var onDismiss: (() -> Void)?
-    var automaticallyFinishesDismissing = true
     var presentationError: Error?
     private(set) var presentations: [Presentation] = []
-    private(set) var dismissCallCount = 0
-    private var dismissalCompletions: [() -> Void] = []
 
     lazy var workflowPresenter = WorkflowPresenter(
-        dismissalPerformer: { [weak self] completion in
-            self?.handleDismissal(completion: completion)
-        },
         presentationStarter: { [weak self] presentation in
             return try self?.handlePresentation(presentation) ?? false
         }
@@ -270,16 +187,6 @@ private final class WorkflowPresenterHarness {
         return true
     }
 
-    private func handleDismissal(completion: @escaping () -> Void) {
-        self.dismissCallCount += 1
-        self.onDismiss?()
-        if self.automaticallyFinishesDismissing {
-            completion()
-        } else {
-            self.dismissalCompletions.append(completion)
-        }
-    }
-
     private func finish(_ execution: CheckpointPresentationOutcome) {
         switch execution {
         case .nothingPresented:
@@ -291,11 +198,6 @@ private final class WorkflowPresenterHarness {
             self.workflowPresenter.presentationDidDismiss(reason: .navigatedBack)
         }
     }
-
-    func finishDismissing() {
-        self.dismissalCompletions.removeFirst()()
-    }
-
 }
 
 #endif
