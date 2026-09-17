@@ -1031,6 +1031,29 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(notificationCount) == 1
     }
 
+    func testSK2TransactionListenerCachesCustomerInfoForUserThatPostedReceiptIfUserChanges() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+
+        // Simulates `logIn` finishing while the receipt is being posted.
+        let newUserID = "new_user_id"
+        self.backend.onPostReceipt = { [currentUserProvider = self.currentUserProvider!] in
+            currentUserProvider.mockAppUserID = newUserID
+        }
+
+        try await self.orchestrator.storeKit2TransactionListener(
+            self.mockStoreKit2TransactionListener!,
+            updatedTransaction: MockStoreTransaction()
+        )
+
+        expect(self.backend.invokedPostReceiptDataParameters?.appUserID) == Self.mockUserID
+        expect(self.customerInfoManager.invokedCacheCustomerInfo) == true
+        expect(self.customerInfoManager.invokedCacheCustomerInfoParameters?.appUserID) == Self.mockUserID
+        expect(self.currentUserProvider.currentAppUserID) == newUserID
+    }
+
     func testSK2PurchaseLogsWarningIfNoErrorsReturnedAndTransactionExpirationDateIsInPast() async throws {
         let mockTransaction = try await self.simulateAnyPurchase()
         let expirationDate = try XCTUnwrap(mockTransaction.underlyingTransaction.expirationDate)
