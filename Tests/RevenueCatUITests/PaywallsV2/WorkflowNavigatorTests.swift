@@ -252,6 +252,30 @@ final class WorkflowNavigatorTests: TestCase {
         expect(navigator.currentStepId) == "step_1"
     }
 
+    /// Navigating to a screen that happens to have a branch exit must land on that screen, not route past it
+    /// to wherever its own branch leads.
+    func testNavigatingToAScreenWithABranchExitLandsOnIt() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStep(id: "step_1", triggers: [("btn_abc", "btn_abc")], triggerActions: [("btn_abc", "step_2")]),
+                makeStepWithBranchExit(
+                    id: "step_2",
+                    componentId: "btn_def",
+                    actionId: "btn_def",
+                    fallbackStepId: "step_3"
+                ),
+                makeScreenStep(id: "step_3")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        let result = navigator.triggerAction(componentId: "btn_abc")
+
+        expect(result?.id) == "step_2"
+        expect(navigator.currentStepId) == "step_2"
+    }
+
     func testAScreensBranchExitNavigatesToTheRouteItPicks() throws {
         let workflow = try Self.makeWorkflow(
             steps: [
@@ -463,7 +487,8 @@ private extension WorkflowNavigatorTests {
     func makeStepWithBranchExit(
         id: String,
         componentId: String,
-        actionId: String
+        actionId: String,
+        fallbackStepId: String = "step_2"
     ) -> StepDescriptor {
         let json = """
         {
@@ -476,8 +501,8 @@ private extension WorkflowNavigatorTests {
           "trigger_actions": {
             "\(actionId)": {
               "type": "branch",
-              "branches": [{"audience_id": "aud_a", "step_id": "step_2"}],
-              "fallback_step_id": "step_2"
+              "branches": [{"audience_id": "aud_a", "step_id": "\(fallbackStepId)"}],
+              "fallback_step_id": "\(fallbackStepId)"
             }
           }
         }
