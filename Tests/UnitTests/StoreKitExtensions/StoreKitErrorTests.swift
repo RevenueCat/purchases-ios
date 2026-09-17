@@ -88,13 +88,13 @@ class StoreKitErrorTests: BaseErrorTests {
     }
 
     #if compiler(>=6.4)
-    func testInvalidPresentationContextPreservesUnknownErrorMapping() throws {
-        guard #available(iOS 27.0, tvOS 27.0, watchOS 27.0, macOS 27.0, *) else {
-            throw XCTSkip("Requires StoreKit 27")
-        }
+    @available(iOS 27.0, tvOS 27.0, watchOS 27.0, macOS 27.0, visionOS 27.0, *)
+    func testInvalidPresentationContextError() throws {
+        try AvailabilityChecks.iOS27APIAvailableOrSkipTest()
+
         let error: StoreKitError = .invalidPresentationContext
-        verifyPurchasesError(error, expectedCode: .unknownError, underlyingError: error)
-        expect(error.trackingDescription) == "unknown_store_kit_error"
+        verifyPurchasesError(error, expectedCode: .storeProblemError, underlyingError: error)
+        expect(error.trackingDescription) == "invalid_presentation_context"
     }
     #endif
 

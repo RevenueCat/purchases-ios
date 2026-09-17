@@ -73,6 +73,12 @@ enum AvailabilityChecks {
         }
     }
 
+    static func iOS27APIAvailableOrSkipTest() throws {
+        guard #available(iOS 27.0, tvOS 27.0, macOS 27.0, watchOS 27.0, visionOS 27.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
+    }
+
     /// Switching Storefronts is broken in iOS 27.0. This is confirmed by Apple and is documented as a known issue
     /// in the Xcode 27 release notes (184155259)
     static func switchingStorefrontWithSKTestWorksOrSkipTest() throws {

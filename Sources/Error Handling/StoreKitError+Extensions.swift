@@ -48,7 +48,7 @@ extension StoreKitError: PurchasesErrorConvertible {
 
         #if compiler(>=6.4)
         case .invalidPresentationContext:
-            return ErrorUtils.unknownError(error: self)
+            return ErrorUtils.storeProblemError(error: self)
         #endif
 
         @unknown default:
@@ -79,7 +79,7 @@ extension StoreKitError: PurchasesErrorConvertible {
 
         #if compiler(>=6.4)
         case .invalidPresentationContext:
-            return "unknown_store_kit_error"
+            return "invalid_presentation_context"
         #endif
 
         @unknown default:

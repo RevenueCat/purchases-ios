@@ -65,6 +65,7 @@ enum PurchaseStrings {
     case callback_not_found_for_request(request: SKRequest)
     case duplicate_refund_request(details: String)
     case failed_refund_request(details: String)
+    case ineligible_refund_request(details: String)
     case unknown_refund_request_error(details: String)
     case unknown_refund_request_error_type(details: String)
     case unknown_refund_request_status
@@ -293,6 +294,8 @@ extension PurchaseStrings: LogMessage {
             "or already approved: \(details)"
         case .failed_refund_request(let details):
             return "Refund request submission failed: \(details)"
+        case .ineligible_refund_request(let details):
+            return "This transaction is not eligible for a refund request: \(details)"
         case .unknown_refund_request_error_type(let details):
             return "Unknown RefundRequestError type from the AppStore: \(details)"
         case .unknown_refund_request_error(let details):

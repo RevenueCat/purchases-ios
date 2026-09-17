@@ -127,6 +127,15 @@ class BeginRefundRequestHelperTests: TestCase {
         }
     }
 
+    func testIneligibleRefundRequestMessagePreservesDetails() {
+        let message = Strings.purchase.ineligible_refund_request(details: "StoreKit details").description
+
+        expect(message) == "This transaction is not eligible for a refund request: StoreKit details"
+        let error = ErrorUtils.beginRefundRequestError(withMessage: message)
+        expect(error.error) == .beginRefundRequestError
+        expect(error.localizedDescription) == message
+    }
+
     @available(iOS 15.0, macCatalyst 15.0, *)
     func testBeginRefundForEntitlementFailsOnCustomerInfoFetchFail() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()

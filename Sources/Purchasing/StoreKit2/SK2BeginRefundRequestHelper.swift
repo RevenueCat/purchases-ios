@@ -107,7 +107,7 @@ private extension SK2BeginRefundRequestHelperType {
                 return Strings.purchase.failed_refund_request(details: details).description
             #if compiler(>=6.4)
             case .ineligible:
-                return Strings.purchase.unknown_refund_request_error_type(details: details).description
+                return Strings.purchase.ineligible_refund_request(details: details).description
             #endif
             @unknown default:
                 return Strings.purchase.unknown_refund_request_error_type(details: details).description
