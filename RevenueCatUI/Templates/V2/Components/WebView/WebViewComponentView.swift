@@ -448,7 +448,7 @@ private extension View {
         measuredWidth: CGFloat?
     ) -> some View {
         switch constraint {
-        case .fit(let defaultSize, _):
+        case .fit(let defaultSize):
             self.frame(
                 width: WebViewSizing.resolvedDimension(
                     measured: measuredWidth,
@@ -456,12 +456,14 @@ private extension View {
                     fallback: WebViewEnvelope.fallbackFitWidth
                 )
             )
-        case .fill:
-            self.frame(maxWidth: .infinity)
+        case let .fill(minMax):
+            self
+                .frame(minWidth: 0, maxWidth: .infinity)
+                .applyWidthLimits(minMax, alignment: .center)
         case .fixed(let value):
             self.frame(width: CGFloat(value))
-        case .relative:
-            self
+        case let .relative(_, minMax):
+            self.applyWidthLimits(minMax, alignment: .center)
         }
     }
 
@@ -471,7 +473,7 @@ private extension View {
         measuredHeight: CGFloat?
     ) -> some View {
         switch constraint {
-        case .fit(let defaultSize, _):
+        case .fit(let defaultSize):
             self.frame(
                 height: WebViewSizing.resolvedDimension(
                     measured: measuredHeight,
@@ -479,12 +481,14 @@ private extension View {
                     fallback: WebViewEnvelope.fallbackFitHeight
                 )
             )
-        case .fill:
-            self.frame(maxHeight: .infinity)
+        case let .fill(minMax):
+            self
+                .frame(minHeight: 0, maxHeight: .infinity)
+                .applyHeightLimits(minMax, alignment: .center)
         case .fixed(let value):
             self.frame(height: CGFloat(value))
-        case .relative:
-            self
+        case let .relative(_, minMax):
+            self.applyHeightLimits(minMax, alignment: .center)
         }
     }
 

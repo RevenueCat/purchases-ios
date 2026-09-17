@@ -32,14 +32,20 @@ struct SizeModifier: ViewModifier {
 
 extension View {
 
+    /// Fill takes the size the parent proposes and clamps it to the configured min/max.
+    ///
+    /// `minWidth: 0` matters: without an explicit minimum, a flexible frame reports at least its child's size,
+    /// so a child that is larger than the available space (e.g. a Fill(min:) that cannot be satisfied) would
+    /// widen every Fill ancestor up to the paywall root. With it, the frame keeps the parent's size and the
+    /// oversized child overflows in place, matching flexbox.
     @ViewBuilder
     func applyWidth(_ sizeConstraint: PaywallComponent.SizeConstraint, alignment: Alignment) -> some View {
         switch sizeConstraint {
-        case let .fit(_, minMax):
-            self.applyWidthLimits(minMax, alignment: alignment)
+        case .fit:
+            self
         case let .fill(minMax):
             self
-                .frame(maxWidth: .infinity, alignment: alignment)
+                .frame(minWidth: 0, maxWidth: .infinity, alignment: alignment)
                 .applyWidthLimits(minMax, alignment: alignment)
         case .fixed(let value):
             self
@@ -53,11 +59,11 @@ extension View {
     @ViewBuilder
     func applyHeight(_ sizeConstraint: PaywallComponent.SizeConstraint, alignment: Alignment) -> some View {
         switch sizeConstraint {
-        case let .fit(_, minMax):
-            self.applyHeightLimits(minMax, alignment: alignment)
+        case .fit:
+            self
         case let .fill(minMax):
             self
-                .frame(maxHeight: .infinity, alignment: alignment)
+                .frame(minHeight: 0, maxHeight: .infinity, alignment: alignment)
                 .applyHeightLimits(minMax, alignment: alignment)
         case .fixed(let value):
             self

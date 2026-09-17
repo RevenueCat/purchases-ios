@@ -24,20 +24,9 @@ final class SizeConstraintTests: TestCase {
         XCTAssertEqual(sizes.fillFill, .init(width: .fill, height: .fill))
         XCTAssertEqual(sizes.fitFill, .init(width: .fit(2), height: .fill))
         XCTAssertEqual(sizes.fillFit, .init(width: .fill, height: .fit(2)))
-        XCTAssertEqual(
-            sizes.fitWithMin,
-            .init(
-                width: .fit(nil, .init(min: 2, max: nil)),
-                height: .fit(nil, .init(min: 2, max: nil))
-            )
-        )
-        XCTAssertEqual(
-            sizes.fitWithMax,
-            .init(
-                width: .fit(nil, .init(min: nil, max: 2)),
-                height: .fit(nil, .init(min: nil, max: 2))
-            )
-        )
+        // min/max are ignored for fit: content sizes itself.
+        XCTAssertEqual(sizes.fitWithMin, .init(width: .fit(nil), height: .fit(nil)))
+        XCTAssertEqual(sizes.fitWithMax, .init(width: .fit(nil), height: .fit(nil)))
         XCTAssertEqual(
             sizes.fillWithMinMax,
             .init(

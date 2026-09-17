@@ -126,21 +126,20 @@ struct BottomSheetOverlayModifier: ViewModifier {
         }
     }
 
-    var sheetHeight: CGFloat? {
-        guard let size = self.sheetViewModel?.sheet.size else {
-            return nil
-        }
-
-        switch size.height {
+    static func resolvedHeight(
+        for constraint: PaywallComponent.SizeConstraint,
+        parentHeight: CGFloat?
+    ) -> CGFloat? {
+        switch constraint {
         case .fit, .fill:
             return nil
         case .fixed(let height):
             return CGFloat(height)
-        case .relative(let percent, _):
-            guard let parentHeight = self.parentHeight else {
+        case let .relative(percent, minMax):
+            guard let parentHeight else {
                 return nil
             }
-            return parentHeight * percent
+            return minMax.clamped(parentHeight * percent)
         }
     }
 
@@ -181,9 +180,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         \.workflowRenderingContext,
                         self.workflowRenderingContext.withoutBackNavigation()
                     )
-                    .applyIfLet(self.sheetHeight, apply: { view, height in
-                        view.frame(height: height)
-                    })
+                    .applySheetSize(sheetViewModel.sheet.size, parentHeight: self.parentHeight)
                     // Hidden until the first layout pass has settled, then animated in.
                     .offset(y: self.presentationPlan(for: sheetViewModel).isPresented ? 0 : (self.parentHeight ?? 2000))
                     .opacity(self.presentationPlan(for: sheetViewModel).isPresented ? 1 : 0)
@@ -239,6 +236,38 @@ struct BottomSheetOverlayModifier: ViewModifier {
             }
         }
     }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension View {
+
+    @ViewBuilder
+    func applySheetSize(_ size: PaywallComponent.Size?, parentHeight: CGFloat?) -> some View {
+        if let size {
+            self
+                .applyWidth(size.width, alignment: .center)
+                .applySheetHeight(size.height, parentHeight: parentHeight)
+        } else {
+            self
+        }
+    }
+
+    @ViewBuilder
+    func applySheetHeight(_ constraint: PaywallComponent.SizeConstraint, parentHeight: CGFloat?) -> some View {
+        switch constraint {
+        case .fit:
+            self
+        case let .fill(minMax):
+            self.applyHeightLimits(minMax, alignment: .center)
+        case .fixed, .relative:
+            self.applyIfLet(
+                BottomSheetOverlayModifier.resolvedHeight(for: constraint, parentHeight: parentHeight)
+            ) { view, height in
+                view.frame(height: height)
+            }
+        }
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
