@@ -18,6 +18,8 @@ import Foundation
 public typealias PaywallInteractionHandler = @MainActor @Sendable (_ event: PaywallInteractionEvent) -> Void
 
 /// A paywall control interaction.
+///
+/// See https://rev.cat/paywall-interaction-events for what each component type sends.
 @objc(RCPaywallInteractionEvent)
 public final class PaywallInteractionEvent: NSObject, @unchecked Sendable {
 
