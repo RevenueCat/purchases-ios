@@ -10,6 +10,7 @@ permissions: {}
 
 jobs:
   approve:
+    if: startsWith(github.event.pull_request.head.ref, 'release/')
     permissions:
       pull-requests: read
     uses: revenuecat/sdk-github-workflows/.github/workflows/approve-release-hold.yml@c7a3b97c331c9d5bbddaaae3e25697d76fb6b9c7 # v9
