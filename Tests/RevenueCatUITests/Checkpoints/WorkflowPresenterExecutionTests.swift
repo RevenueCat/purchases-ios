@@ -16,6 +16,8 @@
 @_spi(CheckpointsInternal) @_spi(Internal) @testable import RevenueCatUI
 import XCTest
 
+#if canImport(UIKit) && !os(tvOS) && !os(watchOS)
+
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class WorkflowPresenterExecutionTests: TestCase {
@@ -295,3 +297,5 @@ private final class WorkflowPresenterHarness {
     }
 
 }
+
+#endif
