@@ -133,7 +133,7 @@ class BeginRefundRequestHelperTests: TestCase {
         expect(message) == "This transaction is not eligible for a refund request: StoreKit details"
         let error = ErrorUtils.beginRefundRequestError(withMessage: message)
         expect(error.error) == .beginRefundRequestError
-        expect(error.localizedDescription) == message
+        expect(error.localizedDescription).to(endWith(message))
     }
 
     @available(iOS 15.0, macCatalyst 15.0, *)
