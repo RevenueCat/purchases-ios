@@ -43,6 +43,9 @@ final class WebViewInstance: ObservableObject {
     /// and resume stay paired, as WebKit requires.
     private(set) var isMediaPlaybackSuspended = false
 
+    /// The last suspension state requested during the current main-actor turn.
+    private var scheduledMediaSuspension: Bool?
+
     init(
         componentID: String,
         expectedOrigin: WebViewOrigin,
@@ -114,7 +117,7 @@ final class WebViewInstance: ObservableObject {
         self.loadFailed = true
     }
 
-    func hostDidEnterWindow(_ host: WebViewHostView) {
+    func reconcile(host: WebViewHostView) {
         self.registerCandidate(host)
         self.reconcileAttachment()
     }
@@ -194,8 +197,32 @@ final class WebViewInstance: ObservableObject {
     }
 
     /// Suspends rather than pauses: a paused page can restart itself by calling `play()`, whereas
-    /// suspension blocks the page and the user until it is lifted.
+    /// suspension blocks the page and the user until it is lifted. Applying the last request on the
+    /// next main-actor turn avoids toggling WebKit while carousel copies update their distances one by one.
     private func setMediaPlaybackSuspended(_ suspended: Bool) {
+        guard suspended != self.isMediaPlaybackSuspended else {
+            // A later host update restored the current state, so discard an intermediate request.
+            self.scheduledMediaSuspension = nil
+            return
+        }
+
+        let shouldScheduleFlush = self.scheduledMediaSuspension == nil
+        self.scheduledMediaSuspension = suspended
+        guard shouldScheduleFlush else {
+            return
+        }
+
+        Task { @MainActor [weak self] in
+            self?.flushScheduledMediaSuspension()
+        }
+    }
+
+    private func flushScheduledMediaSuspension() {
+        guard let suspended = self.scheduledMediaSuspension else {
+            return
+        }
+
+        self.scheduledMediaSuspension = nil
         guard suspended != self.isMediaPlaybackSuspended, let webView = self.webView else {
             return
         }
@@ -208,6 +235,7 @@ final class WebViewInstance: ObservableObject {
         self.navigationDelegateObject = nil
         self.attachedHost = nil
         self.candidateHosts.removeAll()
+        self.scheduledMediaSuspension = nil
 
         guard let webView = self.webView else {
             return

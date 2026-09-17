@@ -281,7 +281,6 @@ private struct CarouselView<Content: View>: View {
                         .environment(\.carouselState, CarouselState(
                             activeIndex: index,
                             pageIndex: pageIndex,
-                            originalCount: originalCount,
                             ancestorDistanceFromActive: self.ancestorCarouselState?.distanceFromActive ?? 0
                         ))
                         // ensure rendering doesn't need to wait on size calculations as the item

@@ -241,7 +241,7 @@ struct WebViewRepresentable: PlatformViewRepresentable {
             if host.window == nil {
                 instance?.hostDidLeaveWindow(host)
             } else {
-                instance?.hostDidEnterWindow(host)
+                instance?.reconcile(host: host)
             }
         }
 
@@ -253,7 +253,7 @@ struct WebViewRepresentable: PlatformViewRepresentable {
         // A carousel page change re-updates every copy; the instance needs the new distance before it re-evaluates.
         host.carouselDistance = self.carouselDistance
         if host.window != nil {
-            self.instance.hostDidEnterWindow(host)
+            self.instance.reconcile(host: host)
         }
     }
 
