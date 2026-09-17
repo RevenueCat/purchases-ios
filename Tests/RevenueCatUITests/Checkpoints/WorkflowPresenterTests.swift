@@ -407,6 +407,36 @@ final class WorkflowPresenterTests: TestCase {
 @MainActor
 final class DefaultPaywallPresenterTests: TestCase {
 
+    func testNavigatingBackWithoutPurchaseOrRestoreReportsNavigatedBack() {
+        let presenter = DefaultPaywallPresenter()
+
+        XCTAssertEqual(presenter.presentationResult(dismissalReason: .navigatedBack), .navigatedBack)
+    }
+
+    func testPurchaseTakesPrecedenceOverNavigatingBack() {
+        let presenter = DefaultPaywallPresenter()
+        let controller = self.makePaywallViewController()
+        let delegate: PaywallViewControllerDelegate = presenter
+
+        delegate.paywallViewController?(
+            controller,
+            didFinishPurchasingWith: TestData.customerInfo,
+            transaction: nil
+        )
+
+        XCTAssertEqual(presenter.presentationResult(dismissalReason: .navigatedBack), .continued)
+    }
+
+    func testRestoreTakesPrecedenceOverNavigatingBack() {
+        let presenter = DefaultPaywallPresenter()
+        let controller = self.makePaywallViewController()
+        let delegate: PaywallViewControllerDelegate = presenter
+
+        delegate.paywallViewController?(controller, didFinishRestoringWith: TestData.customerInfo)
+
+        XCTAssertEqual(presenter.presentationResult(dismissalReason: .navigatedBack), .continued)
+    }
+
     func testDefaultCheckpointPaywallDoesNotAcceptExitOffers() throws {
         let offering = Offering(
             identifier: "offering-id",
@@ -436,6 +466,17 @@ final class DefaultPaywallPresenterTests: TestCase {
 
         XCTAssertTrue(didComplete)
         XCTAssertEqual(controller.dismissCallCount, 0)
+    }
+
+    private func makePaywallViewController() -> PaywallViewController {
+        return PaywallViewController(
+            offering: Offering(
+                identifier: "offering-id",
+                serverDescription: "Test offering",
+                availablePackages: [],
+                webCheckoutUrl: nil
+            )
+        )
     }
 
 }

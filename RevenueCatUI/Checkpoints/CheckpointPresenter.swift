@@ -226,10 +226,11 @@ import UIKit
 
 @MainActor
 @available(iOS 15.0, macOS 12.0, *)
-private final class DefaultPaywallPresenter: NSObject, DefaultPaywallPresenterType, PaywallViewControllerDelegate {
+final class DefaultPaywallPresenter: NSObject, DefaultPaywallPresenterType, PaywallViewControllerDelegate {
 
     private var completion: PaywallPresentationCompletion?
     private weak var presentedViewController: PaywallViewController?
+    private var didCompletePurchaseOrRestore = false
 
     func present(
         params: PaywallPresentationParams,
@@ -244,6 +245,7 @@ private final class DefaultPaywallPresenter: NSObject, DefaultPaywallPresenterTy
             return
         }
 
+        self.didCompletePurchaseOrRestore = false
         let controller = makeDefaultCheckpointPaywallViewController(params: params)
         controller.delegate = self
         self.completion = completion
@@ -270,7 +272,12 @@ private final class DefaultPaywallPresenter: NSObject, DefaultPaywallPresenterTy
     private func finish(_ controller: PaywallViewController) {
         guard let completion = self.takeCompletion() else { return }
         self.presentedViewController = nil
-        completion(controller.workflowDismissalReason == .navigatedBack ? .navigatedBack : .closed)
+        completion(self.presentationResult(dismissalReason: controller.workflowDismissalReason))
+    }
+
+    func presentationResult(dismissalReason: WorkflowDismissalReason) -> PaywallPresentationResult {
+        guard !self.didCompletePurchaseOrRestore else { return .continued }
+        return dismissalReason == .navigatedBack ? .navigatedBack : .closed
     }
 
     private func completeAsClosed() {
@@ -285,10 +292,40 @@ private final class DefaultPaywallPresenter: NSObject, DefaultPaywallPresenterTy
     }
 
     #if compiler(>=5.9)
+    nonisolated func paywallViewController(
+        _ controller: PaywallViewController,
+        didFinishPurchasingWith customerInfo: CustomerInfo,
+        transaction: StoreTransaction?
+    ) {
+        MainActor.assumeIsolated { self.didCompletePurchaseOrRestore = true }
+    }
+
+    nonisolated func paywallViewController(
+        _ controller: PaywallViewController,
+        didFinishRestoringWith customerInfo: CustomerInfo
+    ) {
+        MainActor.assumeIsolated { self.didCompletePurchaseOrRestore = true }
+    }
+
     nonisolated func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {
         MainActor.assumeIsolated { self.finish(controller) }
     }
     #else
+    func paywallViewController(
+        _ controller: PaywallViewController,
+        didFinishPurchasingWith customerInfo: CustomerInfo,
+        transaction: StoreTransaction?
+    ) {
+        self.didCompletePurchaseOrRestore = true
+    }
+
+    func paywallViewController(
+        _ controller: PaywallViewController,
+        didFinishRestoringWith customerInfo: CustomerInfo
+    ) {
+        self.didCompletePurchaseOrRestore = true
+    }
+
     func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {
         self.finish(controller)
     }
