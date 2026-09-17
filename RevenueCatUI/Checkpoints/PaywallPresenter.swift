@@ -107,7 +107,8 @@ public struct PaywallPresentationResult: Hashable {
         self.rawValue = rawValue
     }
 
-    /// The customer completed the custom paywall presentation and should continue through the checkpoint.
+    /// The customer went through the custom paywall presentation and the checkpoint should continue: they purchased,
+    /// restored, or chose to continue without purchasing.
     ///
     /// RevenueCat synchronizes purchases and refreshes customer information before completing the checkpoint.
     public static let continued = Self(rawValue: 0)
