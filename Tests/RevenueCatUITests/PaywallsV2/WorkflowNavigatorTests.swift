@@ -239,32 +239,20 @@ final class WorkflowNavigatorTests: TestCase {
         expect(navigator.currentStepId) == "step_fallback"
     }
 
-    func testABranchStepAsTheInitialStepRoutesOnBeforeRendering() throws {
-        let workflow = try Self.makeWorkflow(
-            steps: [
-                makeBranchStep(id: "branch", matchedStepId: "step_matched", fallbackStepId: "step_fallback"),
-                makeScreenStep(id: "step_matched"),
-                makeScreenStep(id: "step_fallback")
-            ],
-            initialStepId: "branch"
-        )
-        let navigator = WorkflowNavigator(workflow: workflow)
-
-        expect(navigator.currentStepId) == "step_fallback"
-        expect(navigator.currentStep?.screenId) == "screen_step_fallback"
-    }
-
     func testChainedBranchStepsRouteThroughToAScreen() throws {
         let workflow = try Self.makeWorkflow(
             steps: [
+                makeStep(id: "step_1", triggers: [("btn_abc", "btn_abc")], triggerActions: [("btn_abc", "branch_1")]),
                 makeBranchStep(id: "branch_1", matchedStepId: "step_matched", fallbackStepId: "branch_2"),
                 makeBranchStep(id: "branch_2", matchedStepId: "step_matched", fallbackStepId: "step_fallback"),
                 makeScreenStep(id: "step_matched"),
                 makeScreenStep(id: "step_fallback")
             ],
-            initialStepId: "branch_1"
+            initialStepId: "step_1"
         )
         let navigator = WorkflowNavigator(workflow: workflow)
+
+        navigator.triggerAction(componentId: "btn_abc")
 
         expect(navigator.currentStepId) == "step_fallback"
     }
@@ -273,19 +261,23 @@ final class WorkflowNavigatorTests: TestCase {
     func testACycleOfBranchStepsDoesNotHang() throws {
         let workflow = try Self.makeWorkflow(
             steps: [
+                makeStep(id: "step_1", triggers: [("btn_abc", "btn_abc")], triggerActions: [("btn_abc", "branch_1")]),
                 makeBranchStep(id: "branch_1", matchedStepId: "step_matched", fallbackStepId: "branch_2"),
                 makeBranchStep(id: "branch_2", matchedStepId: "step_matched", fallbackStepId: "branch_1"),
                 makeScreenStep(id: "step_matched")
             ],
-            initialStepId: "branch_1"
+            initialStepId: "step_1"
         )
         let navigator = WorkflowNavigator(workflow: workflow)
 
-        // Nowhere renderable to go, so the initial step is kept rather than looping.
-        expect(navigator.currentStepId) == "branch_1"
+        let result = navigator.triggerAction(componentId: "btn_abc")
+
+        expect(result).to(beNil())
+        expect(navigator.currentStepId) == "step_1"
     }
 
-    /// A screen whose exit is a branch is not a routing step: it renders, and its exit is resolved later.
+    /// A screen whose exit is a branch is not a routing step: it renders, and the branch decides where its
+    /// button goes.
     func testAScreenWithABranchExitIsStillRendered() throws {
         let workflow = try Self.makeWorkflow(
             steps: [
@@ -297,6 +289,22 @@ final class WorkflowNavigatorTests: TestCase {
         let navigator = WorkflowNavigator(workflow: workflow)
 
         expect(navigator.currentStepId) == "step_1"
+    }
+
+    func testAScreensBranchExitNavigatesToTheRouteItPicks() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStepWithBranchExit(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
+                makeScreenStep(id: "step_2")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        let result = navigator.triggerAction(componentId: "btn_abc")
+
+        expect(result?.id) == "step_2"
+        expect(navigator.currentStepId) == "step_2"
     }
 
     // MARK: - navigateBack

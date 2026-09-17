@@ -254,26 +254,19 @@ extension PublishedWorkflow {
         var stepId = stepId
 
         while let step = self.steps[stepId], visited.insert(stepId).inserted {
-            guard let branch = self.branch(on: step) else { return step }
-            stepId = branch.fallbackStepId
+            guard let next = self.routedExit(on: step) else { return step }
+            stepId = next
         }
 
         return nil
     }
 
-    /// The first step the workflow can present, which is the initial step unless that step only routes.
-    @_spi(Internal) public var routedInitialStep: WorkflowStep? {
-        return self.routedStep(from: self.initialStepId)
-    }
-
-    private func branch(on step: WorkflowStep) -> WorkflowBranch? {
+    /// Where a routing step sends someone. A step with a screen renders instead of routing, even when its
+    /// own exit is a branch.
+    private func routedExit(on step: WorkflowStep) -> String? {
         guard step.screenId == nil else { return nil }
 
-        for action in step.triggerActions.values {
-            if case .branch(let branch) = action { return branch }
-        }
-
-        return nil
+        return step.triggerActions.values.first { $0.isBranch }?.routedStepId
     }
 
 }

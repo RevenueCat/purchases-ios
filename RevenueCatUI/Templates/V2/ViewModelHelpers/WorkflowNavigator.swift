@@ -35,7 +35,7 @@ final class WorkflowNavigator: ObservableObject {
 
     init(workflow: PublishedWorkflow) {
         self.workflow = workflow
-        self.currentStepId = workflow.routedInitialStep?.id ?? workflow.initialStepId
+        self.currentStepId = workflow.initialStepId
     }
 
     var currentStep: WorkflowStep? {
@@ -80,7 +80,7 @@ final class WorkflowNavigator: ObservableObject {
                   $0.componentId == componentId && $0.type == triggerType
               }),
               let actionId = trigger.actionId,
-              case .step(let stepId) = step.stepTriggerActions[actionId],
+              let stepId = step.stepTriggerActions[actionId]?.routedStepId,
               let nextStep = workflow.routedStep(from: stepId) else {
             return nil
         }

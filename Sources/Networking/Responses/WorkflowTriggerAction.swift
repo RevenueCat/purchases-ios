@@ -20,6 +20,25 @@ import Foundation
     case unknown
 }
 
+extension WorkflowTriggerAction {
+
+    /// The step this exit leads to. A branch takes its fallback until the audiences that pick a different
+    /// route can be evaluated.
+    @_spi(Internal) public var routedStepId: String? {
+        switch self {
+        case .step(let stepId): return stepId
+        case .branch(let branch): return branch.fallbackStepId
+        case .unknown: return nil
+        }
+    }
+
+    var isBranch: Bool {
+        if case .branch = self { return true }
+        return false
+    }
+
+}
+
 // MARK: - Decodable
 
 extension WorkflowTriggerAction: Decodable {
