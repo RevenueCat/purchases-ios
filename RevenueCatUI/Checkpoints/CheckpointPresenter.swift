@@ -284,9 +284,15 @@ private final class DefaultPaywallPresenter: NSObject, DefaultPaywallPresenterPr
         return self.completion
     }
 
+    #if compiler(>=5.9)
     nonisolated func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {
         MainActor.assumeIsolated { self.finish(controller) }
     }
+    #else
+    func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {
+        self.finish(controller)
+    }
+    #endif
 
 }
 
