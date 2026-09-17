@@ -20,6 +20,7 @@ struct CustomCheckpointUseCaseView: View {
 
     @ObservedObject var model: CheckpointDemoModel
     @ObservedObject var customVariables: CustomVariables
+    @ObservedObject private var rewardPollLog = RewardPollLog.shared
 
     @State private var identifier = ""
     @State private var status: String?
@@ -46,6 +47,15 @@ struct CustomCheckpointUseCaseView: View {
                     Text("The callback reports new entitlements after a presented flow completes.")
                 }
             }
+
+            if !self.rewardPollLog.lines.isEmpty {
+                Section("Reward verification polling") {
+                    ForEach(Array(self.rewardPollLog.lines.enumerated()), id: \.offset) { _, line in
+                        Text(line)
+                            .font(.caption.monospaced())
+                    }
+                }
+            }
         }
         .navigationTitle("Custom checkpoint")
     }
@@ -56,6 +66,7 @@ struct CustomCheckpointUseCaseView: View {
         let identifier = self.trimmedIdentifier
         let paywallPresenter = self.model.localPaywallPresenter
         self.status = "Checkpoint requested."
+        self.rewardPollLog.clear()
 
         Purchases.shared.checkpoint(
             identifier,
