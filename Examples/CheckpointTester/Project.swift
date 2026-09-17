@@ -18,10 +18,20 @@ import ProjectDescriptionHelpers
 let storeKitConfigurationPath: Path =
     "../../Tests/TestingApps/PaywallsTester/PaywallsTester/Products.storekit"
 
+// AdMob is only pulled in when test/dev dependencies are included (see Environment.includeTestDependencies),
+// matching how RevenueCatAdMob/AdMobIntegrationSample are gated elsewhere, so CI can skip the GoogleMobileAds
+// download with TUIST_INCLUDE_TEST_DEPENDENCIES=false.
+let adMobDependencies: [TargetDependency] = Environment.includeTestDependencies
+    ? [.revenueCatAdMob, .googleMobileAds]
+    : []
+let adMobPackages: [ProjectDescription.Package] = Environment.includeTestDependencies
+    ? .adMobPackage
+    : []
+
 let project = Project(
     name: "CheckpointTester",
     organizationName: .revenueCatOrgName,
-    packages: .projectPackages,
+    packages: .projectPackages + adMobPackages,
     settings: .appProject,
     targets: [
         .target(
@@ -40,13 +50,15 @@ let project = Project(
                     "REVENUECAT_API_KEY": .string(
                         Environment.rcApiKey ?? "$(REVENUECAT_API_KEY)"
                     ),
+                    // Google's public test AdMob app ID, same one AdMobIntegrationSample uses.
+                    "GADApplicationIdentifier": "ca-app-pub-3940256099942544~1458002511",
                 ]
             ),
             sources: ["CheckpointTester/Sources/**/*.swift"],
             dependencies: [
                 .revenueCat,
                 .revenueCatUI,
-            ],
+            ] + adMobDependencies,
             settings: .appTarget(
                 including: ([
                     "DEVELOPMENT_TEAM": "",
