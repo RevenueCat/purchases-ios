@@ -246,7 +246,8 @@ final class DefaultPaywallPresenter: NSObject, DefaultPaywallPresenterType, Payw
         }
 
         self.didCompletePurchaseOrRestore = false
-        let controller = makeDefaultCheckpointPaywallViewController(params: params)
+        let controller = PaywallViewController(offering: params.offering, displayCloseButton: true)
+        controller.customVariables = params.customVariables
         controller.delegate = self
         self.completion = completion
         self.presentedViewController = controller
@@ -331,15 +332,6 @@ final class DefaultPaywallPresenter: NSObject, DefaultPaywallPresenterType, Payw
     }
     #endif
 
-}
-
-@MainActor
-@available(iOS 15.0, macOS 12.0, *)
-func makeDefaultCheckpointPaywallViewController(params: PaywallPresentationParams) -> PaywallViewController {
-    let controller = PaywallViewController(offering: params.offering, displayCloseButton: true)
-    controller.disableExitOffers()
-    controller.customVariables = params.customVariables
-    return controller
 }
 
 @MainActor
