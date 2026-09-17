@@ -22,8 +22,7 @@ import Foundation
 
 extension WorkflowTriggerAction {
 
-    /// The step this exit leads to. A branch takes its fallback until the audiences that pick a different
-    /// route can be evaluated.
+    /// A branch takes its fallback until the audiences that pick a different route can be evaluated.
     @_spi(Internal) public var routedStepId: String? {
         switch self {
         case .step(let stepId): return stepId

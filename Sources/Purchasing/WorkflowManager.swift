@@ -244,11 +244,8 @@ extension PublishedWorkflow {
         return step.offeringIdentifier ?? step.screenId.flatMap { self.screens[$0]?.offeringIdentifier }
     }
 
-    /// The step reached from `stepId`, following `branch` steps to the first one that has a screen. A branch
-    /// step carries no screen of its own: it only routes, so it can never be presented.
-    ///
-    /// Every branch takes its `fallbackStepId` for now. Evaluating the audiences that pick a different route
-    /// needs the rules engine, which is not wired to navigation yet.
+    /// The step reached from `stepId`, following `branch` steps to the first one with a screen. A branch step
+    /// has no screen of its own, so it can never be presented.
     @_spi(Internal) public func routedStep(from stepId: String) -> WorkflowStep? {
         var visited: Set<String> = []
         var stepId = stepId
@@ -261,8 +258,7 @@ extension PublishedWorkflow {
         return nil
     }
 
-    /// Where a routing step sends someone. A step with a screen renders instead of routing, even when its
-    /// own exit is a branch.
+    /// A step with a screen renders instead of routing, even when its own exit is a branch.
     private func routedExit(on step: WorkflowStep) -> String? {
         guard step.screenId == nil else { return nil }
 

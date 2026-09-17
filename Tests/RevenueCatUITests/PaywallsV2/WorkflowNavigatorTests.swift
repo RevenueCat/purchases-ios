@@ -219,8 +219,7 @@ final class WorkflowNavigatorTests: TestCase {
 
     // MARK: - Branch steps
 
-    /// A published branch step has no screen, so landing on it would fail presentation. The navigator has to
-    /// pass through it to the step it routes to.
+    /// A published branch step has no screen, so landing on it would fail presentation.
     func testNavigatingToABranchStepLandsOnTheStepItRoutesTo() throws {
         let workflow = try Self.makeWorkflow(
             steps: [
@@ -276,8 +275,7 @@ final class WorkflowNavigatorTests: TestCase {
         expect(navigator.currentStepId) == "step_1"
     }
 
-    /// A screen whose exit is a branch is not a routing step: it renders, and the branch decides where its
-    /// button goes.
+    /// A screen whose exit is a branch is not a routing step: it renders.
     func testAScreenWithABranchExitIsStillRendered() throws {
         let workflow = try Self.makeWorkflow(
             steps: [
