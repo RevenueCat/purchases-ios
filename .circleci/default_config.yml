@@ -2837,15 +2837,14 @@ workflows:
       # =============================================================
       - release-checks:
           <<: *release-branches
-      - approve-release:
+      - wait-for-pr-approval:
           type: approval
-          requires:
-            - release-checks
-            - all-tests-succeeded
           <<: *release-branches
       - revenuecat/tag-current-branch:
           requires:
-            - approve-release
+            - wait-for-pr-approval
+            - release-checks
+            - all-tests-succeeded
           <<: *release-branches
 
       - all-tasks-passed:

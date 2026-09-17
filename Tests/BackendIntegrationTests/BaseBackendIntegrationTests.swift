@@ -24,14 +24,18 @@ final class TestPurchaseDelegate: NSObject, PurchasesDelegate, Sendable {
 
     private let _customerInfo: Atomic<CustomerInfo?> = nil
     private let _customerInfoUpdateCount: Atomic<Int> = .init(0)
+    private let _receivedCustomerInfos: Atomic<[CustomerInfo]> = .init([])
 
     func purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo) {
         self._customerInfo.value = customerInfo
         self._customerInfoUpdateCount.value += 1
+        self._receivedCustomerInfos.modify { $0.append(customerInfo) }
     }
 
     var customerInfo: CustomerInfo? { return self._customerInfo.value }
     var customerInfoUpdateCount: Int { return self._customerInfoUpdateCount.value }
+    /// Every `CustomerInfo` received, in order.
+    var receivedCustomerInfos: [CustomerInfo] { return self._receivedCustomerInfos.value }
 
 }
 
