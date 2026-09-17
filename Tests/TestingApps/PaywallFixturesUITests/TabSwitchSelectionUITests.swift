@@ -19,6 +19,10 @@ import XCTest
 /// The two tiers hold their cards at different depths, which is what makes this reproduce: the tab
 /// subtree is replaced on a switch. Flattening them so both tiers match stops it reproducing, so
 /// keep the shapes different when touching this fixture.
+///
+/// It is sensitive to layout, not only to structure: shortening the disclaimer copy was enough to
+/// stop it reproducing. If you edit the fixture, check it still fails without the fix rather than
+/// trusting that it passes.
 final class TabSwitchSelectionUITests: XCTestCase {
 
     private enum Tier {
