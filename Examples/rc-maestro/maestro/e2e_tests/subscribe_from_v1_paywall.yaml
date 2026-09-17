@@ -19,10 +19,16 @@ name: Subscribe to product through V1 Paywall for alternative offering
       - launchApp:
           arguments:
             maestro_store: app_store
+            maestro_storekit_warmup: true
+      - extendedWaitUntil:
+          visible: "StoreKit warmup complete"
+          timeout: 30000
+      - stopApp
 - launchApp:
     arguments:
         e2e_test_flow: subscribe_from_v1_paywall
         maestro_store: ${MAESTRO_STORE}
+        maestro_storekit_warmup: false
 - assertVisible: "entitlement (pro): nil"
 - extendedWaitUntil:
     visible: "Present Paywall"
