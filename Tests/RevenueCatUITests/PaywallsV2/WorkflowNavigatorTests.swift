@@ -276,6 +276,38 @@ final class WorkflowNavigatorTests: TestCase {
         expect(navigator.canNavigateBack) == false
     }
 
+    /// A `branch` decodes to a real case, unlike `conditions`, so it reaches `resolveExits` and has to be
+    /// left out there until its audiences can be evaluated.
+    func testResolvedExitsOmitsABranchExit() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStepWithBranchTriggerAction(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
+                makeStep(id: "step_2")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        expect(navigator.resolvedExits).to(beEmpty())
+    }
+
+    func testTriggerActionWithBranchTypeDoesNotNavigateYet() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStepWithBranchTriggerAction(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
+                makeStep(id: "step_2")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        let result = navigator.triggerAction(componentId: "btn_abc")
+
+        expect(result).to(beNil())
+        expect(navigator.currentStepId) == "step_1"
+        expect(navigator.canNavigateBack) == false
+    }
+
     // MARK: - navigateBack
 
     func testNavigateBackFromInitialStepReturnsNil() throws {
@@ -482,6 +514,33 @@ private extension WorkflowNavigatorTests {
           ],
           "trigger_actions": {
             "\(actionId)": {"type":"conditions","conditions":{"if":[]}}
+          }
+        }
+        """
+        return StepDescriptor(id: id, json: json)
+    }
+
+    /// Creates a `StepDescriptor` whose trigger action is a `branch`, which decodes but needs its audiences
+    /// evaluated before it has a destination.
+    func makeStepWithBranchTriggerAction(
+        id: String,
+        componentId: String,
+        actionId: String,
+        fallbackStepId: String = "step_2"
+    ) -> StepDescriptor {
+        let json = """
+        {
+          "id": "\(id)",
+          "type": "screen",
+          "triggers": [
+            {"name":"Button","type":"on_press","action_id":"\(actionId)","component_id":"\(componentId)"}
+          ],
+          "trigger_actions": {
+            "\(actionId)": {
+              "type":"branch",
+              "branches":[{"audience_id":"aud_a","step_id":"step_2"}],
+              "fallback_step_id":"\(fallbackStepId)"
+            }
           }
         }
         """

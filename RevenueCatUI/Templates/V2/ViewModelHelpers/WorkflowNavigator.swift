@@ -109,8 +109,8 @@ final class WorkflowNavigator: ObservableObject {
         resolvedExits = Self.resolveExits(for: workflow.steps[stepId], in: workflow)
     }
 
-    /// Only `.step` exits resolve here. An exit whose destination has to be evaluated is left out, so it
-    /// does not navigate yet.
+    /// Only `.step` exits resolve here. A `.branch` needs its audiences evaluated, which is async, so it
+    /// is left out and does not navigate yet.
     private static func resolveExits(
         for step: WorkflowStep?,
         in workflow: PublishedWorkflow
