@@ -46,7 +46,6 @@ class BaseBackendIntegrationTests: TestCase {
     private(set) var purchasesDelegate: TestPurchaseDelegate!
 
     private var mainThreadMonitor: MainThreadMonitor!
-    private let eligibilityWarmups = EligibilityWarmupTracker()
     private var purchasesInstances: [WeakBox<Purchases>] = []
 
     var forceServerErrorStrategy: ForceServerErrorStrategy?
@@ -121,10 +120,6 @@ class BaseBackendIntegrationTests: TestCase {
         self.testUUID = UUID()
 
         self.clearReceiptIfExists()
-        self.eligibilityWarmups.install()
-        self.addTeardownBlock {
-            Purchases.eligibilityCacheWarmupStarted.value = nil
-        }
         await self.createPurchases()
         self.verifyPurchasesDoesNotLeak()
     }
@@ -230,7 +225,7 @@ private extension BaseBackendIntegrationTests {
         // - These run *before* `tearDown`.
         // - They run in LIFO order.
         self.addTeardownBlock { @MainActor in
-            try await self.eligibilityWarmups.waitForCompletion(timeout: .seconds(60))
+            try await OperationDispatcher.default.waitForPendingAsyncOperations(timeout: .seconds(60))
         }
         self.addTeardownBlock { @MainActor in
             Purchases.clearSingleton()

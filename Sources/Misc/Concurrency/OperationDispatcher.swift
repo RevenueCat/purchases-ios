@@ -35,8 +35,17 @@ class OperationDispatcher {
 
     private let mainQueue: DispatchQueue = .main
     private let workerQueue: DispatchQueue = .init(label: "OperationDispatcherWorkerQueue")
+    private let pendingAsyncOperations: Atomic<Int> = .init(0)
 
     static let `default`: OperationDispatcher = .init()
+
+    /// Number of `async` worker thread operations that haven't finished yet.
+    ///
+    /// Only counts the `async` overload of `dispatchOnWorkerThread`, whose work is unstructured and can
+    /// outlive whoever scheduled it. Blocks dispatched on the worker queue are not counted.
+    var pendingAsyncOperationCount: Int {
+        return self.pendingAsyncOperations.value
+    }
 
     /// Invokes `block` on the main thread asynchronously
     /// or synchronously if called from the main thread.
@@ -67,7 +76,13 @@ class OperationDispatcher {
 
     func dispatchOnWorkerThread(jitterableDelay delay: JitterableDelay = .none,
                                 block: @escaping @Sendable () async -> Void) {
-        Task.detached(priority: .background) {
+        // Counted before the task is created so that `pendingAsyncOperationCount` never reports
+        // quiescence in the window between dispatching and the task being scheduled.
+        self.pendingAsyncOperations.increment()
+
+        Task.detached(priority: .background) { [pendingAsyncOperations = self.pendingAsyncOperations] in
+            defer { pendingAsyncOperations.decrement() }
+
             if delay.hasDelay {
                 try? await Task.sleep(nanoseconds: DispatchTimeInterval(delay.random()).nanoseconds)
             }

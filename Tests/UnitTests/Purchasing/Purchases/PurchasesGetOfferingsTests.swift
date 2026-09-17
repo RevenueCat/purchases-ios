@@ -211,13 +211,10 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     @MainActor
-    func testEligibilityWarmupBarrierWaitsForBothStagesButNotCacheDeallocation() async throws {
+    func testEligibilityWarmupStaysPendingAfterPurchasesIsDeallocated() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         let checker = HeldEligibilityChecker()
         let cache = PaywallCacheWarming(introEligibiltyChecker: checker)
-        let warmups = EligibilityWarmupTracker()
-        warmups.install()
-        defer { Purchases.eligibilityCacheWarmupStarted.value = nil }
         let offerings = ["current", "remaining"].map { identifier in
             Offering(
                 identifier: identifier,
@@ -252,94 +249,14 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         self.purchases = nil
 
         await expect { observedPurchases == nil }.toEventually(beTrue())
-        expect(warmups.pendingCount) == 1
-        let barrierStarted: Atomic<Bool> = false
-        let barrierFinished: Atomic<Bool> = false
-        let barrier = Task { @MainActor in
-            barrierStarted.value = true
-            try await warmups.waitForCompletion(timeout: .seconds(2))
-            barrierFinished.value = true
-        }
-        await expect { barrierStarted.value }.toEventually(beTrue())
-        expect(barrierFinished.value) == false
-        checker.completeNext()
+        expect(self.mockOperationDispatcher.pendingAsyncOperationCount) >= 1
 
+        checker.completeNext()
         await expect { checker.requests.value }.toEventually(equal([["current"], ["remaining"]]))
-        expect(warmups.pendingCount) == 1
-        expect(barrierFinished.value) == false
         checker.completeNext()
-        try await barrier.value
-        expect(barrierFinished.value) == true
-        expect(warmups.pendingCount) == 0
+
+        try await self.mockOperationDispatcher.waitForPendingAsyncOperations(timeout: .seconds(5))
         withExtendedLifetime(cache) {}
-    }
-
-    @MainActor
-    func testEligibilityWarmupBarrierFailsWhenWorkRemains() async throws {
-        let warmups = EligibilityWarmupTracker()
-        let finish = warmups.start()
-        defer { finish() }
-        var threw = false
-        let assertions = await gatherExpectations(silently: true) {
-            do {
-                try await warmups.waitForCompletion(timeout: .milliseconds(10))
-            } catch {
-                threw = true
-            }
-        }
-
-        expect(threw) == true
-        expect(warmups.pendingCount) == 1
-        let failure = try XCTUnwrap(assertions.onlyElement)
-        expect(failure.success) == false
-        expect(failure.message.stringValue).to(contain("1 operations remain"))
-    }
-
-    @MainActor
-    func testEligibilityWarmupIsTrackedBeforeWorkerStarts() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-        self.systemInfo.stubbedIsApplicationBackgrounded = true
-        self.setupPurchases()
-        self.mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = false
-        self.mockOfferingsManager.stubbedOfferingsCompletionResult = .success(try XCTUnwrap(
-            self.offeringsFactory.createOfferings(from: [:], contents: .mockContents, loadedFromDiskCache: false)
-        ))
-        let warmups = EligibilityWarmupTracker()
-        warmups.install()
-        defer { Purchases.eligibilityCacheWarmupStarted.value = nil }
-
-        _ = try await self.purchases.offerings()
-
-        expect(self.paywallCache.invokedWarmUpEligibilityCache) == false
-        expect(warmups.pendingCount) == 1
-        for block in self.mockOperationDispatcher.dispatchedAsyncWorkerThreadBlocks {
-            await block()
-        }
-        try await warmups.waitForCompletion(timeout: .seconds(2))
-        expect(self.paywallCache.invokedWarmUpEligibilityCache) == true
-        expect(warmups.pendingCount) == 0
-    }
-
-    @MainActor
-    func testEligibilityWarmupBarrierIncludesReplacementInstances() async throws {
-        let warmups = EligibilityWarmupTracker()
-        warmups.install()
-        defer { Purchases.eligibilityCacheWarmupStarted.value = nil }
-        let originalFinished = try XCTUnwrap(Purchases.eligibilityCacheWarmupStarted.value)()
-        let replacementFinished = try XCTUnwrap(Purchases.eligibilityCacheWarmupStarted.value)()
-        let finished: Atomic<Bool> = false
-        let barrier = Task { @MainActor in
-            try await warmups.waitForCompletion(timeout: .seconds(2))
-            finished.value = true
-        }
-
-        expect(warmups.pendingCount) == 2
-        originalFinished()
-        expect(warmups.pendingCount) == 1
-        expect(finished.value) == false
-        replacementFinished()
-        try await barrier.value
-        expect(finished.value) == true
     }
 
     func testOverridePreferredUILocaleInvalidatesInMemoryCache() {

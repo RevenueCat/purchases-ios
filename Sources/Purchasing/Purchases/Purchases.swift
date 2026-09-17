@@ -2939,9 +2939,6 @@ internal extension Purchases {
 
 internal extension Purchases {
 
-    /// Tests can observe queued warmups without retaining Purchases or changing their scheduling.
-    static let eligibilityCacheWarmupStarted: Atomic<(@Sendable () -> (@Sendable () -> Void))?> = .init(nil)
-
     var networkTimeout: TimeInterval {
         return self.backend.networkTimeout
     }
@@ -3232,13 +3229,7 @@ private extension Purchases {
         guard let cache = self.paywallCache else {
             return
         }
-        #if DEBUG
-        let warmupFinished = Self.eligibilityCacheWarmupStarted.value?()
-        #endif
         self.operationDispatcher.dispatchOnWorkerThread {
-            #if DEBUG
-            defer { warmupFinished?() }
-            #endif
             await cache.warmUpEligibilityCache(offerings: offerings)
         }
         self.operationDispatcher.dispatchOnWorkerThread {
