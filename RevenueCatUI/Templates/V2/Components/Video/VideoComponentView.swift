@@ -18,6 +18,9 @@ import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct VideoComponentView: View {
+
+    @Environment(\.paywallUsesMinMaxSizing)
+    private var paywallUsesMinMaxSizing
     let viewModel: VideoComponentViewModel
 
     @EnvironmentObject
@@ -141,8 +144,15 @@ struct VideoComponentView: View {
                         self.resolveSource(viewData: newViewData)
                         self.playerRefreshToggle.toggle()
                     }
-                    .applyMediaWidth(size: style.size)
-                    .applyMediaHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
+                    .applyMediaWidth(
+                        size: style.size,
+                        usesMinMaxSizing: self.paywallUsesMinMaxSizing
+                    )
+                    .applyMediaHeight(
+                        size: style.size,
+                        aspectRatio: self.aspectRatio(style: style),
+                        usesMinMaxSizing: self.paywallUsesMinMaxSizing
+                    )
                     .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
                         view.overlay(
                             Color.clear.backgroundStyle(.color(colorOverlay))

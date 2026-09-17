@@ -11,7 +11,7 @@
 
 import Nimble
 @_spi(Internal) import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 import SwiftUI
 import XCTest
 
@@ -288,6 +288,272 @@ final class SizeModifierTests: TestCase {
         XCTAssertEqual(Self.fittingSize(of: view, in: .init(width: 100, height: 100)).width, 40)
     }
 
+    // MARK: - Media
+
+    func testMediaFitMinimumWidthDoesNotBecomeProposedWidth() {
+        let size = PaywallComponent.Size(
+            width: .fit(nil, .init(min: 120, max: nil)),
+            height: .fit(nil)
+        )
+        let view = Color.clear
+            .frame(width: 10, height: 10)
+            .applyMediaWidth(size: size, usesMinMaxSizing: true)
+
+        XCTAssertEqual(
+            Self.fittingSize(of: view, in: .init(width: 370, height: 500)).width,
+            120
+        )
+    }
+
+    func testMediaWidthMinimumTakesPrecedenceOverHeightMaximum() {
+        let size = PaywallComponent.Size(
+            width: .fit(nil, .init(min: 120, max: nil)),
+            height: .fit(nil, .init(min: nil, max: 60))
+        )
+        let view = Color.clear
+            .aspectRatio(1, contentMode: .fit)
+            .applyMediaWidth(size: size, usesMinMaxSizing: true)
+            .applyMediaHeight(size: size, aspectRatio: 1, usesMinMaxSizing: true)
+
+        XCTAssertEqual(
+            Self.fittingSize(of: view, in: .init(width: 370, height: 500)),
+            .init(width: 120, height: 120)
+        )
+    }
+
+    // MARK: - Constrained stack allocation
+
+    func testConstrainedFillAllocationRedistributesAfterMaximumAndMinimum() throws {
+        guard #available(iOS 16.0, *) else {
+            throw XCTSkip("ConstrainedStackLayout requires iOS 16")
+        }
+
+        XCTAssertEqual(
+            ConstrainedStackLayout.allocateConstrainedFillSpace(
+                availableSpace: 324,
+                constraints: [
+                    .init(min: nil, max: 60),
+                    .null,
+                    .init(min: 140, max: nil)
+                ]
+            ),
+            [60, 124, 140]
+        )
+    }
+
+    func testConstrainedFillAllocationPinsMaximumAndMinimumInSamePass() throws {
+        guard #available(iOS 16.0, *) else {
+            throw XCTSkip("ConstrainedStackLayout requires iOS 16")
+        }
+
+        // Fixed 240pt preview row minus two 8pt gaps: max60 | Fill | min140.
+        XCTAssertEqual(
+            ConstrainedStackLayout.allocateConstrainedFillSpace(
+                availableSpace: 224,
+                constraints: [
+                    .init(min: nil, max: 60),
+                    .null,
+                    .init(min: 140, max: nil)
+                ]
+            ),
+            [60, 24, 140]
+        )
+    }
+
+    func testConstrainedFillAllocationPreservesUnsatisfiableMinimums() throws {
+        guard #available(iOS 16.0, *) else {
+            throw XCTSkip("ConstrainedStackLayout requires iOS 16")
+        }
+
+        XCTAssertEqual(
+            ConstrainedStackLayout.allocateConstrainedFillSpace(
+                availableSpace: 300,
+                constraints: [
+                    .init(min: 220, max: nil),
+                    .init(min: 220, max: nil)
+                ]
+            ),
+            [220, 220]
+        )
+    }
+
+    func testConstrainedFillAllocationAddsMarginsOutsideMaximum() throws {
+        guard #available(iOS 16.0, *) else {
+            throw XCTSkip("ConstrainedStackLayout requires iOS 16")
+        }
+
+        XCTAssertEqual(
+            ConstrainedStackLayout.allocateConstrainedFillSpace(
+                availableSpace: 338,
+                constraints: [
+                    .init(min: nil, max: 100),
+                    .null
+                ],
+                constrainedMargins: [32, 0]
+            ),
+            [132, 206]
+        )
+    }
+
+    func testConstrainedStackKeepsMarginsOutsidePaintedMaximum() throws {
+        guard #available(iOS 16.0, *) else {
+            throw XCTSkip("ConstrainedStackLayout requires iOS 16")
+        }
+
+        let paintedSize = MeasuredSize()
+        let occupiedSize = MeasuredSize()
+        let margin = EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16)
+        let constrainedSize = PaywallComponent.Size(
+            width: .fill(.init(min: nil, max: 100)),
+            height: .fixed(48)
+        )
+        let unconstrainedSize = PaywallComponent.Size(width: .fill, height: .fixed(48))
+        let view = ConstrainedStackLayout(
+            orientation: .horizontal,
+            distribution: .start,
+            crossAxisAlignment: .center,
+            spacing: 0,
+            mainAxisSize: .fixed(338),
+            crossAxisSize: .fixed(80)
+        ) {
+            Color.blue
+                .size(constrainedSize, margin: margin)
+                .background(Self.measure(with: paintedSize))
+                .padding(margin)
+                .background(Self.measure(with: occupiedSize))
+                .layoutValue(
+                    key: ComponentSizeLayoutValueKey.self,
+                    value: ComponentSizeLayoutValue(constrainedSize, margin: margin)
+                )
+
+            Color.orange
+                .size(unconstrainedSize)
+                .layoutValue(
+                    key: ComponentSizeLayoutValueKey.self,
+                    value: ComponentSizeLayoutValue(unconstrainedSize)
+                )
+        }
+        .frame(width: 338, height: 80)
+
+        let dispose = try view.addToHierarchy()
+        defer { dispose() }
+
+        expect(paintedSize.size?.width).toEventually(equal(100))
+        expect(occupiedSize.size?.width).toEventually(equal(132))
+    }
+
+    func testConstrainedStackSafelyAlignsCrossAxisOverflowAtStart() throws {
+        guard #available(iOS 16.0, *) else {
+            throw XCTSkip("ConstrainedStackLayout requires iOS 16")
+        }
+
+        let layout = ConstrainedStackLayout(
+            orientation: .horizontal,
+            distribution: .start,
+            crossAxisAlignment: .center,
+            spacing: 0,
+            mainAxisSize: .fixed(200),
+            crossAxisSize: .fixed(40)
+        )
+
+        XCTAssertEqual(layout.crossAxisPosition(childSize: 64, available: 40), 0)
+        XCTAssertEqual(layout.crossAxisPosition(childSize: 24, available: 40), 8)
+    }
+
+    func testConstrainedStackPaddingLivesInsideFitMinimumHeight() throws {
+        guard #available(iOS 16.0, *) else {
+            throw XCTSkip("ConstrainedStackLayout requires iOS 16")
+        }
+
+        let size = PaywallComponent.Size(
+            width: .fit(nil),
+            height: .fit(nil, .init(min: 80, max: nil))
+        )
+        let childSize = PaywallComponent.Size(width: .fixed(16), height: .fixed(16))
+        let view = ConstrainedStackLayout(
+            orientation: .horizontal,
+            distribution: .start,
+            crossAxisAlignment: .center,
+            spacing: 0,
+            mainAxisSize: size.width,
+            crossAxisSize: size.height
+        ) {
+            Color.clear
+                .frame(width: 16, height: 16)
+                .layoutValue(
+                    key: ComponentSizeLayoutValueKey.self,
+                    value: ComponentSizeLayoutValue(childSize)
+                )
+        }
+        .padding(20)
+        .size(size)
+
+        XCTAssertEqual(
+            Self.fittingSize(of: view, in: .init(width: 500, height: 500)).height,
+            80
+        )
+    }
+
+    func testSerializedLegacySizeDoesNotOptIntoMinMaxLayout() throws {
+        let data = Data(#"{"width":{"type":"fill"},"height":{"type":"fit"}}"#.utf8)
+        let decoded = try JSONDecoder().decode(PaywallComponent.Size.self, from: data)
+
+        XCTAssertFalse(decoded.hasMinMaxSizing)
+    }
+
+    func testConstrainedSizeOptsIntoMinMaxLayout() {
+        XCTAssertTrue(
+            PaywallComponent.Size(
+                width: .fill(.init(min: nil, max: 60)),
+                height: .fit(nil)
+            ).hasMinMaxSizing
+        )
+    }
+
+    // MARK: - Shape clipping
+
+    func testStackUsesOriginalShapeClippingPolicy() {
+        XCTAssertEqual(StackComponentView.contentClippingPolicy, .automatic)
+    }
+
+    func testRectangleWithoutRoundedCornersDoesNotClipContent() {
+        XCTAssertFalse(
+            ShapeModifier.shouldClipContent(
+                shape: .rectangle(nil),
+                hasBorder: false
+            )
+        )
+        XCTAssertFalse(
+            ShapeModifier.shouldClipContent(
+                shape: .rectangle(.init(topLeft: 0, topRight: 0, bottomLeft: 0, bottomRight: 0)),
+                hasBorder: false
+            )
+        )
+    }
+
+    func testBorderClipsContentWithoutExplicitShape() {
+        XCTAssertTrue(
+            ShapeModifier.shouldClipContent(
+                shape: .rectangle(nil),
+                hasBorder: true
+            )
+        )
+    }
+
+    func testRoundedShapeClipsContent() {
+        XCTAssertTrue(
+            ShapeModifier.shouldClipContent(
+                shape: .rectangle(.init(topLeft: 8, topRight: 0, bottomLeft: 0, bottomRight: 0)),
+                hasBorder: false
+            )
+        )
+    }
+
+    func testExplicitClippingOverridesLegacyRectangleHeuristic() {
+        XCTAssertTrue(ShapeModifier.ContentClipping.enabled.resolve(legacyValue: false))
+        XCTAssertFalse(ShapeModifier.ContentClipping.disabled.resolve(legacyValue: true))
+    }
+
     // MARK: - Sheet
 
     func testSheetFitRespectsMinimumHeight() {
@@ -371,6 +637,14 @@ final class SizeModifierTests: TestCase {
 
     private static func fittingSize<Content: View>(of view: Content, in proposal: CGSize) -> CGSize {
         UIHostingController(rootView: view).sizeThatFits(in: proposal)
+    }
+
+    private static func measure(with measuredSize: MeasuredSize) -> some View {
+        GeometryReader { proxy in
+            Color.clear
+                .onAppear { measuredSize.size = proxy.size }
+                .onChangeOf(proxy.size) { measuredSize.size = $0 }
+        }
     }
 
 }

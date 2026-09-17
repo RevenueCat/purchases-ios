@@ -25,7 +25,7 @@ class TextComponentViewModel {
 
     private let localizationProvider: LocalizationProvider
     let uiConfigProvider: UIConfigProvider
-    private let component: PaywallComponent.TextComponent
+    let component: PaywallComponent.TextComponent
 
     private let text: String
     private let presentedOverrides: PresentedOverrides<LocalizedTextPartial>?

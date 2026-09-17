@@ -74,6 +74,9 @@ struct ImageComponentView: View {
     @Environment(\.requestSizeCalculation)
     private var requestSizeCalculation
 
+    @Environment(\.paywallUsesMinMaxSizing)
+    private var paywallUsesMinMaxSizing
+
     let viewModel: ImageComponentViewModel
 
     var renderForPreview: Bool {
@@ -243,8 +246,15 @@ struct ImageComponentView: View {
         with style: ImageComponentStyle
     ) -> some View {
         content
-            .applyMediaWidth(size: style.size)
-            .applyMediaHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
+            .applyMediaWidth(
+                size: style.size,
+                usesMinMaxSizing: self.paywallUsesMinMaxSizing
+            )
+            .applyMediaHeight(
+                size: style.size,
+                aspectRatio: self.aspectRatio(style: style),
+                usesMinMaxSizing: self.paywallUsesMinMaxSizing
+            )
             .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
                 view.overlay(
                     Color.clear

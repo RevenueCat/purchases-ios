@@ -23,6 +23,25 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ShapeModifier: ViewModifier {
 
+    enum ContentClipping: Equatable {
+
+        case automatic
+        case enabled
+        case disabled
+
+        func resolve(legacyValue: Bool) -> Bool {
+            switch self {
+            case .automatic:
+                return legacyValue
+            case .enabled:
+                return true
+            case .disabled:
+                return false
+            }
+        }
+
+    }
+
     struct BorderInfo: Hashable {
 
         let color: DisplayableColorScheme
@@ -112,18 +131,39 @@ struct ShapeModifier: ViewModifier {
     var shape: Shape
     var background: BackgroundStyle?
     var uiConfigProvider: UIConfigProvider?
+    var contentClipping: ContentClipping
 
     @Environment(\.colorScheme) var colorScheme
 
     init(border: BorderInfo?,
          shape: Shape?,
          background: BackgroundStyle?,
-         uiConfigProvider: UIConfigProvider?
+         uiConfigProvider: UIConfigProvider?,
+         contentClipping: ContentClipping = .automatic
     ) {
         self.border = border
         self.shape = shape ?? .rectangle(nil)
         self.background = background
         self.uiConfigProvider = uiConfigProvider
+        self.contentClipping = contentClipping
+    }
+
+    static func shouldClipContent(shape: Shape, hasBorder: Bool) -> Bool {
+        if hasBorder {
+            return true
+        }
+
+        switch shape {
+        case .rectangle(let radius):
+            return [
+                radius?.topLeft,
+                radius?.topRight,
+                radius?.bottomLeft,
+                radius?.bottomRight
+            ].contains { ($0 ?? 0) > 0 }
+        case .circle, .pill, .concave, .convex:
+            return true
+        }
     }
 
     @ViewBuilder
@@ -131,11 +171,15 @@ struct ShapeModifier: ViewModifier {
         switch self.shape {
         case .circle, .pill, .rectangle:
             if let shape = self.shape.toInsettableShape() {
+                let clipsContent = self.contentClipping.resolve(
+                    legacyValue: Self.shouldClipContent(
+                        shape: self.shape,
+                        hasBorder: self.border != nil
+                    )
+                )
                 content
                     .backgroundStyle(background)
-                // We want to clip only in case there is a non-Rectangle shape
-                // or if there's a border
-                    .applyIf(!shape.isRectangle() || border != nil) { view in
+                    .applyIf(clipsContent) { view in
                         view
                             .clipShape(
                                 // Adding inset to clip contents within the border
@@ -145,11 +189,15 @@ struct ShapeModifier: ViewModifier {
                     }
                 // Place border on top of content
                     .applyIfLet(border) { view, border in
-                        view.clipShape(shape).overlay {
-                            border.color.toView(colorScheme: colorScheme)
-                                .mask(shape.strokeBorder(Color.black, lineWidth: border.width))
-                                .allowsHitTesting(false)
-                        }
+                        view
+                            .applyIf(clipsContent) { borderedView in
+                                borderedView.clipShape(shape)
+                            }
+                            .overlay {
+                                border.color.toView(colorScheme: colorScheme)
+                                    .mask(shape.strokeBorder(Color.black, lineWidth: border.width))
+                                    .allowsHitTesting(false)
+                            }
                     }
             }
         case .concave:
@@ -417,14 +465,16 @@ extension View {
         border: ShapeModifier.BorderInfo?,
         shape: ShapeModifier.Shape?,
         background: BackgroundStyle? = nil,
-        uiConfigProvider: UIConfigProvider? = nil
+        uiConfigProvider: UIConfigProvider? = nil,
+        contentClipping: ShapeModifier.ContentClipping = .automatic
     ) -> some View {
         self.modifier(
             ShapeModifier(
                 border: border,
                 shape: shape,
                 background: background,
-                uiConfigProvider: uiConfigProvider
+                uiConfigProvider: uiConfigProvider,
+                contentClipping: contentClipping
             )
         )
     }

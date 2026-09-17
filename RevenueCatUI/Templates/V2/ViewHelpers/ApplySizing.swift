@@ -20,10 +20,17 @@ import SwiftUI
 extension View {
 
     @ViewBuilder
-    func applyMediaWidth(size: PaywallComponent.Size) -> some View {
+    func applyMediaWidth(
+        size: PaywallComponent.Size,
+        usesMinMaxSizing: Bool = false
+    ) -> some View {
         switch size.width {
         case let .fit(_, minMax):
-            self.applyWidthLimits(minMax, alignment: .center)
+            if usesMinMaxSizing, minMax.min != nil {
+                self.applyFitWidthLimits(minMax, alignment: .center)
+            } else {
+                self.applyWidthLimits(minMax, alignment: .center)
+            }
         case let .fill(minMax):
             self
                 .frame(maxWidth: .infinity)
@@ -36,12 +43,27 @@ extension View {
     }
 
     @ViewBuilder
-    func applyMediaHeight(size: PaywallComponent.Size, aspectRatio: Double) -> some View {
+    func applyMediaHeight(
+        size: PaywallComponent.Size,
+        aspectRatio: Double,
+        usesMinMaxSizing: Bool = false
+    ) -> some View {
         switch size.height {
         case let .fit(_, minMax):
             switch size.width {
-            case .fit:
-                self.applyHeightLimits(minMax, alignment: .center)
+            case let .fit(_, widthMinMax):
+                if usesMinMaxSizing, let minimumWidth = widthMinMax.min {
+                    let minimumFromAspectRatio = CGFloat(minimumWidth) / CGFloat(aspectRatio)
+                    let minimumHeight = max(CGFloat(minMax.min ?? 0), minimumFromAspectRatio)
+                    let maximumHeight = minMax.max.map { max(CGFloat($0), minimumHeight) }
+                    self.frame(
+                        minHeight: minimumHeight,
+                        maxHeight: maximumHeight,
+                        alignment: .center
+                    )
+                } else {
+                    self.applyHeightLimits(minMax, alignment: .center)
+                }
             case .fill:
                 self.applyHeightLimits(minMax, alignment: .center)
             case .fixed(let value):

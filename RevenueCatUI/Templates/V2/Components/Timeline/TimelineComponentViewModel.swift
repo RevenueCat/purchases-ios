@@ -24,7 +24,7 @@ typealias PresentedTimelineItemPartial = PaywallComponent.PartialTimelineItem
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class TimelineComponentViewModel {
 
-    private let component: PaywallComponent.TimelineComponent
+    let component: PaywallComponent.TimelineComponent
     let items: [TimelineItemViewModel]
     let uiConfigProvider: UIConfigProvider
     let id = UUID()
