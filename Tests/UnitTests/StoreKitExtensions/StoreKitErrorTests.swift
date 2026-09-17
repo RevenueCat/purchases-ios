@@ -96,7 +96,7 @@ class StoreKitErrorTests: BaseErrorTests {
         verifyPurchasesError(error, expectedCode: .storeProblemError, underlyingError: error)
         expect(error.trackingDescription) == "invalid_presentation_context"
 
-        let nsError = error.asPurchasesError as NSError
+        let nsError = error.asPurchasesError.asPublicError
         let rootError = try XCTUnwrap(nsError.userInfo[ErrorDetails.rootErrorKey] as? [String: Any])
         let storeKitError = try XCTUnwrap(rootError["storeKitError"] as? [String: Any])
         expect(storeKitError["description"] as? String) == "invalid_presentation_context"
