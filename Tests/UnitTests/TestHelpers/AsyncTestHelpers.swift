@@ -62,33 +62,20 @@ func waitUntilValue<Value>(
 
 private struct ConditionFailedError: Error {}
 
-final class EligibilityWarmupTracker: Sendable {
+extension OperationDispatcher {
 
-    private let pendingWarmups: Atomic<Int> = .init(0)
-
-    func install() {
-        let previous = Purchases.eligibilityCacheWarmupStarted.getAndSet { [self] in self.start() }
-        XCTAssertNil(previous, "An eligibility warmup observer is already installed")
-    }
-
-    func start() -> @Sendable () -> Void {
-        self.pendingWarmups.modify { $0 += 1 }
-        return { [pendingWarmups = self.pendingWarmups] in pendingWarmups.modify { $0 -= 1 } }
-    }
-
-    var pendingCount: Int {
-        self.pendingWarmups.value
-    }
-
-    func waitForCompletion(timeout: NimbleTimeInterval) async throws {
+    /// Waits until every asynchronous operation dispatched through this instance has finished, so that
+    /// work scheduled by one test cannot still be running while the next one starts.
+    func waitForPendingAsyncOperations(timeout: NimbleTimeInterval = defaultTimeout) async throws {
         let start = Date()
+
         try await asyncWait(
             timeout: timeout,
             description: { pending in
-                "Eligibility cache warmup did not finish after \(Date().timeIntervalSince(start))s; " +
+                "Asynchronous operations did not finish after \(Date().timeIntervalSince(start))s; " +
                 "\(pending ?? 0) operations remain"
             },
-            until: { self.pendingCount },
+            until: { self.pendingAsyncOperationCount },
             condition: { $0 == 0 }
         )
     }
