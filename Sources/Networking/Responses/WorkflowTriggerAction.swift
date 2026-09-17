@@ -23,7 +23,7 @@ import Foundation
 extension WorkflowTriggerAction {
 
     /// A branch takes its fallback until the audiences that pick a different route can be evaluated.
-    @_spi(Internal) public var routedStepId: String? {
+    @_spi(Internal) public var destinationStepId: String? {
         switch self {
         case .step(let stepId): return stepId
         case .branch(let branch): return branch.fallbackStepId

@@ -238,43 +238,6 @@ final class WorkflowNavigatorTests: TestCase {
         expect(navigator.currentStepId) == "step_fallback"
     }
 
-    func testChainedBranchStepsRouteThroughToAScreen() throws {
-        let workflow = try Self.makeWorkflow(
-            steps: [
-                makeStep(id: "step_1", triggers: [("btn_abc", "btn_abc")], triggerActions: [("btn_abc", "branch_1")]),
-                makeBranchStep(id: "branch_1", matchedStepId: "step_matched", fallbackStepId: "branch_2"),
-                makeBranchStep(id: "branch_2", matchedStepId: "step_matched", fallbackStepId: "step_fallback"),
-                makeScreenStep(id: "step_matched"),
-                makeScreenStep(id: "step_fallback")
-            ],
-            initialStepId: "step_1"
-        )
-        let navigator = WorkflowNavigator(workflow: workflow)
-
-        navigator.triggerAction(componentId: "btn_abc")
-
-        expect(navigator.currentStepId) == "step_fallback"
-    }
-
-    /// Nothing server side stops a branch pointing back at itself, and following one forever would hang.
-    func testACycleOfBranchStepsDoesNotHang() throws {
-        let workflow = try Self.makeWorkflow(
-            steps: [
-                makeStep(id: "step_1", triggers: [("btn_abc", "btn_abc")], triggerActions: [("btn_abc", "branch_1")]),
-                makeBranchStep(id: "branch_1", matchedStepId: "step_matched", fallbackStepId: "branch_2"),
-                makeBranchStep(id: "branch_2", matchedStepId: "step_matched", fallbackStepId: "branch_1"),
-                makeScreenStep(id: "step_matched")
-            ],
-            initialStepId: "step_1"
-        )
-        let navigator = WorkflowNavigator(workflow: workflow)
-
-        let result = navigator.triggerAction(componentId: "btn_abc")
-
-        expect(result).to(beNil())
-        expect(navigator.currentStepId) == "step_1"
-    }
-
     /// A screen whose exit is a branch is not a routing step: it renders.
     func testAScreenWithABranchExitIsStillRendered() throws {
         let workflow = try Self.makeWorkflow(

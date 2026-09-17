@@ -80,8 +80,8 @@ final class WorkflowNavigator: ObservableObject {
                   $0.componentId == componentId && $0.type == triggerType
               }),
               let actionId = trigger.actionId,
-              let stepId = step.stepTriggerActions[actionId]?.routedStepId,
-              let nextStep = workflow.routedStep(from: stepId) else {
+              let stepId = step.stepTriggerActions[actionId]?.destinationStepId,
+              let nextStep = workflow.destinationStep(from: stepId) else {
             return nil
         }
 

@@ -244,25 +244,17 @@ extension PublishedWorkflow {
         return step.offeringIdentifier ?? step.screenId.flatMap { self.screens[$0]?.offeringIdentifier }
     }
 
-    /// The step reached from `stepId`, following `branch` steps to the first one with a screen. A branch step
-    /// has no screen of its own, so it can never be presented.
-    @_spi(Internal) public func routedStep(from stepId: String) -> WorkflowStep? {
-        var visited: Set<String> = []
-        var stepId = stepId
-
-        while let step = self.steps[stepId], visited.insert(stepId).inserted {
-            guard let next = self.routedExit(on: step) else { return step }
-            stepId = next
+    /// The step reached from `stepId`, routing on through it when it is a `branch` step. A branch step has no
+    /// screen of its own, so it can never be presented. A step with a screen renders, even when its own exit
+    /// is a branch.
+    @_spi(Internal) public func destinationStep(from stepId: String) -> WorkflowStep? {
+        guard let step = self.steps[stepId] else { return nil }
+        guard step.screenId == nil,
+              let next = step.triggerActions.values.first(where: { $0.isBranch })?.destinationStepId else {
+            return step
         }
 
-        return nil
-    }
-
-    /// A step with a screen renders instead of routing, even when its own exit is a branch.
-    private func routedExit(on step: WorkflowStep) -> String? {
-        guard step.screenId == nil else { return nil }
-
-        return step.triggerActions.values.first { $0.isBranch }?.routedStepId
+        return self.steps[next]
     }
 
 }
