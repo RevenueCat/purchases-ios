@@ -565,7 +565,7 @@ commands:
         type: string
       device:
         type: string
-        default: iPhone 16 (18.5)
+        default: iPhone 17 (27.0)
     steps:
       - checkout
       - install-dependencies
