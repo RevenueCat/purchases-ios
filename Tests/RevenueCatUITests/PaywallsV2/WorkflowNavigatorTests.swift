@@ -217,70 +217,13 @@ final class WorkflowNavigatorTests: TestCase {
         expect(navigator.canNavigateBack) == false
     }
 
-    // MARK: - Branch steps
-
-    /// A published branch step has no screen, so landing on it would fail presentation.
-    func testNavigatingToABranchStepLandsOnTheStepItRoutesTo() throws {
-        let workflow = try Self.makeWorkflow(
-            steps: [
-                makeStep(id: "step_1", triggers: [("btn_abc", "btn_abc")], triggerActions: [("btn_abc", "branch")]),
-                makeBranchStep(id: "branch", matchedStepId: "step_matched", fallbackStepId: "step_fallback"),
-                makeScreenStep(id: "step_matched"),
-                makeScreenStep(id: "step_fallback")
-            ],
-            initialStepId: "step_1"
-        )
-        let navigator = WorkflowNavigator(workflow: workflow)
-
-        let result = navigator.triggerAction(componentId: "btn_abc")
-
-        expect(result?.id) == "step_fallback"
-        expect(navigator.currentStepId) == "step_fallback"
-    }
-
-    /// A screen whose exit is a branch is not a routing step: it renders.
-    func testAScreenWithABranchExitIsStillRendered() throws {
-        let workflow = try Self.makeWorkflow(
-            steps: [
-                makeStepWithBranchExit(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
-                makeScreenStep(id: "step_2")
-            ],
-            initialStepId: "step_1"
-        )
-        let navigator = WorkflowNavigator(workflow: workflow)
-
-        expect(navigator.currentStepId) == "step_1"
-    }
-
-    /// Navigating to a screen that happens to have a branch exit must land on that screen, not route past it
-    /// to wherever its own branch leads.
-    func testNavigatingToAScreenWithABranchExitLandsOnIt() throws {
-        let workflow = try Self.makeWorkflow(
-            steps: [
-                makeStep(id: "step_1", triggers: [("btn_abc", "btn_abc")], triggerActions: [("btn_abc", "step_2")]),
-                makeStepWithBranchExit(
-                    id: "step_2",
-                    componentId: "btn_def",
-                    actionId: "btn_def",
-                    fallbackStepId: "step_3"
-                ),
-                makeScreenStep(id: "step_3")
-            ],
-            initialStepId: "step_1"
-        )
-        let navigator = WorkflowNavigator(workflow: workflow)
-
-        let result = navigator.triggerAction(componentId: "btn_abc")
-
-        expect(result?.id) == "step_2"
-        expect(navigator.currentStepId) == "step_2"
-    }
+    // MARK: - Branch exits
 
     func testAScreensBranchExitNavigatesToTheRouteItPicks() throws {
         let workflow = try Self.makeWorkflow(
             steps: [
                 makeStepWithBranchExit(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
-                makeScreenStep(id: "step_2")
+                makeStep(id: "step_2")
             ],
             initialStepId: "step_1"
         )
@@ -505,44 +448,6 @@ private extension WorkflowNavigatorTests {
               "fallback_step_id": "\(fallbackStepId)"
             }
           }
-        }
-        """
-        return StepDescriptor(id: id, json: json)
-    }
-
-    /// Creates a `StepDescriptor` shaped like a published branch step: no screen, one `branch` action.
-    func makeBranchStep(
-        id: String,
-        audienceId: String = "aud_a",
-        matchedStepId: String,
-        fallbackStepId: String
-    ) -> StepDescriptor {
-        let json = """
-        {
-          "id": "\(id)",
-          "type": "branch",
-          "param_values": {},
-          "trigger_actions": {
-            "branch": {
-              "type": "branch",
-              "branches": [{"audience_id": "\(audienceId)", "step_id": "\(matchedStepId)"}],
-              "fallback_step_id": "\(fallbackStepId)"
-            }
-          }
-        }
-        """
-        return StepDescriptor(id: id, json: json)
-    }
-
-    /// Creates a `StepDescriptor` for a screen step, with a `screen_id` so it is not a routing step.
-    func makeScreenStep(id: String) -> StepDescriptor {
-        let json = """
-        {
-          "id": "\(id)",
-          "type": "screen",
-          "screen_id": "screen_\(id)",
-          "triggers": [],
-          "trigger_actions": {}
         }
         """
         return StepDescriptor(id: id, json: json)

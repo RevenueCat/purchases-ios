@@ -31,11 +31,6 @@ extension WorkflowTriggerAction {
         }
     }
 
-    var isBranch: Bool {
-        if case .branch = self { return true }
-        return false
-    }
-
 }
 
 // MARK: - Decodable
