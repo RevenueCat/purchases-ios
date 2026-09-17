@@ -41,6 +41,7 @@ func checkCheckpointAPI(_ purchases: Purchases) {
     let _: EntitlementInfo? = entitlement?.entitlementInfo
     let result: FlowResult? = nil
     let _: Set<ObtainedEntitlement>? = result?.obtainedEntitlements
+    let _: CheckpointAdOutcome? = result?.adOutcome
 }
 
 @MainActor
