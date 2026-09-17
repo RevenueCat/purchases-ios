@@ -219,28 +219,6 @@ final class WorkflowPresenterTests: TestCase {
 
     #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
 
-    func testBackOutReasonIsPreservedWhenExitOfferDismisses() throws {
-        let presentation = Self.presentation()
-        let presenter = WorkflowPresenter { _ in true }
-        let offering = try XCTUnwrap(presentation.workflow.offerings.all["offering-id"])
-        let originalController = WorkflowDismissalReasonPaywallController(
-            offering: offering,
-            workflowDismissalReason: .navigatedBack
-        )
-        let exitOfferController = PaywallViewController(offering: offering)
-
-        try presenter.startPresentation(presentation)
-        presenter.paywallViewController(
-            originalController,
-            willPresentExitOfferController: exitOfferController
-        )
-        let execution = presenter.presentationDidDismiss()
-
-        guard case .backedOut? = execution else {
-            return XCTFail("Expected a dismissed outcome")
-        }
-    }
-
     func testRejectedPresentationThrowsAndCleansStoredCall() {
         var shouldAcceptPresentation = false
         let presenter = WorkflowPresenter { _ in shouldAcceptPresentation }
@@ -309,6 +287,20 @@ final class WorkflowPresenterTests: TestCase {
         )
 
         XCTAssertEqual(viewController.customVariables, expected)
+    }
+
+    func testCheckpointWorkflowPaywallDoesNotAcceptExitOffers() throws {
+        let presentation = try Self.renderablePresentation(customVariables: [:])
+        let presenter = WorkflowPresenter { _ in true }
+        let viewController = try presenter.makePaywallViewController(for: presentation)
+        let exitOffering = try XCTUnwrap(presentation.workflow.offerings.all["offering-id"])
+        viewController.remoteConfigEnabledForTesting = true
+
+        viewController.simulateWorkflowExitOfferUpdate(exitOffering)
+        XCTAssertNil(viewController.exitOfferOfferingForTesting)
+
+        viewController.simulateOfferingBasedExitOfferPrefetchResult(exitOffering)
+        XCTAssertNil(viewController.exitOfferOfferingForTesting)
     }
 
     private static func presentation(
@@ -399,36 +391,6 @@ final class WorkflowPresenterTests: TestCase {
 }
 
 @available(iOS 15.0, macOS 12.0, *)
-private final class WorkflowDismissalReasonPaywallController: PaywallViewController {
-
-    private let dismissalReason: WorkflowDismissalReason
-
-    override var workflowDismissalReason: WorkflowDismissalReason {
-        return self.dismissalReason
-    }
-
-    init(
-        offering: Offering,
-        workflowDismissalReason: WorkflowDismissalReason = .close
-    ) {
-        self.dismissalReason = workflowDismissalReason
-        super.init(
-            content: .offering(offering),
-            fonts: DefaultPaywallFontProvider(),
-            displayCloseButton: false,
-            shouldBlockTouchEvents: false,
-            performPurchase: nil,
-            performRestore: nil,
-            dismissRequestedHandler: nil
-        )
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-}
-
-@available(iOS 15.0, macOS 12.0, *)
 @MainActor
 final class DefaultPaywallPresenterTests: TestCase {
 
@@ -462,6 +424,24 @@ final class DefaultPaywallPresenterTests: TestCase {
         XCTAssertEqual(presenter.presentationResult(dismissalReason: .navigatedBack), .continued)
     }
 
+    func testDefaultCheckpointPaywallDoesNotAcceptExitOffers() throws {
+        let offering = Offering(
+            identifier: "offering-id",
+            serverDescription: "Test offering",
+            availablePackages: [],
+            webCheckoutUrl: nil
+        )
+        let controller = makeDefaultCheckpointPaywallViewController(
+            params: .init(checkpointIdentifier: "checkpoint", customVariables: [:], offering: offering)
+        )
+        controller.remoteConfigEnabledForTesting = true
+
+        controller.simulateWorkflowExitOfferUpdate(offering)
+        XCTAssertNil(controller.exitOfferOfferingForTesting)
+
+        controller.simulateOfferingBasedExitOfferPrefetchResult(offering)
+        XCTAssertNil(controller.exitOfferOfferingForTesting)
+    }
     private func makePaywallViewController() -> PaywallViewController {
         return PaywallViewController(
             offering: Offering(

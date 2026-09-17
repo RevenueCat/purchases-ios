@@ -20,6 +20,27 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 final class PaywallViewControllerExitOfferTests: TestCase {
 
+    func testDisablingExitOffersClearsAndIgnoresWorkflowExitOffers() {
+        let controller = PaywallViewController(offering: Self.makeOffering(identifier: "main"))
+        controller.remoteConfigEnabledForTesting = true
+        controller.simulateWorkflowExitOfferUpdate(Self.makeOffering(identifier: "first-exit"))
+        expect(controller.exitOfferOfferingForTesting).notTo(beNil(), description: "precondition")
+
+        controller.disableExitOffers()
+        controller.simulateWorkflowExitOfferUpdate(Self.makeOffering(identifier: "second-exit"))
+
+        expect(controller.exitOfferOfferingForTesting).to(beNil())
+    }
+
+    func testDisablingExitOffersIgnoresOfferingBasedExitOffers() {
+        let controller = PaywallViewController(offering: Self.makeOffering(identifier: "main"))
+
+        controller.disableExitOffers()
+        controller.simulateOfferingBasedExitOfferPrefetchResult(Self.makeOffering(identifier: "exit"))
+
+        expect(controller.exitOfferOfferingForTesting).to(beNil())
+    }
+
     func testUpdateDisplayCloseButtonDoesNotClearWorkflowExitOffer() {
         let controller = PaywallViewController(offering: Self.makeOffering(identifier: "main"))
         controller.remoteConfigEnabledForTesting = true
