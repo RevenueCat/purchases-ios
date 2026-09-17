@@ -13,6 +13,7 @@
 
 import Foundation
 import Nimble
+import StoreKit
 import XCTest
 
 #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -22,6 +23,28 @@ import XCTest
 #endif
 
 extension BaseStoreKitIntegrationTests {
+
+    // Match StoreKit's current identifier, not the SDK's captured fallback UUID (see PR #7739).
+    func storeKitIdentifier(for transaction: StoreTransaction) -> String? {
+        if Self.storeKitVersion == .storeKit1 {
+            return transaction.sk1Transaction?.transactionIdentifier
+        } else {
+            return transaction.transactionIdentifier
+        }
+    }
+
+    func verifyTransactionIsEventuallyRemovedFromSK1Queue(
+        _ transaction: StoreTransaction,
+        file: FileString = #filePath,
+        line: UInt = #line
+    ) async {
+        await expect(file: file, line: line) {
+            SKPaymentQueue.default().transactions.contains {
+                $0.transactionIdentifier == transaction.transactionIdentifier &&
+                    $0.payment.productIdentifier == transaction.productIdentifier
+            }
+        }.toEventually(beFalse(), timeout: .seconds(5))
+    }
 
     @discardableResult
     func verifyEntitlementWentThrough(

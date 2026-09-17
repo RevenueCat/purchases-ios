@@ -316,11 +316,9 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testCallToGetCustomerInfoWithPendingRenewalsPostsReceiptOnlyOnce() async throws {
-        #if os(iOS)
-        try XCTSkipIf(Self.storeKitVersion == .storeKit1 &&
-                      ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
-                      "Concurrent receipt refresh can prevent deduplication; tracked separately in #7738")
-        #endif
+        if Self.storeKitVersion == .storeKit1 {
+            try AvailabilityChecks.concurrentSK1ReceiptRefreshDeduplicatesOrSkipTest()
+        }
 
         // This test requires the "production" behavior to make sure
         // we don't refresh the receipt a second time when posting the second transaction.
@@ -462,10 +460,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchasingMultipleProductsWhileServerIsDownHandlesAllTransactionsWhenForegroundingApp() async throws {
-        #if os(iOS)
-        try XCTSkipIf(ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
-                      "iOS 27 StoreKitTest omits purchased, unfinished transactions from Transaction.unfinished")
-        #endif
+        try AvailabilityChecks.unfinishedTransactionsWithSKTestWorkOrSkipTest()
 
         self.continueAfterFailure = true
 
@@ -543,12 +538,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
             level: .verbose
         )
 
-        let transactionId: String
-        if Self.storeKitVersion == .storeKit1 {
-            transactionId = try XCTUnwrap(transaction.sk1Transaction?.transactionIdentifier)
-        } else {
-            transactionId = transaction.transactionIdentifier
-        }
+        let transactionId = try XCTUnwrap(self.storeKitIdentifier(for: transaction))
         let offeringId = NSRegularExpression.escapedPattern(for: package.presentedOfferingContext.offeringIdentifier)
         let regex = "Enqueing network operation 'PostReceiptDataOperation' with cache key: "
             + ".*-\(offeringId)-false.*-\(transactionId)'"
