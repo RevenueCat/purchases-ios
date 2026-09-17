@@ -217,6 +217,88 @@ final class WorkflowNavigatorTests: TestCase {
         expect(navigator.canNavigateBack) == false
     }
 
+    // MARK: - Branch steps
+
+    /// A published branch step has no screen, so landing on it would fail presentation. The navigator has to
+    /// pass through it to the step it routes to.
+    func testNavigatingToABranchStepLandsOnTheStepItRoutesTo() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStep(id: "step_1", triggers: [("btn_abc", "btn_abc")], triggerActions: [("btn_abc", "branch")]),
+                makeBranchStep(id: "branch", matchedStepId: "step_matched", fallbackStepId: "step_fallback"),
+                makeScreenStep(id: "step_matched"),
+                makeScreenStep(id: "step_fallback")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        let result = navigator.triggerAction(componentId: "btn_abc")
+
+        expect(result?.id) == "step_fallback"
+        expect(navigator.currentStepId) == "step_fallback"
+    }
+
+    func testABranchStepAsTheInitialStepRoutesOnBeforeRendering() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeBranchStep(id: "branch", matchedStepId: "step_matched", fallbackStepId: "step_fallback"),
+                makeScreenStep(id: "step_matched"),
+                makeScreenStep(id: "step_fallback")
+            ],
+            initialStepId: "branch"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        expect(navigator.currentStepId) == "step_fallback"
+        expect(navigator.currentStep?.screenId) == "screen_step_fallback"
+    }
+
+    func testChainedBranchStepsRouteThroughToAScreen() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeBranchStep(id: "branch_1", matchedStepId: "step_matched", fallbackStepId: "branch_2"),
+                makeBranchStep(id: "branch_2", matchedStepId: "step_matched", fallbackStepId: "step_fallback"),
+                makeScreenStep(id: "step_matched"),
+                makeScreenStep(id: "step_fallback")
+            ],
+            initialStepId: "branch_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        expect(navigator.currentStepId) == "step_fallback"
+    }
+
+    /// Nothing server side stops a branch pointing back at itself, and following one forever would hang.
+    func testACycleOfBranchStepsDoesNotHang() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeBranchStep(id: "branch_1", matchedStepId: "step_matched", fallbackStepId: "branch_2"),
+                makeBranchStep(id: "branch_2", matchedStepId: "step_matched", fallbackStepId: "branch_1"),
+                makeScreenStep(id: "step_matched")
+            ],
+            initialStepId: "branch_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        // Nowhere renderable to go, so the initial step is kept rather than looping.
+        expect(navigator.currentStepId) == "branch_1"
+    }
+
+    /// A screen whose exit is a branch is not a routing step: it renders, and its exit is resolved later.
+    func testAScreenWithABranchExitIsStillRendered() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStepWithBranchExit(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
+                makeScreenStep(id: "step_2")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        expect(navigator.currentStepId) == "step_1"
+    }
+
     // MARK: - navigateBack
 
     func testNavigateBackFromInitialStepReturnsNil() throws {
@@ -403,6 +485,70 @@ private extension WorkflowNavigatorTests {
           "type": "screen",
           "triggers": \(triggersJSON),
           "trigger_actions": \(actionsJSON)
+        }
+        """
+        return StepDescriptor(id: id, json: json)
+    }
+
+    /// Creates a `StepDescriptor` for a screen whose exit is a branch, rather than a routing step.
+    func makeStepWithBranchExit(
+        id: String,
+        componentId: String,
+        actionId: String
+    ) -> StepDescriptor {
+        let json = """
+        {
+          "id": "\(id)",
+          "type": "screen",
+          "screen_id": "screen_\(id)",
+          "triggers": [
+            {"name":"Button","type":"on_press","action_id":"\(actionId)","component_id":"\(componentId)"}
+          ],
+          "trigger_actions": {
+            "\(actionId)": {
+              "type": "branch",
+              "branches": [{"audience_id": "aud_a", "step_id": "step_2"}],
+              "fallback_step_id": "step_2"
+            }
+          }
+        }
+        """
+        return StepDescriptor(id: id, json: json)
+    }
+
+    /// Creates a `StepDescriptor` shaped like a published branch step: no screen, one `branch` action.
+    func makeBranchStep(
+        id: String,
+        audienceId: String = "aud_a",
+        matchedStepId: String,
+        fallbackStepId: String
+    ) -> StepDescriptor {
+        let json = """
+        {
+          "id": "\(id)",
+          "type": "branch",
+          "param_values": {},
+          "trigger_actions": {
+            "branch": {
+              "type": "branch",
+              "branches": [{"audience_id": "\(audienceId)", "step_id": "\(matchedStepId)"}],
+              "fallback_step_id": "\(fallbackStepId)"
+            }
+          }
+        }
+        """
+        return StepDescriptor(id: id, json: json)
+    }
+
+    /// Creates a `StepDescriptor` for a screen step, with a `screen_id` so it is not a routing step.
+    func makeScreenStep(id: String) -> StepDescriptor {
+        let json = """
+        {
+          "id": "\(id)",
+          "type": "screen",
+          "screen_id": "screen_\(id)",
+          "triggers": [],
+          "trigger_actions": {}
         }
         """
         return StepDescriptor(id: id, json: json)
