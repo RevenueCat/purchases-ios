@@ -40,7 +40,7 @@ enum CheckpointPresentationOutcome {
 /// Presents a resolved checkpoint workflow and returns its terminal execution.
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-protocol WorkflowPresenterProtocol: AnyObject {
+protocol WorkflowPresenterType: AnyObject {
 
     func present(
         _ presentation: WorkflowPresentationRequest

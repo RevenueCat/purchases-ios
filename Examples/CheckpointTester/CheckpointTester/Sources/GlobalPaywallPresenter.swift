@@ -112,7 +112,7 @@ private enum PaywallPresenterDemo {
                     session.finish(with: .navigatedBack)
                 },
                 onPurchase: { _ in
-                    session.finish(with: .continue)
+                    session.finish(with: .continued)
                 }
             )
         )
@@ -137,7 +137,7 @@ private enum PaywallPresenterDemo {
                     session.finish(with: .navigatedBack)
                 },
                 onPurchase: { _ in
-                    session.finish(with: .continue)
+                    session.finish(with: .continued)
                 }
             )
         )

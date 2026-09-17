@@ -93,7 +93,7 @@ public struct PaywallPresentationParams {
 
 /// Describes how a custom checkpoint paywall presentation ended.
 ///
-/// After ``continue`` or ``closed``, RevenueCat synchronizes purchases and refreshes customer information before
+/// After ``continued`` or ``closed``, RevenueCat synchronizes purchases and refreshes customer information before
 /// completing the checkpoint. ``navigatedBack`` skips synchronization and does not invoke the checkpoint's passed
 /// callback.
 @_spi(CheckpointsInternal)
@@ -110,7 +110,7 @@ public struct PaywallPresentationResult: Hashable {
     /// The customer completed the custom paywall presentation and should continue through the checkpoint.
     ///
     /// RevenueCat synchronizes purchases and refreshes customer information before completing the checkpoint.
-    public static let `continue` = Self(rawValue: 0)
+    public static let continued = Self(rawValue: 0)
 
     /// The customer closed the custom paywall, or the presentation could not be completed.
     ///

@@ -24,12 +24,12 @@ final class CheckpointsManager {
 
     private let resolveCheckpoint: (String, CheckpointCallParams) async throws -> CheckpointResolution
     private let cachedCustomerInfoProvider: @MainActor () -> CustomerInfo?
-    private let checkpointPresenter: CheckpointPresenterProtocol
+    private let checkpointPresenter: CheckpointPresenterType
     var paywallPresenter: PaywallPresenter?
 
     init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
-        checkpointPresenter: CheckpointPresenterProtocol? = nil,
+        checkpointPresenter: CheckpointPresenterType? = nil,
         cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil },
         customerInfoSynchronizer: @escaping CustomerInfoSynchronizer = { throw CancellationError() }
     ) {

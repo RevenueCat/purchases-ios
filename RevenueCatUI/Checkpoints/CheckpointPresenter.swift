@@ -18,15 +18,15 @@ import Foundation
 /// Owns and routes the single active checkpoint presentation.
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-final class CheckpointPresenter: CheckpointPresenterProtocol {
+final class CheckpointPresenter: CheckpointPresenterType {
 
-    private let workflowPresenter: WorkflowPresenterProtocol
-    private let defaultPaywallPresenter: DefaultPaywallPresenterProtocol
+    private let workflowPresenter: WorkflowPresenterType
+    private let defaultPaywallPresenter: DefaultPaywallPresenterType
     private let customerInfoSynchronizer: CheckpointsManager.CustomerInfoSynchronizer
     private let slot = CheckpointPresentationSlot()
 
     init(
-        workflowPresenter: WorkflowPresenterProtocol,
+        workflowPresenter: WorkflowPresenterType,
         customerInfoSynchronizer: @escaping CheckpointsManager.CustomerInfoSynchronizer = { throw CancellationError() }
     ) {
         self.workflowPresenter = workflowPresenter
@@ -35,8 +35,8 @@ final class CheckpointPresenter: CheckpointPresenterProtocol {
     }
 
     init(
-        workflowPresenter: WorkflowPresenterProtocol,
-        defaultPaywallPresenter: DefaultPaywallPresenterProtocol,
+        workflowPresenter: WorkflowPresenterType,
+        defaultPaywallPresenter: DefaultPaywallPresenterType,
         customerInfoSynchronizer: @escaping CheckpointsManager.CustomerInfoSynchronizer = { throw CancellationError() }
     ) {
         self.workflowPresenter = workflowPresenter
@@ -203,7 +203,7 @@ final class CheckpointPresenter: CheckpointPresenterProtocol {
 
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-protocol CheckpointPresenterProtocol: AnyObject {
+protocol CheckpointPresenterType: AnyObject {
 
     func presentWorkflow(_ presentation: WorkflowPresentationRequest) async throws -> CheckpointPresentationOutcome
 
@@ -217,7 +217,7 @@ protocol CheckpointPresenterProtocol: AnyObject {
 
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-protocol DefaultPaywallPresenterProtocol: PaywallPresenter {
+protocol DefaultPaywallPresenterType: PaywallPresenter {
     func cancel(completion: @escaping () -> Void)
 }
 
@@ -226,7 +226,7 @@ import UIKit
 
 @MainActor
 @available(iOS 15.0, macOS 12.0, *)
-private final class DefaultPaywallPresenter: NSObject, DefaultPaywallPresenterProtocol, PaywallViewControllerDelegate {
+private final class DefaultPaywallPresenter: NSObject, DefaultPaywallPresenterType, PaywallViewControllerDelegate {
 
     private var completion: PaywallPresentationCompletion?
     private weak var presentedViewController: PaywallViewController?
@@ -319,7 +319,7 @@ func dismissCheckpointPaywallViewController(
 #else
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private final class DefaultPaywallPresenter: DefaultPaywallPresenterProtocol {
+private final class DefaultPaywallPresenter: DefaultPaywallPresenterType {
     func present(
         params: PaywallPresentationParams,
         completion: @escaping PaywallPresentationCompletion

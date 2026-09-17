@@ -342,7 +342,7 @@ final class CheckpointsManagerTests: TestCase {
             identifier: "onboarding",
             params: .init(customVariables: ["source": "test"], paywallPresenter: { params, completion in
                 receivedParams = params
-                completion(.continue)
+                completion(.continued)
             })
         )
 
@@ -368,7 +368,7 @@ final class CheckpointsManagerTests: TestCase {
             identifier: "onboarding",
             params: .init(paywallPresenter: { _, completion in
                 localCallCount += 1
-                completion(.continue)
+                completion(.continued)
             })
         )
 
@@ -443,7 +443,7 @@ final class CheckpointsManagerTests: TestCase {
 
     func testDefaultOfferingPurchaseOrRestoreUsesTheCachedEntitlementBaseline() async throws {
         let terminalCustomerInfo = try Self.customerInfo(activeEntitlements: ["premium", "pro"])
-        let defaultPresenter = MockDefaultPaywallPresenter(result: .continue)
+        let defaultPresenter = MockDefaultPaywallPresenter(result: .continued)
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
             workflowPresenter: MockWorkflowPresenter(),
@@ -565,7 +565,7 @@ final class CheckpointsManagerTests: TestCase {
 
         let result = await manager.checkpointForCallback(
             identifier: "onboarding",
-            params: .init(paywallPresenter: { _, completion in completion(.continue) })
+            params: .init(paywallPresenter: { _, completion in completion(.continued) })
         )
 
         guard case let .completed(flowResult) = result else {
@@ -585,7 +585,7 @@ final class CheckpointsManagerTests: TestCase {
 
         let result = await manager.checkpointForCallback(
             identifier: "onboarding",
-            params: .init(paywallPresenter: { _, completion in completion(.continue) })
+            params: .init(paywallPresenter: { _, completion in completion(.continued) })
         )
 
         guard case let .completed(flowResult) = result else {
@@ -623,9 +623,9 @@ final class CheckpointsManagerTests: TestCase {
         }
         await self.fulfillment(of: [presentationStarted], timeout: 1)
 
-        presenterCompletion?(.continue)
+        presenterCompletion?(.continued)
         await self.fulfillment(of: [synchronizationStarted], timeout: 1)
-        presenterCompletion?(.continue)
+        presenterCompletion?(.continued)
         presenterCompletion?(.navigatedBack)
 
         XCTAssertEqual(customerInfoSynchronizerCallCount, 1)
@@ -660,7 +660,7 @@ final class CheckpointsManagerTests: TestCase {
             )
         }
         await self.fulfillment(of: [firstStarted], timeout: 1)
-        firstCompletion?(.continue)
+        firstCompletion?(.continued)
         _ = try await first.value
 
         let replacement = Task {
@@ -718,7 +718,7 @@ final class CheckpointsManagerTests: TestCase {
             )
         }
         await self.fulfillment(of: [presentationStarted], timeout: 1)
-        presenterCompletion?(.continue)
+        presenterCompletion?(.continued)
         await self.fulfillment(of: [synchronizationStarted], timeout: 1)
 
         let secondResult: Result<CheckpointPresentationOutcome, Error>
@@ -770,7 +770,7 @@ final class CheckpointsManagerTests: TestCase {
             )
         }
         await self.fulfillment(of: [presentationStarted], timeout: 1)
-        presenterCompletion?(.continue)
+        presenterCompletion?(.continued)
         await self.fulfillment(of: [synchronizationStarted], timeout: 1)
 
         firstCheckpoint.cancel()
@@ -916,8 +916,8 @@ private extension CheckpointsManager {
 
     convenience init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
-        workflowPresenter: WorkflowPresenterProtocol,
-        defaultPaywallPresenter: DefaultPaywallPresenterProtocol? = nil,
+        workflowPresenter: WorkflowPresenterType,
+        defaultPaywallPresenter: DefaultPaywallPresenterType? = nil,
         cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil },
         customerInfoSynchronizer: @escaping CustomerInfoSynchronizer = { throw CancellationError() }
     ) {
@@ -945,7 +945,7 @@ private extension CheckpointsManager {
 
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private final class MockWorkflowPresenter: WorkflowPresenterProtocol {
+private final class MockWorkflowPresenter: WorkflowPresenterType {
 
     var execution: CheckpointPresentationOutcome = .completed(customerInfo: nil)
     var error: Error?
@@ -976,14 +976,14 @@ private final class MockPaywallPresenter: PaywallPresenter {
     ) {
         self.callCount += 1
         self.receivedParams = params
-        completion(.continue)
+        completion(.continued)
     }
 
 }
 
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private final class MockDefaultPaywallPresenter: DefaultPaywallPresenterProtocol {
+private final class MockDefaultPaywallPresenter: DefaultPaywallPresenterType {
 
     let result: PaywallPresentationResult?
     var onPresent: (() -> Void)?

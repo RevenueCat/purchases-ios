@@ -24,7 +24,7 @@ import UIKit
 /// only after the presented UI has fully dismissed.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
-final class WorkflowPresenter: NSObject, WorkflowPresenterProtocol {
+final class WorkflowPresenter: NSObject, WorkflowPresenterType {
 
     typealias PresentationStarter = (WorkflowPresentationRequest) throws -> Bool
     typealias DismissalPerformer = (@escaping () -> Void) -> Void
@@ -356,7 +356,7 @@ extension WorkflowPresenter: PaywallViewControllerDelegate {}
 
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-final class WorkflowPresenter: WorkflowPresenterProtocol {
+final class WorkflowPresenter: WorkflowPresenterType {
 
     func present(_ presentation: WorkflowPresentationRequest) async throws -> CheckpointPresentationOutcome {
         return .failed

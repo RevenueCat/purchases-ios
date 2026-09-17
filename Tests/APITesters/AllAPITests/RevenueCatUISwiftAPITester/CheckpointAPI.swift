@@ -55,12 +55,12 @@ private func checkPaywallPresentationAPI(
         let _: String = params.checkpointIdentifier
         let _: [String: CustomVariableValue] = params.customVariables
         let _: Offering = params.offering
-        completion(.continue)
+        completion(.continued)
     }
 
     purchases.checkpoint("test_checkpoint", paywallPresenter: presenter) { _ in }
 
-    let _: PaywallPresentationResult = .continue
+    let _: PaywallPresentationResult = .continued
     let _: PaywallPresentationResult = .closed
     let _: PaywallPresentationResult = .navigatedBack
 }
@@ -72,7 +72,7 @@ private final class CheckpointAPIPaywallPresenter: PaywallPresenter {
         params: PaywallPresentationParams,
         completion: @escaping PaywallPresentationCompletion
     ) {
-        completion(.continue)
+        completion(.continued)
     }
 
 }
