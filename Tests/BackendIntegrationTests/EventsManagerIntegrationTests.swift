@@ -23,6 +23,8 @@ import XCTest
 @MainActor
 final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
 
+    // Use a real EventsManager directly so tests can await event storage before flushing.
+    // Purchases.track(customerCenterEvent:) schedules background work and returns immediately.
     private var eventsManager: EventsManager!
 
     override func setUp() async throws {
