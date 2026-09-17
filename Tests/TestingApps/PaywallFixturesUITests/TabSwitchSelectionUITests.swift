@@ -59,6 +59,24 @@ final class TabSwitchSelectionUITests: XCTestCase {
         )
     }
 
+    /// Tapping the tier that is already selected republishes the same id. That must not be read
+    /// as a switch, or restoring the tier default would discard the plan the user just picked.
+    func testReTappingTheSelectedTierKeepsThePickedPlan() throws {
+        let app = self.launch()
+
+        app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Subscribe Yearly"))
+            .firstMatch.tap()
+        let picked = Self.amounts(in: Self.disclaimer(in: app))
+        XCTAssertFalse(picked.isEmpty, "No disclaimer price found. \(Self.visibleTexts(in: app))")
+
+        app.buttons[Tier.opening].firstMatch.tap()
+
+        XCTAssertEqual(
+            Self.amounts(in: Self.disclaimer(in: app)), picked,
+            "Re-tapping the selected tier changed the plan. \(Self.visibleTexts(in: app))"
+        )
+    }
+
     private static func amounts(in text: String) -> Set<String> {
         let pattern = try? NSRegularExpression(pattern: #"\d+[.,]\d\d"#)
         let range = NSRange(text.startIndex..., in: text)

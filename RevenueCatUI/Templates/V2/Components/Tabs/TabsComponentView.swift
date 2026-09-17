@@ -398,7 +398,12 @@ struct LoadedTabsComponentView: View {
             // Observed with `onReceive` and not `onChange`: this sits inside a branch that
             // reads `selectedTabId`, so a switch rebuilds the subtree and re-installs
             // `onChange` with the new id already as its baseline, and it never fires.
-            .onReceive(self.tabControlContext.$selectedTabId.dropFirst()) { newTabId in
+            // `removeDuplicates` keeps `onChange`'s semantics: tapping the selected tab
+            // republishes the same id, and restoring the tab default would discard the
+            // package the user just picked.
+            .onReceive(
+                self.tabControlContext.$selectedTabId.removeDuplicates().dropFirst()
+            ) { newTabId in
                 // Publish the new selection before the package-restoration guard so dependent
                 // components re-resolve their `state` conditions even for tabs without packages.
                 self.publishSelectedTabState(newTabId)
