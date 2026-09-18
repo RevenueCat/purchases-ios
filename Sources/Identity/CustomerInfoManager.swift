@@ -146,7 +146,7 @@ class CustomerInfoManager {
             }
 
         case .fetchCurrent:
-            self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+            self.systemInfo.isApplicationBackgrounded { [self] isAppBackgrounded in
                 self.fetchAndCacheCustomerInfoData(
                     appUserID: appUserID,
                     isAppBackgrounded: isAppBackgrounded
@@ -197,7 +197,7 @@ class CustomerInfoManager {
                 }
             }
 
-            self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+            self.systemInfo.isApplicationBackgrounded { [self] isAppBackgrounded in
                 self.fetchAndCacheCustomerInfoDataIfStale(appUserID: appUserID,
                                                           isAppBackgrounded: isAppBackgrounded,
                                                           completion: completionIfNotCalledAlready)
