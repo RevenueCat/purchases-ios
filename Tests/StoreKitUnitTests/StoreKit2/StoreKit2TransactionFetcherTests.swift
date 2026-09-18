@@ -51,9 +51,21 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
     }
 
     func testMultipleUnfinishedVerifiedTransaction() async throws {
+        try AvailabilityChecks.unfinishedTransactionsWithSKTestWorkOrSkipTest(includingTVOS: true)
+
         let transaction1 = try await self.createTransactionInTestSession(productID: Self.product1, finished: false)
         let transaction2 = try await self.createTransactionInTestSession(productID: Self.product2, finished: false)
         let transactionIdentifiers = [String(transaction1.id), String(transaction2.id)]
+        if #available(iOS 27.0, tvOS 27.0, watchOS 27.0, macOS 27.0, *) {
+            try await asyncWait(description: "Fixture purchases did not appear in StoreKit's unfinished queue",
+                                timeout: .seconds(10)) {
+                var unfinishedIdentifiers: Set<String> = []
+                for await transaction in StoreKit.Transaction.unfinished {
+                    unfinishedIdentifiers.insert(String(transaction.underlyingTransaction.id))
+                }
+                return Set(transactionIdentifiers).isSubset(of: unfinishedIdentifiers)
+            }
+        }
 
         let result = await self.fetcher.unfinishedVerifiedTransactions
         expect(result).to(haveCount(2))

@@ -833,10 +833,10 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)
 
-        let transaction = try await createTransaction(finished: true)
-        let product = try await self.fetchSk2Product()
+        let transaction = try await createTransaction(productID: Self.consumableProductId, finished: true)
+        let product = try await self.fetchSk2Product(Self.consumableProductId)
         let package = Package(identifier: "package",
-                              packageType: .monthly,
+                              packageType: .custom,
                               storeProduct: StoreProduct(sk2Product: product),
                               offeringIdentifier: "offering",
                               webCheckoutUrl: nil)
