@@ -82,6 +82,8 @@ final class LocalRulesEvaluator: Sendable {
             snapshot = try await self.dimensionResolver.snapshot(
                 customVariables: customVariables
             )
+        } catch is CancellationError {
+            throw CancellationError()
         } catch {
             Logger.warn(Strings.localRules.dimensionResolutionFailed(logPrefix: logPrefix, error: error))
             throw error

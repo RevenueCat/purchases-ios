@@ -671,6 +671,7 @@ struct LocalRulesEvaluatorTests {
 
     @Test
     func cancellationIsThrownByMatch() async {
+        let logger = TestLogHandler(testIdentifier: #function)
         let evaluator = Self.evaluator(dimensionProviders: [
             CancellingDimensionProvider(name: "store")
         ])
@@ -685,6 +686,10 @@ struct LocalRulesEvaluatorTests {
         } catch {
             Issue.record("Unexpected error: \(error)")
         }
+
+        #expect(logger.messages.allSatisfy {
+            !($0.level == .warn && $0.message.contains("Failed to resolve dimensions"))
+        })
     }
 }
 
