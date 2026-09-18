@@ -248,7 +248,7 @@ struct ImageComponentView: View {
     ) -> some View {
         let contentInsets = style.padding.extend(by: style.border?.width ?? 0)
 
-        content
+        return content
             .applyMediaWidth(size: style.size, subtracting: contentInsets)
             .applyMediaHeight(
                 size: style.size,
