@@ -26,10 +26,6 @@ enum HostedCheckout {
         /// Present this checkout to the customer.
         case present(HostedCheckoutSession)
 
-        /// There is no SDK to ask for a checkout, so the purchase goes through StoreKit, as it would on an
-        /// SDK that does not know this purchase method.
-        case buyThroughStoreKit
-
         /// Nothing to present, and nothing to offer instead: the customer declined Apple's notice, the device
         /// does not authorize payments, another checkout is already starting, or the checkout could not be
         /// created. Each of those is reported where it happens.
@@ -46,22 +42,9 @@ enum HostedCheckout {
 
     }
 
-    /// Runs Apple's flow and creates the checkout session, with the paywall marked as busy throughout so the
-    /// button the customer tapped cannot start a second one.
+    /// Runs Apple's flow and creates the checkout session.
     static func start(for package: Package, purchaseHandler: PurchaseHandler) async -> Start {
-        guard Purchases.isConfigured else {
-            return .buyThroughStoreKit
-        }
-
-        // Carried so that the purchase the customer makes on the page is attributed to the paywall that sent
-        // them there.
-        let paywallEvent = purchaseHandler.createPurchaseInitiatedEvent(package: package)
-
-        let result = await purchaseHandler.withExternalPurchasePreparation {
-            await Purchases.shared.startHostedCheckout(package: package, paywallEvent: paywallEvent)
-        }
-
-        return Start(result)
+        return Start(await purchaseHandler.startHostedCheckout(package: package))
     }
 
 }
