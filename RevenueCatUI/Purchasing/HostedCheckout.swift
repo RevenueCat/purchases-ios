@@ -26,6 +26,9 @@ enum HostedCheckout {
         /// Present this checkout to the customer.
         case present(HostedCheckoutSession)
 
+        /// Tell the customer they already own what they tried to buy, which is why no checkout opens.
+        case tellCustomerTheyAlreadyOwnIt
+
         /// Nothing to present, and nothing to offer instead.
         case nothing
 
@@ -33,6 +36,8 @@ enum HostedCheckout {
             switch result {
             case let .started(session):
                 self = .present(session)
+            case .alreadyPurchased:
+                self = .tellCustomerTheyAlreadyOwnIt
             case .declinedByCustomer, .paymentsNotAuthorized, .alreadyStarting, .failed:
                 self = .nothing
             }
