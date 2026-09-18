@@ -50,6 +50,8 @@ class BaseBackendIntegrationTests: TestCase {
     private(set) var purchasesDelegate: TestPurchaseDelegate!
 
     private var mainThreadMonitor: MainThreadMonitor!
+    private let eligibilityWarmups = EligibilityWarmupTracker()
+    private var purchasesInstances: [WeakBox<Purchases>] = []
 
     var forceServerErrorStrategy: ForceServerErrorStrategy?
 
@@ -123,6 +125,10 @@ class BaseBackendIntegrationTests: TestCase {
         self.testUUID = UUID()
 
         self.clearReceiptIfExists()
+        self.eligibilityWarmups.install()
+        self.addTeardownBlock {
+            self.eligibilityWarmups.uninstall()
+        }
         await self.createPurchases()
         self.verifyPurchasesDoesNotLeak()
     }
@@ -215,6 +221,7 @@ private extension BaseBackendIntegrationTests {
     func createPurchases() async {
         self.purchasesDelegate = TestPurchaseDelegate()
         self.configurePurchases()
+        self.purchasesInstances.append(WeakBox(Purchases.shared))
         self.simulateForegroundingApp()
 
         Purchases.shared.delegate = self.purchasesDelegate
@@ -223,17 +230,20 @@ private extension BaseBackendIntegrationTests {
     }
 
     func verifyPurchasesDoesNotLeak() {
-        weak var purchases = Purchases.shared
-
         // See `addTeardownBlock` docs:
         // - These run *before* `tearDown`.
         // - They run in LIFO order.
-        self.addTeardownBlock {
+        self.addTeardownBlock { @MainActor in
+            try await self.eligibilityWarmups.waitForCompletion(timeout: .seconds(60))
+        }
+        self.addTeardownBlock { @MainActor in
             Purchases.clearSingleton()
 
             // Note: this captures the boolean to avoid race conditions when Nimble tries
             // to print `purchases` while it's being deallocated.
-            expect { purchases == nil }.toEventually(beTrue(), description: "Purchases has leaked")
+            try await asyncWait(description: "Purchases has leaked") {
+                await MainActor.run { self.purchasesInstances.allSatisfy { $0.value == nil } }
+            }
         }
     }
 

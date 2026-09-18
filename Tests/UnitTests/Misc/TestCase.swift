@@ -66,6 +66,7 @@ class TestCase: XCTestCase {
 
     @MainActor
     override func tearDown() {
+        self.logger?.stopObserving()
         self.logger = nil
 
         super.tearDown()

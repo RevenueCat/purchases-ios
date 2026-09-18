@@ -13,6 +13,7 @@
 require_relative 'api_diff_helper'
 require 'rexml/document'
 require 'json'
+require 'open3'
 
 default_platform(:ios)
 
@@ -843,7 +844,7 @@ platform :ios do
       test_plan = "CI-AllTests"
     end
 
-    scan(
+    scan_options = {
       step_name: "scan - iPhone",
       device: ENV['SCAN_DEVICE'] || "iPhone 12 (15.2)",
       ensure_devices_found: true,
@@ -856,7 +857,24 @@ platform :ios do
       output_directory: "fastlane/test_output/xctest/ios",
       number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
       fail_build: !generate_snapshots
-    )
+    }
+
+    if ENV["RC_STOREKIT_TEST_PREFLIGHT"] == "1" && !skip_sk_tests
+      # iOS 27 can bind the first process's purchase connection to Sandbox even after
+      # SKTestSession initialization. Configure StoreKitTest in a separate process so
+      # the full suite starts with XcodeTest active, without bypassing real purchases.
+      # Keep both runs on the same simulator and preserve its StoreKit configuration.
+      scan_options.merge!(reset_simulator: false, reinstall_app: false, parallel_testing: false, only_testing: [])
+      scan(scan_options.merge(
+        step_name: "scan - StoreKitTest preflight",
+        only_testing: ["StoreKitUnitTests/StoreKitTestSessionInitializationTests"],
+        output_directory: "fastlane/test_output/xctest/ios/storekit-preflight",
+        number_of_retries: 0,
+        fail_build: true
+      ))
+    end
+
+    scan(scan_options)
   end
 
   # Screen reader behavior can only be asserted against the real accessibility tree, which SwiftUI
@@ -894,7 +912,7 @@ platform :ios do
       test_plan = "CI-AllTests"
     end
 
-    scan(
+    scan_options = {
       step_name: "scan - Apple TV",
       device: ENV['SCAN_DEVICE'] || "Apple TV",
       ensure_devices_found: true,
@@ -907,7 +925,20 @@ platform :ios do
       output_directory: "fastlane/test_output/xctest/tvos",
       number_of_retries: generate_snapshots ? 0 : 5,
       fail_build: !generate_snapshots
-    )
+    }
+
+    if ENV["RC_STOREKIT_TEST_PREFLIGHT"] == "1" && !generate_snapshots
+      scan_options.merge!(reset_simulator: false, reinstall_app: false, parallel_testing: false, only_testing: [])
+      scan(scan_options.merge(
+        step_name: "scan - StoreKitTest preflight",
+        only_testing: ["StoreKitUnitTests/StoreKitTestSessionInitializationTests"],
+        output_directory: "fastlane/test_output/xctest/tvos/storekit-preflight",
+        number_of_retries: 0,
+        fail_build: true
+      ))
+    end
+
+    scan(scan_options)
   end
 
   desc "Runs all the watchOS tests"
@@ -960,6 +991,9 @@ platform :ios do
     platform = ENV['PLATFORM'] || 'iOS Simulator'
     destination = ENV['DEVICE'] || "iPhone 14,OS=16.4"
     sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
+    test_plan = generate_snapshots ? "CI-Snapshots" : "CI-RevenueCatUI"
+    xcargs = "-testPlan #{test_plan}"
+    xcargs += " -collect-test-diagnostics never" if sdk == 'watchsimulator'
     begin
       # See https://forums.swift.org/t/i-made-a-little-spm-package-that-uses-uikit-how-can-i-run-tests-from-command-line/50399/2
       # Note: We use xcodebuild instead of scan because this is an SPM package (workspace: '.')
@@ -973,7 +1007,7 @@ platform :ios do
         report_formats: [:junit],
         report_path: 'fastlane/test_output/revenuecatui/tests.xml',
         test: true,
-        xcargs: generate_snapshots ? "-testPlan CI-Snapshots" : "-testPlan CI-RevenueCatUI"
+        xcargs: xcargs
       )
     rescue => e
       # Equivalent to `fail_build: !generate_snapshots`
@@ -1372,17 +1406,42 @@ platform :ios do
     begin
       flow_dir = "#{base_path}/Examples/rc-maestro/maestro/#{flow_subdir}"
 
+      previous_test_environment = {}
+      if store == "app_store"
+        platform_path = sh("xcrun", "--sdk", "iphonesimulator", "--show-sdk-platform-path", log: false).strip
+        {
+          "DYLD_FRAMEWORK_PATH" => "#{platform_path}/Developer/Library/Frameworks",
+          "DYLD_LIBRARY_PATH" => "#{platform_path}/Developer/usr/lib"
+        }.each do |key, value|
+          previous, status = Open3.capture2("xcrun", "simctl", "spawn", "booted", "launchctl", "getenv", key)
+          previous_test_environment[key] = status.success? ? previous.strip : nil
+          sh("xcrun", "simctl", "spawn", "booted", "launchctl", "setenv", key, value)
+        end
+      end
+
       UI.message("Using flow directory: #{flow_dir}")
 
       run_maestro_e2e_tests(
         flow_dir: flow_dir,
         output_dir: output_dir,
-        environment_name: environment_name
+        environment_name: environment_name,
+        max_retries: Integer(options.fetch(:max_retries, 5))
       )
       success = true
     rescue => e
       raise e
     ensure
+      previous_test_environment&.each do |key, value|
+        begin
+          if value
+            sh("xcrun", "simctl", "spawn", "booted", "launchctl", "setenv", key, value)
+          else
+            sh("xcrun", "simctl", "spawn", "booted", "launchctl", "unsetenv", key)
+          end
+        rescue StandardError
+          UI.important("Could not restore simulator environment variable #{key}; continuing cleanup.")
+        end
+      end
       unless skip_slack_notification
         slack_backend_integration_test_results(
           environment: backend_environment,
@@ -1975,12 +2034,13 @@ platform :ios do
   lane :backend_integration_tests do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
     test_configuration = generate_snapshots ? "GenerateSnapshots" : "Default"
+    xcargs = "-collect-test-diagnostics never"
 
     replace_api_key_integration_tests
 
     success = false
     begin
-      scan(
+      scan_options = {
         workspace: 'RevenueCat-Tuist.xcworkspace',
         scheme: "BackendIntegrationTests",
         ensure_devices_found: true,
@@ -1989,12 +2049,30 @@ platform :ios do
         output_style: 'raw',
         result_bundle: true,
         testplan: options[:test_plan],
+        xcargs: xcargs,
         only_test_configurations: [test_configuration],
         configuration: 'Debug',
         output_directory: "fastlane/test_output/xctest/ios",
-        number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
+        number_of_retries: generate_snapshots ? 0 : 5,
         fail_build: !generate_snapshots,
-      )
+      }
+      if ENV["RC_STOREKIT_TEST_PREFLIGHT"] == "1" && !generate_snapshots
+        test_plan_name = options[:test_plan] || "BackendIntegrationTests-All"
+        test_plan_path = File.join(__dir__, "..", "BackendIntegrationTests", "#{test_plan_name}.xctestplan")
+        preflight_tests = JSON.parse(File.read(test_plan_path)).fetch("testTargets").map do |target|
+          "#{target.fetch("target").fetch("name")}/BackendStoreKitPreflightTests"
+        end
+        scan_options.merge!(reset_simulator: false, reinstall_app: false, parallel_testing: false)
+        scan(scan_options.merge(
+          step_name: "scan - backend StoreKitTest preflight",
+          only_testing: preflight_tests,
+          xcargs: "-collect-test-diagnostics never",
+          output_directory: "fastlane/test_output/xctest/ios/storekit-preflight",
+          number_of_retries: 0,
+          fail_build: true
+        ))
+      end
+      scan(scan_options)
       success = true
     rescue => exception
       raise exception

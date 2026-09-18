@@ -95,6 +95,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testOfflineCustomerInfoWithOnePurchase() async throws {
+        self.setLongestTestSessionTimeRate(self.testSession)
         try await self.purchaseMonthlyOffering()
 
         try self.purchases.invalidateCustomerInfoCache()
@@ -116,7 +117,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         XCTAssertEqual(purchaseData.customerInfo.entitlements.verification, .verifiedOnDevice)
         self.verifyCustomerInfoWasComputedOffline(customerInfo: purchaseData.customerInfo)
-        self.verifyNoTransactionsWereFinished()
+        self.verifySpecificTransactionWasNotFinished(try XCTUnwrap(purchaseData.transaction))
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -125,9 +126,10 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         // 1. Purchase while server is down
         self.serverDown()
-        try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
+        let purchase = try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
+        let transaction = try XCTUnwrap(purchase.transaction)
 
-        self.verifyNoTransactionsWereFinished()
+        self.verifySpecificTransactionWasNotFinished(transaction)
 
         // 2. "Re-open" the app after the server is back
         self.allServersUp()
@@ -144,7 +146,11 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         }
 
         // 4. Ensure transaction is eventually finished
-        try await self.verifyAnyTransactionIsEventuallyFinished()
+        try await self.verifySpecificTransactionIsEventuallyFinished(
+            transactionId: transaction.transactionIdentifier,
+            productId: transaction.productIdentifier,
+            count: nil
+        )
 
         // 5. Restart app again
         try self.purchases.invalidateCustomerInfoCache()
@@ -229,6 +235,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
         _ = try await self.purchaseMonthlyProduct(allowOfflineEntitlements: true)
 
+        self.logger.clearMessages()
         self.allServersUp()
 
         let task1 = Task { try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent) }
@@ -238,9 +245,11 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         let info2 = try await task2.value
         try await self.verifyEntitlementWentThrough(info1)
         try await self.verifyEntitlementWentThrough(info2)
+        XCTAssertFalse(info1.isComputedOffline)
+        XCTAssertFalse(info2.isComputedOffline)
 
         self.logger.verifyMessageWasLogged(
-            "API request completed: POST '/v1/receipts'",
+            "API request started: POST '/v1/receipts'",
             level: .debug,
             expectedCount: 1
         )
@@ -307,6 +316,10 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testCallToGetCustomerInfoWithPendingRenewalsPostsReceiptOnlyOnce() async throws {
+        if Self.storeKitVersion == .storeKit1 {
+            try AvailabilityChecks.concurrentSK1ReceiptRefreshDeduplicatesOrSkipTest()
+        }
+
         // This test requires the "production" behavior to make sure
         // we don't refresh the receipt a second time when posting the second transaction.
         self.enableReceiptFetchRetry = false
@@ -447,6 +460,10 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testPurchasingMultipleProductsWhileServerIsDownHandlesAllTransactionsWhenForegroundingApp() async throws {
+        try AvailabilityChecks.unfinishedTransactionsWithSKTestWorkOrSkipTest()
+
+        self.continueAfterFailure = true
+
         // To prevent the subscription renewal from happening during the test. Otherwise,
         // it could sometimes interfere with the consumable purchase verification, causing flakiness.
         self.setLongestTestSessionTimeRate(self.testSession)
@@ -481,7 +498,10 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         // 6. Ensure transactions are finished
         try await self.verifyAnyTransactionIsEventuallyFinished(count: 2)
 
-        self.verifySpecificTransactionWasFinished(transaction)
+        try await self.verifySpecificTransactionIsEventuallyFinished(
+            transactionId: transaction.transactionIdentifier,
+            productId: transaction.productIdentifier
+        )
         self.verifyTransactionWasFinishedForProductIdentifier(Self.consumable10Coins)
     }
 
@@ -518,13 +538,16 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
             level: .verbose
         )
 
-        let transactionId = transaction.transactionIdentifier
-        let regex = "Enqueing network operation 'PostReceiptDataOperation' with cache key: .*-\(transactionId)'"
+        let transactionId = try XCTUnwrap(self.storeKitIdentifier(for: transaction))
+        let offeringId = NSRegularExpression.escapedPattern(for: package.presentedOfferingContext.offeringIdentifier)
+        let regex = "Enqueing network operation 'PostReceiptDataOperation' with cache key: "
+            + ".*-\(offeringId)-false.*-\(transactionId)'"
         self.logger.verifyMessageWasLogged(regexPattern: regex,
                                            level: .verbose,
                                            expectedCount: 1)
 
-        self.verifySpecificTransactionWasFinished(transaction)
+        self.verifySpecificTransactionWasFinished(transactionId: transactionId,
+                                                  productId: transaction.productIdentifier)
         self.logger.verifyMessageWasLogged(
             "API request completed: POST '/v1/receipts'",
             level: .debug

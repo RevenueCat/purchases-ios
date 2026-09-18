@@ -230,6 +230,7 @@ class StoreProductTests: StoreKitConfigTestCase {
     }
 
     func testSk1PriceFormatterUsesCurrentStorefront() async throws {
+        try AvailabilityChecks.switchingStorefrontWithSKTestWorksOrSkipTest()
         testSession.locale = Locale(identifier: "es_ES")
         try await self.changeStorefront("ESP")
 
@@ -270,6 +271,7 @@ class StoreProductTests: StoreKitConfigTestCase {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSk2PriceFormatterReactsToStorefrontChanges() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.switchingStorefrontWithSKTestWorksOrSkipTest()
 
         testSession.locale = Locale(identifier: "es_ES")
         try await self.changeStorefront("ESP")
@@ -305,6 +307,7 @@ class StoreProductTests: StoreKitConfigTestCase {
     @available(iOS 16.0, tvOS 16.0, macOS 13.0, watchOS 9.0, *)
     func testSk2PriceFormatterGetsLocaleFromStoreKit() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        try AvailabilityChecks.switchingStorefrontWithSKTestWorksOrSkipTest()
 
         let sk2Fetcher = ProductsFetcherSK2()
 

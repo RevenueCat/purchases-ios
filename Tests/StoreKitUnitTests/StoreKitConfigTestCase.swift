@@ -51,6 +51,14 @@ class StoreKitConfigTestCase: TestCase {
         await self.waitForStoreKitTestIfNeeded()
 
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            // Initialize the test session before observing StoreKit. Otherwise the first connection
+            // can use Sandbox instead of XcodeTest, leaving fixture product requests empty on iOS 27.
+            if Self.transactionsObservation == nil {
+                Self.transactionsObservation = Task {
+                    await Self.listenToTransactionUpdates()
+                }
+            }
+
             try await self.deleteAllTransactions(session: self.testSession)
         }
 
@@ -77,17 +85,6 @@ class StoreKitConfigTestCase: TestCase {
 
     private static var transactionsObservation: Task<Void, Never>?
 
-    override class func setUp() {
-        super.setUp()
-
-        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-            Self.transactionsObservation?.cancel()
-            Self.transactionsObservation = Task {
-                await Self.listenToTransactionUpdates()
-            }
-        }
-    }
-
     override class func tearDown() {
         Self.transactionsObservation?.cancel()
         Self.transactionsObservation = nil
@@ -100,6 +97,18 @@ class StoreKitConfigTestCase: TestCase {
         // Silence warning in tests:
         // "Making a purchase without listening for transaction updates risks missing successful purchases.
         for await _ in Transaction.updates {}
+    }
+
+}
+
+/// Run in a separate test process before the iOS 27 CI suite. The first StoreKit purchase connection
+/// can remain in Sandbox even after SKTestSession is configured; a new process uses XcodeTest correctly.
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+class StoreKitTestSessionInitializationTests: StoreKitConfigTestCase {
+
+    func testInitializesLocalStoreKitSession() async throws {
+        let product = try await self.fetchSk2Product()
+        XCTAssertEqual(product.id, Self.productID)
     }
 
 }
@@ -129,6 +138,69 @@ private extension StoreKitConfigTestCase {
         } catch {
             Logger.appleWarning(StoreKitTestMessage.errorRemovingReceipt(url, error))
         }
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+class StoreKitFixtureProductLookupTests: StoreKitConfigTestCase {
+
+    func testRetriesEmptyFixtureLookupUntilProductAppears() async throws {
+        let product = try await self.fetchSk2Product()
+        var calls = 0
+        let products = try await self.fetchSk2ProductsForFixture(Self.productID, retryTimeout: 2) { identifiers in
+            XCTAssertEqual(identifiers, [Self.productID])
+            calls += 1
+            return calls < 3 ? [] : [product]
+        }
+        XCTAssertEqual(products.map(\.id), [product.id])
+        XCTAssertEqual(calls, 3)
+    }
+
+    func testDoesNotRetrySuccessfulFixtureLookup() async throws {
+        let product = try await self.fetchSk2Product()
+        var calls = 0
+        let products = try await self.fetchSk2ProductsForFixture(Self.productID, retryTimeout: 2) { _ in
+            calls += 1
+            return [product]
+        }
+        XCTAssertEqual(products.map(\.id), [product.id])
+        XCTAssertEqual(calls, 1)
+    }
+
+    func testEmptyFixtureLookupStopsAtTimeout() async throws {
+        var calls = 0
+        let products = try await self.fetchSk2ProductsForFixture(Self.productID, retryTimeout: 0.15) { _ in
+            calls += 1
+            return []
+        }
+        XCTAssertTrue(products.isEmpty)
+        XCTAssertGreaterThanOrEqual(calls, 1)
+    }
+
+    func testZeroTimeoutDoesNotRetryEmptyFixtureLookup() async throws {
+        var calls = 0
+        let products = try await self.fetchSk2ProductsForFixture(Self.productID, retryTimeout: 0) { _ in
+            calls += 1
+            return []
+        }
+        XCTAssertTrue(products.isEmpty)
+        XCTAssertEqual(calls, 1)
+    }
+
+    func testFixtureLookupErrorsAreNotRetried() async throws {
+        let expectedError = NSError(domain: "FixtureLookup", code: 1)
+        var calls = 0
+        do {
+            _ = try await self.fetchSk2ProductsForFixture(Self.productID, retryTimeout: 2) { _ in
+                calls += 1
+                throw expectedError
+            }
+            XCTFail("Expected the product lookup error")
+        } catch {
+            XCTAssertEqual(error as NSError, expectedError)
+        }
+        XCTAssertEqual(calls, 1)
     }
 
 }

@@ -244,8 +244,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
     }
 
     @available(*, deprecated)
-    func testStaticUserIdSringLogsMessage() throws {
-        try AvailabilityChecks.skipIfCompiler63OrLater() // contains explanatory comment
+    func testStaticUserIdSringLogsMessage() {
         _ = Purchases.configure(
             with: .init(withAPIKey: "")
                 .with(appUserID: "Static string")

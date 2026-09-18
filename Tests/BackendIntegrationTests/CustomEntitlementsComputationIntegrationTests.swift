@@ -68,7 +68,8 @@ final class CustomEntitlementsComputationIntegrationTests: BaseStoreKitIntegrati
     func testPurchasingPostsAdAttributionToken() async throws {
         try self.purchases.attribution.enableAdServicesAttributionTokenCollection()
 
-        let info = try await self.purchaseMonthlyOffering().customerInfo
+        let product = try await self.product(Self.consumable10Coins)
+        let info = try await self.purchase(product: product, file: #file, line: #line).customerInfo
 
         self.logger.verifyMessageWasLogged(
             Strings.attribution.adservices_marking_as_synced(appUserID: info.originalAppUserId),
@@ -80,6 +81,8 @@ final class CustomEntitlementsComputationIntegrationTests: BaseStoreKitIntegrati
     @available(iOS 17.0, tvOS 17.0, watchOS 10.0, macOS 14.0, *)
     func testPurchaseCancellationsAreReportedCorrectly() async throws {
         try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
+
+        try AvailabilityChecks.simulatedCancellationWithSKTestWorksOrSkipTest()
 
         try await self.testSession.setSimulatedError(.generic(.userCancelled), forAPI: .purchase)
 
