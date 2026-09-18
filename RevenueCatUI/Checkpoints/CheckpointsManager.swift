@@ -21,22 +21,24 @@ import Foundation
 final class CheckpointsManager {
 
     typealias CustomerInfoSynchronizer = @MainActor () async throws -> CustomerInfo
+    typealias CachedCustomerInfoProvider = @MainActor () -> CustomerInfo?
 
     private let resolveCheckpoint: (String, CheckpointCallParams) async throws -> CheckpointResolution
-    private let cachedCustomerInfoProvider: @MainActor () -> CustomerInfo?
+    private let cachedCustomerInfoProvider: CachedCustomerInfoProvider
     private let checkpointPresenter: CheckpointPresenterType
     var paywallPresenter: PaywallPresenter?
 
     init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
         checkpointPresenter: CheckpointPresenterType? = nil,
-        cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil },
+        cachedCustomerInfoProvider: @escaping CachedCustomerInfoProvider = { nil },
         customerInfoSynchronizer: @escaping CustomerInfoSynchronizer = { throw CancellationError() }
     ) {
         self.resolveCheckpoint = resolveCheckpoint
         self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
         self.checkpointPresenter = checkpointPresenter ?? CheckpointPresenter(
             workflowPresenter: WorkflowPresenter(),
+            cachedCustomerInfoProvider: cachedCustomerInfoProvider,
             customerInfoSynchronizer: customerInfoSynchronizer
         )
     }
@@ -60,7 +62,8 @@ final class CheckpointsManager {
         case let .matchedWorkflow(workflow):
             let presentation = WorkflowPresentationRequest(
                 workflow: workflow,
-                customVariables: params.customVariables
+                customVariables: params.customVariables,
+                initialActiveEntitlementIdentifiers: self.initialActiveEntitlementIdentifiers()
             )
             return try await self.checkpointPresenter.presentWorkflow(presentation)
         case let .matchedOffering(offering):
@@ -82,9 +85,7 @@ final class CheckpointsManager {
         identifier: String,
         params: CheckpointCallParams
     ) async -> CheckpointCallbackResult {
-        let initialEntitlementIdentifiers = self.cachedCustomerInfoProvider().map { customerInfo in
-            Set(customerInfo.entitlements.active.keys)
-        }
+        let initialActiveEntitlementIdentifiers = self.initialActiveEntitlementIdentifiers()
 
         do {
             switch try await self.executeCheckpoint(identifier: identifier, params: params) {
@@ -93,7 +94,7 @@ final class CheckpointsManager {
             case let .completed(customerInfo):
                 return .completed(self.flowResult(
                     customerInfo: customerInfo,
-                    initialEntitlementIdentifiers: initialEntitlementIdentifiers
+                    initialActiveEntitlementIdentifiers: initialActiveEntitlementIdentifiers
                 ))
             case .failed, .nothingPresented:
                 return .completed(nil)
@@ -107,18 +108,20 @@ final class CheckpointsManager {
 
     private func flowResult(
         customerInfo: CustomerInfo?,
-        initialEntitlementIdentifiers: Set<String>?
+        initialActiveEntitlementIdentifiers: Set<String>?
     ) -> FlowResult {
-        let entitlements = customerInfo.map { Array($0.entitlements.active.values) } ?? []
-
-        let obtainedEntitlements = entitlements.lazy
-            .filter { entitlement in
-                guard let initialEntitlementIdentifiers else { return true }
-                return !initialEntitlementIdentifiers.contains(entitlement.identifier)
-            }
+        let obtainedEntitlements = customerInfo?
+            .obtainedEntitlements(comparedTo: initialActiveEntitlementIdentifiers)
             .map(ObtainedEntitlement.init)
+            ?? []
 
         return FlowResult(obtainedEntitlements: Set(obtainedEntitlements))
+    }
+
+    private func initialActiveEntitlementIdentifiers() -> Set<String>? {
+        return self.cachedCustomerInfoProvider().map { customerInfo in
+            Set(customerInfo.entitlements.active.keys)
+        }
     }
 
 }

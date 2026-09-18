@@ -56,3 +56,25 @@ public struct FlowResult: @unchecked Sendable {
     }
 
 }
+
+extension CustomerInfo {
+
+    func obtainedEntitlements(
+        comparedTo initialActiveEntitlementIdentifiers: Set<String>?
+    ) -> [EntitlementInfo] {
+        guard let initialActiveEntitlementIdentifiers else {
+            return Array(self.entitlements.active.values)
+        }
+
+        return self.entitlements.active.values.filter { entitlement in
+            return !initialActiveEntitlementIdentifiers.contains(entitlement.identifier)
+        }
+    }
+
+    func grantsNewEntitlements(
+        comparedTo initialActiveEntitlementIdentifiers: Set<String>?
+    ) -> Bool {
+        return !self.obtainedEntitlements(comparedTo: initialActiveEntitlementIdentifiers).isEmpty
+    }
+
+}
