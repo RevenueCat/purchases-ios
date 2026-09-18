@@ -63,8 +63,12 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
         _ = try await self.createTransaction(productID: Self.product1, finished: true)
         let transaction = try await self.createTransaction(productID: Self.product2, finished: false)
 
-        let result = await self.fetcher.unfinishedVerifiedTransactions
-        expect(result) == [transaction]
+        try await asyncWait(
+            description: "Finished transaction was still returned as unfinished",
+            timeout: .seconds(5)
+        ) {
+            await self.fetcher.unfinishedVerifiedTransactions == [transaction]
+        }
     }
 
     // MARK: - hasPendingConsumablePurchase

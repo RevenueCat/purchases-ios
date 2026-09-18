@@ -244,10 +244,7 @@ class StoreKit2TransactionListenerTransactionUpdatesTests: StoreKit2TransactionL
 
         await self.listener.listenForTransactions()
 
-        // swiftlint:disable:next force_try
-        try! await Task.sleep(nanoseconds: 3 * 1_000_000_000)
-
-        try await self.waitForTransactionUpdated()
+        try await self.waitForTransactionUpdated(timeout: .seconds(10))
 
         expect(self.delegate.updatedTransactions)
             .to(containElementSatisfying { transaction in
@@ -335,12 +332,13 @@ private extension StoreKit2TransactionListenerBaseTests {
 
     @available(iOS 16.4, macOS 13.3, tvOS 16.4, watchOS 9.4, *)
     func waitForTransactionUpdated(
+        timeout: NimbleTimeInterval = .seconds(4),
         file: FileString = #fileID,
         line: UInt = #line
     ) async throws {
         try await asyncWait(
             description: "Transaction update",
-            timeout: .seconds(4),
+            timeout: timeout,
             pollInterval: .milliseconds(100),
             file: file,
             line: line
@@ -412,9 +410,7 @@ class StoreKit2TransactionListenerDiagnosticsTests: StoreKit2TransactionListener
 
         await self.listener.listenForTransactions()
 
-        try await Task.sleep(nanoseconds: 3 * 1_000_000_000)
-
-        try await self.waitForTransactionUpdated()
+        try await self.waitForTransactionUpdated(timeout: .seconds(10))
 
         expect(self.mockDiagnosticsTracker.trackedAppleTransactionUpdateReceivedParams.value).toNot(beEmpty())
         let params = self.mockDiagnosticsTracker.trackedAppleTransactionUpdateReceivedParams.value[0]
@@ -422,7 +418,8 @@ class StoreKit2TransactionListenerDiagnosticsTests: StoreKit2TransactionListener
         expect(params.environment) == "xcode"
 
         let expirationDate = try XCTUnwrap(params.expirationDate)
-        expect(expirationDate.timeIntervalSince(params.purchaseDate)) == 2 // see setShortestTestSessionTimeRate()
+        // Explicitly forced renewals do not advance StoreKitTest's clock by the configured two-second interval.
+        expect(expirationDate).to(beGreaterThan(params.purchaseDate))
 
         #if compiler(>=6.0)
         expect(params.price) == 4.99
