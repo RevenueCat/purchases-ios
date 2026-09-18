@@ -123,7 +123,7 @@ class BaseBackendIntegrationTests: TestCase {
         self.clearReceiptIfExists()
         self.eligibilityWarmups.install()
         self.addTeardownBlock {
-            Purchases.eligibilityCacheWarmupStarted.value = nil
+            self.eligibilityWarmups.uninstall()
         }
         await self.createPurchases()
         self.verifyPurchasesDoesNotLeak()

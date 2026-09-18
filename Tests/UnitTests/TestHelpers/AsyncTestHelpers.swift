@@ -65,10 +65,20 @@ private struct ConditionFailedError: Error {}
 final class EligibilityWarmupTracker: Sendable {
 
     private let pendingWarmups: Atomic<Int> = .init(0)
+    private let tasks: Atomic<[Task<Void, Never>]> = .init([])
 
     func install() {
         let previous = Purchases.eligibilityCacheWarmupStarted.getAndSet { [self] in self.start() }
         XCTAssertNil(previous, "An eligibility warmup observer is already installed")
+        let previousTaskObserver = Purchases.eligibilityCacheWarmupTaskCreated.getAndSet { [tasks] task in
+            tasks.modify { $0.append(task) }
+        }
+        XCTAssertNil(previousTaskObserver, "An eligibility warmup task observer is already installed")
+    }
+
+    func uninstall() {
+        Purchases.eligibilityCacheWarmupStarted.value = nil
+        Purchases.eligibilityCacheWarmupTaskCreated.value = nil
     }
 
     func start() -> @Sendable () -> Void {
@@ -82,13 +92,23 @@ final class EligibilityWarmupTracker: Sendable {
 
     func waitForCompletion(timeout: NimbleTimeInterval) async throws {
         let start = Date()
+        let waiters: Atomic<[Task<Void, Never>]> = .init([])
+        defer { waiters.value.forEach { $0.cancel() } }
         try await asyncWait(
             timeout: timeout,
             description: { pending in
                 "Eligibility cache warmup did not finish after \(Date().timeIntervalSince(start))s; " +
                 "\(pending ?? 0) operations remain"
             },
-            until: { self.pendingCount },
+            until: {
+                // Awaiting the real tasks propagates the teardown waiter's priority to them.
+                // Polling a counter alone leaves background work vulnerable to starvation under CI load.
+                let queuedTasks = self.tasks.getAndSet([])
+                waiters.modify { waiters in
+                    waiters += queuedTasks.map { task in Task(priority: .userInitiated) { await task.value } }
+                }
+                return self.pendingCount
+            },
             condition: { $0 == 0 }
         )
     }

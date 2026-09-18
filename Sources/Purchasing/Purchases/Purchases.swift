@@ -2941,6 +2941,7 @@ internal extension Purchases {
 
     /// Tests can observe queued warmups without retaining Purchases or changing their scheduling.
     static let eligibilityCacheWarmupStarted: Atomic<(@Sendable () -> (@Sendable () -> Void))?> = .init(nil)
+    static let eligibilityCacheWarmupTaskCreated: Atomic<(@Sendable (Task<Void, Never>) -> Void)?> = .init(nil)
 
     var networkTimeout: TimeInterval {
         return self.backend.networkTimeout
@@ -3235,12 +3236,17 @@ private extension Purchases {
         #if DEBUG
         let warmupFinished = Self.eligibilityCacheWarmupStarted.value?()
         #endif
-        self.operationDispatcher.dispatchOnWorkerThread {
+        let warmupTask = self.operationDispatcher.dispatchOnWorkerThread {
             #if DEBUG
             defer { warmupFinished?() }
             #endif
             await cache.warmUpEligibilityCache(offerings: offerings)
         }
+        #if DEBUG
+        Self.eligibilityCacheWarmupTaskCreated.value?(warmupTask)
+        #else
+        _ = warmupTask
+        #endif
         self.operationDispatcher.dispatchOnWorkerThread {
             await cache.warmUpPaywallAssetsCache(offerings: offerings)
         }

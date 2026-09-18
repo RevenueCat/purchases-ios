@@ -81,16 +81,16 @@ class MockOperationDispatcher: OperationDispatcher {
     var invokedDispatchAsyncOnWorkerThreadDelayParam: JitterableDelay?
     private(set) var dispatchedAsyncWorkerThreadBlocks: [@Sendable () async -> Void] = []
 
+    @discardableResult
     override func dispatchOnWorkerThread(
         jitterableDelay delay: JitterableDelay = .none,
         block: @escaping @Sendable () async -> Void
-    ) {
+    ) -> Task<Void, Never> {
         self.invokedDispatchAsyncOnWorkerThreadDelayParam = delay
         self.invokedDispatchAsyncOnWorkerThread = true
         self.invokedDispatchAsyncOnWorkerThreadCount += 1
         if self.forwardToOriginalDispatchOnWorkerThread {
-            super.dispatchOnWorkerThread(jitterableDelay: delay, block: block)
-            return
+            return super.dispatchOnWorkerThread(jitterableDelay: delay, block: block)
         }
 
         self.dispatchedAsyncWorkerThreadBlocks.append(block)
@@ -116,6 +116,8 @@ class MockOperationDispatcher: OperationDispatcher {
                 XCTFail("Dispatch on worker thread timed out")
             }
         }
+        // Work above either completed synchronously or is held for explicit invocation by the test.
+        return Task {}
     }
 
     func invokeAllDispatchedAsyncWorkerThreadBlocks() async {
