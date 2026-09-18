@@ -136,6 +136,7 @@ module Fastlane
       def self.snapshot_file_name(attachment_name:, extension:, test_identifier: nil)
         # Existing screenshot tests use __END to delimit the filename from attachment metadata.
         attachment_name = attachment_name.split("__END").first
+        attachment_name = attachment_name.sub(/#{Regexp.escape(extension)}\z/i, "")
 
         if test_identifier
           # SnapshotPreviews adds a global test index which changes whenever an earlier Preview is inserted.
