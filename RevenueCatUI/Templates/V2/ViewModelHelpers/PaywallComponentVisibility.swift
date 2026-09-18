@@ -88,8 +88,8 @@ extension PaywallComponentViewModel {
     // swiftlint:disable:next cyclomatic_complexity function_body_length
     func isVisible(in context: PaywallComponentVisibilityContext) -> Bool {
         let package = context.packageContext.package
-        let isEligibleForIntroOffer = context.isEligibleForIntroOffer(package: package)
-        let isEligibleForPromoOffer = context.isEligibleForPromoOffer(package: package)
+        let isEligibleForIntroOffer = context.introOfferEligibilityContext.isEligible(package: package)
+        let isEligibleForPromoOffer = context.paywallPromoOfferCache.isMostLikelyEligible(for: package)
 
         switch self {
         case .root, .purchaseButton, .tabControl, .tabControlButton, .tabControlToggle, .countdown:
