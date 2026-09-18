@@ -161,7 +161,7 @@ struct StackComponentView: View {
                 // This alignment defines the position of inner components relative to each other
                 ZStack(alignment: alignment.stackAlignment) {
                     ComponentsView(
-                        components: children,
+                        componentViewModels: self.viewModel.viewModels,
                         pushNonFirstChildrenBelowSafeArea: self.viewModel.firstChildIsFullWidthMedia,
                         onDismiss: self.onDismiss
                     )
