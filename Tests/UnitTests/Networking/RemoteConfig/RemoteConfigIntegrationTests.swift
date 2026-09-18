@@ -72,7 +72,7 @@ final class RemoteConfigIntegrationTests: TestCase {
         self.remoteConfigAPI = RemoteConfigAPI(backendConfig: BackendConfiguration(
             httpClient: self.httpClient,
             operationDispatcher: self.operationDispatcher,
-            operationQueue: MockBackend.QueueProvider.createBackendQueue(),
+            operationQueue: MockBackend.QueueProvider.createQueue(for: .default),
             diagnosticsQueue: MockBackend.QueueProvider.createDiagnosticsQueue(),
             systemInfo: self.systemInfo,
             offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),

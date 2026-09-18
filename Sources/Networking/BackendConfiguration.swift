@@ -50,15 +50,13 @@ extension BackendConfiguration: NetworkConfiguration {}
 
 extension BackendConfiguration {
 
-    /// Adds the `operation` to an `OperationQueue` (based on `CallbackCacheStatus`) potentially adding a random delay.
-    /// Defaults to the shared serial `operationQueue`; pass a different `queue` to run concurrently off it.
+    /// Adds the `operation` to the shared serial `operationQueue`, potentially adding a random delay.
     func addCacheableOperation<T: CacheableNetworkOperation>(
         with factory: CacheableNetworkOperationFactory<T>,
         delay: JitterableDelay,
-        cacheStatus: CallbackCacheStatus,
-        queue: OperationQueue? = nil
+        cacheStatus: CallbackCacheStatus
     ) {
-        let targetQueue = SendableOperationQueue(value: queue ?? self.operationQueue)
+        let targetQueue = SendableOperationQueue(value: self.operationQueue)
         self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
             targetQueue.value.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
         }

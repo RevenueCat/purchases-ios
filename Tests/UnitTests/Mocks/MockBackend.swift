@@ -43,7 +43,7 @@ class MockBackend: Backend {
         let backendConfig = MockBackendConfiguration()
         let identity = MockIdentityAPI(backendConfig: backendConfig)
         let offerings = MockOfferingsAPI(backendConfig: backendConfig)
-        let webBilling = MockWebBillingAPI(backendConfig: backendConfig)
+        let webBilling = MockWebBillingAPI(lanes: BackendLanes(configuration: backendConfig))
         let offlineEntitlements = MockOfflineEntitlementsAPI()
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         let internalAPI = InternalAPI(backendConfig: backendConfig)

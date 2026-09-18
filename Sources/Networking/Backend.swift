@@ -44,68 +44,41 @@ class Backend {
         timeoutManager: HTTPRequestTimeoutManagerType,
         dateProvider: DateProvider = DateProvider()
     ) {
-        // One `apiSourceFailover` for both HTTPClients, so they walk one source list and one
-        // health-check cache; handle tokens keep concurrent unhealthy reports from double-advancing it.
         let apiSourceFailover = apiSourceProvider.map {
             APISourceFailover(usesRemoteConfigAPISources:
                                 systemInfo.dangerousSettings.internalSettings.usesRemoteConfigAPISources,
                               sourceProvider: $0,
                               healthChecker: SourceHealthChecker())
         }
-        // `timeoutManager` is shared by both HTTPClients (and, outside of `Backend`, by the blob
-        // downloader) so a timeout one of them sees on a host fast-fails the others' next request to that
-        // same host, and a success on any of them clears it for all.
-        let httpClient = HTTPClient(systemInfo: systemInfo,
-                                    eTagManager: eTagManager,
-                                    tokenManager: tokenManager,
-                                    signing: Signing(apiKey: systemInfo.apiKey, clock: systemInfo.clock),
-                                    diagnosticsTracker: diagnosticsTracker,
-                                    networkTimeout: httpClientTimeout,
-                                    operationDispatcher: OperationDispatcher.default,
-                                    apiSourceFailover: apiSourceFailover,
-                                    timeoutManager: timeoutManager)
-        let config = BackendConfiguration(httpClient: httpClient,
+        let factory = BackendLanesFactory(systemInfo: systemInfo,
+                                          eTagManager: eTagManager,
+                                          tokenManager: tokenManager,
+                                          diagnosticsTracker: diagnosticsTracker,
+                                          networkTimeout: httpClientTimeout,
+                                          apiSourceFailover: apiSourceFailover,
+                                          timeoutManager: timeoutManager,
                                           operationDispatcher: operationDispatcher,
-                                          operationQueue: QueueProvider.createBackendQueue(),
-                                          diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
-                                          systemInfo: systemInfo,
                                           offlineCustomerInfoCreator: offlineCustomerInfoCreator,
                                           dateProvider: dateProvider)
-        let remoteConfigConfig = BackendConfiguration(
-            httpClient: .dedicatedRemoteConfig(systemInfo: systemInfo,
-                                               eTagManager: eTagManager,
-                                               tokenManager: tokenManager,
-                                               diagnosticsTracker: diagnosticsTracker,
-                                               networkTimeout: httpClientTimeout,
-                                               apiSourceFailover: apiSourceFailover,
-                                               timeoutManager: timeoutManager),
-            operationDispatcher: operationDispatcher,
-            operationQueue: QueueProvider.createRemoteConfigQueue(),
-            diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
-            systemInfo: systemInfo,
-            offlineCustomerInfoCreator: offlineCustomerInfoCreator,
-            dateProvider: dateProvider)
-        self.init(backendConfig: config,
-                  remoteConfigBackendConfig: remoteConfigConfig,
-                  attributionFetcher: attributionFetcher)
+        let lanes = factory.makeLanes(dedicatedLanes: [.remoteConfig, .checkout])
+        self.init(lanes: lanes, attributionFetcher: attributionFetcher)
     }
 
-    convenience init(backendConfig: BackendConfiguration,
-                     remoteConfigBackendConfig: BackendConfiguration? = nil,
-                     attributionFetcher: AttributionFetcher) {
+    convenience init(lanes: BackendLanes, attributionFetcher: AttributionFetcher) {
+        let backendConfig = lanes[.default]
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         let identity = IdentityAPI(backendConfig: backendConfig)
         let token = TokenAPI(backendConfig: backendConfig)
         let offerings = OfferingsAPI(backendConfig: backendConfig)
-        let webBilling = WebBillingAPI(backendConfig: backendConfig)
+        let webBilling = WebBillingAPI(lanes: lanes)
         let offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
         let internalAPI = InternalAPI(backendConfig: backendConfig)
         let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
         let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
-        let externalPurchaseTokenAPI = ExternalPurchaseTokenAPI(backendConfig: backendConfig)
+        let externalPurchaseTokenAPI = ExternalPurchaseTokenAPI(backendConfig: lanes[.checkout])
         let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
         let adsAPI = AdsAPI(backendConfig: backendConfig)
-        let remoteConfigAPI = RemoteConfigAPI(backendConfig: remoteConfigBackendConfig ?? backendConfig)
+        let remoteConfigAPI = RemoteConfigAPI(backendConfig: lanes[.remoteConfig])
 
         self.init(backendConfig: backendConfig,
                   customerAPI: customer,
@@ -121,6 +94,11 @@ class Backend {
                   virtualCurrenciesAPI: virtualCurrenciesAPI,
                   adsAPI: adsAPI,
                   remoteConfigAPI: remoteConfigAPI)
+    }
+
+    convenience init(backendConfig: BackendConfiguration,
+                     attributionFetcher: AttributionFetcher) {
+        self.init(lanes: BackendLanes(configuration: backendConfig), attributionFetcher: attributionFetcher)
     }
 
     required init(backendConfig: BackendConfiguration,
@@ -293,10 +271,11 @@ extension Backend {
 
     enum QueueProvider {
 
-        static func createBackendQueue() -> OperationQueue {
+        static func createQueue(for lane: RequestLane) -> OperationQueue {
             let operationQueue = OperationQueue()
-            operationQueue.name = "RC Backend Queue"
+            operationQueue.name = "RC \(lane.name) Queue"
             operationQueue.maxConcurrentOperationCount = 1
+            operationQueue.qualityOfService = lane.qualityOfService
             return operationQueue
         }
 
@@ -308,38 +287,6 @@ extension Backend {
             return operationQueue
         }
 
-        static func createRemoteConfigQueue() -> OperationQueue {
-            let operationQueue = OperationQueue()
-            operationQueue.name = "RC Remote Config Queue"
-            operationQueue.maxConcurrentOperationCount = 1
-            return operationQueue
-        }
-
-    }
-
-}
-
-private extension HTTPClient {
-
-    // swiftlint:disable:next function_parameter_count
-    static func dedicatedRemoteConfig(
-        systemInfo: SystemInfo,
-        eTagManager: ETagManager,
-        tokenManager: TokenManager,
-        diagnosticsTracker: DiagnosticsTrackerType?,
-        networkTimeout: NetworkTimeout,
-        apiSourceFailover: APISourceFailoverType?,
-        timeoutManager: HTTPRequestTimeoutManagerType
-    ) -> HTTPClient {
-        HTTPClient(systemInfo: systemInfo,
-                   eTagManager: eTagManager,
-                   tokenManager: tokenManager,
-                   signing: Signing(apiKey: systemInfo.apiKey, clock: systemInfo.clock),
-                   diagnosticsTracker: diagnosticsTracker,
-                   networkTimeout: networkTimeout,
-                   operationDispatcher: OperationDispatcher.default,
-                   apiSourceFailover: apiSourceFailover,
-                   timeoutManager: timeoutManager)
     }
 
 }
