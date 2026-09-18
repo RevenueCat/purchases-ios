@@ -30,9 +30,10 @@ module Fastlane
         manifest_path = File.join(export_dir, "manifest.json")
         UI.user_error!("xcresulttool did not produce #{manifest_path}") unless File.exist?(manifest_path)
 
-        original_names_by_uuid = test_id ? original_attachment_names(xcresult_path, test_id) : {}
         manifest = JSON.parse(File.read(manifest_path))
         test_attachments = collect_test_attachments(manifest)
+        test_ids = test_attachments.map { |attachment| attachment["testIdentifier"] }.compact.uniq
+        original_names_by_uuid = original_attachment_names(xcresult_path, test_ids)
         exported_images = 0
 
         test_attachments.each do |test_attachment|
@@ -71,7 +72,13 @@ module Fastlane
         UI.message("Extracted #{exported_images} image attachments from #{xcresult_path}")
       end
 
-      def self.original_attachment_names(xcresult_path, test_id)
+      def self.original_attachment_names(xcresult_path, test_ids)
+        test_ids.each_with_object({}) do |test_id, names_by_uuid|
+          names_by_uuid.merge!(original_attachment_names_for_test(xcresult_path, test_id))
+        end
+      end
+
+      def self.original_attachment_names_for_test(xcresult_path, test_id)
         activities = Actions.sh(
           "xcrun",
           "xcresulttool",
