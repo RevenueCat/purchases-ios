@@ -44,22 +44,35 @@ struct WorkflowPresentationRequest {
 
 }
 
-/// Everything needed to present a checkpoint ad step.
+/// Everything needed to present a checkpoint ad workflow.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct AdPresentationRequest {
+struct AdWorkflowPresentationRequest {
 
-    let params: AdPresentationParams
+    let workflow: ResolvedAdWorkflow
+    let checkpointIdentifier: String
     let customVariables: [String: CustomVariableValue]
     let errorPresentationHandler: ErrorPresentationHandler
 
     init(
-        params: AdPresentationParams,
+        workflow: ResolvedAdWorkflow,
+        checkpointIdentifier: String,
         customVariables: [String: CustomVariableValue],
         errorPresentationHandler: @escaping ErrorPresentationHandler
     ) {
-        self.params = params
+        self.workflow = workflow
+        self.checkpointIdentifier = checkpointIdentifier
         self.customVariables = customVariables
         self.errorPresentationHandler = errorPresentationHandler
+    }
+
+    @MainActor
+    func params(for step: ResolvedAdStep) -> AdPresentationParams {
+        return AdPresentationParams(
+            checkpointIdentifier: self.checkpointIdentifier,
+            adIdentifier: step.adIdentifier,
+            mediator: step.mediator,
+            adFormat: step.adFormat
+        )
     }
 
 }

@@ -135,22 +135,20 @@ final class CheckpointsManager {
                 ),
                 availableProducts: offering.availablePackages.map(\.storeProduct)
             )
-        case let .matchedAd(adStep):
+        case let .matchedAd(adWorkflow):
             guard let adPresenter = self.adPresenter else {
                 Logger.warning(Strings.checkpoint_ad_step_without_ad_presenter(checkpointIdentifier: identifier))
                 return .init(outcome: .nothingPresented)
             }
-            let request = AdPresentationRequest(
-                params: .init(
-                    checkpointIdentifier: identifier,
-                    adIdentifier: adStep.adIdentifier,
-                    mediator: adStep.mediator,
-                    adFormat: adStep.adFormat
-                ),
+            let request = AdWorkflowPresentationRequest(
+                workflow: adWorkflow,
+                checkpointIdentifier: identifier,
                 customVariables: params.customVariables,
                 errorPresentationHandler: errorPresentationHandler
             )
-            return .init(outcome: try await self.checkpointPresenter.presentAd(request, adPresenter: adPresenter))
+            return .init(
+                outcome: try await self.checkpointPresenter.presentAdWorkflow(request, adPresenter: adPresenter)
+            )
         case .noAction:
             return .init(outcome: .nothingPresented)
         }

@@ -124,8 +124,11 @@ final class CheckpointPresenter: CheckpointPresenterType {
         )
     }
 
-    func presentAd(
-        _ presentation: AdPresentationRequest,
+    /// Presents the workflow's ad steps one at a time. An ad that could not be shown ends the chain like a flow
+    /// that could not be shown. The slot is held for the whole chain so another checkpoint can't present
+    /// between two of its ads.
+    func presentAdWorkflow(
+        _ presentation: AdWorkflowPresentationRequest,
         adPresenter: AdPresenter
     ) async throws -> CheckpointPresentationOutcome {
         guard let token = self.slot.claim() else {
@@ -133,23 +136,28 @@ final class CheckpointPresenter: CheckpointPresenterType {
         }
         defer { self.slot.release(token) }
 
-        let result = await AdPresentation(slot: self.slot, token: token).present(
-            params: presentation.params,
-            presenter: adPresenter
-        )
-        guard let error = result.error else {
-            // A verified reward refreshes the cached customer before the presenter completes, so the result
-            // reads the cache like any flow that produced no customer of its own.
-            return .completed(customerInfo: nil)
+        var step = presentation.workflow.initialStep
+        while true {
+            let result = await AdPresentation(slot: self.slot, token: token).present(
+                params: presentation.params(for: step),
+                presenter: adPresenter
+            )
+            if let error = result.error {
+                await self.presentStartupError(
+                    error,
+                    checkpointIdentifier: presentation.checkpointIdentifier,
+                    customVariables: presentation.customVariables,
+                    handler: presentation.errorPresentationHandler
+                )
+                return .failed
+            }
+            guard let nextStep = presentation.workflow.nextStep(after: step) else {
+                // A verified reward refreshes the cached customer before the presenter completes, so the result
+                // reads the cache like any flow that produced no customer of its own.
+                return .completed(customerInfo: nil)
+            }
+            step = nextStep
         }
-
-        await self.presentStartupError(
-            error,
-            checkpointIdentifier: presentation.params.checkpointIdentifier,
-            customVariables: presentation.customVariables,
-            handler: presentation.errorPresentationHandler
-        )
-        return .failed
     }
 
     /// Bridges an ad presenter's completion callback into the checkpoint lifecycle.
@@ -282,8 +290,8 @@ protocol CheckpointPresenterType: AnyObject {
         localPaywallPresentationHandler: PaywallPresentationHandler?
     ) async throws -> CheckpointPresentationOutcome
 
-    func presentAd(
-        _ presentation: AdPresentationRequest,
+    func presentAdWorkflow(
+        _ presentation: AdWorkflowPresentationRequest,
         adPresenter: AdPresenter
     ) async throws -> CheckpointPresentationOutcome
 
