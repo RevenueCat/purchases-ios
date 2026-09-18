@@ -202,7 +202,8 @@ private enum PurchaseButtonInPackagePreview {
                                  nameTextLid: "monthly_title",
                                  detailTextLid: "monthly_desc",
                                  isSelectedByDefault: true))
-        ]
+        ],
+        spacing: 8
     )
 
     static let bodyStack = PaywallComponent.StackComponent(
