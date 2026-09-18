@@ -44,6 +44,8 @@ class Backend {
         timeoutManager: HTTPRequestTimeoutManagerType,
         dateProvider: DateProvider = DateProvider()
     ) {
+        // One `apiSourceFailover` for every lane's HTTPClient, so they walk one source list and one
+        // health-check cache; handle tokens keep concurrent unhealthy reports from double-advancing it.
         let apiSourceFailover = apiSourceProvider.map {
             APISourceFailover(usesRemoteConfigAPISources:
                                 systemInfo.dangerousSettings.internalSettings.usesRemoteConfigAPISources,

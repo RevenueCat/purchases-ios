@@ -50,7 +50,7 @@ extension BackendConfiguration: NetworkConfiguration {}
 
 extension BackendConfiguration {
 
-    /// Adds the `operation` to the shared serial `operationQueue`, potentially adding a random delay.
+    /// Adds the `operation` to this configuration's serial `operationQueue`, potentially adding a random delay.
     func addCacheableOperation<T: CacheableNetworkOperation>(
         with factory: CacheableNetworkOperationFactory<T>,
         delay: JitterableDelay,

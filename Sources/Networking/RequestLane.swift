@@ -13,7 +13,7 @@
 
 import Foundation
 
-/// A named network path with its own serial `OperationQueue` and `HTTPClient`.
+/// A request lane with its own serial `OperationQueue` and `HTTPClient`.
 ///
 /// Lanes bypass two independent serializations in the backend stack: the shared
 /// `OperationQueue` (`maxConcurrentOperationCount = 1`) and the per-client request
