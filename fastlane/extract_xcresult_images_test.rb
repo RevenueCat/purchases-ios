@@ -7,7 +7,7 @@ module Fastlane
   end
 end
 
-require_relative "extract_xcresult_images"
+require_relative "actions/extract_xcresult_images"
 
 class ExtractXcresultImagesActionTest < Minitest::Test
   def test_snapshot_file_name_does_not_duplicate_attachment_extension
