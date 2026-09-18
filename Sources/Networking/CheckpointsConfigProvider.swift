@@ -30,11 +30,16 @@ enum CheckpointRulesProviderError: Error, Equatable {
 
 /// The topic-specific front door for checkpoints, reading through `RemoteConfigManager`'s `checkpoint_rules` topic.
 ///
-/// Items are keyed by checkpoint identifier, so rules load with a single `blobData` read: no topic-index
-/// scan, and `blobData` already handles inlined versus downloaded blobs and identity invalidation.
+/// Items are keyed by checkpoint identifier. Decoded rule sets are retained for their exact committed topic
+/// snapshot, so repeated hits avoid reading and decoding the same blob while config is unchanged.
 final class CheckpointsConfigProvider: CheckpointsConfigProviderType {
 
     private let manager: RemoteConfigManagerType
+    private let cacheLock = Lock()
+    private let cachedRules = GenerationGuardedCache<
+        RemoteConfiguration.ConfigTopic,
+        [String: CheckpointRuleSet]
+    >()
 
     init(manager: RemoteConfigManagerType) {
         self.manager = manager
@@ -59,20 +64,7 @@ final class CheckpointsConfigProvider: CheckpointsConfigProviderType {
     }
 
     private func loadRules(for identifier: String) async throws -> CheckpointRuleSet? {
-        do {
-            if let checkpoint = try await self.manager.blobData(
-                for: .checkpointRules,
-                itemKey: identifier,
-                as: CheckpointRuleSet.self
-            ) {
-                return checkpoint
-            }
-        } catch {
-            Logger.error(Strings.codable.decoding_error(error, CheckpointRuleSet.self))
-        }
-
-        let topic = await self.manager.topic(.checkpointRules)
-        guard let topic else {
+        guard let topic = await self.manager.topic(.checkpointRules) else {
             guard await self.manager.hasCommittedConfig() else {
                 throw CheckpointRulesProviderError.payloadUnavailable
             }
@@ -80,7 +72,50 @@ final class CheckpointsConfigProvider: CheckpointsConfigProviderType {
         }
 
         guard topic[identifier] != nil else { return nil }
+        let topicSnapshot = GenerationGuardedCacheSnapshot(
+            generation: self.manager.configGeneration,
+            key: topic
+        )
+
+        if let cached = self.cachedRule(for: identifier, snapshot: topicSnapshot) {
+            return cached
+        }
+
+        do {
+            if let checkpoint = try await self.manager.blobData(
+                for: .checkpointRules,
+                itemKey: identifier,
+                as: CheckpointRuleSet.self
+            ) {
+                self.cache(checkpoint, for: identifier, snapshot: topicSnapshot)
+                return checkpoint
+            }
+        } catch {
+            Logger.error(Strings.codable.decoding_error(error, CheckpointRuleSet.self))
+        }
+
         throw CheckpointRulesProviderError.payloadUnavailable
+    }
+
+    private func cachedRule(
+        for identifier: String,
+        snapshot: GenerationGuardedCacheSnapshot<RemoteConfiguration.ConfigTopic>
+    ) -> CheckpointRuleSet? {
+        return self.cacheLock.perform {
+            return self.cachedRules.value(for: snapshot)?[identifier]
+        }
+    }
+
+    private func cache(
+        _ ruleSet: CheckpointRuleSet,
+        for identifier: String,
+        snapshot: GenerationGuardedCacheSnapshot<RemoteConfiguration.ConfigTopic>
+    ) {
+        self.cacheLock.perform {
+            var rules = self.cachedRules.value(for: snapshot) ?? [:]
+            rules[identifier] = ruleSet
+            self.cachedRules.store(rules, for: snapshot)
+        }
     }
 
 }
