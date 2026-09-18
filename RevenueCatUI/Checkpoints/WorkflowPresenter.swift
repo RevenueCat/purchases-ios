@@ -36,6 +36,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
     }
 
     private struct PresentationState {
+        let initialActiveEntitlementIdentifiers: Set<String>?
         var outcome: CheckpointPresentationOutcome = .completed(customerInfo: nil)
         var hasReportedOutcome = false
         var dismissalReason: WorkflowDismissalReason = .close
@@ -86,7 +87,9 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         guard self.presentationState == nil else {
             throw CheckpointError.operationAlreadyInProgress
         }
-        self.presentationState = PresentationState()
+        self.presentationState = PresentationState(
+            initialActiveEntitlementIdentifiers: presentation.initialActiveEntitlementIdentifiers
+        )
 
         do {
             if let presentationStarter = self.presentationStarter {
@@ -145,6 +148,14 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
     private func handleDismissal(of controller: PaywallViewController) {
         self.stageDismissalReasonIfNeeded(controller.workflowDismissalReason)
         _ = self.presentationDidDismiss()
+    }
+
+    private func didCompleteRestore(customerInfo: CustomerInfo) {
+        guard customerInfo.grantsNewEntitlements(
+            comparedTo: self.presentationState?.initialActiveEntitlementIdentifiers
+        ) else { return }
+
+        self.stage(.outcome(.completed(customerInfo: customerInfo)))
     }
 
     private func stageDismissalReasonIfNeeded(_ reason: WorkflowDismissalReason) {
@@ -208,7 +219,7 @@ extension WorkflowPresenter {
         didFinishRestoringWith customerInfo: CustomerInfo
     ) {
         MainActor.assumeIsolated {
-            self.stage(.outcome(.completed(customerInfo: customerInfo)))
+            self.didCompleteRestore(customerInfo: customerInfo)
         }
     }
 
@@ -257,7 +268,7 @@ extension WorkflowPresenter {
         _ controller: PaywallViewController,
         didFinishRestoringWith customerInfo: CustomerInfo
     ) {
-        self.stage(.outcome(.completed(customerInfo: customerInfo)))
+        self.didCompleteRestore(customerInfo: customerInfo)
     }
 
     func paywallViewController(
