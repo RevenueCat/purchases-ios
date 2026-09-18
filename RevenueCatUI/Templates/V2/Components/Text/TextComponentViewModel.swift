@@ -64,7 +64,6 @@ class TextComponentViewModel {
 
     }
 
-    // swiftlint:disable:next function_parameter_count
     func visible(
         state: ComponentViewState,
         condition: ScreenCondition,
