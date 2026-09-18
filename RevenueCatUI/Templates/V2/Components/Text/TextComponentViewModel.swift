@@ -65,9 +65,9 @@ class TextComponentViewModel {
     }
 
     lazy var visibilityResolver = PaywallComponentVisibilityResolver(
-        baseVisible: self.component.visible,
-        uiConfigProvider: self.uiConfigProvider,
-        presentedOverrides: self.presentedOverrides,
+        self.component.visible,
+        self.uiConfigProvider,
+        self.presentedOverrides,
         promoOfferEligibility: { context, package in
             context.paywallPromoOfferCache.get(for: package) != nil
         },

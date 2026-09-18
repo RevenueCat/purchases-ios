@@ -45,10 +45,7 @@ class TimelineComponentViewModel {
     }
 
     lazy var visibilityResolver = PaywallComponentVisibilityResolver(
-        baseVisible: self.component.visible,
-        uiConfigProvider: self.uiConfigProvider,
-        presentedOverrides: self.presentedOverrides,
-        visible: { $0.visible }
+        self.component.visible, self.uiConfigProvider, self.presentedOverrides, visible: { $0.visible }
     )
 
     @ViewBuilder

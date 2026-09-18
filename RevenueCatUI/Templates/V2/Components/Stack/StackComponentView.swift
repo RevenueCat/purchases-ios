@@ -347,17 +347,16 @@ struct VerticalStack: View {
                 alignment: horizontalAlignment.stackAlignment,
                 spacing: style.spacing
             ) {
-                ComponentsView(
-                    components: self.children,
-                    onDismiss: self.onDismiss
-                )
+                ForEach(self.children) { child in
+                    ComponentsView(componentViewModels: [child.viewModel], onDismiss: self.onDismiss)
+                }
             }
         case .flex:
             FlexVStack(
                 alignment: horizontalAlignment.stackAlignment,
                 spacing: style.spacing,
                 justifyContent: distribution.justifyContent,
-                children: self.children,
+                componentViewModels: self.children,
                 onDismiss: self.onDismiss
             )
         }
@@ -383,17 +382,16 @@ struct HorizontalStack: View {
                 alignment: verticalAlignment.stackAlignment,
                 spacing: style.spacing
             ) {
-                ComponentsView(
-                    components: self.children,
-                    onDismiss: self.onDismiss
-                )
+                ForEach(self.children) { child in
+                    ComponentsView(componentViewModels: [child.viewModel], onDismiss: self.onDismiss)
+                }
             }
         case .flex:
             FlexHStack(
                 alignment: verticalAlignment.stackAlignment,
                 spacing: style.spacing,
                 justifyContent: distribution.justifyContent,
-                children: self.children,
+                componentViewModels: self.children,
                 onDismiss: self.onDismiss
             )
         }

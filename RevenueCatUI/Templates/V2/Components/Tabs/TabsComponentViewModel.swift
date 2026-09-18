@@ -33,10 +33,7 @@ class TabsComponentViewModel {
     let name: String?
 
     lazy var visibilityResolver = PaywallComponentVisibilityResolver(
-        baseVisible: self.component.visible,
-        uiConfigProvider: self.uiConfigProvider,
-        presentedOverrides: self.presentedOverrides,
-        visible: { $0.visible }
+        self.component.visible, self.uiConfigProvider, self.presentedOverrides, visible: { $0.visible }
     )
 
     /// Guards the one-time propagation of the initial tab's package into the parent

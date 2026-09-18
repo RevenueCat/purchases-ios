@@ -38,9 +38,9 @@ struct PaywallComponentVisibilityResolver {
     private let resolve: @MainActor (PaywallComponentVisibilityContext) -> Bool
 
     init<Partial: PresentedPartial>(
-        baseVisible: Bool?,
-        uiConfigProvider: UIConfigProvider,
-        presentedOverrides: PresentedOverrides<Partial>?,
+        _ baseVisible: Bool?,
+        _ uiConfigProvider: UIConfigProvider,
+        _ presentedOverrides: PresentedOverrides<Partial>?,
         promoOfferEligibility: @escaping PromoOfferEligibility = { context, package in
             context.paywallPromoOfferCache.isMostLikelyEligible(for: package)
         },
