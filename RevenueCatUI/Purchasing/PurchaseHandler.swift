@@ -331,6 +331,18 @@ extension PurchaseHandler {
         return result
     }
 
+    /// Asks for a checkout the customer completes without leaving the app, with the paywall marked as busy
+    /// throughout so the button they tapped cannot start a second one.
+    func startHostedCheckout(package: Package) async -> HostedCheckoutStartResult {
+        // Carried so that the purchase the customer makes on the page is attributed to the paywall that sent
+        // them there.
+        let paywallEvent = self.createPurchaseInitiatedEvent(package: package)
+
+        return await self.withExternalPurchasePreparation {
+            await self.purchases.startHostedCheckout(package: package, paywallEvent: paywallEvent)
+        }
+    }
+
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func invalidateCustomerInfoCache() {
         self.purchases.invalidateCustomerInfoCache()
@@ -1232,6 +1244,10 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
         paywallEvent: PaywallEvent?
     ) async throws -> PurchaseResultData {
         throw ErrorCode.configurationError
+    }
+
+    func startHostedCheckout(package: Package, paywallEvent: PaywallEvent?) async -> HostedCheckoutStartResult {
+        return .failed
     }
 
     func restorePurchases() async throws -> CustomerInfo {

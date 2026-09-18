@@ -183,8 +183,6 @@ struct PurchaseButtonComponentView: View {
         switch await HostedCheckout.start(for: selectedPackage, purchaseHandler: self.purchaseHandler) {
         case let .present(session):
             await self.presentHostedCheckout(session)
-        case .buyThroughStoreKit:
-            try await self.performInAppPurchase(selectedPackage: selectedPackage)
         case .tellCustomerTheyAlreadyOwnIt:
             await self.showAlreadyOwnedAlert(for: selectedPackage)
         case .nothing:

@@ -28,6 +28,17 @@ final class HostedCheckoutTests: TestCase {
         cancelURL: URL(string: "https://api.revenuecat.com/rcbilling/v1/hosted-checkout-return?status=cancel")!
     )
 
+    /// The checkout is asked for through the handler, which is the paywall's only way to the SDK.
+    func testAsksTheHandlerForTheCheckout() async {
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutBlock = { _, _ in .started(Self.session) }
+
+        let start = await HostedCheckout.start(for: TestData.annualPackage,
+                                               purchaseHandler: Self.makeHandler(purchases: purchases))
+
+        expect(start) == .present(Self.session)
+    }
+
     func testPresentsTheCheckoutThatWasCreated() {
         expect(HostedCheckout.Start(.started(Self.session))) == .present(Self.session)
     }
@@ -58,6 +69,30 @@ final class HostedCheckoutTests: TestCase {
     /// be resolved, so a failure offers nothing.
     func testOffersNothingWhenTheCheckoutCouldNotBeCreated() {
         expect(HostedCheckout.Start(.failed)) == .nothing
+    }
+
+}
+
+@available(iOS 15.0, *)
+private extension HostedCheckoutTests {
+
+    static func makePurchases() -> MockPurchases {
+        return MockPurchases { _, _, _ in
+            return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { _ in
+        } customerInfo: {
+            return TestData.customerInfo
+        }
+    }
+
+    static func makeHandler(purchases: MockPurchases) -> PurchaseHandler {
+        return PurchaseHandler(
+            purchases: purchases,
+            eventTracker: .init(purchases: purchases,
+                                eventDispatcher: PaywallEventTrackerTestDispatcher.value)
+        )
     }
 
 }
