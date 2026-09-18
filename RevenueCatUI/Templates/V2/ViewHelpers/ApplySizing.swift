@@ -25,8 +25,9 @@ extension View {
         case let .fit(_, minMax):
             self.applyWidthLimits(minMax, alignment: .center)
         case let .fill(minMax):
+            // See `applyWidth`: `minWidth: 0` keeps an oversized child from widening its ancestors.
             self
-                .frame(maxWidth: .infinity)
+                .frame(minWidth: 0, maxWidth: .infinity)
                 .applyWidthLimits(minMax, alignment: .center)
         case .fixed(let value):
             self.frame(width: Double(value))
@@ -56,7 +57,7 @@ extension View {
             }
         case let .fill(minMax):
             self
-                .frame(maxHeight: .infinity)
+                .frame(minHeight: 0, maxHeight: .infinity)
                 .applyHeightLimits(minMax, alignment: .center)
         case .fixed(let value):
             self.frame(height: Double(value))
