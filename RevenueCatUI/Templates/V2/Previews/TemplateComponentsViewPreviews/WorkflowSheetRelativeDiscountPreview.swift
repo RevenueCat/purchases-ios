@@ -74,26 +74,22 @@ private struct WorkflowDiscountPreviewView: View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private enum WorkflowDiscountPreviewData {
 
-    static let accent = "#D7FA52"
-    static let background = "#0B1020"
-    static let surface = "#171D33"
-    static let muted = "#A9B2C9"
+    static let accent = "#D4B6FF"
+    static let background = "#141122"
+    static let surface = "#211B34"
+    static let muted = "#B8AEC9"
     static let localizations: PaywallComponent.LocalizationDictionary = [
-        "brand": .string("M O M E N T U M   /   P R O"),
-        "headline": .string("Stronger.\nEvery week."),
-        "subtitle": .string("A plan that adapts to you.\nProgress that keeps you going."),
-        "week": .string("YOUR WEEK, UPGRADED"),
-        "sessions": .string("4"),
-        "minutes": .string("35"),
-        "progress": .string("+12%"),
-        "sessions_label": .string("workouts"),
-        "minutes_label": .string("min / session"),
-        "progress_label": .string("this month"),
-        "benefits": .string("✓  Personalized training plans\n✓  Progress insights that matter\n✓  Unlimited workouts"),
-        "recommended": .string("YOUR GOALS. ONE MEMBERSHIP."),
+        "brand": .string("P U R R   C L U B"),
+        "cats": .string("🐈  🐈‍⬛"),
+        "headline": .string("More purrs.\nLess boredom."),
+        "subtitle": .string("Daily play, clever enrichment,\nand happier indoor cats."),
+        "benefits": .string(
+            "✓  Play ideas for every personality\n✓  A fresh adventure every day\n✓  One membership, all your cats"
+        ),
+        "recommended": .string("NINE LIVES. ENDLESS POSSIBILITIES."),
         "all_plans": .string("Explore all plans"),
-        "sheet_title": .string("Find your rhythm"),
-        "sheet_subtitle": .string("The same full access. Your kind of commitment."),
+        "sheet_title": .string("Pick your purr-fect plan"),
+        "sheet_subtitle": .string("All the play. All the cats. Whichever plan fits."),
         "$rc_annual": .string("Annual"),
         "$rc_three_month": .string("3 months"),
         "$rc_monthly": .string("Monthly"),
@@ -102,7 +98,7 @@ private enum WorkflowDiscountPreviewData {
         "discount": .string("{{ product.relative_discount }} OFF"),
         "selection": .string("○"),
         "selected": .string("●"),
-        "continue": .string("Continue"),
+        "continue": .string("Join the club"),
         "close": .string("×"),
         "terms": .string("Auto-renews. Cancel anytime."),
         "footer": .string("Restore purchases   ·   Terms   ·   Privacy")
@@ -174,25 +170,12 @@ private enum WorkflowDiscountPreviewData {
         return .init(
             components: [
                 Self.text("brand", size: 12, color: Self.accent, weight: .bold),
-                Self.text("headline", size: 44, weight: .bold),
+                Self.text("cats", size: 84),
+                Self.text("headline", size: 38, weight: .bold),
                 Self.text("subtitle", size: 16, color: Self.muted),
-                .stack(.init(
-                    components: [
-                        Self.text("week", size: 10, color: Self.muted, weight: .semibold),
-                        .stack(.init(
-                            components: [
-                                Self.metric("sessions", label: "sessions_label"),
-                                Self.metric("minutes", label: "minutes_label"),
-                                Self.metric("progress", label: "progress_label")
-                            ], dimension: .horizontal(.center, .spaceBetween), spacing: 16
-                        ))
-                    ],
-                    spacing: 20, backgroundColor: Self.color(Self.surface),
-                    padding: Self.padding(22), shape: Self.rounded(22)
-                )),
-                Self.text("benefits", size: 15, color: "#DCE2EF", alignment: .leading)
+                Self.text("benefits", size: 15, color: "#E4DCEF", alignment: .leading)
             ],
-            spacing: 26, padding: .init(top: 42, bottom: 24, leading: 28, trailing: 28)
+            spacing: 18, padding: .init(top: 28, bottom: 24, leading: 28, trailing: 28)
         )
     }
 
@@ -203,11 +186,11 @@ private enum WorkflowDiscountPreviewData {
                 components: [
                     .stack(.init(
                         components: [], size: .init(width: .fixed(36), height: .fixed(4)),
-                        backgroundColor: Self.color("#454D65"), shape: .pill
+                        backgroundColor: Self.color("#5A4D6B"), shape: .pill
                     )),
                     .stack(.init(
                         components: [
-                            Self.text("sheet_title", size: 25, weight: .bold, alignment: .leading),
+                            Self.text("sheet_title", size: 23, weight: .bold, alignment: .leading),
                             .button(.init(
                                 action: .navigateBack,
                                 stack: .init(
@@ -291,22 +274,15 @@ private enum WorkflowDiscountPreviewData {
                     ))
                 ],
                 dimension: .horizontal(.center, .start), spacing: 12,
-                backgroundColor: Self.color("#1C233B"), padding: Self.padding(18),
-                shape: Self.rounded(18), border: .init(color: Self.color("#46506C"), width: 1),
+                backgroundColor: Self.color("#28203C"), padding: Self.padding(18),
+                shape: Self.rounded(18), border: .init(color: Self.color("#57486D"), width: 1),
                 badge: badge,
                 overrides: [.init(conditions: [.selected], properties: .init(
-                    backgroundColor: Self.color("#28342C"),
+                    backgroundColor: Self.color("#342642"),
                     border: .init(color: Self.color(Self.accent), width: 2)
                 ))]
             )
         ))
-    }
-
-    private static func metric(_ value: String, label: String) -> PaywallComponent {
-        return .stack(.init(components: [
-            Self.text(value, size: 28, color: Self.accent, weight: .bold),
-            Self.text(label, size: 11, color: Self.muted)
-        ], spacing: 6))
     }
 
     private static func text(
