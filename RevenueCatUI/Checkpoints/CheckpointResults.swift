@@ -62,8 +62,11 @@ extension CustomerInfo {
     func obtainedEntitlements(
         comparedTo initialActiveEntitlementIdentifiers: Set<String>?
     ) -> [EntitlementInfo] {
+        guard let initialActiveEntitlementIdentifiers else {
+            return Array(self.entitlements.active.values)
+        }
+
         return self.entitlements.active.values.filter { entitlement in
-            guard let initialActiveEntitlementIdentifiers = initialActiveEntitlementIdentifiers else { return true }
             return !initialActiveEntitlementIdentifiers.contains(entitlement.identifier)
         }
     }
