@@ -185,6 +185,45 @@ final class WorkflowContextTests: TestCase {
     }
 
     @MainActor
+    func testSheetDefaultDoesNotOverridePageDefault() throws {
+        let context = try Self.makeSheetContext(footer: [
+            Self.sheetButton([.stack(.init(components: [Self.packageComponent("$rc_monthly", isDefault: true)]))]),
+            Self.packageComponent("$rc_annual", isDefault: true)
+        ])
+        let input = WorkflowPaywallView.buildPackageInput(
+            stepId: "paywall", context: context, preferredPackage: nil, showZeroDecimalPlacePrices: true
+        )
+
+        expect(input.packageContext.package?.identifier) == "$rc_annual"
+        expect(try Self.discountText(context: input.packageContext)) == "56%"
+    }
+
+    func testSheetDefaultDoesNotOverrideFirstPagePackageWhenPageHasNoDefault() throws {
+        let context = try Self.makeSheetContext(footer: [
+            Self.sheetButton([Self.packageComponent("$rc_monthly", isDefault: true)]),
+            Self.packageComponent("$rc_annual")
+        ])
+
+        expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_annual"
+    }
+
+    @MainActor
+    func testSheetOnlyPaywallUsesSheetDefaultAndDiscountBaseline() throws {
+        let context = try Self.makeSheetContext(footer: [
+            Self.sheetButton([
+                Self.packageComponent("$rc_monthly"),
+                Self.packageComponent("$rc_annual", isDefault: true)
+            ])
+        ])
+        let input = WorkflowPaywallView.buildPackageInput(
+            stepId: "paywall", context: context, preferredPackage: nil, showZeroDecimalPlacePrices: true
+        )
+
+        expect(input.packageContext.package?.identifier) == "$rc_annual"
+        expect(try Self.discountText(context: input.packageContext)) == "56%"
+    }
+
+    @MainActor
     func testPreferredMonthlySheetPackageHasNoRelativeDiscount() throws {
         let context = try Self.makeSheetContext()
         let monthly = try XCTUnwrap(context.initialOffering.monthly)
