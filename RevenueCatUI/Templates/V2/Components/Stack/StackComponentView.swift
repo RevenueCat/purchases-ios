@@ -99,8 +99,7 @@ struct StackComponentView: View {
             customVariables: self.customVariables,
             stateValues: self.paywallStateValues,
             stateDefaults: self.paywallStateDefaults,
-            windowSize: self.paywallWindowSize,
-            colorScheme: self.colorScheme
+            windowSize: self.paywallWindowSize
         )
         let visibleChildren = self.viewModel.viewModels.enumerated().compactMap { index, viewModel in
             viewModel.isVisible(in: visibilityContext)

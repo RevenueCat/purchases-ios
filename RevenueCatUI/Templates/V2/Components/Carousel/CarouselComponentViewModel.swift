@@ -62,32 +62,12 @@ class CarouselComponentViewModel {
     var onViewAppear: (() -> Void)?
     #endif
 
-    // swiftlint:disable:next function_parameter_count
-    func visible(
-        state: ComponentViewState,
-        condition: ScreenCondition,
-        isEligibleForIntroOffer: Bool,
-        isEligibleForPromoOffer: Bool,
-        selectedPackageId: String?,
-        customVariables: [String: CustomVariableValue],
-        windowSize: CGSize? = nil
-    ) -> Bool {
-        let conditionContext = self.uiConfigProvider.conditionContext(
-            selectedPackageId: selectedPackageId,
-            customVariables: customVariables,
-            windowSize: windowSize
-        )
-        let partial = PresentedCarouselPartial.buildPartial(
-            state: state,
-            condition: condition,
-            isEligibleForIntroOffer: isEligibleForIntroOffer,
-            isEligibleForPromoOffer: isEligibleForPromoOffer,
-            conditionContext: conditionContext,
-            with: self.presentedOverrides
-        )
-
-        return partial?.visible ?? self.component.visible ?? true
-    }
+    lazy var visibilityResolver = PaywallComponentVisibilityResolver(
+        baseVisible: self.component.visible,
+        uiConfigProvider: self.uiConfigProvider,
+        presentedOverrides: self.presentedOverrides,
+        visible: { $0.visible }
+    )
 
     @ViewBuilder
     // swiftlint:disable:next function_parameter_count

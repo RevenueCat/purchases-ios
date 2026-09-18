@@ -39,6 +39,13 @@ class StackComponentViewModel {
 
     let badgeViewModels: [BadgeContents]
 
+    lazy var visibilityResolver = PaywallComponentVisibilityResolver(
+        baseVisible: self.component.visible,
+        uiConfigProvider: self.uiConfigProvider,
+        presentedOverrides: self.presentedOverrides,
+        visible: { $0.visible }
+    )
+
     /// Whether the first child is a full-width image, video, or web view.
     /// Used by ZStack rendering to push non-hero children below the safe area.
     var firstChildIsFullWidthMedia: Bool {
