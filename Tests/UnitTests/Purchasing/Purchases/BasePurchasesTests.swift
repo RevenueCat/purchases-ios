@@ -741,6 +741,15 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
 
     var stubbedTopics: [RemoteConfigTopic: RemoteConfiguration.ConfigTopic] = [:]
     var stubbedBlobData: [RemoteConfigTopic: [String: Data]] = [:]
+    private let _invokedCachedBlobDataParameters: Atomic<[(topic: RemoteConfigTopic, itemKey: String)]> = .init([])
+    var invokedCachedBlobDataParameters: [(topic: RemoteConfigTopic, itemKey: String)] {
+        return self._invokedCachedBlobDataParameters.value
+    }
+    /// When `true`, `cachedBlobData(for:itemKey:)` suspends until `completeStoredCachedBlobReads()` is
+    /// called, allowing tests to advance the config generation while a prewarm is in flight.
+    var shouldStoreCachedBlobDataCompletion = false
+    private typealias StoredCachedBlobRead = (data: Data?, continuation: CheckedContinuation<Data?, Never>)
+    private let _storedCachedBlobReads: Atomic<[StoredCachedBlobRead]> = .init([])
     // Atomic because UiConfigProvider now fetches its parts concurrently, so this can be appended to
     // from multiple tasks at once.
     private let _invokedBlobDataParameters: Atomic<[(topic: RemoteConfigTopic, itemKey: String)]> = .init([])
@@ -775,6 +784,31 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
             // observe readiness before `completeStoredTopic()` has something to resume.
             self._storedTopicContinuations.modify { $0.append(continuation) }
             self._invokedTopicCount.modify { $0 += 1 }
+        }
+    }
+
+    func committedTopicWithoutRefresh(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
+        return self.stubbedTopics[topic]
+    }
+
+    func cachedBlobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data? {
+        self._invokedCachedBlobDataParameters.modify { $0.append((topic, itemKey)) }
+        guard self.shouldStoreCachedBlobDataCompletion else {
+            return self.stubbedBlobData[topic]?[itemKey]
+        }
+        let data = self.stubbedBlobData[topic]?[itemKey]
+        return await withCheckedContinuation { continuation in
+            self._storedCachedBlobReads.modify { $0.append((data, continuation)) }
+            // Capture the data before suspension so a test can replace the config and still resume
+            // this older local read.
+        }
+    }
+
+    /// Resumes every held cached-blob read with the bytes that were available when that read started.
+    func completeStoredCachedBlobReads() {
+        self.shouldStoreCachedBlobDataCompletion = false
+        for read in self._storedCachedBlobReads.getAndSet([]) {
+            read.continuation.resume(returning: read.data)
         }
     }
 

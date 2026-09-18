@@ -23,6 +23,7 @@ class CheckpointsConfigProviderTests: TestCase {
 
     private var diskCache: FakeCheckpointsDiskCache!
     private var blobStore: FakeCheckpointsBlobStore!
+    private var blobFetcher: FakeCheckpointsBlobFetcher!
     private var remoteConfigAPI: FakeCheckpointsRemoteConfigAPI!
     private var manager: RemoteConfigManager!
     private var provider: CheckpointsConfigProvider!
@@ -32,12 +33,13 @@ class CheckpointsConfigProviderTests: TestCase {
 
         self.diskCache = FakeCheckpointsDiskCache()
         self.blobStore = FakeCheckpointsBlobStore()
+        self.blobFetcher = FakeCheckpointsBlobFetcher(blobStore: self.blobStore)
         self.remoteConfigAPI = FakeCheckpointsRemoteConfigAPI()
         self.manager = RemoteConfigManager(
             remoteConfigAPI: self.remoteConfigAPI,
             diskCache: self.diskCache,
             blobStore: self.blobStore,
-            blobFetcher: FakeCheckpointsBlobFetcher(blobStore: self.blobStore),
+            blobFetcher: self.blobFetcher,
             currentUserProvider: FakeCheckpointsCurrentUserProvider()
         )
         self.provider = CheckpointsConfigProvider(manager: self.manager)
@@ -73,6 +75,37 @@ class CheckpointsConfigProviderTests: TestCase {
 
         expect(onboarding.rules.onlyElement?.workflowId) == "wf-a"
         expect(paywallClose.rules.onlyElement?.workflowId) == "wf-exit"
+    }
+
+    func testCachesRulesForTheSameCheckpointAtTheCurrentGeneration() async throws {
+        self.commit(rules: ["onboarding": ["wf-a"]])
+
+        _ = try await self.ruleSet("onboarding")
+        _ = try await self.ruleSet("onboarding")
+
+        expect(self.blobStore.readCount(for: "onboarding-wf-a-ref")) == 1
+    }
+
+    func testCachesRulesForEachCheckpointIndependently() async throws {
+        self.commit(rules: ["onboarding": ["wf-a"], "paywall_close": ["wf-exit"]])
+
+        _ = try await self.ruleSet("onboarding")
+        _ = try await self.ruleSet("paywall_close")
+        _ = try await self.ruleSet("onboarding")
+        _ = try await self.ruleSet("paywall_close")
+
+        expect(self.blobStore.readCount(for: "onboarding-wf-a-ref")) == 1
+        expect(self.blobStore.readCount(for: "paywall_close-wf-exit-ref")) == 1
+    }
+
+    func testWarmCachesCommittedCheckpointRulesBeforeTheyAreRequested() async throws {
+        self.commit(rules: ["onboarding": ["wf-a"]])
+
+        await self.provider.warm()
+        _ = try await self.ruleSet("onboarding")
+
+        expect(self.blobStore.readCount(for: "onboarding-wf-a-ref")) == 1
+        expect(self.blobFetcher.ensureDownloadedCallCount) == 0
     }
 
     func testReturnsNilForACheckpointThatHasNoItem() async throws {
@@ -149,8 +182,7 @@ class CheckpointsConfigProviderTests: TestCase {
         expect(ruleSet.rules).to(beEmpty())
     }
 
-    /// The provider holds no state of its own, so a config replacement is picked up on the next read.
-    func testPicksUpANewPayloadAfterTheConfigIsReplaced() async throws {
+    func testDoesNotServeCachedRulesAfterTheConfigIsReplaced() async throws {
         self.commit(rules: ["onboarding": ["wf-a"]])
         let before = try await self.ruleSet("onboarding")
         expect(before.rules.onlyElement?.workflowId) == "wf-a"
@@ -313,6 +345,7 @@ private final class FakeCheckpointsBlobStore: RemoteConfigBlobStoreType {
 
     private let lock = Lock()
     private var _stubbedData: [String: Data] = [:]
+    private var readCounts: [String: Int] = [:]
     var stubbedData: [String: Data] {
         get { return self.lock.perform { self._stubbedData } }
         set { self.lock.perform { self._stubbedData = newValue } }
@@ -323,7 +356,14 @@ private final class FakeCheckpointsBlobStore: RemoteConfigBlobStoreType {
     }
 
     func read(ref: String) -> Data? {
-        return self.lock.perform { self._stubbedData[ref] }
+        return self.lock.perform {
+            self.readCounts[ref, default: 0] += 1
+            return self._stubbedData[ref]
+        }
+    }
+
+    func readCount(for ref: String) -> Int {
+        return self.lock.perform { self.readCounts[ref, default: 0] }
     }
 
     @discardableResult
@@ -351,6 +391,7 @@ private final class FakeCheckpointsBlobStore: RemoteConfigBlobStoreType {
 private final class FakeCheckpointsBlobFetcher: RemoteConfigBlobFetcherType {
 
     private let blobStore: FakeCheckpointsBlobStore
+    private(set) var ensureDownloadedCallCount = 0
 
     init(blobStore: FakeCheckpointsBlobStore) {
         self.blobStore = blobStore
@@ -358,6 +399,7 @@ private final class FakeCheckpointsBlobFetcher: RemoteConfigBlobFetcherType {
 
     // The store is pre-populated in these tests, so "downloading" is just confirming it's there.
     func ensureDownloaded(ref: String) async -> Bool {
+        self.ensureDownloadedCallCount += 1
         return self.blobStore.contains(ref: ref)
     }
 

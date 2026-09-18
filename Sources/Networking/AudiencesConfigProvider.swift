@@ -37,7 +37,32 @@ final class AudiencesConfigProvider: AudiencesConfigProviderType {
         self.manager = manager
     }
 
+    func warmAsync() {
+        Task { [weak self] in
+            await self?.warm()
+        }
+    }
+
+    func warm() async {
+        guard let snapshot = await self.manager.committedTopicCacheSnapshot(.audiences),
+              snapshot.key[Self.audiencesBlobItemKey] != nil,
+              let blob = await self.manager.cachedBlobData(
+                  for: .audiences,
+                  itemKey: Self.audiencesBlobItemKey
+              ) else { return }
+
+        guard let audiences = try? Self.decodeAudiences(from: blob),
+              self.manager.configGeneration == snapshot.generation else { return }
+        self.cachedConfiguration.store(
+            .init(audiences: audiences, configGeneration: snapshot.generation),
+            for: snapshot
+        )
+    }
+
     func configuration() async throws -> AudienceConfigurationSnapshot? {
+        if let cached = self.cachedConfiguration.value(currentGeneration: self.manager.configGeneration) {
+            return cached
+        }
         return try await self.manager.readConsistent {
             try await self.loadConfiguration()
         }
