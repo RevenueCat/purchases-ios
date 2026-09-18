@@ -884,6 +884,7 @@ private extension PaywallFixture {
                 ),
                 stickyFooter: nil,
                 background: .color(.init(light: .hex("#ffffff")))
+            )),
             componentsLocalizations: [
                 "en_US": [
                     "top": .string("Top button"),
