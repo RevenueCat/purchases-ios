@@ -163,6 +163,25 @@ extension BaseStoreKitIntegrationTests {
     }
 
     func verifySpecificTransactionIsEventuallyFinished(
+        _ transaction: StoreTransaction,
+        count: Int? = 1,
+        file: FileString = #file,
+        line: UInt = #line
+    ) async throws {
+        try await asyncWait(description: "StoreKit transaction identifier is not available", timeout: .seconds(5)) {
+            await self.storeKitIdentifier(for: transaction) != nil
+        }
+        let identifier = try XCTUnwrap(self.storeKitIdentifier(for: transaction))
+        try await self.verifySpecificTransactionIsEventuallyFinished(
+            transactionId: identifier,
+            productId: transaction.productIdentifier,
+            count: count,
+            file: file,
+            line: line
+        )
+    }
+
+    func verifySpecificTransactionIsEventuallyFinished(
         transactionId: String,
         productId: String,
         count: Int? = 1,
