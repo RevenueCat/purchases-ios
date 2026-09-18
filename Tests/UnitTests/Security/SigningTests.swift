@@ -756,6 +756,7 @@ class SigningTests: TestCase {
         )
 
         expect(verifiedResponse.verificationResult) == .failed(.missingSignedPayload)
+        self.logger.verifyMessageWasLogged(Strings.signing.signed_payload_missing(request), level: .warn)
     }
 
     func testResponseVerificationWithNonceWithValidSignature() throws {
