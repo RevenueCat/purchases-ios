@@ -77,6 +77,66 @@ final class SizeModifierTests: TestCase {
         XCTAssertEqual(Self.fittingSize(of: view, in: .init(width: 100, height: 100)).width, 40)
     }
 
+    func testFixedSizeIncludesContentInsets() {
+        let contentInsets = EdgeInsets(top: 5, leading: 10, bottom: 5, trailing: 10)
+        let view = Color.clear
+            .size(
+                .init(width: .fixed(50), height: .fixed(40)),
+                subtracting: contentInsets
+            )
+            .padding(contentInsets)
+
+        XCTAssertEqual(
+            Self.fittingSize(of: view, in: .init(width: 100, height: 100)),
+            .init(width: 50, height: 40)
+        )
+    }
+
+    func testMarginRemainsOutsideFixedSize() {
+        let contentInsets = EdgeInsets(top: 5, leading: 10, bottom: 5, trailing: 10)
+        let margin = EdgeInsets(top: 3, leading: 4, bottom: 3, trailing: 4)
+        let view = Color.clear
+            .size(
+                .init(width: .fixed(50), height: .fixed(40)),
+                subtracting: contentInsets
+            )
+            .padding(contentInsets)
+            .padding(margin)
+
+        XCTAssertEqual(
+            Self.fittingSize(of: view, in: .init(width: 100, height: 100)),
+            .init(width: 58, height: 46)
+        )
+    }
+
+    func testFixedMediaSizeIncludesContentInsets() {
+        let contentInsets = EdgeInsets(top: 5, leading: 10, bottom: 5, trailing: 10)
+        let size = PaywallComponent.Size(width: .fixed(50), height: .fixed(40))
+        let view = Color.clear
+            .applyMediaWidth(size: size, subtracting: contentInsets)
+            .applyMediaHeight(size: size, aspectRatio: 1, subtracting: contentInsets)
+            .padding(contentInsets)
+
+        XCTAssertEqual(
+            Self.fittingSize(of: view, in: .init(width: 100, height: 100)),
+            .init(width: 50, height: 40)
+        )
+    }
+
+    func testFixedWidthMediaWithFitHeightUsesInsetContentWidth() {
+        let contentInsets = EdgeInsets(top: 5, leading: 10, bottom: 5, trailing: 10)
+        let size = PaywallComponent.Size(width: .fixed(50), height: .fit(nil))
+        let view = Color.clear
+            .applyMediaWidth(size: size, subtracting: contentInsets)
+            .applyMediaHeight(size: size, aspectRatio: 2, subtracting: contentInsets)
+            .padding(contentInsets)
+
+        XCTAssertEqual(
+            Self.fittingSize(of: view, in: .init(width: 100, height: 100)),
+            .init(width: 50, height: 25)
+        )
+    }
+
     private static func fittingSize<Content: View>(of view: Content, in proposal: CGSize) -> CGSize {
         UIHostingController(rootView: view).sizeThatFits(in: proposal)
     }
