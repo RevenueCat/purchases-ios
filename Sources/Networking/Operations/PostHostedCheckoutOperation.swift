@@ -120,8 +120,7 @@ extension PostHostedCheckoutOperation {
         /// tie the checkout session to it. Omitted where no token applies (e.g. Test Store).
         let externalPurchaseTokenID: String?
 
-        /// The customer's email, for the provider to prefill its page with. Omitted unless the app has told
-        /// the SDK one.
+        /// The customer's email, for the provider to prefill its page with.
         let email: String?
 
     }

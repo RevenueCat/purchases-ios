@@ -54,8 +54,7 @@ class WebBillingAPI {
     /// - Parameter paywall: The paywall the checkout was started from, where it was started from one.
     /// - Parameter externalPurchaseTokenID: Identifies the Apple external purchase token registered for
     /// this purchase. Pass `nil` where no token applies.
-    /// - Parameter email: The customer's email, for the provider to prefill its page with. Pass `nil` where
-    /// none is known.
+    /// - Parameter email: The customer's email, for the provider to prefill its page with.
     // swiftlint:disable:next function_parameter_count
     func postHostedCheckout(
         appUserID: String,
