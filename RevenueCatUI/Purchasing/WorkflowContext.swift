@@ -202,7 +202,7 @@ import Foundation
         }
 
         let promoOfferCodes = packages.reduce(into: [String: String]()) { result, entry in
-            if let code = entry.promoOfferCode {
+            if let code = entry.promoOfferCode, result[entry.package.identifier] == nil {
                 result[entry.package.identifier] = code
             }
         }

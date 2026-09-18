@@ -238,6 +238,30 @@ final class WorkflowContextTests: TestCase {
         expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_annual"
     }
 
+    func testDuplicateSheetPackagePreservesFirstPromoOfferCode() throws {
+        let context = try Self.makeSheetContext(footer: [
+            Self.packageComponent("$rc_annual", isDefault: true, promoCode: "annual_promo"),
+            Self.sheetButton([Self.packageComponent("$rc_annual", promoCode: "sheet_promo")])
+        ])
+
+        for stepId in ["paywall", "intro"] {
+            let effective = context.effectivePackageContext(for: stepId, preferring: nil)
+            expect(effective?.promoOfferCodesByPackageId["$rc_annual"]) == "annual_promo"
+        }
+    }
+
+    func testDuplicateSheetPackageFillsMissingPromoOfferCode() throws {
+        let context = try Self.makeSheetContext(footer: [
+            Self.packageComponent("$rc_annual", isDefault: true),
+            Self.sheetButton([Self.packageComponent("$rc_annual", promoCode: "sheet_promo")])
+        ])
+
+        for stepId in ["paywall", "intro"] {
+            let effective = context.effectivePackageContext(for: stepId, preferring: nil)
+            expect(effective?.promoOfferCodesByPackageId["$rc_annual"]) == "sheet_promo"
+        }
+    }
+
     func testCollectsPackagesInButtonContentWithoutSheetDestination() throws {
         let button = PaywallComponent.button(.init(
             action: .navigateBack,
