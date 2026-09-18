@@ -82,18 +82,16 @@ final class CheckpointsManager {
                 globalPaywallPresenter: globalPaywallPresenter,
                 localPaywallPresentationHandler: params.localPaywallPresentationHandler
             )
-        case let .matchedAd(adStep):
+        case let .matchedAd(adWorkflow):
             guard let adPresenter else {
                 Logger.warning(Strings.checkpoint_ad_step_without_ad_presenter(checkpointIdentifier: identifier))
                 return .nothingPresented
             }
-            return try await self.checkpointPresenter.presentAd(
-                params: .init(
+            return try await self.checkpointPresenter.presentAdWorkflow(
+                AdWorkflowPresentationRequest(
+                    workflow: adWorkflow,
                     checkpointIdentifier: identifier,
-                    customVariables: params.customVariables,
-                    adIdentifier: adStep.adIdentifier,
-                    mediator: adStep.mediator,
-                    adFormat: adStep.adFormat
+                    customVariables: params.customVariables
                 ),
                 adPresenter: adPresenter
             )
@@ -118,6 +116,7 @@ final class CheckpointsManager {
                     initialActiveEntitlementIdentifiers: initialActiveEntitlementIdentifiers
                 ))
             case let .adPresented(adOutcome):
+                // Only the last ad's outcome is reported for a chain, since it is what the checkpoint ended on.
                 // `Failed` is surfaced too, rather than collapsed to `nil` like `.failed`: it is the only way the
                 // app can receive the error, and unlike a failed workflow it is a hint that a fallback (such as
                 // another ad) may be appropriate.

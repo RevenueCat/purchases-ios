@@ -20,26 +20,60 @@ extension DefaultCheckpointWorkflowResolver {
     static let mediatorParam = "mediator"
     static let adFormatParam = "ad_format"
 
-    /// Serves a workflow whose only step is a terminal `ad` step as an ad the app owns.
-    ///
-    /// Only `ad_identifier`, `mediator` and `ad_format` are validated. Anything else the step happens to carry
-    /// is ignored rather than treated as unservable, since a step of this kind renders nothing.
-    static func resolveAd(_ rule: CheckpointRule, step: WorkflowStep) -> CheckpointResolution {
-        guard let adIdentifier = Self.stringParam(Self.adIdentifierParam, in: step), !adIdentifier.isEmpty else {
-            return Self.unservable(rule, reason: "the ad step has no valid ad identifier")
-        }
-        guard let mediator = Self.stringParam(Self.mediatorParam, in: step), !mediator.isEmpty else {
-            return Self.unservable(rule, reason: "the ad step has no valid mediator")
-        }
-        guard let adFormat = Self.stringParam(Self.adFormatParam, in: step), !adFormat.isEmpty else {
-            return Self.unservable(rule, reason: "the ad step has no valid ad format")
+    /// Serves a workflow made only of `ad` steps as an ad workflow the app owns. Every step is validated up
+    /// front, since a chain the presenter can't finish shouldn't start.
+    static func resolveAdWorkflow(_ rule: CheckpointRule, workflow: PublishedWorkflow) -> CheckpointResolution {
+        guard workflow.steps.values.allSatisfy({ $0.type == Self.adStepType }) else {
+            return Self.unservable(rule, reason: "an ad step cannot be mixed with other steps")
         }
 
-        return .matchedAd(ResolvedAdStep(
+        var steps: [String: ResolvedAdStep] = [:]
+        for (stepId, step) in workflow.steps {
+            guard let resolved = Self.resolveAdStep(rule, step: step, in: workflow) else {
+                return .noAction(.configurationUnavailable)
+            }
+            steps[stepId] = resolved
+        }
+        guard let initialStep = steps[workflow.initialStepId] else {
+            return Self.unservable(rule, reason: "its initial step was not found")
+        }
+
+        return .matchedAd(ResolvedAdWorkflow(initialStep: initialStep, steps: steps))
+    }
+
+    /// Only `ad_identifier`, `mediator` and `ad_format` are validated. Anything else the step happens to carry
+    /// is ignored rather than treated as unservable, since a step of this kind renders nothing.
+    private static func resolveAdStep(
+        _ rule: CheckpointRule,
+        step: WorkflowStep,
+        in workflow: PublishedWorkflow
+    ) -> ResolvedAdStep? {
+        guard let adIdentifier = Self.stringParam(Self.adIdentifierParam, in: step), !adIdentifier.isEmpty else {
+            Self.unservable(rule, reason: "the ad step has no valid ad identifier")
+            return nil
+        }
+        guard let mediator = Self.stringParam(Self.mediatorParam, in: step), !mediator.isEmpty else {
+            Self.unservable(rule, reason: "the ad step has no valid mediator")
+            return nil
+        }
+        guard let adFormat = Self.stringParam(Self.adFormatParam, in: step), !adFormat.isEmpty else {
+            Self.unservable(rule, reason: "the ad step has no valid ad format")
+            return nil
+        }
+
+        // Like `WorkflowNavigator`, an action that isn't a step or points nowhere ends the workflow.
+        var nextStepId: String?
+        if case let .step(stepId)? = step.triggerActions[ResolvedAdStep.triggerActionId],
+           workflow.steps[stepId] != nil {
+            nextStepId = stepId
+        }
+
+        return ResolvedAdStep(
             adIdentifier: adIdentifier,
             mediator: Self.normalizedMediator(mediator),
-            adFormat: AdFormat(rawValue: adFormat)
-        ))
+            adFormat: AdFormat(rawValue: adFormat),
+            nextStepId: nextStepId
+        )
     }
 
     static func stringParam(_ key: String, in step: WorkflowStep) -> String? {
