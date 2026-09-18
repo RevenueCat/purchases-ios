@@ -531,6 +531,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               attributeSyncing: subscriberAttributesManager,
                                               appUserID: appUserID
         )
+        customerInfoManager.currentUserProvider = identityManager
         let remoteConfigManager: RemoteConfigManagerType = {
             guard let remoteConfigDiskCache else { return NoOpRemoteConfigManager() }
 

@@ -179,6 +179,132 @@ class WorkflowResponseTests: TestCase {
         expect(workflow.steps["step_1"]?.triggerActions["btn_2"]) == .unknown
     }
 
+    func testDecodeBranchTriggerActionKeepsTheAudienceOrder() throws {
+        let json = """
+        {
+          "type": "branch",
+          "branches": [
+            { "audience_id": "aud_a", "step_id": "step_a" },
+            { "audience_id": "aud_b", "step_id": "step_b" }
+          ],
+          "fallback_step_id": "step_default"
+        }
+        """.data(using: .utf8)!
+
+        let action = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: json)
+
+        expect(action) == .branch(.init(
+            branches: [
+                .init(audienceId: "aud_a", stepId: "step_a"),
+                .init(audienceId: "aud_b", stepId: "step_b")
+            ],
+            fallbackStepId: "step_default"
+        ))
+    }
+
+    func testDecodeBranchTriggerActionMissingTheFallbackDecodesToUnknown() throws {
+        let json = """
+        { "type": "branch", "branches": [{ "audience_id": "aud_a", "step_id": "step_a" }] }
+        """.data(using: .utf8)!
+
+        let action = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: json)
+
+        expect(action) == .unknown
+    }
+
+    func testDecodeBranchTriggerActionWithNoBranchesStillRoutesToTheFallback() throws {
+        let json = """
+        { "type": "branch", "branches": [], "fallback_step_id": "step_default" }
+        """.data(using: .utf8)!
+
+        let action = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: json)
+
+        expect(action) == .branch(.init(branches: [], fallbackStepId: "step_default"))
+    }
+
+    func testDecodeStepTriggerActionMissingItsStepIdDecodesToUnknown() throws {
+        let json = """
+        { "type": "step" }
+        """.data(using: .utf8)!
+
+        let action = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: json)
+
+        expect(action) == .unknown
+    }
+
+    func testDecodeTriggerActionWithNoTypeDecodesToUnknown() throws {
+        let json = """
+        { "step_id": "step_2" }
+        """.data(using: .utf8)!
+
+        let action = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: json)
+
+        expect(action) == .unknown
+    }
+
+    /// `triggerActions` propagates a throw, so one bad action would otherwise fail the whole workflow.
+    func testDecodeWorkflowWithMalformedStepActionKeepsTheRestOfTheWorkflow() throws {
+        let json = """
+        {
+          "id": "wf_bad_step",
+          "display_name": "Step",
+          "initial_step_id": "step_1",
+          "steps": {
+            "step_1": {
+              "id": "step_1",
+              "type": "screen",
+              "trigger_actions": {
+                "btn_1": { "type": "step", "step_id": "step_2" },
+                "btn_2": { "type": "step" }
+              }
+            }
+          },
+          "screens": {},
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {},
+            "variable_config": { "variable_compatibility_map": {}, "function_compatibility_map": {} }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: json)
+
+        expect(workflow.steps["step_1"]?.triggerActions["btn_1"]) == .step(stepId: "step_2")
+        expect(workflow.steps["step_1"]?.triggerActions["btn_2"]) == .unknown
+    }
+
+    func testDecodeWorkflowWithMalformedBranchKeepsTheRestOfTheWorkflow() throws {
+        let json = """
+        {
+          "id": "wf_bad_branch",
+          "display_name": "Branch",
+          "initial_step_id": "step_1",
+          "steps": {
+            "step_1": {
+              "id": "step_1",
+              "type": "screen",
+              "trigger_actions": {
+                "btn_1": { "type": "step", "step_id": "step_2" },
+                "branch": { "type": "branch", "branches": [] }
+              }
+            }
+          },
+          "screens": {},
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {},
+            "variable_config": { "variable_compatibility_map": {}, "function_compatibility_map": {} }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: json)
+
+        expect(workflow.steps["step_1"]?.triggerActions["btn_1"]) == .step(stepId: "step_2")
+        expect(workflow.steps["step_1"]?.triggerActions["branch"]) == .unknown
+    }
+
     func testDecodeWorkflowTrigger() throws {
         let json = """
         {
