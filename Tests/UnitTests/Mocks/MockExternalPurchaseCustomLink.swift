@@ -17,11 +17,14 @@ import Foundation
 final class MockExternalPurchaseCustomLink: ExternalPurchaseCustomLinkType {
 
     var stubbedIsAPIAvailable: Bool = true
-    var stubbedCanMakeExternalPurchases: Bool = true
+    var stubbedAvailability: ExternalPurchaseAvailability = .available
     var stubbedTokenResult: Result<String?, Error> = .success("test-external-purchase-token")
     var stubbedNoticeResult: Result<ExternalPurchaseNoticeResult, Error> = .success(.continued)
 
-    private(set) var invokedCanMakeExternalPurchasesCount: Int = 0
+    /// Runs while the notice is on screen, so tests can act with a preparation half way through.
+    var whileShowingNotice: (@Sendable () async -> Void)?
+
+    private(set) var invokedAvailabilityCount: Int = 0
     private(set) var invokedTokenTypes: [ExternalPurchaseTokenType] = []
     private(set) var invokedNoticeTypes: [ExternalPurchaseNoticeType] = []
 
@@ -29,9 +32,9 @@ final class MockExternalPurchaseCustomLink: ExternalPurchaseCustomLinkType {
         return self.stubbedIsAPIAvailable
     }
 
-    func canMakeExternalPurchases() async -> Bool {
-        self.invokedCanMakeExternalPurchasesCount += 1
-        return self.stubbedCanMakeExternalPurchases
+    func externalPurchaseAvailability() async -> ExternalPurchaseAvailability {
+        self.invokedAvailabilityCount += 1
+        return self.stubbedAvailability
     }
 
     func token(for tokenType: ExternalPurchaseTokenType) async throws -> String? {
@@ -41,6 +44,7 @@ final class MockExternalPurchaseCustomLink: ExternalPurchaseCustomLinkType {
 
     func showNotice(type: ExternalPurchaseNoticeType) async throws -> ExternalPurchaseNoticeResult {
         self.invokedNoticeTypes.append(type)
+        await self.whileShowingNotice?()
         return try self.stubbedNoticeResult.get()
     }
 

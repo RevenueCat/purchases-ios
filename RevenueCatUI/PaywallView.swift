@@ -54,6 +54,8 @@ public struct PaywallView: View {
 
     private var promoOfferCache: PaywallPromoOfferCache?
 
+    private var workflowPresentationErrorHandler: ((NSError) -> Void)?
+
     private var initializationError: NSError?
 
     @Environment(\.onRequestedDismissal)
@@ -214,6 +216,7 @@ public struct PaywallView: View {
         self.fonts = configuration.fonts
         self.displayCloseButton = configuration.displayCloseButton
         self.promoOfferCache = configuration.promoOfferCache
+        self.workflowPresentationErrorHandler = configuration.workflowPresentationErrorHandler
 
         self.initializationError = Self.checkForConfigurationConsistency(purchaseHandler: configuration.purchaseHandler)
     }
@@ -373,7 +376,8 @@ public struct PaywallView: View {
                         showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
                         displayCloseButton: self.displayCloseButton,
                         promoOfferCache: self.promoOfferCache,
-                        onDismiss: self.dismissRequested
+                        onDismiss: self.dismissRequested,
+                        onPresentationError: self.workflowPresentationErrorHandler
                     )
                 } else {
                     PaywallsV2View(
@@ -469,6 +473,9 @@ struct LoadedOfferingPaywallView: View {
 
     @Environment(\.onRequestedDismissal)
     private var onRequestedDismissal: (() -> Void)?
+
+    @Environment(\.paywallInteractionNotifier)
+    private var paywallInteractionNotifier
 
     @Environment(\.colorScheme)
     private var colorScheme
@@ -573,7 +580,8 @@ struct LoadedOfferingPaywallView: View {
             .environmentObject(self.introEligibility)
             .environment(
                 \.componentInteractionLogger,
-                self.purchaseHandler.componentInteractionLogger(sessionID: self.paywallSessionID)
+                self.purchaseHandler.componentInteractionLogger(sessionID: self.paywallSessionID,
+                                                                onInteraction: self.paywallInteractionNotifier)
             )
             .environmentObject(self.purchaseHandler)
             .disabled(self.purchaseHandler.actionInProgress)

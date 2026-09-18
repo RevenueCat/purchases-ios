@@ -19,6 +19,8 @@ import SwiftUI
 
 // swiftlint:disable file_length
 
+private struct TerminalOfferingWorkflowError: Error {}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class PurchaseHandler: ObservableObject {
 
@@ -28,6 +30,9 @@ final class PurchaseHandler: ObservableObject {
         case pendingPurchaseContinuation
         case purchase
         case restore
+
+        /// What Apple requires before the customer leaves the app to pay on the web.
+        case externalPurchasePreparation
 
     }
 
@@ -300,6 +305,34 @@ extension PurchaseHandler {
         return result
     }
 
+    /// Runs `preparation` with the paywall marked as busy, so the button the customer tapped cannot start a
+    /// second trip out of the app while Apple's flow is under way.
+    ///
+    /// A call that finds the paywall already busy leaves the mark alone, so it cannot free the paywall while
+    /// the flow that set it is still running.
+    func withExternalPurchasePreparation<T>(_ preparation: () async throws -> T) async rethrows -> T {
+        let marked = await MainActor.run { () -> Bool in
+            guard actionTypeInProgress == nil else {
+                return false
+            }
+
+            startAction(.externalPurchasePreparation)
+            return true
+        }
+
+        let result = try await preparation()
+
+        if marked {
+            await MainActor.run {
+                if actionTypeInProgress == .externalPurchasePreparation {
+                    self.actionTypeInProgress = nil
+                }
+            }
+        }
+
+        return result
+    }
+
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func invalidateCustomerInfoCache() {
         self.purchases.invalidateCustomerInfoCache()
@@ -368,6 +401,11 @@ extension PurchaseHandler {
             return .init(offering: offering, workflowContext: nil)
         }
 
+        if case let .offering(offering) = content,
+           offering.internalPaywallComponents != nil {
+            return .init(offering: offering, workflowContext: nil)
+        }
+
         guard let cachedOfferings = self.purchases.cachedOfferings,
               let offering = self.initialOffering(
                 content: content,
@@ -386,7 +424,7 @@ extension PurchaseHandler {
                 uiConfig: fetchResult.uiConfig,
                 allOfferings: cachedOfferings,
                 presentedOfferingContext: offering.presentedOfferingContext,
-                triggerOfferingIdentifier: offering.identifier
+                workflowBlobRef: fetchResult.workflowBlobRef
               ) else {
             return nil
         }
@@ -544,17 +582,17 @@ extension PurchaseHandler {
         return try await self.purchases.offerings()
     }
 
-    /// Routes a resolved offering to its own (legacy) paywall or the workflows endpoint.
-    /// `offering.paywall == nil` is the durable marker of a non-legacy paywall: a v1 paywall always
-    /// carries `paywall`, so a legacy offering renders directly without a workflow fetch. When the
-    /// offering simply has no workflow attached, it falls back to the default paywall (matching the
-    /// legacy path). Other failures (e.g. network, malformed workflow) propagate.
+    /// Routes a resolved offering to its attached paywall or the workflows endpoint. Offerings
+    /// decoded from the backend retain only `hasPaywallComponents`, so an actual components payload
+    /// identifies a render-ready offering supplied by a preview client.
     private func resolvePaywallViewData(
         for offering: Offering,
         offerings: Offerings?,
         remoteConfigEnabled: Bool
     ) async throws -> ResolvedPaywallViewData {
-        guard remoteConfigEnabled, offering.paywall == nil else {
+        guard remoteConfigEnabled,
+              offering.paywall == nil,
+              offering.internalPaywallComponents == nil else {
             return .init(offering: offering, workflowContext: nil)
         }
 
@@ -566,6 +604,8 @@ extension PurchaseHandler {
             )
 
             return .init(offering: context.initialOffering, workflowContext: context)
+        } catch is TerminalOfferingWorkflowError {
+            return .init(offering: offering, workflowContext: nil)
         } catch {
             // An offering without a workflow renders the default paywall, matching the legacy path.
             // Other failures — including a mapped workflow whose item or blob failed to resolve —
@@ -604,7 +644,7 @@ extension PurchaseHandler {
                 uiConfig: fetchResult.uiConfig,
                 allOfferings: allOfferings,
                 presentedOfferingContext: presentedOfferingContext,
-                triggerOfferingIdentifier: identifier
+                workflowBlobRef: fetchResult.workflowBlobRef
             )
         } catch WorkflowError.uiConfigUnavailable(let workflowId) {
             throw PaywallError.workflowUiConfigUnavailable(workflowId: workflowId)
@@ -615,25 +655,37 @@ extension PurchaseHandler {
     /// `initialOffering` carries the workflow screen's offering with its mapped paywall components
     /// applied, so callers can read `context.initialOffering` instead of receiving it separately.
     /// Shared by the async resolve path and the synchronous cache seed: the async path lets the thrown
-    /// error propagate, while the seed treats any throw as a miss (via `try?`) and falls through.
-    /// Throws ``PaywallError/offeringNotFound(identifier:)`` when the workflow has no initial screen
-    /// (reporting `triggerOfferingIdentifier`) or when that screen's offering is absent from
-    /// `allOfferings` (reporting the screen's own offering identifier that was actually missing).
+    /// error propagate, while the seed treats any throw as a miss (via `try?`).
+    /// Throws a specific ``PaywallError`` when the initial step or its screen cannot be rendered. An absent
+    /// offering, whether the initial screen declares one or not, is
+    /// rendered as content-only so the workflow UI can surface its configuration error.
     static func makeWorkflowContext(
         workflow: PublishedWorkflow,
         uiConfig: UIConfig,
         allOfferings: Offerings,
         presentedOfferingContext: PresentedOfferingContext?,
-        triggerOfferingIdentifier: String
+        workflowBlobRef: String? = nil
     ) throws -> WorkflowContext {
-        guard let step = workflow.steps[workflow.initialStepId],
-              let screenID = step.screenId,
-              let screen = workflow.screens[screenID] else {
-            throw PaywallError.offeringNotFound(identifier: triggerOfferingIdentifier)
+        guard let step = workflow.steps[workflow.initialStepId] else {
+            throw PaywallError.workflowInitialStepNotFound(
+                stepId: workflow.initialStepId,
+                workflowId: workflow.id
+            )
         }
-
-        guard let baseOffering = allOfferings.offering(identifier: screen.offeringIdentifier) else {
-            throw PaywallError.offeringNotFound(identifier: screen.offeringIdentifier ?? triggerOfferingIdentifier)
+        guard !step.isOfferingStep else {
+            throw TerminalOfferingWorkflowError()
+        }
+        guard let screenID = step.screenId else {
+            throw PaywallError.workflowInitialStepMissingScreenIdentifier(
+                stepId: step.id,
+                workflowId: workflow.id
+            )
+        }
+        guard let screen = workflow.screens[screenID] else {
+            throw PaywallError.workflowInitialScreenNotFound(
+                screenId: screenID,
+                workflowId: workflow.id
+            )
         }
 
         let paywallComponents = WorkflowScreenMapper.toPaywallComponents(
@@ -642,7 +694,12 @@ extension PurchaseHandler {
             paywallId: screenID
         )
 
-        let initialOffering = baseOffering.withPaywallComponents(paywallComponents)
+        let offeringIdentifier = workflow.offeringIdentifier(for: step)
+        let baseOffering = offeringIdentifier.flatMap { allOfferings.offering(identifier: $0) }
+        let initialOffering = WorkflowContext.renderingOffering(
+            baseOffering: baseOffering,
+            paywallComponents: paywallComponents
+        )
 
         let offering: Offering
         if let presentedOfferingContext {
@@ -656,7 +713,8 @@ extension PurchaseHandler {
             uiConfig: uiConfig,
             allOfferings: allOfferings,
             initialOffering: offering,
-            presentedOfferingContext: presentedOfferingContext
+            presentedOfferingContext: presentedOfferingContext,
+            workflowBlobRef: workflowBlobRef
         )
     }
     #endif
@@ -928,8 +986,14 @@ extension PurchaseHandler {
         }
     }
 
-    func componentInteractionLogger(sessionID: PaywallEvent.SessionID) -> ComponentInteractionLogger {
-        return self.paywallEventTracker.componentInteractionLogger(sessionID: sessionID)
+    func componentInteractionLogger(
+        sessionID: PaywallEvent.SessionID,
+        onInteraction: PaywallInteractionNotifier = .init()
+    ) -> ComponentInteractionLogger {
+        return self.paywallEventTracker.componentInteractionLogger(
+            sessionID: sessionID,
+            onInteraction: onInteraction
+        )
     }
 
     /// - Returns: whether the event was tracked
@@ -1302,6 +1366,37 @@ extension EnvironmentValues {
     var onRequestedDismissal: (() -> Void)? {
         get { self[RequestedDismissalKey.self] }
         set { self[RequestedDismissalKey.self] = newValue }
+    }
+}
+
+/// Lightweight wrapper so views can report paywall interactions without depending on the full `PurchaseHandler`.
+struct PaywallInteractionNotifier: Sendable {
+
+    let handler: PaywallInteractionHandler?
+
+    init(_ handler: PaywallInteractionHandler? = nil) {
+        self.handler = handler
+    }
+
+    func callAsFunction(_ event: PaywallInteractionEvent) {
+        guard let handler = self.handler else { return }
+        Task { @MainActor in
+            handler(event)
+        }
+    }
+
+}
+
+/// `EnvironmentKey` for storing the notifier for paywall interactions.
+struct PaywallInteractionNotifierKey: EnvironmentKey {
+    static let defaultValue: PaywallInteractionNotifier = .init()
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension EnvironmentValues {
+    var paywallInteractionNotifier: PaywallInteractionNotifier {
+        get { self[PaywallInteractionNotifierKey.self] }
+        set { self[PaywallInteractionNotifierKey.self] = newValue }
     }
 }
 

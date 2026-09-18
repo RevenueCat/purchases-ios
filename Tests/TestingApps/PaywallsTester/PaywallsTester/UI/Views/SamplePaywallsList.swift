@@ -182,6 +182,12 @@ struct SamplePaywallsList: View {
                 } label: {
                     TemplateLabel(name: "State-driven tabs", icon: "rectangle.stack")
                 }
+
+                Button {
+                    self.display = .componentPaywall(SamplePaywallLoader.windowSplitComponentsData())
+                } label: {
+                    TemplateLabel(name: "Window split (foldable/iPad)", icon: "rectangle.split.2x1")
+                }
                 #endif
             }
             #endif

@@ -37,6 +37,9 @@ struct TextComponentView: View {
     @Environment(\.screenCondition)
     private var screenCondition
 
+    @Environment(\.paywallWindowSize)
+    private var paywallWindowSize
+
     @Environment(\.countdownTime)
     private var countdownTime: CountdownTime?
 
@@ -60,6 +63,23 @@ struct TextComponentView: View {
     @Environment(\.isPaywallLoading)
     private var isPaywallLoading
 
+    @Environment(\.accessibilityVoiceOverEnabled)
+    private var accessibilityVoiceOverEnabled
+
+#if DEBUG
+    @Environment(\.voiceOverEnabledOverride)
+    private var voiceOverEnabledOverride
+#endif
+
+    private var isVoiceOverRunning: Bool {
+#if DEBUG
+        if let override = self.voiceOverEnabledOverride {
+            return override
+        }
+#endif
+        return self.accessibilityVoiceOverEnabled
+    }
+
     private let viewModel: TextComponentViewModel
 
     internal init(viewModel: TextComponentViewModel) {
@@ -81,11 +101,14 @@ struct TextComponentView: View {
             countdownTime: countdownTime,
             customVariables: self.customVariables,
             stateValues: self.paywallStateValues,
-            stateDefaults: self.paywallStateDefaults
+            stateDefaults: self.paywallStateDefaults,
+            windowSize: self.paywallWindowSize,
+            isVoiceOverRunning: self.isVoiceOverRunning
         ) { style in
             if style.visible {
                 NonLocalizedMarkdownText(
                     text: style.text,
+                    accessibilityText: style.accessibilityText,
                     font: style.font,
                     fontWeight: style.fontWeight,
                     componentName: style.name
@@ -119,17 +142,21 @@ struct NonLocalizedMarkdownText: View {
     private var urlOpenedNotifier
 
     let text: String
+    /// Spoken replacement for `text` when the displayed form reads poorly (e.g. "$1.24/mo").
+    var accessibilityText: String?
     let font: Font
     let fontWeight: Font.Weight
     let componentName: String?
 
     init(
         text: String,
+        accessibilityText: String? = nil,
         font: Font,
         fontWeight: Font.Weight,
         componentName: String? = nil
     ) {
         self.text = text
+        self.accessibilityText = accessibilityText
         self.font = font
         self.fontWeight = fontWeight
         self.componentName = componentName
@@ -180,31 +207,113 @@ struct NonLocalizedMarkdownText: View {
                 // Use markdown if we can successfully parse it
                 Text(markdownText)
                     .environment(\.openURL, OpenURLAction { url in
-                        _ = self.componentInteractionLogger(.paywallTextMarkdownLinkTap(
-                            componentName: self.componentName,
-                            url: url
-                        ))
-#if os(watchOS)
-                        // watchOS doesn't report whether opening succeeded, so we notify right away.
-                        self.parentOpenURL(url)
-                        self.urlOpenedNotifier(url)
-#else
-                        self.parentOpenURL(url) { success in
-                            if success {
-                                self.urlOpenedNotifier(url)
-                            }
-                        }
-#endif
+                        self.openLink(url)
                         return .handled
                     })
+                    .applyIfLet(self.spokenAccessibilityLabel) { view, label in
+                        view.accessibilityLabel(label)
+                    }
+                    .markdownLinkAccessibilityActions(
+                        Self.markdownLinks(in: markdownText),
+                        openLink: self.openLink
+                    )
             } else {
                 // Display text as is because markdown is priority
                 Text(self.text)
                     .font(self.font)
                     .fontWeight(self.fontWeight)
+                    .applyIfLet(self.spokenAccessibilityLabel) { view, label in
+                        view.accessibilityLabel(label)
+                    }
             }
         }
     }
+
+    private func openLink(_ url: URL) {
+        _ = self.componentInteractionLogger(.paywallTextMarkdownLinkTap(
+            componentName: self.componentName,
+            url: url
+        ))
+#if os(watchOS)
+        // watchOS doesn't report whether opening succeeded, so we notify right away.
+        self.parentOpenURL(url)
+        self.urlOpenedNotifier(url)
+#else
+        self.parentOpenURL(url) { success in
+            if success {
+                self.urlOpenedNotifier(url)
+            }
+        }
+#endif
+    }
+
+    /// One run per link: `.inlineOnly` parsing drops emphasis intents inside link text, so styling
+    /// there cannot split a link into several partial actions.
+    static func markdownLinks(in attrString: AttributedString) -> [MarkdownLink] {
+        attrString.runs.compactMap { run in
+            guard let url = run.link else {
+                return nil
+            }
+
+            return MarkdownLink(
+                title: String(attrString[run.range].characters),
+                url: url
+            )
+        }
+    }
+
+    /// A `Text` rather than a `String`: the spoken variant is built from the source copy, so it
+    /// still carries markdown, and `Text` is what knows how to drop it.
+    private var spokenAccessibilityLabel: Text? {
+        guard let accessibilityText = self.accessibilityText else {
+            return nil
+        }
+
+        guard let markdown = try? AttributedString(
+            markdown: accessibilityText,
+            options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnly)
+        ) else {
+            return Text(accessibilityText)
+        }
+
+        // `<u>` is ours, not markdown, so the parser leaves the tags in the characters.
+        return Text(MarkdownUnderlineFormatter.apply(to: markdown))
+    }
+}
+
+struct MarkdownLink {
+    let title: String
+    let url: URL
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension View {
+
+    /// `Text` links are reachable only through the Links rotor, where focus can fall back to the
+    /// enclosing paragraph before the link is activated. Custom actions always reach them.
+    ///
+    /// Covered by a VoiceOver pass on device, not a test: custom actions are not inspectable from
+    /// SwiftUI and XCUITest cannot enumerate them. `markdownLinks(in:)` is unit tested.
+    @ViewBuilder
+    func markdownLinkAccessibilityActions(
+        _ links: [MarkdownLink],
+        openLink: @escaping (URL) -> Void
+    ) -> some View {
+        if links.isEmpty {
+            self
+        } else if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            self.accessibilityActions {
+                ForEach(Array(links.enumerated()), id: \.offset) { _, link in
+                    Button(link.title) {
+                        openLink(link.url)
+                    }
+                }
+            }
+        } else {
+            self
+        }
+    }
+
 }
 
 private extension Font.Weight {

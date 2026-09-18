@@ -181,7 +181,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
      * Indicates whether the user is allowed to make payments.
      * [More information on when this might be `false` here](https://rev.cat/can-make-payments-apple)
      */
-    @objc public static func canMakePayments() -> Bool { StoreKit1Wrapper.canMakePayments() }
+    @objc public static func canMakePayments() -> Bool { PaymentAuthorizationProvider.storeKit.canMakePayments() }
 
     /**
      * Set a custom log handler for redirecting logs to your own logging system.
@@ -282,6 +282,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let attributionFetcher: AttributionFetcher
     private let attributionPoster: AttributionPoster
     private let _authentication: Authentication
+    private let externalPurchaseManager: ExternalPurchaseManager
     private let backend: Backend
     private let deviceCache: DeviceCache
     private let paywallCache: PaywallCacheWarmingType?
@@ -327,6 +328,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let overridePreferredUILocaleRateLimiter = RateLimiter(maxCalls: 2, period: 60)
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let virtualCurrencyManager: VirtualCurrencyManagerType
+    private let hostedCheckoutManager: HostedCheckoutManager
 
     private let webBundleEventBus: WebBundleEventBus
 
@@ -529,6 +531,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               attributeSyncing: subscriberAttributesManager,
                                               appUserID: appUserID
         )
+        customerInfoManager.currentUserProvider = identityManager
         let remoteConfigManager: RemoteConfigManagerType = {
             guard let remoteConfigDiskCache else { return NoOpRemoteConfigManager() }
 
@@ -961,6 +964,18 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               tokenManager: tokenManager,
                                               operationDispatcher: operationDispatcher,
                                               systemInfo: systemInfo)
+        let externalPurchaseManager = ExternalPurchaseManager(
+            customLink: StoreKitExternalPurchaseCustomLink(),
+            externalPurchaseTokenAPI: backend.externalPurchaseTokenAPI,
+            currentUserProvider: identityManager,
+            systemInfo: systemInfo
+        )
+        self.externalPurchaseManager = externalPurchaseManager
+        self.hostedCheckoutManager = HostedCheckoutManager(
+            externalPurchaseManager: externalPurchaseManager,
+            webBillingAPI: backend.webBilling,
+            currentUserProvider: identityManager
+        )
 
         super.init()
         self._authentication.internalDelegate = self
@@ -1883,6 +1898,17 @@ public extension Purchases {
         return CustomerCenterConfigData(from: response)
     }
 
+    /// Used by `RevenueCatUI` to start a checkout the customer completes without leaving the app.
+    ///
+    /// Only to be called when the customer has deliberately asked to buy: it shows Apple's disclosure notice
+    /// and mints an external purchase token, which Apple expects a report for.
+    @_spi(Internal) func startHostedCheckout(
+        package: Package,
+        paywallEvent: PaywallEvent?
+    ) async -> HostedCheckoutStartResult {
+        return await self.hostedCheckoutManager.startCheckout(package: package, paywall: paywallEvent?.data)
+    }
+
     /// Used by `RevenueCatUI` to create a support ticket
     @_spi(Internal) func createTicket(customerEmail: String, ticketDescription: String) async throws -> Bool {
         let response = try await Async.call { completion in
@@ -1906,6 +1932,24 @@ public extension Purchases {
     }
 
 #endif
+
+    /// Used by `RevenueCatUI` before it sends the customer out of the app to pay on the web: it runs what
+    /// Apple requires around an external purchase and hands back the token id the checkout page needs.
+    ///
+    /// Only to be called when the customer has deliberately asked to buy: it shows Apple's disclosure notice,
+    /// and every token minted is one Apple expects a report for.
+    ///
+    /// Does nothing while ``DangerousSettings/useExternalPurchaseCustomLinks`` is disabled: the caller is told to
+    /// proceed with no token id to hand over, so the link keeps opening as it did before.
+    @_spi(Internal) func prepareExternalPurchaseLink() async -> ExternalPurchaseLinkResult {
+        return .init(preparationResult: await self.externalPurchaseManager.prepareExternalPurchase(flow: .linkOut))
+    }
+
+    /// ``DangerousSettings/useExternalPurchaseCustomLinks``, so that `RevenueCatUI` only tells the customer
+    /// something is under way when ``prepareExternalPurchaseLink()`` has work to do.
+    @_spi(Internal) var useExternalPurchaseCustomLinks: Bool {
+        return self.systemInfo.dangerousSettings.useExternalPurchaseCustomLinks
+    }
 
     /// Used by `RevenueCatUI` to download and cache paywall images.
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)

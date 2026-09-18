@@ -23,17 +23,20 @@ struct PackageSelectionContext {
 
     let condition: ScreenCondition
     let customVariables: [String: CustomVariableValue]
+    let windowSize: CGSize?
     let isEligibleForIntroOffer: (Package) -> Bool
     let isEligibleForPromoOffer: (Package) -> Bool
 
     init(
         condition: ScreenCondition,
         customVariables: [String: CustomVariableValue],
+        windowSize: CGSize? = nil,
         isEligibleForIntroOffer: @escaping (Package) -> Bool,
         isEligibleForPromoOffer: @escaping (Package) -> Bool
     ) {
         self.condition = condition
         self.customVariables = customVariables
+        self.windowSize = windowSize
         self.isEligibleForIntroOffer = isEligibleForIntroOffer
         self.isEligibleForPromoOffer = isEligibleForPromoOffer
     }
@@ -110,7 +113,8 @@ class PackageValidator {
             isEligibleForIntroOffer: context.isEligibleForIntroOffer(info.package),
             isEligibleForPromoOffer: context.isEligibleForPromoOffer(info.package),
             selectedPackageId: nil,
-            customVariables: context.customVariables
+            customVariables: context.customVariables,
+            windowSize: context.windowSize
         )
     }
 

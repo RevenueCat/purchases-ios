@@ -51,6 +51,9 @@ struct PaywallsV2View: View {
     @Environment(\.workflowPackageContext)
     private var workflowPackageContext
 
+    @Environment(\.paywallInteractionNotifier)
+    private var paywallInteractionNotifier
+
     /// Non-`nil` when an ancestor (i.e. `WorkflowPaywallView`) already injected the presentation
     /// session's state store; in that case this view must not shadow it with its own.
     @Environment(\.paywallStateStore)
@@ -308,6 +311,7 @@ struct PaywallsV2View: View {
         .environment(\.locale, contentLocale)
         .environment(\.layoutDirection, contentLocale.swiftUILayoutDirection)
         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
+        .measurePaywallWindowSize()
         .environment(\.paywallWebViewStaticContext, webViewContext)
         .environment(\.urlOpenedNotifier, URLOpenedNotifier { [purchaseHandler] url in
             purchaseHandler.signalURLOpened(url)
@@ -441,7 +445,8 @@ struct PaywallsV2View: View {
                 // instead of one bound to this page's session. Otherwise component interactions would be
                 // the one paywall event still emitted on a non-paywall step.
                 Self.componentInteractionLogger(tracksPaywallEvents: self.tracksPaywallEvents) {
-                    self.purchaseHandler.componentInteractionLogger(sessionID: self.paywallSessionID)
+                    self.purchaseHandler.componentInteractionLogger(sessionID: self.paywallSessionID,
+                                                                    onInteraction: self.paywallInteractionNotifier)
                 }
             )
             .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
@@ -619,6 +624,9 @@ struct LoadedPaywallsV2View: View {
     @Environment(\.screenCondition)
     private var screenCondition
 
+    @Environment(\.paywallWindowSize)
+    private var paywallWindowSize
+
     @Environment(\.customPaywallVariables)
     private var customVariables
 
@@ -652,6 +660,7 @@ struct LoadedPaywallsV2View: View {
         return PackageSelectionContext(
             condition: self.screenCondition,
             customVariables: self.customVariables,
+            windowSize: self.paywallWindowSize,
             isEligibleForIntroOffer: { [introOfferEligibilityContext] in
                 introOfferEligibilityContext.isEligible(package: $0)
             },
@@ -741,6 +750,11 @@ struct LoadedPaywallsV2View: View {
             // Leaving a tab can restore a package a rule hides, and this doesn't depend on
             // `onAppear` ordering.
             .onChangeOf(self.selectedPackageContext.package?.identifier) { _ in
+                self.reconcileSelection()
+            }
+            // A window resize (rotation, Split View, Stage Manager) can hide the
+            // selected package via a window size condition.
+            .onChangeOf(self.paywallWindowSize) { _ in
                 self.reconcileSelection()
             }
         }

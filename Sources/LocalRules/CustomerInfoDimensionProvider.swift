@@ -54,7 +54,7 @@ struct CustomerInfoDimensionProvider: DimensionProvider {
             throw CancellationError()
         } catch {
             // The current app user ID is still useful when CustomerInfo is temporarily unavailable.
-            Logger.warn(Strings.remoteConfig.customerInfoUnavailable(error))
+            Logger.warn(Strings.localRules.customerInfoUnavailable(error))
         }
 
         return dimensions

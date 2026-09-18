@@ -86,7 +86,7 @@ extension RulesEngine {
                 )
             }
 
-            var result: [String: Value] = [:]
+            var result = ObjectValue()
             for entry in entries {
                 guard case .array(let pair) = entry, pair.count == 2 else {
                     throw EvaluationError.typeMismatch(

@@ -39,7 +39,7 @@ struct SubscriberDimensionsProvider: DimensionProvider {
 
             return values.compactMapValues(\AnyDecodable.dimensionValue)
         } catch {
-            Logger.warn(Strings.remoteConfig.subscriberDimensionsUnavailable(error))
+            Logger.warn(Strings.localRules.subscriberDimensionsUnavailable(error))
             return [:]
         }
     }

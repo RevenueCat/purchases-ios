@@ -483,6 +483,30 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.actionInProgress) == false
     }
 
+    func testExternalPurchasePreparationMarksThePaywallForAsLongAsItRuns() async throws {
+        let handler: PurchaseHandler = .mock()
+
+        await handler.withExternalPurchasePreparation {
+            expect(handler.actionTypeInProgress) == .externalPurchasePreparation
+        }
+
+        expect(handler.actionInProgress) == false
+    }
+
+    /// A second tap can reach the wrapper before the first one has marked the paywall, and must not free it
+    /// while Apple's notice from the first tap is still up.
+    func testAnExternalPurchasePreparationDoesNotFreeThePaywallItDidNotMark() async throws {
+        let handler: PurchaseHandler = .mock()
+
+        await handler.withExternalPurchasePreparation {
+            await handler.withExternalPurchasePreparation {}
+
+            expect(handler.actionTypeInProgress) == .externalPurchasePreparation
+        }
+
+        expect(handler.actionInProgress) == false
+    }
+
     func testRestorePurchases() async throws {
         let handler: PurchaseHandler = .mock()
         let result = try await handler.restorePurchases()

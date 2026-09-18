@@ -15,114 +15,116 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
-/// Orchestrates checkpoint resolution, workflow execution, and listener delivery.
+/// Orchestrates checkpoint resolution and workflow execution.
+@MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointsManager {
 
-    var listener: CheckpointListener? {
-        get {
-            self.listenerLock.lock()
-            defer { self.listenerLock.unlock() }
-            return self.storedListener
-        }
-        set {
-            self.listenerLock.lock()
-            self.storedListener = newValue
-            self.listenerLock.unlock()
-        }
-    }
+    typealias CustomerInfoSynchronizer = @MainActor () async throws -> CustomerInfo
 
-    private let listenerLock = NSLock()
-    private var storedListener: CheckpointListener?
     private let resolveCheckpoint: (String, CheckpointCallParams) async throws -> CheckpointResolution
-    @MainActor private lazy var executor: CheckpointExecutor = CheckpointWorkflowExecutor()
+    private let cachedCustomerInfoProvider: @MainActor () -> CustomerInfo?
+    private let checkpointPresenter: CheckpointPresenterType
+    var paywallPresenter: PaywallPresenter?
 
-    init(resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution) {
-        self.resolveCheckpoint = resolveCheckpoint
-    }
-
-    @MainActor
     init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
-        executor: CheckpointExecutor
+        checkpointPresenter: CheckpointPresenterType? = nil,
+        cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil },
+        customerInfoSynchronizer: @escaping CustomerInfoSynchronizer = { throw CancellationError() }
     ) {
         self.resolveCheckpoint = resolveCheckpoint
-        self.executor = executor
+        self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
+        self.checkpointPresenter = checkpointPresenter ?? CheckpointPresenter(
+            workflowPresenter: WorkflowPresenter(),
+            customerInfoSynchronizer: customerInfoSynchronizer
+        )
     }
 
-    func checkpoint(
-        identifier: String,
-        params: CheckpointCallParams,
-        completion: @escaping (Result<CheckpointResult, PublicError>) -> Void
-    ) {
-        Task { @MainActor in
-            do {
-                completion(
-                    .success(
-                        try await self.checkpoint(
-                            identifier: identifier,
-                            params: params
-                        )
-                    )
-                )
-            } catch {
-                completion(.failure(error as NSError))
-            }
-        }
+    func setPaywallPresenter(_ presenter: PaywallPresenter?) {
+        self.paywallPresenter = presenter
     }
 
-    @MainActor
-    func checkpoint(
+    func executeCheckpoint(
         identifier: String,
         params: CheckpointCallParams
-    ) async throws -> CheckpointResult {
-        self.listener?.onCheckpointHit(CheckpointContext.Hit(identifier: identifier, params: params))
+    ) async throws -> CheckpointPresentationOutcome {
+        let globalPaywallPresenter = self.paywallPresenter
 
         guard CheckpointIdentifierValidator.isValid(identifier) else {
             Logger.error(CheckpointIdentifierValidator.invalidIdentifierLogMessage(identifier))
-            let result = CheckpointResult.NoAction(reason: .invalidCheckpointIdentifier)
-            self.listener?.onCheckpointCompleted(
-                CheckpointContext.Completed(identifier: identifier, params: params, result: result)
-            )
-            return result
+            return .nothingPresented
         }
 
-        let result: CheckpointResult
         switch try await self.resolveCheckpoint(identifier, params) {
         case let .matchedWorkflow(workflow):
-            let presentation = CheckpointPresentation(
+            let presentation = WorkflowPresentationRequest(
                 workflow: workflow,
                 customVariables: params.customVariables
             )
-            let outcome = try await self.executor.execute(presentation)
-            result = CheckpointResult.PaywallPresented(paywallOutcome: outcome)
+            return try await self.checkpointPresenter.presentWorkflow(presentation)
         case let .matchedOffering(offering):
-            // Data-only, so this never claims the presentation slot the executor owns.
-            result = CheckpointResult.ReceivedOffering(offering: offering)
-        case let .noAction(reason):
-            result = CheckpointResult.NoAction(reason: reason.noActionReason)
+            return try await self.checkpointPresenter.presentOffering(
+                params: .init(
+                    checkpointIdentifier: identifier,
+                    customVariables: params.customVariables,
+                    offering: offering
+                ),
+                globalPaywallPresenter: globalPaywallPresenter,
+                localPaywallPresentationHandler: params.localPaywallPresentationHandler
+            )
+        case .noAction:
+            return .nothingPresented
+        }
+    }
+
+    func checkpointForCallback(
+        identifier: String,
+        params: CheckpointCallParams
+    ) async -> CheckpointCallbackResult {
+        let initialEntitlementIdentifiers = self.cachedCustomerInfoProvider().map { customerInfo in
+            Set(customerInfo.entitlements.active.keys)
         }
 
-        self.listener?.onCheckpointCompleted(
-            CheckpointContext.Completed(identifier: identifier, params: params, result: result)
-        )
-        return result
+        do {
+            switch try await self.executeCheckpoint(identifier: identifier, params: params) {
+            case .backedOut:
+                return .suppressed
+            case let .completed(customerInfo):
+                return .completed(self.flowResult(
+                    customerInfo: customerInfo,
+                    initialEntitlementIdentifiers: initialEntitlementIdentifiers
+                ))
+            case .failed, .nothingPresented:
+                return .completed(nil)
+            }
+        } catch CheckpointError.operationAlreadyInProgress {
+            return .suppressed
+        } catch {
+            return .completed(nil)
+        }
+    }
+
+    private func flowResult(
+        customerInfo: CustomerInfo?,
+        initialEntitlementIdentifiers: Set<String>?
+    ) -> FlowResult {
+        let entitlements = customerInfo.map { Array($0.entitlements.active.values) } ?? []
+
+        let obtainedEntitlements = entitlements.lazy
+            .filter { entitlement in
+                guard let initialEntitlementIdentifiers else { return true }
+                return !initialEntitlementIdentifiers.contains(entitlement.identifier)
+            }
+            .map(ObtainedEntitlement.init)
+
+        return FlowResult(obtainedEntitlements: Set(obtainedEntitlements))
     }
 
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension CheckpointResolutionReason {
-
-    var noActionReason: CheckpointNoActionReason {
-        switch self {
-        case .noMatch:
-            return .noMatch
-        case .configurationUnavailable:
-            return .configurationUnavailable
-        case .unknownCheckpoint:
-            return .unknownCheckpoint
-        }
-    }
-
+enum CheckpointCallbackResult {
+    case completed(FlowResult?)
+    case suppressed
 }

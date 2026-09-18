@@ -16,7 +16,7 @@ import Foundation
 
 struct DimensionSnapshot: Equatable, Sendable {
 
-    let values: [String: RulesEngine.Value]
+    let values: RulesEngine.ObjectValue
     let evaluationDate: Date
 }
 
@@ -52,14 +52,13 @@ struct DimensionResolver: Sendable {
 
     /// Collects each provider once and merges its values into the canonical root scope.
     ///
-    /// `custom` and `backend` remain nested reserved objects. Every other value is flat.
+    /// `custom` remains a nested reserved object. Every other value is flat.
     func snapshot(
-        customVariables: [String: DimensionValue] = [:],
-        backendValues: [String: DimensionValue] = [:]
+        customVariables: [String: DimensionValue] = [:]
     ) async throws -> DimensionSnapshot {
         let appUserID = self.currentAppUserIDProvider()
         let date = self.dateProvider.now()
-        var values: [String: RulesEngine.Value] = [
+        var values: RulesEngine.ObjectValue = [
             Self.evaluatedAtKey: .int(Int64(date.timeIntervalSince1970 * 1_000))
         ]
 
@@ -97,12 +96,6 @@ struct DimensionResolver: Sendable {
             root: Self.customKey,
             to: &values
         )
-        Self.addPerEvaluationValues(
-            backendValues,
-            root: Self.backendKey,
-            to: &values
-        )
-
         try Task.checkCancellation()
         guard self.currentAppUserIDProvider() == appUserID else {
             throw DimensionResolutionError.appUserChanged
@@ -114,7 +107,7 @@ struct DimensionResolver: Sendable {
     private static func addPerEvaluationValues(
         _ dimensions: [String: DimensionValue],
         root: String,
-        to values: inout [String: RulesEngine.Value]
+        to values: inout RulesEngine.ObjectValue
     ) {
         let converted = DimensionValueConverter.convert(dimensions, parentPath: root)
         if !converted.isEmpty {
@@ -124,8 +117,7 @@ struct DimensionResolver: Sendable {
 
     private static let evaluatedAtKey = "evaluated_at"
     private static let customKey = "custom"
-    private static let backendKey = "backend"
-    private static let reservedRootKeys: Set<String> = [Self.evaluatedAtKey, Self.customKey, Self.backendKey]
+    private static let reservedRootKeys: Set<String> = [Self.evaluatedAtKey, Self.customKey]
 }
 
 private enum DimensionValueConverter {
@@ -133,11 +125,11 @@ private enum DimensionValueConverter {
     static func convert(
         _ dimensions: [String: DimensionValue],
         parentPath: String
-    ) -> [String: RulesEngine.Value] {
-        return dimensions.reduce(into: [:]) { result, dimension in
+    ) -> RulesEngine.ObjectValue {
+        return dimensions.reduce(into: RulesEngine.ObjectValue()) { result, dimension in
             let (name, value) = dimension
             guard Self.isValidName(name) else {
-                Logger.warn(Strings.remoteConfig.invalidDimensionName(name, parentPath: parentPath))
+                Logger.warn(Strings.localRules.invalidDimensionName(name, parentPath: parentPath))
                 return
             }
 
