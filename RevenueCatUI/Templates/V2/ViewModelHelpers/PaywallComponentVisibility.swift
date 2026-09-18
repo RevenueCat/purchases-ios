@@ -33,14 +33,16 @@ struct PaywallComponentVisibilityContext {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PaywallComponentVisibilityResolver {
 
+    typealias PromoOfferEligibility = @MainActor (PaywallComponentVisibilityContext, Package?) -> Bool
+
     private let resolve: @MainActor (PaywallComponentVisibilityContext) -> Bool
 
     init<Partial: PresentedPartial>(
         baseVisible: Bool?,
         uiConfigProvider: UIConfigProvider,
         presentedOverrides: PresentedOverrides<Partial>?,
-        promoOfferEligibility: @escaping @MainActor (PaywallComponentVisibilityContext, Package?) -> Bool = {
-            context, package in context.paywallPromoOfferCache.isMostLikelyEligible(for: package)
+        promoOfferEligibility: @escaping PromoOfferEligibility = { context, package in
+            context.paywallPromoOfferCache.isMostLikelyEligible(for: package)
         },
         visible: @escaping (Partial) -> Bool?
     ) {
