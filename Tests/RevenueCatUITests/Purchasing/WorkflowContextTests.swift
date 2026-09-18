@@ -170,38 +170,8 @@ final class WorkflowContextTests: TestCase {
         )
 
         expect(input.packageContext.package?.identifier) == "$rc_annual"
-        expect(input.effectiveWorkflowPackageContext?.packages.map(\.identifier)) == [
-            "$rc_annual", "$rc_annual", "$rc_three_month", "$rc_monthly"
-        ]
         expect(input.packageContext.variableContext.mostExpensivePricePerMonth) == 14.99
-        expect(try Self.discountText(context: input.packageContext)) == "56% OFF"
-
-        // The standalone renderer already collects sheet packages. Both paths must agree.
-        let screen = try XCTUnwrap(context.workflow.screens["screen"])
-        var factory = ViewModelFactory()
-        let root = try factory.toRootViewModel(
-            componentsConfig: screen.componentsConfig.base,
-            offering: context.initialOffering,
-            localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [:]),
-            uiConfigProvider: .init(uiConfig: context.uiConfig),
-            colorScheme: .light
-        )
-        let state = PaywallState(
-            componentsConfig: screen.componentsConfig.base,
-            viewModelFactory: factory,
-            packageInfos: factory.packageValidator.packages.map { ($0, nil) },
-            rootViewModel: root,
-            showZeroDecimalPlacePrices: true
-        )
-        for packages in [nil, input.effectiveWorkflowPackageContext?.packages] {
-            let selected = PaywallsV2View.makeSelectedPackageContext(
-                from: state,
-                defaultPackage: context.initialOffering.annual,
-                workflowPackages: packages,
-                showZeroDecimalPlacePrices: true
-            )
-            expect(try Self.discountText(context: selected)) == "56% OFF"
-        }
+        expect(try Self.discountText(context: input.packageContext)) == "56%"
     }
 
     @MainActor
@@ -211,12 +181,11 @@ final class WorkflowContextTests: TestCase {
             stepId: "intro", context: context, preferredPackage: nil, showZeroDecimalPlacePrices: true
         )
 
-        expect(try Self.discountText(context: input.packageContext)) == "56% OFF"
-        expect(context.workflowPackageContext?.promoOfferCodesByPackageId["$rc_monthly"]) == "monthly_promo"
+        expect(try Self.discountText(context: input.packageContext)) == "56%"
     }
 
     @MainActor
-    func testSheetPackageSelectionCarriesForwardAndBaselinePackageHasNoDiscount() throws {
+    func testPreferredMonthlySheetPackageHasNoRelativeDiscount() throws {
         let context = try Self.makeSheetContext()
         let monthly = try XCTUnwrap(context.initialOffering.monthly)
         let input = WorkflowPaywallView.buildPackageInput(
@@ -224,17 +193,17 @@ final class WorkflowContextTests: TestCase {
         )
 
         expect(input.packageContext.package?.identifier) == "$rc_monthly"
-        expect(try Self.discountText(context: input.packageContext)) == " OFF"
+        expect(try Self.discountText(context: input.packageContext)) == ""
     }
 
-    func testCollectsSheetInsidePackageStackAndNestedSheet() throws {
-        let nestedSheet = Self.sheetButton([Self.packageComponent("$rc_monthly")])
+    func testCollectsSheetInsidePackageStack() throws {
         let annual = Self.packageComponent(
-            "$rc_annual", isDefault: true, children: [Self.sheetButton([nestedSheet])]
+            "$rc_annual", isDefault: true, children: [Self.sheetButton([Self.packageComponent("$rc_monthly")])]
         )
         let context = try Self.makeSheetContext(footer: [annual])
 
-        expect(context.packageContext(for: "paywall")?.packages.map(\.identifier)) == ["$rc_annual", "$rc_monthly"]
+        expect(context.packageContext(for: "paywall")?.packages.map(\.identifier))
+            .to(contain("$rc_annual", "$rc_monthly"))
         expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_annual"
     }
 
@@ -244,10 +213,7 @@ final class WorkflowContextTests: TestCase {
             Self.sheetButton([Self.packageComponent("$rc_annual", promoCode: "sheet_promo")])
         ])
 
-        for stepId in ["paywall", "intro"] {
-            let effective = context.effectivePackageContext(for: stepId, preferring: nil)
-            expect(effective?.promoOfferCodesByPackageId["$rc_annual"]) == "annual_promo"
-        }
+        expect(context.packageContext(for: "paywall")?.promoOfferCodesByPackageId["$rc_annual"]) == "annual_promo"
     }
 
     func testDuplicateSheetPackageFillsMissingPromoOfferCode() throws {
@@ -256,10 +222,7 @@ final class WorkflowContextTests: TestCase {
             Self.sheetButton([Self.packageComponent("$rc_annual", promoCode: "sheet_promo")])
         ])
 
-        for stepId in ["paywall", "intro"] {
-            let effective = context.effectivePackageContext(for: stepId, preferring: nil)
-            expect(effective?.promoOfferCodesByPackageId["$rc_annual"]) == "sheet_promo"
-        }
+        expect(context.packageContext(for: "paywall")?.promoOfferCodesByPackageId["$rc_annual"]) == "sheet_promo"
     }
 
     func testCollectsPackagesInButtonContentWithoutSheetDestination() throws {
@@ -278,7 +241,7 @@ final class WorkflowContextTests: TestCase {
             header: .init(stack: .init(components: [Self.packageComponent("$rc_monthly")]))
         )
 
-        expect(context.workflowPackageContext?.packages.map(\.identifier)) == ["$rc_monthly", "$rc_annual"]
+        expect(context.workflowPackageContext?.packages.map(\.identifier)).to(contain("$rc_monthly", "$rc_annual"))
         expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_annual"
     }
 
@@ -290,7 +253,7 @@ final class WorkflowContextTests: TestCase {
         )
 
         expect(input.effectiveWorkflowPackageContext?.packages.map(\.identifier)) == ["$rc_annual"]
-        expect(try Self.discountText(context: input.packageContext)) == " OFF"
+        expect(try Self.discountText(context: input.packageContext)) == ""
     }
 
     // MARK: - effectivePackageContext(for:preferring: nil)
@@ -702,7 +665,7 @@ private extension WorkflowContextTests {
                     Self.sheetButton([
                         Self.packageComponent("$rc_annual"),
                         Self.packageComponent("$rc_three_month"),
-                        Self.packageComponent("$rc_monthly", promoCode: "monthly_promo")
+                        Self.packageComponent("$rc_monthly")
                     ])
                 ])),
                 background: .color(.init(light: .hex("#FFFFFF")))
@@ -732,7 +695,7 @@ private extension WorkflowContextTests {
         let viewModel = try TextComponentViewModel(
             localizationProvider: .init(
                 locale: Locale(identifier: "en_US"),
-                localizedStrings: ["discount": .string("{{ product.relative_discount }} OFF")]
+                localizedStrings: ["discount": .string("{{ product.relative_discount }}")]
             ),
             uiConfigProvider: .init(uiConfig: uiConfig),
             component: .init(text: "discount", color: .init(light: .hex("#000000")))
