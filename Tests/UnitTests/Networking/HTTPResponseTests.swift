@@ -82,7 +82,7 @@ class HTTPResponseTests: TestCase {
             iamEnabled: false
         )
 
-        expect(verifiedResponse.verificationResult) == .failed
+        expect(verifiedResponse.verificationResult) == .failed(.missingSignature)
     }
 
     func testValueForHeaderFieldWithNonExistingField() {
