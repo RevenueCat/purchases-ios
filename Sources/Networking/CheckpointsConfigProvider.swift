@@ -45,6 +45,27 @@ final class CheckpointsConfigProvider: CheckpointsConfigProviderType {
         self.manager = manager
     }
 
+    /// Best-effort cache warming from an already-committed config. This never starts a config refresh.
+    func warmAsync() {
+        Task { [weak self] in
+            await self?.warm()
+        }
+    }
+
+    func warm() async {
+        guard let snapshot = await self.manager.committedTopicCacheSnapshot(.checkpointRules) else { return }
+
+        for identifier in snapshot.key.keys {
+            guard self.manager.configGeneration == snapshot.generation else { return }
+            guard let data = await self.manager.cachedBlobData(
+                for: .checkpointRules,
+                itemKey: identifier
+            ), let ruleSet = try? JSONDecoder.default.decode(CheckpointRuleSet.self, from: data) else { continue }
+            guard self.manager.configGeneration == snapshot.generation else { return }
+            self.cache(ruleSet, for: identifier, snapshot: snapshot)
+        }
+    }
+
     func rules(for identifier: String) async throws -> CheckpointRulesSnapshot? {
         do {
             return try await self.manager.readConsistent {
