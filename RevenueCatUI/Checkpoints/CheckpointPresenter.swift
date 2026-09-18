@@ -88,8 +88,11 @@ final class CheckpointPresenter: CheckpointPresenterType {
         )
     }
 
-    func presentAd(
-        params: AdPresentationParams,
+    /// Presents the workflow's ad steps one at a time, advancing however each ad finished, and reports the
+    /// outcome the chain ended on. The slot is held for the whole chain so another checkpoint can't present
+    /// between two of its ads.
+    func presentAdWorkflow(
+        _ presentation: AdWorkflowPresentationRequest,
         adPresenter: AdPresenter
     ) async throws -> CheckpointPresentationOutcome {
         guard let token = self.slot.claim() else {
@@ -97,10 +100,17 @@ final class CheckpointPresenter: CheckpointPresenterType {
         }
         defer { self.slot.release(token) }
 
-        return await AdPresentation(slot: self.slot, token: token).present(
-            params: params,
-            presenter: adPresenter
-        )
+        var step = presentation.workflow.initialStep
+        while true {
+            let outcome = await AdPresentation(slot: self.slot, token: token).present(
+                params: presentation.params(for: step),
+                presenter: adPresenter
+            )
+            guard let nextStep = presentation.workflow.nextStep(after: step) else {
+                return .adPresented(outcome)
+            }
+            step = nextStep
+        }
     }
 
     /// Bridges an ad presenter's completion callback into the checkpoint lifecycle.
@@ -109,7 +119,7 @@ final class CheckpointPresenter: CheckpointPresenterType {
 
         private let slot: CheckpointPresentationSlot
         private let token: CheckpointPresentationSlot.Token
-        private var pendingContinuation: CheckedContinuation<CheckpointPresentationOutcome, Never>?
+        private var pendingContinuation: CheckedContinuation<CheckpointAdOutcome, Never>?
 
         init(slot: CheckpointPresentationSlot, token: CheckpointPresentationSlot.Token) {
             self.slot = slot
@@ -119,7 +129,7 @@ final class CheckpointPresenter: CheckpointPresenterType {
         func present(
             params: AdPresentationParams,
             presenter: AdPresenter
-        ) async -> CheckpointPresentationOutcome {
+        ) async -> CheckpointAdOutcome {
             return await withCheckedContinuation { continuation in
                 self.pendingContinuation = continuation
                 presenter.present(params: params) { [weak self] result in
@@ -131,11 +141,10 @@ final class CheckpointPresenter: CheckpointPresenterType {
         private func completed(_ result: AdPresentationResult) {
             guard self.slot.contains(self.token),
                   let continuation = self.takeContinuation() else { return }
-            self.slot.release(self.token)
-            continuation.resume(returning: .adPresented(result.outcome))
+            continuation.resume(returning: result.outcome)
         }
 
-        private func takeContinuation() -> CheckedContinuation<CheckpointPresentationOutcome, Never>? {
+        private func takeContinuation() -> CheckedContinuation<CheckpointAdOutcome, Never>? {
             defer { self.pendingContinuation = nil }
             return self.pendingContinuation
         }
@@ -228,8 +237,8 @@ protocol CheckpointPresenterType: AnyObject {
         localPaywallPresentationHandler: PaywallPresentationHandler?
     ) async throws -> CheckpointPresentationOutcome
 
-    func presentAd(
-        params: AdPresentationParams,
+    func presentAdWorkflow(
+        _ presentation: AdWorkflowPresentationRequest,
         adPresenter: AdPresenter
     ) async throws -> CheckpointPresentationOutcome
 
