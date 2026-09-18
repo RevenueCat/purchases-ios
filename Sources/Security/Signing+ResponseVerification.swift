@@ -101,6 +101,8 @@ extension HTTPResponse where Body == Data? {
 
         let etag = HTTPResponse.value(forCaseInsensitiveHeaderField: .eTag, in: responseHeaders)
         guard message != nil || etag != nil else {
+            Logger.warn(Strings.signing.signed_payload_missing(request))
+
             return .failed(.missingSignedPayload)
         }
 
