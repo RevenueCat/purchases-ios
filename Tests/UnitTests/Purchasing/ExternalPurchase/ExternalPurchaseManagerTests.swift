@@ -192,26 +192,28 @@ class ExternalPurchaseManagerTests: TestCase {
 
     // MARK: - Test Store
 
-    /// A Test Store key has no App Store behind it, so none of the StoreKit steps apply. It reads as ineligible
-    /// rather than as a device that cannot pay, so the caller keeps offering its usual way to buy.
-    func testTheTestStoreIsNotEligible() async {
+    /// Eligibility follows the app's entitlement and the customer's storefront, neither of which has anything
+    /// to do with the key the SDK was configured with, so StoreKit is asked as it is for any other key.
+    func testTheTestStoreResolvesEligibilityThroughStoreKit() async {
         self.systemInfo.stubbedApiKeyValidationResult = .simulatedStore
 
         let availability = await self.manager.externalPurchaseAvailability()
 
-        expect(availability) == .notEligible
-        expect(self.customLink.invokedAvailabilityCount) == 0
+        expect(availability) == .available
+        expect(self.customLink.invokedAvailabilityCount) == 1
     }
 
-    func testTheTestStoreSkipsTheWholeSequence() async {
+    /// A Test Store key is the shortest path a developer has to trying the flow out, so it runs in full. The
+    /// purchase behind the token is a sandbox one, which is what it would have been anyway.
+    func testTheTestStoreRunsTheWholeSequence() async {
         self.systemInfo.stubbedApiKeyValidationResult = .simulatedStore
 
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
-        expect(result) == .notApplicable
-        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
-        expect(self.customLink.invokedTokenTypes).to(beEmpty())
-        expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
+        expect(result) == .registered(tokenID: Self.tokenID)
+        expect(self.customLink.invokedNoticeTypes) == [.withinApp]
+        expect(self.customLink.invokedTokenTypes) == [.inApp]
+        expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenCount) == 1
     }
 
     // MARK: - Eligibility
