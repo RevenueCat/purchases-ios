@@ -554,7 +554,7 @@ private extension HTTPClient {
             }
             // Upgrade to error in enforced mode
             .flatMap { response -> Result<VerifiedHTTPResponse<Data>?, NetworkError> in
-                if let response = response, response.verificationResult == .failed {
+                if let response = response, response.verificationResult.isFailed {
                     if case .enforced = request.verificationMode {
                         return .failure(.signatureVerificationFailed(path: request.httpRequest.path,
                                                                      code: response.httpStatusCode))
@@ -938,7 +938,6 @@ private extension HTTPClient {
             switch result {
             case let .success(response):
                 let httpStatusCode = response.httpStatusCode.rawValue
-                let verificationResult = response.verificationResult
                 diagnosticsTracker.trackHttpRequestPerformed(endpointName: requestPathName,
                                                              host: host,
                                                              responseTime: responseTime,
@@ -946,7 +945,7 @@ private extension HTTPClient {
                                                              responseCode: httpStatusCode,
                                                              backendErrorCode: nil,
                                                              resultOrigin: response.origin,
-                                                             verificationResult: verificationResult,
+                                                             verificationResult: response.verificationResult,
                                                              isRetry: request.retried,
                                                              connectionErrorReason: nil)
             case let .failure(error):
@@ -1350,7 +1349,10 @@ private extension VerifiedHTTPResponse {
 
     func copyWithNewRequestDate() -> Self {
         // Update request time from server unless it failed verification.
-        guard self.verificationResult != .failed, let requestDate = self.requestDate else { return self }
+        if self.verificationResult.isFailed {
+            return self
+        }
+        guard let requestDate = self.requestDate else { return self }
 
         return self.mapBody {
             return $0.copy(with: requestDate)

@@ -39,14 +39,14 @@ class SigningTests: TestCase {
         expect(key.rawRepresentation).toNot(beEmpty())
     }
 
-    func testVerifySignatureWithInvalidSignatureReturnsFalseAndLogsError() throws {
+    func testVerifySignatureWithInvalidSignatureReturnsFailureReasonAndLogsError() throws {
         let message = "Hello World"
         let nonce = "nonce"
         let requestDate: UInt64 = 1677005916012
         let signature = "this is not a signature"
 
-        expect(self.signing.verify(
-            signature: signature,
+        expect(self.signing.verificationResult(
+            for: signature,
             with: .init(
                 path: Self.mockPath,
                 iamEnabled: false,
@@ -56,12 +56,12 @@ class SigningTests: TestCase {
                 requestDate: requestDate
             ),
             publicKey: Signing.loadPublicKey()
-        )) == false
+        )) == .failed(.invalidSignatureFormat)
 
         self.logger.verifyMessageWasLogged("Signature is not base64: \(signature)")
     }
 
-    func testVerifySignatureWithExpiredIntermediateSignatureReturnsFalseAndLogsError() throws {
+    func testVerifySignatureWithExpiredIntermediateSignatureReturnsFailureReasonAndLogsError() throws {
         let message = "Hello World"
         let nonce = "0123456789ab"
         let etag: String? = nil
@@ -84,16 +84,52 @@ class SigningTests: TestCase {
             signature: signature
         )
 
-        expect(self.signing.verify(
-            signature: fullSignature.base64EncodedString(),
+        expect(self.signing.verificationResult(
+            for: fullSignature.base64EncodedString(),
             with: parameters,
             publicKey: self.publicKey
-        )) == false
+        )) == .failed(.intermediateKeyExpired)
 
         self.logger.verifyMessageWasLogged("Intermediate key expired", level: .warn)
     }
 
-    func testVerifySignatureWithInvalidIntermediateSignatureExpirationReturnsFalseAndLogsError() throws {
+    func testVerifySignatureReturnsExpiredIntermediateKeyAfterAdvancingClockByTwoYears() throws {
+        let clock = TestClock(now: Self.mockDate)
+        let signing = Signing(apiKey: Self.apiKey, clock: clock)
+        let parameters: Signing.SignatureParameters = .init(
+            path: Self.mockPath,
+            iamEnabled: false,
+            message: "Hello World".asData,
+            nonce: "nonce".asData,
+            requestDate: Self.mockDate.millisecondsSince1970
+        )
+        let intermediateKey = try self.createIntermediatePublicKeyData(
+            expiration: Self.mockDate.addingTimeInterval(DispatchTimeInterval.days(365).seconds)
+        )
+        let salt = Self.createSalt()
+        let signature = try self.sign(parameters: parameters, salt: salt.asData)
+        let fullSignature = Self.fullSignature(
+            intermediateKey: intermediateKey,
+            salt: salt,
+            signature: signature
+        ).base64EncodedString()
+
+        expect(signing.verificationResult(
+            for: fullSignature,
+            with: parameters,
+            publicKey: self.publicKey
+        )) == .verified
+
+        clock.advance(by: .days(365 * 2))
+
+        expect(signing.verificationResult(
+            for: fullSignature,
+            with: parameters,
+            publicKey: self.publicKey
+        )) == .failed(.intermediateKeyExpired)
+    }
+
+    func testVerifySignatureWithInvalidIntermediateSignatureExpirationReturnsFailureReasonAndLogsError() throws {
         let message = "Hello World"
         let nonce = "0123456789ab"
         let etag = "etag"
@@ -116,11 +152,11 @@ class SigningTests: TestCase {
             signature: signature
         )
 
-        expect(self.signing.verify(
-            signature: fullSignature.base64EncodedString(),
+        expect(self.signing.verificationResult(
+            for: fullSignature.base64EncodedString(),
             with: parameters,
             publicKey: self.publicKey
-        )) == false
+        )) == .failed(.unknown)
 
         self.logger.verifyMessageWasLogged(
             Strings.signing.intermediate_key_invalid(Self.invalidIntermediateKeyExpiration),
@@ -129,8 +165,8 @@ class SigningTests: TestCase {
     }
 
     func testVerifySignatureWithInvalidSignature() throws {
-        expect(self.signing.verify(
-            signature: "invalid signature".asData.base64EncodedString(),
+        expect(self.signing.verificationResult(
+            for: "invalid signature".asData.base64EncodedString(),
             with: .init(
                 path: Self.mockPath,
                 iamEnabled: false,
@@ -140,15 +176,15 @@ class SigningTests: TestCase {
                 requestDate: 1677005916012
             ),
             publicKey: Signing.loadPublicKey()
-        )) == false
+        )) == .failed(.invalidSignatureFormat)
     }
 
     func testVerifySignatureLogsWarningWhenIntermediateSignatureIsInvalid() throws {
         let signature = String(repeating: "x", count: Signing.SignatureComponent.totalSize)
             .asData
 
-        _ = self.signing.verify(
-            signature: signature.base64EncodedString(),
+        let result = self.signing.verificationResult(
+            for: signature.base64EncodedString(),
             with: .init(
                 path: Self.mockPath,
                 iamEnabled: false,
@@ -160,8 +196,43 @@ class SigningTests: TestCase {
             publicKey: Signing.loadPublicKey()
         )
 
+        expect(result) == .failed(.invalidIntermediateKeySignature)
+
         self.logger.verifyMessageWasLogged("Intermediate key failed verification",
                                            level: .warn)
+    }
+
+    func testVerifySignatureReturnsInvalidIntermediateKeyWhenKeyCreationFails() throws {
+        struct KeyCreationError: Error {}
+
+        let signing = Signing(
+            apiKey: Self.apiKey,
+            clock: TestClock(now: Self.mockDate),
+            publicKeyFactory: { _ in throw KeyCreationError() }
+        )
+        let parameters: Signing.SignatureParameters = .init(
+            path: Self.mockPath,
+            iamEnabled: false,
+            message: "Hello World".asData,
+            nonce: "nonce".asData,
+            requestDate: Self.mockDate.millisecondsSince1970
+        )
+        let intermediateKey = try self.createIntermediatePublicKeyData(
+            expiration: Self.intermediateKeyFutureExpiration
+        )
+        let salt = Self.createSalt()
+        let signature = try self.sign(parameters: parameters, salt: salt.asData)
+        let fullSignature = Self.fullSignature(
+            intermediateKey: intermediateKey,
+            salt: salt,
+            signature: signature
+        )
+
+        expect(signing.verificationResult(
+            for: fullSignature.base64EncodedString(),
+            with: parameters,
+            publicKey: self.publicKey
+        )) == .failed(.invalidIntermediateKey)
     }
 
     func testVerifySignatureLogsWarningWhenFail() throws {
@@ -177,20 +248,18 @@ class SigningTests: TestCase {
             // Invalid signature
             signature: String(repeating: "x", count: Signing.SignatureComponent.payload.size).asData
         )
-        expect(
-            self.signing.verify(
-                signature: fullSignature.base64EncodedString(),
-                with: .init(
-                    path: Self.mockPath,
-                    iamEnabled: false,
-                    message: message.asData,
-                    nonce: nonce.asData,
-                    etag: nil,
-                    requestDate: requestDate
-                ),
-                publicKey: self.publicKey
-            )
-        ) == false
+        expect(self.signing.verificationResult(
+            for: fullSignature.base64EncodedString(),
+            with: .init(
+                path: Self.mockPath,
+                iamEnabled: false,
+                message: message.asData,
+                nonce: nonce.asData,
+                etag: nil,
+                requestDate: requestDate
+            ),
+            publicKey: self.publicKey
+        )) == .failed(.payloadSignatureMismatch)
 
         self.logger.verifyMessageWasLogged(Strings.signing.signature_failed_verification,
                                            level: .warn)
@@ -199,8 +268,8 @@ class SigningTests: TestCase {
     func testVerifySignatureLogsWarningWhenSizeIsIncorrect() throws {
         let signature = "invalid signature".asData
 
-        _ = self.signing.verify(
-            signature: signature.base64EncodedString(),
+        let result = self.signing.verificationResult(
+            for: signature.base64EncodedString(),
             with: .init(
                 path: Self.mockPath,
                 iamEnabled: false,
@@ -211,6 +280,8 @@ class SigningTests: TestCase {
             ),
             publicKey: Signing.loadPublicKey()
         )
+
+        expect(result) == .failed(.invalidSignatureFormat)
 
         self.logger.verifyMessageWasLogged(Strings.signing.signature_invalid_size(signature),
                                            level: .warn)
@@ -240,18 +311,20 @@ class SigningTests: TestCase {
             signature: signature
         )
 
-        expect(self.signing.verify(
-            signature: fullSignature.base64EncodedString(),
-            with: .init(
-                path: Self.mockPath,
-                iamEnabled: false,
-                message: message.asData,
-                nonce: nonce.asData,
-                etag: nil,
-                requestDate: requestDate
-            ),
+        let parameters: Signing.SignatureParameters = .init(
+            path: Self.mockPath,
+            iamEnabled: false,
+            message: message.asData,
+            nonce: nonce.asData,
+            etag: nil,
+            requestDate: requestDate
+        )
+
+        expect(self.signing.verificationResult(
+            for: fullSignature.base64EncodedString(),
+            with: parameters,
             publicKey: self.publicKey
-        )) == true
+        )) == .verified
     }
 
     func testVerifySignatureWithValidSignatureIncludingEtag() throws {
@@ -279,8 +352,8 @@ class SigningTests: TestCase {
             signature: signature
         )
 
-        expect(self.signing.verify(
-            signature: fullSignature.base64EncodedString(),
+        expect(self.signing.verificationResult(
+            for: fullSignature.base64EncodedString(),
             with: .init(
                 path: Self.mockPath,
                 iamEnabled: false,
@@ -290,7 +363,7 @@ class SigningTests: TestCase {
                 requestDate: requestDate
             ),
             publicKey: self.publicKey
-        )) == true
+        )) == .verified
     }
 
     /*
@@ -323,8 +396,8 @@ class SigningTests: TestCase {
         let etag = "bc03094946db5488"
 
         expect(
-            self.signing.verify(
-                signature: expectedSignature,
+            self.signing.verificationResult(
+                for: expectedSignature,
                 with: .init(
                     path: .getCustomerInfo(appUserID: "login"),
                     iamEnabled: false,
@@ -335,7 +408,7 @@ class SigningTests: TestCase {
                 ),
                 publicKey: Signing.loadPublicKey()
             )
-        ) == true
+        ) == .verified
     }
 
     func testVerifyKnownSignatureWithNoNonceAndNoEtag() throws {
@@ -357,8 +430,8 @@ class SigningTests: TestCase {
         let requestDate: UInt64 = 1688165984163
 
         expect(
-            self.signing.verify(
-                signature: expectedSignature,
+            self.signing.verificationResult(
+                for: expectedSignature,
                 with: .init(
                     path: .getOfferings(appUserID: "test"),
                     iamEnabled: false,
@@ -369,7 +442,7 @@ class SigningTests: TestCase {
                 ),
                 publicKey: Signing.loadPublicKey()
             )
-        ) == true
+        ) == .verified
     }
 
     func testVerifyKnownSignatureOfEmptyResponseWithNonceAndNoEtagAndNoAPIKey() throws {
@@ -389,8 +462,8 @@ class SigningTests: TestCase {
         let requestDate: UInt64 = 1688701887822
 
         expect(
-            self.signing.verify(
-                signature: expectedSignature,
+            self.signing.verificationResult(
+                for: expectedSignature,
                 with: .init(
                     path: .health,
                     iamEnabled: false,
@@ -401,7 +474,7 @@ class SigningTests: TestCase {
                 ),
                 publicKey: Signing.loadPublicKey()
             )
-        ) == true
+        ) == .verified
     }
 
     func testVerifyKnownSignatureOf304Response() throws {
@@ -423,8 +496,8 @@ class SigningTests: TestCase {
         let etag = "bc03094946db5488"
 
         expect(
-            self.signing.verify(
-                signature: expectedSignature,
+            self.signing.verificationResult(
+                for: expectedSignature,
                 with: .init(
                     path: .getCustomerInfo(appUserID: "login"),
                     iamEnabled: false,
@@ -435,7 +508,7 @@ class SigningTests: TestCase {
                 ),
                 publicKey: Signing.loadPublicKey()
             )
-        ) == true
+        ) == .verified
     }
 
     func testVerifyKnownSignatureWithAnonymousUser() throws {
@@ -459,8 +532,8 @@ class SigningTests: TestCase {
         let etag = "a896a69e4b31304d"
 
         expect(
-            self.signing.verify(
-                signature: expectedSignature,
+            self.signing.verificationResult(
+                for: expectedSignature,
                 with: .init(
                     path: .getCustomerInfo(appUserID: "$RCAnonymousID:1af512a3b9c848899fe427f39dd69f2b"),
                     iamEnabled: false,
@@ -471,7 +544,7 @@ class SigningTests: TestCase {
                 ),
                 publicKey: Signing.loadPublicKey()
             )
-        ) == true
+        ) == .verified
     }
 
     func testVerifyKnownSignatureForPostRequest() throws {
@@ -497,8 +570,8 @@ class SigningTests: TestCase {
         let requestDate: UInt64 = 1688759279805
 
         expect(
-            self.signing.verify(
-                signature: expectedSignature,
+            self.signing.verificationResult(
+                for: expectedSignature,
                 with: .init(
                     path: .logIn,
                     iamEnabled: false,
@@ -513,7 +586,7 @@ class SigningTests: TestCase {
                 ),
                 publicKey: Signing.loadPublicKey()
             )
-        ) == true
+        ) == .verified
     }
 
     func testVerifyKnownSignatureForGetRequestWithSignedHeaders() throws {
@@ -538,8 +611,8 @@ class SigningTests: TestCase {
         let requestDate: UInt64 = 1702063024732
 
         expect(
-            self.signing.verify(
-                signature: expectedSignature,
+            self.signing.verificationResult(
+                for: expectedSignature,
                 with: .init(
                     path: .getCustomerInfo(appUserID: "$RCAnonymousID:6ca4535c42714f88abc99c563703f113"),
                     iamEnabled: false,
@@ -553,7 +626,7 @@ class SigningTests: TestCase {
                 ),
                 publicKey: Signing.loadPublicKey()
             )
-        ) == true
+        ) == .verified
     }
 
     func testVerifyKnownSignatureForPostRequestWithSignedHeadersAndPostBody() throws {
@@ -581,8 +654,8 @@ class SigningTests: TestCase {
         let requestDate: UInt64 = 1702063090637
 
         expect(
-            self.signing.verify(
-                signature: expectedSignature,
+            self.signing.verificationResult(
+                for: expectedSignature,
                 with: .init(
                     path: .logIn,
                     iamEnabled: false,
@@ -600,7 +673,7 @@ class SigningTests: TestCase {
                 ),
                 publicKey: Signing.loadPublicKey()
             )
-        ) == true
+        ) == .verified
     }
 
     func testResponseVerificationWithNoProvidedKey() throws {
@@ -633,7 +706,7 @@ class SigningTests: TestCase {
             iamEnabled: false
         )
 
-        expect(verifiedResponse.verificationResult) == .failed
+        expect(verifiedResponse.verificationResult) == .failed(.missingSignature)
 
         self.logger.verifyMessageWasLogged(Strings.signing.signature_was_requested_but_not_provided(request),
                                            level: .warn)
@@ -658,7 +731,31 @@ class SigningTests: TestCase {
             iamEnabled: false
         )
 
-        expect(verifiedResponse.verificationResult) == .failed
+        expect(verifiedResponse.verificationResult) == .failed(.missingRequestTime)
+    }
+
+    func testResponseVerificationFailsWhenSignedPayloadIsMissing() throws {
+        let request = HTTPRequest.createWithResponseVerification(method: .get, path: .health)
+        let response = HTTPResponse<Data?>(
+            httpStatusCode: .success,
+            responseHeaders: [
+                HTTPClient.ResponseHeader.signature.rawValue: "signature",
+                HTTPClient.ResponseHeader.requestDate.rawValue: String(Date().millisecondsSince1970)
+            ],
+            body: nil
+        )
+
+        let verifiedResponse = response.verify(
+            signing: self.signing,
+            request: request,
+            requestHeaders: [:],
+            publicKey: self.publicKey,
+            isLoadShedderResponse: false,
+            isFallbackUrlResponse: false,
+            iamEnabled: false
+        )
+
+        expect(verifiedResponse.verificationResult) == .failed(.missingSignedPayload)
     }
 
     func testResponseVerificationWithNonceWithValidSignature() throws {
@@ -921,7 +1018,7 @@ class SigningTests: TestCase {
             iamEnabled: false
         )
 
-        expect(verifiedResponse.verificationResult) == .failed
+        expect(verifiedResponse.verificationResult) == .failed(.payloadSignatureMismatch)
     }
 
     func testVerifySignatureWithFallbackPathForGetOfferings() throws {
@@ -951,8 +1048,8 @@ class SigningTests: TestCase {
         )
 
         // Verify with fallback path
-        expect(self.signing.verify(
-            signature: fullSignatureWithFallback.base64EncodedString(),
+        expect(self.signing.verificationResult(
+            for: fullSignatureWithFallback.base64EncodedString(),
             with: .init(
                 path: offeringsPath,
                 iamEnabled: false,
@@ -963,7 +1060,7 @@ class SigningTests: TestCase {
                 useFallbackPath: true
             ),
             publicKey: self.publicKey
-        )) == true
+        )) == .verified
     }
 
     func testVerifySignatureWithFallbackPathForGetProductEntitlementMapping() throws {
@@ -993,8 +1090,8 @@ class SigningTests: TestCase {
         )
 
         // Verify with fallback path
-        expect(self.signing.verify(
-            signature: fullSignatureWithFallback.base64EncodedString(),
+        expect(self.signing.verificationResult(
+            for: fullSignatureWithFallback.base64EncodedString(),
             with: .init(
                 path: productEntitlementMappingPath,
                 iamEnabled: false,
@@ -1005,7 +1102,7 @@ class SigningTests: TestCase {
                 useFallbackPath: true
             ),
             publicKey: self.publicKey
-        )) == true
+        )) == .verified
     }
 
     func testGetOfferingsSignatureWithFallbackPathDoesNotVerifyWithRegularPath() throws {
@@ -1035,8 +1132,8 @@ class SigningTests: TestCase {
         )
 
         // Verify with fallback path
-        expect(self.signing.verify(
-            signature: fullSignatureWithRegular.base64EncodedString(),
+        expect(self.signing.verificationResult(
+            for: fullSignatureWithRegular.base64EncodedString(),
             with: .init(
                 path: offeringsPath,
                 iamEnabled: false,
@@ -1047,7 +1144,7 @@ class SigningTests: TestCase {
                 useFallbackPath: true
             ),
             publicKey: self.publicKey
-        )) == false
+        )) == .failed(.payloadSignatureMismatch)
     }
 
     func testGetOfferingsSignatureWithRegularPathDoesNotVerifyWithFallbackPath() throws {
@@ -1077,8 +1174,8 @@ class SigningTests: TestCase {
         )
 
         // Verify with fallback path
-        expect(self.signing.verify(
-            signature: fullSignatureWithRegular.base64EncodedString(),
+        expect(self.signing.verificationResult(
+            for: fullSignatureWithRegular.base64EncodedString(),
             with: .init(
                 path: offeringsPath,
                 iamEnabled: false,
@@ -1089,7 +1186,7 @@ class SigningTests: TestCase {
                 useFallbackPath: true
             ),
             publicKey: self.publicKey
-        )) == false
+        )) == .failed(.payloadSignatureMismatch)
     }
 
     func testVerifySignatureWithFallbackPathForGetOfferingsWithEtag() throws {
@@ -1120,8 +1217,8 @@ class SigningTests: TestCase {
         )
 
         // Verify with fallback path
-        expect(self.signing.verify(
-            signature: fullSignatureWithFallback.base64EncodedString(),
+        expect(self.signing.verificationResult(
+            for: fullSignatureWithFallback.base64EncodedString(),
             with: .init(
                 path: offeringsPath,
                 iamEnabled: false,
@@ -1132,7 +1229,7 @@ class SigningTests: TestCase {
                 useFallbackPath: true
             ),
             publicKey: self.publicKey
-        )) == true
+        )) == .verified
     }
 
     // MARK: - IAM
@@ -1194,7 +1291,7 @@ class SigningTests: TestCase {
             isFallbackUrlResponse: false,
             iamEnabled: false
         )
-        expect(verifiedWithIAMDisabled.verificationResult) == .failed
+        expect(verifiedWithIAMDisabled.verificationResult) == .failed(.payloadSignatureMismatch)
     }
 
     func testVerificationUsesBearerTokenFromHeadersInsteadOfAPIKeyWhenPresent() throws {
@@ -1308,7 +1405,7 @@ class SigningTests: TestCase {
             iamEnabled: true
         )
 
-        expect(verifiedResponse.verificationResult) == .failed
+        expect(verifiedResponse.verificationResult) == .failed(.payloadSignatureMismatch)
     }
 
     func testDebugDescriptionUsesIAMRelativePathWhenIAMEnabled() {

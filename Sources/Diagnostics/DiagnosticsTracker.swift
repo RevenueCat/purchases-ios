@@ -43,7 +43,7 @@ protocol DiagnosticsTrackerType: Sendable {
                                    responseCode: Int,
                                    backendErrorCode: Int?,
                                    resultOrigin: HTTPResponseOrigin?,
-                                   verificationResult: VerificationResult,
+                                   verificationResult: SignatureVerificationResult,
                                    isRetry: Bool,
                                    connectionErrorReason: ConnectionErrorReason?)
 
@@ -245,12 +245,12 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                    responseCode: Int,
                                    backendErrorCode: Int?,
                                    resultOrigin: HTTPResponseOrigin?,
-                                   verificationResult: VerificationResult,
+                                   verificationResult: SignatureVerificationResult,
                                    isRetry: Bool,
                                    connectionErrorReason: ConnectionErrorReason?) {
         self.trackEvent(name: .httpRequestPerformed,
                         properties: DiagnosticsEvent.Properties(
-                            verificationResult: verificationResult.name,
+                            verificationResult: verificationResult.result.name,
                             endpointName: endpointName,
                             host: host,
                             responseTime: responseTime,

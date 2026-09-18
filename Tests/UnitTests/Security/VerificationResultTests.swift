@@ -25,4 +25,16 @@ class VerificationResultTests: TestCase {
         expect(VerificationResult.verifiedOnDevice.isVerified) == true
     }
 
+    func testSignatureVerificationResultIsFailed() {
+        expect(SignatureVerificationResult.notRequested.isFailed) == false
+        expect(SignatureVerificationResult.verified.isFailed) == false
+        expect(SignatureVerificationResult.failed(.unknown).isFailed) == true
+    }
+
+    func testPublicResultFromSignatureVerificationResult() {
+        expect(SignatureVerificationResult.notRequested.result) == .notRequested
+        expect(SignatureVerificationResult.verified.result) == .verified
+        expect(SignatureVerificationResult.failed(.missingSignature).result) == .failed
+    }
+
 }

@@ -4498,8 +4498,8 @@ extension HTTPClientTests {
 // swiftlint:disable line_length
 
 private func matchTrackParams(
-    _ data: (String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult, Bool, ConnectionErrorReason?)
-) -> Nimble.Predicate<(String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult, Bool, ConnectionErrorReason?)> {
+    _ data: (String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, SignatureVerificationResult, Bool, ConnectionErrorReason?)
+) -> Nimble.Predicate<(String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, SignatureVerificationResult, Bool, ConnectionErrorReason?)> {
     return .init {
         let other = try $0.evaluate()
         let timeInterval = other?.2 ?? -1
