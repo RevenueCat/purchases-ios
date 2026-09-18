@@ -24,9 +24,9 @@ import Foundation
     /// An offering was selected for the checkpoint, with no RevenueCat-managed UI to present. The app
     /// decides whether and how to use it.
     case matchedOffering(Offering)
-    /// An ad was selected for the checkpoint, with no RevenueCat-managed UI to present. A registered
-    /// ad presenter decides how to show it.
-    case matchedAd(ResolvedAdStep)
+    /// An ad-only workflow was selected for the checkpoint, with no RevenueCat-managed UI to present. A
+    /// registered ad presenter decides how to show each of its ads.
+    case matchedAd(ResolvedAdWorkflow)
     /// No workflow should run for the checkpoint.
     case noAction(CheckpointResolutionReason)
 
@@ -315,10 +315,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         }
 
         if initialStep.type == Self.adStepType {
-            guard workflow.steps.count == 1 else {
-                return Self.unservable(rule, reason: "an ad step cannot be mixed with other steps")
-            }
-            return Self.resolveAd(rule, step: initialStep)
+            return Self.resolveAdWorkflow(rule, workflow: workflow)
         }
 
         if workflow.steps.values.contains(where: \.isOfferingStep) {
