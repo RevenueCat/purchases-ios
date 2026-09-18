@@ -196,6 +196,23 @@ private struct CarouselView<Content: View>: View {
     @GestureState private var translation: CGFloat = 0
     #endif
 
+    @Environment(\.accessibilityVoiceOverEnabled)
+    private var accessibilityVoiceOverEnabled
+
+#if DEBUG
+    @Environment(\.voiceOverEnabledOverride)
+    private var voiceOverEnabledOverride
+#endif
+
+    private var isVoiceOverRunning: Bool {
+#if DEBUG
+        if let override = self.voiceOverEnabledOverride {
+            return override
+        }
+#endif
+        return self.accessibilityVoiceOverEnabled
+    }
+
     /// A timer for auto-play, if enabled.
     @State private var autoTimer: Timer?
 
@@ -270,7 +287,7 @@ private struct CarouselView<Content: View>: View {
                 )
             }
 
-            // Main horizontal "strip" of pages:
+            // Adjustable, because a swipe moves a screen reader's focus rather than the carousel.
             HStack(alignment: self.pageAlignment, spacing: spacing) {
                 ForEach(Array(data.enumerated()), id: \.element.id) { pageIndex, item in
                     let isNextInEitherDirection = abs(index - pageIndex) <= 2
@@ -280,6 +297,9 @@ private struct CarouselView<Content: View>: View {
                             pageIndex: pageIndex,
                             originalCount: originalCount
                         ))
+                        // Every page is mounted, and looping mounts three copies of each, so
+                        // without this VoiceOver reads slides that are off screen, repeatedly.
+                        .accessibilityHidden(pageIndex != index)
                         // ensure rendering doesn't need to wait on size calculations as the item
                         // attempts to enter the view
                         .environment(\.requestSizeCalculation, !isNextInEitherDirection)
@@ -292,6 +312,18 @@ private struct CarouselView<Content: View>: View {
             .frame(width: self.width, alignment: .leading)
             .offset(x: xOffset(in: self.width) + dragOffset) // Apply drag offset
             .opacity(opacity)
+            .accessibilityElement(children: .contain)
+            .accessibilityValue(self.accessibilityPageDescription)
+            .accessibilityAdjustableAction { direction in
+                switch direction {
+                case .increment:
+                    self.pageForAccessibility(by: 1)
+                case .decrement:
+                    self.pageForAccessibility(by: -1)
+                @unknown default:
+                    break
+                }
+            }
             .applyIf(autoAdvanceTransitionType == .slide, apply: { view in
                 // Animate only final snaps (or auto transitions), not real-time dragging
                 view.animation(.easeInOut(duration: self.transitionTime), value: index)
@@ -370,6 +402,54 @@ private struct CarouselView<Content: View>: View {
 
     /// When `loop` is `true`, and `fadeTransition` is turned on we don't setUp the animation view modifier
     private let autoAdvanceTransitionType: PaywallComponent.CarouselComponent.AutoAdvanceTransitionType
+
+    /// Paging for a screen reader, which cannot drag.
+    private func pageForAccessibility(by delta: Int) {
+        guard !self.data.isEmpty else { return }
+
+        let originalPageIndexBefore = self.originalPageIndex
+
+        withAnimation(.easeInOut(duration: 0.25)) {
+            self.index = CarouselPaging.index(from: self.index, by: delta, count: self.data.count, loop: self.loop)
+
+            if self.loop {
+                self.expandDataIfNeeded()
+                self.pruneDataIfNeeded()
+            }
+        }
+
+        self.pauseAutoPlay(for: 10)
+        self.reportPageChange(from: originalPageIndexBefore)
+    }
+
+    /// What the adjustable control reads out, so a page change announces where it landed.
+    private var accessibilityPageDescription: String {
+        guard self.originalCount > 0, let page = self.originalPageIndex else {
+            return ""
+        }
+
+        return "\(page + 1) / \(self.originalCount)"
+    }
+
+    /// Which of the original pages is showing, ignoring the copies a looping carousel makes.
+    private var originalPageIndex: Int? {
+        guard self.originalCount > 0 else {
+            return nil
+        }
+
+        return self.loop ? self.index % self.originalCount : self.index
+    }
+
+    /// Paging the carousel is user-initiated however it was driven, so both paths report it.
+    /// Timer-driven auto-advance deliberately does not, see `startAutoPlayIfNeeded`.
+    private func reportPageChange(from originalPageIndexBefore: Int?) {
+        guard self.isInitialized,
+              let originalPageIndexBefore,
+              let originalPageIndexAfter = self.originalPageIndex,
+              originalPageIndexAfter != originalPageIndexBefore else { return }
+
+        self.onUserInitiatedPageIndexChange?(originalPageIndexBefore, originalPageIndexAfter)
+    }
 
     private func setupData() {
         guard !originalPages.isEmpty else { return }
@@ -484,48 +564,41 @@ private struct CarouselView<Content: View>: View {
 
     private func handleDragEnd(translation: CGFloat) {
         let threshold = cardWidth * 0.2
-        let originalPageIndexBefore: Int? = self.originalCount > 0
-            ? (self.loop ? self.index % self.originalCount : self.index)
-            : nil
+        let originalPageIndexBefore = self.originalPageIndex
 
         withAnimation(.easeInOut(duration: 0.25)) {
             self.dragOffset = 0
 
+            let delta: Int
             if translation < -threshold {
-                // Swipe left => next
-                index += 1
+                delta = 1      // Swipe left => next
             } else if translation > threshold {
-                // Swipe right => prev
-                index -= 1
+                delta = -1     // Swipe right => prev
+            } else {
+                delta = 0
             }
+
+            index = CarouselPaging.index(from: index, by: delta, count: data.count, loop: loop)
 
             if loop {
                 expandDataIfNeeded()
                 pruneDataIfNeeded()
-            } else {
-                // Non-loop clamp
-                index = max(0, min(index, data.count - 1))
             }
         }
 
         // Pause auto-play for 10 seconds
         pauseAutoPlay(for: 10)
 
-        // `onUserInitiatedPageIndexChange` is only invoked from here so timer-driven auto-advance does not emit
-        // paywall_component_interacted events (see `startAutoPlayIfNeeded`).
-        guard self.isInitialized,
-              let originalPageIndexBefore,
-              self.originalCount > 0 else { return }
-
-        let originalPageIndexAfter = self.loop
-            ? self.index % self.originalCount
-            : self.index
-        guard originalPageIndexAfter != originalPageIndexBefore else { return }
-
-        self.onUserInitiatedPageIndexChange?(originalPageIndexBefore, originalPageIndexAfter)
+        self.reportPageChange(from: originalPageIndexBefore)
     }
 
     private var autoPlayEnabled: Bool {
+        // Advancing on a timer would pull the focused slide out of the accessibility tree
+        // mid-sentence, on a schedule the user cannot stop.
+        guard !self.isVoiceOverRunning else {
+            return false
+        }
+
         return self.msTimePerSlide != nil && self.msTransitionTime != nil
     }
 
@@ -594,6 +667,22 @@ private struct CarouselView<Content: View>: View {
         guard let lastID = data.last?.id else { return 0 }
         return lastID / originalCount
     }
+}
+
+/// Where paging lands, so the drag path and the screen-reader path cannot drift apart.
+enum CarouselPaging {
+
+    /// Looping carousels keep expanding their data, so only the non-looping case is clamped.
+    static func index(from current: Int, by delta: Int, count: Int, loop: Bool) -> Int {
+        let moved = current + delta
+
+        guard !loop else {
+            return moved
+        }
+
+        return max(0, min(moved, count - 1))
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
