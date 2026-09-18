@@ -44,6 +44,10 @@ class TimelineComponentViewModel {
         self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
 
+    lazy var visibilityResolver = PaywallComponentVisibilityResolver(
+        self.component.visible, self.uiConfigProvider, self.presentedOverrides, visible: { $0.visible }
+    )
+
     @ViewBuilder
     // swiftlint:disable:next function_parameter_count
     func styles(

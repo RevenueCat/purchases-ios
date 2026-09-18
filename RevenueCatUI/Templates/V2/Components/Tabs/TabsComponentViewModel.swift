@@ -32,6 +32,10 @@ class TabsComponentViewModel {
     let defaultTabId: String?
     let name: String?
 
+    lazy var visibilityResolver = PaywallComponentVisibilityResolver(
+        self.component.visible, self.uiConfigProvider, self.presentedOverrides, visible: { $0.visible }
+    )
+
     /// Guards the one-time propagation of the initial tab's package into the parent
     /// `PackageContext`. Lives here, not as per-view `@State`, so SwiftUI's duplicate
     /// `LoadedTabsComponentView` instances (from `ViewThatFits` measuring both of its branches)

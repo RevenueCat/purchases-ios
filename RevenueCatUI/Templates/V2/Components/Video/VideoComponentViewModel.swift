@@ -70,6 +70,10 @@ class VideoComponentViewModel {
         self.presentedOverrides = presentedOverrides
     }
 
+    lazy var visibilityResolver = PaywallComponentVisibilityResolver(
+        self.component.visible, self.uiConfigProvider, self.presentedOverrides, visible: { $0.partial.visible }
+    )
+
     @ViewBuilder
     // swiftlint:disable:next function_parameter_count
     func styles(
