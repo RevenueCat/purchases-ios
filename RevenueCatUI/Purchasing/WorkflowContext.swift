@@ -191,7 +191,8 @@ import Foundation
         for base: PaywallComponentsData.PaywallComponentsConfig,
         offering: Offering
     ) -> WorkflowPackageContext? {
-        let allComponents = base.stack.components
+        let allComponents = (base.header?.stack.components ?? [])
+            + base.stack.components
             + (base.stickyFooter?.stack.components ?? [])
         let packages = Self.collectPackages(in: allComponents, offering: offering)
 
@@ -278,6 +279,14 @@ import Foundation
                     result.append((package: rcPackage,
                                    isSelectedByDefault: pkg.isSelectedByDefault,
                                    promoOfferCode: pkg.applePromoOfferProductCode))
+                }
+                result += Self.collectPackages(in: pkg.stack.components, offering: offering)
+            case .button(let button):
+                result += Self.collectPackages(in: button.stack.components, offering: offering)
+                // Include plans behind "view all plans" in pricing variables and workflow carry-forward,
+                // matching the packages collected by ViewModelFactory for a standalone paywall.
+                if case let .navigateTo(.sheet(sheet)) = button.action, let sheet {
+                    result += Self.collectPackages(in: sheet.stack.components, offering: offering)
                 }
             case .stack(let stack):
                 result += Self.collectPackages(in: stack.components, offering: offering)
