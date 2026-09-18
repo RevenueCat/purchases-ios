@@ -72,9 +72,9 @@ struct BackendLanesFactory {
 
     private func makeConfiguration(for lane: RequestLane,
                                    diagnosticsQueue: OperationQueue) -> BackendConfiguration {
-        // Shared by every lane's HTTPClient (and, outside of `Backend`, by the blob downloader) so a
-        // timeout one of them sees on a host fast-fails the others' next request to that same host,
-        // and a success on any of them clears it for all.
+        // `timeoutManager` is shared by every lane's HTTPClient (and, outside of `Backend`, by the blob
+        // downloader) so a timeout one of them sees on a host fast-fails the others' next request to that
+        // same host, and a success on any of them clears it for all.
         let httpClient = HTTPClient(systemInfo: self.systemInfo,
                                     eTagManager: self.eTagManager,
                                     tokenManager: self.tokenManager,
