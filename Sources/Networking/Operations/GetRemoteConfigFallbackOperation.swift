@@ -54,7 +54,10 @@ private extension GetRemoteConfigFallbackOperation {
     func getRemoteConfigFallback(completion: @escaping () -> Void) {
         let request = HTTPRequest(method: .get, path: HTTPRequest.FallbackPath.remoteConfig(domain: self.domain))
 
-        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<RemoteConfiguration>.Result) in
+        self.httpClient.perform(
+            request,
+            with: self.requiredSignatureVerificationMode
+        ) { (response: VerifiedHTTPResponse<RemoteConfiguration>.Result) in
             defer {
                 completion()
             }

@@ -62,6 +62,7 @@ import Foundation
         let customEntitlementComputation: Bool
         let forceAllowTestStoreInReleaseBuilds: Bool
         let useExternalPurchaseCustomLinks: Bool
+        let disableRequiredSignatureVerifications: Bool
     }
 
     internal let storage: Storage
@@ -117,6 +118,11 @@ import Foundation
      */
     @_spi(Experimental) public var useExternalPurchaseCustomLinks: Bool {
         self.storage.useExternalPurchaseCustomLinks
+    }
+
+    /// Disables response signature verifications that the SDK requires independently of the configured mode.
+    @objc public var disableRequiredSignatureVerifications: Bool {
+        self.storage.disableRequiredSignatureVerifications
     }
 
     @objc public override convenience init() {
@@ -180,6 +186,20 @@ import Foundation
     }
 
     /**
+     * Only use a Dangerous Setting if suggested by RevenueCat support team.
+     *
+     * - Parameter disableRequiredSignatureVerifications: Disables response signature verifications that the SDK
+     * requires independently of the configured mode.
+     */
+    @objc public convenience init(autoSyncPurchases: Bool,
+                                  disableRequiredSignatureVerifications: Bool) {
+        self.init(autoSyncPurchases: autoSyncPurchases,
+                  customEntitlementComputation: false,
+                  internalSettings: Internal.default,
+                  disableRequiredSignatureVerifications: disableRequiredSignatureVerifications)
+    }
+
+    /**
      * Used to initialize the SDK in UI preview mode.
      *
      * - Parameter uiPreviewMode: if `true`, the SDK will return a set of mock products instead
@@ -195,13 +215,15 @@ import Foundation
                   internalSettings: InternalDangerousSettingsType,
                   uiPreviewMode: Bool = false,
                   forceAllowTestStoreInReleaseBuilds: Bool = false,
-                  useExternalPurchaseCustomLinks: Bool = false) {
+                  useExternalPurchaseCustomLinks: Bool = false,
+                  disableRequiredSignatureVerifications: Bool = false) {
         self.storage = Storage(
             autoSyncPurchases: autoSyncPurchases,
             uiPreviewMode: uiPreviewMode,
             customEntitlementComputation: customEntitlementComputation,
             forceAllowTestStoreInReleaseBuilds: forceAllowTestStoreInReleaseBuilds,
-            useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks
+            useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks,
+            disableRequiredSignatureVerifications: disableRequiredSignatureVerifications
         )
         self.internalSettings = internalSettings
     }

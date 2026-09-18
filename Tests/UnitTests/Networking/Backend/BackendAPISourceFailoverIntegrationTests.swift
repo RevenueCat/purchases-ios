@@ -220,7 +220,9 @@ final class BackendAPISourceFailoverIntegrationTests: TestCase {
             )
         }
 
-        expect(configResult).to(beSuccess())
+        // This test fixture does not produce signatures. The config request still proves that the
+        // remote-config lane starts on B; enforced response verification then rejects the fixture response.
+        expect(configResult).to(beFailure())
         expect(sourceA.value) == [Self.customerInfoPath, Self.healthPath]
         expect(sourceB.value.count) == 2
         expect(sourceB.value.last).to(beginWith("/v1/config"))

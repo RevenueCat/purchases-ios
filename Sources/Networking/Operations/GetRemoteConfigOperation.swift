@@ -128,7 +128,10 @@ private extension GetRemoteConfigOperation {
             additionalHeaders: self.request.additionalHeaders
         )
 
-        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<RemoteConfigContainer?>.Result) in
+        self.httpClient.perform(
+            request,
+            with: self.requiredSignatureVerificationMode
+        ) { (response: VerifiedHTTPResponse<RemoteConfigContainer?>.Result) in
             defer {
                 completion()
             }
