@@ -206,7 +206,7 @@ class CustomerInfoManager {
         case .notStaleCachedOrFetched:
             let infoFromCache = try? self.cachedCustomerInfo(appUserID: appUserID)
 
-            self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+            self.systemInfo.isApplicationBackgrounded { [self] isAppBackgrounded in
                 let isCacheStale = self.deviceCache.isCustomerInfoCacheStale(
                     appUserID: appUserID,
                     isAppBackgrounded: isAppBackgrounded

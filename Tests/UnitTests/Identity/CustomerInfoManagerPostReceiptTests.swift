@@ -162,6 +162,25 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
         }
     }
 
+    func testRemainingUnfinishedTransactionPostsUseBackgroundPriority() async throws {
+        let transactions = [Self.createTransaction(), Self.createTransaction(), Self.createTransaction()]
+        self.mockTransationFetcher.stubbedUnfinishedTransactions = transactions
+        self.mockTransactionPoster.stubbedHandlePurchasedTransactionResult.value = .success(self.mockCustomerInfo)
+
+        let manager = try XCTUnwrap(self.customerInfoManager)
+        _ = try await Task.detached(priority: .high) {
+            try await manager.fetchAndCacheCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false)
+        }.value
+
+        try await asyncWait { [poster = self.mockTransactionPoster!] in
+            poster.allHandledTransactions == Set(transactions)
+        }
+
+        let priorities = self.mockTransactionPoster.invokedHandlePurchasedTransactionPriorities.value
+        expect(priorities.filter { $0 == .high }.count) == 1
+        expect(priorities.filter { $0 == .background }.count) == transactions.count - 1
+    }
+
     func testPostingAllTransactionsReturnsFirstResult() async throws {
         let otherMockCustomerInfo = try CustomerInfo(data: [
             "request_date": "2024-12-21T02:40:36Z",
