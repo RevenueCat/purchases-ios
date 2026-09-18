@@ -86,6 +86,37 @@ class IconComponentViewModel {
         return CGSize(width: expectedWidth, height: expectedHeight)
     }
 
+    // swiftlint:disable:next function_parameter_count
+    func visible(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
+        stateValues: [String: PaywallComponent.ConditionValue] = [:],
+        stateDefaults: [String: PaywallComponent.ConditionValue] = [:],
+        windowSize: CGSize? = nil
+    ) -> Bool {
+        let conditionContext = self.uiConfigProvider.conditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables,
+            stateValues: stateValues,
+            stateDefaults: stateDefaults,
+            windowSize: windowSize
+        )
+        let partial = PresentedIconPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
+            with: self.presentedOverrides
+        )
+
+        return partial?.visible ?? self.component.visible ?? true
+    }
+
     @ViewBuilder
     // swiftlint:disable:next function_parameter_count
     func styles(

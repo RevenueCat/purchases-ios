@@ -21,20 +21,20 @@ struct FlexHStack: View {
     let alignment: VerticalAlignment
     let justifyContent: JustifyContent
     let spacing: CGFloat?
-    let componentViewModels: [PaywallComponentViewModel]
+    let children: [IdentifiedPaywallComponentViewModel]
     let onDismiss: () -> Void
 
     init(
         alignment: VerticalAlignment,
         spacing: CGFloat?,
         justifyContent: JustifyContent,
-        componentViewModels: [PaywallComponentViewModel],
+        children: [IdentifiedPaywallComponentViewModel],
         onDismiss: @escaping () -> Void
     ) {
         self.alignment = alignment
         self.spacing = spacing
         self.justifyContent = justifyContent
-        self.componentViewModels = componentViewModels
+        self.children = children
         self.onDismiss = onDismiss
     }
 
@@ -42,12 +42,12 @@ struct FlexHStack: View {
         HStack(alignment: self.alignment, spacing: 0) {
             switch justifyContent {
             case .start:
-                ForEach(0..<componentViewModels.count, id: \.self) { index in
+                ForEach(Array(children.enumerated()), id: \.element.id) { index, child in
                     ComponentsView(
-                        componentViewModels: [self.componentViewModels[index]],
+                        components: [child],
                         onDismiss: self.onDismiss
                     )
-                    if index < self.componentViewModels.count - 1 {
+                    if index < self.children.count - 1 {
                         if let spacing = self.spacing {
                             Spacer().frame(width: spacing)
                         }
@@ -57,12 +57,12 @@ struct FlexHStack: View {
 
             case .center:
                 Spacer(minLength: 0)
-                ForEach(0..<componentViewModels.count, id: \.self) { index in
+                ForEach(Array(children.enumerated()), id: \.element.id) { index, child in
                     ComponentsView(
-                        componentViewModels: [self.componentViewModels[index]],
+                        components: [child],
                         onDismiss: self.onDismiss
                     )
-                    if index < self.componentViewModels.count - 1 {
+                    if index < self.children.count - 1 {
                         if let spacing = self.spacing {
                             Spacer().frame(width: spacing)
                         }
@@ -72,12 +72,12 @@ struct FlexHStack: View {
 
             case .end:
                 Spacer(minLength: 0)
-                ForEach(0..<componentViewModels.count, id: \.self) { index in
+                ForEach(Array(children.enumerated()), id: \.element.id) { index, child in
                     ComponentsView(
-                        componentViewModels: [self.componentViewModels[index]],
+                        components: [child],
                         onDismiss: self.onDismiss
                     )
-                    if index < self.componentViewModels.count - 1 {
+                    if index < self.children.count - 1 {
                         if let spacing = self.spacing {
                             Spacer().frame(width: spacing)
                         }
@@ -85,12 +85,12 @@ struct FlexHStack: View {
                 }
 
             case .spaceBetween:
-                ForEach(0..<componentViewModels.count, id: \.self) { index in
+                ForEach(Array(children.enumerated()), id: \.element.id) { index, child in
                     ComponentsView(
-                        componentViewModels: [self.componentViewModels[index]],
+                        components: [child],
                         onDismiss: self.onDismiss
                     )
-                    if index < self.componentViewModels.count - 1 {
+                    if index < self.children.count - 1 {
                         if let spacing = self.spacing {
                             Spacer().frame(width: spacing)
                         }
@@ -99,15 +99,15 @@ struct FlexHStack: View {
                 }
 
             case .spaceAround:
-                ForEach(0..<componentViewModels.count, id: \.self) { index in
+                ForEach(Array(children.enumerated()), id: \.element.id) { index, child in
                     if index == 0 {
                         FlexSpacer(weight: 1)
                     }
                     ComponentsView(
-                        componentViewModels: [self.componentViewModels[index]],
+                        components: [child],
                         onDismiss: self.onDismiss
                     )
-                    if index < self.componentViewModels.count - 1 {
+                    if index < self.children.count - 1 {
                         if let spacing = self.spacing {
                             Spacer().frame(width: spacing)
                         }
@@ -118,13 +118,13 @@ struct FlexHStack: View {
                 }
 
             case .spaceEvenly:
-                ForEach(0..<componentViewModels.count, id: \.self) { index in
+                ForEach(Array(children.enumerated()), id: \.element.id) { index, child in
                     FlexSpacer(weight: 1)
                     ComponentsView(
-                        componentViewModels: [self.componentViewModels[index]],
+                        components: [child],
                         onDismiss: self.onDismiss
                     )
-                    if index < self.componentViewModels.count - 1 {
+                    if index < self.children.count - 1 {
                         if let spacing = self.spacing {
                             Spacer().frame(width: spacing)
                         }

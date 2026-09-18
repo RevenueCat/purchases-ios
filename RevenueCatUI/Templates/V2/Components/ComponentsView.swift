@@ -25,7 +25,7 @@ struct ComponentsView: View {
     @Environment(\.overlaidHeaderHeight)
     private var overlaidHeaderHeight
 
-    let componentViewModels: [PaywallComponentViewModel]
+    let components: [IdentifiedPaywallComponentViewModel]
     /// When true, applies safe area top padding to all children except the first.
     /// Used for ZStacks where the first child is a hero image that bleeds into the safe area.
     private let pushNonFirstChildrenBelowSafeArea: Bool
@@ -38,15 +38,29 @@ struct ComponentsView: View {
         onDismiss: @escaping () -> Void,
         defaultPackage: Package? = nil
     ) {
-        self.componentViewModels = componentViewModels
+        self.components = componentViewModels.enumerated().map {
+            IdentifiedPaywallComponentViewModel(id: $0.offset, viewModel: $0.element)
+        }
+        self.pushNonFirstChildrenBelowSafeArea = pushNonFirstChildrenBelowSafeArea
+        self.onDismiss = onDismiss
+        self.defaultPackage = defaultPackage
+    }
+
+    init(
+        components: [IdentifiedPaywallComponentViewModel],
+        pushNonFirstChildrenBelowSafeArea: Bool = false,
+        onDismiss: @escaping () -> Void,
+        defaultPackage: Package? = nil
+    ) {
+        self.components = components
         self.pushNonFirstChildrenBelowSafeArea = pushNonFirstChildrenBelowSafeArea
         self.onDismiss = onDismiss
         self.defaultPackage = defaultPackage
     }
 
     var body: some View {
-        ForEach(Array(componentViewModels.enumerated()), id: \.offset) { index, item in
-            view(for: item)
+        ForEach(Array(components.enumerated()), id: \.element.id) { index, item in
+            view(for: item.viewModel)
                 .padding(
                     .top,
                     index > 0 && pushNonFirstChildrenBelowSafeArea
