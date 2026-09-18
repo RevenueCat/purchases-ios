@@ -29,9 +29,7 @@ enum HostedCheckout {
         /// Tell the customer they already own what they tried to buy, which is why no checkout opens.
         case tellCustomerTheyAlreadyOwnIt
 
-        /// Nothing to present, and nothing to offer instead: the customer declined Apple's notice, the device
-        /// does not authorize payments, another checkout is already starting, or the checkout could not be
-        /// created. Each of those is reported where it happens.
+        /// Nothing to present, and nothing to offer instead.
         case nothing
 
         init(_ result: HostedCheckoutStartResult) {
