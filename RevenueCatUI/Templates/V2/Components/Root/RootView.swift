@@ -43,6 +43,7 @@ struct RootView: View {
     private let defaultPackage: Package?
 
     @State private var sheetViewModel: SheetViewModel?
+    @State private var sheetHasDefaultScope = false
     @State private var packageSelectionSheetComponentName: String?
     @State private var packageBeforeOpeningSheet: Package?
     @State private var overlaidHeaderHeight: CGFloat = 0
@@ -164,18 +165,22 @@ struct RootView: View {
         )
         .onChangeOf(sheetViewModel) { newValue in
             if let newValue {
+                self.sheetHasDefaultScope = newValue.sheetStackViewModel.defaultScopePackageValidator != nil
                 self.packageSelectionSheetComponentName = newValue.sheet.name
                 if self.workflowPackageContext != nil {
                     self.packageBeforeOpeningSheet = self.packageContext.package
                 }
             } else {
-                // Reset package selection when sheet is dismissed; snapshot sheet name before clear for analytics.
+                // Legacy sheets restore their previous default. Scoped defaults keep the shared selection.
                 let selectionInSheetContext = self.packageContext.package
-                self.packageContext.package = Self.restoredPackageAfterSheetDismissal(
-                    workflowPackageContext: self.workflowPackageContext,
-                    packageBeforeOpeningSheet: self.packageBeforeOpeningSheet,
-                    defaultPackage: self.defaultPackage
-                )
+                if !self.sheetHasDefaultScope {
+                    self.packageContext.package = Self.restoredPackageAfterSheetDismissal(
+                        workflowPackageContext: self.workflowPackageContext,
+                        packageBeforeOpeningSheet: self.packageBeforeOpeningSheet,
+                        defaultPackage: self.defaultPackage
+                    )
+                }
+                self.sheetHasDefaultScope = false
                 self.packageBeforeOpeningSheet = nil
                 let resultingRootPackage = self.packageContext.package
                 let sheetName = self.packageSelectionSheetComponentName

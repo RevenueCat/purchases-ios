@@ -21,6 +21,30 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class PackageValidatorTests: TestCase {
 
+    func testDefaultScopePackagesAreAvailableButCannotBecomeParentDefault() {
+        let parent = PackageValidator()
+        let child = PackageValidator()
+        parent.add(Self.makePackageInfo(package: TestData.annualPackage, isSelectedByDefault: true, visible: true))
+        child.add(Self.makePackageInfo(package: TestData.monthlyPackage, isSelectedByDefault: true, visible: true))
+        parent.addDefaultScope(child)
+
+        XCTAssertEqual(parent.packages.count, 2)
+        XCTAssertEqual(parent.defaultSelectedPackage(in: Self.context())?.identifier, TestData.annualPackage.identifier)
+        XCTAssertEqual(child.defaultSelectedPackage(in: Self.context())?.identifier, TestData.monthlyPackage.identifier)
+        XCTAssertFalse(parent.isRendering(TestData.monthlyPackage, in: Self.context()))
+        XCTAssertNil(parent.reconciledSelection(current: TestData.monthlyPackage, in: Self.context()))
+    }
+
+    func testPaywallWithOnlyDefaultScopedPackagesIsValidWithoutSelectingThemInParent() {
+        let parent = PackageValidator()
+        let child = PackageValidator()
+        child.add(Self.makePackageInfo(package: TestData.monthlyPackage, isSelectedByDefault: true, visible: true))
+        parent.addDefaultScope(child)
+
+        XCTAssertTrue(parent.isValid)
+        XCTAssertNil(parent.defaultSelectedPackage(in: Self.context()))
+    }
+
     func testDefaultSelectedPackageSkipsStaticallyHiddenSelectedPackage() {
         let validator = PackageValidator()
 
@@ -401,6 +425,73 @@ final class PackageValidatorTests: TestCase {
             validator.reconciledSelection(current: seeded, in: context)?.identifier,
             TestData.monthlyPackage.identifier
         )
+    }
+
+    @MainActor
+    func testInformationalScopeKeepsSharedSelectionButUnavailablePackagesClearIt() {
+        let scope = PackageValidator()
+        let shared = PackageContext(package: TestData.annualPackage, variableContext: .init())
+        scope.applyDefault(to: shared, in: Self.context())
+        XCTAssertEqual(shared.package?.identifier, TestData.annualPackage.identifier)
+
+        scope.hasDeclaredPackages = true
+        scope.applyDefault(to: shared, in: Self.context())
+        XCTAssertNil(shared.package)
+    }
+
+    @MainActor
+    func testDefaultScopeUpdatesSharedSelectionAndReopeningAppliesItsDefault() throws {
+        let monthly = PaywallComponent.PackageComponent(
+            packageID: TestData.monthlyPackage.identifier,
+            isSelectedByDefault: true,
+            visible: nil,
+            applePromoOfferProductCode: nil,
+            stack: .init(components: []),
+            id: "monthly-card"
+        )
+        let annual = PaywallComponent.PackageComponent(
+            packageID: TestData.annualPackage.identifier,
+            isSelectedByDefault: false,
+            visible: nil,
+            applePromoOfferProductCode: nil,
+            stack: .init(components: []),
+            id: "annual-card"
+        )
+        let validator = PackageValidator()
+        let result = try ViewModelFactory().toViewModel(
+            component: .stack(.init(
+                components: [.package(annual), .package(monthly)],
+                packageSelection: .init()
+            )),
+            packageValidator: validator,
+            purchaseButtonCollector: nil,
+            offering: Offering(identifier: "default", serverDescription: "",
+                               availablePackages: [TestData.annualPackage, TestData.monthlyPackage],
+                               webCheckoutUrl: nil),
+            localizationProvider: LocalizationProvider(locale: Locale(identifier: "en_US"), localizedStrings: [:]),
+            uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()),
+            colorScheme: .light
+        )
+        guard case .stack(let stack) = result else { return XCTFail("Expected stack") }
+        let scope = try XCTUnwrap(stack.defaultScopePackageValidator)
+        XCTAssertTrue(scope.hasDeclaredPackages)
+        XCTAssertEqual(scope.defaultSelectedPackage(in: Self.context())?.identifier,
+                       TestData.monthlyPackage.identifier)
+        XCTAssertNil(validator.defaultSelectedPackage(in: Self.context()))
+        XCTAssertEqual(validator.packages.count, 2)
+
+        let shared = PackageContext(package: TestData.annualPackage, variableContext: .init())
+        scope.applyDefault(to: shared, in: Self.context())
+        XCTAssertEqual(shared.package?.identifier, TestData.monthlyPackage.identifier)
+
+        // A purchase button outside the sheet reads this same context.
+        shared.update(package: TestData.annualPackage, variableContext: shared.variableContext)
+        XCTAssertEqual(shared.package?.identifier, TestData.annualPackage.identifier)
+        XCTAssertNil(validator.reconciledSelection(current: shared.package, in: Self.context()))
+
+        // Closing does not replace the context; opening again applies the sheet's default.
+        scope.applyDefault(to: shared, in: Self.context())
+        XCTAssertEqual(shared.package?.identifier, TestData.monthlyPackage.identifier)
     }
 
     func testViewModelFactoryResolvesOverrideVisibilityForDefaultSelection() throws {

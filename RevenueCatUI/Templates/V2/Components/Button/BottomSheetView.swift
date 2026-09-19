@@ -33,7 +33,6 @@ import UIKit
 struct SheetViewModel: Equatable {
     let sheet: RevenueCat.PaywallComponent.ButtonComponent.Sheet
     let sheetStackViewModel: StackComponentViewModel
-
     static func == (lhs: SheetViewModel, rhs: SheetViewModel) -> Bool {
         lhs.sheet.id == rhs.sheet.id
     }

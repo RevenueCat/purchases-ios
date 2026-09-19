@@ -194,6 +194,7 @@ struct ViewModelFactory {
                 )
             )
         case .package(let component):
+            packageValidator.hasDeclaredPackages = true
             // Recorded before the stack walk so a nested package lands after its parent, which is the
             // document order selection uses.
             if let package = offering.package(identifier: component.packageID) {
@@ -386,6 +387,10 @@ struct ViewModelFactory {
                     colorScheme: colorScheme
                 )
 
+                packageValidator.hasDeclaredPackages = packageValidator.hasDeclaredPackages ||
+                    tabPackageValidator.hasDeclaredPackages
+                packageValidator.addNestedScopes(from: tabPackageValidator)
+
                 // Merging into entire paywall package validator
                 for packageInfo in tabPackageValidator.packageInfos {
                     packageValidator.addTabScoped(packageInfo)
@@ -540,6 +545,9 @@ struct ViewModelFactory {
         offering: Offering,
         colorScheme: ColorScheme
     ) throws -> StackComponentViewModel {
+        let defaultScopeValidator = component.packageSelection?.defaultScope == "container"
+            ? PackageValidator() : nil
+        let childValidator = defaultScopeValidator ?? packageValidator
         let viewModels = try component.components.filter {
             // fallback_header is injected by the dashboard for old SDK compatibility.
             // New SDKs render the header from PaywallComponentsConfig.header instead.
@@ -548,7 +556,7 @@ struct ViewModelFactory {
         }.map { component in
             try self.toViewModel(
                 component: component,
-                packageValidator: packageValidator,
+                packageValidator: childValidator,
                 purchaseButtonCollector: purchaseButtonCollector,
                 offering: offering,
                 localizationProvider: localizationProvider,
@@ -568,7 +576,7 @@ struct ViewModelFactory {
                 viewModels: try badge.stack.components.map { component in
                     try self.toViewModel(
                         component: component,
-                        packageValidator: packageValidator,
+                        packageValidator: childValidator,
                         // Explicitly not looking for purchase button in badge
                         purchaseButtonCollector: nil,
                         offering: offering,
@@ -585,12 +593,17 @@ struct ViewModelFactory {
             try appendBadge(override.properties.badge)
         }
 
+        if let defaultScopeValidator {
+            packageValidator.addDefaultScope(defaultScopeValidator)
+        }
+
         return StackComponentViewModel(
             component: component,
             viewModels: viewModels,
             badgeViewModels: badgeViewModels,
             uiConfigProvider: uiConfigProvider,
-            discardRules: discardRules
+            discardRules: discardRules,
+            defaultScopePackageValidator: defaultScopeValidator
         )
     }
 

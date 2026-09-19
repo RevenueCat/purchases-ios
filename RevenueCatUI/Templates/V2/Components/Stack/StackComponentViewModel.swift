@@ -31,6 +31,7 @@ struct BadgeContents {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class StackComponentViewModel {
 
+    let defaultScopePackageValidator: PackageValidator?
     let component: PaywallComponent.StackComponent
     let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedStackPartial>?
@@ -97,8 +98,10 @@ class StackComponentViewModel {
         viewModels: [PaywallComponentViewModel],
         badgeViewModels: [BadgeContents],
         uiConfigProvider: UIConfigProvider,
-        discardRules: Bool = false
+        discardRules: Bool = false,
+        defaultScopePackageValidator: PackageValidator? = nil
     ) {
+        self.defaultScopePackageValidator = defaultScopePackageValidator
         self.component = component
         self.viewModels = viewModels
         self.uiConfigProvider = uiConfigProvider
@@ -113,7 +116,8 @@ class StackComponentViewModel {
             viewModels: newViewModels,
             badgeViewModels: self.badgeViewModels,
             uiConfigProvider: self.uiConfigProvider,
-            discardRules: self.discardRules
+            discardRules: self.discardRules,
+            defaultScopePackageValidator: self.defaultScopePackageValidator
         )
     }
 
