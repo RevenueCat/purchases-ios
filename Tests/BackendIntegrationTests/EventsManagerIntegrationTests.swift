@@ -48,9 +48,10 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
     func testPostingCustomerCenterDoesNotFail() async throws {
         let locale = Locale(identifier: "es_ES")
 
-        Purchases.shared.track(
+        let data = Self.customerCenterCreationData
+        let task0 = Purchases.shared.track(
             customerCenterEvent: CustomerCenterEvent.impression(
-                Self.customerCenterCreationData,
+                data,
                 CustomerCenterEvent.Data(
                     locale: locale,
                     darkMode: true,
@@ -60,9 +61,9 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
             )
         )
 
-        Purchases.shared.track(
+        let task1 = Purchases.shared.track(
             customerCenterEvent: CustomerCenterAnswerSubmittedEvent.answerSubmitted(
-                Self.customerCenterCreationData,
+                data,
                 CustomerCenterAnswerSubmittedEvent.Data(
                     locale: locale,
                     darkMode: true,
@@ -76,13 +77,13 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
             )
         )
         // give background task a chance to run
-        await Task.yield()
+        _ = await (task0.value, task1.value)
 
-        try await self.logger.verifyMessageIsEventuallyLogged(
-            "Storing event:",
-            expectedCount: 2,
-            timeout: .seconds(3),
-            pollInterval: .seconds(1)
+        self.logger.verifyMessageWasLogged(
+            regexPattern: "Storing event:.*impression.*\(data.id.uuidString)"
+        )
+        self.logger.verifyMessageWasLogged(
+            regexPattern: "Storing event:.*answer_submitted.*\(data.id.uuidString)"
         )
 
         try await flushAndVerify(eventsCount: 2)
