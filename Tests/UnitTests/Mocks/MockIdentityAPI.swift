@@ -20,19 +20,30 @@ class MockIdentityAPI: IdentityAPI {
         self.init(backendConfig: MockBackendConfiguration())
     }
 
+    typealias LogInParameters = (
+        currentAppUserID: String,
+        newAppUserID: String,
+        attributes: SubscriberAttribute.Dictionary,
+        previousUnsyncedAttributes: SubscriberAttribute.Dictionary
+    )
+
     var invokedLogIn = false
     var invokedLogInCount = 0
-    var invokedLogInParameters: (currentAppUserID: String, newAppUserID: String)?
-    var invokedLogInParametersList = [(currentAppUserID: String, newAppUserID: String)]()
-    var stubbedLogInCompletionResult: Result<(info: CustomerInfo, created: Bool), BackendError>?
+    var invokedLogInParameters: LogInParameters?
+    var invokedLogInParametersList = [LogInParameters]()
+    var stubbedLogInCompletionResult: IdentityAPI.LogInResponse?
 
     override func logIn(currentAppUserID: String,
                         newAppUserID: String,
+                        attributes: SubscriberAttribute.Dictionary,
+                        previousUnsyncedAttributes: SubscriberAttribute.Dictionary,
                         completion: @escaping LogInResponseHandler) {
         invokedLogIn = true
         invokedLogInCount += 1
-        invokedLogInParameters = (currentAppUserID, newAppUserID)
-        invokedLogInParametersList.append((currentAppUserID, newAppUserID))
+        invokedLogInParameters = (currentAppUserID, newAppUserID, attributes, previousUnsyncedAttributes)
+        invokedLogInParametersList.append(
+            (currentAppUserID, newAppUserID, attributes, previousUnsyncedAttributes)
+        )
         if let result = stubbedLogInCompletionResult {
             completion(result)
         }
