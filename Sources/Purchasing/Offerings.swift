@@ -169,7 +169,8 @@ private extension Offering {
                            packageType: pkg.packageType,
                            storeProduct: pkg.storeProduct,
                            presentedOfferingContext: newContext,
-                           webCheckoutUrl: pkg.webCheckoutUrl
+                           webCheckoutUrl: pkg.webCheckoutUrl,
+                           appleExternalPurchase: pkg.appleExternalPurchase
             )
         }
 

@@ -161,6 +161,7 @@ struct PurchaseButtonComponentView: View {
         guard let url = await ExternalPurchaseLink.urlToOpen(
             launchWebCheckout.url,
             method: launchWebCheckout.method,
+            package: launchWebCheckout.package,
             purchaseHandler: self.purchaseHandler
         ) else {
             return

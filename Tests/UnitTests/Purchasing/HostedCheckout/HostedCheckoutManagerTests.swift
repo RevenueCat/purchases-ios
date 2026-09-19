@@ -197,6 +197,52 @@ class HostedCheckoutManagerTests: TestCase {
         expect(self.webBillingAPI.invokedPostHostedCheckout) == false
     }
 
+    // MARK: - Outside Apple's external purchase programme
+
+    /// A purchase Apple's programme leaves alone, a physical good for one, is bought without asking Apple
+    /// for anything: no disclosure notice, and no token to report it with.
+    func testCreatesTheSessionWithNoNoticeAndNoTokenWhenApplesProgrammeDoesNotApply() async {
+        let result = await self.manager.startCheckout(package: Self.packageOutsideApplesProgramme, paywall: nil)
+
+        expect(result) == .started(Self.session)
+        expect(self.customLink.invokedAvailabilityCount) == 0
+        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
+        expect(self.customLink.invokedTokenTypes).to(beEmpty())
+
+        let parameters = self.webBillingAPI.invokedPostHostedCheckoutParameters
+        expect(parameters?.packageID) == Self.packageOutsideApplesProgramme.identifier
+        expect(parameters?.externalPurchaseTokenID).to(beNil())
+    }
+
+    /// Whether this customer could buy outside the App Store is a question about Apple's programme, and the
+    /// purchase is not part of it.
+    func testCreatesTheSessionWhenExternalPurchasesAreUnavailableAndApplesProgrammeDoesNotApply() async {
+        self.customLink.stubbedAvailability = .notEligible
+
+        let result = await self.manager.startCheckout(package: Self.packageOutsideApplesProgramme, paywall: nil)
+
+        expect(result) == .started(Self.session)
+    }
+
+    /// The setting stands for the app taking part in Apple's programme, which this purchase is no part of.
+    func testCreatesTheSessionWhileTheExternalPurchaseSettingIsDisabledAndApplesProgrammeDoesNotApply() async {
+        self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
+        self.manager = self.makeManager()
+
+        let result = await self.manager.startCheckout(package: Self.packageOutsideApplesProgramme, paywall: nil)
+
+        expect(result) == .started(Self.session)
+    }
+
+    func testCreatesNoSessionWithATestStoreKeyWhenApplesProgrammeDoesNotApply() async {
+        self.systemInfo.stubbedApiKeyValidationResult = .simulatedStore
+
+        let result = await self.manager.startCheckout(package: Self.packageOutsideApplesProgramme, paywall: nil)
+
+        expect(result) == .externalPurchaseUnavailable
+        expect(self.webBillingAPI.invokedPostHostedCheckout) == false
+    }
+
 }
 
 private extension HostedCheckoutManagerTests {
@@ -220,7 +266,8 @@ private extension HostedCheckoutManagerTests {
                 systemInfo: self.systemInfo
             ),
             webBillingAPI: self.webBillingAPI,
-            currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID)
+            currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID),
+            systemInfo: self.systemInfo
         )
     }
 
@@ -239,15 +286,25 @@ private extension HostedCheckoutManagerTests {
                                                successURL: successURL,
                                                cancelURL: cancelURL)
 
-    static let package = Package(
-        identifier: "$rc_monthly",
-        packageType: .monthly,
-        storeProduct: StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.test.monthly")),
-        presentedOfferingContext: .init(offeringIdentifier: "default",
-                                        placementIdentifier: "home",
-                                        targetingContext: .init(revision: 3, ruleId: "test-rule-id")),
-        webCheckoutUrl: nil
-    )
+    static let package = HostedCheckoutManagerTests.makePackage(identifier: "$rc_monthly",
+                                                                appleExternalPurchase: .required)
+
+    static let packageOutsideApplesProgramme =
+        HostedCheckoutManagerTests.makePackage(identifier: "$rc_physical_good",
+                                               appleExternalPurchase: .notRequired)
+
+    static func makePackage(identifier: String, appleExternalPurchase: AppleExternalPurchase) -> Package {
+        return Package(
+            identifier: identifier,
+            packageType: .monthly,
+            storeProduct: StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.test.monthly")),
+            presentedOfferingContext: .init(offeringIdentifier: "default",
+                                            placementIdentifier: "home",
+                                            targetingContext: .init(revision: 3, ruleId: "test-rule-id")),
+            webCheckoutUrl: nil,
+            appleExternalPurchase: appleExternalPurchase
+        )
+    }
 
     static func paywall(identifier: String?) -> PaywallEvent.Data {
         return .init(paywallIdentifier: identifier,

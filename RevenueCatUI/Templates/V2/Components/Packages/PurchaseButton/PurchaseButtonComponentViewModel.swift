@@ -62,7 +62,11 @@ class PurchaseButtonComponentViewModel {
         })
     }
 
-    typealias LaunchWebCheckout = (url: URL, method: PaywallComponent.ButtonComponent.URLMethod, autoDismiss: Bool)
+    /// `package` is what the checkout buys, and is `nil` where the customer picks that on the web page itself.
+    typealias LaunchWebCheckout = (url: URL,
+                                   method: PaywallComponent.ButtonComponent.URLMethod,
+                                   autoDismiss: Bool,
+                                   package: Package?)
 
     func urlForWebCheckout(
         packageContext: PackageContext?,
@@ -78,13 +82,19 @@ class PurchaseButtonComponentViewModel {
             return nil
         case .webCheckout(let webCheckout):
             if let checkoutUrl = packageContext?.package?.webCheckoutUrl ?? offering.webCheckoutUrl {
-                return (checkoutUrl, webCheckout.openMethod ?? .externalBrowser, webCheckout.autoDismiss ?? true)
+                return (checkoutUrl,
+                        webCheckout.openMethod ?? .externalBrowser,
+                        webCheckout.autoDismiss ?? true,
+                        packageContext?.package)
             } else {
                 return nil
             }
         case .webProductSelection(let webCheckout):
             if let checkoutUrl = offering.webCheckoutUrl {
-                return (checkoutUrl, webCheckout.openMethod ?? .externalBrowser, webCheckout.autoDismiss ?? true)
+                return (checkoutUrl,
+                        webCheckout.openMethod ?? .externalBrowser,
+                        webCheckout.autoDismiss ?? true,
+                        nil)
             } else {
                 return nil
             }
@@ -103,7 +113,8 @@ class PurchaseButtonComponentViewModel {
 
             return (url,
                     customWebCheckout.openMethod ?? .externalBrowser,
-                    customWebCheckout.autoDismiss ?? true)
+                    customWebCheckout.autoDismiss ?? true,
+                    packageContext?.package)
         }
     }
 

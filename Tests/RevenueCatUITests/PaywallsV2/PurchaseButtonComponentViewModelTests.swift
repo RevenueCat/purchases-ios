@@ -244,6 +244,41 @@ final class PurchaseButtonComponentViewModelTests: TestCase {
         expect(launch.url) == checkoutUrl
     }
 
+    /// What the checkout buys is what decides whether Apple's external purchase programme covers it, so the
+    /// selected package travels with the url.
+    func testWebCheckoutCarriesTheSelectedPackage() throws {
+        let checkoutUrl = try XCTUnwrap(URL(string: "https://pay.rev.cat/checkout"))
+        let viewModel = try self.makeViewModel(
+            method: .webCheckout(.init()),
+            webCheckoutUrl: checkoutUrl
+        )
+
+        let launch = try XCTUnwrap(viewModel.urlForWebCheckout(
+            packageContext: Self.packageContext(identifier: "monthly"),
+            appUserID: "user_1",
+            isSandbox: false
+        ))
+
+        expect(launch.package?.identifier) == "monthly"
+    }
+
+    /// The customer picks the product on the checkout page itself, so nothing here says what they will buy.
+    func testWebProductSelectionCarriesNoPackage() throws {
+        let checkoutUrl = try XCTUnwrap(URL(string: "https://pay.rev.cat/checkout"))
+        let viewModel = try self.makeViewModel(
+            method: .webProductSelection(.init()),
+            webCheckoutUrl: checkoutUrl
+        )
+
+        let launch = try XCTUnwrap(viewModel.urlForWebCheckout(
+            packageContext: Self.packageContext(identifier: "monthly"),
+            appUserID: "user_1",
+            isSandbox: false
+        ))
+
+        expect(launch.package).to(beNil())
+    }
+
     // MARK: - Helpers
 
     private func queryItems(in url: URL) -> [String: String] {

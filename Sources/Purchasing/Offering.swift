@@ -352,7 +352,8 @@ fileprivate extension Package {
             packageType: packageType,
             storeProduct: storeProduct,
             presentedOfferingContext: presentedOfferingContext,
-            webCheckoutUrl: webCheckoutUrl
+            webCheckoutUrl: webCheckoutUrl,
+            appleExternalPurchase: appleExternalPurchase
         )
     }
 }

@@ -37,6 +37,9 @@ extension ExternalPurchaseLinkResult {
         case .unregistered:
             // The customer is still allowed to buy, with nothing for the checkout to tie the purchase back to.
             self = .proceed(externalPurchaseTokenID: nil)
+        case .notRequired:
+            // Apple's programme does not cover what is being bought, so the link opens as any other would.
+            self = .proceed(externalPurchaseTokenID: nil)
         case .stopped(.notEligible):
             // Nothing was shown and nothing was minted, so the link keeps working exactly as it did before
             // this app took part in the programme.

@@ -123,8 +123,54 @@ final class OfferingsDecodingTests: BaseHTTPResponseTest {
         expect(package.platformProductIdentifier) == "com.revenuecat.other_product"
     }
 
+    func testDecodesAPackageWithoutAnAppleExternalPurchaseValue() throws {
+        let package = try Self.decodePackage(appleExternalPurchase: nil)
+
+        expect(package.appleExternalPurchase).to(beNil())
+    }
+
+    func testDecodesAPackageApplesExternalPurchaseProgrammeDoesNotCover() throws {
+        let package = try Self.decodePackage(appleExternalPurchase: "not_required")
+
+        expect(package.appleExternalPurchase) == .notRequired
+    }
+
+    func testDecodesAPackageApplesExternalPurchaseProgrammeCovers() throws {
+        let package = try Self.decodePackage(appleExternalPurchase: "required")
+
+        expect(package.appleExternalPurchase) == .required
+    }
+
+    /// A value from a later version of the API stands for rules this SDK does not know, and Apple's
+    /// programme applying is the reading that keeps the purchase within them.
+    func testDecodesAnUnknownAppleExternalPurchaseValueAsTheProgrammeApplying() throws {
+        let package = try Self.decodePackage(appleExternalPurchase: "something_else")
+
+        expect(package.appleExternalPurchase) == .required
+    }
+
     func testEncoding() throws {
         expect(try self.response.encodeAndDecode()) == self.response
+    }
+
+}
+
+private extension OfferingsDecodingTests {
+
+    static func decodePackage(appleExternalPurchase: String?) throws -> OfferingsResponse.Offering.Package {
+        let appleExternalPurchaseField = appleExternalPurchase.map {
+            ", \"apple_external_purchase\": \"\($0)\""
+        } ?? ""
+
+        let json = """
+        {
+            "identifier": "$rc_monthly",
+            "platform_product_identifier": "com.revenuecat.monthly"\(appleExternalPurchaseField)
+        }
+        """
+
+        return try JSONDecoder.default.decode(OfferingsResponse.Offering.Package.self,
+                                              from: Data(json.utf8))
     }
 
 }

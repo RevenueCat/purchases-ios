@@ -323,8 +323,11 @@ struct ButtonComponentView: View {
             return
         }
 
+        // A button's link is not tied to a package, so what it buys, and whether Apple's programme covers it,
+        // is not known here.
         guard let url = await ExternalPurchaseLink.urlToOpen(url,
                                                              method: method,
+                                                             package: nil,
                                                              purchaseHandler: self.purchaseHandler) else {
             return
         }

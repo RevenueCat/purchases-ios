@@ -54,6 +54,28 @@ class OfferingsTests: TestCase {
         expect(sk1StoreProduct.underlyingSK1Product).to(equal(product))
         expect(package.identifier) == packageIdentifier
         expect(package.packageType) == PackageType.monthly
+        expect(package.appleExternalPurchase) == .required
+    }
+
+    func testPackageIsCreatedOutsideApplesExternalPurchaseProgramme() throws {
+        let productIdentifier = "com.myproduct.physicalgood"
+        let package = try XCTUnwrap(
+            self.offeringsFactory.createPackage(
+                with: .init(identifier: "physical_good",
+                            platformProductIdentifier: productIdentifier,
+                            platformProductPlanIdentifier: nil,
+                            webCheckoutUrl: nil,
+                            appleExternalPurchase: .notRequired),
+                productsByID: [
+                    productIdentifier: StoreProduct(
+                        sk1Product: MockSK1Product(mockProductIdentifier: productIdentifier)
+                    )
+                ],
+                offeringIdentifier: "offering"
+            )
+        )
+
+        expect(package.appleExternalPurchase) == .notRequired
     }
 
     func testPackageIsCreatedWithUpFrontProductPlanIdentifier() throws {
@@ -525,6 +547,46 @@ class OfferingsTests: TestCase {
         expect(
             offerings.all.values.first!.availablePackages.first!.presentedOfferingContext.targetingContext
         ).to(beNil())
+    }
+
+    /// Reading the current offering copies its packages to put the targeting context on them, and what
+    /// Apple's external purchase programme covers is no less true of the copy.
+    func testTargetingKeepsWhatApplesExternalPurchaseProgrammeCovers() throws {
+        let productIdentifier = "com.myproduct.physicalgood"
+        let response = OfferingsResponse(
+            currentOfferingId: "offering_a",
+            offerings: [
+                .init(identifier: "offering_a",
+                      description: "This is the base offering",
+                      packages: [
+                        .init(identifier: "physical_good",
+                              platformProductIdentifier: productIdentifier,
+                              platformProductPlanIdentifier: nil,
+                              webCheckoutUrl: nil,
+                              appleExternalPurchase: .notRequired)
+                      ], webCheckoutUrl: nil)
+            ],
+            placements: nil,
+            targeting: .init(revision: 1, ruleId: "abc123"),
+            uiConfig: nil
+        )
+        let offerings = try XCTUnwrap(
+            self.offeringsFactory.createOfferings(
+                from: [
+                    productIdentifier: StoreProduct(
+                        sk1Product: MockSK1Product(mockProductIdentifier: productIdentifier)
+                    )
+                ],
+                contents: Offerings.Contents(response: response,
+                                             httpResponseOriginalSource: .mainServer),
+                loadedFromDiskCache: false
+            )
+        )
+
+        let package = try XCTUnwrap(offerings.current?.availablePackages.first)
+
+        expect(package.presentedOfferingContext.targetingContext?.ruleId) == "abc123"
+        expect(package.appleExternalPurchase) == .notRequired
     }
 
     func testOfferingsWithMetadataIsCreated() throws {

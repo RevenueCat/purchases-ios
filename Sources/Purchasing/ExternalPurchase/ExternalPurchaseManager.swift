@@ -61,7 +61,14 @@ final class ExternalPurchaseManager {
     ///
     /// Only one preparation runs at a time. Asking for another while one is under way stops the new one, so a
     /// customer tapping twice sees a single notice and mints a single token.
-    func prepareExternalPurchase(flow: ExternalPurchaseFlow) async -> ExternalPurchasePreparationResult {
+    func prepareExternalPurchase(
+        requirement: ExternalPurchaseRequirement
+    ) async -> ExternalPurchasePreparationResult {
+        guard case let .required(flow) = requirement else {
+            Logger.debug(Strings.externalPurchase.not_required)
+            return .notRequired
+        }
+
         guard self.takesPartInTheProgramme else {
             return .stopped(.notEligible)
         }
@@ -114,6 +121,11 @@ internal enum ExternalPurchasePreparationResult: Equatable {
     /// deliberately not treated as a failure for the customer, who is still allowed to buy.
     case unregistered(FailureReason)
 
+    /// Route the customer to the checkout, with nothing asked of them and nothing to hand over.
+    ///
+    /// Apple's programme does not cover the purchase, so no notice was shown and no token was minted.
+    case notRequired
+
     enum StopReason: Equatable {
 
         /// External purchases do not apply to this customer, see ``ExternalPurchaseAvailability/notEligible``.
@@ -160,7 +172,7 @@ extension ExternalPurchasePreparationResult {
         switch self {
         case .stopped:
             return false
-        case .registered, .unregistered:
+        case .registered, .unregistered, .notRequired:
             return true
         }
     }
@@ -170,7 +182,7 @@ extension ExternalPurchasePreparationResult {
         switch self {
         case let .registered(tokenID):
             return tokenID
-        case .stopped, .unregistered:
+        case .stopped, .unregistered, .notRequired:
             return nil
         }
     }
