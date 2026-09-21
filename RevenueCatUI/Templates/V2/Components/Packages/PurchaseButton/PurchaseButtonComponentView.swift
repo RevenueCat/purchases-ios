@@ -159,6 +159,9 @@ struct PurchaseButtonComponentView: View {
         _ = try await self.purchaseHandler.purchase(package: selectedPackage, promotionalOffer: promoOffer)
     }
 
+    // Isolation is stated rather than inferred: the compilers this builds with disagree about whether a
+    // `View`'s own methods are already on the main actor, and presenting the sheet from here needs it.
+    @MainActor
     private func purchaseInHostedCheckout() async throws {
         #if os(iOS) && canImport(WebKit)
         self.logIfInPreview(package: self.packageContext.package)
@@ -180,9 +183,9 @@ struct PurchaseButtonComponentView: View {
 
         switch await HostedCheckout.start(for: selectedPackage, purchaseHandler: self.purchaseHandler) {
         case let .present(session):
-            await self.presentHostedCheckout(session)
+            self.presentHostedCheckout(session)
         case .tellCustomerTheyAlreadyOwnIt:
-            await self.showAlreadyOwnedAlert(for: selectedPackage)
+            self.showAlreadyOwnedAlert(for: selectedPackage)
         case .nothing:
             break
         }
