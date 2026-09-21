@@ -440,6 +440,30 @@ class PurchasesSubscriberAttributesTests: TestCase {
         expect(postedAttributes?["$attConsentStatus"]?.value) == "authorized"
     }
 
+    func testColdBootForegroundDoesNotSyncSubscriberAttributesAfterAppUserIDChanges() {
+        let customerInfoResponseGate = MockAsyncGate()
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(.emptyInfo)
+        self.mockBackend.deferredGetCustomerInfoCompletionGate.value = customerInfoResponseGate
+
+        self.setupPurchases(isAnonymous: true)
+        let originalAppUserID = self.purchases.appUserID
+        expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(1))
+
+        self.mockNotificationCenter.fireApplicationWillEnterForegroundNotification()
+
+        expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(2))
+        expect(self.mockBackend.invokedGetSubscriberDataParameters?.appUserID) == originalAppUserID
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 0
+
+        self.mockIdentityManager.mockIsAnonymous = false
+        self.mockIdentityManager.mockAppUserID = "new_user"
+        customerInfoResponseGate.open()
+
+        expect(self.mockBackend.completedGetCustomerInfoCount.value).toEventually(equal(2))
+        expect(self.mockDeviceCache.cacheCustomerInfoCount).toEventually(equal(2))
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount).toNever(beGreaterThan(0))
+    }
+
     func testResigningActiveDoesNotSyncSubscriberAttributesWhenCustomerInfoFetchFails() {
         let customerInfoResponseGate = MockAsyncGate()
         self.setupPurchases()
