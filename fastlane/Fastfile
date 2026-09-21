@@ -859,7 +859,7 @@ platform :ios do
       fail_build: !generate_snapshots
     }
 
-    if ENV["RC_STOREKIT_TEST_PREFLIGHT"] == "1" && !skip_sk_tests
+    if ENV["RC_STOREKIT_TEST_PREFLIGHT"] == "1" && !skip_sk_tests && !generate_snapshots
       # iOS 27 can bind the first process's purchase connection to Sandbox even after
       # SKTestSession initialization. Configure StoreKitTest in a separate process so
       # the full suite starts with XcodeTest active, without bypassing real purchases.
@@ -993,7 +993,11 @@ platform :ios do
     sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
     test_plan = generate_snapshots ? "CI-Snapshots" : "CI-RevenueCatUI"
     xcargs = "-testPlan #{test_plan}"
-    xcargs += " -collect-test-diagnostics never" if sdk == 'watchsimulator'
+    # Xcode 27 can hang in `simctl diagnose` after all tests pass, so jobs running on it
+    # opt out of diagnostics collection. watchOS has always needed this.
+    collect_test_diagnostics = ENV['RC_COLLECT_TEST_DIAGNOSTICS'] ||
+                               (sdk == 'watchsimulator' ? 'never' : nil)
+    xcargs += " -collect-test-diagnostics #{collect_test_diagnostics}" if collect_test_diagnostics
     begin
       # See https://forums.swift.org/t/i-made-a-little-spm-package-that-uses-uikit-how-can-i-run-tests-from-command-line/50399/2
       # Note: We use xcodebuild instead of scan because this is an SPM package (workspace: '.')

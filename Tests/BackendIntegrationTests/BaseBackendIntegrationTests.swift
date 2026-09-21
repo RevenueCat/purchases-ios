@@ -232,10 +232,9 @@ private extension BaseBackendIntegrationTests {
     func verifyPurchasesDoesNotLeak() {
         // See `addTeardownBlock` docs:
         // - These run *before* `tearDown`.
-        // - They run in LIFO order.
-        self.addTeardownBlock { @MainActor in
-            try await self.eligibilityWarmups.waitForCompletion(timeout: .seconds(60))
-        }
+        // - They run in LIFO order, so these are registered in reverse:
+        // in-flight eligibility warmups can still hold `Purchases` instances,
+        // so they must finish before the leak check runs.
         self.addTeardownBlock { @MainActor in
             Purchases.clearSingleton()
 
@@ -244,6 +243,9 @@ private extension BaseBackendIntegrationTests {
             try await asyncWait(description: "Purchases has leaked") {
                 await MainActor.run { self.purchasesInstances.allSatisfy { $0.value == nil } }
             }
+        }
+        self.addTeardownBlock { @MainActor in
+            try await self.eligibilityWarmups.waitForCompletion(timeout: .seconds(60))
         }
     }
 

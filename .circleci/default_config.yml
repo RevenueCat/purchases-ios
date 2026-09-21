@@ -882,6 +882,8 @@ jobs:
           no_output_timeout: 15m
           environment:
             DEVICE: iPhone 17,OS=27.0
+            # Xcode 27 can hang in simctl diagnose after all tests pass.
+            RC_COLLECT_TEST_DIAGNOSTICS: never
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
@@ -1908,6 +1910,7 @@ jobs:
       xcode_version: << parameters.xcode_version >>
     steps:
       - checkout-with-minimal-permissions
+      - configure-xcode27-validation
       - run:
           name: Upgrade Carthage
           command: |
