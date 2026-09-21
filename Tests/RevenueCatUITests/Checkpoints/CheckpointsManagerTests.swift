@@ -486,7 +486,7 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(presenter.callCount, 1)
         XCTAssertEqual(presenter.receivedParams?.checkpointIdentifier, "onboarding")
         XCTAssertEqual(presenter.receivedParams?.customVariables, ["source": "test"])
-        XCTAssertEqual(presenter.receivedParams?.adUnitId, "ad-unit-id")
+        XCTAssertEqual(presenter.receivedParams?.adIdentifier, "ad-unit-id")
         XCTAssertEqual(presenter.receivedParams?.mediator, MediatorName(rawValue: "admob"))
     }
 
@@ -917,8 +917,8 @@ final class CheckpointsManagerTests: TestCase {
         )
     }
 
-    private static func adStep(adUnitId: String = "ad-unit-id") -> ResolvedAdStep {
-        return ResolvedAdStep(adUnitId: adUnitId, mediator: MediatorName(rawValue: "admob"))
+    private static func adStep(adIdentifier: String = "ad-unit-id") -> ResolvedAdStep {
+        return ResolvedAdStep(adIdentifier: adIdentifier, mediator: MediatorName(rawValue: "admob"))
     }
 
     private static func workflow() -> ResolvedCheckpointWorkflow {
