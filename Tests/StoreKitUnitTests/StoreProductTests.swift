@@ -708,7 +708,7 @@ extension StoreProductTests {
 @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
 extension StoreProductTests {
     func testLoadsUpFrontProduct() async throws {
-        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+        try AvailabilityChecks.skipBillingPlanTestIfOnUnsupportedOSVersion()
 
         let storeProduct = try await ProductsFetcherSK2().product(withIdentifier: Self.productIDWithBillingPlans)
         expect(storeProduct.productIdentifier).to(equal(Self.productIDWithBillingPlans))
@@ -732,8 +732,8 @@ extension StoreProductTests {
         expect(promoOffer.offerIdentifier).to(equal("upfront.promo.offer"))
     }
 
-    func testLoadsMonthlyProduct() async throws {
-        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+    func testLoadsMonthlyProductWithAnnualCommitment() async throws {
+        try AvailabilityChecks.skipBillingPlanTestIfOnUnsupportedOSVersion()
 
         let storeProduct = try await ProductsFetcherSK2()
             .product(withIdentifier: "\(Self.productIDWithBillingPlans):monthly")

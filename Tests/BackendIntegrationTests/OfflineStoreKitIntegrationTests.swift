@@ -40,7 +40,7 @@ class OfflineStoreKit2IntegrationTests: OfflineStoreKit1IntegrationTests {
 extension OfflineStoreKit2IntegrationTests {
 
     func testOfflineCustomerInfoWithUpFrontBillingPlanProduct() async throws {
-        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+        try AvailabilityChecks.skipBillingPlanTestIfOnUnsupportedOSVersion()
 
         try await self.purchaseBillingPlanProductWhileOffline(
             Self.productIDWithBillingPlans,
@@ -51,7 +51,7 @@ extension OfflineStoreKit2IntegrationTests {
     }
 
     func testOfflineCustomerInfoWithMonthlyBillingPlanProduct() async throws {
-        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+        try AvailabilityChecks.skipBillingPlanTestIfOnUnsupportedOSVersion()
 
         try await self.purchaseBillingPlanProductWhileOffline(
             "\(Self.productIDWithBillingPlans):monthly",

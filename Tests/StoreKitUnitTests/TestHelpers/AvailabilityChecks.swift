@@ -217,4 +217,11 @@ enum AvailabilityChecks {
         throw XCTSkip("Unavailable on Swift 6.3 or later")
         #endif
     }
+
+    static func skipBillingPlanTestIfOnUnsupportedOSVersion() throws {
+        // Billing plans are available starting in iOS 26.4, but due to a bug that prevents
+        // products from being fetched with SKTest in iOS 26.X-27.0, billing plans cannot be
+        // tested with SKTest until iOS 27.0+.
+        try Self.iOS27APIAvailableOrSkipTest()
+    }
 }

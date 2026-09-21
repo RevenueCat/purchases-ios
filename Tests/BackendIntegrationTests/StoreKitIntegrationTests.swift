@@ -159,7 +159,7 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 extension StoreKit2IntegrationTests {
 
     func testCanPurchaseUpFrontBillingPlanProduct() async throws {
-        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+        try AvailabilityChecks.skipBillingPlanTestIfOnUnsupportedOSVersion()
 
         try await self.purchaseBillingPlanProduct(
             Self.productIDWithBillingPlans,
@@ -170,7 +170,7 @@ extension StoreKit2IntegrationTests {
     }
 
     func testCanPurchaseMonthlyBillingPlanProduct() async throws {
-        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+        try AvailabilityChecks.skipBillingPlanTestIfOnUnsupportedOSVersion()
 
         try await self.purchaseBillingPlanProduct(
             "\(Self.productIDWithBillingPlans):monthly",

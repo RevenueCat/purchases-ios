@@ -3280,7 +3280,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 extension PurchasesOrchestratorSK2Tests {
 
     func testPurchaseSK2UpFrontBillingPlanProductReturnsCorrectValues() async throws {
-        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+        try AvailabilityChecks.skipBillingPlanTestIfOnUnsupportedOSVersion()
 
         let storeProduct = try await ProductsFetcherSK2()
             .product(withIdentifier: Self.productIDWithBillingPlans)
@@ -3296,7 +3296,7 @@ extension PurchasesOrchestratorSK2Tests {
     }
 
     func testPurchaseSK2MonthlyBillingPlanProductReturnsCorrectValues() async throws {
-        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+        try AvailabilityChecks.skipBillingPlanTestIfOnUnsupportedOSVersion()
 
         let storeProduct = try await ProductsFetcherSK2()
             .product(withIdentifier: "\(Self.productIDWithBillingPlans):monthly")
