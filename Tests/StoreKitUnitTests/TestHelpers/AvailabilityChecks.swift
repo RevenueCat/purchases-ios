@@ -83,7 +83,7 @@ enum AvailabilityChecks {
     /// in the Xcode 27 release notes (184155259)
     static func switchingStorefrontWithSKTestWorksOrSkipTest() throws {
         if #available(iOS 27.2, tvOS 27.2, macOS 27.2, watchOS 27.2, *) {
-            // This bug appears to be fixed in iOS 27.2 beta 1
+            // This bug was fixed in iOS 27.2 beta 1
             return
         }
 
