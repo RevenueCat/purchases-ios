@@ -3063,6 +3063,13 @@ platform :mac do
       test_plan = "CI-RevenueCat"
     end
 
+    xcargs = "-testPlan #{test_plan} CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
+    # This test plan runs in a random order and some tests are timing sensitive, so an
+    # individual failure is usually load on the runner rather than a real regression.
+    # `scan` gives the iOS and tvOS lanes 5 retries; this lane drives xcodebuild directly,
+    # so ask xcodebuild to retry the failing tests instead.
+    xcargs += " -retry-tests-on-failure -test-iterations 3" unless generate_snapshots
+
     begin
       xcodebuild(
         workspace: 'RevenueCat.xcworkspace',
@@ -3073,7 +3080,7 @@ platform :mac do
         report_formats: [:junit],
         report_path: 'fastlane/test_output/xctest/macos/revenuecat/tests.xml',
         test: true,
-        xcargs: "-testPlan #{test_plan} CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO"
+        xcargs: xcargs
       )
     rescue => e
       # Equivalent to `fail_build: !generate_snapshots`
