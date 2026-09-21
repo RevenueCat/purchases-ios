@@ -3121,6 +3121,11 @@ private extension Purchases {
 
     private func fetchCustomerInfoAndSyncSubscriberAttributes() {
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
+            self.dispatchSyncSubscriberAttributes()
+            return
+        }
+
         guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
             self.dispatchSyncSubscriberAttributes()
             return

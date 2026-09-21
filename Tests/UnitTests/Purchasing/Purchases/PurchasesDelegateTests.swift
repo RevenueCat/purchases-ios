@@ -47,11 +47,11 @@ class PurchasesDelegateTests: BasePurchasesTests {
         expect(self.backend.userID).toEventuallyNot(beNil())
     }
 
-    func testAutomaticallyFetchesCustomerInfoOnDidBecomeActiveIfCacheStale() {
+    func testAutomaticallyFetchesCustomerInfoOnWillEnterForegroundIfCacheStale() {
         expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
 
         self.deviceCache.stubbedIsCustomerInfoCacheStale = true
-        self.notificationCenter.fireNotifications()
+        self.notificationCenter.fireApplicationWillEnterForegroundNotification()
 
         expect(self.backend.getCustomerInfoCallCount).toEventually(equal(2))
     }
@@ -63,11 +63,11 @@ class PurchasesDelegateTests: BasePurchasesTests {
         expect(applicationDidBecomeActiveNotificationObservers.count) == 1
     }
 
-    func testDoesntAutomaticallyFetchCustomerInfoOnDidBecomeActiveIfCacheValid() {
+    func testDoesntAutomaticallyFetchCustomerInfoOnWillEnterForegroundIfCacheValid() {
         expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
         self.deviceCache.stubbedIsCustomerInfoCacheStale = false
 
-        self.notificationCenter.fireNotifications()
+        self.notificationCenter.fireApplicationWillEnterForegroundNotification()
 
         expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
     }
@@ -225,7 +225,7 @@ class PurchasesDelegateTests: BasePurchasesTests {
         self.backend.overrideCustomerInfoResult = .success(newerCustomerInfo)
 
         self.deviceCache.stubbedIsCustomerInfoCacheStale = true
-        self.notificationCenter.fireNotifications()
+        self.notificationCenter.fireApplicationWillEnterForegroundNotification()
 
         await expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(2))
         expect(self.purchasesDelegate.customerInfo) === newerCustomerInfo
