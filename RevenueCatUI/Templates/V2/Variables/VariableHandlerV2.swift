@@ -59,7 +59,8 @@ struct VariableHandlerV2 {
         localizations: [String: String],
         isEligibleForIntroOffer: Bool,
         promoOffer: PromotionalOffer? = nil,
-        countdownTime: CountdownTime? = nil
+        countdownTime: CountdownTime? = nil,
+        spoken: Bool = false
     ) -> String {
         let context = VariablesV2.ProcessContext(
             package: package,
@@ -70,7 +71,8 @@ struct VariableHandlerV2 {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             date: self.dateProvider(),
             promoOffer: promoOffer,
-            countdownTime: countdownTime
+            countdownTime: countdownTime,
+            spoken: spoken
         )
 
         let whisker = Whisker(template: text) { variableRaw, functionRaw in
@@ -89,7 +91,83 @@ struct VariableHandlerV2 {
             return function?.process(processedVariable) ?? processedVariable
         }
 
-        return whisker.render()
+        let rendered = whisker.render()
+
+        guard spoken else {
+            return rendered
+        }
+
+        return Self.expandPeriodAbbreviations(in: rendered, localizations: localizations)
+    }
+
+    /// Both sides come from the paywall's localizations, so expansion stays in its language.
+    /// Long forms as well as abbreviations: `product.period_abbreviated` resolves to the long form
+    /// when spoken, and paywall copy writes "/month" more often than "/mo".
+    private static let periodKeys: [(written: String, spoken: String)] = [
+        ("day_short", "daily"),
+        ("week_short", "weekly"),
+        ("month_short", "monthly"),
+        ("year_short", "yearly"),
+        ("annual_short", "annually"),
+        ("day", "daily"),
+        ("week", "weekly"),
+        ("month", "monthly"),
+        ("year", "yearly"),
+        ("annual", "annually")
+    ]
+
+    /// Rewrites "$5.83/mo" as "$5.83 monthly". Paywall copy types the separator literally
+    /// ("{{ product.price_per_month }}/mo"), which no variable substitution reaches.
+    static func expandPeriodAbbreviations(in text: String, localizations: [String: String]) -> String {
+        let replacements = self.periodKeys.compactMap { keys -> (String, String)? in
+            guard let written = localizations[keys.written], !written.isEmpty,
+                  let spoken = localizations[keys.spoken], !spoken.isEmpty else {
+                return nil
+            }
+
+            return (written, spoken)
+        }
+
+        // A URL path segment can read exactly like an abbreviation ("day" is `day_short` in
+        // English), and rewriting one breaks the link.
+        return Self.outsideURLs(of: text) { segment in
+            // Longest first, so "/month" is taken by the long form and not left to "mo".
+            replacements
+                .sorted { $0.0.count > $1.0.count }
+                .reduce(segment) { partial, replacement in
+                    let (written, spoken) = replacement
+                    // Trailing guard so "/mo" does not match inside a spelled-out "/month".
+                    let pattern = "/\\s*" + NSRegularExpression.escapedPattern(for: written) + "(?![\\p{L}])"
+
+                    return partial.replacingOccurrences(
+                        of: pattern,
+                        with: " " + spoken,
+                        options: [.regularExpression, .caseInsensitive]
+                    )
+                }
+        }
+    }
+
+    private static let urlPattern = "[A-Za-z][A-Za-z0-9+.-]*://[^\\s)]+"
+
+    /// Applies `transform` to everything except the URLs, which are left byte for byte.
+    private static func outsideURLs(of text: String, transform: (String) -> String) -> String {
+        guard let regex = try? NSRegularExpression(pattern: Self.urlPattern) else {
+            return transform(text)
+        }
+
+        let full = text as NSString
+        var result = ""
+        var consumed = 0
+
+        for match in regex.matches(in: text, range: NSRange(location: 0, length: full.length)) {
+            let before = NSRange(location: consumed, length: match.range.location - consumed)
+            result += transform(full.substring(with: before))
+            result += full.substring(with: match.range)
+            consumed = match.range.location + match.range.length
+        }
+
+        return result + transform(full.substring(from: consumed))
     }
 
     /// Process a custom variable, returning the resolved value.
@@ -247,6 +325,11 @@ enum VariablesV2: String {
     case productOfferPricePerWeek = "product.offer_price_per_week"
     case productOfferPricePerMonth = "product.offer_price_per_month"
     case productOfferPricePerYear = "product.offer_price_per_year"
+    case productOfferPriceWithZero = "product.offer_price_with_zero"
+    case productOfferPriceWithZeroPerDay = "product.offer_price_with_zero_per_day"
+    case productOfferPriceWithZeroPerWeek = "product.offer_price_with_zero_per_week"
+    case productOfferPriceWithZeroPerMonth = "product.offer_price_with_zero_per_month"
+    case productOfferPriceWithZeroPerYear = "product.offer_price_with_zero_per_year"
     case productOfferPeriod = "product.offer_period"
     case productOfferPeriodAbbreviated = "product.offer_period_abbreviated"
     case productOfferPeriodInDays = "product.offer_period_in_days"
@@ -295,6 +378,7 @@ extension VariablesV2 {
         let date: Date
         let promoOffer: PromotionalOffer?
         let countdownTime: CountdownTime?
+        var spoken: Bool = false
     }
 
     struct OfferContext {
@@ -338,6 +422,13 @@ extension VariablesV2 {
             }
         case .productPricePerPeriod:
             if let package {
+                if context.spoken {
+                    return self.productPricePerPeriodSpoken(
+                        package: package,
+                        localizations: localizations,
+                        showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                    )
+                }
                 return self.productPricePerPeriod(
                     package: package,
                     localizations: localizations,
@@ -346,6 +437,13 @@ extension VariablesV2 {
             }
         case .productPricePerPeriodAbbreviated:
             if let package {
+                if context.spoken {
+                    return self.productPricePerPeriodSpoken(
+                        package: package,
+                        localizations: localizations,
+                        showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                    )
+                }
                 return self.productPricePerPeriodAbbreviated(
                     package: package,
                     localizations: localizations,
@@ -386,6 +484,12 @@ extension VariablesV2 {
             }
         case .productPeriodAbbreviated:
             if let package {
+                if context.spoken {
+                    // The full noun, so a screen reader says "month" and not "mo". Copy that
+                    // supplies its own slash then reads as "/month", which
+                    // `expandPeriodAbbreviations` leaves alone on purpose.
+                    return self.productPeriod(package: package, localizations: localizations)
+                }
                 return self.productPeriodAbbreviated(package: package, localizations: localizations)
             }
         case .productPeriodInDays:
@@ -410,42 +514,100 @@ extension VariablesV2 {
             }
         case .productOfferPrice:
             if let package {
-                return self.productOfferPrice(
+                return self.offerPrice(
                     package: package,
                     localizations: localizations,
-                    offerContext: offerContext
+                    offerContext: offerContext,
+                    freeTrialRendering: .word
                 )
             }
         case .productOfferPricePerDay:
             if let package {
-                return self.productOfferPricePerDay(
+                return self.offerPricePerPeriod(
                     package: package,
                     localizations: localizations,
-                    offerContext: offerContext
+                    offerContext: offerContext,
+                    unit: .day,
+                    freeTrialRendering: .word
                 )
             }
         case .productOfferPricePerWeek:
             if let package {
-                return self.productOfferPricePerWeek(
+                return self.offerPricePerPeriod(
                     package: package,
                     localizations: localizations,
-                    offerContext: offerContext
+                    offerContext: offerContext,
+                    unit: .week,
+                    freeTrialRendering: .word
                 )
             }
         case .productOfferPricePerMonth:
             if let package {
-                return self.productOfferPricePerMonth(
+                return self.offerPricePerPeriod(
                     package: package,
                     localizations: localizations,
-                    offerContext: offerContext
+                    offerContext: offerContext,
+                    unit: .month,
+                    freeTrialRendering: .word
                 )
             }
         case .productOfferPricePerYear:
             if let package {
-                return self.productOfferPricePerYear(
+                return self.offerPricePerPeriod(
                     package: package,
                     localizations: localizations,
-                    offerContext: offerContext
+                    offerContext: offerContext,
+                    unit: .year,
+                    freeTrialRendering: .word
+                )
+            }
+        case .productOfferPriceWithZero:
+            if let package {
+                return self.offerPrice(
+                    package: package,
+                    localizations: localizations,
+                    offerContext: offerContext,
+                    freeTrialRendering: .amount
+                )
+            }
+        case .productOfferPriceWithZeroPerDay:
+            if let package {
+                return self.offerPricePerPeriod(
+                    package: package,
+                    localizations: localizations,
+                    offerContext: offerContext,
+                    unit: .day,
+                    freeTrialRendering: .amount
+                )
+            }
+        case .productOfferPriceWithZeroPerWeek:
+            if let package {
+                return self.offerPricePerPeriod(
+                    package: package,
+                    localizations: localizations,
+                    offerContext: offerContext,
+                    unit: .week,
+                    freeTrialRendering: .amount
+                )
+            }
+        case .productOfferPriceWithZeroPerMonth:
+            if let package {
+                return self.offerPricePerPeriod(
+                    package: package,
+                    localizations: localizations,
+                    offerContext: offerContext,
+                    unit: .month,
+                    freeTrialRendering: .amount
+                )
+            }
+        case .productOfferPriceWithZeroPerYear:
+            if let package {
+                return self.offerPricePerPeriod(
+                    package: package,
+                    localizations: localizations,
+                    offerContext: offerContext,
+                    unit: .year,
+                    freeTrialRendering: .amount
                 )
             }
         case .productOfferPeriod:
@@ -458,6 +620,13 @@ extension VariablesV2 {
             }
         case .productOfferPeriodAbbreviated:
             if let package {
+                if context.spoken {
+                    return self.productOfferPeriod(
+                        package: package,
+                        localizations: localizations,
+                        offerContext: offerContext
+                    )
+                }
                 return self.productOfferPeriodAbbreviated(
                     package: package,
                     localizations: localizations,
@@ -519,6 +688,9 @@ extension VariablesV2 {
             }
         case .productSecondaryOfferPeriodAbbreviated:
             if let package {
+                if context.spoken {
+                    return self.productSecondaryOfferPeriod(package: package)
+                }
                 return self.productSecondaryOfferPeriodAbbreviated(package: package)
             }
         case .productRelativeDiscount:
@@ -597,6 +769,26 @@ extension VariablesV2 {
 
         let periodAbbreviated = self.productPeriodAbbreviated(package: package, localizations: localizations)
         return "\(price)/\(periodAbbreviated)"
+    }
+
+    /// Spoken counterpart of `productPricePerPeriodAbbreviated`: "$1.24 monthly", not "$1.24/mo".
+    func productPricePerPeriodSpoken(
+        package: Package,
+        localizations: [String: String],
+        showZeroDecimalPlacePrices: Bool
+    ) -> String {
+        let price = package.localizedPrice(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+
+        guard package.storeProduct.subscriptionPeriod != nil else {
+            return price
+        }
+
+        let periodly = self.productPeriodly(package: package, localizations: localizations)
+        guard !periodly.isEmpty else {
+            return price
+        }
+
+        return "\(price) \(periodly)"
     }
 
     func productPeriodly(package: Package, localizations: [String: String]) -> String {
@@ -728,126 +920,88 @@ extension VariablesV2 {
         return String(format: localizedFormat, period.value)
     }
 
-    func productOfferPrice(
+    private func offerPrice(
         package: Package,
         localizations: [String: String],
-        offerContext: OfferContext
+        offerContext: OfferContext,
+        freeTrialRendering: FreeTrialRendering
     ) -> String {
         guard let discount = resolvedDiscount(for: package, offerContext: offerContext) else {
             return self.productPrice(package: package,
                                      showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices)
         }
 
-        if isFree(discount) {
+        if freeTrialRendering == .word, isFree(discount) {
             return localizations[VariableLocalizationKey.freePrice.rawValue] ?? ""
         }
 
+        // Formatting the displayed string keeps the product's currency token, which
+        // `NumberFormatter` can get wrong when its locale doesn't match the currency.
         return formatDiscountPrice(
-            discount.price,
-            package: package,
-            showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices,
-            fallback: discount.localizedPriceString
-        )
-    }
-
-    func productOfferPricePerDay(
-        package: Package,
-        localizations: [String: String],
-        offerContext: OfferContext
-    ) -> String {
-        guard let discount = resolvedDiscount(for: package, offerContext: offerContext) else {
-            return self.productPricePerDay(package: package,
-                                           showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices)
-        }
-
-        if !canDiscountDisplay(discount, unit: .day) {
-            return ""
-        }
-
-        if isFree(discount) {
-            return localizations[VariableLocalizationKey.freePrice.rawValue] ?? ""
-        }
-
-        return formatDiscountPrice(
-            discount.pricePerDay?.decimalValue,
+            discount.localizedPriceString,
             package: package,
             showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices
         )
     }
 
-    func productOfferPricePerWeek(
+    // Note: the per-period offer variables reformat through `NumberFormatter`, so their currency
+    // token can differ from `offer_price`. `StoreProductDiscount` exposes no per-period string.
+
+    private func offerPricePerPeriod(
         package: Package,
         localizations: [String: String],
-        offerContext: OfferContext
+        offerContext: OfferContext,
+        unit: SubscriptionPeriod.Unit,
+        freeTrialRendering: FreeTrialRendering
     ) -> String {
         guard let discount = resolvedDiscount(for: package, offerContext: offerContext) else {
-            return self.productPricePerWeek(package: package,
-                                            showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices)
+            return self.productPricePerPeriodFallback(package: package, unit: unit, offerContext: offerContext)
         }
 
-        if !canDiscountDisplay(discount, unit: .week) {
+        if !canDiscountDisplay(discount, unit: unit) {
             return ""
         }
 
-        if isFree(discount) {
+        if freeTrialRendering == .word, isFree(discount) {
             return localizations[VariableLocalizationKey.freePrice.rawValue] ?? ""
         }
 
         return formatDiscountPrice(
-            discount.pricePerWeek?.decimalValue,
+            self.discountPrice(discount, unit: unit),
             package: package,
             showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices
         )
     }
 
-    func productOfferPricePerMonth(
+    private func productPricePerPeriodFallback(
         package: Package,
-        localizations: [String: String],
+        unit: SubscriptionPeriod.Unit,
         offerContext: OfferContext
     ) -> String {
-        guard let discount = resolvedDiscount(for: package, offerContext: offerContext) else {
-            return self.productPricePerMonth(package: package,
-                                             showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices)
+        let showZeroDecimalPlacePrices = offerContext.showZeroDecimalPlacePrices
+        switch unit {
+        case .day:
+            return self.productPricePerDay(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+        case .week:
+            return self.productPricePerWeek(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+        case .month:
+            return self.productPricePerMonth(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+        case .year:
+            return self.productPricePerYear(package: package, showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
         }
-
-        if !canDiscountDisplay(discount, unit: .month) {
-            return ""
-        }
-
-        if isFree(discount) {
-            return localizations[VariableLocalizationKey.freePrice.rawValue] ?? ""
-        }
-
-        return formatDiscountPrice(
-            discount.pricePerMonth?.decimalValue,
-            package: package,
-            showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices
-        )
     }
 
-    func productOfferPricePerYear(
-        package: Package,
-        localizations: [String: String],
-        offerContext: OfferContext
-    ) -> String {
-        guard let discount = resolvedDiscount(for: package, offerContext: offerContext) else {
-            return self.productPricePerYear(package: package,
-                                            showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices)
+    private func discountPrice(_ discount: StoreProductDiscount, unit: SubscriptionPeriod.Unit) -> Decimal? {
+        switch unit {
+        case .day:
+            return discount.pricePerDay?.decimalValue
+        case .week:
+            return discount.pricePerWeek?.decimalValue
+        case .month:
+            return discount.pricePerMonth?.decimalValue
+        case .year:
+            return discount.pricePerYear?.decimalValue
         }
-
-        if !canDiscountDisplay(discount, unit: .year) {
-            return ""
-        }
-
-        if isFree(discount) {
-            return localizations[VariableLocalizationKey.freePrice.rawValue] ?? ""
-        }
-
-        return formatDiscountPrice(
-            discount.pricePerYear?.decimalValue,
-            package: package,
-            showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices
-        )
     }
 
     func productOfferPeriod(
@@ -1057,6 +1211,14 @@ private extension VariablesV2 {
         return unit.rawValue <= discount.subscriptionPeriod.unit.rawValue
     }
 
+    /// Whether a free trial shows the localized word ("Free") or the formatted amount ("$0.00").
+    enum FreeTrialRendering {
+
+        case word
+        case amount
+
+    }
+
     func isFree(_ discount: StoreProductDiscount) -> Bool {
         switch discount.paymentMode {
         case .freeTrial:
@@ -1088,6 +1250,21 @@ private extension VariablesV2 {
             price,
             showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
         ) ?? fallback
+    }
+
+    /// Formats an already-displayed discount price string, mirroring `Package.localizedPrice`.
+    func formatDiscountPrice(
+        _ priceString: String,
+        package: Package,
+        showZeroDecimalPlacePrices: Bool
+    ) -> String {
+        guard let formatter = package.storeProduct.priceFormatter else {
+            return priceString
+        }
+        return formatter.formattedPriceStrippingTrailingZerosIfNeeded(
+            from: priceString,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+        )
     }
 
 }

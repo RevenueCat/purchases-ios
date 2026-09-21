@@ -15,7 +15,7 @@ import Nimble
 import StoreKit
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class BasePurchasesTests: TestCase {
 
@@ -63,6 +63,7 @@ class BasePurchasesTests: TestCase {
         self.mockOperationDispatcher = MockOperationDispatcher()
         self.mockReceiptParser = MockReceiptParser()
         self.identityManager = MockIdentityManager(mockAppUserID: Self.appUserID, mockDeviceCache: self.deviceCache)
+        self.tokenManager = MockTokenManager()
         self.mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: self.mockProductsManager,
                                                                              receiptParser: self.mockReceiptParser)
         let platformInfo = Purchases.PlatformInfo(flavor: "iOS", version: "4.4.0")
@@ -76,6 +77,7 @@ class BasePurchasesTests: TestCase {
 
         let httpClient = MockHTTPClient(systemInfo: self.systemInfo,
                                         eTagManager: MockETagManager(),
+                                        tokenManager: MockTokenManager(),
                                         diagnosticsTracker: self.diagnosticsTracker)
         let config = BackendConfiguration(httpClient: httpClient,
                                           operationDispatcher: self.mockOperationDispatcher,
@@ -113,6 +115,7 @@ class BasePurchasesTests: TestCase {
                                                        transactionFetcher: self.mockTransactionFetcher,
                                                        transactionPoster: self.transactionPoster,
                                                        systemInfo: self.systemInfo)
+        self.customerInfoManager.currentUserProvider = self.identityManager
         self.mockOfferingsManager = MockOfferingsManager(deviceCache: self.deviceCache,
                                                          operationDispatcher: self.mockOperationDispatcher,
                                                          systemInfo: self.systemInfo,
@@ -130,6 +133,7 @@ class BasePurchasesTests: TestCase {
         self.mockStoreMessagesHelper = .init()
         self.mockWinBackOfferEligibilityCalculator = MockWinBackOfferEligibilityCalculator()
         self.mockVirtualCurrencyManager = MockVirtualCurrencyManager()
+        self.storeKit2ProductPurchaser = StoreKit2ProductPurchaser(systemInfo: self.systemInfo)
         self.mockRemoteConfigManager = MockRemoteConfigManager()
         self.webPurchaseRedemptionHelper = .init(backend: self.backend,
                                                  identityManager: self.identityManager,
@@ -177,6 +181,7 @@ class BasePurchasesTests: TestCase {
     var subscriberAttributesManager: MockSubscriberAttributesManager!
     var attribution: Attribution!
     var identityManager: MockIdentityManager!
+    var tokenManager: MockTokenManager!
     var clock: TestClock!
     var systemInfo: MockSystemInfo!
     var mockOperationDispatcher: MockOperationDispatcher!
@@ -198,6 +203,7 @@ class BasePurchasesTests: TestCase {
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
     var mockStoreMessagesHelper: MockStoreMessagesHelper!
     var mockWinBackOfferEligibilityCalculator: MockWinBackOfferEligibilityCalculator!
+    var storeKit2ProductPurchaser: StoreKit2ProductPurchaser!
     var webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper!
     var diagnosticsTracker: DiagnosticsTrackerType?
     var mockVirtualCurrencyManager: MockVirtualCurrencyManager!
@@ -272,7 +278,11 @@ class BasePurchasesTests: TestCase {
 
     func initializePurchasesInstance(
         appUserId: String?,
-        withDelegate: Bool = true
+        withDelegate: Bool = true,
+        checkpointResolver: CheckpointWorkflowResolver = DisabledCheckpointWorkflowResolver(),
+        dateProvider: DateProvider = DateProvider(),
+        webBundleEventBus: WebBundleEventBus = .shared,
+        paywallCache: PaywallCacheWarmingType? = nil
     ) {
         self.purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
@@ -297,7 +307,10 @@ class BasePurchasesTests: TestCase {
             diagnosticsTracker: self.diagnosticsTracker,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
             eventsManager: self.eventsManager,
-            webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper
+            storeKit2ProductPurchaser: self.storeKit2ProductPurchaser,
+            webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper,
+            checkpointResolver: checkpointResolver,
+            dateProvider: dateProvider
         )
         self.trialOrIntroPriceEligibilityChecker = MockTrialOrIntroPriceEligibilityChecker(
             systemInfo: self.systemInfo,
@@ -336,8 +349,9 @@ class BasePurchasesTests: TestCase {
                                    systemInfo: self.systemInfo,
                                    offeringsFactory: self.offeringsFactory,
                                    deviceCache: self.deviceCache,
-                                   paywallCache: self.paywallCache,
+                                   paywallCache: paywallCache ?? self.paywallCache,
                                    identityManager: self.identityManager,
+                                   tokenManager: self.tokenManager,
                                    subscriberAttributes: self.attribution,
                                    operationDispatcher: self.mockOperationDispatcher,
                                    customerInfoManager: self.customerInfoManager,
@@ -348,7 +362,7 @@ class BasePurchasesTests: TestCase {
                                     workflowsConfigProvider: WorkflowsConfigProvider(
                                         manager: self.mockRemoteConfigManager
                                     ),
-                                    paywallCache: self.paywallCache,
+                                    paywallCache: paywallCache ?? self.paywallCache,
                                     operationDispatcher: self.mockOperationDispatcher
                                    ),
                                    remoteConfigManager: self.mockRemoteConfigManager,
@@ -361,7 +375,8 @@ class BasePurchasesTests: TestCase {
                                    virtualCurrencyManager: self.mockVirtualCurrencyManager,
                                    healthManager: healthManager,
                                    transactionMetadataSyncHelper: transactionMetadataSyncHelper,
-                                   currentConfiguration: nil)
+                                   currentConfiguration: nil,
+                                   webBundleEventBus: webBundleEventBus)
 
         self.purchasesOrchestrator.delegate = self.purchases
 
@@ -447,7 +462,7 @@ extension BasePurchasesTests {
                 return
             }
 
-            completion(.success(.mockContents))
+            completion(.success(.init(contents: .mockContents, rawResponseData: nil)))
         }
 
         var postOfferForSigningCalled = false
@@ -493,24 +508,28 @@ extension BasePurchasesTests {
                          mockAdsAPI: MockAdsAPI) {
             let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
             let identity = IdentityAPI(backendConfig: backendConfig)
+            let token = TokenAPI(backendConfig: backendConfig)
             let offerings = OfferingsAPI(backendConfig: backendConfig)
             let webBilling = WebBillingAPI(backendConfig: backendConfig)
             let offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
             let internalAPI = InternalAPI(backendConfig: backendConfig)
             let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
             let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
+            let externalPurchaseTokenAPI = ExternalPurchaseTokenAPI(backendConfig: backendConfig)
             let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
             let remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
 
             self.init(backendConfig: backendConfig,
                       customerAPI: customer,
                       identityAPI: identity,
+                      tokenAPI: token,
                       offeringsAPI: offerings,
                       webBillingAPI: webBilling,
                       offlineEntitlements: offlineEntitlements,
                       internalAPI: internalAPI,
                       customerCenterConfig: customerCenterConfig,
                       redeemWebPurchaseAPI: redeemWebPurchaseAPI,
+                      externalPurchaseTokenAPI: externalPurchaseTokenAPI,
                       virtualCurrenciesAPI: virtualCurrenciesAPI,
                       adsAPI: mockAdsAPI,
                       remoteConfigAPI: remoteConfigAPI)
@@ -576,6 +595,7 @@ extension BasePurchasesTests {
         var postedObserverMode: Bool?
         var postedInitiationSource: PostReceiptSource.InitiationSource?
         var postReceiptResult: Result<CustomerInfo, BackendError>?
+        var onPostReceipt: (() -> Void)?
         var postedAssociatedTransactionIds: [String?] = []
 
         override func post(receipt: EncodedAppleReceipt,
@@ -614,6 +634,7 @@ extension BasePurchasesTests {
             self.postedObserverMode = observerMode
             self.postedInitiationSource = postReceiptSource.initiationSource
 
+            self.onPostReceipt?()
             completion(self.postReceiptResult ?? .failure(.missingAppUserID()))
         }
 
@@ -675,27 +696,48 @@ extension BasePurchasesTests.MockOfferingsAPI: @unchecked Sendable {}
 final class MockRemoteConfigManager: RemoteConfigManagerType {
 
     struct RefreshParameters {
+        let fetchContext: RemoteConfigFetchContext
         let isAppBackgrounded: Bool
     }
 
-    var isDisabled = false
+    var onConfigGenerationRead: (() -> Void)?
+    var configGeneration: Int {
+        get {
+            defer { self.onConfigGenerationRead?() }
+            return self.configGenerationStorage
+        }
+        set {
+            self.configGenerationStorage = newValue
+        }
+    }
+    private var configGenerationStorage = 0
+    var stubbedHasCommittedConfig = true
 
     private(set) var invokedRefreshRemoteConfigCount = 0
     private(set) var invokedRefreshRemoteConfigIfStaleCount = 0
+    private(set) var invokedCommittedTopicAfterInFlightRefreshCount = 0
     private(set) var invokedClearCacheCount = 0
     private(set) var invokedCloseCount = 0
     private(set) var invokedRefreshRemoteConfigParametersList: [RefreshParameters] = []
     private(set) var invokedRefreshRemoteConfigIfStaleParametersList: [RefreshParameters] = []
     private(set) var invokedClearCacheAppUserIDs: [String] = []
 
-    func refreshRemoteConfig(isAppBackgrounded: Bool) {
+    func refreshRemoteConfig(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool) {
         self.invokedRefreshRemoteConfigCount += 1
-        self.invokedRefreshRemoteConfigParametersList.append(.init(isAppBackgrounded: isAppBackgrounded))
+        self.invokedRefreshRemoteConfigParametersList.append(
+            .init(fetchContext: fetchContext, isAppBackgrounded: isAppBackgrounded)
+        )
     }
 
-    func refreshRemoteConfigIfStale(isAppBackgrounded: Bool) {
+    func refreshRemoteConfigIfStale(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool) {
         self.invokedRefreshRemoteConfigIfStaleCount += 1
-        self.invokedRefreshRemoteConfigIfStaleParametersList.append(.init(isAppBackgrounded: isAppBackgrounded))
+        self.invokedRefreshRemoteConfigIfStaleParametersList.append(
+            .init(fetchContext: fetchContext, isAppBackgrounded: isAppBackgrounded)
+        )
+    }
+
+    func hasCommittedConfig() async -> Bool {
+        return self.stubbedHasCommittedConfig
     }
 
     var stubbedTopics: [RemoteConfigTopic: RemoteConfiguration.ConfigTopic] = [:]
@@ -717,11 +759,15 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
     /// When `true`, `topic(_:)` suspends until `completeStoredTopic()` resumes every stored
     /// waiter (there can be several: e.g. a gated delivery plus a background refresh).
     var shouldStoreTopicCompletion = false
+    /// Restricts held topic reads when `shouldStoreTopicCompletion` is true. `nil` preserves the
+    /// default behavior of holding every topic.
+    var storedTopicCompletionTopics: Set<RemoteConfigTopic>?
     private let _storedTopicContinuations: Atomic<[CheckedContinuation<RemoteConfiguration.ConfigTopic?, Never>]> =
         .init([])
 
     func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
-        guard self.shouldStoreTopicCompletion else {
+        guard self.shouldStoreTopicCompletion,
+              self.storedTopicCompletionTopics?.contains(topic) ?? true else {
             self._invokedTopicCount.modify { $0 += 1 }
             return self.stubbedTopics[topic]
         }
@@ -731,6 +777,15 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
             self._storedTopicContinuations.modify { $0.append(continuation) }
             self._invokedTopicCount.modify { $0 += 1 }
         }
+    }
+
+    var committedTopicAfterInFlightRefreshHandler:
+    ((RemoteConfigTopic) -> RemoteConfiguration.ConfigTopic?)?
+
+    func committedTopicAfterInFlightRefresh(_ topic: RemoteConfigTopic) async
+    -> RemoteConfiguration.ConfigTopic? {
+        self.invokedCommittedTopicAfterInFlightRefreshCount += 1
+        return self.committedTopicAfterInFlightRefreshHandler?(topic) ?? self.stubbedTopics[topic]
     }
 
     /// Resumes every waiter held while `shouldStoreTopicCompletion` was `true`, and stops
@@ -797,7 +852,7 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
         as type: T.Type
     ) async throws -> T? {
         self._invokedMergeItemsBlobDataParameters.modify { $0.append((topic, itemKeys)) }
-        guard !self.isDisabled, !itemKeys.isEmpty else { return nil }
+        guard !itemKeys.isEmpty else { return nil }
 
         var mergedBlobValues: [String: AnyDecodable] = [:]
         for itemKey in itemKeys.deduplicated() {
@@ -810,10 +865,12 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
     }
 
     func clearCache() {
+        self.configGeneration += 1
         self.invokedClearCacheCount += 1
     }
 
     func clearCache(forAppUserID appUserID: String) {
+        self.configGeneration += 1
         self.invokedClearCacheCount += 1
         self.invokedClearCacheAppUserIDs.append(appUserID)
     }
@@ -850,6 +907,7 @@ private extension BasePurchasesTests {
         self.attribution = nil
         self.customerInfoManager = nil
         self.identityManager = nil
+        self.tokenManager = nil
         self.mockOfferingsManager = nil
         self.mockOfflineEntitlementsManager = nil
         self.mockPurchasedProductsFetcher = nil

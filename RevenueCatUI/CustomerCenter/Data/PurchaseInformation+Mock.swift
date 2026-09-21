@@ -37,6 +37,7 @@ extension PurchaseInformation {
         latestPurchaseDate: Date = Self.defaultLatestPurchaseDate,
         originalPurchaseDate: Date? = Self.defaultOriginalPurchaseDate,
         customerInfoRequestedDate: Date = Self.defaultCustomerInfoRequestedDate,
+        dateFormatter: DateFormatter = Self.defaultDateFormatter,
         managementURL: URL? = URL(string: "https://www.revenuecat.com"),
         expirationDate: Date? = Self.defaultExpirationDate,
         renewalDate: Date? = Self.defaulRenewalDate,
@@ -66,6 +67,7 @@ extension PurchaseInformation {
             latestPurchaseDate: latestPurchaseDate,
             originalPurchaseDate: originalPurchaseDate,
             customerInfoRequestedDate: customerInfoRequestedDate,
+            dateFormatter: dateFormatter,
             managementURL: managementURL,
             expirationDate: expirationDate,
             renewalDate: renewalDate,
@@ -91,6 +93,18 @@ extension PurchaseInformation {
         isCancelled: false,
         expirationDate: nil,
         renewalDate: Self.defaulRenewalDate
+    )
+
+    static let cancelled = PurchaseInformation.mock(
+        pricePaid: .nonFree("$4.99"),
+        renewalPrice: .nonFree("$4.99"),
+        productIdentifier: "product_id_cancelled",
+        store: .appStore,
+        isSubscription: true,
+        productType: .autoRenewableSubscription,
+        isCancelled: true,
+        expirationDate: Self.defaultExpirationDate,
+        renewalDate: nil
     )
 
     static let expired = PurchaseInformation.mock(

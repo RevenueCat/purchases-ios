@@ -45,7 +45,6 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
 
         _ = try PaywallView(
             offering: Self.offering.withLocalImages,
-            customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: purchasHandler
         )
@@ -95,7 +94,6 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
 
         _ = try PaywallView(
             offering: Self.offering.withLocalImages,
-            customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: purchasHandler
         )
@@ -145,7 +143,6 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
 
         _ = try PaywallView(
             offering: Self.offering.withLocalImages,
-            customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: purchasHandler
         )
@@ -195,7 +192,6 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
 
         _ = try PaywallView(
             offering: Self.offering.withLocalImages,
-            customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: purchasHandler
         )
@@ -225,7 +221,6 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
 
         _ = try PaywallView(
             offering: Self.offering.withLocalImages,
-            customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: purchasHandler
         )
@@ -274,7 +269,6 @@ class ZZExternalPurchaseAndRestoreTests: TestCase {
 
         _ = try PaywallView(
             offering: Self.offering.withLocalImages,
-            customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: purchasHandler
         )
@@ -374,14 +368,12 @@ private extension PaywallView {
 
     init(
         offering: Offering,
-        customerInfo: CustomerInfo,
         introEligibility: TrialOrIntroEligibilityChecker,
         purchaseHandler: PurchaseHandler
     ) {
         self.init(
             configuration: .init(
                 offering: offering,
-                customerInfo: customerInfo,
                 introEligibility: introEligibility,
                 purchaseHandler: purchaseHandler
             )

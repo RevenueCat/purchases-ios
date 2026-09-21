@@ -102,7 +102,7 @@ private enum Template1Preview {
             .package(package)
         ],
         dimension: .vertical(.center, .start),
-        size: .init(width: .fill, height: .fit),
+        size: .init(width: .fill, height: .fit(nil)),
         spacing: 30,
         backgroundColor: nil
     )

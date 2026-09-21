@@ -70,17 +70,7 @@ struct PurchaseInformationCardView: View {
         self.title = purchaseInformation.title
         self.accessibilityIdentifier = accessibilityIdentifier
 
-        if purchaseInformation.renewalDate != nil {
-            self.subtitle = purchaseInformation.priceRenewalString(
-                localizations: localization
-            )
-        } else if purchaseInformation.expirationDate != nil {
-            self.subtitle = purchaseInformation.expirationString(
-                localizations: localization
-            )
-        } else {
-            self.subtitle = purchaseInformation.pricePaidString(localizations: localization)
-        }
+        self.subtitle = purchaseInformation.subtitle(localizations: localization)
 
         self.additionalIcon = refundStatus?.icon
         self.additionalInfo = refundStatus?.subtitle(localization: localization)
@@ -396,6 +386,28 @@ struct PurchaseInformationCardView_Previews: PreviewProvider {
 
                 PurchaseInformationCardView(
                     purchaseInformation: .mock(isTrial: true, isCancelled: false),
+                    localization: CustomerCenterConfigData.default.localization,
+                    accessibilityIdentifier: "accessibilityIdentifier"
+                )
+                .padding([.leading, .trailing])
+
+                PurchaseInformationCardView(
+                    purchaseInformation: .mock(
+                        title: "Starter Subscription",
+                        pricePaid: .nonFree("$49.00"),
+                        renewalPrice: nil
+                    ),
+                    localization: CustomerCenterConfigData.default.localization,
+                    accessibilityIdentifier: "accessibilityIdentifier"
+                )
+                .padding([.leading, .trailing])
+
+                PurchaseInformationCardView(
+                    purchaseInformation: .mock(
+                        title: "Premium Subscription",
+                        pricePaid: .nonFree("$149.00"),
+                        renewalPrice: nil
+                    ),
                     localization: CustomerCenterConfigData.default.localization,
                     accessibilityIdentifier: "accessibilityIdentifier"
                 )

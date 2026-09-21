@@ -96,10 +96,9 @@ struct VideoPlayerLayerView: UIViewRepresentable {
         private let looper: AVPlayerLooper?
         private let autoplayHandler: VideoAutoplayHandler
 
-        private var previousCategory: AVAudioSession.Category?
-        private var previousMode: AVAudioSession.Mode?
-        private var previousOptions: AVAudioSession.CategoryOptions?
+        private let audioSessionHandler: VideoAudioSessionHandler
 
+        @MainActor
         init(
             videoURL: URL,
             shouldAutoPlay: Bool,
@@ -126,20 +125,7 @@ struct VideoPlayerLayerView: UIViewRepresentable {
             #endif
 
             self.player = avPlayer
-
-            let audioSession = AVAudioSession.sharedInstance()
-            self.previousCategory = audioSession.category
-            self.previousMode = audioSession.mode
-            self.previousOptions = audioSession.categoryOptions
-            do {
-                try audioSession.setCategory(
-                    .ambient,
-                    mode: .default,
-                    options: [.mixWithOthers]
-                )
-            } catch {
-                Logger.warning(Strings.video_failed_to_set_audio_session_category(error))
-            }
+            self.audioSessionHandler = VideoAudioSessionHandler()
 
             self.autoplayHandler = VideoAutoplayHandler(
                 playbackController: avPlayer,
@@ -151,29 +137,13 @@ struct VideoPlayerLayerView: UIViewRepresentable {
             }
         }
 
+        @MainActor
         func tearDown() {
             // Stop lifecycle resume before pausing, so a later didBecomeActive can't restart a
             // player that's being dismantled.
             autoplayHandler.invalidate()
             player.pause()
-        }
-
-        deinit {
-            guard let category = previousCategory,
-                  let mode = previousMode,
-                  let options = previousOptions else {
-                return
-            }
-
-            do {
-                try AVAudioSession.sharedInstance().setCategory(
-                    category,
-                    mode: mode,
-                    options: options
-                )
-            } catch {
-                Logger.warning(Strings.video_failed_to_set_audio_session_category(error))
-            }
+            audioSessionHandler.release()
         }
 
     }

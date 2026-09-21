@@ -94,7 +94,7 @@ struct CountdownComponentView_Previews: PreviewProvider {
                                 fontSize: 24
                             ))
                         ],
-                        size: .init(width: .fill, height: .fit),
+                        size: .init(width: .fill, height: .fit(nil)),
                         backgroundColor: .init(light: .hex("#f0f0f0")),
                         padding: .init(top: 20, bottom: 20, leading: 20, trailing: 20)
                     )
@@ -110,7 +110,7 @@ struct CountdownComponentView_Previews: PreviewProvider {
                                 fontSize: 24
                             ))
                         ],
-                        size: .init(width: .fill, height: .fit),
+                        size: .init(width: .fill, height: .fit(nil)),
                         backgroundColor: .init(light: .hex("#f0f0f0")),
                         padding: .init(top: 20, bottom: 20, leading: 20, trailing: 20)
                     ),

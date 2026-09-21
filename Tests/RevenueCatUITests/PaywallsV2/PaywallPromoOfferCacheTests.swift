@@ -22,6 +22,24 @@ final class PaywallPromoOfferCacheTests: TestCase {
 
     private static let promoCode = "promo_code"
 
+    // Both `PaywallView` initializers map their `simulatePromoEligible` flag through this factory.
+    // It is the single mapping site: if it stops producing a cache, every promo preview silently
+    // falls back to real eligibility, which cannot resolve for the mock products previews use.
+    func testSimulatedBuildsACacheOnlyWhenEligibilityIsSimulated() {
+        XCTAssertNotNil(PaywallPromoOfferCache.simulated(if: true))
+        XCTAssertNil(PaywallPromoOfferCache.simulated(if: false))
+    }
+
+    func testSimulatedCacheFabricatesOffersInsteadOfFetchingThem() async throws {
+        let package = Self.makePackage(promoDiscountIdentifier: Self.promoCode)
+        let cache = try XCTUnwrap(PaywallPromoOfferCache.simulated(if: true))
+
+        await cache.computeEligibility(for: [(package, Self.promoCode)])
+
+        XCTAssertNotNil(cache.get(for: package), "A simulated cache seeds a display-only signed offer.")
+        XCTAssertNil(cache.purchasableOffer(for: package), "A fabricated offer must never reach StoreKit.")
+    }
+
     func testSimulateEligibleSeedsSignedOfferForMatchingDiscount() async {
         let package = Self.makePackage(promoDiscountIdentifier: Self.promoCode)
         let cache = PaywallPromoOfferCache(simulateEligible: true)

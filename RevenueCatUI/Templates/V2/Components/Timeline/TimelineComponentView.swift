@@ -37,6 +37,9 @@ struct TimelineComponentView: View {
     @Environment(\.screenCondition)
     private var screenCondition
 
+    @Environment(\.paywallWindowSize)
+    private var paywallWindowSize
+
     @Environment(\.colorScheme)
     private var colorScheme
 
@@ -62,7 +65,8 @@ struct TimelineComponentView: View {
                 for: self.packageContext.package
             ),
             selectedPackageId: self.selectedPackageId,
-            customVariables: self.customVariables
+            customVariables: self.customVariables,
+            windowSize: self.paywallWindowSize
         ) { style in
             if style.visible {
                 timeline(style: style)
@@ -86,7 +90,8 @@ struct TimelineComponentView: View {
                         for: self.packageContext.package
                     ),
                     selectedPackageId: self.selectedPackageId,
-                    customVariables: self.customVariables
+                    customVariables: self.customVariables,
+                    windowSize: self.paywallWindowSize
                 ) { itemStyle in
                     if itemStyle.visible {
                         timelineRow(itemStyle: itemStyle, style: style)
@@ -113,7 +118,8 @@ struct TimelineComponentView: View {
                             for: self.packageContext.package
                         ),
                         selectedPackageId: self.selectedPackageId,
-                        customVariables: self.customVariables
+                        customVariables: self.customVariables,
+                        windowSize: self.paywallWindowSize
                     ) { itemStyle in
                         if itemStyle.visible {
                             let next = viewModel.items.indices.contains(index + 1) ? viewModel.items[index + 1] : nil
@@ -244,7 +250,7 @@ struct ContentView_Previews: PreviewProvider {
         .init(
             text: text,
             color: .init(light: .hex("#000000")),
-            size: .init(width: .fit, height: .fit),
+            size: .init(width: .fit(nil), height: .fit(nil)),
             horizontalAlignment: .leading
         )
     }
@@ -284,14 +290,14 @@ struct ContentView_Previews: PreviewProvider {
                 text: "id_1",
                 fontWeight: .bold,
                 color: .init(light: .hex("#000000")),
-                size: .init(width: .fit, height: .fit),
+                size: .init(width: .fit(nil), height: .fit(nil)),
                 horizontalAlignment: .leading
             ),
             description: .init(
                 text: "id_2",
                 fontWeight: .light,
                 color: .init(light: .hex("#616161")),
-                size: .init(width: .fit, height: .fit),
+                size: .init(width: .fit(nil), height: .fit(nil)),
                 horizontalAlignment: .leading
             ),
             icon: iconComponent(name: "lock", color: "#576CDB"),
@@ -307,14 +313,14 @@ struct ContentView_Previews: PreviewProvider {
                 text: "id_3",
                 fontWeight: .bold,
                 color: .init(light: .hex("#000000")),
-                size: .init(width: .fit, height: .fit),
+                size: .init(width: .fit(nil), height: .fit(nil)),
                 horizontalAlignment: .leading
             ),
             description: .init(
                 text: "id_4",
                 fontWeight: .light,
                 color: .init(light: .hex("#616161")),
-                size: .init(width: .fit, height: .fit),
+                size: .init(width: .fit(nil), height: .fit(nil)),
                 horizontalAlignment: .leading
             ),
             icon: iconComponent(name: "bell", color: "#576CDB"),
@@ -330,14 +336,14 @@ struct ContentView_Previews: PreviewProvider {
                 text: "id_5",
                 fontWeight: .bold,
                 color: .init(light: .hex("#000000")),
-                size: .init(width: .fit, height: .fit),
+                size: .init(width: .fit(nil), height: .fit(nil)),
                 horizontalAlignment: .leading
             ),
             description: .init(
                 text: "id_6",
                 fontWeight: .light,
                 color: .init(light: .hex("#616161")),
-                size: .init(width: .fit, height: .fit),
+                size: .init(width: .fit(nil), height: .fit(nil)),
                 horizontalAlignment: .leading
             ),
             icon: iconComponent(name: "star", color: "#11D483", size: .init(width: .fixed(50), height: .fixed(50))),
@@ -365,7 +371,7 @@ struct ContentView_Previews: PreviewProvider {
                     itemSpacing: 24,
                     textSpacing: 5,
                     columnGutter: 15,
-                    size: .init(width: .fill, height: .fit),
+                    size: .init(width: .fill, height: .fit(nil)),
                     padding: .init(top: 5, bottom: 5, leading: 5, trailing: 5),
                     margin: .init(top: 5, bottom: 5, leading: 5, trailing: 5),
                     items: items,

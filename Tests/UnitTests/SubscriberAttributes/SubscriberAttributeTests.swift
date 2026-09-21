@@ -267,6 +267,38 @@ class SubscriberAttributeTests: TestCase {
         expect(bbbRange.lowerBound) < cccRange.lowerBound
     }
 
+    func testAttributesWithSameValuesAreEqualAndHashEqually() {
+        let dateProvider = MockDateProvider(stubbedNow: Date(timeIntervalSince1970: 1000))
+
+        let attribute1 = SubscriberAttribute(withKey: "key", value: "value", dateProvider: dateProvider)
+        let attribute2 = SubscriberAttribute(withKey: "key", value: "value", dateProvider: dateProvider)
+
+        expect(attribute1) == attribute2
+        expect(attribute1.hashValue) == attribute2.hashValue
+    }
+
+    func testAttributesCanBeStoredInASet() {
+        let dateProvider = MockDateProvider(stubbedNow: Date(timeIntervalSince1970: 1000))
+
+        let attribute1 = SubscriberAttribute(withKey: "key1", value: "value1", dateProvider: dateProvider)
+        let attribute2 = SubscriberAttribute(withKey: "key2", value: "value2", dateProvider: dateProvider)
+        let duplicateOfAttribute1 = SubscriberAttribute(withKey: "key1", value: "value1", dateProvider: dateProvider)
+
+        let set: Set<SubscriberAttribute> = [attribute1, attribute2, duplicateOfAttribute1]
+
+        expect(set).to(haveCount(2))
+        expect(set).to(contain(attribute1))
+        expect(set).to(contain(attribute2))
+    }
+
+    func testAttributesWithDifferentIsSyncedAreNotEqual() {
+        let now = Date(timeIntervalSince1970: 1000)
+        let synced = SubscriberAttribute(withKey: "key", value: "value", isSynced: true, setTime: now)
+        let unsynced = SubscriberAttribute(withKey: "key", value: "value", isSynced: false, setTime: now)
+
+        expect(synced) != unsynced
+    }
+
 }
 
 private extension SubscriberAttributeTests {

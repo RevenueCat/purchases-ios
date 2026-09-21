@@ -127,7 +127,6 @@ let package = Package(
                 path: "RevenueCatUI",
                 resources: [
                     // Note: these have to match the values in RevenueCatUI.podspec
-                    .copy("Resources/background.jpg"),
                     .process("Resources/icons.xcassets"),
                     .process("Resources/Media.xcassets")
                 ],
@@ -144,12 +143,17 @@ let package = Package(
                         .copy("Resources/background.heic"),
                         .copy("PaywallsV2/__PreviewResources__")
                     ]),
-        .target(name: "RulesEngineInternal",
-                path: "RulesEngineInternal",
-                swiftSettings: ciCompilerFlags + additionalCompilerFlags),
-        .testTarget(name: "RulesEngineInternalTests",
-                    dependencies: ["RulesEngineInternal"],
-                    path: "Tests/RulesEngineInternalTests",
-                    exclude: ["PredicateFixtures"])
+        // Isolated from RevenueCatUITests so a Swift reference to PurchasesUIService
+        // cannot keep the ObjC class alive. Run via the RevenueCatUI-Stripped scheme.
+        .testTarget(
+            name: "PurchasesUIServiceIntegrationTests",
+            dependencies: [
+                "RevenueCat",
+                "RevenueCatUI"
+            ],
+            linkerSettings: [
+                .unsafeFlags(["-dead_strip"], .when(configuration: .release))
+            ]
+        )
     ]
 )

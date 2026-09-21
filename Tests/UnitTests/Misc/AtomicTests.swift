@@ -11,6 +11,7 @@
 //
 //  Created by Nacho Soto on 11/25/21.
 
+import Foundation
 import Nimble
 import XCTest
 
@@ -74,6 +75,70 @@ class AtomicTests: TestCase {
 
         expect(atomic1.value) == true
         expect(atomic2.value) == false
+    }
+
+    func testIncrementIncreasesValueByDefaultAmount() {
+        let atomic = Atomic(5)
+
+        let newValue = atomic.increment()
+
+        expect(newValue) == 6
+        expect(atomic.value) == 6
+    }
+
+    func testIncrementByCustomAmount() {
+        let atomic = Atomic(5)
+
+        let newValue = atomic.increment(by: 3)
+
+        expect(newValue) == 8
+        expect(atomic.value) == 8
+    }
+
+    func testDecrementDecreasesValueByDefaultAmount() {
+        let atomic = Atomic(5)
+
+        let newValue = atomic.decrement()
+
+        expect(newValue) == 4
+        expect(atomic.value) == 4
+    }
+
+    func testDecrementByCustomAmount() {
+        let atomic = Atomic(5)
+
+        let newValue = atomic.decrement(by: 2)
+
+        expect(newValue) == 3
+        expect(atomic.value) == 3
+    }
+
+    func testConcurrentIncrementsProduceCorrectTotal() {
+        let atomic = Atomic(0)
+        let iterations = 1_000
+
+        DispatchQueue.concurrentPerform(iterations: iterations) { _ in
+            atomic.increment()
+        }
+
+        expect(atomic.value) == iterations
+    }
+
+    func testConcurrentIncrementsAndDecrementsAreAtomic() {
+        let atomic = Atomic(0)
+        let iterations = 1_000
+
+        // Equal numbers of increments and decrements should leave the value unchanged,
+        // regardless of the order in which the concurrent operations complete.
+        DispatchQueue.concurrentPerform(iterations: iterations) { index in
+            if index % 2 == 0 {
+                atomic.increment()
+            } else {
+                atomic.decrement()
+            }
+        }
+
+        expect(atomic.value) == 0
     }
 
 }

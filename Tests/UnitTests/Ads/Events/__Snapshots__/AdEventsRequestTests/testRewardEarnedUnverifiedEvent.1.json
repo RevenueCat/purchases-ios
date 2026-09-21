@@ -9,10 +9,8 @@
   "mediator_name" : "AdMob",
   "network_name" : "AdMob",
   "placement" : "home_screen",
-  "reward_amount" : 10,
-  "reward_item" : "coins",
   "reward_verification_enabled" : true,
   "timestamp_ms" : 1694029328000,
-  "type" : "rc_ads_ad_reward_sdk_unverified",
+  "type" : "rc_ads_ad_reward_sdk_earned",
   "version" : 1
 }

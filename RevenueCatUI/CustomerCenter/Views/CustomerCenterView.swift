@@ -93,6 +93,7 @@ public struct CustomerCenterView: View {
             self._viewModel = .init(wrappedValue: CustomerCenterViewModel(actionWrapper: actionWrapper))
             self.mode = mode
             self.navigationOptions = navigationOptions
+            PurchasesUIService.activateIfNeeded()
     }
 
     // swiftlint:disable:next missing_docs

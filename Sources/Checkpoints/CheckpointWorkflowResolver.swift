@@ -1,0 +1,385 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  CheckpointWorkflowResolver.swift
+//
+//  Created by Rick van der Linden.
+//
+
+import Foundation
+
+/// The result of resolving a checkpoint against RevenueCat configuration.
+@_spi(Internal) public enum CheckpointResolution {
+
+    /// A workflow was selected for the checkpoint.
+    case matchedWorkflow(ResolvedCheckpointWorkflow)
+    /// An offering was selected for the checkpoint, with no RevenueCat-managed UI to present. The app
+    /// decides whether and how to use it.
+    case matchedOffering(Offering)
+    /// No workflow should run for the checkpoint.
+    case noAction(CheckpointResolutionReason)
+
+}
+
+/// The reason that checkpoint resolution selected no workflow.
+@_spi(Internal) public enum CheckpointResolutionReason: Sendable {
+
+    /// No targeting rule matched.
+    case noMatch
+    /// Checkpoint configuration could not be loaded.
+    case configurationUnavailable
+    /// The checkpoint identifier is not configured.
+    case unknownCheckpoint
+
+}
+
+/// A ``CheckpointResolution`` together with the rule that produced it. The rule id only attributes the hit
+/// event, so it travels here rather than on ``CheckpointResolution``, which RevenueCatUI consumes.
+struct ResolvedCheckpoint {
+
+    let resolution: CheckpointResolution
+    let checkpointRuleID: String?
+
+    init(_ resolution: CheckpointResolution, checkpointRuleID: String? = nil) {
+        self.resolution = resolution
+        self.checkpointRuleID = checkpointRuleID
+    }
+
+    /// Reports `rule` only when it was actually served.
+    init(_ resolution: CheckpointResolution, servedBy rule: CheckpointRule) {
+        switch resolution {
+        case .matchedWorkflow, .matchedOffering:
+            self.init(resolution, checkpointRuleID: rule.id)
+
+        case .noAction:
+            self.init(resolution)
+        }
+    }
+
+}
+
+/// Resolves a checkpoint to the workflow that should run, or the reason no workflow should run.
+protocol CheckpointWorkflowResolver: AnyObject {
+
+    func resolve(identifier: String, params: CheckpointParams) async throws -> ResolvedCheckpoint
+
+}
+
+final class DisabledCheckpointWorkflowResolver: CheckpointWorkflowResolver {
+
+    func resolve(identifier: String, params: CheckpointParams) async throws -> ResolvedCheckpoint {
+        return .init(.noAction(.configurationUnavailable))
+    }
+
+}
+
+/// Resolves checkpoints through the ordered rules served by the `checkpoint_rules` remote-config topic, taking
+/// the first rule whose audience the customer matches.
+///
+/// The matched rule's workflow body is read first, because its shape decides what else the rule needs: a
+/// workflow whose only step is a terminal `offering` step is handed back to the app as an offering, with
+/// nothing presented, while every other workflow fetches the complete offerings bundle and resolves each
+/// screen step only when it is reached.
+///
+/// The match is final either way. A matched rule that turns out to be unservable resolves to
+/// ``CheckpointResolutionReason/configurationUnavailable`` instead of falling through to a rule this
+/// customer wasn't the first choice for.
+final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
+
+    private let checkpointsConfigProvider: CheckpointsConfigProviderType
+    private let audiencesConfigProvider: AudiencesConfigProviderType
+    private let localRulesEvaluator: LocalRulesEvaluator
+    private let workflowManager: WorkflowManager
+    private let offeringsProvider: () async throws -> Offerings
+
+    init(
+        checkpointsConfigProvider: CheckpointsConfigProviderType,
+        audiencesConfigProvider: AudiencesConfigProviderType,
+        localRulesEvaluator: LocalRulesEvaluator,
+        workflowManager: WorkflowManager,
+        offeringsProvider: @escaping () async throws -> Offerings
+    ) {
+        self.checkpointsConfigProvider = checkpointsConfigProvider
+        self.audiencesConfigProvider = audiencesConfigProvider
+        self.localRulesEvaluator = localRulesEvaluator
+        self.workflowManager = workflowManager
+        self.offeringsProvider = offeringsProvider
+    }
+
+    func resolve(identifier: String, params: CheckpointParams) async throws -> ResolvedCheckpoint {
+        #if DEBUG
+        // Temporary CheckpointTester escape hatch. Config-backed resolution has no natural throwing case yet.
+        if identifier == Self.simulatedErrorCheckpointIdentifier {
+            throw ErrorUtils.configurationError(
+                message: "Simulated error: checkpoint workflow not presentable."
+            )
+        }
+        #endif
+
+        if let resolved = try await self.attemptResolveConfiguredWorkflow(identifier: identifier, params: params) {
+            return resolved
+        }
+        Logger.verbose(Strings.checkpoints.resolutionRetry(identifier: identifier))
+
+        // A `nil` attempt means its configuration became stale while resolving.
+        // Retry once against the latest generation before treating repeated staleness as unavailable.
+        if let resolved = try await self.attemptResolveConfiguredWorkflow(identifier: identifier, params: params) {
+            return resolved
+        }
+        Logger.error(Strings.checkpoints.resolutionRepeatedlyStale(identifier: identifier))
+        return .init(.noAction(.configurationUnavailable))
+    }
+
+    // A resolution attempt has several distinct terminal states plus the stale sentinel (`nil`).
+    // swiftlint:disable:next cyclomatic_complexity function_body_length
+    private func attemptResolveConfiguredWorkflow(
+        identifier: String,
+        params: CheckpointParams
+    ) async throws -> ResolvedCheckpoint? {
+        let rulesSnapshot: CheckpointRulesSnapshot
+        do {
+            guard let snapshot = try await self.checkpointsConfigProvider.rules(for: identifier) else {
+                return .init(.noAction(.unknownCheckpoint))
+            }
+            rulesSnapshot = snapshot
+        } catch let error as CancellationError {
+            throw error
+        } catch CheckpointRulesProviderError.stale {
+            return nil
+        } catch {
+            return .init(.noAction(.configurationUnavailable))
+        }
+
+        guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot) else { return nil }
+        guard !rulesSnapshot.ruleSet.rules.isEmpty else {
+            return .init(.noAction(.noMatch))
+        }
+
+        let audienceConfiguration: AudienceConfigurationSnapshot
+        do {
+            guard let configuration = try await self.audiencesConfigProvider.configuration() else {
+                guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot) else { return nil }
+                return .init(.noAction(.configurationUnavailable))
+            }
+            audienceConfiguration = configuration
+        } catch let error as CancellationError {
+            throw error
+        } catch {
+            guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot) else { return nil }
+            Logger.error(Strings.checkpoints.audiencesNotEvaluated(
+                checkpointID: identifier,
+                reason: "\(error)"
+            ))
+            return .init(.noAction(.configurationUnavailable))
+        }
+
+        guard self.isCurrent(rulesSnapshot, audienceConfiguration) else {
+            return nil
+        }
+
+        let ruleEvaluation = try await self.evaluateRules(
+            for: identifier,
+            in: rulesSnapshot.ruleSet.rules,
+            params: params,
+            audienceConfiguration: audienceConfiguration
+        )
+        guard self.isCurrent(rulesSnapshot, audienceConfiguration) else {
+            return nil
+        }
+
+        let rule: CheckpointRule?
+        switch ruleEvaluation {
+        case let .completed(matchedRule):
+            rule = matchedRule
+        case let .unavailable(error):
+            // Only return `noMatch` when audience evaluation succeeds and no rule matches. If evaluation fails,
+            // the SDK can't determine whether the app user matches, so treat the checkpoint configuration as
+            // unavailable.
+            Logger.error(Strings.checkpoints.audiencesNotEvaluated(
+                checkpointID: identifier,
+                reason: "\(error)"
+            ))
+            return .init(.noAction(.configurationUnavailable))
+        }
+
+        // The offering mapping is resolved per branch now, since only a UI workflow needs it.
+        guard let rule else { return .init(.noAction(.noMatch)) }
+
+        let resolution = try await self.resolve(rule)
+        guard self.isCurrent(rulesSnapshot, audienceConfiguration) else {
+            return nil
+        }
+
+        return .init(resolution, servedBy: rule)
+    }
+
+    private func isCurrent(
+        _ rulesSnapshot: CheckpointRulesSnapshot,
+        _ audienceConfiguration: AudienceConfigurationSnapshot
+    ) -> Bool {
+        return rulesSnapshot.configGeneration == audienceConfiguration.configGeneration
+            && self.checkpointsConfigProvider.isCurrent(rulesSnapshot)
+            && self.audiencesConfigProvider.isCurrent(audienceConfiguration)
+    }
+
+    private func evaluateRules(
+        for identifier: String,
+        in rules: [CheckpointRule],
+        params: CheckpointParams,
+        audienceConfiguration: AudienceConfigurationSnapshot
+    ) async throws -> AudienceRuleEvaluation {
+        do {
+            return .completed(try await self.matchingRule(
+                for: identifier,
+                in: rules,
+                params: params,
+                audienceConfiguration: audienceConfiguration
+            ))
+        } catch let error as CancellationError {
+            throw error
+        } catch {
+            return .unavailable(error)
+        }
+    }
+
+    /// Walks the served rules in priority order and returns the first one whose audience matches.
+    private func matchingRule(
+        for identifier: String,
+        in rules: [CheckpointRule],
+        params: CheckpointParams,
+        audienceConfiguration: AudienceConfigurationSnapshot
+    ) async throws -> CheckpointRule? {
+        return try await self.localRulesEvaluator.match(
+            in: rules,
+            // Already filtered to valid keys by `DimensionResolver`, which exposes them under `custom.*`.
+            customVariables: params.customVariables.mapValues(\.dimensionValue),
+            logPrefix: "[Checkpoint '\(identifier)'] "
+        ) { rule in
+            guard let audience = audienceConfiguration.audiences[rule.audienceId] else {
+                throw AudienceUnavailableError(audienceID: rule.audienceId)
+            }
+
+            return audience.rules
+        }
+    }
+
+    private func loadOfferings() async -> Offerings? {
+        do {
+            return try await self.offeringsProvider()
+        } catch {
+            Logger.error(error.localizedDescription)
+            return nil
+        }
+    }
+
+    private func resolve(_ rule: CheckpointRule) async throws -> CheckpointResolution {
+        // Deliberately the non-prewarming read: an offering workflow renders nothing, and prewarming takes
+        // its fonts from `uiConfig` rather than from the workflow's screens, so it isn't free here.
+        let workflowData: WorkflowDataResult
+        do {
+            workflowData = try await self.workflowManager.workflowData(workflowId: rule.workflowId)
+        } catch let error as CancellationError {
+            throw error
+        } catch {
+            return Self.unservable(rule, reason: error.localizedDescription)
+        }
+
+        let workflow = workflowData.workflow
+        guard let initialStep = workflow.steps[workflow.initialStepId] else {
+            return Self.unservable(rule, reason: "its initial step was not found")
+        }
+
+        if initialStep.isOfferingStep {
+            guard workflow.steps.count == 1 else {
+                return Self.unservable(rule, reason: "an offering step cannot be mixed with other steps")
+            }
+            return await self.resolveOffering(rule, step: initialStep)
+        }
+
+        if workflow.steps.values.contains(where: \.isOfferingStep) {
+            return Self.unservable(rule, reason: "a UI workflow cannot contain offering steps")
+        }
+
+        return await self.resolveWorkflow(workflowData: workflowData)
+    }
+
+    /// Serves a workflow whose only step is a terminal `offering` step as an offering the app owns.
+    ///
+    /// Only the offering identifier is validated. Anything else the step happens to carry is ignored rather
+    /// than treated as unservable, since a step of this kind renders nothing.
+    private func resolveOffering(
+        _ rule: CheckpointRule,
+        step: WorkflowStep
+    ) async -> CheckpointResolution {
+        guard let offeringID = step.offeringIdentifier else {
+            return Self.unservable(rule, reason: "the offering step has no valid offering identifier")
+        }
+        guard let match = await self.offering(identifier: offeringID, for: rule) else {
+            return .noAction(.configurationUnavailable)
+        }
+
+        return .matchedOffering(match.offering)
+    }
+
+    private func resolveWorkflow(workflowData: WorkflowDataResult) async -> CheckpointResolution {
+        guard let offerings = await self.loadOfferings() else {
+            return .noAction(.configurationUnavailable)
+        }
+
+        self.workflowManager.scheduleAssetPrewarming(for: workflowData)
+
+        return .matchedWorkflow(
+            ResolvedCheckpointWorkflow(
+                workflow: workflowData.workflow,
+                uiConfig: workflowData.uiConfig,
+                offerings: offerings,
+                workflowBlobRef: workflowData.workflowBlobRef
+            )
+        )
+    }
+
+    /// Loads the offerings and picks `identifier` out of them, logging why the rule can't be served when it
+    /// isn't there. Both resolution paths need the offering and the container it came from.
+    private func offering(
+        identifier: String,
+        for rule: CheckpointRule
+    ) async -> (offering: Offering, offerings: Offerings)? {
+        guard let offerings = await self.loadOfferings() else { return nil }
+        guard let offering = offerings.offering(identifier: identifier) else {
+            Self.unservable(rule, reason: "offering '\(identifier)' is unavailable")
+            return nil
+        }
+
+        return (offering, offerings)
+    }
+
+    @discardableResult
+    private static func unservable(_ rule: CheckpointRule, reason: String) -> CheckpointResolution {
+        Logger.warn(Strings.checkpoints.workflowRuleSkipped(
+            workflowID: rule.workflowId,
+            reason: reason
+        ))
+        return .noAction(.configurationUnavailable)
+    }
+
+    #if DEBUG
+    private static let simulatedErrorCheckpointIdentifier = "error_checkpoint"
+    #endif
+}
+/// An audience referenced by a checkpoint rule that the SDK couldn't read, so the rule can't be evaluated.
+private struct AudienceUnavailableError: Error, CustomStringConvertible {
+    let audienceID: String
+    var description: String {
+        return "audience '\(self.audienceID)' could not be read"
+    }
+}
+private enum AudienceRuleEvaluation {
+    case completed(CheckpointRule?)
+    case unavailable(any Error)
+}

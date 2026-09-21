@@ -30,8 +30,6 @@ public struct PaywallView: View {
     private let fonts: PaywallFontProvider
     private let displayCloseButton: Bool
     private let paywallViewOwnsPurchaseHandler: Bool
-    private let useDraftPaywall: Bool
-
     @StateObject
     private var internalPurchaseHandler: PurchaseHandler
 
@@ -52,11 +50,11 @@ public struct PaywallView: View {
     private var workflowContext: WorkflowContext?
 
     @State
-    private var customerInfo: CustomerInfo?
-    @State
     private var error: NSError?
 
     private var promoOfferCache: PaywallPromoOfferCache?
+
+    private var workflowPresentationErrorHandler: ((NSError) -> Void)?
 
     private var initializationError: NSError?
 
@@ -111,14 +109,30 @@ public struct PaywallView: View {
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil
     ) {
+        let purchaseHandler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
+
         self.init(
-            offering: offering,
-            fonts: fonts,
-            displayCloseButton: displayCloseButton,
-            useDraftPaywall: false,
-            performPurchase: performPurchase,
-            performRestore: performRestore
+            configuration: .init(
+                offering: offering,
+                fonts: fonts,
+                displayCloseButton: displayCloseButton,
+                purchaseHandler: purchaseHandler
             )
+        )
+    }
+
+    // swiftlint:disable:next missing_docs
+    @_spi(Internal) public init(
+        offeringIdentifier: String,
+        displayCloseButton: Bool = false
+    ) {
+        self.init(
+            configuration: .init(
+                content: .offeringIdentifier(offeringIdentifier, presentedOfferingContext: nil),
+                displayCloseButton: displayCloseButton,
+                purchaseHandler: .default()
+            )
+        )
     }
 
     // swiftlint:disable:next missing_docs
@@ -126,7 +140,6 @@ public struct PaywallView: View {
         offering: Offering,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
-        useDraftPaywall: Bool,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         simulatePromoEligible: Bool = false,
         performPurchase: PerformPurchase? = nil,
@@ -139,10 +152,9 @@ public struct PaywallView: View {
                 offering: offering,
                 fonts: fonts,
                 displayCloseButton: displayCloseButton,
-                useDraftPaywall: useDraftPaywall,
                 introEligibility: introEligibility,
                 purchaseHandler: purchaseHandler,
-                promoOfferCache: simulatePromoEligible ? PaywallPromoOfferCache(simulateEligible: true) : nil
+                promoOfferCache: .simulated(if: simulatePromoEligible)
             )
         )
     }
@@ -156,6 +168,7 @@ public struct PaywallView: View {
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
+        simulatePromoEligible: Bool = false,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil
     ) {
@@ -167,7 +180,8 @@ public struct PaywallView: View {
             fonts: fonts,
             displayCloseButton: displayCloseButton,
             introEligibility: introEligibility,
-            purchaseHandler: purchaseHandler
+            purchaseHandler: purchaseHandler,
+            promoOfferCache: .simulated(if: simulatePromoEligible)
         )
         configuration.injectedWorkflowContext = workflowContext
 
@@ -188,27 +202,21 @@ public struct PaywallView: View {
 
         self._introEligibility = .init(wrappedValue: configuration.introEligibility ?? .default())
 
-        // An injected workflow context (preview/injection path) is used directly; there is no
-        // synchronous cache seed for a workflow paywall, so otherwise the seed is nil and the async
-        // resolve path always takes over, falling back to the cached offering in the meantime.
-        let seededWorkflowContext = configuration.injectedWorkflowContext
-        self._workflowContext = .init(initialValue: seededWorkflowContext)
-        self._offering = .init(
-            initialValue: seededWorkflowContext?.initialOffering
-                ?? configuration.purchaseHandler.cachedInitialOffering(
-                    for: configuration.content
-                )
+        let initialPaywallViewData = configuration.purchaseHandler.cachedInitialPaywallViewData(
+            for: configuration.content,
+            injectedWorkflowContext: configuration.injectedWorkflowContext
         )
-        self._customerInfo = .init(
-            initialValue: configuration.customerInfo ?? Self.loadCachedCustomerInfoIfPossible()
+        self._workflowContext = .init(initialValue: initialPaywallViewData?.workflowContext)
+        self._offering = .init(
+            initialValue: initialPaywallViewData?.offering
         )
 
         self.contentToDisplay = configuration.content
         self.mode = configuration.mode
         self.fonts = configuration.fonts
         self.displayCloseButton = configuration.displayCloseButton
-        self.useDraftPaywall = configuration.useDraftPaywall
         self.promoOfferCache = configuration.promoOfferCache
+        self.workflowPresentationErrorHandler = configuration.workflowPresentationErrorHandler
 
         self.initializationError = Self.checkForConfigurationConsistency(purchaseHandler: configuration.purchaseHandler)
     }
@@ -255,6 +263,7 @@ public struct PaywallView: View {
             // If the parent view uses refreshable, it can be inherited by the paywall view
             // and pulling down in the paywall would execute the parent's refreshable action
             .refreshableDisabled()
+            .modifier(PaywallURLEventsModifier(purchaseHandler: self.purchaseHandler))
     }
 
     @MainActor
@@ -264,11 +273,9 @@ public struct PaywallView: View {
             if let error = self.initializationError {
                 DebugErrorView(error.localizedDescription, releaseBehavior: .fatalError)
             } else if self.introEligibility.isConfigured, self.purchaseHandler.isConfigured {
-                if let offering = self.offering, let customerInfo = self.customerInfo {
+                if let offering = self.offering {
                     self.paywallView(for: offering,
                                      workflowContext: self.workflowContext,
-                                     useDraftPaywall: self.useDraftPaywall,
-                                     activelySubscribedProductIdentifiers: customerInfo.activeSubscriptions,
                                      fonts: self.fonts,
                                      checker: self.introEligibility,
                                      purchaseHandler: self.purchaseHandler)
@@ -290,15 +297,9 @@ public struct PaywallView: View {
                                     throw PaywallError.purchasesNotConfigured
                                 }
 
-                                if self.offering == nil {
-                                    let paywallData = try await self.loadPaywallData()
-                                    self.offering = paywallData.offering
-                                    self.workflowContext = paywallData.workflowContext
-                                }
-
-                                if self.customerInfo == nil {
-                                    self.customerInfo = try await Purchases.shared.customerInfo()
-                                }
+                                let paywallData = try await self.loadPaywallData()
+                                self.offering = paywallData.offering
+                                self.workflowContext = paywallData.workflowContext
                             } catch let error as NSError {
                                 self.error = error
                             }
@@ -327,18 +328,16 @@ public struct PaywallView: View {
 //    }
 
     @ViewBuilder
-    // swiftlint:disable:next function_body_length function_parameter_count
+    // swiftlint:disable:next function_body_length
     private func paywallView(
         for offering: Offering,
         workflowContext: WorkflowContext?,
-        useDraftPaywall: Bool,
-        activelySubscribedProductIdentifiers: Set<String>,
         fonts: PaywallFontProvider,
         checker: TrialOrIntroEligibilityChecker,
         purchaseHandler: PurchaseHandler
     ) -> some View {
 
-        if let paywallComponents = useDraftPaywall ? offering.draftPaywallComponents : offering.paywallComponents {
+        if let paywallComponents = offering.internalPaywallComponents {
             // For V2 paywalls, prefer zeroDecimalPlaceCountries from paywallComponents
             let zeroDecimalPlaceCountries = paywallComponents.data.zeroDecimalPlaceCountries
             let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
@@ -357,7 +356,6 @@ public struct PaywallView: View {
             case .footer, .condensedFooter:
                 LoadedOfferingPaywallView(
                     offering: offering,
-                    activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
                     paywall: paywall,
                     template: PaywallData.defaultTemplate,
                     mode: self.mode,
@@ -379,7 +377,8 @@ public struct PaywallView: View {
                         showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
                         displayCloseButton: self.displayCloseButton,
                         promoOfferCache: self.promoOfferCache,
-                        onDismiss: self.dismissRequested
+                        onDismiss: self.dismissRequested,
+                        onPresentationError: self.workflowPresentationErrorHandler
                     )
                 } else {
                     PaywallsV2View(
@@ -407,7 +406,6 @@ public struct PaywallView: View {
 
             LoadedOfferingPaywallView(
                 offering: offering,
-                activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
                 paywall: paywall,
                 template: template,
                 mode: self.mode,
@@ -431,14 +429,6 @@ public struct PaywallView: View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 private extension PaywallView {
-
-    static func loadCachedCustomerInfoIfPossible() -> CustomerInfo? {
-        if Purchases.isConfigured {
-            return Purchases.shared.cachedCustomerInfo
-        } else {
-            return nil
-        }
-    }
 
     func loadPaywallData() async throws -> PurchaseHandler.ResolvedPaywallViewData {
         return try await self.purchaseHandler.resolvePaywallViewData(for: self.contentToDisplay)
@@ -467,7 +457,6 @@ private extension PaywallView {
 struct LoadedOfferingPaywallView: View {
 
     private let offering: Offering
-    private let activelySubscribedProductIdentifiers: Set<String>
     private let paywall: PaywallData
     private let template: PaywallTemplate
     private let mode: PaywallViewMode
@@ -486,6 +475,9 @@ struct LoadedOfferingPaywallView: View {
     @Environment(\.onRequestedDismissal)
     private var onRequestedDismissal: (() -> Void)?
 
+    @Environment(\.paywallInteractionNotifier)
+    private var paywallInteractionNotifier
+
     @Environment(\.colorScheme)
     private var colorScheme
 
@@ -500,7 +492,6 @@ struct LoadedOfferingPaywallView: View {
 
     init(
         offering: Offering,
-        activelySubscribedProductIdentifiers: Set<String>,
         paywall: PaywallData,
         template: PaywallTemplate,
         mode: PaywallViewMode,
@@ -513,7 +504,6 @@ struct LoadedOfferingPaywallView: View {
         error: Offering.PaywallValidationError? = nil
     ) {
         self.offering = offering
-        self.activelySubscribedProductIdentifiers = activelySubscribedProductIdentifiers
         self.paywall = paywall
         self.template = template
         self.mode = mode
@@ -575,7 +565,6 @@ struct LoadedOfferingPaywallView: View {
     private var content: some View {
         let configuration = self.paywall.configuration(
             for: self.offering,
-            activelySubscribedProductIdentifiers: self.activelySubscribedProductIdentifiers,
             template: self.template,
             mode: self.mode,
             fonts: self.fonts,
@@ -588,7 +577,8 @@ struct LoadedOfferingPaywallView: View {
             .environmentObject(self.introEligibility)
             .environment(
                 \.componentInteractionLogger,
-                self.purchaseHandler.componentInteractionLogger(sessionID: self.paywallSessionID)
+                self.purchaseHandler.componentInteractionLogger(sessionID: self.paywallSessionID,
+                                                                onInteraction: self.paywallInteractionNotifier)
             )
             .environmentObject(self.purchaseHandler)
             .disabled(self.purchaseHandler.actionInProgress)
@@ -753,7 +743,6 @@ struct PaywallView_Previews: PreviewProvider {
                 PaywallView(
                     configuration: .init(
                         offering: offering,
-                        customerInfo: TestData.customerInfo,
                         mode: mode,
                         introEligibility: PreviewHelpers.introEligibilityChecker,
                         purchaseHandler: PreviewHelpers.purchaseHandler
@@ -807,7 +796,6 @@ struct PaywallLocalizationPreviews: PreviewProvider {
         PaywallView(
             configuration: .init(
                 offering: offering,
-                customerInfo: TestData.customerInfo,
                 mode: .fullScreen,
                 introEligibility: PreviewHelpers.introEligibilityChecker,
                 purchaseHandler: .mock(preferredLocaleOverride: locale)

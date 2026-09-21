@@ -18,10 +18,15 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
     // swiftlint:disable:next force_unwrapping
     static let serverHostURL = URL(string: "https://api.revenuecat.com")!
 
+    var usesAPISources: Bool {
+        return true
+    }
+
     var authenticated: Bool {
         switch self {
         case .getWebOfferingProducts,
-             .getWebBillingProducts:
+             .getWebBillingProducts,
+             .postHostedCheckout:
             return true
         }
     }
@@ -31,13 +36,16 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
         case .getWebOfferingProducts,
              .getWebBillingProducts:
             return true
+        case .postHostedCheckout:
+            return false
         }
     }
 
     var supportsSignatureVerification: Bool {
         switch self {
         case .getWebOfferingProducts,
-             .getWebBillingProducts:
+             .getWebBillingProducts,
+             .postHostedCheckout:
             return false
         }
     }
@@ -45,7 +53,8 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
     var needsNonceForSigning: Bool {
         switch self {
         case .getWebOfferingProducts,
-             .getWebBillingProducts:
+             .getWebBillingProducts,
+             .postHostedCheckout:
             return false
         }
     }
@@ -60,6 +69,22 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
                 "id=\(productId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? productId)"
             }.joined(separator: "&")
             return "/rcbilling/v1/subscribers/\(encodedUserId)/products?\(encodedProductIds)"
+        case .postHostedCheckout:
+            return "/rcbilling/v1/hosted-checkout"
+        }
+    }
+
+    var relativeIAMPath: String {
+        switch self {
+        case .getWebOfferingProducts:
+            return "/rcbilling/v1/customer/offering_products"
+        case let .getWebBillingProducts(userId: _, productIds: productIds):
+            let encodedProductIds = productIds.map { productId in
+                "id=\(productId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? productId)"
+            }.joined(separator: "&")
+            return "/rcbilling/v1/customer/products?\(encodedProductIds)"
+        case .postHostedCheckout:
+            return self.relativePath
         }
     }
 
@@ -69,6 +94,8 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
             return "get_web_offering_products"
         case .getWebBillingProducts:
             return "get_web_products"
+        case .postHostedCheckout:
+            return "post_hosted_checkout"
         }
     }
 

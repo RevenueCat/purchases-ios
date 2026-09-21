@@ -71,12 +71,14 @@ class CarouselComponentViewModel {
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
         customVariables: [String: CustomVariableValue],
+        windowSize: CGSize? = nil,
         colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (CarouselComponentStyle) -> some View
     ) -> some View {
         let conditionContext = self.uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: customVariables
+            customVariables: customVariables,
+            windowSize: windowSize
         )
         let partial = PresentedCarouselPartial.buildPartial(
             state: state,
@@ -197,7 +199,7 @@ struct CarouselComponentStyle {
         colorScheme: ColorScheme
     ) {
         self.visible = visible
-        self.size = size ?? .init(width: .fit, height: .fit)
+        self.size = size ?? .init(width: .fit(nil), height: .fit(nil))
         self.padding = (padding ?? .zero).edgeInsets
         self.margin = (margin ?? .zero).edgeInsets
         self.backgroundStyle = background?.asDisplayable(uiConfigProvider: uiConfigProvider)

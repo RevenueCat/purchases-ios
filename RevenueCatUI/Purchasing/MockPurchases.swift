@@ -35,6 +35,11 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
     var isUIPreviewMode = false
     var remoteConfigEnabled = false
 
+    let configuredStoreEnvironment = ConfiguredStoreEnvironment(
+        apiKey: "test_",
+        storeFrontCountryCode: nil
+    )
+
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         get { return _purchasesAreCompletedBy }
         set { _ = newValue }
@@ -44,10 +49,15 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
 
 #if !os(tvOS)
     var workflowBlock: ((String) async throws -> WorkflowDataResult)?
+    var cachedWorkflowBlock: ((String) -> WorkflowDataResult?)?
 
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
         guard let block = workflowBlock else { throw ErrorCode.configurationError }
         return try await block(offeringID)
+    }
+
+    func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
+        return self.cachedWorkflowBlock?(offeringID)
     }
 #endif
 
@@ -177,6 +187,7 @@ extension PaywallPurchasesType {
         mapped.remoteConfigEnabled = self.remoteConfigEnabled
         #if !os(tvOS)
         mapped.workflowBlock = { try await self.workflow(forOfferingIdentifier: $0) }
+        mapped.cachedWorkflowBlock = { self.cachedWorkflow(forOfferingIdentifier: $0) }
         mapped.trackWorkflowEventBlock = { await self.track(workflowEvent: $0) }
         #endif
 
@@ -207,6 +218,7 @@ extension PaywallPurchasesType {
         mapped.remoteConfigEnabled = self.remoteConfigEnabled
         #if !os(tvOS)
         mapped.workflowBlock = { try await self.workflow(forOfferingIdentifier: $0) }
+        mapped.cachedWorkflowBlock = { self.cachedWorkflow(forOfferingIdentifier: $0) }
         mapped.trackWorkflowEventBlock = { await self.track(workflowEvent: $0) }
         #endif
 

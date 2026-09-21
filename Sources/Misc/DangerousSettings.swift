@@ -16,6 +16,7 @@ import Foundation
     internal struct Internal: InternalDangerousSettingsType {
 
         let enableReceiptFetchRetry: Bool
+        let usesRemoteConfigAPISources: Bool
 
         #if DEBUG
         let forceServerErrorStrategy: ForceServerErrorStrategy?
@@ -25,12 +26,14 @@ import Foundation
 
         init(
             enableReceiptFetchRetry: Bool = false,
+            usesRemoteConfigAPISources: Bool = false,
             forceServerErrorStrategy: ForceServerErrorStrategy? = nil,
             forceSignatureFailures: Bool = false,
             disableHeaderSignatureVerification: Bool = false,
             testReceiptIdentifier: String? = nil
         ) {
             self.enableReceiptFetchRetry = enableReceiptFetchRetry
+            self.usesRemoteConfigAPISources = usesRemoteConfigAPISources
             self.forceServerErrorStrategy = forceServerErrorStrategy
             self.forceSignatureFailures = forceSignatureFailures
             self.disableHeaderSignatureVerification = disableHeaderSignatureVerification
@@ -38,9 +41,11 @@ import Foundation
         }
         #else
         init(
-            enableReceiptFetchRetry: Bool = false
+            enableReceiptFetchRetry: Bool = false,
+            usesRemoteConfigAPISources: Bool = false
         ) {
             self.enableReceiptFetchRetry = enableReceiptFetchRetry
+            self.usesRemoteConfigAPISources = usesRemoteConfigAPISources
         }
 
         #endif
@@ -55,6 +60,8 @@ import Foundation
         let autoSyncPurchases: Bool
         let uiPreviewMode: Bool
         let customEntitlementComputation: Bool
+        let forceAllowTestStoreInReleaseBuilds: Bool
+        let useExternalPurchaseCustomLinks: Bool
     }
 
     internal let storage: Storage
@@ -90,6 +97,28 @@ import Foundation
      */
     @objc public var customEntitlementComputation: Bool { self.storage.customEntitlementComputation }
 
+    /**
+     * Forces the SDK to allow using a Test Store API key in Release builds.
+     * By default, configuring the SDK with a Test Store API key in a Release build crashes the app to prevent
+     * uploading it to the App Store.
+     *
+     * - Important: Avoid enabling this except when necessary (e.g. internal builds compiled in Release that are
+     * never uploaded to the App Store), to make sure no builds using the Test Store reach the stores.
+     */
+    @objc public var forceAllowTestStoreInReleaseBuilds: Bool { self.storage.forceAllowTestStoreInReleaseBuilds }
+
+    /**
+     * Whether a web purchase button that opens its link in the external browser takes part in Apple's
+     * external purchase custom link programme: the customer is shown Apple's disclosure notice, and the
+     * purchase is reported to Apple.
+     *
+     * Disabled by default. Enabling it requires the app to be enrolled in the programme and to carry the
+     * corresponding entitlement.
+     */
+    @_spi(Experimental) public var useExternalPurchaseCustomLinks: Bool {
+        self.storage.useExternalPurchaseCustomLinks
+    }
+
     @objc public override convenience init() {
         self.init(autoSyncPurchases: true)
     }
@@ -107,6 +136,24 @@ import Foundation
 
     }
 
+    /**
+     * Only use a Dangerous Setting if suggested by RevenueCat support team.
+     *
+     * - Parameter autoSyncPurchases: Disable or enable subscribing to the StoreKit queue.
+     * If this is disabled, RevenueCat won't observe the StoreKit queue, and it will not sync any purchase
+     * automatically.
+     * - Parameter forceAllowTestStoreInReleaseBuilds: Forces the SDK to allow using a Test Store API key in
+     * Release builds. Avoid enabling this except when necessary, to make sure no builds using the Test Store
+     * reach the stores.
+     */
+    @objc public convenience init(autoSyncPurchases: Bool,
+                                  forceAllowTestStoreInReleaseBuilds: Bool) {
+        self.init(autoSyncPurchases: autoSyncPurchases,
+                  customEntitlementComputation: false,
+                  internalSettings: Internal.default,
+                  forceAllowTestStoreInReleaseBuilds: forceAllowTestStoreInReleaseBuilds)
+    }
+
     /// - Note: this is `internal` only so the only `public` way to enable `customEntitlementComputation`
     /// is through ``Purchases/configureInCustomEntitlementsComputationMode(apiKey:appUserID:)``.
     @objc internal convenience init(autoSyncPurchases: Bool = true,
@@ -115,6 +162,21 @@ import Foundation
                   customEntitlementComputation: customEntitlementComputation,
                   internalSettings: Internal.default)
 
+    }
+
+    /**
+     * - Parameter autoSyncPurchases: Disable or enable subscribing to the StoreKit queue.
+     * If this is disabled, RevenueCat won't observe the StoreKit queue, and it will not sync any purchase
+     * automatically.
+     * - Parameter useExternalPurchaseCustomLinks: Whether a web purchase button that opens its link in the
+     * external browser takes part in Apple's external purchase custom link programme.
+     */
+    @_spi(Experimental) public convenience init(autoSyncPurchases: Bool,
+                                                useExternalPurchaseCustomLinks: Bool) {
+        self.init(autoSyncPurchases: autoSyncPurchases,
+                  customEntitlementComputation: false,
+                  internalSettings: Internal.default,
+                  useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks)
     }
 
     /**
@@ -131,11 +193,15 @@ import Foundation
     internal init(autoSyncPurchases: Bool,
                   customEntitlementComputation: Bool = false,
                   internalSettings: InternalDangerousSettingsType,
-                  uiPreviewMode: Bool = false) {
+                  uiPreviewMode: Bool = false,
+                  forceAllowTestStoreInReleaseBuilds: Bool = false,
+                  useExternalPurchaseCustomLinks: Bool = false) {
         self.storage = Storage(
             autoSyncPurchases: autoSyncPurchases,
             uiPreviewMode: uiPreviewMode,
-            customEntitlementComputation: customEntitlementComputation
+            customEntitlementComputation: customEntitlementComputation,
+            forceAllowTestStoreInReleaseBuilds: forceAllowTestStoreInReleaseBuilds,
+            useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks
         )
         self.internalSettings = internalSettings
     }
@@ -157,12 +223,16 @@ internal protocol InternalDangerousSettingsType: Sendable {
     /// Whether `ReceiptFetcher` can retry fetching receipts.
     var enableReceiptFetchRetry: Bool { get }
 
+    /// Whether main-API requests resolve their base host from the remote-config API sources
+    /// instead of the static `SystemInfo.apiBaseURL`. Disabled by default; enabled in tests while
+    /// remote-config-driven host resolution is being validated.
+    var usesRemoteConfigAPISources: Bool { get }
+
     #if DEBUG
     /// The strategy for the `HTTPClient` to fake server errors. Meant for tests only.
     /// `nil` means no server errors are forced.
     ///
-    /// This is done by routing the requests to https://api.revenuecat.com/force-server-failure,
-    /// which returns a 502 status code with a HTML response body.
+    /// See `ForceServerErrorStrategy.Action` for the ways a request can be intercepted.
     var forceServerErrorStrategy: ForceServerErrorStrategy? { get }
 
     /// Whether `HTTPClient` will fake invalid signatures.
@@ -183,29 +253,32 @@ internal protocol InternalDangerousSettingsType: Sendable {
 
 struct ForceServerErrorStrategy {
 
+    /// What the `HTTPClient` does with a request.
+    enum Action {
+
+        /// The request is not performed, and this response is returned instead.
+        case fakeResponse(HTTPURLResponse, Data)
+
+        /// The request is performed against this URL instead of its original one.
+        ///
+        /// - Warning: the original method, headers and body are dropped.
+        case serverErrorURL(URL)
+
+        /// The request is performed as usual, without interception.
+        case performRequest
+
+        /// Routes the request to `ForceServerErrorStrategy.defaultServerErrorURL`.
+        static var defaultServerError: Self {
+            return .serverErrorURL(ForceServerErrorStrategy.defaultServerErrorURL)
+        }
+
+    }
+
+    /// Returns a 502 status code with an HTML response body.
     // swiftlint:disable:next force_unwrapping
     static let defaultServerErrorURL = URL(string: "https://api.revenuecat.com/force-server-failure")!
 
-    let serverErrorURL: URL
-
-    /// If this returns a non-nil pair of `(HTTPURLResponse, Data)`, the `HTTPClient` will not perform the request
-    /// and will just return the fake response.
-    ///
-    /// Takes precedence over `shouldForceServerError`.
-    let fakeResponseWithoutPerformingRequest: (HTTPClient.Request) -> (HTTPURLResponse, Data)?
-
-    /// If this returns `true`, the `HTTPClient` will route the request to `forceServerErrorURL`.
-    let shouldForceServerError: (HTTPClient.Request) -> Bool
-
-    init(
-        serverErrorURL: URL = Self.defaultServerErrorURL,
-        fakeResponseWithoutPerformingRequest: @escaping (HTTPClient.Request) -> (HTTPURLResponse, Data)? = { _ in nil },
-        shouldForceServerError: @escaping (HTTPClient.Request) -> Bool
-    ) {
-        self.serverErrorURL = serverErrorURL
-        self.fakeResponseWithoutPerformingRequest = fakeResponseWithoutPerformingRequest
-        self.shouldForceServerError = shouldForceServerError
-    }
+    let action: (HTTPClient.Request) -> Action
 
 }
 

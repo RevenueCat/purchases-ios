@@ -1167,6 +1167,110 @@ extension TabsPackageInheritanceTests {
 
 }
 
+// MARK: - Cross-Tab Workflow Default Tests
+//
+// Regression seen in 5.83.0 (remote config + workflows enabled by default, #7327): a tabs paywall
+// served as a single-step workflow stopped selecting the second tab's own default package.
+//
+// `WorkflowContext.collectPackages` flattens every tab into one list, so the workflow-global
+// default is whichever package is marked `isSelectedByDefault` first across all tabs (tab 1's).
+// `LoadedTabsComponentView` then preferred that workflow default over each tab's own default,
+// so tab 2 received a package that isn't even in its list and nothing rendered as selected.
+// Before 5.83.0 `workflowPackageContext` was nil for these paywalls, so the tab defaults were used.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension TabsPackageInheritanceTests {
+
+    /// Tab 2's packages, disjoint from tab 1's (mirrors the customer paywall: subscriptions in
+    /// tab 1, one-time purchases in tab 2).
+    private var tab2PackageOne: Package {
+        Package(
+            identifier: "onetime1",
+            packageType: .custom,
+            storeProduct: TestData.lifetimeProduct.toStoreProduct(),
+            offeringIdentifier: "test_offering",
+            webCheckoutUrl: nil
+        )
+    }
+
+    private var tab2PackageTwo: Package {
+        Package(
+            identifier: "onetime2",
+            packageType: .custom,
+            storeProduct: TestData.consumableProduct.toStoreProduct(),
+            offeringIdentifier: "test_offering",
+            webCheckoutUrl: nil
+        )
+    }
+
+    func testInitialPackageUsesTabDefaultWhenWorkflowDefaultBelongsToAnotherTab() {
+        // Scenario: tab 1 declares annual (parentPackageB) as its default, so the flattened
+        // workflow default is annual. Tab 2 only has one-time packages and declares its own
+        // default. Tab 2 must show its own default, not the other tab's package.
+        let result = LoadedTabsComponentView.initialPackage(
+            parentPackage: nil,
+            tabPackages: [self.tab2PackageOne, self.tab2PackageTwo],
+            workflowDefaultPackage: self.parentPackageB,
+            tabDefaultPackage: self.tab2PackageOne
+        )
+
+        expect(result?.identifier) == self.tab2PackageOne.identifier
+    }
+
+    func testTabSwitchSelectsTabDefaultWhenWorkflowDefaultBelongsToAnotherTab() {
+        // Scenario: user switches to tab 2 without having picked a package. Tab 2's own default
+        // must be selected in both the tab and the parent (purchase button) context.
+        let tab2Packages = [self.tab2PackageOne, self.tab2PackageTwo]
+        let variableContext = PackageContext.VariableContext(packages: tab2Packages)
+
+        let updatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
+            // No explicit user selection yet, so the tabs view passes nil here.
+            parentOwnedPackage: nil,
+            parentOwnedVariableContext: variableContext,
+            parentCurrentVariableContext: variableContext,
+            tabPackages: tab2Packages,
+            tabDefaultPackage: LoadedTabsComponentView.effectiveTabDefaultPackage(
+                workflowDefaultPackage: self.parentPackageB,
+                tabPackages: tab2Packages,
+                tabDefaultPackage: self.tab2PackageOne
+            )
+        )
+
+        expect(updatePlan.tabUpdate?.package?.identifier) == self.tab2PackageOne.identifier
+        expect(updatePlan.parentUpdate?.package?.identifier) == self.tab2PackageOne.identifier
+    }
+
+    func testEffectiveTabDefaultKeepsWorkflowDefaultWhenTabOffersIt() {
+        // The workflow default still wins when the tab actually offers it, so a selection carried
+        // across workflow steps sharing a package set is preserved.
+        let result = LoadedTabsComponentView.effectiveTabDefaultPackage(
+            workflowDefaultPackage: self.parentPackageB,
+            tabPackages: [self.parentPackageA, self.parentPackageB],
+            tabDefaultPackage: self.parentPackageA
+        )
+
+        expect(result?.identifier) == self.parentPackageB.identifier
+    }
+
+    func testResolverIgnoresTabDefaultOutsideTabPackages() {
+        // Defense in depth: whatever the call site passes, the resolver must never hand a tab a
+        // package it doesn't list, because no row would render as selected.
+        let tab2Packages = [self.tab2PackageOne, self.tab2PackageTwo]
+        let variableContext = PackageContext.VariableContext(packages: tab2Packages)
+
+        let updatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentOwnedPackage: nil,
+            parentOwnedVariableContext: variableContext,
+            parentCurrentVariableContext: variableContext,
+            tabPackages: tab2Packages,
+            tabDefaultPackage: self.parentPackageB
+        )
+
+        expect(updatePlan.tabUpdate).to(beNil())
+        expect(updatePlan.parentUpdate).to(beNil())
+    }
+
+}
+
 // MARK: - Test Helpers
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

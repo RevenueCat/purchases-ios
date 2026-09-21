@@ -48,6 +48,9 @@ struct ButtonComponentView: View {
     @Environment(\.screenCondition)
     private var screenCondition
 
+    @Environment(\.paywallWindowSize)
+    private var paywallWindowSize
+
     @Environment(\.customPaywallVariables)
     private var customVariables
 
@@ -55,8 +58,10 @@ struct ButtonComponentView: View {
     private var selectedPackageId
 
     @Environment(\.componentInteractionLogger) var componentInteractionLogger
+    @Environment(\.urlOpenedNotifier) private var urlOpenedNotifier
     @Environment(\.workflowTriggerAction) private var workflowTriggerAction
     @Environment(\.closeWorkflowAction) private var closeWorkflowAction
+    @Environment(\.workflowNavigateBackHandler) private var workflowNavigateBackHandler
     @Environment(\.workflowRenderingContext) private var workflowRenderingContext
 
     private let viewModel: ButtonComponentViewModel
@@ -76,7 +81,7 @@ struct ButtonComponentView: View {
         }
 
         switch actionType {
-        case .purchase:
+        case .purchase, .externalPurchasePreparation:
             return false
         case .restore, .pendingPurchaseContinuation:
             return true
@@ -100,7 +105,8 @@ struct ButtonComponentView: View {
                    for: self.packageContext.package
                ),
                selectedPackageId: self.selectedPackageId,
-               customVariables: self.customVariables
+               customVariables: self.customVariables,
+               windowSize: self.paywallWindowSize
            ) {
             AsyncButton {
                 try await performAction()
@@ -111,6 +117,9 @@ struct ButtonComponentView: View {
                     showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
                 )
             }
+            .applyIfLet(self.derivedAccessibilityLabel, apply: { view, label in
+                view.accessibilityLabel(label)
+            })
             .withTransition(viewModel.component.transition)
             .disabled(self.shouldBeDisabled)
             .opacity(self.shouldBeDisabled ? 0.35 : 1.0)
@@ -118,7 +127,11 @@ struct ButtonComponentView: View {
             .opacity(self.workflowRenderingContext.isHeader ? self.headerButtonOpacity : 1)
             #if canImport(SafariServices) && canImport(UIKit)
             .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
-                SafariView(url: self.inAppBrowserURL!)
+                let url = self.inAppBrowserURL!
+                SafariView(url: url)
+                    // Reported here rather than when the URL is assigned, so the listener only hears about
+                    // in-app browser opens that actually made it on screen.
+                    .onAppear { self.urlOpenedNotifier(url) }
             }
             #if os(iOS)
             .applyIf(self.viewModel.opensCustomerCenter, apply: { view in
@@ -133,6 +146,24 @@ struct ButtonComponentView: View {
             #endif
             #endif
         }
+    }
+
+    /// Resolved through the same `dismissalAction` the tap itself goes through, so the announced
+    /// word cannot drift from where the button actually leads.
+    private var derivedAccessibilityLabel: String? {
+        let dismissal = WorkflowPaywallView.dismissalAction(
+            canNavigateBack: self.workflowRenderingContext.canNavigateBack,
+            hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession
+        )
+
+        let dismissesWorkflow: Bool
+        if case .dismissWorkflow = dismissal {
+            dismissesWorkflow = true
+        } else {
+            dismissesWorkflow = false
+        }
+
+        return self.viewModel.derivedAccessibilityLabel(dismissesPaywall: dismissesWorkflow)
     }
 
     private var headerPageOffset: CGFloat {
@@ -159,17 +190,11 @@ struct ButtonComponentView: View {
         case .restorePurchases:
             try await restorePurchases()
         case .navigateTo(let destination):
-            navigateTo(destination: destination)
+            await navigateTo(destination: destination)
         case .navigateBack:
-            onDismiss()
+            self.navigateBack()
         case .closeWorkflow:
-            if let closeWorkflowAction {
-                closeWorkflowAction()
-            } else {
-                Logger.warning(
-                    Strings.paywall_close_workflow_action_not_handled(componentName: self.viewModel.component.name)
-                )
-            }
+            self.closeWorkflow()
         case .workflowTrigger:
             Logger.warning(
                 Strings.paywall_workflow_trigger_not_handled(componentName: self.viewModel.component.name)
@@ -189,6 +214,24 @@ struct ButtonComponentView: View {
                 )
                 openSheet(sheetViewModel)
             }
+        }
+    }
+
+    private func navigateBack() {
+        if let workflowNavigateBackHandler {
+            workflowNavigateBackHandler()
+        } else {
+            onDismiss()
+        }
+    }
+
+    private func closeWorkflow() {
+        if let closeWorkflowAction {
+            closeWorkflowAction()
+        } else {
+            Logger.warning(
+                Strings.paywall_close_workflow_action_not_handled(componentName: self.viewModel.component.name)
+            )
         }
     }
 
@@ -229,7 +272,7 @@ struct ButtonComponentView: View {
         self.purchaseHandler.setRestored(customerInfo, success: success)
     }
 
-    private func navigateTo(destination: ButtonComponentViewModel.Destination) {
+    private func navigateTo(destination: ButtonComponentViewModel.Destination) async {
         switch destination {
         case .customerCenter:
             self.showCustomerCenter = true
@@ -243,11 +286,12 @@ struct ButtonComponentView: View {
             Browser.navigateTo(url: url,
                                method: method,
                                openURL: self.openURL,
-                               inAppBrowserURL: self.$inAppBrowserURL)
+                               inAppBrowserURL: self.$inAppBrowserURL,
+                               onURLOpened: self.urlOpenedNotifier.callAsFunction)
         case .unknown:
             break
         case .webPaywallLink(url: let url, method: let method):
-            self.openWebPaywallLink(url: url, method: method)
+            await self.openWebPaywallLink(url: url, method: method)
         }
     }
 
@@ -274,7 +318,17 @@ struct ButtonComponentView: View {
 #endif
     }
 
-    private func openWebPaywallLink(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) {
+    private func openWebPaywallLink(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) async {
+        guard !self.purchaseHandler.actionInProgress else {
+            return
+        }
+
+        guard let url = await ExternalPurchaseLink.urlToOpen(url,
+                                                             method: method,
+                                                             purchaseHandler: self.purchaseHandler) else {
+            return
+        }
+
         self.purchaseHandler.invalidateCustomerInfoCache()
 #if os(watchOS)
         // watchOS doesn't support openURL with a completion handler, so we're just opening the URL.
@@ -288,6 +342,7 @@ struct ButtonComponentView: View {
             }
         }
 #endif
+        self.purchaseHandler.signalWebCheckoutOpened()
         onDismiss()
     }
 }

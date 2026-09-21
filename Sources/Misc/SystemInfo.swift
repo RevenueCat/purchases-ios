@@ -93,17 +93,11 @@ class SystemInfo {
         return self._isSandbox
     }
 
-    /// Whether remote config lifecycle wiring is enabled. Temporary gate while remote config is being
-    /// rolled out. Paywall workflows read entirely through remote config, so this is also the single
-    /// gate for workflows: there's no separate workflows switch, since the two ship together.
+    /// Whether remote config lifecycle wiring is enabled. Paywall workflows read entirely through
+    /// remote config, so this is also the gate for workflows: there's no separate workflows switch,
+    /// since the two ship together.
     var remoteConfigEnabled: Bool {
-        guard !self.dangerousSettings.customEntitlementComputation else { return false }
-
-        #if ENABLE_REMOTE_CONFIG
-        return true
-        #else
-        return false
-        #endif
+        return !self.dangerousSettings.customEntitlementComputation
     }
 
     var isDebugBuild: Bool {
@@ -119,7 +113,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.81.0-SNAPSHOT"
+        return "5.91.0-SNAPSHOT"
     }
 
     static var installationMethod: String {
@@ -408,13 +402,13 @@ extension SystemInfo {
         #elseif os(watchOS)
         if #available(watchOS 9, *) {
             return WKApplication.didBecomeActiveNotification
-        } else if #available(watchOS 7, *) {
+        }
+        if #available(watchOS 7, *) {
             // Work around for "Symbol not found" dyld crashes on watchOS 7.0..<9.0
             return Notification.Name("WKApplicationDidBecomeActiveNotification")
-        } else {
-            // There's no equivalent notification available on watchOS <7.
-            return nil
         }
+        // There's no equivalent notification available on watchOS <7.
+        return nil
         #endif
     }
 

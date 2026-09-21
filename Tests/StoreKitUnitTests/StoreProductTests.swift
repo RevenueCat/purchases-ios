@@ -230,6 +230,7 @@ class StoreProductTests: StoreKitConfigTestCase {
     }
 
     func testSk1PriceFormatterUsesCurrentStorefront() async throws {
+        try AvailabilityChecks.switchingStorefrontWithSKTestWorksOrSkipTest()
         testSession.locale = Locale(identifier: "es_ES")
         try await self.changeStorefront("ESP")
 
@@ -270,6 +271,7 @@ class StoreProductTests: StoreKitConfigTestCase {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSk2PriceFormatterReactsToStorefrontChanges() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.switchingStorefrontWithSKTestWorksOrSkipTest()
 
         testSession.locale = Locale(identifier: "es_ES")
         try await self.changeStorefront("ESP")
@@ -305,6 +307,7 @@ class StoreProductTests: StoreKitConfigTestCase {
     @available(iOS 16.0, tvOS 16.0, macOS 13.0, watchOS 9.0, *)
     func testSk2PriceFormatterGetsLocaleFromStoreKit() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        try AvailabilityChecks.switchingStorefrontWithSKTestWorksOrSkipTest()
 
         let sk2Fetcher = ProductsFetcherSK2()
 
@@ -592,6 +595,54 @@ extension StoreProductTests {
         expect(storeProduct.price) == 11.97
     }
 
+    func testLocalizedPriceStringUsesProductPriceStringWhenInstallmentsInfoIsNil() {
+        let localizedPriceString = "$3.99"
+        let storeProduct = Self.testProduct(
+            productIdentifier: "com.revenuecat.product",
+            localizedPriceString: localizedPriceString,
+            installmentsInfo: nil
+        )
+
+        expect(storeProduct.localizedPriceString) == localizedPriceString
+    }
+
+    func testLocalizedPriceStringUsesProductPriceStringBelowIOS264EvenWithInstallmentsInfo() throws {
+        // InstallmentsInfo shouldn't be populated below iOS 26.4, but it's a good thing to check
+        // just in case.
+        try AvailabilityChecks.iOS264APINotAvailableOrSkipTest()
+
+        let localizedPriceString = "$3.99"
+        let storeProduct = Self.testProduct(
+            productIdentifier: "com.revenuecat.product",
+            localizedPriceString: localizedPriceString,
+            installmentsInfo: Self.installmentsInfo(
+                commitmentInstallmentsCount: 12,
+                commitmentTotalPrice: 11.97,
+                commitmentTotalDisplayPrice: "$11.97"
+            )
+        )
+
+        expect(storeProduct.localizedPriceString) == localizedPriceString
+    }
+
+    @available(iOS 26.4, tvOS 26.4, macOS 26.4, watchOS 26.4, visionOS 26.4, *)
+    func testLocalizedPriceStringUsesCommitmentTotalDisplayPriceOnIOS264WhenInstallmentsInfoIsPresent() throws {
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+        let commitmentTotalDisplayPrice = "$11.97"
+
+        let storeProduct = Self.testProduct(
+            productIdentifier: "com.revenuecat.product",
+            localizedPriceString: "$3.99",
+            installmentsInfo: Self.installmentsInfo(
+                commitmentInstallmentsCount: 12,
+                commitmentTotalPrice: 11.97,
+                commitmentTotalDisplayPrice: commitmentTotalDisplayPrice
+            )
+        )
+
+        expect(storeProduct.localizedPriceString) == commitmentTotalDisplayPrice
+    }
+
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testIdReturnsProductIdentifierForSK2ProductWithoutInstallmentsInfo() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
@@ -756,13 +807,14 @@ private extension StoreProductTests {
     static func testProduct(
         productIdentifier: String,
         price: Decimal = 3.99,
+        localizedPriceString: String = "$3.99",
         installmentsInfo: InstallmentsInfo?
     ) -> StoreProduct {
         return TestStoreProduct(
             localizedTitle: "product",
             price: price,
             currencyCode: "USD",
-            localizedPriceString: "$3.99",
+            localizedPriceString: localizedPriceString,
             productIdentifier: productIdentifier,
             productType: .autoRenewableSubscription,
             localizedDescription: "",
@@ -775,6 +827,7 @@ private extension StoreProductTests {
     static func installmentsInfo(
         commitmentInstallmentsCount: Int,
         commitmentTotalPrice: Decimal? = nil,
+        commitmentTotalDisplayPrice: String? = nil,
         billingPlanType: BillingPlanType = .monthly
     ) -> InstallmentsInfo {
         return InstallmentsInfo(
@@ -784,7 +837,8 @@ private extension StoreProductTests {
             installmentBillingDisplayPrice: "$3.99",
             commitmentTotalPeriod: SubscriptionPeriod(value: commitmentInstallmentsCount, unit: .month),
             commitmentTotalPrice: commitmentTotalPrice ?? Decimal(commitmentInstallmentsCount) * 3.99,
-            commitmentTotalDisplayPrice: "$\(commitmentInstallmentsCount * 399 / 100).99",
+            commitmentTotalDisplayPrice: commitmentTotalDisplayPrice
+                ?? "$\(commitmentInstallmentsCount * 399 / 100).99",
             billingPlanType: billingPlanType
         )
     }

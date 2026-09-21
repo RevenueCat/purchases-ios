@@ -1,0 +1,4 @@
+# On the Xcode 26 image, `scan` defaults to a stale iOS 18 simulator whose networking hangs,
+# timing out the live-network test. Newer Xcodes already select a matching runtime on their own.
+xcode_major = Integer(`xcodebuild -version`[/Xcode (\d+)/, 1])
+devices(["iPhone 17"]) if xcode_major == 26

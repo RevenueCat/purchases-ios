@@ -18,9 +18,9 @@ import StoreKit
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
 class MockCustomerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType {
 
-    var returnRenewalPriceFromRenewalInfo: (price: Decimal, currencyCode: String)?
+    var returnRenewalPriceFromRenewalInfo: RenewalPriceData?
     var renewalPriceFromRenewalInfoCallCount = 0
-    func renewalPriceFromRenewalInfo(for product: StoreProduct) async -> (price: Decimal, currencyCode: String)? {
+    func renewalPriceFromRenewalInfo(for product: StoreProduct) async -> RenewalPriceData? {
         renewalPriceFromRenewalInfoCallCount += 1
         return returnRenewalPriceFromRenewalInfo
     }

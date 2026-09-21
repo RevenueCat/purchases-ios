@@ -15,7 +15,7 @@ import Foundation
 import Nimble
 import XCTest
 
-@testable @_spi(Experimental) import RevenueCat
+@testable @_spi(Internal) import RevenueCat
 
 class ConfigurationTests: TestCase {
 
@@ -37,6 +37,33 @@ class ConfigurationTests: TestCase {
 
     func testValidateAPIKeyWithTestStoreKey() {
         expect(Configuration.validateAndLog(apiKey: "test_eg2t9g3098bgqqn")) == .simulatedStore
+    }
+
+    func testTestStoreKeyIsBlockedInReleaseByDefault() {
+        expect(Configuration.APIKeyValidationResult.simulatedStore
+            .shouldBlockSimulatedStoreAPIKeyInRelease(dangerousSettings: DangerousSettings())) == true
+    }
+
+    func testTestStoreKeyIsNotBlockedInReleaseWhenForceAllowTestStoreInReleaseBuilds() {
+        let settings = DangerousSettings(autoSyncPurchases: true, forceAllowTestStoreInReleaseBuilds: true)
+
+        expect(Configuration.APIKeyValidationResult.simulatedStore
+            .shouldBlockSimulatedStoreAPIKeyInRelease(dangerousSettings: settings)) == false
+    }
+
+    func testTestStoreKeyIsNotBlockedInReleaseWhenUIPreviewMode() {
+        let settings = DangerousSettings(uiPreviewMode: true)
+
+        expect(Configuration.APIKeyValidationResult.simulatedStore
+            .shouldBlockSimulatedStoreAPIKeyInRelease(dangerousSettings: settings)) == false
+    }
+
+    func testNonTestStoreKeysAreNotBlockedInRelease() {
+        let results: [Configuration.APIKeyValidationResult] = [.validApplePlatform, .otherPlatforms, .legacy]
+
+        for result in results {
+            expect(result.shouldBlockSimulatedStoreAPIKeyInRelease(dangerousSettings: DangerousSettings())) == false
+        }
     }
 
     func testNoObserverModeWithStoreKit1() {
@@ -94,6 +121,65 @@ class ConfigurationTests: TestCase {
             .build()
 
         expect(configuration.iamEnabled) == true
+    }
+
+    func testKeychainAccessGroupIsNilByDefault() {
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .build()
+
+        expect(configuration.keychainAccessGroup).to(beNil())
+    }
+
+    func testIAMEnabledWithoutKeychainAccessGroupLeavesItNil() {
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .with(iamEnabled: true)
+            .build()
+
+        expect(configuration.iamEnabled) == true
+        expect(configuration.keychainAccessGroup).to(beNil())
+    }
+
+    func testIAMEnabledWithKeychainAccessGroupSetsBothValues() {
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .with(iamEnabled: true, keychainAccessGroup: "group.com.revenuecat.shared")
+            .build()
+
+        expect(configuration.iamEnabled) == true
+        expect(configuration.keychainAccessGroup) == "group.com.revenuecat.shared"
+    }
+
+    func testSingleArgumentIAMEnabledResetsAPreviouslySetKeychainAccessGroup() {
+        // `with(iamEnabled:)` (no access group) represents a complete IAM configuration on its
+        // own, so it must clear out any keychain access group set by an earlier call to the
+        // two-argument overload -- otherwise a stale access group could silently persist.
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .with(iamEnabled: true, keychainAccessGroup: "group.com.revenuecat.shared")
+            .with(iamEnabled: true)
+            .build()
+
+        expect(configuration.iamEnabled) == true
+        expect(configuration.keychainAccessGroup).to(beNil())
+    }
+
+    func testKeychainAccessGroupCanBeSetAfterAPlainIAMEnabledCall() {
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .with(iamEnabled: true)
+            .with(iamEnabled: true, keychainAccessGroup: "group.com.revenuecat.shared")
+            .build()
+
+        expect(configuration.iamEnabled) == true
+        expect(configuration.keychainAccessGroup) == "group.com.revenuecat.shared"
+    }
+
+    func testDifferentKeychainAccessGroupIsNotEqual() {
+        let lhs = Configuration.Builder(withAPIKey: "test")
+            .with(iamEnabled: true, keychainAccessGroup: "group_a")
+            .build()
+        let rhs = Configuration.Builder(withAPIKey: "test")
+            .with(iamEnabled: true, keychainAccessGroup: "group_b")
+            .build()
+
+        expect(lhs) != rhs
     }
 
     func testStoreKitVersionUsesStoreKit1ByDefault() {

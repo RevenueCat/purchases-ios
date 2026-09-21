@@ -79,7 +79,7 @@ final class LocalTransactionMetadataStore: LocalTransactionMetadataStoreType {
     func getMetadata(forTransactionId transactionId: String) -> LocalTransactionMetadata? {
         let key = self.getStoreKey(for: transactionId)
         do {
-            return try self.cache.value(forKey: key)
+            return try self.cache.value(forKey: key, decoder: .default)
         } catch {
             Logger.error("Error loading transaction metadata from cache: \(error.localizedDescription)")
             self.cache.removeObject(forKey: key)
@@ -107,7 +107,7 @@ final class LocalTransactionMetadataStore: LocalTransactionMetadataStoreType {
         let keys = self.cache.allKeys()
         return keys.compactMap { key -> LocalTransactionMetadata? in
             do {
-                return try self.cache.value(forKey: key)
+                return try self.cache.value(forKey: key, decoder: .default)
             } catch {
                 Logger.error("Error loading transaction metadata from cache: \(error.localizedDescription)")
                 self.cache.removeObject(forKey: key)

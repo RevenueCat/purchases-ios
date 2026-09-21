@@ -32,9 +32,11 @@ class BaseBackendTests: TestCase {
     private(set) var webBilling: WebBillingAPI!
     private(set) var offlineEntitlements: OfflineEntitlementsAPI!
     private(set) var identity: IdentityAPI!
+    private(set) var token: TokenAPI!
     private(set) var internalAPI: InternalAPI!
     private(set) var customerCenterConfig: CustomerCenterConfigAPI!
     private(set) var redeemWebPurchaseAPI: RedeemWebPurchaseAPI!
+    private(set) var externalPurchaseTokenAPI: ExternalPurchaseTokenAPI!
     private(set) var virtualCurrenciesAPI: VirtualCurrenciesAPI!
     private(set) var adsAPI: AdsAPI!
     private(set) var remoteConfigAPI: RemoteConfigAPI!
@@ -88,12 +90,14 @@ class BaseBackendTests: TestCase {
 
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         self.identity = IdentityAPI(backendConfig: backendConfig)
+        self.token = TokenAPI(backendConfig: backendConfig)
         self.offerings = OfferingsAPI(backendConfig: backendConfig)
         self.webBilling = WebBillingAPI(backendConfig: backendConfig)
         self.offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
         self.internalAPI = InternalAPI(backendConfig: backendConfig)
         self.customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
         self.redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
+        self.externalPurchaseTokenAPI = ExternalPurchaseTokenAPI(backendConfig: backendConfig)
         self.virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
         self.adsAPI = AdsAPI(backendConfig: backendConfig)
         self.remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
@@ -101,12 +105,14 @@ class BaseBackendTests: TestCase {
         self.backend = Backend(backendConfig: backendConfig,
                                customerAPI: customer,
                                identityAPI: self.identity,
+                               tokenAPI: self.token,
                                offeringsAPI: self.offerings,
                                webBillingAPI: self.webBilling,
                                offlineEntitlements: self.offlineEntitlements,
                                internalAPI: self.internalAPI,
                                customerCenterConfig: self.customerCenterConfig,
                                redeemWebPurchaseAPI: self.redeemWebPurchaseAPI,
+                               externalPurchaseTokenAPI: self.externalPurchaseTokenAPI,
                                virtualCurrenciesAPI: self.virtualCurrenciesAPI,
                                adsAPI: self.adsAPI,
                                remoteConfigAPI: self.remoteConfigAPI)
@@ -140,6 +146,7 @@ extension BaseBackendTests {
 
         return MockHTTPClient(systemInfo: self.systemInfo,
                               eTagManager: eTagManager,
+                              tokenManager: MockTokenManager(),
                               diagnosticsTracker: self.diagnosticsTracker,
                               sourceTestFile: file)
     }

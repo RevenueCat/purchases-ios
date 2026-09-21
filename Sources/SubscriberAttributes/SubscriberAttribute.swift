@@ -14,7 +14,7 @@
 
 import Foundation
 
-struct SubscriberAttribute {
+struct SubscriberAttribute: Hashable {
 
     let setTime: Date
     let key: String

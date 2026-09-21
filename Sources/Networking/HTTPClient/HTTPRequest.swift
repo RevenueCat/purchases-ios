@@ -20,6 +20,9 @@ struct HTTPRequest {
 
     var method: Method
     var path: HTTPRequestPath
+    /// Headers that are specific to this request.
+    /// These override default and path headers, and their final values are included when computing header signatures.
+    let additionalHeaders: Headers
     /// If present, this will be used by the server to compute a checksum of the response signed with a private key.
     var nonce: Data?
     /// Whether or not this request should be retried by the HTTPClient for certain status codes.
@@ -28,10 +31,17 @@ struct HTTPRequest {
     init(
         method: Method,
         path: HTTPRequest.Path,
+        additionalHeaders: Headers = [:],
         nonce: Data? = nil,
         isRetryable: Bool = false
     ) {
-        self.init(method: method, requestPath: path, nonce: nonce, isRetryable: isRetryable)
+        self.init(
+            method: method,
+            requestPath: path,
+            additionalHeaders: additionalHeaders,
+            nonce: nonce,
+            isRetryable: isRetryable
+        )
     }
 
     init(
@@ -82,6 +92,7 @@ struct HTTPRequest {
     internal init(
         method: Method,
         requestPath: HTTPRequestPath,
+        additionalHeaders: Headers = [:],
         nonce: Data? = nil,
         isRetryable: Bool = false
     ) {
@@ -90,6 +101,7 @@ struct HTTPRequest {
 
         self.method = method
         self.path = requestPath
+        self.additionalHeaders = additionalHeaders
         self.nonce = nonce
         self.isRetryable = isRetryable
     }
@@ -126,6 +138,37 @@ extension HTTPRequest.Method {
         switch self {
         case .get: return "GET"
         case .post: return "POST"
+        }
+    }
+
+}
+
+extension HTTPRequest.Headers {
+
+    var bearerAuthorizationValue: String? {
+        get {
+            guard let value = authorizationValue else { return nil }
+            guard let firstSpaceIndex = value.firstIndex(of: " ") else { return nil }
+            guard value[..<firstSpaceIndex] == "Bearer" else { return nil }
+
+            let afterSpace = value.index(after: firstSpaceIndex)
+            return String(value[afterSpace...])
+        }
+        set {
+            if let newValue {
+                self.authorizationValue = "Bearer \(newValue)"
+            } else {
+                self.authorizationValue = nil
+            }
+        }
+    }
+
+    var authorizationValue: String? {
+        get {
+            return self[HTTPClient.RequestHeader.authorization.rawValue]
+        }
+        set {
+            self[HTTPClient.RequestHeader.authorization.rawValue] = newValue
         }
     }
 

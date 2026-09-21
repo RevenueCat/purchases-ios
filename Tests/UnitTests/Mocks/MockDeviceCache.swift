@@ -106,24 +106,41 @@ class MockDeviceCache: DeviceCache {
     var cacheOfferingsCount = 0
     var latestCachePreferredLocales: [String]?
     var cacheOfferingsInMemoryCount = 0
+    var clearInMemoryOfferingsCacheCount = 0
     var clearCachedOfferingsCount = 0
     var clearOfferingsCacheTimestampCount = 0
     var setOfferingsCacheTimestampToNowCount = 0
     var stubbedIsOfferingsCacheStale = false
     var stubbedOfferings: Offerings?
     var stubbedCachedOfferingsData: Data?
+    var latestCachedOfferingsContents: Offerings.Contents?
+    var latestCachedOfferingsFetchResult: OfferingsFetchResult?
     var stubbedOfferingCacheStatus: CacheStatus?
 
     override var cachedOfferings: Offerings? {
         return stubbedOfferings
     }
 
-    override func cache(offerings: Offerings, preferredLocales: [String], appUserID: String) {
+    override func cache(
+        offerings: Offerings,
+        fetchResult: OfferingsFetchResult? = nil,
+        preferredLocales: [String],
+        appUserID: String
+    ) {
         self.cacheOfferingsCount += 1
         self.latestCachePreferredLocales = preferredLocales
+        self.latestCachedOfferingsContents = fetchResult?.contents ?? offerings.contents
+        self.latestCachedOfferingsFetchResult = fetchResult
+        self.stubbedOfferings = offerings
     }
     override func cacheInMemory(offerings: Offerings) {
         self.cacheOfferingsInMemoryCount += 1
+        self.stubbedOfferings = offerings
+    }
+
+    override func clearInMemoryOfferingsCache() {
+        self.clearInMemoryOfferingsCacheCount += 1
+        self.stubbedOfferings = nil
     }
 
     override func isOfferingsCacheStale(isAppBackgrounded: Bool) -> Bool {
@@ -136,11 +153,14 @@ class MockDeviceCache: DeviceCache {
 
     override func clearOfferingsCache(appUserID: String) {
         self.clearCachedOfferingsCount += 1
+        self.stubbedOfferings = nil
+        self.stubbedCachedOfferingsData = nil
     }
 
     override func cachedOfferingsContents(appUserID: String) -> Offerings.Contents? {
         if let stubbedCachedOfferingsData {
-            return try? JSONDecoder.default.decode(Offerings.Contents.self, from: stubbedCachedOfferingsData)
+            let decoder = JSONDecoder.makeDefault()
+            return try? decoder.decode(Offerings.Contents.self, from: stubbedCachedOfferingsData)
         }
         return nil
     }

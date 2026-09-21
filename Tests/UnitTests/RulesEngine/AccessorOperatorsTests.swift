@@ -1,0 +1,82 @@
+//
+//  AccessorOperatorsTests.swift
+//
+//  Created by Antonio Pallares.
+//
+
+import XCTest
+
+@testable import RevenueCat
+
+private typealias Value = RulesEngine.Value
+private typealias Scope = RulesEngine.Scope
+private typealias AccessorOperators = RulesEngine.AccessorOperators
+
+final class AccessorOperatorsTests: XCTestCase {
+
+    private var logger: CapturingLogger!
+
+    override func invokeTest() {
+        let captured = CapturingLogger()
+        logger = captured
+        RulesEngine.$scopedLogger.withValue(captured) {
+            super.invokeTest()
+        }
+    }
+
+    // MARK: - var
+    //
+    // The remaining `var` cases below are kept as Swift tests because they
+    // cannot be expressed as JSON predicate fixtures:
+    //  - The fixture scope is always a JSON object (`Evaluator.evaluate`
+    //    takes `[String: Value]`), but these exercise a top-level *array*
+    //    scope.
+    //  - `var` with an empty or null path returns the entire data object, and
+    //    this engine's `===` is always false for objects, so no predicate can
+    //    assert the result.
+
+    func testVarEmptyPathReturnsEntireData() throws {
+        let data = Value.object(["x": .int(1)])
+        let scope = Scope(root: data)
+        let out = try AccessorOperators.opVar(args: .string(""), vars: scope)
+        XCTAssertEqual(out, data)
+    }
+
+    func testVarNullPathReturnsEntireData() throws {
+        // json-logic-js treats `undefined`, null, and "" as "return the
+        // whole data object".
+        let data = Value.object(["x": .int(1)])
+        let scope = Scope(root: data)
+        let out = try AccessorOperators.opVar(args: .null, vars: scope)
+        XCTAssertEqual(out, data)
+    }
+
+    func testVarWithNumericPathArgIsCoercedToString() throws {
+        // {"var": 0} on array data
+        let data = Value.array([.string("zero"), .string("one")])
+        let scope = Scope(root: data)
+        let out = try AccessorOperators.opVar(args: .int(0), vars: scope)
+        XCTAssertEqual(out, .string("zero"))
+    }
+
+    func testVarWithIntegerValuedFloatPathLooksUpIntegerIndex() throws {
+        // {"var": 1.0} on array data must render as "1" (not "1.0") so the
+        // path resolves to array index 1 — same lookup as `{"var": 1}`.
+        let data = Value.array([.string("zero"), .string("one"), .string("two")])
+        let scope = Scope(root: data)
+        let out = try AccessorOperators.opVar(args: .float(1.0), vars: scope)
+        XCTAssertEqual(out, .string("one"))
+        XCTAssertTrue(logger.warnings.isEmpty)
+    }
+
+    func testVarWithFractionalFloatPathDoesNotMatchAdjacentIndices() throws {
+        // {"var": 1.5} must not silently collapse to "1" or "2" — its
+        // rendered path is "1.5", which doesn't resolve. Guards against an
+        // over-eager rounding fix to `formatNumber`.
+        let data = Value.array([.string("zero"), .string("one"), .string("two")])
+        let scope = Scope(root: data)
+        XCTAssertThrowsError(try AccessorOperators.opVar(args: .float(1.5), vars: scope)) { error in
+            XCTAssertEqual(error as? RulesEngine.EvaluationError, .unresolvedVariable(path: "1.5"))
+        }
+    }
+}

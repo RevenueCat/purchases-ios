@@ -1,0 +1,57 @@
+# Reopening a workflow offering while /v1/config is unreachable, but AFTER a prior successful load
+# warmed the cache, must render the cached multipage workflow (not the default paywall). This is the
+# warm-cache counterpart to workflow_offline_fallback.yaml (which starts cold and gets the default
+# paywall). Bug-bash case: "reopen offline after a prior successful load (cached)".
+#
+# Phase 1 loads the workflow online so config/workflow/blobs get persisted, then the app is relaunched
+# with `remote_config_network_error` (config offline) WITHOUT clearing state, so the disk cache
+# survives and the workflow renders from it.
+#
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/workflow_offline_cached.yaml
+
+appId: com.revenuecat.maestro.ios
+name: Workflow offering renders from cache when reopened offline after a prior load
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+# Dismiss any leftover system alerts from previous test runs.
+- pressKey: home
+
+# Phase 1: load the workflow online so config, workflow and blobs get cached to disk.
+- launchApp:
+    arguments:
+        e2e_test_flow: open_workflow
+- extendedWaitUntil:
+    visible: "Present Paywall"
+    timeout: 20000
+- tapOn:
+    text: "Present Paywall"
+- extendedWaitUntil:
+    visible: "Start Your Free Week And Reclaim 30+ Minutes Daily"
+    timeout: 15000
+# Give the config/blob persist a moment to finish before killing the app.
+- waitForAnimationToEnd:
+    timeout: 5000
+- stopApp
+
+# Phase 2: reopen with /v1/config unreachable and WITHOUT clearing state, so the disk cache survives.
+- launchApp:
+    arguments:
+        e2e_test_flow: open_workflow
+        force_server_error_strategy: remote_config_network_error
+- extendedWaitUntil:
+    visible: "Present Paywall"
+    timeout: 20000
+- tapOn:
+    text: "Present Paywall"
+
+# The cached multipage workflow renders from disk even though config is offline.
+- extendedWaitUntil:
+    visible: "Start Your Free Week And Reclaim 30+ Minutes Daily"
+    timeout: 15000
+# The default paywall (cold-cache fallback) must NOT appear here.
+- assertNotVisible: "No Paywall configured"
+- takeScreenshot: "workflow_offline_cached - workflow from cache"

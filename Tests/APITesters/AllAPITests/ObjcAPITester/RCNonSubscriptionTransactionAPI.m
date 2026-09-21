@@ -18,6 +18,8 @@
     NSDate *pd __unused = transaction.purchaseDate;
     NSString *tid __unused = transaction.transactionIdentifier;
     NSString *stid __unused = transaction.storeTransactionIdentifier;
+    NSDate *opd __unused = transaction.originalPurchaseDate;
+    NSString *dn __unused = transaction.displayName;
 }
 
 @end

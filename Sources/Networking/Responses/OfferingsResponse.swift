@@ -35,7 +35,7 @@ struct OfferingsResponse {
         @DefaultDecodable.EmptyDictionary
         var metadata: [String: AnyDecodable]
         var paywallComponents: PaywallComponentsData?
-        var draftPaywallComponents: PaywallComponentsData?
+        var hasPaywallComponents: Bool = false
         let webCheckoutUrl: URL?
     }
 
@@ -94,7 +94,51 @@ extension OfferingsResponse.Offering.Package {
 }
 
 extension OfferingsResponse.Offering.Package: Codable, Equatable {}
-extension OfferingsResponse.Offering: Codable, Equatable {}
+extension OfferingsResponse.Offering: Codable, Equatable {
+
+    private enum CodingKeys: String, CodingKey {
+        case identifier
+        case description
+        case packages
+        case paywall
+        case metadata
+        case paywallComponents
+        case hasPaywallComponents
+        case webCheckoutUrl
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        self.identifier = try container.decode(String.self, forKey: .identifier)
+        self.description = try container.decode(String.self, forKey: .description)
+        self.packages = try container.decode([Package].self, forKey: .packages)
+        self._paywall = container.decode(IgnoreDecodeErrors<PaywallData?>.self, forKey: .paywall)
+        self._metadata = try container.decode(
+            DefaultDecodable.EmptyDictionary<[String: AnyDecodable]>.self,
+            forKey: .metadata
+        )
+        self.webCheckoutUrl = try container.decodeIfPresent(URL.self, forKey: .webCheckoutUrl)
+
+        let explicitHasPaywallComponents = try container.decodeIfPresent(
+            Bool.self,
+            forKey: .hasPaywallComponents
+        )
+        self.paywallComponents = nil
+        self.hasPaywallComponents = explicitHasPaywallComponents
+            ?? Self.hasNonNullValue(in: container, forKey: .paywallComponents)
+            ?? false
+    }
+
+    private static func hasNonNullValue(
+        in container: KeyedDecodingContainer<CodingKeys>,
+        forKey key: CodingKeys
+    ) -> Bool? {
+        guard container.contains(key) else { return nil }
+        return (try? container.decodeNil(forKey: key)) == false
+    }
+
+}
 extension OfferingsResponse.Placements: Codable, Equatable {}
 extension OfferingsResponse.Targeting: Codable, Equatable {}
 extension OfferingsResponse: Codable, Equatable {}

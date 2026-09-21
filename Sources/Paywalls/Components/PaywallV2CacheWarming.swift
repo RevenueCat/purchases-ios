@@ -13,127 +13,141 @@
 
 import Foundation
 
+@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 extension PaywallComponentsData {
 
+    var allCacheAssets: CacheAssetCollection {
+        return cacheAssets(
+            from: self.componentsConfig,
+            localizations: self.componentsLocalizations
+        )
+    }
+
     var allImageURLs: [URL] {
-        return imageURLs(from: self.componentsConfig, localizations: self.componentsLocalizations)
+        return self.allCacheAssets.imageSourcesToDownload.map(\.url)
     }
 
     var allLowResVideoUrls: [URLWithValidation] {
-        return self.componentsConfig.base.allLowResVideoUrls
+        return self.allCacheAssets.videoSourcesToDownload
     }
 
 }
 
+@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 extension WorkflowScreen {
 
+    var allCacheAssets: CacheAssetCollection {
+        return cacheAssets(
+            from: self.componentsConfig,
+            localizations: self.componentsLocalizations
+        )
+    }
+
     var allImageURLs: [URL] {
-        return imageURLs(from: self.componentsConfig, localizations: self.componentsLocalizations)
+        return self.allCacheAssets.imageSourcesToDownload.map(\.url)
     }
 
     var allLowResVideoUrls: [URLWithValidation] {
-        return self.componentsConfig.base.allLowResVideoUrls
+        return self.allCacheAssets.videoSourcesToDownload
     }
 
 }
 
-private func imageURLs(
+@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+private func cacheAssets(
     from componentsConfig: PaywallComponentsData.ComponentsConfig,
     localizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary]
-) -> [URL] {
-    var imageUrls = componentsConfig.base.allImageURLs
-    for (_, localeValues) in localizations {
-        for (_, value) in localeValues {
+) -> CacheAssetCollection {
+    let componentAssets = componentsConfig.base.allCacheAssets
+    let localizedImages = localizations.values.flatMap { localeValues in
+        localeValues.values.flatMap { value -> [CacheAssetCollection.Media] in
             switch value {
             case .string:
-                break
+                return []
             case .image(let image):
-                imageUrls += image.imageUrls
+                return image.cacheMedia(rendersSynchronously: false)
             }
         }
     }
-    return imageUrls
+
+    return .init(
+        images: componentAssets.images + localizedImages,
+        videos: componentAssets.videos,
+        webBundles: componentAssets.webBundles
+    )
 }
 
+@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 extension PaywallComponentsData.PaywallComponentsConfig {
 
-    var allImageURLs: [URL] {
-        let rootStackImageURLs = self.collectAllImageURLs(in: self.stack)
-        let headerImageURLs = self.header.flatMap {
-            self.collectAllImageURLs(in: $0.stack)
-        } ?? []
-        let stickFooterImageURLs = self.stickyFooter.flatMap {
-            self.collectAllImageURLs(in: $0.stack)
-        } ?? []
+    var allCacheAssets: CacheAssetCollection {
+        var collector = AssetCollector()
 
-        return rootStackImageURLs + headerImageURLs + stickFooterImageURLs + self.background.allImageURLS
+        self.collectAssets(in: self.stack, rendersSynchronously: false, into: &collector)
+        if let header = self.header {
+            self.collectAssets(in: header.stack, rendersSynchronously: false, into: &collector)
+        }
+        if let stickyFooter = self.stickyFooter {
+            self.collectAssets(in: stickyFooter.stack, rendersSynchronously: false, into: &collector)
+        }
+        collector.collect(self.background, rendersSynchronously: false)
+
+        return collector.assets
+    }
+
+    var allImageURLs: [URL] {
+        return self.allCacheAssets.imageSourcesToDownload.map(\.url)
     }
 
     var allLowResVideoUrls: [URLWithValidation] {
-        let rootStackVideoURLs = self.collectAllVideoURLs(in: self.stack)
-        let headerVideoURLs = self.header.flatMap { self.collectAllVideoURLs(in: $0.stack) } ?? []
-        let stickFooterVideoURLs = self.stickyFooter.flatMap { self.collectAllVideoURLs(in: $0.stack) } ?? []
-
-        return rootStackVideoURLs + headerVideoURLs + stickFooterVideoURLs + self.background.lowResVideoUrls
+        return self.allCacheAssets.videoSourcesToDownload
     }
 
     // swiftlint:disable:next cyclomatic_complexity function_body_length
-    private func collectAllImageURLs(
-    in stack: PaywallComponent.StackComponent,
-    includeHighResInComponentHeirarchy: (PaywallComponent) -> Bool = { component in
-        // collecting high res images from the sheet is important because async functions
-        // prevent the proper animation from playing during sheet presentation and by collecting
-        // the images ahead of time we can synchronously render the image instead.
-        return component.isSheetButton
-    }
-    ) -> [URL] {
+    private func collectAssets(
+        in stack: PaywallComponent.StackComponent,
+        rendersSynchronously: Bool,
+        into collector: inout AssetCollector
+    ) {
+        if let background = stack.background {
+            collector.collect(background, rendersSynchronously: rendersSynchronously)
+        }
 
-        var urls: [URL] = []
-        urls += stack.background?.allImageURLS ?? []
         for component in stack.components {
-            var includeHighResInComponentHeirarchy = includeHighResInComponentHeirarchy
-            if includeHighResInComponentHeirarchy(component) {
-                // override to true regardless of children to ensure high res
-                // image collection after the desired component type was found
-                includeHighResInComponentHeirarchy = { _ in return true }
-            }
+            let rendersSynchronously = rendersSynchronously || component.isSheetButton
 
             switch component {
-            case .text:
-                ()
+            case .text, .tabControl, .tabControlToggle, .fallbackHeader:
+                break
             case .icon(let icon):
-                urls += icon.imageUrls
+                collector.imageURLs += icon.cacheMedia(rendersSynchronously: rendersSynchronously)
             case .image(let image):
-                urls += image.source.imageUrls
-
-                if let overrides = image.overrides {
-                    urls += overrides.imageUrls
-                }
-
-                if includeHighResInComponentHeirarchy(component) {
-                    urls += image.source.highResImageUrls
-                }
-
+                collector.imageURLs += image.source.cacheMedia(rendersSynchronously: rendersSynchronously)
+                collector.imageURLs += image.overrides?.flatMap {
+                    $0.properties.source?.cacheMedia(rendersSynchronously: rendersSynchronously) ?? []
+                } ?? []
             case .stack(let stack):
-                urls += self.collectAllImageURLs(
+                self.collectAssets(
                     in: stack,
-                    includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                    rendersSynchronously: rendersSynchronously,
+                    into: &collector
                 )
             case .button(let button):
-                urls += self.collectAllImageURLs(
+                self.collectAssets(
                     in: button.stack,
-                    includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                    rendersSynchronously: rendersSynchronously,
+                    into: &collector
                 )
 
-                // Collect images from sheet stack
                 switch button.action {
                 case .navigateTo(let destination):
                     switch destination {
                     case .sheet(sheet: let sheet):
                         if let sheet {
-                            urls += self.collectAllImageURLs(
+                            self.collectAssets(
                                 in: sheet.stack,
-                                includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                                rendersSynchronously: rendersSynchronously,
+                                into: &collector
                             )
                         }
                     case .customerCenter, .offerCode, .privacyPolicy, .terms, .webPaywallLink, .url, .unknown:
@@ -143,139 +157,126 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                     break
                 }
             case .package(let package):
-                urls += self.collectAllImageURLs(
+                self.collectAssets(
                     in: package.stack,
-                    includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                    rendersSynchronously: rendersSynchronously,
+                    into: &collector
                 )
             case .purchaseButton(let purchaseButton):
-                urls += self.collectAllImageURLs(
+                self.collectAssets(
                     in: purchaseButton.stack,
-                    includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                    rendersSynchronously: rendersSynchronously,
+                    into: &collector
                 )
             case .stickyFooter(let stickyFooter):
-                urls += self.collectAllImageURLs(
+                self.collectAssets(
                     in: stickyFooter.stack,
-                    includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                    rendersSynchronously: rendersSynchronously,
+                    into: &collector
                 )
-            case .timeline(let component):
-                for item in component.items {
-                    urls += item.icon.imageUrls
+            case .timeline(let timeline):
+                collector.imageURLs += timeline.items.flatMap {
+                    $0.icon.cacheMedia(rendersSynchronously: rendersSynchronously)
                 }
             case .tabs(let tabs):
-                urls += self.collectAllImageURLs(
+                self.collectAssets(
                     in: tabs.control.stack,
-                    includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                    rendersSynchronously: rendersSynchronously,
+                    into: &collector
                 )
                 for tab in tabs.tabs {
-                    urls += self.collectAllImageURLs(
+                    self.collectAssets(
                         in: tab.stack,
-                        includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                        rendersSynchronously: rendersSynchronously,
+                        into: &collector
                     )
                 }
-            case .tabControl:
-                break
             case .tabControlButton(let controlButton):
-                urls += self.collectAllImageURLs(
+                self.collectAssets(
                     in: controlButton.stack,
-                    includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                    rendersSynchronously: rendersSynchronously,
+                    into: &collector
                 )
-            case .tabControlToggle:
-                break
             case .carousel(let carousel):
-                urls += carousel.pages.flatMap(
-                    { stack in
-                        self.collectAllImageURLs(
-                            in: stack,
-                            includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
-                        )
-                })
+                for page in carousel.pages {
+                    self.collectAssets(
+                        in: page,
+                        rendersSynchronously: rendersSynchronously,
+                        into: &collector
+                    )
+                }
             case .video(let video):
-                urls += video.imageUrls
+                collector.videoURLs += video.source.cacheMedia(rendersSynchronously: rendersSynchronously)
+                collector.videoURLs += video.overrides?.flatMap {
+                    $0.properties.source?.cacheMedia(rendersSynchronously: rendersSynchronously) ?? []
+                } ?? []
+                collector.imageURLs += video.fallbackSource?.cacheMedia(
+                    rendersSynchronously: rendersSynchronously
+                ) ?? []
             case .countdown(let countdown):
-                urls += self.collectAllImageURLs(
+                self.collectAssets(
                     in: countdown.countdownStack,
-                    includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                    rendersSynchronously: rendersSynchronously,
+                    into: &collector
                 )
                 if let endStack = countdown.endStack {
-                    urls += self.collectAllImageURLs(
+                    self.collectAssets(
                         in: endStack,
-                        includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                        rendersSynchronously: rendersSynchronously,
+                        into: &collector
                     )
                 }
                 if let fallback = countdown.fallback {
-                    urls += self.collectAllImageURLs(
+                    self.collectAssets(
                         in: fallback,
-                        includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                        rendersSynchronously: rendersSynchronously,
+                        into: &collector
                     )
                 }
-            case .fallbackHeader:
-                break
+            case .webView(let webView):
+                if let url = PaywallComponent.WebViewComponent.validatedHTTPSURL(from: webView.url) {
+                    collector.webViewURLs.append(.init(url: url, checksum: nil))
+                }
             }
         }
-
-        return urls
     }
 
-    // swiftlint:disable:next cyclomatic_complexity function_body_length
-    private func collectAllVideoURLs(in stack: PaywallComponent.StackComponent) -> [URLWithValidation] {
+}
 
-        var urls: [URLWithValidation] = []
-        urls += stack.background?.lowResVideoUrls ?? []
-        for component in stack.components {
-            switch component {
-            case .text:
-                break
-            case .icon:
-                break
-            case .image:
-                break
-            case .stack(let stack):
-                urls += self.collectAllVideoURLs(in: stack)
-            case .button(let button):
-                urls += self.collectAllVideoURLs(in: button.stack)
-            case .package(let package):
-                urls += self.collectAllVideoURLs(in: package.stack)
-            case .purchaseButton(let purchaseButton):
-                urls += self.collectAllVideoURLs(in: purchaseButton.stack)
-            case .stickyFooter(let stickyFooter):
-                urls += self.collectAllVideoURLs(in: stickyFooter.stack)
-            case .timeline:
-                break
-            case .tabs(let tabs):
-                for tab in tabs.tabs {
-                    urls += self.collectAllVideoURLs(in: tab.stack)
-                }
-            case .tabControl:
-                break
-            case .tabControlButton(let controlButton):
-                urls += self.collectAllVideoURLs(in: controlButton.stack)
-            case .tabControlToggle:
-                break
-            case .carousel(let carousel):
-                urls += carousel.pages.flatMap({ stack in
-                    self.collectAllVideoURLs(in: stack)
-                })
-            case .video(let video):
-                urls += video.lowResVideoUrls
-            case .countdown(let countdown):
-                urls += self.collectAllVideoURLs(in: countdown.countdownStack)
-                if let endStack = countdown.endStack {
-                    urls += self.collectAllVideoURLs(in: endStack)
-                }
-                if let fallback = countdown.fallback {
-                    urls += self.collectAllVideoURLs(in: fallback)
-                }
-            case .fallbackHeader:
-                break
-            }
+@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+private struct AssetCollector {
+
+    var imageURLs: [CacheAssetCollection.Media] = []
+    var videoURLs: [CacheAssetCollection.Media] = []
+    var webViewURLs: [URLWithValidation] = []
+
+    var assets: CacheAssetCollection {
+        return .init(
+            images: self.imageURLs,
+            videos: self.videoURLs,
+            webBundles: self.webViewURLs
+        )
+    }
+
+    mutating func collect(
+        _ background: PaywallComponent.Background,
+        rendersSynchronously: Bool
+    ) {
+        switch background {
+        case .color:
+            break
+        case .image(let imageURLs, _, _):
+            self.imageURLs += imageURLs.cacheMedia(rendersSynchronously: rendersSynchronously)
+        case .video(let videoURLs, let fallbackImageURLs, _, _, _, _):
+            self.videoURLs += videoURLs.cacheMedia(rendersSynchronously: rendersSynchronously)
+            self.imageURLs += fallbackImageURLs.cacheMedia(rendersSynchronously: rendersSynchronously)
         }
-
-        return urls
     }
 
 }
 
 private extension PaywallComponent {
+
     var isSheetButton: Bool {
         switch self {
         case .button(let component):
@@ -289,112 +290,61 @@ private extension PaywallComponent {
             return false
         }
     }
-}
-
-extension PaywallComponent.IconComponent.Formats {
-
-    func imageUrls(base: URL) -> [URL] {
-        return [
-            base.appendingPathComponent(heic)
-        ]
-    }
 
 }
 
-private extension PaywallComponent.IconComponent {
-
-    var imageUrls: [URL] {
-        guard let baseUrl = URL(string: self.baseUrl) else {
-            return []
-        }
-
-        return self.formats.imageUrls(base: baseUrl) + (self.overrides?.imageUrls(base: baseUrl) ?? [])
-    }
-
-}
-
-extension Array where Element == PaywallComponent.ComponentOverride<PaywallComponent.PartialIconComponent> {
-
-    func imageUrls(base: URL) -> [URL] {
-        return self.compactMap { iconOverrides in
-            iconOverrides.properties.formats?.imageUrls(base: base) ?? []
-        }.flatMap { $0 }
-    }
-
-}
-
-extension Array where Element == PaywallComponent.ComponentOverride<PaywallComponent.PartialImageComponent> {
-
-    var imageUrls: [URL] {
-        return self.compactMap { iconOverrides in
-            iconOverrides.properties.source?.imageUrls ?? []
-        }.flatMap { $0 }
-    }
-
-}
-
+@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 private extension PaywallComponent.ThemeImageUrls {
 
-    var imageUrls: [URL] {
-        return [
-            self.light.heicLowRes,
-            self.dark?.heicLowRes
-        ].compactMap { $0 }
-    }
-
-    var highResImageUrls: [URL] {
-        return [
-            self.light.heic,
-            self.dark?.heic
-        ].compactMap { $0 }
+    func cacheMedia(rendersSynchronously: Bool) -> [CacheAssetCollection.Media] {
+        return [self.light, self.dark]
+            .compactMap { $0 }
+            .map { imageURLs in
+                .init(
+                    highResURL: .init(url: imageURLs.heic, checksum: nil),
+                    lowResURL: .init(url: imageURLs.heicLowRes, checksum: nil),
+                    rendersSynchronously: rendersSynchronously
+                )
+            }
     }
 
 }
 
-private extension PaywallComponent.VideoComponent {
+@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+private extension PaywallComponent.ThemeVideoUrls {
 
-    var imageUrls: [URL] {
-        fallbackSource?.imageUrls ?? []
-    }
-
-    var lowResVideoUrls: [URLWithValidation] {
-        let sources: [PaywallComponent.VideoUrls?] = [source.light, source.dark]
-        return sources.map { source in
-            if let url = source?.urlLowRes {
-                return URLWithValidation(url: url, checksum: source?.checksumLowRes)
-            } else {
-                return nil
+    func cacheMedia(rendersSynchronously: Bool) -> [CacheAssetCollection.Media] {
+        return [self.light, self.dark]
+            .compactMap { $0 }
+            .map { videoURLs in
+                .init(
+                    highResURL: .init(url: videoURLs.url, checksum: videoURLs.checksum),
+                    lowResURL: videoURLs.urlLowRes.map {
+                        .init(url: $0, checksum: videoURLs.checksumLowRes)
+                    },
+                    rendersSynchronously: rendersSynchronously
+                )
             }
-        }
-        .compactMap { $0 }
     }
+
 }
 
-private extension PaywallComponent.Background {
-    var allImageURLS: [URL] {
-        switch self {
-        case .image(let imageURLS, _, _):
-            return imageURLS.imageUrls
-        case .video(_, let imageURLS, _, _, _, _):
-            return imageURLS.imageUrls
-        default:
+@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+private extension PaywallComponent.IconComponent {
+
+    func cacheMedia(rendersSynchronously: Bool) -> [CacheAssetCollection.Media] {
+        guard let baseURL = URL(string: self.baseUrl) else {
             return []
+        }
+
+        let formats = [self.formats] + (self.overrides?.compactMap(\.properties.formats) ?? [])
+        return formats.map {
+            .init(
+                highResURL: .init(url: baseURL.appendingPathComponent($0.heic), checksum: nil),
+                lowResURL: nil,
+                rendersSynchronously: rendersSynchronously
+            )
         }
     }
 
-    var lowResVideoUrls: [URLWithValidation] {
-        switch self {
-        case .video(let urls, _, _, _, _, _):
-            let sources: [PaywallComponent.VideoUrls?] = [urls.light, urls.dark]
-            return sources.compactMap { source in
-                if let url = source?.urlLowRes {
-                    return URLWithValidation(url: url, checksum: source?.checksumLowRes)
-                } else {
-                    return nil
-                }
-            }
-        default:
-            return []
-        }
-    }
 }

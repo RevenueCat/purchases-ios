@@ -18,6 +18,7 @@ import Foundation
 struct CustomerInfoResponse {
 
     var subscriber: Subscriber
+    var user: User?
 
     @IgnoreHashable
     var requestDate: Date
@@ -43,6 +44,7 @@ extension CustomerInfoResponse {
         @DefaultDecodable.EmptyDictionary
         var entitlements: [String: Entitlement]
 
+        var subscriberAttributes: SubscriberAttributes?
     }
 
     struct Subscription {
@@ -106,6 +108,25 @@ extension CustomerInfoResponse {
 
     }
 
+    struct SubscriberAttributes {
+        var attributes: [SubscriberAttribute]
+    }
+
+    struct User {
+
+        // swiftlint:disable:next nesting
+        struct Identity {
+            var id: String?
+            var method: String
+            @IgnoreEncodable @IgnoreHashable
+            var rawData: [String: Any]
+        }
+
+        var amr: [String]
+        var id: String
+        var identities: [Identity]
+    }
+
 }
 
 // MARK: - Codable
@@ -132,6 +153,50 @@ extension CustomerInfoResponse.Entitlement: Decodable {
 
 }
 
+extension CustomerInfoResponse.SubscriberAttributes: Codable, Hashable, CustomStringConvertible {
+
+    /// The wire representation of a single subscriber attribute, decoded/encoded as the *value*
+    /// of a `[String: Entry]` dictionary (see below for why).
+    private struct Entry: Codable {
+        var value: String?
+        var updatedAtMs: Double
+    }
+
+    var description: String {
+        attributes.description
+    }
+
+    // Note: attribute names are arbitrary strings (they can contain underscores,
+    // `$`, mixed case, etc.), so they must never be run through `JSONDecoder`/`JSONEncoder`'s
+    // snake_case <-> camelCase key strategy conversion (`JSONDecoder.default` / `JSONEncoder.default`
+    // both configure this). A `KeyedDecodingContainer`/`KeyedEncodingContainer` keyed by a custom
+    // `CodingKey` type (like `AnyCodingKey`) is *not* exempt from that conversion, so using one here
+    // would silently mangle attribute names containing underscores (e.g. "custom_key" -> "customKey").
+    // Instead, manually going through singleValueContainers() will preserve the underlying casing.
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let entries = try container.decode([String: Entry].self)
+
+        self.init(attributes: entries.map { key, entry in
+            SubscriberAttribute(withKey: key,
+                                value: entry.value,
+                                isSynced: true,
+                                setTime: Date(timeIntervalSince1970: entry.updatedAtMs / 1000))
+        })
+    }
+
+    func encode(to encoder: any Encoder) throws {
+        let entries = Dictionary(uniqueKeysWithValues: self.attributes.map { attribute in
+            (attribute.key, Entry(value: attribute.value,
+                                  updatedAtMs: attribute.setTime.timeIntervalSince1970 * 1000))
+        })
+
+        var container = encoder.singleValueContainer()
+        try container.encode(entries)
+    }
+
+}
+
 extension CustomerInfoResponse.Transaction: Codable, Hashable {
 
     private enum CodingKeys: String, CodingKey {
@@ -148,6 +213,33 @@ extension CustomerInfoResponse.Transaction: Codable, Hashable {
 
 }
 
+extension CustomerInfoResponse.User: Codable, Hashable { }
+
+extension CustomerInfoResponse.User.Identity: Codable, Hashable {
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case method
+    }
+
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        // the "?? .none" is needed because using "decodeIfPresent" with String? type
+        // means you get back a "String??". These combined mean we support:
+        // - having a "nil" id if the field is entirely missing
+        // - having a "nil" id if the field is present with with a null value
+        // - having a non-nil id if the field is present with a string value
+        self.id = try container.decodeIfPresent(String?.self, forKey: .id) ?? .none
+        self.method = try container.decode(String.self, forKey: .method)
+        self.rawData = decoder.decodeRawData()
+    }
+
+    func encode(to encoder: any Encoder) throws {
+        encoder.encodeRawData(rawData)
+    }
+
+}
+
 extension CustomerInfoResponse: Codable {
 
     // Note: this must be manually implemented because of the custom call to `decodeRawData`
@@ -157,6 +249,7 @@ extension CustomerInfoResponse: Codable {
 
         self.requestDate = try container.decode(Date.self, forKey: .requestDate)
         self.subscriber = try container.decode(Subscriber.self, forKey: .subscriber)
+        self.user = try container.decodeIfPresent(User.self, forKey: .user)
 
         self.rawData = decoder.decodeRawData()
     }

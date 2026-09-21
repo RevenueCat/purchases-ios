@@ -371,8 +371,28 @@ final class RemoteConfigurationDecodingTests: TestCase {
         expect(json["prefetch"]).to(beNil())
     }
 
+    func testConfigItemPreservesOpaqueKeysAcrossRoundTrip() throws {
+        let conditionHash = "349OzehoTyCAdiZblj9w0J0yD-Uow8X3"
+        let data = """
+        {
+          "blob_ref": "audiences-ref",
+          "prefetch": true,
+          "\(conditionHash)": false
+        }
+        """.asData
+
+        let decoded = try JSONDecoder.default.decode(RemoteConfiguration.ConfigItem.self, from: data)
+        let persisted = try JSONEncoder.default.encode(decoded)
+        let restored = try JSONDecoder.default.decode(RemoteConfiguration.ConfigItem.self, from: persisted)
+
+        expect(restored.content) == [conditionHash: false]
+        expect(restored.blobRef) == "audiences-ref"
+        expect(restored.prefetch) == true
+    }
+
     func testRequestEncodingOmitsDomain() throws {
         let request = RemoteConfigRequest(
+            fetchContext: .appStart,
             appUserID: "app-user-id",
             domain: "project",
             manifest: "v1.123.sources:sources-etag",
@@ -383,18 +403,20 @@ final class RemoteConfigurationDecodingTests: TestCase {
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
 
         expect(json["app_user_id"] as? String) == "app-user-id"
+        expect(json["fetch_context"] as? String) == "app_start"
         expect(json["domain"]).to(beNil())
         expect(json["manifest"] as? String) == "v1.123.sources:sources-etag"
         expect(json["prefetched_blobs"] as? [String]) == ["blob-b", "blob-a"]
     }
 
     func testFirstRunRequestEncodingIncludesEmptyPrefetchedBlobs() throws {
-        let request = RemoteConfigRequest(appUserID: "app-user-id")
+        let request = RemoteConfigRequest(fetchContext: .appStart, appUserID: "app-user-id")
 
         let data = try JSONEncoder.default.encode(request)
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
 
         expect(json["app_user_id"] as? String) == "app-user-id"
+        expect(json["fetch_context"] as? String) == "app_start"
         expect(json["domain"]).to(beNil())
         expect(json["manifest"]).to(beNil())
         expect(json["prefetched_blobs"] as? [String]).to(beEmpty())

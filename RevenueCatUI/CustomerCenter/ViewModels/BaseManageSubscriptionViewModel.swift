@@ -25,9 +25,14 @@ import SwiftUI
 class BaseManageSubscriptionViewModel: ObservableObject {
 
     let screen: CustomerCenterConfigData.Screen
+    let localization: CustomerCenterConfigData.Localization
 
     var relevantPathsForPurchase: [CustomerCenterConfigData.HelpPath] {
-        paths.relevantPaths(for: purchaseInformation, allowMissingPurchase: allowMissingPurchase)
+        paths.relevantPaths(
+            for: purchaseInformation,
+            allowMissingPurchase: allowMissingPurchase,
+            localization: localization
+        )
     }
 
     /// Used to exclude .missingPurchase path
@@ -84,8 +89,10 @@ class BaseManageSubscriptionViewModel: ObservableObject {
         purchaseInformation: PurchaseInformation? = nil,
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: CustomerCenterPurchasesType,
-        loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
+        loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil,
+        localization: CustomerCenterConfigData.Localization = .default) {
             self.screen = screen
+            self.localization = localization
             self.paths = screen.supportedPaths
             self.purchaseInformation = purchaseInformation
             self.purchasesProvider = purchasesProvider

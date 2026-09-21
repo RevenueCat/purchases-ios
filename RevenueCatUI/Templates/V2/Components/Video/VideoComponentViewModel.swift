@@ -79,12 +79,14 @@ class VideoComponentViewModel {
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
         customVariables: [String: CustomVariableValue],
+        windowSize: CGSize? = nil,
         colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (VideoComponentStyle) -> some View
     ) -> some View {
         let conditionContext = self.uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: customVariables
+            customVariables: customVariables,
+            windowSize: windowSize
         )
         let localizedPartial = LocalizedVideoPartial.buildPartial(
             state: state,
@@ -281,7 +283,10 @@ struct VideoComponentStyle {
         }
     }
 
-    struct ViewData {
+    /// Equatable so the view can re-resolve when any part of the resolved asset changes, not only
+    /// its primary URL: light and dark can share a URL while differing in checksum or low-res
+    /// source, and the file cache keys on url and checksum together.
+    struct ViewData: Equatable {
         let url: URL
         let checksum: Checksum?
         let lowResUrl: URL?

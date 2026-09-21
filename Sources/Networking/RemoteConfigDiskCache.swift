@@ -34,18 +34,25 @@ struct PersistedRemoteConfiguration: Codable, Equatable {
     let prefetchBlobs: [String]
     let topics: RemoteConfiguration.Topics
 
+    /// The most recent `X-RevenueCat-Request-Time` supplied by the main API, stored as epoch milliseconds.
+    ///
+    /// This value is replayed as `X-RC-Last-Refresh-Time` on the next config request.
+    private(set) var lastRefreshTimeMilliseconds: UInt64?
+
     init(
         domain: String = RemoteConfiguration.defaultDomain,
         manifest: String,
         activeTopics: [String] = [],
         prefetchBlobs: [String] = [],
-        topics: RemoteConfiguration.Topics = .init()
+        topics: RemoteConfiguration.Topics = .init(),
+        lastRefreshTimeMilliseconds: UInt64? = nil
     ) {
         self.domain = domain
         self.manifest = manifest
         self.activeTopics = activeTopics
         self.prefetchBlobs = prefetchBlobs
         self.topics = topics
+        self.lastRefreshTimeMilliseconds = lastRefreshTimeMilliseconds
     }
 
     init(from decoder: Decoder) throws {
@@ -55,7 +62,11 @@ struct PersistedRemoteConfiguration: Codable, Equatable {
             manifest: try container.decode(String.self, forKey: .manifest),
             activeTopics: try container.decodeIfPresent([String].self, forKey: .activeTopics) ?? [],
             prefetchBlobs: try container.decodeIfPresent([String].self, forKey: .prefetchBlobs) ?? [],
-            topics: try container.decodeIfPresent(RemoteConfiguration.Topics.self, forKey: .topics) ?? .init()
+            topics: try container.decodeIfPresent(RemoteConfiguration.Topics.self, forKey: .topics) ?? .init(),
+            lastRefreshTimeMilliseconds: try container.decodeIfPresent(
+                UInt64.self,
+                forKey: .lastRefreshTimeMilliseconds
+            )
         )
     }
 
@@ -65,6 +76,24 @@ struct PersistedRemoteConfiguration: Codable, Equatable {
         case activeTopics
         case prefetchBlobs
         case topics
+        case lastRefreshTimeMilliseconds
+    }
+
+}
+
+extension PersistedRemoteConfiguration {
+
+    /// The persisted main-server request time in the `Date` representation used by the request layer.
+    var lastRefreshTime: Date? {
+        return self.lastRefreshTimeMilliseconds.map(Date.init(millisecondsSince1970:))
+    }
+
+    /// Returns a copy whose replayed refresh time is updated from a successful main-server response.
+    func withLastRefreshTime(_ date: Date) -> Self {
+        var copy = self
+        copy.lastRefreshTimeMilliseconds = date.millisecondsSince1970
+
+        return copy
     }
 
 }
@@ -121,7 +150,7 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
 
     private func readFromDisk() -> PersistedRemoteConfiguration? {
         do {
-            return try self.cache.value(forKey: Self.fileName)
+            return try self.cache.value(forKey: Self.fileName, decoder: .default)
         } catch {
             Logger.error(Strings.remoteConfig.failedToReadCache(error))
             return nil

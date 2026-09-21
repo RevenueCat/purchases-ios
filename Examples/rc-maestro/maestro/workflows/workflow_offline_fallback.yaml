@@ -1,0 +1,44 @@
+# Opens a workflow offering (`default_workflows`) while the /v1/config endpoint is unreachable
+# (a transport failure, simulating no network) on a cold cache (`clearState`). For a workflow offering
+# the SDK nulls the offerings-provided paywall components at runtime (their bodies come from remote
+# config, see OfferingsFactory.removingPaywallComponents), so with config unreachable and nothing
+# cached there is no renderable paywall for the offering: the SDK renders its built-in default paywall
+# (the generic fallback) instead of the workflow, and never crashes. This is the "no network, nothing
+# cached -> default paywall" bug-bash case.
+#
+# The `remote_config_network_error` strategy routes config requests to an unreachable host, so the app
+# receives a real URLError. Offerings are not blocked, so the offering still resolves and a paywall is
+# presentable. The force_server_error_strategy launch argument is read by Constants.
+#
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/workflow_offline_fallback.yaml
+
+appId: com.revenuecat.maestro.ios
+name: Workflow offering renders the default paywall when config is offline with nothing cached
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+# Dismiss any leftover system alerts from previous test runs.
+- pressKey: home
+- launchApp:
+    arguments:
+        e2e_test_flow: open_workflow
+        force_server_error_strategy: remote_config_network_error
+- assertVisible: "entitlement (pro): nil"
+# Wait for offerings to load before the button appears.
+- extendedWaitUntil:
+    visible: "Present Paywall"
+    timeout: 20000
+- tapOn:
+    text: "Present Paywall"
+
+# With /v1/config unreachable and nothing cached, there is no workflow and no configured paywall for
+# this offering, so the SDK's default paywall is shown ("No Paywall configured" is its DEBUG warning).
+- extendedWaitUntil:
+    visible: "No Paywall configured"
+    timeout: 15000
+# The multipage workflow entry screen is never rendered.
+- assertNotVisible: "Start Your Free Week And Reclaim 30+ Minutes Daily"
+- takeScreenshot: "workflow_offline_fallback - default paywall"

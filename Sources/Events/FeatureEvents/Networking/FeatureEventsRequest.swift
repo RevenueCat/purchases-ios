@@ -55,6 +55,11 @@ struct FeatureEventsRequest {
                     return nil
                 }
                 return AnyEncodable(event)
+            case .checkpoints:
+                guard let event = FeatureEventsRequest.CheckpointEvent(storedEvent: storedEvent) else {
+                    return nil
+                }
+                return AnyEncodable(event)
             }
         })
     }

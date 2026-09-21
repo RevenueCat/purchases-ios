@@ -47,6 +47,55 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         expect(self.httpClient.calls).toEventually(haveCount(2))
     }
 
+    func testGetCustomerInfoIsAppendedToInFlightPostReceiptForSameUser() {
+        self.httpClient.disableSnapshotTesting()
+        self.httpClient.mock(
+            requestPath: .postReceiptData,
+            response: .init(statusCode: .success, response: Self.validCustomerResponse)
+        )
+
+        let getCustomerInfoCompleted: Atomic<Bool> = false
+
+        self.postReceipt(appUserID: Self.userID)
+        self.backend.getCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false) { _ in
+            getCustomerInfoCompleted.value = true
+        }
+
+        expect(getCustomerInfoCompleted.value).toEventually(beTrue())
+        expect(self.httpClient.calls).to(haveCount(1))
+        expect(self.httpClient.calls.first?.request.path as? HTTPRequest.Path) == .postReceiptData
+    }
+
+    func testGetCustomerInfoIsNotAppendedToInFlightPostReceiptForDifferentUser() throws {
+        self.httpClient.disableSnapshotTesting()
+
+        let otherUserID = "other_user_id"
+        var otherUserResponse = Self.validCustomerResponse
+        var otherUserSubscriber = try XCTUnwrap(otherUserResponse["subscriber"] as? [String: Any])
+        otherUserSubscriber["original_app_user_id"] = otherUserID
+        otherUserResponse["subscriber"] = otherUserSubscriber
+
+        self.httpClient.mock(
+            requestPath: .postReceiptData,
+            response: .init(statusCode: .success, response: Self.validCustomerResponse)
+        )
+        self.httpClient.mock(
+            requestPath: .getCustomerInfo(appUserID: otherUserID),
+            response: .init(statusCode: .success, response: otherUserResponse)
+        )
+
+        self.postReceipt(appUserID: Self.userID)
+        let result = waitUntilValue { completed in
+            self.backend.getCustomerInfo(appUserID: otherUserID, isAppBackgrounded: false, completion: completed)
+        }
+
+        expect(result).to(beSuccess())
+        expect(result?.value?.originalAppUserId) == otherUserID
+        expect(self.httpClient.calls).to(haveCount(2))
+        expect(self.httpClient.calls.last?.request.path as? HTTPRequest.Path)
+            == .getCustomerInfo(appUserID: otherUserID)
+    }
+
     func testGetCustomerCallsBackendProperly() throws {
         let path: HTTPRequest.Path = .getCustomerInfo(appUserID: Self.userID)
         let response = MockHTTPClient.Response(statusCode: .success, response: Self.validCustomerResponse)
@@ -69,6 +118,42 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
 
         expect(customerInfo).to(beSuccess())
         expect(customerInfo?.value?.entitlements.verification) == .notRequested
+    }
+
+    func testGetCustomerInfoPreservesUnparsedResponseDataOfEveryJSONType() throws {
+        self.httpClient.disableSnapshotTesting()
+        var response = Self.validCustomerResponse
+        response["future_data"] = [
+            "string": "value",
+            "boolean": true,
+            "integer": 3,
+            "double": 0.75,
+            "object": ["nested": "value"],
+            "array": ["a", "b"],
+            "null": NSNull()
+        ]
+        self.httpClient.mock(
+            requestPath: .getCustomerInfo(appUserID: Self.userID),
+            response: .init(statusCode: .success, response: response)
+        )
+
+        let result = waitUntilValue { completed in
+            self.backend.getCustomerInfo(
+                appUserID: Self.userID,
+                isAppBackgrounded: false,
+                completion: completed
+            )
+        }
+        expect(result).to(beSuccess())
+
+        let futureData = try XCTUnwrap(result?.value?.rawData["future_data"] as? [String: Any])
+        expect(futureData["string"] as? String) == "value"
+        expect(futureData["boolean"] as? Bool) == true
+        expect(futureData["integer"] as? Int) == 3
+        expect(futureData["double"] as? Double) == 0.75
+        expect(futureData["object"] as? [String: String]) == ["nested": "value"]
+        expect(futureData["array"] as? [String]) == ["a", "b"]
+        expect(futureData["null"] is NSNull) == true
     }
 
     func testHandlesGetCustomerInfoErrors() throws {
@@ -184,6 +269,18 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
 
         expect(response).to(beSuccess())
         expect(response?.value?.requestDate).to(beCloseTo(requestDate, within: 0.01))
+    }
+
+    private func postReceipt(appUserID: String) {
+        self.backend.post(receipt: .receipt("a receipt".asData),
+                          productData: nil,
+                          transactionData: .init(presentedOfferingContext: nil,
+                                                 unsyncedAttributes: nil,
+                                                 storeCountry: nil),
+                          postReceiptSource: .init(isRestore: false, initiationSource: .queue),
+                          observerMode: false,
+                          originalPurchaseCompletedBy: nil,
+                          appUserID: appUserID) { _ in }
     }
 
 }

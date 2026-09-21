@@ -18,7 +18,7 @@ final class SDKHealthManager: Sendable {
     #if DEBUG
     func healthReport() async -> PurchasesDiagnostics.SDKHealthReport {
         do {
-            if !paymentAuthorizationProvider.isAuthorized() {
+            if !paymentAuthorizationProvider.canMakePayments() {
                 return .init(status: .unhealthy(.notAuthorizedToMakePayments))
             }
             let appUserID = self.identityManager.currentAppUserID

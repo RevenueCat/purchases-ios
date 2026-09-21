@@ -102,6 +102,40 @@ final class ImageComponentViewTests: TestCase {
         XCTAssertTrue(plan.showsMeasurementPlaceholder)
     }
 
+    // MARK: - Size-change acceptance (carousel shared-cache race)
+
+    // Regression for looping carousels: multiple page copies share one ImageComponentViewModel
+    // (and thus one cachedMeasuredSize). When local @State is still nil, a measurement must be
+    // accepted even if it equals the shared cache — otherwise the visible copy stays stuck in
+    // the "size unknown" path (image mounted with maxWidth: 0).
+    func testAcceptsMeasurementWhenLocalSizeIsNilEvenIfMatchingSharedCache() {
+        let measured = CGSize(width: 320, height: 200)
+
+        XCTAssertTrue(
+            ImageComponentView.shouldAcceptMeasuredSize(localSize: nil, newSize: measured),
+            "A nil local size must accept the measurement regardless of any shared cached size"
+        )
+    }
+
+    // Once local state already holds this size, reject identical re-measurements to avoid
+    // redraw churn. Init seeds _size from cachedMeasuredSize, so remounted views still short-circuit.
+    func testRejectsMeasurementWhenLocalSizeAlreadyMatches() {
+        let measured = CGSize(width: 320, height: 200)
+
+        XCTAssertFalse(
+            ImageComponentView.shouldAcceptMeasuredSize(localSize: measured, newSize: measured)
+        )
+    }
+
+    func testAcceptsMeasurementWhenLocalSizeDiffers() {
+        let previous = CGSize(width: 100, height: 50)
+        let measured = CGSize(width: 320, height: 200)
+
+        XCTAssertTrue(
+            ImageComponentView.shouldAcceptMeasuredSize(localSize: previous, newSize: measured)
+        )
+    }
+
     // MARK: - maxWidth sizing math (keeps the image within the parent's bounds)
 
     func testCalculateMaxWidthSubtractsBordersPaddingAndMargin() {
@@ -143,7 +177,7 @@ final class ImageComponentViewTests: TestCase {
             source: .init(
                 light: .init(width: 750, height: 530, original: url, heic: url, heicLowRes: url)
             ),
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             fitMode: .fit,
             padding: padding,
             margin: margin,

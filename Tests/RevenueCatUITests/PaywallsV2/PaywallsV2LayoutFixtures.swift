@@ -71,7 +71,7 @@ enum PaywallsV2LayoutFixtures {
                         heic: Self.heroImageURL,
                         heicLowRes: Self.heroImageURL
                     )),
-                    size: .init(width: .fill, height: .fit),
+                    size: .init(width: .fill, height: .fit(nil)),
                     fitMode: .fill
                 )),
                 .text(.init(
@@ -93,7 +93,7 @@ enum PaywallsV2LayoutFixtures {
                 ))
             ],
             dimension: .zlayer(.top),
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             spacing: 0,
             backgroundColor: .init(light: .hex("#FFFFFF"))
         )
@@ -142,7 +142,7 @@ enum PaywallsV2LayoutFixtures {
                 ))
             ],
             dimension: .vertical(.center, .start),
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             spacing: 12,
             backgroundColor: .init(light: .hex("#FFFFFF")),
             padding: .init(top: 12, bottom: 12, leading: 16, trailing: 16)
@@ -209,7 +209,7 @@ enum PaywallsV2LayoutFixtures {
                 ))
             ],
             dimension: .vertical(.center, .start),
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             backgroundColor: .init(light: .hex("#057C5B99")),
             padding: .init(top: 16, bottom: 16, leading: 32, trailing: 32)
         )
@@ -247,7 +247,7 @@ enum PaywallsV2LayoutFixtures {
                 ))
             ],
             dimension: .vertical(.center, .start),
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             backgroundColor: .init(light: .hex("#EEEEEE"))
         )
 

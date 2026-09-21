@@ -11,14 +11,18 @@
 //
 //  Created by Antonio Pallares on 28/1/25.
 
-@_spi(Internal) import RevenueCat
+@_spi(Experimental) @_spi(Internal) import RevenueCat
 
 func checkDangerousSettingsAPI() {
     let _: DangerousSettings = DangerousSettings()
     let _: DangerousSettings = DangerousSettings(autoSyncPurchases: true)
+    let _: DangerousSettings = DangerousSettings(autoSyncPurchases: true, forceAllowTestStoreInReleaseBuilds: true)
+    let _: DangerousSettings = DangerousSettings(autoSyncPurchases: true, useExternalPurchaseCustomLinks: true)
     let settings: DangerousSettings = DangerousSettings(uiPreviewMode: true)
 
     let _: Bool = settings.autoSyncPurchases
     let _: Bool = settings.customEntitlementComputation
     let _: Bool = settings.uiPreviewMode
+    let _: Bool = settings.forceAllowTestStoreInReleaseBuilds
+    let _: Bool = settings.useExternalPurchaseCustomLinks
 }

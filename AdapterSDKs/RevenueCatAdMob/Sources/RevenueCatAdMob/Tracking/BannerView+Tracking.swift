@@ -8,7 +8,7 @@ import Foundation
 
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
-@_spi(Experimental) import RevenueCat
+import RevenueCat
 
 @available(iOS 15.0, *)
 internal extension Tracking {
@@ -93,7 +93,7 @@ internal extension GoogleMobileAds.BannerView {
 }
 
 @available(iOS 15.0, *)
-@_spi(Experimental) public extension GoogleMobileAds.BannerView {
+public extension GoogleMobileAds.BannerView {
 
     /// Loads a banner ad and tracks ad events with RevenueCat while optionally forwarding callbacks.
     ///

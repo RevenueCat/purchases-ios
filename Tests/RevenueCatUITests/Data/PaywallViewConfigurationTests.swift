@@ -19,8 +19,22 @@ import XCTest
 final class PaywallViewConfigurationTests: TestCase {
 
 #if !os(tvOS)
-    func testCachedInitialOfferingReturnsNilForAllContentWhenRemoteConfigEnabled() {
-        let cachedOffering = TestData.offeringWithNoIntroOffer
+    func testWorkflowPresentationErrorHandlerIsRetained() {
+        let expectedError = NSError(domain: "test", code: 1)
+        var receivedError: NSError?
+        let configuration = PaywallViewConfiguration(
+            content: .defaultOffering,
+            purchaseHandler: .default(),
+            workflowPresentationErrorHandler: { receivedError = $0 }
+        )
+
+        configuration.workflowPresentationErrorHandler?(expectedError)
+
+        expect(receivedError) === expectedError
+    }
+
+    func testCachedInitialOfferingReturnsNilForWorkflowContentWhenRemoteConfigEnabledWithoutCachedWorkflow() {
+        let cachedOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
         let purchases = Self.createMockPurchases()
         let handler = Self.createPurchaseHandler(purchases: purchases)
 
@@ -41,6 +55,25 @@ final class PaywallViewConfigurationTests: TestCase {
             for: .offeringIdentifier(cachedOffering.identifier, presentedOfferingContext: nil),
             remoteConfigEnabled: true
         )).to(beNil())
+    }
+
+    func testCachedInitialPaywallViewDataReturnsLegacyOfferingWhenRemoteConfigEnabled() {
+        let cachedOffering = TestData.offeringWithNoIntroOffer
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+
+        purchases.cachedOfferings = Self.createOfferings(
+            [cachedOffering],
+            currentOfferingID: cachedOffering.identifier
+        )
+
+        let result = handler.cachedInitialPaywallViewData(
+            for: .defaultOffering,
+            remoteConfigEnabled: true
+        )
+
+        expect(result?.offering.identifier) == cachedOffering.identifier
+        expect(result?.workflowContext).to(beNil())
     }
 
     func testCachedInitialOfferingUsesCachedOfferingsWhenRemoteConfigDisabled() {
@@ -65,6 +98,76 @@ final class PaywallViewConfigurationTests: TestCase {
             for: .offeringIdentifier(cachedOffering.identifier, presentedOfferingContext: nil),
             remoteConfigEnabled: false
         )?.identifier) == cachedOffering.identifier
+    }
+
+    func testCachedInitialPaywallViewDataUsesCachedOfferingsWhenRemoteConfigDisabled() {
+        let cachedOffering = TestData.offeringWithNoIntroOffer
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+
+        purchases.cachedOfferings = Self.createOfferings(
+            [cachedOffering],
+            currentOfferingID: cachedOffering.identifier
+        )
+
+        let result = handler.cachedInitialPaywallViewData(
+            for: .defaultOffering,
+            remoteConfigEnabled: false
+        )
+
+        expect(result?.offering.identifier) == cachedOffering.identifier
+        expect(result?.workflowContext).to(beNil())
+    }
+
+    func testCachedInitialPaywallViewDataUsesInjectedWorkflowContext() throws {
+        let initialOffering = Self.createOffering(identifier: "offering_a")
+        let workflowContext = WorkflowContext(
+            workflow: try Self.createWorkflow(offeringIdentifier: initialOffering.identifier),
+            uiConfig: PreviewUIConfig.make(),
+            allOfferings: Self.createOfferings([initialOffering]),
+            initialOffering: initialOffering,
+            presentedOfferingContext: initialOffering.presentedOfferingContext
+        )
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+
+        let result = handler.cachedInitialPaywallViewData(
+            for: .defaultOffering,
+            injectedWorkflowContext: workflowContext
+        )
+
+        expect(result?.offering.identifier) == initialOffering.identifier
+        expect(result?.workflowContext?.initialOffering.identifier) == workflowContext.initialOffering.identifier
+        expect(result?.workflowContext?.workflow.id) == workflowContext.workflow.id
+    }
+
+    func testCachedInitialPaywallViewDataUsesProvidedOfferingWithPaywallComponents() throws {
+        let (offering, _, handler) = try Self.createOfferingWithPaywallComponentsFixture()
+
+        let result = handler.cachedInitialPaywallViewData(
+            for: .offering(offering),
+            remoteConfigEnabled: true
+        )
+
+        expect(result?.offering) === offering
+        expect(result?.workflowContext).to(beNil())
+    }
+
+    func testCachedInitialPaywallViewDataDoesNotTreatComponentsMarkerAsProvidedPayload() {
+        let offering = Self.createOfferingWithPaywallComponentsMarker(identifier: "offering_a")
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+        purchases.cachedOfferings = Self.createOfferings(
+            [offering],
+            currentOfferingID: offering.identifier
+        )
+
+        let result = handler.cachedInitialPaywallViewData(
+            for: .offering(offering),
+            remoteConfigEnabled: true
+        )
+
+        expect(result).to(beNil())
     }
 
     func testResolvePaywallViewDataReturnsNilWorkflowContextWhenRemoteConfigDisabled() async throws {
@@ -127,7 +230,7 @@ final class PaywallViewConfigurationTests: TestCase {
         )
 
         expect(result.offering.identifier) == workflowOffering.identifier
-        expect(result.offering.paywallComponents).toNot(beNil())
+        expect(result.offering.internalPaywallComponents).toNot(beNil())
         expect(result.workflowContext?.initialOffering.identifier) == workflowOffering.identifier
         expect(result.workflowContext?.presentedOfferingContext?.offeringIdentifier) == initialOffering.identifier
 
@@ -136,6 +239,35 @@ final class PaywallViewConfigurationTests: TestCase {
         expect(packageContext.placementIdentifier) == "placement_offering_a"
         expect(packageContext.targetingContext?.revision) == 7
         expect(packageContext.targetingContext?.ruleId) == "targeting_rule_offering_a"
+    }
+
+    func testCachedInitialPaywallViewDataReturnsWorkflowContextForCachedWorkflow() throws {
+        let initialOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
+            .withPresentedOfferingContext(Self.createPresentedOfferingContext(offeringIdentifier: "offering_a"))
+        let workflowOffering = Self.createOffering(identifier: "offering_b")
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+        let cachedWorkflow = try Self.createWorkflowDataResult(offeringIdentifier: workflowOffering.identifier)
+
+        purchases.cachedOfferings = Self.createOfferings([initialOffering, workflowOffering])
+        purchases.cachedWorkflowBlock = { offeringIdentifier in
+            expect(offeringIdentifier) == initialOffering.identifier
+            return cachedWorkflow
+        }
+        purchases.workflowBlock = { _ in
+            XCTFail("Cached initial data must not use the async workflow path")
+            throw ErrorCode.configurationError
+        }
+
+        let result = handler.cachedInitialPaywallViewData(
+            for: .offering(initialOffering),
+            remoteConfigEnabled: true
+        )
+
+        expect(result?.offering.identifier) == workflowOffering.identifier
+        expect(result?.offering.internalPaywallComponents).toNot(beNil())
+        expect(result?.workflowContext?.initialOffering.identifier) == workflowOffering.identifier
+        expect(result?.workflowContext?.presentedOfferingContext?.offeringIdentifier) == initialOffering.identifier
     }
 
     func testResolvePaywallViewDataReturnsWorkflowContextForWorkflowDefaultOffering() async throws {
@@ -163,7 +295,7 @@ final class PaywallViewConfigurationTests: TestCase {
         )
 
         expect(result.offering.identifier) == workflowOffering.identifier
-        expect(result.offering.paywallComponents).toNot(beNil())
+        expect(result.offering.internalPaywallComponents).toNot(beNil())
         expect(result.workflowContext?.initialOffering.identifier) == workflowOffering.identifier
         expect(result.workflowContext?.presentedOfferingContext?.offeringIdentifier) == initialOffering.identifier
 
@@ -194,7 +326,7 @@ final class PaywallViewConfigurationTests: TestCase {
         )
 
         expect(result.offering.identifier) == workflowOffering.identifier
-        expect(result.offering.paywallComponents).toNot(beNil())
+        expect(result.offering.internalPaywallComponents).toNot(beNil())
         expect(result.workflowContext?.initialOffering.identifier) == workflowOffering.identifier
         expect(result.workflowContext?.presentedOfferingContext?.offeringIdentifier) == initialOffering.identifier
         expect(result.workflowContext?.workflow.initialStepId) == "step_1"
@@ -203,12 +335,12 @@ final class PaywallViewConfigurationTests: TestCase {
         expect(packageContext.offeringIdentifier) == initialOffering.identifier
     }
 
-    func testResolvePaywallViewDataFallsBackToOfferingsPaywallWhenWorkflowFetchFails() async throws {
-        let (offering, paywallComponents, purchases, handler) = try Self.createOfferingWithFallbackFixture()
-        var workflowFetchAttempted = false
+    func testResolvePaywallViewDataUsesProvidedOfferingWithPaywallComponents() async throws {
+        let (offering, purchases, handler) = try Self.createOfferingWithPaywallComponentsFixture()
+        expect(offering.internalPaywallComponents).toNot(beNil())
         purchases.workflowBlock = { _ in
-            workflowFetchAttempted = true
-            throw ErrorCode.networkError
+            XCTFail("Workflow endpoint should not be fetched for a provided render-ready offering")
+            throw ErrorCode.configurationError
         }
 
         let result = try await handler.resolvePaywallViewData(
@@ -216,33 +348,39 @@ final class PaywallViewConfigurationTests: TestCase {
             remoteConfigEnabled: true
         )
 
-        expect(workflowFetchAttempted) == true
-        expect(result.offering.identifier) == offering.identifier
-        expect(result.offering.paywallComponents?.data) == paywallComponents.data
+        expect(result.offering) === offering
         expect(result.workflowContext).to(beNil())
     }
 
-    func testResolvePaywallViewDataThrowsWhenWorkflowScreenOfferingMissingEvenWithFallbackAvailable() async throws {
-        // A structural workflow misconfiguration (unlike a fetch failure) must still surface, even
-        // with a fallback available: mirrors isWorkflowFetchFallbackEligible's PaywallError exclusion.
-        let (offering, _, purchases, handler) = try Self.createOfferingWithFallbackFixture()
-        purchases.workflowBlock = { _ in
-            try Self.createWorkflowDataResult(offeringIdentifier: "offering_b")
+    func testResolvePaywallViewDataFetchesWorkflowForComponentsMarkerWithoutPayload() async throws {
+        let initialOffering = Self.createOfferingWithPaywallComponentsMarker(identifier: "offering_a")
+        let workflowOffering = Self.createOffering(identifier: "offering_b")
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+        purchases.offeringsBlock = {
+            Self.createOfferings([initialOffering, workflowOffering])
+        }
+        purchases.workflowBlock = { offeringIdentifier in
+            expect(offeringIdentifier) == initialOffering.identifier
+            return try Self.createWorkflowDataResult(offeringIdentifier: workflowOffering.identifier)
         }
 
-        do {
-            _ = try await handler.resolvePaywallViewData(
-                for: .offering(offering),
-                remoteConfigEnabled: true
-            )
-            XCTFail("Expected resolvePaywallViewData to throw")
-        } catch let PaywallError.offeringNotFound(identifier) {
-            expect(identifier) == "offering_b"
-        }
+        let result = try await handler.resolvePaywallViewData(
+            for: .offering(initialOffering),
+            remoteConfigEnabled: true
+        )
+
+        expect(result.offering.identifier) == workflowOffering.identifier
+        expect(result.workflowContext?.workflow.id) == "wf_test"
     }
 
-    func testResolvePaywallViewDataThrowsWhenWorkflowUiConfigUnavailableEvenWithFallbackAvailable() async throws {
-        let (offering, _, purchases, handler) = try Self.createOfferingWithFallbackFixture()
+    func testResolvePaywallViewDataThrowsWhenWorkflowUiConfigUnavailable() async throws {
+        let offering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+        purchases.offeringsBlock = {
+            Self.createOfferings([offering], currentOfferingID: offering.identifier)
+        }
         purchases.workflowBlock = { _ in
             throw WorkflowError.uiConfigUnavailable(workflowId: "wf_test")
         }
@@ -258,10 +396,103 @@ final class PaywallViewConfigurationTests: TestCase {
         }
     }
 
-    func testResolvePaywallViewDataThrowsOnCancellationEvenWithFallbackAvailable() async throws {
-        // Cancellation must propagate even with a fallback available: mirrors
-        // isWorkflowFetchFallbackEligible's CancellationError exclusion.
-        let (offering, _, purchases, handler) = try Self.createOfferingWithFallbackFixture()
+    func testResolvePaywallViewDataThrowsWhenWorkflowInitialStepIsUnavailable() async throws {
+        let offering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+        purchases.offeringsBlock = {
+            Self.createOfferings([offering], currentOfferingID: offering.identifier)
+        }
+        purchases.workflowBlock = { _ in
+            return try Self.createWorkflowDataResult(
+                offeringIdentifier: offering.identifier,
+                initialStepID: "missing_step"
+            )
+        }
+
+        do {
+            _ = try await handler.resolvePaywallViewData(
+                for: .offering(offering),
+                remoteConfigEnabled: true
+            )
+            XCTFail("Expected resolvePaywallViewData to throw")
+        } catch let PaywallError.workflowInitialStepNotFound(stepID, workflowID) {
+            expect(stepID) == "missing_step"
+            expect(workflowID) == "wf_test"
+        }
+    }
+
+    func testResolvePaywallViewDataThrowsWhenWorkflowInitialStepHasNoScreenIdentifier() async throws {
+        let offering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+        purchases.offeringsBlock = { Self.createOfferings([offering], currentOfferingID: offering.identifier) }
+        purchases.workflowBlock = { _ in
+            try Self.createWorkflowDataResult(
+                offeringIdentifier: offering.identifier,
+                initialScreenID: nil
+            )
+        }
+
+        do {
+            _ = try await handler.resolvePaywallViewData(for: .offering(offering), remoteConfigEnabled: true)
+            XCTFail("Expected resolvePaywallViewData to throw")
+        } catch let PaywallError.workflowInitialStepMissingScreenIdentifier(stepID, workflowID) {
+            expect(stepID) == "step_1"
+            expect(workflowID) == "wf_test"
+        }
+    }
+
+    func testResolvePaywallViewDataFallsBackForTerminalOfferingStep() async throws {
+        let offering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+        purchases.offeringsBlock = { Self.createOfferings([offering], currentOfferingID: offering.identifier) }
+        purchases.workflowBlock = { _ in
+            try Self.createWorkflowDataResult(
+                offeringIdentifier: offering.identifier,
+                initialStepType: "offering",
+                initialScreenID: nil
+            )
+        }
+
+        let result = try await handler.resolvePaywallViewData(
+            for: .offering(offering),
+            remoteConfigEnabled: true
+        )
+
+        XCTAssertEqual(result.offering.identifier, offering.identifier)
+        XCTAssertNil(result.workflowContext)
+    }
+
+    func testResolvePaywallViewDataThrowsWhenWorkflowInitialScreenIsUnavailable() async throws {
+        let offering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+        purchases.offeringsBlock = { Self.createOfferings([offering], currentOfferingID: offering.identifier) }
+        purchases.workflowBlock = { _ in
+            try Self.createWorkflowDataResult(
+                offeringIdentifier: offering.identifier,
+                initialScreenID: "missing_screen"
+            )
+        }
+
+        do {
+            _ = try await handler.resolvePaywallViewData(for: .offering(offering), remoteConfigEnabled: true)
+            XCTFail("Expected resolvePaywallViewData to throw")
+        } catch let PaywallError.workflowInitialScreenNotFound(screenID, workflowID) {
+            expect(screenID) == "missing_screen"
+            expect(workflowID) == "wf_test"
+        }
+    }
+
+    func testResolvePaywallViewDataThrowsOnCancellation() async throws {
+        let offering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+        purchases.offeringsBlock = {
+            Self.createOfferings([offering], currentOfferingID: offering.identifier)
+        }
         purchases.workflowBlock = { _ in
             throw CancellationError()
         }
@@ -302,10 +533,89 @@ final class PaywallViewConfigurationTests: TestCase {
         }
     }
 
-    func testResolvePaywallViewDataThrowsWithScreenOfferingIdWhenScreenOfferingMissing() async throws {
-        // The workflow screen resolves to "offering_b", but the offerings snapshot only contains the
-        // trigger offering "offering_a". The error must report the screen's offering id that was
-        // actually missing, not the trigger offering used to look up the workflow.
+    func testResolvePaywallViewDataFallsBackToDefaultPaywallWhenOfferingHasNoWorkflow() async throws {
+        // An offering with neither a legacy paywall nor components, whose workflow lookup reports the
+        // offering simply has no workflow attached, must fall back to the default paywall (matching
+        // the legacy offerings path) instead of surfacing an error.
+        let offering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+
+        purchases.offeringsBlock = {
+            Self.createOfferings([offering], currentOfferingID: offering.identifier)
+        }
+        purchases.workflowBlock = { _ in
+            throw BackendError.offeringHasNoWorkflow(offeringId: "offering_a")
+        }
+
+        let result = try await handler.resolvePaywallViewData(
+            for: .offering(offering),
+            remoteConfigEnabled: true
+        )
+
+        expect(result.workflowContext).to(beNil())
+        expect(result.offering.identifier) == offering.identifier
+    }
+
+    func testResolvePaywallViewDataThrowsWhenMappedWorkflowUnresolvableWithNoFallback() async throws {
+        // A mapped workflow whose item or blob failed to resolve surfaces as `workflowNotFound`. With
+        // no components to fall back to it must still throw, so a broken rollout is not silently masked
+        // by the default paywall. Only the distinct "offering has no workflow" case degrades.
+        let offering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+
+        purchases.offeringsBlock = {
+            Self.createOfferings([offering], currentOfferingID: offering.identifier)
+        }
+        purchases.workflowBlock = { _ in
+            throw BackendError.workflowNotFound(workflowId: "wf_test")
+        }
+
+        do {
+            _ = try await handler.resolvePaywallViewData(
+                for: .offering(offering),
+                remoteConfigEnabled: true
+            )
+            XCTFail("Expected resolvePaywallViewData to throw")
+        } catch {
+            expect(error.isOfferingWithoutWorkflowError) == false
+        }
+    }
+
+    func testResolvePaywallViewDataThrowsWhenWorkflowDecodingFailsWithNoFallback() async throws {
+        // A malformed workflow (decoding failure) with no fallback must still surface, so a broken
+        // rollout is not silently masked by the default paywall. Only the explicit no-workflow case
+        // degrades to the default paywall.
+        let offering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+
+        purchases.offeringsBlock = {
+            Self.createOfferings([offering], currentOfferingID: offering.identifier)
+        }
+        purchases.workflowBlock = { _ in
+            throw BackendError.workflowDecodingFailed(
+                workflowId: "offering_a",
+                error: NSError(domain: "test", code: 1)
+            )
+        }
+
+        do {
+            _ = try await handler.resolvePaywallViewData(
+                for: .offering(offering),
+                remoteConfigEnabled: true
+            )
+            XCTFail("Expected resolvePaywallViewData to throw")
+        } catch {
+            expect(error.isOfferingWithoutWorkflowError) == false
+        }
+    }
+
+    func testResolvePaywallViewDataReturnsContentOnlyOfferingWhenInitialScreenOfferingMissing() async throws {
+        // The workflow's initial screen resolves to "offering_b", but the offerings snapshot only contains
+        // the trigger offering "offering_a". It must still produce a content-only offering, allowing the
+        // workflow view to surface the configuration error for the reached step.
         let initialOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
         let purchases = Self.createMockPurchases()
         let handler = Self.createPurchaseHandler(purchases: purchases)
@@ -317,15 +627,16 @@ final class PaywallViewConfigurationTests: TestCase {
             try Self.createWorkflowDataResult(offeringIdentifier: "offering_b")
         }
 
-        do {
-            _ = try await handler.resolvePaywallViewData(
-                for: .offering(initialOffering),
-                remoteConfigEnabled: true
-            )
-            XCTFail("Expected resolvePaywallViewData to throw")
-        } catch let PaywallError.offeringNotFound(identifier) {
-            expect(identifier) == "offering_b"
-        }
+        let result = try await handler.resolvePaywallViewData(
+            for: .offering(initialOffering),
+            remoteConfigEnabled: true
+        )
+
+        expect(result.offering.identifier) == ""
+        expect(result.offering.availablePackages).to(beEmpty())
+        let context = try XCTUnwrap(result.workflowContext)
+        let initialStep = try XCTUnwrap(context.workflow.steps[context.workflow.initialStepId])
+        expect(context.workflow.offeringIdentifier(for: initialStep)) == "offering_b"
     }
 
     func testResolvePaywallViewDataRendersLegacyWhenOfferingHasLegacyPaywall() async throws {
@@ -468,6 +779,19 @@ private extension PaywallViewConfigurationTests {
         )
     }
 
+    static func createOfferingWithPaywallComponentsMarker(identifier: String) -> Offering {
+        return Offering(
+            identifier: identifier,
+            serverDescription: "Offering \(identifier)",
+            metadata: [:],
+            paywall: nil,
+            paywallComponents: nil,
+            hasPaywallComponents: true,
+            availablePackages: TestData.packages,
+            webCheckoutUrl: nil
+        )
+    }
+
 #if !os(tvOS)
     static func createPresentedOfferingContext(offeringIdentifier: String) -> PresentedOfferingContext {
         return .init(
@@ -480,25 +804,40 @@ private extension PaywallViewConfigurationTests {
         )
     }
 
-    static func createWorkflowDataResult(offeringIdentifier: String) throws -> WorkflowDataResult {
+    static func createWorkflowDataResult(
+        offeringIdentifier: String,
+        initialStepID: String = "step_1",
+        initialStepType: String = "screen",
+        initialScreenID: String? = "screen_1"
+    ) throws -> WorkflowDataResult {
         return .init(
-            workflow: try self.createWorkflow(offeringIdentifier: offeringIdentifier),
+            workflow: try self.createWorkflow(
+                offeringIdentifier: offeringIdentifier,
+                initialStepID: initialStepID,
+                initialStepType: initialStepType,
+                initialScreenID: initialScreenID
+            ),
             uiConfig: PreviewUIConfig.make(),
             enrolledVariants: nil
         )
     }
 
-    static func createWorkflow(offeringIdentifier: String) throws -> PublishedWorkflow {
+    static func createWorkflow(
+        offeringIdentifier: String,
+        initialStepID: String = "step_1",
+        initialStepType: String = "screen",
+        initialScreenID: String? = "screen_1"
+    ) throws -> PublishedWorkflow {
+        let screenIdentifier = initialScreenID.map { ",\n              \"screen_id\": \"\($0)\"" } ?? ""
         let json = """
         {
           "id": "wf_test",
           "display_name": "Test",
-          "initial_step_id": "step_1",
+          "initial_step_id": "\(initialStepID)",
           "steps": {
             "step_1": {
               "id": "step_1",
-              "type": "screen",
-              "screen_id": "screen_1"
+              "type": "\(initialStepType)"\(screenIdentifier)
             }
           },
           "screens": {
@@ -537,21 +876,17 @@ private extension PaywallViewConfigurationTests {
     }
 
     /// A dashboard-authored V2 paywall independent of any workflow, built from the same screen shape
-    /// a workflow would map, to simulate an offering with a fallback paywall already delivered.
+    /// a workflow would map, to verify pre-attached components don't affect workflow error handling.
     static func createPaywallComponents(offeringIdentifier: String) throws -> Offering.PaywallComponents {
         let workflow = try Self.createWorkflow(offeringIdentifier: offeringIdentifier)
         let screen = try XCTUnwrap(workflow.screens["screen_1"])
         return WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: PreviewUIConfig.make())
     }
 
-    /// A non-legacy offering with a fallback paywall already available, wired into a handler whose
-    /// offerings fetch resolves it. Shared by the fallback-eligibility tests, which each only need to
-    /// set `workflowBlock` and assert.
-    static func createOfferingWithFallbackFixture(
+    static func createOfferingWithPaywallComponentsFixture(
         identifier: String = "offering_a"
     ) throws -> (
         offering: Offering,
-        paywallComponents: Offering.PaywallComponents,
         purchases: MockPurchases,
         handler: PurchaseHandler
     ) {
@@ -565,7 +900,7 @@ private extension PaywallViewConfigurationTests {
             Self.createOfferings([offering], currentOfferingID: offering.identifier)
         }
 
-        return (offering, paywallComponents, purchases, handler)
+        return (offering, purchases, handler)
     }
 #endif
 

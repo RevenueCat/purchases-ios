@@ -78,8 +78,6 @@ final class SamplePaywallLoader {
         )
     }
 
-    let customerInfo = TestData.customerInfo
-
     private func paywall(for template: PaywallTemplate) -> PaywallData {
         switch template {
         case .template1:
@@ -649,7 +647,7 @@ extension SamplePaywallLoader {
 
     private static func planTabs() -> PaywallComponent.TabsComponent {
         return .init(
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             control: .init(
                 type: .buttons,
                 stack: .init(
@@ -659,7 +657,7 @@ extension SamplePaywallLoader {
                         Self.tabControlButton(tabId: "lifetime", labelLid: "tab_lifetime_label")
                     ],
                     dimension: .horizontal(.center, .start),
-                    size: .init(width: .fit, height: .fit),
+                    size: .init(width: .fit(nil), height: .fit(nil)),
                     backgroundColor: .init(light: .hex("#dedede")),
                     padding: .init(top: 3, bottom: 3, leading: 3, trailing: 3),
                     shape: .pill
@@ -689,13 +687,13 @@ extension SamplePaywallLoader {
                     .text(.init(
                         text: labelLid,
                         color: .init(light: .hex("#000000")),
-                        size: .init(width: .fit, height: .fit),
+                        size: .init(width: .fit(nil), height: .fit(nil)),
                         overrides: [
                             .init(conditions: [.selected], properties: .init(color: .init(light: .hex("#ffffff"))))
                         ]
                     ))
                 ],
-                size: .init(width: .fit, height: .fit),
+                size: .init(width: .fit(nil), height: .fit(nil)),
                 padding: .init(top: 8, bottom: 8, leading: 18, trailing: 18),
                 shape: .pill,
                 overrides: [
@@ -714,20 +712,20 @@ extension SamplePaywallLoader {
                     text: titleLid,
                     fontWeight: .bold,
                     color: .init(light: .hex("#111827")),
-                    size: .init(width: .fit, height: .fit),
+                    size: .init(width: .fit(nil), height: .fit(nil)),
                     margin: .init(top: 16, bottom: 0, leading: 0, trailing: 0),
                     fontSize: 20
                 )),
                 .text(.init(
                     text: descLid,
                     color: .init(light: .hex("#6b7280")),
-                    size: .init(width: .fill, height: .fit),
+                    size: .init(width: .fill, height: .fit(nil)),
                     margin: .init(top: 4, bottom: 0, leading: 0, trailing: 0),
                     fontSize: 14
                 ))
             ],
             dimension: .vertical(.center, .start),
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             spacing: 4
         ))
     }
@@ -741,7 +739,7 @@ extension SamplePaywallLoader {
             text: "headline_monthly",
             fontWeight: .regular,
             color: .init(light: .hex("#6b7280")),
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             fontSize: 18,
             horizontalAlignment: .center,
             overrides: [
@@ -771,7 +769,7 @@ extension SamplePaywallLoader {
                     text: "price_monthly",
                     fontWeight: .bold,
                     color: .init(light: .hex("#111827")),
-                    size: .init(width: .fit, height: .fit),
+                    size: .init(width: .fit(nil), height: .fit(nil)),
                     fontSize: 24,
                     overrides: [
                         .init(extendedConditions: Self.whenPlan("annual"), properties: .init(
@@ -786,7 +784,7 @@ extension SamplePaywallLoader {
                 ))
             ],
             dimension: .vertical(.center, .start),
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             backgroundColor: .init(light: .hex("#f3f4f6")),
             padding: .init(top: 24, bottom: 24, leading: 16, trailing: 16),
             shape: .rectangle(.init(topLeading: 12, topTrailing: 12, bottomLeading: 12, bottomTrailing: 12)),
@@ -814,7 +812,7 @@ extension SamplePaywallLoader {
             fontWeight: .semibold,
             color: .init(light: .hex("#1b873f")),
             backgroundColor: .init(light: .hex("#e7f7ec")),
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             padding: .init(top: 12, bottom: 12, leading: 16, trailing: 16),
             fontSize: 15,
             overrides: [
@@ -866,6 +864,182 @@ extension SamplePaywallLoader {
     /// enum has no `.state` case, so overrides are constructed via the `extendedConditions:` initializer.
     private static func whenPlan(_ value: String) -> [PaywallComponent.ExtendedCondition] {
         return [.state(operator: .equals, name: Self.planStateKey, value: .string(value))]
+    }
+
+}
+
+// MARK: - Window size conditions
+
+extension SamplePaywallLoader {
+
+    /// Two stacked panes that flip side by side when the window is at least
+    /// 700x480pt. Resize the window (Stage Manager / Split View) to reflow live.
+    static func windowSplitComponentsData() -> PaywallComponentsData {
+        return .init(
+            templateName: "window-split-demo",
+            assetBaseURL: Self.paywallAssetBaseURL,
+            componentsConfig: .init(base: .init(
+                stack: .init(
+                    components: [
+                        .stack(Self.windowSplitWrapper())
+                    ],
+                    overflow: .default
+                ),
+                stickyFooter: nil,
+                background: .color(.init(light: .hex("#ffffff")))
+            )),
+            componentsLocalizations: [
+                "en_US": [
+                    "split_title": .string("Experience Pro today!"),
+                    "split_body": .string("Check out the power of all we offer."),
+                    "split_package_name": .string("Monthly"),
+                    "split_package_detail": .string("$9.99/mo"),
+                    "split_cta": .string("Continue"),
+                    "split_legal": .string("Cancel anytime. Restore purchases.")
+                ]
+            ],
+            revision: 1,
+            defaultLocaleIdentifier: "en_US"
+        )
+    }
+
+    private static func windowSplitWrapper() -> PaywallComponent.StackComponent {
+        return .init(
+            components: [
+                .stack(Self.windowSplitContentPane()),
+                .stack(Self.windowSplitPurchasePane())
+            ],
+            dimension: .vertical(.center, .start),
+            size: .init(width: .fill, height: .fit(nil)),
+            spacing: 0,
+            backgroundColor: nil,
+            overrides: [
+                .init(
+                    extendedConditions: [
+                        .windowWidth(operator: .greaterThanOrEqual, value: 700),
+                        .windowHeight(operator: .greaterThanOrEqual, value: 480)
+                    ],
+                    properties: .init(
+                        dimension: .horizontal(.top, .start)
+                    )
+                )
+            ]
+        )
+    }
+
+    private static func windowSplitContentPane() -> PaywallComponent.StackComponent {
+        let imageUrl = URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!
+        return .init(
+            components: [
+                .image(.init(
+                    source: .init(
+                        light: .init(
+                            width: 750,
+                            height: 530,
+                            original: imageUrl,
+                            heic: imageUrl,
+                            heicLowRes: imageUrl
+                        )
+                    ),
+                    size: .init(width: .fill, height: .fixed(260)),
+                    fitMode: .fill
+                )),
+                .text(.init(
+                    text: "split_title",
+                    fontWeight: .black,
+                    color: .init(light: .hex("#000000")),
+                    padding: .init(top: 20, bottom: 0, leading: 20, trailing: 20),
+                    margin: .zero,
+                    fontSize: 28,
+                    horizontalAlignment: .center
+                )),
+                .text(.init(
+                    text: "split_body",
+                    color: .init(light: .hex("#000000")),
+                    padding: .init(top: 8, bottom: 0, leading: 20, trailing: 20),
+                    margin: .zero,
+                    fontSize: 15,
+                    horizontalAlignment: .center
+                ))
+            ],
+            dimension: .vertical(.center, .start),
+            size: .init(width: .fill, height: .fit(nil)),
+            spacing: 0,
+            backgroundColor: nil
+        )
+    }
+
+    private static func windowSplitPurchasePane() -> PaywallComponent.StackComponent {
+        return .init(
+            components: [
+                .package(.init(
+                    packageID: Self.monthlyPackage.identifier,
+                    isSelectedByDefault: true,
+                    applePromoOfferProductCode: nil,
+                    stack: .init(
+                        components: [
+                            .text(.init(
+                                text: "split_package_name",
+                                fontWeight: .bold,
+                                color: .init(light: .hex("#000000")),
+                                padding: .zero,
+                                margin: .zero
+                            )),
+                            .text(.init(
+                                text: "split_package_detail",
+                                color: .init(light: .hex("#000000")),
+                                padding: .zero,
+                                margin: .zero
+                            ))
+                        ],
+                        dimension: .vertical(.center, .start),
+                        size: .init(width: .fill, height: .fit(nil)),
+                        spacing: 0,
+                        backgroundColor: nil,
+                        padding: .init(top: 12, bottom: 12, leading: 12, trailing: 12),
+                        shape: .rectangle(.init(
+                            topLeading: 12,
+                            topTrailing: 12,
+                            bottomLeading: 12,
+                            bottomTrailing: 12
+                        )),
+                        border: .init(color: .init(light: .hex("#cccccc")), width: 1)
+                    )
+                )),
+                .purchaseButton(.init(
+                    stack: .init(
+                        components: [
+                            .text(.init(
+                                text: "split_cta",
+                                fontWeight: .bold,
+                                color: .init(light: .hex("#ffffff")),
+                                backgroundColor: .init(light: .hex("#e89d89")),
+                                size: .init(width: .fill, height: .fit(nil)),
+                                padding: .init(top: 12, bottom: 12, leading: 30, trailing: 30)
+                            ))
+                        ],
+                        size: .init(width: .fill, height: .fit(nil)),
+                        shape: .pill
+                    ),
+                    action: nil,
+                    method: nil,
+                    name: nil
+                )),
+                .text(.init(
+                    text: "split_legal",
+                    color: .init(light: .hex("#999999")),
+                    padding: .zero,
+                    margin: .zero,
+                    fontSize: 12,
+                    horizontalAlignment: .center
+                ))
+            ],
+            dimension: .vertical(.center, .center),
+            size: .init(width: .fill, height: .fit(nil)),
+            spacing: 16,
+            backgroundColor: nil,
+            padding: .init(top: 16, bottom: 16, leading: 16, trailing: 16)
+        )
     }
 
 }

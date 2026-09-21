@@ -35,6 +35,7 @@ tuist generate PurchaseTester
 
 tuist generate UnitTests
 tuist generate RevenueCatUITests
+tuist generate PurchasesUIServiceIntegrationTests
 tuist generate StoreKitUnitTests
 tuist generate BackendIntegrationTests
 

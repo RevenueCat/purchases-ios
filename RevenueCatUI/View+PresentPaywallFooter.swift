@@ -143,7 +143,6 @@ extension View {
                                                       performRestore: myAppPurchaseLogic?.performRestore)
         return self.originalTemplatePaywallFooter(
             offering: nil,
-            customerInfo: nil,
             condensed: condensed,
             fonts: fonts,
             introEligibility: nil,
@@ -190,7 +189,6 @@ extension View {
         let purchaseHandler = PurchaseHandler.default()
         return self.originalTemplatePaywallFooter(
             offering: offering,
-            customerInfo: nil,
             condensed: condensed,
             fonts: fonts,
             introEligibility: nil,
@@ -283,7 +281,6 @@ extension View {
                                                       performRestore: myAppPurchaseLogic?.performRestore)
         return self.originalTemplatePaywallFooter(
             offering: offering,
-            customerInfo: nil,
             condensed: condensed,
             fonts: fonts,
             introEligibility: nil,
@@ -301,7 +298,6 @@ extension View {
     @available(macOS, unavailable, message: "Legacy paywalls are unavailable in macOS")
     func originalTemplatePaywallFooter(
         offering: Offering?,
-        customerInfo: CustomerInfo?,
         condensed: Bool = false,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
@@ -319,7 +315,6 @@ extension View {
                 PresentingPaywallFooterModifier(
                     configuration: .init(
                         content: .optionalOffering(offering),
-                        customerInfo: customerInfo,
                         mode: condensed ? .condensedFooter : .footer,
                         fonts: fonts,
                         displayCloseButton: false,

@@ -40,9 +40,13 @@ protocol PaywallPurchasesType: Sendable {
 
     var cachedOfferings: Offerings? { get }
 
+    var configuredStoreEnvironment: ConfiguredStoreEnvironment { get }
+
 #if !os(tvOS)
     @Sendable
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult
+
+    func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult?
 #endif
 
     @Sendable

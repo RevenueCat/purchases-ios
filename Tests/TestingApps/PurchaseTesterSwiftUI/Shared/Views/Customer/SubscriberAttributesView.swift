@@ -43,6 +43,7 @@ struct SubscriberAttributesView: View {
         case setSolarEngineDistinctId
         case setSolarEngineAccountId
         case setSolarEngineVisitorId
+        case setSingularDeviceID
         case setMparticleID
         case setOnesignalID
         case setFBAnonymousID
@@ -161,6 +162,8 @@ struct SubscriberAttributesView: View {
                     Purchases.shared.attribution.setSolarEngineAccountId(self.otherValue)
                 case .setSolarEngineVisitorId:
                     Purchases.shared.attribution.setSolarEngineVisitorId(self.otherValue)
+                case .setSingularDeviceID:
+                    Purchases.shared.attribution.setSingularDeviceID(self.otherValue)
                 case .setMparticleID:
                     Purchases.shared.attribution.setMparticleID(self.otherValue)
                 case .setOnesignalID:

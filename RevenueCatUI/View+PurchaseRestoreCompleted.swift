@@ -39,6 +39,13 @@ public typealias PurchaseOfPackageStartedHandler = @MainActor @Sendable (_ packa
 /// A closure used for notifying of purchase cancellation.
 public typealias PurchaseCancelledHandler = @MainActor @Sendable () -> Void
 
+/// A closure invoked when the user taps a web checkout CTA and leaves the app to complete payment
+/// externally.
+public typealias WebCheckoutOpenedHandler = @MainActor @Sendable () -> Void
+
+/// A closure invoked when the paywall successfully opened a URL.
+public typealias URLOpenedHandler = @MainActor @Sendable (_ url: URL) -> Void
+
 /// A closure used to perform custom purchase logic implemented by your app.
 /// - Parameters:
 ///   - package: The package to be purchased.
@@ -242,6 +249,41 @@ extension View {
         _ handler: @escaping PurchaseCancelledHandler
     ) -> some View {
         return self.modifier(OnPurchaseCancelledModifier(handler: handler))
+    }
+
+    /// Invokes the given closure when the user taps a web checkout CTA and leaves the app to complete
+    /// payment externally. Distinct from ``onPurchaseCancelled(_:)``: the user has not cancelled.
+    ///
+    /// Example:
+    /// ```swift
+    ///  PaywallView()
+    ///     .onWebCheckoutOpened {
+    ///         print("User left to complete web checkout")
+    ///     }
+    /// ```
+    public func onWebCheckoutOpened(
+        _ handler: @escaping WebCheckoutOpenedHandler
+    ) -> some View {
+        return self.modifier(OnWebCheckoutOpenedModifier(handler: handler))
+    }
+
+    /// Invokes the given closure after the paywall successfully opened a URL, either from a button with a URL
+    /// destination or from a link inside a text component. Called for all opening methods: in-app browser,
+    /// external browser and deep link.
+    ///
+    /// Not called for web checkout URLs. Use ``onWebCheckoutOpened(_:)`` for those.
+    ///
+    /// Example:
+    /// ```swift
+    ///  PaywallView()
+    ///     .onURLOpened { url in
+    ///         print("Opened URL: \(url)")
+    ///     }
+    /// ```
+    public func onURLOpened(
+        _ handler: @escaping URLOpenedHandler
+    ) -> some View {
+        return self.modifier(OnURLOpenedModifier(handler: handler))
     }
 
     /// Invokes the given closure when a restore begins.
@@ -452,6 +494,32 @@ extension View {
     public func onRequestedDismissal(_ action: @escaping (() -> Void)) -> some View {
         self.environment(\.onRequestedDismissal, action)
     }
+
+    /// Invokes the given closure when the user interacts with a paywall control.
+    ///
+    /// Example:
+    /// ```swift
+    ///  PaywallView()
+    ///     .onPaywallInteraction { event in
+    ///         analytics.track("paywall_component_interacted", properties: event.rawProperties)
+    ///     }
+    /// ```
+    public func onPaywallInteraction(_ handler: @escaping PaywallInteractionHandler) -> some View {
+        self.environment(\.paywallInteractionNotifier, .init(handler))
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+internal extension View {
+
+    func onPaywallInteraction(ifSet handler: PaywallInteractionHandler?) -> some View {
+        self.transformEnvironment(\.paywallInteractionNotifier) { current in
+            if let handler {
+                current = .init(handler)
+            }
+        }
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -510,6 +578,108 @@ private struct OnPurchaseCancelledModifier: ViewModifier {
                     self.handler()
                 }
             }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct OnWebCheckoutOpenedModifier: ViewModifier {
+
+    let handler: WebCheckoutOpenedHandler
+
+    func body(content: Content) -> some View {
+        content.transformEnvironment(\.webCheckoutOpenedHandlers) { handlers in
+            handlers.append { @MainActor @Sendable [handler = self.handler] in
+                handler()
+            }
+        }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct OnURLOpenedModifier: ViewModifier {
+
+    let handler: URLOpenedHandler
+
+    func body(content: Content) -> some View {
+        content.transformEnvironment(\.urlOpenedHandlers) { handlers in
+            handlers.append { @MainActor @Sendable [handler = self.handler] url in
+                handler(url)
+            }
+        }
+    }
+
+}
+
+/// Owns URL event delivery for a paywall, above any retained workflow pages. Standalone V2 views
+/// also install this modifier, but inherit the owner when embedded inside a PaywallView.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@MainActor
+struct PaywallURLEventsModifier: ViewModifier {
+
+    let purchaseHandler: PurchaseHandler
+
+    @Environment(\.urlEventOwner) private var owner
+    @Environment(\.urlOpenedHandlers) private var urlOpenedHandlers
+    @Environment(\.webCheckoutOpenedHandlers) private var webCheckoutOpenedHandlers
+
+    // A hosting controller can retain its SwiftUI graph after dismissal. Its subscription must
+    // not forward events when another presentation starts using the same purchase handler.
+    @State private var isVisible = false
+
+    func body(content: Content) -> some View {
+        if self.owner == ObjectIdentifier(self.purchaseHandler) {
+            content
+        } else {
+            content
+                .environment(\.urlEventOwner, ObjectIdentifier(self.purchaseHandler))
+                .onAppear { self.isVisible = true }
+                .onDisappear { self.isVisible = false }
+                .onReceive(self.purchaseHandler.urlOpenedPublisher) { url in
+                    guard self.isVisible else { return }
+                    for handler in self.urlOpenedHandlers {
+                        handler(url)
+                    }
+                }
+                .onReceive(self.purchaseHandler.webCheckoutOpenedPublisher) {
+                    guard self.isVisible else { return }
+                    for handler in self.webCheckoutOpenedHandlers {
+                        handler()
+                    }
+                }
+        }
+    }
+
+}
+
+private struct URLOpenedHandlersKey: EnvironmentKey {
+    static let defaultValue: [URLOpenedHandler] = []
+}
+
+private struct WebCheckoutOpenedHandlersKey: EnvironmentKey {
+    static let defaultValue: [WebCheckoutOpenedHandler] = []
+}
+
+private struct URLEventOwnerKey: EnvironmentKey {
+    static let defaultValue: ObjectIdentifier? = nil
+}
+
+private extension EnvironmentValues {
+
+    var urlOpenedHandlers: [URLOpenedHandler] {
+        get { self[URLOpenedHandlersKey.self] }
+        set { self[URLOpenedHandlersKey.self] = newValue }
+    }
+
+    var webCheckoutOpenedHandlers: [WebCheckoutOpenedHandler] {
+        get { self[WebCheckoutOpenedHandlersKey.self] }
+        set { self[WebCheckoutOpenedHandlersKey.self] = newValue }
+    }
+
+    var urlEventOwner: ObjectIdentifier? {
+        get { self[URLEventOwnerKey.self] }
+        set { self[URLEventOwnerKey.self] = newValue }
     }
 
 }

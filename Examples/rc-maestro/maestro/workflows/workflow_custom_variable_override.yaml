@@ -1,0 +1,33 @@
+# Opens the workflow paywall (offering `default_workflows`) with a runtime custom-variable override
+# (`.customPaywallVariables(["users_count": .number(12345)])`, driven by the custom_users_count launch
+# argument) and asserts the overridden value (12345) renders instead of the dashboard default (50000).
+#
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/workflow_custom_variable_override.yaml
+
+appId: com.revenuecat.maestro.ios
+name: Workflow paywall renders an overridden custom variable value
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+# Dismiss any leftover system alerts from previous test runs.
+- pressKey: home
+- launchApp:
+    arguments:
+        e2e_test_flow: open_workflow
+        custom_users_count: "12345"
+- assertVisible: "entitlement (pro): nil"
+- extendedWaitUntil:
+    visible: "Present Paywall"
+    timeout: 15000
+- tapOn:
+    text: "Present Paywall"
+
+# The runtime override wins over the dashboard default: 12345 renders, 50000 does not.
+- extendedWaitUntil:
+    visible: ".*12345 Users"
+    timeout: 15000
+- assertNotVisible: ".*50000 Users"
+- takeScreenshot: "workflow_custom_variable_override"

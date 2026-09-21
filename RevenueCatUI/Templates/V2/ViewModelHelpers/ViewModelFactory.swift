@@ -194,6 +194,23 @@ struct ViewModelFactory {
                 )
             )
         case .package(let component):
+            // Recorded before the stack walk so a nested package lands after its parent, which is the
+            // document order selection uses.
+            if let package = offering.package(identifier: component.packageID) {
+                packageValidator.add(
+                    PackageValidator.PackageInfo(
+                        package: package,
+                        isSelectedByDefault: component.isSelectedByDefault,
+                        visibilityResolver: PackageVisibilityResolver(
+                            component: component,
+                            uiConfigProvider: uiConfigProvider,
+                            discardRules: discardRules
+                        ),
+                        promotionalOfferProductCode: component.applePromoOfferProductCode
+                    )
+                )
+            }
+
             // Specifically override the parent PurchaseButtonCollector so that
             // we can see if the package has a purchase button inside of it
             let packagePurchaseButtonCollector = PurchaseButtonCollector()
@@ -218,20 +235,6 @@ struct ViewModelFactory {
                 uiConfigProvider: uiConfigProvider,
                 discardRules: discardRules
             )
-
-            if let package = viewModel.package {
-                let packageInfo = PackageValidator.PackageInfo(
-                    package: package,
-                    isSelectedByDefault: viewModel.isSelectedByDefault,
-                    // Only the static `visible` flag is considered here; override-based visibility
-                    // is evaluated at render time and is not used for default package selection.
-                    // The paywall builder enforces that the default-selected package cannot be
-                    // statically hidden (`visible: false`), so this is safe.
-                    isStaticallyVisible: component.visible ?? true,
-                    promotionalOfferProductCode: viewModel.promotionalOfferProductCode
-                )
-                packageValidator.add(packageInfo)
-            }
 
             return .package(viewModel)
         case .purchaseButton(let component):
@@ -385,14 +388,13 @@ struct ViewModelFactory {
 
                 // Merging into entire paywall package validator
                 for packageInfo in tabPackageValidator.packageInfos {
-                    packageValidator.add(packageInfo)
+                    packageValidator.addTabScoped(packageInfo)
                 }
 
                 return .init(
                     tab: tab,
                     stackViewModel: tabsStackViewModel.copy(withViewModels: [.stack(stackViewModel)]),
-                    defaultSelectedPackage: tabPackageValidator.defaultSelectedPackage,
-                    packages: tabPackageValidator.packages,
+                    packageValidator: tabPackageValidator,
                     uiConfigProvider: uiConfigProvider
                 )
             }
@@ -513,6 +515,14 @@ struct ViewModelFactory {
                     fallbackStackViewModel: fallbackStackViewModel
                 )
             )
+        case .webView(let component):
+            return .webView(
+                WebViewComponentViewModel(
+                    component: component,
+                    uiConfigProvider: uiConfigProvider,
+                    discardRules: discardRules
+                )
+            )
         case .fallbackHeader:
             // fallbackHeader is filtered out in toStackViewModel and should never reach here.
             assertionFailure("fallbackHeader should have been filtered before view model creation")
@@ -547,20 +557,33 @@ struct ViewModelFactory {
             )
         }
 
-        let badgeSource = component.badge
-            ?? component.overrides?.lazy.compactMap(\.properties.badge).first
-        let badgeViewModels = try badgeSource?.stack.components.map { component in
-            try self.toViewModel(
-                component: component,
-                packageValidator: packageValidator,
-                // Explicitly not looking for purchase button in badge
-                purchaseButtonCollector: nil,
-                offering: offering,
-                localizationProvider: localizationProvider,
-                uiConfigProvider: uiConfigProvider,
-                colorScheme: colorScheme
-            )
-        } ?? []
+        // Every badge the stack could present, so the one a rule presents has its own contents.
+        var badgeViewModels: [BadgeContents] = []
+
+        func appendBadge(_ badge: PaywallComponent.Badge?) throws {
+            guard let badge, !badgeViewModels.contains(where: { $0.badge === badge }) else { return }
+
+            badgeViewModels.append(BadgeContents(
+                badge: badge,
+                viewModels: try badge.stack.components.map { component in
+                    try self.toViewModel(
+                        component: component,
+                        packageValidator: packageValidator,
+                        // Explicitly not looking for purchase button in badge
+                        purchaseButtonCollector: nil,
+                        offering: offering,
+                        localizationProvider: localizationProvider,
+                        uiConfigProvider: uiConfigProvider,
+                        colorScheme: colorScheme
+                    )
+                }
+            ))
+        }
+
+        try appendBadge(component.badge)
+        for override in component.overrides ?? [] {
+            try appendBadge(override.properties.badge)
+        }
 
         return StackComponentViewModel(
             component: component,
@@ -572,10 +595,11 @@ struct ViewModelFactory {
     }
 
     /// Matches the dashboard approach: drill through nested stacks only to find the first
-    /// non-stack component, and check if it's a full-width image or video.
+    /// non-stack component, and check if it's a full-width image, video, or web view.
     enum FirstMediaType {
         case image
         case video
+        case webView
     }
 
     private func findFirstFullWidthMedia(
@@ -583,9 +607,11 @@ struct ViewModelFactory {
     ) -> FirstMediaType? {
         switch component {
         case .image(let image):
-            return image.size.width == .fill ? .image : nil
+            return image.size.width.isFill ? .image : nil
         case .video(let video):
-            return video.size.width == .fill ? .video : nil
+            return video.size.width.isFill ? .video : nil
+        case .webView(let webView):
+            return webView.size.width.isFill ? .webView : nil
         case .stack(let stack):
             guard let first = stack.components.first(where: {
                 if case .fallbackHeader = $0 { return false }

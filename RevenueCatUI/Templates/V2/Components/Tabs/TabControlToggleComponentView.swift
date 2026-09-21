@@ -38,6 +38,9 @@ struct TabControlToggleComponentView: View {
     @Environment(\.componentInteractionLogger)
     private var componentInteractionLogger
 
+    @Environment(\.selectionHapticFeedback)
+    private var hapticFeedback
+
     private let viewModel: TabControlToggleComponentViewModel
     private let onDismiss: () -> Void
 
@@ -60,8 +63,15 @@ struct TabControlToggleComponentView: View {
                     componentName: self.tabControlContext.name,
                     isOn: newValue
                 ))
+                if self.hapticFeedbackEnabled {
+                    self.hapticFeedback()
+                }
             }
         )
+    }
+
+    private var hapticFeedbackEnabled: Bool {
+        self.viewModel.component.hapticFeedbackEnabled ?? true
     }
 
     init(viewModel: TabControlToggleComponentViewModel, onDismiss: @escaping () -> Void) {
@@ -80,6 +90,11 @@ struct TabControlToggleComponentView: View {
                 )
             )
             .labelsHidden()
+            .onAppear {
+                if self.hapticFeedbackEnabled {
+                    self.hapticFeedback.prepare()
+                }
+            }
     }
 
     /// Computes the toggle's ON state based on the selected tab.

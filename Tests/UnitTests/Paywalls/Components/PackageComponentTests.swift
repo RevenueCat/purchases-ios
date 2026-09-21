@@ -11,6 +11,7 @@
 //
 //  Created by Claude on 7/3/2026.
 
+import Foundation
 import Nimble
 @_spi(Internal) @testable import RevenueCat
 import XCTest
@@ -125,6 +126,80 @@ class PackageComponentCodableTests: TestCase {
         )
 
         XCTAssertNotEqual(first, second)
+    }
+
+}
+
+class PackageComponentTests: TestCase {
+
+    private func makeComponent(hapticFeedbackEnabled: Bool?) -> PaywallComponent.PackageComponent {
+        return PaywallComponent.PackageComponent(
+            packageID: "weekly",
+            isSelectedByDefault: true,
+            applePromoOfferProductCode: nil,
+            stack: PaywallComponent.StackComponent(components: []),
+            hapticFeedbackEnabled: hapticFeedbackEnabled
+        )
+    }
+
+    func testHapticFeedbackEnabledDefaultsToNilWhenOmitted() {
+        let component = PaywallComponent.PackageComponent(
+            packageID: "weekly",
+            isSelectedByDefault: true,
+            applePromoOfferProductCode: nil,
+            stack: PaywallComponent.StackComponent(components: [])
+        )
+
+        XCTAssertNil(component.hapticFeedbackEnabled)
+    }
+
+    func testHapticFeedbackEnabledRoundTripsTrue() throws {
+        let component = self.makeComponent(hapticFeedbackEnabled: true)
+        let decoded = try component.encodeAndDecode()
+
+        XCTAssertEqual(decoded.hapticFeedbackEnabled, true)
+        XCTAssertEqual(component, decoded)
+    }
+
+    func testHapticFeedbackEnabledRoundTripsFalse() throws {
+        let component = self.makeComponent(hapticFeedbackEnabled: false)
+        let decoded = try component.encodeAndDecode()
+
+        XCTAssertEqual(decoded.hapticFeedbackEnabled, false)
+        XCTAssertEqual(component, decoded)
+    }
+
+    func testHapticFeedbackEnabledRoundTripsNil() throws {
+        let component = self.makeComponent(hapticFeedbackEnabled: nil)
+        let decoded = try component.encodeAndDecode()
+
+        XCTAssertNil(decoded.hapticFeedbackEnabled)
+        XCTAssertEqual(component, decoded)
+    }
+
+    func testHapticFeedbackEnabledDecodesFromSnakeCaseWireKey() throws {
+        let component = self.makeComponent(hapticFeedbackEnabled: nil)
+        let encoded = try JSONEncoder.default.encode(component)
+
+        var json = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: encoded) as? [String: Any]
+        )
+        json["haptic_feedback_enabled"] = false
+
+        let patchedData = try JSONSerialization.data(withJSONObject: json)
+        let decoded = try JSONDecoder.default.decode(
+            PaywallComponent.PackageComponent.self,
+            from: patchedData
+        )
+
+        XCTAssertEqual(decoded.hapticFeedbackEnabled, false)
+    }
+
+    func testHapticFeedbackEnabledDiffAffectsEquality() {
+        let enabled = self.makeComponent(hapticFeedbackEnabled: true)
+        let disabled = self.makeComponent(hapticFeedbackEnabled: false)
+
+        XCTAssertNotEqual(enabled, disabled)
     }
 
 }

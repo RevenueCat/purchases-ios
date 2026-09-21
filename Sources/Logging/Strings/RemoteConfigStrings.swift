@@ -9,6 +9,8 @@ import Foundation
 
 enum RemoteConfigStrings {
 
+    case audienceConfigurationDecodeFailed(Error)
+    case audienceDecodeFailed(identifier: String, error: Error)
     case cacheURLNotAvailable
     case failedToClearBlobStore(Error)
     case failedToDeleteBlob(String, Error)
@@ -22,7 +24,6 @@ enum RemoteConfigStrings {
     case duplicateSourceURL(String)
     case failedToParseResponse(Error)
     case malformedBlobRef(String)
-    case mergeItemsBlobDataDisabled(topic: RemoteConfigTopic, itemKeys: [String])
     case mergeItemsBlobDataEmpty(topic: RemoteConfigTopic)
     case mergeItemsBlobDataUnavailableItems(topic: RemoteConfigTopic, itemKeys: [String])
     case notModified
@@ -30,6 +31,7 @@ enum RemoteConfigStrings {
     case prefetchingBlobCount(Int)
     case receivedConfiguration(activeTopics: [String], changedTopics: [String])
     case refreshing(domain: String, manifestPresent: Bool, isAppBackgrounded: Bool)
+    case remoteConfigReadRetry
     case refreshFailed(BackendError)
     case skippingInvalidBlob(String)
     case persistedConfiguration(domain: String, activeTopicCount: Int, referencedBlobCount: Int)
@@ -45,6 +47,11 @@ extension RemoteConfigStrings: LogMessage {
 
     var description: String {
         switch self {
+        case let .audienceConfigurationDecodeFailed(error):
+            return "Failed to decode canonical audience configuration: \(error.localizedDescription)"
+        case let .audienceDecodeFailed(identifier, error):
+            return "Ignoring audience '\(identifier)' in the canonical audience configuration: " +
+                "\(error.localizedDescription)"
         case .cacheURLNotAvailable:
             return "Remote config cache URL is not available."
         case let .failedToClearBlobStore(error):
@@ -74,9 +81,6 @@ extension RemoteConfigStrings: LogMessage {
             "\(error.localizedDescription)"
         case let .malformedBlobRef(ref):
             return "Refusing remote config blob operation with malformed ref '\(ref)'."
-        case let .mergeItemsBlobDataDisabled(topic, itemKeys):
-            return "Unable to merge remote config blob data for topic '\(topic.wireName)': " +
-                "remote config is disabled. Requested item keys: \(itemKeys.sorted().joined(separator: ", "))."
         case let .mergeItemsBlobDataEmpty(topic):
             return "Unable to merge remote config blob data for topic '\(topic.wireName)': no item keys requested."
         case let .mergeItemsBlobDataUnavailableItems(topic, itemKeys):
@@ -95,6 +99,8 @@ extension RemoteConfigStrings: LogMessage {
         case let .refreshing(domain, manifestPresent, isAppBackgrounded):
             return "Refreshing remote config for domain '\(domain)' " +
                 "(manifestPresent: \(manifestPresent), isAppBackgrounded: \(isAppBackgrounded))."
+        case .remoteConfigReadRetry:
+            return "Remote configuration changed during a read; retrying once."
         case let .refreshFailed(error):
             return "Remote config refresh failed. Keeping cached configuration. Error: \(error)"
         case let .skippingInvalidBlob(ref):

@@ -237,6 +237,27 @@ class DeviceCacheTests: TestCase {
         expect(self.deviceCache.isCustomerInfoCacheStale(appUserID: "cesar", isAppBackgrounded: false)) == false
     }
 
+    func testSubscriberDimensionsAreCachedPerAppUserID() {
+        let data = Data(#"{"plan":"annual"}"#.utf8)
+
+        self.deviceCache.cache(subscriberDimensions: data, appUserID: "cesar")
+
+        expect(self.deviceCache.cachedSubscriberDimensionsData(appUserID: "cesar")) == data
+        expect(self.deviceCache.cachedSubscriberDimensionsData(appUserID: "other")).to(beNil())
+    }
+
+    func testClearCachesRemovesSubscriberDimensionsForOldAppUserID() {
+        let appUserID = "cesar"
+        self.deviceCache.cache(
+            subscriberDimensions: Data(#"{"plan":"annual"}"#.utf8),
+            appUserID: appUserID
+        )
+
+        self.deviceCache.clearCaches(oldAppUserID: appUserID, andSaveWithNewUserID: "newUser")
+
+        expect(self.deviceCache.cachedSubscriberDimensionsData(appUserID: appUserID)).to(beNil())
+    }
+
     func testOfferingsAreProperlyCached() throws {
         let expectedOfferings = try Self.createSampleOfferings()
 
@@ -478,6 +499,67 @@ class DeviceCacheTests: TestCase {
         expect(cachedContents).toNot(beNil())
         expect(cachedContents?.response.currentOfferingId) == offerings.contents.response.currentOfferingId
         expect(cachedContents?.response.offerings.count) == offerings.contents.response.offerings.count
+    }
+
+    func testRawNetworkResponseIsStoredInExistingCacheFormatAndDecodedWithoutComponents() throws {
+        let appUserID = "testUser"
+        let fixtureData = try BaseHTTPResponseTest.data(for: "OfferingsWithPaywallComponents")
+        var rawObject = try XCTUnwrap(JSONSerialization.jsonObject(with: fixtureData) as? [String: Any])
+        rawObject["future_backend_field"] = ["preserved": true]
+        let responseData = try JSONSerialization.data(withJSONObject: rawObject)
+        let response = try OfferingsResponse.create(with: responseData)
+        let contents = Offerings.Contents(
+            response: response,
+            httpResponseOriginalSource: .fallbackUrl
+        )
+
+        self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
+        self.deviceCache.cache(
+            offerings: .empty,
+            fetchResult: .init(contents: contents, rawResponseData: responseData),
+            preferredLocales: ["en-US"],
+            appUserID: appUserID
+        )
+
+        let cachedData = try XCTUnwrap(self.mockFileCache.saveDataInvocations.first?.data)
+        let cachedObject = try XCTUnwrap(JSONSerialization.jsonObject(with: cachedData) as? [String: Any])
+        expect(cachedObject["original_source"] as? String) == "fallback_url"
+        expect((cachedObject["future_backend_field"] as? [String: Bool])?["preserved"]) == true
+
+        let legacyDecoded = try JSONDecoder.default.decode(LegacyOfferingsCache.self, from: cachedData)
+        expect(legacyDecoded.originalSource) == "fallback_url"
+        expect(legacyDecoded.offerings.first?.paywallComponents?.id) == "pw_test_1"
+        expect(legacyDecoded.offerings.first?.paywallComponents?.revision) == 3
+
+        self.mockFileCache.stubCachedContentExists(at: 0, with: true)
+        self.mockFileCache.stubCachedContentExists(at: 1, with: true)
+        self.mockFileCache.stubLoadFile(at: 0, with: .success(cachedData))
+        self.mockFileCache.stubLoadFile(at: 1, with: .success(cachedData))
+
+        let pruned = self.deviceCache.cachedOfferingsContents(appUserID: appUserID)
+
+        expect(pruned?.originalSource) == .fallbackUrl
+        expect(pruned?.response.offerings.first?.paywallComponents).to(beNil())
+        expect(pruned?.response.offerings.first?.hasPaywallComponents) == true
+    }
+
+    func testInvalidRawResponseDoesNotOverwriteCacheWithPrunedContents() throws {
+        let response = try OfferingsResponse.create(
+            with: BaseHTTPResponseTest.data(for: "OfferingsWithPaywallComponents")
+        )
+        let contents = Offerings.Contents(
+            response: response,
+            httpResponseOriginalSource: .mainServer
+        )
+
+        self.deviceCache.cache(
+            offerings: .empty,
+            fetchResult: .init(contents: contents, rawResponseData: Data("[]".utf8)),
+            preferredLocales: ["en-US"],
+            appUserID: "testUser"
+        )
+
+        expect(self.mockFileCache.saveDataInvocations).to(beEmpty())
     }
 
     func testOfferingsAreNeverSavedToUserDefaults() throws {
@@ -1198,6 +1280,35 @@ class DeviceCacheTests: TestCase {
         let finalOfferings = deviceCache.cachedOfferingsContents(appUserID: appUserID)
         expect(finalOfferings).toNot(beNil())
     }
+
+    func testMigratesPreviousSDKFullOfferingsCacheWithoutPruningStoredData() throws {
+        let appUserID = "previous-sdk-user"
+        let cacheData = try BaseHTTPResponseTest.data(for: "OfferingsCacheFromPreviousSDKFull")
+        let documentsURL = try XCTUnwrap(fileManager.urls(for: .documentDirectory, in: .userDomainMask).first)
+        let oldDirectoryURL = documentsURL.appendingPathComponent("RevenueCat")
+        let cacheKey = DeviceCache.CacheKey.offerings(appUserID).rawValue
+        let oldFileURL = oldDirectoryURL.appendingPathComponent(cacheKey)
+
+        try fileManager.createDirectory(
+            at: oldDirectoryURL,
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+        try cacheData.write(to: oldFileURL)
+
+        let deviceCache = DeviceCache(
+            systemInfo: self.systemInfo,
+            userDefaults: self.makeIsolatedUserDefaults(),
+            cache: fileManager
+        )
+
+        let prunedContents = try XCTUnwrap(deviceCache.cachedOfferingsContents(appUserID: appUserID))
+        expect(prunedContents.originalSource) == .fallbackUrl
+        expect(prunedContents.response.offerings.first?.paywallComponents).to(beNil())
+        expect(prunedContents.response.offerings.first?.hasPaywallComponents) == true
+        XCTAssertFalse(fileManager.fileExists(atPath: oldFileURL.path))
+
+    }
 }
 
 private extension DeviceCacheTests {
@@ -1294,6 +1405,24 @@ private extension Offerings {
                                      httpResponseOriginalSource: .mainServer),
         loadedFromDiskCache: false
     )
+
+}
+
+/// Frozen subset of the pre-change cache model. This deliberately does not use
+/// `OfferingsResponse`, so writer and reader changes cannot make the compatibility test pass together.
+private struct LegacyOfferingsCache: Decodable {
+
+    struct Offering: Decodable {
+        let paywallComponents: PaywallComponents?
+    }
+
+    struct PaywallComponents: Decodable {
+        let id: String
+        let revision: Int
+    }
+
+    let offerings: [Offering]
+    let originalSource: String?
 
 }
 

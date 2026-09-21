@@ -204,6 +204,18 @@ class NetworkErrorAsPurchasesErrorTests: BaseErrorTests {
 
 class NetworkErrorTests: TestCase {
 
+    func testURLRequestTimeoutRecognizesNSErrorReturnedByURLSessionOnMacOS() {
+        let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorTimedOut)
+
+        expect(error.isURLRequestTimeout) == true
+    }
+
+    func testURLRequestTimeoutRejectsMatchingCodeFromDifferentDomain() {
+        let error = NSError(domain: "not-a-url-error", code: NSURLErrorTimedOut)
+
+        expect(error.isURLRequestTimeout) == false
+    }
+
     func testSuccessfullySyncedTrue() {
         let errors = [
             error(Self.responseError(.unauthorized)),

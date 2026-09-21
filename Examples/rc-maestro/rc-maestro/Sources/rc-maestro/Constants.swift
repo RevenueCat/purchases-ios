@@ -41,6 +41,12 @@ enum Constants {
      REVENUECAT_FORCE_SERVER_ERROR_STRATEGY = primary_domain_down
      */
     static var forceServerErrorStrategy: Constants.ForceServerErrorStrategy {
+        // Launch-argument override so E2E tests can toggle the strategy per run without a rebuild.
+        if let launchArgument = UserDefaults.standard.string(forKey: "force_server_error_strategy"),
+           let strategy = ForceServerErrorStrategy(rawValue: launchArgument) {
+            return strategy
+        }
+
         guard let value = Bundle.main.object(forInfoDictionaryKey: "REVENUECAT_FORCE_SERVER_ERROR_STRATEGY") as? String else {
             return .never
         }
@@ -64,6 +70,9 @@ enum Constants {
 
     enum ForceServerErrorStrategy: String {
         case primaryBackendDown = "primary_backend_down"
+        // Simulates no network for /v1/config: the request fails with a transport error (unreachable
+        // host), exercising the offline/cache-fallback path.
+        case remoteConfigNetworkError = "remote_config_network_error"
         case never
     }
 }

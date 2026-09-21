@@ -64,6 +64,18 @@ final class WorkflowStepEventCoordinatorTests: TestCase {
         expect(self.recorded).to(haveCount(1))
     }
 
+    // `freshTraceId` proves the passthrough surfaces the generated id, not a hardcoded test value.
+    func testTraceIdMatchesTheTraceIdStampedOnEmittedWorkflowEvents() throws {
+        let workflow = try Self.makeWorkflow()
+        let coordinator = self.makeCoordinator(workflow: workflow, freshTraceId: true)
+        let step = try XCTUnwrap(workflow.steps["step_1"])
+
+        coordinator.trackInitialStep(step, hasRenderedPage: true)
+
+        let data = try XCTUnwrap(Self.startedData(self.recorded[0]))
+        expect(coordinator.traceId) == data.traceId
+    }
+
     // MARK: - Forward / back transitions
 
     func testForwardTransitionEmitsCompletedThenStartedInOrder() throws {
@@ -161,7 +173,27 @@ final class WorkflowStepEventCoordinatorTests: TestCase {
         expect(self.recorded).to(haveCount(1))
     }
 
-    // MARK: - Abandonment (workflows_close)
+    func testLateFailureTracksCurrentStepAndAbandonmentOnlyOnceWhenDismissed() throws {
+        let workflow = try Self.makeWorkflow()
+        let coordinator = self.makeCoordinator(workflow: workflow)
+        let step = try XCTUnwrap(workflow.steps["step_1"])
+
+        coordinator.trackInitialStep(step, hasRenderedPage: true)
+        // A reached destination failed to render: mirror WorkflowPaywallView tracking the current step
+        // before it switches to the configuration-error UI.
+        coordinator.trackTerminalCompletion(currentStep: step, hasRenderedPage: true)
+        coordinator.trackAbandonment(currentStep: step, hasRenderedPage: true, hasCompletedInSession: false)
+        // The error dialog then dismisses the view. Its onDisappear hook must not duplicate either event.
+        coordinator.trackTerminalCompletion(currentStep: step, hasRenderedPage: true)
+        coordinator.trackAbandonment(currentStep: step, hasRenderedPage: true, hasCompletedInSession: false)
+
+        expect(self.recorded).to(haveCount(3))
+        expect(Self.kind(self.recorded[0])) == "started"
+        expect(Self.kind(self.recorded[1])) == "completed"
+        expect(Self.kind(self.recorded[2])) == "close"
+    }
+
+    // MARK: - Abandonment (workflow_close)
 
     func testAbandonmentEmitsCloseForCurrentStepWhenNotPurchased() throws {
         let workflow = try Self.makeWorkflow()
@@ -179,7 +211,7 @@ final class WorkflowStepEventCoordinatorTests: TestCase {
     }
 
     func testAbandonmentStampsTerminalStepPosition() throws {
-        // workflows_close is not gated by step position; it just stamps it. On the terminal step
+        // workflow_close is not gated by step position; it just stamps it. On the terminal step
         // isLastStep is true (analytics decides downstream whether that counts as abandonment).
         let workflow = try Self.makeWorkflow()
         let coordinator = self.makeCoordinator(workflow: workflow)

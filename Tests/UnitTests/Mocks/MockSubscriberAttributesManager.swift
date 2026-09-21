@@ -238,6 +238,18 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
         invokedSetSolarEngineVisitorIdParametersList.append((solarEngineVisitorId, appUserID))
     }
 
+    var invokedSetSingularDeviceID = false
+    var invokedSetSingularDeviceIDCount = 0
+    var invokedSetSingularDeviceIDParameters: (singularDeviceID: String?, appUserID: String?)?
+    var invokedSetSingularDeviceIDParametersList = [(singularDeviceID: String?, appUserID: String?)]()
+
+    override func setSingularDeviceID(_ singularDeviceID: String?, appUserID: String) {
+        invokedSetSingularDeviceID = true
+        invokedSetSingularDeviceIDCount += 1
+        invokedSetSingularDeviceIDParameters = (singularDeviceID, appUserID)
+        invokedSetSingularDeviceIDParametersList.append((singularDeviceID, appUserID))
+    }
+
     var invokedSetMixpanelDistinctID = false
     var invokedSetMixpanelDistinctIDCount = 0
     var invokedSetMixpanelDistinctIDParameters: (mixpanelDistinctID: String?, appUserID: String?)?
@@ -413,6 +425,7 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
     var invokedSyncAttributesForAllUsersCount = 0
     var invokedSyncAttributesForAllUsersParameters: (currentAppUserID: String?, Void)?
     var invokedSyncAttributesForAllUsersParametersList = [(currentAppUserID: String?, Void)]()
+    var stubbedSyncAttributesForAllUsersError: PurchasesError?
 
     override func syncAttributesForAllUsers(
         currentAppUserID: String,
@@ -423,6 +436,7 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
         invokedSyncAttributesForAllUsersCount += 1
         invokedSyncAttributesForAllUsersParameters = (currentAppUserID, ())
         invokedSyncAttributesForAllUsersParametersList.append((currentAppUserID, ()))
+        syncedAttribute?(stubbedSyncAttributesForAllUsersError)
         completion?()
 
         return -1

@@ -1010,6 +1010,22 @@ public protocol PurchasesType: AnyObject {
         )
 
         /**
+         * Spends virtual currencies
+         *
+         * - Parameter amounts: A dictionary key by ``VirtualCurrency`` codes with values corresponding
+         * to the amount of that currency to spend. Values must be positive non-zero numbers. Negative values will
+         * be interpreted as positive. Zero values are ignored.
+         * - Parameter reference: An app-specified string to refer to this transaction
+         * - Parameter completion: The callback that is invoked with the request is complete
+         * - Warning: Using this method requires enabling IAM.
+         */
+        @objc
+        @_spi(Internal)
+        func spendVirtualCurrencies(amounts: [String: Int],
+                                    reference: String?,
+                                    completion: @escaping (VirtualCurrencies?, PublicError?) -> Void)
+
+        /**
          * The currently cached ``VirtualCurrencies`` if one is available.
          * This is synchronous, and therefore useful for contexts where an app needs a `VirtualCurrencies`
          * right away without waiting for a callback, like a SwiftUI view.

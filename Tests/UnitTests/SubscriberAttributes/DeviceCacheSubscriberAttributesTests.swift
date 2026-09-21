@@ -221,6 +221,35 @@ class DeviceCacheSubscriberAttributesTests: TestCase {
         expect(self.deviceCache.subscriberAttribute(attributeKey: "doesn't exist", appUserID: "whoever")).to(beNil())
     }
 
+    func testSubscriberAttributesReturnsAllAttributesForUser() {
+        let appUserID = "waldo"
+        self.subscriberAttributeWeight.isSynced = true
+        self.deviceCache.store(
+            subscriberAttributesByKey: [
+                subscriberAttributeHeight.key: subscriberAttributeHeight,
+                subscriberAttributeWeight.key: subscriberAttributeWeight
+            ],
+            appUserID: appUserID
+        )
+        self.deviceCache.store(
+            subscriberAttribute: SubscriberAttribute(
+                withKey: "goal",
+                value: "lose_weight",
+                dateProvider: self.mockDateProvider
+            ),
+            appUserID: "another-user"
+        )
+
+        expect(self.deviceCache.subscriberAttributes(appUserID: appUserID)) == [
+            subscriberAttributeHeight.key: subscriberAttributeHeight,
+            subscriberAttributeWeight.key: subscriberAttributeWeight
+        ]
+    }
+
+    func testSubscriberAttributesReturnsEmptyIfNoneStored() {
+        expect(self.deviceCache.subscriberAttributes(appUserID: "waldo")).to(beEmpty())
+    }
+
     func testUnsyncedAttributesByKeyReturnsEmptyIfNoneStored() {
         expect(self.deviceCache.unsyncedAttributesByKey(appUserID: "waldo")).to(beEmpty())
     }

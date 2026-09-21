@@ -14,7 +14,7 @@ import Foundation
 import Nimble
 import XCTest
 
-@_spi(Internal) @_spi(Experimental) @testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 final class RewardVerificationStatusResponseTests: TestCase {
 

@@ -6,9 +6,9 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "RCAdTrackerAPI.h"
 #import "RCAttributionAPI.h"
 #import "RCAttributionNetworkAPI.h"
+#import "RCAuthenticationAPI.h"
 #import "RCBillingPlanTypeAPI.h"
 #import "RCConfigurationAPI.h"
 #import "RCCustomerInfoAPI.h"
@@ -41,8 +41,6 @@
 int main(int argc, const char * argv[]) {
     @autoreleasepool {
 
-        [RCAdTrackerAPI checkAPI];
-
         [RCAttributionAPI checkAPI];
         [RCAttributionNetworkAPI checkEnums];
 
@@ -73,6 +71,8 @@ int main(int argc, const char * argv[]) {
         [RCPurchasesAPI checkAPI];
         [RCPurchasesAPI checkConstants];
         [RCPurchasesAPI checkEnums];
+
+        [RCAuthenticationAPI checkAPI];
 
         [RCConfigurationAPI checkAPI];
 

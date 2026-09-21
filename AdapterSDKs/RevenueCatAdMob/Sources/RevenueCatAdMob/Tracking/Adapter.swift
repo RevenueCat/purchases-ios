@@ -9,7 +9,7 @@ import Foundation
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
 import ObjectiveC.runtime
-@_spi(Experimental) import RevenueCat
+import RevenueCat
 
 @available(iOS 15.0, *)
 internal extension Tracking {
@@ -224,7 +224,7 @@ internal extension Tracking {
 
         // MARK: - Helpers
 
-        private static func networkName(from responseInfo: GoogleMobileAds.ResponseInfo?) -> String {
+        static func networkName(from responseInfo: GoogleMobileAds.ResponseInfo?) -> String {
             responseInfo?.loadedAdNetworkResponseInfo?.adNetworkClassName ?? self.fallbackValue
         }
 

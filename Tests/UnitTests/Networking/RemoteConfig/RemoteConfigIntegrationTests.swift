@@ -5,6 +5,8 @@
 //  Created by Rick van der Linden.
 //  Copyright © 2026 RevenueCat, Inc. All rights reserved.
 
+// swiftlint:disable file_length type_body_length function_body_length
+
 import Foundation
 import Nimble
 @preconcurrency @testable import RevenueCat
@@ -24,6 +26,7 @@ final class RemoteConfigIntegrationTests: TestCase {
     private var blobStore: RemoteConfigBlobStore!
     private var sourceProvider: RemoteConfigSourceProvider!
     private var downloader: MockIntegrationBlobDownloader!
+    private var dateProvider: MockCurrentDateProvider!
     private var remoteConfigAPI: RemoteConfigAPI!
     private var manager: RemoteConfigManager!
 
@@ -55,10 +58,12 @@ final class RemoteConfigIntegrationTests: TestCase {
         )
         self.sourceProvider = RemoteConfigSourceProvider(topicStore: self.diskCache)
         self.downloader = MockIntegrationBlobDownloader()
+        self.dateProvider = MockCurrentDateProvider()
         self.systemInfo = MockSystemInfo(finishTransactions: false)
         self.httpClient = MockHTTPClient(
             systemInfo: self.systemInfo,
             eTagManager: MockETagManager(),
+            tokenManager: MockTokenManager(),
             diagnosticsTracker: nil,
             sourceTestFile: #file
         )
@@ -82,6 +87,7 @@ final class RemoteConfigIntegrationTests: TestCase {
 
         self.manager = nil
         self.remoteConfigAPI = nil
+        self.dateProvider = nil
         self.downloader = nil
         self.sourceProvider = nil
         self.blobStore = nil
@@ -92,6 +98,176 @@ final class RemoteConfigIntegrationTests: TestCase {
         self.rootURL = nil
 
         try super.tearDownWithError()
+    }
+
+    func testAudiencesTopicWireNameMatchesBackend() {
+        expect(RemoteConfigTopic.audiences.wireName) == "audiences"
+    }
+
+    func testAudiencesTopicPrefetchesCanonicalDefaultBlobWithoutParsingPayload() async throws {
+        let opaquePayload = Data("not-json".utf8)
+        let ref = RCContainerTestData.blobRef(for: opaquePayload)
+        let source = Self.blobSource("primary")
+        let audiences: RemoteConfiguration.ConfigTopic = [
+            "default": .init(blobRef: ref, prefetch: true)
+        ]
+        let container = try Self.containerData(topics: .init(entries: [
+            RemoteConfigTopic.sources.wireName: Self.sourcesTopic(blobSources: [source]),
+            RemoteConfigTopic.audiences.wireName: audiences
+        ]))
+        await self.downloader.setResponse(.success(opaquePayload), for: source, ref: ref)
+
+        await self.refresh(with: container)
+        let topic = await self.manager.awaitTopicAndPrefetchBlobsReady(.audiences)
+        let prefetchedData = self.blobStore.read(ref: ref)
+        let defaultData = await self.manager.blobData(for: .audiences, itemKey: "default")
+
+        expect(topic?.keys.sorted()) == ["default"]
+        expect(topic?["default"]?.prefetch) == true
+        expect(prefetchedData) == opaquePayload
+        expect(defaultData) == opaquePayload
+    }
+
+    func testAudiencesProviderLoadsAudienceConfiguration() async throws {
+        let configData = #"""
+        {
+          "domain": "app",
+          "manifest": "v1.1787841634.audiences:LS8lu2_V_n16",
+          "active_topics": ["audiences"],
+          "prefetch_blobs": ["S_uSSVFaiTCvj2BIpm59ccs1aBHsJNGH"],
+          "topics": {
+            "audiences": {
+              "default": {
+                "blob_ref": "S_uSSVFaiTCvj2BIpm59ccs1aBHsJNGH",
+                "prefetch": true
+              }
+            }
+          }
+        }
+        """#.asData
+        let payload = #"""
+        {
+          "audf98ea481c76049a3": {
+            "id": "audf98ea481c76049a3",
+            "rules": {
+              "and": [
+                { "==": [{ "var": "platform" }, "ios"] },
+                { "==": [{ "var": "latest_auto_renew_intent" }, false] }
+              ]
+            }
+          },
+          "aud063b1964fd804276": {
+            "id": "aud063b1964fd804276",
+            "rules": { "==": [{ "var": "country" }, "PL"] }
+          }
+        }
+        """#.asData
+        let remoteConfiguration = try JSONDecoder.default.decode(RemoteConfiguration.self, from: configData)
+        let audiencesTopic = try XCTUnwrap(
+            remoteConfiguration.topics.entries[RemoteConfigTopic.audiences.wireName]
+        )
+        let defaultItem = try XCTUnwrap(audiencesTopic["default"])
+        let ref = RCContainerTestData.blobRef(for: payload)
+        var topic = audiencesTopic
+        topic["default"] = .init(blobRef: ref, prefetch: defaultItem.prefetch)
+        let container = try Self.containerData(
+            topics: .init(entries: [
+                RemoteConfigTopic.audiences.wireName: topic
+            ]),
+            contentElements: [(payload, .none)]
+        )
+
+        await self.refresh(with: container)
+
+        let configuration = try await AudiencesConfigProvider(manager: self.manager).configuration()
+
+        expect(configuration?.audiences.keys.sorted()) == [
+            "aud063b1964fd804276",
+            "audf98ea481c76049a3"
+        ]
+        let expectedRules =
+            #"{"and":[{"==":[{"var":"platform"},"ios"]},"# +
+            #"{"==":[{"var":"latest_auto_renew_intent"},false]}]}"#
+        expect(configuration?.audiences["audf98ea481c76049a3"]?.rules)
+            == expectedRules
+    }
+
+    func testAudiencesProviderReturnsNilWithoutDefaultBlob() async throws {
+        let container = try Self.containerData(topics: .init(entries: [
+            RemoteConfigTopic.audiences.wireName: [:]
+        ]))
+
+        await self.refresh(with: container)
+
+        let configuration = try await AudiencesConfigProvider(manager: self.manager).configuration()
+
+        expect(configuration).to(beNil())
+    }
+
+    func testAudiencesProviderRetriesStaleSnapshotBeforeReturningConfiguration() async throws {
+        let manager = MockRemoteConfigManager()
+        let payload = #"{ "aud_123": { "id": "aud_123", "rules": {} } }"#.asData
+        manager.stubbedTopics[.audiences] = [
+            "default": .init(blobRef: "audiences-ref")
+        ]
+        manager.stubbedBlobData[.audiences] = ["default": payload]
+
+        var didAdvanceGeneration = false
+        manager.onConfigGenerationRead = {
+            guard !didAdvanceGeneration else { return }
+            didAdvanceGeneration = true
+            manager.configGeneration += 1
+        }
+
+        let configuration = try await AudiencesConfigProvider(manager: manager).configuration()
+
+        expect(configuration).toNot(beNil())
+        expect(manager.invokedTopicCount).to(beGreaterThan(1))
+    }
+
+    func testAudiencesProviderDropsMalformedAudienceWithoutDroppingValidSiblings() async throws {
+        let payload = #"""
+        {
+            "aud_valid": { "id": "aud_valid", "rules": { "==": [1, 1] } },
+            "aud_invalid": { "id": "aud_invalid", "rules": [] }
+        }
+        """#.asData
+        let ref = RCContainerTestData.blobRef(for: payload)
+        let container = try Self.containerData(
+            topics: .init(entries: [
+                RemoteConfigTopic.audiences.wireName: [
+                    "default": .init(blobRef: ref, prefetch: true)
+                ]
+            ]),
+            contentElements: [(payload, .none)]
+        )
+
+        await self.refresh(with: container)
+
+        let configuration = try await AudiencesConfigProvider(manager: self.manager).configuration()
+
+        expect(configuration?.audiences) == [
+            "aud_valid": Audience(id: "aud_valid", rules: #"{"==":[1,1]}"#)
+        ]
+    }
+
+    func testAudiencesProviderAcceptsMismatchedMapKeyAndAudienceIdentifier() async throws {
+        let payload = #"{ "map_key": { "id": "different_id", "rules": {} } }"#.asData
+        let ref = RCContainerTestData.blobRef(for: payload)
+        let container = try Self.containerData(
+            topics: .init(entries: [
+                RemoteConfigTopic.audiences.wireName: [
+                    "default": .init(blobRef: ref, prefetch: true)
+                ]
+            ]),
+            contentElements: [(payload, .none)]
+        )
+
+        await self.refresh(with: container)
+
+        let configuration = try await AudiencesConfigProvider(manager: self.manager).configuration()
+
+        expect(configuration?.audiences["map_key"]) == Audience(id: "different_id", rules: "{}")
     }
 
     func testUncompressedConfigAndInlineBlobCanBeReadThroughFacade() async throws {
@@ -280,6 +456,44 @@ final class RemoteConfigIntegrationTests: TestCase {
         expect(requestedURLs) == [Self.url(source, ref: externalRef)]
     }
 
+    func testMultipleExternalPrefetchBlobsAllDownloadStoreAndReadThroughFacade() async throws {
+        // Production shape: many prefetch-flagged workflow items, each backed by a distinct external
+        // blob. The concurrent prefetch fan-out must download and store every one through the real
+        // store. Count is above the scheduler's concurrency cap (4) so the queue drain past the
+        // first batch is exercised, which a single-blob test can never reach.
+        let count = 5
+        let source = Self.blobSource("primary")
+        let blobs = (0..<count).map { "external-blob-\($0)".asData }
+        let refs = blobs.map { RCContainerTestData.blobRef(for: $0) }
+
+        var items: RemoteConfiguration.ConfigTopic = [:]
+        for index in 0..<count {
+            items["wf-\(index)"] = .init(blobRef: refs[index], prefetch: true)
+            await self.downloader.setResponse(.success(blobs[index]), for: source, ref: refs[index])
+        }
+        let container = try Self.containerData(topics: Self.topics(
+            sources: Self.sourcesTopic(blobSources: [source]),
+            workflows: Self.workflowTopic(items: items)
+        ))
+
+        await self.refresh(with: container)
+        // The gate's exact call: blocks until every prefetch blob has settled.
+        _ = await self.manager.awaitTopicAndPrefetchBlobsReady(.workflows)
+
+        let requestedURLs = await self.downloader.requestedURLStrings()
+        let expectedURLs = refs.map { Self.url(source, ref: $0) }
+
+        // Every distinct external blob was fetched exactly once, stored, and readable via its item.
+        expect(Set(requestedURLs)) == Set(expectedURLs)
+        expect(requestedURLs).to(haveCount(count))
+        for index in 0..<count {
+            expect(self.blobStore.read(ref: refs[index])) == blobs[index]
+            let maybeItemData = await self.manager.blobData(for: .workflows, itemKey: "wf-\(index)")
+            let itemData = try XCTUnwrap(maybeItemData)
+            expect(itemData) == blobs[index]
+        }
+    }
+
     func testInlineBlobWriteFailureFallsBackToExternalBlobDownload() async throws {
         let blob = #"{"workflow":"inline-write-failed"}"#.asData
         let ref = RCContainerTestData.blobRef(for: blob)
@@ -393,6 +607,71 @@ final class RemoteConfigIntegrationTests: TestCase {
         expect(self.blobStore.cachedRefs()).to(beEmpty())
     }
 
+    func testFirstRequestDoesNotSendLastRefreshTimeHeader() async {
+        self.mockRemoteConfigResponse(statusCode: .noContent, body: Data())
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        await self.waitForRemoteConfigRequestCount(1)
+
+        expect(self.remoteConfigCalls.first?.headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]).to(beNil())
+    }
+
+    func testRequestSendsLastRefreshTimeHeaderAfterSuccessfulConfigIsStored() async throws {
+        let container = try Self.containerData(topics: Self.workflowTopic(ref: "unused"))
+        let serverRequestTime = Date(timeIntervalSince1970: 50)
+
+        await self.refresh(with: container, requestDate: serverRequestTime)
+
+        self.mockRemoteConfigResponse(statusCode: .noContent, body: Data())
+        self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
+        await self.waitForRemoteConfigRequestCount(2)
+
+        expect(self.remoteConfigCalls.first?.headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]).to(beNil())
+        expect(self.remoteConfigCalls.last?.headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue])
+            == serverRequestTime.millisecondsSince1970.description
+    }
+
+    func testNoContentResponseAdvancesLastRefreshTimeHeader() async throws {
+        let container = try Self.containerData(topics: Self.workflowTopic(ref: "unused"))
+        let firstServerRequestTime = Date(timeIntervalSince1970: 50)
+        self.dateProvider.advance(by: 100)
+        await self.refresh(with: container, requestDate: firstServerRequestTime)
+
+        let secondServerRequestTime = Date(timeIntervalSince1970: 75)
+        self.dateProvider.advance(by: 123)
+        self.mockRemoteConfigResponse(
+            statusCode: .noContent,
+            body: Data(),
+            requestDate: secondServerRequestTime
+        )
+        self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
+        await self.waitForRemoteConfigRequestCount(2)
+        await self.waitForStoredRefreshTime(75_000)
+
+        self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
+        await self.waitForRemoteConfigRequestCount(3)
+
+        expect(self.remoteConfigCalls[0].headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]).to(beNil())
+        expect(self.remoteConfigCalls[1].headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]) == "50000"
+        expect(self.remoteConfigCalls[2].headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]) == "75000"
+    }
+
+    func testErrorResponseDoesNotAddLastRefreshTimeHeader() async {
+        self.mockRemoteConfigError(Self.serverError)
+        self.mockRemoteConfigFallbackError(Self.serverError)
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        await self.waitForRemoteConfigRequestCount(1)
+        await self.waitForRemoteConfigFallbackRequestCount(1)
+
+        self.mockRemoteConfigResponse(statusCode: .noContent, body: Data())
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        await self.waitForRemoteConfigRequestCount(2)
+
+        expect(self.remoteConfigCalls[0].headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]).to(beNil())
+        expect(self.remoteConfigCalls[1].headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]).to(beNil())
+    }
+
     func testInformationalFailedVerificationStillPersistsResponse() async throws {
         let blob = #"{"workflow":"informational"}"#.asData
         let ref = RCContainerTestData.blobRef(for: blob)
@@ -414,7 +693,7 @@ final class RemoteConfigIntegrationTests: TestCase {
             code: .success
         ))
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(1)
 
         expect(self.diskCache.read()).to(beNil())
@@ -492,10 +771,10 @@ final class RemoteConfigIntegrationTests: TestCase {
         expect(secondData) == blob
     }
 
-    func testEndpointDisabledPreventsReadTriggeredNetworkWork() async throws {
+    func testClientErrorAllowsReadTriggeredNetworkWork() async throws {
         self.mockRemoteConfigError(Self.disablingNetworkError)
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(1)
 
         let topic = await self.manager.topic(.workflows)
@@ -503,17 +782,61 @@ final class RemoteConfigIntegrationTests: TestCase {
 
         expect(topic).to(beNil())
         expect(data).to(beNil())
-        expect(self.manager.isDisabled) == true
         let requestedURLs = await self.downloader.requestedURLs()
 
-        expect(self.remoteConfigRequestCount) == 1
+        expect(self.remoteConfigRequestCount) == 2
         expect(requestedURLs).to(beEmpty())
+    }
+
+    func testUiConfigProviderUsesPartsCommittedByRefreshWhenCachedTopicIsEmpty() async throws {
+        let app = #"{"colors": {}, "fonts": {}}"#.asData
+        let localizations = #"{"en_US": {"day": "Day"}}"#.asData
+        let variableConfig = #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#.asData
+        let customVariables = #"{}"#.asData
+        let blobs = [app, localizations, variableConfig, customVariables]
+        let container = try Self.containerData(
+            topics: .init(entries: [
+                RemoteConfigTopic.uiConfig.wireName: [
+                    "app": .init(blobRef: RCContainerTestData.blobRef(for: app)),
+                    "localizations": .init(blobRef: RCContainerTestData.blobRef(for: localizations)),
+                    "variable_config": .init(blobRef: RCContainerTestData.blobRef(for: variableConfig)),
+                    "custom_variables": .init(blobRef: RCContainerTestData.blobRef(for: customVariables))
+                ]
+            ]),
+            contentElements: blobs.map { ($0, .none) }
+        )
+        self.diskCache.write(PersistedRemoteConfiguration(
+            manifest: "v1.1710000000.ui_config:etag0",
+            activeTopics: [RemoteConfigTopic.uiConfig.wireName],
+            topics: .init(entries: [RemoteConfigTopic.uiConfig.wireName: [:]])
+        ))
+        self.mockRemoteConfigResponse(body: container, delay: .milliseconds(200))
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        await self.waitForRemoteConfigRequestCount(1)
+
+        let uiConfig = await UiConfigProvider(manager: self.manager).getUiConfig()
+
+        expect(uiConfig).toNot(beNil())
+        expect(self.remoteConfigRequestCount) == 1
+        self.logger.verifyMessageWasNotLogged(
+            Strings.remoteConfig.mergeItemsBlobDataUnavailableItems(
+                topic: .uiConfig,
+                itemKeys: ["app", "localizations", "variable_config", "custom_variables"]
+            ),
+            level: .warn,
+            allowNoMessages: true
+        )
+        self.logger.verifyMessageWasNotLogged(
+            Strings.remoteConfig.uiConfigMissingRequiredPart,
+            level: .warn,
+            allowNoMessages: true
+        )
     }
 
     func testMalformedRawContainerResponseDoesNotPersistConfigOrBlobs() async throws {
         self.mockRemoteConfigResponse(body: #"{"not":"an rc container"}"#.asData)
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(1)
 
         expect(self.diskCache.read()).to(beNil())
@@ -533,6 +856,13 @@ private extension RemoteConfigIntegrationTests {
         )
     }
 
+    static var serverError: NetworkError {
+        return .errorResponse(
+            .init(code: .unknownError, originalCode: BackendErrorCode.unknownError.rawValue),
+            .internalServerError
+        )
+    }
+
     func createManager(blobStore: RemoteConfigBlobStoreType) -> RemoteConfigManager {
         return RemoteConfigManager(
             remoteConfigAPI: self.remoteConfigAPI,
@@ -543,17 +873,23 @@ private extension RemoteConfigIntegrationTests {
                 sourceProvider: self.sourceProvider,
                 downloader: self.downloader
             ),
-            currentUserProvider: MockCurrentUserProvider(mockAppUserID: "integration-test-user")
+            currentUserProvider: MockCurrentUserProvider(mockAppUserID: "integration-test-user"),
+            dateProvider: self.dateProvider
         )
     }
 
     func refresh(
         with body: Data,
-        verificationResult: VerificationResult = .verified
+        verificationResult: VerificationResult = .verified,
+        requestDate: Date? = nil
     ) async {
-        self.mockRemoteConfigResponse(body: body, verificationResult: verificationResult)
+        self.mockRemoteConfigResponse(
+            body: body,
+            verificationResult: verificationResult,
+            requestDate: requestDate
+        )
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(1)
         await self.waitForPersistedManifest(Self.manifest)
     }
@@ -568,7 +904,7 @@ private extension RemoteConfigIntegrationTests {
         ))
         self.mockRemoteConfigFallbackResponse(body: body, verificationResult: verificationResult)
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(1)
         await self.waitForRemoteConfigFallbackRequestCount(1)
         await self.waitForPersistedManifest(Self.manifest)
@@ -577,11 +913,23 @@ private extension RemoteConfigIntegrationTests {
     func mockRemoteConfigResponse(
         statusCode: HTTPStatusCode = .success,
         body: Data,
-        verificationResult: VerificationResult = .verified
+        verificationResult: VerificationResult = .verified,
+        requestDate: Date? = nil,
+        delay: DispatchTimeInterval = .never
     ) {
+        let responseHeaders: HTTPResponse.Headers = [
+            HTTPClient.ResponseHeader.requestDate.rawValue:
+                requestDate?.millisecondsSince1970.description
+        ].compactMapValues { $0 }
         self.httpClient.mock(
             requestPath: HTTPRequest.Path.remoteConfig(domain: RemoteConfiguration.defaultDomain),
-            response: .init(statusCode: statusCode, body: body, verificationResult: verificationResult)
+            response: .init(
+                statusCode: statusCode,
+                body: body,
+                responseHeaders: responseHeaders,
+                verificationResult: verificationResult,
+                delay: delay
+            )
         )
     }
 
@@ -603,16 +951,29 @@ private extension RemoteConfigIntegrationTests {
         )
     }
 
+    func mockRemoteConfigFallbackError(_ error: NetworkError) {
+        self.httpClient.mock(
+            requestPath: HTTPRequest.FallbackPath.remoteConfig(domain: RemoteConfiguration.defaultDomain),
+            response: .init(error: error)
+        )
+    }
+
     var remoteConfigRequestCount: Int {
+        return self.remoteConfigCalls.count
+    }
+
+    var remoteConfigCalls: [MockHTTPClient.Call] {
+        let url = HTTPRequest.Path.remoteConfig(domain: RemoteConfiguration.defaultDomain).url(preferIAMPath: false)
         return self.httpClient.calls.filter {
-            $0.request.path.url == HTTPRequest.Path.remoteConfig(domain: RemoteConfiguration.defaultDomain).url
-        }.count
+            $0.request.path.url(preferIAMPath: false) == url
+        }
     }
 
     var remoteConfigFallbackRequestCount: Int {
+        let fallbackURL = HTTPRequest.FallbackPath.remoteConfig(domain: RemoteConfiguration.defaultDomain)
+                                                  .url(preferIAMPath: false)
         return self.httpClient.calls.filter {
-            $0.request.path.url
-                == HTTPRequest.FallbackPath.remoteConfig(domain: RemoteConfiguration.defaultDomain).url
+            $0.request.path.url(preferIAMPath: false) == fallbackURL
         }.count
     }
 
@@ -644,6 +1005,15 @@ private extension RemoteConfigIntegrationTests {
     ) async {
         await expect(file: file, line: line, self.diskCache.read()?.manifest)
             .toEventually(equal(manifest), timeout: Self.pollTimeout, pollInterval: Self.pollInterval)
+    }
+
+    func waitForStoredRefreshTime(
+        _ milliseconds: UInt64,
+        file: FileString = #filePath,
+        line: UInt = #line
+    ) async {
+        await expect(file: file, line: line, self.diskCache.read()?.lastRefreshTimeMilliseconds)
+            .toEventually(equal(milliseconds), timeout: Self.pollTimeout, pollInterval: Self.pollInterval)
     }
 
     /// Waits until the blob store reflects the expected refs.

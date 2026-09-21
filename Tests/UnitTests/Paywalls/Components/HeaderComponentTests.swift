@@ -143,7 +143,7 @@ class HeaderComponentTests: TestCase {
             stack: .init(
                 components: [],
                 dimension: .vertical(.center, .start),
-                size: .init(width: .fill, height: .fit)
+                size: .init(width: .fill, height: .fit(nil))
             )
         )
 

@@ -28,6 +28,7 @@ class BaseCustomerInfoManagerTests: TestCase {
     fileprivate var customerInfoManagerChangesCallCount = 0
     fileprivate var customerInfoManagerLastCustomerInfoChange: (old: CustomerInfo?, new: CustomerInfo)?
 
+    fileprivate var mockCurrentUserProvider: MockCurrentUserProvider?
     fileprivate var customerInfoMonitorDisposable: (() -> Void)?
 
     override func setUpWithError() throws {
@@ -576,6 +577,114 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
     }
 
+    func testCacheCustomerInfoStoresNonEmptySubscriberDimensionsSeparately() throws {
+        let info = try Self.customerInfo(dimensions: ["plan": "annual"])
+
+        self.customerInfoManager.cache(customerInfo: info, appUserID: Self.appUserID)
+
+        let data = try XCTUnwrap(
+            self.mockDeviceCache.cachedSubscriberDimensionsData(appUserID: Self.appUserID)
+        )
+        let dimensions = try JSONDecoder.default.decode([String: AnyDecodable].self, from: data)
+        expect(dimensions) == ["plan": "annual"]
+    }
+
+    func testSubscriberDimensionsRoundTripFromCustomerInfoThroughProvider() throws {
+        let info = try Self.customerInfo(dimensions: [
+            "plan": "annual",
+            "beta": true,
+            "seats": 3,
+            "score": 0.75,
+            "profile": [
+                "tier": "gold",
+                "age": 42,
+                "ignored_null": NSNull(),
+                "ignored_primitive_array": [1, 2]
+            ] as [String: Any],
+            "teams": [
+                ["id": "a", "active": true] as [String: Any],
+                ["id": "b", "active": false] as [String: Any]
+            ],
+            "ignored_null": NSNull(),
+            "ignored_primitive_array": ["a", "b"]
+        ])
+
+        self.customerInfoManager.cache(customerInfo: info, appUserID: Self.appUserID)
+
+        let provider = SubscriberDimensionsProvider(
+            deviceCache: self.mockDeviceCache,
+            currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID)
+        )
+        expect(provider.dimensions(at: Date())) == [
+            "plan": .string("annual"),
+            "beta": .bool(true),
+            "seats": .int(3),
+            "score": .double(0.75),
+            "profile": .object([
+                "tier": .string("gold"),
+                "ignored_null": .null,
+                "age": .int(42)
+            ]),
+            "teams": .objectList([
+                ["id": .string("a"), "active": .bool(true)],
+                ["id": .string("b"), "active": .bool(false)]
+            ]),
+            "ignored_null": .null
+        ]
+    }
+
+    func testNonEmptySubscriberDimensionsReplaceCompletePreviousSnapshot() throws {
+        self.customerInfoManager.cache(
+            customerInfo: try Self.customerInfo(dimensions: [
+                "plan": "annual",
+                "segment": "high_value"
+            ]),
+            appUserID: Self.appUserID
+        )
+
+        self.customerInfoManager.cache(
+            customerInfo: try Self.customerInfo(dimensions: ["plan": "monthly"]),
+            appUserID: Self.appUserID
+        )
+
+        let data = try XCTUnwrap(
+            self.mockDeviceCache.cachedSubscriberDimensionsData(appUserID: Self.appUserID)
+        )
+        let dimensions = try JSONDecoder.default.decode([String: AnyDecodable].self, from: data)
+        expect(dimensions) == ["plan": "monthly"]
+    }
+
+    func testCacheCustomerInfoWithoutDimensionsKeepsPreviousSubscriberDimensions() throws {
+        let previous = Data(#"{"plan":"annual"}"#.utf8)
+        self.mockDeviceCache.cache(subscriberDimensions: previous, appUserID: Self.appUserID)
+
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
+
+        expect(self.mockDeviceCache.cachedSubscriberDimensionsData(appUserID: Self.appUserID)) == previous
+    }
+
+    func testCacheCustomerInfoWithEmptyDimensionsKeepsPreviousSubscriberDimensions() throws {
+        let previous = Data(#"{"plan":"annual"}"#.utf8)
+        self.mockDeviceCache.cache(subscriberDimensions: previous, appUserID: Self.appUserID)
+
+        self.customerInfoManager.cache(
+            customerInfo: try Self.customerInfo(dimensions: [:]),
+            appUserID: Self.appUserID
+        )
+
+        expect(self.mockDeviceCache.cachedSubscriberDimensionsData(appUserID: Self.appUserID)) == previous
+    }
+
+    func testCacheLoadedCustomerInfoDoesNotReplaceSubscriberDimensions() throws {
+        let previous = Data(#"{"plan":"annual"}"#.utf8)
+        self.mockDeviceCache.cache(subscriberDimensions: previous, appUserID: Self.appUserID)
+        let loadedFromCache = try Self.customerInfo(dimensions: ["plan": "monthly"]).loadedFromCache()
+
+        self.customerInfoManager.cache(customerInfo: loadedFromCache, appUserID: Self.appUserID)
+
+        expect(self.mockDeviceCache.cachedSubscriberDimensionsData(appUserID: Self.appUserID)) == previous
+    }
+
     func testCachesCustomerInfoWithVerifiedEntitlements() throws {
         let appUserID = "myUser"
         let info = self.mockCustomerInfo.copy(with: .verified, httpResponseOriginalSource: .mainServer)
@@ -650,6 +759,46 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
         expect(self.customerInfoManagerChangesCallCount).toEventually(equal(2))
         expect(self.customerInfoManagerLastCustomerInfoChange) == (old: self.mockCustomerInfo, new: newCustomerInfo)
+    }
+
+    func testCacheCustomerInfoSendsToDelegateIfAppUserIDIsCurrent() {
+        self.mockCurrentUserProvider = MockCurrentUserProvider(mockAppUserID: "myUser")
+        self.customerInfoManager.currentUserProvider = self.mockCurrentUserProvider
+
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: "myUser")
+
+        expect(self.customerInfoManagerChangesCallCount).toEventually(equal(1))
+        expect(self.customerInfoManagerLastCustomerInfoChange) == (old: nil, new: self.mockCustomerInfo)
+    }
+
+    func testCacheCustomerInfoDoesNotSendToDelegateIfAppUserIDIsNotCurrent() async {
+        self.mockCurrentUserProvider = MockCurrentUserProvider(mockAppUserID: "myUser")
+        self.customerInfoManager.currentUserProvider = self.mockCurrentUserProvider
+
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: "previousUser")
+
+        // The `CustomerInfo` is still cached for the user that requested it
+        expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
+        expect(self.mockDeviceCache.cachedCustomerInfo["previousUser"]).toNot(beNil())
+
+        await expect(self.customerInfoManagerChangesCallCount).toNever(equal(1), until: .milliseconds(200))
+        expect(self.customerInfoManager.lastSentCustomerInfo).to(beNil())
+    }
+
+    func testCacheCustomerInfoForNonCurrentUserDoesNotAffectSubsequentUpdates() {
+        self.mockCurrentUserProvider = MockCurrentUserProvider(mockAppUserID: "myUser")
+        self.customerInfoManager.currentUserProvider = self.mockCurrentUserProvider
+
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: "myUser")
+        expect(self.customerInfoManagerChangesCallCount).toEventually(equal(1))
+
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo2, appUserID: "previousUser")
+        expect(self.customerInfoManager.lastSentCustomerInfo) === self.mockCustomerInfo
+
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo2, appUserID: "myUser")
+        expect(self.customerInfoManagerChangesCallCount).toEventually(equal(2))
+        expect(self.customerInfoManagerLastCustomerInfoChange) == (old: self.mockCustomerInfo,
+                                                                   new: self.mockCustomerInfo2)
     }
 
     func testCacheCustomerInfoSendsToDelegateWhenComputedOnDevice() {
@@ -727,6 +876,24 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         expect(cachedLoadShedderInfo) == loadShedderInfo
         expect(cachedLoadShedderInfo?.isLoadedFromCache).to(beTrue())
         expect(cachedLoadShedderInfo?.originalSource) == .loadShedder
+    }
+
+}
+
+private extension CustomerInfoManagerTests {
+
+    static func customerInfo(dimensions: [String: Any]) throws -> CustomerInfo {
+        return try CustomerInfo(data: [
+            "request_date": "2023-12-21T02:40:36Z",
+            "dimensions": dimensions,
+            "subscriber": [
+                "original_app_user_id": Self.appUserID,
+                "first_seen": "2019-06-17T16:05:33Z",
+                "subscriptions": [String: Any](),
+                "other_purchases": [String: Any](),
+                "original_application_version": NSNull()
+            ] as [String: Any]
+        ])
     }
 
 }

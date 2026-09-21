@@ -138,7 +138,6 @@ final class CustomerCenterConfigDataTests: TestCase {
                     displayPurchaseHistoryLink: true,
                     displayUserDetailsSection: true,
                     displayVirtualCurrencies: true,
-                    shouldWarnCustomersAboutMultipleSubscriptions: false,
                     supportTickets: nil
                 ),
                 changePlans: []

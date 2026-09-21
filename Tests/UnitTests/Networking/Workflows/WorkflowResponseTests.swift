@@ -179,6 +179,132 @@ class WorkflowResponseTests: TestCase {
         expect(workflow.steps["step_1"]?.triggerActions["btn_2"]) == .unknown
     }
 
+    func testDecodeBranchTriggerActionKeepsTheAudienceOrder() throws {
+        let json = """
+        {
+          "type": "branch",
+          "branches": [
+            { "audience_id": "aud_a", "step_id": "step_a" },
+            { "audience_id": "aud_b", "step_id": "step_b" }
+          ],
+          "fallback_step_id": "step_default"
+        }
+        """.data(using: .utf8)!
+
+        let action = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: json)
+
+        expect(action) == .branch(.init(
+            branches: [
+                .init(audienceId: "aud_a", stepId: "step_a"),
+                .init(audienceId: "aud_b", stepId: "step_b")
+            ],
+            fallbackStepId: "step_default"
+        ))
+    }
+
+    func testDecodeBranchTriggerActionMissingTheFallbackDecodesToUnknown() throws {
+        let json = """
+        { "type": "branch", "branches": [{ "audience_id": "aud_a", "step_id": "step_a" }] }
+        """.data(using: .utf8)!
+
+        let action = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: json)
+
+        expect(action) == .unknown
+    }
+
+    func testDecodeBranchTriggerActionWithNoBranchesStillRoutesToTheFallback() throws {
+        let json = """
+        { "type": "branch", "branches": [], "fallback_step_id": "step_default" }
+        """.data(using: .utf8)!
+
+        let action = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: json)
+
+        expect(action) == .branch(.init(branches: [], fallbackStepId: "step_default"))
+    }
+
+    func testDecodeStepTriggerActionMissingItsStepIdDecodesToUnknown() throws {
+        let json = """
+        { "type": "step" }
+        """.data(using: .utf8)!
+
+        let action = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: json)
+
+        expect(action) == .unknown
+    }
+
+    func testDecodeTriggerActionWithNoTypeDecodesToUnknown() throws {
+        let json = """
+        { "step_id": "step_2" }
+        """.data(using: .utf8)!
+
+        let action = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: json)
+
+        expect(action) == .unknown
+    }
+
+    /// `triggerActions` propagates a throw, so one bad action would otherwise fail the whole workflow.
+    func testDecodeWorkflowWithMalformedStepActionKeepsTheRestOfTheWorkflow() throws {
+        let json = """
+        {
+          "id": "wf_bad_step",
+          "display_name": "Step",
+          "initial_step_id": "step_1",
+          "steps": {
+            "step_1": {
+              "id": "step_1",
+              "type": "screen",
+              "trigger_actions": {
+                "btn_1": { "type": "step", "step_id": "step_2" },
+                "btn_2": { "type": "step" }
+              }
+            }
+          },
+          "screens": {},
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {},
+            "variable_config": { "variable_compatibility_map": {}, "function_compatibility_map": {} }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: json)
+
+        expect(workflow.steps["step_1"]?.triggerActions["btn_1"]) == .step(stepId: "step_2")
+        expect(workflow.steps["step_1"]?.triggerActions["btn_2"]) == .unknown
+    }
+
+    func testDecodeWorkflowWithMalformedBranchKeepsTheRestOfTheWorkflow() throws {
+        let json = """
+        {
+          "id": "wf_bad_branch",
+          "display_name": "Branch",
+          "initial_step_id": "step_1",
+          "steps": {
+            "step_1": {
+              "id": "step_1",
+              "type": "screen",
+              "trigger_actions": {
+                "btn_1": { "type": "step", "step_id": "step_2" },
+                "branch": { "type": "branch", "branches": [] }
+              }
+            }
+          },
+          "screens": {},
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {},
+            "variable_config": { "variable_compatibility_map": {}, "function_compatibility_map": {} }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: json)
+
+        expect(workflow.steps["step_1"]?.triggerActions["btn_1"]) == .step(stepId: "step_2")
+        expect(workflow.steps["step_1"]?.triggerActions["branch"]) == .unknown
+    }
+
     func testDecodeWorkflowTrigger() throws {
         let json = """
         {
@@ -223,6 +349,72 @@ class WorkflowResponseTests: TestCase {
         let screen = try JSONDecoder.default.decode(WorkflowScreen.self, from: json)
 
         expect(screen.offeringIdentifier) == "default"
+    }
+
+    func testDecodeWorkflowScreenAutomaticallyScaleFontSize() throws {
+        let screen = try Self.decodeWorkflowScreen(automaticallyScaleFontSize: false)
+
+        expect(screen.automaticallyScaleFontSize) == false
+    }
+
+    func testDecodeWorkflowScreenAutomaticallyScaleFontSizeDefaultsToTrue() throws {
+        let screen = try Self.decodeWorkflowScreen()
+
+        expect(screen.automaticallyScaleFontSize) == true
+    }
+
+    func testWorkflowScreenInitializerCanDisableAutomaticFontScaling() throws {
+        let decodedScreen = try Self.decodeWorkflowScreen()
+        let screen = WorkflowScreen(
+            name: decodedScreen.name,
+            templateName: decodedScreen.templateName,
+            assetBaseURL: decodedScreen.assetBaseURL,
+            componentsConfig: decodedScreen.componentsConfig,
+            componentsLocalizations: decodedScreen.componentsLocalizations,
+            defaultLocale: decodedScreen.defaultLocale,
+            offeringIdentifier: decodedScreen.offeringIdentifier,
+            automaticallyScaleFontSize: false
+        )
+
+        expect(screen.automaticallyScaleFontSize) == false
+    }
+
+    func testDecodeWorkflowScreenZeroDecimalPlaceCountries() throws {
+        let screen = try Self.decodeWorkflowScreen(
+            zeroDecimalPlaceCountriesJSON: """
+            { "apple": ["TWN", "MEX"], "google": ["TW", "MX"] }
+            """
+        )
+
+        expect(screen.zeroDecimalPlaceCountries) == ["TWN", "MEX"]
+    }
+
+    func testDecodeWorkflowScreenZeroDecimalPlaceCountriesDefaultsToEmpty() throws {
+        let screen = try Self.decodeWorkflowScreen()
+
+        expect(screen.zeroDecimalPlaceCountries).to(beEmpty())
+    }
+
+    func testDecodeWorkflowScreenZeroDecimalPlaceCountriesIgnoresMalformedValue() throws {
+        let screen = try Self.decodeWorkflowScreen(zeroDecimalPlaceCountriesJSON: "\"TWN\"")
+
+        expect(screen.zeroDecimalPlaceCountries).to(beEmpty())
+    }
+
+    func testWorkflowScreenInitializerAcceptsZeroDecimalPlaceCountries() throws {
+        let decodedScreen = try Self.decodeWorkflowScreen()
+        let screen = WorkflowScreen(
+            name: decodedScreen.name,
+            templateName: decodedScreen.templateName,
+            assetBaseURL: decodedScreen.assetBaseURL,
+            componentsConfig: decodedScreen.componentsConfig,
+            componentsLocalizations: decodedScreen.componentsLocalizations,
+            defaultLocale: decodedScreen.defaultLocale,
+            offeringIdentifier: decodedScreen.offeringIdentifier,
+            zeroDecimalPlaceCountries: ["TWN"]
+        )
+
+        expect(screen.zeroDecimalPlaceCountries) == ["TWN"]
     }
 
     func testDecodeWorkflowScreenWithExitOffers() throws {
@@ -326,6 +518,145 @@ class WorkflowResponseTests: TestCase {
         expect(step.metadata).to(beNil())
     }
 
+    func testDecodeWorkflowStepWithoutTypeThrows() {
+        XCTAssertThrowsError(
+            try JSONDecoder.default.decode(WorkflowStep.self, from: Data(#"{ "id": "step_1" }"#.utf8))
+        )
+    }
+
+    func testDecodeWorkflowStepOfferingIdentifier() throws {
+        let step = try JSONDecoder.default.decode(
+            WorkflowStep.self,
+            from: Data((
+                #"{ "id": "step_1", "type": "offering", "param_values": "#
+                + #"{ "offering": { "identifier": "default" } } }"#
+            ).utf8)
+        )
+
+        expect(step.offeringIdentifier) == "default"
+    }
+
+    func testDecodeWorkflowStepOfferingIdentifierFallsBackToFlatValue() throws {
+        let step = try JSONDecoder.default.decode(
+            WorkflowStep.self,
+            from: Data((
+                #"{ "id": "step_1", "type": "offering", "param_values": "#
+                + #"{ "offering_identifier": "default" } }"#
+            ).utf8)
+        )
+
+        expect(step.offeringIdentifier) == "default"
+    }
+
+    func testDecodeWorkflowStepOfferingIdentifierIsNilWithoutAValidValue() throws {
+        let values = [
+            "{}",
+            #"{ "offering_identifier": "   " }"#,
+            #"{ "offering_identifier": 123 }"#
+        ]
+
+        for paramValues in values {
+            let json = #"{ "id": "step_1", "type": "offering", "param_values": "# + paramValues + " }"
+            let step = try JSONDecoder.default.decode(
+                WorkflowStep.self,
+                from: Data(json.utf8)
+            )
+
+            expect(step.offeringIdentifier).to(beNil())
+        }
+    }
+
+    func testDecodeWorkflowStepOfferingIdentifierPrefersNestedValueOverFlatFallback() throws {
+        let step = try JSONDecoder.default.decode(
+            WorkflowStep.self,
+            from: Data(#"""
+            { "id": "step_1", "type": "offering", "param_values": {
+                "offering": { "identifier": "nested" },
+                "offering_identifier": "flat"
+            } }
+            """#.utf8)
+        )
+
+        expect(step.offeringIdentifier) == "nested"
+    }
+
+    func testDecodeWorkflowStepOfferingIdentifierUsesFlatFallbackWhenNestedOfferingHasNoIdentifier() throws {
+        let step = try JSONDecoder.default.decode(
+            WorkflowStep.self,
+            from: Data(#"""
+            { "id": "step_1", "type": "offering", "param_values": {
+                "offering": {},
+                "offering_identifier": "flat"
+            } }
+            """#.utf8)
+        )
+
+        expect(step.offeringIdentifier) == "flat"
+    }
+
+    func testDecodeWorkflowStepOfferingIdentifierUsesFlatFallbackWhenOfferingIsNotAnObject() throws {
+        let step = try JSONDecoder.default.decode(
+            WorkflowStep.self,
+            from: Data(#"""
+            { "id": "step_1", "type": "offering", "param_values": {
+                "offering": "not-an-object",
+                "offering_identifier": "flat"
+            } }
+            """#.utf8)
+        )
+
+        expect(step.offeringIdentifier) == "flat"
+    }
+
+    func testDecodeWorkflowStepOfferingIdentifierDoesNotFallBackWhenNestedIdentifierIsInvalid() throws {
+        let step = try JSONDecoder.default.decode(
+            WorkflowStep.self,
+            from: Data(#"""
+            { "id": "step_1", "type": "offering", "param_values": {
+                "offering": { "identifier": "   " },
+                "offering_identifier": "flat"
+            } }
+            """#.utf8)
+        )
+
+        expect(step.offeringIdentifier).to(beNil())
+    }
+
+    func testDecodeWorkflowStepOfferingIdentifierDoesNotFallBackWhenNestedIdentifierIsNotAString() throws {
+        let step = try JSONDecoder.default.decode(
+            WorkflowStep.self,
+            from: Data(#"""
+            { "id": "step_1", "type": "offering", "param_values": {
+                "offering": { "identifier": 123 },
+                "offering_identifier": "flat"
+            } }
+            """#.utf8)
+        )
+
+        expect(step.offeringIdentifier).to(beNil())
+    }
+
+    func testWorkflowOfferingIdentifierPrefersTheStepAndFallsBackToItsScreen() throws {
+        let screen = try Self.decodeWorkflowScreen(offeringIdentifier: "screen-offering")
+        var step = WorkflowStep(id: "step_1", type: "screen", screenId: "screen_1")
+        let workflow = PublishedWorkflow(
+            id: "workflow",
+            displayName: "Workflow",
+            initialStepId: step.id,
+            singleStepFallbackId: nil,
+            steps: [step.id: step],
+            screens: ["screen_1": screen]
+        )
+
+        expect(workflow.offeringIdentifier(for: step)) == "screen-offering"
+
+        step.paramValues = ["offering": .object(["identifier": .string("step-offering")])]
+        expect(workflow.offeringIdentifier(for: step)) == "step-offering"
+
+        step.paramValues = ["offering_identifier": .string("flat-step-offering")]
+        expect(workflow.offeringIdentifier(for: step)) == "flat-step-offering"
+    }
+
     func testDecodeWorkflowStepScreenTypeFromMetadata() throws {
         let json = """
         {
@@ -370,6 +701,66 @@ class WorkflowResponseTests: TestCase {
         let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
 
         expect(step.stepScreenType).to(beNil())
+    }
+
+    func testDecodeWorkflowStepExperimentParams() throws {
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "param_values": { "experiment_id": "exp_abc", "experiment_variant": "b", "other": 1 }
+        }
+        """.data(using: .utf8)!
+
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
+
+        expect(step.experimentId) == "exp_abc"
+        expect(step.experimentVariant) == "b"
+    }
+
+    func testDecodeWorkflowStepExperimentParamsNilWhenAbsent() throws {
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "param_values": { "offering_identifier": "premium" }
+        }
+        """.data(using: .utf8)!
+
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
+
+        expect(step.experimentId).to(beNil())
+        expect(step.experimentVariant).to(beNil())
+    }
+
+    func testDecodeWorkflowStepExperimentParamsReadIndependently() throws {
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "param_values": { "experiment_id": "exp_abc" }
+        }
+        """.data(using: .utf8)!
+
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
+
+        expect(step.experimentId) == "exp_abc"
+        expect(step.experimentVariant).to(beNil())
+    }
+
+    func testDecodeWorkflowStepExperimentParamsNilWhenNotStrings() throws {
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "param_values": { "experiment_id": 12, "experiment_variant": null }
+        }
+        """.data(using: .utf8)!
+
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
+
+        expect(step.experimentId).to(beNil())
+        expect(step.experimentVariant).to(beNil())
     }
 
     func testDecodeWorkflowStepScreenTypeNilWhenMetadataNull() throws {
@@ -429,6 +820,124 @@ class WorkflowResponseTests: TestCase {
         expect(step.outputs).to(beEmpty())
         expect(step.triggerActions["btn_wagcLsIVjN"]) == .step(stepId: "ztBPCwD")
         expect(step.metadata).to(beNil())
+    }
+
+    // MARK: - default_locale
+
+    func testDecodeWorkflowScreenDefaultLocalePreservesValue() throws {
+        let screen = try Self.decodeWorkflowScreen(defaultLocaleJSON: "\"es_ES\"")
+
+        expect(screen.defaultLocale) == "es_ES"
+    }
+
+    func testDecodeWorkflowScreenDefaultLocaleDefaultsToEnglishWhenNull() throws {
+        let screen = try Self.decodeWorkflowScreen(defaultLocaleJSON: "null")
+
+        expect(screen.defaultLocale) == "en"
+    }
+
+    func testDecodeWorkflowScreenDefaultLocaleDefaultsToEnglishWhenMissing() throws {
+        let screen = try Self.decodeWorkflowScreen(defaultLocaleJSON: nil)
+
+        expect(screen.defaultLocale) == "en"
+    }
+
+    func testWorkflowAndOfferingsPathsAgreeOnDefaultLocale() throws {
+        for localeJSON in ["\"es_ES\"", "null", nil] {
+            let screen = try Self.decodeWorkflowScreen(defaultLocaleJSON: localeJSON)
+            let componentsData = try Self.decodePaywallComponentsData(defaultLocaleJSON: localeJSON)
+
+            expect(screen.defaultLocale).to(
+                equal(componentsData.defaultLocale),
+                description: "default_locale diverged for payload \(localeJSON ?? "<omitted>")"
+            )
+        }
+    }
+
+}
+
+private extension WorkflowResponseTests {
+
+    /// - Parameter defaultLocaleJSON: the raw JSON value for `default_locale`, or `nil` to omit the key
+    /// entirely. The backend sends `null` here for template-derived screens.
+    static func decodeWorkflowScreen(
+        defaultLocaleJSON: String? = "\"en_US\"",
+        automaticallyScaleFontSize: Bool? = nil,
+        zeroDecimalPlaceCountriesJSON: String? = nil,
+        offeringIdentifier: String? = nil
+    ) throws -> WorkflowScreen {
+        var defaultLocaleFragment = ""
+        if let defaultLocaleJSON {
+            defaultLocaleFragment = """
+            "default_locale": \(defaultLocaleJSON),
+            """
+        }
+        var automaticallyScaleFontSizeFragment = ""
+        if let automaticallyScaleFontSize {
+            automaticallyScaleFontSizeFragment = """
+            , "automatically_scale_font_size": \(automaticallyScaleFontSize)
+            """
+        }
+        var zeroDecimalFragment = ""
+        if let zeroDecimalPlaceCountriesJSON {
+            zeroDecimalFragment = """
+            , "zero_decimal_place_countries": \(zeroDecimalPlaceCountriesJSON)
+            """
+        }
+        let offeringIdentifierFragment = offeringIdentifier.map { ", \"offering_identifier\": \"\($0)\"" } ?? ""
+        let json = """
+        {
+          "template_name": "tmpl",
+          "asset_base_url": "https://assets.revenuecat.com",
+          \(defaultLocaleFragment)
+          "components_localizations": {},
+          "components_config": {
+            "base": {
+              "stack": {
+                "type": "stack", "components": [],
+                "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
+                "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
+                "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 }
+              },
+              "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } } }
+            }
+          }\(automaticallyScaleFontSizeFragment)\(zeroDecimalFragment)\(offeringIdentifierFragment)
+        }
+        """.data(using: .utf8)!
+
+        return try JSONDecoder.default.decode(WorkflowScreen.self, from: json)
+    }
+
+    static func decodePaywallComponentsData(defaultLocaleJSON: String?) throws -> PaywallComponentsData {
+        var defaultLocaleFragment = ""
+        if let defaultLocaleJSON {
+            defaultLocaleFragment = """
+            "default_locale": \(defaultLocaleJSON),
+            """
+        }
+        let json = """
+        {
+          "template_name": "tmpl",
+          "asset_base_url": "https://assets.revenuecat.com",
+          \(defaultLocaleFragment)
+          "components_localizations": {},
+          "components_config": {
+            "base": {
+              "stack": {
+                "type": "stack", "components": [],
+                "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
+                "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
+                "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 }
+              },
+              "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } } }
+            }
+          }
+        }
+        """.data(using: .utf8)!
+
+        return try JSONDecoder.default.decode(PaywallComponentsData.self, from: json)
     }
 
 }

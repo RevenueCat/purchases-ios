@@ -66,21 +66,36 @@ private extension GetOfferingsOperation {
 
         let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: appUserID))
 
-        httpClient.perform(request) { (response: VerifiedHTTPResponse<OfferingsResponse>.Result) in
+        httpClient.perform(request) { (response: VerifiedHTTPResponse<Data>.Result) in
             defer {
                 completion()
             }
 
             self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
-                callbackObject.completion(response
-                    .map {
-                        Offerings.Contents(response: $0.body,
-                                           httpResponseOriginalSource: $0.originalSource)
-                    }
-                    .mapError(BackendError.networkError)
-                )
+                callbackObject.completion(Self.decode(response))
             }
         }
+    }
+
+    typealias OfferingsResponseHandlerResult = Result<OfferingsFetchResult, BackendError>
+
+    static func decode(_ response: VerifiedHTTPResponse<Data>.Result) -> OfferingsResponseHandlerResult {
+        let rawResponseData = try? response.get().body
+        let decodedResponse: VerifiedHTTPResponse<OfferingsResponse>.Result = response.parseResponse { data, _ in
+            try OfferingsResponse.create(with: data)
+        }
+
+        return decodedResponse
+            .map {
+                OfferingsFetchResult(
+                    contents: Offerings.Contents(
+                        response: $0.body,
+                        httpResponseOriginalSource: $0.originalSource
+                    ),
+                    rawResponseData: rawResponseData
+                )
+            }
+            .mapError(BackendError.networkError)
     }
 
 }

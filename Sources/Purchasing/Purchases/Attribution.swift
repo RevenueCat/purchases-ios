@@ -339,6 +339,20 @@ public extension Attribution {
     }
 
     /**
+     * Subscriber attribute associated with the Singular Device ID (SDID) for the user.
+     * Required for the RevenueCat Singular integration when using Singular's Event Endpoint V2.
+     *
+     *
+     * #### Related Articles
+     * - [Singular RevenueCat Integration](https://docs.revenuecat.com/docs/singular)
+     *
+     * - Parameter singularDeviceID: Empty String or `nil` will delete the subscriber attribute.
+     */
+    @objc func setSingularDeviceID(_ singularDeviceID: String?) {
+        self.subscriberAttributesManager.setSingularDeviceID(singularDeviceID, appUserID: appUserID)
+    }
+
+    /**
      * Subscriber attribute associated with the Mixpanel Distinct ID for the user.
      * Optional for the RevenueCat Mixpanel integration.
      *

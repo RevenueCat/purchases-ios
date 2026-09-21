@@ -4,12 +4,12 @@
   "app_session_id" : "83164C05-2BDC-4807-8918-A4105F727DEB",
   "app_user_id" : "test-user-id",
   "capture_method" : "manual",
-  "failure_reason" : "timeout",
   "id" : "72164C05-2BDC-4807-8918-A4105F727DEB",
   "impression_id" : "impression-123",
   "mediator_name" : "AdMob",
   "network_name" : "AdMob",
   "placement" : "home_screen",
+  "reward_failure_reason" : "timeout",
   "timestamp_ms" : 1694029328000,
   "type" : "rc_ads_ad_reward_sdk_failed_to_verify",
   "version" : 1

@@ -7,9 +7,20 @@
 
 import Foundation
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import StoreKit
 import SwiftUI
+
+#if os(iOS) || os(tvOS) || VISION_OS
+import UIKit
+
+func checkUIApplicationSPIAPI() {
+    Task { @MainActor in
+        let _: UIViewController? = UIApplication.shared.currentPresentationViewController
+    }
+}
+
+#endif
 
 #if DEBUG && (os(iOS) || os(macOS) || VISION_OS)
 

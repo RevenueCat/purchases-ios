@@ -128,9 +128,9 @@ class FileRepositoryTests: TestCase {
         let url = try await sut.fileRepository
             .generateOrGetCachedFileURL(for: someURL, withChecksum: Checksum.generate(from: data, with: .md5))
 
-        await expect(sut.networkService.invocations.count).toEventually(equal(1))
+        XCTAssertEqual(sut.networkService.invocations.count, 1)
         XCTAssertEqual(sut.cache.saveDataInvocations.count, 1)
-
+        XCTAssertEqual(url, sut.cache.saveDataInvocations.first?.url)
     }
 
     func test_whenChecksumMismatch_throwsChecksumMismatch() async throws {

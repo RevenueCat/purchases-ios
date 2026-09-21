@@ -23,6 +23,9 @@ struct RootView: View {
     @Environment(\.safeAreaInsets)
     private var safeAreaInsets
 
+    @Environment(\.userInterfaceIdiom)
+    private var userInterfaceIdiom
+
     @EnvironmentObject
     private var packageContext: PackageContext
 
@@ -66,6 +69,17 @@ struct RootView: View {
             return true
         }
         return false
+    }
+
+    /// A sheet or window reports no bottom safe area, so the footer needs a minimum of its own.
+    static func stickyFooterBottomPadding(safeAreaBottom: CGFloat, idiom: UserInterfaceIdiom) -> CGFloat {
+        switch idiom {
+        case .pad, .mac, .vision:
+            return max(safeAreaBottom, Constants.minimumFooterBottomPadding)
+        case .phone, .watch, .unknown:
+            // Always full screen.
+            return safeAreaBottom
+        }
     }
 
     var body: some View {
@@ -116,7 +130,15 @@ struct RootView: View {
                     StackComponentView(
                         viewModel: stickyFooterViewModel.stackViewModel,
                         onDismiss: onDismiss,
-                        additionalPadding: EdgeInsets(top: 0, leading: 0, bottom: safeAreaInsets.bottom, trailing: 0)
+                        additionalPadding: EdgeInsets(
+                            top: 0,
+                            leading: 0,
+                            bottom: Self.stickyFooterBottomPadding(
+                                safeAreaBottom: safeAreaInsets.bottom,
+                                idiom: self.userInterfaceIdiom
+                            ),
+                            trailing: 0
+                        )
                     )
                     .fixedSize(horizontal: false, vertical: true)
                     .onSizeChange { overlaidFooterHeight = $0.height }
@@ -297,7 +319,7 @@ private enum RootViewPreviewData {
                     ))
                 ],
                 dimension: .vertical(.center, .start),
-                size: .init(width: .fill, height: .fit),
+                size: .init(width: .fill, height: .fit(nil)),
                 spacing: 12,
                 backgroundColor: .init(light: .hex("#FFFFFF")),
                 padding: .init(top: 28, bottom: 28, leading: 24, trailing: 24),
@@ -413,7 +435,7 @@ private enum RootViewPreviewData {
             ))
         ],
         dimension: .vertical(.center, .start),
-        size: .init(width: .fill, height: .fit),
+        size: .init(width: .fill, height: .fit(nil)),
         spacing: 0
     )
 

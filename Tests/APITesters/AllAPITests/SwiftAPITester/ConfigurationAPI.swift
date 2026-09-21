@@ -6,7 +6,7 @@
 //
 
 import Foundation
-@_spi(Experimental) import RevenueCat
+@_spi(Internal) import RevenueCat
 
 func checkConfigurationAPI() {
     let builder = Configuration
@@ -24,6 +24,7 @@ func checkConfigurationAPI() {
         .with(entitlementVerificationMode: .informational)
         .with(automaticDeviceIdentifierCollectionEnabled: true)
         .with(iamEnabled: false)
+        .with(iamEnabled: false, keychainAccessGroup: "access_group")
         .with(preferredUILocaleOverride: "de_DE")
         .with(preferredUILocaleOverride: nil)
 
