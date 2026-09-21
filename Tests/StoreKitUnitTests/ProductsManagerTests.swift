@@ -229,6 +229,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
     }
 
     func testClearCacheAfterStorefrontChangesSK1() async throws {
+        try AvailabilityChecks.switchingStorefrontWithSKTestWorksOrSkipTest()
         let manager = self.createManager(storeKitVersion: .storeKit1)
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
@@ -258,6 +259,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testInvalidateAndReFetchCachedProductsAfterStorefrontChangesSK2() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        try AvailabilityChecks.switchingStorefrontWithSKTestWorksOrSkipTest()
 
         let manager = self.createManager(storeKitVersion: .storeKit2)
 

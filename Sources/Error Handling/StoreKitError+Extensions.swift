@@ -46,6 +46,11 @@ extension StoreKitError: PurchasesErrorConvertible {
             /// so we can't extract any additional information like we do on `SKError.toPurchasesErrorCode`
             return ErrorUtils.storeProblemError(error: self)
 
+        #if compiler(>=6.4)
+        case .invalidPresentationContext:
+            return ErrorUtils.storeProblemError(error: self)
+        #endif
+
         @unknown default:
             return ErrorUtils.unknownError(error: self)
         }
@@ -70,6 +75,11 @@ extension StoreKitError: PurchasesErrorConvertible {
         // StoreKitError.unsupported was introduced in iOS 18.4, which shipped with Xcode 16.3 beta 1 / Swift 6.1
         case .unsupported:
             return "unsupported"
+        #endif
+
+        #if compiler(>=6.4)
+        case .invalidPresentationContext:
+            return "invalid_presentation_context"
         #endif
 
         @unknown default:
