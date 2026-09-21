@@ -463,7 +463,7 @@ private extension View {
                 )
             )
         case .fill:
-            self.frame(maxWidth: .infinity)
+            self.frame(minWidth: 0, maxWidth: .infinity)
         case .fixed(let value):
             self.frame(width: CGFloat(value))
         case .relative:
@@ -486,7 +486,7 @@ private extension View {
                 )
             )
         case .fill:
-            self.frame(maxHeight: .infinity)
+            self.frame(minHeight: 0, maxHeight: .infinity)
         case .fixed(let value):
             self.frame(height: CGFloat(value))
         case .relative:

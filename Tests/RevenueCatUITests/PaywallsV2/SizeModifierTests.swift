@@ -65,6 +65,27 @@ final class SizeModifierTests: TestCase {
         XCTAssertEqual(Self.fittingSize(of: view, in: .init(width: 100, height: 100)).width, 120)
     }
 
+    func testFillDoesNotGrowToOversizedChild() {
+        let view = Color.clear
+            .frame(width: 500, height: 500)
+            .size(.init(width: .fill, height: .fill))
+
+        XCTAssertEqual(
+            Self.fittingSize(of: view, in: .init(width: 100, height: 100)),
+            .init(width: 100, height: 100)
+        )
+    }
+
+    func testFillParentDoesNotGrowToChildMinimum() {
+        let child = Color.clear
+            .size(.init(width: .fill(.init(min: 120, max: nil)), height: .fixed(10)))
+        let parent = child
+            .size(.init(width: .fill, height: .fixed(10)))
+
+        XCTAssertEqual(Self.fittingSize(of: child, in: .init(width: 100, height: 100)).width, 120)
+        XCTAssertEqual(Self.fittingSize(of: parent, in: .init(width: 100, height: 100)).width, 100)
+    }
+
     func testMinimumTakesPrecedenceOverMaximum() {
         let view = Color.clear
             .size(
