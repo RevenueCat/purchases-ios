@@ -19,6 +19,8 @@ import SwiftUI
 
 // swiftlint:disable file_length
 
+private struct TerminalOfferingWorkflowError: Error {}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class PurchaseHandler: ObservableObject {
 
@@ -614,6 +616,8 @@ extension PurchaseHandler {
             )
 
             return .init(offering: context.initialOffering, workflowContext: context)
+        } catch is TerminalOfferingWorkflowError {
+            return .init(offering: offering, workflowContext: nil)
         } catch {
             // An offering without a workflow renders the default paywall, matching the legacy path.
             // Other failures — including a mapped workflow whose item or blob failed to resolve —
@@ -679,6 +683,9 @@ extension PurchaseHandler {
                 stepId: workflow.initialStepId,
                 workflowId: workflow.id
             )
+        }
+        guard !step.isOfferingStep else {
+            throw TerminalOfferingWorkflowError()
         }
         guard let screenID = step.screenId else {
             throw PaywallError.workflowInitialStepMissingScreenIdentifier(

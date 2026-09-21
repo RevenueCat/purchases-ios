@@ -115,6 +115,7 @@ class BasePurchasesTests: TestCase {
                                                        transactionFetcher: self.mockTransactionFetcher,
                                                        transactionPoster: self.transactionPoster,
                                                        systemInfo: self.systemInfo)
+        self.customerInfoManager.currentUserProvider = self.identityManager
         self.mockOfferingsManager = MockOfferingsManager(deviceCache: self.deviceCache,
                                                          operationDispatcher: self.mockOperationDispatcher,
                                                          systemInfo: self.systemInfo,
@@ -593,6 +594,7 @@ extension BasePurchasesTests {
         var postedObserverMode: Bool?
         var postedInitiationSource: PostReceiptSource.InitiationSource?
         var postReceiptResult: Result<CustomerInfo, BackendError>?
+        var onPostReceipt: (() -> Void)?
         var postedAssociatedTransactionIds: [String?] = []
 
         override func post(receipt: EncodedAppleReceipt,
@@ -631,6 +633,7 @@ extension BasePurchasesTests {
             self.postedObserverMode = observerMode
             self.postedInitiationSource = postReceiptSource.initiationSource
 
+            self.onPostReceipt?()
             completion(self.postReceiptResult ?? .failure(.missingAppUserID()))
         }
 

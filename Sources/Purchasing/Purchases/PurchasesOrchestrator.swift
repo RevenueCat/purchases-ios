@@ -303,22 +303,28 @@ final class PurchasesOrchestrator {
         identifier: String,
         params: CheckpointParams
     ) async throws -> CheckpointResolution {
-        // Tracked before resolving, and regardless of the outcome: the hit is also how the backend learns the
-        // checkpoint exists, so it has to be reported even when nothing is configured for it yet.
-        await self.trackCheckpointHit(identifier: identifier)
+        // Dated before resolving, which awaits the network, and tracked after so the hit carries what it
+        // resolved to.
+        let date = self.dateProvider.now()
 
-        return try await self.checkpointResolver.resolve(
+        let resolved = try await self.checkpointResolver.resolve(
             identifier: identifier,
             params: params
         )
+
+        await self.trackCheckpointHit(identifier: identifier, date: date, resolved: resolved)
+
+        return resolved.resolution
     }
 
-    private func trackCheckpointHit(identifier: String) async {
+    private func trackCheckpointHit(identifier: String, date: Date, resolved: ResolvedCheckpoint) async {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
               let manager = self.eventsManager else { return }
 
         await manager.track(
-            featureEvent: CheckpointEvent.hit(.init(identifier: identifier, date: self.dateProvider.now()))
+            featureEvent: CheckpointEvent.hit(
+                .init(identifier: identifier, date: date, resolved: resolved)
+            )
         )
     }
 
@@ -1646,11 +1652,12 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         )
 
         let transaction = StoreTransaction.from(transaction: transaction)
+        let appUserID = self.appUserID
         let result: Result<CustomerInfo, BackendError> = await self.transactionPoster.handlePurchasedTransaction(
             transaction,
             data: transactionData,
             postReceiptSource: purchaseSource,
-            currentUserID: self.appUserID
+            currentUserID: appUserID
         )
 
         if case let .success(customerInfo) = result {
@@ -1658,7 +1665,7 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
             self.notificationCenter.post(name: .purchaseCompleted, object: purchaseData)
         }
 
-        self.handlePostReceiptResult(result, transactionData: transactionData)
+        self.handlePostReceiptResult(result, transactionData: transactionData, appUserID: appUserID)
 
         if let error = result.error {
             throw error
@@ -1902,6 +1909,7 @@ private extension PurchasesOrchestrator {
                     ) { result in
                         self.handlePostReceiptResult(result,
                                                      transactionData: transactionData,
+                                                     appUserID: currentAppUserID,
                                                      completion: completion)
                     }
                 }
@@ -1989,6 +1997,7 @@ private extension PurchasesOrchestrator {
 
                     self.handlePostReceiptResult(result,
                                                  transactionData: transactionData,
+                                                 appUserID: currentAppUserID,
                                                  completion: completion)
                 }
                 return
@@ -2013,24 +2022,28 @@ private extension PurchasesOrchestrator {
             ) { result in
                 self.handlePostReceiptResult(result,
                                              transactionData: transactionData,
+                                             appUserID: currentAppUserID,
                                              completion: completion)
             }
         }
     }
 
+    /// - Parameter appUserID: the app user ID the receipt was posted for. This must be captured before
+    /// the post starts, since the current user might have changed (e.g. `logIn`) by the time it completes.
     func handlePostReceiptResult(
         _ result: Result<CustomerInfo, BackendError>,
         transactionData: PurchasedTransactionData?,
+        appUserID: String,
         completion: (@Sendable (Result<CustomerInfo, PurchasesError>) -> Void)? = nil
     ) {
         if let customerInfo = try? result.get() {
-            self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: self.appUserID)
+            self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: appUserID)
         }
 
         self.attribution.markSyncedIfNeeded(
             subscriberAttributes: transactionData?.unsyncedAttributes,
             adServicesToken: transactionData?.aadAttributionToken,
-            appUserID: self.appUserID,
+            appUserID: appUserID,
             error: result.error
         )
 
@@ -2059,15 +2072,16 @@ private extension PurchasesOrchestrator {
             )
             let purchaseSource = self.purchaseSource(for: purchasedTransaction.productIdentifier,
                                                      restored: restored)
+            let appUserID = self.appUserID
 
             self.transactionPoster.handlePurchasedTransaction(
                 purchasedTransaction,
                 data: transactionData,
                 postReceiptSource: purchaseSource,
-                currentUserID: self.appUserID
+                currentUserID: appUserID
             ) { result in
 
-                self.handlePostReceiptResult(result, transactionData: transactionData)
+                self.handlePostReceiptResult(result, transactionData: transactionData, appUserID: appUserID)
 
                 if let completion = self.getAndRemovePurchaseCompletedCallback(forTransaction: purchasedTransaction) {
                     self.operationDispatcher.dispatchOnMainActor {
@@ -2416,15 +2430,16 @@ extension PurchasesOrchestrator {
         )
         let purchaseSource: PostReceiptSource = .init(isRestore: self.allowSharingAppStoreAccount,
                                                       initiationSource: initiationSource)
+        let appUserID = self.appUserID
 
         let result = await self.transactionPoster.handlePurchasedTransaction(
             transaction,
             data: transactionData,
             postReceiptSource: purchaseSource,
-            currentUserID: self.appUserID
+            currentUserID: appUserID
         )
 
-        self.handlePostReceiptResult(result, transactionData: transactionData)
+        self.handlePostReceiptResult(result, transactionData: transactionData, appUserID: appUserID)
 
         return try result
             .mapError(\.asPurchasesError)
