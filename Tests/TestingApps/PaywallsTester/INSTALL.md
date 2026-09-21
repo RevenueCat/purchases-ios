@@ -263,6 +263,20 @@ Three things worth knowing if you adapt it:
 Each run is a fresh Astra conversation. Turns chain by re-seeding from the current
 paywall rather than by session id, which is the trade-off the eval route makes.
 
+## 7. Optional: install the skill
+
+`skills/load-paywall/SKILL.md` is the day-to-day workflow written for an agent.
+It ships here rather than in `.claude/`, because this repo does not accept
+committed AI tool configuration. Link it in to have it load automatically:
+
+```bash
+mkdir -p ~/.claude/skills
+ln -s "$PWD/skills/load-paywall" ~/.claude/skills/load-paywall
+```
+
+A symlink rather than a copy, so it tracks the branch. Without this the file is
+still perfectly readable; the only thing you lose is automatic loading.
+
 ## Reading a render correctly
 
 - The harness draws exactly one thing on the paywall: the `…` button, bottom

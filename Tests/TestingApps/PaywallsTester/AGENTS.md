@@ -120,19 +120,31 @@ Gotchas:
 
 ## Editing the loaded JSON
 
-Anything that writes the file works, and the app reloads on its own:
+Anything that writes the file works, and the app reloads on its own. But once a
+paywall is loaded, **a request to change it means running it through Astra**, not
+hand-editing the document:
 
-- **Claude Code**, pointed at the watch folder's `live.json`. No services, no
-  credentials. This is the simplest path.
-- **Astra**, via `scripts/astraedit "<prompt>"`. Needs `ASTRA_DIR` pointing at
-  `packages/astra` in a checkout of RevenueCat/agents, plus a small patch there;
-  see INSTALL.md. It runs through the eval harness rather than Astra's editor API,
-  because that endpoint wants a dashboard cookie even against a local server while
-  eval cases carry their own `feature_flags` and `paywall_size` inline.
+```bash
+scripts/astraedit "<the user's request, verbatim>"
+```
 
-  Worth remembering: Astra judges its own output against the bundled **web**
-  renderer, not the iOS one, so it can be confidently wrong about what ships.
-  That divergence is exactly what this harness exists to show.
+That is the point of the setup. Astra judges its own output against the bundled
+**web** renderer, so it can be confidently wrong about what iOS ships, and this
+harness exists to show that divergence. Hand-editing the JSON tests only your own
+reading of the schema instead, which is not what the user is looking at. Pass the
+request through as phrased rather than translating it into schema terms first,
+since how Astra reads plain language is part of what is being tested.
+
+`astraedit` needs `ASTRA_DIR` pointing at `packages/astra` in a checkout of
+RevenueCat/agents, plus a small addition described in INSTALL.md. It runs through
+the eval harness rather than Astra's editor API, because that endpoint wants a
+dashboard cookie even against a local server, while eval cases carry their own
+`feature_flags` and `paywall_size` inline. Each run is a fresh conversation:
+turns chain by re-seeding from the current paywall, not by session id.
+
+Editing `paywall-live/live.json` directly, with Claude Code or by hand, is the
+fallback when Astra is not set up, when a specific JSON edit is asked for, or when
+building a probe to test a layout rule rather than a design.
 
 ## Always report what changed in the JSON
 
