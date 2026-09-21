@@ -44,9 +44,7 @@ extension OfflineStoreKit2IntegrationTests {
 
         try await self.purchaseBillingPlanProductWhileOffline(
             Self.productIDWithBillingPlans,
-            expectedStoreProductIdentifier: Self.productIDWithBillingPlans,
-            expectedEntitlementIdentifier: "almost_pro",
-            shouldCheckEntitlement: true
+            expectedEntitlementIdentifier: "almost_pro"
         )
     }
 
@@ -55,30 +53,20 @@ extension OfflineStoreKit2IntegrationTests {
 
         try await self.purchaseBillingPlanProductWhileOffline(
             "\(Self.productIDWithBillingPlans):monthly",
-            expectedStoreProductIdentifier: "\(Self.productIDWithBillingPlans):monthly",
-            expectedEntitlementIdentifier: "pro_cat",
-
-            // There's a bug when using SKTestSession where if you purchase a monthly
-            // billing plan, the resulting transaction contains the upFront billing plan on it.
-            // Because of this, the backend will unlock the entitlement for the upFront billing plan
-            // instead of the correct billing plan. This can be removed once the bug is resolved.
-            // See Feedback FB22925515.
-            shouldCheckEntitlement: false
+            expectedEntitlementIdentifier: "pro_cat"
         )
     }
 
     private func purchaseBillingPlanProductWhileOffline(
         _ productIdentifier: String,
-        expectedStoreProductIdentifier: String,
         expectedEntitlementIdentifier: String,
-        shouldCheckEntitlement: Bool,
         file: FileString = #file,
         line: UInt = #line
     ) async throws {
         self.logger.clearMessages()
 
         let product = try await self.product(productIdentifier)
-        expect(product.id) == expectedStoreProductIdentifier
+        expect(product.id) == productIdentifier
         expect(product.productIdentifier) == Self.productIDWithBillingPlans
 
         self.serverDown()
@@ -87,12 +75,10 @@ extension OfflineStoreKit2IntegrationTests {
         let transaction = try XCTUnwrap(purchaseData.transaction)
 
         self.verifyCustomerInfoWasComputedOffline(customerInfo: purchaseData.customerInfo, file: file, line: line)
-        expect(purchaseData.customerInfo.allPurchasedProductIdentifiers).to(contain(Self.productIDWithBillingPlans))
+        expect(purchaseData.customerInfo.allPurchasedProductIdentifiers).to(contain(productIdentifier))
         expect(transaction.productIdentifier) == Self.productIDWithBillingPlans
+        expect(purchaseData.customerInfo.entitlements[expectedEntitlementIdentifier]?.isActive) == true
 
-        if shouldCheckEntitlement {
-            expect(purchaseData.customerInfo.entitlements[expectedEntitlementIdentifier]?.isActive) == true
-        }
 
         self.verifyNoTransactionsWereFinished(file: file, line: line)
     }

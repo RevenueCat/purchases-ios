@@ -163,9 +163,7 @@ extension StoreKit2IntegrationTests {
 
         try await self.purchaseBillingPlanProduct(
             Self.productIDWithBillingPlans,
-            expectedStoreProductIdentifier: Self.productIDWithBillingPlans,
-            expectedEntitlementIdentifier: "almost_pro",
-            shouldCheckEntitlement: true
+            expectedEntitlementIdentifier: "almost_pro"
         )
     }
 
@@ -174,28 +172,18 @@ extension StoreKit2IntegrationTests {
 
         try await self.purchaseBillingPlanProduct(
             "\(Self.productIDWithBillingPlans):monthly",
-            expectedStoreProductIdentifier: "\(Self.productIDWithBillingPlans):monthly",
-            expectedEntitlementIdentifier: "pro_cat",
-
-            // There's a bug when using SKTestSession where if you purchase a monthly
-            // billing plan, the resulting transaction contains the upFront billing plan on it.
-            // Because of this, the backend will unlock the entitlement for the upFront billing plan
-            // instead of the correct billing plan. This can be removed once the bug is resolved.
-            // See Feedback FB22925515.
-            shouldCheckEntitlement: false
+            expectedEntitlementIdentifier: "pro_cat"
         )
     }
 
     private func purchaseBillingPlanProduct(
         _ productIdentifier: String,
-        expectedStoreProductIdentifier: String,
         expectedEntitlementIdentifier: String,
-        shouldCheckEntitlement: Bool,
         file: FileString = #file,
         line: UInt = #line
     ) async throws {
         let product = try await self.product(productIdentifier)
-        expect(product.id) == expectedStoreProductIdentifier
+        expect(product.id) == productIdentifier
         expect(product.productIdentifier) == Self.productIDWithBillingPlans
 
         let result = try await self.purchase(product: product, file: file, line: line)
@@ -203,12 +191,9 @@ extension StoreKit2IntegrationTests {
 
         self.verifyCustomerInfoWasNotComputedOffline(customerInfo: result.customerInfo, file: file, line: line)
 
-        expect(result.customerInfo.allPurchasedProductIdentifiers).to(contain(Self.productIDWithBillingPlans))
+        expect(result.customerInfo.allPurchasedProductIdentifiers).to(contain(productIdentifier))
         expect(transaction.productIdentifier) == Self.productIDWithBillingPlans
-
-        if shouldCheckEntitlement {
-            expect(result.customerInfo.entitlements[expectedEntitlementIdentifier]?.isActive) == true
-        }
+        expect(result.customerInfo.entitlements[expectedEntitlementIdentifier]?.isActive) == true
 
         self.verifyAnyTransactionWasFinished(count: nil, file: file, line: line)
     }
