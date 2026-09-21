@@ -15,15 +15,60 @@ updates. Nothing is rebuilt between edits.
 | Load any dashboard paywall by URL | `scripts/loadpaywall` |
 | Edit the loaded paywall in English | Claude Code, or `scripts/astraedit` |
 
+## Which SDK you are testing
+
+This harness is just a screen; it works on any branch of `purchases-ios`. But the
+branch it ships on is not main, and that is deliberate.
+
+`vinh/harness-minmax-fill` sits on top of **`jzdesign/fill-min-max`** (PR #7770),
+the **Fill-only** version of responsive min/max sizing. On that branch, `min` and
+`max` clamps work on `fill` sizes and are **silently dropped on `fit` sizes**. So a
+component sized `{"type": "fit", "max": 300}` renders as a plain `fit` with no cap,
+and nothing warns you.
+
+That matters when reading a render, because the backend and Astra currently accept
+clamps on `fit`. A cap you author may simply not exist on this branch.
+
+The other variant is `jzdesign/min-max-iteration` (PR #7693), which supports clamps
+on both `fit` and `fill` but needs `ENABLE_PAYWALL_MIN_MAX_SIZING` in
+`Local.xcconfig` (see step 2). To test against that one instead, or against plain
+`main`, copy `LiveJSONPaywallView.swift`, this file, and `scripts/` onto that
+branch. Nothing in the harness depends on either.
+
 ## Prerequisites
+
+**Required**
 
 - Xcode 26 or newer, with the Mac Catalyst SDK. `xcodebuild -version` should work.
 - Python 3.9+.
-- **mafdet CLI**, only if you want to load paywalls from the dashboard by URL.
-  Installed through mise at RevenueCat; `mafdet auth login` to sign in. Skip this
-  if you will supply JSON files by hand.
-- A checkout of **RevenueCat/agents**, only if you want Astra to do the editing.
-  Not needed otherwise.
+
+**Optional, and worth asking the user about before setting up**
+
+An agent following this file should ask which of these the user wants rather than
+installing both. Neither is needed to run the harness.
+
+1. **The mafdet CLI**, to load real paywalls from a dashboard URL. Without it you
+   supply JSON files by hand, which works fine if you already have exports or are
+   writing paywalls from scratch. Ask: *do you want to pull paywalls straight from
+   the dashboard?*
+
+   It is a RevenueCat-internal tool distributed through
+   [mise](https://mise.jdx.dev):
+
+   ```bash
+   brew install mise                              # if you do not have it
+   mise use -g github:RevenueCat/mafdet-cli@latest
+   mafdet auth login
+   ```
+
+   Note the repo is `mafdet-cli`; plain `mafdet` is the server behind it and is not
+   what you want. Auth expires roughly hourly, so `mafdet auth login` again when a
+   fetch returns 401.
+
+2. **A checkout of RevenueCat/agents**, to let Astra make the edits. It also needs
+   a twelve-line addition described in step 6. Ask: *do you want Astra doing the
+   editing, or is Claude Code editing the JSON enough?* Claude Code needs no setup
+   at all and is what most people should start with.
 
 ## 1. Check out the SDK
 
@@ -34,7 +79,7 @@ engine you want to test.
 ```bash
 git clone https://github.com/RevenueCat/purchases-ios.git
 cd purchases-ios
-git checkout <branch>
+git checkout vinh/harness-minmax-fill
 ```
 
 To compare two SDK branches side by side, use `git worktree add` rather than a
