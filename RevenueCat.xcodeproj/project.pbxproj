@@ -1584,7 +1584,6 @@
 		FDAC7B5C2CF100000DFC0D9 /* WinBackOfferEligibilityCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAC7B5B2CF100000DFC0D9 /* WinBackOfferEligibilityCalculatorTests.swift */; };
 		FDAC7B572CD3FD8500DFC0D9 /* MockWinBackOfferEligibilityCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAC7B562CD3FD8500DFC0D9 /* MockWinBackOfferEligibilityCalculator.swift */; };
 		FDAC7B582CD3FD8500DFC0D9 /* MockWinBackOfferEligibilityCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAC7B562CD3FD8500DFC0D9 /* MockWinBackOfferEligibilityCalculator.swift */; };
-		FDAC7B592CF000000DFC0D9 /* WinBackEligibilityAdapters.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAC7B5A2CF000000DFC0D9 /* WinBackEligibilityAdapters.swift */; };
 		FDAC7B5B2CD4085800DFC0D9 /* PurchasesWinBackOfferTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDAC7B5A2CD4085800DFC0D9 /* PurchasesWinBackOfferTests.swift */; };
 		FDC4B60B2FCE1122001E5F96 /* InstallmentsInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDC4B60A2FCE1122001E5F96 /* InstallmentsInfoTests.swift */; };
 		FDC4BBBD2FB4B904000AC203 /* BillingPlanType.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDC4BBBC2FB4B904000AC203 /* BillingPlanType.swift */; };
@@ -8700,7 +8699,6 @@
 				35E840CE2710E2EB00899AE2 /* MockManageSubscriptionsHelper.swift in Sources */,
 				03A98D322D2441B8009BCA61 /* PaywallDataDecodingTests.swift in Sources */,
 				DB7EA7762F964CA200BCC082 /* WorkflowResponseTests.swift in Sources */,
-				DB7EA7772F964CA200BCC082 /* WorkflowDetailProcessorTests.swift in Sources */,
 				858195FCF0E04E3CAA99F9BB /* RemoteConfigurationDecodingTests.swift in Sources */,
 				FEDA000000000000000000B1 /* WeightedSourceSelectorTests.swift in Sources */,
 				FEDA000000000000000000D1 /* RemoteConfigSourceProviderTests.swift in Sources */,
