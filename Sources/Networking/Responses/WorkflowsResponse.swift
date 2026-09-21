@@ -54,11 +54,6 @@ import Foundation
 
 }
 
-@_spi(Internal) public enum WorkflowTriggerAction: Equatable, Sendable {
-    case step(stepId: String)
-    case unknown
-}
-
 /// Step `screen_type` classification (returned by the backend under `metadata.screen_type`), used to
 /// decide which workflow steps report a paywall impression.
 @_spi(Internal) public enum WorkflowScreenType {
@@ -86,6 +81,9 @@ import Foundation
     public var stepTriggers: [WorkflowTrigger] { triggers }
     public var stepTriggerActions: [String: WorkflowTriggerAction] { triggerActions }
     let metadata: [String: AnyDecodable]?
+
+    /// Whether this terminal step returns an offering for app-owned presentation.
+    @_spi(Internal) public var isOfferingStep: Bool { self.type == "offering" }
 
     /// The step's `screen_type` from the backend (`metadata.screen_type`). `nil` = untagged (older
     /// workflows), `[]` = tagged with no known type; the distinction drives paywall-event gating (see
@@ -282,43 +280,11 @@ import Foundation
 
 // MARK: - Codable
 
-extension WorkflowTrigger: Codable, Equatable, Sendable {}
+extension WorkflowTrigger: Decodable, Equatable, Sendable {}
 
-extension WorkflowTriggerAction: Codable {
+extension WorkflowStep: Decodable, Equatable, Sendable {}
 
-    private enum CodingKeys: String, CodingKey {
-        case type
-        case stepId
-    }
-
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        let type = try container.decode(String.self, forKey: .type)
-        switch type {
-        case "step":
-            let stepId = try container.decode(String.self, forKey: .stepId)
-            self = .step(stepId: stepId)
-        default:
-            Logger.warn(Strings.backendError.unknown_workflow_trigger_action_type(type: type))
-            self = .unknown
-        }
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        switch self {
-        case .step(let stepId):
-            try container.encode("step", forKey: .type)
-            try container.encode(stepId, forKey: .stepId)
-        case .unknown:
-            try container.encode("unknown", forKey: .type)
-        }
-    }
-
-}
-extension WorkflowStep: Codable, Equatable, Sendable {}
-
-extension WorkflowScreen: Codable, Equatable, Sendable {
+extension WorkflowScreen: Decodable, Equatable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case name
@@ -343,7 +309,7 @@ extension WorkflowScreen: Codable, Equatable, Sendable {
 
 }
 
-extension PublishedWorkflow: Codable, Equatable, Sendable {
+extension PublishedWorkflow: Decodable, Equatable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case id
@@ -368,20 +334,8 @@ extension PublishedWorkflow: Codable, Equatable, Sendable {
         self.metadata = try container.decodeIfPresent([String: AnyDecodable].self, forKey: .metadata)
     }
 
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(self.id, forKey: .id)
-        try container.encode(self.displayName, forKey: .displayName)
-        try container.encode(self.initialStepId, forKey: .initialStepId)
-        try container.encodeIfPresent(self.singleStepFallbackId, forKey: .singleStepFallbackId)
-        try container.encode(self.steps, forKey: .steps)
-        try container.encode(self.screens, forKey: .screens)
-        try container.encodeIfPresent(self.contentMaxWidth, forKey: .contentMaxWidth)
-        try container.encodeIfPresent(self.metadata, forKey: .metadata)
-    }
-
 }
 
-extension WorkflowDataResult: Codable, Equatable, Sendable {}
+extension WorkflowDataResult: Decodable, Equatable, Sendable {}
 
 extension PublishedWorkflow: HTTPResponseBody {}
