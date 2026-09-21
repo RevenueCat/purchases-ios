@@ -242,7 +242,7 @@ GEM
       xcpretty-travis-formatter (>= 0.0.3, < 2.0.0)
     fastlane-plugin-emerge (0.11.0)
       faraday (~> 2.14, >= 2.14.1)
-    fastlane-plugin-sentry (2.6.3)
+    fastlane-plugin-sentry (2.7.0)
       os (~> 1.1, >= 1.1.4)
     fastlane-sirp (1.1.0)
     ffi (1.17.4)
