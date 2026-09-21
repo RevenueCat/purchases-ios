@@ -20,7 +20,6 @@ import SwiftUI
 struct ContentView: View {
 
     @ObservedObject var model: CheckpointDemoModel
-    @ObservedObject var analyticsTracker: GlobalCheckpointAnalyticsTracker
     @StateObject private var customVariables = CustomVariables()
     @State private var isSubscriberAttributeEditorPresented = false
 
@@ -36,10 +35,6 @@ struct ContentView: View {
                     Label("Custom variables", systemImage: "slider.horizontal.3")
                 }
 
-            self.listenerLog
-                .tabItem {
-                    Label("Listener", systemImage: "waveform.path.ecg")
-                }
         }
         .sheet(isPresented: self.$isSubscriberAttributeEditorPresented) {
             SubscriberAttributeEditor()
@@ -68,7 +63,7 @@ struct ContentView: View {
             List {
                 Section("App-driven use cases") {
                     NavigationLink {
-                        HardPaywallUseCaseView(customVariables: self.customVariables)
+                        HardPaywallUseCaseView(model: self.model, customVariables: self.customVariables)
                     } label: {
                         DemoLabel(
                             title: "Hard paywall",
@@ -78,7 +73,7 @@ struct ContentView: View {
                     }
 
                     NavigationLink {
-                        SoftPaywallUseCaseView(customVariables: self.customVariables)
+                        SoftPaywallUseCaseView(model: self.model, customVariables: self.customVariables)
                     } label: {
                         DemoLabel(
                             title: "Soft paywall",
@@ -88,7 +83,7 @@ struct ContentView: View {
                     }
 
                     NavigationLink {
-                        OnboardingUseCaseView(customVariables: self.customVariables)
+                        OnboardingUseCaseView(model: self.model, customVariables: self.customVariables)
                     } label: {
                         DemoLabel(
                             title: "Onboarding",
@@ -98,7 +93,7 @@ struct ContentView: View {
                     }
 
                     NavigationLink {
-                        EntitlementGateUseCaseView(customVariables: self.customVariables)
+                        EntitlementGateUseCaseView(model: self.model, customVariables: self.customVariables)
                     } label: {
                         DemoLabel(
                             title: "Entitlement gate",
@@ -121,50 +116,25 @@ struct ContentView: View {
                     }
                 }
 
-                Section("Checkpoint outcomes") {
-                    DemoButton(
-                        title: "Unknown checkpoint",
-                        subtitle: "An unknown identifier resolves without presenting UI.",
-                        systemImage: "arrow.forward"
-                    ) {
-                        Task { @MainActor in
-                            do {
-                                let result = try await Purchases.shared.checkpoint(
-                                    "this-checkpoint-does-not-exist",
-                                    customVariables: self.customVariables.checkpointCustomVariables
-                                )
-                                self.model.showOutcome(
-                                    result,
-                                    checkpointIdentifier: "this-checkpoint-does-not-exist"
-                                )
-                            } catch {
-                                self.model.showError(error)
-                            }
+                Section("Offering-step presenter") {
+                    Picker("Presentation mode", selection: self.$model.paywallPresenterMode) {
+                        ForEach(PaywallPresenterMode.allCases) { mode in
+                            Text(mode.title).tag(mode)
                         }
                     }
+                    .pickerStyle(.segmented)
 
-                    DemoButton(
-                        title: "Simulated error",
-                        subtitle: "The checkpoint call throws a configuration error.",
-                        systemImage: "exclamationmark.triangle"
-                    ) {
-                        Task { @MainActor in
-                            do {
-                                let result = try await Purchases.shared.checkpoint(
-                                    "error_checkpoint",
-                                    customVariables: self.customVariables.checkpointCustomVariables
-                                )
-                                self.model.showOutcome(result, checkpointIdentifier: "error_checkpoint")
-                            } catch {
-                                self.model.showError(error)
-                            }
-                        }
-                    }
+                    Text(self.model.paywallPresenterMode.description)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
 
             }
             .navigationTitle("Checkpoint Tester")
             .subscriberAttributeToolbar(isPresented: self.$isSubscriberAttributeEditorPresented)
+            .onChange(of: self.model.paywallPresenterMode) { _ in
+                self.model.configurePaywallPresenter()
+            }
         }
     }
 
@@ -196,39 +166,6 @@ struct ContentView: View {
                 }
             }
             .navigationTitle("Custom variables")
-            .subscriberAttributeToolbar(isPresented: self.$isSubscriberAttributeEditorPresented)
-        }
-    }
-
-    private var listenerLog: some View {
-        NavigationStack {
-            List {
-                Section {
-                    if self.analyticsTracker.events.isEmpty {
-                        Text("Global listener events will appear here as checkpoints run.")
-                            .foregroundStyle(.secondary)
-                    }
-
-                    ForEach(
-                        Array(self.analyticsTracker.events.enumerated()),
-                        id: \.offset
-                    ) { _, event in
-                        Text(event)
-                            .font(.caption.monospaced())
-                    }
-
-                    if !self.analyticsTracker.events.isEmpty {
-                        Button("Clear event log", role: .destructive) {
-                            self.analyticsTracker.clearEvents()
-                        }
-                    }
-                } header: {
-                    Text("Global checkpoint listener")
-                } footer: {
-                    Text("A global analytics tracker can observe checkpoint hits and completed results here.")
-                }
-            }
-            .navigationTitle("Global Listener")
             .subscriberAttributeToolbar(isPresented: self.$isSubscriberAttributeEditorPresented)
         }
     }

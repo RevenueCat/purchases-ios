@@ -16,7 +16,7 @@ import Foundation
 
 struct DimensionSnapshot: Equatable, Sendable {
 
-    let values: [String: RulesEngine.Value]
+    let values: RulesEngine.ObjectValue
     let evaluationDate: Date
 }
 
@@ -58,7 +58,7 @@ struct DimensionResolver: Sendable {
     ) async throws -> DimensionSnapshot {
         let appUserID = self.currentAppUserIDProvider()
         let date = self.dateProvider.now()
-        var values: [String: RulesEngine.Value] = [
+        var values: RulesEngine.ObjectValue = [
             Self.evaluatedAtKey: .int(Int64(date.timeIntervalSince1970 * 1_000))
         ]
 
@@ -107,7 +107,7 @@ struct DimensionResolver: Sendable {
     private static func addPerEvaluationValues(
         _ dimensions: [String: DimensionValue],
         root: String,
-        to values: inout [String: RulesEngine.Value]
+        to values: inout RulesEngine.ObjectValue
     ) {
         let converted = DimensionValueConverter.convert(dimensions, parentPath: root)
         if !converted.isEmpty {
@@ -125,8 +125,8 @@ private enum DimensionValueConverter {
     static func convert(
         _ dimensions: [String: DimensionValue],
         parentPath: String
-    ) -> [String: RulesEngine.Value] {
-        return dimensions.reduce(into: [:]) { result, dimension in
+    ) -> RulesEngine.ObjectValue {
+        return dimensions.reduce(into: RulesEngine.ObjectValue()) { result, dimension in
             let (name, value) = dimension
             guard Self.isValidName(name) else {
                 Logger.warn(Strings.localRules.invalidDimensionName(name, parentPath: parentPath))

@@ -32,12 +32,7 @@ struct SizeModifier: ViewModifier {
 
 extension View {
 
-    /// Fill takes the size the parent proposes and clamps it to the configured min/max.
-    ///
-    /// `minWidth: 0` matters: without an explicit minimum, a flexible frame reports at least its child's size,
-    /// so a child that is larger than the available space (e.g. a Fill(min:) that cannot be satisfied) would
-    /// widen every Fill ancestor up to the paywall root. With it, the frame keeps the parent's size and the
-    /// oversized child overflows in place, matching flexbox.
+    /// A zero minimum prevents oversized children from widening Fill ancestors.
     @ViewBuilder
     func applyWidth(_ sizeConstraint: PaywallComponent.SizeConstraint, alignment: Alignment) -> some View {
         switch sizeConstraint {
