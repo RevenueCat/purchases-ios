@@ -17,15 +17,16 @@ import Foundation
 /// presenter decides how to show it.
 @_spi(Internal) public struct ResolvedAdStep: Equatable, Sendable {
 
-    /// The ad unit identifier configured for this step.
-    public let adUnitId: String
+    /// Identifies the ad to load for this step, in whatever form ``mediator`` expects (an AdMob ad unit id, for
+    /// example).
+    public let adIdentifier: String
 
-    /// The mediation network configured to serve this ad unit.
+    /// The mediation network configured to serve ``adIdentifier``.
     public let mediator: MediatorName
 
     /// Creates a resolved ad step.
-    @_spi(Internal) public init(adUnitId: String, mediator: MediatorName) {
-        self.adUnitId = adUnitId
+    @_spi(Internal) public init(adIdentifier: String, mediator: MediatorName) {
+        self.adIdentifier = adIdentifier
         self.mediator = mediator
     }
 

@@ -53,10 +53,11 @@ public final class AdPresentationParams {
     /// The custom variables supplied to the checkpoint.
     public let customVariables: [String: CustomVariableValue]
 
-    /// The ad unit identifier configured for the checkpoint-selected ad step.
-    public let adUnitId: String
+    /// Identifies the ad to load for the checkpoint-selected ad step, in whatever form ``mediator`` expects
+    /// (an AdMob ad unit id, for example).
+    public let adIdentifier: String
 
-    /// The mediation network configured to serve ``adUnitId``.
+    /// The mediation network configured to serve ``adIdentifier``.
     public let mediator: MediatorName
 
     /// Creates presentation context for an ad step selected by a checkpoint.
@@ -64,17 +65,17 @@ public final class AdPresentationParams {
     /// - Parameters:
     ///   - checkpointIdentifier: The identifier of the checkpoint that selected the ad step.
     ///   - customVariables: The custom variables supplied to the checkpoint.
-    ///   - adUnitId: The ad unit identifier configured for the ad step.
-    ///   - mediator: The mediation network configured to serve `adUnitId`.
+    ///   - adIdentifier: The identifier of the ad configured for the ad step.
+    ///   - mediator: The mediation network configured to serve `adIdentifier`.
     public init(
         checkpointIdentifier: String,
         customVariables: [String: CustomVariableValue] = [:],
-        adUnitId: String,
+        adIdentifier: String,
         mediator: MediatorName
     ) {
         self.checkpointIdentifier = checkpointIdentifier
         self.customVariables = customVariables
-        self.adUnitId = adUnitId
+        self.adIdentifier = adIdentifier
         self.mediator = mediator
     }
 

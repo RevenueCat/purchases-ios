@@ -870,19 +870,19 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     // MARK: - Terminal ad workflows
 
     func testTerminalAdWorkflowResolvesItsAdWithoutAWorkflowToPresent() async throws {
-        self.stubAdWorkflow(adUnitId: "ad_unit_1", mediator: "admob")
+        self.stubAdWorkflow(adIdentifier: "ad_unit_1", mediator: "admob")
 
         let resolution = try await self.resolve()
 
         let adStep = Self.resolvedAd(resolution)
-        XCTAssertEqual(adStep?.adUnitId, "ad_unit_1")
+        XCTAssertEqual(adStep?.adIdentifier, "ad_unit_1")
         XCTAssertEqual(adStep?.mediator, .adMob)
         XCTAssertNil(Self.resolvedWorkflow(resolution))
     }
 
     func testLowercaseWireMediatorResolvesToCanonicalMediatorName() async throws {
         // The backend serializes the mediator as `admob`; presenters match against `MediatorName.adMob`.
-        self.stubAdWorkflow(adUnitId: "ad_unit_1", mediator: "admob")
+        self.stubAdWorkflow(adIdentifier: "ad_unit_1", mediator: "admob")
 
         let resolution = try await self.resolve()
 
@@ -892,7 +892,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     }
 
     func testCanonicallyCasedMediatorResolvesToCanonicalMediatorName() async throws {
-        self.stubAdWorkflow(adUnitId: "ad_unit_1", mediator: MediatorName.adMob.rawValue)
+        self.stubAdWorkflow(adIdentifier: "ad_unit_1", mediator: MediatorName.adMob.rawValue)
 
         let resolution = try await self.resolve()
 
@@ -900,15 +900,15 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     }
 
     func testUnknownMediatorResolvesAsItsRawValue() async throws {
-        self.stubAdWorkflow(adUnitId: "ad_unit_1", mediator: "Some_Future_Mediator")
+        self.stubAdWorkflow(adIdentifier: "ad_unit_1", mediator: "Some_Future_Mediator")
 
         let resolution = try await self.resolve()
 
         XCTAssertEqual(Self.resolvedAd(resolution)?.mediator, MediatorName(rawValue: "Some_Future_Mediator"))
     }
 
-    func testAdStepWithoutAnAdUnitIdentifierResolvesConfigurationUnavailable() async throws {
-        self.stubAdWorkflow(adUnitId: nil, mediator: "admob")
+    func testAdStepWithoutAnAdIdentifierResolvesConfigurationUnavailable() async throws {
+        self.stubAdWorkflow(adIdentifier: nil, mediator: "admob")
 
         let resolution = try await self.resolve()
 
@@ -916,7 +916,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     }
 
     func testAdStepWithoutAMediatorResolvesConfigurationUnavailable() async throws {
-        self.stubAdWorkflow(adUnitId: "ad_unit_1", mediator: nil)
+        self.stubAdWorkflow(adIdentifier: "ad_unit_1", mediator: nil)
 
         let resolution = try await self.resolve()
 
@@ -925,7 +925,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
 
     func testAdStepMixedWithAnotherStepResolvesConfigurationUnavailable() async throws {
         self.stubAdWorkflow(
-            adUnitId: "ad_unit_1",
+            adIdentifier: "ad_unit_1",
             mediator: "admob",
             extraSteps: ["step_2": WorkflowStep(id: "step_2", type: "screen", screenId: nil)]
         )
@@ -938,7 +938,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     func testUIWorkflowContainingAnAdStepResolvesConfigurationUnavailable() async throws {
         // Initial step is the screen step, so the ad step is an unreachable extra.
         self.stubAdWorkflow(
-            adUnitId: "ad_unit_1",
+            adIdentifier: "ad_unit_1",
             mediator: "admob",
             initialStepID: "step_2",
             extraSteps: ["step_2": WorkflowStep(id: "step_2", type: "screen", screenId: nil)]
@@ -950,7 +950,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     }
 
     private func stubAdWorkflow(
-        adUnitId: String?,
+        adIdentifier: String?,
         mediator: String?,
         initialStepID: String? = nil,
         extraSteps: [String: WorkflowStep] = [:]
@@ -958,8 +958,8 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         let stepID = "step_1"
         var step = WorkflowStep(id: stepID, type: "ad", screenId: nil)
         var paramValues: [String: AnyDecodable] = [:]
-        if let adUnitId {
-            paramValues["ad_unit_id"] = .string(adUnitId)
+        if let adIdentifier {
+            paramValues["ad_identifier"] = .string(adIdentifier)
         }
         if let mediator {
             paramValues["mediator"] = .string(mediator)
