@@ -76,6 +76,11 @@ class StoreKit2TransactionFetcherTests: StoreKitConfigTestCase {
         _ = try await self.createTransaction(productID: Self.product1, finished: true)
         let transaction = try await self.createTransaction(productID: Self.product2, finished: false)
 
+        // `finish()` is eventually consistent on OS 27: the finished transaction can still be
+        // listed in `Transaction.unfinished` for a short while after it returns, which would
+        // otherwise make the fetcher report both transactions here.
+        try await self.waitUntilUnfinishedTransactions(condition: { $0 == 1 }, timeout: .seconds(10))
+
         let result = await self.fetcher.unfinishedVerifiedTransactions
         expect(result) == [transaction]
     }
