@@ -24,6 +24,7 @@ import shutil
 import subprocess
 import tempfile
 import sys
+import time
 
 # The folder the app watches. Defaults to `<repo>/paywall-live`, which is what the
 # harness resolves to when launched without an explicit LIVE_PAYWALL_DIR.
@@ -165,12 +166,78 @@ def build_document(screen_payload):
     return document
 
 
+CATALYST_APP = (REPO_ROOT / ".build-catalyst/Build/Products/Debug-maccatalyst"
+                / "PaywallsTester.app")
+CATALYST_BINARY = CATALYST_APP / "Contents/MacOS/PaywallsTester"
+
+
+def catalyst_running():
+    return subprocess.run(
+        ["pgrep", "-f", "Debug-maccatalyst/PaywallsTester.app/Contents/MacOS"],
+        capture_output=True,
+    ).returncode == 0
+
+
+def build_catalyst():
+    """Build the Mac Catalyst app. Takes a few minutes the first time.
+
+    Ad-hoc signing with the entitlements cleared is deliberate: it drops the app
+    sandbox, which is what lets the app read a watch folder anywhere on disk.
+    """
+    print("  building the Catalyst app (first build takes a few minutes)...")
+    log = REPO_ROOT / ".catalyst-build.log"
+    with log.open("w") as handle:
+        result = subprocess.run(
+            [
+                "xcodebuild",
+                "-project", str(REPO_ROOT / "Tests/TestingApps/PaywallsTester"
+                                / "PaywallsTester.xcodeproj"),
+                # There is no scheme called plain `PaywallsTester`.
+                "-scheme", "PaywallsTester - SK config",
+                "-destination", "platform=macOS,variant=Mac Catalyst",
+                "-derivedDataPath", str(REPO_ROOT / ".build-catalyst"),
+                'CODE_SIGN_IDENTITY=-', "CODE_SIGN_ENTITLEMENTS=", "DEVELOPMENT_TEAM=",
+                "build",
+            ],
+            stdout=handle, stderr=subprocess.STDOUT,
+        )
+    if result.returncode != 0 or not CATALYST_BINARY.is_file():
+        sys.exit(f"  build failed; see {log}")
+
+
+def show_in_catalyst(folder):
+    """Make sure the paywall is actually on screen, building if needed."""
+    if sys.platform != "darwin":
+        return
+    if catalyst_running():
+        print("  Catalyst app already running; it will reload on its own")
+        return
+    if not CATALYST_BINARY.is_file():
+        build_catalyst()
+
+    environment = {**os.environ, "LIVE_PAYWALL_DIR": str(folder)}
+    subprocess.Popen(
+        [str(CATALYST_BINARY)], env=environment,
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        start_new_session=True,
+    )
+    # Only report a launch that actually took; a crash on startup is otherwise silent.
+    for _ in range(40):
+        time.sleep(0.25)
+        if catalyst_running():
+            print("  launched the Catalyst app")
+            return
+    print("  launched, but the app did not come up; run the binary by hand to see why")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("url", help="workflow or paywall builder URL (or project id)")
     parser.add_argument("--screen", help="screen id, when the workflow has more than one")
     parser.add_argument("--list", action="store_true", help="list the workflow's screens and exit")
     parser.add_argument("--raw", action="store_true", help="dump the fetched payload instead of writing")
+    parser.add_argument("--no-launch", action="store_true",
+                        help="do not build or launch the Catalyst app")
     parser.add_argument("--keep", action="store_true",
                         help="leave other .json files in the watch folder instead of archiving them")
     args = parser.parse_args()
@@ -231,7 +298,9 @@ def write_document(document, args, label):
         print(f"  {name}: {target}" + (f"  ({moved} archived)" if moved else ""))
 
     locales = list(document["components_localizations"])
-    print(f"{label} · locales {locales} · reloading in the simulators now")
+    print(f"{label} · locales {locales}")
+    if not args.no_launch:
+        show_in_catalyst(next(iter(WATCH_FOLDERS.values())))
 
 
 if __name__ == "__main__":

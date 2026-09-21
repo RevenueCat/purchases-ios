@@ -174,6 +174,12 @@ also fills in `template_name`, `asset_base_url` and `revision`, which no export
 includes and whose absence makes the SDK fall back to the default template
 *without reporting an error*.
 
+It also makes sure the paywall is actually on screen: if the Catalyst app is
+already running it just reloads, otherwise the app is launched, building it first
+if there is no build yet. So on a machine with the prerequisites in place, step 3
+and step 4 above are optional and this one command is the whole loop. Pass
+`--no-launch` to only write the file.
+
 Set `PAYWALL_LIVE_DIR` to write somewhere other than `<repo>/paywall-live`.
 
 ### Or drop files in by hand
