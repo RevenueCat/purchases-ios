@@ -25,7 +25,6 @@ extension View {
         case let .fit(_, minMax):
             self.applyWidthLimits(minMax, alignment: .center)
         case let .fill(minMax):
-            // See `applyWidth`: `minWidth: 0` keeps an oversized child from widening its ancestors.
             self
                 .frame(minWidth: 0, maxWidth: .infinity)
                 .applyWidthLimits(minMax, alignment: .center)
