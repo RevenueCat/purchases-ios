@@ -163,7 +163,7 @@ extension StoreKit2IntegrationTests {
 
         try await self.purchaseBillingPlanProduct(
             Self.productIDWithBillingPlans,
-            expectedEntitlementIdentifier: "almost_pro"
+            expectedEntitlementIdentifier: "super_premium"
         )
     }
 
@@ -172,7 +172,7 @@ extension StoreKit2IntegrationTests {
 
         try await self.purchaseBillingPlanProduct(
             "\(Self.productIDWithBillingPlans):monthly",
-            expectedEntitlementIdentifier: "pro_cat"
+            expectedEntitlementIdentifier: "premium"
         )
     }
 

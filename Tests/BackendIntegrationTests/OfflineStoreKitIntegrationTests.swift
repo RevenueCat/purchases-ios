@@ -44,7 +44,7 @@ extension OfflineStoreKit2IntegrationTests {
 
         try await self.purchaseBillingPlanProductWhileOffline(
             Self.productIDWithBillingPlans,
-            expectedEntitlementIdentifier: "almost_pro"
+            expectedEntitlementIdentifier: "super_premium"
         )
     }
 
@@ -53,7 +53,7 @@ extension OfflineStoreKit2IntegrationTests {
 
         try await self.purchaseBillingPlanProductWhileOffline(
             "\(Self.productIDWithBillingPlans):monthly",
-            expectedEntitlementIdentifier: "pro_cat"
+            expectedEntitlementIdentifier: "premium"
         )
     }
 
