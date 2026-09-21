@@ -106,7 +106,7 @@
         "name" : "Offer Code Redeem Sheet"
       }
     ],
-    "_timeRate" : 0
+    "_timeRate" : 6
   },
   "subscriptionBundleGroups" : [
 
@@ -448,7 +448,7 @@
               "commitmentDisplayPrice" : "6.00",
               "displayPrice" : "0.5",
               "internalID" : "8BCD7D45",
-              "isEnabled" : false
+              "isEnabled" : true
             }
           ],
           "codeOffers" : [
