@@ -623,6 +623,9 @@
 		EF0100000000000000000032 /* StoreKitExternalPurchaseCustomLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0100000000000000000031 /* StoreKitExternalPurchaseCustomLink.swift */; };
 		EF0100000000000000000052 /* MockExternalPurchaseCustomLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0100000000000000000051 /* MockExternalPurchaseCustomLink.swift */; };
 		EF0100000000000000000053 /* MockExternalPurchaseCustomLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0100000000000000000051 /* MockExternalPurchaseCustomLink.swift */; };
+		EF0200000000000000000052 /* MockExternalPurchasesConfigProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0200000000000000000051 /* MockExternalPurchasesConfigProvider.swift */; };
+		EF0200000000000000000053 /* MockExternalPurchasesConfigProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0200000000000000000051 /* MockExternalPurchasesConfigProvider.swift */; };
+		EF0200000000000000000062 /* ExternalPurchasesConfigProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0200000000000000000061 /* ExternalPurchasesConfigProviderTests.swift */; };
 		EF0100000000000000000062 /* ExternalPurchaseCustomLinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0100000000000000000061 /* ExternalPurchaseCustomLinkTests.swift */; };
 		AAAA44740000000000000002 /* ExternalPurchaseFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44740000000000000001 /* ExternalPurchaseFlow.swift */; };
 		AAAA44750000000000000002 /* ExternalPurchaseLinkResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44750000000000000001 /* ExternalPurchaseLinkResult.swift */; };
@@ -1613,6 +1616,7 @@
 		FEDA000000000000000000D5 /* CheckpointRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000C5 /* CheckpointRulesTests.swift */; };
 		FEDA000000000000000000D6 /* CheckpointsConfigProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000C6 /* CheckpointsConfigProviderTests.swift */; };
 		A7D100000000000000000002 /* AudiencesConfigProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D100000000000000000001 /* AudiencesConfigProvider.swift */; };
+		A7E200000000000000000002 /* ExternalPurchasesConfigProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7E200000000000000000001 /* ExternalPurchasesConfigProvider.swift */; };
 		A7D200000000000000000002 /* Audience.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D200000000000000000001 /* Audience.swift */; };
 		A7D200000000000000000004 /* AudienceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D200000000000000000003 /* AudienceTests.swift */; };
 		FEDA000000000000000000E1 /* MockRemoteConfigSourceProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000E0 /* MockRemoteConfigSourceProvider.swift */; };
@@ -2434,6 +2438,8 @@
 		EF0100000000000000000021 /* ExternalPurchaseCustomLinkType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseCustomLinkType.swift; sourceTree = "<group>"; };
 		EF0100000000000000000031 /* StoreKitExternalPurchaseCustomLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitExternalPurchaseCustomLink.swift; sourceTree = "<group>"; };
 		EF0100000000000000000051 /* MockExternalPurchaseCustomLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockExternalPurchaseCustomLink.swift; sourceTree = "<group>"; };
+		EF0200000000000000000051 /* MockExternalPurchasesConfigProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockExternalPurchasesConfigProvider.swift; sourceTree = "<group>"; };
+		EF0200000000000000000061 /* ExternalPurchasesConfigProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchasesConfigProviderTests.swift; sourceTree = "<group>"; };
 		EF0100000000000000000061 /* ExternalPurchaseCustomLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseCustomLinkTests.swift; sourceTree = "<group>"; };
 		AAAA44740000000000000001 /* ExternalPurchaseFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseFlow.swift; sourceTree = "<group>"; };
 		AAAA44750000000000000001 /* ExternalPurchaseLinkResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseLinkResult.swift; sourceTree = "<group>"; };
@@ -3477,6 +3483,7 @@
 		FEDA000000000000000000C5 /* CheckpointRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointRulesTests.swift; sourceTree = "<group>"; };
 		FEDA000000000000000000C6 /* CheckpointsConfigProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointsConfigProviderTests.swift; sourceTree = "<group>"; };
 		A7D100000000000000000001 /* AudiencesConfigProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiencesConfigProvider.swift; sourceTree = "<group>"; };
+		A7E200000000000000000001 /* ExternalPurchasesConfigProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchasesConfigProvider.swift; sourceTree = "<group>"; };
 		A7D200000000000000000001 /* Audience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Audience.swift; sourceTree = "<group>"; };
 		A7D200000000000000000003 /* AudienceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudienceTests.swift; sourceTree = "<group>"; };
 		FEDA000000000000000000E0 /* MockRemoteConfigSourceProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRemoteConfigSourceProvider.swift; sourceTree = "<group>"; };
@@ -4801,6 +4808,7 @@
 				1E3084A330178A6E00236A34 /* MockSourceHealthChecker.swift */,
 				900D27022F96929800D32EDF /* MockAdsAPI.swift */,
 				EF0100000000000000000051 /* MockExternalPurchaseCustomLink.swift */,
+				EF0200000000000000000051 /* MockExternalPurchasesConfigProvider.swift */,
 				1699BC6C2EEC6EAF002001FB /* MockUnderlyingSynchronizedFileCache.swift */,
 				903A065F2EB4B728009B9CE4 /* MockEventsManager.swift */,
 				16BCA3782E4D9C0400B39E7F /* MockSimpleNetworkService.swift */,
@@ -5292,6 +5300,7 @@
 				FEDA000000000000000000C4 /* CheckpointsConfigProvider.swift */,
 				A7D200000000000000000001 /* Audience.swift */,
 				A7D100000000000000000001 /* AudiencesConfigProvider.swift */,
+				A7E200000000000000000001 /* ExternalPurchasesConfigProvider.swift */,
 				A1B2C3D42FE7000000000001 /* RemoteConfigTopic.swift */,
 				A1B2C3D42FE1000000000011 /* RemoteConfigSignatureContextProvider.swift */,
 			);
@@ -5325,6 +5334,7 @@
 				71C9437E0657539E96AADEFB /* BackendErrorCodeTests.swift */,
 				A1B2C3D42FE9000000000003 /* GenerationGuardedCacheTests.swift */,
 				371E0615EDF883698273BC59 /* UiConfigProviderTests.swift */,
+				EF0200000000000000000061 /* ExternalPurchasesConfigProviderTests.swift */,
 				FFB683A085B695768EAB9AA5 /* WorkflowsConfigProviderTests.swift */,
 				A7D200000000000000000003 /* AudienceTests.swift */,
 				FEDA000000000000000000C5 /* CheckpointRulesTests.swift */,
@@ -7740,6 +7750,7 @@
 			files = (
 				1E3084A430178A6E00236A34 /* MockSourceHealthChecker.swift in Sources */,
 				EF0100000000000000000053 /* MockExternalPurchaseCustomLink.swift in Sources */,
+				EF0200000000000000000053 /* MockExternalPurchasesConfigProvider.swift in Sources */,
 				2D9C5ECA26F2805C0057FC45 /* ProductsManagerTests.swift in Sources */,
 				55DACF333034FA93005EE017 /* MockTokenAPI.swift in Sources */,
 				75A3B2B22F16B458001C4CA7 /* MockLargeItemCache.swift in Sources */,
@@ -8018,6 +8029,7 @@
 				FEDA000000000000000000D4 /* CheckpointsConfigProvider.swift in Sources */,
 				A7D200000000000000000002 /* Audience.swift in Sources */,
 				A7D100000000000000000002 /* AudiencesConfigProvider.swift in Sources */,
+				A7E200000000000000000002 /* ExternalPurchasesConfigProvider.swift in Sources */,
 				A1B2C3D42FE2000000000006 /* RemoteConfigStrings.swift in Sources */,
 				A1B2C3D52FE2000000000002 /* CheckpointsStrings.swift in Sources */,
 				A1B2C3D62FE2000000000002 /* LocalRulesStrings.swift in Sources */,
@@ -8462,6 +8474,7 @@
 			files = (
 				FD1197332D6E6485002718E3 /* MockNSWindow.swift in Sources */,
 				EF0100000000000000000052 /* MockExternalPurchaseCustomLink.swift in Sources */,
+				EF0200000000000000000052 /* MockExternalPurchasesConfigProvider.swift in Sources */,
 				EF0100000000000000000062 /* ExternalPurchaseCustomLinkTests.swift in Sources */,
 				AAAA44740000000000000032 /* ExternalPurchaseManagerTests.swift in Sources */,
 				AAAA44750000000000000012 /* ExternalPurchaseLinkResultTests.swift in Sources */,
@@ -8738,6 +8751,7 @@
 				DECC43B62EBDF0A4BD1D06EB /* BackendErrorCodeTests.swift in Sources */,
 				A1B2C3D42FE9000000000004 /* GenerationGuardedCacheTests.swift in Sources */,
 				AD787D4FC44F9C3638DCDEF9 /* UiConfigProviderTests.swift in Sources */,
+				EF0200000000000000000062 /* ExternalPurchasesConfigProviderTests.swift in Sources */,
 				E48EFFFF5FF27ECC25F4E308 /* WorkflowsConfigProviderTests.swift in Sources */,
 				A7D200000000000000000004 /* AudienceTests.swift in Sources */,
 				FEDA000000000000000000D5 /* CheckpointRulesTests.swift in Sources */,

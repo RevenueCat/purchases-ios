@@ -22,10 +22,12 @@ class HostedCheckoutManagerTests: TestCase {
     private static let appUserID = "test-app-user-id"
     private static let tokenID = "ept13dcbc01adaa44db9b1691a6be2f9929"
     private static let paywallSessionID = UUID()
+    private static let storefront = "USA"
 
     private var customLink: MockExternalPurchaseCustomLink!
     private var externalPurchaseTokenAPI: MockExternalPurchaseTokenAPI!
     private var webBillingAPI: MockWebBillingAPI!
+    private var configProvider: MockExternalPurchasesConfigProvider!
     private var systemInfo: MockSystemInfo!
     private var manager: HostedCheckoutManager!
 
@@ -40,7 +42,11 @@ class HostedCheckoutManagerTests: TestCase {
         self.webBillingAPI = MockWebBillingAPI(backendConfig: MockBackendConfiguration())
         self.webBillingAPI.stubbedPostHostedCheckoutCompletionResult = .success(Self.response)
 
+        self.configProvider = MockExternalPurchasesConfigProvider()
+        self.configProvider.stubbedAllowedStorefronts = [Self.storefront]
+
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: true)
+        self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.storefront)
         self.manager = self.makeManager()
     }
 
@@ -169,6 +175,19 @@ class HostedCheckoutManagerTests: TestCase {
         expect(self.webBillingAPI.invokedPostHostedCheckout) == false
     }
 
+    /// Where Apple's flow does not apply and the customer's storefront is not one it is waived in, they are
+    /// offered no checkout at all.
+    func testCreatesNoSessionWhereTheStorefrontDoesNotAllowTheExternalPurchase() async {
+        self.customLink.stubbedAvailability = .notEligible
+        self.systemInfo.stubbedStorefront = MockStorefront(countryCode: "ESP")
+
+        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(result) == .notAllowedInStorefront
+        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
+        expect(self.webBillingAPI.invokedPostHostedCheckout) == false
+    }
+
     /// A customer who taps twice while the notice is coming up asked to buy once, and it is the first tap that
     /// carries the purchase.
     func testStopsACheckoutAskedForWhileAnotherIsStarting() async {
@@ -262,6 +281,7 @@ private extension HostedCheckoutManagerTests {
                 customLink: self.customLink,
                 externalPurchaseTokenAPI: self.externalPurchaseTokenAPI,
                 currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID),
+                configProvider: self.configProvider,
                 systemInfo: self.systemInfo
             ),
             webBillingAPI: self.webBillingAPI,

@@ -22,6 +22,8 @@ enum RemoteConfigStrings {
     case failedToBuildBlobURL(String)
     case failedToDownloadBlob(String, URL, Error)
     case duplicateSourceURL(String)
+    case externalPurchasesPolicyUnavailable
+    case externalPurchasesPolicyWithoutStorefronts
     case failedToParseResponse(Error)
     case malformedBlobRef(String)
     case mergeItemsBlobDataEmpty(topic: RemoteConfigTopic)
@@ -76,6 +78,12 @@ extension RemoteConfigStrings: LogMessage {
         case let .duplicateSourceURL(url):
             return "Found remote config sources sharing the same URL with conflicting priority/weight " +
                 "(\(url)). Keeping the highest-priority one (lowest priority number), tie-broken by weight."
+        case .externalPurchasesPolicyUnavailable:
+            return "No external purchase policy is available, so no storefront is treated as one where an " +
+                "external purchase may be offered without the store's own eligibility."
+        case .externalPurchasesPolicyWithoutStorefronts:
+            return "The external purchase policy lists no App Store storefronts, so an external purchase is " +
+                "only offered where the store says its own flow applies."
         case let .failedToParseResponse(error):
             return "Failed to parse remote config response. Keeping cached configuration. Error: " +
             "\(error.localizedDescription)"

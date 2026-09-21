@@ -20,6 +20,7 @@ final class ExternalPurchaseManager {
     private let customLink: ExternalPurchaseCustomLinkType
     private let externalPurchaseTokenAPI: ExternalPurchaseTokenAPI
     private let currentUserProvider: CurrentUserProvider
+    private let configProvider: ExternalPurchasesConfigProviderType
     private let systemInfo: SystemInfo
 
     private let isPreparing: Atomic<Bool> = false
@@ -27,10 +28,12 @@ final class ExternalPurchaseManager {
     init(customLink: ExternalPurchaseCustomLinkType,
          externalPurchaseTokenAPI: ExternalPurchaseTokenAPI,
          currentUserProvider: CurrentUserProvider,
+         configProvider: ExternalPurchasesConfigProviderType,
          systemInfo: SystemInfo) {
         self.customLink = customLink
         self.externalPurchaseTokenAPI = externalPurchaseTokenAPI
         self.currentUserProvider = currentUserProvider
+        self.configProvider = configProvider
         self.systemInfo = systemInfo
     }
 
@@ -72,6 +75,11 @@ final class ExternalPurchaseManager {
         case .available:
             break
         case .notEligible:
+            guard await self.isInAStorefrontAllowedWithoutStoreEligibility() else {
+                Logger.warn(Strings.externalPurchase.storefront_not_allowed(self.storefront))
+                return .stopped(.notAllowedInStorefront)
+            }
+
             Logger.debug(Strings.externalPurchase.custom_link_does_not_apply)
             return .notApplicable
         case .paymentsNotAuthorized:
@@ -110,12 +118,17 @@ internal enum ExternalPurchasePreparationResult: Equatable {
     case unregistered(FailureReason)
 
     /// Route the customer to the checkout with no identifier to hand over, as the app would outside Apple's
-    /// programme: it does not apply here, see ``ExternalPurchaseAvailability/notEligible``.
+    /// programme: it does not apply here, see ``ExternalPurchaseAvailability/notEligible``, and the customer
+    /// is in a storefront where the purchase may go ahead anyway.
     ///
     /// Nothing was shown and nothing was minted.
     case notApplicable
 
     enum StopReason: Equatable {
+
+        /// Apple's flow does not apply here, and this storefront is not one of those where the purchase may
+        /// go ahead without it, so the customer is offered nothing.
+        case notAllowedInStorefront
 
         /// The device does not authorize payments, see ``ExternalPurchaseAvailability/paymentsNotAuthorized``.
         ///
@@ -155,6 +168,19 @@ private extension ExternalPurchaseManager {
     /// precondition for everything here.
     var takesPartInTheProgramme: Bool {
         return self.systemInfo.dangerousSettings.useExternalPurchaseCustomLinks
+    }
+
+    var storefront: String? {
+        return self.systemInfo.storefront?.countryCode.uppercased()
+    }
+
+    /// Whether the customer may be taken to an external purchase without Apple's flow around it.
+    ///
+    /// Asked on every purchase rather than cached, since the customer can change storefront while the app runs.
+    func isInAStorefrontAllowedWithoutStoreEligibility() async -> Bool {
+        guard let storefront = self.storefront else { return false }
+
+        return await self.configProvider.storefrontsAllowedWithoutStoreEligibility().contains(storefront)
     }
 
     enum NoticeOutcome {
