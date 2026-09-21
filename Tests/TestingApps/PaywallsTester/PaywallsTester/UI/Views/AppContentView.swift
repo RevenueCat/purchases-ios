@@ -9,18 +9,11 @@ import RevenueCat
 import RevenueCatUI
 import SwiftUI
 
+/// Trimmed to the min/max sizing harness: the hot-reloaded local paywall, full
+/// screen. There is deliberately no TabView — a tab bar would take a slice of the
+/// window, and `\.paywallWindowSize` measures the paywall's container, so the
+/// responsive rules would evaluate against a size the real app never sees.
 struct AppContentView: View {
-
-    private enum Tab {
-        case examples
-        case livePaywalls
-        #if os(macOS) && DEBUG
-        case purchaseFocusRegression
-        #endif
-    }
-
-    @State
-    private var selectedTab: Tab = Purchases.isConfigured ? .livePaywalls : .examples
 
     var body: some View {
         #if os(macOS) && DEBUG
@@ -34,39 +27,17 @@ struct AppContentView: View {
         #endif
     }
 
+    @ViewBuilder
     private var content: some View {
-        TabView(selection: $selectedTab) {
-
-            if Purchases.isConfigured {
-                APIKeyDashboardList()
-                    .tabItem {
-                        Label("Live Paywalls", systemImage: "testtube.2")
-                    }
-                    .tag(Tab.livePaywalls)
-            }
-
-            #if !os(macOS)
-            SamplePaywallsList()
-                .tabItem {
-                    Image("logo")
-                        .renderingMode(.template)
-                    Text("Examples")
-                }
-                .tag(Tab.examples)
-            #endif
-
-            #if os(macOS) && DEBUG
-            MacOSPurchaseFocusRegressionView()
-                .tabItem {
-                    Label("Focus Regression", systemImage: "keyboard")
-                }
-                .tag(Tab.purchaseFocusRegression)
-            #endif
-
-            if !Purchases.isConfigured {
-                Text("Purchases is not configured")
-            }
+        #if DEBUG && !os(tvOS) && !os(watchOS)
+        if #available(iOS 15.0, macOS 13.0, *) {
+            LiveJSONPaywallView()
+        } else {
+            Text("Requires iOS 15 / macOS 13")
         }
+        #else
+        Text("The hot reload harness requires a DEBUG build on iOS or macOS.")
+        #endif
     }
 
 }

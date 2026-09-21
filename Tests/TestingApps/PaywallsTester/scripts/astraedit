@@ -1,0 +1,133 @@
+#!/usr/bin/env python3
+"""Ask Astra to edit the paywall currently loaded in the harness.
+
+    astraedit "cap the content at 600 and centre it"
+
+Seeds an eval case from the live `live.json`, runs one Astra turn against it, and
+writes the edited paywall back to the watch folders so the simulators reload.
+
+Why the eval harness rather than Astra's editor API: the editor endpoint requires
+a dashboard `rc_auth_token` cookie even against a local server, while eval cases
+declare their own `feature_flags` and `paywall_size` inline and need no
+credentials at all. The trade-off is that each run is a fresh conversation, so
+turns are chained by re-seeding from the *current* paywall rather than by an
+Astra session id.
+"""
+import argparse
+import glob
+import json
+import os
+import pathlib
+import subprocess
+import sys
+import tempfile
+
+REPO_ROOT = pathlib.Path(__file__).resolve().parents[4]
+
+# `packages/astra` inside a checkout of RevenueCat/agents. Required; there is no
+# sensible default because the monorepo lives wherever the user cloned it.
+ASTRA_DIR = pathlib.Path(os.environ["ASTRA_DIR"]) if os.environ.get("ASTRA_DIR") else None
+
+WATCH_DIR = pathlib.Path(os.environ.get("PAYWALL_LIVE_DIR") or REPO_ROOT / "paywall-live")
+SEED = WATCH_DIR / "live.json"
+DUMP_DIR = pathlib.Path(tempfile.gettempdir()) / "astraedit-out"
+
+# The three keys an eval template carries. Everything else in the live document
+# (template_name, asset_base_url, revision) is iOS-side scaffolding Astra neither
+# reads nor returns, so it is preserved from the seed rather than round-tripped.
+TEMPLATE_KEYS = ("default_locale", "components_config", "components_localizations")
+
+
+def summarise(before, after):
+    """Report what actually changed, flattened to leaf scalars per node."""
+    def walk(node, path="", out=None):
+        out = out if out is not None else {}
+        if isinstance(node, dict):
+            out[path] = {k: v for k, v in node.items() if not isinstance(v, (dict, list))}
+            for key, value in node.items():
+                walk(value, f"{path}.{key}", out)
+        elif isinstance(node, list):
+            for index, value in enumerate(node):
+                walk(value, f"{path}[{index}]", out)
+        return out
+
+    old, new = walk(before), walk(after)
+    changed = [k for k in sorted(set(old) | set(new)) if old.get(k) != new.get(k)]
+    for key in changed:
+        print(f"\n  {key or '<root>'}")
+        print(f"    before: {old.get(key)}")
+        print(f"    after : {new.get(key)}")
+    print(f"\n{len(changed)} node(s) changed")
+    return changed
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("prompt", help="what Astra should change")
+    parser.add_argument("--size", default="834x1194",
+                        help="viewport Astra reasons about (default 834x1194)")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="show the diff without writing to the watch folders")
+    args = parser.parse_args()
+
+    if ASTRA_DIR is None or not (ASTRA_DIR / "evals").is_dir():
+        sys.exit(
+            "Set ASTRA_DIR to `packages/astra` in a checkout of RevenueCat/agents.\n"
+            "See INSTALL.md; the eval harness is what lets Astra edit without credentials."
+        )
+    fixture = ASTRA_DIR / "evals/fixtures/live-loaded.json"
+    dataset = ASTRA_DIR / "evals/datasets/live_edit.yaml"
+
+    if not SEED.is_file():
+        sys.exit(f"No paywall loaded at {SEED}. Run loadpaywall first.")
+
+    width, _, height = args.size.partition("x")
+    seed = json.loads(SEED.read_text())
+    fixture.write_text(json.dumps({k: seed[k] for k in TEMPLATE_KEYS}, indent=2,
+                                  ensure_ascii=False) + "\n")
+
+    dataset.write_text(
+        "dataset: live_edit\ncases:\n"
+        "- template: live-loaded.json\n"
+        f"  message: {json.dumps(args.prompt)}\n"
+        "  description: 'Live edit of the currently loaded paywall'\n"
+        "  feature_flags: {PAYWALL_MAX_MIN_DIMENSIONS: true, PAYWALL_WINDOW_SIZE_RULES: true}\n"
+        f"  paywall_size: {{width: {int(width)}, height: {int(height)}}}\n"
+        "  compile_ok: true\n"
+    )
+
+    DUMP_DIR.mkdir(parents=True, exist_ok=True)
+    for stale in DUMP_DIR.glob("*.json"):
+        stale.unlink()
+
+    print(f"asking Astra (viewport {args.size}): {args.prompt}")
+    environment = {**os.environ, "EVAL_PAYWALL_DUMP_DIR": str(DUMP_DIR)}
+    result = subprocess.run(
+        ["uv", "run", "python", "-m", "evals", "run", "--target", "v3", "--dataset", "live_edit"],
+        cwd=ASTRA_DIR, env=environment, capture_output=True,
+    )
+
+    produced = sorted(DUMP_DIR.glob("*.json"))
+    if not produced:
+        tail = result.stderr.decode("utf-8", errors="replace")[-1500:]
+        sys.exit(f"Astra produced no paywall.\n{tail}")
+
+    edited = json.loads(produced[0].read_text())
+    changed = summarise(seed["components_config"], edited["components_config"])
+    if args.dry_run:
+        print("\ndry run, nothing written")
+        return
+    if not changed:
+        print("\nnothing to write")
+        return
+
+    document = dict(seed)
+    document.update({key: edited[key] for key in TEMPLATE_KEYS})
+    WATCH_DIR.mkdir(parents=True, exist_ok=True)
+    SEED.write_text(json.dumps(document, indent=2, ensure_ascii=False) + "\n")
+    print(f"\nwrote {SEED}; the app reloads within ~300ms")
+
+
+if __name__ == "__main__":
+    main()

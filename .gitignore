@@ -109,3 +109,6 @@ Tests/TestingApps/PaywallsTester/PaywallsTester/PaywallsTester.storekit
 
 # Claude Code
 .claude/
+
+# Live JSON harness watch folder (see Tests/TestingApps/PaywallsTester/INSTALL.md)
+paywall-live/

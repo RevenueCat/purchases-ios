@@ -12,6 +12,7 @@
 		4F102E272A840ECC0059EED6 /* CustomPaywall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F102E262A840ECC0059EED6 /* CustomPaywall.swift */; };
 		4F217A102A6DB6FB000B092D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4FC046BF2A572E3700A28BCF /* Assets.xcassets */; };
 		4F34FF632A60AD9A00AADF11 /* AppContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F34FF622A60AD9A00AADF11 /* AppContentView.swift */; };
+		394FEF0CA0F1470ABE723E59 /* LiveJSONPaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CF111FEB3E948C488C726C7 /* LiveJSONPaywallView.swift */; };
 		4F4557E22A6FFE6A00160521 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4F4557E42A6FFE6A00160521 /* Localizable.strings */; };
 		4F4EE7CF2A572F5D00D7EAE1 /* DebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC046C32A572E3700A28BCF /* DebugView.swift */; };
 		4F4EE7D22A5731E800D7EAE1 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 4F4EE7D12A5731E800D7EAE1 /* RevenueCat */; };
@@ -76,6 +77,7 @@
 		4F1DBFEA2B6432BE00B0768F /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		4F1DBFEB2B6432C100B0768F /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		4F34FF622A60AD9A00AADF11 /* AppContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppContentView.swift; sourceTree = "<group>"; };
+		6CF111FEB3E948C488C726C7 /* LiveJSONPaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveJSONPaywallView.swift; sourceTree = "<group>"; };
 		4F4557E32A6FFE6A00160521 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		4F4557E52A6FFE6D00160521 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 		4F4EE7D02A5731CF00D7EAE1 /* purchases-ios */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "purchases-ios"; path = ../../..; sourceTree = "<group>"; };
@@ -245,6 +247,7 @@
 			children = (
 				FD33CD612D0351BE000D13A4 /* CustomerCenterUIKitView.swift */,
 				4F34FF622A60AD9A00AADF11 /* AppContentView.swift */,
+				6CF111FEB3E948C488C726C7 /* LiveJSONPaywallView.swift */,
 				A8F100013C8D4A0100000002 /* MacOSPurchaseFocusRegressionView.swift */,
 				4FC046C32A572E3700A28BCF /* DebugView.swift */,
 				88B2F9892BE1944200B43E0B /* OfferingList */,
@@ -437,6 +440,7 @@
 				4FDF11202A7270F3004F3680 /* SamplePaywallsList.swift in Sources */,
 				FD33CD622D0351BE000D13A4 /* CustomerCenterUIKitView.swift in Sources */,
 				4F34FF632A60AD9A00AADF11 /* AppContentView.swift in Sources */,
+				394FEF0CA0F1470ABE723E59 /* LiveJSONPaywallView.swift in Sources */,
 				A8F100013C8D4A0100000001 /* MacOSPurchaseFocusRegressionView.swift in Sources */,
 				DF1A26D5115387F97D465BF3 /* CustomVariablesEditorView.swift in Sources */,
 			);

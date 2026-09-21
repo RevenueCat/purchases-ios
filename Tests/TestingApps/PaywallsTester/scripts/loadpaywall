@@ -1,0 +1,238 @@
+#!/usr/bin/env python3
+"""Paste a workflow (or paywall) builder URL, get it rendering in the harness.
+
+    loadpaywall <builder-url> [--screen <id>] [--list]
+
+Fetches the screen through the mafdet CLI, reassembles the halves into the one
+`PaywallComponentsData` document the iOS SDK expects, and overwrites `live.json`
+in the watch folder. The running app picks it up within ~300ms; nothing needs
+rebuilding or restarting.
+
+Why reassembly is needed: the dashboard stores structure and copy separately, and
+every export path hands them over separately too — mafdet's paywall view as
+`-components.json` + `-localizations.json`, the workflow row as a localizations-only
+zip. Neither half renders alone, and the document also carries three fields no
+export includes, whose absence makes the SDK silently fall back to the default
+template instead of reporting an error.
+"""
+import argparse
+import json
+import os
+import pathlib
+import re
+import shutil
+import subprocess
+import tempfile
+import sys
+
+# The folder the app watches. Defaults to `<repo>/paywall-live`, which is what the
+# harness resolves to when launched without an explicit LIVE_PAYWALL_DIR.
+REPO_ROOT = pathlib.Path(__file__).resolve().parents[4]
+WATCH_FOLDERS = {
+    "default": pathlib.Path(os.environ.get("PAYWALL_LIVE_DIR") or REPO_ROOT / "paywall-live"),
+}
+
+# Absent from every export, and required by PaywallComponentsData.
+REQUIRED_FIELDS = {
+    "template_name": "components",
+    "asset_base_url": "https://assets.pawwalls.com",
+    "revision": 1,
+}
+
+
+def mafdet(*args):
+    """Run a mafdet CLI command and parse its JSON.
+
+    Output goes via `-o <file>` rather than stdout: the CLI corrupts multi-byte
+    characters that straddle a 160 KiB chunk boundary when streaming to stdout
+    (an emoji at byte 163839 decodes as invalid UTF-8), and the file path is
+    written in one go, so it is intact.
+    """
+    if shutil.which("mafdet") is None:
+        sys.exit("mafdet CLI not found on PATH (installed via mise).")
+    with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as handle:
+        out_path = handle.name
+    try:
+        result = subprocess.run(
+            ["mafdet", *args, "-f", "json", "-o", out_path],
+            capture_output=True,
+        )
+        if result.returncode != 0:
+            detail = (result.stderr or result.stdout).decode("utf-8", errors="replace").strip()
+            if "auth" in detail.lower() or "401" in detail:
+                detail += "\nTry: mafdet auth login"
+            sys.exit(f"mafdet {' '.join(args)} failed:\n{detail}")
+        raw = pathlib.Path(out_path).read_text(encoding="utf-8")
+        try:
+            return json.loads(raw)
+        except json.JSONDecodeError:
+            sys.exit(f"mafdet {' '.join(args)} returned non-JSON:\n{raw[:500]}")
+    finally:
+        pathlib.Path(out_path).unlink(missing_ok=True)
+
+
+def find(node, *names):
+    """First value under any of `names`, searched breadth-first.
+
+    The CLI's payloads nest differently per endpoint, so this looks for the keys
+    that matter rather than assuming one envelope shape.
+    """
+    queue = [node]
+    while queue:
+        current = queue.pop(0)
+        if isinstance(current, dict):
+            for name in names:
+                if name in current and current[name] is not None:
+                    return current[name]
+            queue.extend(current.values())
+        elif isinstance(current, list):
+            queue.extend(current)
+    return None
+
+
+def parse_target(url):
+    """Split a dashboard URL into (project_id, kind, resource_id).
+
+    The builder serves two different resources under the same path shape:
+    `paywalls/wf…/builder` is a workflow (many screens) and `paywalls/pw…/builder`
+    is a single paywall. They need different CLI commands, so tell them apart by
+    the id prefix rather than asking the caller.
+    """
+    project = re.search(r"projects/([^/?#]+)", url)
+    resource = re.search(r"paywalls/(pw[0-9a-f]+|wf[0-9a-f]+)", url)
+    if not resource:
+        # A bare id, or a URL shape we do not recognise; fall back to the
+        # workflow path, which accepts the whole URL as --project-id.
+        return url, "workflow", None
+    kind = "paywall" if resource.group(1).startswith("pw") else "workflow"
+    return (project.group(1) if project else url), kind, resource.group(1)
+
+
+def fetch_paywall(project_id, paywall_id):
+    """Fetch a single paywall, whose halves come from two separate commands."""
+    components = mafdet("paywall", "components",
+                        "--project-id", project_id, "--paywall-id", paywall_id)
+    localizations = mafdet("paywall", "localizations",
+                           "--project-id", project_id, "--paywall-id", paywall_id)
+    merged = dict(components)
+    merged.update({k: v for k, v in localizations.items() if k != "name"})
+    return merged
+
+
+def screens_for(url):
+    payload = mafdet("workflow", "steps", "--project-id", url)
+    return [
+        {
+            "screen_id": step.get("screen_id"),
+            "step_id": step.get("step_id"),
+            "name": step.get("screen_name") or "",
+            "next": step.get("next_steps") or [],
+        }
+        for step in payload.get("steps", [])
+        if step.get("screen_id")
+    ], payload
+
+
+def build_document(screen_payload):
+    """Normalise whatever the CLI returned into one PaywallComponentsData."""
+    document = dict(screen_payload)
+    components = find(screen_payload, "components_config", "componentsConfig")
+    if components is None:
+        sys.exit(
+            "No components_config in the payload.\n"
+            f"Top-level keys: {list(screen_payload)[:20]}\n"
+            "Re-run with --raw to dump it."
+        )
+    document["components_config"] = components
+
+    localizations = find(screen_payload, "components_localizations", "componentsLocalizations")
+    default_locale = find(screen_payload, "default_locale", "defaultLocale") or "en_US"
+    # A single-locale export can arrive as a bare lid->string map instead of one
+    # keyed by locale; wrap it so the SDK finds the default locale's table.
+    if isinstance(localizations, dict) and localizations:
+        if isinstance(next(iter(localizations.values())), str):
+            localizations = {default_locale: localizations}
+    document["components_localizations"] = localizations or {default_locale: {}}
+    document["default_locale"] = default_locale
+
+    # The dashboard emits a flat list here; iOS expects it keyed by store.
+    zero_decimal = document.get("zero_decimal_place_countries")
+    if isinstance(zero_decimal, list):
+        document["zero_decimal_place_countries"] = {"apple": zero_decimal}
+
+    for key, fallback in REQUIRED_FIELDS.items():
+        document.setdefault(key, fallback)
+    return document
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("url", help="workflow or paywall builder URL (or project id)")
+    parser.add_argument("--screen", help="screen id, when the workflow has more than one")
+    parser.add_argument("--list", action="store_true", help="list the workflow's screens and exit")
+    parser.add_argument("--raw", action="store_true", help="dump the fetched payload instead of writing")
+    parser.add_argument("--keep", action="store_true",
+                        help="leave other .json files in the watch folder instead of archiving them")
+    args = parser.parse_args()
+
+    project_id, kind, resource_id = parse_target(args.url)
+
+    if kind == "paywall":
+        if args.list:
+            print(f"  {resource_id}  (single paywall, no screens to choose from)")
+            return
+        payload = fetch_paywall(project_id, resource_id)
+        if args.raw:
+            print(json.dumps(payload, indent=2)[:4000])
+            return
+        write_document(build_document(payload), args, label=resource_id)
+        return
+
+    screens, raw_steps = screens_for(args.url)
+    if args.list or not screens:
+        print(json.dumps(raw_steps, indent=2) if not screens else "")
+        for screen in screens:
+            print(f"  {screen['screen_id']}  {screen['name']}")
+        if not screens:
+            sys.exit("No screens found; payload dumped above.")
+        return
+
+    screen_id = args.screen or screens[0]["screen_id"]
+    if len(screens) > 1 and not args.screen:
+        print(f"{len(screens)} screens; using {screen_id}. Others: "
+              f"{', '.join(s['screen_id'] for s in screens if s['screen_id'] != screen_id)}")
+
+    payload = mafdet("workflow", "screen", "--project-id", args.url, "--screen-id", screen_id)
+    if args.raw:
+        print(json.dumps(payload, indent=2)[:4000])
+        return
+
+    write_document(build_document(payload), args, label=f"screen {screen_id}")
+
+
+def write_document(document, args, label):
+    for name, folder in WATCH_FOLDERS.items():
+        folder.mkdir(parents=True, exist_ok=True)
+        target = folder / "live.json"
+        target.write_text(json.dumps(document, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+        moved = 0
+        if not args.keep:
+            # Leaving other documents in place would keep whatever the app has
+            # selected; retiring them makes live.json the only candidate, so the
+            # running app re-picks it without a relaunch.
+            archive = folder / "_archive"
+            for other in folder.glob("*.json"):
+                if other.name == "live.json":
+                    continue
+                archive.mkdir(exist_ok=True)
+                other.replace(archive / other.name)
+                moved += 1
+        print(f"  {name}: {target}" + (f"  ({moved} archived)" if moved else ""))
+
+    locales = list(document["components_localizations"])
+    print(f"{label} · locales {locales} · reloading in the simulators now")
+
+
+if __name__ == "__main__":
+    main()
