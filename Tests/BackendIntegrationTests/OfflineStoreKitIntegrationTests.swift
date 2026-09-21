@@ -79,7 +79,6 @@ extension OfflineStoreKit2IntegrationTests {
         expect(transaction.productIdentifier) == Self.productIDWithBillingPlans
         expect(purchaseData.customerInfo.entitlements[expectedEntitlementIdentifier]?.isActive) == true
 
-
         self.verifyNoTransactionsWereFinished(file: file, line: line)
     }
 
