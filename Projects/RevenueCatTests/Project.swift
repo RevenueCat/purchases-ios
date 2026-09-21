@@ -1,7 +1,33 @@
+// One target declaration per test bundle, so this manifest is long by nature.
+// swiftlint:disable file_length
+
 import ProjectDescription
 import ProjectDescriptionHelpers
 
 // MARK: - Project Definition
+
+private let revenueCatTestsTestPlans: [Path] = [
+    .relativeToRoot("Tests/TestPlans/CI-AllTests.xctestplan"),
+    .relativeToRoot("Tests/TestPlans/CI-RevenueCat.xctestplan"),
+    .relativeToRoot("Tests/TestPlans/CI-RevenueCat-Snapshots.xctestplan"),
+    .relativeToRoot("Tests/TestPlans/CI-Snapshots.xctestplan")
+]
+
+private let revenueCatTestsLocalePreAction = ExecutionAction.executionAction(
+    title: "Set Simulator Locale",
+    scriptText: """
+    sh "$SRCROOT/../../scripts/revenuecat-tests-simulator-locale.sh" set
+    """,
+    target: "UnitTests"
+)
+
+private let revenueCatTestsLocalePostAction = ExecutionAction.executionAction(
+    title: "Restore Simulator Locale",
+    scriptText: """
+    sh "$SRCROOT/../../scripts/revenuecat-tests-simulator-locale.sh" restore
+    """,
+    target: "UnitTests"
+)
 
 let project = Project(
     name: "RevenueCatTests",
@@ -24,14 +50,30 @@ let project = Project(
                 "../../Tests/StoreKitUnitTests/TestHelpers/StoreKitTestHelpers.swift",
                 "../../Tests/StoreKitUnitTests/TestHelpers/ImageSnapshot.swift"
             ],
+            resources: [
+                .folderReference(path: "../../Tests/UnitTests/Networking/Responses/Fixtures"),
+                "../../Tests/UnitTests/Resources/receipts/base64encoded_sandboxReceipt.txt",
+                "../../Tests/UnitTests/Resources/receipts/base64encodedreceiptsample1.txt",
+                "../../Tests/UnitTests/Resources/receipts/base64EncodedReceiptSampleForDataExtension.txt",
+                "../../Tests/UnitTests/Resources/receipts/verifyReceiptSample1.txt",
+                "../../Tests/UnitTests/Paywalls/Components/JSON/ImageComponent.json",
+                "../../Tests/UnitTests/Paywalls/Components/JSON/VideoComponent.json",
+                // swiftlint:disable:next line_length
+                "../../Tests/UnitTests/Ads/Events/__Snapshots__/AdEventsRequestTests/testCanInitFromDeserializedEvent.1.json",
+                "../../Tests/UnitTests/Ads/Events/__Snapshots__/AdEventsRequestTests/testDisplayedEvent.1.json",
+                "../../Tests/UnitTests/Ads/Events/__Snapshots__/AdEventsRequestTests/testOpenedEvent.1.json",
+                "../../Tests/UnitTests/Ads/Events/__Snapshots__/AdEventsRequestTests/testRevenueEvent.1.json",
+                // swiftlint:disable:next line_length
+                "../../Tests/UnitTests/Networking/Requests/__Snapshots__/DiagnosticsEventEncodingTests/testEncoding.1.json"
+            ],
             dependencies: [
                 .revenueCat,
                 .nimble,
                 .snapshotTesting,
                 .ohHTTPStubsSwift
-            ],
-            metadata: .metadata(tags: ["RevenueCatTests"])
-        ),
+            ]
+        )
+        .tagged(["RevenueCatTests"]),
 
         .target(
             name: "ReceiptParserTests",
@@ -60,9 +102,9 @@ let project = Project(
             bundleId: "com.revenuecat.StoreKitUnitTestsHostApp",
             deploymentTargets: .multiplatform(
                 iOS: "13.0",
-                macOS: "10.15",
-                watchOS: "6.2",
-                tvOS: "13.0",
+                macOS: "11.0",
+                watchOS: "7.0",
+                tvOS: "14.0",
                 visionOS: "1.0"
             ),
             infoPlist: .file(path: "../../Tests/UnitTestsHostApp/Info.plist"),
@@ -75,9 +117,9 @@ let project = Project(
                 "CODE_SIGNING_ALLOWED": "YES",
                 "CODE_SIGNING_REQUIRED": "YES",
                 "CODE_SIGN_IDENTITY": "Apple Development"
-            ].automaticCodeSigning(devTeam: .revenueCatTeamID)),
-            metadata: .metadata(tags: ["RevenueCatTests"])
-        ),
+            ].automaticCodeSigning(devTeam: .revenueCatTeamID))
+        )
+        .tagged(["RevenueCatTests"]),
 
         // MARK: – StoreKit Unit Tests
         .target(
@@ -107,9 +149,9 @@ let project = Project(
             ],
             additionalFiles: [
                 "../../Tests/StoreKitUnitTests/UnitTestsConfiguration.storekit"
-            ],
-            metadata: .metadata(tags: ["RevenueCatTests"])
-        ),
+            ]
+        )
+        .tagged(["RevenueCatTests"]),
 
         // MARK: – BackendIntegrationTests Host App
         .target(
@@ -128,9 +170,9 @@ let project = Project(
             ],
             dependencies: [
              .storeKit
-            ],
-            metadata: .metadata(tags: ["RevenueCatTests"])
-        ),
+            ]
+        )
+        .tagged(["RevenueCatTests"]),
 
         .target(
             name: "BackendCustomEntitlementsIntegrationTests",
@@ -181,9 +223,9 @@ let project = Project(
                 base: [
                     "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"
                 ]
-            ),
-            metadata: .metadata(tags: ["RevenueCatTests"])
-        ),
+            )
+        )
+        .tagged(["RevenueCatTests"]),
 
         .target(
             name: "BackendIntegrationTests",
@@ -224,9 +266,9 @@ let project = Project(
             additionalFiles: [
                 "../../Tests/BackendIntegrationTests/RevenueCat_IntegrationPurchaseTesterConfiguration.storekit",
                 "../../BackendIntegrationTests/**.xctestplan"
-            ],
-            metadata: .metadata(tags: ["RevenueCatTests"])
-        ),
+            ]
+        )
+        .tagged(["RevenueCatTests"]),
 
         // MARK: – RemoteConfigProductionTests
         // Lean real-backend health check for the remote config CDN blob path. No StoreKit,
@@ -252,9 +294,9 @@ let project = Project(
                 .revenueCat,
                 .nimble,
                 .snapshotTesting
-            ],
-            metadata: .metadata(tags: ["RevenueCatTests"])
-        ),
+            ]
+        )
+        .tagged(["RevenueCatTests"]),
 
         // MARK: – RevenueCatAdMobTests
         .target(
@@ -272,9 +314,9 @@ let project = Project(
                 .revenueCatAdMob,
                 .googleMobileAds,
                 .nimble
-            ],
-            metadata: .metadata(tags: ["RevenueCatTests"])
-        ),
+            ]
+        )
+        .tagged(["RevenueCatTests"]),
 
         // MARK: – RevenueCatUITests
         .target(
@@ -292,12 +334,27 @@ let project = Project(
                 .nimble,
                 .snapshotTesting,
                 .ohHTTPStubsSwift
-            ],
-            metadata: .metadata(tags: ["RevenueCatTests"])
+            ]
         )
+        .tagged(["RevenueCatTests"])
 
     ].addingXcodeDeploymentTargetOverrides(),
     schemes: [
+
+        .scheme(
+            name: "RevenueCatTests",
+            shared: true,
+            buildAction: .buildAction(targets: ["UnitTests"]),
+            testAction: .testPlans(
+                revenueCatTestsTestPlans,
+                preActions: [revenueCatTestsLocalePreAction],
+                postActions: [revenueCatTestsLocalePostAction]
+            ),
+            runAction: .runAction(configuration: "Debug"),
+            archiveAction: .archiveAction(configuration: "Release"),
+            profileAction: .profileAction(configuration: "Release"),
+            analyzeAction: .analyzeAction(configuration: "Debug")
+        ),
 
         .scheme(
             name: "BackendIntegrationTests",
