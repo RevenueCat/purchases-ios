@@ -230,22 +230,21 @@ private extension BaseBackendIntegrationTests {
     }
 
     func verifyPurchasesDoesNotLeak() {
-        // See `addTeardownBlock` docs:
-        // - These run *before* `tearDown`.
-        // - They run in LIFO order, so these are registered in reverse:
-        // in-flight eligibility warmups can still hold `Purchases` instances,
-        // so they must finish before the leak check runs.
+        // See `addTeardownBlock` docs: these run *before* `tearDown`, in LIFO order.
+        // Everything here is a single block because the steps are ordered:
+        // in-flight eligibility warmups only drain once the singleton is cleared,
+        // and they can hold `Purchases` instances until they do, so the leak check
+        // has to come after both.
         self.addTeardownBlock { @MainActor in
             Purchases.clearSingleton()
+
+            try await self.eligibilityWarmups.waitForCompletion(timeout: .seconds(60))
 
             // Note: this captures the boolean to avoid race conditions when Nimble tries
             // to print `purchases` while it's being deallocated.
             try await asyncWait(description: "Purchases has leaked") {
                 await MainActor.run { self.purchasesInstances.allSatisfy { $0.value == nil } }
             }
-        }
-        self.addTeardownBlock { @MainActor in
-            try await self.eligibilityWarmups.waitForCompletion(timeout: .seconds(60))
         }
     }
 
