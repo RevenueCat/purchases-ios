@@ -29,7 +29,6 @@ class PurchaseButtonComponentViewModel {
 
     let customWebCheckoutUrl: URL?
 
-    /// The bundle the SDK's own strings come from, as opposed to the paywall's configured copy.
     let localizedBundle: Bundle
 
     init(

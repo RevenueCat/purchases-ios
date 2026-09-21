@@ -43,8 +43,6 @@ struct PurchaseButtonComponentView: View {
     #if os(iOS) && canImport(WebKit)
     @State private var hostedCheckoutViewModel: WebCheckoutViewModel?
 
-    /// The category of what the customer already owns, which decides the wording, and whose presence puts
-    /// the alert on screen. Held here rather than read from the selection, which they can change underneath.
     @State private var alreadyOwnedCategory: StoreProduct.ProductCategory?
     #endif
 
@@ -196,8 +194,6 @@ struct PurchaseButtonComponentView: View {
     }
 
     #if os(iOS) && canImport(WebKit)
-    /// Only the title differs from Apple's own alert: the rest of what it says, from the renewal date to the
-    /// button that manages the subscription, is about a purchase made on the App Store.
     private var alreadyOwnedTitle: Text {
         switch self.alreadyOwnedCategory {
         case .subscription:
