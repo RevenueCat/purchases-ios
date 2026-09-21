@@ -82,15 +82,22 @@ enum AvailabilityChecks {
     /// Switching Storefronts is broken in iOS 27.0. This is confirmed by Apple and is documented as a known issue
     /// in the Xcode 27 release notes (184155259)
     static func switchingStorefrontWithSKTestWorksOrSkipTest() throws {
+        if #available(iOS 27.2, tvOS 27.2, macOS 27.2, watchOS 27.2, *) {
+            // This bug was fixed in iOS 27.2 beta 1
+            return
+        }
+
         if #available(iOS 27.0, tvOS 27.0, macOS 27.0, watchOS 27.0, *) {
             throw XCTSkip("Switching Storefronts with SKTest is known to be broken on these OS versions.")
         }
     }
 
     // StoreKitTest reproductions and affected tests: https://github.com/RevenueCat/purchases-ios/pull/7742.
-    // These observations do not establish an Apple acknowledgment; attach Feedback IDs when available.
+    // FB24877239
     static func simulatedCancellationWithSKTestWorksOrSkipTest() throws {
-        try Self.skipOnIOS27("StoreKitTest returns .unknown instead of simulated .userCancelled; PR #7717 / #7742")
+        try Self.skipOnIOS27(
+            "StoreKitTest returns .unknown instead of simulated .userCancelled; PR #7717 / #7742, FB24877239"
+        )
     }
 
     static func simulatedPurchaseFailureWithSKTestWorksOrSkipTest() throws {
