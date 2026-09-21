@@ -239,7 +239,19 @@ private extension BaseBackendIntegrationTests {
         // make the leak check fail. They do, however, only drain once the instance is
         // torn down, so waiting on them before `clearSingleton` hangs until the timeout.
         self.addTeardownBlock { @MainActor in
-            try await self.eligibilityWarmups.waitForCompletion(timeout: .seconds(60))
+            // Intro eligibility is unreliable under StoreKitTest on OS 27 (see PR #7718): a warmup
+            // can stay in flight past any timeout and, because the cache is an actor, block every
+            // warmup queued behind it. This wait is isolation hygiene rather than a product
+            // assertion, so there it only warns instead of failing an unrelated test.
+            if #available(iOS 27.0, tvOS 27.0, watchOS 27.0, macOS 27.0, *) {
+                let pending = try await self.eligibilityWarmups.waitForCompletion(timeout: .seconds(60),
+                                                                                  failOnTimeout: false)
+                if pending > 0 {
+                    Logger.appleWarning(TestMessage.eligibility_warmup_did_not_finish(pending: pending))
+                }
+            } else {
+                try await self.eligibilityWarmups.waitForCompletion(timeout: .seconds(60))
+            }
         }
         self.addTeardownBlock { @MainActor in
             Purchases.clearSingleton()
