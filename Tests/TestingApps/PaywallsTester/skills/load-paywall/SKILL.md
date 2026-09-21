@@ -52,8 +52,10 @@ cd "$REPO"
 Tests/TestingApps/PaywallsTester/scripts/astraedit "<the user's request, verbatim>"
 ```
 
-That is the point of the setup: it tests what Astra authors against the real iOS
-layout engine. Hand-editing the JSON tests only your own understanding of the
+You are driving the harness; Astra is what edits the paywall. That indirection is
+the point: the harness exists to watch what Astra authors meet the real iOS layout
+engine, because Astra judges its own work against the bundled *web* renderer and
+the two can disagree. Editing the JSON yourself tests only your own reading of the
 schema, which is not what the user is looking at.
 
 `astraedit` seeds a fresh eval case from the current `live.json`, runs one Astra
@@ -70,7 +72,7 @@ thousands of nodes, summarise the handful that matter and give the total.
 `--size 834x1194` sets the viewport Astra reasons about, `--dry-run` shows the
 diff without writing.
 
-Hand-editing `$REPO/paywall-live/live.json` is still the fallback when Astra is not set
+Writing `$REPO/paywall-live/live.json` yourself is the fallback: when Astra is not set
 up (`astraedit` says so and exits), when the user explicitly asks for a specific
 JSON edit, or when constructing a probe to test a rule rather than a design.
 

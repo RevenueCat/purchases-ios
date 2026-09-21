@@ -142,9 +142,9 @@ dashboard cookie even against a local server, while eval cases carry their own
 `feature_flags` and `paywall_size` inline. Each run is a fresh conversation:
 turns chain by re-seeding from the current paywall, not by session id.
 
-Editing `paywall-live/live.json` directly, with Claude Code or by hand, is the
-fallback when Astra is not set up, when a specific JSON edit is asked for, or when
-building a probe to test a layout rule rather than a design.
+Writing `paywall-live/live.json` yourself is the fallback, for three cases: Astra
+is not set up, a specific JSON change was asked for, or you are building a probe to
+test a layout rule rather than a design.
 
 ## Always report what changed in the JSON
 

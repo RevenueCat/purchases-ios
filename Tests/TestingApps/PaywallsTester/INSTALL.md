@@ -13,7 +13,7 @@ updates. Nothing is rebuilt between edits.
 |---|---|
 | A resizable window running the real SDK | Mac Catalyst build of PaywallsTester |
 | Load any dashboard paywall by URL | `scripts/loadpaywall` |
-| Edit the loaded paywall in English | Claude Code, or `scripts/astraedit` |
+| Change it by describing the change | your agent calls `scripts/astraedit`, which runs it through Astra |
 
 ## Which SDK you are testing
 
@@ -65,10 +65,12 @@ installing both. Neither is needed to run the harness.
    what you want. Auth expires roughly hourly, so `mafdet auth login` again when a
    fetch returns 401.
 
-2. **A checkout of RevenueCat/agents**, to let Astra make the edits. It also needs
-   a twelve-line addition described in step 6. Ask: *do you want Astra doing the
-   editing, or is Claude Code editing the JSON enough?* Claude Code needs no setup
-   at all and is what most people should start with.
+2. **A checkout of RevenueCat/agents**, so that edits go through Astra. It also
+   needs a twelve-line addition described in step 6. Ask: *do you want to see what
+   Astra does with your requests, or just change the JSON directly?* Astra is the
+   reason this harness is interesting, since it shows what the model authors
+   meeting the real iOS renderer. Without it, your agent edits the document itself,
+   which still works for hand-built probes and one-off tweaks.
 
 ## 1. Check out the SDK
 
@@ -194,10 +196,26 @@ Anything in the watch folder is picked up. Accepted shapes:
 
 ## 6. Edit it
 
-**With Claude Code.** Point it at `paywall-live/live.json` and describe the change.
-No credentials, no services. This is the path that works everywhere.
+You drive the harness through an **agent** (Claude Code, Cursor, Codex, whatever
+you use). The agent does not edit the paywall itself. It calls `scripts/astraedit`,
+which runs the request through **Astra**, the same model that edits paywalls in the
+dashboard, and writes the result back to `live.json`.
 
-**With Astra.** Needs a checkout of `RevenueCat/agents`:
+That indirection is the whole point. The harness exists to watch what Astra
+authors meet the real iOS layout engine, because Astra judges its own work against
+the bundled *web* renderer and the two can disagree. An agent editing the JSON
+by hand would just be testing its own reading of the schema.
+
+So the loop is: you say what you want, your agent runs `astraedit` with it, Astra
+rewrites the paywall, the window reloads, and your agent tells you which properties
+changed.
+
+Editing `paywall-live/live.json` directly is still the right move in three cases,
+and your agent should do it then: Astra is not set up, you asked for one specific
+JSON change, or you are building a probe to test a layout rule rather than a
+design.
+
+Astra needs a checkout of `RevenueCat/agents`:
 
 ```bash
 export ASTRA_DIR=/path/to/agents/packages/astra
@@ -206,7 +224,10 @@ scripts/astraedit "cap the content at 600 and centre it"
 ```
 
 `astraedit` seeds an eval case from the current `live.json`, runs one Astra turn,
-prints a node-level diff of what changed, and writes the result back.
+prints a node-level diff of what changed, and writes the result back. Agents should
+pass the request through as the user phrased it rather than translating it into
+schema terms first, since how Astra reads plain language is part of what is being
+tested, and should relay that diff rather than only describing the outcome.
 
 Two things to know about this route:
 
