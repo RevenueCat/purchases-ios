@@ -23,8 +23,7 @@ protocol ExternalPurchasesConfigProviderType {
 
     /// Whether this app config reports its external purchases to Apple with a token.
     ///
-    /// `false` when the policy cannot be read: a token obliges a report, so one is only minted where the
-    /// backend says so.
+    /// A token obliges a report, so one is only minted where the backend says so. Defaults to `false`.
     func reportsTokensToTheAppStore() async -> Bool
 
 }
