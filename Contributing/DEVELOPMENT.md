@@ -86,6 +86,17 @@ tuist generate PaywallsTester
   tuist generate
   ```
 
+## RevenueCatUI SwiftPM schemes
+
+Prefer Tuist for RevenueCatUI development. The schemes `RevenueCatUI`, `RevenueCatUI-Stripped`, and `RevenueCatUITests` are shared in `RevenueCatUI-SPM.xcworkspace` for the SwiftPM test lanes (`test_revenuecatui`, `test_purchases_ui_service_stripped`, and `record_and_upload_v1_snapshots`).
+
+They used to live in `.swiftpm/xcode/xcshareddata/xcschemes/`. SwiftPM consumers import every shared scheme in that directory, including when automatic scheme creation is turned off, so package-level development schemes stay out of it.
+
+```bash
+xcodebuild -list -workspace RevenueCatUI-SPM.xcworkspace
+xcodebuild -showTestPlans -workspace RevenueCatUI-SPM.xcworkspace -scheme RevenueCatUI
+```
+
 ## Known Gaps
 
 The following Tuist projects or test plans are not yet represented:
