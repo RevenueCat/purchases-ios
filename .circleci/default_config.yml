@@ -574,7 +574,7 @@ commands:
           include_test_dependencies: true
       - run:
           name: Run backend_integration Tests
-          command: bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>"
+          command: CIRCLE_PULL_REQUEST= bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>"
           no_output_timeout: 5m
           environment:
             SCAN_DEVICE: << parameters.device >>
