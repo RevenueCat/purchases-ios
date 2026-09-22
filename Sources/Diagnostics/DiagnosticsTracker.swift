@@ -44,6 +44,7 @@ protocol DiagnosticsTrackerType: Sendable {
                                    backendErrorCode: Int?,
                                    resultOrigin: HTTPResponseOrigin?,
                                    verificationResult: SignatureVerificationResult,
+                                   responseRequestDate: Date?,
                                    isRetry: Bool,
                                    connectionErrorReason: ConnectionErrorReason?)
 
@@ -246,21 +247,30 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                    backendErrorCode: Int?,
                                    resultOrigin: HTTPResponseOrigin?,
                                    verificationResult: SignatureVerificationResult,
+                                   responseRequestDate: Date?,
                                    isRetry: Bool,
                                    connectionErrorReason: ConnectionErrorReason?) {
-        self.trackEvent(name: .httpRequestPerformed,
-                        properties: DiagnosticsEvent.Properties(
-                            verificationResult: verificationResult.result.name,
-                            endpointName: endpointName,
-                            host: host,
-                            responseTime: responseTime,
-                            successful: wasSuccessful,
-                            responseCode: responseCode,
-                            backendErrorCode: backendErrorCode,
-                            etagHit: resultOrigin == .cache,
-                            isRetry: isRetry,
-                            connectionErrorReason: connectionErrorReason
-                        ))
+        let now = self.dateProvider.now()
+        self.trackEvent(
+            name: .httpRequestPerformed,
+            properties: DiagnosticsEvent.Properties(
+                verificationResult: verificationResult.result.name,
+                verificationFailureReason: verificationResult.failureReason?.rawValue,
+                verificationDeviceClockOffsetMinutes: responseRequestDate.map {
+                    Int(now.timeIntervalSince($0) / 60)
+                },
+                endpointName: endpointName,
+                host: host,
+                responseTime: responseTime,
+                successful: wasSuccessful,
+                responseCode: responseCode,
+                backendErrorCode: backendErrorCode,
+                etagHit: resultOrigin == .cache,
+                isRetry: isRetry,
+                connectionErrorReason: connectionErrorReason
+            ),
+            timestamp: now
+        )
     }
 
     func trackPurchaseAttempt(wasSuccessful: Bool,
@@ -529,11 +539,13 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 private extension DiagnosticsTracker {
 
-    func trackEvent(name: DiagnosticsEvent.EventName, properties: DiagnosticsEvent.Properties) {
+    func trackEvent(name: DiagnosticsEvent.EventName,
+                    properties: DiagnosticsEvent.Properties,
+                    timestamp: Date? = nil) {
         self.track(
             DiagnosticsEvent(name: name,
                              properties: properties,
-                             timestamp: self.dateProvider.now(),
+                             timestamp: timestamp ?? self.dateProvider.now(),
                              appSessionId: self.appSessionID)
         )
     }

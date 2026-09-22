@@ -25,6 +25,8 @@ class DiagnosticsEventEncodingTests: TestCase {
         name: .httpRequestPerformed,
         properties: DiagnosticsEvent.Properties(
             verificationResult: "FAILED",
+            verificationFailureReason: "PAYLOAD_SIGNATURE_MISMATCH",
+            verificationDeviceClockOffsetMinutes: -120,
             endpointName: HTTPRequest.Path.logIn.name,
             host: "api.revenuecat.com",
             responseTime: 3,

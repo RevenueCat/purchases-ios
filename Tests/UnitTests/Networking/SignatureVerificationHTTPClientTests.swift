@@ -1248,6 +1248,32 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
             .to(matchError(NetworkError.signatureVerificationFailed(path: Self.path, code: .success)))
     }
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testDiagnosticsRetainVerificationResultForEnforcedFailure() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
+        self.signing.stubbedVerificationResult = .failed(.payloadSignatureMismatch)
+
+        let response: DataResponse? = waitUntilValue { completion in
+            self.client.perform(.createWithResponseVerification(method: .get, path: Self.path),
+                                completionHandler: completion)
+        }
+
+        expect(response).to(beFailure())
+
+        // swiftlint:disable:next force_cast
+        let diagnosticsTracker = self.diagnosticsTracker as! MockDiagnosticsTracker
+        expect(diagnosticsTracker.trackedHttpRequestPerformedParams.value).toEventually(haveCount(1))
+
+        let trackedParameters = diagnosticsTracker.trackedHttpRequestPerformedParams.value.onlyElement
+        expect(trackedParameters?.3) == false
+        expect(trackedParameters?.4) == HTTPStatusCode.success.rawValue
+        expect(trackedParameters?.6) == .backend
+        expect(trackedParameters?.7) == .failed(.payloadSignatureMismatch)
+        expect(trackedParameters?.8?.millisecondsSince1970) == Self.date1.millisecondsSince1970
+    }
+
     func testPerformRequestOverridesIt() {
         self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
 
@@ -1312,7 +1338,47 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
         expect(self.signing.requests.onlyElement?.parameters.etag) == Self.eTag
     }
 
-    func testFallbackRemoteConfigNotModifiedResponseWithInvalidSignatureFailsInEnforcedMode() {
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testDiagnosticsUseNetworkResponseCodeForNotModifiedResponse() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app")
+        self.mockPath(
+            path,
+            statusCode: .notModified,
+            requestDate: Self.date2,
+            eTagResponse: .init(
+                eTag: Self.eTag,
+                statusCode: .success,
+                data: "cached fallback config".asData,
+                verificationResult: .verified,
+                isLoadShedderResponse: false,
+                isFallbackUrlResponse: false
+            )
+        )
+        self.signing.stubbedVerificationResult = .verified
+
+        let response: DataResponse? = waitUntilValue { completion in
+            self.client.perform(.init(method: .get, path: path), completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+
+        // swiftlint:disable:next force_cast
+        let diagnosticsTracker = self.diagnosticsTracker as! MockDiagnosticsTracker
+        expect(diagnosticsTracker.trackedHttpRequestPerformedParams.value).toEventually(haveCount(1))
+
+        let trackedParameters = diagnosticsTracker.trackedHttpRequestPerformedParams.value.onlyElement
+        expect(trackedParameters?.4) == HTTPStatusCode.notModified.rawValue
+        expect(trackedParameters?.6) == .cache
+        expect(trackedParameters?.7) == .verified
+        expect(trackedParameters?.8?.millisecondsSince1970) == Self.date2.millisecondsSince1970
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testFallbackRemoteConfigNotModifiedResponseWithInvalidSignatureFailsInEnforcedMode() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
         let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app")
 
         self.mockPath(
@@ -1339,6 +1405,17 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
             .to(matchError(NetworkError.signatureVerificationFailed(path: path, code: .success)))
         expect(self.signing.requests).to(haveCount(1))
         expect(self.signing.requests.onlyElement?.parameters.message).to(beNil())
+
+        // swiftlint:disable:next force_cast
+        let diagnosticsTracker = self.diagnosticsTracker as! MockDiagnosticsTracker
+        expect(diagnosticsTracker.trackedHttpRequestPerformedParams.value).toEventually(haveCount(1))
+
+        let trackedParameters = diagnosticsTracker.trackedHttpRequestPerformedParams.value.onlyElement
+        expect(trackedParameters?.3) == false
+        expect(trackedParameters?.4) == HTTPStatusCode.notModified.rawValue
+        expect(trackedParameters?.6) == .cache
+        expect(trackedParameters?.7) == .failed(.payloadSignatureMismatch)
+        expect(trackedParameters?.8?.millisecondsSince1970) == Self.date2.millisecondsSince1970
     }
 
     func testFakeSignatureFailuresInEnforcedMode() {
