@@ -80,12 +80,12 @@ final class ExternalPurchaseManager {
         case .available:
             break
         case .notEligible:
-            guard await self.isInAStorefrontAllowedWithoutStoreEligibility() else {
-                Logger.warn(Strings.externalPurchase.not_eligible(self.storefront))
+            guard let storefront = await self.storefrontAllowingPurchaseWithoutStoreEligibility() else {
+                Logger.warn(Strings.externalPurchase.not_eligible)
                 return .stopped(.notAllowedInStorefront)
             }
 
-            Logger.debug(Strings.externalPurchase.custom_link_does_not_apply)
+            Logger.debug(Strings.externalPurchase.custom_link_does_not_apply(storefront))
             return .notApplicable
         case .paymentsNotAuthorized:
             Logger.warn(Strings.externalPurchase.payments_not_authorized)
@@ -182,13 +182,17 @@ private extension ExternalPurchaseManager {
         return self.systemInfo.storefront?.countryCode.uppercased()
     }
 
-    /// Whether the customer may be taken to an external purchase without Apple's flow around it.
+    /// The customer's storefront, when it is one where they may be taken to an external purchase without
+    /// Apple's flow around it, and `nil` otherwise.
     ///
     /// Asked on every purchase rather than cached, since the customer can change storefront while the app runs.
-    func isInAStorefrontAllowedWithoutStoreEligibility() async -> Bool {
-        guard let storefront = self.storefront else { return false }
+    func storefrontAllowingPurchaseWithoutStoreEligibility() async -> String? {
+        guard let storefront = self.storefront,
+              await self.configProvider.storefrontsAllowedWithoutStoreEligibility().contains(storefront) else {
+            return nil
+        }
 
-        return await self.configProvider.storefrontsAllowedWithoutStoreEligibility().contains(storefront)
+        return storefront
     }
 
     enum NoticeOutcome {
