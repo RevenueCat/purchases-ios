@@ -95,6 +95,11 @@ class BackendStoreKitPreflightTests: TestCase {
         withExtendedLifetime(session) {}
     }
 
+    // Temporary: forces the job to fail so the Slack recovery notification can be exercised.
+    func testDeliberateFailureForRecoveryNotification() {
+        XCTFail("Deliberate failure to exercise the Slack recovery notification")
+    }
+
 }
 
 extension BaseStoreKitIntegrationTests {
