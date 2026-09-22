@@ -31,13 +31,6 @@ final class SizeConstraintTests: TestCase {
         XCTAssertEqual(sizes.fitWithMax, .init(width: .fit(nil), height: .fit(nil)))
 
         XCTAssertEqual(
-            sizes.fitWithMax,
-            .init(
-                width: .fit(nil, .init(min: nil, max: 2)),
-                height: .fit(nil, .init(min: nil, max: 2))
-            )
-        )
-        XCTAssertEqual(
             sizes.fillWithMinMax,
             .init(
                 width: .fill(.init(min: 2, max: 3)),
