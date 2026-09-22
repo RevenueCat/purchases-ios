@@ -91,8 +91,7 @@ class BackendStoreKitPreflightTests: TestCase {
 
         let productID = BaseStoreKitIntegrationTests.monthlyNoIntroProductID
         let products = try await Product.products(for: [productID])
-        // Temporary: deliberately wrong so the job fails and exercises the Slack recovery notification.
-        XCTAssertEqual(products.map(\.id), ["deliberate.failure.to.exercise.slack.recovery"])
+        XCTAssertEqual(products.map(\.id), [productID])
         withExtendedLifetime(session) {}
     }
 
