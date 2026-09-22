@@ -22,8 +22,9 @@ import Foundation
     /// The customer already owns what the checkout would have sold them.
     case alreadyPurchased
 
-    /// The backend says the session ended without a purchase.
-    case failed
+    /// The backend says the session ended without a purchase. `code` and `message` are the backend's own,
+    /// absent where it gives no detail, and tell a declined payment from a checkout that never got going.
+    case failed(code: Int?, message: String?)
 
     /// No answer either way, because the session was still under way when the attempts ran out or
     /// because it could not be asked about at all. Says nothing about whether a purchase happened.
@@ -34,14 +35,18 @@ import Foundation
 /// Asks the backend what became of a checkout session, one attempt at a time.
 internal protocol HostedCheckoutPolling: Sendable {
 
-    func poll(operationSessionID: String) async -> HostedCheckoutPollResult
+    /// - Parameter appUserID: The customer the session belongs to, which every attempt asks about. The
+    /// backend answers for no one else, so a poll that followed the current customer instead would stop
+    /// answering the moment they changed.
+    func poll(operationSessionID: String, appUserID: String) async -> HostedCheckoutPollResult
 
 }
 
 /// Production wiring is ``HostedCheckoutPoller/WebBillingStatusFetcher``.
 internal protocol HostedCheckoutStatusFetching: Sendable {
 
-    func fetchStatus(operationSessionID: String) async -> Result<HostedCheckoutStatusResponse, BackendError>
+    func fetchStatus(operationSessionID: String,
+                     appUserID: String) async -> Result<HostedCheckoutStatusResponse, BackendError>
 
 }
 
@@ -82,18 +87,16 @@ internal struct HostedCheckoutPoller: HostedCheckoutPolling {
         self.maxAttempts = maxAttempts
     }
 
-    static func makeDefault(webBillingAPI: WebBillingAPI,
-                            currentUserProvider: CurrentUserProvider) -> HostedCheckoutPoller {
+    static func makeDefault(webBillingAPI: WebBillingAPI) -> HostedCheckoutPoller {
         return .init(
-            statusFetcher: WebBillingStatusFetcher(webBillingAPI: webBillingAPI,
-                                                   currentUserProvider: currentUserProvider),
+            statusFetcher: WebBillingStatusFetcher(webBillingAPI: webBillingAPI),
             sleeper: TaskSleeper(),
             interval: Self.defaultInterval,
             maxAttempts: Self.defaultMaxAttempts
         )
     }
 
-    func poll(operationSessionID: String) async -> HostedCheckoutPollResult {
+    func poll(operationSessionID: String, appUserID: String) async -> HostedCheckoutPollResult {
         Logger.debug(Strings.hostedCheckout.poll_start(operationSessionID, maxAttempts: self.maxAttempts))
 
         for attempt in 0..<self.maxAttempts {
@@ -106,7 +109,7 @@ internal struct HostedCheckoutPoller: HostedCheckoutPolling {
                 try? await self.sleeper.sleep(seconds: self.interval)
             }
 
-            switch await self.pollOnce(operationSessionID: operationSessionID) {
+            switch await self.pollOnce(operationSessionID: operationSessionID, appUserID: appUserID) {
             case let .finished(result):
                 return result
             case .retry:
@@ -128,8 +131,9 @@ private extension HostedCheckoutPoller {
         case retry
     }
 
-    func pollOnce(operationSessionID: String) async -> PollAttemptResult {
-        switch await self.statusFetcher.fetchStatus(operationSessionID: operationSessionID) {
+    func pollOnce(operationSessionID: String, appUserID: String) async -> PollAttemptResult {
+        switch await self.statusFetcher.fetchStatus(operationSessionID: operationSessionID,
+                                                    appUserID: appUserID) {
         case let .success(response):
             return self.result(for: response.status, operationSessionID: operationSessionID)
 
@@ -151,8 +155,15 @@ private extension HostedCheckoutPoller {
             return .finished(.succeeded)
 
         case let .failed(failure):
-            Logger.warn(Strings.hostedCheckout.poll_failed(operationSessionID, failure: failure))
-            return .finished(failure?.isAlreadyPurchased == true ? .alreadyPurchased : .failed)
+            Logger.warn(Strings.hostedCheckout.poll_failed(operationSessionID,
+                                                           code: failure?.code,
+                                                           message: failure?.message))
+
+            guard failure?.isAlreadyPurchased != true else {
+                return .finished(.alreadyPurchased)
+            }
+
+            return .finished(.failed(code: failure?.code, message: failure?.message))
 
         case .pending, .unknown:
             return .retry
@@ -165,17 +176,18 @@ private extension HostedCheckoutPoller {
 
 extension HostedCheckoutPoller {
 
+    /// Cancelling the calling `Task` does not cancel the in-flight HTTP request.
     struct WebBillingStatusFetcher: HostedCheckoutStatusFetching {
 
         let webBillingAPI: WebBillingAPI
-        let currentUserProvider: CurrentUserProvider
 
         func fetchStatus(
-            operationSessionID: String
+            operationSessionID: String,
+            appUserID: String
         ) async -> Result<HostedCheckoutStatusResponse, BackendError> {
             return await Async.call { completion in
                 self.webBillingAPI.getHostedCheckoutStatus(
-                    appUserID: self.currentUserProvider.currentAppUserID,
+                    appUserID: appUserID,
                     operationSessionID: operationSessionID,
                     completion: completion
                 )

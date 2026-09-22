@@ -63,8 +63,12 @@ final class HostedCheckoutManager {
     ///
     /// The checkout page returning to its success URL does not mean the purchase has landed yet, so the
     /// backend is asked until it says one way or the other.
+    ///
+    /// The customer is read once, here: the session belongs to whoever was current when the poll began, and
+    /// following a customer who changes mid-poll would only ask about a session they do not own.
     func pollCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
-        return await self.poller.poll(operationSessionID: operationSessionID)
+        return await self.poller.poll(operationSessionID: operationSessionID,
+                                      appUserID: self.currentUserProvider.currentAppUserID)
     }
 
 }

@@ -20,6 +20,7 @@ import XCTest
 class HostedCheckoutPollerTests: TestCase {
 
     private static let operationSessionID = "opsession_123"
+    private static let appUserID = "user_123"
 
     // MARK: - Terminal answers
 
@@ -28,7 +29,8 @@ class HostedCheckoutPollerTests: TestCase {
         let sleeper = RecordingHostedCheckoutSleeper()
 
         let result = await self.makePoller(fetcher: fetcher, sleeper: sleeper).poll(
-            operationSessionID: Self.operationSessionID
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.appUserID
         )
 
         expect(result) == .succeeded
@@ -41,7 +43,8 @@ class HostedCheckoutPollerTests: TestCase {
         let sleeper = RecordingHostedCheckoutSleeper()
 
         let result = await self.makePoller(fetcher: fetcher, sleeper: sleeper).poll(
-            operationSessionID: Self.operationSessionID
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.appUserID
         )
 
         expect(result) == .succeeded
@@ -49,15 +52,31 @@ class HostedCheckoutPollerTests: TestCase {
         expect(sleeper.delays) == [1, 1]
     }
 
-    func testFailsWhenTheBackendSaysTheSessionFailed() async {
+    /// Every attempt asks about the customer the session belongs to. The backend answers for no one else,
+    /// so a poll that followed a customer who changed would stop answering.
+    func testAsksAboutTheSameCustomerOnEveryAttempt() async {
+        let fetcher = StubStatusFetcher(results: [.status(.pending), .status(.pending), .status(.succeeded)])
+
+        _ = await self.makePoller(fetcher: fetcher, sleeper: RecordingHostedCheckoutSleeper()).poll(
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.appUserID
+        )
+
+        expect(fetcher.receivedAppUserIDs) == Array(repeating: Self.appUserID, count: 3)
+    }
+
+    /// The reason comes back with the failure: a payment the bank turned down is not the same thing to say
+    /// to a customer as a checkout that never got going.
+    func testFailsWithTheReasonTheBackendGaveForTheSession() async {
         let fetcher = StubStatusFetcher(results: [.status(.failed(.init(code: 3,
                                                                         message: "payment_charge_failed")))])
 
         let result = await self.makePoller(fetcher: fetcher, sleeper: RecordingHostedCheckoutSleeper()).poll(
-            operationSessionID: Self.operationSessionID
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.appUserID
         )
 
-        expect(result) == .failed
+        expect(result) == .failed(code: 3, message: "payment_charge_failed")
     }
 
     /// Told apart from any other failure: there is something to say to the customer rather than
@@ -67,7 +86,8 @@ class HostedCheckoutPollerTests: TestCase {
                                                                         message: "already_purchased")))])
 
         let result = await self.makePoller(fetcher: fetcher, sleeper: RecordingHostedCheckoutSleeper()).poll(
-            operationSessionID: Self.operationSessionID
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.appUserID
         )
 
         expect(result) == .alreadyPurchased
@@ -77,10 +97,11 @@ class HostedCheckoutPollerTests: TestCase {
         let fetcher = StubStatusFetcher(results: [.status(.failed(nil))])
 
         let result = await self.makePoller(fetcher: fetcher, sleeper: RecordingHostedCheckoutSleeper()).poll(
-            operationSessionID: Self.operationSessionID
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.appUserID
         )
 
-        expect(result) == .failed
+        expect(result) == .failed(code: nil, message: nil)
     }
 
     // MARK: - Answers the SDK does not have
@@ -91,7 +112,8 @@ class HostedCheckoutPollerTests: TestCase {
         let sleeper = RecordingHostedCheckoutSleeper()
 
         let result = await self.makePoller(fetcher: fetcher, sleeper: sleeper, maxAttempts: 4).poll(
-            operationSessionID: Self.operationSessionID
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.appUserID
         )
 
         expect(result) == .undetermined
@@ -105,7 +127,8 @@ class HostedCheckoutPollerTests: TestCase {
         let fetcher = StubStatusFetcher(results: [.status(.unknown), .status(.succeeded)])
 
         let result = await self.makePoller(fetcher: fetcher, sleeper: RecordingHostedCheckoutSleeper()).poll(
-            operationSessionID: Self.operationSessionID
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.appUserID
         )
 
         expect(result) == .succeeded
@@ -116,7 +139,8 @@ class HostedCheckoutPollerTests: TestCase {
         let fetcher = StubStatusFetcher(results: [.failure(.networkError(.serverDown())), .status(.succeeded)])
 
         let result = await self.makePoller(fetcher: fetcher, sleeper: RecordingHostedCheckoutSleeper()).poll(
-            operationSessionID: Self.operationSessionID
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.appUserID
         )
 
         expect(result) == .succeeded
@@ -128,7 +152,8 @@ class HostedCheckoutPollerTests: TestCase {
         let fetcher = StubStatusFetcher(results: [.failure(Self.sessionNotFoundError), .status(.succeeded)])
 
         let result = await self.makePoller(fetcher: fetcher, sleeper: RecordingHostedCheckoutSleeper()).poll(
-            operationSessionID: Self.operationSessionID
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.appUserID
         )
 
         expect(result) == .undetermined
@@ -139,7 +164,8 @@ class HostedCheckoutPollerTests: TestCase {
         let fetcher = StubStatusFetcher(results: [.failure(.missingAppUserID())])
 
         let result = await self.makePoller(fetcher: fetcher, sleeper: RecordingHostedCheckoutSleeper()).poll(
-            operationSessionID: Self.operationSessionID
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.appUserID
         )
 
         expect(result) == .undetermined
@@ -153,7 +179,7 @@ class HostedCheckoutPollerTests: TestCase {
         let poller = self.makePoller(fetcher: fetcher, sleeper: sleeper)
 
         let task = Task<HostedCheckoutPollResult, Never> {
-            await poller.poll(operationSessionID: Self.operationSessionID)
+            await poller.poll(operationSessionID: Self.operationSessionID, appUserID: Self.appUserID)
         }
         task.cancel()
 
@@ -201,6 +227,7 @@ private final class StubStatusFetcher: HostedCheckoutStatusFetching, @unchecked 
 
     private let answers: [Answer]
     private(set) var receivedIDs: [String] = []
+    private(set) var receivedAppUserIDs: [String] = []
 
     var callCount: Int { return self.receivedIDs.count }
 
@@ -208,9 +235,11 @@ private final class StubStatusFetcher: HostedCheckoutStatusFetching, @unchecked 
         self.answers = results
     }
 
-    func fetchStatus(operationSessionID: String) async -> Result<HostedCheckoutStatusResponse, BackendError> {
+    func fetchStatus(operationSessionID: String,
+                     appUserID: String) async -> Result<HostedCheckoutStatusResponse, BackendError> {
         let index = min(self.receivedIDs.count, self.answers.count - 1)
         self.receivedIDs.append(operationSessionID)
+        self.receivedAppUserIDs.append(appUserID)
 
         switch self.answers[index] {
         case let .status(status):

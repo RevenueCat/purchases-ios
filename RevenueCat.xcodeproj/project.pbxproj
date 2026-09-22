@@ -1250,6 +1250,7 @@
 		900D270A2F96A00000D32EDF /* VirtualCurrencyReward.swift in Sources */ = {isa = PBXBuildFile; fileRef = 900D27092F96A00000D32EDF /* VirtualCurrencyReward.swift */; };
 		900D270C2F96A00000D32EDF /* AdReward.swift in Sources */ = {isa = PBXBuildFile; fileRef = 900D270B2F96A00000D32EDF /* AdReward.swift */; };
 		900D270E2F96A00000D32EDF /* PurchasesRewardVerificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 900D270D2F96A00000D32EDF /* PurchasesRewardVerificationTests.swift */; };
+		4487A0B02E9000000000000B /* PurchasesHostedCheckoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4487A0AF2E9000000000000B /* PurchasesHostedCheckoutTests.swift */; };
 		901DE80E2EA0E097007EAA86 /* AdTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 901DE80D2EA0E096007EAA86 /* AdTracker.swift */; };
 		9025C53D2EA66E2500845BCE /* PostFeatureEventsOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9025C53C2EA66E2500845BCE /* PostFeatureEventsOperation.swift */; };
 		903A04342EB35929009B9CE4 /* EventsHTTPRequestPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903A04332EB35929009B9CE4 /* EventsHTTPRequestPath.swift */; };
@@ -3102,6 +3103,7 @@
 		900D27092F96A00000D32EDF /* VirtualCurrencyReward.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyReward.swift; sourceTree = "<group>"; };
 		900D270B2F96A00000D32EDF /* AdReward.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdReward.swift; sourceTree = "<group>"; };
 		900D270D2F96A00000D32EDF /* PurchasesRewardVerificationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesRewardVerificationTests.swift; sourceTree = "<group>"; };
+		4487A0AF2E9000000000000B /* PurchasesHostedCheckoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesHostedCheckoutTests.swift; sourceTree = "<group>"; };
 		901DE80D2EA0E096007EAA86 /* AdTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdTracker.swift; sourceTree = "<group>"; };
 		9025C53C2EA66E2500845BCE /* PostFeatureEventsOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostFeatureEventsOperation.swift; sourceTree = "<group>"; };
 		903A04332EB35929009B9CE4 /* EventsHTTPRequestPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventsHTTPRequestPath.swift; sourceTree = "<group>"; };
@@ -5783,6 +5785,7 @@
 				756AE8342D8816CD00BA2E39 /* PurchasesDiagnosticsTrackingTests.swift */,
 				FD43A7972E01F77300CBA838 /* PurchasesVirtualCurrenciesTests.swift */,
 				900D270D2F96A00000D32EDF /* PurchasesRewardVerificationTests.swift */,
+				4487A0AF2E9000000000000B /* PurchasesHostedCheckoutTests.swift */,
 				77AABEB72F0C23450018C1D3 /* PurchasesStoreMessagesTests.swift */,
 				FD4E63412F34E0B60040BA46 /* PurchasesIsPurchaseAllowedByRestoreBehaviorTests.swift */,
 				FDF6B1A92FB628E0006840E8 /* TestStoreProductTests.swift */,
@@ -8591,6 +8594,7 @@
 				94BA76C3AAF699D59AA685FC /* PurchasesWorkflowTests.swift in Sources */,
 				C0DE00000000000000000109 /* PurchasesCheckpointEventsTests.swift in Sources */,
 				900D270E2F96A00000D32EDF /* PurchasesRewardVerificationTests.swift in Sources */,
+				4487A0B02E9000000000000B /* PurchasesHostedCheckoutTests.swift in Sources */,
 				57045B3829C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift in Sources */,
 				351B514726D44A0D00BD2BD7 /* MockSystemInfo.swift in Sources */,
 				B300E4C226D439B700B22262 /* IntroEligibilityCalculatorTests.swift in Sources */,
