@@ -36,6 +36,7 @@ class PurchasesFallbackURLBackendStoreKit2IntegrationTests: BaseStoreKitIntegrat
         self.mainServerDown()
 
         try await super.setUp() // Initially for these tests, the main server is down
+        self.testSession.timeRate = .realTime
     }
 
     func testWhenOnlyFallbackURLThenCustomerInfoIsComputedOffline() async throws {
@@ -69,13 +70,42 @@ class PurchasesFallbackURLBackendStoreKit2IntegrationTests: BaseStoreKitIntegrat
         XCTAssertTrue(offlineEntitlementInfo.isActive)
         verifySpecificTransactionWasNotFinished(transaction)
 
+        try await asyncWait(description: "Purchased transaction is not available for recovery", timeout: .seconds(10)) {
+            let expectedIdentifier = await self.storeKitIdentifier(for: transaction)
+            guard let expectedIdentifier else { return false }
+
+            for await result in StoreKit.Transaction.unfinished {
+                if case let .verified(pending) = result,
+                   String(pending.id) == expectedIdentifier,
+                   pending.productID == transaction.productIdentifier {
+                    return true
+                }
+            }
+            return false
+        }
+        let transactionIdentifier = try XCTUnwrap(self.storeKitIdentifier(for: transaction))
+
         self.allServersUp() // Simulate main server recovery
         logger.clearMessages()
 
         let onlineCustomerInfo = try await self.purchases.customerInfo()
 
         verifyCustomerInfoWasNotComputedOffline(customerInfo: onlineCustomerInfo)
-        verifySpecificTransactionWasFinished(transaction)
+        try await self.verifySpecificTransactionIsEventuallyFinished(
+            transactionId: transactionIdentifier,
+            productId: transaction.productIdentifier
+        )
+        try await asyncWait(description: "Recovered transaction is still unfinished", timeout: .seconds(5)) {
+            for await result in StoreKit.Transaction.unfinished {
+                switch result {
+                case let .verified(pending), let .unverified(pending, _):
+                    if String(pending.id) == transactionIdentifier {
+                        return false
+                    }
+                }
+            }
+            return true
+        }
 
         XCTAssertFalse(onlineCustomerInfo.isComputedOffline)
         let onlineEntitlementInfo = try XCTUnwrap(onlineCustomerInfo.entitlements[Self.entitlementIdentifier])
@@ -102,7 +132,11 @@ class PurchasesFallbackURLBackendStoreKit2IntegrationTests: BaseStoreKitIntegrat
 
         let onlineCustomerInfo = try await self.purchases.customerInfo()
 
-        verifySpecificTransactionWasFinished(transaction, count: nil)
+        try await self.verifySpecificTransactionIsEventuallyFinished(
+            transactionId: transaction.transactionIdentifier,
+            productId: transaction.productIdentifier,
+            count: nil
+        )
 
         verifyCustomerInfoWasNotComputedOffline(customerInfo: onlineCustomerInfo)
 

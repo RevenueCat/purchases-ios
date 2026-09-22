@@ -460,6 +460,7 @@ struct WorkflowPaywallView: View {
         .environment(\.paywallStateValues, self.stateStore.values)
         .environment(\.paywallStateDefaults, self.stateStore.defaults)
         .displayError(self.workflowPresentationError, onDismiss: self.onDismiss)
+        .modifier(PaywallURLEventsModifier(purchaseHandler: self.purchaseHandler))
     }
 
     // MARK: - Helpers
@@ -869,7 +870,7 @@ struct WorkflowPaywallView: View {
         return .init(
             stepId: stepId,
             content: .init(paywallComponents: paywallComponents, offering: offering),
-            stepType: step.type ?? "screen",
+            stepType: step.type,
             screenType: step.stepScreenType,
             isSingleStepFallback: stepId == context.workflow.singleStepFallbackId,
             headerComponent: screen.componentsConfig.base.header,

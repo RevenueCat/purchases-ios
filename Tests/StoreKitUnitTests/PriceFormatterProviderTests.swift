@@ -47,6 +47,7 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
     }
 
     func testSk1PriceFormatterUsesCurrentStorefront() async throws {
+        try AvailabilityChecks.switchingStorefrontWithSKTestWorksOrSkipTest()
         self.testSession.locale = Locale(identifier: "es_ES")
         try await self.changeStorefront("ESP")
 
@@ -75,6 +76,7 @@ class PriceFormatterProviderTests: StoreKitConfigTestCase {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSk2PriceFormatterUsesCurrentStorefront() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        try AvailabilityChecks.switchingStorefrontWithSKTestWorksOrSkipTest()
 
         self.testSession.locale = Locale(identifier: "es_ES")
         try await self.changeStorefront("ESP")
