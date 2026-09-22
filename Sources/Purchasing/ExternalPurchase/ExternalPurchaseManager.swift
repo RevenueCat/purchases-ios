@@ -123,8 +123,11 @@ internal enum ExternalPurchasePreparationResult: Equatable {
     case unregistered(FailureReason)
 
     /// Route the customer to the checkout with no identifier to hand over, as the app would outside Apple's
-    /// programme: it does not apply here, see ``ExternalPurchaseAvailability/notEligible``, and the customer
-    /// is in a storefront where the purchase may go ahead anyway.
+    /// programme.
+    ///
+    /// Either the app config does not report its external purchases to Apple, or the programme does not
+    /// apply to this customer, see ``ExternalPurchaseAvailability/notEligible``, and they are in a storefront
+    /// where the purchase may go ahead anyway.
     ///
     /// Nothing was shown and nothing was minted.
     case notApplicable
