@@ -1,13 +1,10 @@
-# Opens a workflow whose third step is a started experiment, and asserts the SDK
-# lands on one of the variant paywalls.
+# Opens a workflow whose third step is a started experiment and asserts the SDK
+# lands on one of the variant paywalls. The experiment step has no screen of its
+# own: the backend resolves enrollment and serves a pre-pruned blob, so the SDK
+# should never see it.
 #
-# The experiment step has no screen of its own. The backend resolves enrollment
-# from the app user id and serves a pre-pruned blob, so the SDK should never see
-# that step. Before khepri gated the combo blobs per app it did, and navigation
-# dead-ended on a blank screen.
-#
-# `app_user_id` is pinned so enrollment is deterministic: the backend resolves the
-# same combo for the same id on every run.
+# `app_user_id` is pinned because the backend resolves the combo from it, so the
+# same id resolves the same variant on every run.
 #
 # Run locally against the test store:
 #   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/workflow_experiment_assigns_variant.yaml
@@ -37,19 +34,20 @@ env:
     visible: "Start Your Free Week And Reclaim 30+ Minutes Daily"
     timeout: 15000
 - tapOn:
-    text: "Continue.*"
+    text: "Continue 1/3"
 
 # Screen 2, whose exit points at the experiment step
 - extendedWaitUntil:
     visible: "Most People Feel Calmer After Just 3 Sessions"
     timeout: 15000
 - tapOn:
-    text: "Continue.*"
+    text: "Continue 2/3"
 
-# Either variant is a valid outcome, so assert on what both paywalls share.
-# Reaching one at all is the point: the experiment step itself renders nothing.
+# Either variant is a valid outcome, so match on both titles. Asserting a
+# variant-specific string is what makes this fail if the SDK dead-ends on the
+# screenless experiment step, or falls back to the default paywall.
 - extendedWaitUntil:
-    visible: "Restore Purchases"
+    visible: "People Who Meditate Daily Sleep 40% Better|Get started with our Standard plan"
     timeout: 15000
 
 # Record which variant this user resolved to.
