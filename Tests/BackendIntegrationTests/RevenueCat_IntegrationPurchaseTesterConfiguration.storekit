@@ -1,4 +1,14 @@
 {
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
   "identifier" : "B495CDA2",
   "nonRenewingSubscriptions" : [
     {
@@ -50,58 +60,57 @@
     }
   ],
   "settings" : {
+    "_askToBuyEnabled" : false,
+    "_billingGracePeriodEnabled" : false,
+    "_billingIssuesEnabled" : false,
+    "_disableDialogs" : false,
     "_failTransactionsEnabled" : false,
     "_locale" : "en_US",
+    "_renewalBillingIssuesEnabled" : false,
     "_storefront" : "USA",
     "_storeKitErrors" : [
       {
-        "current" : null,
         "enabled" : false,
         "name" : "Load Products"
       },
       {
-        "current" : null,
         "enabled" : false,
         "name" : "Purchase"
       },
       {
-        "current" : null,
         "enabled" : false,
         "name" : "Verification"
       },
       {
-        "current" : null,
         "enabled" : false,
         "name" : "App Store Sync"
       },
       {
-        "current" : null,
         "enabled" : false,
         "name" : "Subscription Status"
       },
       {
-        "current" : null,
         "enabled" : false,
         "name" : "App Transaction"
       },
       {
-        "current" : null,
         "enabled" : false,
         "name" : "Manage Subscriptions Sheet"
       },
       {
-        "current" : null,
         "enabled" : false,
         "name" : "Refund Request Sheet"
       },
       {
-        "current" : null,
         "enabled" : false,
         "name" : "Offer Code Redeem Sheet"
       }
     ],
     "_timeRate" : 6
   },
+  "subscriptionBundleGroups" : [
+
+  ],
   "subscriptionGroups" : [
     {
       "id" : "7096FF06",
@@ -113,11 +122,22 @@
         {
           "adHocOffers" : [
             {
+              "billingPlanType" : "BILLED_UPFRONT",
               "internalID" : "EC7974C4",
+              "numberOfPeriods" : 1,
               "offerID" : "com.revenuecat.monthly_4.99.1_free_week",
               "paymentMode" : "free",
               "referenceName" : "com.revenuecat.monthly_4.99.1_free_week",
               "subscriptionPeriod" : "P1W"
+            }
+          ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "4.99",
+              "displayPrice" : "4.99",
+              "internalID" : "246CF53C",
+              "isEnabled" : true
             }
           ],
           "codeOffers" : [
@@ -128,10 +148,21 @@
           "groupNumber" : 1,
           "internalID" : "E5E51B92",
           "introductoryOffer" : {
+            "billingPlanType" : "BILLED_UPFRONT",
             "internalID" : "D4FA46D0",
+            "numberOfPeriods" : 1,
             "paymentMode" : "free",
             "subscriptionPeriod" : "P1W"
           },
+          "introductoryOffers" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "internalID" : "D4FA46D0",
+              "numberOfPeriods" : 1,
+              "paymentMode" : "free",
+              "subscriptionPeriod" : "P1W"
+            }
+          ],
           "localizations" : [
             {
               "description" : "Monthly subscription with a 1-week free trial",
@@ -148,16 +179,30 @@
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "monthly free trial",
           "subscriptionGroupID" : "7096FF06",
-          "type" : "RecurringSubscription"
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
         },
         {
           "adHocOffers" : [
             {
+              "billingPlanType" : "BILLED_UPFRONT",
               "internalID" : "F166E790",
+              "numberOfPeriods" : 1,
               "offerID" : "com.revenuecat.monthly_4.99.1_free_week",
               "paymentMode" : "free",
               "referenceName" : "com.revenuecat.monthly_4.99.1_free_week",
               "subscriptionPeriod" : "P1W"
+            }
+          ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "0.99",
+              "displayPrice" : "0.99",
+              "internalID" : "6C547E54",
+              "isEnabled" : true
             }
           ],
           "codeOffers" : [
@@ -167,7 +212,9 @@
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "8ECC132E",
-          "introductoryOffer" : null,
+          "introductoryOffers" : [
+
+          ],
           "localizations" : [
             {
               "description" : "Monthly subscription",
@@ -184,16 +231,30 @@
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "monthly no trial",
           "subscriptionGroupID" : "7096FF06",
-          "type" : "RecurringSubscription"
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
         },
         {
           "adHocOffers" : [
             {
+              "billingPlanType" : "BILLED_UPFRONT",
               "internalID" : "FF50819D",
+              "numberOfPeriods" : 1,
               "offerID" : "com.revenuecat.weekly_1.99.1_free_week",
               "paymentMode" : "free",
               "referenceName" : "com.revenuecat.weekly_1.99.1_free_week",
               "subscriptionPeriod" : "P1W"
+            }
+          ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "1.99",
+              "displayPrice" : "1.99",
+              "internalID" : "655C23B7",
+              "isEnabled" : true
             }
           ],
           "codeOffers" : [
@@ -203,7 +264,9 @@
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "49837CD5",
-          "introductoryOffer" : null,
+          "introductoryOffers" : [
+
+          ],
           "localizations" : [
             {
               "description" : "Weekly subscription",
@@ -220,16 +283,30 @@
           "recurringSubscriptionPeriod" : "P1W",
           "referenceName" : "weekly no trial",
           "subscriptionGroupID" : "7096FF06",
-          "type" : "RecurringSubscription"
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
         },
         {
           "adHocOffers" : [
             {
+              "billingPlanType" : "BILLED_UPFRONT",
               "internalID" : "AF089687",
+              "numberOfPeriods" : 1,
               "offerID" : "com.revenuecat.weekly_1.99.3_free_days",
               "paymentMode" : "free",
               "referenceName" : "com.revenuecat.weekly_1.99.3_free_days",
               "subscriptionPeriod" : "P3D"
+            }
+          ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "1.99",
+              "displayPrice" : "1.99",
+              "internalID" : "A81D1241",
+              "isEnabled" : true
             }
           ],
           "codeOffers" : [
@@ -240,10 +317,21 @@
           "groupNumber" : 1,
           "internalID" : "33D75589",
           "introductoryOffer" : {
+            "billingPlanType" : "BILLED_UPFRONT",
             "internalID" : "32839E59",
+            "numberOfPeriods" : 1,
             "paymentMode" : "free",
             "subscriptionPeriod" : "P3D"
           },
+          "introductoryOffers" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "internalID" : "32839E59",
+              "numberOfPeriods" : 1,
+              "paymentMode" : "free",
+              "subscriptionPeriod" : "P3D"
+            }
+          ],
           "localizations" : [
             {
               "description" : "Weekly subscription",
@@ -260,7 +348,10 @@
           "recurringSubscriptionPeriod" : "P1W",
           "referenceName" : "weekly free trial",
           "subscriptionGroupID" : "7096FF06",
-          "type" : "RecurringSubscription"
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
         }
       ]
     },
@@ -275,6 +366,15 @@
           "adHocOffers" : [
 
           ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "39.99",
+              "displayPrice" : "39.99",
+              "internalID" : "0A628898",
+              "isEnabled" : true
+            }
+          ],
           "codeOffers" : [
 
           ],
@@ -283,10 +383,21 @@
           "groupNumber" : 1,
           "internalID" : "B6A3232F",
           "introductoryOffer" : {
+            "billingPlanType" : "BILLED_UPFRONT",
             "internalID" : "7C6C2EE3",
+            "numberOfPeriods" : 1,
             "paymentMode" : "free",
             "subscriptionPeriod" : "P2W"
           },
+          "introductoryOffers" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "internalID" : "7C6C2EE3",
+              "numberOfPeriods" : 1,
+              "paymentMode" : "free",
+              "subscriptionPeriod" : "P2W"
+            }
+          ],
           "localizations" : [
             {
               "description" : "Annual subscription with a 1 week free trial",
@@ -298,7 +409,73 @@
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "annual free trial",
           "subscriptionGroupID" : "727DE911",
-          "type" : "RecurringSubscription"
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        },
+        {
+          "adHocOffers" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "internalID" : "95DE1FD9",
+              "numberOfPeriods" : 1,
+              "offerID" : "upfront.promo.offer",
+              "paymentMode" : "free",
+              "referenceName" : "Upfront Promo Offer",
+              "subscriptionPeriod" : "P1M"
+            },
+            {
+              "billingPlanType" : "MONTHLY",
+              "internalID" : "00C03974",
+              "numberOfPeriods" : 1,
+              "offerID" : "12mocommitment.promo.offer",
+              "paymentMode" : "free",
+              "referenceName" : "12mo Commitment Promo Offer",
+              "subscriptionPeriod" : "P2M"
+            }
+          ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "11.88",
+              "displayPrice" : "11.88",
+              "internalID" : "1261786A",
+              "isEnabled" : true
+            },
+            {
+              "billingPlanType" : "MONTHLY",
+              "commitmentDisplayPrice" : "6.00",
+              "displayPrice" : "0.5",
+              "internalID" : "8BCD7D45",
+              "isEnabled" : true
+            }
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "11.88",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "3AE07F63",
+          "introductoryOffers" : [
+
+          ],
+          "localizations" : [
+            {
+              "description" : "",
+              "displayName" : "",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.revenuecat.sampleapp.monthly.12mocommitment",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "sub with 12mo monthly commitment",
+          "subscriptionGroupID" : "727DE911",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
         }
       ]
     },
@@ -313,6 +490,15 @@
           "adHocOffers" : [
 
           ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "1.99",
+              "displayPrice" : "1.99",
+              "internalID" : "D369E400",
+              "isEnabled" : true
+            }
+          ],
           "codeOffers" : [
 
           ],
@@ -320,7 +506,9 @@
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "70B67278",
-          "introductoryOffer" : null,
+          "introductoryOffers" : [
+
+          ],
           "localizations" : [
             {
               "description" : "Monthly subscription with no trial",
@@ -332,11 +520,23 @@
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "monthly no trial",
           "subscriptionGroupID" : "45445385",
-          "type" : "RecurringSubscription"
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
         },
         {
           "adHocOffers" : [
 
+          ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "1.99",
+              "displayPrice" : "1.99",
+              "internalID" : "EE726F5A",
+              "isEnabled" : true
+            }
           ],
           "codeOffers" : [
 
@@ -346,10 +546,21 @@
           "groupNumber" : 1,
           "internalID" : "38AF2E0E",
           "introductoryOffer" : {
+            "billingPlanType" : "BILLED_UPFRONT",
             "internalID" : "A5963DDA",
+            "numberOfPeriods" : 1,
             "paymentMode" : "free",
             "subscriptionPeriod" : "P1W"
           },
+          "introductoryOffers" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "internalID" : "A5963DDA",
+              "numberOfPeriods" : 1,
+              "paymentMode" : "free",
+              "subscriptionPeriod" : "P1W"
+            }
+          ],
           "localizations" : [
             {
               "description" : "Monthly subscription with free week",
@@ -361,11 +572,23 @@
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "monthly free trial",
           "subscriptionGroupID" : "45445385",
-          "type" : "RecurringSubscription"
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
         },
         {
           "adHocOffers" : [
 
+          ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "10.99",
+              "displayPrice" : "10.99",
+              "internalID" : "445C5E46",
+              "isEnabled" : true
+            }
           ],
           "codeOffers" : [
 
@@ -375,10 +598,21 @@
           "groupNumber" : 1,
           "internalID" : "F9A3C72D",
           "introductoryOffer" : {
+            "billingPlanType" : "BILLED_UPFRONT",
             "internalID" : "BDFE5F42",
+            "numberOfPeriods" : 1,
             "paymentMode" : "free",
             "subscriptionPeriod" : "P1W"
           },
+          "introductoryOffers" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "internalID" : "BDFE5F42",
+              "numberOfPeriods" : 1,
+              "paymentMode" : "free",
+              "subscriptionPeriod" : "P1W"
+            }
+          ],
           "localizations" : [
             {
               "description" : "Monthly subscription with free week",
@@ -390,7 +624,10 @@
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "annual free trial",
           "subscriptionGroupID" : "45445385",
-          "type" : "RecurringSubscription"
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
         }
       ]
     },
@@ -405,6 +642,15 @@
           "adHocOffers" : [
 
           ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "3.99",
+              "displayPrice" : "3.99",
+              "internalID" : "FF29A72B",
+              "isEnabled" : true
+            }
+          ],
           "codeOffers" : [
 
           ],
@@ -412,7 +658,9 @@
           "familyShareable" : true,
           "groupNumber" : 1,
           "internalID" : "BB2908CD",
-          "introductoryOffer" : null,
+          "introductoryOffers" : [
+
+          ],
           "localizations" : [
             {
               "description" : "loadshedder monthly",
@@ -424,7 +672,10 @@
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "loadShedder monthly",
           "subscriptionGroupID" : "ADE6FE00",
-          "type" : "RecurringSubscription"
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
         }
       ]
     },
@@ -439,6 +690,15 @@
           "adHocOffers" : [
 
           ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "0.99",
+              "displayPrice" : "0.99",
+              "internalID" : "B3EDDEBA",
+              "isEnabled" : true
+            }
+          ],
           "codeOffers" : [
 
           ],
@@ -447,11 +707,23 @@
           "groupNumber" : 1,
           "internalID" : "D8DAF7AC",
           "introductoryOffer" : {
+            "billingPlanType" : "BILLED_UPFRONT",
             "displayPrice" : "0.99",
             "internalID" : "AC7330E8",
+            "numberOfPeriods" : 1,
             "paymentMode" : "free",
             "subscriptionPeriod" : "P3D"
           },
+          "introductoryOffers" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "displayPrice" : "0.99",
+              "internalID" : "AC7330E8",
+              "numberOfPeriods" : 1,
+              "paymentMode" : "free",
+              "subscriptionPeriod" : "P3D"
+            }
+          ],
           "localizations" : [
             {
               "description" : "",
@@ -463,7 +735,10 @@
           "recurringSubscriptionPeriod" : "P1W",
           "referenceName" : "shortest_duration",
           "subscriptionGroupID" : "3B8FF1D7",
-          "type" : "RecurringSubscription"
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
         }
       ]
     }
@@ -472,8 +747,11 @@
     "id" : "C815358F",
     "privateKey" : "MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgMpw0LScUC+8o+WsEAM20KOMzZOMSWKFjUixtwDidPMugCgYIKoZIzj0DAQehRANCAAQIMw4YEVZrDPrk/1dx5WV3hpkuy8enQs+yDAuJRtsrOnzRH6EFgTyiydprKlgUOHW6xBocrRNTMZXioCBQtchg"
   },
+  "subscriptionSuiteGroups" : [
+
+  ],
   "version" : {
-    "major" : 3,
-    "minor" : 0
+    "major" : 6,
+    "minor" : 3
   }
 }

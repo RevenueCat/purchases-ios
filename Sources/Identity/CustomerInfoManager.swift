@@ -30,6 +30,10 @@ class CustomerInfoManager {
     private var diagnosticsTracker: DiagnosticsTrackerType?
     private let dateProvider: DateProvider
 
+    /// Used to avoid notifying observers with a `CustomerInfo` that belongs to a user that is no longer current.
+    /// Weak because `IdentityManager` keeps a strong reference to this class.
+    weak var currentUserProvider: CurrentUserProvider?
+
     /// Underlying synchronized data for in-memory-only mutable state.
     private let data: Atomic<Data>
 
@@ -142,7 +146,7 @@ class CustomerInfoManager {
             }
 
         case .fetchCurrent:
-            self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+            self.systemInfo.isApplicationBackgrounded { [self] isAppBackgrounded in
                 self.fetchAndCacheCustomerInfoData(
                     appUserID: appUserID,
                     isAppBackgrounded: isAppBackgrounded
@@ -193,7 +197,7 @@ class CustomerInfoManager {
                 }
             }
 
-            self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+            self.systemInfo.isApplicationBackgrounded { [self] isAppBackgrounded in
                 self.fetchAndCacheCustomerInfoDataIfStale(appUserID: appUserID,
                                                           isAppBackgrounded: isAppBackgrounded,
                                                           completion: completionIfNotCalledAlready)
@@ -202,7 +206,7 @@ class CustomerInfoManager {
         case .notStaleCachedOrFetched:
             let infoFromCache = try? self.cachedCustomerInfo(appUserID: appUserID)
 
-            self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+            self.systemInfo.isApplicationBackgrounded { [self] isAppBackgrounded in
                 let isCacheStale = self.deviceCache.isCustomerInfoCacheStale(
                     appUserID: appUserID,
                     isAppBackgrounded: isAppBackgrounded
@@ -279,7 +283,7 @@ class CustomerInfoManager {
             self.clearCustomerInfoCache(forAppUserID: appUserID)
         }
 
-        self.sendUpdateIfChanged(customerInfo: customerInfo)
+        self.sendUpdateIfChanged(customerInfo: customerInfo, appUserID: appUserID)
     }
 
     private func cacheSubscriberDimensionsIfPresent(
@@ -352,7 +356,10 @@ class CustomerInfoManager {
         }
     }
 
-    private func sendUpdateIfChanged(customerInfo: CustomerInfo) {
+    private func sendUpdateIfChanged(customerInfo: CustomerInfo, appUserID: String) {
+        // Read outside of the lock: `IdentityManager` reads `DeviceCache`, which must not happen while holding `data`.
+        let currentAppUserID = self.currentUserProvider?.currentAppUserID
+
         return self.modifyData {
             let lastSentCustomerInfo = $0.lastSentCustomerInfo
 
@@ -360,6 +367,16 @@ class CustomerInfoManager {
                 if let tracker = self.diagnosticsTracker, lastSentCustomerInfo != customerInfo {
                     tracker.trackCustomerInfoVerificationResultIfNeeded(customerInfo)
                 }
+            }
+
+            // A response for a user that is no longer current (e.g. an anonymous fetch that finished
+            // after `logIn`) must not be surfaced as the active user's `CustomerInfo`.
+            if let currentAppUserID, currentAppUserID != appUserID {
+                Logger.debug(Strings.customerInfo.not_sending_customerinfo_for_non_current_user(
+                    appUserID: appUserID,
+                    currentAppUserID: currentAppUserID
+                ))
+                return
             }
 
             guard !$0.customerInfoObserversByIdentifier.isEmpty, lastSentCustomerInfo != customerInfo else {

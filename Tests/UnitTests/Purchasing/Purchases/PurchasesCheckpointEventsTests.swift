@@ -32,6 +32,7 @@ class PurchasesCheckpointEventsTests: BasePurchasesTests {
         let event = try await self.singleTrackedCheckpointEvent()
         expect(event.data.identifier) == "onboarding_complete"
         expect(event.data.date) == Self.hitDate
+        expect(event.data.checkpointType) == .custom
     }
 
     /// The hit is what tells the backend the checkpoint exists, so it has to be reported even when the SDK
@@ -48,10 +49,39 @@ class PurchasesCheckpointEventsTests: BasePurchasesTests {
             fail("Expected resolution to report no action, got \(resolution)")
             return
         }
-        _ = try await self.singleTrackedCheckpointEvent()
+        let event = try await self.singleTrackedCheckpointEvent()
+        expect(event.data.result) == .configurationUnavailable
     }
 
-    func testTracksHitWhenResolutionFails() async throws {
+    func testTracksWhatTheCheckpointResolvedTo() async throws {
+        self.setUpCheckpointPurchases(resolver: MatchingCheckpointWorkflowResolver())
+
+        _ = try await self.purchases.resolveCheckpoint(identifier: "onboarding_complete", params: .init())
+
+        let event = try await self.singleTrackedCheckpointEvent()
+        expect(event.data.result) == .returnData
+        expect(event.data.offeringID) == "onboarding"
+        expect(event.data.checkpointRuleID) == "rule_123"
+    }
+
+    /// Resolution awaits the network, so the hit has to be dated when the checkpoint was reached.
+    func testDatesTheHitBeforeResolving() async throws {
+        let afterResolving = Self.hitDate.addingTimeInterval(30)
+        self.identityManager.mockIsAnonymous = false
+        self.initializePurchasesInstance(
+            appUserId: self.identityManager.currentAppUserID,
+            checkpointResolver: MatchingCheckpointWorkflowResolver(),
+            dateProvider: MockDateProvider(stubbedNow: Self.hitDate, subsequentNows: afterResolving)
+        )
+
+        _ = try await self.purchases.resolveCheckpoint(identifier: "onboarding_complete", params: .init())
+
+        let event = try await self.singleTrackedCheckpointEvent()
+        expect(event.data.date) == Self.hitDate
+    }
+
+    /// A resolution that never completes has no outcome to report, so the identifier goes unregistered.
+    func testTracksNothingWhenResolutionFails() async throws {
         self.setUpCheckpointPurchases(resolver: ThrowingCheckpointWorkflowResolver())
 
         do {
@@ -59,7 +89,8 @@ class PurchasesCheckpointEventsTests: BasePurchasesTests {
             fail("Expected resolution to throw")
         } catch {}
 
-        _ = try await self.singleTrackedCheckpointEvent()
+        let tracked = await (try self.mockEventsManager).trackedEvents
+        expect(tracked).to(beEmpty())
     }
 
     // MARK: - Helpers
@@ -88,8 +119,24 @@ private final class ThrowingCheckpointWorkflowResolver: CheckpointWorkflowResolv
 
     private struct ResolutionError: Error {}
 
-    func resolve(identifier: String, params: CheckpointParams) async throws -> CheckpointResolution {
+    func resolve(identifier: String, params: CheckpointParams) async throws -> ResolvedCheckpoint {
         throw ResolutionError()
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+private final class MatchingCheckpointWorkflowResolver: CheckpointWorkflowResolver {
+
+    func resolve(identifier: String, params: CheckpointParams) async throws -> ResolvedCheckpoint {
+        let offering = Offering(
+            identifier: "onboarding",
+            serverDescription: "Onboarding offering",
+            availablePackages: [],
+            webCheckoutUrl: nil
+        )
+
+        return .init(.matchedOffering(offering), checkpointRuleID: "rule_123")
     }
 
 }

@@ -268,16 +268,37 @@ class StoreKit2TransactionListenerCustomStreamTests: StoreKit2TransactionListene
 
     override var updates: AsyncStream<TransactionResult> {
         get async throws {
+            // Use a consumable so each fixture purchase creates a new transaction without resubscribing.
+            let transactions = try await self.createFixtureTransactions()
             return MockAsyncSequence<TransactionResult>(with: [
-                .verified(try await self.createTransactionWithPurchase()),
-                .verified(try await self.createTransactionWithPurchase()),
-                .unverified(
-                    try await self.createTransactionWithPurchase(),
-                    .revokedCertificate
-                )
+                .verified(transactions[0]),
+                .verified(transactions[1]),
+                .unverified(transactions[2], .revokedCertificate)
             ])
             .toAsyncStream()
         }
+    }
+
+    private func createFixtureTransactions() async throws -> [Transaction] {
+        var transactions: [Transaction] = []
+        // buyProduct(identifier:) was added in Xcode 15.
+        #if compiler(>=5.9)
+        if #available(iOS 27.0, tvOS 27.0, macOS 27.0, watchOS 27.0, *) {
+            // StoreKitTest can return no products immediately after session setup on OS 27.
+            // These custom-stream tests need transactions, not coverage of product lookup/purchase.
+            for _ in 0..<3 {
+                let transaction = try await self.testSession.buyProduct(identifier: Self.consumableProductId)
+                await transaction.finish()
+                transactions.append(transaction)
+            }
+            return transactions
+        }
+        #endif
+        let product = try await self.fetchSk2Product(Self.consumableProductId)
+        for _ in 0..<3 {
+            transactions.append(try await self.createTransactionWithPurchase(product: product))
+        }
+        return transactions
     }
 
     func testHandlesAllVerifiedTransactions() async throws {

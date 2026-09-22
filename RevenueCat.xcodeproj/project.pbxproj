@@ -494,6 +494,7 @@
 		C0DE00000000000000000106 /* CheckpointEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000000206 /* CheckpointEvent.swift */; };
 		C0DE00000000000000000105 /* CheckpointWorkflowResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000000205 /* CheckpointWorkflowResolverTests.swift */; };
 		C0DE00000000000000000108 /* CheckpointEventsRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000000208 /* CheckpointEventsRequestTests.swift */; };
+		C0DE0000000000000000010A /* CheckpointEventDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE0000000000000000020A /* CheckpointEventDataTests.swift */; };
 		42F1DF385E3C1F9903A07FBF /* ProductsFetcherSK1.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFB3CBAA73855779FE828CE2 /* ProductsFetcherSK1.swift */; };
 		451441F0014BC13272B179CC /* View+ExitOfferPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8FCE0314FF930204BE4D33 /* View+ExitOfferPresentation.swift */; };
 		49554883F2D5ED48F0907FB9 /* ExitOfferTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D26169F24D341F77345716D /* ExitOfferTests.swift */; };
@@ -974,6 +975,7 @@
 		57DE80BF2807705F008D6C6F /* XCTestCase+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D22BF6626F3CBFB001AE2F9 /* XCTestCase+Extensions.swift */; };
 		57E0473B277260DE0082FE91 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 57E0473A277260DE0082FE91 /* SnapshotTesting */; };
 		57E2230727500BB1002DB06E /* AtomicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E2230627500BB1002DB06E /* AtomicTests.swift */; };
+		D12CC0DE0000000000000001 /* TestLogHandlerLifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D12CC0DE0000000000000002 /* TestLogHandlerLifecycleTests.swift */; };
 		AC17E0A7E0000000000000B3 /* DeferredTaskTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC17E0A7E0000000000000B4 /* DeferredTaskTests.swift */; };
 		BDB2DF81A0F4716A775EEE69 /* JWTTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E305D88B5C27BAA73FE343 /* JWTTests.swift */; };
 		C8B45E436A9CD78B7C05454A /* AnyCodingKeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDD3CB0292567BC23D1772B4 /* AnyCodingKeyTests.swift */; };
@@ -1500,12 +1502,14 @@
 		73A610000000000000000002 /* Checkpoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A610000000000000000012 /* Checkpoints.swift */; };
 		73A610000000000000000003 /* Purchases+Checkpoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A610000000000000000013 /* Purchases+Checkpoints.swift */; };
 		73A610000000000000000004 /* CheckpointResults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A610000000000000000014 /* CheckpointResults.swift */; };
-		73A640000000000000000001 /* CheckpointCallStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000011 /* CheckpointCallStore.swift */; };
+		73A640000000000000000001 /* CheckpointPresentationSlot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000011 /* CheckpointPresentationSlot.swift */; };
 		73A660000000000000000001 /* CheckpointError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A660000000000000000011 /* CheckpointError.swift */; };
 		73A670000000000000000001 /* CheckpointIdentifierValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A670000000000000000011 /* CheckpointIdentifierValidator.swift */; };
-		73A640000000000000000003 /* CheckpointWorkflowPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000013 /* CheckpointWorkflowPresenter.swift */; };
-		73A640000000000000000004 /* CheckpointWorkflowExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000014 /* CheckpointWorkflowExecutor.swift */; };
+		73A640000000000000000003 /* WorkflowPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000013 /* WorkflowPresenter.swift */; };
+		73A640000000000000000004 /* WorkflowPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000014 /* WorkflowPresentation.swift */; };
 		73A640000000000000000005 /* CheckpointsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000015 /* CheckpointsManager.swift */; };
+		73A680000000000000000001 /* CheckpointPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A680000000000000000011 /* CheckpointPresenter.swift */; };
+		73A680000000000000000003 /* PaywallPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A680000000000000000013 /* PaywallPresenter.swift */; };
 		73A620000000000000000001 /* CheckpointValueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A620000000000000000011 /* CheckpointValueTests.swift */; };
 		73A630000000000000000001 /* NSNumber+JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A630000000000000000011 /* NSNumber+JSON.swift */; };
 		FA4A2DF41FC434A9401F08CC /* PaywallWebViewValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D0C57ECDF0E7F1A5B4418FF /* PaywallWebViewValue.swift */; };
@@ -1618,6 +1622,8 @@
 		A7D100000000000000000002 /* AudiencesConfigProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D100000000000000000001 /* AudiencesConfigProvider.swift */; };
 		A7E200000000000000000002 /* ExternalPurchasesConfigProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7E200000000000000000001 /* ExternalPurchasesConfigProvider.swift */; };
 		A7D200000000000000000002 /* Audience.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D200000000000000000001 /* Audience.swift */; };
+		A7D300000000000000000002 /* WorkflowBranch.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D300000000000000000001 /* WorkflowBranch.swift */; };
+		A7D300000000000000000004 /* WorkflowTriggerAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D300000000000000000003 /* WorkflowTriggerAction.swift */; };
 		A7D200000000000000000004 /* AudienceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D200000000000000000003 /* AudienceTests.swift */; };
 		FEDA000000000000000000E1 /* MockRemoteConfigSourceProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000E0 /* MockRemoteConfigSourceProvider.swift */; };
 		FEDA000000000000000000E2 /* MockRemoteConfigSourceProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000E0 /* MockRemoteConfigSourceProvider.swift */; };
@@ -2168,16 +2174,19 @@
 		73A610000000000000000012 /* Checkpoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checkpoints.swift; sourceTree = "<group>"; };
 		73A610000000000000000013 /* Purchases+Checkpoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Purchases+Checkpoints.swift"; sourceTree = "<group>"; };
 		73A610000000000000000014 /* CheckpointResults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointResults.swift; sourceTree = "<group>"; };
-		73A640000000000000000011 /* CheckpointCallStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointCallStore.swift; sourceTree = "<group>"; };
+		73A640000000000000000011 /* CheckpointPresentationSlot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointPresentationSlot.swift; sourceTree = "<group>"; };
 		73A660000000000000000011 /* CheckpointError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointError.swift; sourceTree = "<group>"; };
 		73A670000000000000000011 /* CheckpointIdentifierValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointIdentifierValidator.swift; sourceTree = "<group>"; };
-		73A640000000000000000013 /* CheckpointWorkflowPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointWorkflowPresenter.swift; sourceTree = "<group>"; };
-		73A640000000000000000014 /* CheckpointWorkflowExecutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointWorkflowExecutor.swift; sourceTree = "<group>"; };
+		73A640000000000000000013 /* WorkflowPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowPresenter.swift; sourceTree = "<group>"; };
+		73A640000000000000000014 /* WorkflowPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowPresentation.swift; sourceTree = "<group>"; };
 		73A640000000000000000015 /* CheckpointsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointsManager.swift; sourceTree = "<group>"; };
-		73A650000000000000000011 /* CheckpointWorkflowPresenterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointWorkflowPresenterTests.swift; sourceTree = "<group>"; };
+		73A680000000000000000011 /* CheckpointPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointPresenter.swift; sourceTree = "<group>"; };
+		73A680000000000000000013 /* PaywallPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallPresenter.swift; sourceTree = "<group>"; };
+		73A680000000000000000014 /* WorkflowPresenterExecutionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowPresenterExecutionTests.swift; sourceTree = "<group>"; };
+		73A650000000000000000011 /* WorkflowPresenterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowPresenterTests.swift; sourceTree = "<group>"; };
 		73A650000000000000000012 /* CheckpointsManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointsManagerTests.swift; sourceTree = "<group>"; };
 		73A650000000000000000013 /* CheckpointIdentifierValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointIdentifierValidatorTests.swift; sourceTree = "<group>"; };
-		73A650000000000000000014 /* CheckpointCallStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointCallStoreTests.swift; sourceTree = "<group>"; };
+		73A650000000000000000014 /* CheckpointPresentationSlotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointPresentationSlotTests.swift; sourceTree = "<group>"; };
 		73A620000000000000000011 /* CheckpointValueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointValueTests.swift; sourceTree = "<group>"; };
 		73A630000000000000000011 /* NSNumber+JSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSNumber+JSON.swift"; sourceTree = "<group>"; };
 		350A1B84226E3E8700CCA10F /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -2770,6 +2779,7 @@
 		57DE80AD28075D77008D6C6F /* OSVersionEquivalent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OSVersionEquivalent.swift; sourceTree = "<group>"; };
 		57E0474B27729A1E0082FE91 /* __Snapshots__ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = __Snapshots__; sourceTree = "<group>"; };
 		57E2230627500BB1002DB06E /* AtomicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtomicTests.swift; sourceTree = "<group>"; };
+		D12CC0DE0000000000000002 /* TestLogHandlerLifecycleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestLogHandlerLifecycleTests.swift; sourceTree = "<group>"; };
 		AC17E0A7E0000000000000B4 /* DeferredTaskTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeferredTaskTests.swift; sourceTree = "<group>"; };
 		69E305D88B5C27BAA73FE343 /* JWTTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JWTTests.swift; sourceTree = "<group>"; };
 		CDD3CB0292567BC23D1772B4 /* AnyCodingKeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCodingKeyTests.swift; sourceTree = "<group>"; };
@@ -2899,6 +2909,7 @@
 		C0DE00000000000000000206 /* CheckpointEvent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CheckpointEvent.swift; sourceTree = "<group>"; };
 		C0DE00000000000000000205 /* CheckpointWorkflowResolverTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CheckpointWorkflowResolverTests.swift; sourceTree = "<group>"; };
 		C0DE00000000000000000208 /* CheckpointEventsRequestTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CheckpointEventsRequestTests.swift; sourceTree = "<group>"; };
+		C0DE0000000000000000020A /* CheckpointEventDataTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CheckpointEventDataTests.swift; sourceTree = "<group>"; };
 		830003FE2E26161D00143F9F /* PlatformFont.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformFont.swift; sourceTree = "<group>"; };
 		830004002E261ABE00143F9F /* PlatformImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformImage.swift; sourceTree = "<group>"; };
 		831660B52E3AAA4900855312 /* FixMacButtonsModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixMacButtonsModifier.swift; sourceTree = "<group>"; };
@@ -3485,6 +3496,8 @@
 		A7D100000000000000000001 /* AudiencesConfigProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiencesConfigProvider.swift; sourceTree = "<group>"; };
 		A7E200000000000000000001 /* ExternalPurchasesConfigProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchasesConfigProvider.swift; sourceTree = "<group>"; };
 		A7D200000000000000000001 /* Audience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Audience.swift; sourceTree = "<group>"; };
+		A7D300000000000000000001 /* WorkflowBranch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowBranch.swift; sourceTree = "<group>"; };
+		A7D300000000000000000003 /* WorkflowTriggerAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowTriggerAction.swift; sourceTree = "<group>"; };
 		A7D200000000000000000003 /* AudienceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudienceTests.swift; sourceTree = "<group>"; };
 		FEDA000000000000000000E0 /* MockRemoteConfigSourceProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRemoteConfigSourceProvider.swift; sourceTree = "<group>"; };
 		FEDA0000000000000000F0A1 /* GetRemoteConfigFallbackOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetRemoteConfigFallbackOperation.swift; sourceTree = "<group>"; };
@@ -3849,12 +3862,14 @@
 			children = (
 				73A610000000000000000012 /* Checkpoints.swift */,
 				73A610000000000000000014 /* CheckpointResults.swift */,
-				73A640000000000000000011 /* CheckpointCallStore.swift */,
+				73A640000000000000000011 /* CheckpointPresentationSlot.swift */,
 				73A660000000000000000011 /* CheckpointError.swift */,
 				73A670000000000000000011 /* CheckpointIdentifierValidator.swift */,
-				73A640000000000000000014 /* CheckpointWorkflowExecutor.swift */,
-				73A640000000000000000013 /* CheckpointWorkflowPresenter.swift */,
+				73A680000000000000000011 /* CheckpointPresenter.swift */,
+				73A640000000000000000014 /* WorkflowPresentation.swift */,
+				73A640000000000000000013 /* WorkflowPresenter.swift */,
 				73A640000000000000000015 /* CheckpointsManager.swift */,
+				73A680000000000000000013 /* PaywallPresenter.swift */,
 				73A610000000000000000013 /* Purchases+Checkpoints.swift */,
 			);
 			path = Checkpoints;
@@ -3863,8 +3878,9 @@
 		73A650000000000000000020 /* Checkpoints */ = {
 			isa = PBXGroup;
 			children = (
-				73A650000000000000000014 /* CheckpointCallStoreTests.swift */,
-				73A650000000000000000011 /* CheckpointWorkflowPresenterTests.swift */,
+				73A650000000000000000014 /* CheckpointPresentationSlotTests.swift */,
+				73A680000000000000000014 /* WorkflowPresenterExecutionTests.swift */,
+				73A650000000000000000011 /* WorkflowPresenterTests.swift */,
 				73A650000000000000000012 /* CheckpointsManagerTests.swift */,
 				73A650000000000000000013 /* CheckpointIdentifierValidatorTests.swift */,
 			);
@@ -3877,6 +3893,7 @@
 				73A620000000000000000011 /* CheckpointValueTests.swift */,
 				C0DE00000000000000000205 /* CheckpointWorkflowResolverTests.swift */,
 				C0DE00000000000000000208 /* CheckpointEventsRequestTests.swift */,
+				C0DE0000000000000000020A /* CheckpointEventDataTests.swift */,
 			);
 			path = Checkpoints;
 			sourceTree = "<group>";
@@ -4964,6 +4981,7 @@
 				37E35B9AC7A350CA2437049D /* ISOPeriodFormatterTests.swift */,
 				37E35EEE7783629CDE41B70C /* SystemInfoTests.swift */,
 				57E2230627500BB1002DB06E /* AtomicTests.swift */,
+				D12CC0DE0000000000000002 /* TestLogHandlerLifecycleTests.swift */,
 				AC17E0A7E0000000000000B4 /* DeferredTaskTests.swift */,
 				69E305D88B5C27BAA73FE343 /* JWTTests.swift */,
 				CDD3CB0292567BC23D1772B4 /* AnyCodingKeyTests.swift */,
@@ -6044,6 +6062,8 @@
 				537B4B2D2DA9662700CEFF4C /* HealthReportResponse.swift */,
 				FDE57A9F2DF8785000101CE2 /* VirtualCurrenciesResponse.swift */,
 				DB3395D42F840A570079250C /* WorkflowsResponse.swift */,
+				A7D300000000000000000001 /* WorkflowBranch.swift */,
+				A7D300000000000000000003 /* WorkflowTriggerAction.swift */,
 				755C26A32E310B19006DD0AE /* WebBillingProductsResponse.swift */,
 				4487A0102E90000000000001 /* HostedCheckoutResponse.swift */,
 				E35BAD07C46D469D8CC7C396 /* RemoteConfiguration.swift */,
@@ -8028,6 +8048,8 @@
 				FEDA000000000000000000D3 /* CheckpointRules.swift in Sources */,
 				FEDA000000000000000000D4 /* CheckpointsConfigProvider.swift in Sources */,
 				A7D200000000000000000002 /* Audience.swift in Sources */,
+				A7D300000000000000000002 /* WorkflowBranch.swift in Sources */,
+				A7D300000000000000000004 /* WorkflowTriggerAction.swift in Sources */,
 				A7D100000000000000000002 /* AudiencesConfigProvider.swift in Sources */,
 				A7E200000000000000000002 /* ExternalPurchasesConfigProvider.swift in Sources */,
 				A1B2C3D42FE2000000000006 /* RemoteConfigStrings.swift in Sources */,
@@ -8672,6 +8694,7 @@
 				351B51A426D450BC00BD2BD7 /* NSError+RCExtensionsTests.swift in Sources */,
 				A524378B284FFF0200E788BD /* AttributionPosterTests.swift in Sources */,
 				57E2230727500BB1002DB06E /* AtomicTests.swift in Sources */,
+				D12CC0DE0000000000000001 /* TestLogHandlerLifecycleTests.swift in Sources */,
 				AC17E0A7E0000000000000B3 /* DeferredTaskTests.swift in Sources */,
 				BDB2DF81A0F4716A775EEE69 /* JWTTests.swift in Sources */,
 				C8B45E436A9CD78B7C05454A /* AnyCodingKeyTests.swift in Sources */,
@@ -8743,6 +8766,7 @@
 				579189E928F47E8D00BF4963 /* PurchasesDiagnosticsTests.swift in Sources */,
 				C0DE00000000000000000105 /* CheckpointWorkflowResolverTests.swift in Sources */,
 				C0DE00000000000000000108 /* CheckpointEventsRequestTests.swift in Sources */,
+				C0DE0000000000000000010A /* CheckpointEventDataTests.swift in Sources */,
 				351B51B626D450E800BD2BD7 /* ReceiptFetcherTests.swift in Sources */,
 				4F3D56632A1E66A10070105A /* CustomerInfoManagerPostReceiptTests.swift in Sources */,
 				5796A3C027D7D64500653165 /* ResultExtensionsTests.swift in Sources */,
@@ -8992,12 +9016,14 @@
 				16A5DD14302E611700E04386 /* WebViewWebsiteDataStoreSweeper.swift in Sources */,
 				73A610000000000000000002 /* Checkpoints.swift in Sources */,
 				73A610000000000000000004 /* CheckpointResults.swift in Sources */,
-				73A640000000000000000001 /* CheckpointCallStore.swift in Sources */,
+				73A640000000000000000001 /* CheckpointPresentationSlot.swift in Sources */,
 				73A660000000000000000001 /* CheckpointError.swift in Sources */,
 				73A670000000000000000001 /* CheckpointIdentifierValidator.swift in Sources */,
-				73A640000000000000000004 /* CheckpointWorkflowExecutor.swift in Sources */,
-				73A640000000000000000003 /* CheckpointWorkflowPresenter.swift in Sources */,
+				73A680000000000000000001 /* CheckpointPresenter.swift in Sources */,
+				73A640000000000000000004 /* WorkflowPresentation.swift in Sources */,
+				73A640000000000000000003 /* WorkflowPresenter.swift in Sources */,
 				73A640000000000000000005 /* CheckpointsManager.swift in Sources */,
+				73A680000000000000000003 /* PaywallPresenter.swift in Sources */,
 				73A610000000000000000003 /* Purchases+Checkpoints.swift in Sources */,
 				88B1BB132C81479F001B7EE5 /* PaywallComponentTypeTransformers.swift in Sources */,
 				88B1BB042C813A3C001B7EE5 /* StackComponentViewModel.swift in Sources */,
