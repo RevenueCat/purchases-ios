@@ -32,7 +32,17 @@ final class BackendLanes: Sendable {
     }
 
     subscript(lane: RequestLane) -> BackendConfiguration {
-        return self.dedicatedConfigurations[lane] ?? self.defaultConfiguration
+        if let configuration = self.dedicatedConfigurations[lane] {
+            return configuration
+        }
+
+        // Single-lane bundles have an empty dedicated set by design, so every lane lookup
+        // intentionally shares defaultConfiguration and should stay silent.
+        if lane != .default && !self.dedicatedConfigurations.isEmpty {
+            Logger.warn(Strings.network.missing_dedicated_lane_configuration(laneName: lane.name))
+        }
+
+        return self.defaultConfiguration
     }
 
     func clearHTTPClientCaches() {

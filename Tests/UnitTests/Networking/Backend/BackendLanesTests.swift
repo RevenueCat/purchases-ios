@@ -75,6 +75,48 @@ final class BackendLanesTests: TestCase {
         expect(lanes[.checkout].operationQueue.qualityOfService) == .userInitiated
     }
 
+    func testMissingDedicatedLaneLogsWarning() {
+        let systemInfo = MockSystemInfo(finishTransactions: true)
+        let operationDispatcher = OperationDispatcher()
+        let defaultConfiguration = self.makeConfig(client: self.makeMockClient(systemInfo: systemInfo),
+                                                   lane: .default,
+                                                   systemInfo: systemInfo,
+                                                   operationDispatcher: operationDispatcher)
+        let checkoutConfiguration = self.makeConfig(client: self.makeMockClient(systemInfo: systemInfo),
+                                                    lane: .checkout,
+                                                    systemInfo: systemInfo,
+                                                    operationDispatcher: operationDispatcher)
+        let partialLanes = BackendLanes(
+            defaultConfiguration: defaultConfiguration,
+            dedicatedConfigurations: [.checkout: checkoutConfiguration]
+        )
+
+        self.logger.clearMessages()
+        _ = partialLanes[.remoteConfig]
+        self.logger.verifyMessageWasLogged(
+            Strings.network.missing_dedicated_lane_configuration(laneName: RequestLane.remoteConfig.name),
+            level: .warn
+        )
+
+        self.logger.clearMessages()
+        _ = partialLanes[.default]
+        self.logger.verifyMessageWasNotLogged(
+            Strings.network.missing_dedicated_lane_configuration(laneName: RequestLane.default.name),
+            level: .warn,
+            allowNoMessages: true
+        )
+
+        self.logger.clearMessages()
+        let singleLane = BackendLanes(configuration: defaultConfiguration)
+        _ = singleLane[.remoteConfig]
+        _ = singleLane[.checkout]
+        self.logger.verifyMessageWasNotLogged(
+            Strings.network.missing_dedicated_lane_configuration(laneName: RequestLane.remoteConfig.name),
+            level: .warn,
+            allowNoMessages: true
+        )
+    }
+
     func testClearHTTPClientCachesClearsEveryLaneClient() {
         let systemInfo = MockSystemInfo(finishTransactions: true)
         let operationDispatcher = OperationDispatcher()
