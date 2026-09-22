@@ -972,6 +972,7 @@
 		57DE80BF2807705F008D6C6F /* XCTestCase+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D22BF6626F3CBFB001AE2F9 /* XCTestCase+Extensions.swift */; };
 		57E0473B277260DE0082FE91 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 57E0473A277260DE0082FE91 /* SnapshotTesting */; };
 		57E2230727500BB1002DB06E /* AtomicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E2230627500BB1002DB06E /* AtomicTests.swift */; };
+		D12CC0DE0000000000000001 /* TestLogHandlerLifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D12CC0DE0000000000000002 /* TestLogHandlerLifecycleTests.swift */; };
 		AC17E0A7E0000000000000B3 /* DeferredTaskTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC17E0A7E0000000000000B4 /* DeferredTaskTests.swift */; };
 		BDB2DF81A0F4716A775EEE69 /* JWTTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E305D88B5C27BAA73FE343 /* JWTTests.swift */; };
 		C8B45E436A9CD78B7C05454A /* AnyCodingKeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDD3CB0292567BC23D1772B4 /* AnyCodingKeyTests.swift */; };
@@ -2772,6 +2773,7 @@
 		57DE80AD28075D77008D6C6F /* OSVersionEquivalent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OSVersionEquivalent.swift; sourceTree = "<group>"; };
 		57E0474B27729A1E0082FE91 /* __Snapshots__ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = __Snapshots__; sourceTree = "<group>"; };
 		57E2230627500BB1002DB06E /* AtomicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtomicTests.swift; sourceTree = "<group>"; };
+		D12CC0DE0000000000000002 /* TestLogHandlerLifecycleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestLogHandlerLifecycleTests.swift; sourceTree = "<group>"; };
 		AC17E0A7E0000000000000B4 /* DeferredTaskTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeferredTaskTests.swift; sourceTree = "<group>"; };
 		69E305D88B5C27BAA73FE343 /* JWTTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JWTTests.swift; sourceTree = "<group>"; };
 		CDD3CB0292567BC23D1772B4 /* AnyCodingKeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCodingKeyTests.swift; sourceTree = "<group>"; };
@@ -4971,6 +4973,7 @@
 				37E35B9AC7A350CA2437049D /* ISOPeriodFormatterTests.swift */,
 				37E35EEE7783629CDE41B70C /* SystemInfoTests.swift */,
 				57E2230627500BB1002DB06E /* AtomicTests.swift */,
+				D12CC0DE0000000000000002 /* TestLogHandlerLifecycleTests.swift */,
 				AC17E0A7E0000000000000B4 /* DeferredTaskTests.swift */,
 				69E305D88B5C27BAA73FE343 /* JWTTests.swift */,
 				CDD3CB0292567BC23D1772B4 /* AnyCodingKeyTests.swift */,
@@ -8678,6 +8681,7 @@
 				351B51A426D450BC00BD2BD7 /* NSError+RCExtensionsTests.swift in Sources */,
 				A524378B284FFF0200E788BD /* AttributionPosterTests.swift in Sources */,
 				57E2230727500BB1002DB06E /* AtomicTests.swift in Sources */,
+				D12CC0DE0000000000000001 /* TestLogHandlerLifecycleTests.swift in Sources */,
 				AC17E0A7E0000000000000B3 /* DeferredTaskTests.swift in Sources */,
 				BDB2DF81A0F4716A775EEE69 /* JWTTests.swift in Sources */,
 				C8B45E436A9CD78B7C05454A /* AnyCodingKeyTests.swift in Sources */,

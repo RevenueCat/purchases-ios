@@ -121,15 +121,17 @@ final class PurchaseHandler: ObservableObject {
     @Published
     fileprivate(set) var consecutiveCancellationRequestID: UUID?
 
-    /// Set to a new UUID each time the user taps a web checkout CTA, propagated via
-    /// ``WebCheckoutOpenedPreferenceKey``.
-    @Published
-    fileprivate(set) var webCheckoutOpened: UUID?
+    private let webCheckoutOpenedSubject = PassthroughSubject<Void, Never>()
+    private let urlOpenedSubject = PassthroughSubject<URL, Never>()
 
-    /// Set to a new signal each time the paywall successfully opened a URL, propagated via
-    /// ``URLOpenedPreferenceKey``.
-    @Published
-    fileprivate(set) var urlOpened: URLOpenedSignal?
+    /// One-time events, deliberately not replayed when another paywall reuses this handler.
+    var webCheckoutOpenedPublisher: AnyPublisher<Void, Never> {
+        self.webCheckoutOpenedSubject.eraseToAnyPublisher()
+    }
+
+    var urlOpenedPublisher: AnyPublisher<URL, Never> {
+        self.urlOpenedSubject.eraseToAnyPublisher()
+    }
 
     /// Whether a purchase was successfully completed in the current session.
     /// Convenience property for checking if we should skip exit offers.
@@ -283,8 +285,6 @@ final class PurchaseHandler: ObservableObject {
         self.consecutiveCancellationRequestID = nil
         self.purchaseResult = nil
         self.restoredCustomerInfo = nil
-        self.deferredClearWebCheckoutOpened()
-        self.deferredClearURLOpened()
         self.activePaywallSessionID = nil
     }
 
@@ -986,16 +986,16 @@ extension PurchaseHandler {
         self.restoredCustomerInfo = .init(customerInfo: customerInfo, success: success)
     }
 
-    /// Sets a new UUID on ``webCheckoutOpened`` so ``WebCheckoutOpenedPreferenceKey`` fires.
+    /// Delivers a web checkout event before any subsequent session reset.
     @MainActor
     func signalWebCheckoutOpened() {
-        self.webCheckoutOpened = UUID()
+        self.webCheckoutOpenedSubject.send(())
     }
 
-    /// Sets a new signal on ``urlOpened`` so ``URLOpenedPreferenceKey`` fires.
+    /// Delivers every URL opening, including consecutive openings of the same URL.
     @MainActor
     func signalURLOpened(_ url: URL) {
-        self.urlOpened = .init(id: UUID(), url: url)
+        self.urlOpenedSubject.send(url)
     }
 
     func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
@@ -1008,46 +1008,6 @@ extension PurchaseHandler {
     /// current: it reports no impression, and a purchase there must not attribute to the prior step.
     func clearActivePaywallSession() {
         self.activePaywallSessionID = nil
-    }
-
-    /// Clears a pending web checkout signal without a full session reset, for when an exit offer is
-    /// about to reuse this same `PurchaseHandler`. Must run synchronously, unlike
-    /// `deferredClearWebCheckoutOpened`: the exit offer's paywall mounts in this same step, and a
-    /// deferred clear would let its brand new `onWebCheckoutOpened` observer see the stale signal as
-    /// its own fresh one.
-    @MainActor
-    func clearWebCheckoutOpened() {
-        self.webCheckoutOpened = nil
-    }
-
-    /// Clears a pending URL opened signal without a full session reset. Synchronous for the same reason as
-    /// `clearWebCheckoutOpened`.
-    @MainActor
-    func clearURLOpened() {
-        self.urlOpened = nil
-    }
-
-    /// Deferred by a tick so a signal set earlier in the same synchronous step (e.g. right before a
-    /// dismiss) still reaches its SwiftUI render pass before being cleared. Only clears if nothing
-    /// newer arrived in the meantime (e.g. this same handler reused for a new session), so a stale
-    /// clear can't wipe out a signal it was never meant to touch.
-    @MainActor
-    private func deferredClearWebCheckoutOpened() {
-        let pendingValue = self.webCheckoutOpened
-        DispatchQueue.main.async { [weak self] in
-            guard let self, self.webCheckoutOpened == pendingValue else { return }
-            self.webCheckoutOpened = nil
-        }
-    }
-
-    /// Deferred for the same reason as `deferredClearWebCheckoutOpened`.
-    @MainActor
-    private func deferredClearURLOpened() {
-        let pendingValue = self.urlOpened
-        DispatchQueue.main.async { [weak self] in
-            guard let self, self.urlOpened == pendingValue else { return }
-            self.urlOpened = nil
-        }
     }
 
     func componentInteractionLogger(
@@ -1386,37 +1346,6 @@ struct RestoreErrorPreferenceKey: PreferenceKey {
     static var defaultValue: NSError?
 
     static func reduce(value: inout NSError?, nextValue: () -> NSError?) {
-        value = nextValue()
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct WebCheckoutOpenedPreferenceKey: PreferenceKey {
-
-    static var defaultValue: UUID?
-
-    static func reduce(value: inout UUID?, nextValue: () -> UUID?) {
-        value = nextValue()
-    }
-
-}
-
-/// A URL the paywall opened, tagged with a unique identifier so preference listeners also receive
-/// consecutive opens of the same URL.
-struct URLOpenedSignal: Equatable {
-
-    let id: UUID
-    let url: URL
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct URLOpenedPreferenceKey: PreferenceKey {
-
-    static var defaultValue: URLOpenedSignal?
-
-    static func reduce(value: inout URLOpenedSignal?, nextValue: () -> URLOpenedSignal?) {
         value = nextValue()
     }
 

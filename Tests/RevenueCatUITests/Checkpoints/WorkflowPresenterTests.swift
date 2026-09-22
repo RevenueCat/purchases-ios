@@ -19,8 +19,11 @@ import XCTest
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
 import UIKit
 
+// swiftlint:disable file_length
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
+// swiftlint:disable:next type_body_length
 final class WorkflowPresenterTests: TestCase {
 
     func testPresenterStagesOutcomeUntilPresentationFinishesDismissing() throws {
@@ -78,16 +81,17 @@ final class WorkflowPresenterTests: TestCase {
         let presenter = WorkflowPresenter { _ in true }
         let controller = try presenter.makePaywallViewController(for: presentation)
         let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
+        let restoredCustomerInfo = try Self.customerInfo(activeEntitlements: ["pro"])
 
         try presenter.startPresentation(presentation)
-        presenter.paywallViewController(controller, didFinishRestoringWith: TestData.customerInfo)
+        presenter.paywallViewController(controller, didFinishRestoringWith: restoredCustomerInfo)
         controller.simulateWorkflowPresentationError(error)
         let execution = presenter.presentationDidDismiss()
 
         guard case let .completed(customerInfo)? = execution else {
             return XCTFail("Expected the restore outcome to win")
         }
-        XCTAssertEqual(customerInfo, TestData.customerInfo)
+        XCTAssertEqual(customerInfo, restoredCustomerInfo)
     }
 
     func testWorkflowPresentationErrorDoesNotReplaceEarlierWebCheckoutOutcome() throws {
@@ -139,6 +143,72 @@ final class WorkflowPresenterTests: TestCase {
             return XCTFail("Expected the restore outcome")
         }
         XCTAssertEqual(customerInfo, TestData.customerInfo)
+    }
+
+    func testNavigatingBackAfterRestoreWithoutNewEntitlementsBacksOut() throws {
+        let presenter = WorkflowPresenter { _ in true }
+        let customerInfo = try Self.customerInfo(activeEntitlements: ["pro"])
+
+        try presenter.startPresentation(Self.presentation(initialActiveEntitlementIdentifiers: ["pro"]))
+        presenter.paywallViewController(
+            PaywallViewController(offering: nil),
+            didFinishRestoringWith: customerInfo
+        )
+        let execution = presenter.presentationDidDismiss(reason: .navigatedBack)
+
+        guard case .backedOut? = execution else {
+            return XCTFail("Expected an unchanged restore not to override back navigation")
+        }
+    }
+
+    func testNavigatingBackAfterRestoreWithNewEntitlementCompletes() throws {
+        let presenter = WorkflowPresenter { _ in true }
+        let customerInfo = try Self.customerInfo(activeEntitlements: ["premium", "pro"])
+
+        try presenter.startPresentation(Self.presentation(initialActiveEntitlementIdentifiers: ["pro"]))
+        presenter.paywallViewController(
+            PaywallViewController(offering: nil),
+            didFinishRestoringWith: customerInfo
+        )
+        let execution = presenter.presentationDidDismiss(reason: .navigatedBack)
+
+        guard case let .completed(reportedCustomerInfo)? = execution else {
+            return XCTFail("Expected a restore that grants a new entitlement to complete")
+        }
+        XCTAssertEqual(reportedCustomerInfo, customerInfo)
+    }
+
+    func testRestoreTreatsActiveEntitlementAsNewWithoutInitialCustomerInfo() throws {
+        let presenter = WorkflowPresenter { _ in true }
+        let customerInfo = try Self.customerInfo(activeEntitlements: ["pro"])
+
+        try presenter.startPresentation(Self.presentation(initialActiveEntitlementIdentifiers: nil))
+        presenter.paywallViewController(
+            PaywallViewController(offering: nil),
+            didFinishRestoringWith: customerInfo
+        )
+        let execution = presenter.presentationDidDismiss(reason: .navigatedBack)
+
+        guard case let .completed(reportedCustomerInfo)? = execution else {
+            return XCTFail("Expected active entitlements to be new without an initial snapshot")
+        }
+        XCTAssertEqual(reportedCustomerInfo, customerInfo)
+    }
+
+    func testRestoreWithoutActiveEntitlementsDoesNotOverrideBackWhenInitialCustomerInfoIsMissing() throws {
+        let presenter = WorkflowPresenter { _ in true }
+        let customerInfo = try Self.customerInfo(activeEntitlements: [])
+
+        try presenter.startPresentation(Self.presentation(initialActiveEntitlementIdentifiers: nil))
+        presenter.paywallViewController(
+            PaywallViewController(offering: nil),
+            didFinishRestoringWith: customerInfo
+        )
+        let execution = presenter.presentationDidDismiss(reason: .navigatedBack)
+
+        guard case .backedOut? = execution else {
+            return XCTFail("Expected an empty restore not to override back navigation")
+        }
     }
 
     func testInteractiveDismissalIsNotReportedAsBackingOut() throws {
@@ -304,11 +374,13 @@ final class WorkflowPresenterTests: TestCase {
     }
 
     private static func presentation(
-        customVariables: [String: CustomVariableValue] = [:]
+        customVariables: [String: CustomVariableValue] = [:],
+        initialActiveEntitlementIdentifiers: Set<String>? = nil
     ) -> WorkflowPresentationRequest {
         return WorkflowPresentationRequest(
             workflow: self.workflow(),
-            customVariables: customVariables
+            customVariables: customVariables,
+            initialActiveEntitlementIdentifiers: initialActiveEntitlementIdentifiers
         )
     }
 
@@ -388,6 +460,10 @@ final class WorkflowPresenterTests: TestCase {
         )
     }
 
+    private static func customerInfo(activeEntitlements: [String]) throws -> CustomerInfo {
+        return try makeCustomerInfo(activeEntitlements: activeEntitlements)
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, *)
@@ -405,6 +481,8 @@ final class DefaultPaywallPresenterTests: TestCase {
         let controller = self.makePaywallViewController()
         let delegate: PaywallViewControllerDelegate = presenter
 
+        presenter.prepareForPresentation()
+
         delegate.paywallViewController?(
             controller,
             didFinishPurchasingWith: TestData.customerInfo,
@@ -414,14 +492,103 @@ final class DefaultPaywallPresenterTests: TestCase {
         XCTAssertEqual(presenter.presentationResult(dismissalReason: .navigatedBack), .continued)
     }
 
-    func testRestoreTakesPrecedenceOverNavigatingBack() {
+    func testRestoreWithNewEntitlementTakesPrecedenceOverNavigatingBack() throws {
+        let presenter = DefaultPaywallPresenter(
+            cachedCustomerInfoProvider: { try? Self.customerInfo(activeEntitlements: ["pro"]) }
+        )
+        let controller = self.makePaywallViewControllerForDismissalRecording()
+        let delegate: PaywallViewControllerDelegate = presenter
+
+        presenter.prepareForPresentation()
+        delegate.paywallViewController?(
+            controller,
+            didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["premium", "pro"])
+        )
+
+        XCTAssertEqual(presenter.presentationResult(dismissalReason: .navigatedBack), .continued)
+        XCTAssertEqual(controller.dismissCallCount, 1)
+    }
+
+    func testRestoreWithoutNewEntitlementDoesNotOverrideNavigatingBack() throws {
+        let presenter = DefaultPaywallPresenter(
+            cachedCustomerInfoProvider: { try? Self.customerInfo(activeEntitlements: ["pro"]) }
+        )
+        let controller = self.makePaywallViewControllerForDismissalRecording()
+        let delegate: PaywallViewControllerDelegate = presenter
+
+        presenter.prepareForPresentation()
+        delegate.paywallViewController?(
+            controller,
+            didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["pro"])
+        )
+
+        XCTAssertEqual(presenter.presentationResult(dismissalReason: .navigatedBack), .navigatedBack)
+        XCTAssertEqual(controller.dismissCallCount, 0)
+    }
+
+    func testRestoreWithoutNewEntitlementDoesNotOverrideClose() throws {
+        let presenter = DefaultPaywallPresenter(
+            cachedCustomerInfoProvider: { try? Self.customerInfo(activeEntitlements: ["pro"]) }
+        )
+        let controller = self.makePaywallViewControllerForDismissalRecording()
+        let delegate: PaywallViewControllerDelegate = presenter
+
+        presenter.prepareForPresentation()
+        delegate.paywallViewController?(
+            controller,
+            didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["pro"])
+        )
+
+        XCTAssertEqual(presenter.presentationResult(dismissalReason: .close), .closed)
+        XCTAssertEqual(controller.dismissCallCount, 0)
+    }
+
+    func testRestoreTreatsActiveEntitlementsAsNewWithoutCachedCustomerInfo() throws {
+        let presenter = DefaultPaywallPresenter(cachedCustomerInfoProvider: { nil })
+        let controller = self.makePaywallViewControllerForDismissalRecording()
+        let delegate: PaywallViewControllerDelegate = presenter
+
+        presenter.prepareForPresentation()
+        delegate.paywallViewController?(
+            controller,
+            didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["pro"])
+        )
+
+        XCTAssertEqual(presenter.presentationResult(dismissalReason: .navigatedBack), .continued)
+        XCTAssertEqual(controller.dismissCallCount, 1)
+    }
+
+    func testRestoreWithoutActiveEntitlementsDoesNotOverrideBackWhenCacheIsMissing() throws {
+        let presenter = DefaultPaywallPresenter(cachedCustomerInfoProvider: { nil })
+        let controller = self.makePaywallViewControllerForDismissalRecording()
+        let delegate: PaywallViewControllerDelegate = presenter
+
+        presenter.prepareForPresentation()
+        delegate.paywallViewController?(
+            controller,
+            didFinishRestoringWith: try Self.customerInfo(activeEntitlements: [])
+        )
+
+        XCTAssertEqual(presenter.presentationResult(dismissalReason: .navigatedBack), .navigatedBack)
+        XCTAssertEqual(controller.dismissCallCount, 0)
+    }
+
+    func testPreparingForAnotherPresentationResetsTheRecordedOutcome() {
         let presenter = DefaultPaywallPresenter()
         let controller = self.makePaywallViewController()
         let delegate: PaywallViewControllerDelegate = presenter
 
-        delegate.paywallViewController?(controller, didFinishRestoringWith: TestData.customerInfo)
-
+        presenter.prepareForPresentation()
+        delegate.paywallViewController?(
+            controller,
+            didFinishPurchasingWith: TestData.customerInfo,
+            transaction: nil
+        )
         XCTAssertEqual(presenter.presentationResult(dismissalReason: .navigatedBack), .continued)
+
+        presenter.prepareForPresentation()
+
+        XCTAssertEqual(presenter.presentationResult(dismissalReason: .navigatedBack), .navigatedBack)
     }
 
     func testDefaultCheckpointPaywallDoesNotAcceptExitOffers() throws {
@@ -451,6 +618,76 @@ final class DefaultPaywallPresenterTests: TestCase {
                 webCheckoutUrl: nil
             )
         )
+    }
+
+    private func makePaywallViewControllerForDismissalRecording() -> DismissRecordingPaywallViewController {
+        return DismissRecordingPaywallViewController(
+            offering: Offering(
+                identifier: "offering-id",
+                serverDescription: "Test offering",
+                availablePackages: [],
+                webCheckoutUrl: nil
+            )
+        )
+    }
+
+    private static func customerInfo(activeEntitlements: [String]) throws -> CustomerInfo {
+        return try makeCustomerInfo(activeEntitlements: activeEntitlements)
+    }
+
+}
+
+private func makeCustomerInfo(activeEntitlements: [String]) throws -> CustomerInfo {
+    let infos = Dictionary(uniqueKeysWithValues: activeEntitlements.map { identifier in
+        (
+            identifier,
+            EntitlementInfo(
+                identifier: identifier,
+                isActive: true,
+                willRenew: true,
+                periodType: .normal,
+                latestPurchaseDate: Date(timeIntervalSince1970: 0),
+                expirationDate: Date(timeIntervalSince1970: 4_102_444_800),
+                store: .appStore,
+                productIdentifier: "\(identifier)-product",
+                isSandbox: true,
+                ownershipType: .purchased
+            )
+        )
+    })
+
+    return CustomerInfo(
+        entitlements: EntitlementInfos(entitlements: infos),
+        requestDate: Date(timeIntervalSince1970: 0),
+        firstSeen: Date(timeIntervalSince1970: 0),
+        originalAppUserId: "test-user"
+    )
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private final class DismissRecordingPaywallViewController: PaywallViewController {
+
+    private(set) var dismissCallCount = 0
+
+    init(offering: Offering) {
+        super.init(
+            content: .offering(offering),
+            fonts: DefaultPaywallFontProvider(),
+            displayCloseButton: false,
+            shouldBlockTouchEvents: false,
+            performPurchase: nil,
+            performRestore: nil,
+            dismissRequestedHandler: nil
+        )
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func dismiss(animated flag: Bool, completion: (() -> Void)?) {
+        self.dismissCallCount += 1
+        completion?()
     }
 
 }

@@ -48,6 +48,7 @@ class StorefrontTests: StoreKitConfigTestCase {
     @available(iOS 16.0, tvOS 16.0, macOS 13.0, watchOS 9.0, *)
     func testCurrentStorefrontLocale() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        try AvailabilityChecks.switchingStorefrontWithSKTestWorksOrSkipTest()
 
         try await self.changeStorefront("ESP")
         var currentStorefront = try await XCTAsyncUnwrap(await Storefront.currentStorefront)
@@ -63,6 +64,7 @@ class StorefrontTests: StoreKitConfigTestCase {
     }
 
     func testSystemInfoStorefront() async throws {
+        try AvailabilityChecks.switchingStorefrontWithSKTestWorksOrSkipTest()
         let expected = "ESP"
         try await self.changeStorefront(expected)
 
