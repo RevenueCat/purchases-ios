@@ -42,9 +42,8 @@ final class ExternalPurchasesConfigProvider: ExternalPurchasesConfigProviderType
             return []
         }
 
-        guard let item = topic[Self.storefrontPolicyItemKey],
-              case let .object(policy)? = item.content[Self.allowedStorefrontsKey],
-              case let .array(storefronts)? = policy[Self.appStoreKey] else {
+        guard let item = topic[Self.appStoreItemKey],
+              case let .array(storefronts)? = item.content[Self.allowedStorefrontsKey] else {
             Logger.debug(Strings.remoteConfig.externalPurchasesPolicyWithoutStorefronts)
             return []
         }
@@ -56,9 +55,8 @@ final class ExternalPurchasesConfigProvider: ExternalPurchasesConfigProviderType
         })
     }
 
-    private static let storefrontPolicyItemKey = "storefront_policy"
-    private static let allowedStorefrontsKey = "allowed_without_store_eligibility"
-    private static let appStoreKey = "app_store"
+    private static let appStoreItemKey = "app_store"
+    private static let allowedStorefrontsKey = "storefronts_allowed_without_store_eligibility"
 
 }
 

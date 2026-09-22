@@ -33,16 +33,16 @@ class ExternalPurchasesConfigProviderTests: TestCase {
         expect(RemoteConfigTopic.externalPurchases.wireName) == "external_purchases"
     }
 
-    /// The backend serves every store's list to every app, since the store an app buys through is not always
-    /// the one its API key points at. Only Apple's has a say here.
+    /// The backend serves one item per store, since the store an app buys through is not always the one its
+    /// API key points at. Only Apple's has a say here.
     func testReadsTheAppStoreStorefronts() async throws {
         try self.stub(topic: """
         {
-          "storefront_policy": {
-            "allowed_without_store_eligibility": {
-              "app_store": ["USA", "JPN"],
-              "play_store": ["US"]
-            }
+          "app_store": {
+            "storefronts_allowed_without_store_eligibility": ["USA", "JPN"]
+          },
+          "play_store": {
+            "storefronts_allowed_without_store_eligibility": ["US"]
           }
         }
         """)
@@ -55,7 +55,7 @@ class ExternalPurchasesConfigProviderTests: TestCase {
     /// Storefronts are compared against what StoreKit reports, so they are held in one case rather than
     /// trusted to arrive in it.
     func testUppercasesTheStorefronts() async throws {
-        try self.stub(topic: #"{"storefront_policy": {"allowed_without_store_eligibility": {"app_store": ["usa"]}}}"#)
+        try self.stub(topic: #"{"app_store": {"storefronts_allowed_without_store_eligibility": ["usa"]}}"#)
 
         let storefronts = await self.provider.storefrontsAllowedWithoutStoreEligibility()
 
@@ -72,17 +72,18 @@ class ExternalPurchasesConfigProviderTests: TestCase {
         self.logger.verifyMessageWasLogged(Strings.remoteConfig.externalPurchasesPolicyUnavailable)
     }
 
-    func testReadsNoStorefrontsWithoutThePolicyItem() async throws {
-        try self.stub(topic: #"{"another_item": {"allowed_without_store_eligibility": {"app_store": ["USA"]}}}"#)
+    /// A store the SDK does not buy through says nothing about where it may.
+    func testReadsNoStorefrontsWithoutTheAppStoreItem() async throws {
+        try self.stub(topic: #"{"play_store": {"storefronts_allowed_without_store_eligibility": ["US"]}}"#)
 
         let storefronts = await self.provider.storefrontsAllowedWithoutStoreEligibility()
 
         expect(storefronts).to(beEmpty())
+        self.logger.verifyMessageWasLogged(Strings.remoteConfig.externalPurchasesPolicyWithoutStorefronts)
     }
 
-    /// A store the SDK does not buy through says nothing about where it may.
-    func testReadsNoStorefrontsWithoutAnAppStoreList() async throws {
-        try self.stub(topic: #"{"storefront_policy": {"allowed_without_store_eligibility": {"play_store": ["US"]}}}"#)
+    func testReadsNoStorefrontsWithoutTheStorefrontsKey() async throws {
+        try self.stub(topic: #"{"app_store": {"token_reporting_enabled": true}}"#)
 
         let storefronts = await self.provider.storefrontsAllowedWithoutStoreEligibility()
 
@@ -94,7 +95,7 @@ class ExternalPurchasesConfigProviderTests: TestCase {
     /// skipped rather than taken as an allowance.
     func testSkipsStorefrontsThatAreNotCountryCodes() async throws {
         try self.stub(topic: """
-        {"storefront_policy": {"allowed_without_store_eligibility": {"app_store": ["USA", 7, null, ["JPN"]]}}}
+        {"app_store": {"storefronts_allowed_without_store_eligibility": ["USA", 7, null, ["JPN"]]}}
         """)
 
         let storefronts = await self.provider.storefrontsAllowedWithoutStoreEligibility()
@@ -103,7 +104,7 @@ class ExternalPurchasesConfigProviderTests: TestCase {
     }
 
     func testReadsNoStorefrontsFromAMalformedPolicy() async throws {
-        try self.stub(topic: #"{"storefront_policy": {"allowed_without_store_eligibility": "USA"}}"#)
+        try self.stub(topic: #"{"app_store": {"storefronts_allowed_without_store_eligibility": "USA"}}"#)
 
         let storefronts = await self.provider.storefrontsAllowedWithoutStoreEligibility()
 
@@ -113,7 +114,7 @@ class ExternalPurchasesConfigProviderTests: TestCase {
     /// An empty list is the answer of a backend that allows the purchase nowhere, not of one that has not
     /// answered.
     func testReadsAnEmptyListAsAllowingNoStorefront() async throws {
-        try self.stub(topic: #"{"storefront_policy": {"allowed_without_store_eligibility": {"app_store": []}}}"#)
+        try self.stub(topic: #"{"app_store": {"storefronts_allowed_without_store_eligibility": []}}"#)
 
         let storefronts = await self.provider.storefrontsAllowedWithoutStoreEligibility()
 
