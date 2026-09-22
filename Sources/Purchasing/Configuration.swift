@@ -62,6 +62,7 @@ import Foundation
         let diagnosticsEnabled: Bool
         let iamEnabled: Bool
         let keychainAccessGroup: String?
+        let useExternalPurchaseCustomLinks: Bool
     }
 
     internal let storage: Storage
@@ -86,6 +87,7 @@ import Foundation
     internal var diagnosticsEnabled: Bool { self.storage.diagnosticsEnabled }
     internal var iamEnabled: Bool { self.storage.iamEnabled }
     internal var keychainAccessGroup: String? { self.storage.keychainAccessGroup }
+    internal var useExternalPurchaseCustomLinks: Bool { self.storage.useExternalPurchaseCustomLinks }
 
     private init(with builder: Builder) {
         self.storage = Storage(
@@ -104,7 +106,8 @@ import Foundation
             automaticDeviceIdentifierCollectionEnabled: builder.automaticDeviceIdentifierCollectionEnabled,
             diagnosticsEnabled: builder.diagnosticsEnabled,
             iamEnabled: builder.iamEnabled,
-            keychainAccessGroup: builder.keychainAccessGroup
+            keychainAccessGroup: builder.keychainAccessGroup,
+            useExternalPurchaseCustomLinks: builder.useExternalPurchaseCustomLinks
         )
     }
 
@@ -158,6 +161,7 @@ import Foundation
         private(set) var iamEnabled: Bool = false
         private(set) var keychainAccessGroup: String?
         private(set) var storeKitVersion: StoreKitVersion = .default
+        private(set) var useExternalPurchaseCustomLinks: Bool = false
 
         /// The preferred locale for the requests.
         ///
@@ -388,6 +392,22 @@ import Foundation
                                                                     keychainAccessGroup: String) -> Builder {
             self.iamEnabled = iamEnabled
             self.keychainAccessGroup = keychainAccessGroup
+            return self
+        }
+
+        /// Set `useExternalPurchaseCustomLinks`. This is *disabled* by default.
+        ///
+        /// Enabling it makes a web purchase button that opens its link in the external browser take part in
+        /// Apple's external purchase custom link programme: the customer is shown Apple's disclosure notice,
+        /// and the purchase is reported to Apple.
+        ///
+        /// - Important: The app has to be enrolled in the programme and to carry the corresponding
+        /// entitlement, otherwise no purchase can be made outside the App Store.
+        ///
+        /// - Note: Swift only while the programme support is experimental.
+        @_spi(Experimental)
+        public func with(useExternalPurchaseCustomLinks: Bool) -> Builder {
+            self.useExternalPurchaseCustomLinks = useExternalPurchaseCustomLinks
             return self
         }
 

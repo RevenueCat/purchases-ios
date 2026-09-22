@@ -184,7 +184,7 @@ private extension ExternalPurchaseManager {
     /// Whether the app takes part in Apple's external purchase custom link programme at all, which is a
     /// precondition for everything here.
     var takesPartInTheProgramme: Bool {
-        return self.systemInfo.dangerousSettings.useExternalPurchaseCustomLinks
+        return self.systemInfo.useExternalPurchaseCustomLinks
     }
 
     enum NoticeOutcome {

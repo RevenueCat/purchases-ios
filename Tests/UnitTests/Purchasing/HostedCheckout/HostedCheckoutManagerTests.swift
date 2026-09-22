@@ -15,7 +15,7 @@ import Foundation
 import Nimble
 import XCTest
 
-@_spi(Experimental) @_spi(Internal) @testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class HostedCheckoutManagerTests: TestCase {
 
@@ -204,10 +204,7 @@ private extension HostedCheckoutManagerTests {
     static func makeSystemInfo(useExternalPurchaseCustomLinks: Bool) -> MockSystemInfo {
         return MockSystemInfo(
             finishTransactions: true,
-            dangerousSettings: DangerousSettings(
-                autoSyncPurchases: true,
-                useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks
-            )
+            useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks
         )
     }
 

@@ -29,6 +29,7 @@ class MockSystemInfo: SystemInfo {
                      apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
                      responseVerificationMode: Signing.ResponseVerificationMode = .disabled,
                      dangerousSettings: DangerousSettings,
+                     useExternalPurchaseCustomLinks: Bool = false,
                      clock: ClockType = TestClock(),
                      preferredLocalesProvider: PreferredLocalesProvider = .mock()) {
         self.init(platformInfo: platformInfo,
@@ -39,6 +40,7 @@ class MockSystemInfo: SystemInfo {
                   apiKeyValidationResult: apiKeyValidationResult,
                   responseVerificationMode: responseVerificationMode,
                   dangerousSettings: dangerousSettings,
+                  useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks,
                   isAppBackgrounded: false,
                   clock: clock,
                   preferredLocalesProvider: preferredLocalesProvider)
@@ -53,6 +55,7 @@ class MockSystemInfo: SystemInfo {
                      apiKey: String = "mock_api_key",
                      apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
                      responseVerificationMode: Signing.ResponseVerificationMode = .disabled,
+                     useExternalPurchaseCustomLinks: Bool = false,
                      clock: ClockType = TestClock(),
                      preferredLocalesProvider: PreferredLocalesProvider = .mock()) {
         let dangerousSettings = DangerousSettings(
@@ -71,6 +74,7 @@ class MockSystemInfo: SystemInfo {
                   apiKeyValidationResult: apiKeyValidationResult,
                   responseVerificationMode: responseVerificationMode,
                   dangerousSettings: dangerousSettings,
+                  useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks,
                   clock: clock,
                   preferredLocalesProvider: preferredLocalesProvider)
     }

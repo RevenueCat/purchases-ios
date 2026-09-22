@@ -15,7 +15,7 @@ import Foundation
 import Nimble
 import XCTest
 
-@testable @_spi(Internal) import RevenueCat
+@testable @_spi(Experimental) @_spi(Internal) import RevenueCat
 
 class ConfigurationTests: TestCase {
 
@@ -220,6 +220,19 @@ class ConfigurationTests: TestCase {
         expect(configuration.automaticDeviceIdentifierCollectionEnabled) == false
     }
 
+    func testUseExternalPurchaseCustomLinksIsDisabledByDefault() {
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .build()
+        expect(configuration.useExternalPurchaseCustomLinks) == false
+    }
+
+    func testUseExternalPurchaseCustomLinksCanBeSet() {
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .with(useExternalPurchaseCustomLinks: true)
+            .build()
+        expect(configuration.useExternalPurchaseCustomLinks) == true
+    }
+
     // MARK: - Equality
 
     func testTwoConfigurationsWithIdenticalFieldsAreEqualAndHaveSameHash() {
@@ -269,6 +282,13 @@ class ConfigurationTests: TestCase {
         let rhs = Configuration.Builder(withAPIKey: "test")
             .with(dangerousSettings: DangerousSettings(autoSyncPurchases: false))
             .build()
+
+        expect(lhs) != rhs
+    }
+
+    func testDifferentUseExternalPurchaseCustomLinksIsNotEqual() {
+        let lhs = Configuration.Builder(withAPIKey: "test").with(useExternalPurchaseCustomLinks: true).build()
+        let rhs = Configuration.Builder(withAPIKey: "test").with(useExternalPurchaseCustomLinks: false).build()
 
         expect(lhs) != rhs
     }
@@ -410,6 +430,7 @@ class ConfigurationTests: TestCase {
             .with(preferredUILocaleOverride: "en-US")
             .with(automaticDeviceIdentifierCollectionEnabled: true)
             .with(iamEnabled: false)
+            .with(useExternalPurchaseCustomLinks: false)
     }
 
 }

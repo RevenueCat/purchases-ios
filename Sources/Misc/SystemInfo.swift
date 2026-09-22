@@ -55,6 +55,11 @@ class SystemInfo {
     let platformFlavorVersion: String?
     let responseVerificationMode: Signing.ResponseVerificationMode
     let dangerousSettings: DangerousSettings
+
+    /// Whether the app takes part in Apple's external purchase custom link programme,
+    /// see ``Configuration/Builder/with(useExternalPurchaseCustomLinks:)``.
+    let useExternalPurchaseCustomLinks: Bool
+
     let clock: ClockType
     private let preferredLocalesProvider: PreferredLocalesProvider
 
@@ -218,6 +223,7 @@ class SystemInfo {
          apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
          responseVerificationMode: Signing.ResponseVerificationMode = .default,
          dangerousSettings: DangerousSettings? = nil,
+         useExternalPurchaseCustomLinks: Bool = false,
          isAppBackgrounded: Bool? = nil,
          clock: ClockType = Clock.default,
          preferredLocalesProvider: PreferredLocalesProvider) {
@@ -235,6 +241,7 @@ class SystemInfo {
         self.storefrontProvider = storefrontProvider
         self.responseVerificationMode = responseVerificationMode
         self.dangerousSettings = dangerousSettings ?? DangerousSettings()
+        self.useExternalPurchaseCustomLinks = useExternalPurchaseCustomLinks
         self.clock = clock
         self.preferredLocalesProvider = preferredLocalesProvider
 
