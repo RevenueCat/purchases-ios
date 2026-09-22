@@ -153,6 +153,54 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
     }
 }
 
+// MARK: - Billing Plans
+#if compiler(>=6.3.2)
+@available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+extension StoreKit2IntegrationTests {
+
+    func testCanPurchaseUpFrontBillingPlanProduct() async throws {
+        try AvailabilityChecks.skipBillingPlanTestIfOnUnsupportedOSVersion()
+
+        try await self.purchaseBillingPlanProduct(
+            Self.productIDWithBillingPlans,
+            expectedEntitlementIdentifier: "super_premium"
+        )
+    }
+
+    func testCanPurchaseMonthlyBillingPlanProduct() async throws {
+        try AvailabilityChecks.skipBillingPlanTestIfOnUnsupportedOSVersion()
+
+        try await self.purchaseBillingPlanProduct(
+            "\(Self.productIDWithBillingPlans):monthly",
+            expectedEntitlementIdentifier: "premium"
+        )
+    }
+
+    private func purchaseBillingPlanProduct(
+        _ productIdentifier: String,
+        expectedEntitlementIdentifier: String,
+        file: FileString = #file,
+        line: UInt = #line
+    ) async throws {
+        let product = try await self.product(productIdentifier)
+        expect(product.id) == productIdentifier
+        expect(product.productIdentifier) == Self.productIDWithBillingPlans
+
+        let result = try await self.purchase(product: product, file: file, line: line)
+        let transaction = try XCTUnwrap(result.transaction)
+
+        self.verifyCustomerInfoWasNotComputedOffline(customerInfo: result.customerInfo, file: file, line: line)
+
+        expect(result.customerInfo.allPurchasedProductIdentifiers).to(contain(productIdentifier))
+        expect(transaction.productIdentifier) == Self.productIDWithBillingPlans
+        expect(result.customerInfo.entitlements[expectedEntitlementIdentifier]?.isActive) == true
+
+        self.verifyAnyTransactionWasFinished(count: nil, file: file, line: line)
+    }
+
+}
+#endif
+
 class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
     override class var storeKitVersion: StoreKitVersion { .storeKit1 }

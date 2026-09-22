@@ -34,6 +34,57 @@ class OfflineStoreKit2IntegrationTests: OfflineStoreKit1IntegrationTests {
 
 }
 
+// MARK: - Billing Plans
+#if compiler(>=6.3.2)
+@available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+extension OfflineStoreKit2IntegrationTests {
+
+    func testOfflineCustomerInfoWithUpFrontBillingPlanProduct() async throws {
+        try AvailabilityChecks.skipBillingPlanTestIfOnUnsupportedOSVersion()
+
+        try await self.purchaseBillingPlanProductWhileOffline(
+            Self.productIDWithBillingPlans,
+            expectedEntitlementIdentifier: "super_premium"
+        )
+    }
+
+    func testOfflineCustomerInfoWithMonthlyBillingPlanProduct() async throws {
+        try AvailabilityChecks.skipBillingPlanTestIfOnUnsupportedOSVersion()
+
+        try await self.purchaseBillingPlanProductWhileOffline(
+            "\(Self.productIDWithBillingPlans):monthly",
+            expectedEntitlementIdentifier: "premium"
+        )
+    }
+
+    private func purchaseBillingPlanProductWhileOffline(
+        _ productIdentifier: String,
+        expectedEntitlementIdentifier: String,
+        file: FileString = #file,
+        line: UInt = #line
+    ) async throws {
+        self.logger.clearMessages()
+
+        let product = try await self.product(productIdentifier)
+        expect(product.id) == productIdentifier
+        expect(product.productIdentifier) == Self.productIDWithBillingPlans
+
+        self.serverDown()
+
+        let purchaseData = try await self.purchases.purchase(product: product)
+        let transaction = try XCTUnwrap(purchaseData.transaction)
+
+        self.verifyCustomerInfoWasComputedOffline(customerInfo: purchaseData.customerInfo, file: file, line: line)
+        expect(purchaseData.customerInfo.allPurchasedProductIdentifiers).to(contain(productIdentifier))
+        expect(transaction.productIdentifier) == Self.productIDWithBillingPlans
+        expect(purchaseData.customerInfo.entitlements[expectedEntitlementIdentifier]?.isActive) == true
+
+        self.verifyNoTransactionsWereFinished(file: file, line: line)
+    }
+
+}
+#endif
+
 class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
 
     override class var storeKitVersion: StoreKitVersion { .storeKit1 }
