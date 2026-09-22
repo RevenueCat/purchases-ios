@@ -42,9 +42,8 @@ extension ExternalPurchaseStrings: LogMessage {
             return "This app does not report its external purchases to the App Store: continuing with no " +
             "notice shown and no token minted."
         case let .custom_link_does_not_apply(storefront):
-            return "Apple's external purchase custom link does not apply to this customer, and their " +
-            "storefront (\(storefront)) is one where the purchase may go ahead without it: continuing with " +
-            "no notice shown and no token minted."
+            return "Apple's external purchase custom link does not apply in this customer's storefront " +
+            "(\(storefront)): continuing with no notice shown and no token minted."
         case .not_eligible:
             return "Not preparing an external purchase: Apple's external purchase custom link does not apply " +
             "to this customer."

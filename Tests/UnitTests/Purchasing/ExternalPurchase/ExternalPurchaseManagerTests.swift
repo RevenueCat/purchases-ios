@@ -106,8 +106,8 @@ class ExternalPurchaseManagerTests: TestCase {
         self.logger.verifyMessageWasLogged(Strings.externalPurchase.token_reporting_disabled)
     }
 
-    /// The storefronts are the exception to Apple's own eligibility, which an app that reports nothing is
-    /// never subject to: it is offered the purchase everywhere rather than refused outside the list.
+    /// An app that reports nothing uses none of Apple's external purchase APIs, so it is offered the
+    /// purchase everywhere rather than refused outside the list.
     func testAsksNothingAboutStorefrontsWhileTheAppDoesNotReportTokens() async {
         self.configProvider.stubbedReportsTokens = false
         self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.otherStorefront)
@@ -134,9 +134,9 @@ class ExternalPurchaseManagerTests: TestCase {
         expect(self.configProvider.invokedReportsTokensCount) == 2
     }
 
-    // MARK: - Storefronts that allow the purchase without eligibility
+    // MARK: - Storefronts that do not require Apple's external purchase APIs
 
-    /// Where Apple's flow does not apply and the storefront is not one it is waived in, the customer is
+    /// Where Apple's external purchase APIs are required and cannot be used for this customer, they are
     /// offered nothing at all rather than an undisclosed purchase.
     func testStopsWhenTheStorefrontIsNotOneOfThoseAllowedWithoutEligibility() async {
         self.customLink.stubbedAvailability = .notEligible
