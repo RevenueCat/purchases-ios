@@ -24,8 +24,6 @@ struct RequestLane: Hashable {
     let name: String
     let qualityOfService: QualityOfService
 
-    /// Lanes are only the canonical constants in this file; construction stays here so a lane value
-    /// cannot be built ad hoc and miss the dictionary key it was meant to match.
     private init(name: String, qualityOfService: QualityOfService) {
         self.name = name
         self.qualityOfService = qualityOfService
