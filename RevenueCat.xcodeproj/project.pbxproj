@@ -1516,6 +1516,7 @@
 		FACE0000000000000000B005 /* BackendCheckoutLaneTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE0000000000000000B006 /* BackendCheckoutLaneTests.swift */; };
 		FACE0000000000000000B007 /* BackendLanesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE0000000000000000B008 /* BackendLanesTests.swift */; };
 		FACE0000000000000000B009 /* BackendTestInitializers.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE0000000000000000B00A /* BackendTestInitializers.swift */; };
+		FACE0000000000000000B00B /* BackendTestInitializers.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE0000000000000000B00A /* BackendTestInitializers.swift */; };
 		C4E00000000000000000A007 /* WebCheckoutReturnURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E00000000000000000A006 /* WebCheckoutReturnURL.swift */; };
 		C4E00000000000000000A009 /* WebCheckoutViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E00000000000000000A008 /* WebCheckoutViewModel.swift */; };
 		C4E00000000000000000A00B /* WebCheckoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E00000000000000000A00A /* WebCheckoutView.swift */; };
@@ -7773,6 +7774,7 @@
 				3543914526F926D900E669DF /* SKProductSubscriptionDurationExtensions.swift in Sources */,
 				AC17E0A7E0000000000000A2 /* MockAsyncGate.swift in Sources */,
 				3543913926F90FFB00E669DF /* MockBackend.swift in Sources */,
+				FACE0000000000000000B00B /* BackendTestInitializers.swift in Sources */,
 				F5FCD3FC27DA2034003BDC04 /* PriceFormatterProviderTests.swift in Sources */,
 				F5355163286B70E0009CA47A /* OfferingsManagerStoreKitTests.swift in Sources */,
 				35C272A22BC4084C005A0CE8 /* MockDiagnosticsTracker.swift in Sources */,
