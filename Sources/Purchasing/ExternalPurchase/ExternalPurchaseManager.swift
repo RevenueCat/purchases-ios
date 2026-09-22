@@ -76,7 +76,7 @@ final class ExternalPurchaseManager {
             break
         case .notEligible:
             guard await self.isInAStorefrontAllowedWithoutStoreEligibility() else {
-                Logger.warn(Strings.externalPurchase.storefront_not_allowed(self.storefront))
+                Logger.warn(Strings.externalPurchase.not_eligible(self.storefront))
                 return .stopped(.notAllowedInStorefront)
             }
 
