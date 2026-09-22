@@ -2715,6 +2715,10 @@ workflows:
           context:
             - e2e-tests
             - slack-secrets
+      - run-workflow-maestro-tests:
+          context:
+            - e2e-tests
+            - slack-secrets
 
   daily-cocoapods-token-keepalive:
     when:
@@ -2807,6 +2811,10 @@ workflows:
             - slack-secrets-ios
             - slack-secrets
       - run-all-maestro-e2e-tests:
+          context:
+            - e2e-tests
+            - slack-secrets
+      - run-workflow-maestro-tests:
           context:
             - e2e-tests
             - slack-secrets
@@ -2916,6 +2924,7 @@ workflows:
           requires:
             - check-api-changes
             - run-all-maestro-e2e-tests
+            - run-workflow-maestro-tests
             - lint
             - run-test-ios-26
             - run-test-ios-27
