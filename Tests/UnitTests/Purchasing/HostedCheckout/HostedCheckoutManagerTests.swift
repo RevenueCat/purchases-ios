@@ -125,7 +125,7 @@ class HostedCheckoutManagerTests: TestCase {
 
         _ = await self.manager.startCheckout(package: Self.package, paywall: nil)
 
-        self.logger.verifyMessageWasNotLogged(Strings.externalPurchase.custom_link_does_not_apply)
+        self.logger.verifyMessageWasNotLogged(Strings.externalPurchase.custom_link_does_not_apply(Self.storefront))
     }
 
     /// The backend creates a sandbox session for a `test_` key, and Apple's flow follows the app and the

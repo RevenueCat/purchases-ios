@@ -267,8 +267,10 @@ class ExternalPurchaseManagerTests: TestCase {
 
         _ = await self.manager.prepareExternalPurchase(flow: .linkOut)
 
-        self.logger.verifyMessageWasNotLogged(Strings.externalPurchase.custom_link_does_not_apply,
-                                              allowNoMessages: true)
+        self.logger.verifyMessageWasNotLogged(
+            Strings.externalPurchase.custom_link_does_not_apply(Self.allowedStorefront),
+            allowNoMessages: true
+        )
     }
 
     // MARK: - Test Store
