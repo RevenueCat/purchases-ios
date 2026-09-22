@@ -1269,7 +1269,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
         let trackedParameters = diagnosticsTracker.trackedHttpRequestPerformedParams.value.onlyElement
         expect(trackedParameters?.3) == false
         expect(trackedParameters?.4) == -1
-        expect(trackedParameters?.6) == .backend
+        expect(trackedParameters?.6).to(beNil())
         expect(trackedParameters?.7) == .failed(.payloadSignatureMismatch)
         expect(trackedParameters?.8?.millisecondsSince1970) == Self.date1.millisecondsSince1970
     }
@@ -1413,7 +1413,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
         let trackedParameters = diagnosticsTracker.trackedHttpRequestPerformedParams.value.onlyElement
         expect(trackedParameters?.3) == false
         expect(trackedParameters?.4) == -1
-        expect(trackedParameters?.6) == .cache
+        expect(trackedParameters?.6).to(beNil())
         expect(trackedParameters?.7) == .failed(.payloadSignatureMismatch)
         expect(trackedParameters?.8?.millisecondsSince1970) == Self.date2.millisecondsSince1970
     }

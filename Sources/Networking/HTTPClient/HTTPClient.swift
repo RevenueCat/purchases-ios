@@ -443,7 +443,6 @@ private extension HTTPClient {
     struct VerificationDiagnostics {
         let result: SignatureVerificationResult
         let requestDate: Date?
-        let origin: HTTPResponseOrigin
     }
 
     static let serverErrorResponse: ErrorResponse = .init(code: .internalServerError,
@@ -574,8 +573,7 @@ private extension HTTPClient {
         if case let .success(response?) = responseResult, response.verificationResult.isFailed {
             verificationDiagnostics = .init(
                 result: response.verificationResult,
-                requestDate: response.requestDate,
-                origin: response.origin
+                requestDate: response.requestDate
             )
         } else {
             verificationDiagnostics = nil
@@ -995,7 +993,7 @@ private extension HTTPClient {
                                                              wasSuccessful: false,
                                                              responseCode: responseCode,
                                                              backendErrorCode: backendErrorCode,
-                                                             resultOrigin: verificationDiagnostics?.origin,
+                                                             resultOrigin: nil,
                                                              verificationResult: verificationResult,
                                                              responseRequestDate: verificationDiagnostics?.requestDate,
                                                              isRetry: request.retried,
