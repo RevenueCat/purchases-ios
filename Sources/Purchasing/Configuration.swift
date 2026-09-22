@@ -401,10 +401,8 @@ import Foundation
         /// Apple's external purchase custom link programme: the customer is shown Apple's disclosure notice,
         /// and the purchase is reported to Apple.
         ///
-        /// - Important: The app has to be enrolled in the programme and to carry the corresponding
-        /// entitlement, otherwise no purchase can be made outside the App Store.
-        ///
-        /// - Note: Swift only while the programme support is experimental.
+        /// - Important: The app has to carry Apple's external purchase link entitlement, otherwise no
+        /// purchase can be made outside the App Store.
         @_spi(Experimental)
         public func with(useExternalPurchaseCustomLinks: Bool) -> Builder {
             self.useExternalPurchaseCustomLinks = useExternalPurchaseCustomLinks
