@@ -43,7 +43,7 @@ public extension Purchases {
     ///   - customVariables: Values usable in checkpoint targeting rules, feature events, and the presented flow.
     ///   - paywallPresenter: A custom presenter used if this checkpoint selects an offering. This overrides the global
     ///     ``paywallPresenter`` for this call.
-    ///   - onPassed: Called when the checkpoint completes.
+    ///   - onPassed: Called on the main actor when the checkpoint completes.
     func checkpoint(
         _ identifier: String,
         customVariables: [String: CustomVariableValue] = [:],

@@ -67,7 +67,7 @@ import Foundation
 @_spi(Internal) public struct WorkflowStep {
 
     public let id: String
-    @_spi(Internal) public let type: String?
+    @_spi(Internal) public let type: String
     public let screenId: String?
     @DefaultDecodable.EmptyDictionary
     var paramValues: [String: AnyDecodable]
@@ -116,7 +116,7 @@ import Foundation
     // params), and are typed with the internal `AnyDecodable`, so they're defaulted rather than exposed.
     @_spi(Internal) public init(
         id: String,
-        type: String?,
+        type: String,
         screenId: String?,
         triggers: [WorkflowTrigger] = [],
         triggerActions: [String: WorkflowTriggerAction] = [:]

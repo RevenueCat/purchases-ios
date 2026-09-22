@@ -27,10 +27,13 @@ final class CheckpointPresenter: CheckpointPresenterType {
 
     init(
         workflowPresenter: WorkflowPresenterType,
+        cachedCustomerInfoProvider: @escaping CheckpointsManager.CachedCustomerInfoProvider = { nil },
         customerInfoSynchronizer: @escaping CheckpointsManager.CustomerInfoSynchronizer = { throw CancellationError() }
     ) {
         self.workflowPresenter = workflowPresenter
-        self.defaultPaywallPresenter = DefaultPaywallPresenter()
+        self.defaultPaywallPresenter = DefaultPaywallPresenter(
+            cachedCustomerInfoProvider: cachedCustomerInfoProvider
+        )
         self.customerInfoSynchronizer = customerInfoSynchronizer
     }
 
@@ -180,8 +183,16 @@ import UIKit
 @available(iOS 15.0, macOS 12.0, *)
 final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewControllerDelegate {
 
+    private let cachedCustomerInfoProvider: CheckpointsManager.CachedCustomerInfoProvider
     private var completion: PaywallPresentationCompletion?
-    private var didCompletePurchaseOrRestore = false
+    private var initialActiveEntitlementIdentifiers: Set<String>?
+    private var didPurchaseOrRestoreAccess = false
+
+    init(
+        cachedCustomerInfoProvider: @escaping CheckpointsManager.CachedCustomerInfoProvider = { nil }
+    ) {
+        self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
+    }
 
     func present(
         params: PaywallPresentationParams,
@@ -196,7 +207,7 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
             return
         }
 
-        self.didCompletePurchaseOrRestore = false
+        self.prepareForPresentation()
         let controller = makeDefaultCheckpointPaywallViewController(params: params)
         controller.delegate = self
         self.completion = completion
@@ -212,8 +223,27 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
     }
 
     func presentationResult(dismissalReason: WorkflowDismissalReason) -> PaywallPresentationResult {
-        guard !self.didCompletePurchaseOrRestore else { return .continued }
+        guard !self.didPurchaseOrRestoreAccess else { return .continued }
         return dismissalReason == .navigatedBack ? .navigatedBack : .closed
+    }
+
+    func prepareForPresentation() {
+        self.initialActiveEntitlementIdentifiers = self.cachedCustomerInfoProvider().map { customerInfo in
+            Set(customerInfo.entitlements.active.keys)
+        }
+        self.didPurchaseOrRestoreAccess = false
+    }
+
+    private func didCompleteRestore(
+        controller: PaywallViewController,
+        customerInfo: CustomerInfo
+    ) {
+        guard customerInfo.grantsNewEntitlements(
+            comparedTo: self.initialActiveEntitlementIdentifiers
+        ) else { return }
+
+        self.didPurchaseOrRestoreAccess = true
+        controller.dismiss(animated: true)
     }
 
     private func completeAsClosed() {
@@ -232,14 +262,16 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         didFinishPurchasingWith customerInfo: CustomerInfo,
         transaction: StoreTransaction?
     ) {
-        MainActor.assumeIsolated { self.didCompletePurchaseOrRestore = true }
+        MainActor.assumeIsolated { self.didPurchaseOrRestoreAccess = true }
     }
 
     nonisolated func paywallViewController(
         _ controller: PaywallViewController,
         didFinishRestoringWith customerInfo: CustomerInfo
     ) {
-        MainActor.assumeIsolated { self.didCompletePurchaseOrRestore = true }
+        MainActor.assumeIsolated {
+            self.didCompleteRestore(controller: controller, customerInfo: customerInfo)
+        }
     }
 
     nonisolated func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {
@@ -251,14 +283,14 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         didFinishPurchasingWith customerInfo: CustomerInfo,
         transaction: StoreTransaction?
     ) {
-        self.didCompletePurchaseOrRestore = true
+        self.didPurchaseOrRestoreAccess = true
     }
 
     func paywallViewController(
         _ controller: PaywallViewController,
         didFinishRestoringWith customerInfo: CustomerInfo
     ) {
-        self.didCompletePurchaseOrRestore = true
+        self.didCompleteRestore(controller: controller, customerInfo: customerInfo)
     }
 
     func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {
@@ -280,6 +312,11 @@ func makeDefaultCheckpointPaywallViewController(params: PaywallPresentationParam
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class DefaultPaywallPresenter: PaywallPresenter {
+
+    init(
+        cachedCustomerInfoProvider _: @escaping CheckpointsManager.CachedCustomerInfoProvider = { nil }
+    ) {}
+
     func present(
         params: PaywallPresentationParams,
         completion: @escaping PaywallPresentationCompletion
