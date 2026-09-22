@@ -75,7 +75,7 @@ final class ExternalPurchaseManager {
         case .available:
             break
         case .notEligible:
-            guard let storefront = await self.storefrontAllowingPurchaseWithoutStoreEligibility() else {
+            guard let storefront = await self.storefrontNotRequiringExternalPurchaseAPIs() else {
                 Logger.warn(Strings.externalPurchase.not_eligible)
                 return .stopped(.notAllowedInStorefront)
             }
@@ -118,16 +118,15 @@ internal enum ExternalPurchasePreparationResult: Equatable {
     case unregistered(FailureReason)
 
     /// Route the customer to the checkout with no identifier to hand over, as the app would outside Apple's
-    /// programme: it does not apply here, see ``ExternalPurchaseAvailability/notEligible``, and the customer
-    /// is in a storefront where the purchase may go ahead anyway.
+    /// programme: its external purchase APIs are not required here.
     ///
     /// Nothing was shown and nothing was minted.
     case notApplicable
 
     enum StopReason: Equatable {
 
-        /// Apple's flow does not apply here, and this storefront is not one of those where the purchase may
-        /// go ahead without it, so the customer is offered nothing.
+        /// Apple's external purchase APIs are required in this storefront and cannot be used for this
+        /// customer, so they are offered nothing.
         case notAllowedInStorefront
 
         /// The device does not authorize payments, see ``ExternalPurchaseAvailability/paymentsNotAuthorized``.
@@ -174,11 +173,11 @@ private extension ExternalPurchaseManager {
         return self.systemInfo.storefront?.countryCode.uppercased()
     }
 
-    /// The customer's storefront, when it is one where they may be taken to an external purchase without
-    /// Apple's flow around it, and `nil` otherwise.
+    /// The customer's storefront, when it is one where Apple's external purchase APIs are not required, and
+    /// `nil` otherwise.
     ///
     /// Asked on every purchase rather than cached, since the customer can change storefront while the app runs.
-    func storefrontAllowingPurchaseWithoutStoreEligibility() async -> String? {
+    func storefrontNotRequiringExternalPurchaseAPIs() async -> String? {
         guard let storefront = self.storefront,
               await self.configProvider.storefrontsAllowedWithoutStoreEligibility().contains(storefront) else {
             return nil

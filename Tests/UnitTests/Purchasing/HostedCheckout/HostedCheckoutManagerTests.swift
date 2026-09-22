@@ -175,7 +175,7 @@ class HostedCheckoutManagerTests: TestCase {
         expect(self.webBillingAPI.invokedPostHostedCheckout) == false
     }
 
-    /// Where Apple's flow does not apply and the customer's storefront is not one it is waived in, they are
+    /// Where Apple's external purchase APIs are required and cannot be used for this customer, they are
     /// offered no checkout at all.
     func testCreatesNoSessionWhereTheStorefrontDoesNotAllowTheExternalPurchase() async {
         self.customLink.stubbedAvailability = .notEligible

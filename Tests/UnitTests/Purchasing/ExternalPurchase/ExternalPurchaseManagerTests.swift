@@ -89,9 +89,9 @@ class ExternalPurchaseManagerTests: TestCase {
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
     }
 
-    // MARK: - Storefronts that allow the purchase without eligibility
+    // MARK: - Storefronts that do not require Apple's external purchase APIs
 
-    /// Where Apple's flow does not apply and the storefront is not one it is waived in, the customer is
+    /// Where Apple's external purchase APIs are required and cannot be used for this customer, they are
     /// offered nothing at all rather than an undisclosed purchase.
     func testStopsWhenTheStorefrontIsNotOneOfThoseAllowedWithoutEligibility() async {
         self.customLink.stubbedAvailability = .notEligible

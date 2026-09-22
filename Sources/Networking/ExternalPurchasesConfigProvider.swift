@@ -15,10 +15,9 @@ import Foundation
 
 protocol ExternalPurchasesConfigProviderType {
 
-    /// The storefronts where an external purchase may be offered even though the store says its external
-    /// purchase flow does not apply, as ISO 3166-1 alpha-3 codes.
+    /// The storefronts where Apple's external purchase APIs are not required, as ISO 3166-1 alpha-3 codes.
     ///
-    /// Empty when the policy cannot be read, which offers the purchase nowhere rather than everywhere.
+    /// Empty when the policy cannot be read, so no storefront is treated as one of them.
     func storefrontsAllowedWithoutStoreEligibility() async -> Set<String>
 
 }
