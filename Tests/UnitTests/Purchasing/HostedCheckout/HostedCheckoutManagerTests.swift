@@ -27,6 +27,7 @@ class HostedCheckoutManagerTests: TestCase {
     private var externalPurchaseTokenAPI: MockExternalPurchaseTokenAPI!
     private var webBillingAPI: MockWebBillingAPI!
     private var systemInfo: MockSystemInfo!
+    private var poller: StubHostedCheckoutPoller!
     private var manager: HostedCheckoutManager!
 
     override func setUp() {
@@ -39,6 +40,8 @@ class HostedCheckoutManagerTests: TestCase {
 
         self.webBillingAPI = MockWebBillingAPI(backendConfig: MockBackendConfiguration())
         self.webBillingAPI.stubbedPostHostedCheckoutCompletionResult = .success(Self.response)
+
+        self.poller = StubHostedCheckoutPoller(result: .succeeded)
 
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: true)
         self.manager = self.makeManager()
@@ -242,6 +245,35 @@ class HostedCheckoutManagerTests: TestCase {
         expect(result) == .alreadyPurchased
     }
 
+    // MARK: - Settling
+
+    func testAsksThePollerWhatBecameOfTheSession() async {
+        self.poller.result = .failed
+
+        let result = await self.manager.pollCheckout(operationSessionID: Self.operationSessionID)
+
+        expect(result) == .failed
+        expect(self.poller.receivedIDs) == [Self.operationSessionID]
+    }
+
+}
+
+/// The loop itself is covered by `HostedCheckoutPollerTests`.
+private final class StubHostedCheckoutPoller: HostedCheckoutPolling, @unchecked Sendable {
+
+    var result: HostedCheckoutPollResult
+    private(set) var receivedIDs: [String] = []
+
+    init(result: HostedCheckoutPollResult) {
+        self.result = result
+    }
+
+    func poll(operationSessionID: String) async -> HostedCheckoutPollResult {
+        self.receivedIDs.append(operationSessionID)
+
+        return self.result
+    }
+
 }
 
 private extension HostedCheckoutManagerTests {
@@ -265,7 +297,8 @@ private extension HostedCheckoutManagerTests {
                 systemInfo: self.systemInfo
             ),
             webBillingAPI: self.webBillingAPI,
-            currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID)
+            currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID),
+            poller: self.poller
         )
     }
 

@@ -26,7 +26,8 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
         switch self {
         case .getWebOfferingProducts,
              .getWebBillingProducts,
-             .postHostedCheckout:
+             .postHostedCheckout,
+             .getHostedCheckoutStatus:
             return true
         }
     }
@@ -36,7 +37,8 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
         case .getWebOfferingProducts,
              .getWebBillingProducts:
             return true
-        case .postHostedCheckout:
+        case .postHostedCheckout,
+             .getHostedCheckoutStatus:
             return false
         }
     }
@@ -45,7 +47,8 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
         switch self {
         case .getWebOfferingProducts,
              .getWebBillingProducts,
-             .postHostedCheckout:
+             .postHostedCheckout,
+             .getHostedCheckoutStatus:
             return false
         }
     }
@@ -54,7 +57,8 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
         switch self {
         case .getWebOfferingProducts,
              .getWebBillingProducts,
-             .postHostedCheckout:
+             .postHostedCheckout,
+             .getHostedCheckoutStatus:
             return false
         }
     }
@@ -71,6 +75,9 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
             return "/rcbilling/v1/subscribers/\(encodedUserId)/products?\(encodedProductIds)"
         case .postHostedCheckout:
             return "/rcbilling/v1/hosted-checkout"
+        case let .getHostedCheckoutStatus(operationSessionID, appUserID):
+            return "/rcbilling/v1/hosted-checkout/\(operationSessionID.trimmedAndEscaped)" +
+            "?app_user_id=\(Self.escapedQueryValue(appUserID))"
         }
     }
 
@@ -83,7 +90,8 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
                 "id=\(productId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? productId)"
             }.joined(separator: "&")
             return "/rcbilling/v1/customer/products?\(encodedProductIds)"
-        case .postHostedCheckout:
+        case .postHostedCheckout,
+             .getHostedCheckoutStatus:
             return self.relativePath
         }
     }
@@ -96,7 +104,23 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
             return "get_web_products"
         case .postHostedCheckout:
             return "post_hosted_checkout"
+        case .getHostedCheckoutStatus:
+            return "get_hosted_checkout_status"
         }
+    }
+
+}
+
+private extension HTTPRequest.WebBillingPath {
+
+    /// The sub-delimiters `urlQueryAllowed` leaves alone, which a query value cannot carry literally:
+    /// an app user ID that is an email with a `+` in it reaches the backend as a space otherwise.
+    static let queryValueDisallowed = CharacterSet(charactersIn: "+&=?#;")
+
+    static func escapedQueryValue(_ value: String) -> String {
+        let allowed = CharacterSet.urlQueryAllowed.subtracting(Self.queryValueDisallowed)
+
+        return value.trimmingWhitespacesAndNewLines.addingPercentEncoding(withAllowedCharacters: allowed) ?? ""
     }
 
 }

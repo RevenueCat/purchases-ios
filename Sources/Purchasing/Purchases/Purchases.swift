@@ -974,7 +974,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.hostedCheckoutManager = HostedCheckoutManager(
             externalPurchaseManager: externalPurchaseManager,
             webBillingAPI: backend.webBilling,
-            currentUserProvider: identityManager
+            currentUserProvider: identityManager,
+            poller: HostedCheckoutPoller.makeDefault(webBillingAPI: backend.webBilling,
+                                                     currentUserProvider: identityManager)
         )
 
         super.init()
@@ -1907,6 +1909,12 @@ public extension Purchases {
         paywallEvent: PaywallEvent?
     ) async -> HostedCheckoutStartResult {
         return await self.hostedCheckoutManager.startCheckout(package: package, paywall: paywallEvent?.data)
+    }
+
+    /// Used by `RevenueCatUI` to learn what became of a checkout the customer completed in the app,
+    /// before settling the paywall on it.
+    @_spi(Internal) func pollHostedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
+        return await self.hostedCheckoutManager.pollCheckout(operationSessionID: operationSessionID)
     }
 
     /// Used by `RevenueCatUI` to create a support ticket
