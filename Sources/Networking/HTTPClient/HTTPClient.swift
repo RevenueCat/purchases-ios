@@ -438,9 +438,6 @@ private extension HTTPClient {
 
         /// Verification context captured before an enforced-verification failure becomes a `NetworkError`.
         let verificationDiagnostics: VerificationDiagnostics?
-
-        /// The status returned by the network, before an ETag response can be replaced with cached data.
-        let networkResponseCode: HTTPStatusCode?
     }
 
     struct VerificationDiagnostics {
@@ -492,14 +489,12 @@ private extension HTTPClient {
                requestStartTime: Date) -> ResponseContext {
         if let networkError = networkError {
             return .init(result: .failure(NetworkError(networkError, dnsChecker: self.dnsChecker)),
-                         verificationDiagnostics: nil,
-                         networkResponseCode: nil)
+                         verificationDiagnostics: nil)
         }
 
         guard let httpURLResponse = urlResponse as? HTTPURLResponse else {
             return .init(result: .failure(.unexpectedResponse(urlResponse)),
-                         verificationDiagnostics: nil,
-                         networkResponseCode: nil)
+                         verificationDiagnostics: nil)
         }
 
         let statusCode: HTTPStatusCode = .init(rawValue: httpURLResponse.statusCode)
@@ -606,8 +601,7 @@ private extension HTTPClient {
             .convertUnsuccessfulResponseToError()
 
         return .init(result: result,
-                     verificationDiagnostics: verificationDiagnostics,
-                     networkResponseCode: .init(rawValue: httpURLResponse.statusCode))
+                     verificationDiagnostics: verificationDiagnostics)
     }
 
     // swiftlint:disable:next function_parameter_count function_body_length
@@ -975,12 +969,11 @@ private extension HTTPClient {
             let requestPathName = request.httpRequest.path.name
             switch result {
             case let .success(response):
-                let httpStatusCode = responseContext.networkResponseCode ?? response.httpStatusCode
                 diagnosticsTracker.trackHttpRequestPerformed(endpointName: requestPathName,
                                                              host: host,
                                                              responseTime: responseTime,
                                                              wasSuccessful: true,
-                                                             responseCode: httpStatusCode.rawValue,
+                                                             responseCode: response.httpStatusCode.rawValue,
                                                              backendErrorCode: nil,
                                                              resultOrigin: response.origin,
                                                              verificationResult: response.verificationResult,
@@ -988,10 +981,10 @@ private extension HTTPClient {
                                                              isRetry: request.retried,
                                                              connectionErrorReason: nil)
             case let .failure(error):
-                var responseCode = responseContext.networkResponseCode?.rawValue ?? -1
+                var responseCode = -1
                 var backendErrorCode: Int?
                 if case let .errorResponse(errorResponse, code, _) = error {
-                    responseCode = responseContext.networkResponseCode?.rawValue ?? code.rawValue
+                    responseCode = code.rawValue
                     backendErrorCode = errorResponse.code.rawValue
                 }
                 let verificationDiagnostics = responseContext.verificationDiagnostics

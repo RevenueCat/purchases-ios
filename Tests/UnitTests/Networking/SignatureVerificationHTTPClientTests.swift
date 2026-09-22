@@ -1268,7 +1268,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
 
         let trackedParameters = diagnosticsTracker.trackedHttpRequestPerformedParams.value.onlyElement
         expect(trackedParameters?.3) == false
-        expect(trackedParameters?.4) == HTTPStatusCode.success.rawValue
+        expect(trackedParameters?.4) == -1
         expect(trackedParameters?.6) == .backend
         expect(trackedParameters?.7) == .failed(.payloadSignatureMismatch)
         expect(trackedParameters?.8?.millisecondsSince1970) == Self.date1.millisecondsSince1970
@@ -1339,7 +1339,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func testDiagnosticsUseNetworkResponseCodeForNotModifiedResponse() throws {
+    func testDiagnosticsUseCachedResponseCodeForNotModifiedResponse() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app")
@@ -1369,7 +1369,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
         expect(diagnosticsTracker.trackedHttpRequestPerformedParams.value).toEventually(haveCount(1))
 
         let trackedParameters = diagnosticsTracker.trackedHttpRequestPerformedParams.value.onlyElement
-        expect(trackedParameters?.4) == HTTPStatusCode.notModified.rawValue
+        expect(trackedParameters?.4) == HTTPStatusCode.success.rawValue
         expect(trackedParameters?.6) == .cache
         expect(trackedParameters?.7) == .verified
         expect(trackedParameters?.8?.millisecondsSince1970) == Self.date2.millisecondsSince1970
@@ -1412,7 +1412,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
 
         let trackedParameters = diagnosticsTracker.trackedHttpRequestPerformedParams.value.onlyElement
         expect(trackedParameters?.3) == false
-        expect(trackedParameters?.4) == HTTPStatusCode.notModified.rawValue
+        expect(trackedParameters?.4) == -1
         expect(trackedParameters?.6) == .cache
         expect(trackedParameters?.7) == .failed(.payloadSignatureMismatch)
         expect(trackedParameters?.8?.millisecondsSince1970) == Self.date2.millisecondsSince1970
