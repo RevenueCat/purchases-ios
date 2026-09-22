@@ -55,7 +55,6 @@ class MockBackend: Backend {
         let remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
 
         self.init(lanes: BackendLanes(configuration: backendConfig),
-                  backendConfig: backendConfig,
                   customerAPI: customer,
                   identityAPI: identity,
                   tokenAPI: MockTokenAPI(backendConfig: backendConfig),

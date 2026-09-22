@@ -84,7 +84,6 @@ class Backend {
         let remoteConfigAPI = RemoteConfigAPI(backendConfig: lanes[.remoteConfig])
 
         self.init(lanes: lanes,
-                  backendConfig: backendConfig,
                   customerAPI: customer,
                   identityAPI: identity,
                   tokenAPI: token,
@@ -106,7 +105,6 @@ class Backend {
     }
 
     required init(lanes: BackendLanes,
-                  backendConfig: BackendConfiguration,
                   customerAPI: CustomerAPI,
                   identityAPI: IdentityAPI,
                   tokenAPI: TokenAPI,
@@ -121,7 +119,7 @@ class Backend {
                   adsAPI: AdsAPI,
                   remoteConfigAPI: RemoteConfigAPI) {
         self.lanes = lanes
-        self.config = backendConfig
+        self.config = lanes[.default]
 
         self.customer = customerAPI
         self.identity = identityAPI
