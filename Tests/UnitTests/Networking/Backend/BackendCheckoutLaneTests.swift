@@ -25,6 +25,7 @@ final class BackendCheckoutLaneTests: BaseBackendTests {
 
     private static let packageID = "$rc_monthly"
     private static let offeringID = "default"
+    private static let tokenID = "ept13dcbc01adaa44db9b1691a6be2f9929"
     private static let productIds: Set<String> = ["test_monthly"]
 
     override func createClient() -> MockHTTPClient {
@@ -146,6 +147,49 @@ final class BackendCheckoutLaneTests: BaseBackendTests {
         }
 
         expect(self.httpClient.calls).to(haveCount(2))
+    }
+
+    /// Both checkout endpoints share one lane so `postExternalPurchaseToken` can finish before
+    /// `postHostedCheckout` sends `token_id`; one serial queue per lane is what guarantees that
+    /// ordering.
+    func testBothCheckoutRequestsShareOneLane() {
+        let laneClient = self.createClient(#file)
+        laneClient.disableSnapshotTesting()
+        self.httpClient.disableSnapshotTesting()
+
+        let backend = self.makeBackend(checkoutClient: laneClient)
+
+        laneClient.mock(
+            requestPath: .postExternalPurchaseToken,
+            response: .init(statusCode: .success, response: Self.externalPurchaseTokenResponse)
+        )
+        laneClient.mock(
+            requestPath: .postHostedCheckout,
+            response: .init(statusCode: .success, response: Self.hostedCheckoutResponse)
+        )
+
+        waitUntil { completed in
+            backend.externalPurchaseTokenAPI.postExternalPurchaseToken(
+                appUserID: Self.userID,
+                purchaseType: .linkOut,
+                token: "storekit-token",
+                completion: { _ in completed() }
+            )
+        }
+
+        waitUntil { completed in
+            backend.webBilling.postHostedCheckout(
+                appUserID: Self.userID,
+                packageID: Self.packageID,
+                presentedOfferingContext: .init(offeringIdentifier: Self.offeringID),
+                paywall: nil,
+                externalPurchaseTokenID: Self.tokenID,
+                completion: { _ in completed() }
+            )
+        }
+
+        expect(laneClient.calls).to(haveCount(2))
+        expect(self.httpClient.calls).to(beEmpty())
     }
 
 }
@@ -284,5 +328,94 @@ final class BackendCheckoutLaneParallelTests: TestCase {
         expect(offeringsDispatched.value).toEventually(beTrue())
         expect(offeringsCompleted.value) == false
     }
+
+    func testConcurrent401sAcrossLanesTriggerExactlyOneTokenRefresh() throws {
+        let systemInfo = MockSystemInfo(finishTransactions: true)
+        let tokenManager = MockTokenManager(enabled: true)
+        tokenManager.stubbedCurrentRefreshToken = "refresh-token"
+        tokenManager.stubbedCurrentAccessToken = "stale-access-token"
+
+        let backend = Backend(
+            systemInfo: systemInfo,
+            httpClientTimeout: .custom(30),
+            eTagManager: MockETagManager(),
+            tokenManager: tokenManager,
+            operationDispatcher: OperationDispatcher(),
+            attributionFetcher: AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
+                                                   systemInfo: systemInfo),
+            offlineCustomerInfoCreator: nil,
+            diagnosticsTracker: nil,
+            apiSourceProvider: nil,
+            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .custom(30))
+        )
+
+        let offeringsHits: Atomic<Int> = .init(0)
+        let hostedCheckoutHits: Atomic<Int> = .init(0)
+        let tokenRefreshHits: Atomic<Int> = .init(0)
+        let hostedCheckoutPath = HTTPRequest.WebBillingPath.postHostedCheckout.relativePath
+
+        stub(condition: pathEndsWith("/offerings")) { _ in
+            let hitCount = offeringsHits.increment()
+            if hitCount == 1 {
+                return HTTPStubsResponse(data: Data(), statusCode: 401, headers: nil)
+            }
+            return HTTPStubsResponse(data: Self.noOfferingsResponseData, statusCode: 200, headers: nil)
+        }
+        stub(condition: pathEndsWith(hostedCheckoutPath)) { _ in
+            let hitCount = hostedCheckoutHits.increment()
+            if hitCount == 1 {
+                return HTTPStubsResponse(data: Data(), statusCode: 401, headers: nil)
+            }
+            return HTTPStubsResponse(data: Self.hostedCheckoutResponseData, statusCode: 200, headers: nil)
+        }
+        stub(condition: pathEndsWith("/auth/token")) { _ in
+            tokenRefreshHits.increment()
+            return HTTPStubsResponse(data: Self.tokenRefreshResponseData, statusCode: 200, headers: nil)
+                .responseTime(1)
+        }
+
+        let offeringsResult: Atomic<Result<OfferingsFetchResult, BackendError>?> = nil
+        let checkoutResult: Atomic<Result<HostedCheckoutResponse, BackendError>?> = nil
+
+        backend.offerings.getOfferings(appUserID: Self.userID, isAppBackgrounded: false) { result in
+            offeringsResult.value = result
+        }
+        backend.webBilling.postHostedCheckout(
+            appUserID: Self.userID,
+            packageID: Self.packageID,
+            presentedOfferingContext: .init(offeringIdentifier: "default"),
+            paywall: nil,
+            externalPurchaseTokenID: nil
+        ) { result in
+            checkoutResult.value = result
+        }
+
+        expect(offeringsResult.value).toEventuallyNot(beNil(), timeout: .seconds(10))
+        expect(checkoutResult.value).toEventuallyNot(beNil(), timeout: .seconds(10))
+
+        expect(tokenRefreshHits.value) == 1
+        expect(offeringsHits.value) == 2
+        expect(hostedCheckoutHits.value) == 2
+        expect(offeringsResult.value).to(beSuccess())
+        expect(checkoutResult.value).to(beSuccess())
+    }
+
+}
+
+private extension BackendCheckoutLaneParallelTests {
+
+    static let noOfferingsResponseData = Data("{\"offerings\":[],\"current_offering_id\":null}".utf8)
+
+    static let hostedCheckoutResponseData = Data("""
+    {"operation_session_id":"op_session_id",\
+    "checkout_url":"https://checkout.stripe.com/c/pay/cs_test_123",\
+    "success_url":"https://example.com/success",\
+    "cancel_url":"https://example.com/cancel"}
+    """.utf8)
+
+    static let tokenRefreshResponseData = Data("""
+    {"access_token":"new-access-token","id_token":"new-id-token",\
+    "refresh_token":"new-refresh-token","scope":"openid","expires_in":3600}
+    """.utf8)
 
 }
