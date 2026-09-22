@@ -248,8 +248,8 @@ private extension BackendCheckoutLaneTests {
 
 }
 
-/// Proves the production `Backend` convenience initializer wires checkout onto its own lane: hosted
-/// checkout completes while `/offerings` hangs on the shared client.
+/// Proves the production `Backend` convenience initializer wires checkout onto its own lane: both
+/// checkout tap-path requests complete while `/offerings` hangs on the shared client.
 final class BackendCheckoutLaneParallelTests: TestCase {
 
     private static let userID = "lane-user"
@@ -286,6 +286,7 @@ final class BackendCheckoutLaneParallelTests: TestCase {
         )
 
         let hostedCheckoutPath = HTTPRequest.WebBillingPath.postHostedCheckout.relativePath
+        let externalPurchaseTokenPath = HTTPRequest.Path.postExternalPurchaseToken.relativePath
         let offeringsDispatched: Atomic<Bool> = false
         let offeringsCompleted: Atomic<Bool> = false
 
@@ -294,21 +295,26 @@ final class BackendCheckoutLaneParallelTests: TestCase {
             return HTTPStubsResponse(data: Data("{}".utf8), statusCode: 200, headers: nil)
                 .responseTime(10)
         }
+        stub(condition: pathEndsWith(externalPurchaseTokenPath)) { _ in
+            return HTTPStubsResponse(data: Self.externalPurchaseTokenResponseData, statusCode: 200, headers: nil)
+        }
         stub(condition: pathEndsWith(hostedCheckoutPath)) { _ in
-            return HTTPStubsResponse(
-                data: Data("""
-                {"operation_session_id":"op_session_id",\
-                "checkout_url":"https://checkout.stripe.com/c/pay/cs_test_123",\
-                "success_url":"https://example.com/success",\
-                "cancel_url":"https://example.com/cancel"}
-                """.utf8),
-                statusCode: 200,
-                headers: nil
-            )
+            return HTTPStubsResponse(data: Self.hostedCheckoutResponseData, statusCode: 200, headers: nil)
         }
 
         backend.offerings.getOfferings(appUserID: Self.userID, isAppBackgrounded: false) { _ in
             offeringsCompleted.value = true
+        }
+
+        let tokenResult: Result<ExternalPurchaseTokenResponse, BackendError>? = waitUntilValue(
+            timeout: .seconds(5)
+        ) { completed in
+            backend.externalPurchaseTokenAPI.postExternalPurchaseToken(
+                appUserID: Self.userID,
+                purchaseType: .linkOut,
+                token: "storekit-token",
+                completion: completed
+            )
         }
 
         let checkoutResult: Result<HostedCheckoutResponse, BackendError>? = waitUntilValue(
@@ -324,6 +330,7 @@ final class BackendCheckoutLaneParallelTests: TestCase {
             )
         }
 
+        expect(tokenResult).to(beSuccess())
         expect(checkoutResult).to(beSuccess())
         expect(offeringsDispatched.value).toEventually(beTrue())
         expect(offeringsCompleted.value) == false
@@ -403,6 +410,12 @@ final class BackendCheckoutLaneParallelTests: TestCase {
 }
 
 private extension BackendCheckoutLaneParallelTests {
+
+    static let externalPurchaseTokenResponseData = Data("""
+    {"external_purchase_id":"b2158121-7af9-49d4-9561-1f14c46b3bc1",\
+    "id":"ept13dcbc01adaa44db9b1691a6be2f9929",\
+    "is_sandbox":false,"purchase_type":"LINK_OUT","token_source":"APPLE_SDK"}
+    """.utf8)
 
     static let noOfferingsResponseData = Data("{\"offerings\":[],\"current_offering_id\":null}".utf8)
 
