@@ -20,11 +20,6 @@ final class BackendLanes: Sendable {
     private let defaultConfiguration: BackendConfiguration
     private let dedicatedConfigurations: [RequestLane: BackendConfiguration]
 
-    init(configuration: BackendConfiguration) {
-        self.defaultConfiguration = configuration
-        self.dedicatedConfigurations = [:]
-    }
-
     init(defaultConfiguration: BackendConfiguration,
          dedicatedConfigurations: [RequestLane: BackendConfiguration]) {
         self.defaultConfiguration = defaultConfiguration

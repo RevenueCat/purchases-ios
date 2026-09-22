@@ -99,11 +99,6 @@ class Backend {
                   remoteConfigAPI: remoteConfigAPI)
     }
 
-    convenience init(backendConfig: BackendConfiguration,
-                     attributionFetcher: AttributionFetcher) {
-        self.init(lanes: BackendLanes(configuration: backendConfig), attributionFetcher: attributionFetcher)
-    }
-
     required init(lanes: BackendLanes,
                   customerAPI: CustomerAPI,
                   identityAPI: IdentityAPI,

@@ -1515,6 +1515,7 @@
 		FACE0000000000000000B003 /* BackendLanes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE0000000000000000B004 /* BackendLanes.swift */; };
 		FACE0000000000000000B005 /* BackendCheckoutLaneTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE0000000000000000B006 /* BackendCheckoutLaneTests.swift */; };
 		FACE0000000000000000B007 /* BackendLanesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE0000000000000000B008 /* BackendLanesTests.swift */; };
+		FACE0000000000000000B009 /* BackendTestInitializers.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE0000000000000000B00A /* BackendTestInitializers.swift */; };
 		C4E00000000000000000A007 /* WebCheckoutReturnURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E00000000000000000A006 /* WebCheckoutReturnURL.swift */; };
 		C4E00000000000000000A009 /* WebCheckoutViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E00000000000000000A008 /* WebCheckoutViewModel.swift */; };
 		C4E00000000000000000A00B /* WebCheckoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E00000000000000000A00A /* WebCheckoutView.swift */; };
@@ -3399,6 +3400,7 @@
 		FACE0000000000000000B004 /* BackendLanes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendLanes.swift; sourceTree = "<group>"; };
 		FACE0000000000000000B006 /* BackendCheckoutLaneTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendCheckoutLaneTests.swift; sourceTree = "<group>"; };
 		FACE0000000000000000B008 /* BackendLanesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendLanesTests.swift; sourceTree = "<group>"; };
+		FACE0000000000000000B00A /* BackendTestInitializers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendTestInitializers.swift; sourceTree = "<group>"; };
 		FACE0000000000000000F001 /* PaywallViewControllerExitOfferTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallViewControllerExitOfferTests.swift; sourceTree = "<group>"; };
 		FACE0000000000000000F002 /* PaywallViewControllerCustomVariablesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallViewControllerCustomVariablesTests.swift; sourceTree = "<group>"; };
 		FB5A72012F65F5B9005C64A1 /* ViewModelFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModelFactoryTests.swift; sourceTree = "<group>"; };
@@ -5862,6 +5864,7 @@
 				FACE0000000000000000A002 /* BackendRemoteConfigLaneTests.swift */,
 				FACE0000000000000000B006 /* BackendCheckoutLaneTests.swift */,
 				FACE0000000000000000B008 /* BackendLanesTests.swift */,
+				FACE0000000000000000B00A /* BackendTestInitializers.swift */,
 			);
 			path = Backend;
 			sourceTree = "<group>";
@@ -8522,6 +8525,7 @@
 				FACE0000000000000000A001 /* BackendRemoteConfigLaneTests.swift in Sources */,
 				FACE0000000000000000B005 /* BackendCheckoutLaneTests.swift in Sources */,
 				FACE0000000000000000B007 /* BackendLanesTests.swift in Sources */,
+				FACE0000000000000000B009 /* BackendTestInitializers.swift in Sources */,
 				03C7305B2D35985900297FEC /* TextComponentTests.swift in Sources */,
 				FDE57B0E2DF8BC1100101CE2 /* VirtualCurrenciesDecodingTests.swift in Sources */,
 				75FCD4CE2E37FBE100036C02 /* SimulatedStoreMockData.swift in Sources */,
