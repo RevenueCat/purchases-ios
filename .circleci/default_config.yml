@@ -2448,6 +2448,18 @@ workflows:
       # Full Test Suite: Gated behind approve-full-tests
       # =============================================================
 
+      # Latest Xcode Beta Tests
+      - run-test-latest-xcode-beta:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - run-revenuecat-ui-latest-xcode-beta:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+
       # Backend Integration Tests
       - backend-integration-tests-SK1:
           requires:
