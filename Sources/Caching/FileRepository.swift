@@ -62,7 +62,7 @@ import Foundation
     /// - Parameter urls: An array of URL to fetch data from
     @_spi(Internal) public func prefetch(urls: [InputURL]) {
         for url in urls {
-            Task { [weak self] in
+            _ = Task { [weak self] in
                 try await self?.generateOrGetCachedFileURL(for: url, withChecksum: nil)
             }
         }

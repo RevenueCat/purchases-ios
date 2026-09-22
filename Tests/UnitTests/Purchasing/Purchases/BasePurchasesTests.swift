@@ -281,7 +281,8 @@ class BasePurchasesTests: TestCase {
         withDelegate: Bool = true,
         checkpointResolver: CheckpointWorkflowResolver = DisabledCheckpointWorkflowResolver(),
         dateProvider: DateProvider = DateProvider(),
-        webBundleEventBus: WebBundleEventBus = .shared
+        webBundleEventBus: WebBundleEventBus = .shared,
+        paywallCache: PaywallCacheWarmingType? = nil
     ) {
         self.purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
@@ -348,7 +349,7 @@ class BasePurchasesTests: TestCase {
                                    systemInfo: self.systemInfo,
                                    offeringsFactory: self.offeringsFactory,
                                    deviceCache: self.deviceCache,
-                                   paywallCache: self.paywallCache,
+                                   paywallCache: paywallCache ?? self.paywallCache,
                                    identityManager: self.identityManager,
                                    tokenManager: self.tokenManager,
                                    subscriberAttributes: self.attribution,
@@ -361,7 +362,7 @@ class BasePurchasesTests: TestCase {
                                     workflowsConfigProvider: WorkflowsConfigProvider(
                                         manager: self.mockRemoteConfigManager
                                     ),
-                                    paywallCache: self.paywallCache,
+                                    paywallCache: paywallCache ?? self.paywallCache,
                                     operationDispatcher: self.mockOperationDispatcher
                                    ),
                                    remoteConfigManager: self.mockRemoteConfigManager,

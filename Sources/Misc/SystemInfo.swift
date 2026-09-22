@@ -113,7 +113,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.90.2"
+        return "5.91.0-SNAPSHOT"
     }
 
     static var installationMethod: String {
@@ -402,13 +402,13 @@ extension SystemInfo {
         #elseif os(watchOS)
         if #available(watchOS 9, *) {
             return WKApplication.didBecomeActiveNotification
-        } else if #available(watchOS 7, *) {
+        }
+        if #available(watchOS 7, *) {
             // Work around for "Symbol not found" dyld crashes on watchOS 7.0..<9.0
             return Notification.Name("WKApplicationDidBecomeActiveNotification")
-        } else {
-            // There's no equivalent notification available on watchOS <7.
-            return nil
         }
+        // There's no equivalent notification available on watchOS <7.
+        return nil
         #endif
     }
 

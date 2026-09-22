@@ -82,7 +82,11 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         expect(info2.isComputedOffline) == false
 
         self.logger.verifyMessageWasLogged(Strings.customerInfo.vending_cache, level: .debug)
-        self.logger.verifyMessageWasNotLogged("API request started")
+        try self.logger.verifyMessageWasNotLogged(
+            Strings.network.api_request_started(
+                .init(method: .get, path: .getCustomerInfo(appUserID: self.purchases.appUserID))
+            )
+        )
     }
 
     func testGetOfferingsMultipleTimesInParallel() async throws {
@@ -288,11 +292,13 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let result = try await self.purchases.productEntitlementMapping().entitlementsByProduct
-        expect(result).to(haveCount(21))
+        expect(result).to(haveCount(23))
         expect(result["com.revenuecat.monthly_4.99.1_week_intro"]) == ["premium"]
         expect(result["lifetime"]) == ["premium"]
         expect(result["com.revenuecat.intro_test.monthly.1_week_intro"]).to(beEmpty())
         expect(result["consumable.10_coins"]).to(beEmpty())
+        expect(result["com.revenuecat.sampleapp.monthly.12mocommitment:monthly"]) == ["premium"]
+        expect(result["com.revenuecat.sampleapp.monthly.12mocommitment"]) == ["super_premium"]
     }
 
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
@@ -302,7 +308,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         try await self.logger.verifyMessageIsEventuallyLogged(
             Strings.attribution.adservices_token_post_succeeded.description,
             level: .debug,
-            timeout: .seconds(3),
+            timeout: .seconds(10),
             pollInterval: .milliseconds(200)
         )
     }

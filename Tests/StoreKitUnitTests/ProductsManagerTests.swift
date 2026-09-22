@@ -66,8 +66,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         )
         self.logger.clearMessages()
 
-        let storeKitProductIdentifier = "com.revenuecat.annual_with_commitment"
-        let compoundProductIdentifier = "\(storeKitProductIdentifier):monthly"
+        let compoundProductIdentifier = "\(Self.productIDWithBillingPlans):monthly"
         let compoundIdentifier = try XCTUnwrap(
             CompoundProductIdentifier(compoundProductIdentifier: compoundProductIdentifier)
         )
@@ -78,7 +77,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         let unwrappedProducts = try XCTUnwrap(receivedProducts?.get())
         let product = try XCTUnwrap(unwrappedProducts.onlyElement).product
 
-        expect(product.productIdentifier) == storeKitProductIdentifier
+        expect(product.productIdentifier) == Self.productIDWithBillingPlans
         expect(self.logger.messages).toNot(containElementSatisfying { message in
             message.level == .warn
             && message.message == Strings.storeKit.sk2_billing_plans_are_unavailable_on_this_os_version(
@@ -104,7 +103,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         self.logger.clearMessages()
 
         let compoundProductIdentifier = try XCTUnwrap(
-            CompoundProductIdentifier(compoundProductIdentifier: "com.revenuecat.annual_with_commitment:monthly")
+            CompoundProductIdentifier(compoundProductIdentifier: "\(Self.productIDWithBillingPlans):monthly")
         )
         let receivedProducts = waitUntilValue(timeout: Self.requestDispatchTimeout) { completed in
             manager.products(
@@ -229,6 +228,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
     }
 
     func testClearCacheAfterStorefrontChangesSK1() async throws {
+        try AvailabilityChecks.switchingStorefrontWithSKTestWorksOrSkipTest()
         let manager = self.createManager(storeKitVersion: .storeKit1)
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
@@ -258,6 +258,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testInvalidateAndReFetchCachedProductsAfterStorefrontChangesSK2() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        try AvailabilityChecks.switchingStorefrontWithSKTestWorksOrSkipTest()
 
         let manager = self.createManager(storeKitVersion: .storeKit2)
 
