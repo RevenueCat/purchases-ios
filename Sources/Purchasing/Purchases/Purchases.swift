@@ -3109,11 +3109,6 @@ private extension Purchases {
 
     private func dispatchSyncSubscriberAttributesIfCustomerInfoAvailable() {
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
-            self.dispatchSyncSubscriberAttributes()
-            return
-        }
-
         // Ensure the customer is created server-side before syncing attributes.
         guard (try? self.customerInfoManager.cachedCustomerInfo(appUserID: self.appUserID)) != nil else { return }
         self.dispatchSyncSubscriberAttributes()
