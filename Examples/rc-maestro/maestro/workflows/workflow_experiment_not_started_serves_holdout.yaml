@@ -1,0 +1,58 @@
+# Same shape as workflow_experiment_assigns_variant, but against a workflow whose
+# experiment was never started. Nobody is enrolled, so everyone should follow the
+# experiment's `fallback_step_id`, which is variant A (the control).
+#
+# This is the regression test for the bug where khepri published the experiment
+# step unpruned: the SDK walked into a step with no screen and rendered nothing.
+#
+# Needs its own workflow, since one workflow cannot be both started and not. Pass
+# its offering with -e OFFERING=... until a fixture exists.
+#
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store -e OFFERING='<offering>' \
+#     Examples/rc-maestro/maestro/workflows/workflow_experiment_not_started_serves_holdout.yaml
+
+appId: com.revenuecat.maestro.ios
+name: An experiment that was never started serves the holdout
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+  APP_USER_ID: ${APP_USER_ID || 'maestro-experiment-user-1'}
+  OFFERING: ${OFFERING || '[facu] branching1 not started'}
+
+---
+- clearState
+# Dismiss any leftover system alerts from previous test runs.
+- pressKey: home
+- launchApp:
+    arguments:
+        e2e_test_flow: open_workflow
+        workflow_offering_identifier: ${OFFERING}
+        app_user_id: ${APP_USER_ID}
+- extendedWaitUntil:
+    visible: "Present Paywall"
+    timeout: 15000
+- tapOn:
+    text: "Present Paywall"
+
+# Screen 1
+- extendedWaitUntil:
+    visible: "Start Your Free Week And Reclaim 30+ Minutes Daily"
+    timeout: 15000
+- tapOn:
+    text: "Continue"
+
+# Screen 2, whose exit points at the experiment step
+- extendedWaitUntil:
+    visible: "Most People Feel Calmer After Just 3 Sessions"
+    timeout: 15000
+- tapOn:
+    text: "Continue"
+
+# The holdout is variant A, so it renders and variant B never does. Asserting
+# both ways keeps this honest: a blank screen fails the first, and an accidental
+# enrollment fails the second.
+- extendedWaitUntil:
+    visible: "People Who Meditate Daily Sleep 40% Better"
+    timeout: 15000
+- assertNotVisible: "Get started with our Standard plan"
+- takeScreenshot: "workflow_experiment_not_started_serves_holdout - holdout"
