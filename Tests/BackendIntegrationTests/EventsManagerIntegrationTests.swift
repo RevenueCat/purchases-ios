@@ -23,6 +23,51 @@ import XCTest
 @MainActor
 final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
 
+    // Use a real EventsManager directly so tests can await event storage before flushing.
+    // Purchases.track(customerCenterEvent:) schedules background work and returns immediately.
+    private var eventsManager: EventsManager!
+
+    override func setUp() async throws {
+        try await super.setUp()
+
+        let systemInfo = SystemInfo(
+            platformInfo: nil,
+            finishTransactions: true,
+            storeKitVersion: Self.storeKitVersion,
+            apiKey: self.apiKey,
+            responseVerificationMode: Self.responseVerificationMode,
+            dangerousSettings: DangerousSettings(autoSyncPurchases: true, internalSettings: self),
+            isAppBackgrounded: false,
+            preferredLocalesProvider: PreferredLocalesProvider(preferredLocaleOverride: nil)
+        )
+        let backend = Backend(
+            systemInfo: systemInfo,
+            eTagManager: ETagManager(),
+            tokenManager: TokenManager(enabled: false, storage: Keychain(access: nil)),
+            operationDispatcher: .default,
+            attributionFetcher: AttributionFetcher(
+                attributionFactory: AttributionTypeFactory(),
+                systemInfo: systemInfo
+            ),
+            offlineCustomerInfoCreator: nil,
+            diagnosticsTracker: nil,
+            apiSourceProvider: nil,
+            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .default)
+        )
+        let storeURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let store = try FeatureEventStore(handler: FileHandler(storeURL))
+        self.eventsManager = EventsManager(
+            internalAPI: backend.internalAPI,
+            userProvider: EventUserProvider(currentAppUserID: try self.purchases.appUserID),
+            store: store,
+            systemInfo: systemInfo
+        )
+        self.addTeardownBlock {
+            self.eventsManager = nil
+            try FileManager.default.removeItem(at: storeURL)
+        }
+    }
+
     func testPostingPaywallsDoesNotFail() async throws {
         let events = [
             PaywallEvent.cancel(
@@ -37,8 +82,8 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
         ]
 
         for event in events {
-            await Purchases.shared.track(
-                paywallEvent: event
+            await self.eventsManager.track(
+                featureEvent: event
             )
         }
 
@@ -47,9 +92,8 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
 
     func testPostingCustomerCenterDoesNotFail() async throws {
         let locale = Locale(identifier: "es_ES")
-
-        Purchases.shared.track(
-            customerCenterEvent: CustomerCenterEvent.impression(
+        await self.eventsManager.track(
+            featureEvent: CustomerCenterEvent.impression(
                 Self.customerCenterCreationData,
                 CustomerCenterEvent.Data(
                     locale: locale,
@@ -60,8 +104,8 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
             )
         )
 
-        Purchases.shared.track(
-            customerCenterEvent: CustomerCenterAnswerSubmittedEvent.answerSubmitted(
+        await self.eventsManager.track(
+            featureEvent: CustomerCenterAnswerSubmittedEvent.answerSubmitted(
                 Self.customerCenterCreationData,
                 CustomerCenterAnswerSubmittedEvent.Data(
                     locale: locale,
@@ -75,30 +119,28 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
                 )
             )
         )
-        // give background task a chance to run
-        await Task.yield()
-
-        try await self.logger.verifyMessageIsEventuallyLogged(
-            "Storing event:",
-            expectedCount: 2,
-            timeout: .seconds(3),
-            pollInterval: .seconds(1)
-        )
-
         try await flushAndVerify(eventsCount: 2)
     }
 
     private func flushAndVerify(eventsCount: Int) async throws {
-        _ = try await Purchases.shared.flushPaywallEvents(count: eventsCount)
+        _ = try await self.eventsManager.flushFeatureEvents(batchSize: eventsCount)
 
-        self.logger.verifyMessageWasLogged(
-            Strings.paywalls.event_flush_starting(count: eventsCount)
-        )
-
-        self.logger.verifyMessageWasLogged(
-            Strings.analytics.flush_events_success,
-            level: .debug,
-            expectedCount: 1
+        let logger = try XCTUnwrap(self.logger)
+        try await asyncWait(
+            timeout: .seconds(10),
+            description: { _ in "Expected all \(eventsCount) events to be posted successfully" },
+            until: { logger.messages },
+            condition: { messages in
+                let batchSizes = messages.compactMap { entry in
+                    (1...eventsCount).first { count in
+                        entry.message.contains(Strings.paywalls.event_flush_starting(count: count).description)
+                    }
+                }
+                let successfulBatches = messages.filter {
+                    $0.level == .debug && $0.message.contains(Strings.analytics.flush_events_success.description)
+                }.count
+                return batchSizes.reduce(0, +) == eventsCount && successfulBatches == batchSizes.count
+            }
         )
     }
 
@@ -122,4 +164,15 @@ final class EventsManagerIntegrationTests: BaseBackendIntegrationTests {
         darkMode: true,
         source: nil
     )
+}
+
+private final class EventUserProvider: CurrentUserProvider {
+
+    let currentAppUserID: String
+    let currentUserIsAnonymous = true
+
+    init(currentAppUserID: String) {
+        self.currentAppUserID = currentAppUserID
+    }
+
 }

@@ -16,6 +16,8 @@
 @_spi(CheckpointsInternal) @_spi(Internal) @testable import RevenueCatUI
 import XCTest
 
+// swiftlint:disable file_length type_body_length
+
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointsManagerTests: TestCase {
@@ -118,6 +120,58 @@ final class CheckpointsManagerTests: TestCase {
             "attempt": 2,
             "enabled": true
         ])
+    }
+
+    func testResolvedWorkflowReceivesInitialActiveEntitlements() async throws {
+        let executor = MockWorkflowPresenter()
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
+            workflowPresenter: executor,
+            cachedCustomerInfoProvider: {
+                try? Self.customerInfo(activeEntitlements: ["premium", "pro"])
+            }
+        )
+
+        _ = try await manager.executeCheckpoint(identifier: "soft_paywall", params: .init())
+
+        XCTAssertEqual(
+            executor.presentations.first?.initialActiveEntitlementIdentifiers,
+            ["premium", "pro"]
+        )
+    }
+
+    func testWorkflowPresentationUsesFreshBaselineWhileResultUsesPreResolutionBaseline() async throws {
+        let executor = MockWorkflowPresenter()
+        executor.execution = .completed(
+            customerInfo: try Self.customerInfo(activeEntitlements: ["premium", "pro"])
+        )
+        var resolutionCompleted = false
+        var cachedCustomerInfoCallCount = 0
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in
+                resolutionCompleted = true
+                return .matchedWorkflow(Self.workflow())
+            },
+            workflowPresenter: executor,
+            cachedCustomerInfoProvider: {
+                cachedCustomerInfoCallCount += 1
+                return try? Self.customerInfo(
+                    activeEntitlements: resolutionCompleted ? ["premium", "pro"] : ["pro"]
+                )
+            }
+        )
+
+        let result = await manager.checkpointForCallback(identifier: "soft_paywall", params: .init())
+
+        XCTAssertEqual(cachedCustomerInfoCallCount, 2)
+        XCTAssertEqual(
+            executor.presentations.first?.initialActiveEntitlementIdentifiers,
+            ["premium", "pro"]
+        )
+        guard case let .completed(flowResult) = result else {
+            return XCTFail("Expected a completed callback")
+        }
+        XCTAssertEqual(flowResult?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
     }
 
     func testCallbackCheckpointReturnsCompletedResultAfterWorkflowDismissal() async {
@@ -223,8 +277,12 @@ final class CheckpointsManagerTests: TestCase {
             },
             workflowPresenter: executor,
             cachedCustomerInfoProvider: {
-                XCTAssertFalse(resolutionStarted)
                 cachedCustomerInfoCallCount += 1
+                if cachedCustomerInfoCallCount == 1 {
+                    XCTAssertFalse(resolutionStarted)
+                } else {
+                    XCTAssertTrue(resolutionStarted)
+                }
                 return try? Self.customerInfo(activeEntitlements: ["pro"])
             }
         )
@@ -235,7 +293,7 @@ final class CheckpointsManagerTests: TestCase {
             return XCTFail("Expected a completed callback")
         }
         XCTAssertEqual(flowResult?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
-        XCTAssertEqual(cachedCustomerInfoCallCount, 1)
+        XCTAssertEqual(cachedCustomerInfoCallCount, 2)
     }
 
     func testCallbackCheckpointReturnsNoEntitlementsWhenAllWereAlreadyCached() async throws {
@@ -283,7 +341,7 @@ final class CheckpointsManagerTests: TestCase {
             flowResult?.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted(),
             ["premium", "pro"]
         )
-        XCTAssertEqual(cachedCustomerInfoCallCount, 1)
+        XCTAssertEqual(cachedCustomerInfoCallCount, 2)
     }
 
     func testRunCheckpointRecordsBackOutWithoutChangingDismissedOutcome() async throws {
@@ -830,6 +888,7 @@ private extension CheckpointsManager {
         } else {
             checkpointPresenter = CheckpointPresenter(
                 workflowPresenter: workflowPresenter,
+                cachedCustomerInfoProvider: cachedCustomerInfoProvider,
                 customerInfoSynchronizer: customerInfoSynchronizer
             )
         }

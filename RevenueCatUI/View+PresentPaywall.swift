@@ -778,11 +778,6 @@ private struct PresentingPaywallModifier: ViewModifier {
         if !self.exitOfferPresenter.presentIfAvailable() {
             self.purchaseHandler.resetForNewSession()
             self.onDismiss?()
-        } else {
-            // Exit offer reuses purchaseHandler without a full reset (sessionPurchaseResult is
-            // still needed for eligibility), so clear these signals to avoid them firing again there.
-            self.purchaseHandler.clearWebCheckoutOpened()
-            self.purchaseHandler.clearURLOpened()
         }
     }
 
@@ -1108,11 +1103,6 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         if !self.exitOfferPresenter.presentIfAvailable() {
             self.purchaseHandler.resetForNewSession()
             self.onDismiss?()
-        } else {
-            // Exit offer reuses purchaseHandler without a full reset (sessionPurchaseResult is
-            // still needed for eligibility), so clear these signals to avoid them firing again there.
-            self.purchaseHandler.clearWebCheckoutOpened()
-            self.purchaseHandler.clearURLOpened()
         }
     }
 

@@ -23,6 +23,7 @@ final class VideoAudioSessionHandlerTests: TestCase {
         let audioSession = MockAudioSession()
 
         let handler = VideoAudioSessionHandler(audioSession: audioSession)
+        defer { handler.release() }
 
         XCTAssertEqual(audioSession.configuration, .playbackWithMixing)
         XCTAssertNotNil(handler)
