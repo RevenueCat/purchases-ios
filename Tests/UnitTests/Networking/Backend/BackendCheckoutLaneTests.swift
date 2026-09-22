@@ -204,9 +204,8 @@ private extension BackendCheckoutLaneTests {
 
 }
 
-/// Proves the dedicated lane actually runs hosted checkout in parallel with `/offerings`, using real
-/// `HTTPClient`s (each serial internally) and a stubbed transport: a hung `/offerings` on the
-/// shared client must not block hosted checkout on the lane.
+/// Proves the production `Backend` convenience initializer wires checkout onto its own lane: hosted
+/// checkout completes while `/offerings` hangs on the shared client.
 final class BackendCheckoutLaneParallelTests: TestCase {
 
     private static let userID = "lane-user"
@@ -226,42 +225,21 @@ final class BackendCheckoutLaneParallelTests: TestCase {
         super.tearDown()
     }
 
-    func testHostedCheckoutCompletesWhileOfferingsHangsOnSeparateLane() throws {
+    func testProductionBackendGivesCheckoutItsOwnLane() throws {
         let systemInfo = MockSystemInfo(finishTransactions: true)
-        let eTagManager = MockETagManager()
-        let tokenManager = MockTokenManager()
-
-        func makeClient() -> HTTPClient {
-            return HTTPClient(systemInfo: systemInfo,
-                              eTagManager: eTagManager,
-                              tokenManager: tokenManager,
-                              signing: MockSigning(),
-                              diagnosticsTracker: nil,
-                              networkTimeout: .custom(30),
-                              operationDispatcher: OperationDispatcher(),
-                              apiSourceFailover: nil,
-                              timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .custom(30)))
-        }
-
-        func makeConfig(_ client: HTTPClient, _ queue: OperationQueue) -> BackendConfiguration {
-            return BackendConfiguration(httpClient: client,
-                                        operationDispatcher: OperationDispatcher(),
-                                        operationQueue: queue,
-                                        diagnosticsQueue: Backend.QueueProvider.createDiagnosticsQueue(),
-                                        systemInfo: systemInfo,
-                                        offlineCustomerInfoCreator: nil,
-                                        dateProvider: DateProvider())
-        }
-
-        let lanes = BackendLanes(
-            defaultConfiguration: makeConfig(makeClient(), Backend.QueueProvider.createQueue(for: .default)),
-            dedicatedConfigurations: [
-                .checkout: makeConfig(makeClient(), Backend.QueueProvider.createQueue(for: .checkout))
-            ]
+        let backend = Backend(
+            systemInfo: systemInfo,
+            httpClientTimeout: .custom(30),
+            eTagManager: MockETagManager(),
+            tokenManager: MockTokenManager(),
+            operationDispatcher: OperationDispatcher(),
+            attributionFetcher: AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
+                                                   systemInfo: systemInfo),
+            offlineCustomerInfoCreator: nil,
+            diagnosticsTracker: nil,
+            apiSourceProvider: nil,
+            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .custom(30))
         )
-        let backend = Backend(lanes: lanes,
-                              attributionFetcher: AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
-                                                                     systemInfo: systemInfo))
 
         let hostedCheckoutPath = HTTPRequest.WebBillingPath.postHostedCheckout.relativePath
         let offeringsDispatched: Atomic<Bool> = false
