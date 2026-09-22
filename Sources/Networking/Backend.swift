@@ -29,6 +29,7 @@ class Backend {
     let adsAPI: AdsAPI
     let remoteConfigAPI: RemoteConfigAPI
 
+    private let lanes: BackendLanes
     private let config: BackendConfiguration
 
     convenience init(
@@ -82,7 +83,8 @@ class Backend {
         let adsAPI = AdsAPI(backendConfig: backendConfig)
         let remoteConfigAPI = RemoteConfigAPI(backendConfig: lanes[.remoteConfig])
 
-        self.init(backendConfig: backendConfig,
+        self.init(lanes: lanes,
+                  backendConfig: backendConfig,
                   customerAPI: customer,
                   identityAPI: identity,
                   tokenAPI: token,
@@ -103,7 +105,8 @@ class Backend {
         self.init(lanes: BackendLanes(configuration: backendConfig), attributionFetcher: attributionFetcher)
     }
 
-    required init(backendConfig: BackendConfiguration,
+    required init(lanes: BackendLanes,
+                  backendConfig: BackendConfiguration,
                   customerAPI: CustomerAPI,
                   identityAPI: IdentityAPI,
                   tokenAPI: TokenAPI,
@@ -117,6 +120,7 @@ class Backend {
                   virtualCurrenciesAPI: VirtualCurrenciesAPI,
                   adsAPI: AdsAPI,
                   remoteConfigAPI: RemoteConfigAPI) {
+        self.lanes = lanes
         self.config = backendConfig
 
         self.customer = customerAPI
@@ -135,7 +139,7 @@ class Backend {
     }
 
     func clearHTTPClientCaches() {
-        self.config.clearCache()
+        self.lanes.clearHTTPClientCaches()
     }
 
     func post(attributionData: [String: Any],

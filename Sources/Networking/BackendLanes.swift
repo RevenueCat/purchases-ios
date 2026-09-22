@@ -35,6 +35,13 @@ final class BackendLanes: Sendable {
         return self.dedicatedConfigurations[lane] ?? self.defaultConfiguration
     }
 
+    func clearHTTPClientCaches() {
+        self.defaultConfiguration.clearCache()
+        for configuration in self.dedicatedConfigurations.values {
+            configuration.clearCache()
+        }
+    }
+
 }
 
 /// Builds one `BackendConfiguration` per lane — each with its own `HTTPClient` and `OperationQueue` —

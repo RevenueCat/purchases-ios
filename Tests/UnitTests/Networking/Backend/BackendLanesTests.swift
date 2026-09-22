@@ -75,6 +75,45 @@ final class BackendLanesTests: TestCase {
         expect(lanes[.checkout].operationQueue.qualityOfService) == .userInitiated
     }
 
+    func testClearHTTPClientCachesClearsEveryLaneClient() {
+        let systemInfo = MockSystemInfo(finishTransactions: true)
+        let operationDispatcher = OperationDispatcher()
+        let defaultClient = self.makeMockClient(systemInfo: systemInfo)
+        let remoteConfigClient = self.makeMockClient(systemInfo: systemInfo)
+        let checkoutClient = self.makeMockClient(systemInfo: systemInfo)
+        let defaultConfiguration = self.makeConfig(client: defaultClient,
+                                                   lane: .default,
+                                                   systemInfo: systemInfo,
+                                                   operationDispatcher: operationDispatcher)
+        let remoteConfigConfiguration = self.makeConfig(client: remoteConfigClient,
+                                                        lane: .remoteConfig,
+                                                        systemInfo: systemInfo,
+                                                        operationDispatcher: operationDispatcher)
+        let checkoutConfiguration = self.makeConfig(client: checkoutClient,
+                                                    lane: .checkout,
+                                                    systemInfo: systemInfo,
+                                                    operationDispatcher: operationDispatcher)
+
+        let lanes = BackendLanes(
+            defaultConfiguration: defaultConfiguration,
+            dedicatedConfigurations: [
+                .remoteConfig: remoteConfigConfiguration,
+                .checkout: checkoutConfiguration
+            ]
+        )
+        let backend = Backend(
+            lanes: lanes,
+            attributionFetcher: AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
+                                                   systemInfo: systemInfo)
+        )
+
+        backend.clearHTTPClientCaches()
+
+        expect(defaultClient.clearCachesCallCount) == 1
+        expect(remoteConfigClient.clearCachesCallCount) == 1
+        expect(checkoutClient.clearCachesCallCount) == 1
+    }
+
 }
 
 private extension BackendLanesTests {
@@ -94,6 +133,28 @@ private extension BackendLanesTests {
             dateProvider: DateProvider()
         )
         return factory.makeLanes(dedicatedLanes: dedicatedLanes)
+    }
+
+    func makeMockClient(systemInfo: SystemInfo) -> MockHTTPClient {
+        return MockHTTPClient(systemInfo: systemInfo,
+                              eTagManager: MockETagManager(),
+                              tokenManager: MockTokenManager(),
+                              diagnosticsTracker: nil)
+    }
+
+    func makeConfig(client: MockHTTPClient,
+                    lane: RequestLane,
+                    systemInfo: SystemInfo,
+                    operationDispatcher: OperationDispatcher) -> BackendConfiguration {
+        return BackendConfiguration(
+            httpClient: client,
+            operationDispatcher: operationDispatcher,
+            operationQueue: Backend.QueueProvider.createQueue(for: lane),
+            diagnosticsQueue: Backend.QueueProvider.createDiagnosticsQueue(),
+            systemInfo: systemInfo,
+            offlineCustomerInfoCreator: nil,
+            dateProvider: DateProvider()
+        )
     }
 
 }

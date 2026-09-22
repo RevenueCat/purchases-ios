@@ -102,7 +102,8 @@ class BaseBackendTests: TestCase {
         self.adsAPI = AdsAPI(backendConfig: backendConfig)
         self.remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
 
-        self.backend = Backend(backendConfig: backendConfig,
+        self.backend = Backend(lanes: BackendLanes(configuration: backendConfig),
+                               backendConfig: backendConfig,
                                customerAPI: customer,
                                identityAPI: self.identity,
                                tokenAPI: self.token,
