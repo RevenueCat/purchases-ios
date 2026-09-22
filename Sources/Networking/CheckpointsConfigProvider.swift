@@ -57,9 +57,10 @@ final class CheckpointsConfigProvider: CheckpointsConfigProviderType {
 
         for identifier in snapshot.key.keys {
             guard self.manager.configGeneration == snapshot.generation else { return }
-            guard let data = await self.manager.cachedBlobData(
+            guard let data = await self.manager.blobData(
                 for: .checkpointRules,
-                itemKey: identifier
+                itemKey: identifier,
+                policy: .cachedOnly
             ), let ruleSet = try? JSONDecoder.default.decode(CheckpointRuleSet.self, from: data) else { continue }
             guard self.manager.configGeneration == snapshot.generation else { return }
             self.cache(ruleSet, for: identifier, snapshot: snapshot)

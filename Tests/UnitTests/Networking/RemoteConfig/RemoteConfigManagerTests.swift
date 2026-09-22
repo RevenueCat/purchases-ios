@@ -874,7 +874,7 @@ final class RemoteConfigManagerTests: TestCase {
         )
         self.blobStore.stubbedReadDataByRef[ref] = #"{"id":"workflow"}"#.asData
 
-        let data = await self.manager.cachedBlobData(for: .workflows, itemKey: "default")
+        let data = await self.manager.blobData(for: .workflows, itemKey: "default", policy: .cachedOnly)
 
         expect(data) == #"{"id":"workflow"}"#.asData
         expect(self.blobFetcher.invokedEnsureDownloadedRefs).to(beEmpty())

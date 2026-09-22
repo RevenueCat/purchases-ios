@@ -9,6 +9,11 @@ import Foundation
 
 // swiftlint:disable file_length
 
+enum RemoteConfigReadPolicy: Equatable {
+    case fetchIfNeeded
+    case cachedOnly
+}
+
 protocol RemoteConfigManagerType: AnyObject {
 
     /// Monotonically increases whenever committed remote config state is replaced or invalidated.
@@ -16,12 +21,6 @@ protocol RemoteConfigManagerType: AnyObject {
 
     /// Whether a remote configuration has been committed and is available to read.
     func hasCommittedConfig() async -> Bool
-
-    /// Returns a committed topic without waiting for or initiating a config refresh.
-    func committedTopicWithoutRefresh(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic?
-
-    /// Returns bytes already present in the local blob store without triggering a download or config refresh.
-    func cachedBlobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data?
 
     /// Invokes `observer` after a new remote config generation is committed.
     func addConfigCommitObserver(_ observer: @escaping (Int) -> Void)
@@ -33,7 +32,7 @@ protocol RemoteConfigManagerType: AnyObject {
     ///
     /// If the topic is not cached, this waits for an in-flight refresh or triggers one foreground refresh before
     /// reading again. Returns `nil` when the topic is still unavailable after refresh.
-    func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic?
+    func topic(_ topic: RemoteConfigTopic, policy: RemoteConfigReadPolicy) async -> RemoteConfiguration.ConfigTopic?
 
     /// Waits for the refresh currently in flight, if any, then returns the latest committed topic.
     /// Unlike `topic(_:)`, this never starts a refresh.
@@ -44,7 +43,7 @@ protocol RemoteConfigManagerType: AnyObject {
     ///
     /// Inline item metadata is exposed through `topic(_:)`; items without `blob_ref` return `nil`. Missing items
     /// wait for an in-flight refresh or trigger one foreground refresh before resolving the blob on demand.
-    func blobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data?
+    func blobData(for topic: RemoteConfigTopic, itemKey: String, policy: RemoteConfigReadPolicy) async -> Data?
 
     /// Decodes a blob payload as a concrete `Decodable` type.
     ///
@@ -94,13 +93,12 @@ enum RemoteConfigConsistencyError: Error, Equatable {
 }
 
 extension RemoteConfigManagerType {
-
-    func committedTopicWithoutRefresh(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
-        return nil
+    func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
+        return await self.topic(topic, policy: .fetchIfNeeded)
     }
 
-    func cachedBlobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data? {
-        return nil
+    func blobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data? {
+        return await self.blobData(for: topic, itemKey: itemKey, policy: .fetchIfNeeded)
     }
 
     func addConfigCommitObserver(_ observer: @escaping (Int) -> Void) {}
@@ -160,7 +158,7 @@ extension RemoteConfigManagerType {
     /// Returns a snapshot of already-committed topic metadata without waiting for or triggering a config refresh.
     func committedTopicCacheSnapshot(_ topic: RemoteConfigTopic) async
     -> GenerationGuardedCacheSnapshot<RemoteConfiguration.ConfigTopic>? {
-        guard let configTopic = await self.committedTopicWithoutRefresh(topic) else { return nil }
+        guard let configTopic = await self.topic(topic, policy: .cachedOnly) else { return nil }
         return .init(generation: self.configGeneration, key: configTopic)
     }
 
@@ -283,17 +281,9 @@ final class NoOpRemoteConfigManager: RemoteConfigManagerType {
         return false
     }
 
-    func committedTopicWithoutRefresh(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
-        return nil
-    }
-
-    func cachedBlobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data? {
-        return nil
-    }
-
     func addConfigCommitObserver(_ observer: @escaping (Int) -> Void) {}
 
-    func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
+    func topic(_ topic: RemoteConfigTopic, policy: RemoteConfigReadPolicy) async -> RemoteConfiguration.ConfigTopic? {
         return nil
     }
 
@@ -302,7 +292,7 @@ final class NoOpRemoteConfigManager: RemoteConfigManagerType {
         return nil
     }
 
-    func blobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data? {
+    func blobData(for topic: RemoteConfigTopic, itemKey: String, policy: RemoteConfigReadPolicy) async -> Data? {
         return nil
     }
 
@@ -425,19 +415,19 @@ final class RemoteConfigManager: RemoteConfigManagerType {
         }
     }
 
-    func committedTopicWithoutRefresh(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
-        return await self.readCommittedState {
+    func topic(_ topic: RemoteConfigTopic, policy: RemoteConfigReadPolicy) async -> RemoteConfiguration.ConfigTopic? {
+        return await self.readCommittedState(refreshIfMissing: policy == .fetchIfNeeded) {
             await self.committedTopic(topic)
         }
     }
 
-    func cachedBlobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data? {
-        guard let itemSnapshot = await self.readCommittedStateSnapshot(refreshIfMissing: false, {
+    func blobData(for topic: RemoteConfigTopic, itemKey: String, policy: RemoteConfigReadPolicy) async -> Data? {
+        guard let itemSnapshot = await self.readCommittedStateSnapshot(refreshIfMissing: policy == .fetchIfNeeded, {
             await self.committedTopic(topic)?[itemKey]
         }), let item = itemSnapshot.value, let ref = item.blobRef else { return nil }
 
         return await self.readCommittedState(epoch: itemSnapshot.epoch) {
-            await self.readBlob(ref: ref)
+            policy == .cachedOnly ? await self.readBlob(ref: ref) : await self.blobData(for: item)
         }
     }
 
@@ -480,30 +470,11 @@ final class RemoteConfigManager: RemoteConfigManagerType {
         self.startRefresh(isAppBackgrounded: isAppBackgrounded, requestContext: requestContext)
     }
 
-    func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
-        return await self.readCommittedState(refreshIfMissing: true) {
-            await self.committedTopic(topic)
-        }
-    }
-
     func committedTopicAfterInFlightRefresh(_ topic: RemoteConfigTopic) async
     -> RemoteConfiguration.ConfigTopic? {
         _ = await self.awaitInFlightRefresh()
         return await self.readCommittedState {
             await self.committedTopic(topic)
-        }
-    }
-
-    func blobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data? {
-        guard let itemSnapshot = await self.readCommittedStateSnapshot(refreshIfMissing: true, {
-            await self.committedTopic(topic)?[itemKey]
-        }),
-              let item = itemSnapshot.value else {
-            return nil
-        }
-
-        return await self.readCommittedState(epoch: itemSnapshot.epoch) {
-            await self.blobData(for: item)
         }
     }
 

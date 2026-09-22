@@ -746,7 +746,7 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
     var invokedCachedBlobDataParameters: [(topic: RemoteConfigTopic, itemKey: String)] {
         return self._invokedCachedBlobDataParameters.value
     }
-    /// When `true`, `cachedBlobData(for:itemKey:)` suspends until `completeStoredCachedBlobReads()` is
+    /// When `true`, cache-only `blobData(for:itemKey:policy:)` suspends until `completeStoredCachedBlobReads()` is
     /// called, allowing tests to advance the config generation while a prewarm is in flight.
     var shouldStoreCachedBlobDataCompletion = false
     private typealias StoredCachedBlobRead = (data: Data?, continuation: CheckedContinuation<Data?, Never>)
@@ -774,7 +774,10 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
     private let _storedTopicContinuations: Atomic<[CheckedContinuation<RemoteConfiguration.ConfigTopic?, Never>]> =
         .init([])
 
-    func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
+    func topic(_ topic: RemoteConfigTopic, policy: RemoteConfigReadPolicy) async -> RemoteConfiguration.ConfigTopic? {
+        guard policy == .fetchIfNeeded else {
+            return self.stubbedTopics[topic]
+        }
         guard self.shouldStoreTopicCompletion,
               self.storedTopicCompletionTopics?.contains(topic) ?? true else {
             self._invokedTopicCount.modify { $0 += 1 }
@@ -788,11 +791,8 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
         }
     }
 
-    func committedTopicWithoutRefresh(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
-        return self.stubbedTopics[topic]
-    }
-
-    func cachedBlobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data? {
+    func blobData(for topic: RemoteConfigTopic, itemKey: String, policy: RemoteConfigReadPolicy) async -> Data? {
+        guard policy == .cachedOnly else { return await self.blobData(for: topic, itemKey: itemKey) }
         self._invokedCachedBlobDataParameters.modify { $0.append((topic, itemKey)) }
         guard self.shouldStoreCachedBlobDataCompletion else {
             return self.stubbedBlobData[topic]?[itemKey]
