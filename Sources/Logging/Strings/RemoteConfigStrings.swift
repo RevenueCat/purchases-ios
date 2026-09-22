@@ -24,6 +24,7 @@ enum RemoteConfigStrings {
     case duplicateSourceURL(String)
     case externalPurchasesPolicyUnavailable
     case externalPurchasesPolicyWithoutStorefronts
+    case externalPurchasesPolicyWithoutTokenReporting
     case failedToParseResponse(Error)
     case malformedBlobRef(String)
     case mergeItemsBlobDataEmpty(topic: RemoteConfigTopic)
@@ -84,6 +85,9 @@ extension RemoteConfigStrings: LogMessage {
         case .externalPurchasesPolicyWithoutStorefronts:
             return "The external purchase policy lists no App Store storefronts, so an external purchase is " +
                 "only offered where the store says its own flow applies."
+        case .externalPurchasesPolicyWithoutTokenReporting:
+            return "The external purchase policy does not say whether to report purchases to the App Store, " +
+                "so none is reported and no token is minted."
         case let .failedToParseResponse(error):
             return "Failed to parse remote config response. Keeping cached configuration. Error: " +
             "\(error.localizedDescription)"

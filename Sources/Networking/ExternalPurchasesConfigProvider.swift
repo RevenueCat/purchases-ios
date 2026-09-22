@@ -21,6 +21,12 @@ protocol ExternalPurchasesConfigProviderType {
     /// Empty when the policy cannot be read, which offers the purchase nowhere rather than everywhere.
     func storefrontsAllowedWithoutStoreEligibility() async -> Set<String>
 
+    /// Whether this app config reports its external purchases to Apple with a token.
+    ///
+    /// `false` when the policy cannot be read: a token obliges a report, so one is only minted where the
+    /// backend says so.
+    func reportsTokensToTheAppStore() async -> Bool
+
 }
 
 /// The topic-specific front door for external purchases, reading through `RemoteConfigManager`'s
@@ -55,8 +61,24 @@ final class ExternalPurchasesConfigProvider: ExternalPurchasesConfigProviderType
         })
     }
 
+    func reportsTokensToTheAppStore() async -> Bool {
+        guard let topic = await self.manager.topic(.externalPurchases) else {
+            Logger.debug(Strings.remoteConfig.externalPurchasesPolicyUnavailable)
+            return false
+        }
+
+        guard let item = topic[Self.appStoreItemKey],
+              case let .bool(reportsTokens)? = item.content[Self.tokenReportingKey] else {
+            Logger.debug(Strings.remoteConfig.externalPurchasesPolicyWithoutTokenReporting)
+            return false
+        }
+
+        return reportsTokens
+    }
+
     private static let appStoreItemKey = "app_store"
     private static let allowedStorefrontsKey = "storefronts_allowed_without_store_eligibility"
+    private static let tokenReportingKey = "token_reporting_enabled"
 
 }
 

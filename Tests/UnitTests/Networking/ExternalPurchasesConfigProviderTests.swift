@@ -125,6 +125,43 @@ class ExternalPurchasesConfigProviderTests: TestCase {
                                               allowNoMessages: true)
     }
 
+    // MARK: - Token reporting
+
+    func testReadsTheTokenReportingToggle() async throws {
+        try self.stub(topic: #"{"app_store": {"token_reporting_enabled": true}}"#)
+
+        let reportsTokens = await self.provider.reportsTokensToTheAppStore()
+
+        expect(reportsTokens) == true
+    }
+
+    /// A token obliges a report to Apple, so an app only mints one where the backend says it does.
+    func testReportsNoTokensWithoutATopic() async {
+        let reportsTokens = await self.provider.reportsTokensToTheAppStore()
+
+        expect(reportsTokens) == false
+        self.logger.verifyMessageWasLogged(Strings.remoteConfig.externalPurchasesPolicyUnavailable)
+    }
+
+    func testReportsNoTokensWithoutTheToggle() async throws {
+        try self.stub(topic: #"{"app_store": {"storefronts_allowed_without_store_eligibility": ["USA"]}}"#)
+
+        let reportsTokens = await self.provider.reportsTokensToTheAppStore()
+
+        expect(reportsTokens) == false
+        self.logger.verifyMessageWasLogged(Strings.remoteConfig.externalPurchasesPolicyWithoutTokenReporting)
+    }
+
+    /// The toggle is part of a wire contract shared with the other SDKs, so anything that is not the boolean
+    /// it should be reads as no report rather than as an obligation.
+    func testReportsNoTokensFromAMalformedToggle() async throws {
+        try self.stub(topic: #"{"app_store": {"token_reporting_enabled": "true"}}"#)
+
+        let reportsTokens = await self.provider.reportsTokensToTheAppStore()
+
+        expect(reportsTokens) == false
+    }
+
     // MARK: - Helpers
 
     /// Decodes the topic the way the config response is decoded, so the wire keys are exercised rather than

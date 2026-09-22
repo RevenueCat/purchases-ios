@@ -18,11 +18,20 @@ final class MockExternalPurchasesConfigProvider: ExternalPurchasesConfigProvider
 
     var stubbedAllowedStorefronts: Set<String> = []
 
+    /// Stubbed as reporting, so a test that says nothing about it exercises the notice and token path.
+    var stubbedReportsTokens: Bool = true
+
     private(set) var invokedAllowedStorefrontsCount: Int = 0
+    private(set) var invokedReportsTokensCount: Int = 0
 
     func storefrontsAllowedWithoutStoreEligibility() async -> Set<String> {
         self.invokedAllowedStorefrontsCount += 1
         return self.stubbedAllowedStorefronts
+    }
+
+    func reportsTokensToTheAppStore() async -> Bool {
+        self.invokedReportsTokensCount += 1
+        return self.stubbedReportsTokens
     }
 
 }

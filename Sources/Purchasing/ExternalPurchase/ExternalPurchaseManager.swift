@@ -64,6 +64,11 @@ final class ExternalPurchaseManager {
             return .notApplicable
         }
 
+        guard await self.configProvider.reportsTokensToTheAppStore() else {
+            Logger.debug(Strings.externalPurchase.token_reporting_disabled)
+            return .notApplicable
+        }
+
         guard !self.isPreparing.getAndSet(true) else {
             Logger.warn(Strings.externalPurchase.already_preparing)
             return .stopped(.alreadyPreparing)

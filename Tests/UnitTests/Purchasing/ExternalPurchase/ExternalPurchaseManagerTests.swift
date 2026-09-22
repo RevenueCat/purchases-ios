@@ -89,6 +89,51 @@ class ExternalPurchaseManagerTests: TestCase {
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
     }
 
+    // MARK: - Token reporting
+
+    /// An app config that does not report to Apple is one Apple's flow has nothing to say about, so the
+    /// customer buys as they did before the app had anything to do with the programme.
+    func testMintsNothingAndProceedsWhileTheAppDoesNotReportTokens() async {
+        self.configProvider.stubbedReportsTokens = false
+
+        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+
+        expect(result) == .notApplicable
+        expect(self.customLink.invokedAvailabilityCount) == 0
+        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
+        expect(self.customLink.invokedTokenTypes).to(beEmpty())
+        expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
+        self.logger.verifyMessageWasLogged(Strings.externalPurchase.token_reporting_disabled)
+    }
+
+    /// The storefronts are the exception to Apple's own eligibility, which an app that reports nothing is
+    /// never subject to: it is offered the purchase everywhere rather than refused outside the list.
+    func testAsksNothingAboutStorefrontsWhileTheAppDoesNotReportTokens() async {
+        self.configProvider.stubbedReportsTokens = false
+        self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.otherStorefront)
+
+        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+
+        expect(result) == .notApplicable
+        expect(self.configProvider.invokedAllowedStorefrontsCount) == 0
+    }
+
+    /// The toggle comes from remote config, which can change while the app runs, so no verdict is kept from
+    /// an earlier purchase.
+    func testResolvesTokenReportingOnEveryPurchase() async {
+        self.configProvider.stubbedReportsTokens = false
+
+        let whileNotReporting = await self.manager.prepareExternalPurchase(flow: .inApp)
+        expect(whileNotReporting) == .notApplicable
+
+        self.configProvider.stubbedReportsTokens = true
+
+        let onceReporting = await self.manager.prepareExternalPurchase(flow: .inApp)
+        expect(onceReporting) == .registered(tokenID: Self.tokenID)
+
+        expect(self.configProvider.invokedReportsTokensCount) == 2
+    }
+
     // MARK: - Storefronts that allow the purchase without eligibility
 
     /// Where Apple's flow does not apply and the storefront is not one it is waived in, the customer is
@@ -257,6 +302,7 @@ class ExternalPurchaseManagerTests: TestCase {
         expect(self.customLink.invokedTokenTypes).to(beEmpty())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
         expect(self.configProvider.invokedAllowedStorefrontsCount) == 0
+        expect(self.configProvider.invokedReportsTokensCount) == 0
     }
 
     /// Apps outside the programme did not try to make an external purchase, so telling them anything about
