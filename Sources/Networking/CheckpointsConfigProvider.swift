@@ -68,6 +68,10 @@ final class CheckpointsConfigProvider: CheckpointsConfigProviderType {
     }
 
     func rules(for identifier: String) async throws -> CheckpointRulesSnapshot? {
+        if let cached = self.currentCachedRules(for: identifier) {
+            return cached
+        }
+
         do {
             return try await self.manager.readConsistent {
                 let generation = self.manager.configGeneration
@@ -125,6 +129,14 @@ final class CheckpointsConfigProvider: CheckpointsConfigProviderType {
     ) -> CheckpointRuleSet? {
         return self.cacheLock.perform {
             return self.cachedRules.value(for: snapshot)?[identifier]
+        }
+    }
+
+    private func currentCachedRules(for identifier: String) -> CheckpointRulesSnapshot? {
+        let generation = self.manager.configGeneration
+        return self.cacheLock.perform {
+            guard let ruleSet = self.cachedRules.value(currentGeneration: generation)?[identifier] else { return nil }
+            return .init(ruleSet: ruleSet, configGeneration: generation)
         }
     }
 

@@ -86,6 +86,18 @@ class CheckpointsConfigProviderTests: TestCase {
         expect(self.blobStore.readCount(for: "onboarding-wf-a-ref")) == 1
     }
 
+    func testReturnsCachedRulesWithoutReadingTheTopicAgain() async throws {
+        let manager = MockRemoteConfigManager()
+        manager.stubbedTopics[.checkpointRules] = ["onboarding": .init(blobRef: "onboarding-ref")]
+        manager.stubbedBlobData[.checkpointRules] = ["onboarding": Self.payload(workflowIds: ["wf-a"])]
+        let provider = CheckpointsConfigProvider(manager: manager)
+
+        _ = try await provider.rules(for: "onboarding")
+        _ = try await provider.rules(for: "onboarding")
+
+        expect(manager.invokedTopicCount) == 1
+    }
+
     func testCachesRulesForEachCheckpointIndependently() async throws {
         self.commit(rules: ["onboarding": ["wf-a"], "paywall_close": ["wf-exit"]])
 
