@@ -134,6 +134,8 @@ public class PaywallViewController: UIViewController {
 
     var exitOfferOfferingForTesting: Offering? { self.exitOfferOffering }
 
+    var workflowContextForTesting: WorkflowContext? { self.configuration.injectedWorkflowContext }
+
     func simulateWorkflowExitOfferUpdate(_ offering: Offering?) {
         self.updateWorkflowExitOffer(offering)
     }

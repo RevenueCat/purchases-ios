@@ -43,6 +43,7 @@ struct RcMaestroApp: App {
         let forceServerErrorStrategy = Constants.forceServerErrorStrategy
         Purchases.configure(
             with: .builder(withAPIKey: Constants.apiKey)
+                .with(appUserID: Constants.appUserID)
                 .with(dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(
