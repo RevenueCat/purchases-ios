@@ -155,7 +155,8 @@ extension CheckpointEvent.Data {
                 identifier: identifier,
                 date: date,
                 result: .returnData,
-                checkpointRuleID: resolved.checkpointRuleID
+                checkpointRuleID: resolved.checkpointRuleID,
+                traceID: resolved.traceID
             )
 
         case let .noAction(reason):
