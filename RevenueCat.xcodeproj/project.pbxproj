@@ -233,6 +233,7 @@
 		2C0B98CD2797070B00C5874F /* PromotionalOffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C0B98CC2797070B00C5874F /* PromotionalOffer.swift */; };
 		2C2AEB0F2CA64E0E00A50F38 /* Template1Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2AEB0E2CA64E0E00A50F38 /* Template1Preview.swift */; };
 		832A761DBC4EA873D769CB83 /* WindowSizeConditionsPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 527C8FDAD4BC0E20186FB251 /* WindowSizeConditionsPreview.swift */; };
+		9FDCB2854C16420D876A9751 /* WorkflowSheetRelativeDiscountPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FDCB2854C16420D876A9752 /* WorkflowSheetRelativeDiscountPreview.swift */; };
 		2C2AEB3B2CA7209F00A50F38 /* PaywallPackageComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2AEB3A2CA7209F00A50F38 /* PaywallPackageComponent.swift */; };
 		2C2AEB3F2CA7235300A50F38 /* PaywallPurchaseButtonComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2AEB3E2CA7235300A50F38 /* PaywallPurchaseButtonComponent.swift */; };
 		2C6CC1162B8D2B6900432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6CC1152B8D2B6800432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift */; };
@@ -1983,6 +1984,7 @@
 		2C0B98CC2797070B00C5874F /* PromotionalOffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromotionalOffer.swift; sourceTree = "<group>"; };
 		2C2AEB0E2CA64E0E00A50F38 /* Template1Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Template1Preview.swift; sourceTree = "<group>"; };
 		527C8FDAD4BC0E20186FB251 /* WindowSizeConditionsPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowSizeConditionsPreview.swift; sourceTree = "<group>"; };
+		9FDCB2854C16420D876A9752 /* WorkflowSheetRelativeDiscountPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowSheetRelativeDiscountPreview.swift; sourceTree = "<group>"; };
 		D793578E154692425D9938B6 /* WindowSizeConditionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowSizeConditionTests.swift; sourceTree = "<group>"; };
 		4B90A3E17C25D8F1206BA442 /* PaywallWindowSizeMeasurementTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallWindowSizeMeasurementTests.swift; sourceTree = "<group>"; };
 		2C2AEB3A2CA7209F00A50F38 /* PaywallPackageComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallPackageComponent.swift; sourceTree = "<group>"; };
@@ -4015,6 +4017,7 @@
 				DBAA1FBA2F8D45C2000E8C81 /* HeaderTextBodyHeroSafeAreaPreview.swift */,
 				DBAA1FC12F8D4ED8000E8C81 /* HeaderNestedHeroZLayerSafeAreaPreview.swift */,
 				527C8FDAD4BC0E20186FB251 /* WindowSizeConditionsPreview.swift */,
+				9FDCB2854C16420D876A9752 /* WorkflowSheetRelativeDiscountPreview.swift */,
 			);
 			path = TemplateComponentsViewPreviews;
 			sourceTree = "<group>";
@@ -9138,6 +9141,7 @@
 				577132B92E4CE43A003A0CBD /* NoSubscriptionsCardViewModel.swift in Sources */,
 				2C2AEB0F2CA64E0E00A50F38 /* Template1Preview.swift in Sources */,
 				832A761DBC4EA873D769CB83 /* WindowSizeConditionsPreview.swift in Sources */,
+				9FDCB2854C16420D876A9751 /* WorkflowSheetRelativeDiscountPreview.swift in Sources */,
 				88A543E32C37A4970039C6A5 /* Template7View.swift in Sources */,
 				2C91068C2CE22D4F00189565 /* JustifyContent.swift in Sources */,
 				806797FE2FCD970800DF760F /* PaywallZLayerScrollPolicy.swift in Sources */,
