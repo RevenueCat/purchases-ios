@@ -38,6 +38,11 @@ final class WorkflowNavigator: ObservableObject {
         self.currentStepId = workflow.initialStepId
     }
 
+    func resolveInitialStep(to stepId: String) {
+        guard self.backStack.isEmpty, self.currentStepId == self.workflow.initialStepId else { return }
+        self.currentStepId = stepId
+    }
+
     var currentStep: WorkflowStep? {
         return workflow.steps[currentStepId]
     }
