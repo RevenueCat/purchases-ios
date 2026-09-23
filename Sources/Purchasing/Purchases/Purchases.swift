@@ -298,6 +298,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let customerInfoManager: CustomerInfoManager
     private let eventsManager: EventsManagerType?
     private let remoteConfigManager: RemoteConfigManagerType
+    private let sdkSettingsConfigProvider: SDKSettingsConfigProvider
 
     private var _adTracker: Any?
 
@@ -956,7 +957,13 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.productsManager = productsManager
         self.offeringsManager = offeringsManager
         self.workflowManager = workflowManager
-        self.remoteConfigManager = systemInfo.remoteConfigEnabled ? remoteConfigManager : NoOpRemoteConfigManager()
+        do {
+            let remoteConfigManager = systemInfo.remoteConfigEnabled
+                ? remoteConfigManager
+                : NoOpRemoteConfigManager()
+            self.remoteConfigManager = remoteConfigManager
+            self.sdkSettingsConfigProvider = .init(manager: remoteConfigManager)
+        }
         self.offlineEntitlementsManager = offlineEntitlementsManager
         self.purchasesOrchestrator = purchasesOrchestrator
         self.purchasedProductsFetcher = purchasedProductsFetcher
@@ -999,6 +1006,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         #endif
 
         self.purchasesOrchestrator.delegate = self
+        self.sdkSettingsConfigProvider.delegate = self
+        self.remoteConfigManager.addRemoteConfigStateObserver(self.sdkSettingsConfigProvider)
         #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.attribution.syncAttributesAndOfferingsIfNeededHandler = { completion in
             completion(nil, NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError)
@@ -2734,6 +2743,12 @@ public extension Purchases {
 // async contexts in a much more simple way without errors like:
 // "Capture of 'self' with non-sendable type 'Purchases' in a `@Sendable` closure"
 extension Purchases: @unchecked Sendable {}
+
+extension Purchases: SDKSettingsConfigProviderDelegate {
+
+    func sdkSettingsConfigProvider(_: SDKSettingsConfigProviderType, didUpdate _: SDKSettings) async {}
+
+}
 
 // MARK: Internal
 
