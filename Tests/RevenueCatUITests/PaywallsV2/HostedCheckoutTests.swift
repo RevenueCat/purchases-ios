@@ -34,9 +34,45 @@ final class HostedCheckoutTests: TestCase {
         purchases.hostedCheckoutBlock = { _, _ in .started(Self.session) }
 
         let action = await HostedCheckout.start(for: TestData.annualPackage,
-                                                purchaseHandler: Self.makeHandler(purchases: purchases))
+                                                purchaseHandler: Self.makeHandler(purchases: purchases),
+                                                purchaseInitiatedAction: nil)
 
         expect(action) == .present(Self.session)
+    }
+
+    /// An app that gates purchases, e.g. behind sign in, gets to stop this one before Apple's flow runs.
+    func testStartsNoCheckoutWhenTheAppStopsThePurchase() async {
+        let checkoutsStarted = Recorder<String>()
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutBlock = { package, _ in
+            await checkoutsStarted.record(package.identifier)
+            return .started(Self.session)
+        }
+
+        let action = await HostedCheckout.start(for: TestData.annualPackage,
+                                                purchaseHandler: Self.makeHandler(purchases: purchases),
+                                                purchaseInitiatedAction: Self.interceptor(proceeding: false,
+                                                                                          recordingInto: .init()))
+
+        let packagesCheckedOut = await checkoutsStarted.values
+        expect(action) == .nothing
+        expect(packagesCheckedOut).to(beEmpty())
+    }
+
+    func testStartsTheCheckoutOnceTheAppLetsThePurchaseThrough() async {
+        let packagesIntercepted = Recorder<String>()
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutBlock = { _, _ in .started(Self.session) }
+
+        let action = await HostedCheckout.start(
+            for: TestData.annualPackage,
+            purchaseHandler: Self.makeHandler(purchases: purchases),
+            purchaseInitiatedAction: Self.interceptor(proceeding: true, recordingInto: packagesIntercepted)
+        )
+
+        let packagesAskedAbout = await packagesIntercepted.values
+        expect(action) == .present(Self.session)
+        expect(packagesAskedAbout) == [TestData.annualPackage.identifier]
     }
 
     func testPresentsTheCheckoutThatWasCreated() {
@@ -87,6 +123,26 @@ private extension HostedCheckoutTests {
             eventTracker: .init(purchases: purchases,
                                 eventDispatcher: PaywallEventTrackerTestDispatcher.value)
         )
+    }
+
+    static func interceptor(proceeding: Bool,
+                            recordingInto recorder: Recorder<String>) -> PurchaseInitiatedAction {
+        return PurchaseInitiatedAction { package, resume in
+            Task { @MainActor in
+                await recorder.record(package.identifier)
+                resume(shouldProceed: proceeding)
+            }
+        }
+    }
+
+}
+
+private actor Recorder<Value: Sendable> {
+
+    private(set) var values: [Value] = []
+
+    func record(_ value: Value) {
+        self.values.append(value)
     }
 
 }

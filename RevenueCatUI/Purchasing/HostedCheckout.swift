@@ -40,8 +40,18 @@ enum HostedCheckout {
 
     }
 
-    /// Runs Apple's flow and creates the checkout session.
-    static func start(for package: Package, purchaseHandler: PurchaseHandler) async -> Action {
+    /// Runs Apple's flow and creates the checkout session, once the app's purchase interceptor lets it.
+    ///
+    /// The interceptor is asked first because Apple's flow may mint a token, and every token minted is one
+    /// Apple expects a report for.
+    static func start(for package: Package,
+                      purchaseHandler: PurchaseHandler,
+                      purchaseInitiatedAction: PurchaseInitiatedAction?) async -> Action {
+        guard await purchaseHandler.shouldProceed(withPurchaseOf: package,
+                                                  interceptor: purchaseInitiatedAction) else {
+            return .nothing
+        }
+
         return Action(await purchaseHandler.startHostedCheckout(package: package))
     }
 
