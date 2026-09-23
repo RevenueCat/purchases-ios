@@ -213,15 +213,14 @@ struct PurchaseButtonComponentView: View {
 
     @MainActor
     private func presentHostedCheckout(_ session: HostedCheckoutSession) {
-        let viewModel = WebCheckoutViewModel(
+        // Links the page opens outside the checkout are handed to the browser by the view showing it,
+        // which is the one that knows the environment the sheet renders in.
+        self.hostedCheckoutViewModel = WebCheckoutViewModel(
             checkoutURL: session.checkoutURL,
             successURL: session.successURL,
             cancelURL: session.cancelURL,
             dataStoreIdentifierStore: .init()
         )
-        viewModel.onOpenExternalURL = { self.openURL($0) }
-
-        self.hostedCheckoutViewModel = viewModel
     }
 
     private func handleHostedCheckoutOutcome(_ outcome: WebCheckoutSheetOutcome) {
