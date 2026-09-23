@@ -174,6 +174,7 @@ public class CheckpointAdOutcome: CustomStringConvertible, @unchecked Sendable {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension CheckpointAdOutcome: Equatable {
 
+    /// Returns whether two ad outcomes are the same case with equal associated values.
     public static func == (lhs: CheckpointAdOutcome, rhs: CheckpointAdOutcome) -> Bool {
         switch (lhs, rhs) {
         case (is Shown, is Shown):
