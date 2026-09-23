@@ -111,6 +111,7 @@ public struct AdPresentationResult: Equatable {
         self.outcome = outcome
     }
 
+    /// Returns whether two results carry the same ad outcome.
     public static func == (lhs: AdPresentationResult, rhs: AdPresentationResult) -> Bool {
         return lhs.outcome == rhs.outcome
     }
