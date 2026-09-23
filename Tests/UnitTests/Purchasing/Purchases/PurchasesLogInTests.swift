@@ -293,7 +293,6 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
     }
 
     func testLogInWithStaticStringLogsMessage() async throws {
-        try AvailabilityChecks.skipIfCompiler63OrLater() // contains explanatory comment
         self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true, nil))
 
         _ = try await self.purchases.logIn("Static string")
@@ -351,9 +350,10 @@ class ExistingUserPurchasesLogInTests: BasePurchasesLogInTests {
 
         waitUntil { completed in
             self.purchases.logIn(newAppUserID) { customerInfo, _, _ in
-                // since we're using a mocked identity manager, we need to manually call
-                // customer info manager to update the customer info and trigger an actual
+                // since we're using a mocked identity manager, we need to manually switch the current
+                // user and call customer info manager to update the customer info and trigger an actual
                 // call in the monitorChanges observation
+                self.identityManager.mockAppUserID = newAppUserID
                 self.customerInfoManager.cache(customerInfo: customerInfo!, appUserID: newAppUserID)
                 completed()
             }
@@ -371,9 +371,10 @@ class ExistingUserPurchasesLogInTests: BasePurchasesLogInTests {
 
         waitUntil { completed in
             self.purchases.logIn(newAppUserID) { customerInfo, _, _ in
-                // since we're using a mocked identity manager, we need to manually call
-                // customer info manager to update the customer info and trigger an actual
+                // since we're using a mocked identity manager, we need to manually switch the current
+                // user and call customer info manager to update the customer info and trigger an actual
                 // call in the monitorChanges observation
+                self.identityManager.mockAppUserID = newAppUserID
                 self.customerInfoManager.cache(customerInfo: customerInfo!, appUserID: newAppUserID)
                 completed()
             }
@@ -393,9 +394,10 @@ class ExistingUserPurchasesLogInTests: BasePurchasesLogInTests {
 
         waitUntil { completed in
             self.purchases.logIn(newAppUserID) { customerInfo, _, _ in
-                // since we're using a mocked identity manager, we need to manually call
-                // customer info manager to update the customer info and trigger an actual
+                // since we're using a mocked identity manager, we need to manually switch the current
+                // user and call customer info manager to update the customer info and trigger an actual
                 // call in the monitorChanges observation
+                self.identityManager.mockAppUserID = newAppUserID
                 self.customerInfoManager.cache(customerInfo: customerInfo!, appUserID: newAppUserID)
                 completed()
             }

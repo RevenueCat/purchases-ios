@@ -65,6 +65,15 @@ final class PaywallAccessibilityUITests: XCTestCase {
         )
     }
 
+    // MARK: - Decorative media (images, icons, backgrounds)
+
+    func testDecorativeMediaIsNotAnnounced() throws {
+        let app = self.launchDecorativeMedia()
+        self.settle(app, seconds: 5)
+
+        try app.performAccessibilityAudit(for: [.sufficientElementDescription])
+    }
+
     // MARK: - Package selection
 
     /// The selected card carries the trait, so VoiceOver speaks the system's own word for it.
@@ -158,6 +167,12 @@ final class PaywallAccessibilityUITests: XCTestCase {
         )
 
         return app
+    }
+
+    /// Lets async layout and image downloads land before measuring.
+    private func settle(_ app: XCUIApplication, seconds: TimeInterval = 2) {
+        RunLoop.current.run(until: Date().addingTimeInterval(seconds))
+        _ = app.images.count
     }
 
 }

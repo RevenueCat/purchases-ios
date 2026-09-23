@@ -100,7 +100,7 @@ private extension LogInOperation {
         let result: IdentityAPI.LogInResponse = result
             .map { response in
                 (
-                    response.body.customerInfo.copy(with: response.verificationResult,
+                    response.body.customerInfo.copy(with: response.verificationResult.result,
                                                     httpResponseOriginalSource: response.originalSource),
                     created: response.httpStatusCode == .createdSuccess,
                     attributesErrorResponse: response.body.attributesErrorResponse

@@ -80,6 +80,23 @@ class BaseStoreKitIntegrationTests: BaseBackendIntegrationTests {
 
 // MARK: - Helpers
 
+@MainActor
+class BackendStoreKitPreflightTests: TestCase {
+
+    func testInitializesLocalStoreKitSession() async throws {
+        let session = try SKTestSession(configurationFileNamed: Constants.storeKitConfigFileName)
+        session.resetToDefaultState()
+        session.disableDialogs = true
+        session.clearTransactions()
+
+        let productID = BaseStoreKitIntegrationTests.monthlyNoIntroProductID
+        let products = try await Product.products(for: [productID])
+        XCTAssertEqual(products.map(\.id), [productID])
+        withExtendedLifetime(session) {}
+    }
+
+}
+
 extension BaseStoreKitIntegrationTests {
 
     static let entitlementIdentifier = "premium"
@@ -91,6 +108,7 @@ extension BaseStoreKitIntegrationTests {
     static let group3MonthlyNoTrialProductID = "com.revenuecat.monthly.1.99.no_intro"
     static let group3YearlyTrialProductID = "com.revenuecat.annual.10.99.1_free_week"
     static let weeklyWith3DayTrial = "shortest_duration"
+    static let productIDWithBillingPlans = "com.revenuecat.sampleapp.monthly.12mocommitment"
 
     var currentOffering: Offering {
         get async throws {
@@ -139,8 +157,6 @@ extension BaseStoreKitIntegrationTests {
         file: FileString = #file,
         line: UInt = #line
     ) async throws -> PurchaseResultData {
-        let logger = TestLogHandler(testIdentifier: self.name)
-
         let data = try await self.purchase(package: self.monthlyPackage, file: file, line: line)
 
         try await self.verifyEntitlementWentThrough(data.customerInfo,
@@ -162,8 +178,6 @@ extension BaseStoreKitIntegrationTests {
         file: FileString = #file,
         line: UInt = #line
     ) async throws -> PurchaseResultData {
-        let logger = TestLogHandler(testIdentifier: self.name)
-
         let data: PurchaseResultData
 
         #if ENABLE_TRANSACTION_METADATA
@@ -206,7 +220,12 @@ extension BaseStoreKitIntegrationTests {
         file: FileString = #file,
         line: UInt = #line
     ) async throws -> PurchaseResultData {
-        let logger = TestLogHandler(testIdentifier: self.name)
+        let previousTimeRate = self.testSession.timeRate
+        defer { self.testSession.timeRate = previousTimeRate }
+        if #available(iOS 16.4, tvOS 16.4, macOS 13.3, watchOS 9.4, *), previousTimeRate.rawValue == 6 {
+            self.testSession.timeRate = .oneRenewalEveryTenSeconds
+        }
+
         let product = try await StoreKit.Product.products(for: [Self.weeklyWith3DayTrial]).first!
 
         let data = try await self.purchase(product: StoreProduct(sk2Product: product), file: file, line: line)

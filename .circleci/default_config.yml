@@ -124,6 +124,12 @@ aliases:
         only: main
   swiftinterface-xcode-version: &swiftinterface-xcode-version "26.5"
 commands:
+  configure-xcode27-validation:
+    steps:
+      - run:
+          name: Use Xcode 27 deployment targets for build validation
+          command: printf 'export XCODE_XCCONFIG_FILE=%q\n' "$PWD/.circleci/xcode27-validation.xcconfig" >> "$BASH_ENV"
+
   github-notify-pr-on-fail:
     steps:
       - run:
@@ -557,6 +563,9 @@ commands:
     parameters:
       test_plan:
         type: string
+      device:
+        type: string
+        default: iPhone 17 (27.0)
     steps:
       - checkout
       - install-dependencies
@@ -568,7 +577,7 @@ commands:
           command: bundle exec fastlane backend_integration_tests test_plan:"<< parameters.test_plan >>"
           no_output_timeout: 5m
           environment:
-            SCAN_DEVICE: iPhone 16 (18.5)
+            SCAN_DEVICE: << parameters.device >>
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/ios
           bundle_name: BackendIntegrationTests
@@ -605,8 +614,10 @@ jobs:
   pod-lib-lint:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - checkout
+      - configure-xcode27-validation
       - install-dependencies
       - run:
           name: Check pods and deployment targets
@@ -615,7 +626,7 @@ jobs:
   api-tests:
     executor:
       name: macos-executor
-      xcode_version: "16.4"
+      xcode_version: "27.0.0"
     environment:
       TUIST_SWIFT_CONDITIONS: ENABLE_CHECKPOINTS_OBJC
       TUIST_RC_XCODE_PROJECT: "true"
@@ -630,7 +641,7 @@ jobs:
   revenuecat-admob-tests:
     executor:
       name: macos-executor
-      xcode_version: "26.5"
+      xcode_version: "27.0.0"
     steps:
       - checkout
       - install-dependencies:
@@ -645,7 +656,7 @@ jobs:
           command: bundle exec fastlane test_revenuecat_admob
           no_output_timeout: 10m
           environment:
-            DEVICE: iPhone 17,OS=26.5
+            DEVICE: iPhone 17,OS=27.0
       - compress_result_bundle:
           directory: fastlane/test_output
           bundle_name: revenuecat_admob
@@ -658,6 +669,7 @@ jobs:
   spm-receipt-parser:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - checkout
       - run:
@@ -845,6 +857,46 @@ jobs:
           path: fastlane/test_output
           destination: v1-snapshots
 
+  run-revenuecat-ui-ios-27:
+    executor:
+      name: macos-executor
+      xcode_version: "27.0.0"
+
+    steps:
+      - checkout
+      # xcbeautify not needed: test_revenuecatui uses xcodebuild directly
+      # which uses xcpretty
+      - install-dependencies:
+          install_xcbeautify: false
+      - update-spm-installation-commit
+      - unless:
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          steps:
+            - run:
+                name: SPM RevenueCatUI Release Build
+                command: swift build -c release --target RevenueCatUI
+                no_output_timeout: 5m
+      - run:
+          name: SPM RevenueCatUI Tests
+          command: bundle exec fastlane test_revenuecatui
+          no_output_timeout: 15m
+          environment:
+            DEVICE: iPhone 17,OS=27.0
+            # Xcode 27 can hang in simctl diagnose after all tests pass.
+            RC_COLLECT_TEST_DIAGNOSTICS: never
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
+          job: "create_snapshot_pr"
+          version: "revenuecatui-27"
+      - compress_result_bundle:
+          directory: fastlane/test_output
+          bundle_name: revenuecatui
+      - store_test_results:
+          path: fastlane/test_output/revenuecatui/tests.xml
+      - store_artifacts:
+          path: fastlane/test_output
+          destination: scan-test-output
+
   run-revenuecat-ui-ios-26:
     executor:
       name: macos-executor
@@ -886,6 +938,7 @@ jobs:
   spm-revenuecat-ui-watchos:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - checkout
       # xcbeautify not needed: test_revenuecatui uses xcodebuild directly
@@ -899,7 +952,7 @@ jobs:
           no_output_timeout: 15m
           environment:
             PLATFORM: watchOS Simulator
-            DEVICE: Apple Watch Series 10 (46mm),OS=11.5
+            DEVICE: Apple Watch Series 12 (46mm),OS=27.0
             BUILD_SDK: watchsimulator
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
@@ -917,6 +970,7 @@ jobs:
   run-test-tvos-and-macos:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
 
     steps:
       - checkout
@@ -924,6 +978,10 @@ jobs:
       - run:
           name: Run tvOS tests
           command: bundle exec fastlane test_tvos
+          environment:
+            SCAN_DEVICE: Apple TV 4K (3rd generation) (27.0)
+            SCAN_XCARGS: -collect-test-diagnostics never
+            RC_STOREKIT_TEST_PREFLIGHT: "1"
           no_output_timeout: 5m
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/tvos
@@ -958,6 +1016,48 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output-macos
+
+  run-test-ios-27:
+    executor:
+      name: macos-executor
+      xcode_version: "27.0.0"
+
+    steps:
+      - checkout
+      - run:
+          name: Validate Package.swift
+          command: swift package describe
+      - install-dependencies
+
+      - unless:
+          condition: << pipeline.parameters.generate_snapshots >>
+          steps:
+            - run:
+                name: SPM Release Build (Xcode 27)
+                command: swift build -c release --target RevenueCat
+                no_output_timeout: 30m
+
+      - run:
+          name: Run iOS 27 tests
+          command: bundle exec fastlane test_ios
+          no_output_timeout: 15m
+          environment:
+            SCAN_DEVICE: iPhone 17 (27.0)
+            RC_STOREKIT_TEST_PREFLIGHT: "1"
+            SCAN_XCARGS: -collect-test-diagnostics never
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: RevenueCat
+      - create-snapshot-pr-if-needed:
+          condition: << pipeline.parameters.generate_snapshots >>
+          job: "create_snapshot_pr"
+          version: "ios-27"
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output-ios-27
+      - github-notify-pr-on-fail
 
   run-test-ios-26:
     executor:
@@ -1002,38 +1102,10 @@ jobs:
           destination: scan-test-output-ios-26
       - github-notify-pr-on-fail
 
-  # As of May 12, 2026, there is a StoreKit bug that is preventing us from running unit tests
-  # when building with Xcode 26.4+. When built with Xcode 26.4+, tests that fetch products
-  # with StoreKit with a SKConfig file fail to fetch products. Thus, a good chunk of our
-  # tests fail. While we can't run the tests, the least that we can do is ensure that the
-  # SDK builds on Xcode 26.5 with iOS 26.5, so this job does that.
-  build-xcode-265:
-    executor:
-      name: macos-executor
-      xcode_version: "26.5"
-    steps:
-      - checkout
-      - install-dependencies
-      - run:
-          name: Build RevenueCat with Xcode 26.5
-          command: xcodebuild -workspace RevenueCat.xcworkspace -scheme RevenueCat -destination "generic/platform=iOS" -sdk iphoneos -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=YES build
-          no_output_timeout: 30m
-      - run:
-          name: Build RevenueCat_CustomEntitlementComputation with Xcode 26.5
-          command: xcodebuild -workspace RevenueCat.xcworkspace -scheme RevenueCat_CustomEntitlementComputation -destination "generic/platform=iOS" -sdk iphoneos -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=YES build
-          no_output_timeout: 30m
-      - run:
-          name: Build ReceiptParser with Xcode 26.5
-          command: xcodebuild -workspace RevenueCat.xcworkspace -scheme "ReceiptParser (RevenueCat Workspace)" -destination "generic/platform=iOS" -sdk iphoneos -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=YES build
-          no_output_timeout: 30m
-      - run:
-          name: Build RevenueCatUI with Xcode 26.5
-          command: xcodebuild -workspace RevenueCat.xcworkspace -scheme RevenueCatUI -destination "generic/platform=iOS" -sdk iphoneos -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=YES build
-          no_output_timeout: 30m
-
   build-checkpoint-tester:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - checkout
       - tuist-generate-workspace:
@@ -1052,7 +1124,7 @@ jobs:
   check-app-extension-safe-api-usage:
     executor:
       name: macos-executor
-      xcode_version: "26.5"
+      xcode_version: "27.0.0"
     steps:
       - checkout
       - install-dependencies
@@ -1314,6 +1386,7 @@ jobs:
   run-test-watchos:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - checkout
       - install-dependencies
@@ -1323,7 +1396,9 @@ jobs:
           no_output_timeout: 5m
           environment:
             SCAN_PLATFORM: watchOS Simulator
-            SCAN_DEVICE: Apple Watch Series 10 (46mm) (11.5)
+            SCAN_DEVICE: Apple Watch Series 12 (46mm) (27.0)
+            # Xcode 27 can hang in simctl diagnose after all watchOS tests pass.
+            SCAN_XCARGS: -collect-test-diagnostics never
             BUILD_SDK: watchsimulator
       - compress_result_bundle:
           directory: fastlane/test_output/xctest/watchos
@@ -1341,6 +1416,7 @@ jobs:
   build-tv-watch-mac-and-visionos:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - checkout
       - install-dependencies
@@ -1376,49 +1452,69 @@ jobs:
           destination: scan-test-output
 
   backend-integration-tests-SK1:
+    environment:
+      RC_STOREKIT_TEST_PREFLIGHT: "1"
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-SK1"
+          device: iPhone 17 (27.0)
 
   backend-integration-tests-SK2:
+    environment:
+      RC_STOREKIT_TEST_PREFLIGHT: "1"
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-SK2"
+          device: iPhone 17 (27.0)
 
   backend-integration-tests-other:
+    environment:
+      RC_STOREKIT_TEST_PREFLIGHT: "1"
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-Other"
+          device: iPhone 17 (27.0)
 
   backend-integration-tests-offline:
+    environment:
+      RC_STOREKIT_TEST_PREFLIGHT: "1"
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-Offline"
+          device: iPhone 17 (27.0)
 
   backend-integration-tests-custom-entitlements:
+    environment:
+      RC_STOREKIT_TEST_PREFLIGHT: "1"
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-CustomEntitlements"
+          device: iPhone 17 (27.0)
 
   run-all-maestro-e2e-tests:
     executor:
       name: macos-executor
-      xcode_version: "26.5"
+      xcode_version: "27.0.0"
     steps:
       - macos/preboot-simulator:
-          version: "18.6"
+          version: "27.0"
           platform: "iOS"
-          device: "iPhone 16 Pro"
+          device: "iPhone 17"
       - checkout
       - install-dependencies
       - revenuecat/install-maestro
@@ -1496,7 +1592,8 @@ jobs:
               bundle exec fastlane run slack_backend_integration_test_results \
                 environment:"maestro_e2e (all environments)" \
                 success:true \
-                message_binary_solo_on_failure:false
+                message_binary_solo_on_failure:false \
+                notify_success_only_on_recovery:true
             fi
           when: always
       # Check if any tests failed and fail the job if so
@@ -1515,12 +1612,12 @@ jobs:
     description: "Assert paywall accessibility labels against the real accessibility tree"
     executor:
       name: macos-executor
-      xcode_version: "26.5"
+      xcode_version: "27.0.0"
     steps:
       - macos/preboot-simulator:
-          version: "18.6"
+          version: "27.0"
           platform: "iOS"
-          device: "iPhone 16 Pro"
+          device: "iPhone 17"
       - checkout
       - install-dependencies
       - tuist-generate-workspace:
@@ -1529,6 +1626,8 @@ jobs:
           name: Run paywall accessibility UI tests
           command: |
             bundle exec fastlane paywall_accessibility_ui_tests
+          environment:
+            SCAN_DEVICE: iPhone 17 (27.0)
           no_output_timeout: 15m
       - store_test_results:
           path: fastlane/test_output
@@ -1536,12 +1635,12 @@ jobs:
   run-workflow-maestro-tests:
     executor:
       name: macos-executor
-      xcode_version: "26.5"
+      xcode_version: "27.0.0"
     steps:
       - macos/preboot-simulator:
-          version: "18.6"
+          version: "27.0"
           platform: "iOS"
-          device: "iPhone 16 Pro"
+          device: "iPhone 17"
       - checkout
       - install-dependencies
       - revenuecat/install-maestro
@@ -1701,9 +1800,11 @@ jobs:
   installation-tests-all-but-carthage:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       # === Common setup ===
       - checkout-with-minimal-permissions
+      - configure-xcode27-validation
       - install-dependencies
       - update-spm-installation-commit
       - run:
@@ -1804,12 +1905,13 @@ jobs:
     parameters:
       xcode_version:
         type: string
-        default: "26.5"
+        default: "27.0.0"
     executor:
       name: macos-executor-large
       xcode_version: << parameters.xcode_version >>
     steps:
       - checkout-with-minimal-permissions
+      - configure-xcode27-validation
       - run:
           name: Upgrade Carthage
           command: |
@@ -1878,11 +1980,15 @@ jobs:
           command: bundle exec fastlane automatic_bump fallback_pr_lookup:<< pipeline.parameters.bump_with_fallback_pr_lookup >>
 
   integration-tests-all:
+    environment:
+      RC_STOREKIT_TEST_PREFLIGHT: "1"
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-All-CI"
+          device: iPhone 17 (27.0)
 
   loadshedder-integration-tests-old-major:
     parameters:
@@ -1943,6 +2049,7 @@ jobs:
   emerge_purchases_ui_snapshot_tests:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - checkout
       - revenuecat/setup-git-credentials
@@ -1953,11 +2060,13 @@ jobs:
           name: Build Paywalls Tester
           command: bundle exec fastlane build_paywalls_tester_for_emerge
 
-  emerge_binary_size_analysis:
+  binary_size_analysis:
     executor:
       name: macos-executor
+      xcode_version: "27.0.0"
     steps:
       - checkout
+      - configure-xcode27-validation
       - revenuecat/setup-git-credentials
       - revenuecat/trust-github-key
       - install-dependencies
@@ -1971,8 +2080,8 @@ jobs:
       - tuist-generate-workspace:
           query: "BinarySizeTest"
       - run:
-          name: Build BinarySizeTest (LOCAL_SOURCE) and upload to Emerge
-          command: bundle exec fastlane build_and_upload_emerge_binary_size_analysis integration_method:LOCAL_SOURCE
+          name: Build and upload BinarySizeTest (LOCAL_SOURCE)
+          command: bundle exec fastlane build_and_upload_binary_size_analysis integration_method:LOCAL_SOURCE
 
       # CocoaPods
       - run:
@@ -1983,8 +2092,8 @@ jobs:
       - tuist-generate-workspace:
           query: "BinarySizeTest"
       - run:
-          name: Build BinarySizeTest (COCOAPODS) and upload to Emerge
-          command: bundle exec fastlane build_and_upload_emerge_binary_size_analysis integration_method:COCOAPODS
+          name: Build and upload BinarySizeTest (COCOAPODS)
+          command: bundle exec fastlane build_and_upload_binary_size_analysis integration_method:COCOAPODS
 
       # SPM
       - run:
@@ -1994,8 +2103,8 @@ jobs:
       - tuist-generate-workspace:
           query: "BinarySizeTest"
       - run:
-          name: Build BinarySizeTest (SPM) and upload to Emerge
-          command: bundle exec fastlane build_and_upload_emerge_binary_size_analysis integration_method:SPM
+          name: Build and upload BinarySizeTest (SPM)
+          command: bundle exec fastlane build_and_upload_binary_size_analysis integration_method:SPM
 
   record-and-upload-paywalls-v2-snapshots:
     description: "Record paywall template screenshots and distribute them to the paywall-rendering-validation repository and/or Emerge"
@@ -2172,7 +2281,6 @@ jobs:
           command: echo "All tasks passed"
 
 workflows:
-
   generate-swiftinterface:
     when: << pipeline.parameters.generate_swiftinterface >>
     jobs:
@@ -2183,6 +2291,7 @@ workflows:
   generate-snapshot:
     when: << pipeline.parameters.generate_snapshots >>
     jobs:
+      - run-test-ios-27
       - run-test-ios-26
       - run-test-ios-18-and-17
       - run-test-ios-16
@@ -2191,13 +2300,13 @@ workflows:
       - run-test-watchos
       - backend-integration-tests-SK2 # Snapshots from this job are shared with all BackendIntegrationTests
 
-
   generate_revenuecatui_snapshots:
     when: << pipeline.parameters.generate_revenuecatui_snapshots >>
     jobs:
       - spm-revenuecat-ui-ios-15
       - spm-revenuecat-ui-ios-16
       - run-revenuecat-ui-ios-18-and-17
+      - run-revenuecat-ui-ios-27
       - run-revenuecat-ui-ios-26
       - spm-revenuecat-ui-watchos
 
@@ -2244,7 +2353,7 @@ workflows:
       - run-test-ios-26:
           context:
             - slack-secrets
-      - build-xcode-265:
+      - run-test-ios-27:
           context:
             - slack-secrets
       - build-checkpoint-tester:
@@ -2253,15 +2362,19 @@ workflows:
       - pod-lib-lint:
           context:
             - slack-secrets
+      - run-revenuecat-ui-ios-27:
+          context:
+            - slack-secrets
       - run-revenuecat-ui-ios-26:
           context:
             - slack-secrets
       - emerge_purchases_ui_snapshot_tests:
           context:
             - slack-secrets
-      - emerge_binary_size_analysis:
+      - binary_size_analysis:
           context:
             - slack-secrets
+            - sentry
       - build-tv-watch-mac-and-visionos:
           context:
             - slack-secrets
@@ -2434,12 +2547,13 @@ workflows:
             - lint
             - check-api-changes
             - run-test-ios-26
-            - build-xcode-265
+            - run-test-ios-27
             - build-checkpoint-tester
             - pod-lib-lint
+            - run-revenuecat-ui-ios-27
             - run-revenuecat-ui-ios-26
             - emerge_purchases_ui_snapshot_tests
-            - emerge_binary_size_analysis
+            - binary_size_analysis
             - build-tv-watch-mac-and-visionos
             # Full Test Suite
             - backend-integration-tests-SK1
@@ -2601,6 +2715,10 @@ workflows:
           context:
             - e2e-tests
             - slack-secrets
+      - run-workflow-maestro-tests:
+          context:
+            - e2e-tests
+            - slack-secrets
 
   daily-cocoapods-token-keepalive:
     when:
@@ -2696,6 +2814,10 @@ workflows:
           context:
             - e2e-tests
             - slack-secrets
+      - run-workflow-maestro-tests:
+          context:
+            - e2e-tests
+            - slack-secrets
       - backend-integration-tests-SK1:
           context:
             - slack-secrets
@@ -2769,19 +2891,23 @@ workflows:
           dry_run: true
           context:
             - slack-secrets
-      - emerge_binary_size_analysis:
+      - binary_size_analysis:
           context:
             - slack-secrets
+            - sentry
       - lint:
           context:
             - slack-secrets
       - run-test-ios-26:
           context:
             - slack-secrets
-      - build-xcode-265:
+      - run-test-ios-27:
           context:
             - slack-secrets
       - pod-lib-lint:
+          context:
+            - slack-secrets
+      - run-revenuecat-ui-ios-27:
           context:
             - slack-secrets
       - run-revenuecat-ui-ios-26:
@@ -2798,10 +2924,12 @@ workflows:
           requires:
             - check-api-changes
             - run-all-maestro-e2e-tests
+            - run-workflow-maestro-tests
             - lint
             - run-test-ios-26
-            - build-xcode-265
+            - run-test-ios-27
             - pod-lib-lint
+            - run-revenuecat-ui-ios-27
             - run-revenuecat-ui-ios-26
             - emerge_purchases_ui_snapshot_tests
             - backend-integration-tests-SK1
@@ -2828,7 +2956,7 @@ workflows:
             - api-tests
             - revenuecat-admob-tests
             - deploy-purchase-tester
-            - emerge_binary_size_analysis
+            - binary_size_analysis
 
       # =============================================================
       # Release tagging: only on release branches.
@@ -2837,15 +2965,14 @@ workflows:
       # =============================================================
       - release-checks:
           <<: *release-branches
-      - approve-release:
+      - wait-for-pr-approval:
           type: approval
-          requires:
-            - release-checks
-            - all-tests-succeeded
           <<: *release-branches
       - revenuecat/tag-current-branch:
           requires:
-            - approve-release
+            - wait-for-pr-approval
+            - release-checks
+            - all-tests-succeeded
           <<: *release-branches
 
       - all-tasks-passed:

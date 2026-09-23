@@ -1,10 +1,37 @@
 import SwiftUI
 @testable import RevenueCat
+#if DEBUG && targetEnvironment(simulator)
+import StoreKit
+import StoreKitTest
+#endif
 
 @main
 struct RcMaestroApp: App {
 
+    #if DEBUG && targetEnvironment(simulator)
+    private let storeKitTestSession: SKTestSession?
+    #endif
+
     init() {
+        #if DEBUG && targetEnvironment(simulator)
+        if UserDefaults.standard.string(forKey: "maestro_store") == "app_store" {
+            do {
+                let session = try SKTestSession(configurationFileNamed: "app787ddb07e6")
+                session.resetToDefaultState()
+                session.clearTransactions()
+                session.disableDialogs = false
+                self.storeKitTestSession = session
+            } catch {
+                fatalError("Unable to initialize Maestro StoreKit configuration: \(error)")
+            }
+        } else {
+            self.storeKitTestSession = nil
+        }
+        if Self.isStoreKitWarmup {
+            return
+        }
+        #endif
+
         Purchases.logLevel = .verbose
         Purchases.proxyURL = Constants.proxyURL.flatMap { URL(string: $0) }
 
@@ -16,6 +43,7 @@ struct RcMaestroApp: App {
         let forceServerErrorStrategy = Constants.forceServerErrorStrategy
         Purchases.configure(
             with: .builder(withAPIKey: Constants.apiKey)
+                .with(appUserID: Constants.appUserID)
                 .with(dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(
@@ -49,14 +77,34 @@ struct RcMaestroApp: App {
 
     var body: some Scene {
         WindowGroup {
-            switch e2eTestFlow {
-            case .some(let flow):
-                flow.view
-            case nil:
-                ContentView()
+            #if DEBUG && targetEnvironment(simulator)
+            if Self.isStoreKitWarmup {
+                StoreKitWarmupView()
+            } else {
+                appContent
             }
+            #else
+            appContent
+            #endif
         }
     }
+
+    @ViewBuilder
+    private var appContent: some View {
+        switch e2eTestFlow {
+        case .some(let flow):
+            flow.view
+        case nil:
+            ContentView()
+        }
+    }
+
+    #if DEBUG && targetEnvironment(simulator)
+    private static var isStoreKitWarmup: Bool {
+        UserDefaults.standard.string(forKey: "maestro_store") == "app_store" &&
+            UserDefaults.standard.bool(forKey: "maestro_storekit_warmup")
+    }
+    #endif
     
     /*
      Parses the launch argument with the e2e test flow to run
@@ -69,6 +117,26 @@ struct RcMaestroApp: App {
         return E2ETestFlow(rawValue: string)
     }
 }
+
+#if DEBUG && targetEnvironment(simulator)
+private struct StoreKitWarmupView: View {
+    @State private var status = "Connecting to StoreKit"
+
+    var body: some View {
+        Text(status)
+            .task {
+                do {
+                    // Complete a StoreKit request before Maestro starts the real test process.
+                    // The first process can return no products; the next launch must load the fixtures.
+                    _ = try await Product.products(for: ["pro_monthly_subscription"])
+                    status = "StoreKit warmup complete"
+                } catch {
+                    status = "StoreKit warmup failed: \(error.localizedDescription)"
+                }
+            }
+    }
+}
+#endif
 
 enum E2ETestFlow: String {
     case subscribeFromV1Paywall = "subscribe_from_v1_paywall"

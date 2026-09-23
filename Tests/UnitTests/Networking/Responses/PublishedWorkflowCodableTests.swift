@@ -17,42 +17,8 @@ import XCTest
 
 @_spi(Internal) @testable import RevenueCat
 
-/// `PublishedWorkflow`'s `Codable` conformance is hand-written, not synthesized, so a decode/encode
-/// mismatch is no longer ruled out for free — these tests catch that.
+/// `PublishedWorkflow` decodes through hand-written keys, so these pin the shapes the backend sends.
 class PublishedWorkflowCodableTests: TestCase {
-
-    func testEncodeThenDecodeRoundTripsCodableFields() throws {
-        let original = PublishedWorkflow(
-            id: "wf-1",
-            displayName: "Test workflow",
-            initialStepId: "step-1",
-            singleStepFallbackId: "step-2",
-            steps: [:],
-            screens: [:],
-            contentMaxWidth: 400
-        )
-
-        let data = try JSONEncoder.default.encode(value: original)
-        let decoded = try JSONDecoder.default.decode(PublishedWorkflow.self, jsonData: data)
-
-        expect(decoded) == original
-    }
-
-    func testEncodingOmitsUiConfig() throws {
-        let workflow = PublishedWorkflow(
-            id: "wf-1",
-            displayName: "Test workflow",
-            initialStepId: "step-1",
-            singleStepFallbackId: nil,
-            steps: [:],
-            screens: [:]
-        )
-
-        let data = try JSONEncoder.default.encode(value: workflow)
-        let json = try XCTUnwrap(String(data: data, encoding: .utf8))
-
-        expect(json).toNot(contain("ui_config"))
-    }
 
     func testDecodingWithoutUiConfigSucceeds() throws {
         let json = """

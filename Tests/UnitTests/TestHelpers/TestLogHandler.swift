@@ -66,6 +66,10 @@ final class TestLogHandler {
     }
 
     deinit {
+        self.stopObserving()
+    }
+
+    func stopObserving() {
         Self.sharedHandler.remove(observer: self)
     }
 

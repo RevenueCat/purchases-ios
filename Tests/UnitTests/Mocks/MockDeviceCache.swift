@@ -175,12 +175,14 @@ class MockDeviceCache: DeviceCache {
     var invokedStoreCount = 0
     var invokedStoreParameters: (attribute: SubscriberAttribute, appUserID: String)?
     var invokedStoreParametersList = [(attribute: SubscriberAttribute, appUserID: String)]()
+    var onStoreSubscriberAttribute: ((SubscriberAttribute, String) -> Void)?
 
     override func store(subscriberAttribute: SubscriberAttribute, appUserID: String) {
         invokedStore = true
         invokedStoreCount += 1
         invokedStoreParameters = (subscriberAttribute, appUserID)
         invokedStoreParametersList.append((subscriberAttribute, appUserID))
+        onStoreSubscriberAttribute?(subscriberAttribute, appUserID)
     }
 
     var invokedStoreSubscriberAttributes = false
