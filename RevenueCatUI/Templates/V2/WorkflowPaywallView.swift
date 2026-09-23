@@ -411,7 +411,7 @@ struct WorkflowPaywallView: View {
         // Re-emitted on every step change because navigator is @StateObject with @Published
         // currentStepId. The exit offer is resolved synchronously from allOfferings on the
         // triggering step; when the user navigates away the value becomes nil, clearing
-        // exitOfferOffering — matching Android's shouldTriggerExitOfferForCurrentStep guard.
+        // exitOfferOffering.
         .preference(
             key: WorkflowExitOfferPreferenceKey.self,
             value: self.presentationState.hasFailed
