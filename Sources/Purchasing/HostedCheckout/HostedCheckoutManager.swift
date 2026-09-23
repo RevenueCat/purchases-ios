@@ -20,16 +20,13 @@ final class HostedCheckoutManager {
     private let externalPurchaseManager: ExternalPurchaseManager
     private let webBillingAPI: WebBillingAPI
     private let currentUserProvider: CurrentUserProvider
-    private let poller: HostedCheckoutPolling
 
     init(externalPurchaseManager: ExternalPurchaseManager,
          webBillingAPI: WebBillingAPI,
-         currentUserProvider: CurrentUserProvider,
-         poller: HostedCheckoutPolling) {
+         currentUserProvider: CurrentUserProvider) {
         self.externalPurchaseManager = externalPurchaseManager
         self.webBillingAPI = webBillingAPI
         self.currentUserProvider = currentUserProvider
-        self.poller = poller
     }
 
     /// Starts a checkout for `package`, in response to the customer deliberately asking to buy.
@@ -57,18 +54,6 @@ final class HostedCheckoutManager {
         return await self.createSession(package: package,
                                         paywall: paywall,
                                         externalPurchaseTokenID: externalPurchaseTokenID)
-    }
-
-    /// Waits for a checkout session to reach an outcome the caller can settle on.
-    ///
-    /// The checkout page returning to its success URL does not mean the purchase has landed yet, so the
-    /// backend is asked until it says one way or the other.
-    ///
-    /// The customer is read once, here: the session belongs to whoever was current when the poll began, and
-    /// following a customer who changes mid-poll would only ask about a session they do not own.
-    func pollCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
-        return await self.poller.poll(operationSessionID: operationSessionID,
-                                      appUserID: self.currentUserProvider.currentAppUserID)
     }
 
 }
