@@ -95,6 +95,21 @@ final class WorkflowPreviewTests: TestCase {
         expect(context.offering(for: try XCTUnwrap(workflow.steps["step_1"]))).to(beNil())
     }
 
+    func testMakeContextCarriesTheTraceId() throws {
+        let baseOffering = Self.makeOffering(identifier: "offering_a")
+        let workflow = try Self.makeWorkflow(screenOfferingIdentifier: "offering_a")
+
+        let withTrace = try WorkflowPreview.makeContext(
+            workflow: workflow,
+            offerings: [baseOffering],
+            traceId: "trace-1"
+        )
+        let withoutTrace = try WorkflowPreview.makeContext(workflow: workflow, offerings: [baseOffering])
+
+        expect(withTrace.traceId) == "trace-1"
+        expect(withoutTrace.traceId).to(beNil())
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

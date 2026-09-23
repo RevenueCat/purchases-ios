@@ -96,7 +96,7 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
         self.changeClient(.informational)
         self.mockResponse()
 
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         let request: HTTPRequest = .createWithResponseVerification(method: .get, path: Self.path)
         let response: DataResponse? = waitUntilValue { completion in
@@ -104,7 +104,7 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
         }
 
         expect(response).to(beSuccess())
-        expect(response?.value?.verificationResult) == .failed
+        expect(response?.value?.verificationResult) == .failed(.missingSignature)
         expect(self.signing.requests).to(beEmpty())
 
         self.logger.verifyMessageWasLogged(
@@ -124,7 +124,7 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
                           signature: nil,
                           requestDate: nil)
 
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         let request: HTTPRequest = .init(method: .get, path: path)
         let response: DataResponse? = waitUntilValue { completion in
@@ -132,7 +132,7 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
         }
 
         expect(response).to(beSuccess())
-        expect(response?.value?.verificationResult) == .failed
+        expect(response?.value?.verificationResult) == .failed(.missingSignature)
         expect(self.signing.requests).to(beEmpty())
 
         self.logger.verifyMessageWasLogged(
@@ -153,7 +153,7 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
                          ])
         }
 
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         let request: HTTPRequest = .createWithResponseVerification(method: .get, path: Self.path)
 
@@ -325,7 +325,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         self.mockResponse(signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: body)
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         let request: HTTPRequest = .createWithResponseVerification(method: .get, path: Self.path)
 
@@ -353,7 +353,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: body)
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
@@ -384,7 +384,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: body)
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
@@ -406,7 +406,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: body)
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
@@ -423,7 +423,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           requestDate: Self.date2,
                           eTag: Self.eTag,
                           body: Self.rcContainer())
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
@@ -439,7 +439,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           requestDate: Self.date2,
                           body: "not an RC Container".asData,
                           statusCode: .noContent)
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
@@ -485,7 +485,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
 
         expect(response).to(beSuccess())
         expect(response?.value?.body).to(beNil())
-        expect(response?.value?.verificationResult) == .failed
+        expect(response?.value?.verificationResult) == .failed(.missingSignature)
         expect(self.signing.requests).to(beEmpty())
     }
 
@@ -516,7 +516,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           requestDate: Self.date2,
                           body: Data(),
                           statusCode: .noContent)
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .failed(.payloadSignatureMismatch)
 
         let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
@@ -524,7 +524,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
 
         expect(response).to(beSuccess())
         expect(response?.value?.body).to(beNil())
-        expect(response?.value?.verificationResult) == .failed
+        expect(response?.value?.verificationResult) == .failed(.payloadSignatureMismatch)
         expect(self.signing.requests).to(haveCount(1))
         expect(self.signing.requests.onlyElement?.parameters.message) == Data()
         expect(self.signing.requests.onlyElement?.parameters.nonce).toNot(beNil())
@@ -537,7 +537,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           requestDate: Self.date2,
                           body: Data(),
                           statusCode: .noContent)
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .failed(.payloadSignatureMismatch)
 
         let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
@@ -560,7 +560,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: body)
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         let response: VerifiedHTTPResponse<RemoteConfiguration>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigFallbackRequest, completionHandler: completion)
@@ -585,7 +585,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           requestDate: Self.date2,
                           eTag: Self.eTag,
                           body: Self.remoteConfigFallbackBody)
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         let response: VerifiedHTTPResponse<RemoteConfiguration>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigFallbackRequest, completionHandler: completion)
@@ -601,14 +601,14 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: body)
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .failed(.payloadSignatureMismatch)
 
         let response: VerifiedHTTPResponse<RemoteConfiguration>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigFallbackRequest, completionHandler: completion)
         }
 
         expect(response).to(beSuccess())
-        expect(response?.value?.verificationResult) == .failed
+        expect(response?.value?.verificationResult) == .failed(.payloadSignatureMismatch)
         expect(self.signing.requests).to(haveCount(1))
         expect(self.signing.requests.onlyElement?.parameters.message) == body
         expect(self.signing.requests.onlyElement?.parameters.nonce).to(beNil())
@@ -621,7 +621,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: Self.remoteConfigFallbackBody)
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .failed(.payloadSignatureMismatch)
 
         let response: VerifiedHTTPResponse<RemoteConfiguration>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigFallbackRequest, completionHandler: completion)
@@ -644,19 +644,70 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         }
     }
 
-    func testRemoteConfigMissingSignatureReturnsFailedVerification() throws {
-        self.mockResponse(path: HTTPRequest.Path.remoteConfig(domain: "app"),
-                          signature: nil,
-                          requestDate: Self.date2,
-                          body: Self.rcContainer())
-        self.signing.stubbedVerificationResult = true
+    func testRemoteConfigInvalidResponsePayloadReturnsFailureReason() {
+        self.mockResponse(
+            path: HTTPRequest.Path.remoteConfig(domain: "app"),
+            signature: Self.sampleSignature,
+            requestDate: Self.date2,
+            body: "not an RC Container".asData
+        )
 
         let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
         expect(response).to(beSuccess())
-        expect(response?.value?.verificationResult) == .failed
+        expect(response?.value?.verificationResult) == .failed(.invalidResponsePayload)
+        expect(self.signing.requests).to(beEmpty())
+    }
+
+    func testRemoteConfigMissingSignatureTakesPrecedenceOverInvalidResponsePayload() {
+        self.mockResponse(
+            path: HTTPRequest.Path.remoteConfig(domain: "app"),
+            signature: nil,
+            requestDate: Self.date2,
+            body: "not an RC Container".asData
+        )
+
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .failed(.missingSignature)
+        expect(self.signing.requests).to(beEmpty())
+    }
+
+    func testRemoteConfigMissingRequestTimeTakesPrecedenceOverInvalidResponsePayload() {
+        self.mockResponse(
+            path: HTTPRequest.Path.remoteConfig(domain: "app"),
+            signature: Self.sampleSignature,
+            requestDate: nil,
+            body: "not an RC Container".asData
+        )
+
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .failed(.missingRequestTime)
+        expect(self.signing.requests).to(beEmpty())
+    }
+
+    func testRemoteConfigMissingSignatureReturnsFailedVerification() throws {
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig(domain: "app"),
+                          signature: nil,
+                          requestDate: Self.date2,
+                          body: Self.rcContainer())
+        self.signing.stubbedVerificationResult = .verified
+
+        let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
+            self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .failed(.missingSignature)
         expect(self.signing.requests).to(beEmpty())
     }
 
@@ -666,7 +717,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           signature: nil,
                           requestDate: Self.date2,
                           body: Self.rcContainer())
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
@@ -686,14 +737,14 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: Self.rcContainer())
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .failed(.payloadSignatureMismatch)
 
         let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
         }
 
         expect(response).to(beSuccess())
-        expect(response?.value?.verificationResult) == .failed
+        expect(response?.value?.verificationResult) == .failed(.payloadSignatureMismatch)
         expect(self.signing.requests).to(haveCount(1))
     }
 
@@ -703,7 +754,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: Self.rcContainer())
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .failed(.payloadSignatureMismatch)
 
         let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
@@ -731,7 +782,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: body)
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
@@ -753,7 +804,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: body)
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
@@ -767,7 +818,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     func testPerformRequestOverridesVerificationMode() throws {
         self.mockPath(statusCode: .success, requestDate: Self.date1)
 
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .failed(.payloadSignatureMismatch)
 
         let response: DataResponse? = waitUntilValue { completion in
             self.client.perform(.createWithResponseVerification(method: .get, path: .logIn),
@@ -776,7 +827,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         }
 
         expect(response).to(beSuccess())
-        expect(response?.value?.verificationResult) == .failed
+        expect(response?.value?.verificationResult) == .failed(.payloadSignatureMismatch)
     }
 
     func testValidSignatureWithETagResponse() throws {
@@ -795,7 +846,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
             )
         )
 
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         let request: HTTPRequest = .createWithResponseVerification(method: .get, path: Self.path)
 
@@ -829,7 +880,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
             statusCode: .success
         )
 
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         let request: HTTPRequest = .createWithResponseVerification(method: .post(requestBody),
                                                                    path: Self.path)
@@ -867,7 +918,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
             statusCode: .success
         )
 
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         let request: HTTPRequest = .createWithResponseVerification(method: .post(requestBody),
                                                                    path: Self.path)
@@ -889,7 +940,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     func testIncorrectSignatureReturnsResponse() throws {
         self.mockPath(statusCode: .success, requestDate: Self.date1)
 
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .failed(.payloadSignatureMismatch)
 
         let response: DataResponse? = waitUntilValue { completion in
             self.client.perform(.createWithResponseVerification(method: .get, path: Self.path),
@@ -897,14 +948,14 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         }
 
         expect(response).to(beSuccess())
-        expect(response?.value?.verificationResult) == .failed
+        expect(response?.value?.verificationResult) == .failed(.payloadSignatureMismatch)
         expect(self.signing.requests).to(haveCount(1))
     }
 
     func testIncorrectSignatureLogsError() throws {
         let request: HTTPRequest = .createWithResponseVerification(method: .get, path: Self.path)
         self.mockPath(request.path, statusCode: .success, requestDate: Self.date1)
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .failed(.payloadSignatureMismatch)
 
         let _: DataResponse? = waitUntilValue { completion in
             self.client.perform(request, completionHandler: completion)
@@ -918,7 +969,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     }
 
     func testIgnoresResponseFromETagManagerIfItHadNotBeenVerified() throws {
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         self.mockPath(
             statusCode: .success,
@@ -961,7 +1012,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 isFallbackUrlResponse: false
             )
         )
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .failed(.payloadSignatureMismatch)
 
         let response: BodyWithDateResponse? = waitUntilValue { completion in
             self.client.perform(.createWithResponseVerification(method: .get, path: Self.path),
@@ -971,7 +1022,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(response).to(beSuccess())
         expect(response?.value?.body.data) == cachedResponse.data
         expect(response?.value?.body.requestDate).to(beCloseToDate(cachedResponse.requestDate))
-        expect(response?.value?.verificationResult) == .failed
+        expect(response?.value?.verificationResult) == .failed(.payloadSignatureMismatch)
     }
 
     func testCachedResponseWithVerifiedResponse() throws {
@@ -991,7 +1042,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
             )
         )
 
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         let response: BodyWithDateResponse? = waitUntilValue { completion in
             self.client.perform(.createWithResponseVerification(method: .get, path: Self.path),
@@ -1021,7 +1072,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
             )
         )
 
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .failed(.payloadSignatureMismatch)
 
         let response: BodyWithDateResponse? = waitUntilValue { completion in
             self.client.perform(.createWithResponseVerification(method: .get, path: Self.path),
@@ -1031,13 +1082,13 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(response).to(beSuccess())
         expect(response?.value?.body.data) == cachedResponse.data
         expect(response?.value?.body.requestDate).to(beCloseToDate(cachedResponse.requestDate))
-        expect(response?.value?.verificationResult) == .failed
+        expect(response?.value?.verificationResult) == .failed(.payloadSignatureMismatch)
     }
 
     func testCachedResponseUpdatesRequestDateIfNewResponseIsVerified() throws {
         let cachedResponse = BodyWithDate(data: "test", requestDate: Self.date1)
 
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         self.mockPath(
             statusCode: .notModified,
@@ -1080,7 +1131,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
             )
         )
 
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .failed(.payloadSignatureMismatch)
 
         let response: BodyWithDateResponse? = waitUntilValue { completion in
             self.client.perform(.init(method: .get, path: Self.path),
@@ -1090,7 +1141,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(self.signing.requests).to(haveCount(1))
         expect(response).to(beSuccess())
         expect(response?.value?.body.requestDate).to(beCloseToDate(Self.date1))
-        expect(response?.value?.verificationResult) == .failed
+        expect(response?.value?.verificationResult) == .failed(.payloadSignatureMismatch)
     }
 
     func testNoCachedResponseAndNotVerifiedResponse() throws {
@@ -1106,12 +1157,12 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(self.signing.requests).to(beEmpty())
         expect(response).to(beSuccess())
         expect(response?.value?.requestDate).to(beCloseToDate(Self.date2))
-        expect(response?.value?.verificationResult) == .failed
+        expect(response?.value?.verificationResult) == .failed(.missingSignature)
     }
 
     func testNoCachedResponseAndVerifiedResponse() throws {
         self.mockPath(statusCode: .success, requestDate: Self.date2)
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         let response: DataResponse? = waitUntilValue { completion in
             self.client.perform(.init(method: .get, path: Self.path),
@@ -1144,7 +1195,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
             )
         )
 
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .failed(.payloadSignatureMismatch)
 
         let response: BodyWithDateResponse? = waitUntilValue { completion in
             self.client.perform(.init(method: .get, path: Self.path),
@@ -1154,7 +1205,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(self.signing.requests).to(haveCount(1))
         expect(response).to(beSuccess())
         expect(response?.value?.body.requestDate).to(beCloseToDate(Self.date1))
-        expect(response?.value?.verificationResult) == .failed
+        expect(response?.value?.verificationResult) == .failed(.payloadSignatureMismatch)
     }
 
 }
@@ -1170,7 +1221,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
     func testValidSignature() {
         self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
 
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         let response: DataResponse? = waitUntilValue { completion in
             self.client.perform(.createWithResponseVerification(method: .get, path: Self.path),
@@ -1185,7 +1236,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
     func testIncorrectSignatureReturnsError() {
         self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
 
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .failed(.payloadSignatureMismatch)
 
         let response: DataResponse? = waitUntilValue { completion in
             self.client.perform(.createWithResponseVerification(method: .get, path: Self.path),
@@ -1197,10 +1248,36 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
             .to(matchError(NetworkError.signatureVerificationFailed(path: Self.path, code: .success)))
     }
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testDiagnosticsRetainVerificationResultForEnforcedFailure() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
+        self.signing.stubbedVerificationResult = .failed(.payloadSignatureMismatch)
+
+        let response: DataResponse? = waitUntilValue { completion in
+            self.client.perform(.createWithResponseVerification(method: .get, path: Self.path),
+                                completionHandler: completion)
+        }
+
+        expect(response).to(beFailure())
+
+        // swiftlint:disable:next force_cast
+        let diagnosticsTracker = self.diagnosticsTracker as! MockDiagnosticsTracker
+        expect(diagnosticsTracker.trackedHttpRequestPerformedParams.value).toEventually(haveCount(1))
+
+        let trackedParameters = diagnosticsTracker.trackedHttpRequestPerformedParams.value.onlyElement
+        expect(trackedParameters?.3) == false
+        expect(trackedParameters?.4) == -1
+        expect(trackedParameters?.6).to(beNil())
+        expect(trackedParameters?.7) == .failed(.payloadSignatureMismatch)
+        expect(trackedParameters?.8?.millisecondsSince1970) == Self.date1.millisecondsSince1970
+    }
+
     func testPerformRequestOverridesIt() {
         self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
 
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .failed(.payloadSignatureMismatch)
 
         let response: DataResponse? = waitUntilValue { completion in
             self.client.perform(.createWithResponseVerification(method: .get, path: .logIn),
@@ -1216,7 +1293,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
     func testPerformRequestWithDisabledModeOverridesIt() {
         self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
 
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .failed(.payloadSignatureMismatch)
 
         let response: DataResponse? = waitUntilValue { completion in
             self.client.perform(.createWithResponseVerification(method: .get, path: Self.path),
@@ -1244,7 +1321,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
                 isFallbackUrlResponse: false
             )
         )
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         let response: DataResponse? = waitUntilValue { completion in
             self.client.perform(.init(method: .get, path: path), completionHandler: completion)
@@ -1261,7 +1338,47 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
         expect(self.signing.requests.onlyElement?.parameters.etag) == Self.eTag
     }
 
-    func testFallbackRemoteConfigNotModifiedResponseWithInvalidSignatureFailsInEnforcedMode() {
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testDiagnosticsUseCachedResponseCodeForNotModifiedResponse() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app")
+        self.mockPath(
+            path,
+            statusCode: .notModified,
+            requestDate: Self.date2,
+            eTagResponse: .init(
+                eTag: Self.eTag,
+                statusCode: .success,
+                data: "cached fallback config".asData,
+                verificationResult: .verified,
+                isLoadShedderResponse: false,
+                isFallbackUrlResponse: false
+            )
+        )
+        self.signing.stubbedVerificationResult = .verified
+
+        let response: DataResponse? = waitUntilValue { completion in
+            self.client.perform(.init(method: .get, path: path), completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+
+        // swiftlint:disable:next force_cast
+        let diagnosticsTracker = self.diagnosticsTracker as! MockDiagnosticsTracker
+        expect(diagnosticsTracker.trackedHttpRequestPerformedParams.value).toEventually(haveCount(1))
+
+        let trackedParameters = diagnosticsTracker.trackedHttpRequestPerformedParams.value.onlyElement
+        expect(trackedParameters?.4) == HTTPStatusCode.success.rawValue
+        expect(trackedParameters?.6) == .cache
+        expect(trackedParameters?.7) == .verified
+        expect(trackedParameters?.8?.millisecondsSince1970) == Self.date2.millisecondsSince1970
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testFallbackRemoteConfigNotModifiedResponseWithInvalidSignatureFailsInEnforcedMode() throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
         let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app")
 
         self.mockPath(
@@ -1277,7 +1394,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
                 isFallbackUrlResponse: false
             )
         )
-        self.signing.stubbedVerificationResult = false
+        self.signing.stubbedVerificationResult = .failed(.payloadSignatureMismatch)
 
         let response: DataResponse? = waitUntilValue { completion in
             self.client.perform(.init(method: .get, path: path), completionHandler: completion)
@@ -1288,11 +1405,22 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
             .to(matchError(NetworkError.signatureVerificationFailed(path: path, code: .success)))
         expect(self.signing.requests).to(haveCount(1))
         expect(self.signing.requests.onlyElement?.parameters.message).to(beNil())
+
+        // swiftlint:disable:next force_cast
+        let diagnosticsTracker = self.diagnosticsTracker as! MockDiagnosticsTracker
+        expect(diagnosticsTracker.trackedHttpRequestPerformedParams.value).toEventually(haveCount(1))
+
+        let trackedParameters = diagnosticsTracker.trackedHttpRequestPerformedParams.value.onlyElement
+        expect(trackedParameters?.3) == false
+        expect(trackedParameters?.4) == -1
+        expect(trackedParameters?.6).to(beNil())
+        expect(trackedParameters?.7) == .failed(.payloadSignatureMismatch)
+        expect(trackedParameters?.8?.millisecondsSince1970) == Self.date2.millisecondsSince1970
     }
 
     func testFakeSignatureFailuresInEnforcedMode() {
         self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         self.changeClientToEnforced(forceSignatureFailures: true)
 
@@ -1306,7 +1434,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
 
     func testFakeSignatureFailuresInInformationalMode() {
         self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         self.changeClient(.informational, forceSignatureFailures: true)
 
@@ -1315,7 +1443,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
         }
 
         expect(response).to(beSuccess())
-        expect(response?.value?.verificationResult) == .failed
+        expect(response?.value?.verificationResult) == .failed(.payloadSignatureMismatch)
     }
 
     func testRemoteConfigConfigChecksumMismatchVerifiesConfigPayload() throws {
@@ -1331,7 +1459,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: body)
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         let response: VerifiedHTTPResponse<Data?>.Result? = waitUntilValue { completion in
             self.client.perform(Self.remoteConfigRequest, completionHandler: completion)
@@ -1346,7 +1474,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
 
     func testFakeSignatureFailuresWithDisabledVerification() {
         self.mockResponse(signature: Self.sampleSignature, requestDate: Self.date1)
-        self.signing.stubbedVerificationResult = true
+        self.signing.stubbedVerificationResult = .verified
 
         self.changeClient(.disabled, forceSignatureFailures: true)
 

@@ -1429,6 +1429,34 @@ extension WorkflowPaywallViewTests {
         expect(paywallTraceId) == workflowTraceId
     }
 
+    /// A checkpoint-started workflow has to report the trace id its checkpoint hit carries.
+    @MainActor
+    func testEventsUseTheTraceIdTheContextCarries() async throws {
+        let paywallEvents: Atomic<[PaywallEvent]> = .init([])
+        let workflowEvents: Atomic<[WorkflowEvent]> = .init([])
+        let (purchases, purchaseHandler) = Self.makeEventRecordingPurchaseHandler(paywallEvents: paywallEvents)
+        purchases.trackWorkflowEventBlock = { event in
+            workflowEvents.modify { $0.append(event) }
+        }
+        let context = try Self.makeContextStartingAt(stepId: "step_a", traceId: "checkpoint-trace")
+
+        let dispose = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .addToHierarchy()
+        defer { dispose() }
+
+        await expect(paywallEvents.value).toEventually(
+            containElementSatisfying { Self.isImpression($0) },
+            timeout: .seconds(3)
+        )
+        await expect(workflowEvents.value).toEventually(
+            containElementSatisfying { Self.isStepStarted($0) },
+            timeout: .seconds(3)
+        )
+
+        expect(workflowEvents.value.first { Self.isStepStarted($0) }?.data.traceId) == "checkpoint-trace"
+        expect(paywallEvents.value.first { Self.isImpression($0) }?.data.traceId) == "checkpoint-trace"
+    }
+
     @MainActor
     func testPaywallImpressionCarriesThePaywallIdFromTheScreen() async throws {
         let paywallEvents: Atomic<[PaywallEvent]> = .init([])
@@ -1617,7 +1645,7 @@ private extension WorkflowPaywallViewTests {
 
     /// Creates a two-step workflow (step_a, step_b) with initial_step_id set to stepId.
     /// Use this to exercise callbacks from a non-initial step without requiring navigation.
-    static func makeContextStartingAt(stepId: String) throws -> WorkflowContext {
+    static func makeContextStartingAt(stepId: String, traceId: String? = nil) throws -> WorkflowContext {
         let offeringId = "offering_test"
         let workflowJSON = """
         {
@@ -1676,7 +1704,8 @@ private extension WorkflowPaywallViewTests {
             uiConfig: PreviewUIConfig.make(),
             allOfferings: offerings,
             initialOffering: offering,
-            presentedOfferingContext: nil
+            presentedOfferingContext: nil,
+            traceId: traceId
         )
     }
 

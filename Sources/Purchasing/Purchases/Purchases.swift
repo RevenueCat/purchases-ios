@@ -3047,8 +3047,15 @@ private extension Purchases {
         // Note: it's important that we observe "will enter foreground" instead of
         // "did become active" so that we don't trigger cache updates in the middle
         // of purchases due to pop-ups stealing focus from the app.
-        self.updateAllCachesIfNeeded(isAppBackgrounded: false, fetchContext: .foreground)
-        self.dispatchSyncSubscriberAttributes()
+        let appUserID = self.appUserID
+        self.updateAllCachesIfNeeded(
+            isAppBackgrounded: false,
+            fetchContext: .foreground,
+            customerInfoCompletion: { [weak self] result in
+                guard case .success = result, self?.appUserID == appUserID else { return }
+                self?.dispatchSyncSubscriberAttributes()
+            }
+        )
         self.transactionMetadataSyncHelper.syncIfNeeded(
             allowSharingAppStoreAccount: self.purchasesOrchestrator.allowSharingAppStoreAccount
         )
@@ -3071,7 +3078,8 @@ private extension Purchases {
     }
 
     @objc func applicationWillResignActive() {
-        self.dispatchSyncSubscriberAttributes()
+        self.dispatchSyncSubscriberAttributesIfCustomerInfoAvailable()
+
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.purchasesOrchestrator.postEventsIfNeeded()
         #endif
@@ -3105,6 +3113,18 @@ private extension Purchases {
             self.syncSubscriberAttributes()
         }
         #endif
+    }
+
+    private func dispatchSyncSubscriberAttributesIfCustomerInfoAvailable() {
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        // Ensure the customer is created server-side before syncing attributes.
+        guard self.hasCachedCustomerInfo(for: self.appUserID) else { return }
+        self.dispatchSyncSubscriberAttributes()
+        #endif
+    }
+
+    private func hasCachedCustomerInfo(for appUserID: String) -> Bool {
+        return (try? self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)) != nil
     }
 
     private func performInitialForegroundSetup() {
@@ -3154,7 +3174,11 @@ private extension Purchases {
     }
     #endif
 
-    func updateAllCachesIfNeeded(isAppBackgrounded: Bool, fetchContext: RemoteConfigFetchContext) {
+    func updateAllCachesIfNeeded(
+        isAppBackgrounded: Bool,
+        fetchContext: RemoteConfigFetchContext,
+        customerInfoCompletion: CustomerInfoManager.CustomerInfoCompletion? = nil
+    ) {
         guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
             // No need to update caches every time when in UI preview mode.
             // Only needed at configuration time
@@ -3164,7 +3188,7 @@ private extension Purchases {
         if !self.systemInfo.dangerousSettings.customEntitlementComputation {
             self.customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: self.appUserID,
                                                                       isAppBackgrounded: isAppBackgrounded,
-                                                                      completion: nil)
+                                                                      completion: customerInfoCompletion)
             self.offlineEntitlementsManager.updateProductsEntitlementsCacheIfStale(
                 isAppBackgrounded: isAppBackgrounded,
                 completion: nil

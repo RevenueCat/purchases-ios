@@ -3274,7 +3274,7 @@ private extension RemoteConfigFetchResult {
     /// represents a `204 No Content` response.
     static func test(
         container: RemoteConfigContainer?,
-        verificationResult: VerificationResult = .verified,
+        verificationResult: SignatureVerificationResult = .verified,
         requestDate: Date? = nil
     ) -> RemoteConfigFetchResult {
         return RemoteConfigFetchResult(response: .init(
@@ -3294,7 +3294,7 @@ private extension RemoteConfigFallbackFetchResult {
 
     static func test(
         configuration: RemoteConfiguration,
-        verificationResult: VerificationResult = .verified,
+        verificationResult: SignatureVerificationResult = .verified,
         requestDate: Date? = nil
     ) -> RemoteConfigFallbackFetchResult {
         return RemoteConfigFallbackFetchResult(response: .init(

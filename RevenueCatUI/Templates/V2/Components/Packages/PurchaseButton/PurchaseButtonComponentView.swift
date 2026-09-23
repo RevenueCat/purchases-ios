@@ -125,33 +125,35 @@ struct PurchaseButtonComponentView: View {
     }
 
     private func purchaseInApp() async throws {
-        self.logIfInPreview(package: self.packageContext.package)
-
-        guard !self.purchaseHandler.actionInProgress else {
+        guard let selectedPackage = self.packageForPurchaseTap() else {
             return
         }
-
-        guard let selectedPackage = self.packageContext.package else {
-            Logger.error(Strings.no_selected_package_found)
-            return
-        }
-
-        self.logPurchaseButtonInteractionForInApp(selectedPackage: selectedPackage)
 
         try await self.performInAppPurchase(selectedPackage: selectedPackage)
     }
 
+    /// The package this tap is for, or `nil` when it should do nothing.
+    private func packageForPurchaseTap() -> Package? {
+        self.logIfInPreview(package: self.packageContext.package)
+
+        guard !self.purchaseHandler.actionInProgress else {
+            return nil
+        }
+
+        guard let selectedPackage = self.packageContext.package else {
+            Logger.error(Strings.no_selected_package_found)
+            return nil
+        }
+
+        self.logPurchaseButtonInteractionForInApp(selectedPackage: selectedPackage)
+
+        return selectedPackage
+    }
+
     private func performInAppPurchase(selectedPackage: Package) async throws {
-        // Check if there's a purchase interceptor
-        if let interceptor = self.purchaseInitiatedAction {
-            let result = await self.purchaseHandler.withPendingPurchaseContinuation {
-                await withCheckedContinuation { continuation in
-                    interceptor(selectedPackage, resume: ResumeAction { shouldProceed in
-                        continuation.resume(returning: shouldProceed)
-                    })
-                }
-            }
-            guard result else { return }
+        guard await self.purchaseHandler.shouldProceed(withPurchaseOf: selectedPackage,
+                                                       interceptor: self.purchaseInitiatedAction) else {
+            return
         }
 
         let promoOffer = self.paywallPromoOfferCache.purchasableOffer(for: selectedPackage)
@@ -164,24 +166,17 @@ struct PurchaseButtonComponentView: View {
     @MainActor
     private func purchaseInHostedCheckout() async throws {
         #if os(iOS) && canImport(WebKit)
-        self.logIfInPreview(package: self.packageContext.package)
-
-        guard !self.purchaseHandler.actionInProgress else {
+        guard let selectedPackage = self.packageForPurchaseTap() else {
             return
         }
-
-        guard let selectedPackage = self.packageContext.package else {
-            Logger.error(Strings.no_selected_package_found)
-            return
-        }
-
-        self.logPurchaseButtonInteractionForInApp(selectedPackage: selectedPackage)
 
         guard !self.isInPreview else {
             return
         }
 
-        switch await HostedCheckout.start(for: selectedPackage, purchaseHandler: self.purchaseHandler) {
+        switch await HostedCheckout.start(for: selectedPackage,
+                                          purchaseHandler: self.purchaseHandler,
+                                          purchaseInitiatedAction: self.purchaseInitiatedAction) {
         case let .present(session):
             self.presentHostedCheckout(session)
         case .tellCustomerTheyAlreadyOwnIt:
@@ -213,15 +208,12 @@ struct PurchaseButtonComponentView: View {
 
     @MainActor
     private func presentHostedCheckout(_ session: HostedCheckoutSession) {
-        let viewModel = WebCheckoutViewModel(
+        self.hostedCheckoutViewModel = WebCheckoutViewModel(
             checkoutURL: session.checkoutURL,
             successURL: session.successURL,
             cancelURL: session.cancelURL,
             dataStoreIdentifierStore: .init()
         )
-        viewModel.onOpenExternalURL = { self.openURL($0) }
-
-        self.hostedCheckoutViewModel = viewModel
     }
 
     private func handleHostedCheckoutOutcome(_ outcome: WebCheckoutSheetOutcome) {
