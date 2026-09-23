@@ -112,7 +112,7 @@ public struct AdPresentationResult: Equatable {
     }
 
     /// Returns whether two results carry the same ad outcome.
-    public static func == (lhs: AdPresentationResult, rhs: AdPresentationResult) -> Bool {
+    public static nonisolated func == (lhs: AdPresentationResult, rhs: AdPresentationResult) -> Bool {
         return lhs.outcome == rhs.outcome
     }
 
