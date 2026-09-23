@@ -19,6 +19,8 @@ import SwiftUI
 
 // swiftlint:disable file_length
 
+private struct TerminalOfferingWorkflowError: Error {}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class PurchaseHandler: ObservableObject {
 
@@ -119,15 +121,17 @@ final class PurchaseHandler: ObservableObject {
     @Published
     fileprivate(set) var consecutiveCancellationRequestID: UUID?
 
-    /// Set to a new UUID each time the user taps a web checkout CTA, propagated via
-    /// ``WebCheckoutOpenedPreferenceKey``.
-    @Published
-    fileprivate(set) var webCheckoutOpened: UUID?
+    private let webCheckoutOpenedSubject = PassthroughSubject<Void, Never>()
+    private let urlOpenedSubject = PassthroughSubject<URL, Never>()
 
-    /// Set to a new signal each time the paywall successfully opened a URL, propagated via
-    /// ``URLOpenedPreferenceKey``.
-    @Published
-    fileprivate(set) var urlOpened: URLOpenedSignal?
+    /// One-time events, deliberately not replayed when another paywall reuses this handler.
+    var webCheckoutOpenedPublisher: AnyPublisher<Void, Never> {
+        self.webCheckoutOpenedSubject.eraseToAnyPublisher()
+    }
+
+    var urlOpenedPublisher: AnyPublisher<URL, Never> {
+        self.urlOpenedSubject.eraseToAnyPublisher()
+    }
 
     /// Whether a purchase was successfully completed in the current session.
     /// Convenience property for checking if we should skip exit offers.
@@ -281,8 +285,6 @@ final class PurchaseHandler: ObservableObject {
         self.consecutiveCancellationRequestID = nil
         self.purchaseResult = nil
         self.restoredCustomerInfo = nil
-        self.deferredClearWebCheckoutOpened()
-        self.deferredClearURLOpened()
         self.activePaywallSessionID = nil
     }
 
@@ -301,6 +303,21 @@ extension PurchaseHandler {
             }
         }
         return result
+    }
+
+    /// Asks the app's purchase interceptor, if it set one, whether the purchase of `package` may go ahead.
+    func shouldProceed(withPurchaseOf package: Package, interceptor: PurchaseInitiatedAction?) async -> Bool {
+        guard let interceptor else {
+            return true
+        }
+
+        return await self.withPendingPurchaseContinuation {
+            await withCheckedContinuation { continuation in
+                interceptor(package, resume: ResumeAction { shouldProceed in
+                    continuation.resume(returning: shouldProceed)
+                })
+            }
+        }
     }
 
     /// Runs `preparation` with the paywall marked as busy, so the button the customer tapped cannot start a
@@ -329,6 +346,19 @@ extension PurchaseHandler {
         }
 
         return result
+    }
+
+    /// Asks for a checkout the customer completes without leaving the app, with the paywall marked as busy
+    /// throughout so the button they tapped cannot start a second one.
+    func startHostedCheckout(package: Package) async -> HostedCheckoutStartResult {
+        // Carried so that the purchase the customer makes on the page is attributed to the paywall that sent
+        // them there.
+        let paywallEvent = self.createPurchaseInitiatedEvent(package: package)
+        if let paywallEvent { self.track(paywallEvent) }
+
+        return await self.withExternalPurchasePreparation {
+            await self.purchases.startHostedCheckout(package: package, paywallEvent: paywallEvent)
+        }
     }
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -422,7 +452,7 @@ extension PurchaseHandler {
                 uiConfig: fetchResult.uiConfig,
                 allOfferings: cachedOfferings,
                 presentedOfferingContext: offering.presentedOfferingContext,
-                triggerOfferingIdentifier: offering.identifier
+                workflowBlobRef: fetchResult.workflowBlobRef
               ) else {
             return nil
         }
@@ -602,6 +632,8 @@ extension PurchaseHandler {
             )
 
             return .init(offering: context.initialOffering, workflowContext: context)
+        } catch is TerminalOfferingWorkflowError {
+            return .init(offering: offering, workflowContext: nil)
         } catch {
             // An offering without a workflow renders the default paywall, matching the legacy path.
             // Other failures — including a mapped workflow whose item or blob failed to resolve —
@@ -640,7 +672,7 @@ extension PurchaseHandler {
                 uiConfig: fetchResult.uiConfig,
                 allOfferings: allOfferings,
                 presentedOfferingContext: presentedOfferingContext,
-                triggerOfferingIdentifier: identifier
+                workflowBlobRef: fetchResult.workflowBlobRef
             )
         } catch WorkflowError.uiConfigUnavailable(let workflowId) {
             throw PaywallError.workflowUiConfigUnavailable(workflowId: workflowId)
@@ -651,25 +683,38 @@ extension PurchaseHandler {
     /// `initialOffering` carries the workflow screen's offering with its mapped paywall components
     /// applied, so callers can read `context.initialOffering` instead of receiving it separately.
     /// Shared by the async resolve path and the synchronous cache seed: the async path lets the thrown
-    /// error propagate, while the seed treats any throw as a miss (via `try?`) and falls through.
-    /// Throws ``PaywallError/offeringNotFound(identifier:)`` when the workflow has no initial screen
-    /// (reporting `triggerOfferingIdentifier`) or when that screen's offering is absent from
-    /// `allOfferings` (reporting the screen's own offering identifier that was actually missing).
+    /// error propagate, while the seed treats any throw as a miss (via `try?`).
+    /// Throws a specific ``PaywallError`` when the initial step or its screen cannot be rendered. An absent
+    /// offering, whether the initial screen declares one or not, is
+    /// rendered as content-only so the workflow UI can surface its configuration error.
     static func makeWorkflowContext(
         workflow: PublishedWorkflow,
         uiConfig: UIConfig,
         allOfferings: Offerings,
         presentedOfferingContext: PresentedOfferingContext?,
-        triggerOfferingIdentifier: String
+        workflowBlobRef: String? = nil,
+        traceId: String? = nil
     ) throws -> WorkflowContext {
-        guard let step = workflow.steps[workflow.initialStepId],
-              let screenID = step.screenId,
-              let screen = workflow.screens[screenID] else {
-            throw PaywallError.offeringNotFound(identifier: triggerOfferingIdentifier)
+        guard let step = workflow.steps[workflow.initialStepId] else {
+            throw PaywallError.workflowInitialStepNotFound(
+                stepId: workflow.initialStepId,
+                workflowId: workflow.id
+            )
         }
-
-        guard let baseOffering = allOfferings.offering(identifier: screen.offeringIdentifier) else {
-            throw PaywallError.offeringNotFound(identifier: screen.offeringIdentifier ?? triggerOfferingIdentifier)
+        guard !step.isOfferingStep else {
+            throw TerminalOfferingWorkflowError()
+        }
+        guard let screenID = step.screenId else {
+            throw PaywallError.workflowInitialStepMissingScreenIdentifier(
+                stepId: step.id,
+                workflowId: workflow.id
+            )
+        }
+        guard let screen = workflow.screens[screenID] else {
+            throw PaywallError.workflowInitialScreenNotFound(
+                screenId: screenID,
+                workflowId: workflow.id
+            )
         }
 
         let paywallComponents = WorkflowScreenMapper.toPaywallComponents(
@@ -678,7 +723,12 @@ extension PurchaseHandler {
             paywallId: screenID
         )
 
-        let initialOffering = baseOffering.withPaywallComponents(paywallComponents)
+        let offeringIdentifier = workflow.offeringIdentifier(for: step)
+        let baseOffering = offeringIdentifier.flatMap { allOfferings.offering(identifier: $0) }
+        let initialOffering = WorkflowContext.renderingOffering(
+            baseOffering: baseOffering,
+            paywallComponents: paywallComponents
+        )
 
         let offering: Offering
         if let presentedOfferingContext {
@@ -692,7 +742,9 @@ extension PurchaseHandler {
             uiConfig: uiConfig,
             allOfferings: allOfferings,
             initialOffering: offering,
-            presentedOfferingContext: presentedOfferingContext
+            presentedOfferingContext: presentedOfferingContext,
+            workflowBlobRef: workflowBlobRef,
+            traceId: traceId
         )
     }
     #endif
@@ -821,6 +873,58 @@ extension PurchaseHandler {
 
     }
 
+    // MARK: - Hosted checkout
+
+    /// Reports a checkout the customer completed on a page presented inside the app.
+    ///
+    /// There is no transaction to hand over: what was bought is known to the backend, so the paywall follows
+    /// the refreshed `CustomerInfo`.
+    @MainActor
+    func handleHostedCheckoutPurchase() async {
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        // The purchase was made outside StoreKit, so whatever is cached was fetched before it happened.
+        self.purchases.invalidateCustomerInfoCache()
+        #endif
+
+        await self.reportHostedCheckoutOutcome(userCancelled: false)
+    }
+
+    /// Reports a checkout the customer abandoned on a page presented inside the app.
+    ///
+    /// - Parameter package: The package the checkout was started for, when it is still known. Only used to
+    /// track the cancellation.
+    @MainActor
+    func handleHostedCheckoutCancellation(package: Package?) async {
+        if let package {
+            self.trackCancelledPurchase(package: package)
+        }
+
+        await self.reportHostedCheckoutOutcome(userCancelled: true)
+    }
+
+    @MainActor
+    private func reportHostedCheckoutOutcome(userCancelled: Bool) async {
+        let customerInfo: CustomerInfo
+        do {
+            customerInfo = try await self.purchases.customerInfo()
+        } catch {
+            self.purchaseError = error
+            return
+        }
+
+        let resultInfo: PurchaseResultData = (transaction: nil,
+                                              customerInfo: customerInfo,
+                                              userCancelled: userCancelled)
+
+        // Set sessionPurchaseResult BEFORE setResult so that handleMainPaywallDismiss
+        // sees the correct state when the sheet dismisses.
+        withAnimation(Constants.defaultAnimation) {
+            self.sessionPurchaseResult = resultInfo
+        }
+
+        self.setResult(resultInfo)
+    }
+
     // MARK: - Restore
 
     func restorePurchases() async throws -> (info: CustomerInfo, success: Bool) {
@@ -900,16 +1004,16 @@ extension PurchaseHandler {
         self.restoredCustomerInfo = .init(customerInfo: customerInfo, success: success)
     }
 
-    /// Sets a new UUID on ``webCheckoutOpened`` so ``WebCheckoutOpenedPreferenceKey`` fires.
+    /// Delivers a web checkout event before any subsequent session reset.
     @MainActor
     func signalWebCheckoutOpened() {
-        self.webCheckoutOpened = UUID()
+        self.webCheckoutOpenedSubject.send(())
     }
 
-    /// Sets a new signal on ``urlOpened`` so ``URLOpenedPreferenceKey`` fires.
+    /// Delivers every URL opening, including consecutive openings of the same URL.
     @MainActor
     func signalURLOpened(_ url: URL) {
-        self.urlOpened = .init(id: UUID(), url: url)
+        self.urlOpenedSubject.send(url)
     }
 
     func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
@@ -922,46 +1026,6 @@ extension PurchaseHandler {
     /// current: it reports no impression, and a purchase there must not attribute to the prior step.
     func clearActivePaywallSession() {
         self.activePaywallSessionID = nil
-    }
-
-    /// Clears a pending web checkout signal without a full session reset, for when an exit offer is
-    /// about to reuse this same `PurchaseHandler`. Must run synchronously, unlike
-    /// `deferredClearWebCheckoutOpened`: the exit offer's paywall mounts in this same step, and a
-    /// deferred clear would let its brand new `onWebCheckoutOpened` observer see the stale signal as
-    /// its own fresh one.
-    @MainActor
-    func clearWebCheckoutOpened() {
-        self.webCheckoutOpened = nil
-    }
-
-    /// Clears a pending URL opened signal without a full session reset. Synchronous for the same reason as
-    /// `clearWebCheckoutOpened`.
-    @MainActor
-    func clearURLOpened() {
-        self.urlOpened = nil
-    }
-
-    /// Deferred by a tick so a signal set earlier in the same synchronous step (e.g. right before a
-    /// dismiss) still reaches its SwiftUI render pass before being cleared. Only clears if nothing
-    /// newer arrived in the meantime (e.g. this same handler reused for a new session), so a stale
-    /// clear can't wipe out a signal it was never meant to touch.
-    @MainActor
-    private func deferredClearWebCheckoutOpened() {
-        let pendingValue = self.webCheckoutOpened
-        DispatchQueue.main.async { [weak self] in
-            guard let self, self.webCheckoutOpened == pendingValue else { return }
-            self.webCheckoutOpened = nil
-        }
-    }
-
-    /// Deferred for the same reason as `deferredClearWebCheckoutOpened`.
-    @MainActor
-    private func deferredClearURLOpened() {
-        let pendingValue = self.urlOpened
-        DispatchQueue.main.async { [weak self] in
-            guard let self, self.urlOpened == pendingValue else { return }
-            self.urlOpened = nil
-        }
     }
 
     func componentInteractionLogger(
@@ -1167,6 +1231,10 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
         throw ErrorCode.configurationError
     }
 
+    func startHostedCheckout(package: Package, paywallEvent: PaywallEvent?) async -> HostedCheckoutStartResult {
+        return .failed
+    }
+
     func restorePurchases() async throws -> CustomerInfo {
         throw ErrorCode.configurationError
     }
@@ -1296,37 +1364,6 @@ struct RestoreErrorPreferenceKey: PreferenceKey {
     static var defaultValue: NSError?
 
     static func reduce(value: inout NSError?, nextValue: () -> NSError?) {
-        value = nextValue()
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct WebCheckoutOpenedPreferenceKey: PreferenceKey {
-
-    static var defaultValue: UUID?
-
-    static func reduce(value: inout UUID?, nextValue: () -> UUID?) {
-        value = nextValue()
-    }
-
-}
-
-/// A URL the paywall opened, tagged with a unique identifier so preference listeners also receive
-/// consecutive opens of the same URL.
-struct URLOpenedSignal: Equatable {
-
-    let id: UUID
-    let url: URL
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct URLOpenedPreferenceKey: PreferenceKey {
-
-    static var defaultValue: URLOpenedSignal?
-
-    static func reduce(value: inout URLOpenedSignal?, nextValue: () -> URLOpenedSignal?) {
         value = nextValue()
     }
 

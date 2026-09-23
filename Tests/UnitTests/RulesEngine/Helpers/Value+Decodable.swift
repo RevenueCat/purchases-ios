@@ -36,7 +36,7 @@ extension RulesEngine.Value: Decodable {
         } else if let array = try? container.decode([RulesEngine.Value].self) {
             self = .array(array)
         } else if let object = try? container.decode([String: RulesEngine.Value].self) {
-            self = .object(object)
+            self = .object(RulesEngine.ObjectValue(object))
         } else {
             throw DecodingError.dataCorrupted(
                 DecodingError.Context(

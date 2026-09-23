@@ -131,6 +131,10 @@ struct PackageSelectorIfNeeded: ViewModifier {
     let hasPurchaseButton: Bool
     let hapticFeedbackEnabled: Bool
 
+    private var isSelected: Bool {
+        return self.packageContext.package?.identifier == self.package.identifier
+    }
+
     func body(content: Content) -> some View {
         if hasPurchaseButton {
             content
@@ -164,6 +168,7 @@ struct PackageSelectorIfNeeded: ViewModifier {
             } label: {
                 content
             }
+            .accessibilityAddTraits(self.isSelected ? .isSelected : [])
             .onAppear {
                 if hapticFeedbackEnabled {
                     self.hapticFeedback.prepare()

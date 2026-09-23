@@ -46,11 +46,6 @@ final class ExternalPurchaseManager {
             return .notEligible
         }
 
-        guard !self.systemInfo.isSimulatedStoreAPIKey else {
-            Logger.debug(Strings.externalPurchase.unsupported_with_test_store)
-            return .notEligible
-        }
-
         let availability = await self.customLink.externalPurchaseAvailability()
         Logger.debug(Strings.externalPurchase.eligibility_resolved(availability))
 
@@ -66,7 +61,7 @@ final class ExternalPurchaseManager {
     /// customer tapping twice sees a single notice and mints a single token.
     func prepareExternalPurchase(flow: ExternalPurchaseFlow) async -> ExternalPurchasePreparationResult {
         guard self.takesPartInTheProgramme else {
-            return .stopped(.notEligible)
+            return .notApplicable
         }
 
         guard !self.isPreparing.getAndSet(true) else {
@@ -80,8 +75,8 @@ final class ExternalPurchaseManager {
         case .available:
             break
         case .notEligible:
-            Logger.warn(Strings.externalPurchase.cannot_make_external_purchases)
-            return .stopped(.notEligible)
+            Logger.debug(Strings.externalPurchase.custom_link_does_not_apply)
+            return .notApplicable
         case .paymentsNotAuthorized:
             Logger.warn(Strings.externalPurchase.payments_not_authorized)
             return .stopped(.paymentsNotAuthorized)
@@ -117,19 +112,18 @@ internal enum ExternalPurchasePreparationResult: Equatable {
     /// deliberately not treated as a failure for the customer, who is still allowed to buy.
     case unregistered(FailureReason)
 
-    enum StopReason: Equatable {
+    /// Route the customer to the checkout with no identifier to hand over, as the app would outside Apple's
+    /// programme: it does not apply here, see ``ExternalPurchaseAvailability/notEligible``.
+    ///
+    /// Nothing was shown and nothing was minted.
+    case notApplicable
 
-        /// External purchases do not apply to this customer, see ``ExternalPurchaseAvailability/notEligible``.
-        ///
-        /// The customer saw nothing of the external purchase, so the caller is expected to buy through StoreKit
-        /// instead rather than leave them without a way to buy. Unlike the other reasons, this one does not change
-        /// while the customer stays where they are.
-        case notEligible
+    enum StopReason: Equatable {
 
         /// The device does not authorize payments, see ``ExternalPurchaseAvailability/paymentsNotAuthorized``.
         ///
-        /// Unlike ``notEligible``, there is nothing to offer instead: the caller is expected to route the customer
-        /// nowhere at all.
+        /// Apple asks that such a device be offered no purchase at all, so the caller is expected to route the
+        /// customer nowhere.
         case paymentsNotAuthorized
 
         /// The customer declined at the disclosure notice.
@@ -152,30 +146,6 @@ internal enum ExternalPurchasePreparationResult: Equatable {
         /// The backend did not accept the registration.
         case registrationFailed
 
-    }
-
-}
-
-extension ExternalPurchasePreparationResult {
-
-    /// Whether the customer should be routed to the checkout.
-    var shouldProceed: Bool {
-        switch self {
-        case .stopped:
-            return false
-        case .registered, .unregistered:
-            return true
-        }
-    }
-
-    /// The identifier to hand to the checkout page, when there is one.
-    var tokenID: String? {
-        switch self {
-        case let .registered(tokenID):
-            return tokenID
-        case .stopped, .unregistered:
-            return nil
-        }
     }
 
 }

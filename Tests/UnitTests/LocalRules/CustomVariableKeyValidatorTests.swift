@@ -33,7 +33,11 @@ struct CustomVariableKeyValidatorTests {
             "a",
             "123key",
             "_key",
-            String(repeating: "a", count: 255)
+            "kéy",
+            "π_3",
+            "١valid",
+            String(repeating: "a", count: 256),
+            String(repeating: "a", count: 1_024)
         ]
 
         #expect(validKeys.allSatisfy { CustomVariableKeyValidator.isValidKey($0) })
@@ -47,8 +51,8 @@ struct CustomVariableKeyValidatorTests {
             "key name",
             "key.name",
             "key!",
-            "kéy",
-            String(repeating: "a", count: 256)
+            "key🙂",
+            "e\u{301}"
         ]
 
         #expect(invalidKeys.allSatisfy { !CustomVariableKeyValidator.isValidKey($0) })
@@ -82,6 +86,42 @@ struct CustomVariableKeyValidatorTests {
         ])
 
         #expect(snapshot.values["custom"] == nil)
+    }
+
+    @Test
+    func newlyAcceptedKeysAreAvailableInCustomNamespace() async throws {
+        let longKey = String(repeating: "a", count: 1_024)
+        let snapshot = try await DimensionResolver(
+            dimensionProviders: [],
+            currentAppUserIDProvider: { "user" }
+        ).snapshot(customVariables: [
+            "kéy": .string("unicode"),
+            "١valid": .string("digit"),
+            longKey: .string("long")
+        ])
+
+        guard case let .object(custom)? = snapshot.values["custom"] else {
+            Issue.record("Expected custom variables to be present")
+            return
+        }
+        #expect(custom["kéy"] == .string("unicode"))
+        #expect(custom["١valid"] == .string("digit"))
+        #expect(custom[longKey] == .string("long"))
+    }
+
+    @Test
+    func invalidKeysAreLoggedWhenFiltered() {
+        let logger = TestLogHandler(testIdentifier: #function)
+
+        _ = CustomVariableKeyValidator.validateAndFilter([
+            "invalid.key": "dropped"
+        ])
+
+        logger.verifyMessageWasLogged(
+            "Custom variable key 'invalid.key' is invalid and will be ignored. " +
+                "Keys must not be empty and contain only letters, numbers, and underscores.",
+            level: .warn
+        )
     }
 
 }

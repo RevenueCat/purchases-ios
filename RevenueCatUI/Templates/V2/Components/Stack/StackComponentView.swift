@@ -174,6 +174,17 @@ struct StackComponentView: View {
 
 }
 
+private extension PaywallComponent.SizeConstraint {
+
+    var isFixed: Bool {
+        if case .fixed = self {
+            return true
+        }
+        return false
+    }
+
+}
+
 private extension Axis {
 
     var scrollViewAxis: Axis.Set {
@@ -207,6 +218,7 @@ fileprivate extension View {
                         vertical: verticalAlignment.frameAlignment.vertical
                     )
                 )
+                .preservingFixedSize(along: .horizontal, size: size)
             } else {
                 self
             }
@@ -220,6 +232,7 @@ fileprivate extension View {
                         vertical: distribution.verticalFrameAlignment.vertical
                     )
                 )
+                .preservingFixedSize(along: .vertical, size: size)
             } else {
                 self
             }
@@ -234,9 +247,24 @@ fileprivate extension View {
                     fillContent: true,
                     alignment: alignment.stackAlignment
                 )
+                .preservingFixedSize(along: .vertical, size: size)
             } else {
                 self
             }
+        }
+    }
+
+    /// A `ScrollView` takes all the space proposed along its axis, which would override a fixed size.
+    /// Hug the content instead so the stack keeps its fixed dimension.
+    @ViewBuilder
+    private func preservingFixedSize(along axis: Axis, size: PaywallComponent.Size) -> some View {
+        switch axis {
+        case .horizontal where size.width.isFixed:
+            self.fixedSize(horizontal: true, vertical: false)
+        case .vertical where size.height.isFixed:
+            self.fixedSize(horizontal: false, vertical: true)
+        default:
+            self
         }
     }
 
@@ -721,6 +749,72 @@ struct StackComponentViewHorizontal_Previews: PreviewProvider {
             .horizontal(.bottom, .spaceEvenly)
         ])
     }
+}
+
+/// A fixed 22x22 pill stack must stay a circle even with `overflow: scroll`. Before the fix the
+/// ScrollView wrapper took the row height and the ring rendered as a vertical capsule.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct StackComponentViewFixedPillOverflow_Previews: PreviewProvider {
+
+    static let green = "#7CB518"
+
+    static func radioRing(overflow: PaywallComponent.StackComponent.Overflow?) -> PaywallComponent {
+        .stack(.init(
+            components: [
+                .stack(.init(
+                    components: [],
+                    size: .init(width: .fixed(10), height: .fixed(10)),
+                    backgroundColor: .init(light: .hex(green)),
+                    shape: .pill
+                ))
+            ],
+            dimension: .vertical(.center, .center),
+            size: .init(width: .fixed(22), height: .fixed(22)),
+            shape: .pill,
+            border: .init(color: .init(light: .hex(green)), width: 2),
+            overflow: overflow
+        ))
+    }
+
+    static func packageRow(text: String, overflow: PaywallComponent.StackComponent.Overflow?) -> some View {
+        StackComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                component: .init(
+                    components: [
+                        radioRing(overflow: overflow),
+                        .text(.init(text: "label",
+                                    color: .init(light: .hex("#000000")),
+                                    horizontalAlignment: .leading))
+                    ],
+                    dimension: .horizontal(.center, .start),
+                    size: .init(width: .fill, height: .fit(nil)),
+                    spacing: 12,
+                    padding: .init(top: 16, bottom: 16, leading: 16, trailing: 16),
+                    shape: .rectangle(.init(topLeading: 12, topTrailing: 12, bottomLeading: 12, bottomTrailing: 12)),
+                    border: .init(color: .init(light: .hex("#C7C7CC")), width: 1)
+                ),
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: ["label": .string(text)]
+                ),
+                colorScheme: .light
+            ),
+            onDismiss: {}
+        )
+    }
+
+    static var previews: some View {
+        VStack(spacing: 16) {
+            packageRow(text: "Overflow: default\nRing stays a 22x22 circle", overflow: nil)
+            packageRow(text: "Overflow: scroll\nRing must stay a 22x22 circle too", overflow: .scroll)
+        }
+        .padding()
+        .previewRequiredPaywallsV2Properties()
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Fixed pill + overflow scroll")
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

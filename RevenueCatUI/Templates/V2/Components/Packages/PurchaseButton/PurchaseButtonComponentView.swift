@@ -40,6 +40,12 @@ struct PurchaseButtonComponentView: View {
 
     @State private var inAppBrowserURL: URL?
 
+    #if os(iOS) && canImport(WebKit)
+    @State private var hostedCheckoutViewModel: WebCheckoutViewModel?
+
+    @State private var alreadyOwnedCategory: StoreProduct.ProductCategory?
+    #endif
+
     private let viewModel: PurchaseButtonComponentViewModel
     private let onDismiss: () -> Void
 
@@ -85,6 +91,21 @@ struct PurchaseButtonComponentView: View {
             SafariView(url: self.inAppBrowserURL!)
         }
         #endif
+        #if os(iOS) && canImport(WebKit)
+        .webCheckoutSheet(viewModel: self.$hostedCheckoutViewModel) { outcome in
+            self.handleHostedCheckoutOutcome(outcome)
+        }
+        .alert(
+            self.alreadyOwnedTitle,
+            isPresented: .isNotNil(self.$alreadyOwnedCategory)
+        ) {
+            Button {
+                self.alreadyOwnedCategory = nil
+            } label: {
+                Text("OK", bundle: self.viewModel.localizedBundle)
+            }
+        }
+        #endif
     }
 
     private func purchase() async throws {
@@ -96,41 +117,118 @@ struct PurchaseButtonComponentView: View {
         switch method {
         case .inAppCheckout, .unknown:
             try await self.purchaseInApp()
+        case .hostedWebCheckout:
+            try await self.purchaseInHostedCheckout()
         case .webCheckout, .webProductSelection, .customWebCheckout:
             try await self.purchaseInWeb()
         }
     }
 
     private func purchaseInApp() async throws {
+        guard let selectedPackage = self.packageForPurchaseTap() else {
+            return
+        }
+
+        try await self.performInAppPurchase(selectedPackage: selectedPackage)
+    }
+
+    /// The package this tap is for, or `nil` when it should do nothing.
+    private func packageForPurchaseTap() -> Package? {
         self.logIfInPreview(package: self.packageContext.package)
 
         guard !self.purchaseHandler.actionInProgress else {
-            return
+            return nil
         }
 
         guard let selectedPackage = self.packageContext.package else {
             Logger.error(Strings.no_selected_package_found)
-            return
+            return nil
         }
 
         self.logPurchaseButtonInteractionForInApp(selectedPackage: selectedPackage)
 
-        // Check if there's a purchase interceptor
-        if let interceptor = self.purchaseInitiatedAction {
-            let result = await self.purchaseHandler.withPendingPurchaseContinuation {
-                await withCheckedContinuation { continuation in
-                    interceptor(selectedPackage, resume: ResumeAction { shouldProceed in
-                        continuation.resume(returning: shouldProceed)
-                    })
-                }
-            }
-            guard result else { return }
+        return selectedPackage
+    }
+
+    private func performInAppPurchase(selectedPackage: Package) async throws {
+        guard await self.purchaseHandler.shouldProceed(withPurchaseOf: selectedPackage,
+                                                       interceptor: self.purchaseInitiatedAction) else {
+            return
         }
 
         let promoOffer = self.paywallPromoOfferCache.purchasableOffer(for: selectedPackage)
 
         _ = try await self.purchaseHandler.purchase(package: selectedPackage, promotionalOffer: promoOffer)
     }
+
+    // Isolation is stated rather than inferred: the compilers this builds with disagree about whether a
+    // `View`'s own methods are already on the main actor, and presenting the sheet from here needs it.
+    @MainActor
+    private func purchaseInHostedCheckout() async throws {
+        #if os(iOS) && canImport(WebKit)
+        guard let selectedPackage = self.packageForPurchaseTap() else {
+            return
+        }
+
+        guard !self.isInPreview else {
+            return
+        }
+
+        switch await HostedCheckout.start(for: selectedPackage,
+                                          purchaseHandler: self.purchaseHandler,
+                                          purchaseInitiatedAction: self.purchaseInitiatedAction) {
+        case let .present(session):
+            self.presentHostedCheckout(session)
+        case .tellCustomerTheyAlreadyOwnIt:
+            self.showAlreadyOwnedAlert(for: selectedPackage)
+        case .nothing:
+            break
+        }
+        #else
+        // The sheet the checkout is presented in is iOS only, so everywhere else this behaves like an SDK
+        // that does not know the method.
+        try await self.purchaseInApp()
+        #endif
+    }
+
+    #if os(iOS) && canImport(WebKit)
+    private var alreadyOwnedTitle: Text {
+        switch self.alreadyOwnedCategory {
+        case .subscription:
+            return Text("You are currently subscribed to this", bundle: self.viewModel.localizedBundle)
+        case .nonSubscription, .none:
+            return Text("You've already purchased this", bundle: self.viewModel.localizedBundle)
+        }
+    }
+
+    @MainActor
+    private func showAlreadyOwnedAlert(for package: Package) {
+        self.alreadyOwnedCategory = package.storeProduct.productCategory
+    }
+
+    @MainActor
+    private func presentHostedCheckout(_ session: HostedCheckoutSession) {
+        self.hostedCheckoutViewModel = WebCheckoutViewModel(
+            checkoutURL: session.checkoutURL,
+            successURL: session.successURL,
+            cancelURL: session.cancelURL,
+            dataStoreIdentifierStore: .init()
+        )
+    }
+
+    private func handleHostedCheckoutOutcome(_ outcome: WebCheckoutSheetOutcome) {
+        switch outcome {
+        case .returned(.success):
+            Task { await self.purchaseHandler.handleHostedCheckoutPurchase() }
+        case .returned(.cancel):
+            Task { await self.purchaseHandler.handleHostedCheckoutCancellation(package: self.packageContext.package) }
+        case .dismissed:
+            // A payment may have gone through moments before the customer closed the sheet. Settling that
+            // means asking the backend what became of the session, which is not wired up yet.
+            Logger.debug(Strings.hosted_checkout_dismissed_without_returning)
+        }
+    }
+    #endif
 
     private func purchaseInWeb() async throws {
         self.logIfInPreview(package: self.packageContext.package)
