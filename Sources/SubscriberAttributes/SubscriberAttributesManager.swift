@@ -306,6 +306,10 @@ class SubscriberAttributesManager {
         return deviceCache.unsyncedAttributesForAllUsers()
     }
 
+    func localStoredAttributes(for appUserID: String) -> SubscriberAttribute.Dictionary {
+        deviceCache.subscriberAttributes(appUserID: appUserID)
+    }
+
     func markAttributesAsSynced(_ attributesToSync: SubscriberAttribute.Dictionary?, appUserID: String) {
         guard let attributesToSync = attributesToSync,
               !attributesToSync.isEmpty else {

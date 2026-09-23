@@ -86,7 +86,31 @@ public extension Attribution {
 
 #if !CUSTOM_ENTITLEMENTS_COMPUTATION
 
+extension CustomerInfo {
+
+    @objc(RCCustomerAttribute) public final class Attribute: NSObject {
+
+        private let attribute: SubscriberAttribute
+
+        @objc public var key: String { attribute.key }
+
+        @objc public var value: String { attribute.value }
+
+        @objc public var lastUpdatedDate: Date { attribute.setTime }
+
+        fileprivate init(attribute: SubscriberAttribute) {
+            self.attribute = attribute
+        }
+
+    }
+}
+
 public extension Attribution {
+
+    @objc var attributesForCurrentUser: [CustomerInfo.Attribute] {
+        let attributes = self.subscriberAttributesManager.localStoredAttributes(for: appUserID)
+        return attributes.values.map { CustomerInfo.Attribute(attribute: $0) }
+    }
 
     /**
      * Automatically collect subscriber attributes associated with the device identifiers
