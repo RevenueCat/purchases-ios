@@ -40,6 +40,38 @@ final class HostedCheckoutTests: TestCase {
         expect(action) == .present(Self.session)
     }
 
+    /// The same event is tracked and sent with the checkout, so the purchase made on the page is attributed
+    /// to the initiation the paywall reported.
+    func testTracksThePurchaseAsInitiated() async throws {
+        let trackedEvents: Atomic<[PaywallEvent]> = .init([])
+        let eventsSentWithTheCheckout: Atomic<[PaywallEvent?]> = .init([])
+
+        let purchases = MockPurchases { _, _, _ in
+            return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { event in
+            trackedEvents.modify { $0.append(event) }
+        } customerInfo: {
+            return TestData.customerInfo
+        }
+        purchases.hostedCheckoutBlock = { _, paywallEvent in
+            eventsSentWithTheCheckout.modify { $0.append(paywallEvent) }
+            return .started(Self.session)
+        }
+        let handler = Self.makeHandler(purchases: purchases)
+        handler.trackPaywallImpression(Self.impressionData)
+
+        _ = await handler.startHostedCheckout(package: TestData.annualPackage)
+
+        await expect(trackedEvents.value.contains(where: Self.isPurchaseInitiated))
+            .toEventually(beTrue(), timeout: .seconds(2))
+
+        let initiated = try XCTUnwrap(trackedEvents.value.first(where: Self.isPurchaseInitiated))
+        expect(initiated.data.packageId) == TestData.annualPackage.identifier
+        expect(eventsSentWithTheCheckout.value) == [initiated]
+    }
+
     /// An app that gates purchases, e.g. behind sign in, gets to stop this one before Apple's flow runs.
     func testStartsNoCheckoutWhenTheAppStopsThePurchase() async {
         let checkoutsStarted = Recorder<String>()
@@ -129,6 +161,22 @@ private extension HostedCheckoutTests {
             eventTracker: .init(purchases: purchases,
                                 eventDispatcher: PaywallEventTrackerTestDispatcher.value)
         )
+    }
+
+    static let impressionData = PaywallEvent.Data(
+        paywallIdentifier: TestData.paywallWithIntroOffer.id,
+        offeringIdentifier: TestData.offeringWithIntroOffer.identifier,
+        paywallRevision: TestData.paywallWithIntroOffer.revision,
+        sessionID: .init(),
+        displayMode: .fullScreen,
+        localeIdentifier: "en_US",
+        darkMode: false,
+        source: nil
+    )
+
+    static func isPurchaseInitiated(_ event: PaywallEvent) -> Bool {
+        if case .purchaseInitiated = event { return true }
+        return false
     }
 
     static func interceptor(proceeding: Bool,

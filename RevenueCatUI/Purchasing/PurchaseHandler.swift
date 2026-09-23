@@ -354,6 +354,7 @@ extension PurchaseHandler {
         // Carried so that the purchase the customer makes on the page is attributed to the paywall that sent
         // them there.
         let paywallEvent = self.createPurchaseInitiatedEvent(package: package)
+        if let paywallEvent { self.track(paywallEvent) }
 
         return await self.withExternalPurchasePreparation {
             await self.purchases.startHostedCheckout(package: package, paywallEvent: paywallEvent)
