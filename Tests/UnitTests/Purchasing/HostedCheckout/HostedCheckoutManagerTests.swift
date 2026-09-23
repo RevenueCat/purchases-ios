@@ -232,6 +232,16 @@ class HostedCheckoutManagerTests: TestCase {
         expect(result) == .failed
     }
 
+    /// Kept apart from a failure: there is something to tell the customer, rather than something that went
+    /// wrong on the way to the checkout.
+    func testSaysTheProductIsAlreadyOwnedWhenTheBackendRefusesTheCheckoutForThat() async {
+        self.webBillingAPI.stubbedPostHostedCheckoutCompletionResult = .failure(Self.alreadyPurchasedError)
+
+        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(result) == .alreadyPurchased
+    }
+
 }
 
 private extension HostedCheckoutManagerTests {
@@ -263,6 +273,13 @@ private extension HostedCheckoutManagerTests {
     static let checkoutURL = URL(string: "https://pay.example.com/session")!
     static let successURL = URL(string: "https://api.revenuecat.com/checkout-return?status=success")!
     static let cancelURL = URL(string: "https://api.revenuecat.com/checkout-return?status=cancel")!
+
+    static let alreadyPurchasedError: BackendError = .networkError(
+        .errorResponse(.init(code: .productAlreadyPurchased,
+                             originalCode: BackendErrorCode.productAlreadyPurchased.rawValue,
+                             message: "This customer already has an active purchase for this product."),
+                       .other(409))
+    )
 
     static let response = HostedCheckoutResponse(operationSessionID: operationSessionID,
                                                  checkoutURL: checkoutURL,

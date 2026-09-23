@@ -42,6 +42,8 @@ struct PurchaseButtonComponentView: View {
 
     #if os(iOS) && canImport(WebKit)
     @State private var hostedCheckoutViewModel: WebCheckoutViewModel?
+
+    @State private var alreadyOwnedCategory: StoreProduct.ProductCategory?
     #endif
 
     private let viewModel: PurchaseButtonComponentViewModel
@@ -92,6 +94,16 @@ struct PurchaseButtonComponentView: View {
         #if os(iOS) && canImport(WebKit)
         .webCheckoutSheet(viewModel: self.$hostedCheckoutViewModel) { outcome in
             self.handleHostedCheckoutOutcome(outcome)
+        }
+        .alert(
+            self.alreadyOwnedTitle,
+            isPresented: .isNotNil(self.$alreadyOwnedCategory)
+        ) {
+            Button {
+                self.alreadyOwnedCategory = nil
+            } label: {
+                Text("OK", bundle: self.viewModel.localizedBundle)
+            }
         }
         #endif
     }
@@ -167,6 +179,8 @@ struct PurchaseButtonComponentView: View {
                                           purchaseInitiatedAction: self.purchaseInitiatedAction) {
         case let .present(session):
             self.presentHostedCheckout(session)
+        case .tellCustomerTheyAlreadyOwnIt:
+            self.showAlreadyOwnedAlert(for: selectedPackage)
         case .nothing:
             break
         }
@@ -178,6 +192,20 @@ struct PurchaseButtonComponentView: View {
     }
 
     #if os(iOS) && canImport(WebKit)
+    private var alreadyOwnedTitle: Text {
+        switch self.alreadyOwnedCategory {
+        case .subscription:
+            return Text("You are currently subscribed to this", bundle: self.viewModel.localizedBundle)
+        case .nonSubscription, .none:
+            return Text("You've already purchased this", bundle: self.viewModel.localizedBundle)
+        }
+    }
+
+    @MainActor
+    private func showAlreadyOwnedAlert(for package: Package) {
+        self.alreadyOwnedCategory = package.storeProduct.productCategory
+    }
+
     @MainActor
     private func presentHostedCheckout(_ session: HostedCheckoutSession) {
         self.hostedCheckoutViewModel = WebCheckoutViewModel(

@@ -73,6 +73,9 @@ final class HostedCheckoutManager {
     /// Another checkout was already being started, and that one carries the purchase.
     case alreadyStarting
 
+    /// This customer already owns what they are trying to buy, so there is nothing to check out.
+    case alreadyPurchased
+
     /// The checkout could not be started.
     case failed
 
@@ -103,9 +106,24 @@ private extension HostedCheckoutManager {
             Logger.debug(Strings.hostedCheckout.session_created(response.operationSessionID))
             return .started(.init(response: response))
         case let .failure(error):
+            guard !error.isProductAlreadyPurchased else {
+                Logger.warn(Strings.hostedCheckout.product_already_purchased(package.identifier))
+                return .alreadyPurchased
+            }
+
             Logger.error(Strings.hostedCheckout.error_creating_session(error))
             return .failed
         }
+    }
+
+}
+
+private extension BackendError {
+
+    var isProductAlreadyPurchased: Bool {
+        guard case let .networkError(.errorResponse(response, _, _)) = self else { return false }
+
+        return response.code == .productAlreadyPurchased
     }
 
 }
