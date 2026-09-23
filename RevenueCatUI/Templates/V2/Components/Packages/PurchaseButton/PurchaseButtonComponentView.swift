@@ -125,20 +125,29 @@ struct PurchaseButtonComponentView: View {
     }
 
     private func purchaseInApp() async throws {
+        guard let selectedPackage = self.packageForPurchaseTap() else {
+            return
+        }
+
+        try await self.performInAppPurchase(selectedPackage: selectedPackage)
+    }
+
+    /// The package this tap is for, once the tap has been logged, or `nil` when it should do nothing.
+    private func packageForPurchaseTap() -> Package? {
         self.logIfInPreview(package: self.packageContext.package)
 
         guard !self.purchaseHandler.actionInProgress else {
-            return
+            return nil
         }
 
         guard let selectedPackage = self.packageContext.package else {
             Logger.error(Strings.no_selected_package_found)
-            return
+            return nil
         }
 
         self.logPurchaseButtonInteractionForInApp(selectedPackage: selectedPackage)
 
-        try await self.performInAppPurchase(selectedPackage: selectedPackage)
+        return selectedPackage
     }
 
     private func performInAppPurchase(selectedPackage: Package) async throws {
@@ -157,18 +166,9 @@ struct PurchaseButtonComponentView: View {
     @MainActor
     private func purchaseInHostedCheckout() async throws {
         #if os(iOS) && canImport(WebKit)
-        self.logIfInPreview(package: self.packageContext.package)
-
-        guard !self.purchaseHandler.actionInProgress else {
+        guard let selectedPackage = self.packageForPurchaseTap() else {
             return
         }
-
-        guard let selectedPackage = self.packageContext.package else {
-            Logger.error(Strings.no_selected_package_found)
-            return
-        }
-
-        self.logPurchaseButtonInteractionForInApp(selectedPackage: selectedPackage)
 
         guard !self.isInPreview else {
             return
