@@ -14,6 +14,12 @@ enum RemoteConfigReadPolicy: Equatable {
     case cachedOnly
 }
 
+protocol RemoteConfigStateObserver: AnyObject {
+
+    func remoteConfigStateDidChange(generation: Int)
+
+}
+
 protocol RemoteConfigManagerType: AnyObject {
 
     /// Monotonically increases whenever committed remote config state is replaced or invalidated.
@@ -102,6 +108,14 @@ extension RemoteConfigManagerType {
     }
 
     func addConfigCommitObserver(_ observer: @escaping (Int) -> Void) {}
+
+    /// Registers an observer weakly and immediately delivers the current generation.
+    func addRemoteConfigStateObserver(_ observer: some RemoteConfigStateObserver) {
+        self.addConfigCommitObserver { [weak observer] generation in
+            observer?.remoteConfigStateDidChange(generation: generation)
+        }
+        observer.remoteConfigStateDidChange(generation: self.configGeneration)
+    }
 
     /// Performs a read against one config generation and retries once if a successful read was
     /// superseded while suspended. Errors and cancellation are propagated immediately. An exhausted

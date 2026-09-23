@@ -894,6 +894,29 @@ final class RemoteConfigManagerTests: TestCase {
         expect(observedGenerations) == [1]
     }
 
+    func testTypedStateObserverReceivesCurrentAndCommittedGenerations() throws {
+        let observer = RemoteConfigStateObserverSpy()
+        self.manager.addRemoteConfigStateObserver(observer)
+        let response = """
+        { "domain": "app", "manifest": "v1.test", "active_topics": [], "topics": {} }
+        """
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .success(.test(container: try Self.container(config: response))))
+
+        expect(observer.observedGenerations) == [0, 1]
+    }
+
+    func testDoesNotRetainTypedStateObserver() {
+        var observer: RemoteConfigStateObserverSpy? = .init()
+        weak var weakObserver = observer
+
+        self.manager.addRemoteConfigStateObserver(observer!)
+        observer = nil
+
+        expect(weakObserver).to(beNil())
+    }
+
     func testEnsureBlobsDownloadedDelegatesToBlobFetcher() async {
         let refs = ["ref-1", "ref-2"]
 
@@ -3038,6 +3061,16 @@ final class RemoteConfigManagerTests: TestCase {
         } catch {
             XCTFail("Unexpected error: \(error)")
         }
+    }
+
+}
+
+private final class RemoteConfigStateObserverSpy: RemoteConfigStateObserver {
+
+    var observedGenerations: [Int] = []
+
+    func remoteConfigStateDidChange(generation: Int) {
+        self.observedGenerations.append(generation)
     }
 
 }

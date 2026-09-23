@@ -671,14 +671,13 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let notificationCenter: NotificationCenter = .default
         let checkpointResolver: CheckpointWorkflowResolver
         if systemInfo.remoteConfigEnabled {
-            remoteConfigManager.addConfigCommitObserver { [weak checkpointsConfigProvider] _ in
-                checkpointsConfigProvider?.warmAsync()
+            let remoteConfigStateObservers: [any RemoteConfigStateObserver] = [
+                checkpointsConfigProvider,
+                audiencesConfigProvider
+            ]
+            for observer in remoteConfigStateObservers {
+                remoteConfigManager.addRemoteConfigStateObserver(observer)
             }
-            remoteConfigManager.addConfigCommitObserver { [weak audiencesConfigProvider] _ in
-                audiencesConfigProvider?.warmAsync()
-            }
-            checkpointsConfigProvider.warmAsync()
-            audiencesConfigProvider.warmAsync()
             RulesEngine.setLogger(RulesEngineLoggerBridge())
             let localRulesEvaluator = LocalRulesEvaluator(
                 dimensionProviders: [
