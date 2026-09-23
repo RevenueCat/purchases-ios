@@ -100,7 +100,7 @@ extension CustomerInfo {
 /// ```
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public class CheckpointAdOutcome: CustomStringConvertible {
+public class CheckpointAdOutcome: CustomStringConvertible, @unchecked Sendable {
 
     fileprivate init() {}
 
@@ -108,7 +108,7 @@ public class CheckpointAdOutcome: CustomStringConvertible {
     public var description: String { return "CheckpointAdOutcome" }
 
     /// The ad was shown and dismissed, with no reward earned.
-    public final class Shown: CheckpointAdOutcome {
+    public final class Shown: CheckpointAdOutcome, @unchecked Sendable {
 
         static let shared = Shown()
 
@@ -120,7 +120,7 @@ public class CheckpointAdOutcome: CustomStringConvertible {
 
     /// The customer earned the ad's reward and RevenueCat verified it. Any configured virtual currency or
     /// entitlement has already been granted by the time this outcome is reported.
-    public final class Rewarded: CheckpointAdOutcome {
+    public final class Rewarded: CheckpointAdOutcome, @unchecked Sendable {
 
         /// The primary verified reward. Can be ``AdReward/noReward`` when verification succeeded but the
         /// ad unit has no reward configured.
@@ -144,7 +144,7 @@ public class CheckpointAdOutcome: CustomStringConvertible {
     /// The customer earned the ad's reward, but RevenueCat could not verify it, so nothing was granted.
     ///
     /// Unlike ``Failed``, the ad was shown in full; presenting another ad is not an appropriate recovery.
-    public final class RewardVerificationFailed: CheckpointAdOutcome {
+    public final class RewardVerificationFailed: CheckpointAdOutcome, @unchecked Sendable {
 
         static let shared = RewardVerificationFailed()
 
@@ -155,7 +155,7 @@ public class CheckpointAdOutcome: CustomStringConvertible {
     }
 
     /// The ad could not be shown, for example because it failed to load or the mediator had no fill.
-    public final class Failed: CheckpointAdOutcome {
+    public final class Failed: CheckpointAdOutcome, @unchecked Sendable {
 
         /// The error that prevented the ad from being shown.
         public let error: PublicError
@@ -167,6 +167,26 @@ public class CheckpointAdOutcome: CustomStringConvertible {
 
         public override var description: String { return "Failed(error=\(self.error))" }
 
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension CheckpointAdOutcome: Equatable {
+
+    public static func == (lhs: CheckpointAdOutcome, rhs: CheckpointAdOutcome) -> Bool {
+        switch (lhs, rhs) {
+        case (is Shown, is Shown):
+            return true
+        case let (lhs as Rewarded, rhs as Rewarded):
+            return lhs.reward == rhs.reward && lhs.moreRewards == rhs.moreRewards
+        case (is RewardVerificationFailed, is RewardVerificationFailed):
+            return true
+        case let (lhs as Failed, rhs as Failed):
+            return lhs.error == rhs.error
+        default:
+            return false
+        }
     }
 
 }
