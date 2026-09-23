@@ -12,7 +12,11 @@ import RevenueCatUI
 extension E2ETestFlowView {
     struct OpenWorkflow: View {
 
-        static let offeringIdentifier = "default_workflows"
+        /// A launch-argument override lets Maestro target isolated workflow fixtures without
+        /// coupling those tests to the default workflow's dashboard configuration.
+        static var offeringIdentifier: String {
+            return UserDefaults.standard.string(forKey: "workflow_offering_identifier") ?? "default_workflows"
+        }
 
         /// Custom paywall variable overrides read from a launch argument (used by E2E tests). Empty when
         /// `custom_users_count` is not provided, so the workflow renders the dashboard default value.

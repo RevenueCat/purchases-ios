@@ -44,6 +44,8 @@ import UIKit
 // swiftlint:disable:next type_body_length
 public class PaywallViewController: UIViewController {
 
+    private(set) var workflowDismissalReason: WorkflowDismissalReason = .close
+
     /// See ``PaywallViewControllerDelegate`` for receiving purchase events.
     @objc public final weak var delegate: PaywallViewControllerDelegate?
 
@@ -112,6 +114,9 @@ public class PaywallViewController: UIViewController {
     /// The prefetched exit offer, loaded while the main paywall is showing.
     private var exitOfferOffering: Offering?
 
+    /// Whether this controller resolves and presents exit offers.
+    private var shouldDisplayExitOffers = true
+
     /// Whether the embedded workflow paywall has reported its own exit offer at least once
     /// (even a `nil` one) for the current render, so a slower legacy `prefetchExitOffer` knows
     /// not to overwrite it.
@@ -139,6 +144,12 @@ public class PaywallViewController: UIViewController {
 
     func simulateWorkflowPresentationError(_ error: NSError) {
         self.configuration.workflowPresentationErrorHandler?(error)
+    }
+
+    /// Prevents this controller from resolving or presenting exit offers.
+    func disableExitOffers() {
+        self.shouldDisplayExitOffers = false
+        self.exitOfferOffering = nil
     }
 
     /// Whether we're currently showing an exit offer (to prevent multiple presentations).
@@ -384,6 +395,8 @@ public class PaywallViewController: UIViewController {
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
+        guard self.shouldDisplayExitOffers else { return }
+
         // Set ourselves as the presentation controller delegate to intercept swipe-to-dismiss
         // for exit offer support. We store any existing delegate to forward calls to it.
         // Important: Only capture the original delegate if it's not self to prevent infinite recursion
@@ -485,6 +498,7 @@ public class PaywallViewController: UIViewController {
     /// paywall on a workflow-fetch failure, and that fallback still needs an exit offer.
     @MainActor
     private func prefetchExitOffer() async {
+        guard self.shouldDisplayExitOffers else { return }
         guard let offering = await self.purchaseHandler.resolveOffering(for: self.configuration.content) else {
             return
         }
@@ -503,6 +517,7 @@ public class PaywallViewController: UIViewController {
     /// exit-offer resolution to key off the single resolved paywall render instead of a separate,
     /// independently-timed prefetch; tracked as a follow-up rather than solved here.
     private func applyOfferingBasedExitOffer(_ offering: Offering?) {
+        guard self.shouldDisplayExitOffers else { return }
         guard !self.hasReceivedWorkflowExitOfferUpdate else { return }
         self.exitOfferOffering = offering
     }
@@ -521,6 +536,7 @@ public class PaywallViewController: UIViewController {
     /// Feeds the embedded workflow paywall's exit offer into `exitOfferOffering` so swipe/close can
     /// surface it. Render-dependent, so verified manually like `prefetchExitOffer`.
     private func updateWorkflowExitOffer(_ offering: Offering?) {
+        guard self.shouldDisplayExitOffers else { return }
         // The offering-based prefetch owns the offer when workflows are off; leave it alone.
         guard self.remoteConfigEnabled else { return }
 
@@ -909,6 +925,9 @@ private extension PaywallViewController {
                 self.delegate?.paywallViewController?(self, didFailRestoringWith: error)
             },
             requestedDismissal: onRequestedDismissal,
+            onWorkflowDismissal: { [weak self] reason in
+                self?.workflowDismissalReason = reason
+            },
             onSizeChange: { [weak self] in
                 guard let self else { return }
                 self.delegate?.paywallViewController?(self, didChangeSizeTo: $0)
@@ -1041,6 +1060,7 @@ private struct PaywallContainerView: View {
     let restoreStarted: RestoreStartedHandler
     let restoreFailure: PurchaseFailureHandler
     let requestedDismissal: () -> Void
+    let onWorkflowDismissal: (WorkflowDismissalReason) -> Void
 
     let onSizeChange: (CGSize) -> Void
 
@@ -1065,6 +1085,7 @@ private struct PaywallContainerView: View {
             .onRestoreFailure(self.restoreFailure)
             .onSizeChange(self.onSizeChange)
             .onRequestedDismissal(self.requestedDismissal)
+            .environment(\.workflowDismissalObserver, self.onWorkflowDismissal)
             .onPurchaseInitiated { package, resumeAction in
                 self.purchaseInitiated(package) { shouldProceed in
                     Task { @MainActor in

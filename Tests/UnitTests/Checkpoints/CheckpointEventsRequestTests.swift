@@ -36,9 +36,14 @@ class CheckpointEventsRequestTests: TestCase {
         expect(request.version) == 1
         expect(request.type) == "checkpoint_hit"
         expect(request.identifier) == "onboarding_complete"
+        expect(request.checkpointType) == "custom"
         expect(request.appUserID) == Self.userID
         expect(request.appSessionID) == Self.appSessionID.uuidString
         expect(request.timestamp) == self.date.millisecondsSince1970
+        expect(request.result) == "present_ui"
+        expect(request.workflowID) == "wf_123"
+        expect(request.offeringID) == "offering_id"
+        expect(request.checkpointRuleID) == "rule_123"
     }
 
     func testKhepriCompatibleShape() throws {
@@ -48,9 +53,55 @@ class CheckpointEventsRequestTests: TestCase {
         expect(json).to(contain("\"version\":1"))
         expect(json).to(contain("\"type\":\"checkpoint_hit\""))
         expect(json).to(contain("\"identifier\":\"onboarding_complete\""))
+        expect(json).to(contain("\"checkpoint_type\":\"custom\""))
         expect(json).to(contain("\"app_user_id\":\"\(Self.userID)\""))
         expect(json).to(contain("\"app_session_id\":\"\(Self.appSessionID.uuidString)\""))
         expect(json).to(contain("\"timestamp\":\(self.date.millisecondsSince1970)"))
+        expect(json).to(contain("\"result\":\"present_ui\""))
+        expect(json).to(contain("\"workflow_id\":\"wf_123\""))
+        expect(json).to(contain("\"offering_id\":\"offering_id\""))
+        expect(json).to(contain("\"checkpoint_rule_id\":\"rule_123\""))
+    }
+
+    func testEachResultIsEncodedWithItsWireValue() throws {
+        let expected: [CheckpointHitResult: String] = [
+            .presentUI: "present_ui",
+            .returnData: "return_data",
+            .noMatch: "no_match",
+            .configurationUnavailable: "configuration_unavailable",
+            .unknownCheckpoint: "unknown_checkpoint"
+        ]
+
+        for (result, wireValue) in expected {
+            let json = try self.encodedJSON(data: .init(id: self.id,
+                                                        identifier: "onboarding_complete",
+                                                        date: self.date,
+                                                        result: result))
+
+            expect(json).to(contain("\"result\":\"\(wireValue)\""))
+        }
+    }
+
+    /// `workflow_id` comes back from the store as `workflowId`, so without explicit coding keys the ids
+    /// decode as nil and the hit reaches the backend with no outcome.
+    func testOutcomeIdsSurviveTheStoreRoundTrip() throws {
+        let request = try XCTUnwrap(FeatureEventsRequest.CheckpointEvent(storedEvent: try self.storedEvent()))
+
+        expect(request.workflowID) == "wf_123"
+        expect(request.offeringID) == "offering_id"
+        expect(request.checkpointRuleID) == "rule_123"
+    }
+
+    func testOmitsIdsThatDidNotResolve() throws {
+        let json = try self.encodedJSON(data: .init(id: self.id,
+                                                    identifier: "onboarding_complete",
+                                                    date: self.date,
+                                                    result: .noMatch))
+
+        expect(json).to(contain("\"result\":\"no_match\""))
+        expect(json).toNot(contain("workflow_id"))
+        expect(json).toNot(contain("offering_id"))
+        expect(json).toNot(contain("checkpoint_rule_id"))
     }
 
     /// khepri discriminates the events union on `type`, so nothing downstream reads a `discriminator` key.
@@ -67,7 +118,7 @@ class CheckpointEventsRequestTests: TestCase {
     }
 
     func testReturnsNilForNonCheckpointStoredEvent() throws {
-        let event = CheckpointEvent.hit(.init(id: self.id, identifier: "onboarding_complete", date: self.date))
+        let event = CheckpointEvent.hit(self.resolvedData)
         let stored = try XCTUnwrap(StoredFeatureEvent(
             event: event,
             userID: Self.userID,
@@ -81,9 +132,20 @@ class CheckpointEventsRequestTests: TestCase {
 
     // MARK: - Helpers
 
-    private func storedEvent(appSessionID: UUID? = CheckpointEventsRequestTests.appSessionID) throws
+    private var resolvedData: CheckpointEvent.Data {
+        .init(id: self.id,
+              identifier: "onboarding_complete",
+              date: self.date,
+              result: .presentUI,
+              workflowID: "wf_123",
+              offeringID: "offering_id",
+              checkpointRuleID: "rule_123")
+    }
+
+    private func storedEvent(appSessionID: UUID? = CheckpointEventsRequestTests.appSessionID,
+                             data: CheckpointEvent.Data? = nil) throws
     -> StoredFeatureEvent {
-        let event = CheckpointEvent.hit(.init(id: self.id, identifier: "onboarding_complete", date: self.date))
+        let event = CheckpointEvent.hit(data ?? self.resolvedData)
 
         return try XCTUnwrap(StoredFeatureEvent(
             event: event,
@@ -94,8 +156,8 @@ class CheckpointEventsRequestTests: TestCase {
         ))
     }
 
-    private func encodedJSON() throws -> String {
-        let stored = try self.storedEvent()
+    private func encodedJSON(data: CheckpointEvent.Data? = nil) throws -> String {
+        let stored = try self.storedEvent(data: data)
         let request = try XCTUnwrap(FeatureEventsRequest.CheckpointEvent(storedEvent: stored))
         let encoder = JSONEncoder()
         encoder.outputFormatting = .sortedKeys

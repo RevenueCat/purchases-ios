@@ -23,6 +23,9 @@ let project = Project(
             sources: [
                 "../../Tests/TestingApps/PaywallFixtures/**/*.swift"
             ],
+            resources: [
+                "../../Tests/TestingApps/PaywallFixtures/Resources/**"
+            ],
             dependencies: [
                 .revenueCat,
                 .revenueCatUI

@@ -38,6 +38,7 @@ class RedeemWebPurchaseAPI {
         )
 
         let callback = CustomerInfoCallback(cacheKey: factory.cacheKey,
+                                            appUserID: appUserID,
                                             source: PostRedeemWebPurchaseOperation.self,
                                             completion: completion)
         let cacheStatus = self.redeemWebPurchaseResponseCallbacksCache.add(callback)

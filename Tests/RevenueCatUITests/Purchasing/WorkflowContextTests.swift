@@ -12,6 +12,7 @@
 import Nimble
 @_spi(Internal) @testable import RevenueCat
 @_spi(Internal) @testable import RevenueCatUI
+import SwiftUI
 import XCTest
 
 #if !os(tvOS) // For Paywalls V2
@@ -157,6 +158,141 @@ final class WorkflowContextTests: TestCase {
 
         expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_annual"
         expect(context.packageContext(for: "step_terminal")?.selectedPackage.identifier) == "$rc_annual"
+    }
+
+    // MARK: - Sheet packages and relative discounts
+
+    @MainActor
+    func testRelativeDiscountIncludesPackagesInViewAllPlansSheet() throws {
+        let context = try Self.makeSheetContext()
+        let input = WorkflowPaywallView.buildPackageInput(
+            stepId: "paywall", context: context, preferredPackage: nil, showZeroDecimalPlacePrices: true
+        )
+
+        expect(input.packageContext.package?.identifier) == "$rc_annual"
+        expect(input.packageContext.variableContext.mostExpensivePricePerMonth) == 14.99
+        expect(try Self.discountText(context: input.packageContext)) == "56%"
+    }
+
+    @MainActor
+    func testPackagelessStepInheritsDiscountBaselineFromSheet() throws {
+        let context = try Self.makeSheetContext()
+        let input = WorkflowPaywallView.buildPackageInput(
+            stepId: "intro", context: context, preferredPackage: nil, showZeroDecimalPlacePrices: true
+        )
+
+        expect(try Self.discountText(context: input.packageContext)) == "56%"
+    }
+
+    @MainActor
+    func testSheetDefaultDoesNotOverridePageDefault() throws {
+        let context = try Self.makeSheetContext(footer: [
+            Self.sheetButton([.stack(.init(components: [Self.packageComponent("$rc_monthly", isDefault: true)]))]),
+            Self.packageComponent("$rc_annual", isDefault: true)
+        ])
+        let input = WorkflowPaywallView.buildPackageInput(
+            stepId: "paywall", context: context, preferredPackage: nil, showZeroDecimalPlacePrices: true
+        )
+
+        expect(input.packageContext.package?.identifier) == "$rc_annual"
+        expect(try Self.discountText(context: input.packageContext)) == "56%"
+    }
+
+    func testSheetDefaultDoesNotOverrideFirstPagePackageWhenPageHasNoDefault() throws {
+        let context = try Self.makeSheetContext(footer: [
+            Self.sheetButton([Self.packageComponent("$rc_monthly", isDefault: true)]),
+            Self.packageComponent("$rc_annual")
+        ])
+
+        expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_annual"
+    }
+
+    @MainActor
+    func testSheetOnlyPaywallUsesSheetDefaultAndDiscountBaseline() throws {
+        let context = try Self.makeSheetContext(footer: [
+            Self.sheetButton([
+                Self.packageComponent("$rc_monthly"),
+                Self.packageComponent("$rc_annual", isDefault: true)
+            ])
+        ])
+        let input = WorkflowPaywallView.buildPackageInput(
+            stepId: "paywall", context: context, preferredPackage: nil, showZeroDecimalPlacePrices: true
+        )
+
+        expect(input.packageContext.package?.identifier) == "$rc_annual"
+        expect(try Self.discountText(context: input.packageContext)) == "56%"
+    }
+
+    @MainActor
+    func testPreferredMonthlySheetPackageHasNoRelativeDiscount() throws {
+        let context = try Self.makeSheetContext()
+        let monthly = try XCTUnwrap(context.initialOffering.monthly)
+        let input = WorkflowPaywallView.buildPackageInput(
+            stepId: "intro", context: context, preferredPackage: monthly, showZeroDecimalPlacePrices: true
+        )
+
+        expect(input.packageContext.package?.identifier) == "$rc_monthly"
+        expect(try Self.discountText(context: input.packageContext)) == ""
+    }
+
+    func testCollectsSheetInsidePackageStack() throws {
+        let annual = Self.packageComponent(
+            "$rc_annual", isDefault: true, children: [Self.sheetButton([Self.packageComponent("$rc_monthly")])]
+        )
+        let context = try Self.makeSheetContext(footer: [annual])
+
+        expect(context.packageContext(for: "paywall")?.packages.map(\.identifier))
+            .to(contain("$rc_annual", "$rc_monthly"))
+        expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_annual"
+    }
+
+    func testDuplicateSheetPackagePreservesFirstPromoOfferCode() throws {
+        let context = try Self.makeSheetContext(footer: [
+            Self.packageComponent("$rc_annual", isDefault: true, promoCode: "annual_promo"),
+            Self.sheetButton([Self.packageComponent("$rc_annual", promoCode: "sheet_promo")])
+        ])
+
+        expect(context.packageContext(for: "paywall")?.promoOfferCodesByPackageId["$rc_annual"]) == "annual_promo"
+    }
+
+    func testDuplicateSheetPackageFillsMissingPromoOfferCode() throws {
+        let context = try Self.makeSheetContext(footer: [
+            Self.packageComponent("$rc_annual", isDefault: true),
+            Self.sheetButton([Self.packageComponent("$rc_annual", promoCode: "sheet_promo")])
+        ])
+
+        expect(context.packageContext(for: "paywall")?.promoOfferCodesByPackageId["$rc_annual"]) == "sheet_promo"
+    }
+
+    func testCollectsPackagesInButtonContentWithoutSheetDestination() throws {
+        let button = PaywallComponent.button(.init(
+            action: .navigateBack,
+            stack: .init(components: [Self.packageComponent("$rc_monthly", isDefault: true)])
+        ))
+        let context = try Self.makeSheetContext(footer: [button])
+
+        expect(context.workflowPackageContext?.packages.map(\.identifier)) == ["$rc_monthly"]
+    }
+
+    func testCollectsPackagesInHeader() throws {
+        let context = try Self.makeSheetContext(
+            footer: [Self.packageComponent("$rc_annual", isDefault: true)],
+            header: .init(stack: .init(components: [Self.packageComponent("$rc_monthly")]))
+        )
+
+        expect(context.workflowPackageContext?.packages.map(\.identifier)).to(contain("$rc_monthly", "$rc_annual"))
+        expect(context.workflowPackageContext?.selectedPackage.identifier) == "$rc_annual"
+    }
+
+    @MainActor
+    func testAnnualOnlyPaywallDoesNotUseUnshownOfferingPackagesForDiscount() throws {
+        let context = try Self.makeSheetContext(footer: [Self.packageComponent("$rc_annual", isDefault: true)])
+        let input = WorkflowPaywallView.buildPackageInput(
+            stepId: "paywall", context: context, preferredPackage: nil, showZeroDecimalPlacePrices: true
+        )
+
+        expect(input.effectiveWorkflowPackageContext?.packages.map(\.identifier)) == ["$rc_annual"]
+        expect(try Self.discountText(context: input.packageContext)) == ""
     }
 
     // MARK: - effectivePackageContext(for:preferring: nil)
@@ -508,6 +644,111 @@ final class WorkflowContextTests: TestCase {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension WorkflowContextTests {
+
+    static func packageComponent(
+        _ identifier: String,
+        isDefault: Bool = false,
+        promoCode: String? = nil,
+        children: [PaywallComponent] = []
+    ) -> PaywallComponent {
+        return .package(.init(
+            packageID: identifier,
+            isSelectedByDefault: isDefault,
+            applePromoOfferProductCode: promoCode,
+            stack: .init(components: children)
+        ))
+    }
+
+    static func sheetButton(_ components: [PaywallComponent]) -> PaywallComponent {
+        return .button(.init(
+            action: .navigateTo(destination: .sheet(sheet: .init(
+                id: "all_plans", name: nil, stack: .init(components: components), backgroundBlur: false, size: nil
+            ))),
+            stack: .init(components: [])
+        ))
+    }
+
+    static func makeSheetContext(
+        footer: [PaywallComponent]? = nil,
+        header: PaywallComponent.HeaderComponent? = nil
+    ) throws -> WorkflowContext {
+        let products: [(PackageType, Decimal, SubscriptionPeriod)] = [
+            (.annual, 79.99, .init(value: 1, unit: .year)),
+            (.threeMonth, 34.99, .init(value: 3, unit: .month)),
+            (.monthly, 14.99, .init(value: 1, unit: .month))
+        ]
+        let packages = products.map { type, price, period in
+            Package(
+                identifier: type.identifier,
+                packageType: type,
+                storeProduct: TestStoreProduct(
+                    localizedTitle: type.identifier, price: price, currencyCode: "USD",
+                    localizedPriceString: "$\(price)", productIdentifier: type.identifier,
+                    productType: .autoRenewableSubscription, localizedDescription: "",
+                    subscriptionPeriod: period, locale: Locale(identifier: "en_US")
+                ).toStoreProduct(),
+                offeringIdentifier: "offering_test", webCheckoutUrl: nil
+            )
+        }
+        let offering = Offering(
+            identifier: "offering_test", serverDescription: "Test", metadata: [:],
+            paywall: nil, availablePackages: packages, webCheckoutUrl: nil
+        )
+        let screen = WorkflowScreen(
+            name: nil, templateName: "test", assetBaseURL: try XCTUnwrap(URL(string: "https://example.com")),
+            componentsConfig: .init(base: .init(
+                stack: .init(components: []),
+                header: header,
+                stickyFooter: .init(stack: .init(components: footer ?? [
+                    Self.packageComponent("$rc_annual", isDefault: true),
+                    Self.sheetButton([
+                        Self.packageComponent("$rc_annual"),
+                        Self.packageComponent("$rc_three_month"),
+                        Self.packageComponent("$rc_monthly")
+                    ])
+                ])),
+                background: .color(.init(light: .hex("#FFFFFF")))
+            )),
+            componentsLocalizations: [:], defaultLocale: "en_US", offeringIdentifier: offering.identifier
+        )
+        let workflow = PublishedWorkflow(
+            id: "wf_test", displayName: "Test", initialStepId: "intro", singleStepFallbackId: "paywall",
+            steps: [
+                "intro": .init(id: "intro", type: "screen", screenId: nil),
+                "paywall": .init(id: "paywall", type: "screen", screenId: "screen")
+            ],
+            screens: ["screen": screen]
+        )
+        var uiConfig = UIConfig.empty
+        uiConfig.localizations = ["en_US": ["percent": "%d%%"]]
+        return WorkflowContext(
+            workflow: workflow, uiConfig: uiConfig, allOfferings: Self.makeOfferings(offering),
+            initialOffering: offering, presentedOfferingContext: nil
+        )
+    }
+
+    @MainActor
+    static func discountText(context: PackageContext) throws -> String {
+        var uiConfig = UIConfig.empty
+        uiConfig.localizations = ["en_US": ["percent": "%d%%"]]
+        let viewModel = try TextComponentViewModel(
+            localizationProvider: .init(
+                locale: Locale(identifier: "en_US"),
+                localizedStrings: ["discount": .string("{{ product.relative_discount }}")]
+            ),
+            uiConfigProvider: .init(uiConfig: uiConfig),
+            component: .init(text: "discount", color: .init(light: .hex("#000000")))
+        )
+        var result: String?
+        _ = viewModel.styles(
+            state: .default, condition: .compact, selectedPackageId: context.package?.identifier,
+            packageContext: context, isEligibleForIntroOffer: false, promoOffer: nil
+        ) { style -> EmptyView in
+            result = style.text
+            return EmptyView()
+        }
+        return try XCTUnwrap(result)
+    }
 
     static func makeOfferings(_ offering: Offering) -> Offerings {
         return self.makeOfferings([offering])

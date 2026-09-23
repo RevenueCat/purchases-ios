@@ -26,7 +26,7 @@ final class WorkflowPaywallViewTests: TestCase {
             hasPurchasedInSession: true
         )
 
-        expect(action) == .dismissWorkflow
+        expect(action) == .dismissWorkflow(.close)
     }
 
     func testDismissalActionNavigatesBackWhenPurchaseHasNotCompleted() {
@@ -44,7 +44,7 @@ final class WorkflowPaywallViewTests: TestCase {
             hasPurchasedInSession: false
         )
 
-        expect(action) == .dismissWorkflow
+        expect(action) == .dismissWorkflow(.close)
     }
 
     func testDismissalActionDismissesWorkflowAtRootStepAfterPurchase() {
@@ -53,7 +53,37 @@ final class WorkflowPaywallViewTests: TestCase {
             hasPurchasedInSession: true
         )
 
-        expect(action) == .dismissWorkflow
+        expect(action) == .dismissWorkflow(.close)
+    }
+
+    func testDismissalActionNavigatesWithinWorkflowWhenNavigatingBackFromADeeperStep() {
+        let action = WorkflowPaywallView.dismissalAction(
+            canNavigateBack: true,
+            hasPurchasedInSession: false,
+            dismissalReason: .navigatedBack
+        )
+
+        expect(action) == .navigateBack
+    }
+
+    func testDismissalActionDismissesAsNavigatedBackAtInitialStep() {
+        let action = WorkflowPaywallView.dismissalAction(
+            canNavigateBack: false,
+            hasPurchasedInSession: false,
+            dismissalReason: .navigatedBack
+        )
+
+        expect(action) == .dismissWorkflow(.navigatedBack)
+    }
+
+    func testDismissalActionDismissesNormallyAfterPurchaseWhenNavigatingBackFromInitialStep() {
+        let action = WorkflowPaywallView.dismissalAction(
+            canNavigateBack: false,
+            hasPurchasedInSession: true,
+            dismissalReason: .navigatedBack
+        )
+
+        expect(action) == .dismissWorkflow(.close)
     }
 
     func testHasCompletedInSessionTrueAfterPurchase() {
@@ -1084,8 +1114,7 @@ extension WorkflowPaywallViewTests {
 
     @MainActor
     func testOnWebCheckoutOpenedFiredInWorkflow() throws {
-        // PaywallsV2View must publish WebCheckoutOpenedPreferenceKey like the other preferences, or
-        // this never fires for V2 full-screen paywalls, the only surface with web checkout buttons.
+        // The workflow owns event delivery above its retained V2 pages.
         let purchaseHandler: PurchaseHandler = .mock()
         let context = try Self.makeContext(singleStepFallbackId: "step_terminal")
         var fireCount = 0
@@ -1097,6 +1126,43 @@ extension WorkflowPaywallViewTests {
         purchaseHandler.signalWebCheckoutOpened()
 
         expect(fireCount).toEventually(equal(1))
+    }
+
+    @MainActor
+    func testURLEventsSurviveImmediateResetInNestedWorkflowPaywall() throws {
+        let purchaseHandler: PurchaseHandler = .mock()
+        let context = try Self.makeContext(singleStepFallbackId: "step_terminal")
+        var configuration = PaywallViewConfiguration(
+            offering: context.initialOffering,
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: purchaseHandler
+        )
+        configuration.injectedWorkflowContext = context
+        let urls: Atomic<[URL]> = .init([])
+        let checkoutCount: Atomic<Int> = .init(0)
+        let view = PaywallView(configuration: configuration)
+            .onURLOpened { url in urls.modify { $0.append(url) } }
+            .onWebCheckoutOpened { checkoutCount.modify { $0 += 1 } }
+        let controller = UIHostingController(rootView: view)
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+        controller.view.layoutIfNeeded()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+        defer {
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+
+        let url = URL(string: "https://revenuecat.com/terms")!
+        purchaseHandler.signalURLOpened(url)
+        purchaseHandler.signalWebCheckoutOpened()
+        purchaseHandler.resetForNewSession()
+        purchaseHandler.signalURLOpened(url)
+        purchaseHandler.signalWebCheckoutOpened()
+
+        expect(urls.value) == [url, url]
+        expect(checkoutCount.value) == 2
     }
 
     @MainActor

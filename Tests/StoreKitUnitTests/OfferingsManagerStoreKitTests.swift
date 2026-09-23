@@ -60,6 +60,7 @@ extension OfferingsManagerStoreKitTests {
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testInvalidateAndReFetchCachedOfferingsAfterStorefrontChanges() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try AvailabilityChecks.switchingStorefrontWithSKTestWorksOrSkipTest()
 
         mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
         var fetchedStoreProduct = try await fetchSk2StoreProduct()

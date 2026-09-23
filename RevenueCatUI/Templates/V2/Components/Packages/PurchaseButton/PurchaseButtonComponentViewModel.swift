@@ -74,7 +74,7 @@ class PurchaseButtonComponentViewModel {
         }
 
         switch method {
-        case .inAppCheckout, .unknown:
+        case .inAppCheckout, .hostedWebCheckout, .unknown:
             return nil
         case .webCheckout(let webCheckout):
             if let checkoutUrl = packageContext?.package?.webCheckoutUrl ?? offering.webCheckoutUrl {
