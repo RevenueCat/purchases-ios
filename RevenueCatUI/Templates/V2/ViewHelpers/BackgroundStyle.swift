@@ -31,9 +31,6 @@ struct BackgroundStyleModifier: ViewModifier {
     @Environment(\.colorScheme)
     var colorScheme
 
-    @Environment(\.paywallImagesAccessibilityHidden)
-    var imagesAccessibilityHidden
-
     @State var size: CGSize?
 
     var backgroundStyle: BackgroundStyle?
@@ -47,8 +44,7 @@ struct BackgroundStyleModifier: ViewModifier {
                     backgroundStyle: backgroundStyle,
                     colorScheme: colorScheme,
                     alignment: alignment,
-                    size: size,
-                    imagesAccessibilityHidden: imagesAccessibilityHidden ?? false
+                    size: size
                 )
         } else {
             content
@@ -65,8 +61,7 @@ fileprivate extension View {
         backgroundStyle: BackgroundStyle,
         colorScheme: ColorScheme,
         alignment: Alignment,
-        size: CGSize? = nil,
-        imagesAccessibilityHidden: Bool = false
+        size: CGSize? = nil
     ) -> some View {
         switch backgroundStyle {
         case .color(let color):
@@ -108,7 +103,7 @@ fileprivate extension View {
                 // The mask clips drawing only, so a "fill" image overflowing its container would
                 // still swallow taps on the components it overlaps.
                 .allowsHitTesting(false)
-                .paywallDecorativeMedia(hidden: imagesAccessibilityHidden)
+                .paywallDecorativeMedia()
             }
         case let .video(viewModel, colorOverlay):
             self.background(alignment: alignment) {

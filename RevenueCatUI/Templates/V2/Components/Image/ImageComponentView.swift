@@ -55,9 +55,6 @@ struct ImageComponentView: View {
     @Environment(\.componentViewState)
     private var componentViewState
 
-    @Environment(\.paywallImagesAccessibilityHidden)
-    private var imagesAccessibilityHidden
-
     @Environment(\.screenCondition)
     private var screenCondition
 
@@ -201,7 +198,7 @@ struct ImageComponentView: View {
                     }
                 }
                 // On the decorated result, so it covers the sizing and shaping wrappers too.
-                .paywallDecorativeMedia(hidden: self.imagesAccessibilityHidden ?? true)
+                .paywallDecorativeMedia()
             }
         }
     }

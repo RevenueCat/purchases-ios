@@ -51,9 +51,6 @@ struct IconComponentView: View {
     @Environment(\.paywallStateDefaults)
     private var paywallStateDefaults
 
-    @Environment(\.paywallIconsAccessibilityHidden)
-    private var iconsAccessibilityHidden
-
     let viewModel: IconComponentViewModel
 
     var body: some View {
@@ -91,7 +88,7 @@ struct IconComponentView: View {
                         shape: style.iconBackgroundShape?.toInsettableShape())
                 .size(style.size)
                 .padding(style.margin)
-                .paywallDecorativeMedia(hidden: self.iconsAccessibilityHidden)
+                .paywallDecorativeMedia()
             }
         }
     }

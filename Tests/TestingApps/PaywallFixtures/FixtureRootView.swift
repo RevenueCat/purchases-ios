@@ -86,17 +86,8 @@ struct FixturePaywallView: View {
         ProcessInfo.processInfo.environment["PAYWALL_VOICE_OVER"] == "1" ? true : nil
     }
 
-    /// Only applied when requested: passing `false` is an opt-in to announcements, not the default.
-    private var hidesImages: Bool {
-        ProcessInfo.processInfo.environment["PAYWALL_HIDE_IMAGES"] == "1"
-    }
-
-    private var hidesIcons: Bool {
-        ProcessInfo.processInfo.environment["PAYWALL_HIDE_ICONS"] == "1"
-    }
-
     var body: some View {
-        let paywall = PaywallView(
+        PaywallView(
             offering: self.fixture.offering,
             introEligibility: Self.eligibility,
             simulatePromoEligible: true,
@@ -104,13 +95,6 @@ struct FixturePaywallView: View {
             performRestore: { (success: false, error: nil) }
         )
         .environment(\.voiceOverEnabledOverride, self.pretendsVoiceOverIsRunning)
-        .paywallIconsAccessibilityHidden(self.hidesIcons)
-
-        if self.hidesImages {
-            paywall.paywallImagesAccessibilityHidden()
-        } else {
-            paywall
-        }
     }
 
 }

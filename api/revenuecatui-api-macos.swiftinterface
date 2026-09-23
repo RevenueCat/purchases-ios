@@ -146,13 +146,6 @@ extension RevenueCatUI.ResumeAction {
 }
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension SwiftUICore.View {
-  @_Concurrency.MainActor @preconcurrency public func paywallImagesAccessibilityHidden(_ hidden: Swift.Bool = true) -> some SwiftUICore.View
-  
-  @_Concurrency.MainActor @preconcurrency public func paywallIconsAccessibilityHidden(_ hidden: Swift.Bool = true) -> some SwiftUICore.View
-  
-}
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension SwiftUICore.View {
   @inlinable @_Concurrency.MainActor @preconcurrency internal func onChangeOf<V>(_ value: V, perform action: @escaping (_ newValue: V) -> Swift.Void) -> some SwiftUICore.View where V : Swift.Equatable {
          
          
