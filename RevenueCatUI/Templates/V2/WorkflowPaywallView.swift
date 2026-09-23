@@ -452,11 +452,6 @@ struct WorkflowPaywallView: View {
                 ? nil
                 : Self.exitOfferContext(for: self.context, currentStepId: self.navigator.currentStepId)
         )
-        // Write the exit offer directly via the binding injected by PresentingPaywallModifier.
-        // This is more reliable than the preference key when the workflow is inside a sheet,
-        // since preferences don't always propagate across presentation boundaries.
-        // Must use exitOfferContext(for:currentStepId:), not context.exitOfferOffering, because
-        // exitOfferOffering is not step-aware — it is non-nil for any step whenever configured.
         // This catches dismissal paths that do not pass through a workflow failure: close button,
         // post-purchase auto-dismiss, swipe-to-dismiss on a sheet, and programmatic parent dismiss.
         // A late configuration failure tracks the same lifecycle immediately before showing its error;

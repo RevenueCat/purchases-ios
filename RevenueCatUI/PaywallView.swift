@@ -337,15 +337,23 @@ public struct PaywallView: View {
         purchaseHandler: PurchaseHandler
     ) -> some View {
 
-        if let paywallComponents = offering.internalPaywallComponents {
-            // For V2 paywalls, prefer zeroDecimalPlaceCountries from paywallComponents
-            let zeroDecimalPlaceCountries = paywallComponents.data.zeroDecimalPlaceCountries
-            let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
-                countries: zeroDecimalPlaceCountries.isEmpty
-                    ? offering.paywall?.zeroDecimalPlaceCountries
-                    : zeroDecimalPlaceCountries
-            )
+        let countries = offering.internalPaywallComponents?.data.zeroDecimalPlaceCountries ?? []
+        let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
+            countries: countries.isEmpty ? offering.paywall?.zeroDecimalPlaceCountries : countries
+        )
 
+        if let workflowContext, self.mode == .fullScreen {
+            WorkflowPaywallView(
+                context: workflowContext,
+                purchaseHandler: purchaseHandler,
+                introEligibilityChecker: checker,
+                showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+                displayCloseButton: self.displayCloseButton,
+                promoOfferCache: self.promoOfferCache,
+                onDismiss: self.dismissRequested,
+                onPresentationError: self.workflowPresentationErrorHandler
+            )
+        } else if let paywallComponents = offering.internalPaywallComponents {
             // For fallback view or footer
             let paywall: PaywallData = .createDefault(with: offering.availablePackages,
                                                       locale: purchaseHandler.preferredLocaleOverride ?? .current)
@@ -369,37 +377,20 @@ public struct PaywallView: View {
             #endif
             // Show the actually V2 paywall for full screen
             case .fullScreen:
-                if let workflowContext {
-                    WorkflowPaywallView(
-                        context: workflowContext,
-                        purchaseHandler: purchaseHandler,
-                        introEligibilityChecker: checker,
-                        showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
-                        displayCloseButton: self.displayCloseButton,
-                        promoOfferCache: self.promoOfferCache,
-                        onDismiss: self.dismissRequested,
-                        onPresentationError: self.workflowPresentationErrorHandler
-                    )
-                } else {
-                    PaywallsV2View(
-                        paywallComponents: paywallComponents,
-                        offering: offering,
-                        purchaseHandler: purchaseHandler,
-                        introEligibilityChecker: checker,
-                        showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
-                        displayCloseButton: self.displayCloseButton,
-                        onDismiss: self.dismissRequested,
-                        failedToLoadFont: self.failedToLoadFont,
-                        colorScheme: colorScheme,
-                        promoOfferCache: self.promoOfferCache
-                    )
-                }
+                PaywallsV2View(
+                    paywallComponents: paywallComponents,
+                    offering: offering,
+                    purchaseHandler: purchaseHandler,
+                    introEligibilityChecker: checker,
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+                    displayCloseButton: self.displayCloseButton,
+                    onDismiss: self.dismissRequested,
+                    failedToLoadFont: self.failedToLoadFont,
+                    colorScheme: colorScheme,
+                    promoOfferCache: self.promoOfferCache
+                )
             }
         } else {
-            let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
-                countries: offering.paywall?.zeroDecimalPlaceCountries
-            )
-
             let (paywall, displayedLocale, template, error) = offering.validatedPaywall(
                 locale: purchaseHandler.preferredLocaleOverride ?? .current
             )
