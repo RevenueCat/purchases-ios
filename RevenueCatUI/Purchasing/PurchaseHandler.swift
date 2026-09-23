@@ -305,6 +305,21 @@ extension PurchaseHandler {
         return result
     }
 
+    /// Asks the app's purchase interceptor, if it set one, whether the purchase of `package` may go ahead.
+    func shouldProceed(withPurchaseOf package: Package, interceptor: PurchaseInitiatedAction?) async -> Bool {
+        guard let interceptor else {
+            return true
+        }
+
+        return await self.withPendingPurchaseContinuation {
+            await withCheckedContinuation { continuation in
+                interceptor(package, resume: ResumeAction { shouldProceed in
+                    continuation.resume(returning: shouldProceed)
+                })
+            }
+        }
+    }
+
     /// Runs `preparation` with the paywall marked as busy, so the button the customer tapped cannot start a
     /// second trip out of the app while Apple's flow is under way.
     ///

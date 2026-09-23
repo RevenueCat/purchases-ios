@@ -142,16 +142,9 @@ struct PurchaseButtonComponentView: View {
     }
 
     private func performInAppPurchase(selectedPackage: Package) async throws {
-        // Check if there's a purchase interceptor
-        if let interceptor = self.purchaseInitiatedAction {
-            let result = await self.purchaseHandler.withPendingPurchaseContinuation {
-                await withCheckedContinuation { continuation in
-                    interceptor(selectedPackage, resume: ResumeAction { shouldProceed in
-                        continuation.resume(returning: shouldProceed)
-                    })
-                }
-            }
-            guard result else { return }
+        guard await self.purchaseHandler.shouldProceed(withPurchaseOf: selectedPackage,
+                                                       interceptor: self.purchaseInitiatedAction) else {
+            return
         }
 
         let promoOffer = self.paywallPromoOfferCache.purchasableOffer(for: selectedPackage)
@@ -181,7 +174,9 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
-        switch await HostedCheckout.start(for: selectedPackage, purchaseHandler: self.purchaseHandler) {
+        switch await HostedCheckout.start(for: selectedPackage,
+                                          purchaseHandler: self.purchaseHandler,
+                                          purchaseInitiatedAction: self.purchaseInitiatedAction) {
         case let .present(session):
             self.presentHostedCheckout(session)
         case .tellCustomerTheyAlreadyOwnIt:
