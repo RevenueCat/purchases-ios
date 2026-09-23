@@ -3048,9 +3048,7 @@ private extension Purchases {
         // of purchases due to pop-ups stealing focus from the app.
         let appUserID = self.appUserID
         // Cached CustomerInfo confirms that the customer exists server-side, so attributes can sync immediately.
-        let customerInfoIsAvailable = (try? self.customerInfoManager.cachedCustomerInfo(
-            appUserID: appUserID
-        )) != nil
+        let customerInfoIsAvailable = self.hasCachedCustomerInfo(for: appUserID)
         // Otherwise, wait for the existing foreground refresh to create the customer before syncing attributes.
         let customerInfoCompletion: CustomerInfoManager.CustomerInfoCompletion?
         if customerInfoIsAvailable {
@@ -3132,9 +3130,13 @@ private extension Purchases {
     private func dispatchSyncSubscriberAttributesIfCustomerInfoAvailable() {
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         // Ensure the customer is created server-side before syncing attributes.
-        guard (try? self.customerInfoManager.cachedCustomerInfo(appUserID: self.appUserID)) != nil else { return }
+        guard self.hasCachedCustomerInfo(for: self.appUserID) else { return }
         self.dispatchSyncSubscriberAttributes()
         #endif
+    }
+
+    private func hasCachedCustomerInfo(for appUserID: String) -> Bool {
+        return (try? self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)) != nil
     }
 
     private func performInitialForegroundSetup() {
