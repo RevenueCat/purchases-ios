@@ -36,12 +36,21 @@ class SDKSettingsConfigProviderTests: TestCase {
         let settings = await self.provider.settings()
 
         expect(settings) == SDKSettings()
+        expect(settings.diagnostics.enabled) == false
+    }
+
+    func testDecodesDiagnosticsEnabled() async {
+        self.manager.stubbedTopics[.sdkSettings] = [
+            "default": .init(content: ["diagnostics": ["enabled": true]])
+        ]
+
+        let settings = await self.provider.settings()
+
+        expect(settings.diagnostics.enabled) == true
     }
 
     func testIgnoresUnknownSettingsForForwardCompatibility() async {
-        self.manager.stubbedTopics[.sdkSettings] = [
-            "default": .init(content: ["future_setting": true])
-        ]
+        self.manager.stubbedTopics[.sdkSettings] = ["default": .init(content: ["future_setting": true])]
 
         let settings = await self.provider.settings()
 
