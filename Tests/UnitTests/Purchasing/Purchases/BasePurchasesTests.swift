@@ -115,6 +115,7 @@ class BasePurchasesTests: TestCase {
                                                        transactionFetcher: self.mockTransactionFetcher,
                                                        transactionPoster: self.transactionPoster,
                                                        systemInfo: self.systemInfo)
+        self.customerInfoManager.currentUserProvider = self.identityManager
         self.mockOfferingsManager = MockOfferingsManager(deviceCache: self.deviceCache,
                                                          operationDispatcher: self.mockOperationDispatcher,
                                                          systemInfo: self.systemInfo,
@@ -280,7 +281,8 @@ class BasePurchasesTests: TestCase {
         withDelegate: Bool = true,
         checkpointResolver: CheckpointWorkflowResolver = DisabledCheckpointWorkflowResolver(),
         dateProvider: DateProvider = DateProvider(),
-        webBundleEventBus: WebBundleEventBus = .shared
+        webBundleEventBus: WebBundleEventBus = .shared,
+        paywallCache: PaywallCacheWarmingType? = nil
     ) {
         self.purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
@@ -347,7 +349,7 @@ class BasePurchasesTests: TestCase {
                                    systemInfo: self.systemInfo,
                                    offeringsFactory: self.offeringsFactory,
                                    deviceCache: self.deviceCache,
-                                   paywallCache: self.paywallCache,
+                                   paywallCache: paywallCache ?? self.paywallCache,
                                    identityManager: self.identityManager,
                                    tokenManager: self.tokenManager,
                                    subscriberAttributes: self.attribution,
@@ -360,7 +362,7 @@ class BasePurchasesTests: TestCase {
                                     workflowsConfigProvider: WorkflowsConfigProvider(
                                         manager: self.mockRemoteConfigManager
                                     ),
-                                    paywallCache: self.paywallCache,
+                                    paywallCache: paywallCache ?? self.paywallCache,
                                     operationDispatcher: self.mockOperationDispatcher
                                    ),
                                    remoteConfigManager: self.mockRemoteConfigManager,
@@ -593,6 +595,7 @@ extension BasePurchasesTests {
         var postedObserverMode: Bool?
         var postedInitiationSource: PostReceiptSource.InitiationSource?
         var postReceiptResult: Result<CustomerInfo, BackendError>?
+        var onPostReceipt: (() -> Void)?
         var postedAssociatedTransactionIds: [String?] = []
 
         override func post(receipt: EncodedAppleReceipt,
@@ -631,6 +634,7 @@ extension BasePurchasesTests {
             self.postedObserverMode = observerMode
             self.postedInitiationSource = postReceiptSource.initiationSource
 
+            self.onPostReceipt?()
             completion(self.postReceiptResult ?? .failure(.missingAppUserID()))
         }
 

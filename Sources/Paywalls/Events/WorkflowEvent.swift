@@ -66,9 +66,7 @@ extension WorkflowEvent {
         public var entryReason: String?
         public var isFirstStep: Bool?
         public var isLastStep: Bool?
-        public var experimentId: String?
-        public var experimentVariant: String?
-        public var isLastVariantStep: Bool?
+        public var experiment: ExperimentData?
 
         public init(
             workflowId: String,
@@ -83,9 +81,7 @@ extension WorkflowEvent {
             entryReason: String? = nil,
             isFirstStep: Bool? = nil,
             isLastStep: Bool? = nil,
-            experimentId: String? = nil,
-            experimentVariant: String? = nil,
-            isLastVariantStep: Bool? = nil
+            experiment: ExperimentData? = nil
         ) {
             self.workflowId = workflowId
             self.stepId = stepId
@@ -99,9 +95,7 @@ extension WorkflowEvent {
             self.entryReason = entryReason
             self.isFirstStep = isFirstStep
             self.isLastStep = isLastStep
-            self.experimentId = experimentId
-            self.experimentVariant = experimentVariant
-            self.isLastVariantStep = isLastVariantStep
+            self.experiment = experiment
         }
 
     }
@@ -128,6 +122,25 @@ extension WorkflowEvent {
 
 }
 
+extension WorkflowEvent {
+
+    @_spi(Internal) public struct ExperimentData {
+
+        public var experimentId: String
+        public var experimentVariant: String
+        public var workflowBlobRef: String
+
+        public init(experimentId: String, experimentVariant: String, workflowBlobRef: String) {
+            self.experimentId = experimentId
+            self.experimentVariant = experimentVariant
+            self.workflowBlobRef = workflowBlobRef
+        }
+
+    }
+
+}
+
 extension WorkflowEvent.CreationData: Equatable, Codable, Sendable {}
+extension WorkflowEvent.ExperimentData: Equatable, Codable, Sendable {}
 extension WorkflowEvent.Data: Equatable, Codable, Sendable {}
 extension WorkflowEvent: Equatable, Codable, Sendable {}

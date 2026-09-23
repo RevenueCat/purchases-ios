@@ -65,19 +65,22 @@ class ExternalPurchaseManagerTests: TestCase {
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenParameters?.purchaseType) == .linkOut
     }
 
-    // MARK: - Stopping
+    // MARK: - Outside the programme
 
-    func testMintsNothingWhenTheAppIsNotEligible() async {
+    /// Nothing is disclosed and nothing is minted, so the caller is left to take the customer where it took
+    /// them before the app had anything to do with Apple's programme.
+    func testMintsNothingAndProceedsWhenTheAppIsNotEligible() async {
         self.customLink.stubbedAvailability = .notEligible
 
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
-        expect(result) == .stopped(.notEligible)
-        expect(result.shouldProceed) == false
+        expect(result) == .notApplicable
         expect(self.customLink.invokedNoticeTypes).to(beEmpty())
         expect(self.customLink.invokedTokenTypes).to(beEmpty())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
     }
+
+    // MARK: - Stopping
 
     /// Kept apart from being ineligible: the caller has nothing to offer instead, so it must not fall back to a
     /// purchase of any kind.
@@ -87,7 +90,6 @@ class ExternalPurchaseManagerTests: TestCase {
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
         expect(result) == .stopped(.paymentsNotAuthorized)
-        expect(result.shouldProceed) == false
         expect(self.customLink.invokedNoticeTypes).to(beEmpty())
         expect(self.customLink.invokedTokenTypes).to(beEmpty())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
@@ -100,7 +102,6 @@ class ExternalPurchaseManagerTests: TestCase {
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
         expect(result) == .stopped(.customerCancelledNotice)
-        expect(result.shouldProceed) == false
         expect(self.customLink.invokedTokenTypes).to(beEmpty())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
     }
@@ -113,7 +114,6 @@ class ExternalPurchaseManagerTests: TestCase {
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
         expect(result) == .stopped(.noticeFailed)
-        expect(result.shouldProceed) == false
         expect(self.customLink.invokedTokenTypes).to(beEmpty())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
     }
@@ -128,7 +128,6 @@ class ExternalPurchaseManagerTests: TestCase {
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
         expect(result) == .registered(tokenID: try XCTUnwrap(self.postedTokenID))
-        expect(result.shouldProceed) == true
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenCount) == 1
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenParameters?.token).to(beNil())
     }
@@ -141,8 +140,6 @@ class ExternalPurchaseManagerTests: TestCase {
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
         expect(result) == .unregistered(.tokenRequestFailed)
-        expect(result.shouldProceed) == true
-        expect(result.tokenID).to(beNil())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
     }
 
@@ -154,8 +151,6 @@ class ExternalPurchaseManagerTests: TestCase {
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
         expect(result) == .unregistered(.registrationFailed)
-        expect(result.shouldProceed) == true
-        expect(result.tokenID).to(beNil())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenCount) == 1
     }
 
@@ -172,47 +167,49 @@ class ExternalPurchaseManagerTests: TestCase {
 
         let result = await self.manager.prepareExternalPurchase(flow: .linkOut)
 
-        expect(result) == .stopped(.notEligible)
+        expect(result) == .notApplicable
         expect(self.customLink.invokedAvailabilityCount) == 0
         expect(self.customLink.invokedNoticeTypes).to(beEmpty())
         expect(self.customLink.invokedTokenTypes).to(beEmpty())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
     }
 
-    /// Apps outside the programme did not try to make an external purchase, so telling them they cannot is
-    /// noise in their console.
+    /// Apps outside the programme did not try to make an external purchase, so telling them anything about
+    /// Apple's custom link is noise in their console.
     func testNothingIsLoggedWhileTheSettingIsDisabled() async {
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
         self.manager = self.makeManager()
 
         _ = await self.manager.prepareExternalPurchase(flow: .linkOut)
 
-        self.logger.verifyMessageWasNotLogged(Strings.externalPurchase.cannot_make_external_purchases,
+        self.logger.verifyMessageWasNotLogged(Strings.externalPurchase.custom_link_does_not_apply,
                                               allowNoMessages: true)
     }
 
     // MARK: - Test Store
 
-    /// A Test Store key has no App Store behind it, so none of the StoreKit steps apply. It reads as ineligible
-    /// rather than as a device that cannot pay, so the caller keeps offering its usual way to buy.
-    func testTheTestStoreIsNotEligible() async {
+    /// Eligibility follows the app's entitlement and the customer's storefront, neither of which has anything
+    /// to do with the key the SDK was configured with, so StoreKit is asked as it is for any other key.
+    func testTheTestStoreResolvesEligibilityThroughStoreKit() async {
         self.systemInfo.stubbedApiKeyValidationResult = .simulatedStore
 
         let availability = await self.manager.externalPurchaseAvailability()
 
-        expect(availability) == .notEligible
-        expect(self.customLink.invokedAvailabilityCount) == 0
+        expect(availability) == .available
+        expect(self.customLink.invokedAvailabilityCount) == 1
     }
 
-    func testTheTestStoreSkipsTheWholeSequence() async {
+    /// A Test Store key is the shortest path a developer has to trying the flow out, so it runs in full. The
+    /// purchase behind the token is a sandbox one, which is what it would have been anyway.
+    func testTheTestStoreRunsTheWholeSequence() async throws {
         self.systemInfo.stubbedApiKeyValidationResult = .simulatedStore
 
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
-        expect(result) == .stopped(.notEligible)
-        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
-        expect(self.customLink.invokedTokenTypes).to(beEmpty())
-        expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
+        expect(result) == .registered(tokenID: try XCTUnwrap(self.postedTokenID))
+        expect(self.customLink.invokedNoticeTypes) == [.withinApp]
+        expect(self.customLink.invokedTokenTypes) == [.inApp]
+        expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenCount) == 1
     }
 
     // MARK: - Eligibility
@@ -222,7 +219,7 @@ class ExternalPurchaseManagerTests: TestCase {
         self.customLink.stubbedAvailability = .notEligible
 
         let whileIneligible = await self.manager.prepareExternalPurchase(flow: .inApp)
-        expect(whileIneligible) == .stopped(.notEligible)
+        expect(whileIneligible) == .notApplicable
 
         self.customLink.stubbedAvailability = .available
 
@@ -253,13 +250,15 @@ class ExternalPurchaseManagerTests: TestCase {
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenCount) == 1
     }
 
-    func testPreparesAgainOnceTheFirstOneIsDone() async {
+    func testPreparesAgainOnceTheFirstOneIsDone() async throws {
         let first = await self.manager.prepareExternalPurchase(flow: .linkOut)
+        let firstTokenID = try XCTUnwrap(self.postedTokenID)
         let second = await self.manager.prepareExternalPurchase(flow: .linkOut)
+        let secondTokenID = try XCTUnwrap(self.postedTokenID)
 
-        expect(first.tokenID).toNot(beNil())
-        expect(second.tokenID).toNot(beNil())
-        expect(first.tokenID) != second.tokenID
+        expect(first) == .registered(tokenID: firstTokenID)
+        expect(second) == .registered(tokenID: secondTokenID)
+        expect(firstTokenID) != secondTokenID
         expect(self.customLink.invokedNoticeTypes) == [.browser, .browser]
     }
 

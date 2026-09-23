@@ -44,10 +44,10 @@ struct OnboardingUseCaseView: View {
         }
     }
 
+    @ObservedObject var model: CheckpointDemoModel
     @ObservedObject var customVariables: CustomVariables
 
     @State private var step: Step = .welcome
-    @State private var isRunning = false
     @State private var checkpointResult: String?
 
     var body: some View {
@@ -73,7 +73,6 @@ struct OnboardingUseCaseView: View {
                     Button("Back") {
                         self.step = .welcome
                     }
-                    .disabled(self.isRunning)
                 }
 
                 Spacer()
@@ -85,13 +84,10 @@ struct OnboardingUseCaseView: View {
                     }
                     .buttonStyle(.borderedProminent)
                 case .personalize:
-                    Button(self.isRunning ? "Running checkpoint…" : "Finish onboarding") {
-                        Task { @MainActor in
-                            await self.finishOnboarding()
-                        }
+                    Button("Finish onboarding") {
+                        self.finishOnboarding()
                     }
                     .buttonStyle(.borderedProminent)
-                    .disabled(self.isRunning)
                 case .done:
                     Button("Restart onboarding") {
                         self.step = .welcome
@@ -106,52 +102,17 @@ struct OnboardingUseCaseView: View {
     }
 
     @MainActor
-    private func finishOnboarding() async {
-        guard !self.isRunning else { return }
-        self.isRunning = true
-
-        do {
-            let result = try await Purchases.shared.checkpoint(
-                "onboarding_complete",
-                customVariables: self.personalizationCheckpointCustomVariables
-            )
-            self.checkpointResult = Self.describe(result)
-        } catch {
-            self.checkpointResult = "Checkpoint failed: \(error.localizedDescription)"
+    private func finishOnboarding() {
+        Purchases.shared.checkpoint(
+            "onboarding_complete",
+            customVariables: self.personalizationCheckpointCustomVariables,
+            paywallPresenter: self.model.localPaywallPresenter
+        ) { result in
+            self.checkpointResult = result == nil
+                ? "No completed flow."
+                : "Checkpoint flow completed."
         }
-
-        self.isRunning = false
         self.step = .done
-    }
-
-    private static func describe(_ result: CheckpointResult) -> String {
-        switch result {
-        case let presented as CheckpointResult.PaywallPresented:
-            return Self.describe(presented.paywallOutcome)
-        case let received as CheckpointResult.ReceivedOffering:
-            return "Received offering '\(received.offering.identifier)'."
-        case let noAction as CheckpointResult.NoAction:
-            return "No paywall shown (\(noAction.reason))."
-        default:
-            return "Unknown checkpoint result."
-        }
-    }
-
-    private static func describe(_ outcome: CheckpointPaywallOutcome) -> String {
-        switch outcome {
-        case is CheckpointPaywallOutcome.Purchased:
-            return "Purchased during onboarding."
-        case is CheckpointPaywallOutcome.Restored:
-            return "Restored during onboarding."
-        case is CheckpointPaywallOutcome.Dismissed:
-            return "Paywall dismissed."
-        case is CheckpointPaywallOutcome.WebCheckoutOpened:
-            return "Web checkout opened."
-        case let failed as CheckpointPaywallOutcome.Error:
-            return "Paywall failed: \(failed.error.localizedDescription)"
-        default:
-            return "Unknown paywall outcome."
-        }
     }
 
     private var personalizationCheckpointCustomVariables: [String: CustomVariableValue] {

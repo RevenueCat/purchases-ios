@@ -1196,7 +1196,7 @@ class BackendPostReceiptWithSignatureVerificationTests: BaseBackendPostReceiptDa
             requestPath: .postReceiptData,
             response: .init(statusCode: .success,
                             response: Self.validCustomerResponse,
-                            verificationResult: .failed)
+                            verificationResult: .failed(.unknown))
         )
 
         let result = waitUntilValue { completed in

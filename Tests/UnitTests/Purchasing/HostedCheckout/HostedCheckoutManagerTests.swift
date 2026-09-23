@@ -1,0 +1,320 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  HostedCheckoutManagerTests.swift
+//
+//  Created by Antonio Pallares on 8/9/26.
+
+import Foundation
+import Nimble
+import XCTest
+
+@_spi(Experimental) @_spi(Internal) @testable import RevenueCat
+
+class HostedCheckoutManagerTests: TestCase {
+
+    private static let appUserID = "test-app-user-id"
+    private static let paywallSessionID = UUID()
+
+    private var customLink: MockExternalPurchaseCustomLink!
+    private var externalPurchaseTokenAPI: MockExternalPurchaseTokenAPI!
+    private var webBillingAPI: MockWebBillingAPI!
+    private var systemInfo: MockSystemInfo!
+    private var manager: HostedCheckoutManager!
+
+    override func setUp() {
+        super.setUp()
+
+        self.customLink = MockExternalPurchaseCustomLink()
+
+        self.externalPurchaseTokenAPI = MockExternalPurchaseTokenAPI()
+
+        self.webBillingAPI = MockWebBillingAPI(backendConfig: MockBackendConfiguration())
+        self.webBillingAPI.stubbedPostHostedCheckoutCompletionResult = .success(Self.response)
+
+        self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: true)
+        self.manager = self.makeManager()
+    }
+
+    // MARK: - Starting
+
+    func testRegistersATokenAndCreatesTheSessionForIt() async {
+        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(result) == .started(Self.session)
+        expect(self.customLink.invokedNoticeTypes) == [.withinApp]
+        expect(self.customLink.invokedTokenTypes) == [.inApp]
+
+        let parameters = self.webBillingAPI.invokedPostHostedCheckoutParameters
+        expect(parameters?.appUserID) == Self.appUserID
+        expect(parameters?.packageID) == Self.package.identifier
+        expect(parameters?.presentedOfferingContext) == Self.package.presentedOfferingContext
+        expect(parameters?.externalPurchaseTokenID) == self.postedTokenID
+        expect(parameters?.externalPurchaseTokenID).toNot(beNil())
+        expect(parameters?.paywall).to(beNil())
+    }
+
+    func testAttributesTheCheckoutToThePaywallItWasStartedFrom() async {
+        _ = await self.manager.startCheckout(package: Self.package,
+                                             paywall: Self.paywall(identifier: "test-paywall-id"))
+
+        let paywall = self.webBillingAPI.invokedPostHostedCheckoutParameters?.paywall
+        expect(paywall?.paywallID) == "test-paywall-id"
+        expect(paywall?.sessionID) == Self.paywallSessionID.uuidString
+        expect(paywall?.workflowID) == "test-workflow-id"
+        expect(paywall?.stepID) == "test-step-id"
+    }
+
+    /// A paywall shown on iOS always has a session, and that is what joins the checkout to its events, so
+    /// one without an identifier of its own is still worth sending.
+    func testAttributesTheCheckoutToAPaywallWithoutAnIdentifier() async {
+        _ = await self.manager.startCheckout(package: Self.package, paywall: Self.paywall(identifier: nil))
+
+        let paywall = self.webBillingAPI.invokedPostHostedCheckoutParameters?.paywall
+        expect(paywall?.paywallID).to(beNil())
+        expect(paywall?.sessionID) == Self.paywallSessionID.uuidString
+    }
+
+    // MARK: - Starting outside Apple's programme
+
+    /// The customer gets the same checkout a web purchase in the browser gets them, which is what the app
+    /// offered before it took any part in Apple's programme.
+    func testCreatesTheSessionWithoutATokenWhenExternalPurchasesDoNotApply() async {
+        self.customLink.stubbedAvailability = .notEligible
+
+        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(result) == .started(Self.session)
+        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
+        expect(self.customLink.invokedTokenTypes).to(beEmpty())
+        expect(self.webBillingAPI.invokedPostHostedCheckoutParameters?.externalPurchaseTokenID).to(beNil())
+    }
+
+    /// The setting stands for the app taking part in Apple's programme at all, and a checkout outside it is
+    /// exactly the checkout the app had before.
+    func testCreatesTheSessionWithoutATokenWhileTheExternalPurchaseSettingIsDisabled() async {
+        self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
+        self.manager = self.makeManager()
+
+        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(result) == .started(Self.session)
+        expect(self.customLink.invokedAvailabilityCount) == 0
+        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
+        expect(self.webBillingAPI.invokedPostHostedCheckoutParameters?.externalPurchaseTokenID).to(beNil())
+    }
+
+    /// An app outside the programme did not try to make an external purchase, so telling it anything about
+    /// one is noise in its console.
+    func testSaysNothingAboutExternalPurchasesWhileTheSettingIsDisabled() async {
+        self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
+        self.manager = self.makeManager()
+
+        _ = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        self.logger.verifyMessageWasNotLogged(Strings.externalPurchase.custom_link_does_not_apply)
+    }
+
+    /// The backend creates a sandbox session for a `test_` key, and Apple's flow follows the app and the
+    /// device rather than the key the SDK was configured with, so a Test Store key changes nothing here.
+    func testCreatesTheSessionWithATokenWithATestStoreKey() async {
+        self.systemInfo.stubbedApiKeyValidationResult = .simulatedStore
+
+        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(result) == .started(Self.session)
+        expect(self.customLink.invokedNoticeTypes) == [.withinApp]
+        expect(self.webBillingAPI.invokedPostHostedCheckoutParameters?.externalPurchaseTokenID) == self.postedTokenID
+        expect(self.postedTokenID).toNot(beNil())
+    }
+
+    // MARK: - Not starting
+
+    /// A checkout with no token behind it is a purchase Apple is never told about.
+    func testCreatesNoSessionWhenTheTokenCouldNotBeRegistered() async {
+        self.externalPurchaseTokenAPI.stubbedPostExternalPurchaseTokenError = .networkError(.serverDown())
+
+        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(result) == .failed
+        expect(self.webBillingAPI.invokedPostHostedCheckout) == false
+    }
+
+    func testCreatesNoSessionWhenStoreKitCouldNotProvideAToken() async {
+        self.customLink.stubbedTokenResult = .failure(NSError(domain: "test", code: 1))
+
+        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(result) == .failed
+        expect(self.webBillingAPI.invokedPostHostedCheckout) == false
+    }
+
+    /// Apple asks that a device which cannot authorize payments be offered no purchase at all, so there is
+    /// nothing to fall back to either.
+    func testCreatesNoSessionWhenTheDeviceDoesNotAuthorizePayments() async {
+        self.customLink.stubbedAvailability = .paymentsNotAuthorized
+
+        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(result) == .paymentsNotAuthorized
+        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
+        expect(self.customLink.invokedTokenTypes).to(beEmpty())
+        expect(self.webBillingAPI.invokedPostHostedCheckout) == false
+    }
+
+    /// A customer who taps twice while the notice is coming up asked to buy once, and it is the first tap that
+    /// carries the purchase.
+    func testStopsACheckoutAskedForWhileAnotherIsStarting() async {
+        let manager = self.manager!
+        let secondResult: Atomic<HostedCheckoutStartResult?> = nil
+
+        self.customLink.whileShowingNotice = {
+            secondResult.value = await manager.startCheckout(package: Self.package, paywall: nil)
+        }
+
+        let firstResult = await manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(secondResult.value) == .alreadyStarting
+        expect(firstResult) == .started(Self.session)
+        expect(self.webBillingAPI.invokedPostHostedCheckoutCount) == 1
+    }
+
+    /// Eligibility is resolved before anything is shown, so the rule covers a customer who taps twice
+    /// before the notice comes up, including where the checkout ends up opening without one.
+    func testStopsACheckoutAskedForWhileEligibilityIsBeingResolved() async {
+        let manager = self.manager!
+        self.customLink.stubbedAvailability = .notEligible
+        let secondResult: Atomic<HostedCheckoutStartResult?> = nil
+
+        self.customLink.whileResolvingAvailability = {
+            secondResult.value = await manager.startCheckout(package: Self.package, paywall: nil)
+        }
+
+        let firstResult = await manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(secondResult.value) == .alreadyStarting
+        expect(firstResult) == .started(Self.session)
+        expect(self.webBillingAPI.invokedPostHostedCheckoutCount) == 1
+    }
+
+    func testCreatesNoSessionWhenTheCustomerDeclinesTheNotice() async {
+        self.customLink.stubbedNoticeResult = .success(.cancelled)
+
+        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(result) == .declinedByCustomer
+        expect(self.customLink.invokedTokenTypes).to(beEmpty())
+        expect(self.webBillingAPI.invokedPostHostedCheckout) == false
+    }
+
+    /// Continuing without the notice would breach what StoreKit asks for.
+    func testCreatesNoSessionWhenTheNoticeCannotBeShown() async {
+        self.customLink.stubbedNoticeResult = .failure(NSError(domain: "test", code: 1))
+
+        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(result) == .failed
+        expect(self.webBillingAPI.invokedPostHostedCheckout) == false
+    }
+
+    func testFailsWhenTheSessionCannotBeCreated() async {
+        self.webBillingAPI.stubbedPostHostedCheckoutCompletionResult = .failure(.networkError(.serverDown()))
+
+        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(result) == .failed
+    }
+
+    /// Kept apart from a failure: there is something to tell the customer, rather than something that went
+    /// wrong on the way to the checkout.
+    func testSaysTheProductIsAlreadyOwnedWhenTheBackendRefusesTheCheckoutForThat() async {
+        self.webBillingAPI.stubbedPostHostedCheckoutCompletionResult = .failure(Self.alreadyPurchasedError)
+
+        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(result) == .alreadyPurchased
+    }
+
+}
+
+private extension HostedCheckoutManagerTests {
+
+    static func makeSystemInfo(useExternalPurchaseCustomLinks: Bool) -> MockSystemInfo {
+        return MockSystemInfo(
+            finishTransactions: true,
+            dangerousSettings: DangerousSettings(
+                autoSyncPurchases: true,
+                useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks
+            )
+        )
+    }
+
+    func makeManager() -> HostedCheckoutManager {
+        return HostedCheckoutManager(
+            externalPurchaseManager: ExternalPurchaseManager(
+                customLink: self.customLink,
+                externalPurchaseTokenAPI: self.externalPurchaseTokenAPI,
+                currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID),
+                systemInfo: self.systemInfo
+            ),
+            webBillingAPI: self.webBillingAPI,
+            currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID)
+        )
+    }
+
+    /// The identifier the SDK generated and registered, which the session must carry.
+    var postedTokenID: String? {
+        return self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenParameters?.tokenID
+    }
+
+    static let operationSessionID = "opse4e63d6a8a2c4"
+    static let checkoutURL = URL(string: "https://pay.example.com/session")!
+    static let successURL = URL(string: "https://api.revenuecat.com/checkout-return?status=success")!
+    static let cancelURL = URL(string: "https://api.revenuecat.com/checkout-return?status=cancel")!
+
+    static let alreadyPurchasedError: BackendError = .networkError(
+        .errorResponse(.init(code: .productAlreadyPurchased,
+                             originalCode: BackendErrorCode.productAlreadyPurchased.rawValue,
+                             message: "This customer already has an active purchase for this product."),
+                       .other(409))
+    )
+
+    static let response = HostedCheckoutResponse(operationSessionID: operationSessionID,
+                                                 checkoutURL: checkoutURL,
+                                                 successURL: successURL,
+                                                 cancelURL: cancelURL)
+
+    static let session = HostedCheckoutSession(operationSessionID: operationSessionID,
+                                               checkoutURL: checkoutURL,
+                                               successURL: successURL,
+                                               cancelURL: cancelURL)
+
+    static let package = Package(
+        identifier: "$rc_monthly",
+        packageType: .monthly,
+        storeProduct: StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.test.monthly")),
+        presentedOfferingContext: .init(offeringIdentifier: "default",
+                                        placementIdentifier: "home",
+                                        targetingContext: .init(revision: 3, ruleId: "test-rule-id")),
+        webCheckoutUrl: nil
+    )
+
+    static func paywall(identifier: String?) -> PaywallEvent.Data {
+        return .init(paywallIdentifier: identifier,
+                     offeringIdentifier: "default",
+                     paywallRevision: 4,
+                     sessionID: Self.paywallSessionID,
+                     displayMode: .fullScreen,
+                     localeIdentifier: "en_US",
+                     darkMode: false,
+                     workflowId: "test-workflow-id",
+                     stepId: "test-step-id")
+    }
+
+}
