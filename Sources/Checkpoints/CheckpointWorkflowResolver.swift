@@ -12,6 +12,8 @@
 //  Created by Rick van der Linden.
 //
 
+// swiftlint:disable file_length
+
 import Foundation
 
 /// The result of resolving a checkpoint against RevenueCat configuration.
