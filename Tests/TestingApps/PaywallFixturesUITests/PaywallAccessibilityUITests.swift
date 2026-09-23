@@ -67,11 +67,8 @@ final class PaywallAccessibilityUITests: XCTestCase {
 
     // MARK: - Decorative media (images, icons, backgrounds)
 
-    /// Paywall media has no accessibility metadata, so none of it may reach VoiceOver as a bare
-    /// "image": not the logo, the background image, or the feature checkmarks.
     func testDecorativeMediaIsNotAnnounced() throws {
         let app = self.launchDecorativeMedia()
-        // The background image is remote, so let it land before auditing.
         self.settle(app, seconds: 5)
 
         try app.performAccessibilityAudit(for: [.sufficientElementDescription])

@@ -197,7 +197,6 @@ struct ImageComponentView: View {
                         self.size = newSize
                     }
                 }
-                // On the decorated result, so it covers the sizing and shaping wrappers too.
                 .paywallDecorativeMedia()
             }
         }

@@ -16,12 +16,8 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
 
-    /// Removes paywall media from the accessibility tree, without changing how it draws. Paywall
-    /// images and icons carry no accessibility metadata, so VoiceOver would only say "image".
-    ///
-    /// Do not "simplify" to `accessibilityHidden`: verified on device, it is disregarded on this
-    /// subtree in every placement, and `accessibilityElement(children: .ignore)` leaves the
-    /// wrapper focusable with nothing to say.
+    /// Paywall media has no accessibility metadata, so VoiceOver would only say "image".
+    /// Not `accessibilityHidden`: it's ignored on this subtree (verified on device).
     func paywallDecorativeMedia() -> some View {
         self.accessibilityRepresentation { Color.clear }
     }
