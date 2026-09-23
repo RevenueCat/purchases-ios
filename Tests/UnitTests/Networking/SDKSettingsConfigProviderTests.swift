@@ -49,6 +49,16 @@ class SDKSettingsConfigProviderTests: TestCase {
         expect(settings.diagnostics.enabled) == true
     }
 
+    func testReturnsDefaultSettingsWhenDiagnosticsEnabledIsMalformed() async {
+        self.manager.stubbedTopics[.sdkSettings] = [
+            "default": .init(content: ["diagnostics": ["enabled": "true"]])
+        ]
+
+        let settings = await self.provider.settings()
+
+        expect(settings) == SDKSettings()
+    }
+
     func testIgnoresUnknownSettingsForForwardCompatibility() async {
         self.manager.stubbedTopics[.sdkSettings] = ["default": .init(content: ["future_setting": true])]
 
@@ -76,18 +86,41 @@ class SDKSettingsConfigProviderTests: TestCase {
     }
 
     func testCachesAndNotifiesDelegateWhenRefreshed() async {
+        self.manager.stubbedTopics[.sdkSettings] = [
+            "default": .init(content: ["diagnostics": ["enabled": true]])
+        ]
         let expectation = self.expectation(description: "settings updated")
+        self.delegate.expectation = expectation
+
+        self.provider.delegate = self.delegate
+        await self.provider.refresh()
+
+        await self.fulfillment(of: [expectation], timeout: 1)
+        expect(self.provider.cachedSettings()?.diagnostics.enabled) == true
+        expect(self.delegate.settings?.diagnostics.enabled) == true
+    }
+
+    func testDoesNotNotifyDelegateWhenSettingsDoNotChange() async {
+        self.manager.stubbedTopics[.sdkSettings] = [
+            "default": .init(content: ["diagnostics": ["enabled": true]])
+        ]
+        let expectation = self.expectation(description: "initial settings update")
         self.delegate.expectation = expectation
         self.provider.delegate = self.delegate
 
         await self.provider.refresh()
-
         await self.fulfillment(of: [expectation], timeout: 1)
-        expect(self.provider.cachedSettings()) == SDKSettings()
-        expect(self.delegate.settings) == SDKSettings()
+
+        self.manager.configGeneration += 1
+        await self.provider.refresh()
+
+        expect(self.delegate.updateCount) == 1
     }
 
     func testInvalidatesCachedSettingsWhenGenerationChanges() async {
+        self.manager.stubbedTopics[.sdkSettings] = [
+            "default": .init(content: ["diagnostics": ["enabled": true]])
+        ]
         await self.provider.refresh()
 
         self.manager.configGeneration += 1
@@ -97,6 +130,9 @@ class SDKSettingsConfigProviderTests: TestCase {
 
     func testDoesNotCacheOrNotifyBeforeRemoteConfigIsCommitted() async {
         self.manager.stubbedHasCommittedConfig = false
+        self.manager.stubbedTopics[.sdkSettings] = [
+            "default": .init(content: ["diagnostics": ["enabled": true]])
+        ]
         self.provider.delegate = self.delegate
 
         await self.provider.refresh()
@@ -106,6 +142,9 @@ class SDKSettingsConfigProviderTests: TestCase {
     }
 
     func testStateObserverRefreshesAndNotifiesDelegate() async {
+        self.manager.stubbedTopics[.sdkSettings] = [
+            "default": .init(content: ["diagnostics": ["enabled": true]])
+        ]
         let expectation = self.expectation(description: "settings updated")
         self.delegate.expectation = expectation
         self.provider.delegate = self.delegate
@@ -113,7 +152,7 @@ class SDKSettingsConfigProviderTests: TestCase {
         self.provider.remoteConfigStateDidChange(generation: self.manager.configGeneration)
 
         await self.fulfillment(of: [expectation], timeout: 1)
-        expect(self.provider.cachedSettings()) == SDKSettings()
+        expect(self.provider.cachedSettings()?.diagnostics.enabled) == true
     }
 
 }
@@ -122,9 +161,11 @@ private final class MockSDKSettingsConfigProviderDelegate: SDKSettingsConfigProv
 
     var expectation: XCTestExpectation?
     private(set) var settings: SDKSettings?
+    private(set) var updateCount = 0
 
     func sdkSettingsConfigProvider(_: SDKSettingsConfigProviderType, didUpdate settings: SDKSettings) async {
         self.settings = settings
+        self.updateCount += 1
         self.expectation?.fulfill()
     }
 
