@@ -43,9 +43,7 @@ final class WorkflowStepEventCoordinator {
         )
     }
 
-    /// Production entry point: each impression gets a fresh `traceId`, matching Android's per-impression
-    /// `workflowTraceId`. Because the view creates the coordinator in `init`, a new presentation (new view
-    /// identity) yields a new coordinator and therefore a new `traceId`.
+    /// Mints a fresh `traceId`, matching Android's per-impression `workflowTraceId`.
     convenience init(
         workflow: PublishedWorkflow,
         workflowBlobRef: String? = nil,
