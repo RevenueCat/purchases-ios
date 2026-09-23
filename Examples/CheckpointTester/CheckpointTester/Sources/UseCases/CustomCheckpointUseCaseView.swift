@@ -22,7 +22,7 @@ struct CustomCheckpointUseCaseView: View {
     @ObservedObject var customVariables: CustomVariables
 
     @State private var identifier = ""
-    @State private var isRunning = false
+    @State private var status: String?
 
     private var trimmedIdentifier: String {
         return self.identifier.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -36,34 +36,48 @@ struct CustomCheckpointUseCaseView: View {
                     .autocorrectionDisabled()
 
                 Button("Hit") {
-                    Task { @MainActor in
-                        await self.hitCheckpoint()
-                    }
+                    self.hitCheckpoint()
                 }
-                .disabled(self.trimmedIdentifier.isEmpty || self.isRunning)
+                .disabled(self.trimmedIdentifier.isEmpty)
             } footer: {
-                Text("The current custom variables are passed to the checkpoint.")
+                if let status {
+                    Text(status)
+                } else {
+                    Text("The callback reports new entitlements after a presented flow completes.")
+                }
             }
         }
         .navigationTitle("Custom checkpoint")
     }
 
     @MainActor
-    private func hitCheckpoint() async {
-        guard !self.trimmedIdentifier.isEmpty, !self.isRunning else { return }
+    private func hitCheckpoint() {
+        guard !self.trimmedIdentifier.isEmpty else { return }
+        let identifier = self.trimmedIdentifier
+        let paywallPresenter = self.model.localPaywallPresenter
+        self.status = "Checkpoint requested."
 
-        self.isRunning = true
-        defer { self.isRunning = false }
-
-        do {
-            let result = try await Purchases.shared.checkpoint(
-                self.trimmedIdentifier,
-                customVariables: self.customVariables.checkpointCustomVariables
-            )
-            self.model.showOutcome(result, checkpointIdentifier: self.trimmedIdentifier)
-        } catch {
-            self.model.showError(error)
+        Purchases.shared.checkpoint(
+            identifier,
+            customVariables: self.customVariables.checkpointCustomVariables,
+            paywallPresenter: paywallPresenter
+        ) { result in
+            Task { @MainActor in
+                self.status = Self.describe(result)
+            }
         }
+    }
+
+    private static func describe(_ result: FlowResult?) -> String {
+        guard let result else {
+            return "No flow was presented or the flow could not complete."
+        }
+
+        let entitlementIdentifiers = result.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted()
+        guard !entitlementIdentifiers.isEmpty else {
+            return "Checkpoint flow completed without granting a new entitlement."
+        }
+        return "New entitlements: \(entitlementIdentifiers.joined(separator: ", "))."
     }
 
 }

@@ -79,6 +79,7 @@
 		0882A0238A0B15DCAA63DCA5 /* WorkflowManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DA47C656406D58B636FD82D /* WorkflowManagerTests.swift */; };
 		0DCCBCD6C7CA32B59407A391 /* IterationOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB697245B7ED4A8855FF027E /* IterationOperators.swift */; };
 		7A8B9C0D1E2F304152637481 /* Scope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A8B9C0D1E2F304152637480 /* Scope.swift */; };
+		7A8B9C0D1E2F304152637491 /* ObjectValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A8B9C0D1E2F304152637490 /* ObjectValue.swift */; };
 		A1B2C3D4E5F60718293A4B5E /* CustomOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5D /* CustomOperators.swift */; };
 		C3D4E5F60718293A4B5C03E /* EntriesOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D4E5F60718293A4B5C03D /* EntriesOperators.swift */; };
 		D4E5F60718293A4B5C03D02 /* CaseOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E5F60718293A4B5C03D01 /* CaseOperators.swift */; };
@@ -232,11 +233,13 @@
 		2C0B98CD2797070B00C5874F /* PromotionalOffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C0B98CC2797070B00C5874F /* PromotionalOffer.swift */; };
 		2C2AEB0F2CA64E0E00A50F38 /* Template1Preview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2AEB0E2CA64E0E00A50F38 /* Template1Preview.swift */; };
 		832A761DBC4EA873D769CB83 /* WindowSizeConditionsPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 527C8FDAD4BC0E20186FB251 /* WindowSizeConditionsPreview.swift */; };
+		9FDCB2854C16420D876A9751 /* WorkflowSheetRelativeDiscountPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FDCB2854C16420D876A9752 /* WorkflowSheetRelativeDiscountPreview.swift */; };
 		2C2AEB3B2CA7209F00A50F38 /* PaywallPackageComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2AEB3A2CA7209F00A50F38 /* PaywallPackageComponent.swift */; };
 		2C2AEB3F2CA7235300A50F38 /* PaywallPurchaseButtonComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2AEB3E2CA7235300A50F38 /* PaywallPurchaseButtonComponent.swift */; };
 		2C6CC1162B8D2B6900432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C6CC1152B8D2B6800432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift */; };
 		2C74571F2CE7028E004ACE52 /* ScreenCondition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C74571E2CE7028A004ACE52 /* ScreenCondition.swift */; };
 		2C7457212CE702BB004ACE52 /* PackageContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7457202CE702BB004ACE52 /* PackageContext.swift */; };
+		F221538ADDD849338CEBB79F /* VoiceOverEnabledOverrideKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D16F6916A044463BDFF39A4 /* VoiceOverEnabledOverrideKey.swift */; };
 		2C7457242CE713E5004ACE52 /* PreviewMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7457232CE713E5004ACE52 /* PreviewMock.swift */; };
 		2C7457422CE81107004ACE52 /* IntroOfferEligibilityContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7457412CE810FD004ACE52 /* IntroOfferEligibilityContext.swift */; };
 		2C7457482CEA66AB004ACE52 /* ComponentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C7457472CEA66AB004ACE52 /* ComponentsView.swift */; };
@@ -488,9 +491,11 @@
 		3B41364A5DFC4039B3026F40 /* RemoteConfigAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A2DB969D72432B87F48C5F /* RemoteConfigAPI.swift */; };
 		3D3FCA672E03ABA71D7C0AF3 /* PackageComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5FC914F4E87D00963A8F1D /* PackageComponentTests.swift */; };
 		C0DE00000000000000000102 /* CheckpointWorkflowResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000000202 /* CheckpointWorkflowResolver.swift */; };
+		C0DE00000000000000000103 /* ResolvedCheckpointWorkflow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000000203 /* ResolvedCheckpointWorkflow.swift */; };
 		C0DE00000000000000000106 /* CheckpointEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000000206 /* CheckpointEvent.swift */; };
 		C0DE00000000000000000105 /* CheckpointWorkflowResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000000205 /* CheckpointWorkflowResolverTests.swift */; };
 		C0DE00000000000000000108 /* CheckpointEventsRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000000208 /* CheckpointEventsRequestTests.swift */; };
+		C0DE0000000000000000010A /* CheckpointEventDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE0000000000000000020A /* CheckpointEventDataTests.swift */; };
 		42F1DF385E3C1F9903A07FBF /* ProductsFetcherSK1.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFB3CBAA73855779FE828CE2 /* ProductsFetcherSK1.swift */; };
 		451441F0014BC13272B179CC /* View+ExitOfferPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8FCE0314FF930204BE4D33 /* View+ExitOfferPresentation.swift */; };
 		49554883F2D5ED48F0907FB9 /* ExitOfferTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D26169F24D341F77345716D /* ExitOfferTests.swift */; };
@@ -625,16 +630,21 @@
 		AAAA44750000000000000002 /* ExternalPurchaseLinkResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44750000000000000001 /* ExternalPurchaseLinkResult.swift */; };
 		AAAA44750000000000000012 /* ExternalPurchaseLinkResultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44750000000000000011 /* ExternalPurchaseLinkResultTests.swift */; };
 		AAAA44750000000000000022 /* ExternalPurchaseLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44750000000000000021 /* ExternalPurchaseLink.swift */; };
+		AAAA44830000000000000012 /* HostedCheckout.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44830000000000000011 /* HostedCheckout.swift */; };
 		AAAA44740000000000000012 /* ExternalPurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44740000000000000011 /* ExternalPurchaseManager.swift */; };
 		AAAA44740000000000000022 /* ExternalPurchaseStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44740000000000000021 /* ExternalPurchaseStrings.swift */; };
 		AAAA44740000000000000032 /* ExternalPurchaseManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44740000000000000031 /* ExternalPurchaseManagerTests.swift */; };
-		AAAA44760000000000000002 /* ExternalPurchaseTokenID.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44760000000000000001 /* ExternalPurchaseTokenID.swift */; };
-		AAAA44760000000000000012 /* ExternalPurchaseTokenIDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44760000000000000011 /* ExternalPurchaseTokenIDTests.swift */; };
+		AAAA44860000000000000002 /* ExternalPurchaseTokenID.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44860000000000000001 /* ExternalPurchaseTokenID.swift */; };
+		AAAA44860000000000000012 /* ExternalPurchaseTokenIDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44860000000000000011 /* ExternalPurchaseTokenIDTests.swift */; };
 		AAAA44770000000000000002 /* ExternalPurchaseTokenRegistration.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44770000000000000001 /* ExternalPurchaseTokenRegistration.swift */; };
 		AAAA44770000000000000012 /* ExternalPurchaseTokenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44770000000000000011 /* ExternalPurchaseTokenStore.swift */; };
 		AAAA44770000000000000022 /* ExternalPurchaseTokenStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44770000000000000021 /* ExternalPurchaseTokenStoreTests.swift */; };
 		AAAA44770000000000000032 /* MockExternalPurchaseTokenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44770000000000000031 /* MockExternalPurchaseTokenStore.swift */; };
 		AAAA44770000000000000033 /* MockExternalPurchaseTokenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44770000000000000031 /* MockExternalPurchaseTokenStore.swift */; };
+		AAAA44760000000000000002 /* HostedCheckoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44760000000000000001 /* HostedCheckoutManager.swift */; };
+		AAAA44760000000000000012 /* HostedCheckoutSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44760000000000000011 /* HostedCheckoutSession.swift */; };
+		AAAA44760000000000000022 /* HostedCheckoutStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44760000000000000021 /* HostedCheckoutStrings.swift */; };
+		AAAA44760000000000000032 /* HostedCheckoutManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44760000000000000031 /* HostedCheckoutManagerTests.swift */; };
 		53E33BBB2E095B8900287158 /* SDKHealthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53E33BBA2E095B8900287158 /* SDKHealthManager.swift */; };
 		551800702FF46C720055FD1B /* SecureItemStorageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5518006F2FF46C720055FD1B /* SecureItemStorageTests.swift */; };
 		551800772FF46C8A0055FD1B /* KeychainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551800762FF46C8A0055FD1B /* KeychainTests.swift */; };
@@ -970,6 +980,7 @@
 		57DE80BF2807705F008D6C6F /* XCTestCase+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D22BF6626F3CBFB001AE2F9 /* XCTestCase+Extensions.swift */; };
 		57E0473B277260DE0082FE91 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 57E0473A277260DE0082FE91 /* SnapshotTesting */; };
 		57E2230727500BB1002DB06E /* AtomicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E2230627500BB1002DB06E /* AtomicTests.swift */; };
+		D12CC0DE0000000000000001 /* TestLogHandlerLifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D12CC0DE0000000000000002 /* TestLogHandlerLifecycleTests.swift */; };
 		AC17E0A7E0000000000000B3 /* DeferredTaskTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC17E0A7E0000000000000B4 /* DeferredTaskTests.swift */; };
 		BDB2DF81A0F4716A775EEE69 /* JWTTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E305D88B5C27BAA73FE343 /* JWTTests.swift */; };
 		C8B45E436A9CD78B7C05454A /* AnyCodingKeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDD3CB0292567BC23D1772B4 /* AnyCodingKeyTests.swift */; };
@@ -1132,6 +1143,7 @@
 		887A60822C1D037000E1A461 /* PreviewHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FE52C1D037000E1A461 /* PreviewHelpers.swift */; };
 		887A60832C1D037000E1A461 /* VersionDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FE62C1D037000E1A461 /* VersionDetector.swift */; };
 		887A60842C1D037000E1A461 /* ConsistentPackageContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FE82C1D037000E1A461 /* ConsistentPackageContentView.swift */; };
+		99C5EAC7E37845D1B8869B4E /* PaywallMediaAccessibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B04C629B98143508328E79A /* PaywallMediaAccessibility.swift */; };
 		887A60852C1D037000E1A461 /* FitToAspectRatio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FE92C1D037000E1A461 /* FitToAspectRatio.swift */; };
 		887A60862C1D037000E1A461 /* FooterHidingModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FEA2C1D037000E1A461 /* FooterHidingModifier.swift */; };
 		887A60872C1D037000E1A461 /* ViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FEB2C1D037000E1A461 /* ViewExtensions.swift */; };
@@ -1495,18 +1507,25 @@
 		73A610000000000000000002 /* Checkpoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A610000000000000000012 /* Checkpoints.swift */; };
 		73A610000000000000000003 /* Purchases+Checkpoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A610000000000000000013 /* Purchases+Checkpoints.swift */; };
 		73A610000000000000000004 /* CheckpointResults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A610000000000000000014 /* CheckpointResults.swift */; };
-		73A640000000000000000001 /* CheckpointCallStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000011 /* CheckpointCallStore.swift */; };
+		73A640000000000000000001 /* CheckpointPresentationSlot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000011 /* CheckpointPresentationSlot.swift */; };
 		73A660000000000000000001 /* CheckpointError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A660000000000000000011 /* CheckpointError.swift */; };
 		73A670000000000000000001 /* CheckpointIdentifierValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A670000000000000000011 /* CheckpointIdentifierValidator.swift */; };
-		73A640000000000000000003 /* CheckpointWorkflowPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000013 /* CheckpointWorkflowPresenter.swift */; };
-		73A640000000000000000004 /* CheckpointWorkflowExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000014 /* CheckpointWorkflowExecutor.swift */; };
+		73A640000000000000000003 /* WorkflowPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000013 /* WorkflowPresenter.swift */; };
+		73A640000000000000000004 /* WorkflowPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000014 /* WorkflowPresentation.swift */; };
 		73A640000000000000000005 /* CheckpointsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000015 /* CheckpointsManager.swift */; };
+		73A680000000000000000001 /* CheckpointPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A680000000000000000011 /* CheckpointPresenter.swift */; };
+		73A680000000000000000003 /* PaywallPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A680000000000000000013 /* PaywallPresenter.swift */; };
 		73A620000000000000000001 /* CheckpointValueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A620000000000000000011 /* CheckpointValueTests.swift */; };
 		73A630000000000000000001 /* NSNumber+JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A630000000000000000011 /* NSNumber+JSON.swift */; };
 		FA4A2DF41FC434A9401F08CC /* PaywallWebViewValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D0C57ECDF0E7F1A5B4418FF /* PaywallWebViewValue.swift */; };
 		FA6ABC7C2A81673F00353AF7 /* SystemFontRegistryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA6ABC7B2A81673F00353AF8 /* SystemFontRegistryTests.swift */; };
 		FACD000C2F61A1230073D2DE /* PackageVisibilityPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACD000B2F61A1230073D2DE /* PackageVisibilityPreview.swift */; };
 		FACE0000000000000000A001 /* BackendRemoteConfigLaneTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACE0000000000000000A002 /* BackendRemoteConfigLaneTests.swift */; };
+		C4E00000000000000000A007 /* WebCheckoutReturnURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E00000000000000000A006 /* WebCheckoutReturnURL.swift */; };
+		C4E00000000000000000A009 /* WebCheckoutViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E00000000000000000A008 /* WebCheckoutViewModel.swift */; };
+		C4E00000000000000000A00B /* WebCheckoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E00000000000000000A00A /* WebCheckoutView.swift */; };
+		C4E00000000000000000A010 /* WebCheckoutSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E00000000000000000A00D /* WebCheckoutSheet.swift */; };
+		C4E10000000000000000B009 /* WebViewNavigationFailure.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E10000000000000000B008 /* WebViewNavigationFailure.swift */; };
 		C4E10000000000000000B002 /* WebViewHTTPStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E10000000000000000B001 /* WebViewHTTPStatus.swift */; };
 		C4E10000000000000000B004 /* WebViewComponentNavigationPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E10000000000000000B003 /* WebViewComponentNavigationPolicy.swift */; };
 		FC5AE63E8F81C3EC2FFDA408 /* WebViewOrigin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28661C6CE3F64078A0138080 /* WebViewOrigin.swift */; };
@@ -1607,6 +1626,8 @@
 		FEDA000000000000000000D6 /* CheckpointsConfigProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000C6 /* CheckpointsConfigProviderTests.swift */; };
 		A7D100000000000000000002 /* AudiencesConfigProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D100000000000000000001 /* AudiencesConfigProvider.swift */; };
 		A7D200000000000000000002 /* Audience.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D200000000000000000001 /* Audience.swift */; };
+		A7D300000000000000000002 /* WorkflowBranch.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D300000000000000000001 /* WorkflowBranch.swift */; };
+		A7D300000000000000000004 /* WorkflowTriggerAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D300000000000000000003 /* WorkflowTriggerAction.swift */; };
 		A7D200000000000000000004 /* AudienceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D200000000000000000003 /* AudienceTests.swift */; };
 		FEDA000000000000000000E1 /* MockRemoteConfigSourceProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000E0 /* MockRemoteConfigSourceProvider.swift */; };
 		FEDA000000000000000000E2 /* MockRemoteConfigSourceProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000E0 /* MockRemoteConfigSourceProvider.swift */; };
@@ -1810,6 +1831,7 @@
 		1622D3FC2E900F8200C20E3C /* Checksum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checksum.swift; sourceTree = "<group>"; };
 		1622D40D2E90189F00C20E3C /* URLWithValidation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLWithValidation.swift; sourceTree = "<group>"; };
 		16434BD72EF44EE00030B93B /* MarkdownTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownTests.swift; sourceTree = "<group>"; };
+		109E4F5E6F7F4B0982949B18 /* MarkdownLinkActionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownLinkActionsTests.swift; sourceTree = "<group>"; };
 		164681C82E6B577600854AA5 /* VideoComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoComponentView.swift; sourceTree = "<group>"; };
 		164681C92E6B577600854AA5 /* VideoComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoComponentViewModel.swift; sourceTree = "<group>"; };
 		164681CA2E6B577600854AA5 /* VideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerView.swift; sourceTree = "<group>"; };
@@ -1940,6 +1962,15 @@
 		A91C0A022FEA000000000001 /* RulesEngineLoggerBridge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RulesEngineLoggerBridge.swift; sourceTree = "<group>"; };
 		26AAFBADBA3F4E339D041135 /* WorkflowStepEventCoordinatorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowStepEventCoordinatorTests.swift; sourceTree = "<group>"; };
 		28661C6CE3F64078A0138080 /* WebViewOrigin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewOrigin.swift; sourceTree = "<group>"; };
+		C4E00000000000000000A006 /* WebCheckoutReturnURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebCheckoutReturnURL.swift; sourceTree = "<group>"; };
+		C4E00000000000000000A008 /* WebCheckoutViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebCheckoutViewModel.swift; sourceTree = "<group>"; };
+		C4E00000000000000000A00A /* WebCheckoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebCheckoutView.swift; sourceTree = "<group>"; };
+		C4E00000000000000000A00C /* WebCheckoutReturnURLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebCheckoutReturnURLTests.swift; sourceTree = "<group>"; };
+		C4E00000000000000000A00D /* WebCheckoutSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebCheckoutSheet.swift; sourceTree = "<group>"; };
+		C4E00000000000000000A00E /* WebCheckoutViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebCheckoutViewModelTests.swift; sourceTree = "<group>"; };
+		C4E00000000000000000A00F /* WebCheckoutSheetOutcomeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebCheckoutSheetOutcomeTests.swift; sourceTree = "<group>"; };
+		C4E10000000000000000B008 /* WebViewNavigationFailure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewNavigationFailure.swift; sourceTree = "<group>"; };
+		C4E10000000000000000B00A /* WebViewNavigationFailureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewNavigationFailureTests.swift; sourceTree = "<group>"; };
 		C4E10000000000000000B001 /* WebViewHTTPStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewHTTPStatus.swift; sourceTree = "<group>"; };
 		C4E10000000000000000B003 /* WebViewComponentNavigationPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewComponentNavigationPolicy.swift; sourceTree = "<group>"; };
 		C4E10000000000000000B006 /* WebViewHTTPStatusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewHTTPStatusTests.swift; sourceTree = "<group>"; };
@@ -1953,6 +1984,7 @@
 		2C0B98CC2797070B00C5874F /* PromotionalOffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromotionalOffer.swift; sourceTree = "<group>"; };
 		2C2AEB0E2CA64E0E00A50F38 /* Template1Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Template1Preview.swift; sourceTree = "<group>"; };
 		527C8FDAD4BC0E20186FB251 /* WindowSizeConditionsPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowSizeConditionsPreview.swift; sourceTree = "<group>"; };
+		9FDCB2854C16420D876A9752 /* WorkflowSheetRelativeDiscountPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowSheetRelativeDiscountPreview.swift; sourceTree = "<group>"; };
 		D793578E154692425D9938B6 /* WindowSizeConditionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowSizeConditionTests.swift; sourceTree = "<group>"; };
 		4B90A3E17C25D8F1206BA442 /* PaywallWindowSizeMeasurementTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallWindowSizeMeasurementTests.swift; sourceTree = "<group>"; };
 		2C2AEB3A2CA7209F00A50F38 /* PaywallPackageComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallPackageComponent.swift; sourceTree = "<group>"; };
@@ -1963,6 +1995,7 @@
 		2C6CC1152B8D2B6800432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchasesSyncAttributesAndOfferingsIfNeededTests.swift; sourceTree = "<group>"; };
 		2C74571E2CE7028A004ACE52 /* ScreenCondition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenCondition.swift; sourceTree = "<group>"; };
 		2C7457202CE702BB004ACE52 /* PackageContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageContext.swift; sourceTree = "<group>"; };
+		5D16F6916A044463BDFF39A4 /* VoiceOverEnabledOverrideKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceOverEnabledOverrideKey.swift; sourceTree = "<group>"; };
 		2C7457232CE713E5004ACE52 /* PreviewMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewMock.swift; sourceTree = "<group>"; };
 		2C7457412CE810FD004ACE52 /* IntroOfferEligibilityContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroOfferEligibilityContext.swift; sourceTree = "<group>"; };
 		2C7457472CEA66AB004ACE52 /* ComponentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComponentsView.swift; sourceTree = "<group>"; };
@@ -2146,15 +2179,19 @@
 		73A610000000000000000012 /* Checkpoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checkpoints.swift; sourceTree = "<group>"; };
 		73A610000000000000000013 /* Purchases+Checkpoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Purchases+Checkpoints.swift"; sourceTree = "<group>"; };
 		73A610000000000000000014 /* CheckpointResults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointResults.swift; sourceTree = "<group>"; };
-		73A640000000000000000011 /* CheckpointCallStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointCallStore.swift; sourceTree = "<group>"; };
+		73A640000000000000000011 /* CheckpointPresentationSlot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointPresentationSlot.swift; sourceTree = "<group>"; };
 		73A660000000000000000011 /* CheckpointError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointError.swift; sourceTree = "<group>"; };
 		73A670000000000000000011 /* CheckpointIdentifierValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointIdentifierValidator.swift; sourceTree = "<group>"; };
-		73A640000000000000000013 /* CheckpointWorkflowPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointWorkflowPresenter.swift; sourceTree = "<group>"; };
-		73A640000000000000000014 /* CheckpointWorkflowExecutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointWorkflowExecutor.swift; sourceTree = "<group>"; };
+		73A640000000000000000013 /* WorkflowPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowPresenter.swift; sourceTree = "<group>"; };
+		73A640000000000000000014 /* WorkflowPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowPresentation.swift; sourceTree = "<group>"; };
 		73A640000000000000000015 /* CheckpointsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointsManager.swift; sourceTree = "<group>"; };
-		73A650000000000000000011 /* CheckpointWorkflowPresenterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointWorkflowPresenterTests.swift; sourceTree = "<group>"; };
+		73A680000000000000000011 /* CheckpointPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointPresenter.swift; sourceTree = "<group>"; };
+		73A680000000000000000013 /* PaywallPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallPresenter.swift; sourceTree = "<group>"; };
+		73A680000000000000000014 /* WorkflowPresenterExecutionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowPresenterExecutionTests.swift; sourceTree = "<group>"; };
+		73A650000000000000000011 /* WorkflowPresenterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowPresenterTests.swift; sourceTree = "<group>"; };
 		73A650000000000000000012 /* CheckpointsManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointsManagerTests.swift; sourceTree = "<group>"; };
 		73A650000000000000000013 /* CheckpointIdentifierValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointIdentifierValidatorTests.swift; sourceTree = "<group>"; };
+		73A650000000000000000014 /* CheckpointPresentationSlotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointPresentationSlotTests.swift; sourceTree = "<group>"; };
 		73A620000000000000000011 /* CheckpointValueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointValueTests.swift; sourceTree = "<group>"; };
 		73A630000000000000000011 /* NSNumber+JSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSNumber+JSON.swift"; sourceTree = "<group>"; };
 		350A1B84226E3E8700CCA10F /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -2421,15 +2458,21 @@
 		AAAA44750000000000000011 /* ExternalPurchaseLinkResultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseLinkResultTests.swift; sourceTree = "<group>"; };
 		AAAA44750000000000000021 /* ExternalPurchaseLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseLink.swift; sourceTree = "<group>"; };
 		AAAA44750000000000000031 /* ExternalPurchaseLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseLinkTests.swift; sourceTree = "<group>"; };
+		AAAA44830000000000000011 /* HostedCheckout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedCheckout.swift; sourceTree = "<group>"; };
+		AAAA44830000000000000021 /* HostedCheckoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedCheckoutTests.swift; sourceTree = "<group>"; };
 		AAAA44740000000000000011 /* ExternalPurchaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseManager.swift; sourceTree = "<group>"; };
 		AAAA44740000000000000021 /* ExternalPurchaseStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseStrings.swift; sourceTree = "<group>"; };
 		AAAA44740000000000000031 /* ExternalPurchaseManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseManagerTests.swift; sourceTree = "<group>"; };
-		AAAA44760000000000000001 /* ExternalPurchaseTokenID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseTokenID.swift; sourceTree = "<group>"; };
-		AAAA44760000000000000011 /* ExternalPurchaseTokenIDTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseTokenIDTests.swift; sourceTree = "<group>"; };
+		AAAA44860000000000000001 /* ExternalPurchaseTokenID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseTokenID.swift; sourceTree = "<group>"; };
+		AAAA44860000000000000011 /* ExternalPurchaseTokenIDTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseTokenIDTests.swift; sourceTree = "<group>"; };
 		AAAA44770000000000000001 /* ExternalPurchaseTokenRegistration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseTokenRegistration.swift; sourceTree = "<group>"; };
 		AAAA44770000000000000011 /* ExternalPurchaseTokenStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseTokenStore.swift; sourceTree = "<group>"; };
 		AAAA44770000000000000021 /* ExternalPurchaseTokenStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseTokenStoreTests.swift; sourceTree = "<group>"; };
 		AAAA44770000000000000031 /* MockExternalPurchaseTokenStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockExternalPurchaseTokenStore.swift; sourceTree = "<group>"; };
+		AAAA44760000000000000001 /* HostedCheckoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedCheckoutManager.swift; sourceTree = "<group>"; };
+		AAAA44760000000000000011 /* HostedCheckoutSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedCheckoutSession.swift; sourceTree = "<group>"; };
+		AAAA44760000000000000021 /* HostedCheckoutStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedCheckoutStrings.swift; sourceTree = "<group>"; };
+		AAAA44760000000000000031 /* HostedCheckoutManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedCheckoutManagerTests.swift; sourceTree = "<group>"; };
 		53E33BBA2E095B8900287158 /* SDKHealthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDKHealthManager.swift; sourceTree = "<group>"; };
 		5518006F2FF46C720055FD1B /* SecureItemStorageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureItemStorageTests.swift; sourceTree = "<group>"; };
 		551800762FF46C8A0055FD1B /* KeychainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainTests.swift; sourceTree = "<group>"; };
@@ -2745,6 +2788,7 @@
 		57DE80AD28075D77008D6C6F /* OSVersionEquivalent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OSVersionEquivalent.swift; sourceTree = "<group>"; };
 		57E0474B27729A1E0082FE91 /* __Snapshots__ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = __Snapshots__; sourceTree = "<group>"; };
 		57E2230627500BB1002DB06E /* AtomicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtomicTests.swift; sourceTree = "<group>"; };
+		D12CC0DE0000000000000002 /* TestLogHandlerLifecycleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestLogHandlerLifecycleTests.swift; sourceTree = "<group>"; };
 		AC17E0A7E0000000000000B4 /* DeferredTaskTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeferredTaskTests.swift; sourceTree = "<group>"; };
 		69E305D88B5C27BAA73FE343 /* JWTTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JWTTests.swift; sourceTree = "<group>"; };
 		CDD3CB0292567BC23D1772B4 /* AnyCodingKeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCodingKeyTests.swift; sourceTree = "<group>"; };
@@ -2869,9 +2913,11 @@
 		80CDB7B52E69C35100D7DB9E /* CustomerCenterStylingUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterStylingUtilities.swift; sourceTree = "<group>"; };
 		80E80EF026970DC3008F245A /* ReceiptFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptFetcher.swift; sourceTree = "<group>"; };
 		C0DE00000000000000000202 /* CheckpointWorkflowResolver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CheckpointWorkflowResolver.swift; sourceTree = "<group>"; };
+		C0DE00000000000000000203 /* ResolvedCheckpointWorkflow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ResolvedCheckpointWorkflow.swift; sourceTree = "<group>"; };
 		C0DE00000000000000000206 /* CheckpointEvent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CheckpointEvent.swift; sourceTree = "<group>"; };
 		C0DE00000000000000000205 /* CheckpointWorkflowResolverTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CheckpointWorkflowResolverTests.swift; sourceTree = "<group>"; };
 		C0DE00000000000000000208 /* CheckpointEventsRequestTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CheckpointEventsRequestTests.swift; sourceTree = "<group>"; };
+		C0DE0000000000000000020A /* CheckpointEventDataTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CheckpointEventDataTests.swift; sourceTree = "<group>"; };
 		830003FE2E26161D00143F9F /* PlatformFont.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformFont.swift; sourceTree = "<group>"; };
 		830004002E261ABE00143F9F /* PlatformImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformImage.swift; sourceTree = "<group>"; };
 		831660B52E3AAA4900855312 /* FixMacButtonsModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixMacButtonsModifier.swift; sourceTree = "<group>"; };
@@ -2916,6 +2962,7 @@
 		887A5FE62C1D037000E1A461 /* VersionDetector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VersionDetector.swift; sourceTree = "<group>"; };
 		A82500013C8D000000000002 /* KeyWindowFocusResigner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyWindowFocusResigner.swift; sourceTree = "<group>"; };
 		887A5FE82C1D037000E1A461 /* ConsistentPackageContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConsistentPackageContentView.swift; sourceTree = "<group>"; };
+		4B04C629B98143508328E79A /* PaywallMediaAccessibility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallMediaAccessibility.swift; sourceTree = "<group>"; };
 		887A5FE92C1D037000E1A461 /* FitToAspectRatio.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FitToAspectRatio.swift; sourceTree = "<group>"; };
 		887A5FEA2C1D037000E1A461 /* FooterHidingModifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FooterHidingModifier.swift; sourceTree = "<group>"; };
 		887A5FEB2C1D037000E1A461 /* ViewExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewExtensions.swift; sourceTree = "<group>"; };
@@ -3171,6 +3218,7 @@
 		AAE17E010000000000000004 /* RewardVerificationStatusResponseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardVerificationStatusResponseTests.swift; sourceTree = "<group>"; };
 		AB697245B7ED4A8855FF027E /* IterationOperators.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IterationOperators.swift; sourceTree = "<group>"; };
 		7A8B9C0D1E2F304152637480 /* Scope.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Scope.swift; sourceTree = "<group>"; };
+		7A8B9C0D1E2F304152637490 /* ObjectValue.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ObjectValue.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60718293A4B5D /* CustomOperators.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CustomOperators.swift; sourceTree = "<group>"; };
 		C3D4E5F60718293A4B5C03D /* EntriesOperators.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EntriesOperators.swift; sourceTree = "<group>"; };
 		D4E5F60718293A4B5C03D01 /* CaseOperators.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CaseOperators.swift; sourceTree = "<group>"; };
@@ -3456,6 +3504,8 @@
 		FEDA000000000000000000C6 /* CheckpointsConfigProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointsConfigProviderTests.swift; sourceTree = "<group>"; };
 		A7D100000000000000000001 /* AudiencesConfigProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiencesConfigProvider.swift; sourceTree = "<group>"; };
 		A7D200000000000000000001 /* Audience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Audience.swift; sourceTree = "<group>"; };
+		A7D300000000000000000001 /* WorkflowBranch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowBranch.swift; sourceTree = "<group>"; };
+		A7D300000000000000000003 /* WorkflowTriggerAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowTriggerAction.swift; sourceTree = "<group>"; };
 		A7D200000000000000000003 /* AudienceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudienceTests.swift; sourceTree = "<group>"; };
 		FEDA000000000000000000E0 /* MockRemoteConfigSourceProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRemoteConfigSourceProvider.swift; sourceTree = "<group>"; };
 		FEDA0000000000000000F0A1 /* GetRemoteConfigFallbackOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetRemoteConfigFallbackOperation.swift; sourceTree = "<group>"; };
@@ -3620,6 +3670,7 @@
 				83EE33252E1E20360011CF1C /* PaywallPreviewResourcesLoader.swift */,
 				038EC8222DE7A8AC00786C42 /* TakeScreenshot.swift */,
 				030F918B2D55C9D80085103F /* LocaleFinderTests.swift */,
+				109E4F5E6F7F4B0982949B18 /* MarkdownLinkActionsTests.swift */,
 				16434BD72EF44EE00030B93B /* MarkdownTests.swift */,
 				03C06FC42D4553BB00600693 /* PresentedPartialsTests.swift */,
 				48D31C8D350D427BB8A5CCF0 /* ConditionDeserializationTests.swift */,
@@ -3645,6 +3696,7 @@
 				A1D3F80D2D524F51BA60157C /* ButtonComponentViewTests.swift */,
 				9F2A6D48C1B34E7295D8F0A3 /* BrowserNavigateToTests.swift */,
 				AAAA44750000000000000031 /* ExternalPurchaseLinkTests.swift */,
+				AAAA44830000000000000021 /* HostedCheckoutTests.swift */,
 				834DFBE817EAEDDF0179F323 /* PaywallZLayerScrollPolicyTests.swift */,
 				CF01A0F868569B5E2D5CA465 /* PaywallsV2LayoutFixtures.swift */,
 				DD6CFFCCD908DC638C42E150 /* RootViewLayoutSnapshotTests.swift */,
@@ -3806,6 +3858,7 @@
 			children = (
 				346145E8EF291B0E8BB68D12 /* Checkpoints.swift */,
 				C0DE00000000000000000202 /* CheckpointWorkflowResolver.swift */,
+				C0DE00000000000000000203 /* ResolvedCheckpointWorkflow.swift */,
 				C0DE00000000000000000206 /* CheckpointEvent.swift */,
 			);
 			name = Checkpoints;
@@ -3817,12 +3870,14 @@
 			children = (
 				73A610000000000000000012 /* Checkpoints.swift */,
 				73A610000000000000000014 /* CheckpointResults.swift */,
-				73A640000000000000000011 /* CheckpointCallStore.swift */,
+				73A640000000000000000011 /* CheckpointPresentationSlot.swift */,
 				73A660000000000000000011 /* CheckpointError.swift */,
 				73A670000000000000000011 /* CheckpointIdentifierValidator.swift */,
-				73A640000000000000000014 /* CheckpointWorkflowExecutor.swift */,
-				73A640000000000000000013 /* CheckpointWorkflowPresenter.swift */,
+				73A680000000000000000011 /* CheckpointPresenter.swift */,
+				73A640000000000000000014 /* WorkflowPresentation.swift */,
+				73A640000000000000000013 /* WorkflowPresenter.swift */,
 				73A640000000000000000015 /* CheckpointsManager.swift */,
+				73A680000000000000000013 /* PaywallPresenter.swift */,
 				73A610000000000000000013 /* Purchases+Checkpoints.swift */,
 			);
 			path = Checkpoints;
@@ -3831,7 +3886,9 @@
 		73A650000000000000000020 /* Checkpoints */ = {
 			isa = PBXGroup;
 			children = (
-				73A650000000000000000011 /* CheckpointWorkflowPresenterTests.swift */,
+				73A650000000000000000014 /* CheckpointPresentationSlotTests.swift */,
+				73A680000000000000000014 /* WorkflowPresenterExecutionTests.swift */,
+				73A650000000000000000011 /* WorkflowPresenterTests.swift */,
 				73A650000000000000000012 /* CheckpointsManagerTests.swift */,
 				73A650000000000000000013 /* CheckpointIdentifierValidatorTests.swift */,
 			);
@@ -3844,6 +3901,7 @@
 				73A620000000000000000011 /* CheckpointValueTests.swift */,
 				C0DE00000000000000000205 /* CheckpointWorkflowResolverTests.swift */,
 				C0DE00000000000000000208 /* CheckpointEventsRequestTests.swift */,
+				C0DE0000000000000000020A /* CheckpointEventDataTests.swift */,
 			);
 			path = Checkpoints;
 			sourceTree = "<group>";
@@ -3875,11 +3933,33 @@
 			path = DeepLink;
 			sourceTree = "<group>";
 		};
+		C4E00000000000000000A003 /* WebCheckout */ = {
+			isa = PBXGroup;
+			children = (
+				C4E00000000000000000A006 /* WebCheckoutReturnURL.swift */,
+				C4E00000000000000000A008 /* WebCheckoutViewModel.swift */,
+				C4E00000000000000000A00A /* WebCheckoutView.swift */,
+				C4E00000000000000000A00D /* WebCheckoutSheet.swift */,
+			);
+			path = WebCheckout;
+			sourceTree = "<group>";
+		};
+		C4E00000000000000000A005 /* WebCheckout */ = {
+			isa = PBXGroup;
+			children = (
+				C4E00000000000000000A00C /* WebCheckoutReturnURLTests.swift */,
+				C4E00000000000000000A00E /* WebCheckoutViewModelTests.swift */,
+				C4E00000000000000000A00F /* WebCheckoutSheetOutcomeTests.swift */,
+			);
+			path = WebCheckout;
+			sourceTree = "<group>";
+		};
 		C4E10000000000000000B005 /* WebView */ = {
 			isa = PBXGroup;
 			children = (
 				28661C6CE3F64078A0138080 /* WebViewOrigin.swift */,
 				C4E10000000000000000B001 /* WebViewHTTPStatus.swift */,
+				C4E10000000000000000B008 /* WebViewNavigationFailure.swift */,
 			);
 			path = WebView;
 			sourceTree = "<group>";
@@ -3889,6 +3969,7 @@
 			children = (
 				AAB0C0DE00000000000A0601 /* WebViewOriginTests.swift */,
 				C4E10000000000000000B006 /* WebViewHTTPStatusTests.swift */,
+				C4E10000000000000000B00A /* WebViewNavigationFailureTests.swift */,
 			);
 			path = WebView;
 			sourceTree = "<group>";
@@ -3935,6 +4016,7 @@
 				DBAA1FBA2F8D45C2000E8C81 /* HeaderTextBodyHeroSafeAreaPreview.swift */,
 				DBAA1FC12F8D4ED8000E8C81 /* HeaderNestedHeroZLayerSafeAreaPreview.swift */,
 				527C8FDAD4BC0E20186FB251 /* WindowSizeConditionsPreview.swift */,
+				9FDCB2854C16420D876A9752 /* WorkflowSheetRelativeDiscountPreview.swift */,
 			);
 			path = TemplateComponentsViewPreviews;
 			sourceTree = "<group>";
@@ -4016,6 +4098,7 @@
 				03AB07802E385AEF00BC5275 /* PaywallPromoOfferCache.swift */,
 				2C7457412CE810FD004ACE52 /* IntroOfferEligibilityContext.swift */,
 				2C7457202CE702BB004ACE52 /* PackageContext.swift */,
+				5D16F6916A044463BDFF39A4 /* VoiceOverEnabledOverrideKey.swift */,
 				0382135F2DCAF6BE003C02C3 /* OpenSheet.swift */,
 				2C74571E2CE7028A004ACE52 /* ScreenCondition.swift */,
 				AC06C294F30E7D8000000002 /* SelectedPackageId.swift */,
@@ -4199,6 +4282,7 @@
 				4F4FF3E02A3B731A0028018C /* ETagStrings.swift */,
 				A1E0F0012F297A0100000001 /* EventsManagerStrings.swift */,
 				AAAA44740000000000000021 /* ExternalPurchaseStrings.swift */,
+				AAAA44760000000000000021 /* HostedCheckoutStrings.swift */,
 				1E2F91712CCFA98C00BDB016 /* WebRedemptionStrings.swift */,
 				9A65E0752591977200DE00B0 /* IdentityStrings.swift */,
 				A1B2C3D62FE2000000000001 /* LocalRulesStrings.swift */,
@@ -4906,6 +4990,7 @@
 				37E35B9AC7A350CA2437049D /* ISOPeriodFormatterTests.swift */,
 				37E35EEE7783629CDE41B70C /* SystemInfoTests.swift */,
 				57E2230627500BB1002DB06E /* AtomicTests.swift */,
+				D12CC0DE0000000000000002 /* TestLogHandlerLifecycleTests.swift */,
 				AC17E0A7E0000000000000B4 /* DeferredTaskTests.swift */,
 				69E305D88B5C27BAA73FE343 /* JWTTests.swift */,
 				CDD3CB0292567BC23D1772B4 /* AnyCodingKeyTests.swift */,
@@ -4994,6 +5079,7 @@
 				2D1015DC275A57DB0086173F /* StoreKitAbstractions */,
 				75BB99002E3381BF0001DD1A /* SimulatedStore */,
 				EF0100000000000000000041 /* ExternalPurchase */,
+				AAAA44760000000000000041 /* HostedCheckout */,
 				B325543B2825C81800DA62EA /* Configuration.swift */,
 				B32B750026868C1D005647BF /* EntitlementInfo.swift */,
 				B3AA6235268A81C700894871 /* EntitlementInfos.swift */,
@@ -5035,7 +5121,7 @@
 				AAAA44750000000000000001 /* ExternalPurchaseLinkResult.swift */,
 				AAAA44740000000000000011 /* ExternalPurchaseManager.swift */,
 				EF0100000000000000000011 /* ExternalPurchaseNotice.swift */,
-				AAAA44760000000000000001 /* ExternalPurchaseTokenID.swift */,
+				AAAA44860000000000000001 /* ExternalPurchaseTokenID.swift */,
 				AAAA44770000000000000001 /* ExternalPurchaseTokenRegistration.swift */,
 				AAAA44770000000000000011 /* ExternalPurchaseTokenStore.swift */,
 				EF0100000000000000000001 /* ExternalPurchaseTokenType.swift */,
@@ -5044,16 +5130,33 @@
 			path = ExternalPurchase;
 			sourceTree = "<group>";
 		};
+		AAAA44760000000000000041 /* HostedCheckout */ = {
+			isa = PBXGroup;
+			children = (
+				AAAA44760000000000000001 /* HostedCheckoutManager.swift */,
+				AAAA44760000000000000011 /* HostedCheckoutSession.swift */,
+			);
+			path = HostedCheckout;
+			sourceTree = "<group>";
+		};
 		EF0100000000000000000071 /* ExternalPurchase */ = {
 			isa = PBXGroup;
 			children = (
 				EF0100000000000000000061 /* ExternalPurchaseCustomLinkTests.swift */,
 				AAAA44740000000000000031 /* ExternalPurchaseManagerTests.swift */,
 				AAAA44750000000000000011 /* ExternalPurchaseLinkResultTests.swift */,
-				AAAA44760000000000000011 /* ExternalPurchaseTokenIDTests.swift */,
+				AAAA44860000000000000011 /* ExternalPurchaseTokenIDTests.swift */,
 				AAAA44770000000000000021 /* ExternalPurchaseTokenStoreTests.swift */,
 			);
 			path = ExternalPurchase;
+			sourceTree = "<group>";
+		};
+		AAAA44760000000000000071 /* HostedCheckout */ = {
+			isa = PBXGroup;
+			children = (
+				AAAA44760000000000000031 /* HostedCheckoutManagerTests.swift */,
+			);
+			path = HostedCheckout;
 			sourceTree = "<group>";
 		};
 		354235D624C11160008C84EE /* Purchasing */ = {
@@ -5065,6 +5168,7 @@
 				5766AABB283E809D00FA6091 /* Purchases */,
 				7581A92B2E2EB25400D0C3DE /* SimulatedStoreUnitTests */,
 				EF0100000000000000000071 /* ExternalPurchase */,
+				AAAA44760000000000000071 /* HostedCheckout */,
 				FD2472EF2F4CBAF50074D28A /* CustomerInfoActiveDatesTests.swift */,
 				37E3582920E16E065502E5FC /* EntitlementInfosTests.swift */,
 				B3F8418E26F3A93400E560FB /* ErrorCodeTests.swift */,
@@ -5969,6 +6073,8 @@
 				537B4B2D2DA9662700CEFF4C /* HealthReportResponse.swift */,
 				FDE57A9F2DF8785000101CE2 /* VirtualCurrenciesResponse.swift */,
 				DB3395D42F840A570079250C /* WorkflowsResponse.swift */,
+				A7D300000000000000000001 /* WorkflowBranch.swift */,
+				A7D300000000000000000003 /* WorkflowTriggerAction.swift */,
 				755C26A32E310B19006DD0AE /* WebBillingProductsResponse.swift */,
 				4487A0102E90000000000001 /* HostedCheckoutResponse.swift */,
 				E35BAD07C46D469D8CC7C396 /* RemoteConfiguration.swift */,
@@ -6274,6 +6380,7 @@
 			isa = PBXGroup;
 			children = (
 				887A5FE82C1D037000E1A461 /* ConsistentPackageContentView.swift */,
+				4B04C629B98143508328E79A /* PaywallMediaAccessibility.swift */,
 				88A543E42C37A4AF0039C6A5 /* ConsistentTierContentView.swift */,
 				887A5FE92C1D037000E1A461 /* FitToAspectRatio.swift */,
 				887A5FEA2C1D037000E1A461 /* FooterHidingModifier.swift */,
@@ -6291,6 +6398,7 @@
 				887A5FED2C1D037000E1A461 /* MockPurchases.swift */,
 				887A5FEE2C1D037000E1A461 /* PaywallPurchasesType.swift */,
 				AAAA44750000000000000021 /* ExternalPurchaseLink.swift */,
+				AAAA44830000000000000011 /* HostedCheckout.swift */,
 				887A5FEF2C1D037000E1A461 /* PurchaseHandler.swift */,
 				16E147A32F3B4C010089B609 /* PurchasesUIService.swift */,
 				887A5FF02C1D037000E1A461 /* PurchaseHandler+TestData.swift */,
@@ -6426,6 +6534,7 @@
 				887A604F2C1D037000E1A461 /* Templates */,
 				887A60522C1D037000E1A461 /* UIKit */,
 				887A605F2C1D037000E1A461 /* Views */,
+				C4E00000000000000000A003 /* WebCheckout */,
 				C4E10000000000000000B005 /* WebView */,
 				2D2AFE902C6A9EF500D1B0B4 /* Binding+Extensions.swift */,
 				887A60602C1D037000E1A461 /* PaywallFontProvider.swift */,
@@ -6555,6 +6664,7 @@
 				887A613B2C1D168B00E1A461 /* Resources */,
 				887A62172C1D168B00E1A461 /* Templates */,
 				FACE0000000000000000F003 /* UIKit */,
+				C4E00000000000000000A005 /* WebCheckout */,
 				C4E10000000000000000B007 /* WebView */,
 				887A621C2C1D168B00E1A461 /* TestPlans */,
 				887A621D2C1D168B00E1A461 /* BaseSnapshotTest.swift */,
@@ -6858,6 +6968,7 @@
 				E32EE3749710C439BCB9AFD6 /* RulesEngine.swift */,
 				2F7428736E4FABCF7AD45798 /* RulesEngineEvaluate.swift */,
 				7A8B9C0D1E2F304152637480 /* Scope.swift */,
+				7A8B9C0D1E2F304152637490 /* ObjectValue.swift */,
 				DF4D7487E0B0348ED8ECCBD3 /* Value+JSON.swift */,
 				BDE6FC116D66BBEFEE662547 /* Value.swift */,
 			);
@@ -7948,6 +8059,8 @@
 				FEDA000000000000000000D3 /* CheckpointRules.swift in Sources */,
 				FEDA000000000000000000D4 /* CheckpointsConfigProvider.swift in Sources */,
 				A7D200000000000000000002 /* Audience.swift in Sources */,
+				A7D300000000000000000002 /* WorkflowBranch.swift in Sources */,
+				A7D300000000000000000004 /* WorkflowTriggerAction.swift in Sources */,
 				A7D100000000000000000002 /* AudiencesConfigProvider.swift in Sources */,
 				A1B2C3D42FE2000000000006 /* RemoteConfigStrings.swift in Sources */,
 				A1B2C3D52FE2000000000002 /* CheckpointsStrings.swift in Sources */,
@@ -8311,10 +8424,13 @@
 				AAAA44740000000000000002 /* ExternalPurchaseFlow.swift in Sources */,
 				AAAA44750000000000000002 /* ExternalPurchaseLinkResult.swift in Sources */,
 				AAAA44740000000000000012 /* ExternalPurchaseManager.swift in Sources */,
-				AAAA44760000000000000002 /* ExternalPurchaseTokenID.swift in Sources */,
+				AAAA44860000000000000002 /* ExternalPurchaseTokenID.swift in Sources */,
 				AAAA44770000000000000002 /* ExternalPurchaseTokenRegistration.swift in Sources */,
 				AAAA44770000000000000012 /* ExternalPurchaseTokenStore.swift in Sources */,
 				AAAA44740000000000000022 /* ExternalPurchaseStrings.swift in Sources */,
+				AAAA44760000000000000002 /* HostedCheckoutManager.swift in Sources */,
+				AAAA44760000000000000012 /* HostedCheckoutSession.swift in Sources */,
+				AAAA44760000000000000022 /* HostedCheckoutStrings.swift in Sources */,
 				EF0100000000000000000012 /* ExternalPurchaseNotice.swift in Sources */,
 				EF0100000000000000000002 /* ExternalPurchaseTokenType.swift in Sources */,
 				EF0100000000000000000032 /* StoreKitExternalPurchaseCustomLink.swift in Sources */,
@@ -8342,6 +8458,7 @@
 				2DF8D9550354ECBAE400C547 /* EvaluationError.swift in Sources */,
 				6A24585F01C6C2310AECC0B0 /* Evaluator.swift in Sources */,
 				7A8B9C0D1E2F304152637481 /* Scope.swift in Sources */,
+				7A8B9C0D1E2F304152637491 /* ObjectValue.swift in Sources */,
 				A1B2C3D4E5F60718293A4B5E /* CustomOperators.swift in Sources */,
 				C3D4E5F60718293A4B5C03E /* EntriesOperators.swift in Sources */,
 				D4E5F60718293A4B5C03D02 /* CaseOperators.swift in Sources */,
@@ -8381,6 +8498,7 @@
 				A0D100000000000000000003 /* DimensionResolver.swift in Sources */,
 				FA360650C0B87331F2EFF527 /* Checkpoints.swift in Sources */,
 				C0DE00000000000000000102 /* CheckpointWorkflowResolver.swift in Sources */,
+				C0DE00000000000000000103 /* ResolvedCheckpointWorkflow.swift in Sources */,
 				C0DE00000000000000000106 /* CheckpointEvent.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -8393,9 +8511,10 @@
 				EF0100000000000000000052 /* MockExternalPurchaseCustomLink.swift in Sources */,
 				EF0100000000000000000062 /* ExternalPurchaseCustomLinkTests.swift in Sources */,
 				AAAA44740000000000000032 /* ExternalPurchaseManagerTests.swift in Sources */,
-				AAAA44760000000000000012 /* ExternalPurchaseTokenIDTests.swift in Sources */,
+				AAAA44860000000000000012 /* ExternalPurchaseTokenIDTests.swift in Sources */,
 				AAAA44770000000000000022 /* ExternalPurchaseTokenStoreTests.swift in Sources */,
 				AAAA44750000000000000012 /* ExternalPurchaseLinkResultTests.swift in Sources */,
+				AAAA44760000000000000032 /* HostedCheckoutManagerTests.swift in Sources */,
 				C05A00000000000000000003 /* CustomVariableKeyValidatorTests.swift in Sources */,
 				73A620000000000000000001 /* CheckpointValueTests.swift in Sources */,
 				1E3084A830178A9100236A34 /* APISourceFailoverTests.swift in Sources */,
@@ -8589,6 +8708,7 @@
 				351B51A426D450BC00BD2BD7 /* NSError+RCExtensionsTests.swift in Sources */,
 				A524378B284FFF0200E788BD /* AttributionPosterTests.swift in Sources */,
 				57E2230727500BB1002DB06E /* AtomicTests.swift in Sources */,
+				D12CC0DE0000000000000001 /* TestLogHandlerLifecycleTests.swift in Sources */,
 				AC17E0A7E0000000000000B3 /* DeferredTaskTests.swift in Sources */,
 				BDB2DF81A0F4716A775EEE69 /* JWTTests.swift in Sources */,
 				C8B45E436A9CD78B7C05454A /* AnyCodingKeyTests.swift in Sources */,
@@ -8660,6 +8780,7 @@
 				579189E928F47E8D00BF4963 /* PurchasesDiagnosticsTests.swift in Sources */,
 				C0DE00000000000000000105 /* CheckpointWorkflowResolverTests.swift in Sources */,
 				C0DE00000000000000000108 /* CheckpointEventsRequestTests.swift in Sources */,
+				C0DE0000000000000000010A /* CheckpointEventDataTests.swift in Sources */,
 				351B51B626D450E800BD2BD7 /* ReceiptFetcherTests.swift in Sources */,
 				4F3D56632A1E66A10070105A /* CustomerInfoManagerPostReceiptTests.swift in Sources */,
 				5796A3C027D7D64500653165 /* ResultExtensionsTests.swift in Sources */,
@@ -8909,12 +9030,14 @@
 				16A5DD14302E611700E04386 /* WebViewWebsiteDataStoreSweeper.swift in Sources */,
 				73A610000000000000000002 /* Checkpoints.swift in Sources */,
 				73A610000000000000000004 /* CheckpointResults.swift in Sources */,
-				73A640000000000000000001 /* CheckpointCallStore.swift in Sources */,
+				73A640000000000000000001 /* CheckpointPresentationSlot.swift in Sources */,
 				73A660000000000000000001 /* CheckpointError.swift in Sources */,
 				73A670000000000000000001 /* CheckpointIdentifierValidator.swift in Sources */,
-				73A640000000000000000004 /* CheckpointWorkflowExecutor.swift in Sources */,
-				73A640000000000000000003 /* CheckpointWorkflowPresenter.swift in Sources */,
+				73A680000000000000000001 /* CheckpointPresenter.swift in Sources */,
+				73A640000000000000000004 /* WorkflowPresentation.swift in Sources */,
+				73A640000000000000000003 /* WorkflowPresenter.swift in Sources */,
 				73A640000000000000000005 /* CheckpointsManager.swift in Sources */,
+				73A680000000000000000003 /* PaywallPresenter.swift in Sources */,
 				73A610000000000000000003 /* Purchases+Checkpoints.swift in Sources */,
 				88B1BB132C81479F001B7EE5 /* PaywallComponentTypeTransformers.swift in Sources */,
 				88B1BB042C813A3C001B7EE5 /* StackComponentViewModel.swift in Sources */,
@@ -8937,6 +9060,7 @@
 				887A60722C1D037000E1A461 /* PaywallViewMode+Extensions.swift in Sources */,
 				887A60C32C1D037000E1A461 /* FooterView.swift in Sources */,
 				2C7457212CE702BB004ACE52 /* PackageContext.swift in Sources */,
+				F221538ADDD849338CEBB79F /* VoiceOverEnabledOverrideKey.swift in Sources */,
 				887A607F2C1D037000E1A461 /* Optional+Extensions.swift in Sources */,
 				2C08B3172CDA44440024857B /* ViewModelFactory.swift in Sources */,
 				356979E02CCFDAA100EE6A9E /* CustomerInfoFixtures.swift in Sources */,
@@ -8957,6 +9081,7 @@
 				887A60BE2C1D037000E1A461 /* PaywallFooterViewController.swift in Sources */,
 				DBD2A168300E81E20019DB7F /* VideoAudioSessionHandler.swift in Sources */,
 				AAAA44750000000000000022 /* ExternalPurchaseLink.swift in Sources */,
+				AAAA44830000000000000012 /* HostedCheckout.swift in Sources */,
 				887A608A2C1D037000E1A461 /* PurchaseHandler.swift in Sources */,
 				A82500013C8D000000000001 /* KeyWindowFocusResigner.swift in Sources */,
 				16E147A42F3B4C010089B609 /* PurchasesUIService.swift in Sources */,
@@ -9013,6 +9138,7 @@
 				577132B92E4CE43A003A0CBD /* NoSubscriptionsCardViewModel.swift in Sources */,
 				2C2AEB0F2CA64E0E00A50F38 /* Template1Preview.swift in Sources */,
 				832A761DBC4EA873D769CB83 /* WindowSizeConditionsPreview.swift in Sources */,
+				9FDCB2854C16420D876A9751 /* WorkflowSheetRelativeDiscountPreview.swift in Sources */,
 				88A543E32C37A4970039C6A5 /* Template7View.swift in Sources */,
 				2C91068C2CE22D4F00189565 /* JustifyContent.swift in Sources */,
 				806797FE2FCD970800DF760F /* PaywallZLayerScrollPolicy.swift in Sources */,
@@ -9066,6 +9192,11 @@
 				164681D62E6B577600854AA5 /* VideoPlayerLayerUIView.swift in Sources */,
 				FC5AE63E8F81C3EC2FFDA408 /* WebViewOrigin.swift in Sources */,
 				C4E10000000000000000B002 /* WebViewHTTPStatus.swift in Sources */,
+				C4E00000000000000000A007 /* WebCheckoutReturnURL.swift in Sources */,
+				C4E00000000000000000A009 /* WebCheckoutViewModel.swift in Sources */,
+				C4E00000000000000000A00B /* WebCheckoutView.swift in Sources */,
+				C4E00000000000000000A010 /* WebCheckoutSheet.swift in Sources */,
+				C4E10000000000000000B009 /* WebViewNavigationFailure.swift in Sources */,
 				C4E10000000000000000B004 /* WebViewComponentNavigationPolicy.swift in Sources */,
 				FA4A2DF41FC434A9401F08CC /* PaywallWebViewValue.swift in Sources */,
 				11CC2EA83C56933E40D8E5D8 /* WebViewEnvelope.swift in Sources */,
@@ -9210,6 +9341,7 @@
 				0387D4AF2EC58AA5008E4A6B /* CountdownComponentView.swift in Sources */,
 				7707A94E2CAD94D2006E0313 /* ButtonComponentViewModel.swift in Sources */,
 				887A60842C1D037000E1A461 /* ConsistentPackageContentView.swift in Sources */,
+				99C5EAC7E37845D1B8869B4E /* PaywallMediaAccessibility.swift in Sources */,
 				887A60C42C1D037000E1A461 /* IconView.swift in Sources */,
 				830004012E261AC100143F9F /* PlatformImage.swift in Sources */,
 				887A60732C1D037000E1A461 /* ProcessedLocalizedConfiguration.swift in Sources */,

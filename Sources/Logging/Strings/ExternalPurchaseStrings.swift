@@ -18,8 +18,7 @@ import Foundation
 enum ExternalPurchaseStrings {
 
     case eligibility_resolved(_ availability: ExternalPurchaseAvailability)
-    case unsupported_with_test_store
-    case cannot_make_external_purchases
+    case custom_link_does_not_apply
     case payments_not_authorized
     case already_preparing
     case notice_cancelled
@@ -42,10 +41,9 @@ extension ExternalPurchaseStrings: LogMessage {
         switch self {
         case let .eligibility_resolved(availability):
             return "External purchase availability resolved to \(availability)."
-        case .unsupported_with_test_store:
-            return "External purchases are not supported when the SDK is configured with a Test Store API key."
-        case .cannot_make_external_purchases:
-            return "Not preparing an external purchase: this app cannot offer one to this customer."
+        case .custom_link_does_not_apply:
+            return "Apple's external purchase custom link does not apply to this customer: continuing with " +
+            "no notice shown and no token minted."
         case .payments_not_authorized:
             return "Not preparing an external purchase: this device does not authorize payments."
         case .already_preparing:

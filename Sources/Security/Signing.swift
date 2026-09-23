@@ -19,11 +19,11 @@ import Foundation
 /// A type that can verify signatures.
 protocol SigningType {
 
-    func verify(
-        signature: String,
+    func verificationResult(
+        for signature: String,
         with parameters: Signing.SignatureParameters,
         publicKey: Signing.PublicKey
-    ) -> Bool
+    ) -> SignatureVerificationResult
 
 }
 
@@ -32,6 +32,7 @@ final class Signing: SigningType {
 
     /// An object that represents a cryptographic key.
     typealias PublicKey = SigningPublicKey
+    typealias PublicKeyFactory = (Data) throws -> PublicKey
 
     /// Parameters used for signature creation / verification.
     struct SignatureParameters {
@@ -50,10 +51,18 @@ final class Signing: SigningType {
 
     private let apiKey: String
     private let clock: ClockType
+    private let publicKeyFactory: PublicKeyFactory
 
     init(apiKey: String, clock: ClockType = Clock.default) {
         self.apiKey = apiKey
         self.clock = clock
+        self.publicKeyFactory = Self.createPublicKey
+    }
+
+    init(apiKey: String, clock: ClockType, publicKeyFactory: @escaping PublicKeyFactory) {
+        self.apiKey = apiKey
+        self.clock = clock
+        self.publicKeyFactory = publicKeyFactory
     }
 
     /// Parses the binary `key` and returns a `PublicKey`
@@ -75,27 +84,33 @@ final class Signing: SigningType {
         }
     }
 
-    func verify(
-        signature: String,
+    func verificationResult(
+        for signature: String,
         with parameters: SignatureParameters,
         publicKey: Signing.PublicKey
-    ) -> Bool {
+    ) -> SignatureVerificationResult {
         guard let signature = Data(base64Encoded: signature) else {
             Logger.warn(Strings.signing.signature_not_base64(signature))
-            return false
+            return .failed(.invalidSignatureFormat)
         }
 
         guard signature.count == SignatureComponent.totalSize else {
             Logger.warn(Strings.signing.signature_invalid_size(signature))
-            return false
+            return .failed(.invalidSignatureFormat)
         }
 
-        guard let intermediatePublicKey = Self.extractAndVerifyIntermediateKey(
-            from: signature,
-            publicKey: publicKey,
-            clock: self.clock
-        ) else {
-            return false
+        let intermediatePublicKey: Signing.PublicKey
+        do {
+            intermediatePublicKey = try Self.extractAndVerifyIntermediateKey(
+                from: signature,
+                publicKey: publicKey,
+                clock: self.clock,
+                publicKeyFactory: self.publicKeyFactory
+            )
+        } catch let error as IntermediateKeyError {
+            return .failed(.init(error))
+        } catch {
+            return .failed(.unknown)
         }
 
         let authValue = parameters.requestHeaders.bearerAuthorizationValue ?? self.apiKey
@@ -119,11 +134,11 @@ final class Signing: SigningType {
 
         if isValid {
             Logger.verbose(Strings.signing.signature_passed_verification)
+            return .verified
         } else {
             Logger.warn(Strings.signing.signature_failed_verification)
+            return .failed(.payloadSignatureMismatch)
         }
-
-        return isValid
     }
 
     static func verificationMode(
@@ -324,6 +339,33 @@ extension Signing.SignatureParameters: CustomDebugStringConvertible {
 
 private final class BundleToken: NSObject {}
 
+// swiftlint:disable:next private_over_fileprivate
+fileprivate enum IntermediateKeyError: Error {
+
+    case invalidSignature
+    case invalidExpiration
+    case expired
+    case invalidKey
+
+}
+
+fileprivate extension SignatureVerificationResult.FailureReason {
+
+    init(_ error: IntermediateKeyError) {
+        switch error {
+        case .invalidSignature:
+            self = .invalidIntermediateKeySignature
+        case .invalidExpiration:
+            self = .unknown
+        case .expired:
+            self = .intermediateKeyExpired
+        case .invalidKey:
+            self = .invalidIntermediateKey
+        }
+    }
+
+}
+
 private extension Signing {
 
     static func createPublicKey(with data: Data) throws -> PublicKey {
@@ -333,8 +375,9 @@ private extension Signing {
     static func extractAndVerifyIntermediateKey(
         from signature: Data,
         publicKey: Signing.PublicKey,
-        clock: ClockType
-    ) -> Signing.PublicKey? {
+        clock: ClockType,
+        publicKeyFactory: PublicKeyFactory
+    ) throws -> Signing.PublicKey {
         let intermediatePublicKey = signature.component(.intermediatePublicKey)
         let intermediateKeyExpiration = signature.component(.intermediateKeyExpiration)
         let intermediateKeySignature = signature.component(.intermediateKeySignature)
@@ -342,41 +385,37 @@ private extension Signing {
         guard publicKey.isValidSignature(intermediateKeySignature,
                                          for: intermediateKeyExpiration + intermediatePublicKey) else {
             Logger.warn(Strings.signing.intermediate_key_failed_verification(signature: intermediateKeySignature))
-            return nil
+            throw IntermediateKeyError.invalidSignature
         }
 
-        guard let expirationDate = Self.extractAndVerifyIntermediateKeyExpiration(intermediateKeyExpiration,
-                                                                                  clock) else {
-            return nil
-        }
+        let expirationDate = try Self.extractAndVerifyIntermediateKeyExpiration(intermediateKeyExpiration, clock)
 
         Logger.verbose(Strings.signing.intermediate_key_creating(expiration: expirationDate,
                                                                  data: intermediatePublicKey))
 
         do {
-            return try Self.createPublicKey(with: intermediatePublicKey)
+            return try publicKeyFactory(intermediatePublicKey)
         } catch {
             Logger.error(Strings.signing.intermediate_key_failed_creation(error))
-            return nil
+            throw IntermediateKeyError.invalidKey
         }
     }
 
-    /// - Returns: `nil` if the key is expired or has an invalid expiration date.
     private static func extractAndVerifyIntermediateKeyExpiration(
         _ expirationData: Data,
         _ clock: ClockType
-    ) -> Date? {
+    ) throws -> Date {
         let daysSince1970 = UInt32(littleEndian32Bits: expirationData)
 
         guard daysSince1970 > 0 else {
             Logger.warn(Strings.signing.intermediate_key_invalid(expirationData))
-            return nil
+            throw IntermediateKeyError.invalidExpiration
         }
 
         let expirationDate = Date(daysSince1970: daysSince1970)
         guard expirationDate.timeIntervalSince(clock.now) >= 0 else {
             Logger.warn(Strings.signing.intermediate_key_expired(expirationDate, expirationData))
-            return nil
+            throw IntermediateKeyError.expired
         }
 
         return expirationDate

@@ -30,13 +30,16 @@ let project = Project(
             sources: ["rc-maestro/Sources/**/*.swift"],
             resources: [
                 "rc-maestro/Resources/**/*.xcassets",
+                "rc-maestro/Resources/StoreKit/app787ddb07e6.storekit",
             ],
             dependencies: [
                 .revenueCat,
                 .revenueCatUI,
                 .storeKit
             ],
-            settings: .appTarget
+            settings: .appTarget(including: [
+                "ENABLE_TESTING_SEARCH_PATHS[sdk=iphonesimulator*]": "YES",
+            ])
         )
     ],
     schemes: [
