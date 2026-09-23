@@ -28,6 +28,8 @@ import Foundation
     /// Package context from `singleStepFallbackId`, precomputed because it is stable for a workflow.
     let workflowPackageContext: WorkflowPackageContext?
     let workflowBlobRef: String?
+    /// Set when a checkpoint started the workflow, so its events join the checkpoint hit.
+    let traceId: String?
 
     init(
         workflow: PublishedWorkflow,
@@ -35,9 +37,11 @@ import Foundation
         allOfferings: Offerings,
         initialOffering: Offering,
         presentedOfferingContext: PresentedOfferingContext?,
-        workflowBlobRef: String? = nil
+        workflowBlobRef: String? = nil,
+        traceId: String? = nil
     ) {
         self.workflowBlobRef = workflowBlobRef
+        self.traceId = traceId
         self.workflow = workflow
         self.uiConfig = uiConfig
         self.allOfferings = allOfferings
