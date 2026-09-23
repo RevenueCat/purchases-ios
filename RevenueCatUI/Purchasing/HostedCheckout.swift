@@ -21,7 +21,7 @@ import Foundation
 enum HostedCheckout {
 
     /// What the paywall does with the tap that asked for a checkout.
-    enum Start: Equatable {
+    enum Action: Equatable {
 
         /// Present this checkout to the customer.
         case present(HostedCheckoutSession)
@@ -46,8 +46,8 @@ enum HostedCheckout {
     }
 
     /// Runs Apple's flow and creates the checkout session.
-    static func start(for package: Package, purchaseHandler: PurchaseHandler) async -> Start {
-        return Start(await purchaseHandler.startHostedCheckout(package: package))
+    static func start(for package: Package, purchaseHandler: PurchaseHandler) async -> Action {
+        return Action(await purchaseHandler.startHostedCheckout(package: package))
     }
 
 }

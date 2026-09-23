@@ -33,42 +33,42 @@ final class HostedCheckoutTests: TestCase {
         let purchases = Self.makePurchases()
         purchases.hostedCheckoutBlock = { _, _ in .started(Self.session) }
 
-        let start = await HostedCheckout.start(for: TestData.annualPackage,
-                                               purchaseHandler: Self.makeHandler(purchases: purchases))
+        let action = await HostedCheckout.start(for: TestData.annualPackage,
+                                                purchaseHandler: Self.makeHandler(purchases: purchases))
 
-        expect(start) == .present(Self.session)
+        expect(action) == .present(Self.session)
     }
 
     func testPresentsTheCheckoutThatWasCreated() {
-        expect(HostedCheckout.Start(.started(Self.session))) == .present(Self.session)
+        expect(HostedCheckout.Action(.started(Self.session))) == .present(Self.session)
     }
 
     /// There is no checkout to open for something the customer already has, and they are told so rather than
     /// left with a button that appears to do nothing.
     func testTellsTheCustomerWhenTheyAlreadyOwnTheProduct() {
-        expect(HostedCheckout.Start(.alreadyPurchased)) == .tellCustomerTheyAlreadyOwnIt
+        expect(HostedCheckout.Action(.alreadyPurchased)) == .tellCustomerTheyAlreadyOwnIt
     }
 
     /// A customer who said no to Apple's notice said no to the purchase.
     func testOffersNothingWhenTheCustomerDeclinedTheNotice() {
-        expect(HostedCheckout.Start(.declinedByCustomer)) == .nothing
+        expect(HostedCheckout.Action(.declinedByCustomer)) == .nothing
     }
 
     /// Apple asks that a device that does not authorize payments be offered no purchase at all, not even
     /// through StoreKit.
     func testOffersNothingWhenTheDeviceDoesNotAuthorizePayments() {
-        expect(HostedCheckout.Start(.paymentsNotAuthorized)) == .nothing
+        expect(HostedCheckout.Action(.paymentsNotAuthorized)) == .nothing
     }
 
     /// The checkout already under way carries the purchase.
     func testOffersNothingWhileAnotherCheckoutIsStarting() {
-        expect(HostedCheckout.Start(.alreadyStarting)) == .nothing
+        expect(HostedCheckout.Action(.alreadyStarting)) == .nothing
     }
 
     /// Falling back to StoreKit here would charge a customer who is midway through a checkout that may yet
     /// be resolved, so a failure offers nothing.
     func testOffersNothingWhenTheCheckoutCouldNotBeCreated() {
-        expect(HostedCheckout.Start(.failed)) == .nothing
+        expect(HostedCheckout.Action(.failed)) == .nothing
     }
 
 }
