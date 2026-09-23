@@ -349,6 +349,29 @@ class PurchasesSubscriberAttributesTests: TestCase {
         expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
     }
 
+    func testForegroundSyncsSubscriberAttributesImmediatelyWithStaleCachedCustomerInfo() {
+        let customerInfoResponseGate = MockAsyncGate()
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(.emptyInfo)
+        self.setupPurchases()
+
+        expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(1))
+        expect(self.mockDeviceCache.cacheCustomerInfoCount).toEventually(equal(1))
+
+        self.mockDeviceCache.stubbedIsCustomerInfoCacheStale = true
+        self.mockBackend.deferredGetCustomerInfoCompletionGate.value = customerInfoResponseGate
+        self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount = 0
+
+        self.mockNotificationCenter.fireApplicationWillEnterForegroundNotification()
+
+        expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(2))
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount).toEventually(equal(1))
+
+        customerInfoResponseGate.open()
+
+        expect(self.mockBackend.completedGetCustomerInfoCount.value).toEventually(equal(2))
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 1
+    }
+
     func testResigningActiveSyncsSubscriberAttributesImmediatelyWithCachedCustomerInfo() {
         self.mockBackend.stubbedGetCustomerInfoResult = .success(.emptyInfo)
         self.setupPurchases()
@@ -390,7 +413,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
         expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 0
     }
 
-    func testColdBootForegroundSkipsSubscriberAttributesUntilLaterLifecycleWithCachedCustomerInfo() {
+    func testColdBootForegroundDefersSubscriberAttributesUntilInitialCustomerInfoCompletes() {
         let customerInfoResponseGate = MockAsyncGate()
         let subscriberAttributesManager = SubscriberAttributesManager(
             backend: self.mockBackend,
@@ -435,15 +458,34 @@ class PurchasesSubscriberAttributesTests: TestCase {
 
         expect(self.mockBackend.completedGetCustomerInfoCount.value).toEventually(equal(2))
         expect(self.mockDeviceCache.cacheCustomerInfoCount).toEventually(equal(2))
-        expect(self.mockBackend.invokedPostSubscriberAttributesCount) == 0
-
-        let customerInfoRequestCount = self.mockBackend.invokedGetSubscriberDataCount
-        self.mockNotificationCenter.fireApplicationWillResignActiveNotification()
-
         expect(self.mockBackend.invokedPostSubscriberAttributesCount).toEventually(equal(1))
-        expect(self.mockBackend.invokedGetSubscriberDataCount) == customerInfoRequestCount
+        expect(self.mockBackend.invokedPostSubscriberAttributesCount).toNever(beGreaterThan(1))
         let postedAttributes = self.mockBackend.invokedPostSubscriberAttributesParameters?.subscriberAttributes
         expect(postedAttributes?["$attConsentStatus"]?.value) == "authorized"
+    }
+
+    func testColdBootForegroundDoesNotSyncSubscriberAttributesAfterAppUserIDChanges() {
+        let customerInfoResponseGate = MockAsyncGate()
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(.emptyInfo)
+        self.mockBackend.deferredGetCustomerInfoCompletionGate.value = customerInfoResponseGate
+
+        self.setupPurchases(isAnonymous: true)
+        let originalAppUserID = self.purchases.appUserID
+        expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(1))
+
+        self.mockNotificationCenter.fireApplicationWillEnterForegroundNotification()
+
+        expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(2))
+        expect(self.mockBackend.invokedGetSubscriberDataParameters?.appUserID) == originalAppUserID
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 0
+
+        self.mockIdentityManager.mockIsAnonymous = false
+        self.mockIdentityManager.mockAppUserID = "new_user"
+        customerInfoResponseGate.open()
+
+        expect(self.mockBackend.completedGetCustomerInfoCount.value).toEventually(equal(2))
+        expect(self.mockDeviceCache.cacheCustomerInfoCount).toEventually(equal(2))
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount).toNever(beGreaterThan(0))
     }
 
     func testResigningActiveDoesNotFetchCustomerInfoOrSyncAttributesWhenCustomerInfoIsUnavailable() {
