@@ -141,6 +141,40 @@ class CheckpointsConfigProviderTests: TestCase {
         expect(rules).to(beNil())
     }
 
+    func testResolvesCheckpointPublishedByRefreshWhenCommittedTopicIsStale() async throws {
+        self.commit(rules: ["onboarding": ["wf-a"]])
+
+        let payload = Self.payload(workflowIds: ["wf-new"])
+        let blobRef = RCContainerTestData.blobRef(for: payload)
+        let configuration = RemoteConfiguration(
+            domain: RemoteConfiguration.defaultDomain,
+            manifest: "updated-manifest",
+            activeTopics: [RemoteConfigTopic.checkpointRules.wireName],
+            topics: .init(entries: [
+                RemoteConfigTopic.checkpointRules.wireName: ["new_checkpoint": .init(blobRef: blobRef)]
+            ])
+        )
+        let container = try RemoteConfigContainer(data: RCContainerTestData.compressedContainer(
+            config: try JSONEncoder.default.encode(configuration),
+            contentElements: [(payload, .none)]
+        ))
+        self.remoteConfigAPI.result = .success(.init(response: .init(
+            httpStatusCode: .success,
+            responseHeaders: [:],
+            body: container,
+            verificationResult: .verified,
+            isLoadShedderResponse: false,
+            isFallbackUrlResponse: false
+        )))
+
+        let ruleSet = try await self.ruleSet("new_checkpoint")
+        let readsAfterRefresh = self.blobStore.readCount(for: blobRef)
+        _ = try await self.ruleSet("new_checkpoint")
+
+        expect(ruleSet.rules.onlyElement?.workflowId) == "wf-new"
+        expect(self.blobStore.readCount(for: blobRef)) == readsAfterRefresh
+    }
+
     func testReturnsNilWhenTheTopicIsAbsent() async throws {
         self.commit(rules: [:])
 

@@ -90,6 +90,26 @@ final class CheckpointsConfigProvider: CheckpointsConfigProviderType {
     }
 
     private func loadRules(for identifier: String) async throws -> CheckpointRuleSet? {
+        do {
+            if let checkpoint = try await self.manager.blobData(
+                for: .checkpointRules,
+                itemKey: identifier,
+                as: CheckpointRuleSet.self
+            ) {
+                guard let topic = await self.manager.topic(.checkpointRules), topic[identifier] != nil else {
+                    return nil
+                }
+                let topicSnapshot = GenerationGuardedCacheSnapshot(
+                    generation: self.manager.configGeneration,
+                    key: topic
+                )
+                self.cache(checkpoint, for: identifier, snapshot: topicSnapshot)
+                return checkpoint
+            }
+        } catch {
+            Logger.error(Strings.codable.decoding_error(error, CheckpointRuleSet.self))
+        }
+
         guard let topic = await self.manager.topic(.checkpointRules) else {
             guard await self.manager.hasCommittedConfig() else {
                 throw CheckpointRulesProviderError.payloadUnavailable
@@ -98,38 +118,7 @@ final class CheckpointsConfigProvider: CheckpointsConfigProviderType {
         }
 
         guard topic[identifier] != nil else { return nil }
-        let topicSnapshot = GenerationGuardedCacheSnapshot(
-            generation: self.manager.configGeneration,
-            key: topic
-        )
-
-        if let cached = self.cachedRule(for: identifier, snapshot: topicSnapshot) {
-            return cached
-        }
-
-        do {
-            if let checkpoint = try await self.manager.blobData(
-                for: .checkpointRules,
-                itemKey: identifier,
-                as: CheckpointRuleSet.self
-            ) {
-                self.cache(checkpoint, for: identifier, snapshot: topicSnapshot)
-                return checkpoint
-            }
-        } catch {
-            Logger.error(Strings.codable.decoding_error(error, CheckpointRuleSet.self))
-        }
-
         throw CheckpointRulesProviderError.payloadUnavailable
-    }
-
-    private func cachedRule(
-        for identifier: String,
-        snapshot: GenerationGuardedCacheSnapshot<RemoteConfiguration.ConfigTopic>
-    ) -> CheckpointRuleSet? {
-        return self.cacheLock.perform {
-            return self.cachedRules.value(for: snapshot)?[identifier]
-        }
     }
 
     private func currentCachedRules(for identifier: String) -> CheckpointRulesSnapshot? {
