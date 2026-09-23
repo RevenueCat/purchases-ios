@@ -45,7 +45,7 @@ final class AudiencesConfigProvider: AudiencesConfigProviderType {
 
     func warm() async {
         guard let snapshot = await self.manager.committedTopicCacheSnapshot(.audiences),
-              snapshot.key[Self.audiencesBlobItemKey] != nil,
+              snapshot.key[Self.audiencesBlobItemKey]?.prefetch == true,
               let blob = await self.manager.blobData(
                   for: .audiences,
                   itemKey: Self.audiencesBlobItemKey,

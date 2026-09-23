@@ -15,7 +15,7 @@ final class AudiencesConfigProviderTests: TestCase {
 
     func testWarmCachesLocalDataBeforeConfigurationIsRequested() async throws {
         let manager = MockRemoteConfigManager()
-        manager.stubbedTopics[.audiences] = ["default": .init(blobRef: "audiences-ref")]
+        manager.stubbedTopics[.audiences] = ["default": .init(blobRef: "audiences-ref", prefetch: true)]
         manager.stubbedBlobData[.audiences] = [
             "default": #"{ "aud_123": { "id": "aud_123", "rules": {} } }"#.asData
         ]
@@ -28,6 +28,21 @@ final class AudiencesConfigProviderTests: TestCase {
         expect(manager.invokedCachedBlobDataParameters.map(\.itemKey)) == ["default"]
         expect(manager.invokedTopicCount) == 0
         expect(manager.invokedBlobDataParameters).to(beEmpty())
+    }
+
+    func testWarmSkipsAudienceConfigurationWithoutPrefetch() async throws {
+        let manager = MockRemoteConfigManager()
+        manager.stubbedTopics[.audiences] = ["default": .init(blobRef: "audiences-ref", prefetch: false)]
+        manager.stubbedBlobData[.audiences] = [
+            "default": #"{ "aud_123": { "id": "aud_123", "rules": {} } }"#.asData
+        ]
+        let provider = AudiencesConfigProvider(manager: manager)
+
+        await provider.warm()
+
+        expect(manager.invokedCachedBlobDataParameters).to(beEmpty())
+        let configuration = try await provider.configuration()
+        expect(configuration?.audiences["aud_123"]?.id) == "aud_123"
     }
 
     func testWarmDoesNotCacheDataFromASupersededGeneration() async throws {

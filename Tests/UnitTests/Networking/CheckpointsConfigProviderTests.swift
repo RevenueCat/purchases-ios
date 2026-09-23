@@ -108,6 +108,19 @@ class CheckpointsConfigProviderTests: TestCase {
         expect(self.blobFetcher.ensureDownloadedCallCount) == 0
     }
 
+    func testWarmSkipsCheckpointRulesWithoutPrefetch() async throws {
+        self.commit(
+            checkpoints: ["onboarding": .init(blobRef: "onboarding-ref", prefetch: false)],
+            blobs: ["onboarding-ref": Self.payload(workflowIds: ["wf-a"])]
+        )
+
+        await self.provider.warm()
+
+        expect(self.blobStore.readCount(for: "onboarding-ref")) == 0
+        let ruleSet = try await self.ruleSet("onboarding")
+        expect(ruleSet.rules.onlyElement?.workflowId) == "wf-a"
+    }
+
     func testReturnsNilForACheckpointThatHasNoItem() async throws {
         self.commit(rules: ["onboarding": ["wf-a"]])
 

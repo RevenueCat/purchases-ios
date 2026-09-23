@@ -55,7 +55,7 @@ final class CheckpointsConfigProvider: CheckpointsConfigProviderType {
     func warm() async {
         guard let snapshot = await self.manager.committedTopicCacheSnapshot(.checkpointRules) else { return }
 
-        for identifier in snapshot.key.keys {
+        for (identifier, item) in snapshot.key where item.prefetch {
             guard self.manager.configGeneration == snapshot.generation else { return }
             guard let data = await self.manager.blobData(
                 for: .checkpointRules,
