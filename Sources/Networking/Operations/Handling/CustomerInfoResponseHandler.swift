@@ -50,7 +50,7 @@ class CustomerInfoResponseHandler {
                     _ = response.body.errorResponse.asBackendError(with: response.httpStatusCode)
                 }
 
-                return response.body.customerInfo.copy(with: response.verificationResult,
+                return response.body.customerInfo.copy(with: response.verificationResult.result,
                                                        httpResponseOriginalSource: response.originalSource)
             }
             .mapError(BackendError.networkError)

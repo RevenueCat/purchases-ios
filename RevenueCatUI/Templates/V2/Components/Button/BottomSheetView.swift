@@ -241,6 +241,10 @@ struct BottomSheetOverlayModifier: ViewModifier {
                     .id(sheetViewModel.sheet.id)
                 }
             }
+            // Hiding the paywall doesn't reach into its ScrollView, so VoiceOver still walked it.
+            // Only checkable with Accessibility Inspector or VoiceOver: XCUITest lists hidden elements.
+            .accessibilityElement(children: .contain)
+            .accessibilityAddTraits(self.sheetViewModel != nil ? .isModal : [])
             .background(
                 GeometryReader { proxy in
                     Color.clear

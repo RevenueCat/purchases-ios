@@ -305,6 +305,21 @@ extension PurchaseHandler {
         return result
     }
 
+    /// Asks the app's purchase interceptor, if it set one, whether the purchase of `package` may go ahead.
+    func shouldProceed(withPurchaseOf package: Package, interceptor: PurchaseInitiatedAction?) async -> Bool {
+        guard let interceptor else {
+            return true
+        }
+
+        return await self.withPendingPurchaseContinuation {
+            await withCheckedContinuation { continuation in
+                interceptor(package, resume: ResumeAction { shouldProceed in
+                    continuation.resume(returning: shouldProceed)
+                })
+            }
+        }
+    }
+
     /// Runs `preparation` with the paywall marked as busy, so the button the customer tapped cannot start a
     /// second trip out of the app while Apple's flow is under way.
     ///
@@ -339,6 +354,7 @@ extension PurchaseHandler {
         // Carried so that the purchase the customer makes on the page is attributed to the paywall that sent
         // them there.
         let paywallEvent = self.createPurchaseInitiatedEvent(package: package)
+        if let paywallEvent { self.track(paywallEvent) }
 
         return await self.withExternalPurchasePreparation {
             await self.purchases.startHostedCheckout(package: package, paywallEvent: paywallEvent)
@@ -676,7 +692,8 @@ extension PurchaseHandler {
         uiConfig: UIConfig,
         allOfferings: Offerings,
         presentedOfferingContext: PresentedOfferingContext?,
-        workflowBlobRef: String? = nil
+        workflowBlobRef: String? = nil,
+        traceId: String? = nil
     ) throws -> WorkflowContext {
         guard let step = workflow.steps[workflow.initialStepId] else {
             throw PaywallError.workflowInitialStepNotFound(
@@ -726,7 +743,8 @@ extension PurchaseHandler {
             allOfferings: allOfferings,
             initialOffering: offering,
             presentedOfferingContext: presentedOfferingContext,
-            workflowBlobRef: workflowBlobRef
+            workflowBlobRef: workflowBlobRef,
+            traceId: traceId
         )
     }
     #endif
