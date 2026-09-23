@@ -88,6 +88,7 @@ struct IconComponentView: View {
                         shape: style.iconBackgroundShape?.toInsettableShape())
                 .size(style.size)
                 .padding(style.margin)
+                .paywallDecorativeMedia()
             }
         }
     }

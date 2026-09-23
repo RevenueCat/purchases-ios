@@ -1592,7 +1592,8 @@ jobs:
               bundle exec fastlane run slack_backend_integration_test_results \
                 environment:"maestro_e2e (all environments)" \
                 success:true \
-                message_binary_solo_on_failure:false
+                message_binary_solo_on_failure:false \
+                notify_success_only_on_recovery:true
             fi
           when: always
       # Check if any tests failed and fail the job if so
@@ -2714,6 +2715,10 @@ workflows:
           context:
             - e2e-tests
             - slack-secrets
+      - run-workflow-maestro-tests:
+          context:
+            - e2e-tests
+            - slack-secrets
 
   daily-cocoapods-token-keepalive:
     when:
@@ -2806,6 +2811,10 @@ workflows:
             - slack-secrets-ios
             - slack-secrets
       - run-all-maestro-e2e-tests:
+          context:
+            - e2e-tests
+            - slack-secrets
+      - run-workflow-maestro-tests:
           context:
             - e2e-tests
             - slack-secrets
@@ -2915,6 +2924,7 @@ workflows:
           requires:
             - check-api-changes
             - run-all-maestro-e2e-tests
+            - run-workflow-maestro-tests
             - lint
             - run-test-ios-26
             - run-test-ios-27
