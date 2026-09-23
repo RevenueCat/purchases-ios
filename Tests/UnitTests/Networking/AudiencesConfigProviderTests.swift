@@ -47,7 +47,7 @@ final class AudiencesConfigProviderTests: TestCase {
 
     func testWarmDoesNotCacheDataFromASupersededGeneration() async throws {
         let manager = MockRemoteConfigManager()
-        manager.stubbedTopics[.audiences] = ["default": .init(blobRef: "old")]
+        manager.stubbedTopics[.audiences] = ["default": .init(blobRef: "old", prefetch: true)]
         manager.stubbedBlobData[.audiences] = ["default": #"{ "old": { "id": "old", "rules": {} } }"#.asData]
         manager.shouldStoreCachedBlobDataCompletion = true
         let provider = AudiencesConfigProvider(manager: manager)
@@ -55,7 +55,7 @@ final class AudiencesConfigProviderTests: TestCase {
         let warm = Task { await provider.warm() }
         await expect(manager.invokedCachedBlobDataParameters.count).toEventually(equal(1))
         manager.configGeneration += 1
-        manager.stubbedTopics[.audiences] = ["default": .init(blobRef: "new")]
+        manager.stubbedTopics[.audiences] = ["default": .init(blobRef: "new", prefetch: true)]
         manager.stubbedBlobData[.audiences] = ["default": #"{ "new": { "id": "new", "rules": {} } }"#.asData]
         manager.completeStoredCachedBlobReads()
         await warm.value
