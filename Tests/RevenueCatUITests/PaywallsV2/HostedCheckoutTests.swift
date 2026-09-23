@@ -139,6 +139,153 @@ final class HostedCheckoutTests: TestCase {
         expect(HostedCheckout.Action(.failed)) == .nothing
     }
 
+    // MARK: - Settling on what the backend says
+
+    func testCountsAConfirmedPurchaseWhicheverWayTheCustomerLeft() {
+        expect(HostedCheckout.Settlement(.succeeded, after: .successPage)) == .purchased
+        expect(HostedCheckout.Settlement(.succeeded, after: .closedSheet)) == .purchased
+    }
+
+    func testTellsTheCustomerTheyAlreadyOwnItWhicheverWayTheyLeft() {
+        expect(HostedCheckout.Settlement(.alreadyPurchased, after: .successPage)) == .tellCustomerTheyAlreadyOwnIt
+        expect(HostedCheckout.Settlement(.alreadyPurchased, after: .closedSheet)) == .tellCustomerTheyAlreadyOwnIt
+    }
+
+    /// The success page told the customer the purchase went through, so anything short of it is an error.
+    func testFailsWhenTheBackendDoesNotConfirmWhatTheSuccessPageSaid() {
+        expect(HostedCheckout.Settlement(.failed(code: 3, message: "payment_charge_failed"), after: .successPage))
+            == .failed(.failed(code: 3))
+        expect(HostedCheckout.Settlement(.undetermined, after: .successPage)) == .failed(.unconfirmed)
+    }
+
+    /// A customer who closed the sheet on a session that never finished most likely walked away.
+    func testCancelsWhenTheCustomerClosedTheSheetOnASessionThatDidNotSucceed() {
+        expect(HostedCheckout.Settlement(.failed(code: 3, message: nil), after: .closedSheet)) == .cancelled
+        expect(HostedCheckout.Settlement(.undetermined, after: .closedSheet)) == .cancelled
+    }
+
+    func testAsksAboutTheSessionThatWasPresented() async {
+        let sessionsAskedAbout = Recorder<String>()
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollBlock = { operationSessionID in
+            await sessionsAskedAbout.record(operationSessionID)
+            return .succeeded
+        }
+
+        _ = await HostedCheckout.settle(Self.session,
+                                        after: .successPage,
+                                        package: TestData.annualPackage,
+                                        purchaseHandler: Self.makeHandler(purchases: purchases))
+
+        let asked = await sessionsAskedAbout.values
+        expect(asked) == [Self.session.operationSessionID]
+    }
+
+    @MainActor
+    func testShowsThePurchaseUnderWayUntilTheBackendAnswers() async {
+        let actionsWhilePolling = Recorder<Bool>()
+        let purchases = Self.makePurchases()
+        let handler = Self.makeHandler(purchases: purchases)
+        purchases.hostedCheckoutPollBlock = { _ in
+            await actionsWhilePolling.record(await MainActor.run { handler.actionTypeInProgress == .purchase })
+            return .succeeded
+        }
+
+        _ = await HostedCheckout.settle(Self.session,
+                                        after: .successPage,
+                                        package: TestData.annualPackage,
+                                        purchaseHandler: handler)
+
+        let wasPurchasing = await actionsWhilePolling.values
+        expect(wasPurchasing) == [true]
+        expect(handler.actionInProgress) == false
+    }
+
+    @MainActor
+    func testReportsAConfirmedPurchaseAsCompleted() async {
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollBlock = { _ in .succeeded }
+        let handler = Self.makeHandler(purchases: purchases)
+
+        let settlement = await HostedCheckout.settle(Self.session,
+                                                     after: .closedSheet,
+                                                     package: TestData.annualPackage,
+                                                     purchaseHandler: handler)
+
+        expect(settlement) == .purchased
+        expect(handler.sessionPurchaseResult?.userCancelled) == false
+        expect(handler.purchaseError).to(beNil())
+    }
+
+    @MainActor
+    func testReportsAFailureAfterTheSuccessPageAsAPurchaseError() async {
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollBlock = { _ in .undetermined }
+        let handler = Self.makeHandler(purchases: purchases)
+
+        let settlement = await HostedCheckout.settle(Self.session,
+                                                     after: .successPage,
+                                                     package: TestData.annualPackage,
+                                                     purchaseHandler: handler)
+
+        expect(settlement) == .failed(.unconfirmed)
+        expect(handler.purchaseError as? HostedCheckoutError) == .unconfirmed
+        expect(handler.sessionPurchaseResult).to(beNil())
+    }
+
+    @MainActor
+    func testReportsAClosedSheetThatDidNotEndInAPurchaseAsCancelled() async {
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollBlock = { _ in .undetermined }
+        let handler = Self.makeHandler(purchases: purchases)
+
+        let settlement = await HostedCheckout.settle(Self.session,
+                                                     after: .closedSheet,
+                                                     package: TestData.annualPackage,
+                                                     purchaseHandler: handler)
+
+        expect(settlement) == .cancelled
+        expect(handler.sessionPurchaseResult?.userCancelled) == true
+        expect(handler.purchaseError).to(beNil())
+    }
+
+    /// Already owning the product is no purchase, and the paywall is freed as for one the customer backed out of.
+    @MainActor
+    func testReportsAProductTheCustomerAlreadyOwnedAsCancelled() async {
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollBlock = { _ in .alreadyPurchased }
+        let handler = Self.makeHandler(purchases: purchases)
+
+        _ = await HostedCheckout.settle(Self.session,
+                                        after: .successPage,
+                                        package: TestData.annualPackage,
+                                        purchaseHandler: handler)
+
+        expect(handler.sessionPurchaseResult?.userCancelled) == true
+    }
+
+    // MARK: - Errors, matching purchases-js
+
+    func testReportsAFailedChargeAsAFailedPayment() {
+        expect((HostedCheckoutError.failed(code: 3) as NSError).code) == ErrorCode.paymentPendingError.rawValue
+    }
+
+    func testReportsAFailedSetupAsAStoreProblem() {
+        for code in [1, 2, 4] {
+            expect((HostedCheckoutError.failed(code: code) as NSError).code) == ErrorCode.storeProblemError.rawValue
+        }
+    }
+
+    func testReportsAnyOtherFailureAsUnknown() {
+        expect((HostedCheckoutError.failed(code: nil) as NSError).code) == ErrorCode.unknownError.rawValue
+        expect((HostedCheckoutError.failed(code: 99) as NSError).code) == ErrorCode.unknownError.rawValue
+        expect((HostedCheckoutError.unconfirmed as NSError).code) == ErrorCode.unknownError.rawValue
+    }
+
+    func testReportsErrorsInTheSDKsDomain() {
+        expect((HostedCheckoutError.unconfirmed as NSError).domain) == ErrorCode.errorDomain
+    }
+
 }
 
 @available(iOS 15.0, *)

@@ -114,6 +114,14 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
         return await block(package, paywallEvent)
     }
 
+    var hostedCheckoutPollBlock: (@Sendable (String) async -> HostedCheckoutPollResult)?
+
+    func pollHostedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
+        guard let block = self.hostedCheckoutPollBlock else { return .undetermined }
+
+        return await block(operationSessionID)
+    }
+
     func restorePurchases() async throws -> CustomerInfo {
         return try await self.restoreBlock()
     }
@@ -197,6 +205,7 @@ extension PaywallPurchasesType {
         mapped.isUIPreviewMode = self.isUIPreviewMode
         mapped.remoteConfigEnabled = self.remoteConfigEnabled
         mapped.hostedCheckoutBlock = { await self.startHostedCheckout(package: $0, paywallEvent: $1) }
+        mapped.hostedCheckoutPollBlock = { await self.pollHostedCheckout(operationSessionID: $0) }
         #if !os(tvOS)
         mapped.workflowBlock = { try await self.workflow(forOfferingIdentifier: $0) }
         mapped.cachedWorkflowBlock = { self.cachedWorkflow(forOfferingIdentifier: $0) }
@@ -229,6 +238,7 @@ extension PaywallPurchasesType {
         mapped.isUIPreviewMode = self.isUIPreviewMode
         mapped.remoteConfigEnabled = self.remoteConfigEnabled
         mapped.hostedCheckoutBlock = { await self.startHostedCheckout(package: $0, paywallEvent: $1) }
+        mapped.hostedCheckoutPollBlock = { await self.pollHostedCheckout(operationSessionID: $0) }
         #if !os(tvOS)
         mapped.workflowBlock = { try await self.workflow(forOfferingIdentifier: $0) }
         mapped.cachedWorkflowBlock = { self.cachedWorkflow(forOfferingIdentifier: $0) }
