@@ -305,6 +305,21 @@ extension PurchaseHandler {
         return result
     }
 
+    /// Asks the app's purchase interceptor, if it set one, whether the purchase of `package` may go ahead.
+    func shouldProceed(withPurchaseOf package: Package, interceptor: PurchaseInitiatedAction?) async -> Bool {
+        guard let interceptor else {
+            return true
+        }
+
+        return await self.withPendingPurchaseContinuation {
+            await withCheckedContinuation { continuation in
+                interceptor(package, resume: ResumeAction { shouldProceed in
+                    continuation.resume(returning: shouldProceed)
+                })
+            }
+        }
+    }
+
     /// Runs `preparation` with the paywall marked as busy, so the button the customer tapped cannot start a
     /// second trip out of the app while Apple's flow is under way.
     ///
@@ -331,6 +346,19 @@ extension PurchaseHandler {
         }
 
         return result
+    }
+
+    /// Asks for a checkout the customer completes without leaving the app, with the paywall marked as busy
+    /// throughout so the button they tapped cannot start a second one.
+    func startHostedCheckout(package: Package) async -> HostedCheckoutStartResult {
+        // Carried so that the purchase the customer makes on the page is attributed to the paywall that sent
+        // them there.
+        let paywallEvent = self.createPurchaseInitiatedEvent(package: package)
+        if let paywallEvent { self.track(paywallEvent) }
+
+        return await self.withExternalPurchasePreparation {
+            await self.purchases.startHostedCheckout(package: package, paywallEvent: paywallEvent)
+        }
     }
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -845,6 +873,58 @@ extension PurchaseHandler {
 
     }
 
+    // MARK: - Hosted checkout
+
+    /// Reports a checkout the customer completed on a page presented inside the app.
+    ///
+    /// There is no transaction to hand over: what was bought is known to the backend, so the paywall follows
+    /// the refreshed `CustomerInfo`.
+    @MainActor
+    func handleHostedCheckoutPurchase() async {
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        // The purchase was made outside StoreKit, so whatever is cached was fetched before it happened.
+        self.purchases.invalidateCustomerInfoCache()
+        #endif
+
+        await self.reportHostedCheckoutOutcome(userCancelled: false)
+    }
+
+    /// Reports a checkout the customer abandoned on a page presented inside the app.
+    ///
+    /// - Parameter package: The package the checkout was started for, when it is still known. Only used to
+    /// track the cancellation.
+    @MainActor
+    func handleHostedCheckoutCancellation(package: Package?) async {
+        if let package {
+            self.trackCancelledPurchase(package: package)
+        }
+
+        await self.reportHostedCheckoutOutcome(userCancelled: true)
+    }
+
+    @MainActor
+    private func reportHostedCheckoutOutcome(userCancelled: Bool) async {
+        let customerInfo: CustomerInfo
+        do {
+            customerInfo = try await self.purchases.customerInfo()
+        } catch {
+            self.purchaseError = error
+            return
+        }
+
+        let resultInfo: PurchaseResultData = (transaction: nil,
+                                              customerInfo: customerInfo,
+                                              userCancelled: userCancelled)
+
+        // Set sessionPurchaseResult BEFORE setResult so that handleMainPaywallDismiss
+        // sees the correct state when the sheet dismisses.
+        withAnimation(Constants.defaultAnimation) {
+            self.sessionPurchaseResult = resultInfo
+        }
+
+        self.setResult(resultInfo)
+    }
+
     // MARK: - Restore
 
     func restorePurchases() async throws -> (info: CustomerInfo, success: Bool) {
@@ -1149,6 +1229,10 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
         paywallEvent: PaywallEvent?
     ) async throws -> PurchaseResultData {
         throw ErrorCode.configurationError
+    }
+
+    func startHostedCheckout(package: Package, paywallEvent: PaywallEvent?) async -> HostedCheckoutStartResult {
+        return .failed
     }
 
     func restorePurchases() async throws -> CustomerInfo {
