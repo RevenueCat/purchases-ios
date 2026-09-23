@@ -69,6 +69,7 @@ import Foundation
     public let id: String
     @_spi(Internal) public let type: String
     public let screenId: String?
+    @_spi(Internal) public let branch: WorkflowBranch?
     @DefaultDecodable.EmptyDictionary
     var paramValues: [String: AnyDecodable]
     @DefaultDecodable.EmptyArray
@@ -119,11 +120,13 @@ import Foundation
         type: String,
         screenId: String?,
         triggers: [WorkflowTrigger] = [],
-        triggerActions: [String: WorkflowTriggerAction] = [:]
+        triggerActions: [String: WorkflowTriggerAction] = [:],
+        branch: WorkflowBranch? = nil
     ) {
         self.id = id
         self.type = type
         self.screenId = screenId
+        self.branch = branch
         self.paramValues = [:]
         self.triggers = triggers
         self.outputs = [:]
@@ -282,7 +285,28 @@ import Foundation
 
 extension WorkflowTrigger: Decodable, Equatable, Sendable {}
 
-extension WorkflowStep: Decodable, Equatable, Sendable {}
+extension WorkflowStep: Decodable, Equatable, Sendable {
+
+    private enum CodingKeys: String, CodingKey {
+        case id, type, screenId, paramValues, triggers, outputs, triggerActions, metadata
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decode(String.self, forKey: .id)
+        self.type = try container.decode(String.self, forKey: .type)
+        self.screenId = try container.decodeIfPresent(String.self, forKey: .screenId)
+        self.paramValues = try container.decodeIfPresent([String: AnyDecodable].self, forKey: .paramValues) ?? [:]
+        self.triggers = try container.decodeIfPresent([WorkflowTrigger].self, forKey: .triggers) ?? []
+        self.outputs = try container.decodeIfPresent([String: AnyDecodable].self, forKey: .outputs) ?? [:]
+        self.triggerActions = try container.decodeIfPresent(
+            [String: WorkflowTriggerAction].self, forKey: .triggerActions
+        ) ?? [:]
+        self.metadata = try container.decodeIfPresent([String: AnyDecodable].self, forKey: .metadata)
+        self.branch = self.type == "branch" ? try? WorkflowBranch(from: decoder) : nil
+    }
+
+}
 
 extension WorkflowScreen: Decodable, Equatable, Sendable {
 

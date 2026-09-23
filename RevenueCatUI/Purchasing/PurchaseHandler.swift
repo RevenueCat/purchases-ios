@@ -624,6 +624,32 @@ extension PurchaseHandler {
         }
     }
 
+    func resolveBranch(_ branch: WorkflowBranch) async -> String {
+        let purchases = self.purchases
+        // A task group would wait for cancelled network work before returning the timeout result.
+        let results = AsyncStream<String>(bufferingPolicy: .bufferingOldest(1)) { continuation in
+            let resolution = Task<Void, Never> {
+                let stepId = await purchases.resolveBranch(branch)
+                guard !Task.isCancelled else { return }
+                continuation.yield(stepId)
+                continuation.finish()
+            }
+            let timeout = Task<Void, Never> {
+                do {
+                    try await Task.sleep(nanoseconds: 3_000_000_000)
+                } catch { return }
+                continuation.yield(branch.fallbackStepId)
+                continuation.finish()
+            }
+            continuation.onTermination = { _ in
+                resolution.cancel()
+                timeout.cancel()
+            }
+        }
+        for await stepId in results { return stepId }
+        return branch.fallbackStepId
+    }
+
     // Callers gate on remoteConfigEnabled before reaching this point, so this assumes
     // workflows are enabled and always resolves against the workflow endpoint.
     func resolveWorkflowContext(
@@ -659,15 +685,17 @@ extension PurchaseHandler {
     /// Throws a specific ``PaywallError`` when the initial step or its screen cannot be rendered. An absent
     /// offering, whether the initial screen declares one or not, is
     /// rendered as content-only so the workflow UI can surface its configuration error.
+    // swiftlint:disable:next function_body_length
     static func makeWorkflowContext(
         workflow: PublishedWorkflow,
         uiConfig: UIConfig,
         allOfferings: Offerings,
         presentedOfferingContext: PresentedOfferingContext?,
         workflowBlobRef: String? = nil,
-        traceId: String? = nil
+        traceId: String? = nil,
+        resolvedInitialStepId: String? = nil
     ) throws -> WorkflowContext {
-        guard let step = workflow.steps[workflow.initialStepId] else {
+        guard let step = workflow.steps[resolvedInitialStepId ?? workflow.initialStepId] else {
             throw PaywallError.workflowInitialStepNotFound(
                 stepId: workflow.initialStepId,
                 workflowId: workflow.id
@@ -675,6 +703,19 @@ extension PurchaseHandler {
         }
         guard !step.isOfferingStep else {
             throw TerminalOfferingWorkflowError()
+        }
+        if step.type == "branch", step.branch != nil, resolvedInitialStepId == nil {
+            return WorkflowContext(
+                workflow: workflow,
+                uiConfig: uiConfig,
+                allOfferings: allOfferings,
+                initialOffering: Offering(
+                    identifier: "", serverDescription: "", availablePackages: [], webCheckoutUrl: nil
+                ),
+                presentedOfferingContext: presentedOfferingContext,
+                workflowBlobRef: workflowBlobRef,
+                traceId: traceId
+            )
         }
         guard let screenID = step.screenId else {
             throw PaywallError.workflowInitialStepMissingScreenIdentifier(
@@ -716,7 +757,8 @@ extension PurchaseHandler {
             initialOffering: offering,
             presentedOfferingContext: presentedOfferingContext,
             workflowBlobRef: workflowBlobRef,
-            traceId: traceId
+            traceId: traceId,
+            resolvedInitialStepId: resolvedInitialStepId
         )
     }
     #endif

@@ -32,7 +32,8 @@ import Foundation
         ),
         presentedOfferingContext: PresentedOfferingContext? = nil,
         workflowBlobRef: String? = nil,
-        traceId: String? = nil
+        traceId: String? = nil,
+        resolvedInitialStepId: String? = nil
     ) throws -> WorkflowContext {
         return try self.makeContext(
             workflow: workflow,
@@ -40,7 +41,8 @@ import Foundation
             uiConfig: uiConfig,
             presentedOfferingContext: presentedOfferingContext,
             workflowBlobRef: workflowBlobRef,
-            traceId: traceId
+            traceId: traceId,
+            resolvedInitialStepId: resolvedInitialStepId
         )
     }
 
@@ -55,7 +57,8 @@ import Foundation
         ),
         presentedOfferingContext: PresentedOfferingContext? = nil,
         workflowBlobRef: String? = nil,
-        traceId: String? = nil
+        traceId: String? = nil,
+        resolvedInitialStepId: String? = nil
     ) throws -> WorkflowContext {
         return try PurchaseHandler.makeWorkflowContext(
             workflow: workflow,
@@ -63,7 +66,8 @@ import Foundation
             allOfferings: offerings,
             presentedOfferingContext: presentedOfferingContext,
             workflowBlobRef: workflowBlobRef,
-            traceId: traceId
+            traceId: traceId,
+            resolvedInitialStepId: resolvedInitialStepId
         )
     }
 

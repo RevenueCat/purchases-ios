@@ -30,6 +30,7 @@ import Foundation
     let workflowBlobRef: String?
     /// Set when a checkpoint started the workflow, so its events join the checkpoint hit.
     let traceId: String?
+    let resolvedInitialStepId: String?
 
     init(
         workflow: PublishedWorkflow,
@@ -38,10 +39,12 @@ import Foundation
         initialOffering: Offering,
         presentedOfferingContext: PresentedOfferingContext?,
         workflowBlobRef: String? = nil,
-        traceId: String? = nil
+        traceId: String? = nil,
+        resolvedInitialStepId: String? = nil
     ) {
         self.workflowBlobRef = workflowBlobRef
         self.traceId = traceId
+        self.resolvedInitialStepId = resolvedInitialStepId
         self.workflow = workflow
         self.uiConfig = uiConfig
         self.allOfferings = allOfferings

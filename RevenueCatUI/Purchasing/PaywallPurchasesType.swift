@@ -46,6 +46,8 @@ protocol PaywallPurchasesType: Sendable {
     @Sendable
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult
 
+    func resolveBranch(_ branch: WorkflowBranch) async -> String
+
     func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult?
 #endif
 
@@ -92,3 +94,14 @@ protocol PaywallPurchasesType: Sendable {
 }
 
 extension Purchases: PaywallPurchasesType {}
+
+#if !os(tvOS)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PaywallPurchasesType {
+
+    func resolveBranch(_ branch: WorkflowBranch) async -> String {
+        return branch.fallbackStepId
+    }
+
+}
+#endif
