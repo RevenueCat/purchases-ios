@@ -283,9 +283,9 @@ struct WorkflowPaywallView: View {
     @StateObject private var promoOfferCacheOwner: PromoOfferCacheOwner
     @State private var presentationState: PresentationState
     /// Owns the per-impression workflow step event state machine (trace id, fire-once flags, gating).
-    /// Created in `init`, so a new presentation (new view identity) yields a fresh `traceId`, matching
-    /// Android's per-impression `workflowTraceId`, unless a checkpoint passed the one its hit carries.
-    /// Its sequence/gating is unit tested in `WorkflowStepEventCoordinatorTests`.
+    /// Created in `init`, so a new presentation (new view identity) yields a fresh `traceId`, unless a
+    /// checkpoint passed the one its hit carries. Its sequence/gating is unit tested in
+    /// `WorkflowStepEventCoordinatorTests`.
     @State private var stepEventCoordinator: WorkflowStepEventCoordinator
     @State private var transitionState: WorkflowPageTransitionState<RenderedPage>
     @State private var activeTransitionID: UUID?

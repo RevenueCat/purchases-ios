@@ -43,7 +43,7 @@ final class WorkflowStepEventCoordinator {
         )
     }
 
-    /// Mints a fresh `traceId`, matching Android's per-impression `workflowTraceId`.
+    /// Mints a fresh `traceId` for the impression.
     convenience init(
         workflow: PublishedWorkflow,
         workflowBlobRef: String? = nil,
