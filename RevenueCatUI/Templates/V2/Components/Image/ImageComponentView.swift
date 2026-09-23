@@ -197,6 +197,7 @@ struct ImageComponentView: View {
                         self.size = newSize
                     }
                 }
+                .paywallDecorativeMedia()
             }
         }
     }
@@ -304,8 +305,6 @@ struct ImageComponentView: View {
                 containerContentMode: style.contentMode
             )
             .frame(maxWidth: maxWidth)
-            // WIP: Fix this later when accessibility info is available
-            .accessibilityHidden(true)
     }
 
 }
