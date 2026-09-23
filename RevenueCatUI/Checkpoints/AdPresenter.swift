@@ -18,7 +18,7 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public typealias AdPresentationCompletion = @MainActor (AdPresentationResult) -> Void
 
-/// Presents an ad for an ad unit selected by a checkpoint.
+/// Presents an ad for an ad step selected by a checkpoint.
 ///
 /// Set an instance on ``Purchases/adPresenter`` to use it for all checkpoint-selected ad steps.
 /// This is a separate presenter from ``PaywallPresenter``: an ad step never selects an offering, and
@@ -45,7 +45,7 @@ public protocol AdPresenter: AnyObject {
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
-public final class AdPresentationParams {
+public struct AdPresentationParams {
 
     /// The identifier of the checkpoint that selected this ad step.
     public let checkpointIdentifier: String
@@ -67,7 +67,7 @@ public final class AdPresentationParams {
     ///   - customVariables: The custom variables supplied to the checkpoint.
     ///   - adIdentifier: The identifier of the ad configured for the ad step.
     ///   - mediator: The mediation network configured to serve `adIdentifier`.
-    public init(
+    init(
         checkpointIdentifier: String,
         customVariables: [String: CustomVariableValue] = [:],
         adIdentifier: String,
@@ -85,7 +85,7 @@ public final class AdPresentationParams {
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
-public final class AdPresentationResult {
+public struct AdPresentationResult: Equatable {
 
     /// The ad was shown and dismissed, with no reward earned.
     public static let shown = AdPresentationResult(outcome: CheckpointAdOutcome.Shown.shared)
@@ -109,6 +109,10 @@ public final class AdPresentationResult {
 
     private init(outcome: CheckpointAdOutcome) {
         self.outcome = outcome
+    }
+
+    public static func == (lhs: AdPresentationResult, rhs: AdPresentationResult) -> Bool {
+        return lhs.outcome == rhs.outcome
     }
 
 }
