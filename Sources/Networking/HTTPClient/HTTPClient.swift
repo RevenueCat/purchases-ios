@@ -431,6 +431,20 @@ internal extension HTTPClient {
 
 private extension HTTPClient {
 
+    /// The processed SDK result together with network context that can be lost while transforming it.
+    struct ResponseContext {
+        /// The final response or error after cache resolution, signature verification, and HTTP status handling.
+        let result: VerifiedHTTPResponse<Data>.Result?
+
+        /// Verification context captured before an enforced-verification failure becomes a `NetworkError`.
+        let verificationDiagnostics: VerificationDiagnostics?
+    }
+
+    struct VerificationDiagnostics {
+        let result: SignatureVerificationResult
+        let requestDate: Date?
+    }
+
     static let serverErrorResponse: ErrorResponse = .init(code: .internalServerError,
                                                           originalCode: BackendErrorCode.unknownBackendError.rawValue)
 
@@ -471,13 +485,15 @@ private extension HTTPClient {
                urlRequest: URLRequest,
                data: Data?,
                error networkError: Error?,
-               requestStartTime: Date) -> VerifiedHTTPResponse<Data>.Result? {
+               requestStartTime: Date) -> ResponseContext {
         if let networkError = networkError {
-            return .failure(NetworkError(networkError, dnsChecker: self.dnsChecker))
+            return .init(result: .failure(NetworkError(networkError, dnsChecker: self.dnsChecker)),
+                         verificationDiagnostics: nil)
         }
 
         guard let httpURLResponse = urlResponse as? HTTPURLResponse else {
-            return .failure(.unexpectedResponse(urlResponse))
+            return .init(result: .failure(.unexpectedResponse(urlResponse)),
+                         verificationDiagnostics: nil)
         }
 
         let statusCode: HTTPStatusCode = .init(rawValue: httpURLResponse.statusCode)
@@ -499,7 +515,7 @@ private extension HTTPClient {
         data: Data?,
         response httpURLResponse: HTTPURLResponse,
         requestStartTime: Date
-    ) -> VerifiedHTTPResponse<Data>.Result? {
+    ) -> ResponseContext {
         #if DEBUG
         let requestHeaders: HTTPClient.RequestHeaders
 
@@ -515,7 +531,7 @@ private extension HTTPClient {
         let requestHeaders = urlRequest.allHTTPHeaderFields ?? [:]
         #endif
 
-        let result = Result
+        let responseResult: Result<VerifiedHTTPResponse<Data>?, NetworkError> = Result
             .success(data)
             .mapToResponse(response: httpURLResponse, request: request.httpRequest)
             // Verify response
@@ -552,6 +568,18 @@ private extension HTTPClient {
                     isFallbackURLRequest: request.isFallbackURLRequest
                 )
             }
+
+        let verificationDiagnostics: VerificationDiagnostics?
+        if case let .success(response?) = responseResult, response.verificationResult.isFailed {
+            verificationDiagnostics = .init(
+                result: response.verificationResult,
+                requestDate: response.requestDate
+            )
+        } else {
+            verificationDiagnostics = nil
+        }
+
+        let result = responseResult
             // Upgrade to error in enforced mode
             .flatMap { response -> Result<VerifiedHTTPResponse<Data>?, NetworkError> in
                 if let response = response, response.verificationResult.isFailed {
@@ -570,7 +598,8 @@ private extension HTTPClient {
             .asOptionalResult?
             .convertUnsuccessfulResponseToError()
 
-        return result
+        return .init(result: result,
+                     verificationDiagnostics: verificationDiagnostics)
     }
 
     // swiftlint:disable:next function_parameter_count function_body_length
@@ -582,12 +611,13 @@ private extension HTTPClient {
                 requestStartTime: Date) {
         RCTestAssertNotMainThread()
 
-        let response = self.parse(urlResponse: urlResponse,
-                                  request: request,
-                                  urlRequest: urlRequest,
-                                  data: data,
-                                  error: networkError,
-                                  requestStartTime: requestStartTime)
+        let responseContext = self.parse(urlResponse: urlResponse,
+                                         request: request,
+                                         urlRequest: urlRequest,
+                                         data: data,
+                                         error: networkError,
+                                         requestStartTime: requestStartTime)
+        let response = responseContext.result
 
         var requestTimeoutResult: HTTPRequestTimeoutManager.RequestResult = .other
 
@@ -617,7 +647,7 @@ private extension HTTPClient {
                 }
 
                 self.finish(request: request,
-                            response: .success(response),
+                            responseContext: responseContext,
                             retryScheduled: false,
                             requestTimeoutResult: requestTimeoutResult,
                             urlRequest: urlRequest,
@@ -662,7 +692,7 @@ private extension HTTPClient {
                                                                                  error: error,
                                                                                  httpURLResponse: httpURLResponse)
                         self.finish(request: request,
-                                    response: .failure(error),
+                                    responseContext: responseContext,
                                     retryScheduled: retryScheduled,
                                     requestTimeoutResult: requestTimeoutResult,
                                     recordRequestTimeoutResult: false,
@@ -689,7 +719,7 @@ private extension HTTPClient {
                 }
 
                 self.finish(request: request,
-                            response: .failure(error),
+                            responseContext: responseContext,
                             retryScheduled: retryScheduled,
                             requestTimeoutResult: requestTimeoutResult,
                             urlRequest: urlRequest,
@@ -703,7 +733,7 @@ private extension HTTPClient {
             }
 
             self.finish(request: request,
-                        response: nil,
+                        responseContext: responseContext,
                         retryScheduled: true,
                         requestTimeoutResult: requestTimeoutResult,
                         urlRequest: urlRequest,
@@ -742,13 +772,13 @@ private extension HTTPClient {
     /// timeout bookkeeping and diagnostics for the attempt, and unblocks the serial pipeline.
     // swiftlint:disable:next function_parameter_count
     private func finish(request: Request,
-                        response: VerifiedHTTPResponse<Data>.Result?,
+                        responseContext: ResponseContext,
                         retryScheduled: Bool,
                         requestTimeoutResult: HTTPRequestTimeoutManager.RequestResult,
                         recordRequestTimeoutResult: Bool = true,
                         urlRequest: URLRequest,
                         requestStartTime: Date) {
-        if !retryScheduled, let response = response {
+        if !retryScheduled, let response = responseContext.result {
             request.completionHandler?(response)
         }
 
@@ -759,7 +789,7 @@ private extension HTTPClient {
         self.trackHttpRequestPerformedIfNeeded(request: request,
                                                host: urlRequest.url?.host,
                                                requestStartTime: requestStartTime,
-                                               result: response)
+                                               responseContext: responseContext)
 
         self.beginNextRequest()
     }
@@ -930,22 +960,22 @@ private extension HTTPClient {
     private func trackHttpRequestPerformedIfNeeded(request: Request,
                                                    host: String?,
                                                    requestStartTime: Date,
-                                                   result: Result<VerifiedHTTPResponse<Data>, NetworkError>?) {
+                                                   responseContext: ResponseContext) {
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-            guard let diagnosticsTracker = self.diagnosticsTracker, let result else { return }
+            guard let diagnosticsTracker = self.diagnosticsTracker, let result = responseContext.result else { return }
             let responseTime = self.dateProvider.now().timeIntervalSince(requestStartTime)
             let requestPathName = request.httpRequest.path.name
             switch result {
             case let .success(response):
-                let httpStatusCode = response.httpStatusCode.rawValue
                 diagnosticsTracker.trackHttpRequestPerformed(endpointName: requestPathName,
                                                              host: host,
                                                              responseTime: responseTime,
                                                              wasSuccessful: true,
-                                                             responseCode: httpStatusCode,
+                                                             responseCode: response.httpStatusCode.rawValue,
                                                              backendErrorCode: nil,
                                                              resultOrigin: response.origin,
                                                              verificationResult: response.verificationResult,
+                                                             responseRequestDate: response.requestDate,
                                                              isRetry: request.retried,
                                                              connectionErrorReason: nil)
             case let .failure(error):
@@ -955,6 +985,8 @@ private extension HTTPClient {
                     responseCode = code.rawValue
                     backendErrorCode = errorResponse.code.rawValue
                 }
+                let verificationDiagnostics = responseContext.verificationDiagnostics
+                let verificationResult = verificationDiagnostics?.result ?? .notRequested
                 diagnosticsTracker.trackHttpRequestPerformed(endpointName: requestPathName,
                                                              host: host,
                                                              responseTime: responseTime,
@@ -962,7 +994,8 @@ private extension HTTPClient {
                                                              responseCode: responseCode,
                                                              backendErrorCode: backendErrorCode,
                                                              resultOrigin: nil,
-                                                             verificationResult: .notRequested,
+                                                             verificationResult: verificationResult,
+                                                             responseRequestDate: verificationDiagnostics?.requestDate,
                                                              isRetry: request.retried,
                                                              connectionErrorReason: .init(from: error))
             }

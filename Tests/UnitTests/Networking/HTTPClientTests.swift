@@ -3323,6 +3323,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             nil,
             .backend,
             .notRequested,
+            nil,
             false,
             nil
         )))
@@ -3363,6 +3364,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             7225,
             nil,
             .notRequested,
+            nil,
             false,
             .other
         )))
@@ -3404,6 +3406,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             nil,
             nil,
             .notRequested,
+            nil,
             false,
             .timeout
         )))
@@ -3445,6 +3448,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             nil,
             nil,
             .notRequested,
+            nil,
             false,
             .noNetwork
         )))
@@ -3499,6 +3503,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             0,
             nil,
             .notRequested,
+            nil,
             false,
             .other
         )))
@@ -3511,6 +3516,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             nil,
             .backend,
             .notRequested,
+            nil,
             false,
             nil
         )))
@@ -4498,8 +4504,8 @@ extension HTTPClientTests {
 // swiftlint:disable line_length
 
 private func matchTrackParams(
-    _ data: (String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, SignatureVerificationResult, Bool, ConnectionErrorReason?)
-) -> Nimble.Predicate<(String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, SignatureVerificationResult, Bool, ConnectionErrorReason?)> {
+    _ data: (String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, SignatureVerificationResult, Date?, Bool, ConnectionErrorReason?)
+) -> Nimble.Predicate<(String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, SignatureVerificationResult, Date?, Bool, ConnectionErrorReason?)> {
     return .init {
         let other = try $0.evaluate()
         let timeInterval = other?.2 ?? -1
@@ -4512,7 +4518,8 @@ private func matchTrackParams(
                        other?.6 == data.6 &&
                        other?.7 == data.7 &&
                        other?.8 == data.8 &&
-                       other?.9 == data.9)
+                       other?.9 == data.9 &&
+                       other?.10 == data.10)
 
         return .init(bool: matches, message: .fail("Diagnostics tracked params do not match"))
     }

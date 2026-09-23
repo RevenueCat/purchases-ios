@@ -44,6 +44,7 @@ protocol DiagnosticsTrackerType: Sendable {
                                    backendErrorCode: Int?,
                                    resultOrigin: HTTPResponseOrigin?,
                                    verificationResult: SignatureVerificationResult,
+                                   responseRequestDate: Date?,
                                    isRetry: Bool,
                                    connectionErrorReason: ConnectionErrorReason?)
 
@@ -246,21 +247,28 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                    backendErrorCode: Int?,
                                    resultOrigin: HTTPResponseOrigin?,
                                    verificationResult: SignatureVerificationResult,
+                                   responseRequestDate: Date?,
                                    isRetry: Bool,
                                    connectionErrorReason: ConnectionErrorReason?) {
-        self.trackEvent(name: .httpRequestPerformed,
-                        properties: DiagnosticsEvent.Properties(
-                            verificationResult: verificationResult.result.name,
-                            endpointName: endpointName,
-                            host: host,
-                            responseTime: responseTime,
-                            successful: wasSuccessful,
-                            responseCode: responseCode,
-                            backendErrorCode: backendErrorCode,
-                            etagHit: resultOrigin == .cache,
-                            isRetry: isRetry,
-                            connectionErrorReason: connectionErrorReason
-                        ))
+        self.trackEvent(
+            name: .httpRequestPerformed,
+            properties: DiagnosticsEvent.Properties(
+                verificationResult: verificationResult.result.name,
+                verificationFailureReason: verificationResult.failureReason?.rawValue,
+                verificationDeviceClockOffsetMinutes: responseRequestDate.map {
+                    Int(self.dateProvider.now().timeIntervalSince($0) / 60)
+                },
+                endpointName: endpointName,
+                host: host,
+                responseTime: responseTime,
+                successful: wasSuccessful,
+                responseCode: responseCode,
+                backendErrorCode: backendErrorCode,
+                etagHit: resultOrigin == .cache,
+                isRetry: isRetry,
+                connectionErrorReason: connectionErrorReason
+            )
+        )
     }
 
     func trackPurchaseAttempt(wasSuccessful: Bool,

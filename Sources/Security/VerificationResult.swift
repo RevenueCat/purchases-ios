@@ -90,18 +90,18 @@ enum SignatureVerificationResult: Equatable, Sendable {
     case failed(FailureReason)
 
     /// Internal classification of why HTTP response signature verification failed.
-    enum FailureReason: Error, Sendable {
+    enum FailureReason: String, Error, Sendable {
 
-        case missingSignature
-        case missingRequestTime
-        case missingSignedPayload
-        case invalidSignatureFormat
-        case invalidIntermediateKeySignature
-        case invalidIntermediateKey
-        case invalidResponsePayload
-        case intermediateKeyExpired
-        case payloadSignatureMismatch
-        case unknown
+        case missingSignature = "MISSING_SIGNATURE"
+        case missingRequestTime = "MISSING_REQUEST_TIME"
+        case missingSignedPayload = "MISSING_SIGNED_PAYLOAD"
+        case invalidSignatureFormat = "INVALID_SIGNATURE_FORMAT"
+        case invalidIntermediateKeySignature = "INVALID_INTERMEDIATE_KEY_SIGNATURE"
+        case invalidIntermediateKey = "INVALID_INTERMEDIATE_KEY"
+        case invalidResponsePayload = "INVALID_RESPONSE_PAYLOAD"
+        case intermediateKeyExpired = "INTERMEDIATE_KEY_EXPIRED"
+        case payloadSignatureMismatch = "PAYLOAD_SIGNATURE_MISMATCH"
+        case unknown = "UNKNOWN"
 
     }
 
@@ -123,6 +123,16 @@ enum SignatureVerificationResult: Equatable, Sendable {
         case .failed:
             return .failed
         }
+    }
+
+}
+
+extension SignatureVerificationResult {
+
+    var failureReason: FailureReason? {
+        guard case let .failed(reason) = self else { return nil }
+
+        return reason
     }
 
 }
