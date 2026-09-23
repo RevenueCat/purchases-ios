@@ -132,6 +132,7 @@ class DiagnosticsTrackerTests: TestCase {
                                                backendErrorCode: 7121,
                                                resultOrigin: .cache,
                                                verificationResult: .verified,
+                                               responseRequestDate: nil,
                                                isRetry: false,
                                                connectionErrorReason: .noNetwork)
         let entries = await self.handler.getEntries()
@@ -152,6 +153,44 @@ class DiagnosticsTrackerTests: TestCase {
                   timestamp: Self.eventTimestamp1,
                   appSessionId: SystemInfo.appSessionID)
         ])
+    }
+
+    func testTracksVerificationFailureReasonAndPositiveClockOffset() async {
+        let event = await self.trackHTTPResponse(
+            verificationResult: .failed(.intermediateKeyExpired),
+            requestDate: Self.eventTimestamp1.addingTimeInterval(-120 * 60)
+        )
+
+        expect(event.properties.verificationFailureReason) == "INTERMEDIATE_KEY_EXPIRED"
+        expect(event.properties.verificationDeviceClockOffsetMinutes) == 120
+    }
+
+    func testTracksNegativeClockOffset() async {
+        let event = await self.trackHTTPResponse(
+            verificationResult: .failed(.payloadSignatureMismatch),
+            requestDate: Self.eventTimestamp1.addingTimeInterval(120 * 60)
+        )
+
+        expect(event.properties.verificationDeviceClockOffsetMinutes) == -120
+    }
+
+    func testClockOffsetTruncatesSubMinuteDifferences() async {
+        let event = await self.trackHTTPResponse(
+            verificationResult: .failed(.payloadSignatureMismatch),
+            requestDate: Self.eventTimestamp1.addingTimeInterval(-59)
+        )
+
+        expect(event.properties.verificationDeviceClockOffsetMinutes) == 0
+    }
+
+    func testDoesNotTrackClockOffsetWithoutRequestDate() async {
+        let event = await self.trackHTTPResponse(
+            verificationResult: .failed(.missingRequestTime),
+            requestDate: nil
+        )
+
+        expect(event.properties.verificationFailureReason) == "MISSING_REQUEST_TIME"
+        expect(event.properties.verificationDeviceClockOffsetMinutes).to(beNil())
     }
 
     // MARK: - product request
@@ -881,6 +920,31 @@ class DiagnosticsTrackerTests: TestCase {
                   timestamp: Self.eventTimestamp1,
                   appSessionId: SystemInfo.appSessionID)
         ])
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension DiagnosticsTrackerTests {
+
+    func trackHTTPResponse(
+        verificationResult: SignatureVerificationResult,
+        requestDate: Date?
+    ) async -> DiagnosticsEvent {
+        self.tracker.trackHttpRequestPerformed(endpointName: "mock_endpoint",
+                                               host: "api.revenuecat.com",
+                                               responseTime: 1,
+                                               wasSuccessful: true,
+                                               responseCode: 200,
+                                               backendErrorCode: nil,
+                                               resultOrigin: .backend,
+                                               verificationResult: verificationResult,
+                                               responseRequestDate: requestDate,
+                                               isRetry: false,
+                                               connectionErrorReason: nil)
+
+        let entries = await self.handler.getEntries()
+        return entries.compactMap { $0 }.onlyElement!
     }
 
 }

@@ -359,6 +359,15 @@ final class WorkflowPresenterTests: TestCase {
         XCTAssertEqual(viewController.customVariables, expected)
     }
 
+    func testCheckpointTraceIdReachesTheWorkflowContext() throws {
+        let presentation = try Self.renderablePresentation(customVariables: [:])
+        let presenter = WorkflowPresenter { _ in true }
+
+        let viewController = try presenter.makePaywallViewController(for: presentation)
+
+        XCTAssertEqual(viewController.workflowContextForTesting?.traceId, presentation.workflow.traceId)
+    }
+
     func testCheckpointWorkflowPaywallDoesNotAcceptExitOffers() throws {
         let presentation = try Self.renderablePresentation(customVariables: [:])
         let presenter = WorkflowPresenter { _ in true }
