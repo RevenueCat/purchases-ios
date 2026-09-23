@@ -19,6 +19,9 @@ import Foundation
 protocol DiagnosticsTrackerType: Sendable {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func setCollectionEnabled(_ enabled: Bool)
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func track(_ event: DiagnosticsEvent)
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -180,24 +183,69 @@ protocol DiagnosticsTrackerType: Sendable {
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+/// Collects diagnostics events once collection has been enabled. Events are buffered until a collection decision is
+/// received, then persisted or discarded accordingly. Disabling collection only stops new events; events already
+/// persisted on disk could still be uploaded by the synchronizer.
 final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
 
     private let diagnosticsFileHandler: DiagnosticsFileHandlerType
+    private let collectionState: Atomic<CollectionState>
     private let diagnosticsDispatcher: OperationDispatcher
     private let dateProvider: DateProvider
     private let appSessionID: UUID
 
     init(diagnosticsFileHandler: DiagnosticsFileHandlerType,
+         collectionDecision: DiagnosticsCollectionDecision = .enabled,
          diagnosticsDispatcher: OperationDispatcher = .default,
          dateProvider: DateProvider = DateProvider(),
          appSessionID: UUID = SystemInfo.appSessionID) {
         self.diagnosticsFileHandler = diagnosticsFileHandler
+        self.collectionState = .init(.init(decision: collectionDecision, pendingEvents: []))
         self.diagnosticsDispatcher = diagnosticsDispatcher
         self.dateProvider = dateProvider
         self.appSessionID = appSessionID
     }
 
+    /// Persists events when collection is enabled, buffers them while the decision is undetermined, and ignores them
+    /// when collection is disabled.
     func track(_ event: DiagnosticsEvent) {
+        let collectionDecision = self.collectionState.modify { state in
+            if state.decision == .undetermined {
+                state.pendingEvents.append(event)
+            }
+            return state.decision
+        }
+        switch collectionDecision {
+        case .enabled:
+            self.persist(event)
+        case .undetermined:
+            Logger.debug(Strings.diagnostics.diagnostic_event_awaiting_collection_decision)
+        case .disabled:
+            break
+        }
+    }
+
+    /// Resolves buffered events by persisting them when enabled or discarding them when disabled. Events already on
+    /// disk are unchanged.
+    func setCollectionEnabled(_ enabled: Bool) {
+        let pendingEvents = self.collectionState.modify { state in
+            defer {
+                state.decision = .init(enabled: enabled)
+                state.pendingEvents = []
+            }
+
+            return enabled ? state.pendingEvents : []
+        }
+        Logger.debug(Strings.diagnostics.diagnostics_collection_configured(
+            isEnabled: enabled,
+            pendingEventCount: pendingEvents.count
+        ))
+        for event in pendingEvents {
+            self.persist(event)
+        }
+    }
+
+    private func persist(_ event: DiagnosticsEvent) {
         self.diagnosticsDispatcher.dispatchOnWorkerThread {
             await self.clearDiagnosticsFileIfTooBig()
             await self.diagnosticsFileHandler.appendEvent(diagnosticsEvent: event)
@@ -530,6 +578,30 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                             errorCode: errorCode,
                             skErrorDescription: storeKitErrorDescription
                         ))
+    }
+
+    private struct CollectionState {
+        var decision: DiagnosticsCollectionDecision
+        var pendingEvents: [DiagnosticsEvent]
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+extension DiagnosticsTrackerType {
+
+    func setCollectionEnabled(_: Bool) {}
+
+}
+
+enum DiagnosticsCollectionDecision: Equatable, Sendable {
+
+    case undetermined
+    case enabled
+    case disabled
+
+    init(enabled: Bool) {
+        self = enabled ? .enabled : .disabled
     }
 
 }
