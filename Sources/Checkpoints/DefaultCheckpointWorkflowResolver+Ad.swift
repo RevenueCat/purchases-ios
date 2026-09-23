@@ -40,9 +40,10 @@ extension DefaultCheckpointWorkflowResolver {
     }
 
     /// The backend serializes mediators in lowercase (`admob`) while the SDK's canonical constants are
-    /// mixed case (`AdMob`), and `MediatorName` equality is case-sensitive. Map known mediators onto their
-    /// canonical instance so presenters can match on them; anything unknown passes through untouched.
-    private static let knownMediators: [MediatorName] = [.adMob, .appLovin]
+    /// mixed case (`AdMob`), and `MediatorName` equality is case-sensitive. Map mediators checkpoints
+    /// support onto their canonical instance so presenters can match on them; anything else (including
+    /// unsupported mediators like AppLovin) passes through untouched.
+    private static let knownMediators: [MediatorName] = [.adMob]
 
     private static func normalizedMediator(_ rawValue: String) -> MediatorName {
         return Self.knownMediators.first { known in
