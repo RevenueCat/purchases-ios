@@ -35,7 +35,7 @@ class PurchasesPaywallEventsTests: BasePurchasesTests {
 
         await expect(manager.invokedFlushAllEventsWithBackgroundTask.value).toEventually(beTrue())
 
-        expect(self.mockOperationDispatcher.invokedDispatchOnWorkerThreadDelayParam) == .long
+        expect(self.mockOperationDispatcher.invokedDispatchOnWorkerThreadDelayParams).to(contain(.long))
     }
 
     func testCustomerCenterEventsReachManager() async throws {

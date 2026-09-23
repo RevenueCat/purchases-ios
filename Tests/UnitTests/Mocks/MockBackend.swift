@@ -134,6 +134,10 @@ class MockBackend: Backend {
                                                    completion: CustomerAPI.CustomerInfoResponseHandler?)]()
 
     var stubbedGetCustomerInfoResult: Result<CustomerInfo, BackendError> = .failure(.missingAppUserID())
+    let completedGetCustomerInfoCount: Atomic<Int> = .init(0)
+
+    /// When set, getCustomerInfo calls defer completion until this shared barrier is opened.
+    let deferredGetCustomerInfoCompletionGate: Atomic<MockAsyncGate?> = nil
 
     override func getCustomerInfo(appUserID: String,
                                   isAppBackgrounded: Bool,
@@ -144,7 +148,17 @@ class MockBackend: Backend {
         invokedGetSubscriberDataParameters = (appUserID, isAppBackgrounded, allowComputingOffline, completion)
         invokedGetSubscriberDataParametersList.append((appUserID, isAppBackgrounded, allowComputingOffline, completion))
 
-        completion(self.stubbedGetCustomerInfoResult)
+        let result = self.stubbedGetCustomerInfoResult
+        if let gate = self.deferredGetCustomerInfoCompletionGate.value {
+            Task {
+                await gate.wait()
+                completion(result)
+                self.completedGetCustomerInfoCount.modify { $0 += 1 }
+            }
+        } else {
+            completion(result)
+            self.completedGetCustomerInfoCount.modify { $0 += 1 }
+        }
     }
 
     var invokedPostAttributionData = false

@@ -680,7 +680,7 @@ final class RemoteConfigIntegrationTests: TestCase {
             contentElements: [(blob, .none)]
         )
 
-        await self.refresh(with: container, verificationResult: .failed)
+        await self.refresh(with: container, verificationResult: .failed(.unknown))
 
         expect(self.diskCache.read()?.manifest) == Self.manifest
         let data = await self.manager.blobData(for: .workflows, itemKey: "default")
@@ -880,7 +880,7 @@ private extension RemoteConfigIntegrationTests {
 
     func refresh(
         with body: Data,
-        verificationResult: VerificationResult = .verified,
+        verificationResult: SignatureVerificationResult = .verified,
         requestDate: Date? = nil
     ) async {
         self.mockRemoteConfigResponse(
@@ -896,7 +896,7 @@ private extension RemoteConfigIntegrationTests {
 
     func refreshFromFallback(
         with body: Data,
-        verificationResult: VerificationResult = .verified
+        verificationResult: SignatureVerificationResult = .verified
     ) async {
         self.mockRemoteConfigError(.errorResponse(
             .init(code: .unknownError, originalCode: BackendErrorCode.unknownError.rawValue),
@@ -913,7 +913,7 @@ private extension RemoteConfigIntegrationTests {
     func mockRemoteConfigResponse(
         statusCode: HTTPStatusCode = .success,
         body: Data,
-        verificationResult: VerificationResult = .verified,
+        verificationResult: SignatureVerificationResult = .verified,
         requestDate: Date? = nil,
         delay: DispatchTimeInterval = .never
     ) {
@@ -936,7 +936,7 @@ private extension RemoteConfigIntegrationTests {
     func mockRemoteConfigFallbackResponse(
         statusCode: HTTPStatusCode = .success,
         body: Data,
-        verificationResult: VerificationResult = .verified
+        verificationResult: SignatureVerificationResult = .verified
     ) {
         self.httpClient.mock(
             requestPath: HTTPRequest.FallbackPath.remoteConfig(domain: RemoteConfiguration.defaultDomain),

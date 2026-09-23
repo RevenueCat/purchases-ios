@@ -27,7 +27,7 @@ class MockHTTPClient: HTTPClient {
             statusCode: HTTPStatusCode,
             response: [String: Any] = [:],
             responseHeaders: HTTPResponse.Headers = [:],
-            verificationResult: VerificationResult = .defaultValue,
+            verificationResult: SignatureVerificationResult = .notRequested,
             delay: DispatchTimeInterval = .never,
             isLoadShedderResponse: Bool = false,
             isFallbackUrlResponse: Bool = false
@@ -53,7 +53,7 @@ class MockHTTPClient: HTTPClient {
             statusCode: HTTPStatusCode,
             body: Data,
             responseHeaders: HTTPResponse.Headers = [:],
-            verificationResult: VerificationResult = .defaultValue,
+            verificationResult: SignatureVerificationResult = .notRequested,
             delay: DispatchTimeInterval = .never,
             isLoadShedderResponse: Bool = false,
             isFallbackUrlResponse: Bool = false
