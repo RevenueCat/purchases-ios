@@ -3047,27 +3047,14 @@ private extension Purchases {
         // "did become active" so that we don't trigger cache updates in the middle
         // of purchases due to pop-ups stealing focus from the app.
         let appUserID = self.appUserID
-        // Cached CustomerInfo confirms that the customer exists server-side, so attributes can sync immediately.
-        let customerInfoIsAvailable = self.hasCachedCustomerInfo(for: appUserID)
-        // Otherwise, wait for the existing foreground refresh to create the customer before syncing attributes.
-        let customerInfoCompletion: CustomerInfoManager.CustomerInfoCompletion?
-        if customerInfoIsAvailable {
-            customerInfoCompletion = nil
-        } else {
-            customerInfoCompletion = { [weak self] result in
-                guard case .success = result, self?.appUserID == appUserID else { return }
-                self?.dispatchSyncSubscriberAttributes()
-            }
-        }
-
         self.updateAllCachesIfNeeded(
             isAppBackgrounded: false,
             fetchContext: .foreground,
-            customerInfoCompletion: customerInfoCompletion
+            customerInfoCompletion: { [weak self] result in
+                guard case .success = result, self?.appUserID == appUserID else { return }
+                self?.dispatchSyncSubscriberAttributes()
+            }
         )
-        if customerInfoIsAvailable {
-            self.dispatchSyncSubscriberAttributes()
-        }
         self.transactionMetadataSyncHelper.syncIfNeeded(
             allowSharingAppStoreAccount: self.purchasesOrchestrator.allowSharingAppStoreAccount
         )

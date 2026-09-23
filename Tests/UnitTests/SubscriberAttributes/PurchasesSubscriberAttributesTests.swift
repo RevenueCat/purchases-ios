@@ -349,7 +349,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
         expect(self.mockBackend.invokedGetSubscriberDataCount) == 1
     }
 
-    func testForegroundSyncsSubscriberAttributesImmediatelyWithStaleCachedCustomerInfo() {
+    func testForegroundSyncsSubscriberAttributesAfterRefreshingStaleCachedCustomerInfo() {
         let customerInfoResponseGate = MockAsyncGate()
         self.mockBackend.stubbedGetCustomerInfoResult = .success(.emptyInfo)
         self.setupPurchases()
@@ -364,12 +364,12 @@ class PurchasesSubscriberAttributesTests: TestCase {
         self.mockNotificationCenter.fireApplicationWillEnterForegroundNotification()
 
         expect(self.mockBackend.invokedGetSubscriberDataCount).toEventually(equal(2))
-        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount).toEventually(equal(1))
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 0
 
         customerInfoResponseGate.open()
 
         expect(self.mockBackend.completedGetCustomerInfoCount.value).toEventually(equal(2))
-        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 1
+        expect(self.mockSubscriberAttributesManager.invokedSyncAttributesForAllUsersCount).toEventually(equal(1))
     }
 
     func testResigningActiveSyncsSubscriberAttributesImmediatelyWithCachedCustomerInfo() {
