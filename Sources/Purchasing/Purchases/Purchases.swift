@@ -974,7 +974,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.hostedCheckoutManager = HostedCheckoutManager(
             externalPurchaseManager: externalPurchaseManager,
             webBillingAPI: backend.webBilling,
-            currentUserProvider: identityManager
+            currentUserProvider: identityManager,
+            systemInfo: systemInfo
         )
 
         super.init()
