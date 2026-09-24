@@ -140,6 +140,9 @@ private struct SideToolbarCancelButtonStack: ViewModifier {
                         ToolbarItem(placement: .cancellationAction) {
                             Button(self.closeTitle, systemImage: "xmark", action: self.onCancel)
                                 .disabled(self.isDisabled)
+                                // Looks like the system control it is, not like the paywall
+                                // content whose tint an app may set.
+                                .tint(nil)
                         }
                     }
                 }
