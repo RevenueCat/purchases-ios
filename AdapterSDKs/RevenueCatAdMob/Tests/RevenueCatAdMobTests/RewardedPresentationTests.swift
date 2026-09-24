@@ -11,67 +11,76 @@ import GoogleMobileAds
 final class RewardedPresentationTests: AdapterTestCase {
 
     private static let adUnitID = "ca-app-pub-test/rewarded"
+    private static let formats: [RewardedPresentation.Format] = [.rewarded, .rewardedInterstitial]
 
     func testDismissalWithoutEarningRewardCompletesWithShown() throws {
-        let fakeAd = FakeRewardedAd()
-        let presentation = self.makePresentation(loadResult: .success(fakeAd))
-        let recorder = OutcomeRecorder()
+        for format in Self.formats {
+            let fakeAd = FakeRewardedAd()
+            let presentation = self.makePresentation(format: format, loadResult: .success(fakeAd))
+            let recorder = OutcomeRecorder()
 
-        self.start(presentation, completion: recorder.record)
-        self.waitForPresentation(of: fakeAd)
+            self.start(presentation, completion: recorder.record)
+            self.waitForPresentation(of: fakeAd)
 
-        presentation.adDidDismissFullScreenContent(PresentingAdStub())
+            presentation.adDidDismissFullScreenContent(PresentingAdStub())
 
-        XCTAssertEqual(recorder.outcomes.count, 1)
-        XCTAssertTrue(try XCTUnwrap(recorder.outcomes.first).isShown)
+            XCTAssertEqual(recorder.outcomes.count, 1, "\(format)")
+            XCTAssertTrue(try XCTUnwrap(recorder.outcomes.first).isShown, "\(format)")
+        }
     }
 
     func testEnablesRewardVerificationBeforePresenting() {
-        let fakeAd = FakeRewardedAd()
-        let presentation = self.makePresentation(loadResult: .success(fakeAd))
+        for format in Self.formats {
+            let fakeAd = FakeRewardedAd()
+            let presentation = self.makePresentation(format: format, loadResult: .success(fakeAd))
 
-        self.start(presentation) { _ in }
-        self.waitForPresentation(of: fakeAd)
+            self.start(presentation) { _ in }
+            self.waitForPresentation(of: fakeAd)
 
-        XCTAssertEqual(fakeAd.events, [.enableRewardVerification, .present])
+            XCTAssertEqual(fakeAd.events, [.enableRewardVerification, .present], "\(format)")
+        }
     }
 
     func testVerifiedRewardAfterDismissalCompletesWithRewarded() throws {
-        let fakeAd = FakeRewardedAd()
-        let presentation = self.makePresentation(loadResult: .success(fakeAd))
-        let recorder = OutcomeRecorder()
+        for format in Self.formats {
+            let fakeAd = FakeRewardedAd()
+            let presentation = self.makePresentation(format: format, loadResult: .success(fakeAd))
+            let recorder = OutcomeRecorder()
 
-        self.start(presentation, completion: recorder.record)
-        self.waitForPresentation(of: fakeAd)
+            self.start(presentation, completion: recorder.record)
+            self.waitForPresentation(of: fakeAd)
 
-        fakeAd.earnReward()
-        presentation.adDidDismissFullScreenContent(PresentingAdStub())
-        XCTAssertTrue(recorder.outcomes.isEmpty, "Must wait for verification before completing")
+            fakeAd.earnReward()
+            presentation.adDidDismissFullScreenContent(PresentingAdStub())
+            XCTAssertTrue(recorder.outcomes.isEmpty, "Must wait for verification before completing (\(format))")
 
-        fakeAd.completeVerification(.verified(.unsupportedReward, moreRewards: [.noReward]))
+            fakeAd.completeVerification(.verified(.unsupportedReward, moreRewards: [.noReward]))
 
-        XCTAssertEqual(recorder.outcomes.count, 1)
-        let rewarded = try XCTUnwrap(recorder.outcomes.first?.rewarded)
-        XCTAssertEqual(rewarded.reward, .unsupportedReward)
-        XCTAssertEqual(rewarded.moreRewards, [.noReward])
+            XCTAssertEqual(recorder.outcomes.count, 1, "\(format)")
+            let rewarded = try XCTUnwrap(recorder.outcomes.first?.rewarded)
+            XCTAssertEqual(rewarded.reward, .unsupportedReward)
+            XCTAssertEqual(rewarded.moreRewards, [.noReward])
+        }
     }
 
     func testVerifiedRewardBeforeDismissalWaitsForDismissal() throws {
-        let fakeAd = FakeRewardedAd()
-        let presentation = self.makePresentation(loadResult: .success(fakeAd))
-        let recorder = OutcomeRecorder()
+        for format in Self.formats {
+            let fakeAd = FakeRewardedAd()
+            let presentation = self.makePresentation(format: format, loadResult: .success(fakeAd))
+            let recorder = OutcomeRecorder()
 
-        self.start(presentation, completion: recorder.record)
-        self.waitForPresentation(of: fakeAd)
+            self.start(presentation, completion: recorder.record)
+            self.waitForPresentation(of: fakeAd)
 
-        fakeAd.earnReward()
-        fakeAd.completeVerification(.verified(.unsupportedReward))
-        XCTAssertTrue(recorder.outcomes.isEmpty, "Must not complete while the ad is still on screen")
+            fakeAd.earnReward()
+            fakeAd.completeVerification(.verified(.unsupportedReward))
+            XCTAssertTrue(recorder.outcomes.isEmpty, "Must not complete while the ad is still on screen (\(format))")
 
-        presentation.adDidDismissFullScreenContent(PresentingAdStub())
+            presentation.adDidDismissFullScreenContent(PresentingAdStub())
 
-        XCTAssertEqual(recorder.outcomes.count, 1)
-        XCTAssertEqual(try XCTUnwrap(recorder.outcomes.first?.rewarded).reward, .unsupportedReward)
+            XCTAssertEqual(recorder.outcomes.count, 1, "\(format)")
+            XCTAssertEqual(try XCTUnwrap(recorder.outcomes.first?.rewarded).reward, .unsupportedReward)
+        }
     }
 
     func testVerifiedNoRewardCompletesWithRewardedCarryingNoReward() throws {
@@ -92,19 +101,21 @@ final class RewardedPresentationTests: AdapterTestCase {
     }
 
     func testFailedVerificationCompletesWithRewardVerificationFailed() throws {
-        let fakeAd = FakeRewardedAd()
-        let presentation = self.makePresentation(loadResult: .success(fakeAd))
-        let recorder = OutcomeRecorder()
+        for format in Self.formats {
+            let fakeAd = FakeRewardedAd()
+            let presentation = self.makePresentation(format: format, loadResult: .success(fakeAd))
+            let recorder = OutcomeRecorder()
 
-        self.start(presentation, completion: recorder.record)
-        self.waitForPresentation(of: fakeAd)
+            self.start(presentation, completion: recorder.record)
+            self.waitForPresentation(of: fakeAd)
 
-        fakeAd.earnReward()
-        presentation.adDidDismissFullScreenContent(PresentingAdStub())
-        fakeAd.completeVerification(.failed)
+            fakeAd.earnReward()
+            presentation.adDidDismissFullScreenContent(PresentingAdStub())
+            fakeAd.completeVerification(.failed)
 
-        XCTAssertEqual(recorder.outcomes.count, 1)
-        XCTAssertTrue(try XCTUnwrap(recorder.outcomes.first).isRewardVerificationFailed)
+            XCTAssertEqual(recorder.outcomes.count, 1, "\(format)")
+            XCTAssertTrue(try XCTUnwrap(recorder.outcomes.first).isRewardVerificationFailed, "\(format)")
+        }
     }
 
     func testPresentationFailureCompletesWithFailed() throws {
@@ -144,48 +155,57 @@ final class RewardedPresentationTests: AdapterTestCase {
     }
 
     func testMissingPresentationContextCompletesWithFailedWithoutPresenting() throws {
-        let fakeAd = FakeRewardedAd()
-        let presentation = self.makePresentation(loadResult: .success(fakeAd), hasPresentationContext: false)
-        let recorder = OutcomeRecorder()
-        let completed = self.expectation(description: "completed")
+        for format in Self.formats {
+            let fakeAd = FakeRewardedAd()
+            let presentation = self.makePresentation(
+                format: format,
+                loadResult: .success(fakeAd),
+                hasPresentationContext: false
+            )
+            let recorder = OutcomeRecorder()
+            let completed = self.expectation(description: "completed")
 
-        self.start(presentation) { outcome in
-            recorder.record(outcome)
-            completed.fulfill()
+            self.start(presentation) { outcome in
+                recorder.record(outcome)
+                completed.fulfill()
+            }
+            self.wait(for: [completed], timeout: 2.0)
+
+            let error = try XCTUnwrap(recorder.outcomes.first?.error)
+            XCTAssertEqual(error.domain, RewardedPresentationError.errorDomain)
+            XCTAssertEqual(error.code, RewardedPresentationError.noPresentationContext.errorCode)
+            XCTAssertTrue(fakeAd.events.isEmpty, "\(format)")
         }
-        self.wait(for: [completed], timeout: 2.0)
-
-        let error = try XCTUnwrap(recorder.outcomes.first?.error)
-        XCTAssertEqual(error.domain, RewardedPresentationError.errorDomain)
-        XCTAssertEqual(error.code, RewardedPresentationError.noPresentationContext.errorCode)
-        XCTAssertTrue(fakeAd.events.isEmpty)
     }
 
     func testUnsupportedMediatorCompletesWithFailedWithoutLoading() throws {
-        var loadCount = 0
-        let presentation = RewardedPresentation(
-            loadAd: { _, _, _ in
-                loadCount += 1
-                return FakeRewardedAd()
-            },
-            presentingViewControllerProvider: { UIViewController() }
-        )
-        let recorder = OutcomeRecorder()
+        for format in Self.formats {
+            var loadCount = 0
+            let presentation = RewardedPresentation(
+                format: format,
+                loadAd: { _, _, _ in
+                    loadCount += 1
+                    return FakeRewardedAd()
+                },
+                presentingViewControllerProvider: { UIViewController() }
+            )
+            let recorder = OutcomeRecorder()
 
-        presentation.start(
-            adUnitID: Self.adUnitID,
-            mediator: .appLovin,
-            placement: "checkpoint",
-            completion: recorder.record
-        )
+            presentation.start(
+                adUnitID: Self.adUnitID,
+                mediator: .appLovin,
+                placement: "checkpoint",
+                completion: recorder.record
+            )
 
-        let error = try XCTUnwrap(recorder.outcomes.first?.error)
-        XCTAssertEqual(error.domain, RewardedPresentationError.errorDomain)
-        XCTAssertEqual(
-            error.code,
-            RewardedPresentationError.unsupportedMediator(MediatorName.appLovin.rawValue).errorCode
-        )
-        XCTAssertEqual(loadCount, 0)
+            let error = try XCTUnwrap(recorder.outcomes.first?.error)
+            XCTAssertEqual(error.domain, RewardedPresentationError.errorDomain)
+            XCTAssertEqual(
+                error.code,
+                RewardedPresentationError.unsupportedMediator(MediatorName.appLovin.rawValue).errorCode
+            )
+            XCTAssertEqual(loadCount, 0, "\(format)")
+        }
     }
 
     func testPassesAdUnitPlacementAndItselfAsDelegateToLoad() {
@@ -194,6 +214,7 @@ final class RewardedPresentationTests: AdapterTestCase {
         var receivedPlacement: String?
         weak var receivedDelegate: GoogleMobileAds.FullScreenContentDelegate?
         let presentation = RewardedPresentation(
+            format: .rewarded,
             loadAd: { adUnitID, placement, delegate in
                 receivedAdUnitID = adUnitID
                 receivedPlacement = placement
@@ -229,30 +250,37 @@ final class RewardedPresentationTests: AdapterTestCase {
         XCTAssertEqual(recorder.outcomes.count, 1)
     }
 
+    func testFormatMapsToAdFormat() {
+        XCTAssertEqual(RewardedPresentation.Format.rewarded.adFormat, AdFormat.rewarded)
+        XCTAssertEqual(RewardedPresentation.Format.rewardedInterstitial.adFormat, AdFormat.rewardedInterstitial)
+    }
+
     func testOutcomeMapsToAdPresentationResult() {
-        XCTAssertTrue(RewardedPresentation.Outcome.shown.presentationResult === AdPresentationResult.shown)
-        XCTAssertTrue(
-            RewardedPresentation.Outcome.rewardVerificationFailed.presentationResult
-                === AdPresentationResult.rewardVerificationFailed
+        XCTAssertEqual(RewardedPresentation.Outcome.shown.presentationResult, AdPresentationResult.shown)
+        XCTAssertEqual(
+            RewardedPresentation.Outcome.rewardVerificationFailed.presentationResult,
+            AdPresentationResult.rewardVerificationFailed
         )
 
         let rewarded = RewardedPresentation.Outcome.rewarded(.noReward, moreRewards: []).presentationResult
-        XCTAssertFalse(rewarded === AdPresentationResult.shown)
-        XCTAssertFalse(rewarded === AdPresentationResult.rewardVerificationFailed)
+        XCTAssertNotEqual(rewarded, AdPresentationResult.shown)
+        XCTAssertNotEqual(rewarded, AdPresentationResult.rewardVerificationFailed)
 
         let failed = RewardedPresentation.Outcome.failed(NSError(domain: "gma", code: 1)).presentationResult
-        XCTAssertFalse(failed === AdPresentationResult.shown)
-        XCTAssertFalse(failed === AdPresentationResult.rewardVerificationFailed)
+        XCTAssertNotEqual(failed, AdPresentationResult.shown)
+        XCTAssertNotEqual(failed, AdPresentationResult.rewardVerificationFailed)
     }
 
     // MARK: - Helpers
 
     private func makePresentation(
+        format: RewardedPresentation.Format = .rewarded,
         loadResult: Result<FakeRewardedAd, Error>,
         hasPresentationContext: Bool = true
     ) -> RewardedPresentation {
         let viewController = hasPresentationContext ? UIViewController() : nil
         return RewardedPresentation(
+            format: format,
             loadAd: { _, _, _ in try loadResult.get() },
             presentingViewControllerProvider: { viewController }
         )
@@ -301,9 +329,9 @@ private final class FakeRewardedAd: RewardedPresentableAd {
         self.events.append(.enableRewardVerification)
     }
 
-    func presentRewarded(
+    func present(
         from viewController: UIViewController,
-        rewardVerificationStarted: @escaping @MainActor () -> Void,
+        rewardVerificationStarted: (@MainActor () -> Void)?,
         rewardVerificationCompleted: @escaping @MainActor (RewardVerificationResult) -> Void
     ) {
         self.events.append(.present)
