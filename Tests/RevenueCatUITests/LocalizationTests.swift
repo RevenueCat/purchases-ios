@@ -632,4 +632,56 @@ class PaywallsV2LocaleResolutionTests: TestCase {
         expect(chosen) == Locale(identifier: "fr_FR")
     }
 
+    // `Locale.preferredLanguages` uses hyphens, paywall locales use underscores
+    func testHyphenatedPreferredLocaleMatchesExactRegion() {
+        let chosen = Locale.selectPreferredLocale(
+            from: ["en_AU", "en_CA", "en_GB", "en_US"].map { Locale(identifier: $0) },
+            preferredLocales: [Locale(identifier: "en-GB")]
+        )
+        expect(chosen) == Locale(identifier: "en_GB")
+    }
+
+    func testHyphenatedPreferredLocalesMatchRegionalVariants() {
+        let portuguese = ["pt_BR", "pt_PT"].map { Locale(identifier: $0) }
+        let spanish = ["es_ES", "es_MX"].map { Locale(identifier: $0) }
+
+        expect(Locale.selectPreferredLocale(from: portuguese, preferredLocales: [Locale(identifier: "pt-BR")]))
+            == Locale(identifier: "pt_BR")
+        expect(Locale.selectPreferredLocale(from: portuguese, preferredLocales: [Locale(identifier: "pt-PT")]))
+            == Locale(identifier: "pt_PT")
+        expect(Locale.selectPreferredLocale(from: spanish, preferredLocales: [Locale(identifier: "es-MX")]))
+            == Locale(identifier: "es_MX")
+    }
+
+    // Available locales usually come from a Dictionary, so their order is not stable
+    func testLanguageOnlyMatchDoesNotDependOnOrderOfAvailableLocales() {
+        let identifiers = ["en_US", "en_GB", "en_CA", "en_AU"]
+        let orders = [identifiers, identifiers.reversed(), Array(identifiers[2...] + identifiers[..<2])]
+
+        let chosen = Set(orders.map { order in
+            Locale.selectPreferredLocale(
+                from: order.map { Locale(identifier: $0) },
+                preferredLocales: [Locale(identifier: "en-IE")]
+            )
+        })
+        expect(chosen) == [Locale(identifier: "en_AU")]
+    }
+
+    func testScriptMatchTakesPriorityOverLanguageOnlyMatch() {
+        let chinese = ["zh_Hans", "zh_Hant"].map { Locale(identifier: $0) }
+
+        expect(Locale.selectPreferredLocale(from: chinese, preferredLocales: [Locale(identifier: "zh-Hant-TW")]))
+            == Locale(identifier: "zh_Hant")
+        expect(Locale.selectPreferredLocale(from: chinese, preferredLocales: [Locale(identifier: "zh-Hans-CN")]))
+            == Locale(identifier: "zh_Hans")
+    }
+
+    func testScriptIsInferredFromRegion() {
+        let chosen = Locale.selectPreferredLocale(
+            from: [Locale(identifier: "zh_Hans"), Locale(identifier: "zh_Hant")],
+            preferredLocales: [Locale(identifier: "zh_TW")]
+        )
+        expect(chosen) == Locale(identifier: "zh_Hant")
+    }
+
 }
