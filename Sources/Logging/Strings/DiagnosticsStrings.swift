@@ -19,6 +19,7 @@ enum DiagnosticsStrings {
 
     case timing_message(message: String, duration: TimeInterval)
     case could_not_create_diagnostics_tracker
+    case diagnostics_collection_decision(isEnabled: Bool, isEnabledBySDKConfiguration: Bool)
     case diagnostic_event_awaiting_collection_decision
     case diagnostics_collection_configured(isEnabled: Bool, pendingEventCount: Int)
 
@@ -56,6 +57,11 @@ extension DiagnosticsStrings: LogMessage {
 
         case .could_not_create_diagnostics_tracker:
             return "Could not create DiagnosticsTracker"
+
+        case let .diagnostics_collection_decision(isEnabled, isEnabledBySDKConfiguration):
+            let source = isEnabledBySDKConfiguration ? "local SDK configuration" : "remote SDK settings"
+            return "Diagnostics collection decision: \(isEnabled ? "enabled" : "disabled"), "
+                + "as determined by \(source)."
 
         case .diagnostic_event_awaiting_collection_decision:
             return "Diagnostics collection decision has not been received. "
