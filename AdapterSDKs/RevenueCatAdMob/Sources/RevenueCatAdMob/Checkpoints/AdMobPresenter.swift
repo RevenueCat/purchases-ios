@@ -12,7 +12,7 @@ import GoogleMobileAds
 @_spi(CheckpointsInternal) import RevenueCatUI
 import UIKit
 
-/// Errors produced by ``AdMobPresenter`` before any format-specific presentation starts.
+/// Errors produced by ``AdMobPresenter`` before any format-specific presenter is involved.
 @available(iOS 15.0, *)
 internal enum AdMobPresentationError: Error, CustomNSError {
 
@@ -40,89 +40,58 @@ internal enum AdMobPresentationError: Error, CustomNSError {
 
 }
 
-/// Presents AdMob ads for checkpoint ad steps, choosing the loader that matches each step's ad format.
+/// Presents AdMob ads for checkpoint ad steps by delegating each step to the presenter for its ad format.
 ///
-/// Register one instance on `Purchases.shared.adPresenter`. A resolved ad step then loads its ad
-/// unit through the matching `loadAndTrack` entry point (so the usual RevenueCat ad events are tracked) and
-/// presents it from the topmost view controller. Rewarded formats enable RevenueCat reward verification and
-/// complete with `CheckpointAdOutcome.Rewarded` once the reward has been verified server-side.
+/// Register one instance on `Purchases.shared.adPresenter` to handle every AdMob format the adapter
+/// supports; register ``AdMobInterstitialPresenter``, ``AdMobRewardedPresenter`` or
+/// ``AdMobRewardedInterstitialPresenter`` directly instead if the app only ever configures one format.
 ///
-/// AdMob ad units are format-locked, so an ad step whose format this presenter does not implement fails
-/// immediately with an error in the `RevenueCatAdMob.AdMobPresentationError` domain rather than being loaded
-/// through a loader that would only report a no-fill.
-///
-/// The checkpoint identifier is used as the tracking placement.
+/// AdMob ad units are format-locked, so an ad step whose format has no presenter here fails immediately
+/// with an error in the `RevenueCatAdMob.AdMobPresentationError` domain rather than being loaded through
+/// a presenter that would only report a no-fill.
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, *)
 @MainActor
 public final class AdMobPresenter: AdPresenter {
 
-    /// Presentations stay alive until they complete: AdMob holds `fullScreenContentDelegate` weakly.
-    private var activePresentations: Set<NSObject> = []
+    private let interstitialPresenter: AdPresenter
+    private let rewardedPresenter: AdPresenter
+    private let rewardedInterstitialPresenter: AdPresenter
 
-    private let makeInterstitialPresentation: @MainActor () -> InterstitialPresentation
-    private let makeRewardedPresentation: @MainActor (RewardedPresentation.Format) -> RewardedPresentation
-
-    /// Creates a presenter that loads and shows AdMob ads for checkpoint ad steps.
+    /// Creates a presenter that delegates to the adapter's format-specific AdMob presenters.
     public convenience init() {
         self.init(
-            makeInterstitialPresentation: { InterstitialPresentation() },
-            makeRewardedPresentation: { RewardedPresentation(format: $0) }
+            interstitialPresenter: AdMobInterstitialPresenter(),
+            rewardedPresenter: AdMobRewardedPresenter(),
+            rewardedInterstitialPresenter: AdMobRewardedInterstitialPresenter()
         )
     }
 
     init(
-        makeInterstitialPresentation: @escaping @MainActor () -> InterstitialPresentation,
-        makeRewardedPresentation: @escaping @MainActor (RewardedPresentation.Format) -> RewardedPresentation
+        interstitialPresenter: AdPresenter,
+        rewardedPresenter: AdPresenter,
+        rewardedInterstitialPresenter: AdPresenter
     ) {
-        self.makeInterstitialPresentation = makeInterstitialPresentation
-        self.makeRewardedPresentation = makeRewardedPresentation
+        self.interstitialPresenter = interstitialPresenter
+        self.rewardedPresenter = rewardedPresenter
+        self.rewardedInterstitialPresenter = rewardedInterstitialPresenter
     }
 
-    /// Loads and presents the ad for `params.adIdentifier` using the loader for `params.adFormat`, completing
-    /// once the ad is dismissed (and any earned reward verified) or once it fails.
+    /// Forwards the ad step to the presenter for `params.adFormat`.
     public func present(
         params: AdPresentationParams,
         completion: @escaping AdPresentationCompletion
     ) {
         switch params.adFormat {
         case .interstitial:
-            let presentation = self.makeInterstitialPresentation()
-            let finish = self.track(presentation, completion: completion)
-            presentation.start(
-                adUnitID: params.adIdentifier,
-                mediator: params.mediator,
-                placement: params.checkpointIdentifier
-            ) { finish($0.presentationResult) }
-
-        case .rewarded, .rewardedInterstitial:
-            let format: RewardedPresentation.Format = params.adFormat == .rewarded ? .rewarded : .rewardedInterstitial
-            let presentation = self.makeRewardedPresentation(format)
-            let finish = self.track(presentation, completion: completion)
-            presentation.start(
-                adUnitID: params.adIdentifier,
-                mediator: params.mediator,
-                placement: params.checkpointIdentifier
-            ) { finish($0.presentationResult) }
-
+            self.interstitialPresenter.present(params: params, completion: completion)
+        case .rewarded:
+            self.rewardedPresenter.present(params: params, completion: completion)
+        case .rewardedInterstitial:
+            self.rewardedInterstitialPresenter.present(params: params, completion: completion)
         default:
             Logger.warn(CheckpointPresenterStrings.unsupported_format(adFormat: params.adFormat.rawValue))
             completion(.failed(error: AdMobPresentationError.unsupportedFormat(params.adFormat.rawValue) as NSError))
-        }
-    }
-
-    // MARK: -
-
-    private func track(
-        _ presentation: NSObject,
-        completion: @escaping AdPresentationCompletion
-    ) -> @MainActor (AdPresentationResult) -> Void {
-        self.activePresentations.insert(presentation)
-        return { [weak self, weak presentation] result in
-            if let presentation {
-                self?.activePresentations.remove(presentation)
-            }
-            completion(result)
         }
     }
 
