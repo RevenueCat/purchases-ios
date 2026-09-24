@@ -6,6 +6,7 @@
 //  Copyright © 2026 RevenueCat, Inc. All rights reserved.
 //
 
+import Foundation
 import Nimble
 import XCTest
 
@@ -55,6 +56,22 @@ class SDKSettingsConfigProviderTests: TestCase {
         ]
 
         let settings = await self.provider.settings()
+
+        expect(settings) == SDKSettings()
+    }
+
+    func testDecodingMalformedDiagnosticsEnabledDefaultsOnlyDiagnostics() throws {
+        let data = Data(#"{"diagnostics":{"enabled":"true"}}"#.utf8)
+
+        let settings = try JSONDecoder.default.decode(SDKSettings.self, from: data)
+
+        expect(settings) == SDKSettings()
+    }
+
+    func testDecodingMalformedDiagnosticsDefaultsOnlyDiagnostics() throws {
+        let data = Data(#"{"diagnostics":"enabled"}"#.utf8)
+
+        let settings = try JSONDecoder.default.decode(SDKSettings.self, from: data)
 
         expect(settings) == SDKSettings()
     }
