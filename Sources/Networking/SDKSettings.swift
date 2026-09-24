@@ -39,7 +39,7 @@ struct SDKSettings: Decodable, Equatable {
 
         init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            self.enabled = try container.decodeIfPresent(Bool.self, forKey: .enabled) ?? false
+            self.enabled = (try? container.decode(Bool.self, forKey: .enabled)) ?? false
         }
 
     }
@@ -56,7 +56,7 @@ extension SDKSettings {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.externalPurchases = (try? container.decode(ExternalPurchases.self, forKey: .externalPurchases))
             ?? Self.noExternalPurchases
-        self.diagnostics = try container.decodeIfPresent(Diagnostics.self, forKey: .diagnostics) ?? .init()
+        self.diagnostics = (try? container.decode(Diagnostics.self, forKey: .diagnostics)) ?? .init()
     }
 
     private static let noExternalPurchases = ExternalPurchases(
