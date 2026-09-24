@@ -130,7 +130,10 @@ enum HostedCheckout {
 }
 
 /// Why a checkout the customer was told succeeded did not end in a purchase, mapped onto the same public
-/// codes `purchases-js` reports for it.
+/// codes `purchases-js` reports for it, except for a failed charge.
+///
+/// `purchases-js` reports a failed charge as `PaymentPendingError`, but on Apple platforms that code means a
+/// purchase awaiting approval, which apps commonly hold off on rather than treat as a failure.
 enum HostedCheckoutError: Error, Equatable {
 
     /// The backend says the session failed. `code` is the backend's own, absent where it gave none.
@@ -158,7 +161,7 @@ extension HostedCheckoutError: CustomNSError {
     private var publicCode: ErrorCode {
         switch self {
         case .failed(code: Self.paymentChargeFailedCode):
-            return .paymentPendingError
+            return .purchaseNotAllowedError
         case let .failed(code?) where Self.setupFailedCodes.contains(code):
             return .storeProblemError
         case .failed, .unconfirmed:

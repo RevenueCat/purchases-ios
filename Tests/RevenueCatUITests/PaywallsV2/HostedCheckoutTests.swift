@@ -290,10 +290,12 @@ final class HostedCheckoutTests: TestCase {
             .toNever(beTrue(), until: .milliseconds(300))
     }
 
-    // MARK: - Errors, matching purchases-js
+    // MARK: - Errors
 
-    func testReportsAFailedChargeAsAFailedPayment() {
-        expect((HostedCheckoutError.failed(code: 3) as NSError).code) == ErrorCode.paymentPendingError.rawValue
+    /// Not as a pending payment, which is what `purchases-js` reports: on Apple platforms that means a purchase
+    /// awaiting approval.
+    func testReportsAFailedChargeAsAPurchaseThatWasNotAllowed() {
+        expect((HostedCheckoutError.failed(code: 3) as NSError).code) == ErrorCode.purchaseNotAllowedError.rawValue
     }
 
     func testReportsAFailedSetupAsAStoreProblem() {
