@@ -14,7 +14,7 @@ import UIKit
 
 /// Presents an AdMob interstitial ad when a checkpoint resolves to an ad step.
 ///
-/// Register an instance on `Purchases.shared.checkpointAdPresenter` so a resolved ad step loads the
+/// Register an instance on `Purchases.shared.adPresenter` so a resolved ad step loads the
 /// configured ad unit through `InterstitialAd.loadAndTrack` (so the usual RevenueCat ad events are
 /// tracked) and presents it from the topmost view controller.
 ///
@@ -31,7 +31,7 @@ public final class AdMobInterstitialPresenter: AdPresenter {
     /// Creates a presenter that loads and shows AdMob interstitials for checkpoint ad steps.
     public init() {}
 
-    /// Loads and presents the interstitial for `params.adUnitId`, completing once it is dismissed or fails.
+    /// Loads and presents the interstitial for `params.adIdentifier`, completing once it is dismissed or fails.
     public func present(
         params: AdPresentationParams,
         completion: @escaping AdPresentationCompletion
@@ -40,7 +40,7 @@ public final class AdMobInterstitialPresenter: AdPresenter {
         self.activePresentations.insert(presentation)
 
         presentation.start(
-            adUnitID: params.adUnitId,
+            adUnitID: params.adIdentifier,
             mediator: params.mediator,
             placement: params.checkpointIdentifier
         ) { [weak self, weak presentation] outcome in
