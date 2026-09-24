@@ -17,7 +17,7 @@
                BlueprintIdentifier = "RevenueCatUI"
                BuildableName = "RevenueCatUI"
                BlueprintName = "RevenueCatUI"
-               ReferencedContainer = "container:">
+               ReferencedContainer = "container:.">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -56,7 +56,7 @@
                BlueprintIdentifier = "RevenueCatUITests"
                BuildableName = "RevenueCatUITests"
                BlueprintName = "RevenueCatUITests"
-               ReferencedContainer = "container:">
+               ReferencedContainer = "container:.">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -84,7 +84,7 @@
             BlueprintIdentifier = "RevenueCatUI"
             BuildableName = "RevenueCatUI"
             BlueprintName = "RevenueCatUI"
-            ReferencedContainer = "container:">
+            ReferencedContainer = "container:.">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>
