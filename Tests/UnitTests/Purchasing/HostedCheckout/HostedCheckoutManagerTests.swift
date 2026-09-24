@@ -27,7 +27,7 @@ class HostedCheckoutManagerTests: TestCase {
     private var customLink: MockExternalPurchaseCustomLink!
     private var externalPurchaseTokenAPI: MockExternalPurchaseTokenAPI!
     private var webBillingAPI: MockWebBillingAPI!
-    private var configProvider: MockExternalPurchasesConfigProvider!
+    private var settingsProvider: MockSDKSettingsConfigProvider!
     private var systemInfo: MockSystemInfo!
     private var manager: HostedCheckoutManager!
 
@@ -42,8 +42,8 @@ class HostedCheckoutManagerTests: TestCase {
         self.webBillingAPI = MockWebBillingAPI(backendConfig: MockBackendConfiguration())
         self.webBillingAPI.stubbedPostHostedCheckoutCompletionResult = .success(Self.response)
 
-        self.configProvider = MockExternalPurchasesConfigProvider()
-        self.configProvider.stubbedAllowedStorefronts = [Self.storefront]
+        self.settingsProvider = MockSDKSettingsConfigProvider()
+        self.settingsProvider.stubbedSettings = .allowingExternalPurchases(in: [Self.storefront])
 
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: true)
         self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.storefront)
@@ -281,7 +281,7 @@ private extension HostedCheckoutManagerTests {
                 customLink: self.customLink,
                 externalPurchaseTokenAPI: self.externalPurchaseTokenAPI,
                 currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID),
-                configProvider: self.configProvider,
+                settingsProvider: self.settingsProvider,
                 systemInfo: self.systemInfo
             ),
             webBillingAPI: self.webBillingAPI,

@@ -984,7 +984,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             customLink: StoreKitExternalPurchaseCustomLink(),
             externalPurchaseTokenAPI: backend.externalPurchaseTokenAPI,
             currentUserProvider: identityManager,
-            configProvider: ExternalPurchasesConfigProvider(manager: self.remoteConfigManager),
+            settingsProvider: self.sdkSettingsConfigProvider,
             systemInfo: systemInfo
         )
         self.externalPurchaseManager = externalPurchaseManager

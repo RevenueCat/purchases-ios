@@ -20,7 +20,7 @@ final class ExternalPurchaseManager {
     private let customLink: ExternalPurchaseCustomLinkType
     private let externalPurchaseTokenAPI: ExternalPurchaseTokenAPI
     private let currentUserProvider: CurrentUserProvider
-    private let configProvider: ExternalPurchasesConfigProviderType
+    private let settingsProvider: SDKSettingsConfigProviderType
     private let systemInfo: SystemInfo
 
     private let isPreparing: Atomic<Bool> = false
@@ -28,12 +28,12 @@ final class ExternalPurchaseManager {
     init(customLink: ExternalPurchaseCustomLinkType,
          externalPurchaseTokenAPI: ExternalPurchaseTokenAPI,
          currentUserProvider: CurrentUserProvider,
-         configProvider: ExternalPurchasesConfigProviderType,
+         settingsProvider: SDKSettingsConfigProviderType,
          systemInfo: SystemInfo) {
         self.customLink = customLink
         self.externalPurchaseTokenAPI = externalPurchaseTokenAPI
         self.currentUserProvider = currentUserProvider
-        self.configProvider = configProvider
+        self.settingsProvider = settingsProvider
         self.systemInfo = systemInfo
     }
 
@@ -179,7 +179,8 @@ private extension ExternalPurchaseManager {
     /// Asked on every purchase rather than cached, since the customer can change storefront while the app runs.
     func storefrontNotRequiringExternalPurchaseAPIs() async -> String? {
         guard let storefront = self.storefront,
-              await self.configProvider.storefrontsAllowedWithoutStoreEligibility().contains(storefront) else {
+              await self.settingsProvider.settings().externalPurchases.appStore
+                .storefrontsAllowedWithoutStoreEligibility.contains(storefront) else {
             return nil
         }
 
