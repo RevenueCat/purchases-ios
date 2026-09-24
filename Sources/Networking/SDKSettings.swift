@@ -19,7 +19,7 @@ struct SDKSettings: Decodable, Equatable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.diagnostics = try container.decodeIfPresent(Diagnostics.self, forKey: .diagnostics) ?? .init()
+        self.diagnostics = (try? container.decode(Diagnostics.self, forKey: .diagnostics)) ?? .init()
     }
 
     struct Diagnostics: Decodable, Equatable {
@@ -32,7 +32,7 @@ struct SDKSettings: Decodable, Equatable {
 
         init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            self.enabled = try container.decodeIfPresent(Bool.self, forKey: .enabled) ?? false
+            self.enabled = (try? container.decode(Bool.self, forKey: .enabled)) ?? false
         }
 
     }
