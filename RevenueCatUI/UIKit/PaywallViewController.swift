@@ -109,6 +109,9 @@ public class PaywallViewController: UIViewController {
         }
     }
 
+    /// Whether this controller is presented on its own, where hosting a navigation stack is safe.
+    private let modalPresentationState = PaywallModalPresentationState()
+
     // MARK: - Exit Offer State
 
     /// The prefetched exit offer, loaded while the main paywall is showing.
@@ -384,6 +387,7 @@ public class PaywallViewController: UIViewController {
     public override func viewDidLoad() {
         super.viewDidLoad()
 
+        self.updateModalPresentationState()
         if self.hostingController == nil {
             self.hostingController = self.createHostingController()
         }
@@ -396,6 +400,8 @@ public class PaywallViewController: UIViewController {
 
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+
+        self.updateModalPresentationState()
 
         guard self.shouldDisplayExitOffers else { return }
 
@@ -865,6 +871,18 @@ public protocol PaywallViewControllerDelegate: AnyObject {
 private extension PaywallViewController {
 
     // swiftlint:disable:next function_body_length
+    /// A controller presented on its own is the root of a modal presentation, like the SwiftUI
+    /// `presentPaywall` paths. Pushed, embedded or navigation-wrapped controllers are not: hosting a
+    /// navigation stack there would nest navigation bars.
+    func updateModalPresentationState() {
+        let isModalPresentationRoot = self.presentingViewController != nil
+            && self.navigationController == nil
+            && self.parent == nil
+        if self.modalPresentationState.isModalPresentationRoot != isModalPresentationRoot {
+            self.modalPresentationState.isModalPresentationRoot = isModalPresentationRoot
+        }
+    }
+
     func createHostingController() -> UIHostingController<PaywallContainerView> {
         // Always route close button through exit offer handling
         let onRequestedDismissal: () -> Void = { [weak self] in
@@ -884,6 +902,7 @@ private extension PaywallViewController {
         let container = PaywallContainerView(
             configuration: self.configuration,
             customVariables: self.customVariables,
+            modalPresentationState: self.modalPresentationState,
             purchaseStarted: { [weak self] package in
                 guard let self else { return }
                 self.delegate?.paywallViewControllerDidStartPurchase?(self)
@@ -1045,11 +1064,22 @@ extension PaywallViewController {
 
 }
 
+/// Observed rather than stored in the configuration: a configuration change rebuilds the hosting
+/// controller, which would reset the paywall.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@MainActor
+private final class PaywallModalPresentationState: ObservableObject {
+    @Published var isModalPresentationRoot = false
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private struct PaywallContainerView: View {
 
     var configuration: PaywallViewConfiguration
     var customVariables: [String: CustomVariableValue]
+
+    @ObservedObject
+    var modalPresentationState: PaywallModalPresentationState
 
     let purchaseStarted: PurchaseOfPackageStartedHandler
     let purchaseCompleted: PurchaseCompletedHandler
@@ -1088,6 +1118,10 @@ private struct PaywallContainerView: View {
             .onSizeChange(self.onSizeChange)
             .onRequestedDismissal(self.requestedDismissal)
             .environment(\.workflowDismissalObserver, self.onWorkflowDismissal)
+            .environment(
+                \.paywallIsModalPresentationRoot,
+                self.modalPresentationState.isModalPresentationRoot
+            )
             .onPurchaseInitiated { package, resumeAction in
                 self.purchaseInitiated(package) { shouldProceed in
                     Task { @MainActor in

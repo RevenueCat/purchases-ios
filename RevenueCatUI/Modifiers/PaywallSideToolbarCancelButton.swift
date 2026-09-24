@@ -26,9 +26,11 @@ extension View {
     /// display. Everywhere else the paywall keeps its designed close button.
     ///
     /// This is on by default for paywalls presented with `presentPaywallIfNeeded` and
-    /// `presentPaywall`. A `PaywallView` you present yourself can't know whether it's the root of
-    /// a modal presentation or pushed onto your own navigation stack, so it only opts in when you
-    /// apply this modifier with `true`. Apply it to the root of a modal presentation only.
+    /// `presentPaywall`, and for a `PaywallViewController` presented on its own rather than pushed
+    /// or wrapped in a navigation controller. A `PaywallView` you present yourself can't know
+    /// whether it's the root of a modal presentation or pushed onto your own navigation stack, so
+    /// it only opts in when you apply this modifier with `true`. Apply it to the root of a modal
+    /// presentation only.
     ///
     /// - Parameter enabled: Pass `false` to always keep the designed close button.
     public func movePaywallCancelButtonToSideToolbarWhenAppropriate(_ enabled: Bool = true) -> some View {
