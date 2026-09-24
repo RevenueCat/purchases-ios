@@ -393,6 +393,10 @@ public struct PaywallView: View {
                         colorScheme: colorScheme,
                         promoOfferCache: self.promoOfferCache
                     )
+                    .paywallSideToolbarCancelButtonHost(
+                        purchaseHandler: purchaseHandler,
+                        onCancel: self.dismissRequested
+                    )
                 }
             }
         } else {

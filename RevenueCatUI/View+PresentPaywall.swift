@@ -672,6 +672,7 @@ private struct PresentingPaywallModifier: ViewModifier {
                 promoOfferCache: self.promoOfferCacheOwner.cache
             )
         )
+        .paywallIsModalPresentationRoot()
         .environment(\.workflowCompletedInSessionBinding, self.$workflowCompletedInSession)
         .onAppear(perform: self.resetWorkflowCompletedInSession)
         .onPurchaseStarted {
@@ -792,6 +793,7 @@ private struct PresentingPaywallModifier: ViewModifier {
                 promoOfferCache: self.promoOfferCacheOwner.cache
             )
         )
+        .paywallIsModalPresentationRoot()
         .customPaywallVariables(self.customPaywallVariables)
         .environment(\.workflowCompletedInSessionBinding, self.$workflowCompletedInSession)
         .onPurchaseStarted {
@@ -964,6 +966,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
                 promoOfferCache: self.promoOfferCacheOwner.cache
             )
         )
+        .paywallIsModalPresentationRoot()
         .environment(\.workflowCompletedInSessionBinding, self.$workflowCompletedInSession)
         .onAppear(perform: self.resetWorkflowCompletedInSession)
         .onPurchaseStarted {
@@ -1014,6 +1017,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
                 promoOfferCache: self.promoOfferCacheOwner.cache
             )
         )
+        .paywallIsModalPresentationRoot()
         .customPaywallVariables(self.customPaywallVariables)
         .environment(\.workflowCompletedInSessionBinding, self.$workflowCompletedInSession)
         .onPurchaseStarted {
