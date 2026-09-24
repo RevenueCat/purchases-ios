@@ -29,7 +29,6 @@ class Backend {
     let adsAPI: AdsAPI
     let remoteConfigAPI: RemoteConfigAPI
 
-    private let lanes: BackendLanes
     private let config: BackendConfiguration
 
     convenience init(
@@ -113,7 +112,6 @@ class Backend {
                   virtualCurrenciesAPI: VirtualCurrenciesAPI,
                   adsAPI: AdsAPI,
                   remoteConfigAPI: RemoteConfigAPI) {
-        self.lanes = lanes
         self.config = lanes[.default]
 
         self.customer = customerAPI
@@ -132,7 +130,9 @@ class Backend {
     }
 
     func clearHTTPClientCaches() {
-        self.lanes.clearHTTPClientCaches()
+        // Every lane's HTTPClient shares one ETagManager, so clearing it through the default lane
+        // clears it for all of them.
+        self.config.clearCache()
     }
 
     func post(attributionData: [String: Any],

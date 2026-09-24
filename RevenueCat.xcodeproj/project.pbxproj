@@ -1632,6 +1632,7 @@
 		FEDA000000000000000000D5 /* CheckpointRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000C5 /* CheckpointRulesTests.swift */; };
 		FEDA000000000000000000D6 /* CheckpointsConfigProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000C6 /* CheckpointsConfigProviderTests.swift */; };
 		A7D100000000000000000002 /* AudiencesConfigProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D100000000000000000001 /* AudiencesConfigProvider.swift */; };
+		B8E400000000000000000002 /* AudiencesConfigProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8E400000000000000000001 /* AudiencesConfigProviderTests.swift */; };
 		A7D200000000000000000002 /* Audience.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D200000000000000000001 /* Audience.swift */; };
 		A7D300000000000000000002 /* WorkflowBranch.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D300000000000000000001 /* WorkflowBranch.swift */; };
 		A7D300000000000000000004 /* WorkflowTriggerAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D300000000000000000003 /* WorkflowTriggerAction.swift */; };
@@ -3517,6 +3518,7 @@
 		FEDA000000000000000000C5 /* CheckpointRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointRulesTests.swift; sourceTree = "<group>"; };
 		FEDA000000000000000000C6 /* CheckpointsConfigProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointsConfigProviderTests.swift; sourceTree = "<group>"; };
 		A7D100000000000000000001 /* AudiencesConfigProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiencesConfigProvider.swift; sourceTree = "<group>"; };
+		B8E400000000000000000001 /* AudiencesConfigProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiencesConfigProviderTests.swift; sourceTree = "<group>"; };
 		A7D200000000000000000001 /* Audience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Audience.swift; sourceTree = "<group>"; };
 		A7D300000000000000000001 /* WorkflowBranch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowBranch.swift; sourceTree = "<group>"; };
 		A7D300000000000000000003 /* WorkflowTriggerAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowTriggerAction.swift; sourceTree = "<group>"; };
@@ -5381,6 +5383,7 @@
 				A7D200000000000000000003 /* AudienceTests.swift */,
 				FEDA000000000000000000C5 /* CheckpointRulesTests.swift */,
 				FEDA000000000000000000C6 /* CheckpointsConfigProviderTests.swift */,
+				B8E400000000000000000001 /* AudiencesConfigProviderTests.swift */,
 				5733B1A927FFBCF900EC2045 /* BaseErrorTests.swift */,
 				DB7EA7752F964CA200BCC082 /* Workflows */,
 			);
@@ -8821,6 +8824,7 @@
 				A7D200000000000000000004 /* AudienceTests.swift in Sources */,
 				FEDA000000000000000000D5 /* CheckpointRulesTests.swift in Sources */,
 				FEDA000000000000000000D6 /* CheckpointsConfigProviderTests.swift in Sources */,
+				B8E400000000000000000002 /* AudiencesConfigProviderTests.swift in Sources */,
 				03A98D362D244329009BCA61 /* UIConfigDecodingTests.swift in Sources */,
 				7559DF072E38B05F0050C5B4 /* WebProductToStoreProductConversionTests.swift in Sources */,
 				351B515626D44B2300BD2BD7 /* MockNotificationCenter.swift in Sources */,
