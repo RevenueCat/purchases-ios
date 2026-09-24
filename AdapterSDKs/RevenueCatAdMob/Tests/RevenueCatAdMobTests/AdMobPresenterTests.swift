@@ -10,88 +10,68 @@ import GoogleMobileAds
 @MainActor
 final class AdMobPresenterTests: AdapterTestCase {
 
-    private let loaders = FormatLoaders()
-    private lazy var presenter: AdMobPresenter = {
-        let loaders = self.loaders
-        return AdMobPresenter(
-            makeInterstitialPresentation: {
-                InterstitialPresentation(
-                    loadAd: loaders.loadInterstitial,
-                    presentingViewControllerProvider: { UIViewController() }
-                )
-            },
-            makeRewardedPresentation: { format in
-                RewardedPresentation(
-                    format: format,
-                    loadAd: loaders.loadRewarded(format),
-                    presentingViewControllerProvider: { UIViewController() }
-                )
-            }
-        )
-    }()
+    private let interstitial = RecordingPresenter()
+    private let rewarded = RecordingPresenter()
+    private let rewardedInterstitial = RecordingPresenter()
+    private lazy var presenter = AdMobPresenter(
+        interstitialPresenter: self.interstitial,
+        rewardedPresenter: self.rewarded,
+        rewardedInterstitialPresenter: self.rewardedInterstitial
+    )
 
     // MARK: - Dispatch by format
 
-    func testInterstitialFormatLoadsThroughTheInterstitialLoader() {
-        let loaded = self.expectation(description: "loaded")
-        self.loaders.onLoad = { loaded.fulfill() }
-
+    func testInterstitialFormatIsDelegatedToTheInterstitialPresenter() {
         self.presenter.present(params: Self.params(adFormat: .interstitial)) { _ in }
-        self.wait(for: [loaded], timeout: 2.0)
 
-        XCTAssertEqual(self.loaders.requests, [.interstitial(adUnitID: "ad-unit", placement: "checkpoint_id")])
+        XCTAssertEqual(self.interstitial.params.map(\.adFormat), [.interstitial])
+        XCTAssertTrue(self.rewarded.params.isEmpty)
+        XCTAssertTrue(self.rewardedInterstitial.params.isEmpty)
     }
 
-    func testRewardedFormatLoadsThroughTheRewardedLoader() {
-        let loaded = self.expectation(description: "loaded")
-        self.loaders.onLoad = { loaded.fulfill() }
-
+    func testRewardedFormatIsDelegatedToTheRewardedPresenter() {
         self.presenter.present(params: Self.params(adFormat: .rewarded)) { _ in }
-        self.wait(for: [loaded], timeout: 2.0)
 
-        XCTAssertEqual(self.loaders.requests, [.rewarded(adUnitID: "ad-unit", placement: "checkpoint_id")])
+        XCTAssertEqual(self.rewarded.params.map(\.adFormat), [.rewarded])
+        XCTAssertTrue(self.interstitial.params.isEmpty)
+        XCTAssertTrue(self.rewardedInterstitial.params.isEmpty)
     }
 
-    func testRewardedInterstitialFormatLoadsThroughTheRewardedInterstitialLoader() {
-        let loaded = self.expectation(description: "loaded")
-        self.loaders.onLoad = { loaded.fulfill() }
-
+    func testRewardedInterstitialFormatIsDelegatedToTheRewardedInterstitialPresenter() {
         self.presenter.present(params: Self.params(adFormat: .rewardedInterstitial)) { _ in }
-        self.wait(for: [loaded], timeout: 2.0)
 
-        XCTAssertEqual(
-            self.loaders.requests,
-            [.rewardedInterstitial(adUnitID: "ad-unit", placement: "checkpoint_id")]
-        )
+        XCTAssertEqual(self.rewardedInterstitial.params.map(\.adFormat), [.rewardedInterstitial])
+        XCTAssertTrue(self.interstitial.params.isEmpty)
+        XCTAssertTrue(self.rewarded.params.isEmpty)
     }
 
-    func testUsesTheCheckpointIdentifierAsThePlacement() {
-        let loaded = self.expectation(description: "loaded")
-        self.loaders.onLoad = { loaded.fulfill() }
-
+    func testForwardsTheParamsUnchanged() throws {
         self.presenter.present(
-            params: Self.params(checkpointIdentifier: "level_complete", adFormat: .interstitial)
+            params: Self.params(checkpointIdentifier: "level_complete", adFormat: .rewarded, mediator: .appLovin)
         ) { _ in }
-        self.wait(for: [loaded], timeout: 2.0)
 
-        XCTAssertEqual(self.loaders.requests, [.interstitial(adUnitID: "ad-unit", placement: "level_complete")])
+        let forwarded = try XCTUnwrap(self.rewarded.params.first)
+        XCTAssertEqual(forwarded.checkpointIdentifier, "level_complete")
+        XCTAssertEqual(forwarded.adIdentifier, "ad-unit")
+        XCTAssertEqual(forwarded.mediator, .appLovin)
     }
 
-    func testForwardsTheMediatorSoNonAdMobStepsFailWithoutLoading() {
+    func testForwardsTheSubPresenterResultToTheCompletion() throws {
         var results: [AdPresentationResult] = []
 
-        self.presenter.present(params: Self.params(adFormat: .interstitial, mediator: .appLovin)) { result in
+        self.presenter.present(params: Self.params(adFormat: .rewarded)) { result in
             results.append(result)
         }
+        XCTAssertTrue(results.isEmpty)
 
-        XCTAssertEqual(results.count, 1)
-        XCTAssertNotEqual(results[0], AdPresentationResult.shown)
-        XCTAssertTrue(self.loaders.requests.isEmpty)
+        try XCTUnwrap(self.rewarded.completions.first)(.rewardVerificationFailed)
+
+        XCTAssertEqual(results, [.rewardVerificationFailed])
     }
 
     // MARK: - Unsupported formats
 
-    func testUnsupportedFormatFailsImmediatelyWithoutLoadingAnything() {
+    func testUnsupportedFormatFailsImmediatelyWithoutDelegating() {
         var results: [AdPresentationResult] = []
 
         let formats = [RevenueCat.AdFormat.banner, .native, .appOpen, .other, .init(rawValue: "some_future_format")]
@@ -106,7 +86,9 @@ final class AdMobPresenterTests: AdapterTestCase {
             XCTAssertNotEqual(result, AdPresentationResult.shown)
             XCTAssertNotEqual(result, AdPresentationResult.rewardVerificationFailed)
         }
-        XCTAssertTrue(self.loaders.requests.isEmpty)
+        XCTAssertTrue(self.interstitial.params.isEmpty)
+        XCTAssertTrue(self.rewarded.params.isEmpty)
+        XCTAssertTrue(self.rewardedInterstitial.params.isEmpty)
     }
 
     func testUnsupportedFormatErrorDescribesTheFormatAndTheSupportedOnes() {
@@ -116,64 +98,6 @@ final class AdMobPresenterTests: AdapterTestCase {
         XCTAssertEqual(error.code, 1)
         XCTAssertTrue(error.localizedDescription.contains("'banner'"))
         XCTAssertTrue(error.localizedDescription.contains("rewarded_interstitial"))
-    }
-
-    // MARK: - Outcome forwarding
-
-    func testInterstitialDismissalCompletesWithShown() throws {
-        let presented = self.expectation(description: "presented")
-        self.loaders.interstitialAd.onPresent = { presented.fulfill() }
-        var results: [AdPresentationResult] = []
-
-        self.presenter.present(params: Self.params(adFormat: .interstitial)) { result in
-            results.append(result)
-        }
-        self.wait(for: [presented], timeout: 2.0)
-
-        let delegate = try XCTUnwrap(self.loaders.lastDelegate)
-        delegate.adDidDismissFullScreenContent?(PresentingAdStub())
-
-        XCTAssertEqual(results.count, 1)
-        XCTAssertEqual(results[0], AdPresentationResult.shown)
-    }
-
-    func testLoadFailureCompletesWithFailed() {
-        self.loaders.loadError = NSError(domain: "gma", code: 1)
-        let completed = self.expectation(description: "completed")
-        var results: [AdPresentationResult] = []
-
-        self.presenter.present(params: Self.params(adFormat: .rewarded)) { result in
-            results.append(result)
-            completed.fulfill()
-        }
-        self.wait(for: [completed], timeout: 2.0)
-
-        XCTAssertEqual(results.count, 1)
-        XCTAssertNotEqual(results[0], AdPresentationResult.shown)
-    }
-
-    func testBackToBackPresentationsOfDifferentFormatsEachCompleteIndependently() throws {
-        var results: [AdPresentationResult] = []
-
-        for format in [RevenueCat.AdFormat.interstitial, .rewarded, .interstitial] {
-            let loaded = self.expectation(description: "loaded \(format.rawValue)")
-            self.loaders.onLoad = { loaded.fulfill() }
-            let presented = self.expectation(description: "presented \(format.rawValue)")
-            self.loaders.interstitialAd.onPresent = { presented.fulfill() }
-            self.loaders.rewardedAd.onPresent = { presented.fulfill() }
-
-            self.presenter.present(params: Self.params(adFormat: format)) { result in
-                results.append(result)
-            }
-            self.wait(for: [loaded, presented], timeout: 2.0)
-
-            let delegate = try XCTUnwrap(self.loaders.lastDelegate)
-            delegate.adDidDismissFullScreenContent?(PresentingAdStub())
-        }
-
-        XCTAssertEqual(results.count, 3)
-        XCTAssertTrue(results.allSatisfy { $0 == AdPresentationResult.shown })
-        XCTAssertEqual(self.loaders.requests.map(\.formatName), ["interstitial", "rewarded", "interstitial"])
     }
 
     // MARK: - Helpers
@@ -195,97 +119,18 @@ final class AdMobPresenterTests: AdapterTestCase {
 
 // MARK: - Test doubles
 
-/// Records which format-specific loader the presenter routed each request through.
 @available(iOS 15.0, *)
 @MainActor
-private final class FormatLoaders {
+private final class RecordingPresenter: AdPresenter {
 
-    enum Request: Equatable {
-        case interstitial(adUnitID: String, placement: String)
-        case rewarded(adUnitID: String, placement: String)
-        case rewardedInterstitial(adUnitID: String, placement: String)
+    private(set) var params: [AdPresentationParams] = []
+    private(set) var completions: [AdPresentationCompletion] = []
 
-        var formatName: String {
-            switch self {
-            case .interstitial: return "interstitial"
-            case .rewarded: return "rewarded"
-            case .rewardedInterstitial: return "rewarded_interstitial"
-            }
-        }
+    func present(params: AdPresentationParams, completion: @escaping AdPresentationCompletion) {
+        self.params.append(params)
+        self.completions.append(completion)
     }
 
-    private(set) var requests: [Request] = []
-    private(set) weak var lastDelegate: GoogleMobileAds.FullScreenContentDelegate?
-    var onLoad: (() -> Void)?
-    var loadError: Error?
-
-    let interstitialAd = FakeInterstitialAd()
-    let rewardedAd = FakeRewardedAd()
-
-    func loadInterstitial(
-        adUnitID: String,
-        placement: String,
-        delegate: GoogleMobileAds.FullScreenContentDelegate
-    ) throws -> any InterstitialPresentableAd {
-        self.record(.interstitial(adUnitID: adUnitID, placement: placement), delegate: delegate)
-        if let loadError { throw loadError }
-        return self.interstitialAd
-    }
-
-    func loadRewarded(_ format: RewardedPresentation.Format) -> RewardedPresentation.LoadAd {
-        return { adUnitID, placement, delegate in
-            switch format {
-            case .rewarded:
-                self.record(.rewarded(adUnitID: adUnitID, placement: placement), delegate: delegate)
-            case .rewardedInterstitial:
-                self.record(.rewardedInterstitial(adUnitID: adUnitID, placement: placement), delegate: delegate)
-            }
-            if let loadError = self.loadError { throw loadError }
-            return self.rewardedAd
-        }
-    }
-
-    private func record(_ request: Request, delegate: GoogleMobileAds.FullScreenContentDelegate) {
-        self.requests.append(request)
-        self.lastDelegate = delegate
-        self.onLoad?()
-    }
-
-}
-
-@available(iOS 15.0, *)
-@MainActor
-private final class FakeInterstitialAd: InterstitialPresentableAd {
-
-    var onPresent: (() -> Void)?
-
-    func presentInterstitial(from viewController: UIViewController) {
-        self.onPresent?()
-    }
-
-}
-
-@available(iOS 15.0, *)
-@MainActor
-private final class FakeRewardedAd: RewardedPresentableAd {
-
-    var onPresent: (() -> Void)?
-
-    func enableRewardVerification() {}
-
-    func present(
-        from viewController: UIViewController,
-        rewardVerificationStarted: (@MainActor () -> Void)?,
-        rewardVerificationCompleted: @escaping @MainActor (RewardVerificationResult) -> Void
-    ) {
-        self.onPresent?()
-    }
-
-}
-
-@available(iOS 15.0, *)
-private final class PresentingAdStub: NSObject, GoogleMobileAds.FullScreenPresentingAd {
-    weak var fullScreenContentDelegate: GoogleMobileAds.FullScreenContentDelegate?
 }
 
 #endif
