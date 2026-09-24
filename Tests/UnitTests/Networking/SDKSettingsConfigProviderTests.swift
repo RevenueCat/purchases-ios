@@ -86,6 +86,16 @@ class SDKSettingsConfigProviderTests: TestCase {
         expect(self.provider.cachedSettings()).to(beNil())
     }
 
+    func testDoesNotNotifyDelegateWhenSettingsHaveNotChanged() async {
+        self.provider.delegate = self.delegate
+
+        await self.provider.refresh()
+        self.manager.configGeneration += 1
+        await self.provider.refresh()
+
+        expect(self.delegate.invokedDidUpdateCount) == 1
+    }
+
     func testDoesNotCacheOrNotifyBeforeRemoteConfigIsCommitted() async {
         self.manager.stubbedHasCommittedConfig = false
         self.provider.delegate = self.delegate
@@ -112,9 +122,11 @@ class SDKSettingsConfigProviderTests: TestCase {
 private final class MockSDKSettingsConfigProviderDelegate: SDKSettingsConfigProviderDelegate {
 
     var expectation: XCTestExpectation?
+    private(set) var invokedDidUpdateCount = 0
     private(set) var settings: SDKSettings?
 
     func sdkSettingsConfigProviderDidUpdate(_ provider: SDKSettingsConfigProviderType) async {
+        self.invokedDidUpdateCount += 1
         self.settings = provider.cachedSettings()
         self.expectation?.fulfill()
     }

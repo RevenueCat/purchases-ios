@@ -26,6 +26,7 @@ final class SDKSettingsConfigProvider: SDKSettingsConfigProviderType, RemoteConf
 
     private let manager: RemoteConfigManagerType
     private let cache = GenerationGuardedCache<String, SDKSettings>()
+    private let lastDeliveredSettings: Atomic<SDKSettings?> = nil
     weak var delegate: SDKSettingsConfigProviderDelegate?
 
     init(manager: RemoteConfigManagerType) {
@@ -77,7 +78,16 @@ final class SDKSettingsConfigProvider: SDKSettingsConfigProviderType, RemoteConf
         guard self.manager.configGeneration == generation else { return }
 
         self.cache.store(settings, for: .init(generation: generation, key: Self.cacheKey))
-        await self.delegate?.sdkSettingsConfigProviderDidUpdate(self)
+        guard let delegate = self.delegate else { return }
+
+        let didChange = self.lastDeliveredSettings.modify { previousSettings in
+            guard previousSettings != settings else { return false }
+            previousSettings = settings
+            return true
+        }
+        guard didChange else { return }
+
+        await delegate.sdkSettingsConfigProviderDidUpdate(self)
     }
 
     private static func decodeSettings(from item: RemoteConfiguration.ConfigItem) throws -> SDKSettings {
