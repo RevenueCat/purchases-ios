@@ -615,6 +615,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             uiConfigProvider: uiConfigProvider
         )
         let checkpointsConfigProvider = CheckpointsConfigProvider(manager: remoteConfigManager)
+        let audiencesConfigProvider = AudiencesConfigProvider(manager: remoteConfigManager)
 
         let workflowManager = WorkflowManager(
             workflowsConfigProvider: workflowsConfigProvider,
@@ -670,6 +671,13 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let notificationCenter: NotificationCenter = .default
         let checkpointResolver: CheckpointWorkflowResolver
         if systemInfo.remoteConfigEnabled {
+            let remoteConfigStateObservers: [any RemoteConfigStateObserver] = [
+                checkpointsConfigProvider,
+                audiencesConfigProvider
+            ]
+            for observer in remoteConfigStateObservers {
+                remoteConfigManager.addRemoteConfigStateObserver(observer)
+            }
             RulesEngine.setLogger(RulesEngineLoggerBridge())
             let localRulesEvaluator = LocalRulesEvaluator(
                 dimensionProviders: [
@@ -701,7 +709,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             )
             checkpointResolver = DefaultCheckpointWorkflowResolver(
                 checkpointsConfigProvider: checkpointsConfigProvider,
-                audiencesConfigProvider: AudiencesConfigProvider(manager: remoteConfigManager),
+                audiencesConfigProvider: audiencesConfigProvider,
                 localRulesEvaluator: localRulesEvaluator,
                 workflowManager: workflowManager,
                 offeringsProvider: {
