@@ -178,45 +178,6 @@ class SubscriberAttributesManager {
         setReservedAttribute(.creative, value: creative, appUserID: appUserID)
     }
 
-    func setAppsFlyerConversionData(_ data: [AnyHashable: Any]?, appUserID: String) {
-        guard let data = data else {
-            return
-        }
-
-        let mediaSource = stringValueForPrimitive(from: data, forKey: "media_source") ?? (
-            stringValueForPrimitive(from: data, forKey: "af_status")?.caseInsensitiveCompare("Organic") == .orderedSame
-                ? "Organic" : nil
-        )
-        if let mediaSource = mediaSource {
-            setMediaSource(mediaSource, appUserID: appUserID)
-        }
-
-        if let campaign = stringValueForPrimitive(from: data, forKey: "campaign") {
-            setCampaign(campaign, appUserID: appUserID)
-        }
-
-        if let adGroup = stringValueForPrimitive(from: data, forKey: "adgroup")
-            ?? stringValueForPrimitive(from: data, forKey: "adset") {
-            setAdGroup(adGroup, appUserID: appUserID)
-        }
-
-        // swiftlint:disable:next identifier_name
-        if let ad = stringValueForPrimitive(from: data, forKey: "af_ad")
-            ?? stringValueForPrimitive(from: data, forKey: "ad_id") {
-            setAd(ad, appUserID: appUserID)
-        }
-
-        if let keyword = stringValueForPrimitive(from: data, forKey: "af_keywords")
-            ?? stringValueForPrimitive(from: data, forKey: "keyword") {
-            setKeyword(keyword, appUserID: appUserID)
-        }
-
-        if let creative = stringValueForPrimitive(from: data, forKey: "creative")
-            ?? stringValueForPrimitive(from: data, forKey: "af_creative") {
-            setCreative(creative, appUserID: appUserID)
-        }
-    }
-
     func collectDeviceIdentifiers(forAppUserID appUserID: String) {
         let identifierForAdvertisers = attributionFetcher.identifierForAdvertisers
         let identifierForVendor = attributionFetcher.identifierForVendor
@@ -244,13 +205,24 @@ class SubscriberAttributesManager {
                                    syncedAttribute: (@Sendable (PurchasesError?) -> Void)? = nil,
                                    completion: (@Sendable () -> Void)? = nil) -> Int {
         setATTConsentStatus(forAppUserID: currentAppUserID)
-        let unsyncedAttributesForAllUsers = unsyncedAttributesByKeyForAllUsers()
-        let total = unsyncedAttributesForAllUsers.count
+
+        return self.sync(self.unsyncedAttributesByKeyForAllUsers(),
+                         currentAppUserID: currentAppUserID,
+                         syncedAttribute: syncedAttribute,
+                         completion: completion)
+    }
+
+    @discardableResult
+    private func sync(_ unsyncedAttributes: [String: SubscriberAttribute.Dictionary],
+                      currentAppUserID: String,
+                      syncedAttribute: (@Sendable (PurchasesError?) -> Void)?,
+                      completion: (@Sendable () -> Void)?) -> Int {
+        let total = unsyncedAttributes.count
 
         operationDispatcher.dispatchOnWorkerThread {
             let completed: Atomic<Int> = .init(0)
 
-            for (syncingAppUserID, attributes) in unsyncedAttributesForAllUsers {
+            for (syncingAppUserID, attributes) in unsyncedAttributes {
                 self.syncAttributes(attributes: attributes, appUserID: syncingAppUserID) { error in
                     self.handleAttributesSynced(syncingAppUserId: syncingAppUserID,
                                                 currentAppUserId: currentAppUserID,
@@ -336,12 +308,109 @@ class SubscriberAttributesManager {
 
 }
 
+// MARK: - AppsFlyer conversion data
+
+extension SubscriberAttributesManager {
+
+    func setAppsFlyerConversionData(_ data: [AnyHashable: Any]?, appUserID: String) {
+        guard let data = data else {
+            return
+        }
+
+        let mediaSource = stringValueForPrimitive(from: data, forKey: "media_source") ?? (
+            stringValueForPrimitive(from: data, forKey: "af_status")?.caseInsensitiveCompare("Organic") == .orderedSame
+                ? "Organic" : nil
+        )
+        if let mediaSource = mediaSource {
+            setMediaSource(mediaSource, appUserID: appUserID)
+        }
+
+        if let campaign = stringValueForPrimitive(from: data, forKey: "campaign") {
+            setCampaign(campaign, appUserID: appUserID)
+        }
+
+        if let adGroup = stringValueForPrimitive(from: data, forKey: "adgroup")
+            ?? stringValueForPrimitive(from: data, forKey: "adset") {
+            setAdGroup(adGroup, appUserID: appUserID)
+        }
+
+        // swiftlint:disable:next identifier_name
+        if let ad = stringValueForPrimitive(from: data, forKey: "af_ad")
+            ?? stringValueForPrimitive(from: data, forKey: "ad_id") {
+            setAd(ad, appUserID: appUserID)
+        }
+
+        if let keyword = stringValueForPrimitive(from: data, forKey: "af_keywords")
+            ?? stringValueForPrimitive(from: data, forKey: "keyword") {
+            setKeyword(keyword, appUserID: appUserID)
+        }
+
+        if let creative = stringValueForPrimitive(from: data, forKey: "creative")
+            ?? stringValueForPrimitive(from: data, forKey: "af_creative") {
+            setCreative(creative, appUserID: appUserID)
+        }
+    }
+
+}
+
 extension SubscriberAttributesManager: AttributeSyncing {
 
     func syncSubscriberAttributes(currentAppUserID: String, completion: @Sendable @escaping () -> Void) {
         self.syncAttributesForAllUsers(currentAppUserID: currentAppUserID,
                                        syncedAttribute: nil,
                                        completion: completion)
+    }
+
+    func storeAndGetUnsyncedAttributes(_ attributes: [String: String],
+                                       appUserID: String) -> SubscriberAttribute.Dictionary {
+        self.setAttributes(attributes, appUserID: appUserID)
+
+        return self.unsyncedAttributesByKey(appUserID: appUserID)
+    }
+
+    func refreshATTStatusAndGetUnsyncedAttributes(appUserID: String) -> SubscriberAttribute.Dictionary {
+        self.setATTConsentStatus(forAppUserID: appUserID)
+
+        return self.unsyncedAttributesByKey(appUserID: appUserID)
+    }
+
+    func syncAttributesForUsersOtherThan(_ appUserIDs: Set<String>, currentAppUserID: String) {
+        let unsyncedAttributes = self.unsyncedAttributesByKeyForAllUsers()
+            .filter { !appUserIDs.contains($0.key) }
+
+        guard !unsyncedAttributes.isEmpty else { return }
+
+        self.sync(unsyncedAttributes,
+                  currentAppUserID: currentAppUserID,
+                  syncedAttribute: nil,
+                  completion: nil)
+    }
+
+    func handleAttributesSentOnLogIn(_ attributes: SubscriberAttribute.Dictionary,
+                                     appUserID: String,
+                                     errorResponse: ErrorResponse?) {
+        guard !attributes.isEmpty else { return }
+
+        guard let errorResponse = errorResponse else {
+            self.markAttributesAsSynced(attributes, appUserID: appUserID)
+            return
+        }
+
+        Logger.error(Strings.attribution.attributes_sent_on_login_error(appUserID: appUserID,
+                                                                        code: errorResponse.originalCode,
+                                                                        message: errorResponse.message,
+                                                                        attributeErrors: errorResponse.attributeErrors))
+
+        guard errorResponse.code == .invalidSubscriberAttributes else {
+            // Any other code is transient, so these stay queued for the next sync.
+            return
+        }
+
+        // The malformed keys will never be accepted, so they're dropped instead of retried forever.
+        // The rest of the bucket did apply.
+        let malformedKeys = Set(errorResponse.attributeErrors.keys)
+        self.deviceCache.deleteSubscriberAttributes(keys: malformedKeys, appUserID: appUserID)
+        self.markAttributesAsSynced(attributes.filter { !malformedKeys.contains($0.key) }, appUserID: appUserID)
     }
 
 }
