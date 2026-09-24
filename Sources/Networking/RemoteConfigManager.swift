@@ -28,8 +28,8 @@ protocol RemoteConfigManagerType: AnyObject {
     /// Whether a remote configuration has been committed and is available to read.
     func hasCommittedConfig() async -> Bool
 
-    /// Invokes `observer` when the remote config state changes, including cache invalidation.
-    func addConfigStateObserver(_ observer: @escaping (Int) -> Void)
+    /// Invokes `observer` after a new remote config generation is committed.
+    func addConfigCommitObserver(_ observer: @escaping (Int) -> Void)
 
     func refreshRemoteConfig(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool)
     func refreshRemoteConfigIfStale(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool)
@@ -107,11 +107,11 @@ extension RemoteConfigManagerType {
         return await self.blobData(for: topic, itemKey: itemKey, policy: .fetchIfNeeded)
     }
 
-    func addConfigStateObserver(_ observer: @escaping (Int) -> Void) {}
+    func addConfigCommitObserver(_ observer: @escaping (Int) -> Void) {}
 
     /// Registers an observer weakly and immediately delivers the current generation.
     func addRemoteConfigStateObserver(_ observer: some RemoteConfigStateObserver) {
-        self.addConfigStateObserver { [weak observer] generation in
+        self.addConfigCommitObserver { [weak observer] generation in
             observer?.remoteConfigStateDidChange(generation: generation)
         }
         observer.remoteConfigStateDidChange(generation: self.configGeneration)
@@ -295,7 +295,7 @@ final class NoOpRemoteConfigManager: RemoteConfigManagerType {
         return false
     }
 
-    func addConfigStateObserver(_ observer: @escaping (Int) -> Void) {}
+    func addConfigCommitObserver(_ observer: @escaping (Int) -> Void) {}
 
     func topic(_ topic: RemoteConfigTopic, policy: RemoteConfigReadPolicy) async -> RemoteConfiguration.ConfigTopic? {
         return nil
@@ -403,7 +403,7 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     /// These continuations carry no result because callers decide what to do by rereading disk state after the
     /// refresh, clear, close, or failure completes.
     private var refreshContinuations: [CheckedContinuation<Void, Never>] = []
-    private var configStateObservers: [(Int) -> Void] = []
+    private var configCommitObservers: [(Int) -> Void] = []
 
     init(
         remoteConfigAPI: RemoteConfigAPIType,
@@ -445,9 +445,9 @@ final class RemoteConfigManager: RemoteConfigManagerType {
         }
     }
 
-    func addConfigStateObserver(_ observer: @escaping (Int) -> Void) {
+    func addConfigCommitObserver(_ observer: @escaping (Int) -> Void) {
         self.lock.perform {
-            self.configStateObservers.append(observer)
+            self.configCommitObservers.append(observer)
         }
     }
 
@@ -515,7 +515,7 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     }
 
     func clearCache(forAppUserID appUserID: String) {
-        let (continuations, generation) = self.lock.perform {
+        let continuations = self.lock.perform {
             self.epoch += 1
             self.generation += 1
             self.identityBoundAppUserID = appUserID
@@ -524,10 +524,9 @@ final class RemoteConfigManager: RemoteConfigManagerType {
             self.lastRefreshAttemptAt = nil
             self.diskCache.clear()
             self.blobStore.clear()
-            return (self.drainRefreshContinuations(), self.generation)
+            return self.drainRefreshContinuations()
         }
         continuations.forEach { $0.resume() }
-        self.notifyConfigStateDidChange(generation: generation)
     }
 
     func close() {
@@ -720,7 +719,7 @@ private extension RemoteConfigManager {
                 return nil
             }
             if let committedGeneration {
-                self.notifyConfigStateDidChange(generation: committedGeneration)
+                self.notifyConfigCommitted(generation: committedGeneration)
             }
         } catch {
             Logger.error(Strings.remoteConfig.failedToParseResponse(error))
@@ -811,7 +810,7 @@ private extension RemoteConfigManager {
             return nil
         }
         if let committedGeneration {
-            self.notifyConfigStateDidChange(generation: committedGeneration)
+            self.notifyConfigCommitted(generation: committedGeneration)
         }
     }
 
@@ -999,8 +998,8 @@ private extension RemoteConfigManager {
         }
     }
 
-    func notifyConfigStateDidChange(generation: Int) {
-        let observers = self.lock.perform { self.configStateObservers }
+    func notifyConfigCommitted(generation: Int) {
+        let observers = self.lock.perform { self.configCommitObservers }
         observers.forEach { $0(generation) }
     }
 
