@@ -881,9 +881,9 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 0
     }
 
-    func testNotifiesCommitObserversAfterPersistingConfig() throws {
+    func testNotifiesStateObserversAfterPersistingConfig() throws {
         var observedGenerations: [Int] = []
-        self.manager.addConfigCommitObserver { observedGenerations.append($0) }
+        self.manager.addConfigStateObserver { observedGenerations.append($0) }
         let response = """
         { "domain": "app", "manifest": "v1.test", "active_topics": [], "topics": {} }
         """
@@ -903,6 +903,15 @@ final class RemoteConfigManagerTests: TestCase {
 
         self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(with: .success(.test(container: try Self.container(config: response))))
+
+        expect(observer.observedGenerations) == [0, 1]
+    }
+
+    func testTypedStateObserverReceivesGenerationWhenCacheIsCleared() {
+        let observer = RemoteConfigStateObserverSpy()
+        self.manager.addRemoteConfigStateObserver(observer)
+
+        self.manager.clearCache(forAppUserID: "new-user")
 
         expect(observer.observedGenerations) == [0, 1]
     }
