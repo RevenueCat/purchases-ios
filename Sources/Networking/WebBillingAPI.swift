@@ -22,10 +22,10 @@ class WebBillingAPI {
     private let webBillingProductsCallbackCache: CallbackCache<WebBillingProductsCallback>
     private let hostedCheckoutCallbackCache: CallbackCache<HostedCheckoutCallback>
     private let hostedCheckoutStatusCallbackCache: CallbackCache<HostedCheckoutStatusCallback>
-    private let backendConfig: BackendConfiguration
+    private let lanes: BackendLanes
 
-    init(backendConfig: BackendConfiguration) {
-        self.backendConfig = backendConfig
+    init(lanes: BackendLanes) {
+        self.lanes = lanes
         self.webBillingProductsCallbackCache = .init()
         self.hostedCheckoutCallbackCache = .init()
         self.hostedCheckoutStatusCallbackCache = .init()
@@ -34,7 +34,8 @@ class WebBillingAPI {
     func getWebBillingProducts(
         appUserID: String, productIds: Set<String>, completion: @escaping WebBillingProductsResponseHandler
     ) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+        let backendConfig = self.lanes[.default]
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let factory = GetWebBillingProductsOperation.createFactory(
             configuration: config,
@@ -45,7 +46,7 @@ class WebBillingAPI {
         let webProductsCallback = WebBillingProductsCallback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.webBillingProductsCallbackCache.add(webProductsCallback)
 
-        self.backendConfig.addCacheableOperation(
+        backendConfig.addCacheableOperation(
             with: factory,
             delay: .none,
             cacheStatus: cacheStatus
@@ -66,7 +67,9 @@ class WebBillingAPI {
         externalPurchaseTokenID: String?,
         completion: @escaping HostedCheckoutResponseHandler
     ) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+        // Runs on the checkout lane so hosted checkout is not delayed by unrelated backend work.
+        let backendConfig = self.lanes[.checkout]
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let factory = PostHostedCheckoutOperation.createFactory(
             configuration: config,
@@ -86,7 +89,7 @@ class WebBillingAPI {
         let cacheStatus = self.hostedCheckoutCallbackCache.add(callback)
 
         // The customer is waiting on this request before checkout can open, so it is never delayed.
-        self.backendConfig.addCacheableOperation(
+        backendConfig.addCacheableOperation(
             with: factory,
             delay: .none,
             cacheStatus: cacheStatus
@@ -102,7 +105,8 @@ class WebBillingAPI {
         operationSessionID: String,
         completion: @escaping HostedCheckoutStatusResponseHandler
     ) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+        let backendConfig = self.lanes[.checkout]
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let factory = GetHostedCheckoutStatusOperation.createFactory(
             configuration: config,
@@ -114,7 +118,7 @@ class WebBillingAPI {
         let cacheStatus = self.hostedCheckoutStatusCallbackCache.add(callback)
 
         // Polling paces itself, and the customer is waiting on the answer to settle their purchase.
-        self.backendConfig.addCacheableOperation(
+        backendConfig.addCacheableOperation(
             with: factory,
             delay: .none,
             cacheStatus: cacheStatus

@@ -32,13 +32,15 @@ final class BackendRemoteConfigLaneTests: BaseBackendTests {
         laneClient.disableSnapshotTesting()
         self.httpClient.disableSnapshotTesting()
 
-        let backend = Backend(
-            backendConfig: self.makeConfig(client: self.httpClient,
-                                           queue: Backend.QueueProvider.createBackendQueue()),
-            remoteConfigBackendConfig: self.makeConfig(client: laneClient,
-                                                       queue: Backend.QueueProvider.createRemoteConfigQueue()),
-            attributionFetcher: self.makeAttributionFetcher()
+        let lanes = BackendLanes(
+            defaultConfiguration: self.makeConfig(client: self.httpClient,
+                                                  queue: Backend.QueueProvider.createQueue(for: .default)),
+            dedicatedConfigurations: [
+                .remoteConfig: self.makeConfig(client: laneClient,
+                                               queue: Backend.QueueProvider.createQueue(for: .remoteConfig))
+            ]
         )
+        let backend = Backend(lanes: lanes, attributionFetcher: self.makeAttributionFetcher())
 
         laneClient.mock(
             requestPath: HTTPRequest.Path.remoteConfig(domain: "app"),
@@ -61,7 +63,7 @@ final class BackendRemoteConfigLaneTests: BaseBackendTests {
 
         let backend = Backend(
             backendConfig: self.makeConfig(client: self.httpClient,
-                                           queue: Backend.QueueProvider.createBackendQueue()),
+                                           queue: Backend.QueueProvider.createQueue(for: .default)),
             attributionFetcher: self.makeAttributionFetcher()
         )
 
@@ -151,12 +153,15 @@ final class BackendRemoteConfigLaneParallelTests: TestCase {
                                         dateProvider: DateProvider())
         }
 
-        let backend = Backend(
-            backendConfig: makeConfig(makeClient(), Backend.QueueProvider.createBackendQueue()),
-            remoteConfigBackendConfig: makeConfig(makeClient(), Backend.QueueProvider.createRemoteConfigQueue()),
-            attributionFetcher: AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
-                                                   systemInfo: systemInfo)
+        let lanes = BackendLanes(
+            defaultConfiguration: makeConfig(makeClient(), Backend.QueueProvider.createQueue(for: .default)),
+            dedicatedConfigurations: [
+                .remoteConfig: makeConfig(makeClient(), Backend.QueueProvider.createQueue(for: .remoteConfig))
+            ]
         )
+        let backend = Backend(lanes: lanes,
+                              attributionFetcher: AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
+                                                                     systemInfo: systemInfo))
 
         // `/offerings` stays in flight for the whole test; `/config` returns immediately. If config
         // shared the offerings client, it would queue behind the hung `/offerings` and time out.
