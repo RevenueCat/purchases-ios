@@ -81,7 +81,7 @@ class BasePurchasesTests: TestCase {
                                         diagnosticsTracker: self.diagnosticsTracker)
         let config = BackendConfiguration(httpClient: httpClient,
                                           operationDispatcher: self.mockOperationDispatcher,
-                                          operationQueue: MockBackend.QueueProvider.createBackendQueue(),
+                                          operationQueue: MockBackend.QueueProvider.createQueue(for: .default),
                                           diagnosticsQueue: MockBackend.QueueProvider.createDiagnosticsQueue(),
                                           systemInfo: self.systemInfo,
                                           offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
@@ -513,7 +513,7 @@ extension BasePurchasesTests {
             let identity = IdentityAPI(backendConfig: backendConfig)
             let token = TokenAPI(backendConfig: backendConfig)
             let offerings = OfferingsAPI(backendConfig: backendConfig)
-            let webBilling = WebBillingAPI(backendConfig: backendConfig)
+            let webBilling = WebBillingAPI(lanes: BackendLanes(configuration: backendConfig))
             let offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
             let internalAPI = InternalAPI(backendConfig: backendConfig)
             let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
@@ -522,7 +522,7 @@ extension BasePurchasesTests {
             let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
             let remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
 
-            self.init(backendConfig: backendConfig,
+            self.init(lanes: BackendLanes(configuration: backendConfig),
                       customerAPI: customer,
                       identityAPI: identity,
                       tokenAPI: token,

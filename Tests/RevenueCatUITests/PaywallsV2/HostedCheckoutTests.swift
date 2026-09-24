@@ -130,7 +130,7 @@ final class HostedCheckoutTests: TestCase {
 
     /// A customer who is not eligible to buy outside the App Store has nothing to be offered in its place.
     func testOffersNothingToAnIneligibleCustomer() {
-        expect(HostedCheckout.Start(.notEligible)) == .nothing
+        expect(HostedCheckout.Action(.notEligible)) == .nothing
     }
 
     /// The checkout already under way carries the purchase.
