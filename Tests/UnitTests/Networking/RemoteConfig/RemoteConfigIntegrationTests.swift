@@ -69,7 +69,7 @@ final class RemoteConfigIntegrationTests: TestCase {
         )
         self.httpClient.disableSnapshotTesting()
         self.operationDispatcher = MockOperationDispatcher()
-        self.remoteConfigAPI = RemoteConfigAPI(backendConfig: BackendConfiguration(
+        self.remoteConfigAPI = RemoteConfigAPI(backendLanes: BackendLanes(configuration: BackendConfiguration(
             httpClient: self.httpClient,
             operationDispatcher: self.operationDispatcher,
             operationQueue: MockBackend.QueueProvider.createQueue(for: .default),
@@ -77,7 +77,7 @@ final class RemoteConfigIntegrationTests: TestCase {
             systemInfo: self.systemInfo,
             offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
             dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate)
-        ))
+        )))
         self.manager = self.createManager(blobStore: self.blobStore)
     }
 

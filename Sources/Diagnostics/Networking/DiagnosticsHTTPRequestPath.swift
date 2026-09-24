@@ -60,4 +60,11 @@ extension HTTPRequest.DiagnosticsPath: HTTPRequestPath {
         }
     }
 
+    var lane: RequestLane {
+        switch self {
+        case .postDiagnostics:
+            return .default
+        }
+    }
+
 }

@@ -40,6 +40,10 @@ final class BackendLanes: Sendable {
         return self.defaultConfiguration
     }
 
+    subscript(path: any HTTPRequestPath) -> BackendConfiguration {
+        self[path.lane]
+    }
+
 }
 
 /// Builds one `BackendConfiguration` per lane — each with its own `HTTPClient` and `OperationQueue` —

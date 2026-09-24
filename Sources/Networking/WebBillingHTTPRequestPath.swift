@@ -99,4 +99,14 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
         }
     }
 
+    var lane: RequestLane {
+        switch self {
+        case .getWebOfferingProducts,
+             .getWebBillingProducts:
+            return .default
+        case .postHostedCheckout:
+            return .checkout
+        }
+    }
+
 }

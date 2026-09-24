@@ -117,6 +117,29 @@ final class BackendLanesTests: TestCase {
         )
     }
 
+    func testEndpointPathsDeclareExpectedLanes() {
+        expect(HTTPRequest.Path.postExternalPurchaseToken.lane) == .checkout
+        expect(HTTPRequest.WebBillingPath.postHostedCheckout.lane) == .checkout
+        expect(HTTPRequest.Path.remoteConfig(domain: "app").lane) == .remoteConfig
+        expect(HTTPRequest.FallbackPath.remoteConfig(domain: "app").lane) == .remoteConfig
+        expect(HTTPRequest.Path.getOfferings(appUserID: "user").lane) == .default
+    }
+
+    func testPathBasedSubscriptRoutesToDedicatedLaneConfiguration() {
+        let lanes = self.makeLanes(dedicatedLanes: [.remoteConfig, .checkout])
+
+        expect(lanes[HTTPRequest.Path.postExternalPurchaseToken])
+            .to(beIdenticalTo(lanes[.checkout]))
+        expect(lanes[HTTPRequest.WebBillingPath.postHostedCheckout])
+            .to(beIdenticalTo(lanes[.checkout]))
+        expect(lanes[HTTPRequest.Path.remoteConfig(domain: "app")])
+            .to(beIdenticalTo(lanes[.remoteConfig]))
+        expect(lanes[HTTPRequest.FallbackPath.remoteConfig(domain: "app")])
+            .to(beIdenticalTo(lanes[.remoteConfig]))
+        expect(lanes[HTTPRequest.Path.getOfferings(appUserID: "user")])
+            .to(beIdenticalTo(lanes[.default]))
+    }
+
     func testClearHTTPClientCachesClearsSharedETagCacheOnce() {
         let systemInfo = MockSystemInfo(finishTransactions: true)
         let eTagManager = MockETagManager()

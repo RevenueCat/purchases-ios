@@ -18,24 +18,25 @@ class OfflineEntitlementsAPI {
     typealias ProductEntitlementMappingResponseHandler = Backend.ResponseHandler<ProductEntitlementMappingResponse>
 
     private let productEntitlementMappingCallbacksCache: CallbackCache<ProductEntitlementMappingCallback>
-    private let backendConfig: BackendConfiguration
+    private let backendLanes: BackendLanes
 
-    init(backendConfig: BackendConfiguration) {
-        self.backendConfig = backendConfig
+    init(backendLanes: BackendLanes) {
+        self.backendLanes = backendLanes
         self.productEntitlementMappingCallbacksCache = .init()
     }
 
     func getProductEntitlementMapping(isAppBackgrounded: Bool,
                                       completion: @escaping ProductEntitlementMappingResponseHandler) {
+        let backendConfig = self.backendLanes[HTTPRequest.Path.getProductEntitlementMapping]
         let factory = GetProductEntitlementMappingOperation.createFactory(
-            configuration: self.backendConfig,
+            configuration: backendConfig,
             callbackCache: self.productEntitlementMappingCallbacksCache
         )
 
         let callback = ProductEntitlementMappingCallback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.productEntitlementMappingCallbacksCache.add(callback)
 
-        self.backendConfig.addCacheableOperation(
+        backendConfig.addCacheableOperation(
             with: factory,
             delay: .default(forBackgroundedApp: isAppBackgrounded),
             cacheStatus: cacheStatus

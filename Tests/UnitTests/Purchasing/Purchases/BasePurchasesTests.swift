@@ -506,20 +506,21 @@ extension BasePurchasesTests {
         convenience init(backendConfig: BackendConfiguration,
                          attributionFetcher: AttributionFetcher,
                          mockAdsAPI: MockAdsAPI) {
-            let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
-            let identity = IdentityAPI(backendConfig: backendConfig)
-            let token = TokenAPI(backendConfig: backendConfig)
-            let offerings = OfferingsAPI(backendConfig: backendConfig)
-            let webBilling = WebBillingAPI(lanes: BackendLanes(configuration: backendConfig))
-            let offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
-            let internalAPI = InternalAPI(backendConfig: backendConfig)
-            let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
-            let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
-            let externalPurchaseTokenAPI = ExternalPurchaseTokenAPI(backendConfig: backendConfig)
-            let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
-            let remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
+            let backendLanes = BackendLanes(configuration: backendConfig)
+            let customer = CustomerAPI(backendLanes: backendLanes, attributionFetcher: attributionFetcher)
+            let identity = IdentityAPI(backendLanes: backendLanes)
+            let token = TokenAPI(backendLanes: backendLanes)
+            let offerings = OfferingsAPI(backendLanes: backendLanes)
+            let webBilling = WebBillingAPI(backendLanes: backendLanes)
+            let offlineEntitlements = OfflineEntitlementsAPI(backendLanes: backendLanes)
+            let internalAPI = InternalAPI(backendLanes: backendLanes)
+            let customerCenterConfig = CustomerCenterConfigAPI(backendLanes: backendLanes)
+            let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendLanes: backendLanes)
+            let externalPurchaseTokenAPI = ExternalPurchaseTokenAPI(backendLanes: backendLanes)
+            let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendLanes: backendLanes)
+            let remoteConfigAPI = RemoteConfigAPI(backendLanes: backendLanes)
 
-            self.init(lanes: BackendLanes(configuration: backendConfig),
+            self.init(lanes: backendLanes,
                       customerAPI: customer,
                       identityAPI: identity,
                       tokenAPI: token,

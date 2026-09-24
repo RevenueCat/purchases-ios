@@ -27,10 +27,10 @@ class OfferingsAPI {
 
     private let offeringsCallbacksCache: CallbackCache<OfferingsCallback>
     private let webOfferingProductsCallbacksCache: CallbackCache<WebOfferingProductsCallback>
-    private let backendConfig: BackendConfiguration
+    private let backendLanes: BackendLanes
 
-    init(backendConfig: BackendConfiguration) {
-        self.backendConfig = backendConfig
+    init(backendLanes: BackendLanes) {
+        self.backendLanes = backendLanes
         self.offeringsCallbacksCache = .init()
         self.webOfferingProductsCallbacksCache = .init()
     }
@@ -38,7 +38,8 @@ class OfferingsAPI {
     func getOfferings(appUserID: String,
                       isAppBackgrounded: Bool,
                       completion: @escaping OfferingsResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+        let backendConfig = self.backendLanes[HTTPRequest.Path.getOfferings(appUserID: appUserID)]
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let factory = GetOfferingsOperation.createFactory(
             configuration: config,
@@ -57,7 +58,7 @@ class OfferingsAPI {
                          : Strings.offering.offerings_stale_updating_in_foreground)
         }
 
-        self.backendConfig.addCacheableOperation(
+        backendConfig.addCacheableOperation(
             with: factory,
             delay: .default(forBackgroundedApp: isAppBackgrounded),
             cacheStatus: cacheStatus
@@ -65,7 +66,8 @@ class OfferingsAPI {
     }
 
     func getWebOfferingProducts(appUserID: String, completion: @escaping WebOfferingProductsResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+        let backendConfig = self.backendLanes[HTTPRequest.WebBillingPath.getWebOfferingProducts(appUserID: appUserID)]
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let factory = GetWebOfferingProductsOperation.createFactory(
             configuration: config,
@@ -75,7 +77,7 @@ class OfferingsAPI {
         let webProductsCallback = WebOfferingProductsCallback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.webOfferingProductsCallbacksCache.add(webProductsCallback)
 
-        self.backendConfig.addCacheableOperation(
+        backendConfig.addCacheableOperation(
             with: factory,
             delay: .none,
             cacheStatus: cacheStatus
@@ -86,13 +88,14 @@ class OfferingsAPI {
                              receiptData: Data,
                              productIdentifiers: Set<String>,
                              completion: @escaping IntroEligibilityResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+        let backendConfig = self.backendLanes[HTTPRequest.Path.getIntroEligibility(appUserID: appUserID)]
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let getIntroEligibilityOperation = GetIntroEligibilityOperation(configuration: config,
                                                                         receiptData: receiptData,
                                                                         productIdentifiers: productIdentifiers,
                                                                         responseHandler: completion)
-        self.backendConfig.operationQueue.addOperation(getIntroEligibilityOperation)
+        backendConfig.operationQueue.addOperation(getIntroEligibilityOperation)
     }
 
     // swiftlint:disable:next function_parameter_count
@@ -102,7 +105,8 @@ class OfferingsAPI {
               receipt: EncodedAppleReceipt,
               appUserID: String,
               completion: @escaping OfferSigningResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+        let backendConfig = self.backendLanes[HTTPRequest.Path.postOfferForSigning]
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
 
         let postOfferData = PostOfferForSigningOperation.PostOfferForSigningData(offerIdentifier: offerIdentifier,
@@ -112,7 +116,7 @@ class OfferingsAPI {
         let postOfferForSigningOperation = PostOfferForSigningOperation(configuration: config,
                                                                         postOfferForSigningData: postOfferData,
                                                                         responseHandler: completion)
-        self.backendConfig.operationQueue.addOperation(postOfferForSigningOperation)
+        backendConfig.operationQueue.addOperation(postOfferForSigningOperation)
     }
 
 }

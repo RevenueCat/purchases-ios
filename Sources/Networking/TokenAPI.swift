@@ -15,19 +15,20 @@ class TokenAPI {
     private let revokeCallbacksCache: CallbackCache<TokenRevokeCallback>
 
     private let tokenManager: TokenManager
-    private let backendConfig: BackendConfiguration
+    private let backendLanes: BackendLanes
 
     var enabled: Bool { tokenManager.enabled }
 
-    init(backendConfig: BackendConfiguration) {
-        self.backendConfig = backendConfig
-        self.tokenManager = backendConfig.httpClient.tokenManager
+    init(backendLanes: BackendLanes) {
+        self.backendLanes = backendLanes
+        self.tokenManager = backendLanes[HTTPRequest.Path.tokenLogin].httpClient.tokenManager
         self.tokenCallbacksCache = CallbackCache<TokenCallback>()
         self.revokeCallbacksCache = CallbackCache<TokenRevokeCallback>()
     }
 
     func logIn(currentAppUserID: String, identity: Identity, completion: @escaping TokenResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+        let backendConfig = self.backendLanes[HTTPRequest.Path.tokenLogin]
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: currentAppUserID)
 
         let linkToID = tokenManager.idToken(for: currentAppUserID)
@@ -48,12 +49,13 @@ class TokenAPI {
         }
         let cacheStatus = self.tokenCallbacksCache.add(tokenCallback)
 
-        self.backendConfig.operationQueue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
+        backendConfig.operationQueue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
     }
 
     func revokeTokens(for appUserID: String, completion: @escaping (BackendError?) -> Void) {
         if let refreshToken = tokenManager.currentRefreshToken {
-            let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+            let backendConfig = self.backendLanes[HTTPRequest.Path.tokenLogOut]
+            let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                     appUserID: appUserID)
 
             let factory = TokenRevocationOperation.createFactory(configuration: config,
@@ -69,7 +71,7 @@ class TokenAPI {
             }
             let cacheStatus = self.revokeCallbacksCache.add(revokeCallback)
 
-            self.backendConfig.operationQueue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
+            backendConfig.operationQueue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
         } else {
             tokenManager.deleteTokens(for: appUserID)
             completion(nil)
