@@ -68,7 +68,7 @@ class BackendSubscriberAttributesTests: TestCase {
 
         let config = BackendConfiguration(httpClient: self.mockHTTPClient,
                                           operationDispatcher: MockOperationDispatcher(),
-                                          operationQueue: MockBackend.QueueProvider.createBackendQueue(),
+                                          operationQueue: MockBackend.QueueProvider.createQueue(for: .default),
                                           diagnosticsQueue: MockBackend.QueueProvider.createDiagnosticsQueue(),
                                           systemInfo: self.systemInfo,
                                           offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
@@ -435,7 +435,7 @@ class BackendSubscriberAttributesTests: TestCase {
 
         let config = BackendConfiguration(httpClient: self.mockHTTPClient,
                                           operationDispatcher: MockOperationDispatcher(),
-                                          operationQueue: MockBackend.QueueProvider.createBackendQueue(),
+                                          operationQueue: MockBackend.QueueProvider.createQueue(for: .default),
                                           diagnosticsQueue: MockBackend.QueueProvider.createDiagnosticsQueue(),
                                           systemInfo: self.systemInfo,
                                           offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
@@ -504,7 +504,7 @@ class BackendSubscriberAttributesTests: TestCase {
 
         let config = BackendConfiguration(httpClient: self.mockHTTPClient,
                                           operationDispatcher: MockOperationDispatcher(),
-                                          operationQueue: MockBackend.QueueProvider.createBackendQueue(),
+                                          operationQueue: MockBackend.QueueProvider.createQueue(for: .default),
                                           diagnosticsQueue: MockBackend.QueueProvider.createDiagnosticsQueue(),
                                           systemInfo: self.systemInfo,
                                           offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
@@ -564,7 +564,7 @@ class BackendSubscriberAttributesTests: TestCase {
 
         let config = BackendConfiguration(httpClient: self.mockHTTPClient,
                                           operationDispatcher: MockOperationDispatcher(),
-                                          operationQueue: MockBackend.QueueProvider.createBackendQueue(),
+                                          operationQueue: MockBackend.QueueProvider.createQueue(for: .default),
                                           diagnosticsQueue: MockBackend.QueueProvider.createDiagnosticsQueue(),
                                           systemInfo: self.systemInfo,
                                           offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
