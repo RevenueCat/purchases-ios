@@ -114,9 +114,13 @@ enum HostedCheckout {
             case .purchased:
                 await purchaseHandler.handleHostedCheckoutPurchase()
             case let .failed(error):
-                purchaseHandler.handleHostedCheckoutFailure(error)
-            case .tellCustomerTheyAlreadyOwnIt, .cancelled:
+                purchaseHandler.handleHostedCheckoutFailure(error, package: package)
+            case .cancelled:
                 await purchaseHandler.handleHostedCheckoutCancellation(package: package)
+            case .tellCustomerTheyAlreadyOwnIt:
+                // Neither a purchase nor a cancellation, just as when the checkout never opened for this reason:
+                // the paywall only tells the customer.
+                break
             }
 
             return settlement

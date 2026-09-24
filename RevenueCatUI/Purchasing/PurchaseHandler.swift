@@ -900,8 +900,15 @@ extension PurchaseHandler {
     }
 
     /// Reports a checkout that failed, as opposed to one the customer walked away from.
+    ///
+    /// - Parameter package: The package the checkout was started for, when it is still known. Only used to
+    /// track the failure.
     @MainActor
-    func handleHostedCheckoutFailure(_ error: Error) {
+    func handleHostedCheckoutFailure(_ error: Error, package: Package?) {
+        if let package {
+            self.trackPurchaseError(package: package, error: error)
+        }
+
         self.purchaseError = error
     }
 

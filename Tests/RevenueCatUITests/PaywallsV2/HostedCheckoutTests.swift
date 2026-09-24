@@ -249,19 +249,45 @@ final class HostedCheckoutTests: TestCase {
         expect(handler.purchaseError).to(beNil())
     }
 
-    /// Already owning the product is no purchase, and the paywall is freed as for one the customer backed out of.
     @MainActor
-    func testReportsAProductTheCustomerAlreadyOwnedAsCancelled() async {
-        let purchases = Self.makePurchases()
-        purchases.hostedCheckoutPollBlock = { _ in .alreadyPurchased }
+    func testTracksAFailureAfterTheSuccessPageAsAPurchaseError() async {
+        let trackedEvents: Atomic<[PaywallEvent]> = .init([])
+        let purchases = Self.makePurchases(trackingInto: trackedEvents)
+        purchases.hostedCheckoutPollBlock = { _ in .failed(code: 3, message: "payment_charge_failed") }
         let handler = Self.makeHandler(purchases: purchases)
+        handler.trackPaywallImpression(Self.impressionData)
 
         _ = await HostedCheckout.settle(Self.session,
                                         after: .successPage,
                                         package: TestData.annualPackage,
                                         purchaseHandler: handler)
 
-        expect(handler.sessionPurchaseResult?.userCancelled) == true
+        await expect(trackedEvents.value.contains(where: Self.isPurchaseError))
+            .toEventually(beTrue(), timeout: .seconds(2))
+        expect(trackedEvents.value.first(where: Self.isPurchaseError)?.data.packageId)
+            == TestData.annualPackage.identifier
+    }
+
+    /// Settles as when the checkout never opened for this reason: the paywall tells the customer, and reports
+    /// neither a purchase nor a cancellation.
+    @MainActor
+    func testReportsNothingForAProductTheCustomerAlreadyOwned() async {
+        let trackedEvents: Atomic<[PaywallEvent]> = .init([])
+        let purchases = Self.makePurchases(trackingInto: trackedEvents)
+        purchases.hostedCheckoutPollBlock = { _ in .alreadyPurchased }
+        let handler = Self.makeHandler(purchases: purchases)
+        handler.trackPaywallImpression(Self.impressionData)
+
+        _ = await HostedCheckout.settle(Self.session,
+                                        after: .successPage,
+                                        package: TestData.annualPackage,
+                                        purchaseHandler: handler)
+
+        expect(handler.sessionPurchaseResult).to(beNil())
+        expect(handler.purchaseError).to(beNil())
+        expect(handler.actionInProgress) == false
+        await expect(trackedEvents.value.contains(where: Self.isCancel))
+            .toNever(beTrue(), until: .milliseconds(300))
     }
 
     // MARK: - Errors, matching purchases-js
@@ -292,11 +318,16 @@ final class HostedCheckoutTests: TestCase {
 private extension HostedCheckoutTests {
 
     static func makePurchases() -> MockPurchases {
+        return self.makePurchases(trackingInto: .init([]))
+    }
+
+    static func makePurchases(trackingInto trackedEvents: Atomic<[PaywallEvent]>) -> MockPurchases {
         return MockPurchases { _, _, _ in
             return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
         } restorePurchases: {
             return TestData.customerInfo
-        } trackEvent: { _ in
+        } trackEvent: { event in
+            trackedEvents.modify { $0.append(event) }
         } customerInfo: {
             return TestData.customerInfo
         }
@@ -323,6 +354,16 @@ private extension HostedCheckoutTests {
 
     static func isPurchaseInitiated(_ event: PaywallEvent) -> Bool {
         if case .purchaseInitiated = event { return true }
+        return false
+    }
+
+    static func isPurchaseError(_ event: PaywallEvent) -> Bool {
+        if case .purchaseError = event { return true }
+        return false
+    }
+
+    static func isCancel(_ event: PaywallEvent) -> Bool {
+        if case .cancel = event { return true }
         return false
     }
 
