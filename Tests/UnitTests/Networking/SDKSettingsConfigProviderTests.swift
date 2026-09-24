@@ -66,7 +66,7 @@ class SDKSettingsConfigProviderTests: TestCase {
         expect(self.provider.cachedSettings()).to(beNil())
     }
 
-    func testCachesAndNotifiesDelegateWhenRefreshed() async {
+    func testCachesSettingsBeforeNotifyingDelegateWhenRefreshed() async {
         let expectation = self.expectation(description: "settings updated")
         self.delegate.expectation = expectation
         self.provider.delegate = self.delegate
@@ -114,8 +114,8 @@ private final class MockSDKSettingsConfigProviderDelegate: SDKSettingsConfigProv
     var expectation: XCTestExpectation?
     private(set) var settings: SDKSettings?
 
-    func sdkSettingsConfigProvider(_: SDKSettingsConfigProviderType, didUpdate settings: SDKSettings) async {
-        self.settings = settings
+    func sdkSettingsConfigProviderDidUpdate(_ provider: SDKSettingsConfigProviderType) async {
+        self.settings = provider.cachedSettings()
         self.expectation?.fulfill()
     }
 

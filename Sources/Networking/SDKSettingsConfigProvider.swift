@@ -17,8 +17,7 @@ protocol SDKSettingsConfigProviderType {
 
 protocol SDKSettingsConfigProviderDelegate: AnyObject {
 
-    func sdkSettingsConfigProvider(_ provider: SDKSettingsConfigProviderType,
-                                   didUpdate settings: SDKSettings) async
+    func sdkSettingsConfigProviderDidUpdate(_ provider: SDKSettingsConfigProviderType) async
 
 }
 
@@ -78,7 +77,7 @@ final class SDKSettingsConfigProvider: SDKSettingsConfigProviderType, RemoteConf
         guard self.manager.configGeneration == generation else { return }
 
         self.cache.store(settings, for: .init(generation: generation, key: Self.cacheKey))
-        await self.delegate?.sdkSettingsConfigProvider(self, didUpdate: settings)
+        await self.delegate?.sdkSettingsConfigProviderDidUpdate(self)
     }
 
     private static func decodeSettings(from item: RemoteConfiguration.ConfigItem) throws -> SDKSettings {

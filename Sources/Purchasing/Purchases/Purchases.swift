@@ -2746,7 +2746,7 @@ extension Purchases: @unchecked Sendable {}
 
 extension Purchases: SDKSettingsConfigProviderDelegate {
 
-    func sdkSettingsConfigProvider(_: SDKSettingsConfigProviderType, didUpdate _: SDKSettings) async {}
+    func sdkSettingsConfigProviderDidUpdate(_: SDKSettingsConfigProviderType) async {}
 
 }
 
