@@ -53,7 +53,7 @@ internal enum InterstitialPresentationError: Error, CustomNSError {
     var localizedDescription: String {
         switch self {
         case let .unsupportedMediator(mediator):
-            return "AdMobPresenter only presents AdMob ad units, but the checkpoint ad step " +
+            return "AdMob checkpoint presenters only present AdMob ad units, but the checkpoint ad step " +
                 "is configured for mediator '\(mediator)'."
         case .noPresentationContext:
             return "No view controller is available to present the interstitial ad from."
