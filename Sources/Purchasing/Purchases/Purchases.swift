@@ -2746,8 +2746,12 @@ extension Purchases: SDKSettingsConfigProviderDelegate {
 
     private func setDiagnosticsCollectionEnabled(shouldEnableFromRemoteConfig: Bool) {
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-            let diagnosticsCollectionEnabled = (self.currentConfiguration?.diagnosticsEnabled ?? false)
-                || shouldEnableFromRemoteConfig
+            let isEnabledBySDKConfiguration = self.currentConfiguration?.diagnosticsEnabled ?? false
+            let diagnosticsCollectionEnabled = isEnabledBySDKConfiguration || shouldEnableFromRemoteConfig
+            Logger.debug(Strings.diagnostics.diagnostics_collection_decision(
+                isEnabled: diagnosticsCollectionEnabled,
+                isEnabledBySDKConfiguration: isEnabledBySDKConfiguration
+            ))
             self.diagnosticsTracker?.setCollectionEnabled(diagnosticsCollectionEnabled)
         }
     }
