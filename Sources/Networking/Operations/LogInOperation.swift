@@ -130,3 +130,7 @@ extension LogInOperation.Body: HTTPRequestBody {
     }
 
 }
+
+extension LogInOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .default }
+}

@@ -72,3 +72,7 @@ private extension PostAdServicesTokenOperation {
     }
 
 }
+
+extension PostAdServicesTokenOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .default }
+}

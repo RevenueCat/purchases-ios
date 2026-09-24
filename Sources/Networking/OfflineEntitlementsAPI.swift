@@ -27,7 +27,7 @@ class OfflineEntitlementsAPI {
 
     func getProductEntitlementMapping(isAppBackgrounded: Bool,
                                       completion: @escaping ProductEntitlementMappingResponseHandler) {
-        let backendConfig = self.backendLanes[HTTPRequest.Path.getProductEntitlementMapping]
+        let backendConfig = self.backendLanes[GetProductEntitlementMappingOperation.self]
         let factory = GetProductEntitlementMappingOperation.createFactory(
             configuration: backendConfig,
             callbackCache: self.productEntitlementMappingCallbacksCache

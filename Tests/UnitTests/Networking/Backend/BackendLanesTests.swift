@@ -22,9 +22,9 @@ final class BackendLanesTests: TestCase {
     func testDedicatedLaneGetsItsOwnConfigurationClientAndQueue() {
         let lanes = self.makeLanes(dedicatedLanes: [.remoteConfig, .checkout])
 
-        let defaultConfig = lanes[.default]
-        let remoteConfigConfig = lanes[.remoteConfig]
-        let checkoutConfig = lanes[.checkout]
+        let defaultConfig = lanes.defaultConfiguration
+        let remoteConfigConfig = lanes[GetRemoteConfigOperation.self]
+        let checkoutConfig = lanes[PostHostedCheckoutOperation.self]
 
         expect(defaultConfig).toNot(beIdenticalTo(remoteConfigConfig))
         expect(defaultConfig).toNot(beIdenticalTo(checkoutConfig))
@@ -42,37 +42,39 @@ final class BackendLanesTests: TestCase {
     func testUnlistedLaneFallsBackToDefaultConfiguration() {
         let lanes = self.makeLanes(dedicatedLanes: [.checkout])
 
-        expect(lanes[.default]).to(beIdenticalTo(lanes[.remoteConfig]))
+        expect(lanes.defaultConfiguration).to(beIdenticalTo(lanes[GetRemoteConfigOperation.self]))
     }
 
     func testDefaultInDedicatedLanesDoesNotCreateSecondConfiguration() {
         let lanes = self.makeLanes(dedicatedLanes: [.default, .checkout])
 
-        expect(lanes[.default]).to(beIdenticalTo(lanes[.remoteConfig]))
-        expect(lanes[.default]).toNot(beIdenticalTo(lanes[.checkout]))
+        expect(lanes.defaultConfiguration).to(beIdenticalTo(lanes[GetRemoteConfigOperation.self]))
+        expect(lanes.defaultConfiguration).toNot(beIdenticalTo(lanes[PostHostedCheckoutOperation.self]))
     }
 
     func testDiagnosticsQueueIsSharedAcrossLanes() {
         let lanes = self.makeLanes(dedicatedLanes: [.remoteConfig, .checkout])
 
-        expect(lanes[.default].diagnosticsQueue).to(beIdenticalTo(lanes[.remoteConfig].diagnosticsQueue))
-        expect(lanes[.default].diagnosticsQueue).to(beIdenticalTo(lanes[.checkout].diagnosticsQueue))
+        expect(lanes.defaultConfiguration.diagnosticsQueue)
+            .to(beIdenticalTo(lanes[GetRemoteConfigOperation.self].diagnosticsQueue))
+        expect(lanes.defaultConfiguration.diagnosticsQueue)
+            .to(beIdenticalTo(lanes[PostHostedCheckoutOperation.self].diagnosticsQueue))
     }
 
     func testQueueNamingAndQualityOfService() {
         let lanes = self.makeLanes(dedicatedLanes: [.remoteConfig, .checkout])
 
-        expect(lanes[.default].operationQueue.name) == "RC Backend Queue"
-        expect(lanes[.remoteConfig].operationQueue.name) == "RC Remote Config Queue"
-        expect(lanes[.checkout].operationQueue.name) == "RC Checkout Queue"
+        expect(lanes.defaultConfiguration.operationQueue.name) == "RC Backend Queue"
+        expect(lanes[GetRemoteConfigOperation.self].operationQueue.name) == "RC Remote Config Queue"
+        expect(lanes[PostHostedCheckoutOperation.self].operationQueue.name) == "RC Checkout Queue"
 
-        expect(lanes[.default].operationQueue.maxConcurrentOperationCount) == 1
-        expect(lanes[.remoteConfig].operationQueue.maxConcurrentOperationCount) == 1
-        expect(lanes[.checkout].operationQueue.maxConcurrentOperationCount) == 1
+        expect(lanes.defaultConfiguration.operationQueue.maxConcurrentOperationCount) == 1
+        expect(lanes[GetRemoteConfigOperation.self].operationQueue.maxConcurrentOperationCount) == 1
+        expect(lanes[PostHostedCheckoutOperation.self].operationQueue.maxConcurrentOperationCount) == 1
 
-        expect(lanes[.default].operationQueue.qualityOfService) == .default
-        expect(lanes[.remoteConfig].operationQueue.qualityOfService) == .default
-        expect(lanes[.checkout].operationQueue.qualityOfService) == .userInitiated
+        expect(lanes.defaultConfiguration.operationQueue.qualityOfService) == .default
+        expect(lanes[GetRemoteConfigOperation.self].operationQueue.qualityOfService) == .default
+        expect(lanes[PostHostedCheckoutOperation.self].operationQueue.qualityOfService) == .userInitiated
     }
 
     func testMissingDedicatedLaneLogsWarning() {
@@ -92,14 +94,14 @@ final class BackendLanesTests: TestCase {
         )
 
         self.logger.clearMessages()
-        _ = partialLanes[.remoteConfig]
+        _ = partialLanes[GetRemoteConfigOperation.self]
         self.logger.verifyMessageWasLogged(
             Strings.network.missing_dedicated_lane_configuration(laneName: RequestLane.remoteConfig.name),
             level: .warn
         )
 
         self.logger.clearMessages()
-        _ = partialLanes[.default]
+        _ = partialLanes.defaultConfiguration
         self.logger.verifyMessageWasNotLogged(
             Strings.network.missing_dedicated_lane_configuration(laneName: RequestLane.default.name),
             level: .warn,
@@ -108,8 +110,8 @@ final class BackendLanesTests: TestCase {
 
         self.logger.clearMessages()
         let singleLane = BackendLanes(configuration: defaultConfiguration)
-        _ = singleLane[.remoteConfig]
-        _ = singleLane[.checkout]
+        _ = singleLane[GetRemoteConfigOperation.self]
+        _ = singleLane[PostHostedCheckoutOperation.self]
         self.logger.verifyMessageWasNotLogged(
             Strings.network.missing_dedicated_lane_configuration(laneName: RequestLane.remoteConfig.name),
             level: .warn,
@@ -117,27 +119,23 @@ final class BackendLanesTests: TestCase {
         )
     }
 
-    func testEndpointPathsDeclareExpectedLanes() {
-        expect(HTTPRequest.Path.postExternalPurchaseToken.lane) == .checkout
-        expect(HTTPRequest.WebBillingPath.postHostedCheckout.lane) == .checkout
-        expect(HTTPRequest.Path.remoteConfig(domain: "app").lane) == .remoteConfig
-        expect(HTTPRequest.FallbackPath.remoteConfig(domain: "app").lane) == .remoteConfig
-        expect(HTTPRequest.Path.getOfferings(appUserID: "user").lane) == .default
+    func testOperationsDeclareExpectedLanes() {
+        expect(PostExternalPurchaseTokenOperation.lane) == .checkout
+        expect(PostHostedCheckoutOperation.lane) == .checkout
+        expect(GetRemoteConfigOperation.lane) == .remoteConfig
+        expect(GetRemoteConfigFallbackOperation.lane) == .remoteConfig
+        expect(GetOfferingsOperation.lane) == .default
     }
 
-    func testPathBasedSubscriptRoutesToDedicatedLaneConfiguration() {
+    func testOperationBasedSubscriptRoutesToDedicatedLaneConfiguration() {
         let lanes = self.makeLanes(dedicatedLanes: [.remoteConfig, .checkout])
 
-        expect(lanes[HTTPRequest.Path.postExternalPurchaseToken])
-            .to(beIdenticalTo(lanes[.checkout]))
-        expect(lanes[HTTPRequest.WebBillingPath.postHostedCheckout])
-            .to(beIdenticalTo(lanes[.checkout]))
-        expect(lanes[HTTPRequest.Path.remoteConfig(domain: "app")])
-            .to(beIdenticalTo(lanes[.remoteConfig]))
-        expect(lanes[HTTPRequest.FallbackPath.remoteConfig(domain: "app")])
-            .to(beIdenticalTo(lanes[.remoteConfig]))
-        expect(lanes[HTTPRequest.Path.getOfferings(appUserID: "user")])
-            .to(beIdenticalTo(lanes[.default]))
+        expect(lanes[PostExternalPurchaseTokenOperation.self])
+            .to(beIdenticalTo(lanes[PostHostedCheckoutOperation.self]))
+        expect(lanes[GetRemoteConfigOperation.self])
+            .to(beIdenticalTo(lanes[GetRemoteConfigFallbackOperation.self]))
+        expect(lanes[GetOfferingsOperation.self])
+            .to(beIdenticalTo(lanes.defaultConfiguration))
     }
 
     func testClearHTTPClientCachesClearsSharedETagCacheOnce() {

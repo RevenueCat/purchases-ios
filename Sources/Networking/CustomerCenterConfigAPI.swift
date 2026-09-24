@@ -30,7 +30,7 @@ class CustomerCenterConfigAPI {
     func getCustomerCenterConfig(appUserID: String,
                                  isAppBackgrounded: Bool,
                                  completion: @escaping CustomerCenterConfigResponseHandler) {
-        let backendConfig = self.backendLanes[HTTPRequest.Path.getCustomerCenterConfig(appUserID: appUserID)]
+        let backendConfig = self.backendLanes[GetCustomerCenterConfigOperation.self]
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
 
@@ -53,7 +53,7 @@ class CustomerCenterConfigAPI {
                           customerEmail: String,
                           ticketDescription: String,
                           completion: @escaping CreateTicketResponseHandler) {
-        let backendConfig = self.backendLanes[HTTPRequest.Path.postCreateTicket]
+        let backendConfig = self.backendLanes[PostCreateTicketOperation.self]
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
 
@@ -152,4 +152,8 @@ struct CreateTicketResponse: HTTPResponseBody, Decodable {
 
     let sent: Bool
 
+}
+
+extension PostCreateTicketOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .default }
 }

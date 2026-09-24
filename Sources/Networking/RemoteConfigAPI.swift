@@ -46,7 +46,7 @@ class RemoteConfigAPI: RemoteConfigAPIType {
         isAppBackgrounded: Bool,
         completion: @escaping RemoteConfigResponseHandler
     ) {
-        let backendConfig = self.backendLanes[HTTPRequest.Path.remoteConfig(domain: request.domain)]
+        let backendConfig = self.backendLanes[GetRemoteConfigOperation.self]
         let factory = GetRemoteConfigOperation.createFactory(
             configuration: backendConfig,
             callbackCache: self.callbackCache,
@@ -68,7 +68,7 @@ class RemoteConfigAPI: RemoteConfigAPIType {
         isAppBackgrounded: Bool,
         completion: @escaping FallbackResponseHandler
     ) {
-        let backendConfig = self.backendLanes[HTTPRequest.FallbackPath.remoteConfig(domain: domain)]
+        let backendConfig = self.backendLanes[GetRemoteConfigFallbackOperation.self]
         let factory = GetRemoteConfigFallbackOperation.createFactory(
             configuration: backendConfig,
             callbackCache: self.fallbackCallbackCache,

@@ -73,3 +73,7 @@ final class HealthReportAvailabilityOperation: CacheableNetworkOperation {
 // Restating inherited @unchecked Sendable from Foundation's Operation
 extension HealthReportAvailabilityOperation: @unchecked Sendable {}
 #endif
+
+extension HealthReportAvailabilityOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .default }
+}

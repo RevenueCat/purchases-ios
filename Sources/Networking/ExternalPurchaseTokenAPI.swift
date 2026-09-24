@@ -29,7 +29,7 @@ class ExternalPurchaseTokenAPI {
                                    purchaseType: ExternalPurchaseTokenType,
                                    token: String?,
                                    completion: @escaping ExternalPurchaseTokenResponseHandler) {
-        let backendConfig = self.backendLanes[HTTPRequest.Path.postExternalPurchaseToken]
+        let backendConfig = self.backendLanes[PostExternalPurchaseTokenOperation.self]
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
 

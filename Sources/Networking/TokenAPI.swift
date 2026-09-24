@@ -21,13 +21,13 @@ class TokenAPI {
 
     init(backendLanes: BackendLanes) {
         self.backendLanes = backendLanes
-        self.tokenManager = backendLanes[HTTPRequest.Path.tokenLogin].httpClient.tokenManager
+        self.tokenManager = backendLanes[TokenLogInOperation.self].httpClient.tokenManager
         self.tokenCallbacksCache = CallbackCache<TokenCallback>()
         self.revokeCallbacksCache = CallbackCache<TokenRevokeCallback>()
     }
 
     func logIn(currentAppUserID: String, identity: Identity, completion: @escaping TokenResponseHandler) {
-        let backendConfig = self.backendLanes[HTTPRequest.Path.tokenLogin]
+        let backendConfig = self.backendLanes[TokenLogInOperation.self]
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: currentAppUserID)
 
@@ -54,7 +54,7 @@ class TokenAPI {
 
     func revokeTokens(for appUserID: String, completion: @escaping (BackendError?) -> Void) {
         if let refreshToken = tokenManager.currentRefreshToken {
-            let backendConfig = self.backendLanes[HTTPRequest.Path.tokenLogOut]
+            let backendConfig = self.backendLanes[TokenRevocationOperation.self]
             let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                     appUserID: appUserID)
 

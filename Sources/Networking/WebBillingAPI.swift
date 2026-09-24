@@ -31,9 +31,7 @@ class WebBillingAPI {
     func getWebBillingProducts(
         appUserID: String, productIds: Set<String>, completion: @escaping WebBillingProductsResponseHandler
     ) {
-        let backendConfig = self.backendLanes[
-            HTTPRequest.WebBillingPath.getWebBillingProducts(userId: appUserID, productIds: productIds)
-        ]
+        let backendConfig = self.backendLanes[GetWebBillingProductsOperation.self]
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let factory = GetWebBillingProductsOperation.createFactory(
@@ -66,7 +64,7 @@ class WebBillingAPI {
         externalPurchaseTokenID: String?,
         completion: @escaping HostedCheckoutResponseHandler
     ) {
-        let backendConfig = self.backendLanes[HTTPRequest.WebBillingPath.postHostedCheckout]
+        let backendConfig = self.backendLanes[PostHostedCheckoutOperation.self]
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let factory = PostHostedCheckoutOperation.createFactory(

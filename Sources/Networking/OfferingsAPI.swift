@@ -38,7 +38,7 @@ class OfferingsAPI {
     func getOfferings(appUserID: String,
                       isAppBackgrounded: Bool,
                       completion: @escaping OfferingsResponseHandler) {
-        let backendConfig = self.backendLanes[HTTPRequest.Path.getOfferings(appUserID: appUserID)]
+        let backendConfig = self.backendLanes[GetOfferingsOperation.self]
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let factory = GetOfferingsOperation.createFactory(
@@ -66,7 +66,7 @@ class OfferingsAPI {
     }
 
     func getWebOfferingProducts(appUserID: String, completion: @escaping WebOfferingProductsResponseHandler) {
-        let backendConfig = self.backendLanes[HTTPRequest.WebBillingPath.getWebOfferingProducts(appUserID: appUserID)]
+        let backendConfig = self.backendLanes[GetWebOfferingProductsOperation.self]
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let factory = GetWebOfferingProductsOperation.createFactory(
@@ -88,7 +88,7 @@ class OfferingsAPI {
                              receiptData: Data,
                              productIdentifiers: Set<String>,
                              completion: @escaping IntroEligibilityResponseHandler) {
-        let backendConfig = self.backendLanes[HTTPRequest.Path.getIntroEligibility(appUserID: appUserID)]
+        let backendConfig = self.backendLanes[GetIntroEligibilityOperation.self]
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let getIntroEligibilityOperation = GetIntroEligibilityOperation(configuration: config,
@@ -105,7 +105,7 @@ class OfferingsAPI {
               receipt: EncodedAppleReceipt,
               appUserID: String,
               completion: @escaping OfferSigningResponseHandler) {
-        let backendConfig = self.backendLanes[HTTPRequest.Path.postOfferForSigning]
+        let backendConfig = self.backendLanes[PostOfferForSigningOperation.self]
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
 

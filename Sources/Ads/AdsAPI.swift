@@ -31,9 +31,7 @@ class AdsAPI {
         clientTransactionID: String,
         completion: @escaping RewardVerificationStatusResponseHandler
     ) {
-        let backendConfig = self.backendLanes[
-            HTTPRequest.Path.rewardVerificationStatus(appUserID: appUserID, clientTransactionID: clientTransactionID)
-        ]
+        let backendConfig = self.backendLanes[GetRewardVerificationStatusOperation.self]
         let config = GetRewardVerificationStatusOperation.Configuration(
             httpClient: backendConfig.httpClient,
             appUserID: appUserID,

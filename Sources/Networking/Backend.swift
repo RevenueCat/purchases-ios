@@ -111,7 +111,7 @@ class Backend {
                   virtualCurrenciesAPI: VirtualCurrenciesAPI,
                   adsAPI: AdsAPI,
                   remoteConfigAPI: RemoteConfigAPI) {
-        self.config = lanes[.default]
+        self.config = lanes.defaultConfiguration
 
         self.customer = customerAPI
         self.identity = identityAPI

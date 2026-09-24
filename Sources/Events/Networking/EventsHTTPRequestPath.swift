@@ -40,8 +40,4 @@ extension EventsHTTPRequestPath {
         return "/v1/events"
     }
 
-    var lane: RequestLane {
-        return .default
-    }
-
 }

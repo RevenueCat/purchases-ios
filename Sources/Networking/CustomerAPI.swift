@@ -40,7 +40,7 @@ final class CustomerAPI {
                          isAppBackgrounded: Bool,
                          allowComputingOffline: Bool,
                          completion: @escaping CustomerInfoResponseHandler) {
-        let backendConfig = self.backendLanes[HTTPRequest.Path.getCustomerInfo(appUserID: appUserID)]
+        let backendConfig = self.backendLanes[GetCustomerInfoOperation.self]
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
 
@@ -65,7 +65,7 @@ final class CustomerAPI {
     func post(subscriberAttributes: SubscriberAttribute.Dictionary,
               appUserID: String,
               completion: SimpleResponseHandler?) {
-        let backendConfig = self.backendLanes[HTTPRequest.Path.postSubscriberAttributes(appUserID: appUserID)]
+        let backendConfig = self.backendLanes[PostSubscriberAttributesOperation.self]
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let operation = PostSubscriberAttributesOperation(configuration: config,
@@ -78,7 +78,7 @@ final class CustomerAPI {
               network: AttributionNetwork,
               appUserID: String,
               completion: SimpleResponseHandler?) {
-        let backendConfig = self.backendLanes[HTTPRequest.Path.postAttributionData(appUserID: appUserID)]
+        let backendConfig = self.backendLanes[PostAttributionDataOperation.self]
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let postAttributionDataOperation = PostAttributionDataOperation(configuration: config,
@@ -91,7 +91,7 @@ final class CustomerAPI {
     func post(adServicesToken: String,
               appUserID: String,
               completion: SimpleResponseHandler?) {
-        let backendConfig = self.backendLanes[HTTPRequest.Path.postAdServicesToken(appUserID: appUserID)]
+        let backendConfig = self.backendLanes[PostAdServicesTokenOperation.self]
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let postAttributionDataOperation = PostAdServicesTokenOperation(configuration: config,
@@ -106,9 +106,7 @@ final class CustomerAPI {
         isAppBackgrounded: Bool,
         completion: @escaping IsPurchaseAllowedByRestoreBehaviorResponseHandler
     ) {
-        let backendConfig = self.backendLanes[
-            HTTPRequest.Path.isPurchaseAllowedByRestoreBehavior(appUserID: appUserID)
-        ]
+        let backendConfig = self.backendLanes[PostIsPurchaseAllowedByRestoreBehaviorOperation.self]
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let postData = PostIsPurchaseAllowedByRestoreBehaviorOperation.PostData(
@@ -142,7 +140,7 @@ final class CustomerAPI {
               appUserID: String,
               containsAttributionData: Bool,
               completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
-        let backendConfig = self.backendLanes[HTTPRequest.Path.postReceiptData]
+        let backendConfig = self.backendLanes[PostReceiptDataOperation.self]
         var subscriberAttributesToPost: SubscriberAttribute.Dictionary?
 
         if !backendConfig.systemInfo.dangerousSettings.customEntitlementComputation {

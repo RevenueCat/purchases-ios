@@ -37,7 +37,7 @@ class InternalAPI {
     }
 
     func healthRequest(signatureVerification: Bool, completion: @escaping ResponseHandler) {
-        let backendConfig = self.backendLanes[HTTPRequest.Path.health]
+        let backendConfig = self.backendLanes[HealthOperation.self]
         let factory = HealthOperation.createFactory(httpClient: backendConfig.httpClient,
                                                     callbackCache: self.healthCallbackCache,
                                                     signatureVerification: signatureVerification)
@@ -52,7 +52,7 @@ class InternalAPI {
 
     #if DEBUG
     func healthReportRequest(appUserID: String, completion: @escaping HealthReportResponseHandler) {
-        let backendConfig = self.backendLanes[HTTPRequest.Path.appHealthReport(appUserID: appUserID)]
+        let backendConfig = self.backendLanes[HealthReportOperation.self]
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let factory = HealthReportOperation.createFactory(configuration: config,
@@ -69,7 +69,7 @@ class InternalAPI {
         appUserID: String,
         completion: @escaping HealthReportAvailabilityResponseHandler
     ) {
-        let backendConfig = self.backendLanes[HTTPRequest.Path.appHealthReportAvailability(appUserID: appUserID)]
+        let backendConfig = self.backendLanes[HealthReportAvailabilityOperation.self]
         let config = NetworkOperation.UserSpecificConfiguration(
             httpClient: backendConfig.httpClient,
             appUserID: appUserID
@@ -94,7 +94,7 @@ class InternalAPI {
             return
         }
 
-        let backendConfig = self.backendLanes[HTTPRequest.FeatureEventsPath.postEvents]
+        let backendConfig = self.backendLanes[PostFeatureEventsOperation.self]
         let request = FeatureEventsRequest(events: events)
         let operation = PostFeatureEventsOperation(
             configuration: .init(httpClient: backendConfig.httpClient),
@@ -113,7 +113,7 @@ class InternalAPI {
             return
         }
 
-        let backendConfig = self.backendLanes[HTTPRequest.DiagnosticsPath.postDiagnostics]
+        let backendConfig = self.backendLanes[DiagnosticsPostOperation.self]
         let operation = DiagnosticsPostOperation(configuration: .init(httpClient: backendConfig.httpClient),
                                                  request: .init(events: events),
                                                  responseHandler: completion)
@@ -128,7 +128,7 @@ class InternalAPI {
             return
         }
 
-        let backendConfig = self.backendLanes[HTTPRequest.AdPath.postEvents]
+        let backendConfig = self.backendLanes[PostAdEventsOperation.self]
         let request = AdEventsRequest(events: events)
         let operation = PostAdEventsOperation(
             configuration: .init(httpClient: backendConfig.httpClient),

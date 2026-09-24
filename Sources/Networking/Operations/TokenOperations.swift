@@ -345,3 +345,11 @@ extension TokenRevocationOperation {
     }
 
 }
+
+extension TokenLogInOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .default }
+}
+
+extension TokenRevocationOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .default }
+}

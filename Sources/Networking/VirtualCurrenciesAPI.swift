@@ -30,7 +30,7 @@ class VirtualCurrenciesAPI {
         isAppBackgrounded: Bool,
         completion: @escaping VirtualCurrenciesResponseHandler
     ) {
-        let backendConfig = self.backendLanes[HTTPRequest.Path.getVirtualCurrencies(appUserID: appUserID)]
+        let backendConfig = self.backendLanes[GetVirtualCurrenciesOperation.self]
         let config = NetworkOperation.UserSpecificConfiguration(
             httpClient: backendConfig.httpClient,
             appUserID: appUserID
@@ -54,7 +54,7 @@ class VirtualCurrenciesAPI {
     func spendVirtualCurrencies(amounts: [String: Int],
                                 reference: String?,
                                 completion: @escaping VirtualCurrenciesResponseHandler) {
-        let backendConfig = self.backendLanes[HTTPRequest.Path.spendVirtualCurrencies]
+        let backendConfig = self.backendLanes[SpendVirtualCurrenciesOperation.self]
         let config = NetworkOperation.Configuration(
             httpClient: backendConfig.httpClient
         )

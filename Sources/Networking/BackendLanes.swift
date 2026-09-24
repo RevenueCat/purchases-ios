@@ -17,7 +17,7 @@ import Foundation
 /// configuration when a lane has no dedicated one.
 final class BackendLanes: Sendable {
 
-    private let defaultConfiguration: BackendConfiguration
+    let defaultConfiguration: BackendConfiguration
     private let dedicatedConfigurations: [RequestLane: BackendConfiguration]
 
     init(defaultConfiguration: BackendConfiguration,
@@ -26,7 +26,7 @@ final class BackendLanes: Sendable {
         self.dedicatedConfigurations = dedicatedConfigurations
     }
 
-    subscript(lane: RequestLane) -> BackendConfiguration {
+    private subscript(lane: RequestLane) -> BackendConfiguration {
         if let configuration = self.dedicatedConfigurations[lane] {
             return configuration
         }
@@ -40,8 +40,8 @@ final class BackendLanes: Sendable {
         return self.defaultConfiguration
     }
 
-    subscript(path: any HTTPRequestPath) -> BackendConfiguration {
-        self[path.lane]
+    subscript<Operation: LaneRoutedOperation>(_ operationType: Operation.Type) -> BackendConfiguration {
+        self[operationType.lane]
     }
 
 }

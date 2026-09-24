@@ -28,7 +28,7 @@ class RedeemWebPurchaseAPI {
     func postRedeemWebPurchase(appUserID: String,
                                redemptionToken: String,
                                completion: @escaping RedeemWebPurchaseResponseHandler) {
-        let backendConfig = self.backendLanes[HTTPRequest.Path.postRedeemWebPurchase]
+        let backendConfig = self.backendLanes[PostRedeemWebPurchaseOperation.self]
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
 

@@ -2161,7 +2161,6 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
                 [URL(string: "https://this-is-a-fallback.com/\(relativePath)-fallback")!]
             }
 
-            var lane: RequestLane { .default }
         }
 
         let firstRequest = HTTPRequest(

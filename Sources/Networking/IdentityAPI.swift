@@ -29,7 +29,7 @@ class IdentityAPI {
     func logIn(currentAppUserID: String,
                newAppUserID: String,
                completion: @escaping LogInResponseHandler) {
-        let backendConfig = self.backendLanes[HTTPRequest.Path.logIn]
+        let backendConfig = self.backendLanes[LogInOperation.self]
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: currentAppUserID)
 

@@ -68,9 +68,6 @@ protocol HTTPRequestPath {
 
     /// Whether this path corresponds to an IAM request
     var isIAMPath: Bool { get }
-
-    /// The request lane this endpoint should run on.
-    var lane: RequestLane { get }
 }
 
 /// Provides endpoint-specific inputs for backend response signature verification.
@@ -662,39 +659,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         }
     }
 
-    var lane: RequestLane {
-        switch self {
-        case .getCustomerInfo,
-             .getOfferings,
-             .getIntroEligibility,
-             .logIn,
-             .postAttributionData,
-             .postOfferForSigning,
-             .postReceiptData,
-             .postSubscriberAttributes,
-             .postAdServicesToken,
-             .health,
-             .appHealthReport,
-             .appHealthReportAvailability,
-             .getProductEntitlementMapping,
-             .getCustomerCenterConfig,
-             .getVirtualCurrencies,
-             .spendVirtualCurrencies,
-             .postRedeemWebPurchase,
-             .postCreateTicket,
-             .isPurchaseAllowedByRestoreBehavior,
-             .rewardVerificationStatus,
-             .tokenLogin,
-             .tokenRefresh,
-             .tokenLogOut:
-            return .default
-        case .postExternalPurchaseToken:
-            return .checkout
-        case .remoteConfig:
-            return .remoteConfig
-        }
-    }
-
     private static func escape(_ appUserID: String) -> String {
         return appUserID.trimmedAndEscaped
     }
@@ -765,13 +729,6 @@ extension HTTPRequest.FallbackPath: HTTPRequestPath {
         switch self {
         case .remoteConfig:
             return [:]
-        }
-    }
-
-    var lane: RequestLane {
-        switch self {
-        case .remoteConfig:
-            return .remoteConfig
         }
     }
 
