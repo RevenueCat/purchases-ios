@@ -174,12 +174,18 @@ final class BackendCheckoutLaneTests: BaseBackendTests {
 
         let tokenResult: Atomic<Result<ExternalPurchaseTokenResponse, BackendError>?> = nil
         let checkoutResult: Atomic<Result<HostedCheckoutResponse, BackendError>?> = nil
+        let callsAtTokenCompletion: Atomic<[String]?> = nil
 
         backend.externalPurchaseTokenAPI.postExternalPurchaseToken(
             appUserID: Self.userID,
             purchaseType: .linkOut,
             token: "storekit-token"
-        ) { tokenResult.value = $0 }
+        ) { result in
+            // The operation invokes this closure before calling its internal completion, which is
+            // what frees the lane's single queue slot, so hosted checkout cannot have started yet.
+            callsAtTokenCompletion.value = laneClient.calls.map(\.request.path.relativePath)
+            tokenResult.value = result
+        }
 
         backend.webBilling.postHostedCheckout(
             appUserID: Self.userID,
@@ -189,14 +195,10 @@ final class BackendCheckoutLaneTests: BaseBackendTests {
             externalPurchaseTokenID: Self.tokenID
         ) { checkoutResult.value = $0 }
 
-        // The token request stays in flight for one second; hosted checkout must not start meanwhile.
-        expect(laneClient.calls.map(\.request.path.relativePath)).toEventually(
-            equal([externalPurchaseTokenPath]),
-            timeout: .seconds(2)
-        )
-
         expect(tokenResult.value).toEventuallyNot(beNil(), timeout: .seconds(5))
         expect(checkoutResult.value).toEventuallyNot(beNil(), timeout: .seconds(5))
+
+        expect(callsAtTokenCompletion.value) == [externalPurchaseTokenPath]
 
         expect(laneClient.calls.map(\.request.path.relativePath)) == [
             externalPurchaseTokenPath,
