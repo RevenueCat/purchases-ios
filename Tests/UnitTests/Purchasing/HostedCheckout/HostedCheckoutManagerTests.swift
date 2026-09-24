@@ -38,7 +38,7 @@ class HostedCheckoutManagerTests: TestCase {
         self.externalPurchaseTokenAPI = MockExternalPurchaseTokenAPI()
         self.externalPurchaseTokenAPI.stubbedPostExternalPurchaseTokenResult = .success(.init(id: Self.tokenID))
 
-        self.webBillingAPI = MockWebBillingAPI(backendConfig: MockBackendConfiguration())
+        self.webBillingAPI = MockWebBillingAPI(lanes: BackendLanes(configuration: MockBackendConfiguration()))
         self.webBillingAPI.stubbedPostHostedCheckoutCompletionResult = .success(Self.response)
 
         self.poller = StubHostedCheckoutPoller(result: .succeeded)
