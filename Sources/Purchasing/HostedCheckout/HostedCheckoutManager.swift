@@ -70,8 +70,8 @@ final class HostedCheckoutManager {
     /// The device does not authorize payments.
     case paymentsNotAuthorized
 
-    /// This customer's storefront does not allow the purchase to be made outside the App Store.
-    case notAllowedInStorefront
+    /// The customer is not eligible to buy outside the App Store.
+    case notEligible
 
     /// Another checkout was already being started, and that one carries the purchase.
     case alreadyStarting
@@ -135,8 +135,8 @@ private extension HostedCheckoutStartResult {
 
     init(stopReason: ExternalPurchasePreparationResult.StopReason) {
         switch stopReason {
-        case .notAllowedInStorefront:
-            self = .notAllowedInStorefront
+        case .notEligible:
+            self = .notEligible
         case .paymentsNotAuthorized:
             self = .paymentsNotAuthorized
         case .customerCancelledNotice:

@@ -77,7 +77,7 @@ final class ExternalPurchaseManager {
         case .notEligible:
             guard let storefront = await self.storefrontNotRequiringExternalPurchaseAPIs() else {
                 Logger.warn(Strings.externalPurchase.not_eligible)
-                return .stopped(.notAllowedInStorefront)
+                return .stopped(.notEligible)
             }
 
             Logger.debug(Strings.externalPurchase.custom_link_does_not_apply(storefront))
@@ -125,9 +125,12 @@ internal enum ExternalPurchasePreparationResult: Equatable {
 
     enum StopReason: Equatable {
 
-        /// Apple's external purchase APIs are required in this storefront and cannot be used for this
-        /// customer, so they are offered nothing.
-        case notAllowedInStorefront
+        /// The customer is not eligible for Apple's external purchase programme, see
+        /// ``ExternalPurchaseAvailability/notEligible``, so they are offered nothing.
+        ///
+        /// In the storefronts where its APIs are not required, the purchase goes ahead as
+        /// ``ExternalPurchasePreparationResult/notApplicable`` instead.
+        case notEligible
 
         /// The device does not authorize payments, see ``ExternalPurchaseAvailability/paymentsNotAuthorized``.
         ///

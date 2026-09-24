@@ -99,7 +99,7 @@ class ExternalPurchaseManagerTests: TestCase {
 
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
-        expect(result) == .stopped(.notAllowedInStorefront)
+        expect(result) == .stopped(.notEligible)
         expect(self.customLink.invokedNoticeTypes).to(beEmpty())
         expect(self.customLink.invokedTokenTypes).to(beEmpty())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
@@ -112,7 +112,7 @@ class ExternalPurchaseManagerTests: TestCase {
 
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
-        expect(result) == .stopped(.notAllowedInStorefront)
+        expect(result) == .stopped(.notEligible)
     }
 
     /// An empty policy is what an SDK that could not read one is left with, and it offers the purchase
@@ -123,7 +123,7 @@ class ExternalPurchaseManagerTests: TestCase {
 
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
-        expect(result) == .stopped(.notAllowedInStorefront)
+        expect(result) == .stopped(.notEligible)
     }
 
     func testMatchesTheStorefrontRegardlessOfCase() async {
@@ -157,7 +157,7 @@ class ExternalPurchaseManagerTests: TestCase {
         self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.otherStorefront)
 
         let onceElsewhere = await self.manager.prepareExternalPurchase(flow: .inApp)
-        expect(onceElsewhere) == .stopped(.notAllowedInStorefront)
+        expect(onceElsewhere) == .stopped(.notEligible)
 
         expect(self.settingsProvider.invokedSettingsCount) == 2
     }

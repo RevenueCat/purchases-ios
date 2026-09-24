@@ -177,13 +177,13 @@ class HostedCheckoutManagerTests: TestCase {
 
     /// Where Apple's external purchase APIs are required and cannot be used for this customer, they are
     /// offered no checkout at all.
-    func testCreatesNoSessionWhereTheStorefrontDoesNotAllowTheExternalPurchase() async {
+    func testCreatesNoSessionForAnIneligibleCustomer() async {
         self.customLink.stubbedAvailability = .notEligible
         self.systemInfo.stubbedStorefront = MockStorefront(countryCode: "ESP")
 
         let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
 
-        expect(result) == .notAllowedInStorefront
+        expect(result) == .notEligible
         expect(self.customLink.invokedNoticeTypes).to(beEmpty())
         expect(self.webBillingAPI.invokedPostHostedCheckout) == false
     }

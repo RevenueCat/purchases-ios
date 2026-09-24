@@ -38,7 +38,7 @@ enum HostedCheckout {
                 self = .present(session)
             case .alreadyPurchased:
                 self = .tellCustomerTheyAlreadyOwnIt
-            case .declinedByCustomer, .paymentsNotAuthorized, .notAllowedInStorefront, .alreadyStarting, .failed:
+            case .declinedByCustomer, .paymentsNotAuthorized, .notEligible, .alreadyStarting, .failed:
                 self = .nothing
             }
         }
