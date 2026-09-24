@@ -19,7 +19,7 @@ import Foundation
 protocol DiagnosticsTrackerType: Sendable {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func setCollectionEnabled(_ enabled: Bool)
+    func setCollectionDecision(_ decision: DiagnosticsCollectionDecision)
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func track(_ event: DiagnosticsEvent)
@@ -183,13 +183,12 @@ protocol DiagnosticsTrackerType: Sendable {
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-/// Collects diagnostics events once collection has been enabled. Events are buffered until a collection decision is
-/// received, then persisted or discarded accordingly. Disabling collection only stops new events; events already
-/// persisted on disk could still be uploaded by the synchronizer.
+/// Persists diagnostics events until collection is disabled. The synchronizer only uploads persisted events after
+/// collection is enabled. Disabling collection deletes all persisted diagnostics events.
 final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
 
     private let diagnosticsFileHandler: DiagnosticsFileHandlerType
-    private let collectionState: Atomic<CollectionState>
+    private let collectionDecision: Atomic<DiagnosticsCollectionDecision>
     private let diagnosticsDispatcher: OperationDispatcher
     private let dateProvider: DateProvider
     private let appSessionID: UUID
@@ -200,48 +199,32 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
          dateProvider: DateProvider = DateProvider(),
          appSessionID: UUID = SystemInfo.appSessionID) {
         self.diagnosticsFileHandler = diagnosticsFileHandler
-        self.collectionState = .init(.init(decision: collectionDecision, pendingEvents: []))
+        self.collectionDecision = .init(collectionDecision)
         self.diagnosticsDispatcher = diagnosticsDispatcher
         self.dateProvider = dateProvider
         self.appSessionID = appSessionID
+
+        if collectionDecision == .disabled {
+            self.discardPersistedEvents()
+        }
     }
 
-    /// Persists events when collection is enabled, buffers them while the decision is undetermined, and ignores them
-    /// when collection is disabled.
+    /// Persists events until collection is disabled. Events persisted while the decision is undetermined are only
+    /// uploaded if collection is later enabled.
     func track(_ event: DiagnosticsEvent) {
-        let collectionDecision = self.collectionState.modify { state in
-            if state.decision == .undetermined {
-                state.pendingEvents.append(event)
-            }
-            return state.decision
-        }
-        switch collectionDecision {
-        case .enabled:
+        switch self.collectionDecision.value {
+        case .enabled, .undetermined:
             self.persist(event)
-        case .undetermined:
-            Logger.debug(Strings.diagnostics.diagnostic_event_awaiting_collection_decision)
         case .disabled:
             break
         }
     }
 
-    /// Resolves buffered events by persisting them when enabled or discarding them when disabled. Events already on
-    /// disk are unchanged.
-    func setCollectionEnabled(_ enabled: Bool) {
-        let pendingEvents = self.collectionState.modify { state in
-            defer {
-                state.decision = .init(enabled: enabled)
-                state.pendingEvents = []
-            }
-
-            return enabled ? state.pendingEvents : []
-        }
-        Logger.debug(Strings.diagnostics.diagnostics_collection_configured(
-            isEnabled: enabled,
-            pendingEventCount: pendingEvents.count
-        ))
-        for event in pendingEvents {
-            self.persist(event)
+    /// Updates the collection decision. Disabling collection discards every persisted diagnostics event.
+    func setCollectionDecision(_ decision: DiagnosticsCollectionDecision) {
+        self.collectionDecision.value = decision
+        if decision == .disabled {
+            self.discardPersistedEvents()
         }
     }
 
@@ -249,6 +232,16 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
         self.diagnosticsDispatcher.dispatchOnWorkerThread {
             await self.clearDiagnosticsFileIfTooBig()
             await self.diagnosticsFileHandler.appendEvent(diagnosticsEvent: event)
+        }
+    }
+
+    private func discardPersistedEvents() {
+        self.diagnosticsDispatcher.dispatchOnWorkerThread {
+            let eventCount = await self.diagnosticsFileHandler.getEntries().count
+            if eventCount > 0 {
+                Logger.debug(Strings.diagnostics.discarding_persisted_diagnostic_events(count: eventCount))
+            }
+            await self.diagnosticsFileHandler.emptyDiagnosticsFile()
         }
     }
 
@@ -580,17 +573,16 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                         ))
     }
 
-    private struct CollectionState {
-        var decision: DiagnosticsCollectionDecision
-        var pendingEvents: [DiagnosticsEvent]
-    }
-
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension DiagnosticsTrackerType {
 
-    func setCollectionEnabled(_: Bool) {}
+    func setCollectionDecision(_: DiagnosticsCollectionDecision) {}
+
+    func setCollectionEnabled(_ enabled: Bool) {
+        self.setCollectionDecision(.init(enabled: enabled))
+    }
 
 }
 

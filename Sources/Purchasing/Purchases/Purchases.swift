@@ -411,7 +411,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             if let handler = diagnosticsFileHandler, #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 return DiagnosticsTracker(
                     diagnosticsFileHandler: handler,
-                    collectionDecision: diagnosticsEnabled ? .enabled : .undetermined
+                    collectionDecision: initialDiagnosticsCollectionDecision(
+                        diagnosticsEnabled: diagnosticsEnabled,
+                        remoteConfigEnabled: systemInfo.remoteConfigEnabled
+                    )
                 )
             } else {
                 if diagnosticsEnabled {
@@ -734,10 +737,16 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 let diagnosticsSynchronizer: DiagnosticsSynchronizer?
                 if let diagnosticsFileHandler = diagnosticsFileHandler {
                     let synchronizedUserDefaults = SynchronizedUserDefaults(userDefaults: userDefaults)
-                    diagnosticsSynchronizer = DiagnosticsSynchronizer(internalAPI: backend.internalAPI,
-                                                                      handler: diagnosticsFileHandler,
-                                                                      tracker: diagnosticsTracker,
-                                                                      userDefaults: synchronizedUserDefaults)
+                    diagnosticsSynchronizer = DiagnosticsSynchronizer(
+                        internalAPI: backend.internalAPI,
+                        handler: diagnosticsFileHandler,
+                        tracker: diagnosticsTracker,
+                        userDefaults: synchronizedUserDefaults,
+                        collectionDecision: initialDiagnosticsCollectionDecision(
+                            diagnosticsEnabled: diagnosticsEnabled,
+                            remoteConfigEnabled: systemInfo.remoteConfigEnabled
+                        )
+                    )
                     Task {
                         await diagnosticsFileHandler.updateDelegate(diagnosticsSynchronizer)
                     }
@@ -1009,9 +1018,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.purchasesOrchestrator.delegate = self
         self.sdkSettingsConfigProvider.delegate = self
         self.remoteConfigManager.addRemoteConfigStateObserver(self.sdkSettingsConfigProvider)
-        if !self.systemInfo.remoteConfigEnabled {
-            self.setDiagnosticsCollectionEnabled(shouldEnableFromRemoteConfig: false)
-        }
         #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.attribution.syncAttributesAndOfferingsIfNeededHandler = { completion in
             completion(nil, NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError)
@@ -2741,10 +2747,10 @@ public extension Purchases {
 extension Purchases: SDKSettingsConfigProviderDelegate {
 
     func sdkSettingsConfigProviderDidUpdate(_ settings: SDKSettings) {
-        self.setDiagnosticsCollectionEnabled(shouldEnableFromRemoteConfig: settings.diagnostics.enabled)
+        self.setDiagnosticsCollectionDecision(shouldEnableFromRemoteConfig: settings.diagnostics.enabled)
     }
 
-    private func setDiagnosticsCollectionEnabled(shouldEnableFromRemoteConfig: Bool) {
+    private func setDiagnosticsCollectionDecision(shouldEnableFromRemoteConfig: Bool) {
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
             let isEnabledBySDKConfiguration = self.currentConfiguration?.diagnosticsEnabled ?? false
             let diagnosticsCollectionEnabled = isEnabledBySDKConfiguration || shouldEnableFromRemoteConfig
@@ -2752,7 +2758,11 @@ extension Purchases: SDKSettingsConfigProviderDelegate {
                 isEnabled: diagnosticsCollectionEnabled,
                 isEnabledBySDKConfiguration: isEnabledBySDKConfiguration
             ))
-            self.diagnosticsTracker?.setCollectionEnabled(diagnosticsCollectionEnabled)
+            let decision = DiagnosticsCollectionDecision(enabled: diagnosticsCollectionEnabled)
+            self.diagnosticsTracker?.setCollectionDecision(decision)
+            Task { [weak self] in
+                await self?.purchasesOrchestrator.diagnosticsSynchronizer?.setCollectionDecision(decision)
+            }
         }
     }
 
@@ -2767,6 +2777,17 @@ extension Purchases: SDKSettingsConfigProviderDelegate {
 // async contexts in a much more simple way without errors like:
 // "Capture of 'self' with non-sendable type 'Purchases' in a `@Sendable` closure"
 extension Purchases: @unchecked Sendable {}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+private func initialDiagnosticsCollectionDecision(
+    diagnosticsEnabled: Bool,
+    remoteConfigEnabled: Bool
+) -> DiagnosticsCollectionDecision {
+    if diagnosticsEnabled {
+        return .enabled
+    }
+    return remoteConfigEnabled ? .undetermined : .disabled
+}
 
 // MARK: Internal
 
