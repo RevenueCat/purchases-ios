@@ -14,7 +14,7 @@ import UIKit
 
 /// Presents an AdMob rewarded ad when a checkpoint resolves to an ad step, and reports the verified reward.
 ///
-/// Register an instance on `Purchases.shared.checkpointAdPresenter` so a resolved ad step loads the
+/// Register an instance on `Purchases.shared.adPresenter` so a resolved ad step loads the
 /// configured ad unit through `RewardedAd.loadAndTrack` (so the usual RevenueCat ad events are tracked),
 /// enables RevenueCat reward verification, and presents it from the topmost view controller. Once the
 /// customer earns the reward, RevenueCat verifies it server-side and grants the configured virtual
@@ -33,17 +33,17 @@ public final class AdMobRewardedPresenter: AdPresenter {
     /// Creates a presenter that loads and shows AdMob rewarded ads for checkpoint ad steps.
     public init() {}
 
-    /// Loads and presents the rewarded ad for `params.adUnitId`, completing once it is dismissed and any
+    /// Loads and presents the rewarded ad for `params.adIdentifier`, completing once it is dismissed and any
     /// earned reward has been verified, or once it fails.
     public func present(
         params: AdPresentationParams,
         completion: @escaping AdPresentationCompletion
     ) {
-        let presentation = RewardedPresentation()
+        let presentation = RewardedPresentation(format: .rewarded)
         self.activePresentations.insert(presentation)
 
         presentation.start(
-            adUnitID: params.adUnitId,
+            adUnitID: params.adIdentifier,
             mediator: params.mediator,
             placement: params.checkpointIdentifier
         ) { [weak self, weak presentation] outcome in
