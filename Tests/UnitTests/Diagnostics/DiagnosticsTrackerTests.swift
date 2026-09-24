@@ -80,7 +80,8 @@ class DiagnosticsTrackerTests: TestCase {
 
         self.tracker.track(event)
 
-        expect(await self.handler.getEntries()).to(beEmpty())
+        let entries = await self.handler.getEntries()
+        expect(entries).to(beEmpty())
     }
 
     func testBuffersEventsUntilDiagnosticsAreEnabled() async {
@@ -96,11 +97,13 @@ class DiagnosticsTrackerTests: TestCase {
                                      appSessionId: SystemInfo.appSessionID)
 
         self.tracker.track(event)
-        expect(await self.handler.getEntries()).to(beEmpty())
+        let entriesBeforeEnabling = await self.handler.getEntries()
+        expect(entriesBeforeEnabling).to(beEmpty())
 
         self.tracker.setCollectionEnabled(true)
 
-        expect(await self.handler.getEntries()) == [
+        let entriesAfterEnabling = await self.handler.getEntries()
+        expect(entriesAfterEnabling) == [
             .init(id: event.id,
                   name: .httpRequestPerformed,
                   properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
@@ -133,7 +136,8 @@ class DiagnosticsTrackerTests: TestCase {
         )
         self.tracker.setCollectionEnabled(true)
 
-        expect(await self.handler.getEntries()).to(beEmpty())
+        let entries = await self.handler.getEntries()
+        expect(entries).to(beEmpty())
     }
 
     func testTrackMultipleEvents() async {
