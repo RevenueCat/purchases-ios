@@ -30,6 +30,7 @@ enum HostedCheckoutStrings {
     case poll_terminal_error(_ operationSessionID: String, error: BackendError)
     case poll_cancelled(_ operationSessionID: String)
     case poll_exhausted(_ operationSessionID: String, maxAttempts: Int)
+    case poll_timed_out(_ operationSessionID: String, timeout: TimeInterval)
     case poll_fetching_customer_info(_ operationSessionID: String)
     case poll_customer_info_refresh_failed(_ operationSessionID: String)
 
@@ -68,6 +69,8 @@ extension HostedCheckoutStrings: LogMessage {
             return "Stopped asking about checkout session \(operationSessionID) before it answered."
         case let .poll_exhausted(operationSessionID, maxAttempts):
             return "Checkout session \(operationSessionID) was still under way after \(maxAttempts) attempts."
+        case let .poll_timed_out(operationSessionID, timeout):
+            return "Checkout session \(operationSessionID) gave no answer within \(Int(timeout)) seconds."
         case let .poll_fetching_customer_info(operationSessionID):
             return "Fetching CustomerInfo for the purchase checkout session \(operationSessionID) landed."
         case let .poll_customer_info_refresh_failed(operationSessionID):

@@ -66,38 +66,53 @@ internal protocol HostedCheckoutAsyncSleeper: Sendable {
 ///
 /// The bound is safe because asynchronous payment methods, which settle long after the customer leaves the
 /// page, are deliberately unsupported.
+///
+/// Attempts alone do not bound how long the customer waits, since each one lasts as long as its request does.
+/// So the loop also stops asking once ``timeout`` has passed, and the wait is at most that plus one request.
 internal struct HostedCheckoutPoller: HostedCheckoutPolling {
 
     /// Thirty attempts a second apart, matching `purchases-js`.
     static let defaultMaxAttempts = 30
     static let defaultInterval: TimeInterval = 1
+    /// Leaves room for thirty attempts on a healthy connection.
+    static let defaultTimeout: TimeInterval = 45
 
     private let statusFetcher: HostedCheckoutStatusFetching
     private let sleeper: HostedCheckoutAsyncSleeper
+    private let dateProvider: DateProvider
     private let interval: TimeInterval
     let maxAttempts: Int
+    let timeout: TimeInterval
 
     init(statusFetcher: HostedCheckoutStatusFetching,
          sleeper: HostedCheckoutAsyncSleeper,
+         dateProvider: DateProvider,
          interval: TimeInterval,
-         maxAttempts: Int) {
+         maxAttempts: Int,
+         timeout: TimeInterval) {
         self.statusFetcher = statusFetcher
         self.sleeper = sleeper
+        self.dateProvider = dateProvider
         self.interval = interval
         self.maxAttempts = maxAttempts
+        self.timeout = timeout
     }
 
     static func makeDefault(webBillingAPI: WebBillingAPI) -> HostedCheckoutPoller {
         return .init(
             statusFetcher: WebBillingStatusFetcher(webBillingAPI: webBillingAPI),
             sleeper: TaskSleeper(),
+            dateProvider: DateProvider(),
             interval: Self.defaultInterval,
-            maxAttempts: Self.defaultMaxAttempts
+            maxAttempts: Self.defaultMaxAttempts,
+            timeout: Self.defaultTimeout
         )
     }
 
     func poll(operationSessionID: String, appUserID: String) async -> HostedCheckoutPollResult {
         Logger.debug(Strings.hostedCheckout.poll_start(operationSessionID, maxAttempts: self.maxAttempts))
+
+        let deadline = self.dateProvider.now().addingTimeInterval(self.timeout)
 
         for attempt in 0..<self.maxAttempts {
             if Task.isCancelled {
@@ -107,6 +122,11 @@ internal struct HostedCheckoutPoller: HostedCheckoutPolling {
 
             if attempt > 0 {
                 try? await self.sleeper.sleep(seconds: self.interval)
+
+                guard self.dateProvider.now() < deadline else {
+                    Logger.warn(Strings.hostedCheckout.poll_timed_out(operationSessionID, timeout: self.timeout))
+                    return .undetermined
+                }
             }
 
             switch await self.pollOnce(operationSessionID: operationSessionID, appUserID: appUserID) {
