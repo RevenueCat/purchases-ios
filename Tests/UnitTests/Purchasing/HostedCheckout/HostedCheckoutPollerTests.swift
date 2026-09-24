@@ -121,6 +121,41 @@ class HostedCheckoutPollerTests: TestCase {
         expect(sleeper.delays) == [1, 1, 1]
     }
 
+    /// Slow requests would otherwise keep the customer waiting for as long as thirty of them take.
+    func testGivesNoAnswerOnceTheTimeoutPasses() async {
+        let clock = ManualClock()
+        let fetcher = StubStatusFetcher(results: [.status(.pending)])
+        fetcher.whileRequesting = { clock.advance(by: 10) }
+        let sleeper = RecordingHostedCheckoutSleeper()
+        sleeper.clock = clock
+
+        let result = await self.makePoller(fetcher: fetcher, sleeper: sleeper, clock: clock, maxAttempts: 30).poll(
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.appUserID
+        )
+
+        expect(result) == .undetermined
+        // Asked at 0, 11, 22, 33 and 44 seconds in; at 55 the 45 seconds are up.
+        expect(fetcher.callCount) == 5
+    }
+
+    func testTakesAnAnswerThatArrivesAfterTheTimeout() async {
+        let clock = ManualClock()
+        let fetcher = StubStatusFetcher(results: [.status(.pending), .status(.pending), .status(.pending),
+                                                  .status(.pending), .status(.succeeded)])
+        fetcher.whileRequesting = { clock.advance(by: 10) }
+        let sleeper = RecordingHostedCheckoutSleeper()
+        sleeper.clock = clock
+
+        let result = await self.makePoller(fetcher: fetcher, sleeper: sleeper, clock: clock, maxAttempts: 30).poll(
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.appUserID
+        )
+
+        expect(result) == .succeeded
+        expect(fetcher.callCount) == 5
+    }
+
     /// A status this version does not know is likelier to be a step along the way than an outcome, so it
     /// keeps asking and ends up with no answer rather than a wrong one.
     func testKeepsAskingThroughAStatusItDoesNotKnow() async {
@@ -209,10 +244,34 @@ private extension HostedCheckoutPollerTests {
     func makePoller(fetcher: HostedCheckoutStatusFetching,
                     sleeper: HostedCheckoutAsyncSleeper,
                     maxAttempts: Int) -> HostedCheckoutPoller {
+        return self.makePoller(fetcher: fetcher, sleeper: sleeper, clock: ManualClock(), maxAttempts: maxAttempts)
+    }
+
+    func makePoller(fetcher: HostedCheckoutStatusFetching,
+                    sleeper: HostedCheckoutAsyncSleeper,
+                    clock: DateProvider,
+                    maxAttempts: Int) -> HostedCheckoutPoller {
         return HostedCheckoutPoller(statusFetcher: fetcher,
                                     sleeper: sleeper,
+                                    dateProvider: clock,
                                     interval: 1,
-                                    maxAttempts: maxAttempts)
+                                    maxAttempts: maxAttempts,
+                                    timeout: 45)
+    }
+
+}
+
+/// Stands still unless a test moves it, so time passes only where a test says it does.
+private final class ManualClock: DateProvider, @unchecked Sendable {
+
+    private let current: Atomic<Date> = .init(Date(timeIntervalSince1970: 1_700_000_000))
+
+    override func now() -> Date {
+        return self.current.value
+    }
+
+    func advance(by seconds: TimeInterval) {
+        self.current.modify { $0.addTimeInterval(seconds) }
     }
 
 }
@@ -228,6 +287,8 @@ private final class StubStatusFetcher: HostedCheckoutStatusFetching, @unchecked 
     private let answers: [Answer]
     private(set) var receivedIDs: [String] = []
     private(set) var receivedAppUserIDs: [String] = []
+    /// Runs while each request is out, standing in for the time it takes.
+    var whileRequesting: () -> Void = {}
 
     var callCount: Int { return self.receivedIDs.count }
 
@@ -240,6 +301,7 @@ private final class StubStatusFetcher: HostedCheckoutStatusFetching, @unchecked 
         let index = min(self.receivedIDs.count, self.answers.count - 1)
         self.receivedIDs.append(operationSessionID)
         self.receivedAppUserIDs.append(appUserID)
+        self.whileRequesting()
 
         switch self.answers[index] {
         case let .status(status):
@@ -255,9 +317,11 @@ private final class StubStatusFetcher: HostedCheckoutStatusFetching, @unchecked 
 private final class RecordingHostedCheckoutSleeper: HostedCheckoutAsyncSleeper, @unchecked Sendable {
 
     private(set) var delays: [TimeInterval] = []
+    var clock: ManualClock?
 
     func sleep(seconds: TimeInterval) async throws {
         self.delays.append(seconds)
+        self.clock?.advance(by: seconds)
     }
 
 }

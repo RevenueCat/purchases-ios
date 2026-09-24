@@ -81,6 +81,19 @@ extension PurchasesHostedCheckoutTests {
         expect(result) == .succeeded
     }
 
+    /// The cached `CustomerInfo` predates the purchase, so it must not be served as current once the fetch
+    /// meant to replace it fails.
+    func testMarksTheCachedCustomerInfoStaleWhenItCannotBeFetched() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try self.stubStatus(.succeeded)
+        self.backend.overrideCustomerInfoResult = .failure(.networkError(.offlineConnection()))
+        let clearsBefore = self.deviceCache.clearCustomerInfoCacheTimestampCount
+
+        _ = await self.purchases.pollHostedCheckout(operationSessionID: Self.operationSessionID)
+
+        expect(self.deviceCache.clearCustomerInfoCacheTimestampCount) > clearsBefore
+    }
+
 }
 
 private extension PurchasesHostedCheckoutTests {

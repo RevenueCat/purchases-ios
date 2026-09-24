@@ -410,7 +410,7 @@ class HTTPRequestTests: TestCase {
                                                                       appUserID: "user+plus@example.com")
 
         expect(path.relativePath) ==
-            "/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=user%2Bplus%40example.com"
+            "/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=user%2Bplus@example.com"
     }
 
     func testHostedCheckoutStatusIsAuthenticatedAndSendsNoEtag() {
