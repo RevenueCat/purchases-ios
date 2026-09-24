@@ -58,12 +58,19 @@ extension SDKSettings.ExternalPurchases {
         /// Empty when the backend sends none, so no storefront is treated as one of them.
         let storefrontsAllowedWithoutStoreEligibility: Set<String>
 
+        /// Whether this app config reports its external purchases to Apple with a token.
+        ///
+        /// A token obliges a report, so one is only minted where the backend says so. `false` when the backend
+        /// sends none.
+        let tokenReportingEnabled: Bool
+
         init() {
-            self.init(storefrontsAllowedWithoutStoreEligibility: [])
+            self.init(storefrontsAllowedWithoutStoreEligibility: [], tokenReportingEnabled: false)
         }
 
-        init(storefrontsAllowedWithoutStoreEligibility: Set<String>) {
+        init(storefrontsAllowedWithoutStoreEligibility: Set<String>, tokenReportingEnabled: Bool) {
             self.storefrontsAllowedWithoutStoreEligibility = storefrontsAllowedWithoutStoreEligibility
+            self.tokenReportingEnabled = tokenReportingEnabled
         }
 
         init(from decoder: Decoder) throws {
@@ -72,6 +79,8 @@ extension SDKSettings.ExternalPurchases {
             let storefronts = try container.decodeIfPresent([String].self,
                                                             forKey: .storefrontsAllowedWithoutStoreEligibility)
             self.storefrontsAllowedWithoutStoreEligibility = Set((storefronts ?? []).map { $0.uppercased() })
+            self.tokenReportingEnabled = try container.decodeIfPresent(Bool.self,
+                                                                       forKey: .tokenReportingEnabled) ?? false
         }
 
     }
@@ -98,6 +107,7 @@ private extension SDKSettings.ExternalPurchases.AppStore {
 
     enum CodingKeys: String, CodingKey {
         case storefrontsAllowedWithoutStoreEligibility
+        case tokenReportingEnabled
     }
 
 }

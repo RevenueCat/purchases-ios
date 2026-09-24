@@ -18,6 +18,7 @@ import Foundation
 enum ExternalPurchaseStrings {
 
     case eligibility_resolved(_ availability: ExternalPurchaseAvailability)
+    case token_reporting_disabled
     case custom_link_does_not_apply(_ storefront: String)
     case not_eligible
     case payments_not_authorized
@@ -37,6 +38,9 @@ extension ExternalPurchaseStrings: LogMessage {
         switch self {
         case let .eligibility_resolved(availability):
             return "External purchase availability resolved to \(availability)."
+        case .token_reporting_disabled:
+            return "This app does not report its external purchases to the App Store: continuing with no " +
+            "notice shown and no token minted."
         case let .custom_link_does_not_apply(storefront):
             return "Apple's external purchase custom link does not apply in this customer's storefront " +
             "(\(storefront)): continuing with no notice shown and no token minted."

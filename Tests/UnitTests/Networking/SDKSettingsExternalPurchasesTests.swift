@@ -101,6 +101,34 @@ class SDKSettingsExternalPurchasesTests: TestCase {
         expect(settings) == SDKSettings()
     }
 
+    // MARK: - Token reporting
+
+    func testReadsTheTokenReportingToggle() async throws {
+        try self.stub(externalPurchases: #"{"app_store": {"token_reporting_enabled": true}}"#)
+
+        let reportsTokens = await self.provider.settings().externalPurchases.appStore.tokenReportingEnabled
+
+        expect(reportsTokens) == true
+    }
+
+    /// A token obliges a report to Apple, so an app only mints one where the backend says it does.
+    func testReportsNoTokensWithoutTheToggle() async throws {
+        try self.stub(externalPurchases: #"{"app_store": {"storefronts_allowed_without_store_eligibility": ["USA"]}}"#)
+
+        let reportsTokens = await self.provider.settings().externalPurchases.appStore.tokenReportingEnabled
+
+        expect(reportsTokens) == false
+    }
+
+    /// Anything that is not the boolean it should be never reads as an obligation to report.
+    func testFallsBackToTheDefaultSettingsFromAMalformedToggle() async throws {
+        try self.stub(externalPurchases: #"{"app_store": {"token_reporting_enabled": "true"}}"#)
+
+        let settings = await self.provider.settings()
+
+        expect(settings) == SDKSettings()
+    }
+
     // MARK: - Helpers
 
     private func storefronts() async -> Set<String> {

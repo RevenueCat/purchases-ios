@@ -43,7 +43,7 @@ class HostedCheckoutManagerTests: TestCase {
         self.webBillingAPI.stubbedPostHostedCheckoutCompletionResult = .success(Self.response)
 
         self.settingsProvider = MockSDKSettingsConfigProvider()
-        self.settingsProvider.stubbedSettings = .allowingExternalPurchases(in: [Self.storefront])
+        self.settingsProvider.stubbedSettings = .allowingExternalPurchases(in: [Self.storefront], reportingTokens: true)
 
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: true)
         self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.storefront)

@@ -40,9 +40,10 @@ extension MockSDKSettingsConfigProvider: @unchecked Sendable {}
 
 extension SDKSettings {
 
-    static func allowingExternalPurchases(in storefronts: Set<String>) -> SDKSettings {
+    static func allowingExternalPurchases(in storefronts: Set<String>, reportingTokens: Bool) -> SDKSettings {
         return .init(
-            externalPurchases: .init(appStore: .init(storefrontsAllowedWithoutStoreEligibility: storefronts))
+            externalPurchases: .init(appStore: .init(storefrontsAllowedWithoutStoreEligibility: storefronts,
+                                                     tokenReportingEnabled: reportingTokens))
         )
     }
 

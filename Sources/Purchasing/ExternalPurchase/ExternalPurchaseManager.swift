@@ -64,6 +64,13 @@ final class ExternalPurchaseManager {
             return .notApplicable
         }
 
+        let policy = await self.settingsProvider.settings().externalPurchases.appStore
+
+        guard policy.tokenReportingEnabled else {
+            Logger.debug(Strings.externalPurchase.token_reporting_disabled)
+            return .notApplicable
+        }
+
         guard !self.isPreparing.getAndSet(true) else {
             Logger.warn(Strings.externalPurchase.already_preparing)
             return .stopped(.alreadyPreparing)
@@ -75,7 +82,7 @@ final class ExternalPurchaseManager {
         case .available:
             break
         case .notEligible:
-            guard let storefront = await self.storefrontNotRequiringExternalPurchaseAPIs() else {
+            guard let storefront = self.storefrontNotRequiringExternalPurchaseAPIs(policy) else {
                 Logger.warn(Strings.externalPurchase.not_eligible)
                 return .stopped(.notEligible)
             }
@@ -118,7 +125,8 @@ internal enum ExternalPurchasePreparationResult: Equatable {
     case unregistered(FailureReason)
 
     /// Route the customer to the checkout with no identifier to hand over, as the app would outside Apple's
-    /// programme: its external purchase APIs are not required here.
+    /// programme: either this app config does not report its external purchases to Apple, or Apple's
+    /// external purchase APIs are not required here.
     ///
     /// Nothing was shown and nothing was minted.
     case notApplicable
@@ -180,10 +188,9 @@ private extension ExternalPurchaseManager {
     /// `nil` otherwise.
     ///
     /// Asked on every purchase rather than cached, since the customer can change storefront while the app runs.
-    func storefrontNotRequiringExternalPurchaseAPIs() async -> String? {
+    func storefrontNotRequiringExternalPurchaseAPIs(_ policy: SDKSettings.ExternalPurchases.AppStore) -> String? {
         guard let storefront = self.storefront,
-              await self.settingsProvider.settings().externalPurchases.appStore
-                .storefrontsAllowedWithoutStoreEligibility.contains(storefront) else {
+              policy.storefrontsAllowedWithoutStoreEligibility.contains(storefront) else {
             return nil
         }
 
