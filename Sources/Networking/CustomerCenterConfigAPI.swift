@@ -20,17 +20,18 @@ class CustomerCenterConfigAPI {
     typealias CreateTicketResponseHandler = (Result<CreateTicketResponse, BackendError>) -> Void
 
     private let customerCenterConfigResponseCallbacksCache: CallbackCache<CustomerCenterConfigCallback>
-    private let backendConfig: BackendConfiguration
+    private let backendLanes: BackendLanes
 
-    init(backendConfig: BackendConfiguration) {
-        self.backendConfig = backendConfig
+    init(backendLanes: BackendLanes) {
+        self.backendLanes = backendLanes
         self.customerCenterConfigResponseCallbacksCache = .init()
     }
 
     func getCustomerCenterConfig(appUserID: String,
                                  isAppBackgrounded: Bool,
                                  completion: @escaping CustomerCenterConfigResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+        let backendConfig = self.backendLanes[GetCustomerCenterConfigOperation.self]
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
 
         let factory = GetCustomerCenterConfigOperation.createFactory(
@@ -41,7 +42,7 @@ class CustomerCenterConfigAPI {
         let callback = CustomerCenterConfigCallback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.customerCenterConfigResponseCallbacksCache.add(callback)
 
-        self.backendConfig.addCacheableOperation(
+        backendConfig.addCacheableOperation(
             with: factory,
             delay: .default(forBackgroundedApp: isAppBackgrounded),
             cacheStatus: cacheStatus
@@ -52,7 +53,8 @@ class CustomerCenterConfigAPI {
                           customerEmail: String,
                           ticketDescription: String,
                           completion: @escaping CreateTicketResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+        let backendConfig = self.backendLanes[PostCreateTicketOperation.self]
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
 
         let operation = PostCreateTicketOperation(configuration: config,
@@ -60,7 +62,7 @@ class CustomerCenterConfigAPI {
                                                   ticketDescription: ticketDescription,
                                                   responseHandler: completion)
 
-        self.backendConfig.operationQueue.addOperation(operation)
+        backendConfig.operationQueue.addOperation(operation)
     }
 
 }
@@ -150,4 +152,8 @@ struct CreateTicketResponse: HTTPResponseBody, Decodable {
 
     let sent: Bool
 
+}
+
+extension PostCreateTicketOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .default }
 }

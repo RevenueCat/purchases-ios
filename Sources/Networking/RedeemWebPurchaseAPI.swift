@@ -18,17 +18,18 @@ class RedeemWebPurchaseAPI {
     typealias RedeemWebPurchaseResponseHandler = Backend.ResponseHandler<CustomerInfo>
 
     private let redeemWebPurchaseResponseCallbacksCache: CallbackCache<CustomerInfoCallback>
-    private let backendConfig: BackendConfiguration
+    private let backendLanes: BackendLanes
 
-    init(backendConfig: BackendConfiguration) {
-        self.backendConfig = backendConfig
+    init(backendLanes: BackendLanes) {
+        self.backendLanes = backendLanes
         self.redeemWebPurchaseResponseCallbacksCache = .init()
     }
 
     func postRedeemWebPurchase(appUserID: String,
                                redemptionToken: String,
                                completion: @escaping RedeemWebPurchaseResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+        let backendConfig = self.backendLanes[PostRedeemWebPurchaseOperation.self]
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
 
         let factory = PostRedeemWebPurchaseOperation.createFactory(
@@ -43,7 +44,7 @@ class RedeemWebPurchaseAPI {
                                             completion: completion)
         let cacheStatus = self.redeemWebPurchaseResponseCallbacksCache.add(callback)
 
-        self.backendConfig.addCacheableOperation(
+        backendConfig.addCacheableOperation(
             with: factory,
             delay: .none,
             cacheStatus: cacheStatus

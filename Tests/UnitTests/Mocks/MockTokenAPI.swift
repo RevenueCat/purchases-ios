@@ -17,7 +17,7 @@ import Foundation
 class MockTokenAPI: TokenAPI {
 
     public convenience init() {
-        self.init(backendConfig: MockBackendConfiguration())
+        self.init(backendLanes: BackendLanes(configuration: MockBackendConfiguration()))
     }
 
     // MARK: - logIn(currentAppUserID:identity:completion:)

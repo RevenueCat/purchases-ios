@@ -83,3 +83,7 @@ private extension GetWebOfferingProductsOperation {
     }
 
 }
+
+extension GetWebOfferingProductsOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .default }
+}

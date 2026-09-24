@@ -88,3 +88,7 @@ private extension GetCustomerCenterConfigOperation {
     }
 
 }
+
+extension GetCustomerCenterConfigOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .default }
+}

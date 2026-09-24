@@ -459,3 +459,7 @@ private extension PurchasesAreCompletedBy {
     }
 
 }
+
+extension PostReceiptDataOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .default }
+}

@@ -17,7 +17,7 @@ import Foundation
 class MockIdentityAPI: IdentityAPI {
 
     public convenience init() {
-        self.init(backendConfig: MockBackendConfiguration())
+        self.init(backendLanes: BackendLanes(configuration: MockBackendConfiguration()))
     }
 
     var invokedLogIn = false

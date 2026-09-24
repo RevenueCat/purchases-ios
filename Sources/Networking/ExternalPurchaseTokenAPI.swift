@@ -18,10 +18,10 @@ class ExternalPurchaseTokenAPI {
     typealias ExternalPurchaseTokenResponseHandler = Backend.ResponseHandler<ExternalPurchaseTokenResponse>
 
     private let externalPurchaseTokenCallbacksCache: CallbackCache<ExternalPurchaseTokenCallback>
-    private let backendConfig: BackendConfiguration
+    private let backendLanes: BackendLanes
 
-    init(backendConfig: BackendConfiguration) {
-        self.backendConfig = backendConfig
+    init(backendLanes: BackendLanes) {
+        self.backendLanes = backendLanes
         self.externalPurchaseTokenCallbacksCache = .init()
     }
 
@@ -29,7 +29,8 @@ class ExternalPurchaseTokenAPI {
                                    purchaseType: ExternalPurchaseTokenType,
                                    token: String?,
                                    completion: @escaping ExternalPurchaseTokenResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+        let backendConfig = self.backendLanes[PostExternalPurchaseTokenOperation.self]
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
 
         let factory = PostExternalPurchaseTokenOperation.createFactory(
@@ -42,7 +43,7 @@ class ExternalPurchaseTokenAPI {
         let cacheStatus = self.externalPurchaseTokenCallbacksCache.add(callback)
 
         // The customer is waiting on this request before checkout can open, so it is never delayed.
-        self.backendConfig.addCacheableOperation(
+        backendConfig.addCacheableOperation(
             with: factory,
             delay: .none,
             cacheStatus: cacheStatus

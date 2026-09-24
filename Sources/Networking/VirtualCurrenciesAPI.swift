@@ -18,10 +18,10 @@ class VirtualCurrenciesAPI {
     typealias VirtualCurrenciesResponseHandler = Backend.ResponseHandler<VirtualCurrenciesResponse>
 
     private let virtualCurrenciesResponseCallbacksCache: CallbackCache<VirtualCurrenciesCallback>
-    private let backendConfig: BackendConfiguration
+    private let backendLanes: BackendLanes
 
-    init(backendConfig: BackendConfiguration) {
-        self.backendConfig = backendConfig
+    init(backendLanes: BackendLanes) {
+        self.backendLanes = backendLanes
         self.virtualCurrenciesResponseCallbacksCache = .init()
     }
 
@@ -30,8 +30,9 @@ class VirtualCurrenciesAPI {
         isAppBackgrounded: Bool,
         completion: @escaping VirtualCurrenciesResponseHandler
     ) {
+        let backendConfig = self.backendLanes[GetVirtualCurrenciesOperation.self]
         let config = NetworkOperation.UserSpecificConfiguration(
-            httpClient: self.backendConfig.httpClient,
+            httpClient: backendConfig.httpClient,
             appUserID: appUserID
         )
 
@@ -43,7 +44,7 @@ class VirtualCurrenciesAPI {
         let callback = VirtualCurrenciesCallback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.virtualCurrenciesResponseCallbacksCache.add(callback)
 
-        self.backendConfig.addCacheableOperation(
+        backendConfig.addCacheableOperation(
             with: factory,
             delay: .default(forBackgroundedApp: isAppBackgrounded),
             cacheStatus: cacheStatus
@@ -53,8 +54,9 @@ class VirtualCurrenciesAPI {
     func spendVirtualCurrencies(amounts: [String: Int],
                                 reference: String?,
                                 completion: @escaping VirtualCurrenciesResponseHandler) {
+        let backendConfig = self.backendLanes[SpendVirtualCurrenciesOperation.self]
         let config = NetworkOperation.Configuration(
-            httpClient: self.backendConfig.httpClient
+            httpClient: backendConfig.httpClient
         )
 
         let operation = SpendVirtualCurrenciesOperation(configuration: config,
@@ -62,6 +64,6 @@ class VirtualCurrenciesAPI {
                                                         reference: reference,
                                                         handler: completion)
 
-        self.backendConfig.operationQueue.addOperation(operation)
+        backendConfig.operationQueue.addOperation(operation)
     }
 }

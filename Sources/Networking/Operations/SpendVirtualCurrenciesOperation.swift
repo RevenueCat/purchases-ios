@@ -64,3 +64,7 @@ extension SpendVirtualCurrenciesOperation {
     }
 
 }
+
+extension SpendVirtualCurrenciesOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .default }
+}

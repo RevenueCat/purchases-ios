@@ -22,14 +22,14 @@ final class CustomerAPI {
     typealias IsPurchaseAllowedByRestoreBehaviorResponseHandler =
     Backend.ResponseHandler<IsPurchaseAllowedByRestoreBehaviorResponse>
 
-    private let backendConfig: BackendConfiguration
+    private let backendLanes: BackendLanes
     private let customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>
     private let isPurchaseAllowedByRestoreBehaviorCallbacksCache:
     CallbackCache<IsPurchaseAllowedByRestoreBehaviorCallback>
     private let attributionFetcher: AttributionFetcher
 
-    init(backendConfig: BackendConfiguration, attributionFetcher: AttributionFetcher) {
-        self.backendConfig = backendConfig
+    init(backendLanes: BackendLanes, attributionFetcher: AttributionFetcher) {
+        self.backendLanes = backendLanes
         self.attributionFetcher = attributionFetcher
         self.customerInfoCallbackCache = CallbackCache<CustomerInfoCallback>()
         self.isPurchaseAllowedByRestoreBehaviorCallbacksCache =
@@ -40,14 +40,15 @@ final class CustomerAPI {
                          isAppBackgrounded: Bool,
                          allowComputingOffline: Bool,
                          completion: @escaping CustomerInfoResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+        let backendConfig = self.backendLanes[GetCustomerInfoOperation.self]
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
 
         let factory = GetCustomerInfoOperation.createFactory(
             configuration: config,
             customerInfoCallbackCache: self.customerInfoCallbackCache,
             offlineCreator: allowComputingOffline
-                ? self.backendConfig.offlineCustomerInfoCreator
+                ? backendConfig.offlineCustomerInfoCreator
                 : nil
         )
 
@@ -56,44 +57,47 @@ final class CustomerAPI {
                                             source: factory.operationType,
                                             completion: completion)
         let cacheStatus = self.customerInfoCallbackCache.addOrAppendToPostReceiptDataOperation(callback: callback)
-        self.backendConfig.addCacheableOperation(with: factory,
-                                                 delay: .default(forBackgroundedApp: isAppBackgrounded),
-                                                 cacheStatus: cacheStatus)
+        backendConfig.addCacheableOperation(with: factory,
+                                            delay: .default(forBackgroundedApp: isAppBackgrounded),
+                                            cacheStatus: cacheStatus)
     }
 
     func post(subscriberAttributes: SubscriberAttribute.Dictionary,
               appUserID: String,
               completion: SimpleResponseHandler?) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+        let backendConfig = self.backendLanes[PostSubscriberAttributesOperation.self]
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let operation = PostSubscriberAttributesOperation(configuration: config,
                                                           subscriberAttributes: subscriberAttributes,
                                                           completion: completion)
-        self.backendConfig.operationQueue.addOperation(operation)
+        backendConfig.operationQueue.addOperation(operation)
     }
 
     func post(attributionData: [String: Any],
               network: AttributionNetwork,
               appUserID: String,
               completion: SimpleResponseHandler?) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+        let backendConfig = self.backendLanes[PostAttributionDataOperation.self]
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let postAttributionDataOperation = PostAttributionDataOperation(configuration: config,
                                                                         attributionData: attributionData,
                                                                         network: network,
                                                                         responseHandler: completion)
-        self.backendConfig.operationQueue.addOperation(postAttributionDataOperation)
+        backendConfig.operationQueue.addOperation(postAttributionDataOperation)
     }
 
     func post(adServicesToken: String,
               appUserID: String,
               completion: SimpleResponseHandler?) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+        let backendConfig = self.backendLanes[PostAdServicesTokenOperation.self]
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let postAttributionDataOperation = PostAdServicesTokenOperation(configuration: config,
                                                                         token: adServicesToken,
                                                                         responseHandler: completion)
-        self.backendConfig.operationQueue.addOperation(postAttributionDataOperation)
+        backendConfig.operationQueue.addOperation(postAttributionDataOperation)
     }
 
     func isPurchaseAllowedByRestoreBehavior(
@@ -102,7 +106,8 @@ final class CustomerAPI {
         isAppBackgrounded: Bool,
         completion: @escaping IsPurchaseAllowedByRestoreBehaviorResponseHandler
     ) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+        let backendConfig = self.backendLanes[PostIsPurchaseAllowedByRestoreBehaviorOperation.self]
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let postData = PostIsPurchaseAllowedByRestoreBehaviorOperation.PostData(
             transactionJWS: transactionJWS
@@ -115,7 +120,7 @@ final class CustomerAPI {
         let callback = IsPurchaseAllowedByRestoreBehaviorCallback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.isPurchaseAllowedByRestoreBehaviorCallbacksCache.add(callback)
 
-        self.backendConfig.addCacheableOperation(
+        backendConfig.addCacheableOperation(
             with: factory,
             delay: .default(forBackgroundedApp: isAppBackgrounded),
             cacheStatus: cacheStatus
@@ -135,19 +140,20 @@ final class CustomerAPI {
               appUserID: String,
               containsAttributionData: Bool,
               completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
+        let backendConfig = self.backendLanes[PostReceiptDataOperation.self]
         var subscriberAttributesToPost: SubscriberAttribute.Dictionary?
 
-        if !self.backendConfig.systemInfo.dangerousSettings.customEntitlementComputation {
+        if !backendConfig.systemInfo.dangerousSettings.customEntitlementComputation {
             subscriberAttributesToPost = transactionData.unsyncedAttributes ?? [:]
             let attributionStatus = self.attributionFetcher.authorizationStatus
             let consentStatus = SubscriberAttribute(attribute: ReservedSubscriberAttribute.consentStatus,
                                                     value: attributionStatus.description,
-                                                    dateProvider: self.backendConfig.dateProvider,
+                                                    dateProvider: backendConfig.dateProvider,
                                                     ignoreTimeInCacheIdentity: true)
             subscriberAttributesToPost?[consentStatus.key] = consentStatus
         }
 
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
 
         let postData = PostReceiptDataOperation.PostData(
@@ -158,15 +164,15 @@ final class CustomerAPI {
             receipt: receipt,
             observerMode: observerMode,
             purchaseCompletedBy: originalPurchaseCompletedBy,
-            testReceiptIdentifier: self.backendConfig.systemInfo.testReceiptIdentifier,
+            testReceiptIdentifier: backendConfig.systemInfo.testReceiptIdentifier,
             appTransaction: appTransaction,
             transactionId: associatedTransactionId,
             containsAttributionData: containsAttributionData,
             sdkOriginated: sdkOriginated
         )
         let offlineCustomerInfoCreator: OfflineCustomerInfoCreator? =
-            self.backendConfig.systemInfo.supportsOfflineEntitlements
-            ? self.backendConfig.offlineCustomerInfoCreator
+            backendConfig.systemInfo.supportsOfflineEntitlements
+            ? backendConfig.offlineCustomerInfoCreator
             : nil
 
         let factory = PostReceiptDataOperation.createFactory(
@@ -183,7 +189,7 @@ final class CustomerAPI {
 
         let cacheStatus = customerInfoCallbackCache.add(callbackObject)
 
-        self.backendConfig.operationQueue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
+        backendConfig.operationQueue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
     }
 
 }

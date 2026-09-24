@@ -144,3 +144,7 @@ extension PostRedeemWebPurchaseOperation.PostData: HTTPRequestBody {
     }
 
 }
+
+extension PostRedeemWebPurchaseOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .default }
+}

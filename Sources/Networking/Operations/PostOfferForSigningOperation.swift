@@ -143,3 +143,7 @@ private extension PostOfferForSigningOperation {
     }
 
 }
+
+extension PostOfferForSigningOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .default }
+}

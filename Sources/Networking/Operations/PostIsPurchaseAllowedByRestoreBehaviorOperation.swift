@@ -138,3 +138,7 @@ extension PostIsPurchaseAllowedByRestoreBehaviorOperation.PostData: HTTPRequestB
     }
 
 }
+
+extension PostIsPurchaseAllowedByRestoreBehaviorOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .default }
+}

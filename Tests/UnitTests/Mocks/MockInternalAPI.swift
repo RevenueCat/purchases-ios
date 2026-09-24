@@ -17,7 +17,7 @@ import Foundation
 class MockInternalAPI: InternalAPI {
 
     public convenience init() {
-        self.init(backendConfig: MockBackendConfiguration())
+        self.init(backendLanes: BackendLanes(configuration: MockBackendConfiguration()))
     }
 
     var invokedPostPaywallEvents: Bool = false

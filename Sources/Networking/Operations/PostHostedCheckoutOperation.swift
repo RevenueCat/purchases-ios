@@ -202,3 +202,7 @@ extension PostHostedCheckoutOperation.Paywall: Encodable {
 // MARK: - HTTPRequestBody
 
 extension PostHostedCheckoutOperation.PostData: HTTPRequestBody {}
+
+extension PostHostedCheckoutOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .checkout }
+}

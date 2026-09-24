@@ -67,3 +67,7 @@ private extension GetProductEntitlementMappingOperation {
     }
 
 }
+
+extension GetProductEntitlementMappingOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .default }
+}

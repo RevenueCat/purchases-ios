@@ -102,3 +102,7 @@ private extension GetCustomerInfoOperation {
     }
 
 }
+
+extension GetCustomerInfoOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .default }
+}
