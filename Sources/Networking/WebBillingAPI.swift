@@ -20,10 +20,10 @@ class WebBillingAPI {
 
     private let webBillingProductsCallbackCache: CallbackCache<WebBillingProductsCallback>
     private let hostedCheckoutCallbackCache: CallbackCache<HostedCheckoutCallback>
-    private let lanes: BackendLanes
+    private let backendLanes: BackendLanes
 
     init(lanes: BackendLanes) {
-        self.lanes = lanes
+        self.backendLanes = lanes
         self.webBillingProductsCallbackCache = .init()
         self.hostedCheckoutCallbackCache = .init()
     }
@@ -31,7 +31,7 @@ class WebBillingAPI {
     func getWebBillingProducts(
         appUserID: String, productIds: Set<String>, completion: @escaping WebBillingProductsResponseHandler
     ) {
-        let backendConfig = self.lanes[.default]
+        let backendConfig = self.backendLanes[.default]
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let factory = GetWebBillingProductsOperation.createFactory(
@@ -65,7 +65,7 @@ class WebBillingAPI {
         completion: @escaping HostedCheckoutResponseHandler
     ) {
         // Runs on the checkout lane so hosted checkout is not delayed by unrelated backend work.
-        let backendConfig = self.lanes[.checkout]
+        let backendConfig = self.backendLanes[.checkout]
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let factory = PostHostedCheckoutOperation.createFactory(
