@@ -146,10 +146,10 @@ final class InterstitialPresentationTests: AdapterTestCase {
     }
 
     func testOutcomeMapsToAdPresentationResult() {
-        XCTAssertTrue(InterstitialPresentation.Outcome.shown.presentationResult === AdPresentationResult.shown)
-        XCTAssertFalse(
-            InterstitialPresentation.Outcome.failed(NSError(domain: "gma", code: 1)).presentationResult
-                === AdPresentationResult.shown
+        XCTAssertEqual(InterstitialPresentation.Outcome.shown.presentationResult, AdPresentationResult.shown)
+        XCTAssertNotEqual(
+            InterstitialPresentation.Outcome.failed(NSError(domain: "gma", code: 1)).presentationResult,
+            AdPresentationResult.shown
         )
     }
 
