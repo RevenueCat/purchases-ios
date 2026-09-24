@@ -8,16 +8,17 @@
 
 import Foundation
 
-protocol SDKSettingsConfigProviderType {
+protocol SDKSettingsConfigProviderType: AnyObject, RemoteConfigStateObserver {
 
     func settings() async -> SDKSettings
     func cachedSettings() -> SDKSettings?
+    var delegate: SDKSettingsConfigProviderDelegate? { get set }
 
 }
 
 protocol SDKSettingsConfigProviderDelegate: AnyObject {
 
-    func sdkSettingsConfigProviderDidUpdate(_ provider: SDKSettingsConfigProviderType) async
+    func sdkSettingsConfigProviderDidUpdate(_ settings: SDKSettings)
 
 }
 
@@ -26,8 +27,13 @@ final class SDKSettingsConfigProvider: SDKSettingsConfigProviderType, RemoteConf
 
     private let manager: RemoteConfigManagerType
     private let cache = GenerationGuardedCache<String, SDKSettings>()
-    private let lastDeliveredSettings: Atomic<SDKSettings?> = nil
-    weak var delegate: SDKSettingsConfigProviderDelegate?
+    private let lastDeliveredSettings: Atomic<DeliveredSettings?> = nil
+    private let delegateStorage = Atomic(DelegateStorage())
+
+    var delegate: SDKSettingsConfigProviderDelegate? {
+        get { self.delegateStorage.withValue(\.value) }
+        set { self.delegateStorage.modify { $0.value = newValue } }
+    }
 
     init(manager: RemoteConfigManagerType) {
         self.manager = manager
@@ -80,14 +86,15 @@ final class SDKSettingsConfigProvider: SDKSettingsConfigProviderType, RemoteConf
         self.cache.store(settings, for: .init(generation: generation, key: Self.cacheKey))
         guard let delegate = self.delegate else { return }
 
-        let didChange = self.lastDeliveredSettings.modify { previousSettings in
-            guard previousSettings != settings else { return false }
-            previousSettings = settings
-            return true
+        let didChange = self.lastDeliveredSettings.modify { previous in
+            guard (previous?.generation ?? Int.min) <= generation else { return false }
+            let didChange = previous?.settings != settings
+            previous = .init(generation: generation, settings: settings)
+            return didChange
         }
         guard didChange else { return }
 
-        await delegate.sdkSettingsConfigProviderDidUpdate(self)
+        delegate.sdkSettingsConfigProviderDidUpdate(settings)
     }
 
     private static func decodeSettings(from item: RemoteConfiguration.ConfigItem) throws -> SDKSettings {
@@ -98,6 +105,19 @@ final class SDKSettingsConfigProvider: SDKSettingsConfigProviderType, RemoteConf
     private static let defaultItemKey = "default"
     private static let cacheKey = "sdk_settings"
     private static let fallbackSettings = SDKSettings()
+
+    private struct DeliveredSettings {
+
+        let generation: Int
+        let settings: SDKSettings
+
+    }
+
+    private final class DelegateStorage {
+
+        weak var value: SDKSettingsConfigProviderDelegate?
+
+    }
 
 }
 

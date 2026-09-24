@@ -125,9 +125,9 @@ private final class MockSDKSettingsConfigProviderDelegate: SDKSettingsConfigProv
     private(set) var invokedDidUpdateCount = 0
     private(set) var settings: SDKSettings?
 
-    func sdkSettingsConfigProviderDidUpdate(_ provider: SDKSettingsConfigProviderType) async {
+    func sdkSettingsConfigProviderDidUpdate(_ settings: SDKSettings) {
         self.invokedDidUpdateCount += 1
-        self.settings = provider.cachedSettings()
+        self.settings = settings
         self.expectation?.fulfill()
     }
 
