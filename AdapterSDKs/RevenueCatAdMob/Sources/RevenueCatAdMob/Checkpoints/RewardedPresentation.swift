@@ -12,7 +12,9 @@ import GoogleMobileAds
 @_spi(CheckpointsInternal) import RevenueCatUI
 import UIKit
 
-/// The subset of `GoogleMobileAds.RewardedAd` the presentation needs, so tests can substitute a fake.
+/// The subset of `GoogleMobileAds.RewardedAd` / `RewardedInterstitialAd` the presentation needs, so tests
+/// can substitute a fake. Both AdMob types already expose these methods with matching signatures through
+/// `RewardedAds+RewardVerification.swift`.
 @available(iOS 15.0, *)
 internal protocol RewardedPresentableAd: AnyObject {
 
@@ -20,32 +22,21 @@ internal protocol RewardedPresentableAd: AnyObject {
     func enableRewardVerification()
 
     @MainActor
-    func presentRewarded(
+    func present(
         from viewController: UIViewController,
-        rewardVerificationStarted: @escaping @MainActor () -> Void,
+        rewardVerificationStarted: (@MainActor () -> Void)?,
         rewardVerificationCompleted: @escaping @MainActor (RewardVerificationResult) -> Void
     )
 
 }
 
 @available(iOS 15.0, *)
-extension GoogleMobileAds.RewardedAd: RewardedPresentableAd {
+extension GoogleMobileAds.RewardedAd: RewardedPresentableAd {}
 
-    func presentRewarded(
-        from viewController: UIViewController,
-        rewardVerificationStarted: @escaping @MainActor () -> Void,
-        rewardVerificationCompleted: @escaping @MainActor (RewardVerificationResult) -> Void
-    ) {
-        self.present(
-            from: viewController,
-            rewardVerificationStarted: rewardVerificationStarted,
-            rewardVerificationCompleted: rewardVerificationCompleted
-        )
-    }
+@available(iOS 15.0, *)
+extension GoogleMobileAds.RewardedInterstitialAd: RewardedPresentableAd {}
 
-}
-
-/// Errors produced by ``AdMobRewardedPresenter`` itself, as opposed to errors forwarded from AdMob.
+/// Errors produced by ``RewardedPresentation`` itself, as opposed to errors forwarded from AdMob.
 @available(iOS 15.0, *)
 internal enum RewardedPresentationError: Error, CustomNSError {
 
@@ -68,7 +59,7 @@ internal enum RewardedPresentationError: Error, CustomNSError {
     var localizedDescription: String {
         switch self {
         case let .unsupportedMediator(mediator):
-            return "AdMobRewardedPresenter only presents AdMob ad units, but the checkpoint ad step " +
+            return "Only AdMob ad units can be presented, but the checkpoint ad step " +
                 "is configured for mediator '\(mediator)'."
         case .noPresentationContext:
             return "No view controller is available to present the rewarded ad from."
@@ -77,8 +68,8 @@ internal enum RewardedPresentationError: Error, CustomNSError {
 
 }
 
-/// One checkpoint ad step: loads a rewarded ad, presents it with reward verification enabled, and
-/// reports a single terminal outcome.
+/// One checkpoint ad step: loads a rewarded or rewarded interstitial ad, presents it with reward
+/// verification enabled, and reports a single terminal outcome.
 ///
 /// AdMob reports the earned reward while the ad is still on screen, and verification polling usually
 /// outlives the dismissal. The outcome is therefore reported only once the ad is dismissed *and*, if
@@ -87,6 +78,28 @@ internal enum RewardedPresentationError: Error, CustomNSError {
 @available(iOS 15.0, *)
 @MainActor
 internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenContentDelegate {
+
+    /// AdMob ad units are format-locked, so the format decides which `loadAndTrack` entry point is used.
+    enum Format {
+
+        case rewarded
+        case rewardedInterstitial
+
+        var adFormat: RevenueCat.AdFormat {
+            switch self {
+            case .rewarded: return .rewarded
+            case .rewardedInterstitial: return .rewardedInterstitial
+            }
+        }
+
+        fileprivate var defaultLoadAd: LoadAd {
+            switch self {
+            case .rewarded: return RewardedPresentation.loadAndTrackRewarded
+            case .rewardedInterstitial: return RewardedPresentation.loadAndTrackRewardedInterstitial
+            }
+        }
+
+    }
 
     enum Outcome {
 
@@ -119,6 +132,7 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
 
     typealias PresentingViewControllerProvider = @MainActor () -> UIViewController?
 
+    private let format: Format
     private let loadAd: LoadAd
     private let presentingViewControllerProvider: PresentingViewControllerProvider
     private var completion: (@MainActor (Outcome) -> Void)?
@@ -131,11 +145,13 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
     private var verificationResult: RewardVerificationResult?
 
     init(
-        loadAd: @escaping LoadAd = RewardedPresentation.loadAndTrackRewarded,
+        format: Format,
+        loadAd: LoadAd? = nil,
         presentingViewControllerProvider: @escaping PresentingViewControllerProvider
             = RewardedPresentation.currentViewController
     ) {
-        self.loadAd = loadAd
+        self.format = format
+        self.loadAd = loadAd ?? format.defaultLoadAd
         self.presentingViewControllerProvider = presentingViewControllerProvider
     }
 
@@ -149,7 +165,10 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
         self.adUnitID = adUnitID
 
         guard mediator == .adMob else {
-            Logger.warn(CheckpointPresenterStrings.rewarded_unsupported_mediator(mediator: mediator.rawValue))
+            Logger.warn(CheckpointPresenterStrings.rewarded_unsupported_mediator(
+                adFormat: self.format.adFormat,
+                mediator: mediator.rawValue
+            ))
             self.finish(.failed(RewardedPresentationError.unsupportedMediator(mediator.rawValue) as NSError))
             return
         }
@@ -161,20 +180,26 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
             do {
                 loadedAd = try await self.loadAd(adUnitID, placement, self)
             } catch {
-                Logger.warn(CheckpointPresenterStrings.rewarded_load_failed(adUnitID: adUnitID, error: error))
+                Logger.warn(CheckpointPresenterStrings.rewarded_load_failed(
+                    adFormat: self.format.adFormat,
+                    adUnitID: adUnitID,
+                    error: error
+                ))
                 self.finish(.failed(error as NSError))
                 return
             }
 
             guard let viewController = self.presentingViewControllerProvider() else {
-                Logger.warn(CheckpointPresenterStrings.rewarded_no_presentation_context)
+                Logger.warn(
+                    CheckpointPresenterStrings.rewarded_no_presentation_context(adFormat: self.format.adFormat)
+                )
                 self.finish(.failed(RewardedPresentationError.noPresentationContext as NSError))
                 return
             }
 
             self.loadedAd = loadedAd
             loadedAd.enableRewardVerification()
-            loadedAd.presentRewarded(
+            loadedAd.present(
                 from: viewController,
                 rewardVerificationStarted: { [weak self] in
                     self?.isAwaitingVerification = true
@@ -198,7 +223,9 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
         _ presentingAd: any GoogleMobileAds.FullScreenPresentingAd,
         didFailToPresentFullScreenContentWithError error: any Error
     ) {
-        Logger.warn(CheckpointPresenterStrings.rewarded_present_failed(error: error))
+        Logger.warn(
+            CheckpointPresenterStrings.rewarded_present_failed(adFormat: self.format.adFormat, error: error)
+        )
         self.finish(.failed(error as NSError))
     }
 
@@ -217,7 +244,10 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
         if let reward = result.verifiedReward {
             self.finish(.rewarded(reward, moreRewards: result.moreRewards))
         } else {
-            Logger.warn(CheckpointPresenterStrings.rewarded_verification_failed(adUnitID: self.adUnitID ?? ""))
+            Logger.warn(CheckpointPresenterStrings.rewarded_verification_failed(
+                adFormat: self.format.adFormat,
+                adUnitID: self.adUnitID ?? ""
+            ))
             self.finish(.rewardVerificationFailed)
         }
     }
@@ -235,6 +265,19 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
         delegate: GoogleMobileAds.FullScreenContentDelegate
     ) async throws -> any RewardedPresentableAd {
         try await GoogleMobileAds.RewardedAd.loadAndTrack(
+            withAdUnitID: adUnitID,
+            request: GoogleMobileAds.Request(),
+            placement: placement,
+            fullScreenContentDelegate: delegate
+        )
+    }
+
+    private static func loadAndTrackRewardedInterstitial(
+        adUnitID: String,
+        placement: String,
+        delegate: GoogleMobileAds.FullScreenContentDelegate
+    ) async throws -> any RewardedPresentableAd {
+        try await GoogleMobileAds.RewardedInterstitialAd.loadAndTrack(
             withAdUnitID: adUnitID,
             request: GoogleMobileAds.Request(),
             placement: placement,
