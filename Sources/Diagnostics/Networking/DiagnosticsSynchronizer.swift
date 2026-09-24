@@ -16,6 +16,7 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 protocol DiagnosticsSynchronizerType {
 
+    func setCollectionDecision(_ decision: DiagnosticsCollectionDecision) async
     func syncDiagnosticsIfNeeded() async throws
 
 }
@@ -28,21 +29,36 @@ actor DiagnosticsSynchronizer: DiagnosticsSynchronizerType {
     private let tracker: DiagnosticsTrackerType?
     private let userDefaults: SynchronizedUserDefaults
 
+    private var collectionDecision: DiagnosticsCollectionDecision
     private var syncInProgress = false
 
     init(
         internalAPI: InternalAPI,
         handler: DiagnosticsFileHandlerType,
         tracker: DiagnosticsTrackerType?,
-        userDefaults: SynchronizedUserDefaults
+        userDefaults: SynchronizedUserDefaults,
+        collectionDecision: DiagnosticsCollectionDecision = .enabled
     ) {
         self.internalAPI = internalAPI
         self.handler = handler
         self.tracker = tracker
         self.userDefaults = userDefaults
+        self.collectionDecision = collectionDecision
+    }
+
+    func setCollectionDecision(_ decision: DiagnosticsCollectionDecision) async {
+        self.collectionDecision = decision
+        guard decision == .enabled else { return }
+
+        do {
+            try await self.syncDiagnosticsIfNeeded()
+        } catch {
+            Logger.error(Strings.diagnostics.could_not_synchronize_diagnostics(error: error))
+        }
     }
 
     func syncDiagnosticsIfNeeded() async throws {
+        guard self.collectionDecision == .enabled else { return }
         guard !self.syncInProgress else {
             Logger.debug(Strings.diagnostics.event_sync_already_in_progress)
             return
@@ -136,6 +152,13 @@ private extension DiagnosticsSynchronizer {
             $0.integer(forKey: CacheKeys.numberOfRetries.rawValue)
         }
     }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension DiagnosticsSynchronizerType {
+
+    func setCollectionDecision(_: DiagnosticsCollectionDecision) async {}
 
 }
 

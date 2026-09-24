@@ -75,16 +75,43 @@ class DiagnosticsSynchronizerTests: TestCase {
         await self.verifyEmptyStore()
     }
 
-    func testSyncsStoredEventsWhenDiagnosticsCollectionIsDisabled() async throws {
+    func testDoesNotSyncStoredEventsWhenDiagnosticsCollectionIsDisabled() async throws {
         let event = await self.storeEvent()
-        let disabledTracker = DiagnosticsTracker(diagnosticsFileHandler: self.handler,
-                                                 collectionDecision: .disabled)
         let synchronizer = DiagnosticsSynchronizer(internalAPI: self.api,
                                                    handler: self.handler,
-                                                   tracker: disabledTracker,
-                                                   userDefaults: .init(userDefaults: self.userDefaults))
+                                                   tracker: self.tracker,
+                                                   userDefaults: .init(userDefaults: self.userDefaults),
+                                                   collectionDecision: .disabled)
 
         try await synchronizer.syncDiagnosticsIfNeeded()
+
+        expect(self.api.invokedPostDiagnosticsEvents) == false
+        await self.verifyEvents([event])
+    }
+
+    func testDoesNotSyncStoredEventsWhenDiagnosticsCollectionIsUndetermined() async throws {
+        let event = await self.storeEvent()
+        let synchronizer = DiagnosticsSynchronizer(internalAPI: self.api,
+                                                   handler: self.handler,
+                                                   tracker: self.tracker,
+                                                   userDefaults: .init(userDefaults: self.userDefaults),
+                                                   collectionDecision: .undetermined)
+
+        try await synchronizer.syncDiagnosticsIfNeeded()
+
+        expect(self.api.invokedPostDiagnosticsEvents) == false
+        await self.verifyEvents([event])
+    }
+
+    func testSyncsStoredEventsWhenDiagnosticsCollectionBecomesEnabled() async {
+        let event = await self.storeEvent()
+        let synchronizer = DiagnosticsSynchronizer(internalAPI: self.api,
+                                                   handler: self.handler,
+                                                   tracker: self.tracker,
+                                                   userDefaults: .init(userDefaults: self.userDefaults),
+                                                   collectionDecision: .undetermined)
+
+        await synchronizer.setCollectionDecision(.enabled)
 
         expect(self.api.invokedPostDiagnosticsEvents) == true
         expect(self.api.invokedPostDiagnosticsEventsParameters) == [[event]]

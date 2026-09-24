@@ -84,7 +84,7 @@ class DiagnosticsTrackerTests: TestCase {
         expect(entries).to(beEmpty())
     }
 
-    func testBuffersEventsUntilDiagnosticsAreEnabled() async {
+    func testPersistsEventsWhileDiagnosticsCollectionIsUndetermined() async {
         self.tracker = .init(
             diagnosticsFileHandler: self.handler,
             collectionDecision: .undetermined,
@@ -97,13 +97,19 @@ class DiagnosticsTrackerTests: TestCase {
                                      appSessionId: SystemInfo.appSessionID)
 
         self.tracker.track(event)
-        let entriesBeforeEnabling = await self.handler.getEntries()
-        expect(entriesBeforeEnabling).to(beEmpty())
+        let entriesBeforeDecision = await self.handler.getEntries()
+        expect(entriesBeforeDecision) == [
+            .init(id: event.id,
+                  name: .httpRequestPerformed,
+                  properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ]
 
-        self.tracker.setCollectionEnabled(true)
+        self.tracker.setCollectionDecision(.enabled)
 
-        let entriesAfterEnabling = await self.handler.getEntries()
-        expect(entriesAfterEnabling) == [
+        let entriesAfterDecision = await self.handler.getEntries()
+        expect(entriesAfterDecision) == [
             .init(id: event.id,
                   name: .httpRequestPerformed,
                   properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
@@ -112,7 +118,7 @@ class DiagnosticsTrackerTests: TestCase {
         ]
     }
 
-    func testDiscardsBufferedEventsWhenDiagnosticsAreDisabled() async {
+    func testDiscardsPersistedEventsWhenDiagnosticsCollectionIsDisabled() async {
         self.tracker = .init(
             diagnosticsFileHandler: self.handler,
             collectionDecision: .undetermined,
@@ -126,7 +132,10 @@ class DiagnosticsTrackerTests: TestCase {
                   timestamp: Self.eventTimestamp1,
                   appSessionId: SystemInfo.appSessionID)
         )
-        self.tracker.setCollectionEnabled(false)
+        self.tracker.setCollectionDecision(.disabled)
+
+        let entriesAfterDisabling = await self.handler.getEntries()
+        expect(entriesAfterDisabling).to(beEmpty())
 
         self.tracker.track(
             .init(name: .httpRequestPerformed,
@@ -134,7 +143,7 @@ class DiagnosticsTrackerTests: TestCase {
                   timestamp: Self.eventTimestamp1,
                   appSessionId: SystemInfo.appSessionID)
         )
-        self.tracker.setCollectionEnabled(true)
+        self.tracker.setCollectionDecision(.enabled)
 
         let entries = await self.handler.getEntries()
         expect(entries).to(beEmpty())
