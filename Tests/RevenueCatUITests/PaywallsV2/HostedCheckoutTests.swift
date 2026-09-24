@@ -201,8 +201,9 @@ final class HostedCheckoutTests: TestCase {
         expect(handler.actionInProgress) == false
     }
 
+    /// Reporting the purchase can close the paywall, so it waits until the customer has been told about it.
     @MainActor
-    func testReportsAConfirmedPurchaseAsCompleted() async {
+    func testLeavesAConfirmedPurchaseForThePaywallToReport() async {
         let purchases = Self.makePurchases()
         purchases.hostedCheckoutPollBlock = { _ in .succeeded }
         let handler = Self.makeHandler(purchases: purchases)
@@ -213,6 +214,17 @@ final class HostedCheckoutTests: TestCase {
                                                      purchaseHandler: handler)
 
         expect(settlement) == .purchased
+        expect(handler.sessionPurchaseResult).to(beNil())
+        expect(handler.purchaseError).to(beNil())
+        expect(handler.actionInProgress) == false
+    }
+
+    @MainActor
+    func testReportsAConfirmedPurchaseAsCompleted() async {
+        let handler = Self.makeHandler(purchases: Self.makePurchases())
+
+        await handler.handleHostedCheckoutPurchase()
+
         expect(handler.sessionPurchaseResult?.userCancelled) == false
         expect(handler.purchaseError).to(beNil())
     }

@@ -890,7 +890,8 @@ extension PurchaseHandler {
 
     // MARK: - Hosted checkout
 
-    /// Reports a checkout the backend confirmed the customer completed on a page presented inside the app.
+    /// Reports a checkout the backend confirmed the customer completed on a page presented inside the app, once
+    /// the customer has been told the purchase went through.
     ///
     /// There is no transaction to hand over: what was bought is known to the backend, so the paywall follows
     /// the `CustomerInfo` the SDK fetched when confirming it.

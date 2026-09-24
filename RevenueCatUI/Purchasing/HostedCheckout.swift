@@ -100,6 +100,9 @@ enum HostedCheckout {
     /// Asks the backend what became of a checkout the customer left without going through its cancel page,
     /// then settles the paywall on the answer.
     ///
+    /// A purchase is left for the caller to report with ``PurchaseHandler/handleHostedCheckoutPurchase()``
+    /// once the customer has been told about it, since reporting it can close the paywall.
+    ///
     /// - Parameter package: The package the checkout was started for, when it is still known.
     @MainActor
     static func settle(_ session: HostedCheckoutSession,
@@ -112,7 +115,7 @@ enum HostedCheckout {
 
             switch settlement {
             case .purchased:
-                await purchaseHandler.handleHostedCheckoutPurchase()
+                break
             case let .failed(error):
                 purchaseHandler.handleHostedCheckoutFailure(error, package: package)
             case .cancelled:
