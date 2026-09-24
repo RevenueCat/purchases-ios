@@ -366,6 +366,9 @@ class BasePurchasesTests: TestCase {
                                     operationDispatcher: self.mockOperationDispatcher
                                    ),
                                    remoteConfigManager: self.mockRemoteConfigManager,
+                                   sdkSettingsConfigProvider: SDKSettingsConfigProvider(
+                                    manager: self.mockRemoteConfigManager
+                                   ),
                                    offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
                                    purchasesOrchestrator: self.purchasesOrchestrator,
                                    purchasedProductsFetcher: self.mockPurchasedProductsFetcher,
