@@ -56,14 +56,13 @@ class SDKSettingsExternalPurchasesTests: TestCase {
         expect(storefronts) == ["USA"]
     }
 
-    /// Absent until the backend's allow list reaches this app.
+    /// Absent from a backend that predates the policy.
     func testReadsNoStorefrontsWithoutExternalPurchases() async throws {
-        try self.stub(item: #"{"diagnostics": {"enabled": true}}"#)
+        try self.stub(item: "{}")
 
-        let settings = await self.provider.settings()
+        let storefronts = await self.storefronts()
 
-        expect(settings.externalPurchases.appStore.storefrontsAllowedWithoutStoreEligibility).to(beEmpty())
-        expect(settings.diagnostics.enabled) == true
+        expect(storefronts).to(beEmpty())
     }
 
     /// A store the SDK does not buy through says nothing about where it may.
@@ -93,11 +92,8 @@ class SDKSettingsExternalPurchasesTests: TestCase {
 
     /// Anything unexpected in the policy is never taken as an allowance.
     func testFallsBackToTheDefaultSettingsFromAMalformedPolicy() async throws {
-        try self.stub(item: """
-        {
-          "diagnostics": {"enabled": true},
-          "external_purchases": {"app_store": {"storefronts_allowed_without_store_eligibility": ["USA", 7]}}
-        }
+        try self.stub(externalPurchases: """
+        {"app_store": {"storefronts_allowed_without_store_eligibility": ["USA", 7]}}
         """)
 
         let settings = await self.provider.settings()

@@ -75,22 +75,6 @@ class DiagnosticsSynchronizerTests: TestCase {
         await self.verifyEmptyStore()
     }
 
-    func testSyncsStoredEventsWhenDiagnosticsCollectionIsDisabled() async throws {
-        let event = await self.storeEvent()
-        let disabledTracker = DiagnosticsTracker(diagnosticsFileHandler: self.handler,
-                                                 collectionDecision: .disabled)
-        let synchronizer = DiagnosticsSynchronizer(internalAPI: self.api,
-                                                   handler: self.handler,
-                                                   tracker: disabledTracker,
-                                                   userDefaults: .init(userDefaults: self.userDefaults))
-
-        try await synchronizer.syncDiagnosticsIfNeeded()
-
-        expect(self.api.invokedPostDiagnosticsEvents) == true
-        expect(self.api.invokedPostDiagnosticsEventsParameters) == [[event]]
-        await self.verifyEmptyStore()
-    }
-
     func testSyncMultipleEvents() async throws {
         let event1 = await self.storeEvent()
         let event2 = await self.storeEvent(timestamp: Self.eventTimestamp2)

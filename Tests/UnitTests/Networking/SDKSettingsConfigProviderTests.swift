@@ -36,31 +36,12 @@ class SDKSettingsConfigProviderTests: TestCase {
         let settings = await self.provider.settings()
 
         expect(settings) == SDKSettings()
-        expect(settings.diagnostics.enabled) == false
-    }
-
-    func testDecodesDiagnosticsEnabled() async {
-        self.manager.stubbedTopics[.sdkSettings] = [
-            "default": .init(content: ["diagnostics": ["enabled": true]])
-        ]
-
-        let settings = await self.provider.settings()
-
-        expect(settings.diagnostics.enabled) == true
-    }
-
-    func testReturnsDefaultSettingsWhenDiagnosticsEnabledIsMalformed() async {
-        self.manager.stubbedTopics[.sdkSettings] = [
-            "default": .init(content: ["diagnostics": ["enabled": "true"]])
-        ]
-
-        let settings = await self.provider.settings()
-
-        expect(settings) == SDKSettings()
     }
 
     func testIgnoresUnknownSettingsForForwardCompatibility() async {
-        self.manager.stubbedTopics[.sdkSettings] = ["default": .init(content: ["future_setting": true])]
+        self.manager.stubbedTopics[.sdkSettings] = [
+            "default": .init(content: ["future_setting": true])
+        ]
 
         let settings = await self.provider.settings()
 
@@ -85,42 +66,19 @@ class SDKSettingsConfigProviderTests: TestCase {
         expect(self.provider.cachedSettings()).to(beNil())
     }
 
-    func testCachesAndNotifiesDelegateWhenRefreshed() async {
-        self.manager.stubbedTopics[.sdkSettings] = [
-            "default": .init(content: ["diagnostics": ["enabled": true]])
-        ]
+    func testCachesSettingsBeforeNotifyingDelegateWhenRefreshed() async {
         let expectation = self.expectation(description: "settings updated")
         self.delegate.expectation = expectation
-
-        self.provider.delegate = self.delegate
-        await self.provider.refresh()
-
-        await self.fulfillment(of: [expectation], timeout: 1)
-        expect(self.provider.cachedSettings()?.diagnostics.enabled) == true
-        expect(self.delegate.settings?.diagnostics.enabled) == true
-    }
-
-    func testDoesNotNotifyDelegateWhenSettingsDoNotChange() async {
-        self.manager.stubbedTopics[.sdkSettings] = [
-            "default": .init(content: ["diagnostics": ["enabled": true]])
-        ]
-        let expectation = self.expectation(description: "initial settings update")
-        self.delegate.expectation = expectation
         self.provider.delegate = self.delegate
 
         await self.provider.refresh()
+
         await self.fulfillment(of: [expectation], timeout: 1)
-
-        self.manager.configGeneration += 1
-        await self.provider.refresh()
-
-        expect(self.delegate.updateCount) == 1
+        expect(self.provider.cachedSettings()) == SDKSettings()
+        expect(self.delegate.settings) == SDKSettings()
     }
 
     func testInvalidatesCachedSettingsWhenGenerationChanges() async {
-        self.manager.stubbedTopics[.sdkSettings] = [
-            "default": .init(content: ["diagnostics": ["enabled": true]])
-        ]
         await self.provider.refresh()
 
         self.manager.configGeneration += 1
@@ -128,11 +86,18 @@ class SDKSettingsConfigProviderTests: TestCase {
         expect(self.provider.cachedSettings()).to(beNil())
     }
 
+    func testDoesNotNotifyDelegateWhenSettingsHaveNotChanged() async {
+        self.provider.delegate = self.delegate
+
+        await self.provider.refresh()
+        self.manager.configGeneration += 1
+        await self.provider.refresh()
+
+        expect(self.delegate.invokedDidUpdateCount) == 1
+    }
+
     func testDoesNotCacheOrNotifyBeforeRemoteConfigIsCommitted() async {
         self.manager.stubbedHasCommittedConfig = false
-        self.manager.stubbedTopics[.sdkSettings] = [
-            "default": .init(content: ["diagnostics": ["enabled": true]])
-        ]
         self.provider.delegate = self.delegate
 
         await self.provider.refresh()
@@ -142,9 +107,6 @@ class SDKSettingsConfigProviderTests: TestCase {
     }
 
     func testStateObserverRefreshesAndNotifiesDelegate() async {
-        self.manager.stubbedTopics[.sdkSettings] = [
-            "default": .init(content: ["diagnostics": ["enabled": true]])
-        ]
         let expectation = self.expectation(description: "settings updated")
         self.delegate.expectation = expectation
         self.provider.delegate = self.delegate
@@ -152,7 +114,7 @@ class SDKSettingsConfigProviderTests: TestCase {
         self.provider.remoteConfigStateDidChange(generation: self.manager.configGeneration)
 
         await self.fulfillment(of: [expectation], timeout: 1)
-        expect(self.provider.cachedSettings()?.diagnostics.enabled) == true
+        expect(self.provider.cachedSettings()) == SDKSettings()
     }
 
 }
@@ -160,12 +122,12 @@ class SDKSettingsConfigProviderTests: TestCase {
 private final class MockSDKSettingsConfigProviderDelegate: SDKSettingsConfigProviderDelegate {
 
     var expectation: XCTestExpectation?
+    private(set) var invokedDidUpdateCount = 0
     private(set) var settings: SDKSettings?
-    private(set) var updateCount = 0
 
-    func sdkSettingsConfigProvider(_: SDKSettingsConfigProviderType, didUpdate settings: SDKSettings) async {
+    func sdkSettingsConfigProviderDidUpdate(_ settings: SDKSettings) {
+        self.invokedDidUpdateCount += 1
         self.settings = settings
-        self.updateCount += 1
         self.expectation?.fulfill()
     }
 

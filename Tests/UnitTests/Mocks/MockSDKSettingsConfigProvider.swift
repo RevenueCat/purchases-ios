@@ -19,6 +19,8 @@ final class MockSDKSettingsConfigProvider: SDKSettingsConfigProviderType {
     var stubbedSettings = SDKSettings()
     var stubbedCachedSettings: SDKSettings?
 
+    weak var delegate: SDKSettingsConfigProviderDelegate?
+
     private(set) var invokedSettingsCount: Int = 0
 
     func settings() async -> SDKSettings {
@@ -30,6 +32,8 @@ final class MockSDKSettingsConfigProvider: SDKSettingsConfigProviderType {
         return self.stubbedCachedSettings
     }
 
+    func remoteConfigStateDidChange(generation _: Int) {}
+
 }
 
 extension MockSDKSettingsConfigProvider: @unchecked Sendable {}
@@ -38,7 +42,6 @@ extension SDKSettings {
 
     static func allowingExternalPurchases(in storefronts: Set<String>) -> SDKSettings {
         return .init(
-            diagnostics: .init(),
             externalPurchases: .init(appStore: .init(storefrontsAllowedWithoutStoreEligibility: storefronts))
         )
     }

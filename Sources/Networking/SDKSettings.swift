@@ -11,38 +11,20 @@ import Foundation
 /// The SDK-specific settings served through the `sdk_settings` remote config topic.
 struct SDKSettings: Decodable, Equatable {
 
-    let diagnostics: Diagnostics
     let externalPurchases: ExternalPurchases
 
-    init(diagnostics: Diagnostics = .init()) {
-        self.init(diagnostics: diagnostics, externalPurchases: .init())
+    init() {
+        self.init(externalPurchases: .init())
     }
 
-    init(diagnostics: Diagnostics, externalPurchases: ExternalPurchases) {
-        self.diagnostics = diagnostics
+    init(externalPurchases: ExternalPurchases) {
         self.externalPurchases = externalPurchases
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.diagnostics = try container.decodeIfPresent(Diagnostics.self, forKey: .diagnostics) ?? .init()
         self.externalPurchases = try container.decodeIfPresent(ExternalPurchases.self,
                                                                forKey: .externalPurchases) ?? .init()
-    }
-
-    struct Diagnostics: Decodable, Equatable {
-
-        let enabled: Bool
-
-        init(enabled: Bool = false) {
-            self.enabled = enabled
-        }
-
-        init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            self.enabled = try container.decodeIfPresent(Bool.self, forKey: .enabled) ?? false
-        }
-
     }
 
     /// The rules for purchases taken outside the store, one entry per store.
@@ -99,16 +81,7 @@ extension SDKSettings.ExternalPurchases {
 private extension SDKSettings {
 
     enum CodingKeys: String, CodingKey {
-        case diagnostics
         case externalPurchases
-    }
-
-}
-
-private extension SDKSettings.Diagnostics {
-
-    enum CodingKeys: String, CodingKey {
-        case enabled
     }
 
 }
