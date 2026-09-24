@@ -54,16 +54,38 @@ final class BackendLanes: Sendable {
 /// entry in `dedicatedLanes`.
 struct BackendLanesFactory {
 
-    let systemInfo: SystemInfo
-    let eTagManager: ETagManager
-    let tokenManager: TokenManager
-    let diagnosticsTracker: DiagnosticsTrackerType?
-    let networkTimeout: NetworkTimeout
-    let apiSourceFailover: APISourceFailoverType?
-    let timeoutManager: HTTPRequestTimeoutManagerType
-    let operationDispatcher: OperationDispatcher
-    let offlineCustomerInfoCreator: OfflineCustomerInfoCreator?
-    let dateProvider: DateProvider
+    private let systemInfo: SystemInfo
+    private let eTagManager: ETagManager
+    private let tokenManager: TokenManager
+    private let diagnosticsTracker: DiagnosticsTrackerType?
+    private let networkTimeout: NetworkTimeout
+    private let apiSourceFailover: APISourceFailoverType?
+    private let timeoutManager: HTTPRequestTimeoutManagerType
+    private let operationDispatcher: OperationDispatcher
+    private let offlineCustomerInfoCreator: OfflineCustomerInfoCreator?
+    private let dateProvider: DateProvider
+
+    init(systemInfo: SystemInfo,
+         eTagManager: ETagManager,
+         tokenManager: TokenManager,
+         diagnosticsTracker: DiagnosticsTrackerType?,
+         networkTimeout: NetworkTimeout,
+         apiSourceFailover: APISourceFailoverType?,
+         timeoutManager: HTTPRequestTimeoutManagerType,
+         operationDispatcher: OperationDispatcher,
+         offlineCustomerInfoCreator: OfflineCustomerInfoCreator?,
+         dateProvider: DateProvider) {
+        self.systemInfo = systemInfo
+        self.eTagManager = eTagManager
+        self.tokenManager = tokenManager
+        self.diagnosticsTracker = diagnosticsTracker
+        self.networkTimeout = networkTimeout
+        self.apiSourceFailover = apiSourceFailover
+        self.timeoutManager = timeoutManager
+        self.operationDispatcher = operationDispatcher
+        self.offlineCustomerInfoCreator = offlineCustomerInfoCreator
+        self.dateProvider = dateProvider
+    }
 
     /// - Parameter dedicatedLanes: lanes that get their own `HTTPClient` and `OperationQueue`.
     ///   Any lane not listed runs on the default lane.
