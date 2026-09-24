@@ -27,7 +27,7 @@ class ExternalPurchaseManagerTests: TestCase {
 
     private var customLink: MockExternalPurchaseCustomLink!
     private var externalPurchaseTokenAPI: MockExternalPurchaseTokenAPI!
-    private var configProvider: MockExternalPurchasesConfigProvider!
+    private var settingsProvider: MockSDKSettingsConfigProvider!
     private var systemInfo: MockSystemInfo!
     private var manager: ExternalPurchaseManager!
 
@@ -40,8 +40,10 @@ class ExternalPurchaseManagerTests: TestCase {
         self.externalPurchaseTokenAPI = MockExternalPurchaseTokenAPI()
         self.externalPurchaseTokenAPI.stubbedPostExternalPurchaseTokenResult = .success(.init(id: Self.tokenID))
 
-        self.configProvider = MockExternalPurchasesConfigProvider()
-        self.configProvider.stubbedAllowedStorefronts = [Self.allowedStorefront]
+        self.settingsProvider = MockSDKSettingsConfigProvider()
+        // Reporting, so a test that says nothing about it exercises the notice and token path.
+        self.settingsProvider.stubbedSettings = .allowingExternalPurchases(in: [Self.allowedStorefront],
+                                                                           reportingTokens: true)
 
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: true)
         self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.allowedStorefront)
@@ -94,7 +96,7 @@ class ExternalPurchaseManagerTests: TestCase {
     /// An app config that does not report to Apple is one Apple's flow has nothing to say about, so the
     /// customer buys as they did before the app had anything to do with the programme.
     func testMintsNothingAndProceedsWhileTheAppDoesNotReportTokens() async {
-        self.configProvider.stubbedReportsTokens = false
+        self.stubTokenReporting(false)
 
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
@@ -108,30 +110,30 @@ class ExternalPurchaseManagerTests: TestCase {
 
     /// An app that reports nothing uses none of Apple's external purchase APIs, so it is offered the
     /// purchase everywhere rather than refused outside the list.
-    func testAsksNothingAboutStorefrontsWhileTheAppDoesNotReportTokens() async {
-        self.configProvider.stubbedReportsTokens = false
+    func testOffersThePurchaseOutsideTheStorefrontsWhileTheAppDoesNotReportTokens() async {
+        self.stubTokenReporting(false)
+        self.customLink.stubbedAvailability = .notEligible
         self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.otherStorefront)
 
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
         expect(result) == .notApplicable
-        expect(self.configProvider.invokedAllowedStorefrontsCount) == 0
     }
 
     /// The toggle comes from remote config, which can change while the app runs, so no verdict is kept from
     /// an earlier purchase.
     func testResolvesTokenReportingOnEveryPurchase() async {
-        self.configProvider.stubbedReportsTokens = false
+        self.stubTokenReporting(false)
 
         let whileNotReporting = await self.manager.prepareExternalPurchase(flow: .inApp)
         expect(whileNotReporting) == .notApplicable
 
-        self.configProvider.stubbedReportsTokens = true
+        self.stubTokenReporting(true)
 
         let onceReporting = await self.manager.prepareExternalPurchase(flow: .inApp)
         expect(onceReporting) == .registered(tokenID: Self.tokenID)
 
-        expect(self.configProvider.invokedReportsTokensCount) == 2
+        expect(self.settingsProvider.invokedSettingsCount) == 2
     }
 
     // MARK: - Storefronts that do not require Apple's external purchase APIs
@@ -144,7 +146,7 @@ class ExternalPurchaseManagerTests: TestCase {
 
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
-        expect(result) == .stopped(.notAllowedInStorefront)
+        expect(result) == .stopped(.notEligible)
         expect(self.customLink.invokedNoticeTypes).to(beEmpty())
         expect(self.customLink.invokedTokenTypes).to(beEmpty())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
@@ -157,18 +159,18 @@ class ExternalPurchaseManagerTests: TestCase {
 
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
-        expect(result) == .stopped(.notAllowedInStorefront)
+        expect(result) == .stopped(.notEligible)
     }
 
     /// An empty policy is what an SDK that could not read one is left with, and it offers the purchase
     /// nowhere rather than everywhere.
     func testStopsWhileNoStorefrontIsAllowed() async {
         self.customLink.stubbedAvailability = .notEligible
-        self.configProvider.stubbedAllowedStorefronts = []
+        self.settingsProvider.stubbedSettings = .allowingExternalPurchases(in: [], reportingTokens: true)
 
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
-        expect(result) == .stopped(.notAllowedInStorefront)
+        expect(result) == .stopped(.notEligible)
     }
 
     func testMatchesTheStorefrontRegardlessOfCase() async {
@@ -182,14 +184,13 @@ class ExternalPurchaseManagerTests: TestCase {
 
     /// Being eligible is Apple's own answer for this customer in this storefront, so the policy has no say:
     /// the notice is shown and the token is minted wherever they are.
-    func testAsksNothingAboutStorefrontsWhileTheCustomerIsEligible() async {
-        self.configProvider.stubbedAllowedStorefronts = []
+    func testIgnoresTheStorefrontsWhileTheCustomerIsEligible() async {
+        self.settingsProvider.stubbedSettings = .allowingExternalPurchases(in: [], reportingTokens: true)
         self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.otherStorefront)
 
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
         expect(result) == .registered(tokenID: Self.tokenID)
-        expect(self.configProvider.invokedAllowedStorefrontsCount) == 0
     }
 
     /// The customer can change storefront while the app runs, so no verdict is kept from an earlier purchase.
@@ -202,9 +203,9 @@ class ExternalPurchaseManagerTests: TestCase {
         self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.otherStorefront)
 
         let onceElsewhere = await self.manager.prepareExternalPurchase(flow: .inApp)
-        expect(onceElsewhere) == .stopped(.notAllowedInStorefront)
+        expect(onceElsewhere) == .stopped(.notEligible)
 
-        expect(self.configProvider.invokedAllowedStorefrontsCount) == 2
+        expect(self.settingsProvider.invokedSettingsCount) == 2
     }
 
     // MARK: - Stopping
@@ -301,8 +302,7 @@ class ExternalPurchaseManagerTests: TestCase {
         expect(self.customLink.invokedNoticeTypes).to(beEmpty())
         expect(self.customLink.invokedTokenTypes).to(beEmpty())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
-        expect(self.configProvider.invokedAllowedStorefrontsCount) == 0
-        expect(self.configProvider.invokedReportsTokensCount) == 0
+        expect(self.settingsProvider.invokedSettingsCount) == 0
     }
 
     /// Apps outside the programme did not try to make an external purchase, so telling them anything about
@@ -404,12 +404,17 @@ class ExternalPurchaseManagerTests: TestCase {
         )
     }
 
+    private func stubTokenReporting(_ reportingTokens: Bool) {
+        self.settingsProvider.stubbedSettings = .allowingExternalPurchases(in: [Self.allowedStorefront],
+                                                                           reportingTokens: reportingTokens)
+    }
+
     private func makeManager() -> ExternalPurchaseManager {
         return ExternalPurchaseManager(
             customLink: self.customLink,
             externalPurchaseTokenAPI: self.externalPurchaseTokenAPI,
             currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID),
-            configProvider: self.configProvider,
+            settingsProvider: self.settingsProvider,
             systemInfo: self.systemInfo
         )
     }

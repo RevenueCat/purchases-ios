@@ -128,10 +128,9 @@ final class HostedCheckoutTests: TestCase {
         expect(HostedCheckout.Action(.paymentsNotAuthorized)) == .nothing
     }
 
-    /// Where the customer's storefront does not allow the purchase outside the App Store, there is nothing to
-    /// offer them in its place.
-    func testOffersNothingWhereTheStorefrontDoesNotAllowThePurchase() {
-        expect(HostedCheckout.Start(.notAllowedInStorefront)) == .nothing
+    /// A customer who is not eligible to buy outside the App Store has nothing to be offered in its place.
+    func testOffersNothingToAnIneligibleCustomer() {
+        expect(HostedCheckout.Start(.notEligible)) == .nothing
     }
 
     /// The checkout already under way carries the purchase.

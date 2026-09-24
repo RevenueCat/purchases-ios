@@ -38,8 +38,8 @@ final class ExternalPurchaseLinkResultTests: TestCase {
     }
 
     /// Being ineligible only keeps the link where the storefront allows it; anywhere else it opens nothing.
-    func testNothingOpensWhereTheStorefrontDoesNotAllowThePurchase() {
-        let result = ExternalPurchaseLinkResult(preparationResult: .stopped(.notAllowedInStorefront))
+    func testNothingOpensForAnIneligibleCustomer() {
+        let result = ExternalPurchaseLinkResult(preparationResult: .stopped(.notEligible))
 
         expect(result) == .stopped
     }

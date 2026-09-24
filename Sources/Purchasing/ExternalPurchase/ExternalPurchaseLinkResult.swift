@@ -41,8 +41,8 @@ extension ExternalPurchaseLinkResult {
         case .notApplicable:
             // No notice sheet was shown and no purchase token was minted, and the external purchase proceeds.
             self = .proceed(externalPurchaseTokenID: nil)
-        case .stopped(.notAllowedInStorefront):
-            // The customer may not be taken outside the App Store to pay from where they are.
+        case .stopped(.notEligible):
+            // The customer is not eligible to be taken outside the App Store to pay.
             self = .stopped
         case .stopped(.paymentsNotAuthorized):
             // Apple asks that a device which cannot authorize payments be offered no purchase at all, so the

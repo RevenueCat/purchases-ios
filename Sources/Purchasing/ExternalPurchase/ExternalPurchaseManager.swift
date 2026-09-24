@@ -20,7 +20,7 @@ final class ExternalPurchaseManager {
     private let customLink: ExternalPurchaseCustomLinkType
     private let externalPurchaseTokenAPI: ExternalPurchaseTokenAPI
     private let currentUserProvider: CurrentUserProvider
-    private let configProvider: ExternalPurchasesConfigProviderType
+    private let settingsProvider: SDKSettingsConfigProviderType
     private let systemInfo: SystemInfo
 
     private let isPreparing: Atomic<Bool> = false
@@ -28,12 +28,12 @@ final class ExternalPurchaseManager {
     init(customLink: ExternalPurchaseCustomLinkType,
          externalPurchaseTokenAPI: ExternalPurchaseTokenAPI,
          currentUserProvider: CurrentUserProvider,
-         configProvider: ExternalPurchasesConfigProviderType,
+         settingsProvider: SDKSettingsConfigProviderType,
          systemInfo: SystemInfo) {
         self.customLink = customLink
         self.externalPurchaseTokenAPI = externalPurchaseTokenAPI
         self.currentUserProvider = currentUserProvider
-        self.configProvider = configProvider
+        self.settingsProvider = settingsProvider
         self.systemInfo = systemInfo
     }
 
@@ -64,7 +64,9 @@ final class ExternalPurchaseManager {
             return .notApplicable
         }
 
-        guard await self.configProvider.reportsTokensToTheAppStore() else {
+        let policy = await self.settingsProvider.settings().externalPurchases.appStore
+
+        guard policy.tokenReportingEnabled else {
             Logger.debug(Strings.externalPurchase.token_reporting_disabled)
             return .notApplicable
         }
@@ -80,9 +82,9 @@ final class ExternalPurchaseManager {
         case .available:
             break
         case .notEligible:
-            guard let storefront = await self.storefrontNotRequiringExternalPurchaseAPIs() else {
+            guard let storefront = self.storefrontNotRequiringExternalPurchaseAPIs(policy) else {
                 Logger.warn(Strings.externalPurchase.not_eligible)
-                return .stopped(.notAllowedInStorefront)
+                return .stopped(.notEligible)
             }
 
             Logger.debug(Strings.externalPurchase.custom_link_does_not_apply(storefront))
@@ -131,9 +133,12 @@ internal enum ExternalPurchasePreparationResult: Equatable {
 
     enum StopReason: Equatable {
 
-        /// Apple's external purchase APIs are required in this storefront and cannot be used for this
-        /// customer, so they are offered nothing.
-        case notAllowedInStorefront
+        /// The customer is not eligible for Apple's external purchase programme, see
+        /// ``ExternalPurchaseAvailability/notEligible``, so they are offered nothing.
+        ///
+        /// In the storefronts where its APIs are not required, the purchase goes ahead as
+        /// ``ExternalPurchasePreparationResult/notApplicable`` instead.
+        case notEligible
 
         /// The device does not authorize payments, see ``ExternalPurchaseAvailability/paymentsNotAuthorized``.
         ///
@@ -183,9 +188,9 @@ private extension ExternalPurchaseManager {
     /// `nil` otherwise.
     ///
     /// Asked on every purchase rather than cached, since the customer can change storefront while the app runs.
-    func storefrontNotRequiringExternalPurchaseAPIs() async -> String? {
+    func storefrontNotRequiringExternalPurchaseAPIs(_ policy: SDKSettings.ExternalPurchases.AppStore) -> String? {
         guard let storefront = self.storefront,
-              await self.configProvider.storefrontsAllowedWithoutStoreEligibility().contains(storefront) else {
+              policy.storefrontsAllowedWithoutStoreEligibility.contains(storefront) else {
             return nil
         }
 

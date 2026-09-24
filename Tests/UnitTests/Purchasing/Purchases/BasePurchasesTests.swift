@@ -366,6 +366,9 @@ class BasePurchasesTests: TestCase {
                                     operationDispatcher: self.mockOperationDispatcher
                                    ),
                                    remoteConfigManager: self.mockRemoteConfigManager,
+                                   sdkSettingsConfigProvider: SDKSettingsConfigProvider(
+                                    manager: self.mockRemoteConfigManager
+                                   ),
                                    offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
                                    purchasesOrchestrator: self.purchasesOrchestrator,
                                    purchasedProductsFetcher: self.mockPurchasedProductsFetcher,
@@ -742,6 +745,15 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
 
     var stubbedTopics: [RemoteConfigTopic: RemoteConfiguration.ConfigTopic] = [:]
     var stubbedBlobData: [RemoteConfigTopic: [String: Data]] = [:]
+    private let _invokedCachedBlobDataParameters: Atomic<[(topic: RemoteConfigTopic, itemKey: String)]> = .init([])
+    var invokedCachedBlobDataParameters: [(topic: RemoteConfigTopic, itemKey: String)] {
+        return self._invokedCachedBlobDataParameters.value
+    }
+    /// When `true`, cache-only `blobData(for:itemKey:policy:)` suspends until `completeStoredCachedBlobReads()` is
+    /// called, allowing tests to advance the config generation while a prewarm is in flight.
+    var shouldStoreCachedBlobDataCompletion = false
+    private typealias StoredCachedBlobRead = (data: Data?, continuation: CheckedContinuation<Data?, Never>)
+    private let _storedCachedBlobReads: Atomic<[StoredCachedBlobRead]> = .init([])
     // Atomic because UiConfigProvider now fetches its parts concurrently, so this can be appended to
     // from multiple tasks at once.
     private let _invokedBlobDataParameters: Atomic<[(topic: RemoteConfigTopic, itemKey: String)]> = .init([])
@@ -765,7 +777,10 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
     private let _storedTopicContinuations: Atomic<[CheckedContinuation<RemoteConfiguration.ConfigTopic?, Never>]> =
         .init([])
 
-    func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
+    func topic(_ topic: RemoteConfigTopic, policy: RemoteConfigReadPolicy) async -> RemoteConfiguration.ConfigTopic? {
+        guard policy == .fetchIfNeeded else {
+            return self.stubbedTopics[topic]
+        }
         guard self.shouldStoreTopicCompletion,
               self.storedTopicCompletionTopics?.contains(topic) ?? true else {
             self._invokedTopicCount.modify { $0 += 1 }
@@ -776,6 +791,28 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
             // observe readiness before `completeStoredTopic()` has something to resume.
             self._storedTopicContinuations.modify { $0.append(continuation) }
             self._invokedTopicCount.modify { $0 += 1 }
+        }
+    }
+
+    func blobData(for topic: RemoteConfigTopic, itemKey: String, policy: RemoteConfigReadPolicy) async -> Data? {
+        guard policy == .cachedOnly else { return await self.blobData(for: topic, itemKey: itemKey) }
+        self._invokedCachedBlobDataParameters.modify { $0.append((topic, itemKey)) }
+        guard self.shouldStoreCachedBlobDataCompletion else {
+            return self.stubbedBlobData[topic]?[itemKey]
+        }
+        let data = self.stubbedBlobData[topic]?[itemKey]
+        return await withCheckedContinuation { continuation in
+            self._storedCachedBlobReads.modify { $0.append((data, continuation)) }
+            // Capture the data before suspension so a test can replace the config and still resume
+            // this older local read.
+        }
+    }
+
+    /// Resumes every held cached-blob read with the bytes that were available when that read started.
+    func completeStoredCachedBlobReads() {
+        self.shouldStoreCachedBlobDataCompletion = false
+        for read in self._storedCachedBlobReads.getAndSet([]) {
+            read.continuation.resume(returning: read.data)
         }
     }
 
