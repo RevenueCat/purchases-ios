@@ -117,43 +117,26 @@ final class BackendLanesTests: TestCase {
         )
     }
 
-    func testClearHTTPClientCachesClearsEveryLaneClient() {
+    func testClearHTTPClientCachesClearsSharedETagCacheOnce() {
         let systemInfo = MockSystemInfo(finishTransactions: true)
-        let operationDispatcher = OperationDispatcher()
-        let defaultClient = self.makeMockClient(systemInfo: systemInfo)
-        let remoteConfigClient = self.makeMockClient(systemInfo: systemInfo)
-        let checkoutClient = self.makeMockClient(systemInfo: systemInfo)
-        let defaultConfiguration = self.makeConfig(client: defaultClient,
-                                                   lane: .default,
-                                                   systemInfo: systemInfo,
-                                                   operationDispatcher: operationDispatcher)
-        let remoteConfigConfiguration = self.makeConfig(client: remoteConfigClient,
-                                                        lane: .remoteConfig,
-                                                        systemInfo: systemInfo,
-                                                        operationDispatcher: operationDispatcher)
-        let checkoutConfiguration = self.makeConfig(client: checkoutClient,
-                                                    lane: .checkout,
-                                                    systemInfo: systemInfo,
-                                                    operationDispatcher: operationDispatcher)
-
-        let lanes = BackendLanes(
-            defaultConfiguration: defaultConfiguration,
-            dedicatedConfigurations: [
-                .remoteConfig: remoteConfigConfiguration,
-                .checkout: checkoutConfiguration
-            ]
-        )
+        let eTagManager = MockETagManager()
         let backend = Backend(
-            lanes: lanes,
+            systemInfo: systemInfo,
+            httpClientTimeout: .default,
+            eTagManager: eTagManager,
+            tokenManager: MockTokenManager(),
+            operationDispatcher: OperationDispatcher(),
             attributionFetcher: AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
-                                                   systemInfo: systemInfo)
+                                                   systemInfo: systemInfo),
+            offlineCustomerInfoCreator: nil,
+            diagnosticsTracker: nil,
+            apiSourceProvider: nil,
+            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .default)
         )
 
         backend.clearHTTPClientCaches()
 
-        expect(defaultClient.clearCachesCallCount) == 1
-        expect(remoteConfigClient.clearCachesCallCount) == 1
-        expect(checkoutClient.clearCachesCallCount) == 1
+        expect(eTagManager.invokedClearCachesCount) == 1
     }
 
 }
