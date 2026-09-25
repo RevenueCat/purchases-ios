@@ -20,6 +20,20 @@ class MockStoreKit2ProductPurchaser: StoreKit2ProductPurchaserType {
     private(set) var invokedPurchaseCount = 0
     private(set) var receivedStoreKit2ConfirmInOptions: StoreKit2ConfirmInOptions?
 
+    // This mock is also constructed by tests that support OS versions before StoreKit 2.
+    private var _stubbedPurchaseResult: Any?
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    var stubbedPurchaseResult: Box<Result<StoreKit.Product.PurchaseResult, Error>> {
+        get {
+            return self._stubbedPurchaseResult as? Box<Result<StoreKit.Product.PurchaseResult, Error>>
+                ?? .init(.success(.pending))
+        }
+        set {
+            self._stubbedPurchaseResult = newValue
+        }
+    }
+
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func purchase(
         product: any RevenueCat.PurchasableSK2Product,
@@ -28,6 +42,6 @@ class MockStoreKit2ProductPurchaser: StoreKit2ProductPurchaserType {
     ) async throws -> StoreKit.Product.PurchaseResult {
         self.invokedPurchaseCount += 1
         self.receivedStoreKit2ConfirmInOptions = storeKit2ConfirmInOptions
-        return .pending
+        return try self.stubbedPurchaseResult.value.get()
     }
 }

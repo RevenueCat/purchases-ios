@@ -250,9 +250,10 @@ struct WorkflowPaywallView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.workflowExitOfferOfferingBinding) private var exitOfferOfferingBinding
     @Environment(\.workflowCompletedInSessionBinding) private var workflowCompletedInSessionBinding
+    @Environment(\.workflowDismissalObserver) private var workflowDismissalObserver
 
     enum DismissalAction: Equatable {
-        case dismissWorkflow
+        case dismissWorkflow(WorkflowDismissalReason)
         case navigateBack
     }
 
@@ -282,8 +283,8 @@ struct WorkflowPaywallView: View {
     @StateObject private var promoOfferCacheOwner: PromoOfferCacheOwner
     @State private var presentationState: PresentationState
     /// Owns the per-impression workflow step event state machine (trace id, fire-once flags, gating).
-    /// Created in `init`, so a new presentation (new view identity) yields a fresh `traceId`, matching
-    /// Android's per-impression `workflowTraceId`. Its sequence/gating is unit tested in
+    /// Created in `init`, so a new presentation (new view identity) yields a fresh `traceId`, unless a
+    /// checkpoint passed the one its hit carries. Its sequence/gating is unit tested in
     /// `WorkflowStepEventCoordinatorTests`.
     @State private var stepEventCoordinator: WorkflowStepEventCoordinator
     @State private var transitionState: WorkflowPageTransitionState<RenderedPage>
@@ -346,6 +347,7 @@ struct WorkflowPaywallView: View {
         self._stepEventCoordinator = .init(
             wrappedValue: WorkflowStepEventCoordinator(
                 workflow: context.workflow,
+                traceId: context.traceId ?? UUID().uuidString,
                 workflowBlobRef: context.workflowBlobRef,
                 sink: { [purchaseHandler] event in purchaseHandler.track(event) }
             )
@@ -409,7 +411,7 @@ struct WorkflowPaywallView: View {
         // Re-emitted on every step change because navigator is @StateObject with @Published
         // currentStepId. The exit offer is resolved synchronously from allOfferings on the
         // triggering step; when the user navigates away the value becomes nil, clearing
-        // exitOfferOffering — matching Android's shouldTriggerExitOfferForCurrentStep guard.
+        // exitOfferOffering.
         .preference(
             key: WorkflowExitOfferPreferenceKey.self,
             value: self.presentationState.hasFailed
@@ -459,6 +461,7 @@ struct WorkflowPaywallView: View {
         .environment(\.paywallStateValues, self.stateStore.values)
         .environment(\.paywallStateDefaults, self.stateStore.defaults)
         .displayError(self.workflowPresentationError, onDismiss: self.onDismiss)
+        .modifier(PaywallURLEventsModifier(purchaseHandler: self.purchaseHandler))
     }
 
     // MARK: - Helpers
@@ -541,7 +544,7 @@ struct WorkflowPaywallView: View {
             workflowPackages: page.effectiveWorkflowPackageContext?.packages,
             workflowPromoOfferProductCodes: page.effectiveWorkflowPackageContext?.promoOfferCodesByPackageId,
             displayCloseButton: page.showCloseButton,
-            onDismiss: self.handleDismiss,
+            onDismiss: { self.handleDismiss() },
             closeWorkflowAction: self.onDismiss,
             failedToLoadFont: self.failedToLoadFont,
             colorScheme: self.colorScheme,
@@ -564,6 +567,9 @@ struct WorkflowPaywallView: View {
         .environment(\.workflowTriggerAction, { componentId in
             return self.handleTriggeredNavigation(componentId: componentId)
         })
+        .environment(\.workflowNavigateBackHandler, {
+            self.handleDismiss(dismissalReason: .navigatedBack)
+        })
     }
 
     @ViewBuilder
@@ -579,7 +585,7 @@ struct WorkflowPaywallView: View {
                             introOfferEligibilityContext: displayedPage.page.introOfferEligibilityContext,
                             paywallPromoOfferCache: self.promoOfferCacheOwner.cache,
                             showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
-                            onDismiss: self.handleDismiss,
+                            onDismiss: { self.handleDismiss() },
                             closeWorkflowAction: self.onDismiss,
                             failedToLoadFont: self.failedToLoadFont,
                             colorScheme: self.colorScheme,
@@ -608,18 +614,22 @@ struct WorkflowPaywallView: View {
         }
     }
 
-    private func handleDismiss() {
+    private func handleDismiss(dismissalReason: WorkflowDismissalReason = .close) {
         guard !self.transitionState.isTransitioning else {
             return
         }
 
         switch Self.dismissalAction(
             canNavigateBack: self.navigator.canNavigateBack,
-            hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession
+            hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession,
+            dismissalReason: dismissalReason
         ) {
-        case .dismissWorkflow:
+        case let .dismissWorkflow(reason):
             if self.purchaseHandler.hasPurchasedInSession {
                 self.markWorkflowCompletedInSession()
+            }
+            if reason == .navigatedBack {
+                self.workflowDismissalObserver?(.navigatedBack)
             }
             self.onDismiss()
         case .navigateBack:
@@ -648,9 +658,11 @@ struct WorkflowPaywallView: View {
     }
 
     private func syncExitOfferBinding() {
-        self.exitOfferOfferingBinding.wrappedValue = Self.exitOfferContext(
-            for: self.context, currentStepId: self.navigator.currentStepId
-        )?.exitOfferOffering
+        self.exitOfferOfferingBinding.wrappedValue = self.presentationState.hasFailed
+            ? nil
+            : Self.exitOfferContext(
+                for: self.context, currentStepId: self.navigator.currentStepId
+            )?.exitOfferOffering
     }
 
     // MARK: - Workflow step event tracking
@@ -721,13 +733,14 @@ struct WorkflowPaywallView: View {
 
     static func dismissalAction(
         canNavigateBack: Bool,
-        hasPurchasedInSession: Bool
+        hasPurchasedInSession: Bool,
+        dismissalReason: WorkflowDismissalReason = .close
     ) -> DismissalAction {
         // After a purchase, always close the whole workflow regardless of back stack —
         // navigating back to a previous step post-purchase would be confusing and
         // could allow the user to purchase again.
         guard canNavigateBack, !hasPurchasedInSession else {
-            return .dismissWorkflow
+            return .dismissWorkflow(hasPurchasedInSession ? .close : dismissalReason)
         }
 
         return .navigateBack
@@ -858,7 +871,7 @@ struct WorkflowPaywallView: View {
         return .init(
             stepId: stepId,
             content: .init(paywallComponents: paywallComponents, offering: offering),
-            stepType: step.type ?? "screen",
+            stepType: step.type,
             screenType: step.stepScreenType,
             isSingleStepFallback: stepId == context.workflow.singleStepFallbackId,
             headerComponent: screen.componentsConfig.base.header,

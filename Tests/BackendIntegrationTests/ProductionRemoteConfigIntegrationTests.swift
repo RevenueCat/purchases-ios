@@ -218,4 +218,24 @@ final class EnforcedProductionRemoteConfigIntegrationTests: BaseProductionRemote
         try self.verifyRemoteConfigFallbackResponse(result)
     }
 
+    func testVerifiesNotModifiedFallbackResponseWhenVerificationIsEnforced() async throws {
+        let firstResult = try await self.fetchRemoteConfigFallback()
+        try self.verifyRemoteConfigFallbackResponse(firstResult)
+
+        self.logger.clearMessages()
+
+        let secondResult = try await self.fetchRemoteConfigFallback()
+
+        try self.verifyRemoteConfigFallbackResponse(secondResult)
+        expect(secondResult.configuration) == firstResult.configuration
+
+        let expectedRequest = HTTPRequest(
+            method: .get,
+            path: HTTPRequest.FallbackPath.remoteConfig(domain: RemoteConfiguration.defaultDomain)
+        )
+        self.logger.verifyMessageWasLogged(
+            Strings.network.api_request_completed(expectedRequest, httpCode: .notModified, metadata: nil)
+        )
+    }
+
 }

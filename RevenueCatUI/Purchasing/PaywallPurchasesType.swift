@@ -56,6 +56,11 @@ protocol PaywallPurchasesType: Sendable {
         paywallEvent: PaywallEvent?
     ) async throws -> PurchaseResultData
 
+    /// Only to be called when the customer has deliberately asked to buy: Apple's disclosure notice is shown
+    /// and an external purchase token may be minted, which Apple expects a report for.
+    @Sendable
+    func startHostedCheckout(package: Package, paywallEvent: PaywallEvent?) async -> HostedCheckoutStartResult
+
     @Sendable
     func restorePurchases() async throws -> CustomerInfo
 

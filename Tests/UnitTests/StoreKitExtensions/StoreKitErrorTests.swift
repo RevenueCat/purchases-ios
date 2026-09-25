@@ -87,4 +87,21 @@ class StoreKitErrorTests: BaseErrorTests {
                              underlyingError: error)
     }
 
+    #if compiler(>=6.4)
+    @available(iOS 27.0, tvOS 27.0, watchOS 27.0, macOS 27.0, visionOS 27.0, *)
+    func testInvalidPresentationContextError() throws {
+        try AvailabilityChecks.iOS27APIAvailableOrSkipTest()
+
+        let error: StoreKitError = .invalidPresentationContext
+        verifyPurchasesError(error, expectedCode: .storeProblemError, underlyingError: error)
+        expect(error.trackingDescription) == "invalid_presentation_context"
+
+        let nsError = error.asPurchasesError.asPublicError
+        let rootError = try XCTUnwrap(nsError.userInfo[ErrorDetails.rootErrorKey] as? [String: Any])
+        let storeKitError = try XCTUnwrap(rootError["storeKitError"] as? [String: Any])
+        expect(storeKitError["description"] as? String) == "invalid_presentation_context"
+        self.logger.verifyMessageWasNotLogged(Strings.storeKit.unknown_storekit_error(error))
+    }
+    #endif
+
 }

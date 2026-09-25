@@ -112,7 +112,7 @@ final class WebViewWebsiteDataStoreSweeperTests: TestCase {
 
     func testSweepStoresDropsMissingIdentifiersWithoutCallingRemove() async throws {
         let store = try self.makeStore()
-        let first = store.identifier()
+        _ = store.identifier()
         store.retireCurrentIdentifier()
         var removeCalled = false
 

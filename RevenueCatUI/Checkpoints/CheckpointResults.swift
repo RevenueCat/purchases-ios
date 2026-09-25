@@ -15,192 +15,66 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
-/// Base class for the result of evaluating a checkpoint.
-///
-/// Inspect the concrete result type to determine what happened:
-///
-/// ```swift
-/// let result = try await Purchases.shared.checkpoint("onboarding_complete")
-///
-/// switch result {
-/// case let result as CheckpointResult.PaywallPresented:
-///     handlePaywallOutcome(result.paywallOutcome)
-/// case let result as CheckpointResult.ReceivedOffering:
-///     showOffering(result.offering)
-/// case let result as CheckpointResult.NoAction:
-///     handleNoAction(result.reason)
-/// default:
-///     // Handle result types added in future SDK versions.
-///     break
-/// }
-/// ```
+/// An active entitlement reported after completing a checkpoint flow.
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public class CheckpointResult: CustomStringConvertible {
+public struct ObtainedEntitlement: Hashable, @unchecked Sendable {
 
-    init() {}
+    /// Information about the active entitlement reported after the flow.
+    public let entitlementInfo: EntitlementInfo
 
-    /// A debug description of the checkpoint result.
-    public var description: String {
-        return "CheckpointResult"
+    init(entitlementInfo: EntitlementInfo) {
+        self.entitlementInfo = entitlementInfo
     }
 
-    /// Nothing was served for a checkpoint.
-    public final class NoAction: CheckpointResult {
-
-        /// The reason no experience was served.
-        public let reason: CheckpointNoActionReason
-
-        init(reason: CheckpointNoActionReason) {
-            self.reason = reason
-            super.init()
-        }
-
-        public override var description: String {
-            return "NoAction(reason=\(self.reason))"
-        }
-
+    /// Returns whether two obtained entitlements represent the same entitlement identifier.
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        return lhs.entitlementInfo.identifier == rhs.entitlementInfo.identifier
     }
 
-    /// An offering was selected for a checkpoint, with no RevenueCat-managed UI presented. The app decides
-    /// whether and how to use it.
-    public final class ReceivedOffering: CheckpointResult {
-
-        /// The offering the checkpoint selected.
-        public let offering: Offering
-
-        init(offering: Offering) {
-            self.offering = offering
-            super.init()
-        }
-
-        public override var description: String {
-            return "ReceivedOffering(offering=\(self.offering.identifier))"
-        }
-
-    }
-
-    /// A checkpoint-triggered paywall was presented and finished.
-    public final class PaywallPresented: CheckpointResult {
-
-        /// The terminal outcome of the presented paywall.
-        public let paywallOutcome: CheckpointPaywallOutcome
-
-        init(paywallOutcome: CheckpointPaywallOutcome) {
-            self.paywallOutcome = paywallOutcome
-            super.init()
-        }
-
-        public override var description: String {
-            return "PaywallPresented(paywallOutcome=\(self.paywallOutcome))"
-        }
-
+    /// Hashes the entitlement identifier.
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.entitlementInfo.identifier)
     }
 
 }
 
-/// Base class for the terminal outcome of a checkpoint-presented paywall.
-///
-/// Inspect the concrete outcome type to determine how the paywall finished:
-///
-/// ```swift
-/// switch result.paywallOutcome {
-/// case let outcome as CheckpointPaywallOutcome.Purchased:
-///     handlePurchase(outcome.transaction, outcome.customerInfo)
-/// case let outcome as CheckpointPaywallOutcome.Restored:
-///     handleRestore(outcome.customerInfo)
-/// case is CheckpointPaywallOutcome.Dismissed:
-///     handleDismissal()
-/// case is CheckpointPaywallOutcome.WebCheckoutOpened:
-///     handleWebCheckoutOpened()
-/// case let outcome as CheckpointPaywallOutcome.Error:
-///     handleError(outcome.error)
-/// default:
-///     // Handle outcome types added in future SDK versions.
-///     break
-/// }
-/// ```
+/// The result of completing a checkpoint flow.
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public class CheckpointPaywallOutcome: CustomStringConvertible {
+public struct FlowResult: @unchecked Sendable {
 
-    fileprivate init() {}
-
-    /// A debug description of the paywall outcome.
-    public var description: String { return "CheckpointPaywallOutcome" }
-
-    /// The customer dismissed the paywall without a purchase, restore, or error.
-    public final class Dismissed: CheckpointPaywallOutcome {
-
-        static let shared = Dismissed()
-
-        private override init() { super.init() }
-
-        public override var description: String { return "Dismissed" }
-
-    }
-
-    /// The customer opened a web checkout from the paywall to pay externally.
+    /// Active entitlements present after the flow that were not active in cached customer information before it began.
     ///
-    /// There is no in-app completion signal for the external payment.
-    public final class WebCheckoutOpened: CheckpointPaywallOutcome {
+    /// The SDK compares the final customer information with the customer information cached before presenting the
+    /// flow. When no cached customer information is available, this can include entitlements that were already active
+    /// or were obtained from another source.
+    public let obtainedEntitlements: Set<ObtainedEntitlement>
 
-        static let shared = WebCheckoutOpened()
-
-        private override init() { super.init() }
-
-        public override var description: String { return "WebCheckoutOpened" }
-
+    init(obtainedEntitlements: Set<ObtainedEntitlement> = []) {
+        self.obtainedEntitlements = obtainedEntitlements
     }
 
-    /// The customer completed a purchase.
-    public final class Purchased: CheckpointPaywallOutcome {
+}
 
-        /// The transaction completed by the purchase, if available.
-        public let transaction: StoreTransaction?
+extension CustomerInfo {
 
-        /// Customer information after the completed purchase.
-        public let customerInfo: CustomerInfo
-
-        init(transaction: StoreTransaction?, customerInfo: CustomerInfo) {
-            self.transaction = transaction
-            self.customerInfo = customerInfo
-            super.init()
+    func obtainedEntitlements(
+        comparedTo initialActiveEntitlementIdentifiers: Set<String>?
+    ) -> [EntitlementInfo] {
+        guard let initialActiveEntitlementIdentifiers else {
+            return Array(self.entitlements.active.values)
         }
 
-        public override var description: String { return "Purchased" }
-
+        return self.entitlements.active.values.filter { entitlement in
+            return !initialActiveEntitlementIdentifiers.contains(entitlement.identifier)
+        }
     }
 
-    /// The customer restored purchases.
-    public final class Restored: CheckpointPaywallOutcome {
-
-        /// Customer information after restoring purchases.
-        public let customerInfo: CustomerInfo
-
-        init(customerInfo: CustomerInfo) {
-            self.customerInfo = customerInfo
-            super.init()
-        }
-
-        public override var description: String { return "Restored" }
-
-    }
-
-    /// A purchase or restore failed with an error. Cancellations are reported as
-    /// ``Dismissed`` instead.
-    public final class Error: CheckpointPaywallOutcome {
-
-        /// The error that ended the checkpoint experience.
-        public let error: PublicError
-
-        init(error: PublicError) {
-            self.error = error
-            super.init()
-        }
-
-        public override var description: String { return "Error(error=\(self.error))" }
-
+    func grantsNewEntitlements(
+        comparedTo initialActiveEntitlementIdentifiers: Set<String>?
+    ) -> Bool {
+        return !self.obtainedEntitlements(comparedTo: initialActiveEntitlementIdentifiers).isEmpty
     }
 
 }

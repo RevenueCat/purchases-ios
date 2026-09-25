@@ -76,6 +76,36 @@ class PurchasesTransactionHandlingTests: BasePurchasesTests {
         expect(self.purchasesDelegate.customerInfoReceivedCount).toEventually(equal(2))
     }
 
+    func testCustomerInfoFromReceiptPostIsCachedForUserThatPostedItIfUserChanges() throws {
+        let customerInfo = try CustomerInfo(data: [
+            "request_date": "2020-01-01T00:00:00Z",
+            "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": Self.appUserID,
+                "subscriptions": [:] as [String: Any],
+                "non_subscriptions": [:] as [String: Any]
+            ] as [String: Any]
+        ])
+        self.backend.postReceiptResult = .success(customerInfo)
+
+        // Simulates `logIn` finishing while the receipt is being posted.
+        let newUserID = "new_app_user_id"
+        self.backend.onPostReceipt = { [identityManager = self.identityManager!] in
+            identityManager.mockAppUserID = newUserID
+        }
+
+        let transaction = MockTransaction()
+        transaction.mockPayment = SKPayment(product: self.product)
+        transaction.mockState = .purchased
+        try self.delegate.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
+
+        expect(self.backend.userID) == Self.appUserID
+        expect {
+            try self.customerInfoManager.cachedCustomerInfo(appUserID: Self.appUserID)?.requestDate
+        }.toEventually(equal(customerInfo.requestDate))
+        expect(self.deviceCache.cachedCustomerInfo[newUserID]).to(beNil())
+    }
+
     func testDelegateIsOnlyCalledOnceIfCustomerInfoTheSame() throws {
         let customerInfo1: CustomerInfo = .emptyInfo
 

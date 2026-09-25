@@ -62,6 +62,83 @@ func waitUntilValue<Value>(
 
 private struct ConditionFailedError: Error {}
 
+final class EligibilityWarmupTracker: Sendable {
+
+    private let pendingWarmups: Atomic<Int> = .init(0)
+    private let tasks: Atomic<[Task<Void, Never>]> = .init([])
+
+    func install() {
+        let previous = Purchases.eligibilityCacheWarmupStarted.getAndSet { [self] in self.start() }
+        XCTAssertNil(previous, "An eligibility warmup observer is already installed")
+        let previousTaskObserver = Purchases.eligibilityCacheWarmupTaskCreated.getAndSet { [tasks] task in
+            tasks.modify { $0.append(task) }
+        }
+        XCTAssertNil(previousTaskObserver, "An eligibility warmup task observer is already installed")
+    }
+
+    func uninstall() {
+        Purchases.eligibilityCacheWarmupStarted.value = nil
+        Purchases.eligibilityCacheWarmupTaskCreated.value = nil
+    }
+
+    func start() -> @Sendable () -> Void {
+        self.pendingWarmups.modify { $0 += 1 }
+        return { [pendingWarmups = self.pendingWarmups] in pendingWarmups.modify { $0 -= 1 } }
+    }
+
+    var pendingCount: Int {
+        self.pendingWarmups.value
+    }
+
+    /// Waits until every tracked warmup has finished.
+    ///
+    /// - Parameter failOnTimeout: whether running out of time should fail the test. Pass `false`
+    /// where the wait is isolation hygiene rather than the thing under test, and inspect the
+    /// returned count instead.
+    /// - Returns: the number of warmups still in flight, which is `0` unless the wait timed out.
+    @discardableResult
+    func waitForCompletion(timeout: NimbleTimeInterval, failOnTimeout: Bool = true) async throws -> Int {
+        let start = Date()
+        let waiters: Atomic<[Task<Void, Never>]> = .init([])
+        defer { waiters.value.forEach { $0.cancel() } }
+
+        // Awaiting the real tasks propagates the teardown waiter's priority to them.
+        // Polling a counter alone leaves background work vulnerable to starvation under CI load.
+        let drainAndCount: @Sendable () -> Int = { [self, waiters] in
+            let queuedTasks = self.tasks.getAndSet([])
+            waiters.modify { waiters in
+                waiters += queuedTasks.map { task in Task(priority: .userInitiated) { await task.value } }
+            }
+            return self.pendingCount
+        }
+
+        guard failOnTimeout else {
+            var remaining = drainAndCount()
+
+            while remaining > 0,
+                  DispatchTimeInterval(Date().timeIntervalSince(start)).nanoseconds < timeout.nanoseconds {
+                try? await Task.sleep(nanoseconds: UInt64(defaultPollInterval.nanoseconds))
+                remaining = drainAndCount()
+            }
+
+            return remaining
+        }
+
+        try await asyncWait(
+            timeout: timeout,
+            description: { pending in
+                "Eligibility cache warmup did not finish after \(Date().timeIntervalSince(start))s; " +
+                "\(pending ?? 0) operations remain"
+            },
+            until: { drainAndCount() },
+            condition: { $0 == 0 }
+        )
+
+        return 0
+    }
+
+}
+
 func asyncWait(
     description: String? = nil,
     timeout: NimbleTimeInterval = defaultTimeout,

@@ -23,3 +23,5 @@
 "Default_offer_details_with_intro_offer" = "{{ sub_offer_duration }} トライアルを開始してから、{{ total_price_and_per_month }} を開始してください。";
 "Something went wrong" = "問題が発生しました";
 "Purchase" = "購入";
+"You are currently subscribed to this" = "この項目は現在購読中です";
+"You've already purchased this" = "この項目はすでに購入済みです";

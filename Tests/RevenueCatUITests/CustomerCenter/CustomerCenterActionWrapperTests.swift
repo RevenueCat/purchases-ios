@@ -283,6 +283,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
         expect(receivedOfferId.value).to(equal("test_offer"))
     }
 
+    @available(*, deprecated)
     func testPromotionalOfferSucceededAlsoFiresDeprecatedHandler() async throws {
         let actionWrapper = await CustomerCenterActionWrapper()
         let newExpectation = XCTestExpectation(description: "promotionalOfferSucceeded new handler fires")

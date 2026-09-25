@@ -17,6 +17,33 @@ import Foundation
 import RevenueCat
 @_spi(CheckpointsInternal) import RevenueCatUI
 
+enum PaywallPresenterMode: String, CaseIterable, Identifiable {
+    case `default`
+    case global
+    case localOverride
+
+    var id: Self { self }
+
+    var title: String {
+        switch self {
+        case .default: return "Default"
+        case .global: return "Global"
+        case .localOverride: return "Local"
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .default:
+            return "For an offering step, RevenueCat presents its default paywall."
+        case .global:
+            return "For an offering step, Purchases.shared uses the blue global presenter."
+        case .localOverride:
+            return "For an offering step, each checkpoint call uses the purple local override."
+        }
+    }
+}
+
 final class CheckpointDemoModel: ObservableObject {
 
     struct OutcomeAlert: Identifiable {
@@ -26,13 +53,26 @@ final class CheckpointDemoModel: ObservableObject {
     }
 
     @Published private(set) var outcomeAlert: OutcomeAlert?
+    @Published var paywallPresenterMode: PaywallPresenterMode = .default
 
     private var pendingOutcomeAlerts: [OutcomeAlert] = []
 
-    func showOutcome(_ result: CheckpointResult, checkpointIdentifier: String) {
+    func showOutcome(_ result: FlowResult?, checkpointIdentifier: String) {
+        guard let result else {
+            self.showOutcomeAlert(
+                title: "No completed flow",
+                message: "Checkpoint · \(checkpointIdentifier)\n\n" +
+                    "No matching flow was found, or the flow could not complete."
+            )
+            return
+        }
+
+        let identifiers = result.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted()
         self.showOutcomeAlert(
-            title: "Checkpoint result",
-            message: Self.describe(result, checkpointIdentifier: checkpointIdentifier)
+            title: "Checkpoint completed",
+            message: identifiers.isEmpty
+                ? "Checkpoint · \(checkpointIdentifier)\n\nNo active entitlements reported."
+                : "Checkpoint · \(checkpointIdentifier)\n\nObtained: \(identifiers.joined(separator: ", "))"
         )
     }
 
@@ -41,6 +81,20 @@ final class CheckpointDemoModel: ObservableObject {
             title: "Checkpoint failed",
             message: error.localizedDescription
         )
+    }
+
+    @MainActor
+    func configurePaywallPresenter() {
+        Purchases.shared.paywallPresenter = switch self.paywallPresenterMode {
+        case .global: GlobalPaywallPresenter.shared
+        case .default, .localOverride: nil
+        }
+    }
+
+    @MainActor
+    var localPaywallPresenter: PaywallPresentationHandler? {
+        guard self.paywallPresenterMode == .localOverride else { return nil }
+        return LocalPaywallPresenter.shared
     }
 
     // MARK: - Demo-only result presentation
@@ -71,37 +125,6 @@ final class CheckpointDemoModel: ObservableObject {
             return
         }
         self.outcomeAlert = self.pendingOutcomeAlerts.removeFirst()
-    }
-
-    private static func describe(_ result: CheckpointResult, checkpointIdentifier: String) -> String {
-        switch result {
-        case let presented as CheckpointResult.PaywallPresented:
-            return "Paywall presented · \(checkpointIdentifier)\n\n" +
-                "Paywall outcome: \(Self.describe(presented.paywallOutcome))"
-        case let received as CheckpointResult.ReceivedOffering:
-            return "Received offering · \(checkpointIdentifier) · \(received.offering.identifier)"
-        case let noAction as CheckpointResult.NoAction:
-            return "No action · \(checkpointIdentifier) · \(noAction.reason)"
-        default:
-            return "Unknown checkpoint result · \(checkpointIdentifier)"
-        }
-    }
-
-    private static func describe(_ result: CheckpointPaywallOutcome) -> String {
-        switch result {
-        case is CheckpointPaywallOutcome.Dismissed:
-            return "Dismissed"
-        case is CheckpointPaywallOutcome.WebCheckoutOpened:
-            return "Web checkout opened"
-        case is CheckpointPaywallOutcome.Purchased:
-            return "Purchased"
-        case is CheckpointPaywallOutcome.Restored:
-            return "Restored"
-        case let error as CheckpointPaywallOutcome.Error:
-            return "Error · \(error.error.localizedDescription)"
-        default:
-            return "Unknown paywall outcome"
-        }
     }
 
 }

@@ -31,14 +31,16 @@ import Foundation
             variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
         ),
         presentedOfferingContext: PresentedOfferingContext? = nil,
-        workflowBlobRef: String? = nil
+        workflowBlobRef: String? = nil,
+        traceId: String? = nil
     ) throws -> WorkflowContext {
         return try self.makeContext(
             workflow: workflow,
             offerings: .preview(offerings: offerings),
             uiConfig: uiConfig,
             presentedOfferingContext: presentedOfferingContext,
-            workflowBlobRef: workflowBlobRef
+            workflowBlobRef: workflowBlobRef,
+            traceId: traceId
         )
     }
 
@@ -52,14 +54,16 @@ import Foundation
             variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
         ),
         presentedOfferingContext: PresentedOfferingContext? = nil,
-        workflowBlobRef: String? = nil
+        workflowBlobRef: String? = nil,
+        traceId: String? = nil
     ) throws -> WorkflowContext {
         return try PurchaseHandler.makeWorkflowContext(
             workflow: workflow,
             uiConfig: uiConfig,
             allOfferings: offerings,
             presentedOfferingContext: presentedOfferingContext,
-            workflowBlobRef: workflowBlobRef
+            workflowBlobRef: workflowBlobRef,
+            traceId: traceId
         )
     }
 

@@ -372,6 +372,57 @@ class PurchaseButtonComponentCodableTests: TestCase {
         XCTAssertNil(customWebCheckout.customUrl.envParam)
     }
 
+    // MARK: - Hosted web checkout
+
+    /// The action stays there so that SDKs that do not know the method still buy through StoreKit.
+    func testMethodHostedWebCheckoutDecoding() throws {
+        let jsonString = """
+        {
+            "type": "purchase_button",
+            "action": "in_app_checkout",
+            "method": {
+                "type": "hosted_web_checkout"
+            },
+            "stack": \(jsonStringDefaultStack)
+        }
+        """
+        let jsonData = jsonString.data(using: .utf8)!
+        let decodedPurchaseButton = try JSONDecoder.default.decode(PaywallComponent.PurchaseButtonComponent.self,
+                                                                   from: jsonData)
+
+        let purchaseButtonComponent = PaywallComponent.PurchaseButtonComponent(
+            stack: .init(
+                components: [],
+                dimension: .vertical(.center, .start),
+                size: .init(width: .fill, height: .fill)
+            ),
+            action: .inAppCheckout,
+            method: .hostedWebCheckout,
+            name: nil
+        )
+
+        XCTAssertEqual(decodedPurchaseButton, purchaseButtonComponent)
+    }
+
+    /// An open method may be added later. Until this SDK reads one, it opens the checkout in the app.
+    func testMethodHostedWebCheckoutIgnoresAnythingElseInTheMethod() throws {
+        let jsonString = """
+        {
+            "type": "purchase_button",
+            "method": {
+                "type": "hosted_web_checkout",
+                "open_method": "external_browser"
+            },
+            "stack": \(jsonStringDefaultStack)
+        }
+        """
+        let jsonData = jsonString.data(using: .utf8)!
+        let decodedPurchaseButton = try JSONDecoder.default.decode(PaywallComponent.PurchaseButtonComponent.self,
+                                                                   from: jsonData)
+
+        XCTAssertEqual(decodedPurchaseButton.method, .hostedWebCheckout)
+    }
+
     // MARK: - Method.description
 
     func testMethodDescriptionInAppCheckout() {
@@ -398,6 +449,13 @@ class PurchaseButtonComponentCodableTests: TestCase {
                 .init(customUrl: .init(url: "url", packageParam: nil))
             ).description,
             "custom_web_checkout"
+        )
+    }
+
+    func testMethodDescriptionHostedWebCheckout() {
+        XCTAssertEqual(
+            PaywallComponent.PurchaseButtonComponent.Method.hostedWebCheckout.description,
+            "hosted_web_checkout"
         )
     }
 

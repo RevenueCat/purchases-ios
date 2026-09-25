@@ -40,9 +40,11 @@ actor MockEventsManager: EventsManagerType {
     }
 
     var trackedEvents: [FeatureEvent] = []
+    var trackedEventPriorities: [TaskPriority] = []
 
     func track(featureEvent: FeatureEvent) async {
         self.trackedEvents.append(featureEvent)
+        self.trackedEventPriorities.append(Task.currentPriority)
     }
 
     var invokedFlushFeatureEvents = false

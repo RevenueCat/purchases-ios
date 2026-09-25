@@ -28,6 +28,7 @@ class BaseCustomerInfoManagerTests: TestCase {
     fileprivate var customerInfoManagerChangesCallCount = 0
     fileprivate var customerInfoManagerLastCustomerInfoChange: (old: CustomerInfo?, new: CustomerInfo)?
 
+    fileprivate var mockCurrentUserProvider: MockCurrentUserProvider?
     fileprivate var customerInfoMonitorDisposable: (() -> Void)?
 
     override func setUpWithError() throws {
@@ -758,6 +759,46 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
 
         expect(self.customerInfoManagerChangesCallCount).toEventually(equal(2))
         expect(self.customerInfoManagerLastCustomerInfoChange) == (old: self.mockCustomerInfo, new: newCustomerInfo)
+    }
+
+    func testCacheCustomerInfoSendsToDelegateIfAppUserIDIsCurrent() {
+        self.mockCurrentUserProvider = MockCurrentUserProvider(mockAppUserID: "myUser")
+        self.customerInfoManager.currentUserProvider = self.mockCurrentUserProvider
+
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: "myUser")
+
+        expect(self.customerInfoManagerChangesCallCount).toEventually(equal(1))
+        expect(self.customerInfoManagerLastCustomerInfoChange) == (old: nil, new: self.mockCustomerInfo)
+    }
+
+    func testCacheCustomerInfoDoesNotSendToDelegateIfAppUserIDIsNotCurrent() async {
+        self.mockCurrentUserProvider = MockCurrentUserProvider(mockAppUserID: "myUser")
+        self.customerInfoManager.currentUserProvider = self.mockCurrentUserProvider
+
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: "previousUser")
+
+        // The `CustomerInfo` is still cached for the user that requested it
+        expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
+        expect(self.mockDeviceCache.cachedCustomerInfo["previousUser"]).toNot(beNil())
+
+        await expect(self.customerInfoManagerChangesCallCount).toNever(equal(1), until: .milliseconds(200))
+        expect(self.customerInfoManager.lastSentCustomerInfo).to(beNil())
+    }
+
+    func testCacheCustomerInfoForNonCurrentUserDoesNotAffectSubsequentUpdates() {
+        self.mockCurrentUserProvider = MockCurrentUserProvider(mockAppUserID: "myUser")
+        self.customerInfoManager.currentUserProvider = self.mockCurrentUserProvider
+
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: "myUser")
+        expect(self.customerInfoManagerChangesCallCount).toEventually(equal(1))
+
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo2, appUserID: "previousUser")
+        expect(self.customerInfoManager.lastSentCustomerInfo) === self.mockCustomerInfo
+
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo2, appUserID: "myUser")
+        expect(self.customerInfoManagerChangesCallCount).toEventually(equal(2))
+        expect(self.customerInfoManagerLastCustomerInfoChange) == (old: self.mockCustomerInfo,
+                                                                   new: self.mockCustomerInfo2)
     }
 
     func testCacheCustomerInfoSendsToDelegateWhenComputedOnDevice() {

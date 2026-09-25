@@ -66,8 +66,32 @@ extension StoreKitConfigTestCase {
     }
 
     func fetchSk2Product(_ productID: String = StoreKitConfigTestCase.productID) async throws -> SK2Product {
-        let products: [SK2Product] = try await StoreKit.Product.products(for: [productID])
-        return try XCTUnwrap(products.first)
+        let retryTimeout: TimeInterval
+        if #available(iOS 27.0, tvOS 27.0, macOS 27.0, watchOS 27.0, *) {
+            retryTimeout = 10
+        } else {
+            retryTimeout = 0
+        }
+        let products = try await self.fetchSk2ProductsForFixture(productID, retryTimeout: retryTimeout)
+        return try XCTUnwrap(products.first, "StoreKitTest did not return fixture product \(productID)")
+    }
+
+    /// OS 27 StoreKitTest can temporarily return an empty product list after session setup.
+    /// Only fixture lookup retries; SDK product fetching and purchase assertions remain unchanged.
+    /// Errors and cancellation propagate immediately, and a persistently empty result still fails the caller.
+    func fetchSk2ProductsForFixture(
+        _ productID: String,
+        retryTimeout: TimeInterval,
+        fetchProducts: ([String]) async throws -> [SK2Product] = { try await StoreKit.Product.products(for: $0) }
+    ) async throws -> [SK2Product] {
+        let deadline = Date().addingTimeInterval(retryTimeout)
+        while true {
+            try Task.checkCancellation()
+            let products = try await fetchProducts([productID])
+            let remainingTime = deadline.timeIntervalSinceNow
+            guard products.isEmpty, remainingTime > 0 else { return products }
+            try await Task.sleep(nanoseconds: UInt64(min(0.1, remainingTime) * 1_000_000_000))
+        }
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -130,6 +154,7 @@ extension StoreKitConfigTestCase {
     static let consumableProductId = "com.revenuecat.consumable"
     static let nonConsumableProductId = "lifetime"
     static let nonRenewableProductId = "com.revenuecat.non_renewable"
+    static let productIDWithBillingPlans = "com.revenuecat.sampleapp.monthly.12mocommitment"
 
 }
 
