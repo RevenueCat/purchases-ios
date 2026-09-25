@@ -441,26 +441,33 @@ class ExternalPurchaseManagerTests: TestCase {
     // MARK: - Helpers
 
     private static func makeSystemInfo(useExternalPurchaseCustomLinks: Bool) -> MockSystemInfo {
-        return MockSystemInfo(
+        return Self.onADevice(MockSystemInfo(
             finishTransactions: true,
             dangerousSettings: DangerousSettings(
                 autoSyncPurchases: true,
                 useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks
             )
-        )
+        ))
     }
 
     private static func makeSystemInfoDisablingExternalPurchasesInSimulator(
         useExternalPurchaseCustomLinks: Bool
     ) -> MockSystemInfo {
-        return MockSystemInfo(
+        return Self.onADevice(MockSystemInfo(
             finishTransactions: true,
             dangerousSettings: DangerousSettings(
                 autoSyncPurchases: true,
                 useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks,
                 disableExternalPurchasesInSimulator: true
             )
-        )
+        ))
+    }
+
+    /// iOS tests run in the simulator and macOS ones do not, so every test starts on a device unless it says
+    /// otherwise.
+    private static func onADevice(_ systemInfo: MockSystemInfo) -> MockSystemInfo {
+        systemInfo.stubbedIsRunningInSimulator = false
+        return systemInfo
     }
 
     private func makeManager() -> ExternalPurchaseManager {
