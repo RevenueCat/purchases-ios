@@ -213,7 +213,7 @@ private extension HostedCheckoutPoller {
             }
 
             let timer = Task {
-                guard (try? await TaskSleeper().sleep(seconds: timeLimit)) != nil else { return }
+                try await TaskSleeper().sleep(seconds: timeLimit)
                 finish(nil)
             }
 
