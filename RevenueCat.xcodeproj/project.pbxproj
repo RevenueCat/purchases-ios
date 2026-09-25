@@ -1037,12 +1037,16 @@
 		4487A0212E90000000000002 /* HostedCheckoutCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4487A0202E90000000000002 /* HostedCheckoutCallback.swift */; };
 		4487A0312E90000000000003 /* PostHostedCheckoutOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4487A0302E90000000000003 /* PostHostedCheckoutOperation.swift */; };
 		4487A0512E90000000000005 /* HostedCheckoutStatusResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4487A0502E90000000000005 /* HostedCheckoutStatusResponse.swift */; };
+		4487B1012E90000000000001 /* HostedCheckoutPaymentStatusResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4487B1002E90000000000001 /* HostedCheckoutPaymentStatusResponse.swift */; };
 		4487A0612E90000000000006 /* HostedCheckoutStatusCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4487A0602E90000000000006 /* HostedCheckoutStatusCallback.swift */; };
+		4487B1012E90000000000002 /* HostedCheckoutPaymentStatusCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4487B1002E90000000000002 /* HostedCheckoutPaymentStatusCallback.swift */; };
 		4487A0712E90000000000007 /* GetHostedCheckoutStatusOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4487A0702E90000000000007 /* GetHostedCheckoutStatusOperation.swift */; };
+		4487B1012E90000000000003 /* GetHostedCheckoutPaymentStatusOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4487B1002E90000000000003 /* GetHostedCheckoutPaymentStatusOperation.swift */; };
 		4487A0812E90000000000008 /* HostedCheckoutPoller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4487A0802E90000000000008 /* HostedCheckoutPoller.swift */; };
 		755C26A62E310B7B006DD0AE /* BackendGetWebBillingProductsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755C26A52E310B7B006DD0AE /* BackendGetWebBillingProductsTests.swift */; };
 		4487A0412E90000000000004 /* BackendPostHostedCheckoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4487A0402E90000000000004 /* BackendPostHostedCheckoutTests.swift */; };
 		4487A0912E90000000000009 /* BackendGetHostedCheckoutStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4487A0902E90000000000009 /* BackendGetHostedCheckoutStatusTests.swift */; };
+		4487B1012E90000000000004 /* BackendHostedCheckoutPaymentStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4487B1002E90000000000004 /* BackendHostedCheckoutPaymentStatusTests.swift */; };
 		4487A0A12E9000000000000A /* HostedCheckoutPollerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4487A0A02E9000000000000A /* HostedCheckoutPollerTests.swift */; };
 		756AE8352D8816CD00BA2E39 /* PurchasesDiagnosticsTrackingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756AE8342D8816CD00BA2E39 /* PurchasesDiagnosticsTrackingTests.swift */; };
 		7571BE9F2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7571BE9E2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift */; };
@@ -2849,12 +2853,16 @@
 		4487A0202E90000000000002 /* HostedCheckoutCallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedCheckoutCallback.swift; sourceTree = "<group>"; };
 		4487A0302E90000000000003 /* PostHostedCheckoutOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostHostedCheckoutOperation.swift; sourceTree = "<group>"; };
 		4487A0502E90000000000005 /* HostedCheckoutStatusResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedCheckoutStatusResponse.swift; sourceTree = "<group>"; };
+		4487B1002E90000000000001 /* HostedCheckoutPaymentStatusResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedCheckoutPaymentStatusResponse.swift; sourceTree = "<group>"; };
 		4487A0602E90000000000006 /* HostedCheckoutStatusCallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedCheckoutStatusCallback.swift; sourceTree = "<group>"; };
+		4487B1002E90000000000002 /* HostedCheckoutPaymentStatusCallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedCheckoutPaymentStatusCallback.swift; sourceTree = "<group>"; };
 		4487A0702E90000000000007 /* GetHostedCheckoutStatusOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetHostedCheckoutStatusOperation.swift; sourceTree = "<group>"; };
+		4487B1002E90000000000003 /* GetHostedCheckoutPaymentStatusOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetHostedCheckoutPaymentStatusOperation.swift; sourceTree = "<group>"; };
 		4487A0802E90000000000008 /* HostedCheckoutPoller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedCheckoutPoller.swift; sourceTree = "<group>"; };
 		755C26A52E310B7B006DD0AE /* BackendGetWebBillingProductsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendGetWebBillingProductsTests.swift; sourceTree = "<group>"; };
 		4487A0402E90000000000004 /* BackendPostHostedCheckoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendPostHostedCheckoutTests.swift; sourceTree = "<group>"; };
 		4487A0902E90000000000009 /* BackendGetHostedCheckoutStatusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendGetHostedCheckoutStatusTests.swift; sourceTree = "<group>"; };
+		4487B1002E90000000000004 /* BackendHostedCheckoutPaymentStatusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendHostedCheckoutPaymentStatusTests.swift; sourceTree = "<group>"; };
 		4487A0A02E9000000000000A /* HostedCheckoutPollerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedCheckoutPollerTests.swift; sourceTree = "<group>"; };
 		756AE8342D8816CD00BA2E39 /* PurchasesDiagnosticsTrackingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesDiagnosticsTrackingTests.swift; sourceTree = "<group>"; };
 		7571BE9E2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift; sourceTree = "<group>"; };
@@ -5874,6 +5882,7 @@
 				755C26A52E310B7B006DD0AE /* BackendGetWebBillingProductsTests.swift */,
 				4487A0402E90000000000004 /* BackendPostHostedCheckoutTests.swift */,
 				4487A0902E90000000000009 /* BackendGetHostedCheckoutStatusTests.swift */,
+				4487B1002E90000000000004 /* BackendHostedCheckoutPaymentStatusTests.swift */,
 				579D2E3928F0BF5A0094B36F /* BackendInternalTests.swift */,
 				5796A38B27D6BA1600653165 /* BackendLoginTests.swift */,
 				64FEF3704AAACD669F3BF4E0 /* BackendTokenLoginTests.swift */,
@@ -6099,6 +6108,7 @@
 				755C26A32E310B19006DD0AE /* WebBillingProductsResponse.swift */,
 				4487A0102E90000000000001 /* HostedCheckoutResponse.swift */,
 				4487A0502E90000000000005 /* HostedCheckoutStatusResponse.swift */,
+				4487B1002E90000000000001 /* HostedCheckoutPaymentStatusResponse.swift */,
 				E35BAD07C46D469D8CC7C396 /* RemoteConfiguration.swift */,
 			);
 			path = Responses;
@@ -7048,6 +7058,7 @@
 				755C26A12E310AA4006DD0AE /* WebBillingProductsCallback.swift */,
 				4487A0202E90000000000002 /* HostedCheckoutCallback.swift */,
 				4487A0602E90000000000006 /* HostedCheckoutStatusCallback.swift */,
+				4487B1002E90000000000002 /* HostedCheckoutPaymentStatusCallback.swift */,
 				FDED7EC42F33DF0A00827E54 /* IsPurchaseAllowedByRestoreBehaviorCallback.swift */,
 				AAAA4473000000000000000C /* ExternalPurchaseTokenCallback.swift */,
 				57045B3B29C51AF7001A5417 /* ProductEntitlementMappingCallback.swift */,
@@ -7074,6 +7085,7 @@
 				75A9F25B2E38DE57005D1AB1 /* GetWebBillingProductsOperation.swift */,
 				4487A0302E90000000000003 /* PostHostedCheckoutOperation.swift */,
 				4487A0702E90000000000007 /* GetHostedCheckoutStatusOperation.swift */,
+				4487B1002E90000000000003 /* GetHostedCheckoutPaymentStatusOperation.swift */,
 				57045B3929C51751001A5417 /* GetProductEntitlementMappingOperation.swift */,
 				4F5F47072AA91F8A005649D8 /* HealthOperation.swift */,
 				537B4B2F2DA9742500CEFF4C /* HealthReportOperation.swift */,
@@ -8188,6 +8200,7 @@
 				75A9F25C2E38DE57005D1AB1 /* GetWebBillingProductsOperation.swift in Sources */,
 				4487A0312E90000000000003 /* PostHostedCheckoutOperation.swift in Sources */,
 				4487A0712E90000000000007 /* GetHostedCheckoutStatusOperation.swift in Sources */,
+				4487B1012E90000000000003 /* GetHostedCheckoutPaymentStatusOperation.swift in Sources */,
 				A525BF4B26C320D100C354C4 /* SubscriberAttributesManager.swift in Sources */,
 				2D1015DA275959840086173F /* StoreTransaction.swift in Sources */,
 				FD11970A2D6E48A5002718E3 /* StoreKit2ProductPurchaser.swift in Sources */,
@@ -8221,6 +8234,7 @@
 				755C26A22E310AA4006DD0AE /* WebBillingProductsCallback.swift in Sources */,
 				4487A0212E90000000000002 /* HostedCheckoutCallback.swift in Sources */,
 				4487A0612E90000000000006 /* HostedCheckoutStatusCallback.swift in Sources */,
+				4487B1012E90000000000002 /* HostedCheckoutPaymentStatusCallback.swift in Sources */,
 				4F98E9D32A465A4400DB6EAB /* TestStoreProduct.swift in Sources */,
 				3592E8902C2ED5C100D7F91D /* CustomerCenterConfigAPI.swift in Sources */,
 				2DC5623224EC63730031F69B /* TransactionsFactory.swift in Sources */,
@@ -8424,6 +8438,7 @@
 				755C26A42E310B19006DD0AE /* WebBillingProductsResponse.swift in Sources */,
 				4487A0112E90000000000001 /* HostedCheckoutResponse.swift in Sources */,
 				4487A0512E90000000000005 /* HostedCheckoutStatusResponse.swift in Sources */,
+				4487B1012E90000000000001 /* HostedCheckoutPaymentStatusResponse.swift in Sources */,
 				4DBC30962B1DFA97001D33C7 /* StoreKitVersion.swift in Sources */,
 				57DE807328074C76008D6C6F /* SK2Storefront.swift in Sources */,
 				57A17727276A721D0052D3A8 /* Set+Extensions.swift in Sources */,
@@ -8927,6 +8942,7 @@
 				755C26A62E310B7B006DD0AE /* BackendGetWebBillingProductsTests.swift in Sources */,
 				4487A0412E90000000000004 /* BackendPostHostedCheckoutTests.swift in Sources */,
 				4487A0912E90000000000009 /* BackendGetHostedCheckoutStatusTests.swift in Sources */,
+				4487B1012E90000000000004 /* BackendHostedCheckoutPaymentStatusTests.swift in Sources */,
 				2C7F0AD62B8EEF7B00381179 /* RateLimiterTests.swift in Sources */,
 				FDAADFCB2BE2A5BF00BD1659 /* MockAllTransactionsProvider.swift in Sources */,
 				356E2DE82CD3CF930055AABB /* StoredEventTests.swift in Sources */,

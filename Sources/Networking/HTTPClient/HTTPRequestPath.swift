@@ -220,6 +220,7 @@ extension HTTPRequest {
         case getWebBillingProducts(userId: String, productIds: Set<String>)
         case postHostedCheckout
         case getHostedCheckoutStatus(operationSessionID: String, appUserID: String)
+        case getHostedCheckoutPaymentStatus(operationSessionID: String, appUserID: String)
 
     }
 

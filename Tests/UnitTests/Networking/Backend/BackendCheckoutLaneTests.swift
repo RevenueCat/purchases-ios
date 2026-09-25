@@ -113,6 +113,34 @@ final class BackendCheckoutLaneTests: BaseBackendTests {
         expect(self.httpClient.calls).to(beEmpty())
     }
 
+    func testGetHostedCheckoutPaymentStatusRunsOnDedicatedLaneNotSharedClient() {
+        let laneClient = self.createClient(#file)
+        laneClient.disableSnapshotTesting()
+        self.httpClient.disableSnapshotTesting()
+
+        let backend = self.makeBackend(checkoutClient: laneClient)
+        let paymentStatusPath = HTTPRequest.WebBillingPath.getHostedCheckoutPaymentStatus(
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.userID
+        )
+
+        laneClient.mock(
+            requestPath: paymentStatusPath,
+            response: .init(statusCode: .success, response: ["payment_status": "processing"])
+        )
+
+        waitUntil { completed in
+            backend.webBilling.getHostedCheckoutPaymentStatus(
+                appUserID: Self.userID,
+                operationSessionID: Self.operationSessionID,
+                completion: { _ in completed() }
+            )
+        }
+
+        expect(laneClient.calls).to(haveCount(1))
+        expect(self.httpClient.calls).to(beEmpty())
+    }
+
     func testGetWebBillingProductsStillRunsOnSharedClient() {
         let laneClient = self.createClient(#file)
         laneClient.disableSnapshotTesting()

@@ -18,10 +18,12 @@ class WebBillingAPI {
     typealias WebBillingProductsResponseHandler = Backend.ResponseHandler<WebBillingProductsResponse>
     typealias HostedCheckoutResponseHandler = Backend.ResponseHandler<HostedCheckoutResponse>
     typealias HostedCheckoutStatusResponseHandler = Backend.ResponseHandler<HostedCheckoutStatusResponse>
+    typealias CheckoutPaymentStatusResponseHandler = Backend.ResponseHandler<HostedCheckoutPaymentStatusResponse>
 
     private let webBillingProductsCallbackCache: CallbackCache<WebBillingProductsCallback>
     private let hostedCheckoutCallbackCache: CallbackCache<HostedCheckoutCallback>
     private let hostedCheckoutStatusCallbackCache: CallbackCache<HostedCheckoutStatusCallback>
+    private let hostedCheckoutPaymentStatusCallbackCache: CallbackCache<HostedCheckoutPaymentStatusCallback>
     private let backendLanes: BackendLanes
 
     init(lanes: BackendLanes) {
@@ -29,6 +31,7 @@ class WebBillingAPI {
         self.webBillingProductsCallbackCache = .init()
         self.hostedCheckoutCallbackCache = .init()
         self.hostedCheckoutStatusCallbackCache = .init()
+        self.hostedCheckoutPaymentStatusCallbackCache = .init()
     }
 
     func getWebBillingProducts(
@@ -118,6 +121,36 @@ class WebBillingAPI {
         let cacheStatus = self.hostedCheckoutStatusCallbackCache.add(callback)
 
         // Polling paces itself, and the customer is waiting on the answer to settle their purchase.
+        backendConfig.addCacheableOperation(
+            with: factory,
+            delay: .none,
+            cacheStatus: cacheStatus
+        )
+    }
+
+    /// Asks whether the customer paid for a checkout session, which the backend reads from the payment
+    /// provider. Meant for a checkout the customer dismissed, where nothing says whether they paid.
+    ///
+    /// - Parameter operationSessionID: The session to ask about, as returned by ``postHostedCheckout``.
+    /// Answered with a 404 where this customer does not own it.
+    func getHostedCheckoutPaymentStatus(
+        appUserID: String,
+        operationSessionID: String,
+        completion: @escaping CheckoutPaymentStatusResponseHandler
+    ) {
+        let backendConfig = self.backendLanes[.checkout]
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
+                                                                appUserID: appUserID)
+        let factory = GetHostedCheckoutPaymentStatusOperation.createFactory(
+            configuration: config,
+            operationSessionID: operationSessionID,
+            callbackCache: self.hostedCheckoutPaymentStatusCallbackCache
+        )
+
+        let callback = HostedCheckoutPaymentStatusCallback(cacheKey: factory.cacheKey, completion: completion)
+        let cacheStatus = self.hostedCheckoutPaymentStatusCallbackCache.add(callback)
+
+        // The customer is waiting on the answer to leave the checkout.
         backendConfig.addCacheableOperation(
             with: factory,
             delay: .none,
