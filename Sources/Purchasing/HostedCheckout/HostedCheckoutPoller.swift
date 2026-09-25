@@ -291,7 +291,7 @@ private extension HostedCheckoutPoller {
     ///
     /// Waits in real time rather than on `sleeper`, since that is the time a request takes.
     func value<Value>(before deadline: Date, of operation: @escaping @Sendable () async -> Value) async -> Value? {
-        let timeLimit = deadline.timeIntervalSince(self.dateProvider.now())
+        let timeLimit = max(0, deadline.timeIntervalSince(self.dateProvider.now()))
 
         return await withUnsafeContinuation { continuation in
             let resumed: Atomic<Bool> = false
