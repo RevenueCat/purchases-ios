@@ -34,7 +34,7 @@ struct CheckpointTesterApp: App {
         Self.configurePurchases()
         model.configurePaywallPresenter()
         Self.configureAdMob()
-        RewardPollLog.install()
+        CheckpointDebugLog.install()
     }
 
     var body: some Scene {
