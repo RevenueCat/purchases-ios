@@ -318,16 +318,21 @@ extension Locale {
 
     /// Selects the best-matching locale from `availableLocales` given `preferredLocales`.
     ///
-    /// Matches on language first, then exact region within language matches.
+    /// Matches on language first, then picks the closest region/script within language matches.
     /// Returns `nil` if no language match exists for any preferred locale.
     static func selectPreferredLocale(from availableLocales: [Locale],
                                       preferredLocales: [Locale]) -> Locale? {
         for preferred in preferredLocales {
-            guard let languageMatch = availableLocales.first(where: {
-                $0.languageCodeIdentifier == preferred.languageCodeIdentifier
-            }) else { continue }
-            // Prefer an exact locale match (language + region) over a language-only match.
-            return availableLocales.first(where: { $0 == preferred }) ?? languageMatch
+            let languageMatches = availableLocales
+                .filter { $0.languageCodeIdentifier == preferred.languageCodeIdentifier }
+                .sorted { $0.identifier < $1.identifier }
+            guard let firstMatch = languageMatches.first else { continue }
+
+            let bestIdentifier = Bundle.preferredLocalizations(
+                from: languageMatches.map(\.identifier),
+                forPreferences: [preferred.identifier]
+            ).first
+            return languageMatches.first { $0.identifier == bestIdentifier } ?? firstMatch
         }
         return nil
     }
