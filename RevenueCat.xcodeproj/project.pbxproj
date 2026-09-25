@@ -1096,6 +1096,7 @@
 		830004012E261AC100143F9F /* PlatformImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 830004002E261ABE00143F9F /* PlatformImage.swift */; };
 		831660B62E3AAA4E00855312 /* FixMacButtonsModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 831660B52E3AAA4900855312 /* FixMacButtonsModifier.swift */; };
 		839F34392E3BC575006355B0 /* PlatformColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 839F34382E3BC574006355B0 /* PlatformColor.swift */; };
+		FEAE7E8350B0437288B094E5 /* PlatformPasteboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C85D14AB309C4AB5AA421B44 /* PlatformPasteboard.swift */; };
 		839F343B2E3BC5C8006355B0 /* PlatformBezierPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 839F343A2E3BC5C4006355B0 /* PlatformBezierPath.swift */; };
 		858195FCF0E04E3CAA99F9BB /* RemoteConfigurationDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E31E8A264E9F4375A3B29D78 /* RemoteConfigurationDecodingTests.swift */; };
 		860C454F8A2AB5F395EEC454 /* ComparisonOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = A764561D333182171B1E5E3F /* ComparisonOperators.swift */; };
@@ -2873,6 +2874,7 @@
 		8337DD6D2E0A7CFE000798BF /* paywall-preview-resources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "paywall-preview-resources"; sourceTree = "<group>"; };
 		834DFBE817EAEDDF0179F323 /* PaywallZLayerScrollPolicyTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PaywallZLayerScrollPolicyTests.swift; path = Tests/RevenueCatUITests/PaywallsV2/PaywallZLayerScrollPolicyTests.swift; sourceTree = SOURCE_ROOT; };
 		839F34382E3BC574006355B0 /* PlatformColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformColor.swift; sourceTree = "<group>"; };
+		C85D14AB309C4AB5AA421B44 /* PlatformPasteboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformPasteboard.swift; sourceTree = "<group>"; };
 		839F343A2E3BC5C4006355B0 /* PlatformBezierPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformBezierPath.swift; sourceTree = "<group>"; };
 		83EE33252E1E20360011CF1C /* PaywallPreviewResourcesLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallPreviewResourcesLoader.swift; sourceTree = "<group>"; };
 		84C3F1AC1D7E1E64341D3936 /* Pods_RevenueCat_PurchasesTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RevenueCat_PurchasesTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -6157,6 +6159,7 @@
 			children = (
 				839F343A2E3BC5C4006355B0 /* PlatformBezierPath.swift */,
 				839F34382E3BC574006355B0 /* PlatformColor.swift */,
+				C85D14AB309C4AB5AA421B44 /* PlatformPasteboard.swift */,
 				830004002E261ABE00143F9F /* PlatformImage.swift */,
 				830003FE2E26161D00143F9F /* PlatformFont.swift */,
 			);
@@ -9145,6 +9148,7 @@
 				5798C9552DF1985700F44400 /* CompatibilityNavigationStack.swift in Sources */,
 				5798C9562DF1985700F44400 /* PromotionalOfferData.swift in Sources */,
 				839F34392E3BC575006355B0 /* PlatformColor.swift in Sources */,
+				FEAE7E8350B0437288B094E5 /* PlatformPasteboard.swift in Sources */,
 				5798C9572DF1985700F44400 /* FeedbackSurveyViewModel.swift in Sources */,
 				5798C9582DF1985700F44400 /* PurchaseCardView.swift in Sources */,
 				5798C9592DF1985700F44400 /* CustomerCenterConfigDataSupport+URL.swift in Sources */,
