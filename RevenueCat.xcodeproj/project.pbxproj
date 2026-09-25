@@ -1628,6 +1628,9 @@
 		FEDA000000000000000000D4 /* CheckpointsConfigProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000C4 /* CheckpointsConfigProvider.swift */; };
 		FEDA000000000000000000D5 /* CheckpointRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000C5 /* CheckpointRulesTests.swift */; };
 		FEDA000000000000000000D6 /* CheckpointsConfigProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000C6 /* CheckpointsConfigProviderTests.swift */; };
+		FEDA00000000000000000101 /* SDKSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA00000000000000000103 /* SDKSettings.swift */; };
+		FEDA00000000000000000102 /* SDKSettingsConfigProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA00000000000000000104 /* SDKSettingsConfigProvider.swift */; };
+		FEDA00000000000000000105 /* SDKSettingsConfigProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA00000000000000000106 /* SDKSettingsConfigProviderTests.swift */; };
 		A7D100000000000000000002 /* AudiencesConfigProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D100000000000000000001 /* AudiencesConfigProvider.swift */; };
 		B8E400000000000000000002 /* AudiencesConfigProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8E400000000000000000001 /* AudiencesConfigProviderTests.swift */; };
 		A7D200000000000000000002 /* Audience.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D200000000000000000001 /* Audience.swift */; };
@@ -3511,6 +3514,9 @@
 		FEDA000000000000000000C4 /* CheckpointsConfigProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointsConfigProvider.swift; sourceTree = "<group>"; };
 		FEDA000000000000000000C5 /* CheckpointRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointRulesTests.swift; sourceTree = "<group>"; };
 		FEDA000000000000000000C6 /* CheckpointsConfigProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointsConfigProviderTests.swift; sourceTree = "<group>"; };
+		FEDA00000000000000000103 /* SDKSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDKSettings.swift; sourceTree = "<group>"; };
+		FEDA00000000000000000104 /* SDKSettingsConfigProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDKSettingsConfigProvider.swift; sourceTree = "<group>"; };
+		FEDA00000000000000000106 /* SDKSettingsConfigProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDKSettingsConfigProviderTests.swift; sourceTree = "<group>"; };
 		A7D100000000000000000001 /* AudiencesConfigProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiencesConfigProvider.swift; sourceTree = "<group>"; };
 		B8E400000000000000000001 /* AudiencesConfigProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiencesConfigProviderTests.swift; sourceTree = "<group>"; };
 		A7D200000000000000000001 /* Audience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Audience.swift; sourceTree = "<group>"; };
@@ -5336,6 +5342,8 @@
 				4C390BBAC430231B23B4B5F8 /* WorkflowsConfigProvider.swift */,
 				FEDA000000000000000000C3 /* CheckpointRules.swift */,
 				FEDA000000000000000000C4 /* CheckpointsConfigProvider.swift */,
+				FEDA00000000000000000103 /* SDKSettings.swift */,
+				FEDA00000000000000000104 /* SDKSettingsConfigProvider.swift */,
 				A7D200000000000000000001 /* Audience.swift */,
 				A7D100000000000000000001 /* AudiencesConfigProvider.swift */,
 				A1B2C3D42FE7000000000001 /* RemoteConfigTopic.swift */,
@@ -5375,6 +5383,7 @@
 				A7D200000000000000000003 /* AudienceTests.swift */,
 				FEDA000000000000000000C5 /* CheckpointRulesTests.swift */,
 				FEDA000000000000000000C6 /* CheckpointsConfigProviderTests.swift */,
+				FEDA00000000000000000106 /* SDKSettingsConfigProviderTests.swift */,
 				B8E400000000000000000001 /* AudiencesConfigProviderTests.swift */,
 				5733B1A927FFBCF900EC2045 /* BaseErrorTests.swift */,
 				DB7EA7752F964CA200BCC082 /* Workflows */,
@@ -8074,6 +8083,8 @@
 				49B8016629C29C4691C0774A /* WorkflowsConfigProvider.swift in Sources */,
 				FEDA000000000000000000D3 /* CheckpointRules.swift in Sources */,
 				FEDA000000000000000000D4 /* CheckpointsConfigProvider.swift in Sources */,
+				FEDA00000000000000000101 /* SDKSettings.swift in Sources */,
+				FEDA00000000000000000102 /* SDKSettingsConfigProvider.swift in Sources */,
 				A7D200000000000000000002 /* Audience.swift in Sources */,
 				A7D300000000000000000002 /* WorkflowBranch.swift in Sources */,
 				A7D300000000000000000004 /* WorkflowTriggerAction.swift in Sources */,
@@ -8812,6 +8823,7 @@
 				A7D200000000000000000004 /* AudienceTests.swift in Sources */,
 				FEDA000000000000000000D5 /* CheckpointRulesTests.swift in Sources */,
 				FEDA000000000000000000D6 /* CheckpointsConfigProviderTests.swift in Sources */,
+				FEDA00000000000000000105 /* SDKSettingsConfigProviderTests.swift in Sources */,
 				B8E400000000000000000002 /* AudiencesConfigProviderTests.swift in Sources */,
 				03A98D362D244329009BCA61 /* UIConfigDecodingTests.swift in Sources */,
 				7559DF072E38B05F0050C5B4 /* WebProductToStoreProductConversionTests.swift in Sources */,
