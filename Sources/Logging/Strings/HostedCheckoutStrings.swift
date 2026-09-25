@@ -34,6 +34,9 @@ enum HostedCheckoutStrings {
     case poll_timed_out(_ operationSessionID: String, timeout: TimeInterval)
     case poll_fetching_customer_info(_ operationSessionID: String)
     case poll_customer_info_refresh_failed(_ operationSessionID: String)
+    case dismissed_without_paying(_ operationSessionID: String)
+    case payment_status_unknown(_ operationSessionID: String)
+    case payment_status_undetermined(_ operationSessionID: String)
 
 }
 
@@ -79,6 +82,12 @@ extension HostedCheckoutStrings: LogMessage {
         case let .poll_customer_info_refresh_failed(operationSessionID):
             return "Could not fetch CustomerInfo for the purchase checkout session \(operationSessionID) " +
             "landed. The purchase still stands, and the next fetch will reflect it."
+        case let .dismissed_without_paying(operationSessionID):
+            return "Checkout session \(operationSessionID) was dismissed without a payment."
+        case let .payment_status_unknown(operationSessionID):
+            return "The backend could not say whether checkout session \(operationSessionID) was paid for."
+        case let .payment_status_undetermined(operationSessionID):
+            return "Could not learn whether the dismissed checkout session \(operationSessionID) was paid for."
         }
     }
 

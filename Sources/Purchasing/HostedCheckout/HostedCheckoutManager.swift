@@ -71,6 +71,13 @@ final class HostedCheckoutManager {
                                       appUserID: self.currentUserProvider.currentAppUserID)
     }
 
+    /// Settles a checkout the customer dismissed before it sent them anywhere, where nothing says whether
+    /// they paid. The customer is read once, as in ``pollCheckout(operationSessionID:)``.
+    func pollDismissedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
+        return await self.poller.pollDismissed(operationSessionID: operationSessionID,
+                                               appUserID: self.currentUserProvider.currentAppUserID)
+    }
+
 }
 
 /// What the caller should do once ``HostedCheckoutManager`` has been asked to start a checkout.

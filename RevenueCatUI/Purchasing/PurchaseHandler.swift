@@ -376,6 +376,10 @@ extension PurchaseHandler {
         return await self.purchases.pollHostedCheckout(operationSessionID: operationSessionID)
     }
 
+    func pollDismissedHostedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
+        return await self.purchases.pollDismissedHostedCheckout(operationSessionID: operationSessionID)
+    }
+
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func invalidateCustomerInfoCache() {
         self.purchases.invalidateCustomerInfoCache()
@@ -1260,6 +1264,10 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
     }
 
     func pollHostedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
+        return .undetermined
+    }
+
+    func pollDismissedHostedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
         return .undetermined
     }
 

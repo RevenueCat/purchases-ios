@@ -225,6 +225,113 @@ class HostedCheckoutPollerTests: TestCase {
         expect(sleeper.delays).to(beEmpty())
     }
 
+    // MARK: - A dismissed checkout
+
+    /// Nothing to wait for, so the session itself is never asked about.
+    func testAbandonsADismissedCheckoutTheCustomerDidNotPayFor() async {
+        let fetcher = StubStatusFetcher(paymentStatuses: [.paymentStatus(.open)], results: [.status(.succeeded)])
+        let sleeper = RecordingHostedCheckoutSleeper()
+
+        let result = await self.makePoller(fetcher: fetcher, sleeper: sleeper).pollDismissed(
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.appUserID
+        )
+
+        expect(result) == .abandoned
+        expect(fetcher.receivedPaymentStatusIDs) == [Self.operationSessionID]
+        expect(fetcher.receivedPaymentStatusAppUserIDs) == [Self.appUserID]
+        expect(fetcher.callCount) == 0
+        expect(sleeper.delays).to(beEmpty())
+    }
+
+    func testPollsADismissedCheckoutWithAPaymentUnderWay() async {
+        let fetcher = StubStatusFetcher(paymentStatuses: [.paymentStatus(.processing)],
+                                        results: [.status(.pending), .status(.succeeded)])
+
+        let result = await self.makePoller(fetcher: fetcher, sleeper: RecordingHostedCheckoutSleeper()).pollDismissed(
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.appUserID
+        )
+
+        expect(result) == .succeeded
+        expect(fetcher.paymentStatusCallCount) == 1
+        expect(fetcher.receivedAppUserIDs) == [Self.appUserID, Self.appUserID]
+    }
+
+    /// A payment under way is not a purchase that did not happen, however long it takes to land.
+    func testGivesNoAnswerWhenAPaymentUnderWayDoesNotLandInTime() async {
+        let fetcher = StubStatusFetcher(paymentStatuses: [.paymentStatus(.processing)],
+                                        results: [.status(.pending)])
+
+        let result = await self.makePoller(fetcher: fetcher,
+                                           sleeper: RecordingHostedCheckoutSleeper(),
+                                           maxAttempts: 3).pollDismissed(
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.appUserID
+        )
+
+        expect(result) == .undetermined
+        expect(fetcher.callCount) == 3
+    }
+
+    func testAsksOnceMoreWhenTheBackendCannotSayWhetherTheCustomerPaid() async {
+        let fetcher = StubStatusFetcher(paymentStatuses: [.paymentStatus(.unknown), .paymentStatus(.open)],
+                                        results: [.status(.succeeded)])
+        let sleeper = RecordingHostedCheckoutSleeper()
+
+        let result = await self.makePoller(fetcher: fetcher, sleeper: sleeper).pollDismissed(
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.appUserID
+        )
+
+        expect(result) == .abandoned
+        expect(fetcher.paymentStatusCallCount) == 2
+        expect(sleeper.delays) == [1]
+    }
+
+    func testAsksOnceMoreThroughAnErrorThatTendsToPass() async {
+        let fetcher = StubStatusFetcher(paymentStatuses: [.failure(.networkError(.serverDown())),
+                                                          .paymentStatus(.processing)],
+                                        results: [.status(.succeeded)])
+
+        let result = await self.makePoller(fetcher: fetcher, sleeper: RecordingHostedCheckoutSleeper()).pollDismissed(
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.appUserID
+        )
+
+        expect(result) == .succeeded
+        expect(fetcher.paymentStatusCallCount) == 2
+    }
+
+    /// The customer may have paid, so this is not taken for a checkout they walked away from.
+    func testGivesNoAnswerWhenTheBackendStillCannotSayWhetherTheCustomerPaid() async {
+        let fetcher = StubStatusFetcher(paymentStatuses: [.paymentStatus(.unknown)], results: [.status(.succeeded)])
+
+        let result = await self.makePoller(fetcher: fetcher, sleeper: RecordingHostedCheckoutSleeper()).pollDismissed(
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.appUserID
+        )
+
+        expect(result) == .undetermined
+        expect(fetcher.paymentStatusCallCount) == 2
+        expect(fetcher.callCount) == 0
+    }
+
+    func testGivesNoAnswerWhenTheDismissedSessionIsNotFoundForThisCustomer() async {
+        let fetcher = StubStatusFetcher(paymentStatuses: [.failure(Self.sessionNotFoundError),
+                                                          .paymentStatus(.open)],
+                                        results: [.status(.succeeded)])
+
+        let result = await self.makePoller(fetcher: fetcher, sleeper: RecordingHostedCheckoutSleeper()).pollDismissed(
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.appUserID
+        )
+
+        expect(result) == .undetermined
+        expect(fetcher.paymentStatusCallCount) == 1
+        expect(fetcher.callCount) == 0
+    }
+
 }
 
 private extension HostedCheckoutPollerTests {
@@ -284,16 +391,46 @@ private final class StubStatusFetcher: HostedCheckoutStatusFetching, @unchecked 
         case failure(BackendError)
     }
 
+    enum PaymentAnswer {
+        case paymentStatus(HostedCheckoutPaymentStatusResponse.PaymentStatus)
+        case failure(BackendError)
+    }
+
     private let answers: [Answer]
+    private let paymentAnswers: [PaymentAnswer]
     private(set) var receivedIDs: [String] = []
     private(set) var receivedAppUserIDs: [String] = []
+    private(set) var receivedPaymentStatusIDs: [String] = []
+    private(set) var receivedPaymentStatusAppUserIDs: [String] = []
     /// Runs while each request is out, standing in for the time it takes.
     var whileRequesting: () -> Void = {}
 
     var callCount: Int { return self.receivedIDs.count }
+    var paymentStatusCallCount: Int { return self.receivedPaymentStatusIDs.count }
 
-    init(results: [Answer]) {
+    convenience init(results: [Answer]) {
+        self.init(paymentStatuses: [], results: results)
+    }
+
+    init(paymentStatuses: [PaymentAnswer], results: [Answer]) {
+        self.paymentAnswers = paymentStatuses
         self.answers = results
+    }
+
+    func fetchPaymentStatus(
+        operationSessionID: String,
+        appUserID: String
+    ) async -> Result<HostedCheckoutPaymentStatusResponse, BackendError> {
+        let index = min(self.receivedPaymentStatusIDs.count, self.paymentAnswers.count - 1)
+        self.receivedPaymentStatusIDs.append(operationSessionID)
+        self.receivedPaymentStatusAppUserIDs.append(appUserID)
+
+        switch self.paymentAnswers[index] {
+        case let .paymentStatus(paymentStatus):
+            return .success(.init(paymentStatus: paymentStatus))
+        case let .failure(error):
+            return .failure(error)
+        }
     }
 
     func fetchStatus(operationSessionID: String,
