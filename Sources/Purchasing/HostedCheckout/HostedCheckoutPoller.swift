@@ -30,6 +30,9 @@ import Foundation
     /// because it could not be asked about at all. Says nothing about whether a purchase happened.
     case undetermined
 
+    /// The customer dismissed the checkout without paying.
+    case abandoned
+
 }
 
 /// Asks the backend what became of a checkout session, one attempt at a time.
@@ -40,6 +43,10 @@ internal protocol HostedCheckoutPolling: Sendable {
     /// answering the moment they changed.
     func poll(operationSessionID: String, appUserID: String) async -> HostedCheckoutPollResult
 
+    /// Settles a checkout the customer dismissed before it sent them anywhere, where nothing says whether
+    /// they paid: asks the payment provider once, and only polls if a payment is under way.
+    func pollDismissed(operationSessionID: String, appUserID: String) async -> HostedCheckoutPollResult
+
 }
 
 /// Production wiring is ``HostedCheckoutPoller/WebBillingStatusFetcher``.
@@ -47,6 +54,9 @@ internal protocol HostedCheckoutStatusFetching: Sendable {
 
     func fetchStatus(operationSessionID: String,
                      appUserID: String) async -> Result<HostedCheckoutStatusResponse, BackendError>
+
+    func fetchPaymentStatus(operationSessionID: String,
+                            appUserID: String) async -> Result<HostedCheckoutPaymentStatusResponse, BackendError>
 
 }
 
@@ -110,9 +120,36 @@ internal struct HostedCheckoutPoller: HostedCheckoutPolling {
     }
 
     func poll(operationSessionID: String, appUserID: String) async -> HostedCheckoutPollResult {
-        Logger.debug(Strings.hostedCheckout.poll_start(operationSessionID, maxAttempts: self.maxAttempts))
+        return await self.poll(operationSessionID: operationSessionID,
+                               appUserID: appUserID,
+                               deadline: self.dateProvider.now().addingTimeInterval(self.timeout))
+    }
 
+    /// Asking whether the customer paid shares ``timeout`` with the polling it may lead to, so a dismissed
+    /// sheet keeps the customer waiting no longer than a completed one.
+    func pollDismissed(operationSessionID: String, appUserID: String) async -> HostedCheckoutPollResult {
         let deadline = self.dateProvider.now().addingTimeInterval(self.timeout)
+
+        switch await self.paymentStatus(operationSessionID: operationSessionID,
+                                        appUserID: appUserID,
+                                        deadline: deadline) {
+        case .notPaid:
+            Logger.debug(Strings.hostedCheckout.dismissed_without_paying(operationSessionID))
+            return .abandoned
+        case .paying:
+            return await self.poll(operationSessionID: operationSessionID, appUserID: appUserID, deadline: deadline)
+        case .noAnswer:
+            Logger.warn(Strings.hostedCheckout.payment_status_undetermined(operationSessionID))
+            return .undetermined
+        }
+    }
+
+}
+
+private extension HostedCheckoutPoller {
+
+    func poll(operationSessionID: String, appUserID: String, deadline: Date) async -> HostedCheckoutPollResult {
+        Logger.debug(Strings.hostedCheckout.poll_start(operationSessionID, maxAttempts: self.maxAttempts))
 
         for attempt in 0..<self.maxAttempts {
             if Task.isCancelled {
@@ -122,11 +159,11 @@ internal struct HostedCheckoutPoller: HostedCheckoutPolling {
 
             if attempt > 0 {
                 try? await self.sleeper.sleep(seconds: self.interval)
+            }
 
-                guard self.dateProvider.now() < deadline else {
-                    Logger.warn(Strings.hostedCheckout.poll_timed_out(operationSessionID, timeout: self.timeout))
-                    return .undetermined
-                }
+            guard self.dateProvider.now() < deadline else {
+                Logger.warn(Strings.hostedCheckout.poll_timed_out(operationSessionID, timeout: self.timeout))
+                return .undetermined
             }
 
             switch await self.pollOnce(operationSessionID: operationSessionID,
@@ -143,14 +180,65 @@ internal struct HostedCheckoutPoller: HostedCheckoutPolling {
         return .undetermined
     }
 
-}
-
-private extension HostedCheckoutPoller {
-
     /// A single attempt: either an answer to stop on, or a reason to ask again.
     enum PollAttemptResult {
         case finished(HostedCheckoutPollResult)
         case retry
+    }
+
+    enum PaymentStatusAnswer {
+        case notPaid
+        case paying
+        case noAnswer
+    }
+
+    /// Asking the payment provider is costly for the backend, so an unknown answer, or an error that tends
+    /// to pass, is asked about only once more.
+    static let paymentStatusAttempts = 2
+
+    func paymentStatus(operationSessionID: String, appUserID: String, deadline: Date) async -> PaymentStatusAnswer {
+        let statusFetcher = self.statusFetcher
+
+        for attempt in 0..<Self.paymentStatusAttempts {
+            if Task.isCancelled {
+                Logger.debug(Strings.hostedCheckout.poll_cancelled(operationSessionID))
+                return .noAnswer
+            }
+
+            if attempt > 0 {
+                try? await self.sleeper.sleep(seconds: self.interval)
+            }
+
+            guard self.dateProvider.now() < deadline,
+                  let fetched = await self.value(before: deadline, of: {
+                      await statusFetcher.fetchPaymentStatus(operationSessionID: operationSessionID,
+                                                             appUserID: appUserID)
+                  }) else {
+                Logger.warn(Strings.hostedCheckout.poll_timed_out(operationSessionID, timeout: self.timeout))
+                return .noAnswer
+            }
+
+            switch fetched {
+            case let .success(response):
+                switch response.paymentStatus {
+                case .open:
+                    return .notPaid
+                case .processing:
+                    return .paying
+                case .unknown:
+                    Logger.debug(Strings.hostedCheckout.payment_status_unknown(operationSessionID))
+                }
+
+            case let .failure(error) where error.isTransient:
+                Logger.verbose(Strings.hostedCheckout.poll_transient_error(operationSessionID, error: error))
+
+            case let .failure(error):
+                Logger.error(Strings.hostedCheckout.poll_terminal_error(operationSessionID, error: error))
+                return .noAnswer
+            }
+        }
+
+        return .noAnswer
     }
 
     func pollOnce(operationSessionID: String, appUserID: String, deadline: Date) async -> PollAttemptResult {
@@ -241,6 +329,19 @@ extension HostedCheckoutPoller {
         ) async -> Result<HostedCheckoutStatusResponse, BackendError> {
             return await Async.call { completion in
                 self.webBillingAPI.getHostedCheckoutStatus(
+                    appUserID: appUserID,
+                    operationSessionID: operationSessionID,
+                    completion: completion
+                )
+            }
+        }
+
+        func fetchPaymentStatus(
+            operationSessionID: String,
+            appUserID: String
+        ) async -> Result<HostedCheckoutPaymentStatusResponse, BackendError> {
+            return await Async.call { completion in
+                self.webBillingAPI.getHostedCheckoutPaymentStatus(
                     appUserID: appUserID,
                     operationSessionID: operationSessionID,
                     completion: completion

@@ -122,6 +122,14 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
         return await block(operationSessionID)
     }
 
+    var hostedCheckoutPollDismissedBlock: (@Sendable (String) async -> HostedCheckoutPollResult)?
+
+    func pollDismissedHostedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
+        guard let block = self.hostedCheckoutPollDismissedBlock else { return .undetermined }
+
+        return await block(operationSessionID)
+    }
+
     func restorePurchases() async throws -> CustomerInfo {
         return try await self.restoreBlock()
     }
@@ -206,6 +214,7 @@ extension PaywallPurchasesType {
         mapped.remoteConfigEnabled = self.remoteConfigEnabled
         mapped.hostedCheckoutBlock = { await self.startHostedCheckout(package: $0, paywallEvent: $1) }
         mapped.hostedCheckoutPollBlock = { await self.pollHostedCheckout(operationSessionID: $0) }
+        mapped.hostedCheckoutPollDismissedBlock = { await self.pollDismissedHostedCheckout(operationSessionID: $0) }
         #if !os(tvOS)
         mapped.workflowBlock = { try await self.workflow(forOfferingIdentifier: $0) }
         mapped.cachedWorkflowBlock = { self.cachedWorkflow(forOfferingIdentifier: $0) }
@@ -239,6 +248,7 @@ extension PaywallPurchasesType {
         mapped.remoteConfigEnabled = self.remoteConfigEnabled
         mapped.hostedCheckoutBlock = { await self.startHostedCheckout(package: $0, paywallEvent: $1) }
         mapped.hostedCheckoutPollBlock = { await self.pollHostedCheckout(operationSessionID: $0) }
+        mapped.hostedCheckoutPollDismissedBlock = { await self.pollDismissedHostedCheckout(operationSessionID: $0) }
         #if !os(tvOS)
         mapped.workflowBlock = { try await self.workflow(forOfferingIdentifier: $0) }
         mapped.cachedWorkflowBlock = { self.cachedWorkflow(forOfferingIdentifier: $0) }

@@ -70,9 +70,9 @@ enum HostedCheckout {
 
     /// How the paywall settles once the backend has said what became of a checkout.
     ///
-    /// Only a purchase the backend confirms counts as one. What else it can say is an error after the success
-    /// page, which told the customer the purchase went through, and a cancellation after a closed sheet,
-    /// which most likely means they walked away.
+    /// Only a purchase the backend confirms counts as one, and only a checkout dismissed without paying
+    /// counts as a cancellation. Anything else is an error: either the success page told the customer the
+    /// purchase went through, or a payment was under way when they closed the sheet.
     enum Settlement: Equatable {
 
         case purchased
@@ -80,17 +80,17 @@ enum HostedCheckout {
         case failed(HostedCheckoutError)
         case cancelled
 
-        init(_ result: HostedCheckoutPollResult, after exit: Exit) {
-            switch (result, exit) {
-            case (.succeeded, _):
+        init(_ result: HostedCheckoutPollResult) {
+            switch result {
+            case .succeeded:
                 self = .purchased
-            case (.alreadyPurchased, _):
+            case .alreadyPurchased:
                 self = .tellCustomerTheyAlreadyOwnIt
-            case let (.failed(code, _), .successPage):
+            case let .failed(code, _):
                 self = .failed(.failed(code: code))
-            case (.undetermined, .successPage):
+            case .undetermined:
                 self = .failed(.unconfirmed)
-            case (.failed, .closedSheet), (.undetermined, .closedSheet):
+            case .abandoned:
                 self = .cancelled
             }
         }
@@ -110,8 +110,17 @@ enum HostedCheckout {
                        package: Package?,
                        purchaseHandler: PurchaseHandler) async -> Settlement {
         return await purchaseHandler.whileConfirmingHostedCheckout {
-            let result = await purchaseHandler.pollHostedCheckout(operationSessionID: session.operationSessionID)
-            let settlement = Settlement(result, after: exit)
+            let operationSessionID = session.operationSessionID
+            let result: HostedCheckoutPollResult
+
+            switch exit {
+            case .successPage:
+                result = await purchaseHandler.pollHostedCheckout(operationSessionID: operationSessionID)
+            case .closedSheet:
+                result = await purchaseHandler.pollDismissedHostedCheckout(operationSessionID: operationSessionID)
+            }
+
+            let settlement = Settlement(result)
 
             switch settlement {
             case .purchased:

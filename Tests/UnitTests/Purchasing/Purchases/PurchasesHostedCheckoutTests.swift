@@ -94,6 +94,36 @@ extension PurchasesHostedCheckoutTests {
         expect(self.deviceCache.clearCustomerInfoCacheTimestampCount) > clearsBefore
     }
 
+    // MARK: - A dismissed checkout
+
+    func testFetchesCustomerInfoOnceADismissedCheckoutLands() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try self.stubPaymentStatus(.processing)
+        try self.stubStatus(.succeeded)
+        let fetchesBefore = self.backend.getCustomerInfoCallCount
+
+        let result = await self.purchases.pollDismissedHostedCheckout(operationSessionID: Self.operationSessionID)
+
+        expect(result) == .succeeded
+        expect(self.backend.getCustomerInfoCallCount) == fetchesBefore + 1
+
+        let parameters = try XCTUnwrap(try self.mockWebBillingAPI.invokedGetHostedCheckoutPaymentStatusParameters)
+        expect(parameters.operationSessionID) == Self.operationSessionID
+        expect(parameters.appUserID) == self.identityManager.currentAppUserID
+    }
+
+    func testDoesNotAskAboutADismissedCheckoutTheCustomerDidNotPayFor() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try self.stubPaymentStatus(.open)
+        let fetchesBefore = self.backend.getCustomerInfoCallCount
+
+        let result = await self.purchases.pollDismissedHostedCheckout(operationSessionID: Self.operationSessionID)
+
+        expect(result) == .abandoned
+        expect(try self.mockWebBillingAPI.invokedGetHostedCheckoutStatus) == false
+        expect(self.backend.getCustomerInfoCallCount) == fetchesBefore
+    }
+
 }
 
 private extension PurchasesHostedCheckoutTests {
@@ -102,6 +132,11 @@ private extension PurchasesHostedCheckoutTests {
 
     func stubStatus(_ status: HostedCheckoutStatusResponse.Status) throws {
         try self.mockWebBillingAPI.stubbedGetHostedCheckoutStatusCompletionResult = .success(.init(status: status))
+    }
+
+    func stubPaymentStatus(_ paymentStatus: HostedCheckoutPaymentStatusResponse.PaymentStatus) throws {
+        try self.mockWebBillingAPI.stubbedGetHostedCheckoutPaymentStatusCompletionResult =
+            .success(.init(paymentStatus: paymentStatus))
     }
 
 }

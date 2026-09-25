@@ -141,27 +141,24 @@ final class HostedCheckoutTests: TestCase {
 
     // MARK: - Settling on what the backend says
 
-    func testCountsAConfirmedPurchaseWhicheverWayTheCustomerLeft() {
-        expect(HostedCheckout.Settlement(.succeeded, after: .successPage)) == .purchased
-        expect(HostedCheckout.Settlement(.succeeded, after: .closedSheet)) == .purchased
+    func testCountsAConfirmedPurchase() {
+        expect(HostedCheckout.Settlement(.succeeded)) == .purchased
     }
 
-    func testTellsTheCustomerTheyAlreadyOwnItWhicheverWayTheyLeft() {
-        expect(HostedCheckout.Settlement(.alreadyPurchased, after: .successPage)) == .tellCustomerTheyAlreadyOwnIt
-        expect(HostedCheckout.Settlement(.alreadyPurchased, after: .closedSheet)) == .tellCustomerTheyAlreadyOwnIt
+    func testTellsTheCustomerTheyAlreadyOwnIt() {
+        expect(HostedCheckout.Settlement(.alreadyPurchased)) == .tellCustomerTheyAlreadyOwnIt
     }
 
-    /// The success page told the customer the purchase went through, so anything short of it is an error.
-    func testFailsWhenTheBackendDoesNotConfirmWhatTheSuccessPageSaid() {
-        expect(HostedCheckout.Settlement(.failed(code: 3, message: "payment_charge_failed"), after: .successPage))
+    /// Either the success page told the customer the purchase went through, or a payment was under way
+    /// when they closed the sheet, so anything short of a purchase is an error.
+    func testFailsWhenTheBackendDoesNotConfirmThePurchase() {
+        expect(HostedCheckout.Settlement(.failed(code: 3, message: "payment_charge_failed")))
             == .failed(.failed(code: 3))
-        expect(HostedCheckout.Settlement(.undetermined, after: .successPage)) == .failed(.unconfirmed)
+        expect(HostedCheckout.Settlement(.undetermined)) == .failed(.unconfirmed)
     }
 
-    /// A customer who closed the sheet on a session that never finished most likely walked away.
-    func testCancelsWhenTheCustomerClosedTheSheetOnASessionThatDidNotSucceed() {
-        expect(HostedCheckout.Settlement(.failed(code: 3, message: nil), after: .closedSheet)) == .cancelled
-        expect(HostedCheckout.Settlement(.undetermined, after: .closedSheet)) == .cancelled
+    func testCancelsACheckoutTheCustomerDismissedWithoutPaying() {
+        expect(HostedCheckout.Settlement(.abandoned)) == .cancelled
     }
 
     func testAsksAboutTheSessionThatWasPresented() async {
@@ -202,10 +199,34 @@ final class HostedCheckoutTests: TestCase {
     }
 
     /// Reporting the purchase can close the paywall, so it waits until the customer has been told about it.
+    /// Only the backend can say whether the customer paid before closing the sheet, so the dismissed
+    /// session is asked about as such.
+    func testAsksAboutADismissedSessionAsDismissed() async {
+        let sessionsAskedAbout = Recorder<String>()
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollBlock = { _ in
+            await sessionsAskedAbout.record("polled")
+            return .succeeded
+        }
+        purchases.hostedCheckoutPollDismissedBlock = { operationSessionID in
+            await sessionsAskedAbout.record(operationSessionID)
+            return .abandoned
+        }
+
+        let settlement = await HostedCheckout.settle(Self.session,
+                                                     after: .closedSheet,
+                                                     package: TestData.annualPackage,
+                                                     purchaseHandler: Self.makeHandler(purchases: purchases))
+
+        let asked = await sessionsAskedAbout.values
+        expect(asked) == [Self.session.operationSessionID]
+        expect(settlement) == .cancelled
+    }
+
     @MainActor
     func testLeavesAConfirmedPurchaseForThePaywallToReport() async {
         let purchases = Self.makePurchases()
-        purchases.hostedCheckoutPollBlock = { _ in .succeeded }
+        purchases.hostedCheckoutPollDismissedBlock = { _ in .succeeded }
         let handler = Self.makeHandler(purchases: purchases)
 
         let settlement = await HostedCheckout.settle(Self.session,
@@ -246,9 +267,9 @@ final class HostedCheckoutTests: TestCase {
     }
 
     @MainActor
-    func testReportsAClosedSheetThatDidNotEndInAPurchaseAsCancelled() async {
+    func testReportsAClosedSheetTheCustomerDidNotPayForAsCancelled() async {
         let purchases = Self.makePurchases()
-        purchases.hostedCheckoutPollBlock = { _ in .undetermined }
+        purchases.hostedCheckoutPollDismissedBlock = { _ in .abandoned }
         let handler = Self.makeHandler(purchases: purchases)
 
         let settlement = await HostedCheckout.settle(Self.session,
@@ -259,6 +280,23 @@ final class HostedCheckoutTests: TestCase {
         expect(settlement) == .cancelled
         expect(handler.sessionPurchaseResult?.userCancelled) == true
         expect(handler.purchaseError).to(beNil())
+    }
+
+    /// The customer may have paid, so saying they cancelled could hide a purchase that went through.
+    @MainActor
+    func testReportsAClosedSheetThatCouldNotBeConfirmedAsAPurchaseError() async {
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollDismissedBlock = { _ in .undetermined }
+        let handler = Self.makeHandler(purchases: purchases)
+
+        let settlement = await HostedCheckout.settle(Self.session,
+                                                     after: .closedSheet,
+                                                     package: TestData.annualPackage,
+                                                     purchaseHandler: handler)
+
+        expect(settlement) == .failed(.unconfirmed)
+        expect(handler.purchaseError as? HostedCheckoutError) == .unconfirmed
+        expect(handler.sessionPurchaseResult).to(beNil())
     }
 
     @MainActor

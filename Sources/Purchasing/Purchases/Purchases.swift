@@ -1935,6 +1935,22 @@ public extension Purchases {
     @_spi(Internal) func pollHostedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
         let result = await self.hostedCheckoutManager.pollCheckout(operationSessionID: operationSessionID)
 
+        return await self.refreshingCustomerInfo(after: result, operationSessionID: operationSessionID)
+    }
+
+    /// Used by `RevenueCatUI` to learn what became of a checkout the customer dismissed before it sent them
+    /// anywhere, where nothing says whether they paid. Refreshes a confirmed purchase as
+    /// ``pollHostedCheckout(operationSessionID:)`` does.
+    @_spi(Internal) func pollDismissedHostedCheckout(
+        operationSessionID: String
+    ) async -> HostedCheckoutPollResult {
+        let result = await self.hostedCheckoutManager.pollDismissedCheckout(operationSessionID: operationSessionID)
+
+        return await self.refreshingCustomerInfo(after: result, operationSessionID: operationSessionID)
+    }
+
+    private func refreshingCustomerInfo(after result: HostedCheckoutPollResult,
+                                        operationSessionID: String) async -> HostedCheckoutPollResult {
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         if case .succeeded = result {
             await self.refreshCustomerInfoAfterHostedCheckout(operationSessionID: operationSessionID)
