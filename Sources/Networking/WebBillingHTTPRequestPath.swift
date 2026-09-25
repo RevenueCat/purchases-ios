@@ -77,7 +77,7 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
             return "/rcbilling/v1/hosted-checkout"
         case let .getHostedCheckoutStatus(operationSessionID, appUserID):
             return "/rcbilling/v1/hosted-checkout/\(operationSessionID.trimmedAndEscaped)" +
-            "?app_user_id=\(Self.escapedQueryValue(appUserID))"
+            "?app_user_id=\(appUserID.trimmedAndEscapedForQuery)"
         }
     }
 
@@ -107,20 +107,6 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
         case .getHostedCheckoutStatus:
             return "get_hosted_checkout_status"
         }
-    }
-
-}
-
-private extension HTTPRequest.WebBillingPath {
-
-    /// The sub-delimiters `urlQueryAllowed` leaves alone, which a query value cannot carry literally:
-    /// an app user ID that is an email with a `+` in it reaches the backend as a space otherwise.
-    static let queryValueDisallowed = CharacterSet(charactersIn: "+&=?#;")
-
-    static func escapedQueryValue(_ value: String) -> String {
-        let allowed = CharacterSet.urlQueryAllowed.subtracting(Self.queryValueDisallowed)
-
-        return value.trimmingWhitespacesAndNewLines.addingPercentEncoding(withAllowedCharacters: allowed) ?? ""
     }
 
 }
