@@ -21,11 +21,20 @@ struct SizeModifier: ViewModifier {
     var size: PaywallComponent.Size
     var hortizontalAlignment: Alignment
     var verticalAlignment: Alignment
+    var contentInsets: EdgeInsets = .init()
 
     func body(content: Content) -> some View {
         content
-            .applyWidth(size.width, alignment: hortizontalAlignment)
-            .applyHeight(size.height, alignment: verticalAlignment)
+            .applyWidth(
+                size.width,
+                alignment: hortizontalAlignment,
+                fixedDimensionInset: contentInsets.leading + contentInsets.trailing
+            )
+            .applyHeight(
+                size.height,
+                alignment: verticalAlignment,
+                fixedDimensionInset: contentInsets.top + contentInsets.bottom
+            )
     }
 
 }
@@ -34,7 +43,11 @@ extension View {
 
     /// A zero minimum prevents oversized children from widening Fill ancestors.
     @ViewBuilder
-    func applyWidth(_ sizeConstraint: PaywallComponent.SizeConstraint, alignment: Alignment) -> some View {
+    func applyWidth(
+        _ sizeConstraint: PaywallComponent.SizeConstraint,
+        alignment: Alignment,
+        fixedDimensionInset: CGFloat = 0
+    ) -> some View {
         switch sizeConstraint {
         case let .fit(_, minMax):
             self.applyWidthLimits(minMax, alignment: alignment)
@@ -44,7 +57,7 @@ extension View {
                 .applyWidthLimits(minMax, alignment: alignment)
         case .fixed(let value):
             self
-                .frame(width: CGFloat(value), alignment: alignment)
+                .frame(width: max(0, CGFloat(value) - fixedDimensionInset), alignment: alignment)
         case let .relative(_, minMax):
             // WIP: Maybe handle % value here
             self.applyWidthLimits(minMax, alignment: alignment)
@@ -52,7 +65,11 @@ extension View {
     }
 
     @ViewBuilder
-    func applyHeight(_ sizeConstraint: PaywallComponent.SizeConstraint, alignment: Alignment) -> some View {
+    func applyHeight(
+        _ sizeConstraint: PaywallComponent.SizeConstraint,
+        alignment: Alignment,
+        fixedDimensionInset: CGFloat = 0
+    ) -> some View {
         switch sizeConstraint {
         case let .fit(_, minMax):
             self.applyHeightLimits(minMax, alignment: alignment)
@@ -62,7 +79,7 @@ extension View {
                 .applyHeightLimits(minMax, alignment: alignment)
         case .fixed(let value):
             self
-                .frame(height: CGFloat(value), alignment: alignment)
+                .frame(height: max(0, CGFloat(value) - fixedDimensionInset), alignment: alignment)
         case let .relative(_, minMax):
             // WIP: Maybe handle % value here
             self.applyHeightLimits(minMax, alignment: alignment)
@@ -141,6 +158,16 @@ extension View {
         self.modifier(SizeModifier(size: size,
                                    hortizontalAlignment: horizontalAlignment,
                                    verticalAlignment: verticalAlignment))
+    }
+
+    func size(_ size: PaywallComponent.Size,
+              subtracting contentInsets: EdgeInsets,
+              horizontalAlignment: Alignment = .center,
+              verticalAlignment: Alignment = .center) -> some View {
+        self.modifier(SizeModifier(size: size,
+                                   hortizontalAlignment: horizontalAlignment,
+                                   verticalAlignment: verticalAlignment,
+                                   contentInsets: contentInsets))
     }
 
 }

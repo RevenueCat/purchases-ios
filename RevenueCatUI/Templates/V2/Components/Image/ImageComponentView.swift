@@ -247,9 +247,15 @@ struct ImageComponentView: View {
         _ content: Content,
         with style: ImageComponentStyle
     ) -> some View {
-        content
-            .applyMediaWidth(size: style.size)
-            .applyMediaHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
+        let contentInsets = style.padding.extend(by: style.border?.width ?? 0)
+
+        return content
+            .applyMediaWidth(size: style.size, subtracting: contentInsets)
+            .applyMediaHeight(
+                size: style.size,
+                aspectRatio: self.aspectRatio(style: style),
+                subtracting: contentInsets
+            )
             .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
                 view.overlay(
                     Color.clear
@@ -257,7 +263,7 @@ struct ImageComponentView: View {
                 )
             })
             .clipped()
-            .padding(style.padding.extend(by: style.border?.width ?? 0))
+            .padding(contentInsets)
             .shape(border: style.border,
                    shape: style.shape)
             .compositingGroup() // ensure borders and images are a single layer that gets shaded.

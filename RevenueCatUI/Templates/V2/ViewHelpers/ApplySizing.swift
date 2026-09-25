@@ -20,7 +20,7 @@ import SwiftUI
 extension View {
 
     @ViewBuilder
-    func applyMediaWidth(size: PaywallComponent.Size) -> some View {
+    func applyMediaWidth(size: PaywallComponent.Size, subtracting contentInsets: EdgeInsets) -> some View {
         switch size.width {
         case let .fit(_, minMax):
             self.applyWidthLimits(minMax, alignment: .center)
@@ -29,14 +29,18 @@ extension View {
                 .frame(minWidth: 0, maxWidth: .infinity)
                 .applyWidthLimits(minMax, alignment: .center)
         case .fixed(let value):
-            self.frame(width: Double(value))
+            self.frame(width: max(0, CGFloat(value) - contentInsets.leading - contentInsets.trailing))
         case let .relative(_, minMax):
             self.applyWidthLimits(minMax, alignment: .center)
         }
     }
 
     @ViewBuilder
-    func applyMediaHeight(size: PaywallComponent.Size, aspectRatio: Double) -> some View {
+    func applyMediaHeight(
+        size: PaywallComponent.Size,
+        aspectRatio: Double,
+        subtracting contentInsets: EdgeInsets
+    ) -> some View {
         switch size.height {
         case let .fit(_, minMax):
             switch size.width {
@@ -50,7 +54,8 @@ extension View {
                 // fixed height according to the aspect ratio.
                 // Otherwise the view would grow vertically to occupy available space.
                 // See "Image streching vertically" preview
-                self.frame(height: minMax.clamped(Double(value) / aspectRatio))
+                let contentWidth = max(0, CGFloat(value) - contentInsets.leading - contentInsets.trailing)
+                self.frame(height: minMax.clamped(contentWidth / CGFloat(aspectRatio)))
             case .relative:
                 self.applyHeightLimits(minMax, alignment: .center)
             }
@@ -59,7 +64,7 @@ extension View {
                 .frame(minHeight: 0, maxHeight: .infinity)
                 .applyHeightLimits(minMax, alignment: .center)
         case .fixed(let value):
-            self.frame(height: Double(value))
+            self.frame(height: max(0, CGFloat(value) - contentInsets.top - contentInsets.bottom))
         case let .relative(_, minMax):
             self.applyHeightLimits(minMax, alignment: .center)
         }
