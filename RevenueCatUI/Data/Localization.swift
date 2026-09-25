@@ -299,6 +299,35 @@ private extension Locale {
         }
     }
 
+    var regionCodeIdentifier: String? {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            return self.language.region?.identifier
+        } else {
+            return self.regionCode
+        }
+    }
+
+    /// The script of the locale, or the script implied by its region (e.g. `zh_TW` → `Hant`).
+    var scriptCodeIdentifier: String? {
+        let script: String?
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            script = self.language.script?.identifier
+        } else {
+            script = self.scriptCode
+        }
+        return script ?? self.regionCodeIdentifier.flatMap { Self.scriptsByRegion[$0] }
+    }
+
+    /// Scripts inferred from the region. Same values as `scriptByRegion` in purchases-android.
+    static let scriptsByRegion: [String: String] = [
+        "CN": "Hans",
+        "SG": "Hans",
+        "MY": "Hans",
+        "TW": "Hant",
+        "HK": "Hant",
+        "MO": "Hant"
+    ]
+
 }
 
 extension Locale {
@@ -318,16 +347,39 @@ extension Locale {
 
     /// Selects the best-matching locale from `availableLocales` given `preferredLocales`.
     ///
-    /// Matches on language first, then exact region within language matches.
+    /// Uses the first preferred locale whose language is available, and returns, in this order:
+    /// 1. The locale with the same language, script and region. `en-GB` and `en_GB` are the same locale.
+    /// 2. The first locale with the same language and script, e.g. `zh_Hant` for `zh-Hant-TW`.
+    /// 3. The first locale with the same language.
+    ///
+    /// Candidates are sorted by identifier, so the result doesn't depend on the order of `availableLocales`
+    /// (which usually comes from a `Dictionary`). This mirrors `getBestMatch` in purchases-android.
     /// Returns `nil` if no language match exists for any preferred locale.
     static func selectPreferredLocale(from availableLocales: [Locale],
                                       preferredLocales: [Locale]) -> Locale? {
+        let candidates = availableLocales.sorted { $0.identifier < $1.identifier }
+
         for preferred in preferredLocales {
-            guard let languageMatch = availableLocales.first(where: {
+            let languageMatches = candidates.filter {
                 $0.languageCodeIdentifier == preferred.languageCodeIdentifier
-            }) else { continue }
-            // Prefer an exact locale match (language + region) over a language-only match.
-            return availableLocales.first(where: { $0 == preferred }) ?? languageMatch
+            }
+            guard let languageMatch = languageMatches.first else { continue }
+
+            let preferredScript = preferred.scriptCodeIdentifier
+
+            if let exactMatch = languageMatches.first(where: {
+                $0.regionCodeIdentifier == preferred.regionCodeIdentifier &&
+                $0.scriptCodeIdentifier == preferredScript
+            }) {
+                return exactMatch
+            }
+
+            if let preferredScript,
+               let scriptMatch = languageMatches.first(where: { $0.scriptCodeIdentifier == preferredScript }) {
+                return scriptMatch
+            }
+
+            return languageMatch
         }
         return nil
     }
