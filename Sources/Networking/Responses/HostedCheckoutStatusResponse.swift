@@ -21,6 +21,9 @@ struct HostedCheckoutStatusResponse: Equatable {
     enum Status: Equatable {
 
         /// The session is under way. The caller keeps asking.
+        ///
+        /// Also stands for a status this version of the SDK does not know: a newer backend saying something
+        /// new is likelier to be a step along the way than an outcome.
         case pending
 
         /// The purchase is on the customer's account.
@@ -28,10 +31,6 @@ struct HostedCheckoutStatusResponse: Equatable {
 
         /// The session ended without a purchase. `failure` is absent where the backend sends no detail.
         case failed(Failure?)
-
-        /// A status this version of the SDK does not know. Treated as pending: a newer backend saying
-        /// something new is likelier to be a step along the way than an outcome.
-        case unknown
 
     }
 
@@ -87,8 +86,8 @@ extension HostedCheckoutStatusResponse: Decodable {
         case RawStatus.failed:
             return .failed(try? container.decodeIfPresent(Failure.self, forKey: .error))
         default:
-            Logger.warn(Strings.hostedCheckout.unknown_status(rawStatus))
-            return .unknown
+            Logger.warn(Strings.hostedCheckout.unrecognized_status(rawStatus))
+            return .pending
         }
     }
 
