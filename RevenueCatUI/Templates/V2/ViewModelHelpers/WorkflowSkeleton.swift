@@ -38,7 +38,7 @@ struct WorkflowSkeleton {
             stack: transform.stack(base.stack),
             header: base.header.map { .init(stack: transform.stack($0.stack)) },
             stickyFooter: base.stickyFooter.map { .init(stack: transform.stack($0.stack)) },
-            background: .color(.init(light: .hex(Self.gray(light)), dark: .hex(Self.gray(dark))))
+            background: .color(background)
         ))
         return copy
     }
@@ -214,11 +214,6 @@ struct WorkflowSkeleton {
             let value = hex.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
             return value.count == 8 ? Double(UInt8(value.suffix(2), radix: 16) ?? 255) / 255 : 1
         }.max() ?? 0
-    }
-
-    private static func gray(_ brightness: Double) -> String {
-        let value = Int((brightness * 255).rounded())
-        return String(format: "#%02X%02X%02X", value, value, value)
     }
 
 }

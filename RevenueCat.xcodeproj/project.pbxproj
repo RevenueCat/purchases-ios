@@ -1420,7 +1420,6 @@
 		C1311C20A12B3813D86A2EDF /* WorkflowPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FA3AA2BC4C1B8CE7E9A3B59 /* WorkflowPreview.swift */; };
 		C2351AB1D03FC78685D3CE0A /* CapturingLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECCBB32E1734BAD9232A3001 /* CapturingLogger.swift */; };
 		C53CDAA4FC3E6B51CC70D724 /* WorkflowPaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 800A129055A298C390AED0B5 /* WorkflowPaywallView.swift */; };
-		A7D500000000000000000004 /* WorkflowSkeletonShimmer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D500000000000000000003 /* WorkflowSkeletonShimmer.swift */; };
 		D012440C2FD02DC90043B43B /* RewardVerificationResultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D012440B2FD02DC90043B43B /* RewardVerificationResultTests.swift */; };
 		D012440D2FD02DC90043B43B /* RewardVerificationOutcomeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01244082FD02DC90043B43B /* RewardVerificationOutcomeTests.swift */; };
 		D012440E2FD02DC90043B43B /* RewardVerificationPollerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D012440A2FD02DC90043B43B /* RewardVerificationPollerTests.swift */; };
@@ -2891,7 +2890,6 @@
 		7E927212FE6045350AC196C1 /* BackendTokenRevocationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendTokenRevocationTests.swift; sourceTree = "<group>"; };
 		7F8F8AD16519E1EFCE1B99F4 /* ValueTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ValueTests.swift; sourceTree = "<group>"; };
 		800A129055A298C390AED0B5 /* WorkflowPaywallView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowPaywallView.swift; sourceTree = "<group>"; };
-		A7D500000000000000000003 /* WorkflowSkeletonShimmer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowSkeletonShimmer.swift; sourceTree = "<group>"; };
 		802593742FE06CDA005AF6DF /* StateUpdate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateUpdate.swift; sourceTree = "<group>"; };
 		8025937D2FE06FA1005AF6DF /* PaywallStateStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallStateStore.swift; sourceTree = "<group>"; };
 		802593842FE07057005AF6DF /* PaywallStateStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallStateStoreTests.swift; sourceTree = "<group>"; };
@@ -6706,7 +6704,6 @@
 				2C7457432CEA6470004ACE52 /* Components */,
 				2C7457222CE713DA004ACE52 /* Previews */,
 				800A129055A298C390AED0B5 /* WorkflowPaywallView.swift */,
-				A7D500000000000000000003 /* WorkflowSkeletonShimmer.swift */,
 				AB70B73749FDB04A429A0E13 /* Layout */,
 			);
 			path = V2;
@@ -9345,7 +9342,6 @@
 				97B9F00926E0977B0DAAD7D7 /* EnvironmentValues+Workflow.swift in Sources */,
 				150BEBF14F59182317CDA8DA /* WorkflowContext.swift in Sources */,
 				C53CDAA4FC3E6B51CC70D724 /* WorkflowPaywallView.swift in Sources */,
-				A7D500000000000000000004 /* WorkflowSkeletonShimmer.swift in Sources */,
 				C1311C20A12B3813D86A2EDF /* WorkflowPreview.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

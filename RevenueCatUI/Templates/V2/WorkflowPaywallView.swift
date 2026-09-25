@@ -501,7 +501,6 @@ struct WorkflowPaywallView: View {
                         .overlay(ProgressView())
                 }
             }
-            .modifier(WorkflowSkeletonShimmer())
             .allowsHitTesting(false)
             .accessibilityHidden(true)
 
