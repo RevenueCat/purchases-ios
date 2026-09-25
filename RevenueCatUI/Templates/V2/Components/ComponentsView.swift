@@ -68,8 +68,10 @@ struct ComponentsView: View {
             )
         case .text(let viewModel):
             TextComponentView(viewModel: viewModel)
+                .modifier(WorkflowSkeletonShimmer())
         case .image(let viewModel):
             ImageComponentView(viewModel: viewModel)
+                .modifier(WorkflowSkeletonShimmer())
         case .icon(let viewModel):
             IconComponentView(viewModel: viewModel)
         case .stack(let viewModel):
@@ -77,6 +79,7 @@ struct ComponentsView: View {
                 viewModel: viewModel,
                 onDismiss: onDismiss
             )
+            .modifier(WorkflowSkeletonShimmer())
         case .button(let viewModel):
             ButtonComponentView(viewModel: viewModel, onDismiss: onDismiss)
         case .package(let viewModel):

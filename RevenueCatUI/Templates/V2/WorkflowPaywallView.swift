@@ -496,6 +496,7 @@ struct WorkflowPaywallView: View {
                         workflowScreenType: []
                     )
                     .redacted(reason: .placeholder)
+                    .environment(\.workflowSkeletonShimmerEnabled, true)
                 } else {
                     Color.secondary.opacity(0.15).ignoresSafeArea()
                         .overlay(ProgressView())
