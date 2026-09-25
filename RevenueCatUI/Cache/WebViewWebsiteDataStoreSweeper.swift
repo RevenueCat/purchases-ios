@@ -42,7 +42,7 @@ final class WebViewWebsiteDataStoreSweeper: WebViewDataStoreSweeping {
 
     #if DEBUG
 
-    // Test initializer - Invoking WebKit APIs in the unit test suite crashes
+    // Test initializer - for mocking and spying WebKit APIs
     init(
         idStore: WebViewDataStoreIdentifierStore = .init(),
         existingIdentifiers: (@MainActor () async -> Set<UUID>)? = nil,
