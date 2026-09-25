@@ -22,7 +22,7 @@ enum HostedCheckoutStrings {
     case session_created(_ operationSessionID: String)
     case product_already_purchased(_ packageID: String)
     case error_creating_session(_ error: BackendError)
-    case unknown_status(_ status: String)
+    case unrecognized_status(_ status: String)
 
 }
 
@@ -41,8 +41,8 @@ extension HostedCheckoutStrings: LogMessage {
             "in package \(packageID)."
         case let .error_creating_session(error):
             return "Error creating the checkout session: \(error.localizedDescription)"
-        case let .unknown_status(status):
-            return "Unknown checkout session status '\(status)'. Treating the session as still under way."
+        case let .unrecognized_status(status):
+            return "Unrecognized checkout session status '\(status)'. Treating the session as still under way."
         }
     }
 
