@@ -897,6 +897,35 @@ jobs:
           path: fastlane/test_output
           destination: scan-test-output
 
+  run-revenuecat-ui-latest-xcode-beta:
+    executor:
+      name: macos-executor
+      xcode_version: "27.2.0"
+
+    steps:
+      - checkout
+      # xcbeautify not needed: test_revenuecatui uses xcodebuild directly
+      # which uses xcpretty
+      - install-dependencies:
+          install_xcbeautify: false
+      - update-spm-installation-commit
+      - run:
+          name: SPM RevenueCatUI Tests (latest Xcode beta)
+          command: bundle exec fastlane test_revenuecatui
+          no_output_timeout: 15m
+          environment:
+            DEVICE: iPhone 17,OS=27.2
+            # Xcode 27 can hang in simctl diagnose after all tests pass.
+            RC_COLLECT_TEST_DIAGNOSTICS: never
+      - compress_result_bundle:
+          directory: fastlane/test_output
+          bundle_name: revenuecatui
+      - store_test_results:
+          path: fastlane/test_output/revenuecatui/tests.xml
+      - store_artifacts:
+          path: fastlane/test_output
+          destination: scan-test-output-latest-xcode-beta
+
   run-revenuecat-ui-ios-26:
     executor:
       name: macos-executor
@@ -1058,6 +1087,34 @@ jobs:
           path: fastlane/test_output/xctest
           destination: scan-test-output-ios-27
       - github-notify-pr-on-fail
+
+  run-test-latest-xcode-beta:
+    executor:
+      name: macos-executor
+      xcode_version: "27.2.0"
+
+    steps:
+      - checkout
+      - run:
+          name: Validate Package.swift
+          command: swift package describe
+      - install-dependencies
+      - run:
+          name: Run iOS tests (latest Xcode beta)
+          command: bundle exec fastlane test_ios
+          no_output_timeout: 15m
+          environment:
+            SCAN_DEVICE: iPhone 17 (27.2)
+            RC_STOREKIT_TEST_PREFLIGHT: "1"
+            SCAN_XCARGS: -collect-test-diagnostics never
+      - compress_result_bundle:
+          directory: fastlane/test_output/xctest/ios
+          bundle_name: RevenueCat
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output/xctest
+          destination: scan-test-output-latest-xcode-beta
 
   run-test-ios-26:
     executor:
@@ -2392,6 +2449,18 @@ workflows:
       # Full Test Suite: Gated behind approve-full-tests
       # =============================================================
 
+      # Latest Xcode Beta Tests
+      - run-test-latest-xcode-beta:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+      - run-revenuecat-ui-latest-xcode-beta:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
+
       # Backend Integration Tests
       - backend-integration-tests-SK1:
           requires:
@@ -2904,10 +2973,18 @@ workflows:
       - run-test-ios-27:
           context:
             - slack-secrets
+      - run-test-latest-xcode-beta:
+          <<: *only-main-branch
+          context:
+            - slack-secrets
       - pod-lib-lint:
           context:
             - slack-secrets
       - run-revenuecat-ui-ios-27:
+          context:
+            - slack-secrets
+      - run-revenuecat-ui-latest-xcode-beta:
+          <<: *only-main-branch
           context:
             - slack-secrets
       - run-revenuecat-ui-ios-26:
