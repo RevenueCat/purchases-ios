@@ -315,10 +315,12 @@ class HostedCheckoutManagerTests: TestCase {
 private extension HostedCheckoutManagerTests {
 
     static func makeSystemInfo(useExternalPurchaseCustomLinks: Bool) -> MockSystemInfo {
-        return MockSystemInfo(
+        let systemInfo = MockSystemInfo(
             finishTransactions: true,
             useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks
         )
+        systemInfo.stubbedIsRunningInSimulator = false
+        return systemInfo
     }
 
     func makeManager() -> HostedCheckoutManager {

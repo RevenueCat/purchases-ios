@@ -441,20 +441,25 @@ class ExternalPurchaseManagerTests: TestCase {
     // MARK: - Helpers
 
     private static func makeSystemInfo(useExternalPurchaseCustomLinks: Bool) -> MockSystemInfo {
-        return MockSystemInfo(
+        return Self.onADevice(MockSystemInfo(
             finishTransactions: true,
             useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks
-        )
+        ))
     }
 
     private static func makeSystemInfoDisablingExternalPurchasesInSimulator(
         useExternalPurchaseCustomLinks: Bool
     ) -> MockSystemInfo {
-        return MockSystemInfo(
+        return Self.onADevice(MockSystemInfo(
             finishTransactions: true,
             useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks,
             disableExternalPurchasesInSimulator: true
-        )
+        ))
+    }
+
+    private static func onADevice(_ systemInfo: MockSystemInfo) -> MockSystemInfo {
+        systemInfo.stubbedIsRunningInSimulator = false
+        return systemInfo
     }
 
     private func makeManager() -> ExternalPurchaseManager {
