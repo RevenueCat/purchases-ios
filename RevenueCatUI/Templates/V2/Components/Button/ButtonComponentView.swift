@@ -58,6 +58,9 @@ struct ButtonComponentView: View {
     @Environment(\.selectedPackageId)
     private var selectedPackageId
 
+    @Environment(\.planSelectionDefaultPackage)
+    private var planSelectionDefaultPackage
+
     @Environment(\.componentInteractionLogger) var componentInteractionLogger
     @Environment(\.urlOpenedNotifier) private var urlOpenedNotifier
     @Environment(\.workflowTriggerAction) private var workflowTriggerAction
@@ -213,7 +216,9 @@ struct ButtonComponentView: View {
             if let sheet, let sheetStackViewModel = self.viewModel.sheetStackViewModel {
                 let sheetViewModel = SheetViewModel(
                     sheet: sheet,
-                    sheetStackViewModel: sheetStackViewModel
+                    sheetStackViewModel: sheetStackViewModel,
+                    presentingPackageContext: self.packageContext,
+                    presentingDefaultPackage: self.planSelectionDefaultPackage
                 )
                 openSheet(sheetViewModel)
             }
