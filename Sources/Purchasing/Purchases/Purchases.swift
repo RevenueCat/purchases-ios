@@ -1930,8 +1930,8 @@ public extension Purchases {
     /// Used by `RevenueCatUI` to learn what became of a checkout the customer completed in the app,
     /// before settling the paywall on it.
     ///
-    /// A purchase the backend confirms is fetched before it is reported, so a caller acting on the outcome
-    /// finds the entitlement on the customer rather than the state from before the checkout.
+    /// When the backend confirms a purchase, fetches the customer's `CustomerInfo` before returning, so
+    /// callers that read it next find the new entitlement instead of the cached state from before the checkout.
     @_spi(Internal) func pollHostedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
         let result = await self.hostedCheckoutManager.pollCheckout(operationSessionID: operationSessionID)
 
