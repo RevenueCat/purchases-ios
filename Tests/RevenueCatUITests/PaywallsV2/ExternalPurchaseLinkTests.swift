@@ -44,6 +44,33 @@ final class ExternalPurchaseLinkTests: TestCase {
             == "https://pay.rev.cat/abc/user_1?rc_external_purchase_token_id=token_id"
     }
 
+    func testOpensTheLinkWithTheTokenID() throws {
+        let url = try XCTUnwrap(URL(string: "https://pay.rev.cat/abc/user_1"))
+
+        expect(ExternalPurchaseLink.Action(.proceed(externalPurchaseTokenID: "token_id"), url: url))
+            == .open(url.appendingExternalPurchaseTokenID("token_id"))
+    }
+
+    func testOpensTheLinkAsItIsWithoutATokenID() throws {
+        let url = try XCTUnwrap(URL(string: "https://pay.rev.cat/abc/user_1"))
+
+        expect(ExternalPurchaseLink.Action(.proceed(externalPurchaseTokenID: nil), url: url)) == .open(url)
+    }
+
+    /// A customer who is not eligible to buy outside the App Store is told the purchase is unavailable rather
+    /// than left with a button that appears to do nothing.
+    func testTellsAnIneligibleCustomerThePurchaseIsUnavailable() throws {
+        let url = try XCTUnwrap(URL(string: "https://pay.rev.cat/abc/user_1"))
+
+        expect(ExternalPurchaseLink.Action(.notEligible, url: url)) == .tellCustomerThePurchaseIsUnavailable
+    }
+
+    func testOpensNothingWhenThePreparationStopped() throws {
+        let url = try XCTUnwrap(URL(string: "https://pay.rev.cat/abc/user_1"))
+
+        expect(ExternalPurchaseLink.Action(.stopped, url: url)) == .nothing
+    }
+
 }
 
 #endif

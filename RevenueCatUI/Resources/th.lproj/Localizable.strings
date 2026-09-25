@@ -25,3 +25,5 @@
 "Purchase" = "ซื้อ";
 "You are currently subscribed to this" = "คุณสมัครใช้บริการนี้อยู่แล้ว";
 "You've already purchased this" = "คุณซื้อรายการนี้แล้ว";
+"Purchase unavailable" = "ไม่สามารถซื้อได้";
+"This purchase isn't available in your region." = "การซื้อนี้ไม่พร้อมใช้งานในภูมิภาคของคุณ";

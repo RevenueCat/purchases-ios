@@ -25,3 +25,5 @@
 "Purchase" = "Comprar";
 "You are currently subscribed to this" = "Já tem uma subscrição deste item";
 "You've already purchased this" = "Já comprou este item";
+"Purchase unavailable" = "Compra indisponível";
+"This purchase isn't available in your region." = "Esta compra não está disponível na sua região.";

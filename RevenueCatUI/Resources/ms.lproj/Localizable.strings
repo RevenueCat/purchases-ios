@@ -25,3 +25,5 @@
 "Purchase" = "Beli";
 "You are currently subscribed to this" = "Anda sudah melanggan ini";
 "You've already purchased this" = "Anda sudah membeli ini";
+"Purchase unavailable" = "Pembelian tidak tersedia";
+"This purchase isn't available in your region." = "Pembelian ini tidak tersedia di rantau Anda.";

@@ -25,3 +25,5 @@
 "Purchase" = "Kjøp";
 "You are currently subscribed to this" = "Du abonnerer allerede på dette";
 "You've already purchased this" = "Du har allerede kjøpt dette";
+"Purchase unavailable" = "Kjøp er ikke tilgjengelig";
+"This purchase isn't available in your region." = "Dette kjøpet er ikke tilgjengelig i din region.";
