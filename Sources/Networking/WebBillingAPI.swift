@@ -120,7 +120,6 @@ class WebBillingAPI {
         let callback = HostedCheckoutStatusCallback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.hostedCheckoutStatusCallbackCache.add(callback)
 
-        // Polling paces itself, and the customer is waiting on the answer to settle their purchase.
         backendConfig.addCacheableOperation(
             with: factory,
             delay: .none,
