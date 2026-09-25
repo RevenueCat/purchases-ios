@@ -222,6 +222,24 @@ class HostedCheckoutManagerTests: TestCase {
         expect(self.webBillingAPI.invokedPostHostedCheckout) == false
     }
 
+    /// An app outside the programme gets the checkout it had before, whatever the simulator is told.
+    func testCreatesTheSessionInTheSimulatorOutsideTheProgrammeWhileExternalPurchasesAreDisabledThere() async {
+        self.systemInfo = MockSystemInfo(
+            finishTransactions: true,
+            dangerousSettings: DangerousSettings(
+                autoSyncPurchases: true,
+                useExternalPurchaseCustomLinks: false,
+                disableExternalPurchasesInSimulator: true
+            )
+        )
+        self.manager = self.makeManager(isRunningInSimulator: true)
+
+        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(result) == .started(Self.session)
+        expect(self.webBillingAPI.invokedPostHostedCheckoutParameters?.externalPurchaseTokenID).to(beNil())
+    }
+
     /// A customer who taps twice while the notice is coming up asked to buy once, and it is the first tap that
     /// carries the purchase.
     func testStopsACheckoutAskedForWhileAnotherIsStarting() async {
