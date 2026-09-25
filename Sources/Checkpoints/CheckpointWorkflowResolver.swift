@@ -12,6 +12,8 @@
 //  Created by Rick van der Linden.
 //
 
+// swiftlint:disable file_length
+
 import Foundation
 
 /// The result of resolving a checkpoint against RevenueCat configuration.
@@ -22,6 +24,9 @@ import Foundation
     /// An offering was selected for the checkpoint, with no RevenueCat-managed UI to present. The app
     /// decides whether and how to use it.
     case matchedOffering(Offering)
+    /// An ad was selected for the checkpoint, with no RevenueCat-managed UI to present. A registered
+    /// ad presenter decides how to show it.
+    case matchedAd(ResolvedAdStep)
     /// No workflow should run for the checkpoint.
     case noAction(CheckpointResolutionReason)
 
@@ -61,7 +66,7 @@ struct ResolvedCheckpoint {
     /// Reports `rule` only when it was actually served.
     init(_ resolution: CheckpointResolution, servedBy rule: CheckpointRule) {
         switch resolution {
-        case .matchedWorkflow, .matchedOffering:
+        case .matchedWorkflow, .matchedOffering, .matchedAd:
             self.init(resolution, checkpointRuleID: rule.id)
 
         case .noAction:
@@ -309,8 +314,19 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             return await self.resolveOffering(rule, step: initialStep)
         }
 
+        if initialStep.type == Self.adStepType {
+            guard workflow.steps.count == 1 else {
+                return Self.unservable(rule, reason: "an ad step cannot be mixed with other steps")
+            }
+            return Self.resolveAd(rule, step: initialStep)
+        }
+
         if workflow.steps.values.contains(where: \.isOfferingStep) {
             return Self.unservable(rule, reason: "a UI workflow cannot contain offering steps")
+        }
+
+        if workflow.steps.values.contains(where: { $0.type == Self.adStepType }) {
+            return Self.unservable(rule, reason: "a UI workflow cannot contain ad steps")
         }
 
         return await self.resolveWorkflow(workflowData: workflowData)
@@ -367,7 +383,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
     }
 
     @discardableResult
-    private static func unservable(_ rule: CheckpointRule, reason: String) -> CheckpointResolution {
+    static func unservable(_ rule: CheckpointRule, reason: String) -> CheckpointResolution {
         Logger.warn(Strings.checkpoints.workflowRuleSkipped(
             workflowID: rule.workflowId,
             reason: reason
