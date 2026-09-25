@@ -252,4 +252,30 @@ final class ProductPaidPriceTests: TestCase {
             expect(price.amount) == amount
         }
     }
+
+    func testHighVolumeConcurrentAccess() async throws {
+        let testCases = [
+            ("USD", 4.99, "en_US"),
+            ("EUR", 7.99, "fr_FR"),
+            ("JPY", 1500.0, "ja_JP"),
+            ("GBP", 3.49, "en_GB")
+        ]
+
+        await withTaskGroup(of: Void.self) { group in
+            for _ in 0..<100 {
+                for testCase in testCases {
+                    group.addTask {
+                        let locale = Locale(identifier: testCase.2)
+                        let price = ProductPaidPrice(currency: testCase.0, amount: testCase.1, locale: locale)
+
+                        _ = price.currency
+                        _ = price.amount
+                        _ = price.formatted
+                    }
+                }
+            }
+
+            await group.waitForAll()
+        }
+    }
 }
