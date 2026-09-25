@@ -28,10 +28,6 @@ class PaywallViewDynamicTypeTests: BaseSnapshotTest {
         Self.test(.medium)
     }
 
-    func testLarge() {
-        Self.test(.xLarge)
-    }
-
     func testXLarge() {
         Self.test(.xLarge)
     }
