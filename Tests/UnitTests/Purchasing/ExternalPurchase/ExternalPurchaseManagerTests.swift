@@ -273,6 +273,98 @@ class ExternalPurchaseManagerTests: TestCase {
         )
     }
 
+    // MARK: - Simulator
+
+    /// StoreKit never finds the customer eligible in the simulator, so asking it would only ever stop the purchase
+    /// outside the storefronts allowed without eligibility.
+    func testRunsNoneOfTheSequenceInTheSimulator() async {
+        self.systemInfo.stubbedIsRunningInSimulator = true
+        self.manager = self.makeManager()
+
+        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+
+        expect(result) == .notApplicable
+        expect(self.customLink.invokedAvailabilityCount) == 0
+        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
+        expect(self.customLink.invokedTokenTypes).to(beEmpty())
+        expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
+        self.logger.verifyMessageWasLogged(Strings.externalPurchase.custom_link_skipped_in_simulator,
+                                           level: .debug)
+    }
+
+    /// Developers try their web purchases out in the simulator from wherever they are.
+    func testProceedsInTheSimulatorWhateverTheStorefront() async {
+        self.settingsProvider.stubbedSettings = .allowingExternalPurchases(in: [])
+        self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.otherStorefront)
+        self.systemInfo.stubbedIsRunningInSimulator = true
+        self.manager = self.makeManager()
+
+        let result = await self.manager.prepareExternalPurchase(flow: .linkOut)
+
+        expect(result) == .notApplicable
+        expect(self.settingsProvider.invokedSettingsCount) == 0
+    }
+
+    /// Offers nothing even in a storefront allowed without eligibility, so the path taken by a customer who is
+    /// offered nothing can be tried out in the simulator wherever the developer is.
+    func testOffersNothingInTheSimulatorWhileExternalPurchasesAreDisabledThere() async {
+        self.systemInfo = Self.makeSystemInfoDisablingExternalPurchasesInSimulator(
+            useExternalPurchaseCustomLinks: true
+        )
+        self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.allowedStorefront)
+        self.systemInfo.stubbedIsRunningInSimulator = true
+        self.manager = self.makeManager()
+
+        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+
+        expect(result) == .stopped(.notEligible)
+        expect(self.customLink.invokedAvailabilityCount) == 0
+        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
+        expect(self.customLink.invokedTokenTypes).to(beEmpty())
+        expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
+        expect(self.settingsProvider.invokedSettingsCount) == 0
+        self.logger.verifyMessageWasLogged(Strings.externalPurchase.disabled_in_simulator, level: .warn)
+    }
+
+    func testDisablingExternalPurchasesInTheSimulatorChangesNothingOnADevice() async {
+        self.systemInfo = Self.makeSystemInfoDisablingExternalPurchasesInSimulator(
+            useExternalPurchaseCustomLinks: true
+        )
+        self.manager = self.makeManager()
+
+        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+
+        expect(result) == .registered(tokenID: Self.tokenID)
+        expect(self.customLink.invokedNoticeTypes) == [.withinApp]
+    }
+
+    /// An app outside the programme makes its purchases as it did before, whatever the simulator is told.
+    func testDisablingExternalPurchasesInTheSimulatorIsIgnoredOutsideTheProgramme() async {
+        self.systemInfo = Self.makeSystemInfoDisablingExternalPurchasesInSimulator(
+            useExternalPurchaseCustomLinks: false
+        )
+        self.systemInfo.stubbedIsRunningInSimulator = true
+        self.manager = self.makeManager()
+
+        let result = await self.manager.prepareExternalPurchase(flow: .linkOut)
+
+        expect(result) == .notApplicable
+        self.logger.verifyMessageWasNotLogged(Strings.externalPurchase.disabled_in_simulator, allowNoMessages: true)
+    }
+
+    /// Apps outside the programme hear nothing about Apple's custom link, in the simulator or anywhere else.
+    func testNothingIsLoggedInTheSimulatorWhileTheSettingIsDisabled() async {
+        self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
+        self.systemInfo.stubbedIsRunningInSimulator = true
+        self.manager = self.makeManager()
+
+        let result = await self.manager.prepareExternalPurchase(flow: .linkOut)
+
+        expect(result) == .notApplicable
+        self.logger.verifyMessageWasNotLogged(Strings.externalPurchase.custom_link_skipped_in_simulator,
+                                              allowNoMessages: true)
+    }
+
     // MARK: - Test Store
 
     /// Eligibility follows the app's entitlement and the customer's storefront, neither of which has anything
@@ -349,13 +441,31 @@ class ExternalPurchaseManagerTests: TestCase {
     // MARK: - Helpers
 
     private static func makeSystemInfo(useExternalPurchaseCustomLinks: Bool) -> MockSystemInfo {
-        return MockSystemInfo(
+        return Self.onADevice(MockSystemInfo(
             finishTransactions: true,
             dangerousSettings: DangerousSettings(
                 autoSyncPurchases: true,
                 useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks
             )
-        )
+        ))
+    }
+
+    private static func makeSystemInfoDisablingExternalPurchasesInSimulator(
+        useExternalPurchaseCustomLinks: Bool
+    ) -> MockSystemInfo {
+        return Self.onADevice(MockSystemInfo(
+            finishTransactions: true,
+            dangerousSettings: DangerousSettings(
+                autoSyncPurchases: true,
+                useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks,
+                disableExternalPurchasesInSimulator: true
+            )
+        ))
+    }
+
+    private static func onADevice(_ systemInfo: MockSystemInfo) -> MockSystemInfo {
+        systemInfo.stubbedIsRunningInSimulator = false
+        return systemInfo
     }
 
     private func makeManager() -> ExternalPurchaseManager {

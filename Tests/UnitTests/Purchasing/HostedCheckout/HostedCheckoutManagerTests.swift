@@ -103,6 +103,22 @@ class HostedCheckoutManagerTests: TestCase {
         expect(self.webBillingAPI.invokedPostHostedCheckoutParameters?.externalPurchaseTokenID).to(beNil())
     }
 
+    /// Developers try the checkout out in the simulator from wherever they are, even though StoreKit never finds
+    /// the customer eligible there.
+    func testCreatesTheSessionWithoutATokenInTheSimulatorWhateverTheStorefront() async {
+        self.customLink.stubbedAvailability = .notEligible
+        self.systemInfo.stubbedStorefront = MockStorefront(countryCode: "ESP")
+        self.systemInfo.stubbedIsRunningInSimulator = true
+        self.manager = self.makeManager()
+
+        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(result) == .started(Self.session)
+        expect(self.customLink.invokedAvailabilityCount) == 0
+        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
+        expect(self.webBillingAPI.invokedPostHostedCheckoutParameters?.externalPurchaseTokenID).to(beNil())
+    }
+
     /// The setting stands for the app taking part in Apple's programme at all, and a checkout outside it is
     /// exactly the checkout the app had before.
     func testCreatesTheSessionWithoutATokenWhileTheExternalPurchaseSettingIsDisabled() async {
@@ -188,6 +204,45 @@ class HostedCheckoutManagerTests: TestCase {
         expect(self.webBillingAPI.invokedPostHostedCheckout) == false
     }
 
+    /// The simulator can be made to refuse the checkout as a device refuses it to an ineligible customer, so that
+    /// path can be tried out there too.
+    func testCreatesNoSessionInTheSimulatorWhileExternalPurchasesAreDisabledThere() async {
+        self.systemInfo = MockSystemInfo(
+            finishTransactions: true,
+            dangerousSettings: DangerousSettings(
+                autoSyncPurchases: true,
+                useExternalPurchaseCustomLinks: true,
+                disableExternalPurchasesInSimulator: true
+            )
+        )
+        self.systemInfo.stubbedIsRunningInSimulator = true
+        self.manager = self.makeManager()
+
+        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(result) == .notEligible
+        expect(self.webBillingAPI.invokedPostHostedCheckout) == false
+    }
+
+    /// An app outside the programme gets the checkout it had before, whatever the simulator is told.
+    func testCreatesTheSessionInTheSimulatorOutsideTheProgrammeWhileExternalPurchasesAreDisabledThere() async {
+        self.systemInfo = MockSystemInfo(
+            finishTransactions: true,
+            dangerousSettings: DangerousSettings(
+                autoSyncPurchases: true,
+                useExternalPurchaseCustomLinks: false,
+                disableExternalPurchasesInSimulator: true
+            )
+        )
+        self.systemInfo.stubbedIsRunningInSimulator = true
+        self.manager = self.makeManager()
+
+        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(result) == .started(Self.session)
+        expect(self.webBillingAPI.invokedPostHostedCheckoutParameters?.externalPurchaseTokenID).to(beNil())
+    }
+
     /// A customer who taps twice while the notice is coming up asked to buy once, and it is the first tap that
     /// carries the purchase.
     func testStopsACheckoutAskedForWhileAnotherIsStarting() async {
@@ -266,13 +321,15 @@ class HostedCheckoutManagerTests: TestCase {
 private extension HostedCheckoutManagerTests {
 
     static func makeSystemInfo(useExternalPurchaseCustomLinks: Bool) -> MockSystemInfo {
-        return MockSystemInfo(
+        let systemInfo = MockSystemInfo(
             finishTransactions: true,
             dangerousSettings: DangerousSettings(
                 autoSyncPurchases: true,
                 useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks
             )
         )
+        systemInfo.stubbedIsRunningInSimulator = false
+        return systemInfo
     }
 
     func makeManager() -> HostedCheckoutManager {
