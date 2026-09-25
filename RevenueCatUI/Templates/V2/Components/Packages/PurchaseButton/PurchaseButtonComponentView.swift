@@ -48,6 +48,8 @@ struct PurchaseButtonComponentView: View {
 
     @State private var alreadyOwnedCategory: StoreProduct.ProductCategory?
 
+    @State private var isShowingHostedCheckoutPurchaseSucceeded = false
+
     @State private var hostedCheckoutError: NSError?
     #endif
 
@@ -113,6 +115,18 @@ struct PurchaseButtonComponentView: View {
             } label: {
                 Text("OK", bundle: self.viewModel.localizedBundle)
             }
+        }
+        .alert(
+            Text(verbatim: ""),
+            isPresented: self.$isShowingHostedCheckoutPurchaseSucceeded
+        ) {
+            Button {
+                Task { await self.purchaseHandler.handleHostedCheckoutPurchase() }
+            } label: {
+                Text("OK", bundle: self.viewModel.localizedBundle)
+            }
+        } message: {
+            Text("Your purchase was successful.", bundle: self.viewModel.localizedBundle)
         }
         #endif
     }
@@ -253,7 +267,9 @@ struct PurchaseButtonComponentView: View {
                 }
             case let .failed(error):
                 self.hostedCheckoutError = error as NSError
-            case .purchased, .cancelled:
+            case .purchased:
+                self.isShowingHostedCheckoutPurchaseSucceeded = true
+            case .cancelled:
                 break
             }
         }
