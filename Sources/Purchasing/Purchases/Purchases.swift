@@ -298,6 +298,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let customerInfoManager: CustomerInfoManager
     private let eventsManager: EventsManagerType?
     private let remoteConfigManager: RemoteConfigManagerType
+    private let sdkSettingsConfigProvider: SDKSettingsConfigProviderType
 
     private var _adTracker: Any?
 
@@ -616,6 +617,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         )
         let checkpointsConfigProvider = CheckpointsConfigProvider(manager: remoteConfigManager)
         let audiencesConfigProvider = AudiencesConfigProvider(manager: remoteConfigManager)
+        let sdkSettingsConfigProvider = SDKSettingsConfigProvider(manager: remoteConfigManager)
 
         let workflowManager = WorkflowManager(
             workflowsConfigProvider: workflowsConfigProvider,
@@ -859,6 +861,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   offeringsManager: offeringsManager,
                   workflowManager: workflowManager,
                   remoteConfigManager: remoteConfigManager,
+                  sdkSettingsConfigProvider: sdkSettingsConfigProvider,
                   offlineEntitlementsManager: offlineEntitlementsManager,
                   purchasesOrchestrator: purchasesOrchestrator,
                   purchasedProductsFetcher: purchasedProductsFetcher,
@@ -897,6 +900,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          offeringsManager: OfferingsManager,
          workflowManager: WorkflowManager,
          remoteConfigManager: RemoteConfigManagerType,
+         sdkSettingsConfigProvider: SDKSettingsConfigProviderType,
          offlineEntitlementsManager: OfflineEntitlementsManager,
          purchasesOrchestrator: PurchasesOrchestrator,
          purchasedProductsFetcher: PurchasedProductsFetcherType?,
@@ -956,7 +960,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.productsManager = productsManager
         self.offeringsManager = offeringsManager
         self.workflowManager = workflowManager
-        self.remoteConfigManager = systemInfo.remoteConfigEnabled ? remoteConfigManager : NoOpRemoteConfigManager()
+        self.remoteConfigManager = systemInfo.remoteConfigEnabled
+            ? remoteConfigManager
+            : NoOpRemoteConfigManager()
+        self.sdkSettingsConfigProvider = sdkSettingsConfigProvider
         self.offlineEntitlementsManager = offlineEntitlementsManager
         self.purchasesOrchestrator = purchasesOrchestrator
         self.purchasedProductsFetcher = purchasedProductsFetcher
@@ -1000,6 +1007,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         #endif
 
         self.purchasesOrchestrator.delegate = self
+        self.sdkSettingsConfigProvider.delegate = self
+        self.remoteConfigManager.addRemoteConfigStateObserver(self.sdkSettingsConfigProvider)
         #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.attribution.syncAttributesAndOfferingsIfNeededHandler = { completion in
             completion(nil, NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError)
@@ -2793,6 +2802,12 @@ public extension Purchases {
 // async contexts in a much more simple way without errors like:
 // "Capture of 'self' with non-sendable type 'Purchases' in a `@Sendable` closure"
 extension Purchases: @unchecked Sendable {}
+
+extension Purchases: SDKSettingsConfigProviderDelegate {
+
+    func sdkSettingsConfigProviderDidUpdate(_: SDKSettings) {}
+
+}
 
 // MARK: Internal
 
