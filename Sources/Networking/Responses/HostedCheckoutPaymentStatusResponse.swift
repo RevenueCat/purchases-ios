@@ -26,7 +26,7 @@ struct HostedCheckoutPaymentStatusResponse: Equatable {
         /// The customer has not paid.
         case open
 
-        /// A payment is under way, or the session has already ended. The caller polls the session's status.
+        /// A payment is under way, or the session has already ended. The caller should poll the session's status.
         case processing
 
         /// The backend could not read the payment provider, or sent a status this version of the SDK does
