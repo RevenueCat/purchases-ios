@@ -44,7 +44,8 @@ extension ExternalPurchaseStrings: LogMessage {
             "(\(storefront)): continuing with no notice shown and no token minted."
         case .custom_link_skipped_in_simulator:
             return "Apple's external purchase custom link is not available in the simulator: continuing with " +
-            "no notice shown and no token minted, whatever the storefront. Use a device to try that flow out."
+            "no notice shown and no token minted, whatever the storefront. Use a device in an allowed region " +
+            "to try that flow out."
         case .disabled_in_simulator:
             return "Not preparing an external purchase: DangerousSettings.disableExternalPurchasesInSimulator " +
             "makes the simulator behave as a physical device does for a customer who is not eligible for " +
