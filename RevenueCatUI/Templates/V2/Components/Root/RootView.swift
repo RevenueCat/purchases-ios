@@ -171,7 +171,13 @@ struct RootView: View {
                 self.sheetHasIndependentSelection = newValue.sheetStackViewModel.independentPackageValidator != nil
                 self.sheetPackageContext = newValue.independentPackageContext
                 self.sheetPresentingPackageContext = newValue.presentingPackageContext
-                self.sheetPresentingDefaultPackage = newValue.presentingDefaultPackage
+                if let presentingContext = newValue.presentingPackageContext,
+                   presentingContext !== self.packageContext {
+                    self.sheetPresentingDefaultPackage = newValue.presentingDefaultPackage
+                } else {
+                    // Legacy sheets opened from the root keep the paywall's existing reset behavior.
+                    self.sheetPresentingDefaultPackage = nil
+                }
                 self.packageSelectionSheetComponentName = newValue.sheet.name
                 if self.workflowPackageContext != nil {
                     self.packageBeforeOpeningSheet = (newValue.presentingPackageContext ?? self.packageContext).package
