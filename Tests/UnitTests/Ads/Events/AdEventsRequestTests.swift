@@ -291,17 +291,24 @@ class AdFeatureEventsRequestTests: TestCase {
 
     // MARK: - Capture method
 
-    func testAdapterCaptureMethodIsSerialized() throws {
+    func testIOSAdMobAdapterCaptureMethodIsSerialized() throws {
         let creationData = AdEvent.CreationData(
             id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
             date: .init(timeIntervalSince1970: 1694029328),
-            captureMethod: .adapter
+            captureMethod: .iosAdMobAdapter
         )
         let event = AdEvent.displayed(creationData, Self.eventData)
         let storedEvent = try Self.createStoredAdEvent(from: event)
         let requestEvent = try XCTUnwrap(AdEventsRequest.AdEventRequest(storedEvent: storedEvent))
 
-        expect(requestEvent.captureMethod) == "adapter"
+        expect(requestEvent.captureMethod) == "ios_admob_adapter"
+    }
+
+    func testLegacyAdapterCaptureMethodCanStillBeDeserialized() throws {
+        let data = try XCTUnwrap("\"adapter\"".data(using: .utf8))
+        let captureMethod = try JSONDecoder.default.decode(AdEventCaptureMethod.self, from: data)
+
+        expect(captureMethod.rawValue) == "adapter"
     }
 
     func testCaptureMethodIsOmittedForLegacyStoredEvent() throws {
