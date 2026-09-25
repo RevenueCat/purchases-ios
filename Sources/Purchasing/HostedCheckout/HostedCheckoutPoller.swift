@@ -185,7 +185,7 @@ private extension HostedCheckoutPoller {
 
             return .finished(.failed(code: failure?.code, message: failure?.message))
 
-        case .pending, .unknown:
+        case .pending:
             return .retry
         }
     }
