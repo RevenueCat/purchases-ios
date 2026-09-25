@@ -121,10 +121,11 @@ import Foundation
     }
 
     /**
-     * Whether the simulator offers no external purchase, as a device does for a customer who is not eligible
-     * outside the storefronts allowed without eligibility. Otherwise, the simulator offers them in any storefront.
+     * Whether the simulator offers no external purchase, as a device does for a customer who is not
+     * [eligible](https://developer.apple.com/documentation/storekit/externalpurchasecustomlink/iseligible)
+     * for external purchases. Otherwise, the simulator offers them in any storefront.
      *
-     * Disabled by default. Has no effect on a device.
+     * Defaults to `false`. Has no effect on a physical device.
      */
     @_spi(Experimental) public var disableExternalPurchasesInSimulator: Bool {
         self.storage.disableExternalPurchasesInSimulator
@@ -197,7 +198,9 @@ import Foundation
      * - Parameter useExternalPurchaseCustomLinks: Whether a web purchase button that opens its link in the
      * external browser takes part in Apple's external purchase custom link programme.
      * - Parameter disableExternalPurchasesInSimulator: Whether the simulator offers no external purchase, as a
-     * device does for a customer who is not eligible. Has no effect on a device.
+     * device does for a customer who is not
+     * [eligible](https://developer.apple.com/documentation/storekit/externalpurchasecustomlink/iseligible)
+     * for external purchases. Has no effect on a physical device.
      */
     @_spi(Experimental) public convenience init(autoSyncPurchases: Bool,
                                                 useExternalPurchaseCustomLinks: Bool,
