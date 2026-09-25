@@ -1950,7 +1950,7 @@ public extension Purchases {
     /// A fetch that does not land leaves the outcome alone: the purchase happened, and settling on it serves
     /// the customer better than telling them it did not.
     private func refreshCustomerInfoAfterHostedCheckout(operationSessionID: String) async {
-        Logger.debug(Strings.hostedCheckout.poll_fetching_customer_info(operationSessionID))
+        Logger.verbose(Strings.hostedCheckout.poll_fetching_customer_info(operationSessionID))
 
         let refreshed: CustomerInfo? = await Async.retry(maximumRetries: 3) {
             do {
