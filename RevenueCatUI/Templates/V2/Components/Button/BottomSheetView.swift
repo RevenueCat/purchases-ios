@@ -33,6 +33,29 @@ import UIKit
 struct SheetViewModel: Equatable {
     let sheet: RevenueCat.PaywallComponent.ButtonComponent.Sheet
     let sheetStackViewModel: StackComponentViewModel
+    let presentingPackageContext: PackageContext?
+    let presentingDefaultPackage: Package?
+    let independentPackageContext: PackageContext?
+
+    init(
+        sheet: RevenueCat.PaywallComponent.ButtonComponent.Sheet,
+        sheetStackViewModel: StackComponentViewModel,
+        presentingPackageContext: PackageContext? = nil,
+        presentingDefaultPackage: Package? = nil
+    ) {
+        self.sheet = sheet
+        self.sheetStackViewModel = sheetStackViewModel
+        self.presentingPackageContext = presentingPackageContext
+        self.presentingDefaultPackage = presentingDefaultPackage
+        if let validator = sheetStackViewModel.independentPackageValidator {
+            self.independentPackageContext = PackageContext(
+                package: validator.defaultSelectedPackage(in: .provisional),
+                variableContext: .init(packages: validator.packageInfos.map(\.package))
+            )
+        } else {
+            self.independentPackageContext = nil
+        }
+    }
 
     static func == (lhs: SheetViewModel, rhs: SheetViewModel) -> Bool {
         lhs.sheet.id == rhs.sheet.id
@@ -89,6 +112,8 @@ struct BottomSheetOverlayModifier: ViewModifier {
     let onSheetContentAppear: (() -> Void)?
 
     @Environment(\.workflowRenderingContext) private var workflowRenderingContext
+    @Environment(\.planSelectionDefaultPackage) private var planSelectionDefaultPackage
+    @EnvironmentObject private var packageContext: PackageContext
 
     @State private var parentHeight: CGFloat?
 
@@ -180,6 +205,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
                 if let sheetViewModel {
                     StackComponentView(
                         viewModel: sheetViewModel.sheetStackViewModel,
+                        independentSelectionContext: sheetViewModel.independentPackageContext,
                         onDismiss: {
                             self.sheetViewModel = nil
                         },
@@ -190,6 +216,19 @@ struct BottomSheetOverlayModifier: ViewModifier {
                             trailing: 0
                         )
                     )
+                    .environmentObject(sheetViewModel.presentingPackageContext ?? self.packageContext)
+                    .environment(\.independentPurchaseContext, sheetViewModel.presentingPackageContext != nil)
+                    .environment(
+                        \.planSelectionDefaultPackage,
+                        sheetViewModel.presentingPackageContext != nil
+                            ? sheetViewModel.presentingDefaultPackage
+                            : self.planSelectionDefaultPackage
+                    )
+                    .environment(\.openSheet, { nextSheet in
+                        guard sheetViewModel.presentingPackageContext != nil ||
+                                sheetViewModel.independentPackageContext != nil else { return }
+                        self.sheetViewModel = nextSheet
+                    })
                     // Dismissal in here closes the sheet, so a `navigate_back` button must not
                     // inherit the workflow's back stack or handler. Its label and tap both refer
                     // to the sheet's local dismissal.

@@ -16,6 +16,14 @@ import Foundation
 
 @_spi(Internal) public extension PaywallComponent {
 
+    struct PurchaseContext: Codable, Hashable, Sendable {
+        public let mode: String
+
+        public init(mode: String = "independent") {
+            self.mode = mode
+        }
+    }
+
     final class StackComponent: PaywallComponentBase {
 
         public enum Overflow: String, PaywallComponentBase {
@@ -44,6 +52,7 @@ import Foundation
         public let border: Border?
         public let shadow: Shadow?
         public let badge: Badge?
+        public let purchaseContext: PurchaseContext?
         public let overflow: Overflow?
 
         public let overrides: ComponentOverrides<PartialStackComponent>?
@@ -64,7 +73,8 @@ import Foundation
             shadow: Shadow? = nil,
             badge: Badge? = nil,
             overflow: Overflow? = nil,
-            overrides: ComponentOverrides<PartialStackComponent>? = nil
+            overrides: ComponentOverrides<PartialStackComponent>? = nil,
+            purchaseContext: PurchaseContext? = nil
         ) {
             self.name = name
             self.visible = visible
@@ -82,9 +92,11 @@ import Foundation
             self.shadow = shadow
             self.badge = badge
             self.overflow = overflow
+            self.purchaseContext = purchaseContext
             self.overrides = overrides
         }
         public func hash(into hasher: inout Hasher) {
+            hasher.combine(purchaseContext)
             hasher.combine(type)
             hasher.combine(name)
             hasher.combine(visible)
@@ -105,7 +117,8 @@ import Foundation
         }
 
         public static func == (lhs: StackComponent, rhs: StackComponent) -> Bool {
-            return lhs.type == rhs.type &&
+            return lhs.purchaseContext == rhs.purchaseContext &&
+                   lhs.type == rhs.type &&
                    lhs.name == rhs.name &&
                    lhs.visible == rhs.visible &&
                    lhs.components == rhs.components &&

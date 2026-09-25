@@ -21,6 +21,30 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class PackageValidatorTests: TestCase {
 
+    func testIndependentScopePackagesAreAvailableButCannotBecomeParentDefault() {
+        let parent = PackageValidator()
+        let child = PackageValidator()
+        parent.add(Self.makePackageInfo(package: TestData.annualPackage, isSelectedByDefault: true, visible: true))
+        child.add(Self.makePackageInfo(package: TestData.monthlyPackage, isSelectedByDefault: true, visible: true))
+        parent.addIndependentScope(child)
+
+        XCTAssertEqual(parent.packages.count, 2)
+        XCTAssertEqual(parent.packageInfos.map(\.package.identifier), [TestData.annualPackage.identifier])
+        XCTAssertEqual(parent.defaultSelectedPackage(in: Self.context())?.identifier, TestData.annualPackage.identifier)
+        XCTAssertEqual(child.defaultSelectedPackage(in: Self.context())?.identifier, TestData.monthlyPackage.identifier)
+        XCTAssertFalse(parent.isRendering(TestData.monthlyPackage, in: Self.context()))
+    }
+
+    func testPaywallWithOnlyIndependentPackagesIsValidWithoutSelectingThemInParent() {
+        let parent = PackageValidator()
+        let child = PackageValidator()
+        child.add(Self.makePackageInfo(package: TestData.monthlyPackage, isSelectedByDefault: true, visible: true))
+        parent.addIndependentScope(child)
+
+        XCTAssertTrue(parent.isValid)
+        XCTAssertNil(parent.defaultSelectedPackage(in: Self.context()))
+    }
+
     func testDefaultSelectedPackageSkipsStaticallyHiddenSelectedPackage() {
         let validator = PackageValidator()
 
@@ -401,6 +425,56 @@ final class PackageValidatorTests: TestCase {
             validator.reconciledSelection(current: seeded, in: context)?.identifier,
             TestData.monthlyPackage.identifier
         )
+    }
+
+    func testFactoryResolvesIndependentDefaultFromPackageFlagAndPreservesParentSelection() throws {
+        let monthly = PaywallComponent.PackageComponent(
+            packageID: TestData.monthlyPackage.identifier,
+            isSelectedByDefault: true,
+            visible: nil,
+            applePromoOfferProductCode: nil,
+            stack: .init(components: []),
+            id: "monthly-card"
+        )
+        let annual = PaywallComponent.PackageComponent(
+            packageID: TestData.annualPackage.identifier,
+            isSelectedByDefault: false,
+            visible: nil,
+            applePromoOfferProductCode: nil,
+            stack: .init(components: []),
+            id: "annual-card"
+        )
+        let validator = PackageValidator()
+        let result = try ViewModelFactory().toViewModel(
+            component: .stack(.init(
+                components: [.package(annual), .package(monthly)],
+                purchaseContext: .init()
+            )),
+            packageValidator: validator,
+            purchaseButtonCollector: nil,
+            offering: Offering(identifier: "default", serverDescription: "",
+                               availablePackages: [TestData.annualPackage, TestData.monthlyPackage],
+                               webCheckoutUrl: nil),
+            localizationProvider: LocalizationProvider(locale: Locale(identifier: "en_US"), localizedStrings: [:]),
+            uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()),
+            colorScheme: .light
+        )
+        guard case .stack(let stack) = result else { return XCTFail("Expected stack") }
+        let independent = try XCTUnwrap(stack.independentPackageValidator)
+        XCTAssertTrue(independent.hasDeclaredPackages)
+        XCTAssertEqual(independent.defaultSelectedPackage(in: Self.context())?.identifier,
+                       TestData.monthlyPackage.identifier)
+        XCTAssertNil(validator.defaultSelectedPackage(in: Self.context()))
+        XCTAssertEqual(validator.packages.count, 2)
+
+        let sheet = PaywallComponent.ButtonComponent.Sheet(
+            id: "sheet", name: nil, stack: stack.component, backgroundBlur: false, size: nil
+        )
+        let firstPresentation = SheetViewModel(sheet: sheet, sheetStackViewModel: stack)
+        firstPresentation.independentPackageContext?.package = TestData.annualPackage
+        let reopened = SheetViewModel(sheet: sheet, sheetStackViewModel: stack)
+        XCTAssertEqual(reopened.independentPackageContext?.package?.identifier, TestData.monthlyPackage.identifier)
+        XCTAssertFalse(firstPresentation.independentPackageContext === reopened.independentPackageContext)
     }
 
     func testViewModelFactoryResolvesOverrideVisibilityForDefaultSelection() throws {
