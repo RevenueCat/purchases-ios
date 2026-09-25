@@ -29,6 +29,9 @@ enum HostedCheckout {
         /// Tell the customer they already own what they tried to buy, which is why no checkout opens.
         case tellCustomerTheyAlreadyOwnIt
 
+        /// Tell the customer the purchase is not available to them, which is why no checkout opens.
+        case tellCustomerThePurchaseIsUnavailable
+
         /// Nothing to present, and nothing to offer instead.
         case nothing
 
@@ -38,7 +41,9 @@ enum HostedCheckout {
                 self = .present(session)
             case .alreadyPurchased:
                 self = .tellCustomerTheyAlreadyOwnIt
-            case .declinedByCustomer, .paymentsNotAuthorized, .notEligible, .alreadyStarting, .failed:
+            case .notEligible:
+                self = .tellCustomerThePurchaseIsUnavailable
+            case .declinedByCustomer, .paymentsNotAuthorized, .alreadyStarting, .failed:
                 self = .nothing
             }
         }

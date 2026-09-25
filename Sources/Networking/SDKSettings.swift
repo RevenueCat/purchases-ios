@@ -13,39 +13,30 @@ struct SDKSettings: Decodable, Equatable {
 
     let externalPurchases: ExternalPurchases
 
-    init() {
-        self.init(externalPurchases: .init())
-    }
-
-    init(externalPurchases: ExternalPurchases) {
-        self.externalPurchases = externalPurchases
-    }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.externalPurchases = try container.decodeIfPresent(ExternalPurchases.self,
-                                                               forKey: .externalPurchases) ?? .init()
-    }
-
     /// The rules for purchases taken outside the store, one entry per store.
     struct ExternalPurchases: Decodable, Equatable {
 
         let appStore: AppStore
 
-        init() {
-            self.init(appStore: .init())
-        }
-
-        init(appStore: AppStore) {
-            self.appStore = appStore
-        }
-
-        init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            self.appStore = try container.decodeIfPresent(AppStore.self, forKey: .appStore) ?? .init()
-        }
-
     }
+
+}
+
+extension SDKSettings {
+
+    init() {
+        self.init(externalPurchases: Self.noExternalPurchases)
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.externalPurchases = (try? container.decode(ExternalPurchases.self, forKey: .externalPurchases))
+            ?? Self.noExternalPurchases
+    }
+
+    private static let noExternalPurchases = ExternalPurchases(
+        appStore: .init(storefrontsAllowedWithoutStoreEligibility: [])
+    )
 
 }
 
@@ -58,22 +49,18 @@ extension SDKSettings.ExternalPurchases {
         /// Empty when the backend sends none, so no storefront is treated as one of them.
         let storefrontsAllowedWithoutStoreEligibility: Set<String>
 
-        init() {
-            self.init(storefrontsAllowedWithoutStoreEligibility: [])
-        }
+    }
 
-        init(storefrontsAllowedWithoutStoreEligibility: Set<String>) {
-            self.storefrontsAllowedWithoutStoreEligibility = storefrontsAllowedWithoutStoreEligibility
-        }
+}
 
-        init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            // Compared against what StoreKit reports, so held in one case rather than trusted to arrive in it.
-            let storefronts = try container.decodeIfPresent([String].self,
-                                                            forKey: .storefrontsAllowedWithoutStoreEligibility)
-            self.storefrontsAllowedWithoutStoreEligibility = Set((storefronts ?? []).map { $0.uppercased() })
-        }
+extension SDKSettings.ExternalPurchases.AppStore {
 
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        // Compared against what StoreKit reports, so held in one case rather than trusted to arrive in it.
+        let storefronts = try container.decodeIfPresent([String].self,
+                                                        forKey: .storefrontsAllowedWithoutStoreEligibility)
+        self.storefrontsAllowedWithoutStoreEligibility = Set((storefronts ?? []).map { $0.uppercased() })
     }
 
 }
@@ -82,14 +69,6 @@ private extension SDKSettings {
 
     enum CodingKeys: String, CodingKey {
         case externalPurchases
-    }
-
-}
-
-private extension SDKSettings.ExternalPurchases {
-
-    enum CodingKeys: String, CodingKey {
-        case appStore
     }
 
 }
