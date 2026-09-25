@@ -58,10 +58,6 @@ struct HostedCheckoutStatusResponse: Equatable {
 extension HostedCheckoutStatusResponse: Decodable {
 
     private enum CodingKeys: String, CodingKey {
-        case operation
-    }
-
-    private enum OperationCodingKeys: String, CodingKey {
         case status
         case error
     }
@@ -75,14 +71,13 @@ extension HostedCheckoutStatusResponse: Decodable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        let operation = try container.nestedContainer(keyedBy: OperationCodingKeys.self, forKey: .operation)
 
-        self.status = Self.decodeStatus(try operation.decode(String.self, forKey: .status), from: operation)
+        self.status = Self.decodeStatus(try container.decode(String.self, forKey: .status), from: container)
     }
 
     private static func decodeStatus(
         _ rawStatus: String,
-        from container: KeyedDecodingContainer<OperationCodingKeys>
+        from container: KeyedDecodingContainer<CodingKeys>
     ) -> Status {
         switch rawStatus {
         case RawStatus.started, RawStatus.inProgress:
