@@ -40,6 +40,7 @@ class VariableHandlerV2Test: TestCase {
             "annual": "annual",
             "annually": "annually",
             "annual_short": "yr",
+            "lifetime": "lifetime",
             "free_price": "free",
             "percent": "%d%%",
             "num_day_zero": "%d day",
@@ -1403,7 +1404,8 @@ class VariableHandlerV2Test: TestCase {
             localizations: localizations["en_US"]!,
             isEligibleForIntroOffer: true
         )
-        expect(result).to(equal("$119.49 for "))
+        // No offer, so offer_period falls back to the product period
+        expect(result).to(equal("$119.49 for lifetime"))
     }
 
     func testOfferVariablesWithConsumableProduct() {
@@ -1418,6 +1420,78 @@ class VariableHandlerV2Test: TestCase {
     }
 
     // MARK: - Non-Subscription Tests
+
+    func testProductPeriodlyForLifetime() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.periodly }}",
+            with: TestData.lifetimePackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("lifetime"))
+    }
+
+    func testProductPeriodForLifetime() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.period }}",
+            with: TestData.lifetimePackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("lifetime"))
+    }
+
+    func testProductPeriodAbbreviatedForLifetime() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.period_abbreviated }}",
+            with: TestData.lifetimePackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("lifetime"))
+    }
+
+    func testProductPeriodWithUnitForLifetime() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.period_with_unit }}",
+            with: TestData.lifetimePackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("lifetime"))
+    }
+
+    func testProductPeriodlyForNonSubscriptionOutsideLifetimePackage() {
+        // A non-subscription product in a custom package is not a lifetime purchase, so there is
+        // no period to describe and the variable stays empty.
+        let result = variableHandler.processVariables(
+            in: "{{ product.periodly }}",
+            with: TestData.consumablePackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testProductPeriodlyForLifetimeWithoutLocalization() {
+        // Older paywalls may be served a localizations payload with no `lifetime` key.
+        var withoutLifetime = localizations["en_US"]!
+        withoutLifetime.removeValue(forKey: "lifetime")
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.periodly }}",
+            with: TestData.lifetimePackage,
+            locale: locale,
+            localizations: withoutLifetime,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal(""))
+    }
 
     func testProductPricePerPeriodForLifetime() {
         let result = variableHandler.processVariables(
@@ -1489,6 +1563,7 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
             "annual": "annual",
             "annually": "annually",
             "annual_short": "yr",
+            "lifetime": "lifetime",
             "free_price": "free",
             "percent": "%d%%",
             "num_day_zero": "%d day",
