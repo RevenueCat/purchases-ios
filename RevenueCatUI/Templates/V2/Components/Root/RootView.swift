@@ -171,13 +171,7 @@ struct RootView: View {
                 self.sheetHasIndependentSelection = newValue.sheetStackViewModel.independentPackageValidator != nil
                 self.sheetPackageContext = newValue.independentPackageContext
                 self.sheetPresentingPackageContext = newValue.presentingPackageContext
-                if let presentingContext = newValue.presentingPackageContext,
-                   presentingContext !== self.packageContext {
-                    self.sheetPresentingDefaultPackage = newValue.presentingDefaultPackage
-                } else {
-                    // Legacy sheets opened from the root keep the paywall's existing reset behavior.
-                    self.sheetPresentingDefaultPackage = nil
-                }
+                self.sheetPresentingDefaultPackage = newValue.presentingDefaultPackage
                 self.packageSelectionSheetComponentName = newValue.sheet.name
                 if self.workflowPackageContext != nil {
                     self.packageBeforeOpeningSheet = (newValue.presentingPackageContext ?? self.packageContext).package
@@ -187,10 +181,13 @@ struct RootView: View {
                 let presentingContext = self.sheetPresentingPackageContext ?? self.packageContext
                 let selectionInSheetContext = self.sheetPackageContext.map { $0.package } ?? presentingContext.package
                 if !self.sheetHasIndependentSelection {
+                    let defaultPackage = presentingContext === self.packageContext
+                        ? self.defaultPackage
+                        : self.sheetPresentingDefaultPackage
                     presentingContext.package = Self.restoredPackageAfterSheetDismissal(
                         workflowPackageContext: self.workflowPackageContext,
                         packageBeforeOpeningSheet: self.packageBeforeOpeningSheet,
-                        defaultPackage: self.sheetPresentingDefaultPackage ?? self.defaultPackage
+                        defaultPackage: defaultPackage
                     )
                 }
                 self.sheetHasIndependentSelection = false

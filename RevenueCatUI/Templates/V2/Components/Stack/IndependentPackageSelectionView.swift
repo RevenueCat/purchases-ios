@@ -59,6 +59,7 @@ struct IndependentPackageSelectionView<Content: View>: View {
             .environmentObject(selection)
             .environment(\.selectedPackageId, selection.package?.identifier)
             .environment(\.planSelectionDefaultPackage, defaultPackage)
+            .environment(\.independentPurchaseContext, true)
             .environment(\.workflowPackageContext, nil)
             .onAppear { reconcileSelectedPackage() }
             .onChangeOf(visibleIds) { _ in reconcileSelectedPackage() }
