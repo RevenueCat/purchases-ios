@@ -38,21 +38,6 @@ class BackendGetWebOfferingProductsTests: BaseBackendTests {
         expect(self.operationDispatcher.invokedDispatchOnWorkerThreadDelayParam) == JitterableDelay.none
     }
 
-    func testGetWebOfferingProductsCallsHTTPMethodWithNoDelay() {
-        self.httpClient.mock(
-            requestPath: .getWebOfferingProducts(appUserID: Self.userID),
-            response: .init(statusCode: .success, response: Self.noOfferingsResponse as [String: Any])
-        )
-
-        let result = waitUntilValue { completed in
-            self.offerings.getWebOfferingProducts(appUserID: Self.userID, completion: completed)
-        }
-
-        expect(result).to(beSuccess())
-        expect(self.httpClient.calls).to(haveCount(1))
-        expect(self.operationDispatcher.invokedDispatchOnWorkerThreadDelayParam) == JitterableDelay.none
-    }
-
     func testGetWebOfferingProductsCachesForSameUserID() {
         self.httpClient.mock(
             requestPath: .getWebOfferingProducts(appUserID: Self.userID),
