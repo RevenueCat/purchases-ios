@@ -112,6 +112,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
     let onSheetContentAppear: (() -> Void)?
 
     @Environment(\.workflowRenderingContext) private var workflowRenderingContext
+    @Environment(\.planSelectionDefaultPackage) private var planSelectionDefaultPackage
     @EnvironmentObject private var packageContext: PackageContext
 
     @State private var parentHeight: CGFloat?
@@ -216,6 +217,18 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         )
                     )
                     .environmentObject(sheetViewModel.presentingPackageContext ?? self.packageContext)
+                    .environment(\.independentPurchaseContext, sheetViewModel.presentingPackageContext != nil)
+                    .environment(
+                        \.planSelectionDefaultPackage,
+                        sheetViewModel.presentingPackageContext != nil
+                            ? sheetViewModel.presentingDefaultPackage
+                            : self.planSelectionDefaultPackage
+                    )
+                    .environment(\.openSheet, { nextSheet in
+                        guard sheetViewModel.presentingPackageContext != nil ||
+                                sheetViewModel.independentPackageContext != nil else { return }
+                        self.sheetViewModel = nextSheet
+                    })
                     // Dismissal in here closes the sheet, so a `navigate_back` button must not
                     // inherit the workflow's back stack or handler. Its label and tap both refer
                     // to the sheet's local dismissal.
