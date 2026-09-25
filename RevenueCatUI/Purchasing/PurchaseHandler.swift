@@ -624,6 +624,7 @@ extension PurchaseHandler {
         }
     }
 
+    #if ENABLE_WORKFLOW_BRANCH_LOADING
     func resolveBranch(_ branch: WorkflowBranch) async -> String {
         let purchases = self.purchases
         // A task group would wait for cancelled network work before returning the timeout result.
@@ -649,6 +650,8 @@ extension PurchaseHandler {
         for await stepId in results { return stepId }
         return branch.fallbackStepId
     }
+
+    #endif
 
     // Callers gate on remoteConfigEnabled before reaching this point, so this assumes
     // workflows are enabled and always resolves against the workflow endpoint.
@@ -695,6 +698,9 @@ extension PurchaseHandler {
         traceId: String? = nil,
         resolvedInitialStepId: String? = nil
     ) throws -> WorkflowContext {
+        #if !ENABLE_WORKFLOW_BRANCH_LOADING
+        let resolvedInitialStepId: String? = nil
+        #endif
         guard let step = workflow.steps[resolvedInitialStepId ?? workflow.initialStepId] else {
             throw PaywallError.workflowInitialStepNotFound(
                 stepId: workflow.initialStepId,
@@ -704,6 +710,7 @@ extension PurchaseHandler {
         guard !step.isOfferingStep else {
             throw TerminalOfferingWorkflowError()
         }
+        #if ENABLE_WORKFLOW_BRANCH_LOADING
         if step.type == "branch", step.branch != nil, resolvedInitialStepId == nil {
             return WorkflowContext(
                 workflow: workflow,
@@ -717,6 +724,7 @@ extension PurchaseHandler {
                 traceId: traceId
             )
         }
+        #endif
         guard let screenID = step.screenId else {
             throw PaywallError.workflowInitialStepMissingScreenIdentifier(
                 stepId: step.id,

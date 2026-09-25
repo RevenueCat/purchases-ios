@@ -38,10 +38,13 @@ final class WorkflowNavigator: ObservableObject {
         self.currentStepId = workflow.initialStepId
     }
 
+    #if ENABLE_WORKFLOW_BRANCH_LOADING
     func resolveInitialStep(to stepId: String) {
         guard self.backStack.isEmpty, self.currentStepId == self.workflow.initialStepId else { return }
         self.currentStepId = stepId
     }
+
+    #endif
 
     var currentStep: WorkflowStep? {
         return workflow.steps[currentStepId]

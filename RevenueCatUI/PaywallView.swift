@@ -337,6 +337,9 @@ public struct PaywallView: View {
         purchaseHandler: PurchaseHandler
     ) -> some View {
 
+        #if !ENABLE_WORKFLOW_BRANCH_LOADING
+        let workflowContext = offering.internalPaywallComponents == nil ? nil : workflowContext
+        #endif
         let countries = offering.internalPaywallComponents?.data.zeroDecimalPlaceCountries ?? []
         let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
             countries: countries.isEmpty ? offering.paywall?.zeroDecimalPlaceCountries : countries

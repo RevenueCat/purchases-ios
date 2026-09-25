@@ -219,7 +219,9 @@ struct WorkflowTransitionGeometry {
 struct WorkflowPaywallView: View {
 
     private enum PresentationState {
+        #if ENABLE_WORKFLOW_BRANCH_LOADING
         case resolvingBranch(WorkflowBranch)
+        #endif
         case active
         case failing(error: NSError)
         // The alert clears its error before dismissing, but the presentation must remain failed so
@@ -233,8 +235,12 @@ struct WorkflowPaywallView: View {
 
         var hasFailed: Bool {
             switch self {
-            case .active, .resolvingBranch:
+            case .active:
                 return false
+            #if ENABLE_WORKFLOW_BRANCH_LOADING
+            case .resolvingBranch:
+                return false
+            #endif
             case .failing, .failureReported:
                 return true
             }
@@ -291,11 +297,16 @@ struct WorkflowPaywallView: View {
     @State private var transitionState: WorkflowPageTransitionState<RenderedPage>
     @State private var activeTransitionID: UUID?
     @State private var hasCompletedWorkflowInSession = false
+    #if ENABLE_WORKFLOW_BRANCH_LOADING
     @State private var skeletonComponents: Offering.PaywallComponents?
     @State private var showsSkeleton: Bool
     @State private var skeletonOpacity: Double = 1
     @State private var hasRenderedPage = false
     @State private var isDismissed = false
+    #else
+    private var hasRenderedPage: Bool { self.transitionState.currentPage != nil }
+    private var showsSkeleton: Bool { false }
+    #endif
     /// Every step the user has seen, in first-seen order. Each page is kept mounted so its subtree,
     /// and the state it owns (a tab/toggle selection, the `PackageContext` that `PaywallsV2View`
     /// mutates by reference), survives navigating away and back. Also the per-step page cache:
@@ -320,9 +331,11 @@ struct WorkflowPaywallView: View {
         self.onDismiss = onDismiss
         self.onPresentationError = onPresentationError
         let navigator = WorkflowNavigator(workflow: context.workflow)
+        #if ENABLE_WORKFLOW_BRANCH_LOADING
         if let resolvedInitialStepId = context.resolvedInitialStepId {
             navigator.resolveInitialStep(to: resolvedInitialStepId)
         }
+        #endif
         self._navigator = .init(wrappedValue: navigator)
         self._stateStore = .init(
             wrappedValue: PaywallStateStore(declarations: Self.mergedStateDeclarations(in: context.workflow))
@@ -332,6 +345,7 @@ struct WorkflowPaywallView: View {
                 subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
             )
         ))
+        #if ENABLE_WORKFLOW_BRANCH_LOADING
         let initialStepId = context.resolvedInitialStepId ?? context.workflow.initialStepId
         let initialStep = context.workflow.steps[initialStepId]
         let branch = context.resolvedInitialStepId == nil && initialStep?.type == "branch"
@@ -348,6 +362,10 @@ struct WorkflowPaywallView: View {
                 components.data, colors: context.uiConfig.app.colors
             ))
         })
+        #else
+        let initialStepId = context.workflow.initialStepId
+        let branch: WorkflowBranch? = nil
+        #endif
         let initialPackageInput = Self.buildPackageInput(
             stepId: initialStepId,
             context: context,
@@ -364,11 +382,13 @@ struct WorkflowPaywallView: View {
                 packageInput: initialPackageInput
             )
             : nil
-        self._presentationState = .init(
-            initialValue: branch.map { .resolvingBranch($0) } ?? initialPresentationError.map {
-                .failing(error: $0)
-            } ?? .active
-        )
+        var initialPresentationState = initialPresentationError.map { PresentationState.failing(error: $0) } ?? .active
+        #if ENABLE_WORKFLOW_BRANCH_LOADING
+        if let branch {
+            initialPresentationState = .resolvingBranch(branch)
+        }
+        #endif
+        self._presentationState = .init(initialValue: initialPresentationState)
         self._stepEventCoordinator = .init(
             wrappedValue: WorkflowStepEventCoordinator(
                 workflow: context.workflow,
@@ -412,11 +432,13 @@ struct WorkflowPaywallView: View {
                 self.workflowHeaderOverlay(geometry: geometry)
                     .zIndex(2)
 
+                #if ENABLE_WORKFLOW_BRANCH_LOADING
                 if self.showsSkeleton {
                     self.skeletonView
                         .opacity(self.skeletonOpacity)
                         .zIndex(3)
                 }
+                #endif
 
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -432,9 +454,26 @@ struct WorkflowPaywallView: View {
             activeTransitionID: self.activeTransitionID,
             completion: self.finishTransition
         )
+        #if ENABLE_WORKFLOW_BRANCH_LOADING
         .task {
             await self.presentInitialStep()
         }
+        #else
+        .onAppear {
+            self.syncExitOfferBinding()
+            switch self.presentationState {
+            case .failing:
+                self.reportPresentationError(for: self.navigator.currentStepId)
+            case .failureReported:
+                break
+            case .active:
+                self.stepEventCoordinator.trackInitialStep(
+                    self.navigator.currentStep,
+                    hasRenderedPage: self.hasRenderedPage
+                )
+            }
+        }
+        #endif
         .task(id: self.activeTransitionID) {
             guard let activeTransitionID = self.activeTransitionID else {
                 return
@@ -457,7 +496,9 @@ struct WorkflowPaywallView: View {
         // A late configuration failure tracks the same lifecycle immediately before showing its error;
         // the coordinator's fire-once guards prevent this hook from duplicating those events later.
         .onDisappear {
+            #if ENABLE_WORKFLOW_BRANCH_LOADING
             self.isDismissed = true
+            #endif
             self.trackCurrentWorkflowLeft()
         }
         .onChangeOf(self.navigator.currentStepId) { _ in
@@ -478,6 +519,7 @@ struct WorkflowPaywallView: View {
 
     // MARK: - Helpers
 
+    #if ENABLE_WORKFLOW_BRANCH_LOADING
     @ViewBuilder
     private var skeletonView: some View {
         ZStack(alignment: .topTrailing) {
@@ -575,6 +617,7 @@ struct WorkflowPaywallView: View {
         self.stepEventCoordinator.trackInitialStep(self.navigator.currentStep, hasRenderedPage: true)
         self.syncExitOfferBinding()
     }
+    #endif
 
     private var displayedPages: [DisplayedPage] {
         return [
@@ -1099,8 +1142,10 @@ struct WorkflowPaywallView: View {
         self.trackCurrentWorkflowLeft()
         self.exitOfferOfferingBinding.wrappedValue = nil
         self.presentationState = .failing(error: error)
+        #if ENABLE_WORKFLOW_BRANCH_LOADING
         self.showsSkeleton = false
         self.skeletonComponents = nil
+        #endif
         self.reportPresentationError(for: stepId)
     }
 
@@ -1113,8 +1158,12 @@ struct WorkflowPaywallView: View {
                     self.presentationState = .failing(error: error)
                 case (.failing, nil):
                     self.presentationState = .failureReported
-                case (.active, nil), (.resolvingBranch, nil), (.failureReported, nil):
+                case (.active, nil), (.failureReported, nil):
                     break
+                #if ENABLE_WORKFLOW_BRANCH_LOADING
+                case (.resolvingBranch, nil):
+                    break
+                #endif
                 }
             }
         )

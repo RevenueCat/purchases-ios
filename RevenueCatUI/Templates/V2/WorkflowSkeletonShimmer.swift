@@ -11,7 +11,7 @@
 
 import SwiftUI
 
-#if !os(tvOS)
+#if !os(tvOS) && ENABLE_WORKFLOW_BRANCH_LOADING
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct WorkflowSkeletonShimmer: ViewModifier {
