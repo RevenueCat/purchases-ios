@@ -203,6 +203,25 @@ class HostedCheckoutManagerTests: TestCase {
         expect(self.webBillingAPI.invokedPostHostedCheckout) == false
     }
 
+    /// The simulator can be made to refuse the checkout as a device refuses it to an ineligible customer, so that
+    /// path can be tried out there too.
+    func testCreatesNoSessionInTheSimulatorWhileExternalPurchasesAreDisabledThere() async {
+        self.systemInfo = MockSystemInfo(
+            finishTransactions: true,
+            dangerousSettings: DangerousSettings(
+                autoSyncPurchases: true,
+                useExternalPurchaseCustomLinks: true,
+                disableExternalPurchasesInSimulator: true
+            )
+        )
+        self.manager = self.makeManager(isRunningInSimulator: true)
+
+        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(result) == .notEligible
+        expect(self.webBillingAPI.invokedPostHostedCheckout) == false
+    }
+
     /// A customer who taps twice while the notice is coming up asked to buy once, and it is the first tap that
     /// carries the purchase.
     func testStopsACheckoutAskedForWhileAnotherIsStarting() async {

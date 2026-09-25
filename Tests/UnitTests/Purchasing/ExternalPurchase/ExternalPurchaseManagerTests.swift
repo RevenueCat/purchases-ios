@@ -303,6 +303,34 @@ class ExternalPurchaseManagerTests: TestCase {
         expect(self.settingsProvider.invokedSettingsCount) == 0
     }
 
+    /// Offers nothing even in a storefront allowed without eligibility, so the path taken by a customer who is
+    /// offered nothing can be tried out in the simulator wherever the developer is.
+    func testOffersNothingInTheSimulatorWhileExternalPurchasesAreDisabledThere() async {
+        self.systemInfo = Self.makeSystemInfoDisablingExternalPurchasesInSimulator()
+        self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.allowedStorefront)
+        self.manager = self.makeManager(isRunningInSimulator: true)
+
+        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+
+        expect(result) == .stopped(.notEligible)
+        expect(self.customLink.invokedAvailabilityCount) == 0
+        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
+        expect(self.customLink.invokedTokenTypes).to(beEmpty())
+        expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
+        expect(self.settingsProvider.invokedSettingsCount) == 0
+        self.logger.verifyMessageWasLogged(Strings.externalPurchase.disabled_in_simulator, level: .warn)
+    }
+
+    func testDisablingExternalPurchasesInTheSimulatorChangesNothingOnADevice() async {
+        self.systemInfo = Self.makeSystemInfoDisablingExternalPurchasesInSimulator()
+        self.manager = self.makeManager(isRunningInSimulator: false)
+
+        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+
+        expect(result) == .registered(tokenID: Self.tokenID)
+        expect(self.customLink.invokedNoticeTypes) == [.withinApp]
+    }
+
     /// Apps outside the programme hear nothing about Apple's custom link, in the simulator or anywhere else.
     func testNothingIsLoggedInTheSimulatorWhileTheSettingIsDisabled() async {
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
@@ -396,6 +424,17 @@ class ExternalPurchaseManagerTests: TestCase {
             dangerousSettings: DangerousSettings(
                 autoSyncPurchases: true,
                 useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks
+            )
+        )
+    }
+
+    private static func makeSystemInfoDisablingExternalPurchasesInSimulator() -> MockSystemInfo {
+        return MockSystemInfo(
+            finishTransactions: true,
+            dangerousSettings: DangerousSettings(
+                autoSyncPurchases: true,
+                useExternalPurchaseCustomLinks: true,
+                disableExternalPurchasesInSimulator: true
             )
         )
     }
