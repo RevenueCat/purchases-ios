@@ -127,7 +127,7 @@ class BackendGetHostedCheckoutStatusTests: BaseBackendTests {
 
     /// Only used for web product changes, so it says nothing about what became of this session.
     func testIgnoresAnExpiredSession() throws {
-        self.mockStatus(["operation": ["status": "succeeded", "is_expired": true]])
+        self.mockStatus(["status": "succeeded", "is_expired": true])
 
         let response = try XCTUnwrap(waitUntilValue { completed in
             self.getStatus(completion: completed)
@@ -190,11 +190,11 @@ private extension BackendGetHostedCheckoutStatusTests {
     )
 
     static func response(status: String) -> [String: Any] {
-        return ["operation": ["status": status, "is_expired": false]]
+        return ["status": status, "is_expired": false]
     }
 
     static func response(status: String, error: [String: Any]) -> [String: Any] {
-        return ["operation": ["status": status, "is_expired": false, "error": error]]
+        return ["status": status, "is_expired": false, "error": error]
     }
 
     func mockStatus(_ response: [String: Any]) {
