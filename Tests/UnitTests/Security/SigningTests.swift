@@ -1113,8 +1113,8 @@ class SigningTests: TestCase {
         let salt = Self.createSalt()
         let offeringsPath = HTTPRequest.Path.getOfferings(appUserID: "test_user")
 
-        // Sign with regular path
-        let signatureRegular = try self.sign(
+        // Sign with fallback path
+        let signatureFallback = try self.sign(
             parameters: .init(
                 path: offeringsPath,
                 iamEnabled: false,
@@ -1122,19 +1122,19 @@ class SigningTests: TestCase {
                 nonce: nil,
                 etag: nil,
                 requestDate: requestDate,
-                useFallbackPath: false
+                useFallbackPath: true
             ),
             salt: salt.asData
         )
-        let fullSignatureWithRegular = Self.fullSignature(
+        let fullSignatureWithFallback = Self.fullSignature(
             intermediateKey: intermediateKey,
             salt: salt,
-            signature: signatureRegular
+            signature: signatureFallback
         )
 
-        // Verify with fallback path
+        // Verify with regular path
         expect(self.signing.verificationResult(
-            for: fullSignatureWithRegular.base64EncodedString(),
+            for: fullSignatureWithFallback.base64EncodedString(),
             with: .init(
                 path: offeringsPath,
                 iamEnabled: false,
@@ -1142,7 +1142,7 @@ class SigningTests: TestCase {
                 nonce: nil,
                 etag: nil,
                 requestDate: requestDate,
-                useFallbackPath: true
+                useFallbackPath: false
             ),
             publicKey: self.publicKey
         )) == .failed(.payloadSignatureMismatch)
