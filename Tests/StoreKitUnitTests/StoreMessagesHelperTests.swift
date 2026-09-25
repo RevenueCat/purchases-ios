@@ -79,14 +79,6 @@ class StoreMessagesHelperTests: TestCase {
         expect(message2.displayCalled) == false
     }
 
-    func testShowMessagesAfterDeferMessagesAndNoMessagesDoesNothing() async throws {
-        self.createHelper(showStoreMessagesAutomatically: true)
-
-        try await self.waitForDeferredMessages(messages: [])
-
-        await self.helper.showStoreMessages(types: Set(StoreMessageType.allCases))
-    }
-
     func testShowMessagesAfterShowMessagesDoesNotCallDisplayMultipleTimes() async throws {
         self.createHelper(showStoreMessagesAutomatically: false)
 

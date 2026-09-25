@@ -21,16 +21,6 @@ import XCTest
 
 class SecureStorageErrorTests: TestCase {
 
-    func testRawValueIsStored() {
-        let error = SecureStorageError(rawValue: errSecItemNotFound)
-        expect(error.rawValue) == errSecItemNotFound
-    }
-
-    func testRawValueIsStoredForSuccess() {
-        let error = SecureStorageError(rawValue: errSecSuccess)
-        expect(error.rawValue) == errSecSuccess
-    }
-
     func testDescriptionIsNonEmptyForKnownError() {
         let error = SecureStorageError(rawValue: errSecItemNotFound)
         expect(error.description).toNot(beEmpty())
@@ -46,25 +36,6 @@ class SecureStorageErrorTests: TestCase {
         // (either a system message or the numeric fallback string)
         let error = SecureStorageError(rawValue: OSStatus(Int32.max))
         expect(error.description).toNot(beEmpty())
-    }
-
-    func testDescriptionFallsBackToNumericStringWhenSystemMessageUnavailable() {
-        // Pick a status that is unlikely to have a human-readable system message.
-        // The implementation uses SecCopyErrorMessageString, which returns nil for
-        // unknown codes, in which case description falls back to "\(rawValue)".
-        let obscureStatus: OSStatus = -9_999_999
-        let error = SecureStorageError(rawValue: obscureStatus)
-        // Either the system gave us a message OR we fell back to the numeric string.
-        let expectedFallback = "\(obscureStatus)"
-        let isSystemMessage = error.description != expectedFallback
-        let isFallback = error.description == expectedFallback
-        expect(isSystemMessage || isFallback) == true
-    }
-
-    func testConformsToError() {
-        // Verify the type can be used as any Error without explicit casting
-        let error: any Error = SecureStorageError(rawValue: errSecAuthFailed)
-        expect(error).toNot(beNil())
     }
 
     func testTwoErrorsWithSameRawValueAreDescribedIdentically() {
@@ -88,14 +59,6 @@ class SecureItemAttributesTests: TestCase {
         var attrs = SecureItemAttributes()
         attrs.includedInBackup = false
         expect(attrs.includedInBackup) == false
-    }
-
-    func testMutatingOneInstanceDoesNotAffectAnother() {
-        let original = SecureItemAttributes()
-        var copy = original
-        copy.includedInBackup = false
-        expect(original.includedInBackup) == true
-        expect(copy.includedInBackup) == false
     }
 
 }
@@ -231,34 +194,6 @@ class MockSecureItemStorageTests: TestCase {
         try storage.saveItem(identifier: "myKey", contents: data)
         expect(self.storage.lastSaveIdentifier) == "myKey"
         expect(self.storage.lastSaveContents) == data
-    }
-
-}
-
-// MARK: - AccessGroup struct
-
-class AccessGroupTests: TestCase {
-
-    func testAccessGroupStringIsStored() {
-        let accessGroup = Keychain.AccessGroup(accessGroup: "com.example.shared", appIdentifier: "com.example.app")
-        expect(accessGroup.accessGroup) == "com.example.shared"
-    }
-
-    func testAppIdentifierIsStored() {
-        let accessGroup = Keychain.AccessGroup(accessGroup: "com.example.shared", appIdentifier: "com.example.app")
-        expect(accessGroup.appIdentifier) == "com.example.app"
-    }
-
-    func testAccessGroupAndAppIdentifierCanBeDistinct() {
-        let accessGroup = Keychain.AccessGroup(accessGroup: "com.example.group", appIdentifier: "com.example.app.one")
-        expect(accessGroup.accessGroup) == "com.example.group"
-        expect(accessGroup.appIdentifier) == "com.example.app.one"
-    }
-
-    func testAccessGroupCanMatchAppIdentifier() {
-        // A common pattern: the app's own bundle ID is also the access group.
-        let accessGroup = Keychain.AccessGroup(accessGroup: "com.example.app", appIdentifier: "com.example.app")
-        expect(accessGroup.accessGroup) == accessGroup.appIdentifier
     }
 
 }

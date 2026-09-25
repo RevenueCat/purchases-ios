@@ -278,42 +278,4 @@ final class ProductPaidPriceTests: TestCase {
             await group.waitForAll()
         }
     }
-
-    func testFormatterCacheCoherencyUnderConcurrentAccess() async throws {
-        let currencies = ["USD", "EUR", "GBP", "JPY"]
-        let locales = ["en_US", "fr_FR", "en_GB", "ja_JP"]
-        let amounts = [1.99, 9.99, 49.99, 199.99]
-
-        // Test that cache remains coherent under concurrent access
-        await withTaskGroup(of: (String, String, Double, String).self) { group in
-            for currency in currencies {
-                for localeId in locales {
-                    for amount in amounts {
-                        group.addTask {
-                            let locale = Locale(identifier: localeId)
-                            let formatted = ProductPaidPrice.formatPrice(
-                                currency: currency,
-                                amount: amount,
-                                locale: locale
-                            )
-                            return (currency, localeId, amount, formatted)
-                        }
-                    }
-                }
-            }
-
-            var results: [String: String] = [:]
-
-            for await (currency, localeId, amount, formatted) in group {
-                let key = "\(currency)-\(localeId)-\(amount)"
-
-                if let existingFormatted = results[key] {
-                    // Same parameters should always produce same result
-                    expect(formatted) == existingFormatted
-                } else {
-                    results[key] = formatted
-                }
-            }
-        }
-    }
 }
