@@ -250,7 +250,8 @@ private extension BackendCheckoutLaneTests {
     ]
 
     static let hostedCheckoutStatusResponse: [String: Any] = [
-        "operation": ["status": "in_progress", "is_expired": false]
+        "status": "in_progress",
+        "is_expired": false
     ]
 
     static let externalPurchaseTokenResponse: [String: Any] = [
