@@ -409,7 +409,7 @@ import Foundation
         /// device does for a customer who is not
         /// [eligible](https://developer.apple.com/documentation/storekit/externalpurchasecustomlink/iseligible)
         /// for external purchases. Otherwise, the simulator offers them in any storefront. Defaults to `false`.
-        /// Has no effect on a physical device.
+        /// Has no effect on a physical device, nor while `useExternalPurchaseCustomLinks` is `false`.
         ///
         /// - Important: The app has to carry Apple's external purchase link entitlement, otherwise no
         /// purchase can be made outside the App Store.
