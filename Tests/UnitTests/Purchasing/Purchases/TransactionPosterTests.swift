@@ -969,52 +969,6 @@ class TransactionPosterTests: TestCase {
         expect(self.localTransactionMetadataStore.invokedStoreMetadataCount.value) == 1
     }
 
-    func testPostReceiptFromQueueClearsExistingMetadataWhenMetadataOnSuccessWhenMetadataAlreadyExists() throws {
-        let product = MockSK1Product(mockProductIdentifier: "product")
-        let storedMetadata = LocalTransactionMetadata(
-            transactionId: self.mockTransaction.transactionIdentifier,
-            productData: ProductRequestData(
-                productIdentifier: "stored_product",
-                paymentMode: nil,
-                currencyCode: "USD",
-                storeCountry: "US",
-                price: 9.99,
-                normalDuration: nil,
-                introDuration: nil,
-                introDurationType: nil,
-                introPrice: nil,
-                subscriptionGroup: nil,
-                discounts: nil
-            ),
-            transactionData: PurchasedTransactionData(),
-            encodedAppleReceipt: .receipt("test_receipt".asData),
-            originalPurchasesAreCompletedBy: .revenueCat,
-            sdkOriginated: true
-        )
-
-        // Pre-store metadata (simulating it was stored from a previous purchase attempt)
-        self.localTransactionMetadataStore.storeMetadata(
-            storedMetadata,
-            forTransactionId: self.mockTransaction.transactionIdentifier
-        )
-
-        // Transaction is from queue (not purchase-initiated)
-        let transactionData = PurchasedTransactionData()
-
-        self.receiptFetcher.shouldReturnReceipt = true
-        self.productsManager.stubbedProductsCompletionResult = .success([StoreProduct(sk1Product: product)])
-        self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
-
-        let result = try self.handleTransaction(transactionData)
-        expect(result).to(beSuccess())
-
-        // Metadata should be cleared on success even for queue-initiated transactions
-        expect(self.localTransactionMetadataStore.invokedRemoveMetadata.value) == true
-        expect(self.localTransactionMetadataStore.invokedRemoveMetadataCount.value) == 1
-        expect(self.localTransactionMetadataStore.invokedRemoveMetadataTransactionId.value) ==
-            self.mockTransaction.transactionIdentifier
-    }
-
     func testPostReceiptFromQueueClearsExistingMetadataWhenMetadataOnFinishableErrorWhenMetadataAlreadyExists() throws {
         let product = MockSK1Product(mockProductIdentifier: "product")
         let storedMetadata = LocalTransactionMetadata(

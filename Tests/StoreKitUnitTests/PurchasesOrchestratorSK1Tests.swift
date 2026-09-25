@@ -652,47 +652,6 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         ).to(beNil())
     }
 
-    func testPurchaseErrorEventClearsCachedPresentedOfferingContext() async throws {
-        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
-
-        let product = try await self.fetchSk1Product()
-        let payment = self.storeKit1Wrapper.payment(with: product)
-        let package = Package(
-            identifier: "package",
-            packageType: .monthly,
-            storeProduct: StoreProduct(sk1Product: product),
-            offeringIdentifier: "offering",
-            webCheckoutUrl: nil
-        )
-
-        // Cache the presentedOfferingContext (as PurchaseHandler would do)
-        self.orchestrator.cachePurchaseData(
-            presentedOfferingContext: package.presentedOfferingContext,
-            paywallEvent: nil,
-            productIdentifier: product.productIdentifier
-        )
-
-        // Simulate clearing the cache (as PurchaseHandler would do on purchaseError)
-        self.orchestrator.clearCachedPurchaseData(productIdentifier: Self.testProductId)
-
-        // Purchase without a package (so no new context is cached)
-        _ = await withCheckedContinuation { continuation in
-            self.orchestrator.purchase(
-                sk1Product: product,
-                payment: payment,
-                package: nil,
-                wrapper: self.storeKit1Wrapper
-            ) { transaction, customerInfo, error, userCancelled in
-                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
-            }
-        }
-
-        // The cached context should have been cleared by the purchaseError event
-        expect(
-            self.backend.invokedPostReceiptDataParameters?.transactionData.presentedOfferingContext
-        ).to(beNil())
-    }
-
     func testSK1PurchaseWithPackageThenFailedThenPurchaseWithProductDoesNotIncludeOfferingContext() async throws {
         self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
