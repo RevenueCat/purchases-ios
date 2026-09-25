@@ -36,8 +36,8 @@ extension View {
     @ViewBuilder
     func applyWidth(_ sizeConstraint: PaywallComponent.SizeConstraint, alignment: Alignment) -> some View {
         switch sizeConstraint {
-        case let .fit(_, minMax):
-            self.applyWidthLimits(minMax, alignment: alignment)
+        case .fit:
+            self
         case let .fill(minMax):
             self
                 .frame(minWidth: 0, maxWidth: .infinity, alignment: alignment)
@@ -54,8 +54,8 @@ extension View {
     @ViewBuilder
     func applyHeight(_ sizeConstraint: PaywallComponent.SizeConstraint, alignment: Alignment) -> some View {
         switch sizeConstraint {
-        case let .fit(_, minMax):
-            self.applyHeightLimits(minMax, alignment: alignment)
+        case .fit:
+            self
         case let .fill(minMax):
             self
                 .frame(minHeight: 0, maxHeight: .infinity, alignment: alignment)
