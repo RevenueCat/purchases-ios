@@ -17,6 +17,11 @@ import RevenueCat
 @_spi(CheckpointsInternal) import RevenueCatUI
 import SwiftUI
 
+#if canImport(GoogleMobileAds)
+import GoogleMobileAds
+@_spi(CheckpointsInternal) import RevenueCatAdMob
+#endif
+
 @main
 struct CheckpointTesterApp: App {
 
@@ -28,6 +33,8 @@ struct CheckpointTesterApp: App {
         Purchases.logLevel = .debug
         Self.configurePurchases()
         model.configurePaywallPresenter()
+        Self.configureAdMob()
+        RewardPollLog.install()
     }
 
     var body: some Scene {
@@ -48,6 +55,15 @@ struct CheckpointTesterApp: App {
         if !Purchases.isConfigured {
             Purchases.configure(withAPIKey: apiKey)
         }
+    }
+
+    /// Registers the AdMob checkpoint presenter and starts the Google Mobile Ads SDK, so a checkpoint
+    /// resolving to an `ad` step (any format) can present through `AdMobPresenter`.
+    private static func configureAdMob() {
+        #if canImport(GoogleMobileAds)
+        MobileAds.shared.start(completionHandler: nil)
+        Purchases.shared.adPresenter = AdMobPresenter()
+        #endif
     }
 
 }
