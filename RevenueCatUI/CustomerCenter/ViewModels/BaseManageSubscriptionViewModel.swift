@@ -164,8 +164,13 @@ class BaseManageSubscriptionViewModel: ObservableObject {
         }
     }
 
+    /// Whether the browser we just closed was the store's management URL, where the customer
+    /// can cancel or resubscribe. Custom URLs are left out, we can't know what they point at.
+    private(set) var browserMayHaveChangedSubscription = false
+
     func onDismissInAppBrowser() {
         self.inAppBrowserURL = nil
+        self.browserMayHaveChangedSubscription = false
     }
 
     func displayAllInAppCurrenciesScreen() {
@@ -184,6 +189,9 @@ private extension BaseManageSubscriptionViewModel {
 
 #if os(iOS) || targetEnvironment(macCatalyst)
     private func onPathSelected(path: CustomerCenterConfigData.HelpPath, withActiveProductId: String?) async {
+        // stale from a browser whose onDismiss never fired, don't let it refresh the next one
+        self.browserMayHaveChangedSubscription = false
+
         switch path.type {
         case .missingPurchase:
             self.showRestoreAlert = true
@@ -238,6 +246,7 @@ private extension BaseManageSubscriptionViewModel {
 
     private func handleNonAppStoreCancel() {
         if let url = purchaseInformation?.managementURL {
+            self.browserMayHaveChangedSubscription = true
             self.inAppBrowserURL = IdentifiableURL(url: url)
         }
     }
