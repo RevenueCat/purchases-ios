@@ -17,15 +17,51 @@ import Nimble
 import SwiftUI
 import XCTest
 
-#if !os(watchOS) && !os(macOS)
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
+
+#if os(iOS) || os(macOS)
+
+#if os(macOS)
+private typealias PlatformWindow = NSWindow
+#else
+private typealias PlatformWindow = UIWindow
+#endif
 
 @MainActor
 private final class WindowHolder {
-    var window: UIWindow?
+    var window: PlatformWindow?
 }
 
-@available(iOS 15.0, *)
+@available(iOS 15.0, macOS 13.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 final class CustomerCenterActionWrapperTests: TestCase {
+
+    /// Hosts `view` in a real, on-screen window so SwiftUI's `.onAppear` actually fires:
+    /// `CustomerCenterActionViewModifier` subscribes to the action wrapper from `.onAppear`,
+    /// which SwiftUI never calls unless the hosting controller's view is part of a live window.
+    @MainActor
+    private func hostAndAppear<V: View>(_ view: V) -> PlatformWindow {
+        #if os(macOS)
+        let controller = NSHostingController(rootView: view)
+        let window = NSWindow(contentViewController: controller)
+        window.makeKeyAndOrderFront(nil)
+        controller.view.layoutSubtreeIfNeeded()
+        addTeardownBlock { window.close() }
+        return window
+        #else
+        let controller = UIHostingController(rootView: view)
+        let window = UIWindow(frame: UIScreen.main.bounds)
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+        controller.view.layoutIfNeeded()
+        return window
+        #endif
+    }
 
     func testRestoreStarted() async throws {
         let actionWrapper = await CustomerCenterActionWrapper()
@@ -40,13 +76,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
                     expectation.fulfill()
                 }
 
-            let viewController = UIHostingController(rootView: testView)
-            let window = UIWindow(frame: UIScreen.main.bounds)
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-            viewController.view.layoutIfNeeded()
-
-            windowHolder.window = window
+            windowHolder.window = self.hostAndAppear(testView)
         }
 
         await MainActor.run {
@@ -69,17 +99,13 @@ final class CustomerCenterActionWrapperTests: TestCase {
                     expectation.fulfill()
                 }
 
-            let viewController = UIHostingController(rootView: testView)
-            let window = UIWindow(frame: UIScreen.main.bounds)
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-            viewController.view.layoutIfNeeded()
-
-            windowHolder.window = window
+            windowHolder.window = self.hostAndAppear(testView)
         }
 
         await MainActor.run {
-            actionWrapper.handleAction(.restoreFailed(TestError.error))
+            // `Templates/ExternalPurchaseAndRestoreTests.swift`'s shared `TestError` type is
+            // gated to `#if !os(watchOS) && !os(macOS)`, so this file uses its own dummy error.
+            actionWrapper.handleAction(.restoreFailed(NSError(domain: "CustomerCenterActionWrapperTests", code: 1)))
         }
 
         await fulfillment(of: [expectation], timeout: 1.0)
@@ -98,13 +124,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
                     expectation.fulfill()
                 }
 
-            let viewController = UIHostingController(rootView: testView)
-            let window = UIWindow(frame: UIScreen.main.bounds)
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-            viewController.view.layoutIfNeeded()
-
-            windowHolder.window = window
+            windowHolder.window = self.hostAndAppear(testView)
         }
 
         await MainActor.run {
@@ -127,13 +147,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
                     expectation.fulfill()
                 }
 
-            let viewController = UIHostingController(rootView: testView)
-            let window = UIWindow(frame: UIScreen.main.bounds)
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-            viewController.view.layoutIfNeeded()
-
-            windowHolder.window = window
+            windowHolder.window = self.hostAndAppear(testView)
         }
 
         await MainActor.run {
@@ -156,13 +170,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
                     expectation.fulfill()
                 }
 
-            let viewController = UIHostingController(rootView: testView)
-            let window = UIWindow(frame: UIScreen.main.bounds)
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-            viewController.view.layoutIfNeeded()
-
-            windowHolder.window = window
+            windowHolder.window = self.hostAndAppear(testView)
         }
 
         await MainActor.run {
@@ -185,13 +193,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
                     expectation.fulfill()
                 }
 
-            let viewController = UIHostingController(rootView: testView)
-            let window = UIWindow(frame: UIScreen.main.bounds)
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-            viewController.view.layoutIfNeeded()
-
-            windowHolder.window = window
+            windowHolder.window = self.hostAndAppear(testView)
         }
 
         await MainActor.run {
@@ -214,13 +216,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
                     expectation.fulfill()
                 }
 
-            let viewController = UIHostingController(rootView: testView)
-            let window = UIWindow(frame: UIScreen.main.bounds)
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-            viewController.view.layoutIfNeeded()
-
-            windowHolder.window = window
+            windowHolder.window = self.hostAndAppear(testView)
         }
 
         await MainActor.run {
@@ -243,13 +239,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
                     expectation.fulfill()
                 }
 
-            let viewController = UIHostingController(rootView: testView)
-            let window = UIWindow(frame: UIScreen.main.bounds)
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-            viewController.view.layoutIfNeeded()
-
-            windowHolder.window = window
+            windowHolder.window = self.hostAndAppear(testView)
         }
 
         let transaction = StoreTransaction(MockStoreTransaction())
@@ -278,13 +268,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
                     expectation.fulfill()
                 }
 
-            let viewController = UIHostingController(rootView: testView)
-            let window = UIWindow(frame: UIScreen.main.bounds)
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-            viewController.view.layoutIfNeeded()
-
-            windowHolder.window = window
+            windowHolder.window = self.hostAndAppear(testView)
         }
 
         let transaction = StoreTransaction(MockStoreTransaction())
@@ -316,13 +300,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
                     deprecatedExpectation.fulfill()
                 }
 
-            let viewController = UIHostingController(rootView: testView)
-            let window = UIWindow(frame: UIScreen.main.bounds)
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-            viewController.view.layoutIfNeeded()
-
-            windowHolder.window = window
+            windowHolder.window = self.hostAndAppear(testView)
         }
 
         let transaction = StoreTransaction(MockStoreTransaction())
@@ -349,13 +327,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
                     expectation.fulfill()
                 }
 
-            let viewController = UIHostingController(rootView: testView)
-            let window = UIWindow(frame: UIScreen.main.bounds)
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-            viewController.view.layoutIfNeeded()
-
-            windowHolder.window = window
+            windowHolder.window = self.hostAndAppear(testView)
         }
 
         await MainActor.run {
@@ -378,13 +350,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
                     expectation.fulfill()
                 }
 
-            let viewController = UIHostingController(rootView: testView)
-            let window = UIWindow(frame: UIScreen.main.bounds)
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-            viewController.view.layoutIfNeeded()
-
-            windowHolder.window = window
+            windowHolder.window = self.hostAndAppear(testView)
         }
 
         // Send a generic management option (e.g., Cancel)
@@ -408,13 +374,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
                     expectation.fulfill()
                 }
 
-            let viewController = UIHostingController(rootView: testView)
-            let window = UIWindow(frame: UIScreen.main.bounds)
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-            viewController.view.layoutIfNeeded()
-
-            windowHolder.window = window
+            windowHolder.window = self.hostAndAppear(testView)
         }
 
         await MainActor.run {
@@ -441,13 +401,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
                     expectation.fulfill()
                 }
 
-            let viewController = UIHostingController(rootView: testView)
-            let window = UIWindow(frame: UIScreen.main.bounds)
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-            viewController.view.layoutIfNeeded()
-
-            windowHolder.window = window
+            windowHolder.window = self.hostAndAppear(testView)
         }
 
         await MainActor.run {
@@ -474,13 +428,7 @@ final class CustomerCenterActionWrapperTests: TestCase {
                     customActionExpectation.fulfill()
                 }
 
-            let viewController = UIHostingController(rootView: testView)
-            let window = UIWindow(frame: UIScreen.main.bounds)
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-            viewController.view.layoutIfNeeded()
-
-            windowHolder.window = window
+            windowHolder.window = self.hostAndAppear(testView)
         }
 
         let customAction = CustomerCenterManagementOption.CustomAction(
