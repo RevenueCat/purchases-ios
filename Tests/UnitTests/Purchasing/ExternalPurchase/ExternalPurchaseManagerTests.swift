@@ -463,8 +463,6 @@ class ExternalPurchaseManagerTests: TestCase {
         ))
     }
 
-    /// iOS tests run in the simulator and macOS ones do not, so every test starts on a device unless it says
-    /// otherwise.
     private static func onADevice(_ systemInfo: MockSystemInfo) -> MockSystemInfo {
         systemInfo.stubbedIsRunningInSimulator = false
         return systemInfo

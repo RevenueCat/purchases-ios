@@ -320,7 +320,6 @@ class HostedCheckoutManagerTests: TestCase {
 
 private extension HostedCheckoutManagerTests {
 
-    /// On a device: iOS tests run in the simulator and macOS ones do not, so tests that want the simulator say so.
     static func makeSystemInfo(useExternalPurchaseCustomLinks: Bool) -> MockSystemInfo {
         let systemInfo = MockSystemInfo(
             finishTransactions: true,
