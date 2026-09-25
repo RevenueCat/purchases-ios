@@ -18,8 +18,10 @@ import Foundation
 enum ExternalPurchaseStrings {
 
     case eligibility_resolved(_ availability: ExternalPurchaseAvailability)
-    case unsupported_with_test_store
-    case cannot_make_external_purchases
+    case custom_link_does_not_apply(_ storefront: String)
+    case custom_link_skipped_in_simulator
+    case disabled_in_simulator
+    case not_eligible
     case payments_not_authorized
     case already_preparing
     case notice_cancelled
@@ -37,10 +39,19 @@ extension ExternalPurchaseStrings: LogMessage {
         switch self {
         case let .eligibility_resolved(availability):
             return "External purchase availability resolved to \(availability)."
-        case .unsupported_with_test_store:
-            return "External purchases are not supported when the SDK is configured with a Test Store API key."
-        case .cannot_make_external_purchases:
-            return "Not preparing an external purchase: this app cannot offer one to this customer."
+        case let .custom_link_does_not_apply(storefront):
+            return "Apple's external purchase custom link does not apply in this customer's storefront " +
+            "(\(storefront)): continuing with no notice shown and no token minted."
+        case .custom_link_skipped_in_simulator:
+            return "Apple's external purchase custom link is not available in the simulator: continuing with " +
+            "no notice shown and no token minted, whatever the storefront. Use a device to try that flow out."
+        case .disabled_in_simulator:
+            return "Not preparing an external purchase: DangerousSettings.disableExternalPurchasesInSimulator " +
+            "makes the simulator behave as a physical device does for a customer who is not eligible for " +
+            "external purchases."
+        case .not_eligible:
+            return "Not preparing an external purchase: Apple's external purchase custom link does not apply " +
+            "to this customer."
         case .payments_not_authorized:
             return "Not preparing an external purchase: this device does not authorize payments."
         case .already_preparing:

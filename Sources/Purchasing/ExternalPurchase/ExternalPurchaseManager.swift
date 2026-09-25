@@ -20,18 +20,26 @@ final class ExternalPurchaseManager {
     private let customLink: ExternalPurchaseCustomLinkType
     private let externalPurchaseTokenAPI: ExternalPurchaseTokenAPI
     private let currentUserProvider: CurrentUserProvider
+    private let settingsProvider: SDKSettingsConfigProviderType
     private let systemInfo: SystemInfo
+    private let isRunningInSimulator: Bool
 
     private let isPreparing: Atomic<Bool> = false
 
+    /// - Parameter isRunningInSimulator: Deliberately not defaulted to ``SystemInfo/isRunningInSimulator``:
+    /// unit tests run in the simulator on some platforms and not on others, so each has to say which it means.
     init(customLink: ExternalPurchaseCustomLinkType,
          externalPurchaseTokenAPI: ExternalPurchaseTokenAPI,
          currentUserProvider: CurrentUserProvider,
-         systemInfo: SystemInfo) {
+         settingsProvider: SDKSettingsConfigProviderType,
+         systemInfo: SystemInfo,
+         isRunningInSimulator: Bool) {
         self.customLink = customLink
         self.externalPurchaseTokenAPI = externalPurchaseTokenAPI
         self.currentUserProvider = currentUserProvider
+        self.settingsProvider = settingsProvider
         self.systemInfo = systemInfo
+        self.isRunningInSimulator = isRunningInSimulator
     }
 
     /// Whether the app can offer an external purchase to this customer.
@@ -40,11 +48,6 @@ final class ExternalPurchaseManager {
     /// anything to Apple.
     func externalPurchaseAvailability() async -> ExternalPurchaseAvailability {
         guard self.takesPartInTheProgramme else {
-            return .notEligible
-        }
-
-        guard !self.systemInfo.isSimulatedStoreAPIKey else {
-            Logger.debug(Strings.externalPurchase.unsupported_with_test_store)
             return .notEligible
         }
 
@@ -61,9 +64,17 @@ final class ExternalPurchaseManager {
     ///
     /// Only one preparation runs at a time. Asking for another while one is under way stops the new one, so a
     /// customer tapping twice sees a single notice and mints a single token.
+    ///
+    /// In the simulator, where StoreKit never finds the customer eligible, none of this runs and the purchase goes
+    /// ahead in any storefront, so that developers can try their web purchases out wherever they are, unless
+    /// ``DangerousSettings/disableExternalPurchasesInSimulator`` says otherwise.
     func prepareExternalPurchase(flow: ExternalPurchaseFlow) async -> ExternalPurchasePreparationResult {
         guard self.takesPartInTheProgramme else {
-            return .stopped(.notEligible)
+            return .notApplicable
+        }
+
+        guard !self.isRunningInSimulator else {
+            return self.prepareExternalPurchaseInSimulator()
         }
 
         guard !self.isPreparing.getAndSet(true) else {
@@ -77,8 +88,13 @@ final class ExternalPurchaseManager {
         case .available:
             break
         case .notEligible:
-            Logger.warn(Strings.externalPurchase.cannot_make_external_purchases)
-            return .stopped(.notEligible)
+            guard let storefront = await self.storefrontNotRequiringExternalPurchaseAPIs() else {
+                Logger.warn(Strings.externalPurchase.not_eligible)
+                return .stopped(.notEligible)
+            }
+
+            Logger.debug(Strings.externalPurchase.custom_link_does_not_apply(storefront))
+            return .notApplicable
         case .paymentsNotAuthorized:
             Logger.warn(Strings.externalPurchase.payments_not_authorized)
             return .stopped(.paymentsNotAuthorized)
@@ -114,19 +130,25 @@ internal enum ExternalPurchasePreparationResult: Equatable {
     /// deliberately not treated as a failure for the customer, who is still allowed to buy.
     case unregistered(FailureReason)
 
+    /// Route the customer to the checkout with no identifier to hand over, as the app would outside Apple's
+    /// programme: its external purchase APIs are not required here.
+    ///
+    /// Nothing was shown and nothing was minted.
+    case notApplicable
+
     enum StopReason: Equatable {
 
-        /// External purchases do not apply to this customer, see ``ExternalPurchaseAvailability/notEligible``.
+        /// The customer is not eligible for Apple's external purchase programme, see
+        /// ``ExternalPurchaseAvailability/notEligible``, so they are offered nothing.
         ///
-        /// The customer saw nothing of the external purchase, so the caller is expected to buy through StoreKit
-        /// instead rather than leave them without a way to buy. Unlike the other reasons, this one does not change
-        /// while the customer stays where they are.
+        /// In the storefronts where its APIs are not required, the purchase goes ahead as
+        /// ``ExternalPurchasePreparationResult/notApplicable`` instead.
         case notEligible
 
         /// The device does not authorize payments, see ``ExternalPurchaseAvailability/paymentsNotAuthorized``.
         ///
-        /// Unlike ``notEligible``, there is nothing to offer instead: the caller is expected to route the customer
-        /// nowhere at all.
+        /// Apple asks that such a device be offered no purchase at all, so the caller is expected to route the
+        /// customer nowhere.
         case paymentsNotAuthorized
 
         /// The customer declined at the disclosure notice.
@@ -153,30 +175,6 @@ internal enum ExternalPurchasePreparationResult: Equatable {
 
 }
 
-extension ExternalPurchasePreparationResult {
-
-    /// Whether the customer should be routed to the checkout.
-    var shouldProceed: Bool {
-        switch self {
-        case .stopped:
-            return false
-        case .registered, .unregistered:
-            return true
-        }
-    }
-
-    /// The identifier to hand to the checkout page, when there is one.
-    var tokenID: String? {
-        switch self {
-        case let .registered(tokenID):
-            return tokenID
-        case .stopped, .unregistered:
-            return nil
-        }
-    }
-
-}
-
 // MARK: - Private
 
 private extension ExternalPurchaseManager {
@@ -185,6 +183,32 @@ private extension ExternalPurchaseManager {
     /// precondition for everything here.
     var takesPartInTheProgramme: Bool {
         return self.systemInfo.useExternalPurchaseCustomLinks
+    }
+
+    var storefront: String? {
+        return self.systemInfo.storefront?.countryCode.uppercased()
+    }
+
+    /// The customer's storefront, when it is one where Apple's external purchase APIs are not required, and
+    /// `nil` otherwise.
+    func storefrontNotRequiringExternalPurchaseAPIs() async -> String? {
+        guard let storefront = self.storefront,
+              await self.settingsProvider.settings().externalPurchases.appStore
+                .storefrontsAllowedWithoutStoreEligibility.contains(storefront) else {
+            return nil
+        }
+
+        return storefront
+    }
+
+    func prepareExternalPurchaseInSimulator() -> ExternalPurchasePreparationResult {
+        guard !self.systemInfo.dangerousSettings.disableExternalPurchasesInSimulator else {
+            Logger.warn(Strings.externalPurchase.disabled_in_simulator)
+            return .stopped(.notEligible)
+        }
+
+        Logger.debug(Strings.externalPurchase.custom_link_skipped_in_simulator)
+        return .notApplicable
     }
 
     enum NoticeOutcome {

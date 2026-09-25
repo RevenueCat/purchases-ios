@@ -23,3 +23,7 @@
 "Default_offer_details_with_intro_offer" = "试用期{{ sub_offer_duration }}，届满后{{ total_price_and_per_month }}。";
 "Something went wrong" = "出现错误";
 "Purchase" = "购买";
+"You are currently subscribed to this" = "您当前已订阅此项目";
+"You've already purchased this" = "您已购买此项目";
+"Purchase unavailable" = "无法购买";
+"This purchase isn't available in your region." = "此项购买在您所在的地区不可用。";

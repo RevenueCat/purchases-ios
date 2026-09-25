@@ -22,9 +22,12 @@ class ExternalPurchaseManagerTests: TestCase {
     private static let appUserID = "test-app-user-id"
     private static let token = "test-external-purchase-token"
     private static let tokenID = "ept13dcbc01adaa44db9b1691a6be2f9929"
+    private static let allowedStorefront = "USA"
+    private static let otherStorefront = "ESP"
 
     private var customLink: MockExternalPurchaseCustomLink!
     private var externalPurchaseTokenAPI: MockExternalPurchaseTokenAPI!
+    private var settingsProvider: MockSDKSettingsConfigProvider!
     private var systemInfo: MockSystemInfo!
     private var manager: ExternalPurchaseManager!
 
@@ -37,8 +40,12 @@ class ExternalPurchaseManagerTests: TestCase {
         self.externalPurchaseTokenAPI = MockExternalPurchaseTokenAPI()
         self.externalPurchaseTokenAPI.stubbedPostExternalPurchaseTokenResult = .success(.init(id: Self.tokenID))
 
+        self.settingsProvider = MockSDKSettingsConfigProvider()
+        self.settingsProvider.stubbedSettings = .allowingExternalPurchases(in: [Self.allowedStorefront])
+
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: true)
-        self.manager = self.makeManager()
+        self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.allowedStorefront)
+        self.manager = self.makeManager(isRunningInSimulator: false)
     }
 
     // MARK: - Flow types
@@ -67,19 +74,95 @@ class ExternalPurchaseManagerTests: TestCase {
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenParameters?.purchaseType) == .linkOut
     }
 
-    // MARK: - Stopping
+    // MARK: - Outside the programme
 
-    func testMintsNothingWhenTheAppIsNotEligible() async {
+    /// Nothing is disclosed and nothing is minted, so the caller is left to take the customer where it took
+    /// them before the app had anything to do with Apple's programme.
+    func testMintsNothingAndProceedsWhenTheAppIsNotEligible() async {
         self.customLink.stubbedAvailability = .notEligible
 
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
-        expect(result) == .stopped(.notEligible)
-        expect(result.shouldProceed) == false
+        expect(result) == .notApplicable
         expect(self.customLink.invokedNoticeTypes).to(beEmpty())
         expect(self.customLink.invokedTokenTypes).to(beEmpty())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
     }
+
+    // MARK: - Storefronts that do not require Apple's external purchase APIs
+
+    /// Where Apple's external purchase APIs are required and cannot be used for this customer, they are
+    /// offered nothing at all rather than an undisclosed purchase.
+    func testStopsWhenTheStorefrontIsNotOneOfThoseAllowedWithoutEligibility() async {
+        self.customLink.stubbedAvailability = .notEligible
+        self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.otherStorefront)
+
+        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+
+        expect(result) == .stopped(.notEligible)
+        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
+        expect(self.customLink.invokedTokenTypes).to(beEmpty())
+        expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
+    }
+
+    /// A storefront that cannot be read is no proof of being in one where the purchase is allowed.
+    func testStopsWhenTheStorefrontIsUnknown() async {
+        self.customLink.stubbedAvailability = .notEligible
+        self.systemInfo.stubbedStorefront = nil
+
+        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+
+        expect(result) == .stopped(.notEligible)
+    }
+
+    /// An empty policy is what an SDK that could not read one is left with, and it offers the purchase
+    /// nowhere rather than everywhere.
+    func testStopsWhileNoStorefrontIsAllowed() async {
+        self.customLink.stubbedAvailability = .notEligible
+        self.settingsProvider.stubbedSettings = .allowingExternalPurchases(in: [])
+
+        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+
+        expect(result) == .stopped(.notEligible)
+    }
+
+    func testMatchesTheStorefrontRegardlessOfCase() async {
+        self.customLink.stubbedAvailability = .notEligible
+        self.systemInfo.stubbedStorefront = MockStorefront(countryCode: "usa")
+
+        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+
+        expect(result) == .notApplicable
+    }
+
+    /// Being eligible is Apple's own answer for this customer in this storefront, so the policy has no say:
+    /// the notice is shown and the token is minted wherever they are.
+    func testAsksNothingAboutStorefrontsWhileTheCustomerIsEligible() async {
+        self.settingsProvider.stubbedSettings = .allowingExternalPurchases(in: [])
+        self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.otherStorefront)
+
+        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+
+        expect(result) == .registered(tokenID: Self.tokenID)
+        expect(self.settingsProvider.invokedSettingsCount) == 0
+    }
+
+    /// The customer can change storefront while the app runs, so no verdict is kept from an earlier purchase.
+    func testResolvesTheStorefrontOnEveryPurchase() async {
+        self.customLink.stubbedAvailability = .notEligible
+
+        let whileAllowed = await self.manager.prepareExternalPurchase(flow: .inApp)
+        expect(whileAllowed) == .notApplicable
+
+        self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.otherStorefront)
+
+        let onceElsewhere = await self.manager.prepareExternalPurchase(flow: .inApp)
+        expect(onceElsewhere) == .stopped(.notEligible)
+
+        expect(self.settingsProvider.invokedSettingsCount) == 2
+    }
+
+    // MARK: - Stopping
 
     /// Kept apart from being ineligible: the caller has nothing to offer instead, so it must not fall back to a
     /// purchase of any kind.
@@ -89,7 +172,6 @@ class ExternalPurchaseManagerTests: TestCase {
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
         expect(result) == .stopped(.paymentsNotAuthorized)
-        expect(result.shouldProceed) == false
         expect(self.customLink.invokedNoticeTypes).to(beEmpty())
         expect(self.customLink.invokedTokenTypes).to(beEmpty())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
@@ -102,7 +184,6 @@ class ExternalPurchaseManagerTests: TestCase {
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
         expect(result) == .stopped(.customerCancelledNotice)
-        expect(result.shouldProceed) == false
         expect(self.customLink.invokedTokenTypes).to(beEmpty())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
     }
@@ -115,7 +196,6 @@ class ExternalPurchaseManagerTests: TestCase {
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
         expect(result) == .stopped(.noticeFailed)
-        expect(result.shouldProceed) == false
         expect(self.customLink.invokedTokenTypes).to(beEmpty())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
     }
@@ -130,7 +210,6 @@ class ExternalPurchaseManagerTests: TestCase {
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
         expect(result) == .registered(tokenID: Self.tokenID)
-        expect(result.shouldProceed) == true
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenCount) == 1
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenParameters?.token).to(beNil())
     }
@@ -143,8 +222,6 @@ class ExternalPurchaseManagerTests: TestCase {
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
         expect(result) == .unregistered(.tokenRequestFailed)
-        expect(result.shouldProceed) == true
-        expect(result.tokenID).to(beNil())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
     }
 
@@ -158,8 +235,6 @@ class ExternalPurchaseManagerTests: TestCase {
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
         expect(result) == .unregistered(.registrationFailed)
-        expect(result.shouldProceed) == true
-        expect(result.tokenID).to(beNil())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenCount) == 1
     }
 
@@ -169,54 +244,129 @@ class ExternalPurchaseManagerTests: TestCase {
     /// than any one call site.
     func testTheWholeSequenceIsSkippedWhileTheSettingIsDisabled() async {
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
-        self.manager = self.makeManager()
+        self.manager = self.makeManager(isRunningInSimulator: false)
 
         let availability = await self.manager.externalPurchaseAvailability()
         expect(availability) == .notEligible
 
         let result = await self.manager.prepareExternalPurchase(flow: .linkOut)
 
+        expect(result) == .notApplicable
+        expect(self.customLink.invokedAvailabilityCount) == 0
+        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
+        expect(self.customLink.invokedTokenTypes).to(beEmpty())
+        expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
+        expect(self.settingsProvider.invokedSettingsCount) == 0
+    }
+
+    /// Apps outside the programme did not try to make an external purchase, so telling them anything about
+    /// Apple's custom link is noise in their console.
+    func testNothingIsLoggedWhileTheSettingIsDisabled() async {
+        self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
+        self.manager = self.makeManager(isRunningInSimulator: false)
+
+        _ = await self.manager.prepareExternalPurchase(flow: .linkOut)
+
+        self.logger.verifyMessageWasNotLogged(
+            Strings.externalPurchase.custom_link_does_not_apply(Self.allowedStorefront),
+            allowNoMessages: true
+        )
+    }
+
+    // MARK: - Simulator
+
+    /// StoreKit never finds the customer eligible in the simulator, so asking it would only ever stop the purchase
+    /// outside the storefronts allowed without eligibility.
+    func testRunsNoneOfTheSequenceInTheSimulator() async {
+        self.manager = self.makeManager(isRunningInSimulator: true)
+
+        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+
+        expect(result) == .notApplicable
+        expect(self.customLink.invokedAvailabilityCount) == 0
+        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
+        expect(self.customLink.invokedTokenTypes).to(beEmpty())
+        expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
+        self.logger.verifyMessageWasLogged(Strings.externalPurchase.custom_link_skipped_in_simulator,
+                                           level: .debug)
+    }
+
+    /// Developers try their web purchases out in the simulator from wherever they are.
+    func testProceedsInTheSimulatorWhateverTheStorefront() async {
+        self.settingsProvider.stubbedSettings = .allowingExternalPurchases(in: [])
+        self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.otherStorefront)
+        self.manager = self.makeManager(isRunningInSimulator: true)
+
+        let result = await self.manager.prepareExternalPurchase(flow: .linkOut)
+
+        expect(result) == .notApplicable
+        expect(self.settingsProvider.invokedSettingsCount) == 0
+    }
+
+    /// Offers nothing even in a storefront allowed without eligibility, so the path taken by a customer who is
+    /// offered nothing can be tried out in the simulator wherever the developer is.
+    func testOffersNothingInTheSimulatorWhileExternalPurchasesAreDisabledThere() async {
+        self.systemInfo = Self.makeSystemInfoDisablingExternalPurchasesInSimulator()
+        self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.allowedStorefront)
+        self.manager = self.makeManager(isRunningInSimulator: true)
+
+        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+
         expect(result) == .stopped(.notEligible)
         expect(self.customLink.invokedAvailabilityCount) == 0
         expect(self.customLink.invokedNoticeTypes).to(beEmpty())
         expect(self.customLink.invokedTokenTypes).to(beEmpty())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
+        expect(self.settingsProvider.invokedSettingsCount) == 0
+        self.logger.verifyMessageWasLogged(Strings.externalPurchase.disabled_in_simulator, level: .warn)
     }
 
-    /// Apps outside the programme did not try to make an external purchase, so telling them they cannot is
-    /// noise in their console.
-    func testNothingIsLoggedWhileTheSettingIsDisabled() async {
+    func testDisablingExternalPurchasesInTheSimulatorChangesNothingOnADevice() async {
+        self.systemInfo = Self.makeSystemInfoDisablingExternalPurchasesInSimulator()
+        self.manager = self.makeManager(isRunningInSimulator: false)
+
+        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+
+        expect(result) == .registered(tokenID: Self.tokenID)
+        expect(self.customLink.invokedNoticeTypes) == [.withinApp]
+    }
+
+    /// Apps outside the programme hear nothing about Apple's custom link, in the simulator or anywhere else.
+    func testNothingIsLoggedInTheSimulatorWhileTheSettingIsDisabled() async {
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
-        self.manager = self.makeManager()
+        self.manager = self.makeManager(isRunningInSimulator: true)
 
-        _ = await self.manager.prepareExternalPurchase(flow: .linkOut)
+        let result = await self.manager.prepareExternalPurchase(flow: .linkOut)
 
-        self.logger.verifyMessageWasNotLogged(Strings.externalPurchase.cannot_make_external_purchases,
+        expect(result) == .notApplicable
+        self.logger.verifyMessageWasNotLogged(Strings.externalPurchase.custom_link_skipped_in_simulator,
                                               allowNoMessages: true)
     }
 
     // MARK: - Test Store
 
-    /// A Test Store key has no App Store behind it, so none of the StoreKit steps apply. It reads as ineligible
-    /// rather than as a device that cannot pay, so the caller keeps offering its usual way to buy.
-    func testTheTestStoreIsNotEligible() async {
+    /// Eligibility follows the app's entitlement and the customer's storefront, neither of which has anything
+    /// to do with the key the SDK was configured with, so StoreKit is asked as it is for any other key.
+    func testTheTestStoreResolvesEligibilityThroughStoreKit() async {
         self.systemInfo.stubbedApiKeyValidationResult = .simulatedStore
 
         let availability = await self.manager.externalPurchaseAvailability()
 
-        expect(availability) == .notEligible
-        expect(self.customLink.invokedAvailabilityCount) == 0
+        expect(availability) == .available
+        expect(self.customLink.invokedAvailabilityCount) == 1
     }
 
-    func testTheTestStoreSkipsTheWholeSequence() async {
+    /// A Test Store key is the shortest path a developer has to trying the flow out, so it runs in full. The
+    /// purchase behind the token is a sandbox one, which is what it would have been anyway.
+    func testTheTestStoreRunsTheWholeSequence() async {
         self.systemInfo.stubbedApiKeyValidationResult = .simulatedStore
 
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
-        expect(result) == .stopped(.notEligible)
-        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
-        expect(self.customLink.invokedTokenTypes).to(beEmpty())
-        expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
+        expect(result) == .registered(tokenID: Self.tokenID)
+        expect(self.customLink.invokedNoticeTypes) == [.withinApp]
+        expect(self.customLink.invokedTokenTypes) == [.inApp]
+        expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenCount) == 1
     }
 
     // MARK: - Eligibility
@@ -226,7 +376,7 @@ class ExternalPurchaseManagerTests: TestCase {
         self.customLink.stubbedAvailability = .notEligible
 
         let whileIneligible = await self.manager.prepareExternalPurchase(flow: .inApp)
-        expect(whileIneligible) == .stopped(.notEligible)
+        expect(whileIneligible) == .notApplicable
 
         self.customLink.stubbedAvailability = .available
 
@@ -275,12 +425,25 @@ class ExternalPurchaseManagerTests: TestCase {
         )
     }
 
-    private func makeManager() -> ExternalPurchaseManager {
+    private static func makeSystemInfoDisablingExternalPurchasesInSimulator() -> MockSystemInfo {
+        return MockSystemInfo(
+            finishTransactions: true,
+            dangerousSettings: DangerousSettings(
+                autoSyncPurchases: true,
+                useExternalPurchaseCustomLinks: true,
+                disableExternalPurchasesInSimulator: true
+            )
+        )
+    }
+
+    private func makeManager(isRunningInSimulator: Bool) -> ExternalPurchaseManager {
         return ExternalPurchaseManager(
             customLink: self.customLink,
             externalPurchaseTokenAPI: self.externalPurchaseTokenAPI,
             currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID),
-            systemInfo: self.systemInfo
+            settingsProvider: self.settingsProvider,
+            systemInfo: self.systemInfo,
+            isRunningInSimulator: isRunningInSimulator
         )
     }
 

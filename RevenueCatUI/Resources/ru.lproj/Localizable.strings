@@ -23,3 +23,7 @@
 "Default_offer_details_with_intro_offer" = "Начните пробную версию {{ sub_offer_duration }}, затем {{ total_price_and_per_month }}.";
 "Something went wrong" = "Что-то пошло не так";
 "Purchase" = "Купить";
+"You are currently subscribed to this" = "Вы уже подписаны на это";
+"You've already purchased this" = "Вы уже приобрели это";
+"Purchase unavailable" = "Покупка недоступна";
+"This purchase isn't available in your region." = "Эта покупка недоступна в вашем регионе.";

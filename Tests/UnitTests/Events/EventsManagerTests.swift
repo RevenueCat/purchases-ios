@@ -148,7 +148,8 @@ class EventsManagerTests: TestCase {
                   date: Date(timeIntervalSince1970: 1_699_270_688.995),
                   result: .presentUI,
                   workflowID: "wf_123",
-                  checkpointRuleID: "rule_123")
+                  checkpointRuleID: "rule_123",
+                  traceID: "trace_123")
         )
 
         let map = event.toMap()
@@ -162,6 +163,7 @@ class EventsManagerTests: TestCase {
         expect(map["result"] as? String) == "present_ui"
         expect(map["workflow_id"] as? String) == "wf_123"
         expect(map["checkpoint_rule_id"] as? String) == "rule_123"
+        expect(map["trace_id"] as? String) == "trace_123"
         expect(map["offering_id"]).to(beNil())
     }
 

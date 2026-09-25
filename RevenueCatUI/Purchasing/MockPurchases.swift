@@ -103,6 +103,26 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
         return try await self.purchaseBlock(package, promotionalOffer, paywallEvent)
     }
 
+    var hostedCheckoutBlock: (@Sendable (Package, PaywallEvent?) async -> HostedCheckoutStartResult)?
+    private(set) var lastHostedCheckoutPaywallEvent: PaywallEvent?
+
+    func startHostedCheckout(package: Package, paywallEvent: PaywallEvent?) async -> HostedCheckoutStartResult {
+        self.lastHostedCheckoutPaywallEvent = paywallEvent
+
+        guard let block = self.hostedCheckoutBlock else { return .failed }
+
+        return await block(package, paywallEvent)
+    }
+
+    var useExternalPurchaseCustomLinks = false
+    var externalPurchaseLinkBlock: (@Sendable () async -> ExternalPurchaseLinkResult)?
+
+    func prepareExternalPurchaseLink() async -> ExternalPurchaseLinkResult {
+        guard let block = self.externalPurchaseLinkBlock else { return .proceed(externalPurchaseTokenID: nil) }
+
+        return await block()
+    }
+
     func restorePurchases() async throws -> CustomerInfo {
         return try await self.restoreBlock()
     }
@@ -185,6 +205,9 @@ extension PaywallPurchasesType {
         mapped.offeringsBlock = { try await self.offerings() }
         mapped.isUIPreviewMode = self.isUIPreviewMode
         mapped.remoteConfigEnabled = self.remoteConfigEnabled
+        mapped.hostedCheckoutBlock = { await self.startHostedCheckout(package: $0, paywallEvent: $1) }
+        mapped.useExternalPurchaseCustomLinks = self.useExternalPurchaseCustomLinks
+        mapped.externalPurchaseLinkBlock = { await self.prepareExternalPurchaseLink() }
         #if !os(tvOS)
         mapped.workflowBlock = { try await self.workflow(forOfferingIdentifier: $0) }
         mapped.cachedWorkflowBlock = { self.cachedWorkflow(forOfferingIdentifier: $0) }
@@ -216,6 +239,9 @@ extension PaywallPurchasesType {
         mapped.offeringsBlock = { try await self.offerings() }
         mapped.isUIPreviewMode = self.isUIPreviewMode
         mapped.remoteConfigEnabled = self.remoteConfigEnabled
+        mapped.hostedCheckoutBlock = { await self.startHostedCheckout(package: $0, paywallEvent: $1) }
+        mapped.useExternalPurchaseCustomLinks = self.useExternalPurchaseCustomLinks
+        mapped.externalPurchaseLinkBlock = { await self.prepareExternalPurchaseLink() }
         #if !os(tvOS)
         mapped.workflowBlock = { try await self.workflow(forOfferingIdentifier: $0) }
         mapped.cachedWorkflowBlock = { self.cachedWorkflow(forOfferingIdentifier: $0) }

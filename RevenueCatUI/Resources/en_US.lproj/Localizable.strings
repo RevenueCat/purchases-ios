@@ -23,3 +23,7 @@
 "Default_offer_details_with_intro_offer" = "Start your {{ sub_offer_duration }} trial, then {{ total_price_and_per_month }}.";
 "Something went wrong" = "Something went wrong";
 "Purchase" = "Purchase";
+"You are currently subscribed to this" = "You are currently subscribed to this";
+"You've already purchased this" = "You've already purchased this";
+"Purchase unavailable" = "Purchase unavailable";
+"This purchase isn't available in your region." = "This purchase isn't available in your region.";

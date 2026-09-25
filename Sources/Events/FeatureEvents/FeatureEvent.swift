@@ -292,6 +292,7 @@ private extension CheckpointEvent {
         if let workflowID = self.data.workflowID { result["workflow_id"] = workflowID }
         if let offeringID = self.data.offeringID { result["offering_id"] = offeringID }
         if let ruleID = self.data.checkpointRuleID { result["checkpoint_rule_id"] = ruleID }
+        if let traceID = self.data.traceID { result["trace_id"] = traceID }
 
         return result
     }

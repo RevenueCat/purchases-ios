@@ -23,3 +23,7 @@
 "Default_offer_details_with_intro_offer" = "Start prøveperioden på {{ sub_offer_duration }}, og deretter {{ total_price_and_per_month }}.";
 "Something went wrong" = "Noe gikk galt";
 "Purchase" = "Kjøp";
+"You are currently subscribed to this" = "Du abonnerer allerede på dette";
+"You've already purchased this" = "Du har allerede kjøpt dette";
+"Purchase unavailable" = "Kjøpet er ikke tilgjengelig";
+"This purchase isn't available in your region." = "Dette kjøpet er ikke tilgjengelig i regionen din.";

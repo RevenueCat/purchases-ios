@@ -22,10 +22,12 @@ class HostedCheckoutManagerTests: TestCase {
     private static let appUserID = "test-app-user-id"
     private static let tokenID = "ept13dcbc01adaa44db9b1691a6be2f9929"
     private static let paywallSessionID = UUID()
+    private static let storefront = "USA"
 
     private var customLink: MockExternalPurchaseCustomLink!
     private var externalPurchaseTokenAPI: MockExternalPurchaseTokenAPI!
     private var webBillingAPI: MockWebBillingAPI!
+    private var settingsProvider: MockSDKSettingsConfigProvider!
     private var systemInfo: MockSystemInfo!
     private var manager: HostedCheckoutManager!
 
@@ -37,11 +39,15 @@ class HostedCheckoutManagerTests: TestCase {
         self.externalPurchaseTokenAPI = MockExternalPurchaseTokenAPI()
         self.externalPurchaseTokenAPI.stubbedPostExternalPurchaseTokenResult = .success(.init(id: Self.tokenID))
 
-        self.webBillingAPI = MockWebBillingAPI(backendConfig: MockBackendConfiguration())
+        self.webBillingAPI = MockWebBillingAPI(lanes: BackendLanes(configuration: MockBackendConfiguration()))
         self.webBillingAPI.stubbedPostHostedCheckoutCompletionResult = .success(Self.response)
 
+        self.settingsProvider = MockSDKSettingsConfigProvider()
+        self.settingsProvider.stubbedSettings = .allowingExternalPurchases(in: [Self.storefront])
+
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: true)
-        self.manager = self.makeManager()
+        self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.storefront)
+        self.manager = self.makeManager(isRunningInSimulator: false)
     }
 
     // MARK: - Starting
@@ -82,6 +88,73 @@ class HostedCheckoutManagerTests: TestCase {
         expect(paywall?.sessionID) == Self.paywallSessionID.uuidString
     }
 
+    // MARK: - Starting outside Apple's programme
+
+    /// The customer gets the same checkout a web purchase in the browser gets them, which is what the app
+    /// offered before it took any part in Apple's programme.
+    func testCreatesTheSessionWithoutATokenWhenExternalPurchasesDoNotApply() async {
+        self.customLink.stubbedAvailability = .notEligible
+
+        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(result) == .started(Self.session)
+        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
+        expect(self.customLink.invokedTokenTypes).to(beEmpty())
+        expect(self.webBillingAPI.invokedPostHostedCheckoutParameters?.externalPurchaseTokenID).to(beNil())
+    }
+
+    /// Developers try the checkout out in the simulator from wherever they are, even though StoreKit never finds
+    /// the customer eligible there.
+    func testCreatesTheSessionWithoutATokenInTheSimulatorWhateverTheStorefront() async {
+        self.customLink.stubbedAvailability = .notEligible
+        self.systemInfo.stubbedStorefront = MockStorefront(countryCode: "ESP")
+        self.manager = self.makeManager(isRunningInSimulator: true)
+
+        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(result) == .started(Self.session)
+        expect(self.customLink.invokedAvailabilityCount) == 0
+        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
+        expect(self.webBillingAPI.invokedPostHostedCheckoutParameters?.externalPurchaseTokenID).to(beNil())
+    }
+
+    /// The setting stands for the app taking part in Apple's programme at all, and a checkout outside it is
+    /// exactly the checkout the app had before.
+    func testCreatesTheSessionWithoutATokenWhileTheExternalPurchaseSettingIsDisabled() async {
+        self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
+        self.manager = self.makeManager(isRunningInSimulator: false)
+
+        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(result) == .started(Self.session)
+        expect(self.customLink.invokedAvailabilityCount) == 0
+        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
+        expect(self.webBillingAPI.invokedPostHostedCheckoutParameters?.externalPurchaseTokenID).to(beNil())
+    }
+
+    /// An app outside the programme did not try to make an external purchase, so telling it anything about
+    /// one is noise in its console.
+    func testSaysNothingAboutExternalPurchasesWhileTheSettingIsDisabled() async {
+        self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
+        self.manager = self.makeManager(isRunningInSimulator: false)
+
+        _ = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        self.logger.verifyMessageWasNotLogged(Strings.externalPurchase.custom_link_does_not_apply(Self.storefront))
+    }
+
+    /// The backend creates a sandbox session for a `test_` key, and Apple's flow follows the app and the
+    /// device rather than the key the SDK was configured with, so a Test Store key changes nothing here.
+    func testCreatesTheSessionWithATokenWithATestStoreKey() async {
+        self.systemInfo.stubbedApiKeyValidationResult = .simulatedStore
+
+        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(result) == .started(Self.session)
+        expect(self.customLink.invokedNoticeTypes) == [.withinApp]
+        expect(self.webBillingAPI.invokedPostHostedCheckoutParameters?.externalPurchaseTokenID) == Self.tokenID
+    }
+
     // MARK: - Not starting
 
     /// A checkout with no token behind it is a purchase Apple is never told about.
@@ -104,18 +177,8 @@ class HostedCheckoutManagerTests: TestCase {
         expect(self.webBillingAPI.invokedPostHostedCheckout) == false
     }
 
-    func testMintsNothingAndCreatesNoSessionWhenExternalPurchasesAreUnavailable() async {
-        self.customLink.stubbedAvailability = .notEligible
-
-        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
-
-        expect(result) == .externalPurchaseUnavailable
-        expect(self.customLink.invokedTokenTypes).to(beEmpty())
-        expect(self.webBillingAPI.invokedPostHostedCheckout) == false
-    }
-
-    /// Apple asks that a device which cannot authorize payments be offered no purchase at all, so unlike
-    /// ``HostedCheckoutStartResult/externalPurchaseUnavailable`` there is nothing to fall back to either.
+    /// Apple asks that a device which cannot authorize payments be offered no purchase at all, so there is
+    /// nothing to fall back to either.
     func testCreatesNoSessionWhenTheDeviceDoesNotAuthorizePayments() async {
         self.customLink.stubbedAvailability = .paymentsNotAuthorized
 
@@ -124,6 +187,38 @@ class HostedCheckoutManagerTests: TestCase {
         expect(result) == .paymentsNotAuthorized
         expect(self.customLink.invokedNoticeTypes).to(beEmpty())
         expect(self.customLink.invokedTokenTypes).to(beEmpty())
+        expect(self.webBillingAPI.invokedPostHostedCheckout) == false
+    }
+
+    /// Where Apple's external purchase APIs are required and cannot be used for this customer, they are
+    /// offered no checkout at all.
+    func testCreatesNoSessionForAnIneligibleCustomer() async {
+        self.customLink.stubbedAvailability = .notEligible
+        self.systemInfo.stubbedStorefront = MockStorefront(countryCode: "ESP")
+
+        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(result) == .notEligible
+        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
+        expect(self.webBillingAPI.invokedPostHostedCheckout) == false
+    }
+
+    /// The simulator can be made to refuse the checkout as a device refuses it to an ineligible customer, so that
+    /// path can be tried out there too.
+    func testCreatesNoSessionInTheSimulatorWhileExternalPurchasesAreDisabledThere() async {
+        self.systemInfo = MockSystemInfo(
+            finishTransactions: true,
+            dangerousSettings: DangerousSettings(
+                autoSyncPurchases: true,
+                useExternalPurchaseCustomLinks: true,
+                disableExternalPurchasesInSimulator: true
+            )
+        )
+        self.manager = self.makeManager(isRunningInSimulator: true)
+
+        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(result) == .notEligible
         expect(self.webBillingAPI.invokedPostHostedCheckout) == false
     }
 
@@ -144,17 +239,22 @@ class HostedCheckoutManagerTests: TestCase {
         expect(self.webBillingAPI.invokedPostHostedCheckoutCount) == 1
     }
 
-    /// The setting stands for the app taking part in Apple's programme at all, and there is no checkout to open
-    /// outside it, so the caller is left to buy through StoreKit.
-    func testCreatesNoSessionWhileTheExternalPurchaseSettingIsDisabled() async {
-        self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
-        self.manager = self.makeManager()
+    /// Eligibility is resolved before anything is shown, so the rule covers a customer who taps twice
+    /// before the notice comes up, including where the checkout ends up opening without one.
+    func testStopsACheckoutAskedForWhileEligibilityIsBeingResolved() async {
+        let manager = self.manager!
+        self.customLink.stubbedAvailability = .notEligible
+        let secondResult: Atomic<HostedCheckoutStartResult?> = nil
 
-        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+        self.customLink.whileResolvingAvailability = {
+            secondResult.value = await manager.startCheckout(package: Self.package, paywall: nil)
+        }
 
-        expect(result) == .externalPurchaseUnavailable
-        expect(self.customLink.invokedAvailabilityCount) == 0
-        expect(self.webBillingAPI.invokedPostHostedCheckout) == false
+        let firstResult = await manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(secondResult.value) == .alreadyStarting
+        expect(firstResult) == .started(Self.session)
+        expect(self.webBillingAPI.invokedPostHostedCheckoutCount) == 1
     }
 
     func testCreatesNoSessionWhenTheCustomerDeclinesTheNotice() async {
@@ -185,16 +285,14 @@ class HostedCheckoutManagerTests: TestCase {
         expect(result) == .failed
     }
 
-    /// The Test Store is not supported for now, so a `test_` key leaves the caller to buy through StoreKit.
-    func testCreatesNoSessionWithATestStoreKey() async {
-        self.systemInfo.stubbedApiKeyValidationResult = .simulatedStore
+    /// Kept apart from a failure: there is something to tell the customer, rather than something that went
+    /// wrong on the way to the checkout.
+    func testSaysTheProductIsAlreadyOwnedWhenTheBackendRefusesTheCheckoutForThat() async {
+        self.webBillingAPI.stubbedPostHostedCheckoutCompletionResult = .failure(Self.alreadyPurchasedError)
 
         let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
 
-        expect(result) == .externalPurchaseUnavailable
-        expect(self.customLink.invokedAvailabilityCount) == 0
-        expect(self.customLink.invokedTokenTypes).to(beEmpty())
-        expect(self.webBillingAPI.invokedPostHostedCheckout) == false
+        expect(result) == .alreadyPurchased
     }
 
 }
@@ -208,13 +306,15 @@ private extension HostedCheckoutManagerTests {
         )
     }
 
-    func makeManager() -> HostedCheckoutManager {
+    func makeManager(isRunningInSimulator: Bool) -> HostedCheckoutManager {
         return HostedCheckoutManager(
             externalPurchaseManager: ExternalPurchaseManager(
                 customLink: self.customLink,
                 externalPurchaseTokenAPI: self.externalPurchaseTokenAPI,
                 currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID),
-                systemInfo: self.systemInfo
+                settingsProvider: self.settingsProvider,
+                systemInfo: self.systemInfo,
+                isRunningInSimulator: isRunningInSimulator
             ),
             webBillingAPI: self.webBillingAPI,
             currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID)
@@ -225,6 +325,13 @@ private extension HostedCheckoutManagerTests {
     static let checkoutURL = URL(string: "https://pay.example.com/session")!
     static let successURL = URL(string: "https://api.revenuecat.com/checkout-return?status=success")!
     static let cancelURL = URL(string: "https://api.revenuecat.com/checkout-return?status=cancel")!
+
+    static let alreadyPurchasedError: BackendError = .networkError(
+        .errorResponse(.init(code: .productAlreadyPurchased,
+                             originalCode: BackendErrorCode.productAlreadyPurchased.rawValue,
+                             message: "This customer already has an active purchase for this product."),
+                       .other(409))
+    )
 
     static let response = HostedCheckoutResponse(operationSessionID: operationSessionID,
                                                  checkoutURL: checkoutURL,
