@@ -37,6 +37,13 @@ final class ExternalPurchaseLinkResultTests: TestCase {
         expect(result) == .proceed(externalPurchaseTokenID: nil)
     }
 
+    /// Being ineligible only keeps the link where the storefront allows it; anywhere else it opens nothing.
+    func testNothingOpensForAnIneligibleCustomer() {
+        let result = ExternalPurchaseLinkResult(preparationResult: .stopped(.notEligible))
+
+        expect(result) == .stopped
+    }
+
     /// Unlike being ineligible, a device that cannot authorize payments is not offered the link either.
     func testNothingOpensWhenThePaymentsAreNotAuthorized() {
         let result = ExternalPurchaseLinkResult(preparationResult: .stopped(.paymentsNotAuthorized))
