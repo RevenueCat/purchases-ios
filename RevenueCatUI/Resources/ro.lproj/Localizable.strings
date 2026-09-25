@@ -25,3 +25,5 @@
 "Purchase" = "Cumpără";
 "You are currently subscribed to this" = "Aveți deja un abonament la acest articol";
 "You've already purchased this" = "Ați cumpărat deja acest articol";
+"Purchase unavailable" = "Achiziție indisponibilă";
+"This purchase isn't available in your region." = "Această achiziție nu este disponibilă în regiunea dvs.";

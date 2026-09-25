@@ -25,3 +25,5 @@
 "Purchase" = "Придбати";
 "You are currently subscribed to this" = "Ви вже підписані на це";
 "You've already purchased this" = "Ви вже придбали це";
+"Purchase unavailable" = "Покупка недоступна";
+"This purchase isn't available in your region." = "Ця покупка недоступна у вашому регіоні.";

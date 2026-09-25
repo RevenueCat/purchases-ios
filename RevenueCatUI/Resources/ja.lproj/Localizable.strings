@@ -25,3 +25,5 @@
 "Purchase" = "購入";
 "You are currently subscribed to this" = "この項目は現在購読中です";
 "You've already purchased this" = "この項目はすでに購入済みです";
+"Purchase unavailable" = "購入できません";
+"This purchase isn't available in your region." = "この項目はお住まいの地域では購入できません。";

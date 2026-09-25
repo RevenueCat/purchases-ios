@@ -25,3 +25,5 @@
 "Purchase" = "Сатып алу";
 "You are currently subscribed to this" = "Сіз бұған әлдеқашан жазылғансыз";
 "You've already purchased this" = "Сіз бұны әлдеқашан сатып алғансыз";
+"Purchase unavailable" = "Сатып алу қолжетімсіз";
+"This purchase isn't available in your region." = "Бұл сатып алу сіздің аймағыңызда қолжетімсіз.";
