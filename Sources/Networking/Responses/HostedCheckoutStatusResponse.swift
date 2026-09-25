@@ -22,8 +22,7 @@ struct HostedCheckoutStatusResponse: Equatable {
 
         /// The session is under way. The caller keeps asking.
         ///
-        /// Also stands for a status this version of the SDK does not know: a newer backend saying something
-        /// new is likelier to be a step along the way than an outcome.
+        /// Also stands for a status this version of the SDK does not know.
         case pending
 
         /// The purchase is on the customer's account.
@@ -40,7 +39,7 @@ struct HostedCheckoutStatusResponse: Equatable {
         /// The backend's own code for the failure, which does not belong to ``BackendErrorCode``.
         let code: Int
 
-        /// A wire-level name such as `payment_charge_failed`, meant for logs rather than for customers.
+        /// A wire-level name such as `payment_charge_failed`, meant for logs.
         let message: String?
 
         /// The customer already owns what the checkout would have sold them.
