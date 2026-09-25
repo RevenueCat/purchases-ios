@@ -64,7 +64,7 @@ extension HostedCheckoutPaymentStatusResponse: Decodable {
         case RawPaymentStatus.unknown:
             return .unknown
         default:
-            Logger.warn(Strings.hostedCheckout.unknown_payment_status(rawPaymentStatus))
+            Logger.warn(Strings.hostedCheckout.unrecognized_payment_status(rawPaymentStatus))
             return .unknown
         }
     }

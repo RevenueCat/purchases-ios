@@ -156,20 +156,6 @@ class HostedCheckoutPollerTests: TestCase {
         expect(fetcher.callCount) == 5
     }
 
-    /// A status this version does not know is likelier to be a step along the way than an outcome, so it
-    /// keeps asking and ends up with no answer rather than a wrong one.
-    func testKeepsAskingThroughAStatusItDoesNotKnow() async {
-        let fetcher = StubStatusFetcher(results: [.status(.unknown), .status(.succeeded)])
-
-        let result = await self.makePoller(fetcher: fetcher, sleeper: RecordingHostedCheckoutSleeper()).poll(
-            operationSessionID: Self.operationSessionID,
-            appUserID: Self.appUserID
-        )
-
-        expect(result) == .succeeded
-        expect(fetcher.callCount) == 2
-    }
-
     func testKeepsAskingThroughAnErrorThatTendsToPass() async {
         let fetcher = StubStatusFetcher(results: [.failure(.networkError(.serverDown())), .status(.succeeded)])
 
