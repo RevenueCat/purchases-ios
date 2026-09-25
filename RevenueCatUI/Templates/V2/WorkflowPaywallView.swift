@@ -272,10 +272,18 @@ struct WorkflowPaywallView: View {
     private let context: WorkflowContext
     private let purchaseHandler: PurchaseHandler
     private let introEligibilityChecker: TrialOrIntroEligibilityChecker
-    private let showZeroDecimalPlacePrices: Bool
+    private let initialShowZeroDecimalPlacePrices: Bool
     private let displayCloseButton: Bool
     private let onDismiss: () -> Void
     private let onPresentationError: ((NSError) -> Void)?
+
+    private var showZeroDecimalPlacePrices: Bool {
+        #if ENABLE_WORKFLOW_BRANCH_LOADING
+        return self.resolvedShowZeroDecimalPlacePrices ?? self.initialShowZeroDecimalPlacePrices
+        #else
+        return self.initialShowZeroDecimalPlacePrices
+        #endif
+    }
 
     @StateObject private var navigator: WorkflowNavigator
     /// One paywall state store per workflow presentation: all screens read and write the same
@@ -303,6 +311,7 @@ struct WorkflowPaywallView: View {
     @State private var skeletonOpacity: Double = 1
     @State private var hasRenderedPage = false
     @State private var isDismissed = false
+    @State private var resolvedShowZeroDecimalPlacePrices: Bool?
     #else
     private var hasRenderedPage: Bool { self.transitionState.currentPage != nil }
     private var showsSkeleton: Bool { false }
@@ -326,7 +335,7 @@ struct WorkflowPaywallView: View {
         self.context = context
         self.purchaseHandler = purchaseHandler
         self.introEligibilityChecker = introEligibilityChecker
-        self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
+        self.initialShowZeroDecimalPlacePrices = showZeroDecimalPlacePrices
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
         self.onPresentationError = onPresentationError
@@ -496,9 +505,6 @@ struct WorkflowPaywallView: View {
         // A late configuration failure tracks the same lifecycle immediately before showing its error;
         // the coordinator's fire-once guards prevent this hook from duplicating those events later.
         .onDisappear {
-            #if ENABLE_WORKFLOW_BRANCH_LOADING
-            self.isDismissed = true
-            #endif
             self.trackCurrentWorkflowLeft()
         }
         .onChangeOf(self.navigator.currentStepId) { _ in
@@ -555,7 +561,13 @@ struct WorkflowPaywallView: View {
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.primary)
                     .frame(width: 44, height: 44)
-                    .background(.regularMaterial, in: Circle())
+                    .background {
+                        if #available(watchOS 10.0, *) {
+                            Circle().fill(.regularMaterial)
+                        } else {
+                            Circle().fill(Color.secondary.opacity(0.2))
+                        }
+                    }
             }
             .buttonStyle(.plain)
             .accessibilityLabel(Text("Close", bundle: .revenueCatUI))
@@ -570,6 +582,7 @@ struct WorkflowPaywallView: View {
             self.syncExitOfferBinding()
             let stepId = await self.purchaseHandler.resolveBranch(branch)
             guard !Task.isCancelled, !self.isDismissed else { return }
+            self.updateInitialPriceFormatting(for: stepId)
             guard Self.presentationError(for: stepId, in: self.context) == nil,
                   let page = Self.renderedPage(
                     from: self.context,
@@ -602,6 +615,8 @@ struct WorkflowPaywallView: View {
             self.showsSkeleton = false
             self.skeletonComponents = nil
         case .active:
+            self.showsSkeleton = false
+            self.skeletonComponents = nil
             self.activateInitialPage()
         case .failing:
             self.syncExitOfferBinding()
@@ -616,6 +631,20 @@ struct WorkflowPaywallView: View {
         self.hasRenderedPage = true
         self.stepEventCoordinator.trackInitialStep(self.navigator.currentStep, hasRenderedPage: true)
         self.syncExitOfferBinding()
+    }
+
+    private func updateInitialPriceFormatting(for stepId: String) {
+        guard let step = self.context.workflow.steps[stepId],
+              let screenId = step.screenId,
+              let screen = self.context.workflow.screens[screenId] else { return }
+        let countries = screen.zeroDecimalPlaceCountries.isEmpty
+            ? self.context.offering(for: step)?.paywall?.zeroDecimalPlaceCountries ?? []
+            : screen.zeroDecimalPlaceCountries
+        if Purchases.isConfigured, let country = Purchases.shared.storeFrontCountryCode {
+            self.resolvedShowZeroDecimalPlacePrices = countries.contains(country)
+        } else {
+            self.resolvedShowZeroDecimalPlacePrices = false
+        }
     }
     #endif
 
