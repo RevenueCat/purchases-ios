@@ -250,7 +250,7 @@ private extension BackendCheckoutLaneTests {
     ]
 
     static let hostedCheckoutStatusResponse: [String: Any] = [
-        "status": "in_progress",
+        "status": "started",
         "is_expired": false
     ]
 
