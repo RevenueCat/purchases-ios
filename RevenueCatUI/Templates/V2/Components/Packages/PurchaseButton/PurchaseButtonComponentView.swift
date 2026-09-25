@@ -43,7 +43,12 @@ struct PurchaseButtonComponentView: View {
     #if os(iOS) && canImport(WebKit)
     @State private var hostedCheckoutViewModel: WebCheckoutViewModel?
 
+    /// The session the sheet was presented for, which is asked about once the sheet has gone.
+    @State private var presentedHostedCheckoutSession: HostedCheckoutSession?
+
     @State private var alreadyOwnedCategory: StoreProduct.ProductCategory?
+
+    @State private var hostedCheckoutError: NSError?
     #endif
 
     private let viewModel: PurchaseButtonComponentViewModel
@@ -93,8 +98,12 @@ struct PurchaseButtonComponentView: View {
         #endif
         #if os(iOS) && canImport(WebKit)
         .webCheckoutSheet(viewModel: self.$hostedCheckoutViewModel) { outcome in
-            self.handleHostedCheckoutOutcome(outcome)
+            guard let session = self.presentedHostedCheckoutSession else { return }
+            self.presentedHostedCheckoutSession = nil
+
+            self.handleHostedCheckoutOutcome(outcome, session: session)
         }
+        .displayError(self.$hostedCheckoutError)
         .alert(
             self.alreadyOwnedTitle,
             isPresented: .isNotNil(self.$alreadyOwnedCategory)
@@ -208,6 +217,7 @@ struct PurchaseButtonComponentView: View {
 
     @MainActor
     private func presentHostedCheckout(_ session: HostedCheckoutSession) {
+        self.presentedHostedCheckoutSession = session
         self.hostedCheckoutViewModel = WebCheckoutViewModel(
             checkoutURL: session.checkoutURL,
             successURL: session.successURL,
@@ -216,16 +226,36 @@ struct PurchaseButtonComponentView: View {
         )
     }
 
-    private func handleHostedCheckoutOutcome(_ outcome: WebCheckoutSheetOutcome) {
+    private func handleHostedCheckoutOutcome(_ outcome: WebCheckoutSheetOutcome, session: HostedCheckoutSession) {
         switch outcome {
         case .returned(.success):
-            Task { await self.purchaseHandler.handleHostedCheckoutPurchase() }
+            self.settleHostedCheckout(session, after: .successPage)
         case .returned(.cancel):
             Task { await self.purchaseHandler.handleHostedCheckoutCancellation(package: self.packageContext.package) }
         case .dismissed:
-            // A payment may have gone through moments before the customer closed the sheet. Settling that
-            // means asking the backend what became of the session, which is not wired up yet.
+            // A payment may have gone through moments before the customer closed the sheet.
             Logger.debug(Strings.hosted_checkout_dismissed_without_returning)
+            self.settleHostedCheckout(session, after: .closedSheet)
+        }
+    }
+
+    private func settleHostedCheckout(_ session: HostedCheckoutSession, after exit: HostedCheckout.Exit) {
+        let package = self.packageContext.package
+
+        Task { @MainActor in
+            switch await HostedCheckout.settle(session,
+                                               after: exit,
+                                               package: package,
+                                               purchaseHandler: self.purchaseHandler) {
+            case .tellCustomerTheyAlreadyOwnIt:
+                if let package {
+                    self.showAlreadyOwnedAlert(for: package)
+                }
+            case let .failed(error):
+                self.hostedCheckoutError = error as NSError
+            case .purchased, .cancelled:
+                break
+            }
         }
     }
     #endif
