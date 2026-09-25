@@ -698,20 +698,12 @@ extension PurchaseHandler {
         traceId: String? = nil,
         resolvedInitialStepId: String? = nil
     ) throws -> WorkflowContext {
-        #if !ENABLE_WORKFLOW_BRANCH_LOADING
-        let resolvedInitialStepId: String? = nil
-        #endif
-        guard let step = workflow.steps[resolvedInitialStepId ?? workflow.initialStepId] else {
-            throw PaywallError.workflowInitialStepNotFound(
-                stepId: workflow.initialStepId,
-                workflowId: workflow.id
-            )
-        }
-        guard !step.isOfferingStep else {
-            throw TerminalOfferingWorkflowError()
-        }
         #if ENABLE_WORKFLOW_BRANCH_LOADING
-        if step.type == "branch", step.branch != nil, resolvedInitialStepId == nil {
+        var resolvedInitialStepId = resolvedInitialStepId
+        if resolvedInitialStepId == nil, case let .step(stepId)? = workflow.initialStepTrigger {
+            resolvedInitialStepId = stepId
+        }
+        if resolvedInitialStepId == nil, case .branch? = workflow.initialStepTrigger {
             return WorkflowContext(
                 workflow: workflow,
                 uiConfig: uiConfig,
@@ -724,7 +716,19 @@ extension PurchaseHandler {
                 traceId: traceId
             )
         }
+        #else
+        let resolvedInitialStepId: String? = nil
         #endif
+        let initialStepId = resolvedInitialStepId ?? workflow.initialStepId
+        guard let step = workflow.steps[initialStepId] else {
+            throw PaywallError.workflowInitialStepNotFound(
+                stepId: initialStepId,
+                workflowId: workflow.id
+            )
+        }
+        guard !step.isOfferingStep else {
+            throw TerminalOfferingWorkflowError()
+        }
         guard let screenID = step.screenId else {
             throw PaywallError.workflowInitialStepMissingScreenIdentifier(
                 stepId: step.id,

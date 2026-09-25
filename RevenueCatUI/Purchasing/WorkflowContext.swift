@@ -113,6 +113,12 @@ import Foundation
               let offeringId = screen.exitOffers?.dismiss?.offeringId else {
             return nil
         }
+        #if ENABLE_WORKFLOW_BRANCH_LOADING
+        if case .branch? = self.workflow.initialStepTrigger,
+           offeringId == self.offering(for: step)?.identifier {
+            return nil
+        }
+        #endif
         return (offeringId: offeringId, triggeringStepId: stepId)
     }
 

@@ -310,7 +310,6 @@ struct WorkflowPaywallView: View {
     @State private var showsSkeleton: Bool
     @State private var skeletonOpacity: Double = 1
     @State private var hasRenderedPage = false
-    @State private var isDismissed = false
     @State private var resolvedShowZeroDecimalPlacePrices: Bool?
     #else
     private var hasRenderedPage: Bool { self.transitionState.currentPage != nil }
@@ -356,9 +355,13 @@ struct WorkflowPaywallView: View {
         ))
         #if ENABLE_WORKFLOW_BRANCH_LOADING
         let initialStepId = context.resolvedInitialStepId ?? context.workflow.initialStepId
-        let initialStep = context.workflow.steps[initialStepId]
-        let branch = context.resolvedInitialStepId == nil && initialStep?.type == "branch"
-            ? initialStep?.branch : nil
+        let branch: WorkflowBranch?
+        if context.resolvedInitialStepId == nil,
+           case let .branch(initialBranch)? = context.workflow.initialStepTrigger {
+            branch = initialBranch
+        } else {
+            branch = nil
+        }
         self._showsSkeleton = .init(initialValue: branch != nil)
         self._skeletonComponents = .init(initialValue: branch.flatMap { branch in
             guard let stepId = branch.branches.first?.stepId,
@@ -554,7 +557,7 @@ struct WorkflowPaywallView: View {
             .accessibilityHidden(true)
 
             Button {
-                self.isDismissed = true
+                // The host can keep this view mounted; its task cancels when dismissal actually occurs.
                 self.onDismiss()
             } label: {
                 Image(systemName: "xmark")
@@ -581,7 +584,7 @@ struct WorkflowPaywallView: View {
         case let .resolvingBranch(branch):
             self.syncExitOfferBinding()
             let stepId = await self.purchaseHandler.resolveBranch(branch)
-            guard !Task.isCancelled, !self.isDismissed else { return }
+            guard !Task.isCancelled else { return }
             self.updateInitialPriceFormatting(for: stepId)
             guard Self.presentationError(for: stepId, in: self.context) == nil,
                   let page = Self.renderedPage(
@@ -603,7 +606,7 @@ struct WorkflowPaywallView: View {
             do {
                 try await Task.sleep(nanoseconds: Constants.transitionStartDelayNanoseconds)
             } catch { return }
-            guard !self.isDismissed else { return }
+            guard !Task.isCancelled else { return }
             self.presentationState = .active
             self.activateInitialPage()
             withAnimation(.easeInOut(duration: Constants.transitionDuration)) {
@@ -627,7 +630,7 @@ struct WorkflowPaywallView: View {
     }
 
     private func activateInitialPage() {
-        guard !self.isDismissed, self.transitionState.currentPage != nil else { return }
+        guard !Task.isCancelled, self.transitionState.currentPage != nil else { return }
         self.hasRenderedPage = true
         self.stepEventCoordinator.trackInitialStep(self.navigator.currentStep, hasRenderedPage: true)
         self.syncExitOfferBinding()
