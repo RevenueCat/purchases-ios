@@ -59,6 +59,14 @@ class NetworkOperation: Operation {
 
     let httpClient: HTTPClient
 
+    var requiredSignatureVerificationMode: Signing.ResponseVerificationMode {
+        if self.httpClient.systemInfo.dangerousSettings.disableRequiredSignatureVerifications {
+            return self.httpClient.systemInfo.responseVerificationMode
+        }
+
+        return Signing.enforcedVerificationMode()
+    }
+
     private let _didStart: Atomic<Bool> = false
     private var didStart: Bool { return self._didStart.value }
 

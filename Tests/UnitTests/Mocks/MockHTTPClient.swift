@@ -80,6 +80,7 @@ class MockHTTPClient: HTTPClient {
 
     var mocks: [URL: Response] = [:]
     var calls: [Call] = []
+    var verificationModes: [Signing.ResponseVerificationMode] = []
     private var shouldAssertSnapshot: Bool = true
 
     init(systemInfo: SystemInfo,
@@ -129,6 +130,7 @@ class MockHTTPClient: HTTPClient {
 
         DispatchQueue.main.async {
             self.calls.append(call)
+            self.verificationModes.append(verificationMode)
 
             if self.shouldAssertSnapshot {
                 assertSnapshot(of: call,

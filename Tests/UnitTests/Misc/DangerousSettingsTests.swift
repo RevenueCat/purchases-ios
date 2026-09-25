@@ -60,6 +60,11 @@ final class DangerousSettingsTests: TestCase {
             != DangerousSettings(autoSyncPurchases: true, useExternalPurchaseCustomLinks: false)
     }
 
+    func testDifferentDisableRequiredSignatureVerificationsIsNotEqual() {
+        expect(DangerousSettings(autoSyncPurchases: true, disableRequiredSignatureVerifications: true))
+            != DangerousSettings(autoSyncPurchases: true, disableRequiredSignatureVerifications: false)
+    }
+
     func testInternalSettingsAreExcludedFromEquality() {
         let defaultInternal: InternalDangerousSettingsType = DangerousSettings.Internal.default
         let customInternal: InternalDangerousSettingsType = DangerousSettings.Internal(enableReceiptFetchRetry: true)
@@ -104,6 +109,19 @@ final class DangerousSettingsTests: TestCase {
         expect(settings.uiPreviewMode) == false
         expect(settings.customEntitlementComputation) == false
         expect(settings.forceAllowTestStoreInReleaseBuilds) == false
+    }
+
+    // MARK: - disableRequiredSignatureVerifications
+
+    func testDisableRequiredSignatureVerificationsIsDisabledByDefault() {
+        expect(DangerousSettings().disableRequiredSignatureVerifications) == false
+    }
+
+    func testDisableRequiredSignatureVerificationsCanBeEnabled() {
+        let settings = DangerousSettings(autoSyncPurchases: false, disableRequiredSignatureVerifications: true)
+
+        expect(settings.disableRequiredSignatureVerifications) == true
+        expect(settings.autoSyncPurchases) == false
     }
 
     // MARK: - Internal settings
