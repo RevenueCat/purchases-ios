@@ -154,9 +154,10 @@ private extension HostedCheckoutPoller {
     }
 
     func pollOnce(operationSessionID: String, appUserID: String, deadline: Date) async -> PollAttemptResult {
-        guard let fetched = await self.fetchStatus(operationSessionID: operationSessionID,
-                                                   appUserID: appUserID,
-                                                   deadline: deadline) else {
+        let statusFetcher = self.statusFetcher
+        guard let fetched = await self.value(before: deadline, of: {
+            await statusFetcher.fetchStatus(operationSessionID: operationSessionID, appUserID: appUserID)
+        }) else {
             Logger.warn(Strings.hostedCheckout.poll_timed_out(operationSessionID, timeout: self.timeout))
             return .finished(.undetermined)
         }
@@ -198,20 +199,17 @@ private extension HostedCheckoutPoller {
         }
     }
 
-    /// `nil` when `deadline` comes first. The request cannot be cancelled, so it finishes unobserved.
+    /// `nil` when `deadline` comes first. A request cannot be cancelled, so one still out finishes unobserved.
     ///
-    /// Waits in real time rather than on `sleeper`, since that is the time the request takes.
-    func fetchStatus(operationSessionID: String,
-                     appUserID: String,
-                     deadline: Date) async -> Result<HostedCheckoutStatusResponse, BackendError>? {
+    /// Waits in real time rather than on `sleeper`, since that is the time a request takes.
+    func value<Value>(before deadline: Date, of operation: @escaping @Sendable () async -> Value) async -> Value? {
         let timeLimit = deadline.timeIntervalSince(self.dateProvider.now())
-        let statusFetcher = self.statusFetcher
 
         return await withUnsafeContinuation { continuation in
             let resumed: Atomic<Bool> = false
-            let finish: @Sendable (Result<HostedCheckoutStatusResponse, BackendError>?) -> Void = { result in
+            let finish: @Sendable (Value?) -> Void = { value in
                 guard !resumed.getAndSet(true) else { return }
-                continuation.resume(returning: result)
+                continuation.resume(returning: value)
             }
 
             let timer = Task {
@@ -220,7 +218,7 @@ private extension HostedCheckoutPoller {
             }
 
             Task {
-                finish(await statusFetcher.fetchStatus(operationSessionID: operationSessionID, appUserID: appUserID))
+                finish(await operation())
                 timer.cancel()
             }
         }
