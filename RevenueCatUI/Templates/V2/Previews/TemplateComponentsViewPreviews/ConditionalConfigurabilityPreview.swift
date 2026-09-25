@@ -405,7 +405,9 @@ struct ConditionalStackVisibility_Previews: PreviewProvider {
                             ]
                         ))
                     ],
-                    size: .init(width: .fill, height: .fit(nil))
+                    dimension: .vertical(.center, .spaceEvenly),
+                    size: .init(width: .fill, height: .fixed(240)),
+                    spacing: 24
                 ),
                 localizationProvider: .init(
                     locale: Locale.current,
@@ -445,7 +447,9 @@ struct ConditionalStackVisibility_Previews: PreviewProvider {
                             ]
                         ))
                     ],
-                    size: .init(width: .fill, height: .fit(nil))
+                    dimension: .vertical(.center, .spaceEvenly),
+                    size: .init(width: .fill, height: .fixed(240)),
+                    spacing: 24
                 ),
                 localizationProvider: .init(
                     locale: Locale.current,
