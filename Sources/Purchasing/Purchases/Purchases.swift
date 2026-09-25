@@ -358,6 +358,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      storeKitTimeout: TimeInterval = Configuration.storeKitRequestTimeoutDefault,
                      networkTimeout: NetworkTimeout = .default,
                      dangerousSettings: DangerousSettings? = nil,
+                     useExternalPurchaseCustomLinks: Bool = false,
+                     disableExternalPurchasesInSimulator: Bool = false,
                      showStoreMessagesAutomatically: Bool,
                      diagnosticsEnabled: Bool = false,
                      preferredLocale: String?,
@@ -387,6 +389,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             apiKeyValidationResult: apiKeyValidationResult,
             responseVerificationMode: responseVerificationMode,
             dangerousSettings: dangerousSettings,
+            useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks,
+            disableExternalPurchasesInSimulator: disableExternalPurchasesInSimulator,
             preferredLocalesProvider: PreferredLocalesProvider(preferredLocaleOverride: preferredLocale)
         )
 
@@ -1957,16 +1961,18 @@ public extension Purchases {
     /// Only to be called when the customer has deliberately asked to buy: it shows Apple's disclosure notice,
     /// and every token minted is one Apple expects a report for.
     ///
-    /// Does nothing while ``DangerousSettings/useExternalPurchaseCustomLinks`` is disabled: the caller is told to
-    /// proceed with no token id to hand over, so the link keeps opening as it did before.
+    /// Does nothing while `useExternalPurchaseCustomLinks` is disabled, see
+    /// ``Configuration/Builder/with(useExternalPurchaseCustomLinks:disableExternalPurchasesInSimulator:)``: the
+    /// caller is told to proceed with no token id to hand over, so the link keeps opening as it did before.
     @_spi(Internal) func prepareExternalPurchaseLink() async -> ExternalPurchaseLinkResult {
         return .init(preparationResult: await self.externalPurchaseManager.prepareExternalPurchase(flow: .linkOut))
     }
 
-    /// ``DangerousSettings/useExternalPurchaseCustomLinks``, so that `RevenueCatUI` only tells the customer
-    /// something is under way when ``prepareExternalPurchaseLink()`` has work to do.
+    /// ``Configuration/Builder/with(useExternalPurchaseCustomLinks:disableExternalPurchasesInSimulator:)``, so that
+    /// `RevenueCatUI` only tells the customer something is under way when ``prepareExternalPurchaseLink()`` has
+    /// work to do.
     @_spi(Internal) var useExternalPurchaseCustomLinks: Bool {
-        return self.systemInfo.dangerousSettings.useExternalPurchaseCustomLinks
+        return self.systemInfo.useExternalPurchaseCustomLinks
     }
 
     /// Used by `RevenueCatUI` to download and cache paywall images.
@@ -2306,6 +2312,8 @@ public extension Purchases {
                 storeKitTimeout: configuration.storeKit1Timeout,
                 networkTimeout: configuration.networkTimeout,
                 dangerousSettings: configuration.dangerousSettings,
+                useExternalPurchaseCustomLinks: configuration.useExternalPurchaseCustomLinks,
+                disableExternalPurchasesInSimulator: configuration.disableExternalPurchasesInSimulator,
                 showStoreMessagesAutomatically: configuration.showStoreMessagesAutomatically,
                 diagnosticsEnabled: configuration.diagnosticsEnabled,
                 preferredLocale: configuration.preferredLocale,

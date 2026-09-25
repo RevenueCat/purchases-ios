@@ -15,7 +15,7 @@ import Foundation
 import Nimble
 import XCTest
 
-@_spi(Experimental) @_spi(Internal) @testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class HostedCheckoutManagerTests: TestCase {
 
@@ -209,11 +209,8 @@ class HostedCheckoutManagerTests: TestCase {
     func testCreatesNoSessionInTheSimulatorWhileExternalPurchasesAreDisabledThere() async {
         self.systemInfo = MockSystemInfo(
             finishTransactions: true,
-            dangerousSettings: DangerousSettings(
-                autoSyncPurchases: true,
-                useExternalPurchaseCustomLinks: true,
-                disableExternalPurchasesInSimulator: true
-            )
+            useExternalPurchaseCustomLinks: true,
+            disableExternalPurchasesInSimulator: true
         )
         self.systemInfo.stubbedIsRunningInSimulator = true
         self.manager = self.makeManager()
@@ -228,11 +225,8 @@ class HostedCheckoutManagerTests: TestCase {
     func testCreatesTheSessionInTheSimulatorOutsideTheProgrammeWhileExternalPurchasesAreDisabledThere() async {
         self.systemInfo = MockSystemInfo(
             finishTransactions: true,
-            dangerousSettings: DangerousSettings(
-                autoSyncPurchases: true,
-                useExternalPurchaseCustomLinks: false,
-                disableExternalPurchasesInSimulator: true
-            )
+            useExternalPurchaseCustomLinks: false,
+            disableExternalPurchasesInSimulator: true
         )
         self.systemInfo.stubbedIsRunningInSimulator = true
         self.manager = self.makeManager()
@@ -323,10 +317,7 @@ private extension HostedCheckoutManagerTests {
     static func makeSystemInfo(useExternalPurchaseCustomLinks: Bool) -> MockSystemInfo {
         let systemInfo = MockSystemInfo(
             finishTransactions: true,
-            dangerousSettings: DangerousSettings(
-                autoSyncPurchases: true,
-                useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks
-            )
+            useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks
         )
         systemInfo.stubbedIsRunningInSimulator = false
         return systemInfo

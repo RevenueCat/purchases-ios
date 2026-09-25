@@ -15,7 +15,7 @@ import Foundation
 import Nimble
 import XCTest
 
-@_spi(Experimental) @testable import RevenueCat
+@testable import RevenueCat
 
 class ExternalPurchaseManagerTests: TestCase {
 
@@ -443,10 +443,7 @@ class ExternalPurchaseManagerTests: TestCase {
     private static func makeSystemInfo(useExternalPurchaseCustomLinks: Bool) -> MockSystemInfo {
         return Self.onADevice(MockSystemInfo(
             finishTransactions: true,
-            dangerousSettings: DangerousSettings(
-                autoSyncPurchases: true,
-                useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks
-            )
+            useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks
         ))
     }
 
@@ -455,11 +452,8 @@ class ExternalPurchaseManagerTests: TestCase {
     ) -> MockSystemInfo {
         return Self.onADevice(MockSystemInfo(
             finishTransactions: true,
-            dangerousSettings: DangerousSettings(
-                autoSyncPurchases: true,
-                useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks,
-                disableExternalPurchasesInSimulator: true
-            )
+            useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks,
+            disableExternalPurchasesInSimulator: true
         ))
     }
 
