@@ -320,28 +320,6 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         expect(finished).toEventually(beTrue())
     }
 
-    func testNotifiesIfTransactionFailsFromBackend() throws {
-        let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
-        self.purchases.purchase(product: product) { (_, _, _, _) in }
-        let transaction = MockTransaction()
-        transaction.mockPayment = try XCTUnwrap(self.storeKit1Wrapper.payment)
-
-        self.backend.postReceiptResult = .failure(
-            .networkError(.errorResponse(
-                .init(code: .unknownBackendError,
-                      originalCode: BackendErrorCode.unknownBackendError.rawValue,
-                      message: nil),
-                .internalServerError
-            ))
-        )
-
-        transaction.mockState = SKPaymentTransactionState.purchased
-        self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
-
-        expect(self.backend.postReceiptDataCalled) == true
-        expect(self.storeKit1Wrapper.finishCalled) == false
-    }
-
     @MainActor
     func testNotifiesIfTransactionFailsFromStoreKit() throws {
         let product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))

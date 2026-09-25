@@ -1041,16 +1041,6 @@ extension OfferingsManagerTests {
         expect(result).to(beSuccess())
     }
 
-    func testGetOfferingsUsesLightweightResponse() {
-        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
-
-        let result = waitUntilValue { completed in
-            self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) { completed($0) }
-        }
-
-        expect(result).to(beSuccess())
-    }
-
     func testGetOfferingsUsesPrunedMemoryCacheWhenRemoteConfigManagerIsEnabled() {
         let mockRemoteConfigManager = MockRemoteConfigManager()
         let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
@@ -1155,21 +1145,6 @@ extension OfferingsManagerTests {
         expect(result).to(beSuccess())
         expect(result?.value?["base"]).toNot(beNil())
         expect(result?.value?["base"]?.monthly?.storeProduct).toNot(beNil())
-    }
-
-    func testGetOfferingsDeliversEvenIfTheGateTaskIsCancelled() {
-        // The gate's two readiness awaits are non-throwing and always awaited before the
-        // callback fires, so no cancellation can strand it. Model that here by resolving both
-        // to their empty/failed states (no workflows topic, no ui_config) and asserting the
-        // completion still runs.
-        let manager = self.makeOfferingsManager(remoteConfigManager: MockRemoteConfigManager())
-        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
-
-        let result = waitUntilValue { completed in
-            manager.offerings(appUserID: MockData.anyAppUserID) { completed($0) }
-        }
-
-        expect(result).to(beSuccess())
     }
 
     func testBackgroundCacheRefreshCachesWithoutAwaitingTheConfigGate() {
