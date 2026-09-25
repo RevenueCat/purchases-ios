@@ -33,11 +33,16 @@ internal protocol AdImpressionEventData: AdEventData {
     var impressionId: String { get }
 }
 
-/// Identifies the mechanism that emitted an ad event. The SDK only ever emits these two values;
-/// pre-feature versions send nothing, which the backend treats as `unknown`.
+/// Identifies the mechanism that emitted an ad event.
+/// Pre-feature versions send nothing, which the backend treats as `unknown`.
 @_spi(Internal) public enum AdEventCaptureMethod: String, Codable, Sendable {
 
+    /// Auto-captured by the official RevenueCat Google AdMob adapter for iOS.
+    case iosAdMobAdapter = "ios_admob_adapter"
+
     /// Auto-captured by an official RevenueCat ad-network adapter.
+    /// Retained so events stored by older adapter versions can still be decoded and sent.
+    @available(*, deprecated, message: "Use iosAdMobAdapter instead.")
     case adapter
 
     /// Reported via the public `trackAd*` tracking API.
