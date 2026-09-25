@@ -139,21 +139,19 @@ class HostedCheckoutPollerTests: TestCase {
         expect(fetcher.callCount) == 5
     }
 
-    func testTakesAnAnswerThatArrivesAfterTheTimeout() async {
-        let clock = ManualClock()
-        let fetcher = StubStatusFetcher(results: [.status(.pending), .status(.pending), .status(.pending),
-                                                  .status(.pending), .status(.succeeded)])
-        fetcher.whileRequesting = { clock.advance(by: 10) }
-        let sleeper = RecordingHostedCheckoutSleeper()
-        sleeper.clock = clock
+    func testGivesNoAnswerWhenARequestOutlastsTheTimeout() async {
+        let fetcher = UnansweredStatusFetcher()
+        let poller = HostedCheckoutPoller(statusFetcher: fetcher,
+                                          sleeper: RecordingHostedCheckoutSleeper(),
+                                          dateProvider: DateProvider(),
+                                          interval: 1,
+                                          maxAttempts: 30,
+                                          timeout: 0.1)
 
-        let result = await self.makePoller(fetcher: fetcher, sleeper: sleeper, clock: clock, maxAttempts: 30).poll(
-            operationSessionID: Self.operationSessionID,
-            appUserID: Self.appUserID
-        )
+        let result = await poller.poll(operationSessionID: Self.operationSessionID, appUserID: Self.appUserID)
 
-        expect(result) == .succeeded
-        expect(fetcher.callCount) == 5
+        expect(result) == .undetermined
+        expect(fetcher.callCount.value) == 1
     }
 
     func testKeepsAskingThroughAnErrorThatTendsToPass() async {
@@ -318,6 +316,41 @@ class HostedCheckoutPollerTests: TestCase {
         expect(fetcher.callCount) == 0
     }
 
+    func testGivesNoAnswerWhenAPaymentStatusRequestOutlastsTheTimeout() async {
+        let fetcher = UnansweredStatusFetcher()
+        let poller = HostedCheckoutPoller(statusFetcher: fetcher,
+                                          sleeper: RecordingHostedCheckoutSleeper(),
+                                          dateProvider: DateProvider(),
+                                          interval: 1,
+                                          maxAttempts: 30,
+                                          timeout: 0.1)
+
+        let result = await poller.pollDismissed(operationSessionID: Self.operationSessionID,
+                                                appUserID: Self.appUserID)
+
+        expect(result) == .undetermined
+        expect(fetcher.paymentStatusCallCount.value) == 1
+        expect(fetcher.callCount.value) == 0
+    }
+
+    /// Asking whether the customer paid comes out of the same time as the polling after it.
+    func testPollsADismissedCheckoutOnlyForTheTimeLeftAfterAskingWhetherItWasPaid() async {
+        let clock = ManualClock()
+        let fetcher = StubStatusFetcher(paymentStatuses: [.paymentStatus(.unknown), .paymentStatus(.processing)],
+                                        results: [.status(.pending)])
+        fetcher.whileRequesting = { clock.advance(by: 10) }
+        let sleeper = RecordingHostedCheckoutSleeper()
+        sleeper.clock = clock
+
+        let result = await self.makePoller(fetcher: fetcher, sleeper: sleeper, clock: clock, maxAttempts: 30)
+            .pollDismissed(operationSessionID: Self.operationSessionID, appUserID: Self.appUserID)
+
+        expect(result) == .undetermined
+        // One second went on asking again whether it was paid, so the polling asks at 1, 12, 23 and 34
+        // seconds in; at 45 the time is up.
+        expect(fetcher.callCount) == 4
+    }
+
 }
 
 private extension HostedCheckoutPollerTests {
@@ -432,6 +465,30 @@ private final class StubStatusFetcher: HostedCheckoutStatusFetching, @unchecked 
         case let .failure(error):
             return .failure(error)
         }
+    }
+
+}
+
+/// A request that is still out long after any test using it has finished.
+private final class UnansweredStatusFetcher: HostedCheckoutStatusFetching {
+
+    let callCount: Atomic<Int> = .init(0)
+    let paymentStatusCallCount: Atomic<Int> = .init(0)
+
+    func fetchPaymentStatus(
+        operationSessionID: String,
+        appUserID: String
+    ) async -> Result<HostedCheckoutPaymentStatusResponse, BackendError> {
+        self.paymentStatusCallCount.modify { $0 += 1 }
+        try? await Task.sleep(nanoseconds: 10_000_000_000)
+        return .success(.init(paymentStatus: .open))
+    }
+
+    func fetchStatus(operationSessionID: String,
+                     appUserID: String) async -> Result<HostedCheckoutStatusResponse, BackendError> {
+        self.callCount.modify { $0 += 1 }
+        try? await Task.sleep(nanoseconds: 10_000_000_000)
+        return .success(.init(status: .succeeded))
     }
 
 }
