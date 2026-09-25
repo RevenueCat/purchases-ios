@@ -545,7 +545,7 @@ struct ViewModelFactory {
         offering: Offering,
         colorScheme: ColorScheme
     ) throws -> StackComponentViewModel {
-        let independentValidator = component.packageSelection?.mode == "independent"
+        let independentValidator = component.purchaseContext?.mode == "independent"
             ? PackageValidator() : nil
         let childValidator = independentValidator ?? packageValidator
         let viewModels = try component.components.filter {
