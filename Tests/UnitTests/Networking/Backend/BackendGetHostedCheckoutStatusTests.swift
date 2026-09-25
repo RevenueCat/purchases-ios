@@ -115,14 +115,14 @@ class BackendGetHostedCheckoutStatusTests: BaseBackendTests {
     }
 
     /// A status a newer backend adds must not read as an outcome this version cannot vouch for.
-    func testReadsAnUnrecognizedStatusAsUnknown() throws {
+    func testReadsAnUnrecognizedStatusAsPending() throws {
         self.mockStatus(Self.response(status: "something_new"))
 
         let response = try XCTUnwrap(waitUntilValue { completed in
             self.getStatus(completion: completed)
         }?.value)
 
-        expect(response.status) == .unknown
+        expect(response.status) == .pending
     }
 
     /// Only used for web product changes, so it says nothing about what became of this session.
