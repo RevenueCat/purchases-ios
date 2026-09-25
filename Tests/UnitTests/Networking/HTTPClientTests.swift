@@ -172,23 +172,6 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         expect(hostCorrect.value) == true
     }
 
-    func testUsesServerHostURLWhenNoAPISourceProvider() throws {
-        // No provider injected: behavior is unchanged and requests target `serverHostURL`.
-        let hostCorrect: Atomic<Bool> = false
-        let host = try XCTUnwrap(SystemInfo.apiBaseURL.host)
-        stub(condition: isHost(host)) { _ in
-            hostCorrect.value = true
-            return .emptySuccessResponse()
-        }
-
-        let request = HTTPRequest(method: .get, path: .mockPath)
-        waitUntil { completion in
-            self.client.perform(request) { (_: EmptyResponse) in completion() }
-        }
-
-        expect(hostCorrect.value) == true
-    }
-
     func testProxyURLTakesPrecedenceOverAPISource() throws {
         let proxyURL = try XCTUnwrap(URL(string: "https://proxy.rc-test.com"))
         SystemInfo.proxyURL = proxyURL

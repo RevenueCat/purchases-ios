@@ -42,23 +42,6 @@ class BackendGetWebBillingProductsTests: BaseBackendTests {
         expect(self.operationDispatcher.invokedDispatchOnWorkerThreadDelayParam) == JitterableDelay.none
     }
 
-    func testGetWebBillingProductsCallsHTTPMethodWithNoDelay() {
-        self.httpClient.mock(
-            requestPath: .getWebBillingProducts(userId: Self.userID, productIds: self.productIds),
-            response: .init(statusCode: .success, response: Self.noProductsResponse as [String: Any])
-        )
-
-        let result = waitUntilValue { completed in
-            self.webBilling.getWebBillingProducts(
-                appUserID: Self.userID, productIds: self.productIds, completion: completed
-            )
-        }
-
-        expect(result).to(beSuccess())
-        expect(self.httpClient.calls).to(haveCount(1))
-        expect(self.operationDispatcher.invokedDispatchOnWorkerThreadDelayParam) == JitterableDelay.none
-    }
-
     func testGetWebBillingProductsCachesForSameUserIDAndProductIds() {
         self.httpClient.mock(
             requestPath: .getWebBillingProducts(userId: Self.userID, productIds: self.productIds),

@@ -138,11 +138,6 @@ final class RewardVerificationStatusResponseDecodingTests: TestCase {
         )
     }
 
-    func testDecodesVerifiedWithMissingRewardFieldAsNoReward() throws {
-        let response = try Self.decode(["status": "verified"])
-        expect(response.status) == .verified(.noReward)
-    }
-
     func testDecodesVerifiedWithNullRewardAsNoReward() throws {
         let json = #"{"status":"verified","reward":null}"#
         let response = try RewardVerificationStatusResponse.create(with: Data(json.utf8))

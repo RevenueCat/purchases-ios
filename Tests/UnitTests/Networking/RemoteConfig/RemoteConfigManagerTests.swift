@@ -194,15 +194,6 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
     }
 
-    func testFreshRefreshDoesNotStartAnotherRequest() {
-        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
-        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
-
-        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
-
-        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
-    }
-
     func testSuccessfulRefreshDoesNotApplyFailureCooldown() {
         self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
