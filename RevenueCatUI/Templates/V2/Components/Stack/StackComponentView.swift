@@ -557,6 +557,37 @@ struct StackComponentView_Previews: PreviewProvider {
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Default - Fill Fit Fixed Fill")
 
+        // Default spacing - None
+        StackComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                component: .init(
+                    components: [
+                        .stack(.init(
+                            components: [],
+                            size: .init(width: .fill, height: .fixed(40)),
+                            backgroundColor: .init(light: .hex("#ff0000"))
+                        )),
+                        .stack(.init(
+                            components: [],
+                            size: .init(width: .fill, height: .fixed(40)),
+                            backgroundColor: .init(light: .hex("#0000ff"))
+                        ))
+                    ],
+                    size: .init(width: .fixed(160), height: .fit(nil))
+                ),
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [:]
+                ),
+                colorScheme: .light
+            ),
+            onDismiss: {}
+        )
+        .previewRequiredPaywallsV2Properties()
+        .previewLayout(.sizeThatFits)
+        .previewDisplayName("Default spacing - None")
+
         // Scrollable - HStack
         HStack(spacing: 0) {
             StackComponentView(
@@ -709,6 +740,7 @@ struct StackComponentView_Previews: PreviewProvider {
                             ],
                             dimension: .vertical(.center, .center),
                             size: .init(width: .fit(nil), height: .fit(nil)),
+                            spacing: 8,
                             backgroundColor: .init(light: .hex("#0000ff")),
                             margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
                         ))
