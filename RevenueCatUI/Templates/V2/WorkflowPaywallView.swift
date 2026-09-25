@@ -395,6 +395,11 @@ struct WorkflowPaywallView: View {
             .environment(\.paywallWindowSize, proxy.size)
             .transitionClipMask(geometry: geometry)
         }
+        // Takes the same path as the designed close button it stands in for.
+        .paywallSideToolbarCancelButtonHost(
+            purchaseHandler: self.purchaseHandler,
+            onCancel: { self.handleDismiss(dismissalReason: .navigatedBack) }
+        )
         .allowsHitTesting(!self.transitionState.isTransitioning && !self.presentationState.hasFailed)
         .workflowTransitionAnimationCompletion(
             progress: self.transitionState.progress,
@@ -524,6 +529,11 @@ struct WorkflowPaywallView: View {
                     canNavigateBack: self.navigator.canNavigateBack
                 )
             )
+            // Pages stay mounted after they're left, so only the current step's close button may
+            // move into the toolbar; the toolbar would otherwise act on a step not on screen.
+            .transformEnvironment(\.paywallCancelButtonInToolbar) { movesCancelButton in
+                movesCancelButton = movesCancelButton && isCurrent
+            }
             .frame(width: geometry.size.width, height: geometry.size.height)
             .transitionClipMask(geometry: geometry)
             .opacity(isHidden ? 0 : 1)
