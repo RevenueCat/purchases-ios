@@ -22,24 +22,19 @@ final class ExternalPurchaseManager {
     private let currentUserProvider: CurrentUserProvider
     private let settingsProvider: SDKSettingsConfigProviderType
     private let systemInfo: SystemInfo
-    private let isRunningInSimulator: Bool
 
     private let isPreparing: Atomic<Bool> = false
 
-    /// - Parameter isRunningInSimulator: Deliberately not defaulted to ``SystemInfo/isRunningInSimulator``:
-    /// unit tests run in the simulator on some platforms and not on others, so each has to say which it means.
     init(customLink: ExternalPurchaseCustomLinkType,
          externalPurchaseTokenAPI: ExternalPurchaseTokenAPI,
          currentUserProvider: CurrentUserProvider,
          settingsProvider: SDKSettingsConfigProviderType,
-         systemInfo: SystemInfo,
-         isRunningInSimulator: Bool) {
+         systemInfo: SystemInfo) {
         self.customLink = customLink
         self.externalPurchaseTokenAPI = externalPurchaseTokenAPI
         self.currentUserProvider = currentUserProvider
         self.settingsProvider = settingsProvider
         self.systemInfo = systemInfo
-        self.isRunningInSimulator = isRunningInSimulator
     }
 
     /// Whether the app can offer an external purchase to this customer.
@@ -74,7 +69,7 @@ final class ExternalPurchaseManager {
             return .notApplicable
         }
 
-        guard !self.isRunningInSimulator else {
+        guard !self.systemInfo.isRunningInSimulator else {
             return self.prepareExternalPurchaseInSimulator()
         }
 

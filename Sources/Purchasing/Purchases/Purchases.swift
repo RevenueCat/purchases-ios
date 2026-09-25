@@ -988,8 +988,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             externalPurchaseTokenAPI: backend.externalPurchaseTokenAPI,
             currentUserProvider: identityManager,
             settingsProvider: self.sdkSettingsConfigProvider,
-            systemInfo: systemInfo,
-            isRunningInSimulator: SystemInfo.isRunningInSimulator
+            systemInfo: systemInfo
         )
         self.externalPurchaseManager = externalPurchaseManager
         self.hostedCheckoutManager = HostedCheckoutManager(

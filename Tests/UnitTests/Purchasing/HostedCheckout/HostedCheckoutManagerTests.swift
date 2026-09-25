@@ -47,7 +47,7 @@ class HostedCheckoutManagerTests: TestCase {
 
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: true)
         self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.storefront)
-        self.manager = self.makeManager(isRunningInSimulator: false)
+        self.manager = self.makeManager()
     }
 
     // MARK: - Starting
@@ -108,7 +108,8 @@ class HostedCheckoutManagerTests: TestCase {
     func testCreatesTheSessionWithoutATokenInTheSimulatorWhateverTheStorefront() async {
         self.customLink.stubbedAvailability = .notEligible
         self.systemInfo.stubbedStorefront = MockStorefront(countryCode: "ESP")
-        self.manager = self.makeManager(isRunningInSimulator: true)
+        self.systemInfo.stubbedIsRunningInSimulator = true
+        self.manager = self.makeManager()
 
         let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
 
@@ -122,7 +123,7 @@ class HostedCheckoutManagerTests: TestCase {
     /// exactly the checkout the app had before.
     func testCreatesTheSessionWithoutATokenWhileTheExternalPurchaseSettingIsDisabled() async {
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
-        self.manager = self.makeManager(isRunningInSimulator: false)
+        self.manager = self.makeManager()
 
         let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
 
@@ -136,7 +137,7 @@ class HostedCheckoutManagerTests: TestCase {
     /// one is noise in its console.
     func testSaysNothingAboutExternalPurchasesWhileTheSettingIsDisabled() async {
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
-        self.manager = self.makeManager(isRunningInSimulator: false)
+        self.manager = self.makeManager()
 
         _ = await self.manager.startCheckout(package: Self.package, paywall: nil)
 
@@ -211,7 +212,8 @@ class HostedCheckoutManagerTests: TestCase {
             useExternalPurchaseCustomLinks: true,
             disableExternalPurchasesInSimulator: true
         )
-        self.manager = self.makeManager(isRunningInSimulator: true)
+        self.systemInfo.stubbedIsRunningInSimulator = true
+        self.manager = self.makeManager()
 
         let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
 
@@ -226,7 +228,8 @@ class HostedCheckoutManagerTests: TestCase {
             useExternalPurchaseCustomLinks: false,
             disableExternalPurchasesInSimulator: true
         )
-        self.manager = self.makeManager(isRunningInSimulator: true)
+        self.systemInfo.stubbedIsRunningInSimulator = true
+        self.manager = self.makeManager()
 
         let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
 
@@ -318,15 +321,14 @@ private extension HostedCheckoutManagerTests {
         )
     }
 
-    func makeManager(isRunningInSimulator: Bool) -> HostedCheckoutManager {
+    func makeManager() -> HostedCheckoutManager {
         return HostedCheckoutManager(
             externalPurchaseManager: ExternalPurchaseManager(
                 customLink: self.customLink,
                 externalPurchaseTokenAPI: self.externalPurchaseTokenAPI,
                 currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID),
                 settingsProvider: self.settingsProvider,
-                systemInfo: self.systemInfo,
-                isRunningInSimulator: isRunningInSimulator
+                systemInfo: self.systemInfo
             ),
             webBillingAPI: self.webBillingAPI,
             currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID)
