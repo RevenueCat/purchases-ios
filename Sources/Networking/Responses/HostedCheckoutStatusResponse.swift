@@ -63,7 +63,6 @@ extension HostedCheckoutStatusResponse: Decodable {
 
     private enum RawStatus {
         static let started = "started"
-        static let inProgress = "in_progress"
         static let succeeded = "succeeded"
         static let failed = "failed"
     }
@@ -79,7 +78,7 @@ extension HostedCheckoutStatusResponse: Decodable {
         from container: KeyedDecodingContainer<CodingKeys>
     ) -> Status {
         switch rawStatus {
-        case RawStatus.started, RawStatus.inProgress:
+        case RawStatus.started:
             return .pending
         case RawStatus.succeeded:
             return .succeeded
