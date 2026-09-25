@@ -30,12 +30,16 @@ struct WorkflowForwardNavigationDestination {
 final class WorkflowNavigator: ObservableObject {
 
     @Published private(set) var currentStepId: String
+    /// Destination per exit (`actionId` -> step id), resolved when the step is entered so a tap is a
+    /// lookup rather than a decision.
+    private(set) var resolvedExits: [String: String] = [:]
     private let workflow: PublishedWorkflow
     private var backStack: [String] = []
 
     init(workflow: PublishedWorkflow) {
         self.workflow = workflow
         self.currentStepId = workflow.initialStepId
+        self.resolvedExits = Self.resolveExits(for: workflow.steps[workflow.initialStepId], in: workflow)
     }
 
     var currentStep: WorkflowStep? {
@@ -65,7 +69,7 @@ final class WorkflowNavigator: ObservableObject {
         }
 
         backStack.append(currentStepId)
-        currentStepId = nextStep.step.id
+        moveTo(nextStep.step.id)
         return nextStep.step
     }
 
@@ -80,8 +84,7 @@ final class WorkflowNavigator: ObservableObject {
                   $0.componentId == componentId && $0.type == triggerType
               }),
               let actionId = trigger.actionId,
-              let triggerAction = step.stepTriggerActions[actionId],
-              case .step(let stepId) = triggerAction,
+              let stepId = resolvedExits[actionId],
               let nextStep = workflow.steps[stepId] else {
             return nil
         }
@@ -97,8 +100,27 @@ final class WorkflowNavigator: ObservableObject {
         guard let previousStepId = backStack.popLast() else {
             return nil
         }
-        currentStepId = previousStepId
+        moveTo(previousStepId)
         return workflow.steps[previousStepId]
+    }
+
+    private func moveTo(_ stepId: String) {
+        currentStepId = stepId
+        resolvedExits = Self.resolveExits(for: workflow.steps[stepId], in: workflow)
+    }
+
+    /// Only `.step` exits resolve here. A `.branch` needs its audiences evaluated, which is async, so it
+    /// is left out and does not navigate yet.
+    private static func resolveExits(
+        for step: WorkflowStep?,
+        in workflow: PublishedWorkflow
+    ) -> [String: String] {
+        guard let step else { return [:] }
+
+        return step.stepTriggerActions.reduce(into: [:]) { exits, entry in
+            guard case let .step(stepId) = entry.value, workflow.steps[stepId] != nil else { return }
+            exits[entry.key] = stepId
+        }
     }
 
 }

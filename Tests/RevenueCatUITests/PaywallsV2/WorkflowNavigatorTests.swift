@@ -198,12 +198,103 @@ final class WorkflowNavigatorTests: TestCase {
         expect(navigator.canNavigateBack) == false
     }
 
+    // MARK: - resolvedExits
+
+    func testResolvedExitsIsPopulatedOnLandingForStepActions() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStep(id: "step_1", triggers: [("btn_abc", "btn_abc")], triggerActions: [("btn_abc", "step_2")]),
+                makeStep(id: "step_2")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        expect(navigator.resolvedExits) == ["btn_abc": "step_2"]
+    }
+
+    func testResolvedExitsIsRecomputedAfterNavigating() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStep(id: "step_1", triggers: [("btn_abc", "btn_abc")], triggerActions: [("btn_abc", "step_2")]),
+                makeStep(id: "step_2", triggers: [("btn_def", "btn_def")], triggerActions: [("btn_def", "step_3")]),
+                makeStep(id: "step_3")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        navigator.triggerAction(componentId: "btn_abc")
+
+        expect(navigator.resolvedExits) == ["btn_def": "step_3"]
+    }
+
+    func testResolvedExitsIsRecomputedAfterNavigatingBack() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStep(id: "step_1", triggers: [("btn_abc", "btn_abc")], triggerActions: [("btn_abc", "step_2")]),
+                makeStep(id: "step_2")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        navigator.triggerAction(componentId: "btn_abc")
+        navigator.navigateBack()
+
+        expect(navigator.resolvedExits) == ["btn_abc": "step_2"]
+    }
+
+    func testResolvedExitsOmitsExitsPointingAtAMissingStep() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStep(id: "step_1", triggers: [("btn_abc", "btn_abc")], triggerActions: [("btn_abc", "nope")])
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        expect(navigator.resolvedExits).to(beEmpty())
+    }
+
     func testTriggerActionWithConditionsTypeReturnsNil() throws {
         // A "conditions" trigger action has no step_id. The navigator must not crash
         // and must return nil (no navigation), leaving the current step unchanged.
         let workflow = try Self.makeWorkflow(
             steps: [
                 makeStepWithConditionsTriggerAction(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
+                makeStep(id: "step_2")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        let result = navigator.triggerAction(componentId: "btn_abc")
+
+        expect(result).to(beNil())
+        expect(navigator.currentStepId) == "step_1"
+        expect(navigator.canNavigateBack) == false
+    }
+
+    /// A `branch` decodes to a real case, unlike `conditions`, so it reaches `resolveExits` and has to be
+    /// left out there until its audiences can be evaluated.
+    func testResolvedExitsOmitsABranchExit() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStepWithBranchTriggerAction(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
+                makeStep(id: "step_2")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        expect(navigator.resolvedExits).to(beEmpty())
+    }
+
+    func testTriggerActionWithBranchTypeDoesNotNavigateYet() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStepWithBranchTriggerAction(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
                 makeStep(id: "step_2")
             ],
             initialStepId: "step_1"
@@ -423,6 +514,33 @@ private extension WorkflowNavigatorTests {
           ],
           "trigger_actions": {
             "\(actionId)": {"type":"conditions","conditions":{"if":[]}}
+          }
+        }
+        """
+        return StepDescriptor(id: id, json: json)
+    }
+
+    /// Creates a `StepDescriptor` whose trigger action is a `branch`, which decodes but needs its audiences
+    /// evaluated before it has a destination.
+    func makeStepWithBranchTriggerAction(
+        id: String,
+        componentId: String,
+        actionId: String,
+        fallbackStepId: String = "step_2"
+    ) -> StepDescriptor {
+        let json = """
+        {
+          "id": "\(id)",
+          "type": "screen",
+          "triggers": [
+            {"name":"Button","type":"on_press","action_id":"\(actionId)","component_id":"\(componentId)"}
+          ],
+          "trigger_actions": {
+            "\(actionId)": {
+              "type":"branch",
+              "branches":[{"audience_id":"aud_a","step_id":"step_2"}],
+              "fallback_step_id":"\(fallbackStepId)"
+            }
           }
         }
         """
