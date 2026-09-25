@@ -178,8 +178,6 @@ private extension ExternalPurchaseManager {
 
     /// The customer's storefront, when it is one where Apple's external purchase APIs are not required, and
     /// `nil` otherwise.
-    ///
-    /// Asked on every purchase rather than cached, since the customer can change storefront while the app runs.
     func storefrontNotRequiringExternalPurchaseAPIs() async -> String? {
         guard let storefront = self.storefront,
               await self.settingsProvider.settings().externalPurchases.appStore
