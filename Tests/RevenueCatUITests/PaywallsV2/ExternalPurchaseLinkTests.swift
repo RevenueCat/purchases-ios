@@ -71,6 +71,70 @@ final class ExternalPurchaseLinkTests: TestCase {
         expect(ExternalPurchaseLink.Action(.stopped, url: url)) == .nothing
     }
 
+    /// The link is prepared through the handler, which is the paywall's only way to the SDK.
+    func testAsksTheHandlerToPrepareAnExternalBrowserLink() async throws {
+        let url = try XCTUnwrap(URL(string: "https://pay.rev.cat/abc/user_1"))
+        let purchases = Self.makePurchases(usingExternalPurchaseCustomLinks: true)
+        purchases.externalPurchaseLinkBlock = { .notEligible }
+
+        let action = await ExternalPurchaseLink.action(for: url,
+                                                       method: .externalBrowser,
+                                                       purchaseHandler: Self.makeHandler(purchases: purchases))
+
+        expect(action) == .tellCustomerThePurchaseIsUnavailable
+    }
+
+    /// Only leaving the app is covered by Apple's programme.
+    func testOpensALinkThatStaysInTheAppWithoutPreparingIt() async throws {
+        let url = try XCTUnwrap(URL(string: "https://pay.rev.cat/abc/user_1"))
+        let purchases = Self.makePurchases(usingExternalPurchaseCustomLinks: true)
+        purchases.externalPurchaseLinkBlock = { .notEligible }
+
+        let action = await ExternalPurchaseLink.action(for: url,
+                                                       method: .inAppBrowser,
+                                                       purchaseHandler: Self.makeHandler(purchases: purchases))
+
+        expect(action) == .open(url)
+    }
+
+    func testOpensTheLinkWithoutPreparingItWhileCustomLinksAreDisabled() async throws {
+        let url = try XCTUnwrap(URL(string: "https://pay.rev.cat/abc/user_1"))
+        let purchases = Self.makePurchases(usingExternalPurchaseCustomLinks: false)
+        purchases.externalPurchaseLinkBlock = { .notEligible }
+
+        let action = await ExternalPurchaseLink.action(for: url,
+                                                       method: .externalBrowser,
+                                                       purchaseHandler: Self.makeHandler(purchases: purchases))
+
+        expect(action) == .open(url)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension ExternalPurchaseLinkTests {
+
+    static func makePurchases(usingExternalPurchaseCustomLinks: Bool) -> MockPurchases {
+        let purchases = MockPurchases { _, _, _ in
+            return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { _ in
+        } customerInfo: {
+            return TestData.customerInfo
+        }
+        purchases.useExternalPurchaseCustomLinks = usingExternalPurchaseCustomLinks
+        return purchases
+    }
+
+    static func makeHandler(purchases: MockPurchases) -> PurchaseHandler {
+        return PurchaseHandler(
+            purchases: purchases,
+            eventTracker: .init(purchases: purchases,
+                                eventDispatcher: PaywallEventTrackerTestDispatcher.value)
+        )
+    }
+
 }
 
 #endif

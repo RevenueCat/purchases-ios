@@ -52,24 +52,19 @@ enum ExternalPurchaseLink {
     static func action(for url: URL,
                        method: PaywallComponent.ButtonComponent.URLMethod,
                        purchaseHandler: PurchaseHandler) async -> Action {
-        guard self.applies(to: method) else {
+        guard self.applies(to: method, purchaseHandler: purchaseHandler) else {
             return .open(url)
         }
 
-        return await purchaseHandler.withExternalPurchasePreparation {
-            Action(await Purchases.shared.prepareExternalPurchaseLink(), url: url)
-        }
+        return Action(await purchaseHandler.prepareExternalPurchaseLink(), url: url)
     }
 
     /// Whether opening a link with this method goes through Apple's external purchase flow.
     ///
     /// Only external browser links take part: leaving the app is what Apple's programme covers.
-    private static func applies(to method: PaywallComponent.ButtonComponent.URLMethod) -> Bool {
-        guard method == .externalBrowser, Purchases.isConfigured else {
-            return false
-        }
-
-        return Purchases.shared.useExternalPurchaseCustomLinks
+    private static func applies(to method: PaywallComponent.ButtonComponent.URLMethod,
+                                purchaseHandler: PurchaseHandler) -> Bool {
+        return method == .externalBrowser && purchaseHandler.useExternalPurchaseCustomLinks
     }
 
 }
