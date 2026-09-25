@@ -139,21 +139,19 @@ class HostedCheckoutPollerTests: TestCase {
         expect(fetcher.callCount) == 5
     }
 
-    func testTakesAnAnswerThatArrivesAfterTheTimeout() async {
-        let clock = ManualClock()
-        let fetcher = StubStatusFetcher(results: [.status(.pending), .status(.pending), .status(.pending),
-                                                  .status(.pending), .status(.succeeded)])
-        fetcher.whileRequesting = { clock.advance(by: 10) }
-        let sleeper = RecordingHostedCheckoutSleeper()
-        sleeper.clock = clock
+    func testGivesNoAnswerWhenARequestOutlastsTheTimeout() async {
+        let fetcher = UnansweredStatusFetcher()
+        let poller = HostedCheckoutPoller(statusFetcher: fetcher,
+                                          sleeper: RecordingHostedCheckoutSleeper(),
+                                          dateProvider: DateProvider(),
+                                          interval: 1,
+                                          maxAttempts: 30,
+                                          timeout: 0.1)
 
-        let result = await self.makePoller(fetcher: fetcher, sleeper: sleeper, clock: clock, maxAttempts: 30).poll(
-            operationSessionID: Self.operationSessionID,
-            appUserID: Self.appUserID
-        )
+        let result = await poller.poll(operationSessionID: Self.operationSessionID, appUserID: Self.appUserID)
 
-        expect(result) == .succeeded
-        expect(fetcher.callCount) == 5
+        expect(result) == .undetermined
+        expect(fetcher.callCount.value) == 1
     }
 
     func testKeepsAskingThroughAnErrorThatTendsToPass() async {
@@ -295,6 +293,20 @@ private final class StubStatusFetcher: HostedCheckoutStatusFetching, @unchecked 
         case let .failure(error):
             return .failure(error)
         }
+    }
+
+}
+
+/// A request that is still out long after any test using it has finished.
+private final class UnansweredStatusFetcher: HostedCheckoutStatusFetching {
+
+    let callCount: Atomic<Int> = .init(0)
+
+    func fetchStatus(operationSessionID: String,
+                     appUserID: String) async -> Result<HostedCheckoutStatusResponse, BackendError> {
+        self.callCount.modify { $0 += 1 }
+        try? await Task.sleep(nanoseconds: 10_000_000_000)
+        return .success(.init(status: .succeeded))
     }
 
 }
