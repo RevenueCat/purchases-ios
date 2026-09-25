@@ -447,7 +447,7 @@ final class PackageValidatorTests: TestCase {
         let result = try ViewModelFactory().toViewModel(
             component: .stack(.init(
                 components: [.package(annual), .package(monthly)],
-                packageSelection: .init()
+                purchaseContext: .init()
             )),
             packageValidator: validator,
             purchaseButtonCollector: nil,

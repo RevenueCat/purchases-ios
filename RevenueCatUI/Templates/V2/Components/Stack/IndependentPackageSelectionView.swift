@@ -71,7 +71,10 @@ struct IndependentPackageSelectionView<Content: View>: View {
                 selection.package.map({ validator.isRendering($0, in: selectionContext) }) != true else { return }
         selection.update(
             package: validator.defaultSelectedPackage(in: selectionContext),
-            variableContext: parentContext.variableContext,
+            variableContext: .init(
+                packages: validator.packages,
+                showZeroDecimalPlacePrices: parentContext.variableContext.showZeroDecimalPlacePrices
+            ),
             isReconcile: true
         )
     }

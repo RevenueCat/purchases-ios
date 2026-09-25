@@ -35,8 +35,7 @@ struct StackComponentView: View {
             additionalPadding: additionalPadding,
             showActivityIndicatorOverContent: showActivityIndicatorOverContent
         )
-        if let validator = viewModel.independentPackageValidator,
-           validator.hasDeclaredPackages || !validator.packageInfos.isEmpty {
+        if let validator = viewModel.independentPackageValidator {
             IndependentPackageSelectionView(validator: validator, selection: independentSelectionContext) { content }
         } else {
             content

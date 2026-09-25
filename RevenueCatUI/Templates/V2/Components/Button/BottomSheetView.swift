@@ -38,8 +38,7 @@ struct SheetViewModel: Equatable {
     init(sheet: RevenueCat.PaywallComponent.ButtonComponent.Sheet, sheetStackViewModel: StackComponentViewModel) {
         self.sheet = sheet
         self.sheetStackViewModel = sheetStackViewModel
-        if let validator = sheetStackViewModel.independentPackageValidator,
-           validator.hasDeclaredPackages || !validator.packageInfos.isEmpty {
+        if let validator = sheetStackViewModel.independentPackageValidator {
             self.independentPackageContext = PackageContext(
                 package: validator.defaultSelectedPackage(in: .provisional),
                 variableContext: .init(packages: validator.packages)
