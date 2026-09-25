@@ -47,7 +47,7 @@ class HostedCheckoutManagerTests: TestCase {
 
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: true)
         self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.storefront)
-        self.manager = self.makeManager()
+        self.manager = self.makeManager(isRunningInSimulator: false)
     }
 
     // MARK: - Starting
@@ -103,11 +103,26 @@ class HostedCheckoutManagerTests: TestCase {
         expect(self.webBillingAPI.invokedPostHostedCheckoutParameters?.externalPurchaseTokenID).to(beNil())
     }
 
+    /// Developers try the checkout out in the simulator from wherever they are, even though StoreKit never finds
+    /// the customer eligible there.
+    func testCreatesTheSessionWithoutATokenInTheSimulatorWhateverTheStorefront() async {
+        self.customLink.stubbedAvailability = .notEligible
+        self.systemInfo.stubbedStorefront = MockStorefront(countryCode: "ESP")
+        self.manager = self.makeManager(isRunningInSimulator: true)
+
+        let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
+
+        expect(result) == .started(Self.session)
+        expect(self.customLink.invokedAvailabilityCount) == 0
+        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
+        expect(self.webBillingAPI.invokedPostHostedCheckoutParameters?.externalPurchaseTokenID).to(beNil())
+    }
+
     /// The setting stands for the app taking part in Apple's programme at all, and a checkout outside it is
     /// exactly the checkout the app had before.
     func testCreatesTheSessionWithoutATokenWhileTheExternalPurchaseSettingIsDisabled() async {
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
-        self.manager = self.makeManager()
+        self.manager = self.makeManager(isRunningInSimulator: false)
 
         let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
 
@@ -121,7 +136,7 @@ class HostedCheckoutManagerTests: TestCase {
     /// one is noise in its console.
     func testSaysNothingAboutExternalPurchasesWhileTheSettingIsDisabled() async {
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
-        self.manager = self.makeManager()
+        self.manager = self.makeManager(isRunningInSimulator: false)
 
         _ = await self.manager.startCheckout(package: Self.package, paywall: nil)
 
@@ -275,14 +290,15 @@ private extension HostedCheckoutManagerTests {
         )
     }
 
-    func makeManager() -> HostedCheckoutManager {
+    func makeManager(isRunningInSimulator: Bool) -> HostedCheckoutManager {
         return HostedCheckoutManager(
             externalPurchaseManager: ExternalPurchaseManager(
                 customLink: self.customLink,
                 externalPurchaseTokenAPI: self.externalPurchaseTokenAPI,
                 currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID),
                 settingsProvider: self.settingsProvider,
-                systemInfo: self.systemInfo
+                systemInfo: self.systemInfo,
+                isRunningInSimulator: isRunningInSimulator
             ),
             webBillingAPI: self.webBillingAPI,
             currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID)

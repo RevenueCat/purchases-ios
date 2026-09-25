@@ -22,19 +22,24 @@ final class ExternalPurchaseManager {
     private let currentUserProvider: CurrentUserProvider
     private let settingsProvider: SDKSettingsConfigProviderType
     private let systemInfo: SystemInfo
+    private let isRunningInSimulator: Bool
 
     private let isPreparing: Atomic<Bool> = false
 
+    /// - Parameter isRunningInSimulator: Deliberately not defaulted to ``SystemInfo/isRunningInSimulator``:
+    /// unit tests run in the simulator on some platforms and not on others, so each has to say which it means.
     init(customLink: ExternalPurchaseCustomLinkType,
          externalPurchaseTokenAPI: ExternalPurchaseTokenAPI,
          currentUserProvider: CurrentUserProvider,
          settingsProvider: SDKSettingsConfigProviderType,
-         systemInfo: SystemInfo) {
+         systemInfo: SystemInfo,
+         isRunningInSimulator: Bool) {
         self.customLink = customLink
         self.externalPurchaseTokenAPI = externalPurchaseTokenAPI
         self.currentUserProvider = currentUserProvider
         self.settingsProvider = settingsProvider
         self.systemInfo = systemInfo
+        self.isRunningInSimulator = isRunningInSimulator
     }
 
     /// Whether the app can offer an external purchase to this customer.
@@ -59,8 +64,16 @@ final class ExternalPurchaseManager {
     ///
     /// Only one preparation runs at a time. Asking for another while one is under way stops the new one, so a
     /// customer tapping twice sees a single notice and mints a single token.
+    ///
+    /// In the simulator, where StoreKit never finds the customer eligible, none of this runs and the purchase goes
+    /// ahead in any storefront, so that developers can try their web purchases out wherever they are.
     func prepareExternalPurchase(flow: ExternalPurchaseFlow) async -> ExternalPurchasePreparationResult {
         guard self.takesPartInTheProgramme else {
+            return .notApplicable
+        }
+
+        guard !self.isRunningInSimulator else {
+            Logger.debug(Strings.externalPurchase.custom_link_skipped_in_simulator)
             return .notApplicable
         }
 

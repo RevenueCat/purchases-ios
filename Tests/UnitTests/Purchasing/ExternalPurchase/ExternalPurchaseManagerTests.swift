@@ -45,7 +45,7 @@ class ExternalPurchaseManagerTests: TestCase {
 
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: true)
         self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.allowedStorefront)
-        self.manager = self.makeManager()
+        self.manager = self.makeManager(isRunningInSimulator: false)
     }
 
     // MARK: - Flow types
@@ -244,7 +244,7 @@ class ExternalPurchaseManagerTests: TestCase {
     /// than any one call site.
     func testTheWholeSequenceIsSkippedWhileTheSettingIsDisabled() async {
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
-        self.manager = self.makeManager()
+        self.manager = self.makeManager(isRunningInSimulator: false)
 
         let availability = await self.manager.externalPurchaseAvailability()
         expect(availability) == .notEligible
@@ -263,7 +263,7 @@ class ExternalPurchaseManagerTests: TestCase {
     /// Apple's custom link is noise in their console.
     func testNothingIsLoggedWhileTheSettingIsDisabled() async {
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
-        self.manager = self.makeManager()
+        self.manager = self.makeManager(isRunningInSimulator: false)
 
         _ = await self.manager.prepareExternalPurchase(flow: .linkOut)
 
@@ -271,6 +271,48 @@ class ExternalPurchaseManagerTests: TestCase {
             Strings.externalPurchase.custom_link_does_not_apply(Self.allowedStorefront),
             allowNoMessages: true
         )
+    }
+
+    // MARK: - Simulator
+
+    /// StoreKit never finds the customer eligible in the simulator, so asking it would only ever stop the purchase
+    /// outside the storefronts allowed without eligibility.
+    func testRunsNoneOfTheSequenceInTheSimulator() async {
+        self.manager = self.makeManager(isRunningInSimulator: true)
+
+        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+
+        expect(result) == .notApplicable
+        expect(self.customLink.invokedAvailabilityCount) == 0
+        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
+        expect(self.customLink.invokedTokenTypes).to(beEmpty())
+        expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
+        self.logger.verifyMessageWasLogged(Strings.externalPurchase.custom_link_skipped_in_simulator,
+                                           level: .debug)
+    }
+
+    /// Developers try their web purchases out in the simulator from wherever they are.
+    func testProceedsInTheSimulatorWhateverTheStorefront() async {
+        self.settingsProvider.stubbedSettings = .allowingExternalPurchases(in: [])
+        self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.otherStorefront)
+        self.manager = self.makeManager(isRunningInSimulator: true)
+
+        let result = await self.manager.prepareExternalPurchase(flow: .linkOut)
+
+        expect(result) == .notApplicable
+        expect(self.settingsProvider.invokedSettingsCount) == 0
+    }
+
+    /// Apps outside the programme hear nothing about Apple's custom link, in the simulator or anywhere else.
+    func testNothingIsLoggedInTheSimulatorWhileTheSettingIsDisabled() async {
+        self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
+        self.manager = self.makeManager(isRunningInSimulator: true)
+
+        let result = await self.manager.prepareExternalPurchase(flow: .linkOut)
+
+        expect(result) == .notApplicable
+        self.logger.verifyMessageWasNotLogged(Strings.externalPurchase.custom_link_skipped_in_simulator,
+                                              allowNoMessages: true)
     }
 
     // MARK: - Test Store
@@ -358,13 +400,14 @@ class ExternalPurchaseManagerTests: TestCase {
         )
     }
 
-    private func makeManager() -> ExternalPurchaseManager {
+    private func makeManager(isRunningInSimulator: Bool) -> ExternalPurchaseManager {
         return ExternalPurchaseManager(
             customLink: self.customLink,
             externalPurchaseTokenAPI: self.externalPurchaseTokenAPI,
             currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID),
             settingsProvider: self.settingsProvider,
-            systemInfo: self.systemInfo
+            systemInfo: self.systemInfo,
+            isRunningInSimulator: isRunningInSimulator
         )
     }
 

@@ -19,6 +19,7 @@ enum ExternalPurchaseStrings {
 
     case eligibility_resolved(_ availability: ExternalPurchaseAvailability)
     case custom_link_does_not_apply(_ storefront: String)
+    case custom_link_skipped_in_simulator
     case not_eligible
     case payments_not_authorized
     case already_preparing
@@ -40,6 +41,9 @@ extension ExternalPurchaseStrings: LogMessage {
         case let .custom_link_does_not_apply(storefront):
             return "Apple's external purchase custom link does not apply in this customer's storefront " +
             "(\(storefront)): continuing with no notice shown and no token minted."
+        case .custom_link_skipped_in_simulator:
+            return "Apple's external purchase custom link is not available in the simulator: continuing with " +
+            "no notice shown and no token minted, whatever the storefront. Use a device to try that flow out."
         case .not_eligible:
             return "Not preparing an external purchase: Apple's external purchase custom link does not apply " +
             "to this customer."
