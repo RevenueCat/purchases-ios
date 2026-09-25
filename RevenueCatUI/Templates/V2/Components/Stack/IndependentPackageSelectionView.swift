@@ -38,7 +38,7 @@ struct IndependentPackageSelectionView<Content: View>: View {
         self.content = content
         self._selection = StateObject(wrappedValue: selection ?? PackageContext(
             package: validator.defaultSelectedPackage(in: .provisional),
-            variableContext: .init(packages: validator.packages)
+            variableContext: .init(packages: validator.packageInfos.map(\.package))
         ))
     }
 
@@ -67,14 +67,18 @@ struct IndependentPackageSelectionView<Content: View>: View {
     private func reconcileSelectedPackage() {
         let initializePageSelection = !didInitializeSelection && validator.hasPageScopedPackages
         didInitializeSelection = true
+        let variableContext = PackageContext.VariableContext(
+            packages: validator.packageInfos.map(\.package),
+            showZeroDecimalPlacePrices: parentContext.variableContext.showZeroDecimalPlacePrices
+        )
         guard initializePageSelection ||
-                selection.package.map({ validator.isRendering($0, in: selectionContext) }) != true else { return }
+                selection.package.map({ validator.isRendering($0, in: selectionContext) }) != true else {
+            selection.variableContext = variableContext
+            return
+        }
         selection.update(
             package: validator.defaultSelectedPackage(in: selectionContext),
-            variableContext: .init(
-                packages: validator.packages,
-                showZeroDecimalPlacePrices: parentContext.variableContext.showZeroDecimalPlacePrices
-            ),
+            variableContext: variableContext,
             isReconcile: true
         )
     }

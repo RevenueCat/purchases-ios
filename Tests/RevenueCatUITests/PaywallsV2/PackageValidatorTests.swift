@@ -29,6 +29,7 @@ final class PackageValidatorTests: TestCase {
         parent.addIndependentScope(child)
 
         XCTAssertEqual(parent.packages.count, 2)
+        XCTAssertEqual(parent.packageInfos.map(\.package.identifier), [TestData.annualPackage.identifier])
         XCTAssertEqual(parent.defaultSelectedPackage(in: Self.context())?.identifier, TestData.annualPackage.identifier)
         XCTAssertEqual(child.defaultSelectedPackage(in: Self.context())?.identifier, TestData.monthlyPackage.identifier)
         XCTAssertFalse(parent.isRendering(TestData.monthlyPackage, in: Self.context()))
