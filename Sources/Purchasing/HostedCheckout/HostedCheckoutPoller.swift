@@ -68,7 +68,7 @@ internal protocol HostedCheckoutAsyncSleeper: Sendable {
 /// page, are deliberately unsupported.
 ///
 /// Attempts alone do not bound how long the customer waits, since each one lasts as long as its request does.
-/// So the loop also stops asking once ``timeout`` has passed, and the wait is at most that plus one request.
+/// So the loop gives up once ``timeout`` has passed, including on a request still out at that point.
 internal struct HostedCheckoutPoller: HostedCheckoutPolling {
 
     /// Thirty attempts a second apart, matching `purchases-js`.
@@ -116,7 +116,7 @@ internal struct HostedCheckoutPoller: HostedCheckoutPolling {
 
         for attempt in 0..<self.maxAttempts {
             if Task.isCancelled {
-                Logger.warn(Strings.hostedCheckout.poll_cancelled(operationSessionID))
+                Logger.debug(Strings.hostedCheckout.poll_cancelled(operationSessionID))
                 return .undetermined
             }
 
@@ -129,7 +129,9 @@ internal struct HostedCheckoutPoller: HostedCheckoutPolling {
                 }
             }
 
-            switch await self.pollOnce(operationSessionID: operationSessionID, appUserID: appUserID) {
+            switch await self.pollOnce(operationSessionID: operationSessionID,
+                                       appUserID: appUserID,
+                                       deadline: deadline) {
             case let .finished(result):
                 return result
             case .retry:
@@ -151,14 +153,20 @@ private extension HostedCheckoutPoller {
         case retry
     }
 
-    func pollOnce(operationSessionID: String, appUserID: String) async -> PollAttemptResult {
-        switch await self.statusFetcher.fetchStatus(operationSessionID: operationSessionID,
-                                                    appUserID: appUserID) {
+    func pollOnce(operationSessionID: String, appUserID: String, deadline: Date) async -> PollAttemptResult {
+        guard let fetched = await self.fetchStatus(operationSessionID: operationSessionID,
+                                                   appUserID: appUserID,
+                                                   deadline: deadline) else {
+            Logger.warn(Strings.hostedCheckout.poll_timed_out(operationSessionID, timeout: self.timeout))
+            return .finished(.undetermined)
+        }
+
+        switch fetched {
         case let .success(response):
             return self.result(for: response.status, operationSessionID: operationSessionID)
 
         case let .failure(error) where error.isTransient:
-            Logger.debug(Strings.hostedCheckout.poll_transient_error(operationSessionID, error: error))
+            Logger.verbose(Strings.hostedCheckout.poll_transient_error(operationSessionID, error: error))
             return .retry
 
         case let .failure(error):
@@ -187,6 +195,34 @@ private extension HostedCheckoutPoller {
 
         case .pending:
             return .retry
+        }
+    }
+
+    /// `nil` when `deadline` comes first. The request cannot be cancelled, so it finishes unobserved.
+    ///
+    /// Waits in real time rather than on `sleeper`, since that is the time the request takes.
+    func fetchStatus(operationSessionID: String,
+                     appUserID: String,
+                     deadline: Date) async -> Result<HostedCheckoutStatusResponse, BackendError>? {
+        let timeLimit = deadline.timeIntervalSince(self.dateProvider.now())
+        let statusFetcher = self.statusFetcher
+
+        return await withUnsafeContinuation { continuation in
+            let resumed: Atomic<Bool> = false
+            let finish: @Sendable (Result<HostedCheckoutStatusResponse, BackendError>?) -> Void = { result in
+                guard !resumed.getAndSet(true) else { return }
+                continuation.resume(returning: result)
+            }
+
+            let timer = Task {
+                guard (try? await TaskSleeper().sleep(seconds: timeLimit)) != nil else { return }
+                finish(nil)
+            }
+
+            Task {
+                finish(await statusFetcher.fetchStatus(operationSessionID: operationSessionID, appUserID: appUserID))
+                timer.cancel()
+            }
         }
     }
 
