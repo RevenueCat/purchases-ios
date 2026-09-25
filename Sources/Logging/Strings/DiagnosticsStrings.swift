@@ -19,6 +19,9 @@ enum DiagnosticsStrings {
 
     case timing_message(message: String, duration: TimeInterval)
     case could_not_create_diagnostics_tracker
+    case diagnostics_collection_decision(isEnabled: Bool, isEnabledBySDKConfiguration: Bool)
+    case diagnostic_event_awaiting_collection_decision
+    case diagnostics_collection_configured(isEnabled: Bool, pendingEventCount: Int)
 
     case event_sync_already_in_progress
     case event_sync_with_empty_store
@@ -54,6 +57,19 @@ extension DiagnosticsStrings: LogMessage {
 
         case .could_not_create_diagnostics_tracker:
             return "Could not create DiagnosticsTracker"
+
+        case let .diagnostics_collection_decision(isEnabled, isEnabledBySDKConfiguration):
+            let source = isEnabledBySDKConfiguration ? "local SDK configuration" : "remote SDK settings"
+            return "Diagnostics collection decision: \(isEnabled ? "enabled" : "disabled"), "
+                + "as determined by \(source)."
+
+        case .diagnostic_event_awaiting_collection_decision:
+            return "Diagnostics collection decision has not been received. "
+                + "Buffering diagnostic event in memory until then."
+
+        case let .diagnostics_collection_configured(isEnabled, pendingEventCount):
+            let action = isEnabled ? "Persisting" : "Discarding"
+            return "Diagnostics collection configured as \(isEnabled). \(action) \(pendingEventCount) buffered events."
 
         case .event_sync_already_in_progress:
             return "Diagnostics event flushing already in progress. Skipping."

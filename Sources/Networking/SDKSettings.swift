@@ -9,4 +9,48 @@
 import Foundation
 
 /// The SDK-specific settings served through the `sdk_settings` remote config topic.
-struct SDKSettings: Decodable, Equatable {}
+struct SDKSettings: Decodable, Equatable {
+
+    let diagnostics: Diagnostics
+
+    init(diagnostics: Diagnostics = .init()) {
+        self.diagnostics = diagnostics
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.diagnostics = (try? container.decode(Diagnostics.self, forKey: .diagnostics)) ?? .init()
+    }
+
+    struct Diagnostics: Decodable, Equatable {
+
+        let enabled: Bool
+
+        init(enabled: Bool = false) {
+            self.enabled = enabled
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            self.enabled = (try? container.decode(Bool.self, forKey: .enabled)) ?? false
+        }
+
+    }
+
+}
+
+private extension SDKSettings {
+
+    enum CodingKeys: String, CodingKey {
+        case diagnostics
+    }
+
+}
+
+private extension SDKSettings.Diagnostics {
+
+    enum CodingKeys: String, CodingKey {
+        case enabled
+    }
+
+}

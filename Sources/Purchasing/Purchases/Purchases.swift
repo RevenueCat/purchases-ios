@@ -402,15 +402,17 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let deviceCache = DeviceCache(systemInfo: systemInfo, userDefaults: userDefaults)
 
         let diagnosticsFileHandler: DiagnosticsFileHandlerType? = {
-            guard diagnosticsEnabled,
-                  dangerousSettings?.uiPreviewMode != true,
+            guard dangerousSettings?.uiPreviewMode != true,
                   #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return nil }
             return DiagnosticsFileHandler()
         }()
 
         let diagnosticsTracker: DiagnosticsTrackerType? = {
             if let handler = diagnosticsFileHandler, #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-                return DiagnosticsTracker(diagnosticsFileHandler: handler)
+                return DiagnosticsTracker(
+                    diagnosticsFileHandler: handler,
+                    collectionDecision: diagnosticsEnabled ? .enabled : .undetermined
+                )
             } else {
                 if diagnosticsEnabled {
                     Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
@@ -730,21 +732,19 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 let diagnosticsSynchronizer: DiagnosticsSynchronizer?
-                if diagnosticsEnabled {
-                    if let diagnosticsFileHandler = diagnosticsFileHandler {
-                        let synchronizedUserDefaults = SynchronizedUserDefaults(userDefaults: userDefaults)
-                        diagnosticsSynchronizer = DiagnosticsSynchronizer(internalAPI: backend.internalAPI,
-                                                                          handler: diagnosticsFileHandler,
-                                                                          tracker: diagnosticsTracker,
-                                                                          userDefaults: synchronizedUserDefaults)
-                        Task {
-                            await diagnosticsFileHandler.updateDelegate(diagnosticsSynchronizer)
-                        }
-                    } else {
-                        Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
-                        diagnosticsSynchronizer = nil
+                if let diagnosticsFileHandler = diagnosticsFileHandler {
+                    let synchronizedUserDefaults = SynchronizedUserDefaults(userDefaults: userDefaults)
+                    diagnosticsSynchronizer = DiagnosticsSynchronizer(internalAPI: backend.internalAPI,
+                                                                      handler: diagnosticsFileHandler,
+                                                                      tracker: diagnosticsTracker,
+                                                                      userDefaults: synchronizedUserDefaults)
+                    Task {
+                        await diagnosticsFileHandler.updateDelegate(diagnosticsSynchronizer)
                     }
                 } else {
+                    if diagnosticsEnabled {
+                        Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
+                    }
                     diagnosticsSynchronizer = nil
                 }
                 let storeKit2ObserverModePurchaseDetector = StoreKit2ObserverModePurchaseDetector(
@@ -874,6 +874,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   currentConfiguration: currentConfiguration,
                   webBundleEventBus: webBundleEventBus
         )
+
     }
 
     // swiftlint:disable:next function_body_length
@@ -1008,6 +1009,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.purchasesOrchestrator.delegate = self
         self.sdkSettingsConfigProvider.delegate = self
         self.remoteConfigManager.addRemoteConfigStateObserver(self.sdkSettingsConfigProvider)
+        if !self.systemInfo.remoteConfigEnabled {
+            self.setDiagnosticsCollectionEnabled(shouldEnableFromRemoteConfig: false)
+        }
         #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.attribution.syncAttributesAndOfferingsIfNeededHandler = { completion in
             completion(nil, NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError)
@@ -2734,6 +2738,26 @@ public extension Purchases {
 
 }
 
+extension Purchases: SDKSettingsConfigProviderDelegate {
+
+    func sdkSettingsConfigProviderDidUpdate(_ settings: SDKSettings) {
+        self.setDiagnosticsCollectionEnabled(shouldEnableFromRemoteConfig: settings.diagnostics.enabled)
+    }
+
+    private func setDiagnosticsCollectionEnabled(shouldEnableFromRemoteConfig: Bool) {
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            let isEnabledBySDKConfiguration = self.currentConfiguration?.diagnosticsEnabled ?? false
+            let diagnosticsCollectionEnabled = isEnabledBySDKConfiguration || shouldEnableFromRemoteConfig
+            Logger.debug(Strings.diagnostics.diagnostics_collection_decision(
+                isEnabled: diagnosticsCollectionEnabled,
+                isEnabledBySDKConfiguration: isEnabledBySDKConfiguration
+            ))
+            self.diagnosticsTracker?.setCollectionEnabled(diagnosticsCollectionEnabled)
+        }
+    }
+
+}
+
 // @unchecked because:
 // - It contains `NotificationCenter`, which isn't thread-safe as of Swift 5.7.
 // - It has a mutable `privateDelegate` (this isn't actually thread-safe!)
@@ -2743,12 +2767,6 @@ public extension Purchases {
 // async contexts in a much more simple way without errors like:
 // "Capture of 'self' with non-sendable type 'Purchases' in a `@Sendable` closure"
 extension Purchases: @unchecked Sendable {}
-
-extension Purchases: SDKSettingsConfigProviderDelegate {
-
-    func sdkSettingsConfigProviderDidUpdate(_: SDKSettings) {}
-
-}
 
 // MARK: Internal
 
