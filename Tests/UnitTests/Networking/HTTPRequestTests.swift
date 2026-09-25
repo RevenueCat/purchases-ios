@@ -298,7 +298,9 @@ class HTTPRequestTests: TestCase {
             HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"]),
             HTTPRequest.WebBillingPath.postHostedCheckout,
             HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
-                                                               appUserID: Self.userID)
+                                                               appUserID: Self.userID),
+            HTTPRequest.WebBillingPath.getHostedCheckoutPaymentStatus(operationSessionID: "opsession_123",
+                                                                      appUserID: Self.userID)
         ]
         for path in paths {
             expect(path.usesAPISources).to(beTrue(), description: "Path '\(path)' should use API sources")
@@ -429,6 +431,32 @@ class HTTPRequestTests: TestCase {
             == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=\(Self.userID)"
         expect(path.url(preferIAMPath: true)?.absoluteString)
             == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=\(Self.userID)"
+    }
+
+    func testHostedCheckoutPaymentStatusRelativePathNamesTheSessionAndTheCustomer() {
+        let path = HTTPRequest.WebBillingPath.getHostedCheckoutPaymentStatus(operationSessionID: "opsession_123",
+                                                                             appUserID: Self.userID)
+
+        expect(path.relativePath)
+            == "/rcbilling/v1/hosted-checkout/opsession_123/payment-status?app_user_id=\(Self.userID)"
+        expect(path.relativeIAMPath) == path.relativePath
+    }
+
+    func testHostedCheckoutPaymentStatusEscapesAnAppUserIDThatLooksLikeAnEmail() {
+        let path = HTTPRequest.WebBillingPath.getHostedCheckoutPaymentStatus(operationSessionID: "opsession_123",
+                                                                             appUserID: "user+plus@example.com")
+
+        expect(path.relativePath) ==
+            "/rcbilling/v1/hosted-checkout/opsession_123/payment-status?app_user_id=user%2Bplus@example.com"
+    }
+
+    func testHostedCheckoutPaymentStatusIsAuthenticatedAndSendsNoEtag() {
+        let path = HTTPRequest.WebBillingPath.getHostedCheckoutPaymentStatus(operationSessionID: "opsession_123",
+                                                                             appUserID: Self.userID)
+
+        expect(path.authenticated).to(beTrue())
+        expect(path.shouldSendEtag).to(beFalse())
+        expect(path.name) == "get_hosted_checkout_payment_status"
     }
 
     func testWebBillingPathsURLPreferringIAMPathUsesIAMRelativePath() {

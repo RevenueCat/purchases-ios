@@ -23,6 +23,7 @@ enum HostedCheckoutStrings {
     case product_already_purchased(_ packageID: String)
     case error_creating_session(_ error: BackendError)
     case unrecognized_status(_ status: String)
+    case unrecognized_payment_status(_ paymentStatus: String)
     case poll_start(_ operationSessionID: String, maxAttempts: Int)
     case poll_succeeded(_ operationSessionID: String)
     case poll_failed(_ operationSessionID: String, code: Int?, message: String?)
@@ -53,6 +54,8 @@ extension HostedCheckoutStrings: LogMessage {
             return "Error creating the checkout session: \(error.localizedDescription)"
         case let .unrecognized_status(status):
             return "Unrecognized checkout session status '\(status)'. Treating the session as still under way."
+        case let .unrecognized_payment_status(paymentStatus):
+            return "Unrecognized checkout payment status '\(paymentStatus)'. Treating the payment as undetermined."
         case let .poll_start(operationSessionID, maxAttempts):
             return "Asking what became of checkout session \(operationSessionID), up to \(maxAttempts) times."
         case let .poll_succeeded(operationSessionID):
