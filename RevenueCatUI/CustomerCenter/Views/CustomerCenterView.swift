@@ -16,7 +16,7 @@
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 
 /// Use the Customer Center in your app to help your customers manage common support tasks.
 ///
@@ -29,8 +29,7 @@ import SwiftUI
 /// The `CustomerCenterView` can be used to integrate the Customer Center directly in your app with SwiftUI.
 ///
 /// For more information, see the [Customer Center docs](https://www.revenuecat.com/docs/tools/customer-center).
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 public struct CustomerCenterView: View {
@@ -133,8 +132,7 @@ public struct CustomerCenterView: View {
 
 }
 
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 private extension CustomerCenterView {
@@ -147,11 +145,18 @@ private extension CustomerCenterView {
                 ErrorView()
                     .environment(\.customerCenterPresentationMode, self.mode)
                     .environment(\.navigationOptions, self.navigationOptionsWithDismiss)
+                    #if os(macOS)
+                    // Fills the sheet, so the close row sits at its top instead of above the card.
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    #endif
                     // Use explicit options to avoid any environment propagation issues
                     .dismissCircleButtonToolbarIfNeeded(navigationOptions: self.navigationOptionsWithDismiss)
 
             case .notLoaded:
                 TintedProgressView()
+                    #if os(macOS)
+                    .macRootCloseRow(navigationOptions: self.navigationOptionsWithDismiss)
+                    #endif
 
             case .success:
                 if let configuration = self.viewModel.configuration {
@@ -163,6 +168,9 @@ private extension CustomerCenterView {
                         .environment(\.supportInformation, configuration.support)
                 } else {
                     TintedProgressView()
+                        #if os(macOS)
+                        .macRootCloseRow(navigationOptions: self.navigationOptionsWithDismiss)
+                        #endif
                 }
             }
         }
@@ -217,6 +225,9 @@ private extension CustomerCenterView {
                     virtualCurrencies: self.viewModel.virtualCurrencies,
                     purchasesProvider: self.viewModel.purchasesProvider
                 )
+                #if os(macOS)
+                .macRootCloseRow(navigationOptions: self.navigationOptionsWithDismiss)
+                #endif
             }
         }
     }
@@ -236,9 +247,19 @@ private extension CustomerCenterView {
             screen: screen,
             shouldShowSeeAllPurchases: viewModel.shouldShowSeeAllPurchases,
             purchasesProvider: self.viewModel.purchasesProvider,
-            actionWrapper: self.viewModel.actionWrapper
+            actionWrapper: self.viewModel.actionWrapper,
+            titleIsInCloseRow: self.navigationOptionsWithDismiss.drawsTitleInCloseRow
         )
-        .dismissCircleButtonToolbarIfNeeded(navigationOptions: self.navigationOptionsWithDismiss)
+        .dismissCircleButtonToolbarIfNeeded(
+            navigationOptions: self.navigationOptionsWithDismiss,
+            title: Self.closeRowTitle(for: screen)
+        )
+    }
+
+    /// The title the Mac draws next to the close button: the one iOS shows in the navigation bar,
+    /// which the screens set only for the management screen.
+    static func closeRowTitle(for screen: CustomerCenterConfigData.Screen) -> String? {
+        screen.type == .management ? screen.title : nil
     }
 
     func singlePurchaseView(_ screen: CustomerCenterConfigData.Screen) -> some View {
@@ -251,9 +272,13 @@ private extension CustomerCenterView {
             showVirtualCurrencies: viewModel.shouldShowVirtualCurrencies,
             allowsMissingPurchaseAction: true,
             purchasesProvider: self.viewModel.purchasesProvider,
-            actionWrapper: self.viewModel.actionWrapper
+            actionWrapper: self.viewModel.actionWrapper,
+            titleIsInCloseRow: self.navigationOptionsWithDismiss.drawsTitleInCloseRow
         )
-        .dismissCircleButtonToolbarIfNeeded(navigationOptions: self.navigationOptionsWithDismiss)
+        .dismissCircleButtonToolbarIfNeeded(
+            navigationOptions: self.navigationOptionsWithDismiss,
+            title: Self.closeRowTitle(for: screen)
+        )
     }
 
     func trackImpression() {
@@ -263,7 +288,7 @@ private extension CustomerCenterView {
 
 }
 
-@available(iOS 15.0, *)
+@available(iOS 15.0, macOS 13.0, *)
 private extension CustomerCenterView {
     /// Provide a navigation options instance that always includes a close handler.
     ///
@@ -281,10 +306,27 @@ private extension CustomerCenterView {
     }
 }
 
+#if os(macOS)
+
+@available(macOS 13.0, *)
+private extension View {
+
+    /// The close row for a root state iOS leaves to the sheet's swipe (loading, the fallback
+    /// screen): a Mac sheet has no such gesture. The view fills the sheet first, so the row sits
+    /// at its top rather than above content the navigation stack centers.
+    func macRootCloseRow(navigationOptions: CustomerCenterNavigationOptions) -> some View {
+        self
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .dismissCircleButtonToolbarIfNeeded(navigationOptions: navigationOptions)
+    }
+
+}
+
+#endif
+
 #if DEBUG
 
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct CustomerCenterView_Previews: PreviewProvider {

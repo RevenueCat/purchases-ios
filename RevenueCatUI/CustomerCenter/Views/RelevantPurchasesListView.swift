@@ -15,10 +15,9 @@
 import SwiftUI
 
 // swiftlint:disable file_length
-#if os(iOS)
+#if os(iOS) || os(macOS)
 
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct RelevantPurchasesListView: View {
@@ -44,12 +43,17 @@ struct RelevantPurchasesListView: View {
     @ObservedObject
     private var customerInfoViewModel: CustomerCenterViewModel
 
+    /// Whether the row holding the close button already carries this screen's title (see
+    /// `drawsTitleInCloseRow`), which only the Customer Center's root has.
+    private let titleIsInCloseRow: Bool
+
     init(
         customerInfoViewModel: CustomerCenterViewModel,
         screen: CustomerCenterConfigData.Screen,
         shouldShowSeeAllPurchases: Bool,
         purchasesProvider: CustomerCenterPurchasesType,
-        actionWrapper: CustomerCenterActionWrapper
+        actionWrapper: CustomerCenterActionWrapper,
+        titleIsInCloseRow: Bool = false
     ) {
         let viewModel = RelevantPurchasesListViewModel(
             screen: screen,
@@ -61,24 +65,27 @@ struct RelevantPurchasesListView: View {
 
         self.init(
             customerInfoViewModel: customerInfoViewModel,
-            viewModel: viewModel
+            viewModel: viewModel,
+            titleIsInCloseRow: titleIsInCloseRow
         )
     }
 
     // Used for Previews
     fileprivate init(
         customerInfoViewModel: CustomerCenterViewModel,
-        viewModel: RelevantPurchasesListViewModel
+        viewModel: RelevantPurchasesListViewModel,
+        titleIsInCloseRow: Bool = false
     ) {
         self.customerInfoViewModel = customerInfoViewModel
         self._viewModel = .init(wrappedValue: viewModel)
+        self.titleIsInCloseRow = titleIsInCloseRow
     }
 
     var body: some View {
         content
-            .applyIf(self.viewModel.screen.type == .management, apply: {
+            .applyIf(self.viewModel.screen.type == .management && !titleIsInCloseRow, apply: {
                 $0.navigationTitle(self.viewModel.screen.title)
-                    .navigationBarTitleDisplayMode(.inline)
+                    .compatibleInlineNavigationBarTitle()
             })
             .compatibleNavigation(
                 item: $viewModel.purchaseInformation,
@@ -137,6 +144,9 @@ struct RelevantPurchasesListView: View {
 
     @ViewBuilder
     var content: some View {
+        #if os(macOS)
+        macContent
+        #else
         ScrollViewWithOSBackground {
             LazyVStack(spacing: 0) {
                 if !customerInfoViewModel.hasAnyPurchases {
@@ -208,6 +218,7 @@ struct RelevantPurchasesListView: View {
             }
             .padding(.top, 16)
         }
+        #endif
     }
 
     private var emptyView: some View {
@@ -224,6 +235,7 @@ struct RelevantPurchasesListView: View {
             .prefix(RelevantPurchasesListViewModel.maxNonSubscriptionsToShow))
     }
 
+    #if !os(macOS)
     @ViewBuilder
     private var seeAllSubscriptionsButton: some View {
         if #available(iOS 26.0, *) {
@@ -271,6 +283,7 @@ struct RelevantPurchasesListView: View {
             .tint(appearance.tintColor(colorScheme: colorScheme))
         }
     }
+    #endif
 
     private var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
@@ -280,9 +293,94 @@ struct RelevantPurchasesListView: View {
     }
 }
 
+#if os(macOS)
+
+@available(macOS 13.0, *)
+private extension RelevantPurchasesListView {
+
+    /// The Mac's layout of this screen: a grouped form with a section for each group of cards
+    /// the iOS layout stacks, and the same content and actions.
+    var macContent: some View {
+        Form {
+            if !customerInfoViewModel.hasAnyPurchases {
+                Section {
+                    emptyView
+                }
+            } else {
+                if !customerInfoViewModel.subscriptionsSection.isEmpty {
+                    PurchasesInformationSection(
+                        title: localization[.subscriptionsSectionTitle],
+                        items: customerInfoViewModel.subscriptionsSection,
+                        localization: localization
+                    ) {
+                        viewModel.purchaseInformation = $0
+                    }
+                }
+
+                if !customerInfoViewModel.nonSubscriptionsSection.isEmpty {
+                    PurchasesInformationSection(
+                        title: localization[.purchasesSectionTitle],
+                        items: activeNonSubscriptionPurchasesToShow,
+                        localization: localization
+                    ) {
+                        viewModel.purchaseInformation = $0
+                    }
+                }
+
+                if let virtualCurrencies = customerInfoViewModel.virtualCurrencies,
+                   !virtualCurrencies.all.isEmpty,
+                    customerInfoViewModel.shouldShowVirtualCurrencies {
+                    VirtualCurrenciesScrollViewWithOSBackgroundSection(
+                        virtualCurrencies: virtualCurrencies,
+                        onSeeAllInAppCurrenciesButtonTapped: self.viewModel.displayAllInAppCurrenciesScreen
+                    )
+                }
+            }
+
+            if !viewModel.relevantPathsForPurchase.isEmpty {
+                ScrollViewSection(title: localization[.actionsSectionTitle]) {
+                    ActiveSubscriptionButtonsView(
+                        viewModel: viewModel,
+                        activePurchaseIdentifier: activePurchaseIdentifier
+                    )
+                }
+            }
+
+            if viewModel.shouldShowSeeAllPurchases {
+                Section {
+                    Button {
+                        viewModel.showAllPurchases = true
+                    } label: {
+                        CustomerCenterMacRowLabel(title: localization[.seeAllPurchases], showsChevron: true)
+                    }
+                    .customerCenterMacRow()
+                }
+            }
+
+            if customerInfoViewModel.shouldShowUserDetailsSection {
+                AccountDetailsSection(
+                    originalPurchaseDate: customerInfoViewModel.originalPurchaseDate,
+                    originalAppUserId: customerInfoViewModel.originalAppUserId,
+                    localization: localization
+                )
+            }
+        }
+        .formStyle(.grouped)
+    }
+
+    /// The one active subscription the help paths act on, when there is exactly one.
+    var activePurchaseIdentifier: String? {
+        customerInfoViewModel.subscriptionsSection.count == 1
+            ? customerInfoViewModel.subscriptionsSection.first?.productIdentifier
+            : nil
+    }
+
+}
+
+#endif
+
 #if DEBUG
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct RelevantPurchasesListView_Previews: PreviewProvider {

@@ -144,6 +144,17 @@ struct ButtonComponentView: View {
             })
             #endif
             #endif
+            #if os(macOS)
+            .applyIf(self.viewModel.opensCustomerCenter, apply: { view in
+                view.presentCustomerCenterIfAvailable(
+                    isPresented: self.$showCustomerCenter,
+                    purchaseHandler: self.purchaseHandler,
+                    onDismiss: {
+                        self.showCustomerCenter = false
+                    }
+                )
+            })
+            #endif
         }
     }
 
@@ -329,7 +340,7 @@ struct ButtonComponentView: View {
     }
 }
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension ButtonComponentViewModel {
 
@@ -339,6 +350,32 @@ private extension ButtonComponentViewModel {
         }
 
         return true
+    }
+
+}
+#endif
+
+#if os(macOS)
+@available(macOS 12.0, *)
+private extension View {
+
+    /// The Customer Center exists on macOS from 13.0, one version above this component's floor,
+    /// so older macOS leaves the button without a destination, as before.
+    @ViewBuilder
+    func presentCustomerCenterIfAvailable(
+        isPresented: Binding<Bool>,
+        purchaseHandler: PurchaseHandler,
+        onDismiss: @escaping () -> Void
+    ) -> some View {
+        if #available(macOS 13.0, *) {
+            self.presentCustomerCenter(
+                isPresented: isPresented,
+                purchaseHandler: purchaseHandler,
+                onDismiss: onDismiss
+            )
+        } else {
+            self
+        }
     }
 
 }

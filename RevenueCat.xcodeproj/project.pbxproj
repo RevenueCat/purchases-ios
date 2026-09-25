@@ -812,6 +812,8 @@
 		5796A3A927D7C43500653165 /* Deprecations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5796A3A827D7C43500653165 /* Deprecations.swift */; };
 		5796A3C027D7D64500653165 /* ResultExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5796A3BF27D7D64500653165 /* ResultExtensionsTests.swift */; };
 		5798C9312DF1985700F44400 /* CompatibilityTopBarTrailing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C91F2DF1985700F44400 /* CompatibilityTopBarTrailing.swift */; };
+		29F3FE65F76B424FBD38D53B /* CompatibilityInlineNavigationBarTitle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D8BC90A52F54835A561500E /* CompatibilityInlineNavigationBarTitle.swift */; };
+		068764C15F4245DEB1A53683 /* CompatibilityInsetGroupedListStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64D49CC1412A43529802FD28 /* CompatibilityInsetGroupedListStyle.swift */; };
 		5798C9322DF1985700F44400 /* FeedbackSurveyData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C8ED2DF1985700F44400 /* FeedbackSurveyData.swift */; };
 		5798C9332DF1985700F44400 /* PurchaseDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C9072DF1985700F44400 /* PurchaseDetailViewModel.swift */; };
 		5798C9342DF1985700F44400 /* CustomerCenterAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C8E32DF1985700F44400 /* CustomerCenterAction.swift */; };
@@ -2656,6 +2658,8 @@
 		5798C91D2DF1985700F44400 /* CompatibilityLabeledContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompatibilityLabeledContent.swift; sourceTree = "<group>"; };
 		5798C91E2DF1985700F44400 /* CompatibilityNavigationStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompatibilityNavigationStack.swift; sourceTree = "<group>"; };
 		5798C91F2DF1985700F44400 /* CompatibilityTopBarTrailing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompatibilityTopBarTrailing.swift; sourceTree = "<group>"; };
+		3D8BC90A52F54835A561500E /* CompatibilityInlineNavigationBarTitle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompatibilityInlineNavigationBarTitle.swift; sourceTree = "<group>"; };
+		64D49CC1412A43529802FD28 /* CompatibilityInsetGroupedListStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompatibilityInsetGroupedListStyle.swift; sourceTree = "<group>"; };
 		5798C9202DF1985700F44400 /* CustomerCenterNavigationLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterNavigationLink.swift; sourceTree = "<group>"; };
 		5798C9212DF1985700F44400 /* CustomerCenterNavigationOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterNavigationOptions.swift; sourceTree = "<group>"; };
 		5798C9222DF1985700F44400 /* CustomerCenterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterView.swift; sourceTree = "<group>"; };
@@ -5910,6 +5914,8 @@
 				5798C91D2DF1985700F44400 /* CompatibilityLabeledContent.swift */,
 				5798C91E2DF1985700F44400 /* CompatibilityNavigationStack.swift */,
 				5798C91F2DF1985700F44400 /* CompatibilityTopBarTrailing.swift */,
+				3D8BC90A52F54835A561500E /* CompatibilityInlineNavigationBarTitle.swift */,
+				64D49CC1412A43529802FD28 /* CompatibilityInsetGroupedListStyle.swift */,
 				5798C9202DF1985700F44400 /* CustomerCenterNavigationLink.swift */,
 				5798C9212DF1985700F44400 /* CustomerCenterNavigationOptions.swift */,
 				1DEF75892ECF0EFE00614CB2 /* CreateTicketView.swift */,
@@ -9102,6 +9108,8 @@
 				4D6F4BD02CF69DE400353AF6 /* ForegroundColorScheme.swift in Sources */,
 				887A60822C1D037000E1A461 /* PreviewHelpers.swift in Sources */,
 				5798C9312DF1985700F44400 /* CompatibilityTopBarTrailing.swift in Sources */,
+				29F3FE65F76B424FBD38D53B /* CompatibilityInlineNavigationBarTitle.swift in Sources */,
+				068764C15F4245DEB1A53683 /* CompatibilityInsetGroupedListStyle.swift in Sources */,
 				5798C9322DF1985700F44400 /* FeedbackSurveyData.swift in Sources */,
 				5798C9332DF1985700F44400 /* PurchaseDetailViewModel.swift in Sources */,
 				5798C9342DF1985700F44400 /* CustomerCenterAction.swift in Sources */,

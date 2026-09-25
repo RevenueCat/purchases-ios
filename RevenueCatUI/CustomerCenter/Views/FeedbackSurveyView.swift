@@ -16,10 +16,9 @@
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct FeedbackSurveyView: View {
@@ -77,11 +76,14 @@ struct FeedbackSurveyView: View {
 
     var body: some View {
         CompatibilityNavigationStack {
-            List {
+            CompatibilityGroupedList {
                 content
             }
             .dismissCircleButtonToolbarIfNeeded(
                 navigationOptions: navigationOptions,
+                // A macOS sheet never draws the `.principal` question below, so the Mac shows it
+                // next to the close button.
+                title: self.viewModel.feedbackSurveyData.configuration.title,
                 customDismiss: {
                     isPresented = false
                 }
@@ -109,7 +111,7 @@ struct FeedbackSurveyView: View {
                 .environment(\.appearance, appearance)
                 .environment(\.localization, localization)
             }
-            .navigationBarTitleDisplayMode(.inline)
+            .compatibleInlineNavigationBarTitle()
             .toolbar(content: {
                 ToolbarItem(placement: .principal) {
                     Text(self.viewModel.feedbackSurveyData.configuration.title)
@@ -126,8 +128,7 @@ struct FeedbackSurveyView: View {
     }
 }
 
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 // This is a duplicate of ActiveSubscriptionButtonsView. It should be unified in the near future.
@@ -153,9 +154,17 @@ struct FeedbackSurveyButtonsView: View {
                 if self.loadingOption == option.id {
                     TintedProgressView()
                 } else {
+                    #if os(macOS)
+                    CustomerCenterMacRowLabel(title: option.title)
+                        .foregroundStyle(.tint)
+                    #else
                     Text(option.title)
+                    #endif
                 }
             }
+            #if os(macOS)
+            .customerCenterMacRow()
+            #endif
             .disabled(self.loadingOption != nil)
         }
         .applyIfLet(appearance.tintColor(colorScheme: colorScheme), apply: { $0.tint($1)})
@@ -163,8 +172,7 @@ struct FeedbackSurveyButtonsView: View {
 }
 
 #if DEBUG
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct FeedbackSurveyView_Previews: PreviewProvider {

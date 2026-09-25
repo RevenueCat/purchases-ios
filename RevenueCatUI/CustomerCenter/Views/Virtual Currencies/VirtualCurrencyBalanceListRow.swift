@@ -11,7 +11,7 @@
 //
 //  Created by Will Taylor on 4/22/25.
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 
 import SwiftUI
 
@@ -35,8 +35,7 @@ import SwiftUI
 /// }
 /// ```
 ///
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct VirtualCurrencyBalanceListRow: View {
@@ -77,7 +76,7 @@ struct VirtualCurrencyBalanceListRow: View {
 struct VirtualCurrencyBalanceListRow_Previews: PreviewProvider {
 
     static var previews: some View {
-        if #available(iOS 15.0, *) {
+        if #available(iOS 15.0, macOS 13.0, *) {
             List {
                 VirtualCurrencyBalanceListRow(
                     rowData: .init(

@@ -12,11 +12,11 @@
 //  Created by Facundo Menzella on 14/1/25.
 //
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
-@available(iOS 15.0, *)
+@available(iOS 15.0, macOS 13.0, *)
 struct PurchaseDetailView: View {
 
     @Environment(\.localization)
@@ -25,7 +25,7 @@ struct PurchaseDetailView: View {
     @StateObject var viewModel: PurchaseDetailViewModel
 
     var body: some View {
-        List {
+        CompatibilityGroupedList {
             Section {
                 ForEach(viewModel.items) { detailItem in
                     CompatibilityLabeledContent(
@@ -50,8 +50,8 @@ struct PurchaseDetailView: View {
                 }
             }
         }
-        .listStyle(.insetGrouped)
-        .navigationBarTitleDisplayMode(.inline)
+        .compatibleInsetGroupedListStyle()
+        .compatibleInlineNavigationBarTitle()
         .onAppear {
             viewModel.didAppear(localization: localization)
         }

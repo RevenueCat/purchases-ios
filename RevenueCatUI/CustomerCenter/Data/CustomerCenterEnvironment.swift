@@ -93,12 +93,11 @@ extension EnvironmentValues {
 
 }
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 
 // MARK: - Customer Center Actions Environment
 
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 /// Handlers for external host-app callbacks from the Customer Center UI.
@@ -124,16 +123,14 @@ final class CustomerCenterExternalActions: @unchecked Sendable {
     var customActionSelected: @MainActor @Sendable (String, String?) -> Void = { _, _ in }
 }
 
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 private enum CustomerCenterExternalActionsKey: EnvironmentKey {
     static let defaultValue = CustomerCenterExternalActions()
 }
 
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension EnvironmentValues {

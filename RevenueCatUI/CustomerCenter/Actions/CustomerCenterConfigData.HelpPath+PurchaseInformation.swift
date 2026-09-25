@@ -141,6 +141,39 @@ private extension CustomerCenterConfigData.HelpPath.PathType {
             return false
         }
     }
+
+}
+
+// Not `private`: `isSupportedOnCurrentPlatform` is read from `Screen.supportedPaths` in
+// `BaseManageSubscriptionViewModel.swift`, which filters a screen's paths before any other rule
+// runs, and from the test suite via `@testable import`.
+extension CustomerCenterConfigData.HelpPath.PathType {
+
+    /// Whether this platform can carry the path out at all.
+    ///
+    /// macOS has no in-app refund sheet: `Transaction.beginRefundRequest` needs a `UIWindowScene`,
+    /// and `Purchases.beginRefundRequest(forProduct:)` is unavailable there. Apple routes Mac
+    /// refunds through reportaproblem.apple.com, so the path is left out rather than shown and
+    /// failed. Plan changes are shown with `SubscriptionStoreView`, which macOS gained in 14.0.
+    var isSupportedOnCurrentPlatform: Bool {
+        #if os(macOS)
+        switch self {
+        case .refundRequest:
+            return false
+        case .changePlans:
+            if #available(macOS 14.0, *) {
+                return true
+            } else {
+                return false
+            }
+        // Any other path, present or future, is supported: only the two above depend on StoreKit sheets macOS lacks.
+        default:
+            return true
+        }
+        #else
+        return true
+        #endif
+    }
 }
 
 private extension CustomerCenterConfigData.HelpPath.RefundWindowDuration {

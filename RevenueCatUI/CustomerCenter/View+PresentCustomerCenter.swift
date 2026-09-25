@@ -14,10 +14,9 @@
 import RevenueCat
 import SwiftUI
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable, message: "CustomerCenterView does not support macOS yet")
+@available(iOS 15.0, macOS 13.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable, message: "RevenueCatUI does not support tvOS yet")
 @available(watchOS, unavailable, message: "CustomerCenterView does not support watchOS yet")
 extension View {
@@ -194,8 +193,7 @@ extension View {
     }
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 private struct PresentingCustomerCenterModifier: ViewModifier {
@@ -266,13 +264,23 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
                 content
                     .sheet(isPresented: self.$isPresented, onDismiss: onDismiss) {
                         self.customerCenterView()
+                            .customerCenterSheetFrame()
                     }
 
             case .fullScreen:
+                #if os(macOS)
+                // There is no full-screen cover on macOS; a sheet is the closest presentation.
+                content
+                    .sheet(isPresented: self.$isPresented, onDismiss: onDismiss) {
+                        self.customerCenterView()
+                            .customerCenterSheetFrame()
+                    }
+                #else
                 content
                     .fullScreenCover(isPresented: self.$isPresented, onDismiss: onDismiss) {
                         self.customerCenterView()
                     }
+                #endif
 
             @unknown default:
                 content
@@ -322,6 +330,29 @@ private struct PresentingCustomerCenterModifier: ViewModifier {
             }
             .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
     }
+}
+
+#endif
+
+#if os(iOS) || os(macOS)
+
+@available(iOS 15.0, macOS 13.0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension View {
+
+    /// Gives a Customer Center sheet a usable size on macOS, where a sheet takes its content's
+    /// ideal size: for a scrolling screen that is a strip showing little more than its close
+    /// button. It starts window-sized and the customer can resize it. iOS sizes its own sheets.
+    @ViewBuilder
+    func customerCenterSheetFrame() -> some View {
+        #if os(macOS)
+        self.frame(minWidth: 480, minHeight: 667)
+        #else
+        self
+        #endif
+    }
+
 }
 
 #endif

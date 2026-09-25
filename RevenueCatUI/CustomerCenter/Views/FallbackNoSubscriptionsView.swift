@@ -16,11 +16,10 @@
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 
 /// If fetching the configuration fails (NO_ACTIVE screen is not present) we display this
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct FallbackNoSubscriptionsView: View {
@@ -65,6 +64,61 @@ struct FallbackNoSubscriptionsView: View {
     }
 
     var body: some View {
+        page
+        .compatibleNavigation(
+            isPresented: $showAllInAppCurrenciesScreen,
+            usesNavigationStack: navigationOptions.usesNavigationStack
+        ) {
+            VirtualCurrencyBalancesScreen(
+                viewModel: VirtualCurrencyBalancesScreenViewModel(
+                    purchasesProvider: customerCenterViewModel.purchasesProvider
+                )
+            )
+            .environment(\.appearance, appearance)
+            .environment(\.localization, localization)
+            .environment(\.navigationOptions, navigationOptions)
+        }
+        .overlay {
+            RestorePurchasesAlert(
+                isPresented: $showRestoreAlert,
+                actionWrapper: actionWrapper,
+                customerCenterViewModel: customerCenterViewModel
+            )
+        }
+    }
+
+    @ViewBuilder
+    private var page: some View {
+        #if os(macOS)
+        // The Mac's layout of this screen: a grouped form with the same content and actions.
+        Form {
+            Section {
+                NoSubscriptionsCardView(
+                    screenOffering: nil,
+                    screen: nil,
+                    localization: localization,
+                    purchasesProvider: purchasesProvider
+                )
+            }
+
+            if let virtualCurrencies, !virtualCurrencies.all.isEmpty {
+                VirtualCurrenciesScrollViewWithOSBackgroundSection(
+                    virtualCurrencies: virtualCurrencies,
+                    onSeeAllInAppCurrenciesButtonTapped: { self.showAllInAppCurrenciesScreen = true }
+                )
+            }
+
+            Section {
+                Button {
+                    showRestoreAlert = true
+                } label: {
+                    CustomerCenterMacRowLabel(title: localization[.restorePurchases])
+                }
+                .customerCenterMacRow()
+            }
+        }
+        .formStyle(.grouped)
+        #else
         ScrollViewWithOSBackground {
             LazyVStack(spacing: 0) {
                 NoSubscriptionsCardView(
@@ -88,28 +142,10 @@ struct FallbackNoSubscriptionsView: View {
                 restorePurchasesButton
             }
         }
-        .compatibleNavigation(
-            isPresented: $showAllInAppCurrenciesScreen,
-            usesNavigationStack: navigationOptions.usesNavigationStack
-        ) {
-            VirtualCurrencyBalancesScreen(
-                viewModel: VirtualCurrencyBalancesScreenViewModel(
-                    purchasesProvider: customerCenterViewModel.purchasesProvider
-                )
-            )
-            .environment(\.appearance, appearance)
-            .environment(\.localization, localization)
-            .environment(\.navigationOptions, navigationOptions)
-        }
-        .overlay {
-            RestorePurchasesAlert(
-                isPresented: $showRestoreAlert,
-                actionWrapper: actionWrapper,
-                customerCenterViewModel: customerCenterViewModel
-            )
-        }
+        #endif
     }
 
+    #if !os(macOS)
     private var restorePurchasesButton: some View {
         Button {
             showRestoreAlert = true
@@ -125,13 +161,13 @@ struct FallbackNoSubscriptionsView: View {
         }
         .tint(colorScheme == .dark ? .white : .black)
     }
+    #endif
 
 }
 
 #if DEBUG
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct NoSubscriptionsView_Previews: PreviewProvider {
