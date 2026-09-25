@@ -17,15 +17,18 @@ class WebBillingAPI {
 
     typealias WebBillingProductsResponseHandler = Backend.ResponseHandler<WebBillingProductsResponse>
     typealias HostedCheckoutResponseHandler = Backend.ResponseHandler<HostedCheckoutResponse>
+    typealias HostedCheckoutStatusResponseHandler = Backend.ResponseHandler<HostedCheckoutStatusResponse>
 
     private let webBillingProductsCallbackCache: CallbackCache<WebBillingProductsCallback>
     private let hostedCheckoutCallbackCache: CallbackCache<HostedCheckoutCallback>
+    private let hostedCheckoutStatusCallbackCache: CallbackCache<HostedCheckoutStatusCallback>
     private let backendLanes: BackendLanes
 
     init(lanes: BackendLanes) {
         self.backendLanes = lanes
         self.webBillingProductsCallbackCache = .init()
         self.hostedCheckoutCallbackCache = .init()
+        self.hostedCheckoutStatusCallbackCache = .init()
     }
 
     func getWebBillingProducts(
@@ -86,6 +89,34 @@ class WebBillingAPI {
         let cacheStatus = self.hostedCheckoutCallbackCache.add(callback)
 
         // The customer is waiting on this request before checkout can open, so it is never delayed.
+        backendConfig.addCacheableOperation(
+            with: factory,
+            delay: .none,
+            cacheStatus: cacheStatus
+        )
+    }
+
+    /// Asks what became of a checkout session.
+    ///
+    /// - Parameter operationSessionID: The session to ask about, as returned by ``postHostedCheckout``.
+    /// Answered with a 404 where this customer does not own it.
+    func getHostedCheckoutStatus(
+        appUserID: String,
+        operationSessionID: String,
+        completion: @escaping HostedCheckoutStatusResponseHandler
+    ) {
+        let backendConfig = self.backendLanes[.checkout]
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
+                                                                appUserID: appUserID)
+        let factory = GetHostedCheckoutStatusOperation.createFactory(
+            configuration: config,
+            operationSessionID: operationSessionID,
+            callbackCache: self.hostedCheckoutStatusCallbackCache
+        )
+
+        let callback = HostedCheckoutStatusCallback(cacheKey: factory.cacheKey, completion: completion)
+        let cacheStatus = self.hostedCheckoutStatusCallbackCache.add(callback)
+
         backendConfig.addCacheableOperation(
             with: factory,
             delay: .none,

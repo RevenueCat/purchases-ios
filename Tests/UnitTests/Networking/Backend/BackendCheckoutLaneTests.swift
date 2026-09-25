@@ -26,6 +26,7 @@ final class BackendCheckoutLaneTests: BaseBackendTests {
     private static let packageID = "$rc_monthly"
     private static let offeringID = "default"
     private static let tokenID = "ept13dcbc01adaa44db9b1691a6be2f9929"
+    private static let operationSessionID = "op_session_id"
     private static let productIds: Set<String> = ["test_monthly"]
 
     override func createClient() -> MockHTTPClient {
@@ -76,6 +77,34 @@ final class BackendCheckoutLaneTests: BaseBackendTests {
                 appUserID: Self.userID,
                 purchaseType: .linkOut,
                 token: "storekit-token",
+                completion: { _ in completed() }
+            )
+        }
+
+        expect(laneClient.calls).to(haveCount(1))
+        expect(self.httpClient.calls).to(beEmpty())
+    }
+
+    func testGetHostedCheckoutStatusRunsOnDedicatedLaneNotSharedClient() {
+        let laneClient = self.createClient(#file)
+        laneClient.disableSnapshotTesting()
+        self.httpClient.disableSnapshotTesting()
+
+        let backend = self.makeBackend(checkoutClient: laneClient)
+        let statusPath = HTTPRequest.WebBillingPath.getHostedCheckoutStatus(
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.userID
+        )
+
+        laneClient.mock(
+            requestPath: statusPath,
+            response: .init(statusCode: .success, response: Self.hostedCheckoutStatusResponse)
+        )
+
+        waitUntil { completed in
+            backend.webBilling.getHostedCheckoutStatus(
+                appUserID: Self.userID,
+                operationSessionID: Self.operationSessionID,
                 completion: { _ in completed() }
             )
         }
@@ -218,6 +247,11 @@ private extension BackendCheckoutLaneTests {
         "checkout_url": "https://checkout.stripe.com/c/pay/cs_test_123",
         "success_url": "https://api.revenuecat.com/rcbilling/v1/hosted-checkout-return?status=success",
         "cancel_url": "https://api.revenuecat.com/rcbilling/v1/hosted-checkout-return?status=cancel"
+    ]
+
+    static let hostedCheckoutStatusResponse: [String: Any] = [
+        "status": "started",
+        "is_expired": false
     ]
 
     static let externalPurchaseTokenResponse: [String: Any] = [

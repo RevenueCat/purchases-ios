@@ -77,6 +77,33 @@ class MockWebBillingAPI: WebBillingAPI {
         }
     }
 
+    struct GetHostedCheckoutStatusParameters {
+
+        let appUserID: String
+        let operationSessionID: String
+
+    }
+
+    var invokedGetHostedCheckoutStatus = false
+    var invokedGetHostedCheckoutStatusCount = 0
+    var invokedGetHostedCheckoutStatusParameters: GetHostedCheckoutStatusParameters?
+    var stubbedGetHostedCheckoutStatusCompletionResult: Result<HostedCheckoutStatusResponse, BackendError>?
+
+    override func getHostedCheckoutStatus(
+        appUserID: String,
+        operationSessionID: String,
+        completion: @escaping HostedCheckoutStatusResponseHandler
+    ) {
+        self.invokedGetHostedCheckoutStatus = true
+        self.invokedGetHostedCheckoutStatusCount += 1
+        self.invokedGetHostedCheckoutStatusParameters = .init(appUserID: appUserID,
+                                                              operationSessionID: operationSessionID)
+
+        if let result = self.stubbedGetHostedCheckoutStatusCompletionResult {
+            completion(result)
+        }
+    }
+
 }
 
 extension MockWebBillingAPI: @unchecked Sendable {}
