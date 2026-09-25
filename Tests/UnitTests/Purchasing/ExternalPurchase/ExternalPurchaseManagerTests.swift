@@ -45,7 +45,7 @@ class ExternalPurchaseManagerTests: TestCase {
 
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: true)
         self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.allowedStorefront)
-        self.manager = self.makeManager(isRunningInSimulator: false)
+        self.manager = self.makeManager()
     }
 
     // MARK: - Flow types
@@ -244,7 +244,7 @@ class ExternalPurchaseManagerTests: TestCase {
     /// than any one call site.
     func testTheWholeSequenceIsSkippedWhileTheSettingIsDisabled() async {
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
-        self.manager = self.makeManager(isRunningInSimulator: false)
+        self.manager = self.makeManager()
 
         let availability = await self.manager.externalPurchaseAvailability()
         expect(availability) == .notEligible
@@ -263,7 +263,7 @@ class ExternalPurchaseManagerTests: TestCase {
     /// Apple's custom link is noise in their console.
     func testNothingIsLoggedWhileTheSettingIsDisabled() async {
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
-        self.manager = self.makeManager(isRunningInSimulator: false)
+        self.manager = self.makeManager()
 
         _ = await self.manager.prepareExternalPurchase(flow: .linkOut)
 
@@ -278,7 +278,8 @@ class ExternalPurchaseManagerTests: TestCase {
     /// StoreKit never finds the customer eligible in the simulator, so asking it would only ever stop the purchase
     /// outside the storefronts allowed without eligibility.
     func testRunsNoneOfTheSequenceInTheSimulator() async {
-        self.manager = self.makeManager(isRunningInSimulator: true)
+        self.systemInfo.stubbedIsRunningInSimulator = true
+        self.manager = self.makeManager()
 
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
@@ -295,7 +296,8 @@ class ExternalPurchaseManagerTests: TestCase {
     func testProceedsInTheSimulatorWhateverTheStorefront() async {
         self.settingsProvider.stubbedSettings = .allowingExternalPurchases(in: [])
         self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.otherStorefront)
-        self.manager = self.makeManager(isRunningInSimulator: true)
+        self.systemInfo.stubbedIsRunningInSimulator = true
+        self.manager = self.makeManager()
 
         let result = await self.manager.prepareExternalPurchase(flow: .linkOut)
 
@@ -310,7 +312,8 @@ class ExternalPurchaseManagerTests: TestCase {
             useExternalPurchaseCustomLinks: true
         )
         self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.allowedStorefront)
-        self.manager = self.makeManager(isRunningInSimulator: true)
+        self.systemInfo.stubbedIsRunningInSimulator = true
+        self.manager = self.makeManager()
 
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
@@ -327,7 +330,7 @@ class ExternalPurchaseManagerTests: TestCase {
         self.systemInfo = Self.makeSystemInfoDisablingExternalPurchasesInSimulator(
             useExternalPurchaseCustomLinks: true
         )
-        self.manager = self.makeManager(isRunningInSimulator: false)
+        self.manager = self.makeManager()
 
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
@@ -340,7 +343,8 @@ class ExternalPurchaseManagerTests: TestCase {
         self.systemInfo = Self.makeSystemInfoDisablingExternalPurchasesInSimulator(
             useExternalPurchaseCustomLinks: false
         )
-        self.manager = self.makeManager(isRunningInSimulator: true)
+        self.systemInfo.stubbedIsRunningInSimulator = true
+        self.manager = self.makeManager()
 
         let result = await self.manager.prepareExternalPurchase(flow: .linkOut)
 
@@ -351,7 +355,8 @@ class ExternalPurchaseManagerTests: TestCase {
     /// Apps outside the programme hear nothing about Apple's custom link, in the simulator or anywhere else.
     func testNothingIsLoggedInTheSimulatorWhileTheSettingIsDisabled() async {
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
-        self.manager = self.makeManager(isRunningInSimulator: true)
+        self.systemInfo.stubbedIsRunningInSimulator = true
+        self.manager = self.makeManager()
 
         let result = await self.manager.prepareExternalPurchase(flow: .linkOut)
 
@@ -458,14 +463,13 @@ class ExternalPurchaseManagerTests: TestCase {
         )
     }
 
-    private func makeManager(isRunningInSimulator: Bool) -> ExternalPurchaseManager {
+    private func makeManager() -> ExternalPurchaseManager {
         return ExternalPurchaseManager(
             customLink: self.customLink,
             externalPurchaseTokenAPI: self.externalPurchaseTokenAPI,
             currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID),
             settingsProvider: self.settingsProvider,
-            systemInfo: self.systemInfo,
-            isRunningInSimulator: isRunningInSimulator
+            systemInfo: self.systemInfo
         )
     }
 

@@ -19,6 +19,8 @@ class MockSystemInfo: SystemInfo {
     var stubbedRemoteConfigEnabled: Bool?
     var stubbedStorefront: StorefrontType?
     var stubbedApiKeyValidationResult: Configuration.APIKeyValidationResult?
+    /// Not the real value by default, which would differ between the platforms tests run on.
+    var stubbedIsRunningInSimulator = false
 
     convenience init(platformInfo: Purchases.PlatformInfo? = nil,
                      finishTransactions: Bool,
@@ -114,6 +116,10 @@ class MockSystemInfo: SystemInfo {
 
     override var storefront: StorefrontType? {
         return self.stubbedStorefront
+    }
+
+    override var isRunningInSimulator: Bool {
+        return self.stubbedIsRunningInSimulator
     }
 
     override var apiKeyValidationResult: Configuration.APIKeyValidationResult {
