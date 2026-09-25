@@ -6,49 +6,36 @@ import XCTest
 
 class ShapePropertyTests: TestCase {
 
-    func testRectangleNoCorners() throws {
-        let json = """
-        {
-            "type": "rectangle",
-        }
-        """
+    private static let corners = """
+    "corners": {
+        "top_leading": 1,
+        "top_trailing": 2,
+        "bottom_leading": 3,
+        "bottom_trailing": 4
+    }
+    """
 
-        _ = try JSONDecoder.default.decode(
-            PaywallComponent.Shape.self,
-            from: json.data(using: .utf8)!
-        )
+    func testDecodesEachType() throws {
+        let cases: [(json: String, expected: PaywallComponent.Shape)] = [
+            (#"{ "type": "rectangle" }"#, .rectangle(nil)),
+            (
+                #"{ "type": "rectangle", \#(Self.corners) }"#,
+                .rectangle(.init(topLeading: 1, topTrailing: 2, bottomLeading: 3, bottomTrailing: 4))
+            ),
+            (#"{ "type": "pill" }"#, .pill)
+        ]
+
+        for (json, expected) in cases {
+            expect(try Self.decode(json)).to(equal(expected), description: json)
+        }
     }
 
-    func testRectangleWithCorners() throws {
-        let json = """
-        {
-            "type": "rectangle",
-            "corners": {
-                "top_leading": 5,
-                "top_trailing": 5,
-                "bottom_leading": 5,
-                "bottom_trailing": 5
-            }
-        }
-        """
-
-        _ = try JSONDecoder.default.decode(
-            PaywallComponent.Shape.self,
-            from: json.data(using: .utf8)!
-        )
+    func testUnknownTypeFallsBackToRectangle() throws {
+        expect(try Self.decode(#"{ "type": "hexagon" }"#)) == .rectangle(nil)
     }
 
-    func testPill() throws {
-        let json = """
-        {
-            "type": "pill",
-        }
-        """
-
-        _ = try JSONDecoder.default.decode(
-            PaywallComponent.Shape.self,
-            from: json.data(using: .utf8)!
-        )
+    private static func decode(_ json: String) throws -> PaywallComponent.Shape {
+        return try JSONDecoder.default.decode(PaywallComponent.Shape.self, from: json.data(using: .utf8)!)
     }
 
 }
