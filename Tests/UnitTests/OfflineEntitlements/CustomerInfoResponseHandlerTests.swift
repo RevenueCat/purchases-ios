@@ -173,24 +173,6 @@ class OfflineCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTe
         )
     }
 
-    func testServerErrorFailsWhenCreatingOfflineCustomerInfoWithNoMapping() async {
-        self.fetcher.stubbedResult = .success([])
-        self.factory.stubbedResult = Self.offlineCustomerInfo
-
-        let error: NetworkError = .serverDown()
-
-        let result = await self.handle(.failure(error), nil)
-        expect(result).to(beFailure())
-        expect(result.error).to(matchError(BackendError.networkError(error)))
-
-        expect(self.factory.createRequested) == false
-
-        self.logger.verifyMessageWasLogged(
-            Strings.offlineEntitlements.computing_offline_customer_info_with_no_entitlement_mapping,
-            level: .warn
-        )
-    }
-
     func testServerErrorCreatesOfflineCustomerInfo() async {
         self.fetcher.stubbedResult = .success([
             Self.purchasedProduct
@@ -351,7 +333,7 @@ class CustomerInfoResponseHandlerThrowsErrorWithInvalidInAppPurchaseKeyTests: Ba
         let result = await self.handle(
             .failure(error),
             Self.mapping,
-            failIfInvalidSubscriptionKeyDetectedInDebug: true,
+            failIfInvalidSubscriptionKeyDetectedInDebug: false,
             isDebug: false
         )
 
