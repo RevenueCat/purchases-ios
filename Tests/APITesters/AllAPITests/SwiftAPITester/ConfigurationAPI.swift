@@ -28,6 +28,7 @@ func checkConfigurationAPI() {
         .with(preferredUILocaleOverride: "de_DE")
         .with(preferredUILocaleOverride: nil)
         .with(useExternalPurchaseCustomLinks: true)
+        .with(useExternalPurchaseCustomLinks: true, disableExternalPurchasesInSimulator: false)
 
 
     let _: Configuration = builder.build()

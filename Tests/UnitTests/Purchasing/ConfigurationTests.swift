@@ -224,6 +224,7 @@ class ConfigurationTests: TestCase {
         let configuration = Configuration.Builder(withAPIKey: "test")
             .build()
         expect(configuration.useExternalPurchaseCustomLinks) == false
+        expect(configuration.disableExternalPurchasesInSimulator) == false
     }
 
     func testUseExternalPurchaseCustomLinksCanBeSet() {
@@ -231,6 +232,15 @@ class ConfigurationTests: TestCase {
             .with(useExternalPurchaseCustomLinks: true)
             .build()
         expect(configuration.useExternalPurchaseCustomLinks) == true
+        expect(configuration.disableExternalPurchasesInSimulator) == false
+    }
+
+    func testDisableExternalPurchasesInSimulatorCanBeSet() {
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .with(useExternalPurchaseCustomLinks: true, disableExternalPurchasesInSimulator: true)
+            .build()
+        expect(configuration.useExternalPurchaseCustomLinks) == true
+        expect(configuration.disableExternalPurchasesInSimulator) == true
     }
 
     // MARK: - Equality
@@ -289,6 +299,17 @@ class ConfigurationTests: TestCase {
     func testDifferentUseExternalPurchaseCustomLinksIsNotEqual() {
         let lhs = Configuration.Builder(withAPIKey: "test").with(useExternalPurchaseCustomLinks: true).build()
         let rhs = Configuration.Builder(withAPIKey: "test").with(useExternalPurchaseCustomLinks: false).build()
+
+        expect(lhs) != rhs
+    }
+
+    func testDifferentDisableExternalPurchasesInSimulatorIsNotEqual() {
+        let lhs = Configuration.Builder(withAPIKey: "test")
+            .with(useExternalPurchaseCustomLinks: true, disableExternalPurchasesInSimulator: true)
+            .build()
+        let rhs = Configuration.Builder(withAPIKey: "test")
+            .with(useExternalPurchaseCustomLinks: true, disableExternalPurchasesInSimulator: false)
+            .build()
 
         expect(lhs) != rhs
     }
@@ -430,7 +451,7 @@ class ConfigurationTests: TestCase {
             .with(preferredUILocaleOverride: "en-US")
             .with(automaticDeviceIdentifierCollectionEnabled: true)
             .with(iamEnabled: false)
-            .with(useExternalPurchaseCustomLinks: false)
+            .with(useExternalPurchaseCustomLinks: false, disableExternalPurchasesInSimulator: false)
     }
 
 }

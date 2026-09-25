@@ -56,9 +56,11 @@ class SystemInfo {
     let responseVerificationMode: Signing.ResponseVerificationMode
     let dangerousSettings: DangerousSettings
 
-    /// Whether the app takes part in Apple's external purchase custom link programme,
-    /// see ``Configuration/Builder/with(useExternalPurchaseCustomLinks:)``.
+    /// Whether the app takes part in Apple's external purchase custom link programme, and whether the simulator
+    /// offers no external purchase, see
+    /// ``Configuration/Builder/with(useExternalPurchaseCustomLinks:disableExternalPurchasesInSimulator:)``.
     let useExternalPurchaseCustomLinks: Bool
+    let disableExternalPurchasesInSimulator: Bool
 
     let clock: ClockType
     private let preferredLocalesProvider: PreferredLocalesProvider
@@ -224,6 +226,7 @@ class SystemInfo {
          responseVerificationMode: Signing.ResponseVerificationMode = .default,
          dangerousSettings: DangerousSettings? = nil,
          useExternalPurchaseCustomLinks: Bool = false,
+         disableExternalPurchasesInSimulator: Bool = false,
          isAppBackgrounded: Bool? = nil,
          clock: ClockType = Clock.default,
          preferredLocalesProvider: PreferredLocalesProvider) {
@@ -242,6 +245,7 @@ class SystemInfo {
         self.responseVerificationMode = responseVerificationMode
         self.dangerousSettings = dangerousSettings ?? DangerousSettings()
         self.useExternalPurchaseCustomLinks = useExternalPurchaseCustomLinks
+        self.disableExternalPurchasesInSimulator = disableExternalPurchasesInSimulator
         self.clock = clock
         self.preferredLocalesProvider = preferredLocalesProvider
 

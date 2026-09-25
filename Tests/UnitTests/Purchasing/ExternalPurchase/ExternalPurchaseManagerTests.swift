@@ -428,11 +428,8 @@ class ExternalPurchaseManagerTests: TestCase {
     private static func makeSystemInfoDisablingExternalPurchasesInSimulator() -> MockSystemInfo {
         return MockSystemInfo(
             finishTransactions: true,
-            dangerousSettings: DangerousSettings(
-                autoSyncPurchases: true,
-                useExternalPurchaseCustomLinks: true,
-                disableExternalPurchasesInSimulator: true
-            )
+            useExternalPurchaseCustomLinks: true,
+            disableExternalPurchasesInSimulator: true
         )
     }
 

@@ -208,11 +208,8 @@ class HostedCheckoutManagerTests: TestCase {
     func testCreatesNoSessionInTheSimulatorWhileExternalPurchasesAreDisabledThere() async {
         self.systemInfo = MockSystemInfo(
             finishTransactions: true,
-            dangerousSettings: DangerousSettings(
-                autoSyncPurchases: true,
-                useExternalPurchaseCustomLinks: true,
-                disableExternalPurchasesInSimulator: true
-            )
+            useExternalPurchaseCustomLinks: true,
+            disableExternalPurchasesInSimulator: true
         )
         self.manager = self.makeManager(isRunningInSimulator: true)
 

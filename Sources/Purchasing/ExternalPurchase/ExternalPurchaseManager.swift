@@ -67,7 +67,8 @@ final class ExternalPurchaseManager {
     ///
     /// In the simulator, where StoreKit never finds the customer eligible, none of this runs and the purchase goes
     /// ahead in any storefront, so that developers can try their web purchases out wherever they are, unless
-    /// ``DangerousSettings/disableExternalPurchasesInSimulator`` says otherwise.
+    /// `disableExternalPurchasesInSimulator` says otherwise, see
+    /// ``Configuration/Builder/with(useExternalPurchaseCustomLinks:disableExternalPurchasesInSimulator:)``.
     func prepareExternalPurchase(flow: ExternalPurchaseFlow) async -> ExternalPurchasePreparationResult {
         guard self.takesPartInTheProgramme else {
             return .notApplicable
@@ -202,7 +203,7 @@ private extension ExternalPurchaseManager {
     }
 
     func prepareExternalPurchaseInSimulator() -> ExternalPurchasePreparationResult {
-        guard !self.systemInfo.dangerousSettings.disableExternalPurchasesInSimulator else {
+        guard !self.systemInfo.disableExternalPurchasesInSimulator else {
             Logger.warn(Strings.externalPurchase.disabled_in_simulator)
             return .stopped(.notEligible)
         }
