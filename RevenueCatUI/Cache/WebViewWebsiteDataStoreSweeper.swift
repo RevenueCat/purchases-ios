@@ -98,6 +98,7 @@ final class WebViewWebsiteDataStoreSweeper: WebViewDataStoreSweeping {
         #if compiler(>=5.9) && !os(tvOS) && !os(watchOS) && canImport(WebKit)
         // Compiler 5.9 is beyond Xcode 14. Even with the following guard 👇 Xcode 14 fails to compile
         if #available(iOS 17.0, macOS 14.0, *) {
+            ensureWebKitIsReady()
             return Set(await WKWebsiteDataStore.allDataStoreIdentifiers)
         }
         #endif
@@ -111,6 +112,7 @@ final class WebViewWebsiteDataStoreSweeper: WebViewDataStoreSweeping {
         // Compiler 5.9 is beyond Xcode 14. Even with the following guard 👇 Xcode 14 fails to compile
         if #available(iOS 17.0, macOS 14.0, *) {
             do {
+                ensureWebKitIsReady()
                 try await WKWebsiteDataStore.remove(forIdentifier: identifier)
                 return true
             } catch {
@@ -123,4 +125,14 @@ final class WebViewWebsiteDataStoreSweeper: WebViewDataStoreSweeping {
         return true
     }
 
+    // There are certain cases where a consuming application will invoke the cache clearing path in our SDK
+    // before a data store is initialized. In those cases, our SDK can crash with a EXC_BAD_ACCESS when attempting
+    // to interact with the WebKit API. By creating one, we can ensure that the crash never happens, and we can
+    // clear the retired store
+    @MainActor
+    private static func ensureWebKitIsReady() {
+        #if !os(tvOS) && !os(watchOS) && canImport(WebKit)
+        _ = WKWebsiteDataStore.default()
+        #endif
+    }
 }
