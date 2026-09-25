@@ -513,7 +513,7 @@ extension BasePurchasesTests {
             let identity = IdentityAPI(backendConfig: backendConfig)
             let token = TokenAPI(backendConfig: backendConfig)
             let offerings = OfferingsAPI(backendConfig: backendConfig)
-            let webBilling = WebBillingAPI(lanes: BackendLanes(configuration: backendConfig))
+            let webBilling = MockWebBillingAPI(lanes: BackendLanes(configuration: backendConfig))
             let offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
             let internalAPI = InternalAPI(backendConfig: backendConfig)
             let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
