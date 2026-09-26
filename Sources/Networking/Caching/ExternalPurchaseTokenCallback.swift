@@ -16,6 +16,6 @@ import Foundation
 struct ExternalPurchaseTokenCallback: CacheKeyProviding {
 
     let cacheKey: String
-    let completion: (Result<ExternalPurchaseTokenResponse, BackendError>) -> Void
+    let completion: (BackendError?) -> Void
 
 }

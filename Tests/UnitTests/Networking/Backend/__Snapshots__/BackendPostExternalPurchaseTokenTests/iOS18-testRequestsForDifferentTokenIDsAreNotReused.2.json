@@ -1,13 +1,14 @@
 {
   "headers" : {
     "Authorization" : "Bearer asharedsecret",
+    "X-Apple-Device-Identifier" : "5D7C0074-07E4-4564-AAA4-4008D0640881",
     "X-Client-Build-Version" : "12345",
     "X-Client-Bundle-ID" : "com.apple.dt.xctest.tool",
     "X-Client-Version" : "17.0.0",
     "X-Installation-Method" : "unknown",
     "X-Is-Backgrounded" : "false",
     "X-Is-Debug-Build" : "true",
-    "X-Is-Sandbox" : "false",
+    "X-Is-Sandbox" : "true",
     "X-Observer-Mode-Enabled" : "false",
     "X-Platform" : "iOS",
     "X-Platform-Device" : "arm64",
@@ -24,8 +25,9 @@
   "request" : {
     "body" : {
       "app_user_id" : "user",
-      "id" : "ept13dcbc01adaa44db9b1691a6be2f9929",
-      "purchase_type" : "LINK_OUT"
+      "id" : "epta51d06bc57f344ffb386dff7e2353bea",
+      "purchase_type" : "LINK_OUT",
+      "token" : "storekit-token"
     },
     "method" : "POST",
     "url" : "https://api.revenuecat.com/v1/external_purchase_tokens"

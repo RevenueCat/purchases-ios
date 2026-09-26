@@ -20,7 +20,6 @@ import XCTest
 class HostedCheckoutManagerTests: TestCase {
 
     private static let appUserID = "test-app-user-id"
-    private static let tokenID = "ept13dcbc01adaa44db9b1691a6be2f9929"
     private static let paywallSessionID = UUID()
 
     private var customLink: MockExternalPurchaseCustomLink!
@@ -35,7 +34,6 @@ class HostedCheckoutManagerTests: TestCase {
         self.customLink = MockExternalPurchaseCustomLink()
 
         self.externalPurchaseTokenAPI = MockExternalPurchaseTokenAPI()
-        self.externalPurchaseTokenAPI.stubbedPostExternalPurchaseTokenResult = .success(.init(id: Self.tokenID))
 
         self.webBillingAPI = MockWebBillingAPI(lanes: BackendLanes(configuration: MockBackendConfiguration()))
         self.webBillingAPI.stubbedPostHostedCheckoutCompletionResult = .success(Self.response)
@@ -57,7 +55,8 @@ class HostedCheckoutManagerTests: TestCase {
         expect(parameters?.appUserID) == Self.appUserID
         expect(parameters?.packageID) == Self.package.identifier
         expect(parameters?.presentedOfferingContext) == Self.package.presentedOfferingContext
-        expect(parameters?.externalPurchaseTokenID) == Self.tokenID
+        expect(parameters?.externalPurchaseTokenID) == self.postedTokenID
+        expect(parameters?.externalPurchaseTokenID).toNot(beNil())
         expect(parameters?.paywall).to(beNil())
     }
 
@@ -131,15 +130,15 @@ class HostedCheckoutManagerTests: TestCase {
 
         expect(result) == .started(Self.session)
         expect(self.customLink.invokedNoticeTypes) == [.withinApp]
-        expect(self.webBillingAPI.invokedPostHostedCheckoutParameters?.externalPurchaseTokenID) == Self.tokenID
+        expect(self.webBillingAPI.invokedPostHostedCheckoutParameters?.externalPurchaseTokenID) == self.postedTokenID
+        expect(self.postedTokenID).toNot(beNil())
     }
 
     // MARK: - Not starting
 
     /// A checkout with no token behind it is a purchase Apple is never told about.
     func testCreatesNoSessionWhenTheTokenCouldNotBeRegistered() async {
-        self.externalPurchaseTokenAPI.stubbedPostExternalPurchaseTokenResult =
-            .failure(.networkError(.serverDown()))
+        self.externalPurchaseTokenAPI.stubbedPostExternalPurchaseTokenError = .networkError(.serverDown())
 
         let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
 
@@ -267,6 +266,11 @@ private extension HostedCheckoutManagerTests {
             webBillingAPI: self.webBillingAPI,
             currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID)
         )
+    }
+
+    /// The identifier the SDK generated and registered, which the session must carry.
+    var postedTokenID: String? {
+        return self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenParameters?.tokenID
     }
 
     static let operationSessionID = "opse4e63d6a8a2c4"

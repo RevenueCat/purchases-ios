@@ -24,8 +24,9 @@
   "request" : {
     "body" : {
       "app_user_id" : "user",
-      "id" : "ept13dcbc01adaa44db9b1691a6be2f9929",
-      "purchase_type" : "LINK_OUT"
+      "id" : "epta51d06bc57f344ffb386dff7e2353bea",
+      "purchase_type" : "LINK_OUT",
+      "token" : "storekit-token"
     },
     "method" : "POST",
     "url" : "https://api.revenuecat.com/v1/external_purchase_tokens"
