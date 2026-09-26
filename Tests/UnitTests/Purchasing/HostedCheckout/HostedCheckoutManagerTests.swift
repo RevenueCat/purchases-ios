@@ -260,6 +260,7 @@ private extension HostedCheckoutManagerTests {
             externalPurchaseManager: ExternalPurchaseManager(
                 customLink: self.customLink,
                 externalPurchaseTokenAPI: self.externalPurchaseTokenAPI,
+                tokenStore: MockExternalPurchaseTokenStore(),
                 currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID),
                 systemInfo: self.systemInfo
             ),
