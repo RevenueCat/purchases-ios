@@ -22,6 +22,9 @@ protocol ExternalPurchaseTokenStoreType: Sendable {
     /// Drop a registration the backend has answered for, whether it accepted or rejected it.
     func remove(_ registration: ExternalPurchaseTokenRegistration)
 
+    /// Every registration kept, in no particular order.
+    func allRegistrations() -> [ExternalPurchaseTokenRegistration]
+
 }
 
 /// Stores external purchase token registrations persistently on disk, so that one minted in a session that
@@ -53,6 +56,18 @@ final class ExternalPurchaseTokenStore: ExternalPurchaseTokenStoreType {
 
     func remove(_ registration: ExternalPurchaseTokenRegistration) {
         self.cache.removeObject(forKey: Self.key(for: registration))
+    }
+
+    func allRegistrations() -> [ExternalPurchaseTokenRegistration] {
+        return self.cache.allKeys().compactMap { key in
+            do {
+                return try self.cache.value(forKey: key, decoder: .default)
+            } catch {
+                Logger.error(Strings.externalPurchase.error_loading_registration(error))
+                self.cache.removeObject(forKey: key)
+                return nil
+            }
+        }
     }
 
     /// Keys become file names, so they may not contain path separators. ``ExternalPurchaseTokenID`` only

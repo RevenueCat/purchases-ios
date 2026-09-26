@@ -26,6 +26,13 @@ class ExternalPurchaseTokenStoreTests: TestCase {
         token: "test-external-purchase-token"
     )
 
+    private static let otherRegistration = ExternalPurchaseTokenRegistration(
+        tokenID: "epta51d06bc57f344ffb386dff7e2353bea",
+        appUserID: "test-app-user-id",
+        purchaseType: .linkOut,
+        token: "another-external-purchase-token"
+    )
+
     private var cache: MockLargeItemCache!
     private var store: ExternalPurchaseTokenStore!
 
@@ -101,21 +108,48 @@ class ExternalPurchaseTokenStoreTests: TestCase {
     }
 
     func testKeepsTheOtherRegistrationsWhenOneIsRemoved() throws {
-        let other = ExternalPurchaseTokenRegistration(
-            tokenID: "epta51d06bc57f344ffb386dff7e2353bea",
-            appUserID: Self.registration.appUserID,
-            purchaseType: .linkOut,
-            token: "another-external-purchase-token"
-        )
-
         self.store.store(Self.registration)
-        self.store.store(other)
+        self.store.store(Self.otherRegistration)
         self.store.remove(Self.registration)
 
         let removed = try XCTUnwrap(self.cache.removeInvocations.onlyElement)
 
         expect(removed.lastPathComponent).to(contain(Self.registration.tokenID))
-        expect(removed.lastPathComponent).toNot(contain(other.tokenID))
+        expect(removed.lastPathComponent).toNot(contain(Self.otherRegistration.tokenID))
+    }
+
+    func testReadsBackEveryRegistrationItKept() {
+        self.store.store(Self.registration)
+        self.store.store(Self.otherRegistration)
+
+        let registrations = self.store.allRegistrations()
+
+        expect(registrations).to(haveCount(2))
+        expect(registrations).to(contain(Self.registration))
+        expect(registrations).to(contain(Self.otherRegistration))
+    }
+
+    func testReadsBackNothingWhenNothingWasKept() {
+        expect(self.store.allRegistrations()).to(beEmpty())
+    }
+
+    func testDoesNotReadBackARegistrationItRemoved() {
+        self.store.store(Self.registration)
+        self.store.store(Self.otherRegistration)
+        self.store.remove(Self.registration)
+
+        expect(self.store.allRegistrations()) == [Self.otherRegistration]
+    }
+
+    /// A registration that cannot be read can never be posted, so it is dropped rather than kept forever.
+    func testDropsARegistrationItCannotRead() throws {
+        self.store.store(Self.registration)
+
+        let saved = try XCTUnwrap(self.cache.saveDataInvocations.onlyElement)
+        try self.cache.saveData(Data("not a registration".utf8), to: saved.url)
+
+        expect(self.store.allRegistrations()).to(beEmpty())
+        expect(self.cache.removeInvocations) == [saved.url]
     }
 
 }

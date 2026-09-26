@@ -262,6 +262,7 @@ private extension HostedCheckoutManagerTests {
                 externalPurchaseTokenAPI: self.externalPurchaseTokenAPI,
                 tokenStore: MockExternalPurchaseTokenStore(),
                 currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID),
+                operationDispatcher: MockOperationDispatcher(),
                 systemInfo: self.systemInfo
             ),
             webBillingAPI: self.webBillingAPI,
