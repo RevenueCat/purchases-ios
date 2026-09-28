@@ -57,66 +57,48 @@ enum HostedCheckout {
         return Action(await purchaseHandler.startHostedCheckout(package: package))
     }
 
-    /// How the customer left a checkout that did not end on its cancel page.
-    enum Exit {
-
-        /// The page sent them to the success URL.
-        case successPage
-
-        /// They closed the sheet before the page sent them anywhere.
-        case closedSheet
-
-    }
-
-    /// How the paywall settles once the backend has said what became of a checkout.
+    /// How the paywall settles once the backend has said what became of a checkout that ended on its success page.
     ///
-    /// Only a purchase the backend confirms counts as one. What else it can say is an error after the success
-    /// page, which told the customer the purchase went through, and a cancellation after a closed sheet,
-    /// which most likely means they walked away.
+    /// Only a purchase the backend confirms counts as one. Anything else is an error, since the page told the
+    /// customer the purchase went through.
     enum Settlement: Equatable {
 
         case purchased
         case tellCustomerTheyAlreadyOwnIt
         case failed(HostedCheckoutError)
-        case cancelled
 
-        init(_ result: HostedCheckoutPollResult, after exit: Exit) {
-            switch (result, exit) {
-            case (.succeeded, _):
+        init(_ result: HostedCheckoutPollResult) {
+            switch result {
+            case .succeeded:
                 self = .purchased
-            case (.alreadyPurchased, _):
+            case .alreadyPurchased:
                 self = .tellCustomerTheyAlreadyOwnIt
-            case let (.failed(code, _), .successPage):
+            case let .failed(code, _):
                 self = .failed(.failed(code: code))
-            case (.undetermined, .successPage):
+            case .undetermined:
                 self = .failed(.unconfirmed)
-            case (.failed, .closedSheet), (.undetermined, .closedSheet):
-                self = .cancelled
             }
         }
 
     }
 
-    /// Asks the backend what became of a checkout the customer left without going through its cancel page,
-    /// then settles the paywall on the answer.
+    /// Asks the backend what became of a checkout that ended on its success page, then settles the paywall on
+    /// the answer.
     ///
     /// - Parameter package: The package the checkout was started for, when it is still known.
     @MainActor
     static func settle(_ session: HostedCheckoutSession,
-                       after exit: Exit,
                        package: Package?,
                        purchaseHandler: PurchaseHandler) async -> Settlement {
         return await purchaseHandler.whileConfirmingHostedCheckout {
             let result = await purchaseHandler.pollHostedCheckout(operationSessionID: session.operationSessionID)
-            let settlement = Settlement(result, after: exit)
+            let settlement = Settlement(result)
 
             switch settlement {
             case .purchased:
                 await purchaseHandler.handleHostedCheckoutPurchase()
             case let .failed(error):
                 purchaseHandler.handleHostedCheckoutFailure(error, package: package)
-            case .cancelled:
-                await purchaseHandler.handleHostedCheckoutCancellation(package: package)
             case .tellCustomerTheyAlreadyOwnIt:
                 // Neither a purchase nor a cancellation, just as when the checkout never opened for this reason:
                 // the paywall only tells the customer.
