@@ -70,10 +70,12 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
 
     let subscriptionHistoryTracker = SubscriptionHistoryTracker()
 
+#if !os(tvOS)
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func resolvedBranchSteps(for workflow: PublishedWorkflow) async -> [WorkflowBranch: String] {
         return [:]
     }
+#endif
 
     init(
         purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat,

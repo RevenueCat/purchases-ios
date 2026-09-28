@@ -54,10 +54,12 @@ final class PurchaseHandler: ObservableObject {
         purchases.subscriptionHistoryTracker
     }
 
+#if !os(tvOS)
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func resolvedBranchSteps(for workflow: PublishedWorkflow) async -> [WorkflowBranch: String] {
         return await purchases.resolvedBranchSteps(for: workflow)
     }
+#endif
 
     /// `false` if this `PurchaseHandler` is not backend by a configured `Purchases`instance.
     let isConfigured: Bool
@@ -1202,10 +1204,12 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
         SubscriptionHistoryTracker()
     }
 
+#if !os(tvOS)
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func resolvedBranchSteps(for workflow: PublishedWorkflow) async -> [WorkflowBranch: String] {
         return [:]
     }
+#endif
 
     init(customerInfo: CustomerInfo? = nil, purchasesAreCompletedBy: PurchasesAreCompletedBy) {
         self.customerInfo = customerInfo
