@@ -80,7 +80,7 @@ final class WorkflowNavigator: ObservableObject {
                   $0.componentId == componentId && $0.type == triggerType
               }),
               let actionId = trigger.actionId,
-              let stepId = step.stepTriggerActions[actionId]?.destinationStepId,
+              let stepId = step.stepTriggerActions[actionId]?.nextStepId,
               let nextStep = workflow.steps[stepId] else {
             return nil
         }
@@ -98,6 +98,19 @@ final class WorkflowNavigator: ObservableObject {
         }
         currentStepId = previousStepId
         return workflow.steps[previousStepId]
+    }
+
+}
+
+extension WorkflowTriggerAction {
+
+    /// A branch takes its fallback until the audiences that pick a different route can be evaluated.
+    var nextStepId: String? {
+        switch self {
+        case .step(let stepId): return stepId
+        case .branch(let branch): return branch.fallbackStepId
+        case .unknown: return nil
+        }
     }
 
 }
