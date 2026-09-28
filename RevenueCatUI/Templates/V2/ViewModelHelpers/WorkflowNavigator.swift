@@ -27,15 +27,32 @@ struct WorkflowForwardNavigationDestination {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@MainActor
 final class WorkflowNavigator: ObservableObject {
 
     @Published private(set) var currentStepId: String
     private let workflow: PublishedWorkflow
     private var backStack: [String] = []
+    /// Keyed by action id. Empty until this visit's resolve lands.
+    private var currentStepBranches: [String: String] = [:]
+    private var resolveTask: Task<Void, Never>?
 
-    init(workflow: PublishedWorkflow) {
+    private let branchResolver: BranchResolver
+
+    init(workflow: PublishedWorkflow, branchResolver: BranchResolver = DisabledBranchResolver()) {
         self.workflow = workflow
+        self.branchResolver = branchResolver
         self.currentStepId = workflow.initialStepId
+        self.resolveStepExits()
+    }
+
+    deinit {
+        self.resolveTask?.cancel()
+    }
+
+    /// The observation point for a resolve nothing else awaits.
+    func waitForBranchResolution() async {
+        await self.resolveTask?.value
     }
 
     var currentStep: WorkflowStep? {
@@ -66,6 +83,7 @@ final class WorkflowNavigator: ObservableObject {
 
         backStack.append(currentStepId)
         currentStepId = nextStep.step.id
+        self.resolveStepExits()
         return nextStep.step
     }
 
@@ -80,8 +98,7 @@ final class WorkflowNavigator: ObservableObject {
                   $0.componentId == componentId && $0.type == triggerType
               }),
               let actionId = trigger.actionId,
-              let triggerAction = step.stepTriggerActions[actionId],
-              case .step(let stepId) = triggerAction,
+              let stepId = self.nextStepId(for: step.stepTriggerActions[actionId], actionId: actionId),
               let nextStep = workflow.steps[stepId] else {
             return nil
         }
@@ -98,7 +115,57 @@ final class WorkflowNavigator: ObservableObject {
             return nil
         }
         currentStepId = previousStepId
+        self.resolveStepExits()
         return workflow.steps[previousStepId]
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension WorkflowNavigator {
+
+    /// Abandons the previous step's resolve, so every visit routes on its own answer.
+    private func resolveStepExits() {
+        self.currentStepBranches = [:]
+        self.resolveTask?.cancel()
+        self.resolveTask = nil
+
+        // A workflow without branches never reaches the resolver.
+        guard let step = self.currentStep, step.hasBranchExit else { return }
+        self.resolveTask = Task { [weak self, branchResolver] in
+            let resolved = await branchResolver.resolveBranches(in: step)
+            // Cancellation is what drops a previous step's answer: cancel() runs before the step changes,
+            // and this check and the write share one main actor block, so nothing lands out of order.
+            guard !Task.isCancelled else { return }
+            self?.currentStepBranches = resolved
+        }
+    }
+
+    /// A branch falls back when nothing matched, and when the route names a step the workflow has lost.
+    func nextStepId(for action: WorkflowTriggerAction?, actionId: String) -> String? {
+        switch action {
+        case .step(let stepId):
+            return stepId
+        case .branch(let branch):
+            guard let routed = self.currentStepBranches[actionId], self.workflow.steps[routed] != nil else {
+                return branch.fallbackStepId
+            }
+            return routed
+        case .unknown, nil:
+            return nil
+        }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension WorkflowStep {
+
+    var hasBranchExit: Bool {
+        return self.stepTriggerActions.values.contains { action in
+            if case .branch = action { return true }
+            return false
+        }
     }
 
 }

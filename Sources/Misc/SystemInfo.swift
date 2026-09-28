@@ -100,6 +100,15 @@ class SystemInfo {
         return !self.dangerousSettings.customEntitlementComputation
     }
 
+    /// Workflow branch routing, unreleased. Goes away with `DisabledBranchResolver` once branching ships.
+    var branchingEnabled: Bool {
+#if ENABLE_WORKFLOW_BRANCHING
+        return true
+#else
+        return false
+#endif
+    }
+
     var isDebugBuild: Bool {
 #if DEBUG
         return true

@@ -293,6 +293,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let offeringsFactory: OfferingsFactory
     private let offeringsManager: OfferingsManager
     private let workflowManager: WorkflowManager
+    @_spi(Internal) public let branchResolver: BranchResolver
     private let offlineEntitlementsManager: OfflineEntitlementsManager
     private let productsManager: ProductsManagerType
     private let customerInfoManager: CustomerInfoManager
@@ -672,6 +673,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         let notificationCenter: NotificationCenter = .default
         let checkpointResolver: CheckpointWorkflowResolver
+        let branchResolver: BranchResolver
         if systemInfo.remoteConfigEnabled {
             let remoteConfigStateObservers: [any RemoteConfigStateObserver] = [
                 checkpointsConfigProvider,
@@ -724,8 +726,15 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     }
                 }
             )
+            branchResolver = systemInfo.branchingEnabled
+                ? DefaultBranchResolver(
+                    audiencesConfigProvider: audiencesConfigProvider,
+                    localRulesEvaluator: localRulesEvaluator
+                )
+                : DisabledBranchResolver()
         } else {
             checkpointResolver = DisabledCheckpointWorkflowResolver()
+            branchResolver = DisabledBranchResolver()
         }
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
@@ -860,6 +869,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   productsManager: productsManager,
                   offeringsManager: offeringsManager,
                   workflowManager: workflowManager,
+                  branchResolver: branchResolver,
                   remoteConfigManager: remoteConfigManager,
                   sdkSettingsConfigProvider: sdkSettingsConfigProvider,
                   offlineEntitlementsManager: offlineEntitlementsManager,
@@ -899,6 +909,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          productsManager: ProductsManagerType,
          offeringsManager: OfferingsManager,
          workflowManager: WorkflowManager,
+         branchResolver: BranchResolver = DisabledBranchResolver(),
          remoteConfigManager: RemoteConfigManagerType,
          sdkSettingsConfigProvider: SDKSettingsConfigProviderType,
          offlineEntitlementsManager: OfflineEntitlementsManager,
@@ -960,6 +971,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.productsManager = productsManager
         self.offeringsManager = offeringsManager
         self.workflowManager = workflowManager
+        self.branchResolver = branchResolver
         self.remoteConfigManager = systemInfo.remoteConfigEnabled
             ? remoteConfigManager
             : NoOpRemoteConfigManager()
