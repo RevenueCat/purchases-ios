@@ -96,8 +96,6 @@ import Foundation
                 case "custom_web_checkout":
                     let customCheckout = try CustomWebCheckout(from: decoder)
                     self = .customWebCheckout(customCheckout)
-                case "hosted_web_checkout":
-                    self = .hostedWebCheckout
                 case "unknown":
                     self = .unknown
                 default:
