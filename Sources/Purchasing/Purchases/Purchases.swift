@@ -1932,31 +1932,22 @@ public extension Purchases {
     ///
     /// When the backend confirms a purchase, fetches the customer's `CustomerInfo` before returning, so
     /// callers that read it next find the new entitlement instead of the cached state from before the checkout.
+    /// A fetch that fails still reports the purchase, which did happen.
     @_spi(Internal) func pollHostedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
         let result = await self.hostedCheckoutManager.pollCheckout(operationSessionID: operationSessionID)
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         if case .succeeded = result {
-            await self.refreshCustomerInfoAfterHostedCheckout(operationSessionID: operationSessionID)
+            Logger.verbose(Strings.hostedCheckout.poll_fetching_customer_info(operationSessionID))
+
+            if await self.fetchCurrentCustomerInfoRetryingTransientErrors() == nil {
+                Logger.warn(Strings.hostedCheckout.poll_customer_info_refresh_failed(operationSessionID))
+            }
         }
         #endif
 
         return result
     }
-
-    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-    /// Fetches the `CustomerInfo` the checkout just changed, retrying transient failures.
-    ///
-    /// A fetch that does not land leaves the outcome alone: the purchase happened, and settling on it serves
-    /// the customer better than telling them it did not.
-    private func refreshCustomerInfoAfterHostedCheckout(operationSessionID: String) async {
-        Logger.verbose(Strings.hostedCheckout.poll_fetching_customer_info(operationSessionID))
-
-        if await self.fetchCurrentCustomerInfoRetryingTransientErrors() == nil {
-            Logger.warn(Strings.hostedCheckout.poll_customer_info_refresh_failed(operationSessionID))
-        }
-    }
-    #endif
 
     /// Used by `RevenueCatUI` to create a support ticket
     @_spi(Internal) func createTicket(customerEmail: String, ticketDescription: String) async throws -> Bool {
