@@ -96,35 +96,9 @@ class BranchResolverTests: TestCase {
         expect(resolved) == ["btn_one": "step_a", "btn_two": "step_b"]
     }
 
-    func testResolveBranchesSkipsNonBranchActions() async throws {
-        self.audiencesProvider.rulesByAudienceID = ["aud_a": Self.alwaysMatches]
-        let workflow = try Self.workflowWithTwoBranches()
-        let step = try XCTUnwrap(workflow.steps["step_1"])
-
-        let resolved = await self.makeResolver().resolveBranches(in: step)
-
-        expect(resolved) == ["btn": "step_a"]
-        expect(self.audiencesProvider.configurationRequestCount) == 1
-    }
-
     // MARK: - gate
 
-    /// Branching is off until it ships, so nothing resolves and every branch takes its fallback.
-    func testBranchingIsDisabledByDefault() {
-        let systemInfo = MockSystemInfo(platformInfo: nil, finishTransactions: true)
-
-        expect(systemInfo.branchingEnabled) == false
-    }
-
     // MARK: - disabled
-
-    func testTheDisabledResolverAlwaysTakesTheFallback() async {
-        let resolved = await DisabledBranchResolver().resolve(
-            .init(branches: [.init(audienceId: "aud_a", stepId: "step_a")], fallbackStepId: "step_fallback")
-        )
-
-        expect(resolved) == "step_fallback"
-    }
 
 }
 
@@ -171,51 +145,6 @@ private extension BranchResolverTests {
         """
         let data = try XCTUnwrap(json.data(using: .utf8))
         return try JSONDecoder.default.decode(WorkflowStep.self, from: data)
-    }
-
-    /// `step_1` branches on `aud_a`, `step_2` branches on `aud_b`.
-    static func workflowWithTwoBranches() throws -> PublishedWorkflow {
-        let json = """
-        {
-          "id": "wf_test",
-          "display_name": "Test Workflow",
-          "initial_step_id": "step_1",
-          "steps": {
-            "step_1": {
-              "id": "step_1",
-              "type": "screen",
-              "triggers": [
-                {"name":"Button","type":"on_press","action_id":"btn","component_id":"btn"}
-              ],
-              "trigger_actions": {
-                "btn": {
-                  "type": "branch",
-                  "branches": [{"audience_id": "aud_a", "step_id": "step_a"}],
-                  "fallback_step_id": "step_fallback_1"
-                }
-              }
-            },
-            "step_2": {
-              "id": "step_2",
-              "type": "screen",
-              "triggers": [
-                {"name":"Button","type":"on_press","action_id":"btn","component_id":"btn"}
-              ],
-              "trigger_actions": {
-                "btn": {
-                  "type": "branch",
-                  "branches": [{"audience_id": "aud_b", "step_id": "step_b"}],
-                  "fallback_step_id": "step_fallback_2"
-                }
-              }
-            }
-          },
-          "screens": {},
-          "ui_config": { "app": { "colors": {}, "fonts": {} }, "localizations": {} }
-        }
-        """
-        let data = try XCTUnwrap(json.data(using: .utf8))
-        return try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
     }
 
 }

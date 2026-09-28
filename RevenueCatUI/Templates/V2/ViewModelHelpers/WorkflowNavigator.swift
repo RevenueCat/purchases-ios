@@ -128,8 +128,10 @@ extension WorkflowNavigator {
     private func resolveStepExits() {
         self.currentStepBranches = [:]
         self.resolveTask?.cancel()
+        self.resolveTask = nil
 
-        guard let step = self.currentStep else { return }
+        // A workflow without branches never reaches the resolver.
+        guard let step = self.currentStep, step.hasBranchExit else { return }
         self.resolveTask = Task { [weak self, branchResolver] in
             let resolved = await branchResolver.resolveBranches(in: step)
             // Cancellation is what drops a previous step's answer: cancel() runs before the step changes,
@@ -151,6 +153,18 @@ extension WorkflowNavigator {
             return routed
         case .unknown, nil:
             return nil
+        }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension WorkflowStep {
+
+    var hasBranchExit: Bool {
+        return self.stepTriggerActions.values.contains { action in
+            if case .branch = action { return true }
+            return false
         }
     }
 

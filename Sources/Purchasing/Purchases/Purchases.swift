@@ -728,7 +728,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             )
             branchResolver = systemInfo.branchingEnabled
                 ? DefaultBranchResolver(
-                    audiencesConfigProvider: AudiencesConfigProvider(manager: remoteConfigManager),
+                    audiencesConfigProvider: audiencesConfigProvider,
                     localRulesEvaluator: localRulesEvaluator
                 )
                 : DisabledBranchResolver()

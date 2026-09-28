@@ -95,8 +95,12 @@ final class DefaultBranchResolver: BranchResolver {
             return audience.rules
         }
 
-        if matched == nil, !unreadable.value.isEmpty {
-            throw BranchResolutionError.unreadableAudiences(unreadable.value)
+        // Reported even when a later audience matched, otherwise a route that silently stopped firing
+        // leaves no trace at all.
+        if !unreadable.value.isEmpty {
+            Logger.error(Strings.remoteConfig.branchRoutedToFallback(
+                reason: String(describing: BranchResolutionError.unreadableAudiences(unreadable.value))
+            ))
         }
         return matched?.stepId
     }

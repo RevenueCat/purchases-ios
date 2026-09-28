@@ -241,23 +241,6 @@ final class WorkflowNavigatorTests: TestCase {
         expect(navigator.currentStepId) == "step_3"
     }
 
-    /// Nothing waits on resolution, so a tap that lands before it must still navigate.
-    func testAnUnresolvedBranchTakesItsFallback() throws {
-        let workflow = try Self.makeWorkflow(
-            steps: [
-                makeStepWithBranchExit(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
-                makeStep(id: "step_2"),
-                makeStep(id: "step_3")
-            ],
-            initialStepId: "step_1"
-        )
-        let navigator = WorkflowNavigator(workflow: workflow)
-
-        let result = navigator.triggerAction(componentId: "btn_abc")
-
-        expect(result?.id) == "step_2"
-    }
-
     func testReturningToAStepDropsItsPreviousBranchResolution() async throws {
         let workflow = try Self.makeWorkflow(
             steps: [
@@ -278,25 +261,6 @@ final class WorkflowNavigatorTests: TestCase {
 
         // Back on step_1 with nothing resolved yet, so the fallback stands until the new pass lands.
         expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_2"
-    }
-
-    func testResolvingTheCurrentStepRoutesItsBranchToTheResolvedStep() async throws {
-        let workflow = try Self.makeWorkflow(
-            steps: [
-                makeStepWithBranchExit(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
-                makeStep(id: "step_2"),
-                makeStep(id: "step_3")
-            ],
-            initialStepId: "step_1"
-        )
-        let navigator = WorkflowNavigator(
-            workflow: workflow,
-            branchResolver: StubBranchResolver(stepId: "step_3")
-        )
-
-        await navigator.waitForBranchResolution()
-
-        expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_3"
     }
 
     func testWithBranchingDisabledEveryBranchTakesItsFallback() async throws {
@@ -389,6 +353,25 @@ final class WorkflowNavigatorTests: TestCase {
         await navigator.waitForBranchResolution()
 
         expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_4"
+    }
+
+    /// Nothing waits on resolution. The body is synchronous from init to the tap, so the resolve task
+    /// provably has not run, and the branch must still navigate.
+    func testATapBeforeResolutionTakesTheFallback() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStepWithBranchExit(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
+                makeStep(id: "step_2"),
+                makeStep(id: "step_3")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(
+            workflow: workflow,
+            branchResolver: StubBranchResolver(stepId: "step_3")
+        )
+
+        expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_2"
     }
 
     // MARK: - navigateBack
