@@ -142,18 +142,18 @@ final class HostedCheckoutTests: TestCase {
     // MARK: - Settling on what the backend says
 
     func testCountsAConfirmedPurchase() {
-        expect(HostedCheckout.Settlement(.succeeded)) == .purchased
+        expect(HostedCheckout.Resolution(.succeeded)) == .purchased
     }
 
     func testTellsTheCustomerTheyAlreadyOwnIt() {
-        expect(HostedCheckout.Settlement(.alreadyPurchased)) == .tellCustomerTheyAlreadyOwnIt
+        expect(HostedCheckout.Resolution(.alreadyPurchased)) == .tellCustomerTheyAlreadyOwnIt
     }
 
     /// The success page told the customer the purchase went through, so anything short of it is an error.
     func testFailsWhenTheBackendDoesNotConfirmWhatTheSuccessPageSaid() {
-        expect(HostedCheckout.Settlement(.failed(code: 3, message: "payment_charge_failed")))
+        expect(HostedCheckout.Resolution(.failed(code: 3, message: "payment_charge_failed")))
             == .failed(.failed(code: 3))
-        expect(HostedCheckout.Settlement(.undetermined)) == .failed(.unconfirmed)
+        expect(HostedCheckout.Resolution(.undetermined)) == .failed(.unconfirmed)
     }
 
     func testAsksAboutTheSessionThatWasPresented() async {
@@ -164,9 +164,9 @@ final class HostedCheckoutTests: TestCase {
             return .succeeded
         }
 
-        _ = await HostedCheckout.settle(Self.session,
-                                        package: TestData.annualPackage,
-                                        purchaseHandler: Self.makeHandler(purchases: purchases))
+        _ = await HostedCheckout.resolve(Self.session,
+                                         package: TestData.annualPackage,
+                                         purchaseHandler: Self.makeHandler(purchases: purchases))
 
         let asked = await sessionsAskedAbout.values
         expect(asked) == [Self.session.operationSessionID]
@@ -182,9 +182,9 @@ final class HostedCheckoutTests: TestCase {
             return .succeeded
         }
 
-        _ = await HostedCheckout.settle(Self.session,
-                                        package: TestData.annualPackage,
-                                        purchaseHandler: handler)
+        _ = await HostedCheckout.resolve(Self.session,
+                                         package: TestData.annualPackage,
+                                         purchaseHandler: handler)
 
         let wasPurchasing = await actionsWhilePolling.values
         expect(wasPurchasing) == [true]
@@ -198,11 +198,11 @@ final class HostedCheckoutTests: TestCase {
         purchases.hostedCheckoutPollBlock = { _ in .succeeded }
         let handler = Self.makeHandler(purchases: purchases)
 
-        let settlement = await HostedCheckout.settle(Self.session,
-                                                     package: TestData.annualPackage,
-                                                     purchaseHandler: handler)
+        let resolution = await HostedCheckout.resolve(Self.session,
+                                                      package: TestData.annualPackage,
+                                                      purchaseHandler: handler)
 
-        expect(settlement) == .purchased
+        expect(resolution) == .purchased
         expect(handler.sessionPurchaseResult).to(beNil())
         expect(handler.purchaseError).to(beNil())
         expect(handler.actionInProgress) == false
@@ -224,11 +224,11 @@ final class HostedCheckoutTests: TestCase {
         purchases.hostedCheckoutPollBlock = { _ in .undetermined }
         let handler = Self.makeHandler(purchases: purchases)
 
-        let settlement = await HostedCheckout.settle(Self.session,
-                                                     package: TestData.annualPackage,
-                                                     purchaseHandler: handler)
+        let resolution = await HostedCheckout.resolve(Self.session,
+                                                      package: TestData.annualPackage,
+                                                      purchaseHandler: handler)
 
-        expect(settlement) == .failed(.unconfirmed)
+        expect(resolution) == .failed(.unconfirmed)
         expect(handler.purchaseError as? HostedCheckoutError) == .unconfirmed
         expect(handler.sessionPurchaseResult).to(beNil())
     }
@@ -241,9 +241,9 @@ final class HostedCheckoutTests: TestCase {
         let handler = Self.makeHandler(purchases: purchases)
         handler.trackPaywallImpression(Self.impressionData)
 
-        _ = await HostedCheckout.settle(Self.session,
-                                        package: TestData.annualPackage,
-                                        purchaseHandler: handler)
+        _ = await HostedCheckout.resolve(Self.session,
+                                         package: TestData.annualPackage,
+                                         purchaseHandler: handler)
 
         await expect(trackedEvents.value.contains(where: Self.isPurchaseError))
             .toEventually(beTrue(), timeout: .seconds(2))
@@ -261,9 +261,9 @@ final class HostedCheckoutTests: TestCase {
         let handler = Self.makeHandler(purchases: purchases)
         handler.trackPaywallImpression(Self.impressionData)
 
-        _ = await HostedCheckout.settle(Self.session,
-                                        package: TestData.annualPackage,
-                                        purchaseHandler: handler)
+        _ = await HostedCheckout.resolve(Self.session,
+                                         package: TestData.annualPackage,
+                                         purchaseHandler: handler)
 
         expect(handler.sessionPurchaseResult).to(beNil())
         expect(handler.purchaseError).to(beNil())
