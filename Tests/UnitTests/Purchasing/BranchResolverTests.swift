@@ -107,6 +107,15 @@ class BranchResolverTests: TestCase {
         expect(self.audiencesProvider.configurationRequestCount) == 1
     }
 
+    // MARK: - gate
+
+    /// Branching is off until it ships, so nothing resolves and every branch takes its fallback.
+    func testBranchingIsDisabledByDefault() {
+        let systemInfo = MockSystemInfo(platformInfo: nil, finishTransactions: true)
+
+        expect(systemInfo.branchingEnabled) == false
+    }
+
     // MARK: - disabled
 
     func testTheDisabledResolverAlwaysTakesTheFallback() async {

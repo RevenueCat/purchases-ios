@@ -299,7 +299,7 @@ final class WorkflowNavigatorTests: TestCase {
         expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_3"
     }
 
-    func testWithoutAResolverEveryBranchTakesItsFallback() throws {
+    func testWithBranchingDisabledEveryBranchTakesItsFallback() async throws {
         let workflow = try Self.makeWorkflow(
             steps: [
                 makeStepWithBranchExit(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
@@ -309,6 +309,7 @@ final class WorkflowNavigatorTests: TestCase {
             initialStepId: "step_1"
         )
         let navigator = WorkflowNavigator(workflow: workflow)
+        await navigator.waitForBranchResolution()
 
         expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_2"
     }

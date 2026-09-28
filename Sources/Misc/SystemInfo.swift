@@ -100,6 +100,15 @@ class SystemInfo {
         return !self.dangerousSettings.customEntitlementComputation
     }
 
+    /// Workflow branch routing. Off until branching ships, so a branch always takes its fallback.
+    var branchingEnabled: Bool {
+#if ENABLE_WORKFLOW_BRANCHING
+        return self.remoteConfigEnabled
+#else
+        return false
+#endif
+    }
+
     var isDebugBuild: Bool {
 #if DEBUG
         return true

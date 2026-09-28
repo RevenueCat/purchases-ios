@@ -38,13 +38,13 @@ final class WorkflowNavigator: ObservableObject {
     private var resolvedBranchSteps: [String: String] = [:]
     private var resolveTask: Task<Void, Never>?
 
-    private let branchResolver: BranchResolver?
+    private let branchResolver: BranchResolver
 
-    init(workflow: PublishedWorkflow, branchResolver: BranchResolver? = nil) {
+    init(workflow: PublishedWorkflow, branchResolver: BranchResolver = DisabledBranchResolver()) {
         self.workflow = workflow
         self.branchResolver = branchResolver
         self.currentStepId = workflow.initialStepId
-        self.beginStepVisit()
+        self.resolveStepExits()
     }
 
     deinit {
@@ -83,7 +83,7 @@ final class WorkflowNavigator: ObservableObject {
         }
 
         backStack.append(currentStepId)
-        self.beginStepVisit()
+        self.resolveStepExits()
         currentStepId = nextStep.step.id
         return nextStep.step
     }
@@ -115,7 +115,7 @@ final class WorkflowNavigator: ObservableObject {
         guard let previousStepId = backStack.popLast() else {
             return nil
         }
-        self.beginStepVisit()
+        self.resolveStepExits()
         currentStepId = previousStepId
         return workflow.steps[previousStepId]
     }
@@ -125,14 +125,12 @@ final class WorkflowNavigator: ObservableObject {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension WorkflowNavigator {
 
-    /// Starts this visit's resolve and abandons the previous one, so each visit to a step, including a step
-    /// that targets itself, routes on its own answer.
-    private func beginStepVisit() {
+    /// Resolves the branches the current step can exit through, abandoning the previous step's resolve. Each
+    /// visit routes on its own answer, including a step that targets itself.
+    private func resolveStepExits() {
         self.resolvedBranchSteps = [:]
         self.resolveTask?.cancel()
-
-        guard let branchResolver else { return }
-        self.resolveTask = Task { [weak self] in
+        self.resolveTask = Task { [weak self, branchResolver] in
             guard let step = self?.currentStep else { return }
             let resolved = await branchResolver.resolveBranches(in: step)
             guard !Task.isCancelled else { return }

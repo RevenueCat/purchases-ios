@@ -39,10 +39,14 @@ extension BranchResolver {
 
 }
 
-/// Used when remote config is off, so there is nothing to evaluate audiences against.
-final class DisabledBranchResolver: BranchResolver {
+/// Used until branching is enabled, so every branch takes its fallback.
+@_spi(Internal) public final class DisabledBranchResolver: BranchResolver {
 
-    func resolve(_ branch: WorkflowBranch) async -> String {
+    /// Creates the resolver used while branching is disabled.
+    @_spi(Internal) public init() {}
+
+    /// - Returns: the branch's `fallbackStepId`, always.
+    @_spi(Internal) public func resolve(_ branch: WorkflowBranch) async -> String {
         return branch.fallbackStepId
     }
 

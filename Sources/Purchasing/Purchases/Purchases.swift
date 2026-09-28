@@ -726,10 +726,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     }
                 }
             )
-            branchResolver = DefaultBranchResolver(
-                audiencesConfigProvider: AudiencesConfigProvider(manager: remoteConfigManager),
-                localRulesEvaluator: localRulesEvaluator
-            )
+            branchResolver = systemInfo.branchingEnabled
+                ? DefaultBranchResolver(
+                    audiencesConfigProvider: AudiencesConfigProvider(manager: remoteConfigManager),
+                    localRulesEvaluator: localRulesEvaluator
+                )
+                : DisabledBranchResolver()
         } else {
             checkpointResolver = DisabledCheckpointWorkflowResolver()
             branchResolver = DisabledBranchResolver()
