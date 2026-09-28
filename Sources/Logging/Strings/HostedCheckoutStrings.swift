@@ -79,7 +79,7 @@ extension HostedCheckoutStrings: LogMessage {
             "the product."
         case let .poll_customer_info_refresh_failed(operationSessionID):
             return "Could not fetch CustomerInfo, though checkout session \(operationSessionID) says the " +
-            "customer owns the product. The next fetch will reflect it."
+            "customer owns the product. Clearing the cached CustomerInfo, so the next read fetches it."
         }
     }
 
