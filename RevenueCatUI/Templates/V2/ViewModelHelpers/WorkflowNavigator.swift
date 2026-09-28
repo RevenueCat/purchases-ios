@@ -36,9 +36,7 @@ final class WorkflowNavigator: ObservableObject {
     /// The current step's branch destinations, keyed by action id. Cleared on every step change, so each
     /// visit re-resolves, and until a visit's resolve lands its branches route to their `fallbackStepId`.
     private var resolvedBranchSteps: [String: String] = [:]
-    /// Bumped on every step change, so a resolve started on one visit cannot apply to a later one. Step ids
-    /// repeat, on back navigation and on a step that targets itself, so they cannot tell two visits apart.
-    @Published private(set) var stepVisit = 0
+    private var resolveTask: Task<Void, Never>?
 
     private let branchResolver: BranchResolver?
 
@@ -46,15 +44,16 @@ final class WorkflowNavigator: ObservableObject {
         self.workflow = workflow
         self.branchResolver = branchResolver
         self.currentStepId = workflow.initialStepId
+        self.beginStepVisit()
     }
 
-    /// A result from a visit the user has already left is dropped.
-    func resolveBranchesForCurrentStep() async {
-        guard let branchResolver, let step = self.currentStep else { return }
-        let visit = self.stepVisit
-        let resolved = await branchResolver.resolveBranches(in: step)
-        guard visit == self.stepVisit else { return }
-        self.resolvedBranchSteps = resolved
+    deinit {
+        self.resolveTask?.cancel()
+    }
+
+    /// Waits for the current visit's resolve. Only tests need this: nothing in the UI waits on resolution.
+    func waitForBranchResolution() async {
+        await self.resolveTask?.value
     }
 
     var currentStep: WorkflowStep? {
@@ -126,9 +125,19 @@ final class WorkflowNavigator: ObservableObject {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension WorkflowNavigator {
 
+    /// Starts this visit's resolve and abandons the previous one, so each visit to a step, including a step
+    /// that targets itself, routes on its own answer.
     private func beginStepVisit() {
         self.resolvedBranchSteps = [:]
-        self.stepVisit += 1
+        self.resolveTask?.cancel()
+
+        guard let branchResolver else { return }
+        self.resolveTask = Task { [weak self] in
+            guard let step = self?.currentStep else { return }
+            let resolved = await branchResolver.resolveBranches(in: step)
+            guard !Task.isCancelled else { return }
+            self?.resolvedBranchSteps = resolved
+        }
     }
 
     /// A branch takes the route its audiences picked, or its fallback when none matched. A route naming a

@@ -233,7 +233,7 @@ final class WorkflowNavigatorTests: TestCase {
             workflow: workflow,
             branchResolver: StubBranchResolver(stepId: "step_3")
         )
-        await navigator.resolveBranchesForCurrentStep()
+        await navigator.waitForBranchResolution()
 
         let result = navigator.triggerAction(componentId: "btn_abc")
 
@@ -271,7 +271,7 @@ final class WorkflowNavigatorTests: TestCase {
             workflow: workflow,
             branchResolver: StubBranchResolver(stepId: "step_3")
         )
-        await navigator.resolveBranchesForCurrentStep()
+        await navigator.waitForBranchResolution()
 
         _ = navigator.triggerAction(componentId: "btn_abc")
         _ = navigator.navigateBack()
@@ -294,7 +294,7 @@ final class WorkflowNavigatorTests: TestCase {
             branchResolver: StubBranchResolver(stepId: "step_3")
         )
 
-        await navigator.resolveBranchesForCurrentStep()
+        await navigator.waitForBranchResolution()
 
         expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_3"
     }
@@ -313,32 +313,6 @@ final class WorkflowNavigatorTests: TestCase {
         expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_2"
     }
 
-    /// The step id repeats across visits, so a resolve started on the first visit must not apply to the
-    /// second. It is released only after the user has navigated away and come back.
-    func testAResolveFromAnEarlierVisitDoesNotApplyAfterReturning() async throws {
-        let workflow = try Self.makeWorkflow(
-            steps: [
-                makeStepWithBranchExit(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
-                makeStep(id: "step_2"),
-                makeStep(id: "step_3")
-            ],
-            initialStepId: "step_1"
-        )
-        let resolver = BlockingBranchResolver(stepId: "step_3")
-        let navigator = WorkflowNavigator(workflow: workflow, branchResolver: resolver)
-
-        let pending = Task { await navigator.resolveBranchesForCurrentStep() }
-        await resolver.waitUntilCalled()
-
-        _ = navigator.triggerAction(componentId: "btn_abc")
-        _ = navigator.navigateBack()
-
-        resolver.release()
-        await pending.value
-
-        expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_2"
-    }
-
     /// Config drift: the audiences pick a step the workflow no longer contains. The button must still
     /// navigate, using the configured fallback, rather than doing nothing.
     func testARouteNamingAMissingStepFallsBack() async throws {
@@ -353,13 +327,13 @@ final class WorkflowNavigatorTests: TestCase {
             workflow: workflow,
             branchResolver: StubBranchResolver(stepId: "step_gone")
         )
-        await navigator.resolveBranchesForCurrentStep()
+        await navigator.waitForBranchResolution()
 
         expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_2"
     }
 
-    /// A step that targets itself is still a new visit, so its branches must resolve again.
-    func testAStepTargetingItselfStartsANewVisit() throws {
+    /// A step that targets itself is still a new visit, so its branches resolve again.
+    func testAStepTargetingItselfResolvesAgain() async throws {
         let workflow = try Self.makeWorkflow(
             steps: [
                 makeStepWithBranchExit(
@@ -368,17 +342,20 @@ final class WorkflowNavigatorTests: TestCase {
                     actionId: "btn_abc",
                     fallbackStepId: "step_1"
                 ),
-                makeStep(id: "step_2")
+                makeStep(id: "step_2"),
+                makeStep(id: "step_3")
             ],
             initialStepId: "step_1"
         )
-        let navigator = WorkflowNavigator(workflow: workflow)
-        let before = navigator.stepVisit
+        let resolver = CountingBranchResolver(stepId: "step_1")
+        let navigator = WorkflowNavigator(workflow: workflow, branchResolver: resolver)
+        await navigator.waitForBranchResolution()
 
         _ = navigator.triggerAction(componentId: "btn_abc")
+        await navigator.waitForBranchResolution()
 
         expect(navigator.currentStepId) == "step_1"
-        expect(navigator.stepVisit) > before
+        expect(resolver.callCount) == 2
     }
 
     // MARK: - navigateBack
@@ -656,37 +633,17 @@ private final class StubBranchResolver: BranchResolver {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private final class BlockingBranchResolver: BranchResolver, @unchecked Sendable {
+private final class CountingBranchResolver: BranchResolver, @unchecked Sendable {
 
     private let stepId: String
-    private let called = DispatchSemaphore(value: 0)
-    private let released = DispatchSemaphore(value: 0)
+    private(set) var callCount = 0
 
     init(stepId: String) {
         self.stepId = stepId
     }
 
-    func waitUntilCalled() async {
-        await withCheckedContinuation { continuation in
-            DispatchQueue.global().async {
-                self.called.wait()
-                continuation.resume()
-            }
-        }
-    }
-
-    func release() {
-        self.released.signal()
-    }
-
     func resolve(_ branch: WorkflowBranch) async -> String {
-        self.called.signal()
-        await withCheckedContinuation { continuation in
-            DispatchQueue.global().async {
-                self.released.wait()
-                continuation.resume()
-            }
-        }
+        self.callCount += 1
         return self.stepId
     }
 

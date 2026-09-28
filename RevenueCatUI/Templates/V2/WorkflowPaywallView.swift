@@ -454,10 +454,6 @@ struct WorkflowPaywallView: View {
         .onChangeOf(self.navigator.currentStepId) { _ in
             self.syncExitOfferBinding()
         }
-        // Keyed on the visit, not the step id, so a step that targets itself re-resolves too.
-        .task(id: self.navigator.stepVisit) {
-            await self.navigator.resolveBranchesForCurrentStep()
-        }
         // Workflow-level injection: every page (current, outgoing, and hidden-but-mounted) shares
         // this presentation session's state store. PaywallsV2View only creates its own store when
         // no store was injected from above (i.e. standalone presentation).

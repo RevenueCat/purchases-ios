@@ -66,56 +66,54 @@ final class DefaultBranchResolver: BranchResolver {
     func resolve(_ branch: WorkflowBranch) async -> String {
         guard !branch.branches.isEmpty else { return branch.fallbackStepId }
 
-        let audiences: [String: Audience]
         do {
-            // One snapshot for the whole walk, so a config swap midway cannot mix two generations.
-            guard let configuration = try await self.audiencesConfigProvider.configuration() else {
-                Logger.error(Strings.remoteConfig.branchRoutedToFallback(
-                    reason: "no audience configuration"
-                ))
-                return branch.fallbackStepId
-            }
-            audiences = configuration.audiences
-        } catch {
-            Logger.error(Strings.remoteConfig.branchRoutedToFallback(
-                reason: String(describing: error)
-            ))
+            return try await self.route(branch) ?? branch.fallbackStepId
+        } catch is CancellationError {
+            // The step was left before this finished, so there is nothing to report.
             return branch.fallbackStepId
+        } catch {
+            Logger.error(Strings.remoteConfig.branchRoutedToFallback(reason: String(describing: error)))
+            return branch.fallbackStepId
+        }
+    }
+
+    /// The step the first matching audience picks, or `nil` when none matched.
+    private func route(_ branch: WorkflowBranch) async throws -> String? {
+        // One snapshot for the whole walk, so a config swap midway cannot mix two generations.
+        guard let audiences = try await self.audiencesConfigProvider.configuration()?.audiences else {
+            throw BranchResolutionError.noAudienceConfiguration
         }
 
         let unreadable = Atomic<[String]>([])
-
-        do {
-            let matched = try await self.localRulesEvaluator.match(in: branch.branches) { route in
-                guard let audience = audiences[route.audienceId] else {
-                    // Not thrown: `match` ends the walk on a resolution failure, and an audience we
-                    // cannot read must not stop a later one from winning. Never matches instead.
-                    unreadable.modify { $0.append(route.audienceId) }
-                    return Self.neverMatches
-                }
-
-                return audience.rules
+        let matched = try await self.localRulesEvaluator.match(in: branch.branches) { route in
+            guard let audience = audiences[route.audienceId] else {
+                // Not thrown: `match` ends the walk on a resolution failure, and an audience we cannot
+                // read must not stop a later one from winning. Never matches instead.
+                unreadable.modify { $0.append(route.audienceId) }
+                return Self.neverMatches
             }
+            return audience.rules
+        }
 
-            if let matched { return matched.stepId }
+        if matched == nil, !unreadable.value.isEmpty {
+            throw BranchResolutionError.unreadableAudiences(unreadable.value)
+        }
+        return matched?.stepId
+    }
 
-            if !unreadable.value.isEmpty {
-                Logger.error(Strings.remoteConfig.branchRoutedToFallback(
-                    reason: "could not read \(unreadable.value.joined(separator: ", "))"
-                ))
-            }
+}
 
-            return branch.fallbackStepId
-        } catch is CancellationError {
-            // The step was left before this finished. Not a resolution failure, so it is not logged.
-            return branch.fallbackStepId
-        } catch {
-            // Nothing matched and something went wrong on the way. Logged because it is
-            // indistinguishable from a clean non-match once we route.
-            Logger.error(Strings.remoteConfig.branchRoutedToFallback(
-                reason: String(describing: error)
-            ))
-            return branch.fallbackStepId
+private enum BranchResolutionError: Error, CustomStringConvertible {
+
+    case noAudienceConfiguration
+    case unreadableAudiences([String])
+
+    var description: String {
+        switch self {
+        case .noAudienceConfiguration:
+            return "no audience configuration"
+        case .unreadableAudiences(let identifiers):
+            return "could not read \(identifiers.joined(separator: ", "))"
         }
     }
 
