@@ -1968,18 +1968,7 @@ public extension Purchases {
     private func refreshCustomerInfoAfterHostedCheckout(operationSessionID: String) async {
         Logger.verbose(Strings.hostedCheckout.poll_fetching_customer_info(operationSessionID))
 
-        let refreshed: CustomerInfo? = await Async.retry(maximumRetries: 3) {
-            do {
-                let info = try await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
-                                                                           fetchPolicy: .fetchCurrent)
-                return (shouldRetry: false, info)
-            } catch {
-                let isTransient = (error as? BackendError)?.isTransient ?? false
-                return (shouldRetry: isTransient, nil)
-            }
-        }
-
-        if refreshed == nil {
+        if await self.fetchCurrentCustomerInfoRetryingTransientErrors() == nil {
             Logger.warn(Strings.hostedCheckout.poll_customer_info_refresh_failed(operationSessionID))
         }
     }
@@ -2233,18 +2222,7 @@ extension Purchases {
         Logger.debug(AdsStrings.reward_verification_entitlement_fetching_customer_info(
             transactionID: clientTransactionID
         ))
-        let refreshed: CustomerInfo? = await Async.retry(maximumRetries: 3) {
-            do {
-                let info = try await self.customerInfoManager.customerInfo(
-                    appUserID: self.appUserID,
-                    fetchPolicy: .fetchCurrent
-                )
-                return (shouldRetry: false, info)
-            } catch {
-                let isTransient = (error as? BackendError)?.isTransient ?? false
-                return (shouldRetry: isTransient, nil)
-            }
-        }
+        let refreshed = await self.fetchCurrentCustomerInfoRetryingTransientErrors()
         if refreshed == nil {
             Logger.warn(AdsStrings.reward_verification_entitlement_customer_info_refresh_failed(
                 transactionID: clientTransactionID
@@ -3094,6 +3072,22 @@ internal extension Purchases {
 // MARK: Private
 
 private extension Purchases {
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    /// For a backend change made outside StoreKit, which no receipt post brings back. `nil` if no fetch lands.
+    func fetchCurrentCustomerInfoRetryingTransientErrors() async -> CustomerInfo? {
+        return await Async.retry(maximumRetries: 3) {
+            do {
+                let info = try await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
+                                                                           fetchPolicy: .fetchCurrent)
+                return (shouldRetry: false, info)
+            } catch {
+                let isTransient = (error as? BackendError)?.isTransient ?? false
+                return (shouldRetry: isTransient, nil)
+            }
+        }
+    }
+    #endif
 
     func handleCustomerInfoChanged(from old: CustomerInfo?, to new: CustomerInfo) {
         if old != nil {
