@@ -28,3 +28,5 @@
 "You are currently subscribed to this" = "Вы уже подписаны на это";
 "You've already purchased this" = "Вы уже приобрели это";
 "Your purchase was successful." = "Покупка прошла успешно.";
+"Purchase unavailable" = "Покупка недоступна";
+"This purchase isn't available in your region." = "Эта покупка недоступна в вашем регионе.";

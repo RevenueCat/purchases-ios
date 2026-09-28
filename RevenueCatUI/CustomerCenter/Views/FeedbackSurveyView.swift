@@ -116,6 +116,7 @@ struct FeedbackSurveyView: View {
                         .font(.headline)
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             })
         }

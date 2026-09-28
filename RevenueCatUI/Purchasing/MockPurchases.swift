@@ -122,6 +122,15 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
         return await block(operationSessionID)
     }
 
+    var useExternalPurchaseCustomLinks = false
+    var externalPurchaseLinkBlock: (@Sendable () async -> ExternalPurchaseLinkResult)?
+
+    func prepareExternalPurchaseLink() async -> ExternalPurchaseLinkResult {
+        guard let block = self.externalPurchaseLinkBlock else { return .proceed(externalPurchaseTokenID: nil) }
+
+        return await block()
+    }
+
     func restorePurchases() async throws -> CustomerInfo {
         return try await self.restoreBlock()
     }
@@ -206,6 +215,8 @@ extension PaywallPurchasesType {
         mapped.remoteConfigEnabled = self.remoteConfigEnabled
         mapped.hostedCheckoutBlock = { await self.startHostedCheckout(package: $0, paywallEvent: $1) }
         mapped.hostedCheckoutPollBlock = { await self.pollHostedCheckout(operationSessionID: $0) }
+        mapped.useExternalPurchaseCustomLinks = self.useExternalPurchaseCustomLinks
+        mapped.externalPurchaseLinkBlock = { await self.prepareExternalPurchaseLink() }
         #if !os(tvOS)
         mapped.workflowBlock = { try await self.workflow(forOfferingIdentifier: $0) }
         mapped.cachedWorkflowBlock = { self.cachedWorkflow(forOfferingIdentifier: $0) }
@@ -239,6 +250,8 @@ extension PaywallPurchasesType {
         mapped.remoteConfigEnabled = self.remoteConfigEnabled
         mapped.hostedCheckoutBlock = { await self.startHostedCheckout(package: $0, paywallEvent: $1) }
         mapped.hostedCheckoutPollBlock = { await self.pollHostedCheckout(operationSessionID: $0) }
+        mapped.useExternalPurchaseCustomLinks = self.useExternalPurchaseCustomLinks
+        mapped.externalPurchaseLinkBlock = { await self.prepareExternalPurchaseLink() }
         #if !os(tvOS)
         mapped.workflowBlock = { try await self.workflow(forOfferingIdentifier: $0) }
         mapped.cachedWorkflowBlock = { self.cachedWorkflow(forOfferingIdentifier: $0) }
