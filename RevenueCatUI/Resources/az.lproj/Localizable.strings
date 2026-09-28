@@ -22,6 +22,8 @@
 "Continue" = "Davam et";
 "Default_offer_details_with_intro_offer" = "{{ sub_offer_duration }} sınaq dövrünüzü başladın, sonra {{ total_price_and_per_month }}.";
 "Something went wrong" = "Nəsə səhv oldu";
+"Payment failed." = "Ödəniş uğursuz oldu.";
+"Your purchase is still processing." = "Alışınız hələ emal olunur.";
 "Purchase" = "Satın al";
 "You are currently subscribed to this" = "Siz artıq buna abunəsiniz";
 "You've already purchased this" = "Siz bunu artıq almısınız";

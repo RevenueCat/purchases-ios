@@ -22,6 +22,8 @@
 "Continue" = "продължи";
 "Default_offer_details_with_intro_offer" = "Започнете своя пробен период от {{ sub_offer_duration }}, след което {{ total_price_and_per_month }}.";
 "Something went wrong" = "Нещо се обърка";
+"Payment failed." = "Плащането не бе успешно.";
+"Your purchase is still processing." = "Покупката ви все още се обработва.";
 "Purchase" = "Купи";
 "You are currently subscribed to this" = "Вече имате абонамент за това";
 "You've already purchased this" = "Вече сте закупили това";

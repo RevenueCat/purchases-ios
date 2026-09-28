@@ -22,6 +22,8 @@
 "Continue" = "يكمل";
 "Default_offer_details_with_intro_offer" = "ابدأ الفترة التجريبية التي تبلغ {{ sub_offer_duration }}، ثم {{ Total_price_and_per_month }}.";
 "Something went wrong" = "هناك خطأ ما";
+"Payment failed." = "فشل الدفع.";
+"Your purchase is still processing." = "لا تزال عملية الشراء قيد المعالجة.";
 "Purchase" = "شراء";
 "You are currently subscribed to this" = "أنت مشترك في هذا العنصر بالفعل";
 "You've already purchased this" = "لقد اشتريت هذا العنصر بالفعل";

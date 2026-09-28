@@ -13,6 +13,7 @@
 
 import Foundation
 @_spi(Internal) import RevenueCat
+import SwiftUI
 
 #if os(iOS) && canImport(WebKit)
 
@@ -167,6 +168,23 @@ extension HostedCheckoutError: CustomNSError {
     /// Creating the setup intent, creating the payment method, and completing the setup intent.
     private static let setupFailedCodes: Set<Int> = [1, 2, 4]
     private static let paymentChargeFailedCode = 3
+
+}
+
+extension HostedCheckoutError {
+
+    /// What the paywall tells the customer. A purchase the backend has yet to confirm may still land, so it is not
+    /// called a failure.
+    func message(bundle: Bundle) -> Text {
+        switch self {
+        case .failed(code: Self.paymentChargeFailedCode):
+            return Text("Payment failed.", bundle: bundle)
+        case .failed:
+            return Text("Something went wrong", bundle: bundle)
+        case .unconfirmed:
+            return Text("Your purchase is still processing.", bundle: bundle)
+        }
+    }
 
 }
 

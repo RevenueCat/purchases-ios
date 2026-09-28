@@ -48,7 +48,7 @@ struct PurchaseButtonComponentView: View {
 
     @State private var alreadyOwnedCategory: StoreProduct.ProductCategory?
 
-    @State private var hostedCheckoutError: NSError?
+    @State private var hostedCheckoutError: HostedCheckoutError?
     #endif
 
     private let viewModel: PurchaseButtonComponentViewModel
@@ -103,7 +103,19 @@ struct PurchaseButtonComponentView: View {
 
             self.handleHostedCheckoutOutcome(outcome, session: session)
         }
-        .displayError(self.$hostedCheckoutError)
+        .alert(
+            Text(verbatim: ""),
+            isPresented: .isNotNil(self.$hostedCheckoutError),
+            presenting: self.hostedCheckoutError
+        ) { _ in
+            Button {
+                self.hostedCheckoutError = nil
+            } label: {
+                Text("OK", bundle: self.viewModel.localizedBundle)
+            }
+        } message: { error in
+            error.message(bundle: self.viewModel.localizedBundle)
+        }
         .alert(
             self.alreadyOwnedTitle,
             isPresented: .isNotNil(self.$alreadyOwnedCategory)
@@ -251,7 +263,7 @@ struct PurchaseButtonComponentView: View {
                     self.showAlreadyOwnedAlert(for: package)
                 }
             case let .failed(error):
-                self.hostedCheckoutError = error as NSError
+                self.hostedCheckoutError = error
             case .purchased:
                 break
             }
