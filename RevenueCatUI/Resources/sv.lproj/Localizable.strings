@@ -28,3 +28,5 @@
 "You are currently subscribed to this" = "Du abonnerar redan på detta";
 "You've already purchased this" = "Du har redan köpt detta";
 "Your purchase was successful." = "Ditt köp har genomförts.";
+"Purchase unavailable" = "Köpet är inte tillgängligt";
+"This purchase isn't available in your region." = "Det här köpet är inte tillgängligt i din region.";
