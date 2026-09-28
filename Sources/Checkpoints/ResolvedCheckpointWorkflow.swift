@@ -25,19 +25,23 @@ import Foundation
     public let workflowBlobRef: String?
     /// Shared by the checkpoint hit and every event of the workflow run it starts.
     public let traceId: String
+    /// Every branch in the workflow, resolved when the checkpoint picked it.
+    public let resolvedBranchSteps: [WorkflowBranch: String]
 
     init(
         workflow: PublishedWorkflow,
         uiConfig: UIConfig,
         offerings: Offerings,
         workflowBlobRef: String? = nil,
-        traceId: String = UUID().uuidString
+        traceId: String = UUID().uuidString,
+        resolvedBranchSteps: [WorkflowBranch: String] = [:]
     ) {
         self.workflow = workflow
         self.uiConfig = uiConfig
         self.offerings = offerings
         self.workflowBlobRef = workflowBlobRef
         self.traceId = traceId
+        self.resolvedBranchSteps = resolvedBranchSteps
     }
 
 }

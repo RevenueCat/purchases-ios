@@ -104,6 +104,10 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
     private let localRulesEvaluator: LocalRulesEvaluator
     private let workflowManager: WorkflowManager
     private let offeringsProvider: () async throws -> Offerings
+    private lazy var branchResolver: BranchResolver = DefaultBranchResolver(
+        audiencesConfigProvider: self.audiencesConfigProvider,
+        localRulesEvaluator: self.localRulesEvaluator
+    )
 
     init(
         checkpointsConfigProvider: CheckpointsConfigProviderType,
@@ -346,7 +350,8 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
                 workflow: workflowData.workflow,
                 uiConfig: workflowData.uiConfig,
                 offerings: offerings,
-                workflowBlobRef: workflowData.workflowBlobRef
+                workflowBlobRef: workflowData.workflowBlobRef,
+                resolvedBranchSteps: await self.branchResolver.resolveAll(in: workflowData.workflow)
             )
         )
     }
