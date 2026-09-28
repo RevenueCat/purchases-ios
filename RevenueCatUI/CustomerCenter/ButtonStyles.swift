@@ -367,7 +367,8 @@ struct CustomerCenterMacRowLabel: View {
             if showsChevron {
                 Image(systemName: "chevron.forward")
                     .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.tertiary)
+                    // Not `.tertiary`, which under a tinted title comes out as a faded tint.
+                    .foregroundStyle(Color(nsColor: .tertiaryLabelColor))
                     .accessibilityHidden(true)
             }
         }

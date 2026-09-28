@@ -352,6 +352,7 @@ private extension RelevantPurchasesListView {
                         viewModel.showAllPurchases = true
                     } label: {
                         CustomerCenterMacRowLabel(title: localization[.seeAllPurchases], showsChevron: true)
+                            .foregroundStyle(.tint)
                     }
                     .customerCenterMacRow()
                 }
