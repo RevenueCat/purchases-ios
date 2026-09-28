@@ -2063,7 +2063,7 @@ jobs:
             ulimit -n 4096
             bundle exec fastlane build_and_upload_paywalls_tester_snapshots
           environment:
-            DEVICE: iPhone 17,OS=27.0
+            DEVICE: iPhone 17 (27.0)
 
   binary_size_analysis:
     executor:
