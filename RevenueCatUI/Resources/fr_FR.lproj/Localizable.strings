@@ -23,3 +23,5 @@
 "Default_offer_details_with_intro_offer" = "Démarrez votre essai de {{ sub_offer_duration }}, puis de {{ total_price_and_per_month }}.";
 "Something went wrong" = "Une erreur s’est produite";
 "Purchase" = "Acheter";
+"You are currently subscribed to this" = "Vous êtes déjà abonné à cet article";
+"You've already purchased this" = "Vous avez déjà acheté cet article";

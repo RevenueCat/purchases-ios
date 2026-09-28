@@ -23,3 +23,5 @@
 "Default_offer_details_with_intro_offer" = "התחל את תקופת הניסיון של {{ sub_offer_duration }} ולאחר מכן {{ total_price_and_per_month }}.";
 "Something went wrong" = "משהו השתבש";
 "Purchase" = "רכישה";
+"You are currently subscribed to this" = "יש לך כבר מנוי לפריט הזה";
+"You've already purchased this" = "כבר רכשת את הפריט הזה";

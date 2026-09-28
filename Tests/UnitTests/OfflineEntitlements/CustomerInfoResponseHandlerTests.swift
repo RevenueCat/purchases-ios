@@ -63,7 +63,7 @@ class NormalCustomerInfoResponseHandlerTests: BaseCustomerInfoResponseHandlerTes
                       responseHeaders: [:],
                       body: .init(customerInfo: Self.sampleCustomerInfo,
                                   errorResponse: .default),
-                      verificationResult: .failed,
+                      verificationResult: .failed(.unknown),
                       isLoadShedderResponse: false,
                       isFallbackUrlResponse: false)
             ),

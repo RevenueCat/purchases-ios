@@ -31,6 +31,7 @@ extension FeatureEventsRequest {
         let workflowID: String?
         let offeringID: String?
         let checkpointRuleID: String?
+        let traceID: String?
 
     }
 
@@ -67,7 +68,8 @@ extension FeatureEventsRequest.CheckpointEvent {
                 result: event.data.result.rawValue,
                 workflowID: event.data.workflowID,
                 offeringID: event.data.offeringID,
-                checkpointRuleID: event.data.checkpointRuleID
+                checkpointRuleID: event.data.checkpointRuleID,
+                traceID: event.data.traceID
             )
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
@@ -97,6 +99,7 @@ extension FeatureEventsRequest.CheckpointEvent: Encodable {
         case workflowID = "workflow_id"
         case offeringID = "offering_id"
         case checkpointRuleID = "checkpoint_rule_id"
+        case traceID = "trace_id"
 
     }
 
@@ -114,6 +117,7 @@ extension FeatureEventsRequest.CheckpointEvent: Encodable {
         try container.encodeIfPresent(self.workflowID, forKey: .workflowID)
         try container.encodeIfPresent(self.offeringID, forKey: .offeringID)
         try container.encodeIfPresent(self.checkpointRuleID, forKey: .checkpointRuleID)
+        try container.encodeIfPresent(self.traceID, forKey: .traceID)
     }
 
 }

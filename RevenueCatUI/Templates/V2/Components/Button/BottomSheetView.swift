@@ -12,6 +12,9 @@
 //  Created by Will Taylor on 5/5/25.
 
 import SwiftUI
+#if os(iOS) || os(visionOS)
+import UIKit
+#endif
 
 @_spi(Internal) import RevenueCat
 
@@ -116,6 +119,13 @@ struct BottomSheetOverlayModifier: ViewModifier {
         )
     }
 
+    /// A sheet is not a new screen to UIKit, so VoiceOver holds its focus until told otherwise.
+    private static func announceScreenChange() {
+#if os(iOS) || os(visionOS)
+        UIAccessibility.post(notification: .screenChanged, argument: nil)
+#endif
+    }
+
     /// One hop so the content's own measurements land before anything moves.
     private func settleAfterLayout(sheetID: String) {
         DispatchQueue.main.async {
@@ -123,6 +133,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
             withAnimation(Self.presentationAnimation) {
                 self.settledSheetID = sheetID
             }
+            Self.announceScreenChange()
         }
     }
 
@@ -149,6 +160,8 @@ struct BottomSheetOverlayModifier: ViewModifier {
             content
                 .blur(radius: sheetViewModel?.sheet.backgroundBlur == true ? 10 : 0)
                 .animation(.easeInOut(duration: 0.25), value: sheetViewModel?.sheet.backgroundBlur)
+                // Blur is visual only: without this VoiceOver still walks what is behind.
+                .accessibilityHidden(self.sheetViewModel != nil)
 
             // Invisible tap area that covers the screen
             if sheetViewModel != nil {
@@ -157,6 +170,8 @@ struct BottomSheetOverlayModifier: ViewModifier {
                     .onTapGesture {
                         sheetViewModel = nil
                     }
+                    // Nothing to announce: dismissal is reachable from inside the sheet.
+                    .accessibilityHidden(true)
             }
 
             // Sheet content
@@ -205,6 +220,16 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         if self.mountedSheetID == sheetViewModel.sheet.id {
                             self.mountedSheetID = nil
                         }
+                        // Hand focus back to the paywall. Skipped when another sheet took its
+                        // place, since that one announces itself once it settles.
+                        if self.sheetViewModel == nil {
+                            Self.announceScreenChange()
+                        }
+                    }
+                    // A sheet need not author a close button, so without this a screen reader
+                    // could have no way out.
+                    .accessibilityAction(.escape) {
+                        self.sheetViewModel = nil
                     }
                     // Tie the sheet content's identity to the sheet's `id` so that
                     // switching to a different sheet disposes the previous sheet's
@@ -216,6 +241,10 @@ struct BottomSheetOverlayModifier: ViewModifier {
                     .id(sheetViewModel.sheet.id)
                 }
             }
+            // Hiding the paywall doesn't reach into its ScrollView, so VoiceOver still walked it.
+            // Only checkable with Accessibility Inspector or VoiceOver: XCUITest lists hidden elements.
+            .accessibilityElement(children: .contain)
+            .accessibilityAddTraits(self.sheetViewModel != nil ? .isModal : [])
             .background(
                 GeometryReader { proxy in
                     Color.clear

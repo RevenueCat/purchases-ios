@@ -19,6 +19,7 @@ import SwiftUI
 
 struct EntitlementGateUseCaseView: View {
 
+    @ObservedObject var model: CheckpointDemoModel
     @ObservedObject var customVariables: CustomVariables
 
     @State private var didLoad = false
@@ -84,7 +85,8 @@ struct EntitlementGateUseCaseView: View {
 
             Purchases.shared.checkpoint(
                 "entitlement_gate",
-                customVariables: self.entitlementCheckpointCustomVariables
+                customVariables: self.entitlementCheckpointCustomVariables,
+                paywallPresenter: self.model.localPaywallPresenter
             ) { result in
                 self.handle(result)
             }

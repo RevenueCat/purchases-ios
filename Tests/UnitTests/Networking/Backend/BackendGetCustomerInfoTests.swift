@@ -238,7 +238,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
             requestPath: .getCustomerInfo(appUserID: Self.userID),
             response: .init(statusCode: .success,
                             response: Self.validCustomerResponse,
-                            verificationResult: .failed)
+                            verificationResult: .failed(.unknown))
         )
 
         let customerInfo = waitUntilValue { completed in

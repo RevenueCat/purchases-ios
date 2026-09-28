@@ -518,16 +518,19 @@ class WorkflowResponseTests: TestCase {
         expect(step.metadata).to(beNil())
     }
 
-    func testDecodeWorkflowStepWithoutType() throws {
-        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: Data(#"{ "id": "step_1" }"#.utf8))
-
-        expect(step.type).to(beNil())
+    func testDecodeWorkflowStepWithoutTypeThrows() {
+        XCTAssertThrowsError(
+            try JSONDecoder.default.decode(WorkflowStep.self, from: Data(#"{ "id": "step_1" }"#.utf8))
+        )
     }
 
     func testDecodeWorkflowStepOfferingIdentifier() throws {
         let step = try JSONDecoder.default.decode(
             WorkflowStep.self,
-            from: Data(#"{ "id": "step_1", "param_values": { "offering": { "identifier": "default" } } }"#.utf8)
+            from: Data((
+                #"{ "id": "step_1", "type": "offering", "param_values": "#
+                + #"{ "offering": { "identifier": "default" } } }"#
+            ).utf8)
         )
 
         expect(step.offeringIdentifier) == "default"
@@ -536,7 +539,10 @@ class WorkflowResponseTests: TestCase {
     func testDecodeWorkflowStepOfferingIdentifierFallsBackToFlatValue() throws {
         let step = try JSONDecoder.default.decode(
             WorkflowStep.self,
-            from: Data(#"{ "id": "step_1", "param_values": { "offering_identifier": "default" } }"#.utf8)
+            from: Data((
+                #"{ "id": "step_1", "type": "offering", "param_values": "#
+                + #"{ "offering_identifier": "default" } }"#
+            ).utf8)
         )
 
         expect(step.offeringIdentifier) == "default"
@@ -550,7 +556,7 @@ class WorkflowResponseTests: TestCase {
         ]
 
         for paramValues in values {
-            let json = #"{ "id": "step_1", "param_values": "# + paramValues + " }"
+            let json = #"{ "id": "step_1", "type": "offering", "param_values": "# + paramValues + " }"
             let step = try JSONDecoder.default.decode(
                 WorkflowStep.self,
                 from: Data(json.utf8)
@@ -564,7 +570,7 @@ class WorkflowResponseTests: TestCase {
         let step = try JSONDecoder.default.decode(
             WorkflowStep.self,
             from: Data(#"""
-            { "id": "step_1", "param_values": {
+            { "id": "step_1", "type": "offering", "param_values": {
                 "offering": { "identifier": "nested" },
                 "offering_identifier": "flat"
             } }
@@ -578,7 +584,7 @@ class WorkflowResponseTests: TestCase {
         let step = try JSONDecoder.default.decode(
             WorkflowStep.self,
             from: Data(#"""
-            { "id": "step_1", "param_values": {
+            { "id": "step_1", "type": "offering", "param_values": {
                 "offering": {},
                 "offering_identifier": "flat"
             } }
@@ -592,7 +598,7 @@ class WorkflowResponseTests: TestCase {
         let step = try JSONDecoder.default.decode(
             WorkflowStep.self,
             from: Data(#"""
-            { "id": "step_1", "param_values": {
+            { "id": "step_1", "type": "offering", "param_values": {
                 "offering": "not-an-object",
                 "offering_identifier": "flat"
             } }
@@ -606,7 +612,7 @@ class WorkflowResponseTests: TestCase {
         let step = try JSONDecoder.default.decode(
             WorkflowStep.self,
             from: Data(#"""
-            { "id": "step_1", "param_values": {
+            { "id": "step_1", "type": "offering", "param_values": {
                 "offering": { "identifier": "   " },
                 "offering_identifier": "flat"
             } }
@@ -620,7 +626,7 @@ class WorkflowResponseTests: TestCase {
         let step = try JSONDecoder.default.decode(
             WorkflowStep.self,
             from: Data(#"""
-            { "id": "step_1", "param_values": {
+            { "id": "step_1", "type": "offering", "param_values": {
                 "offering": { "identifier": 123 },
                 "offering_identifier": "flat"
             } }

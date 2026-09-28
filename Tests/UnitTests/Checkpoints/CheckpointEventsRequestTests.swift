@@ -44,6 +44,7 @@ class CheckpointEventsRequestTests: TestCase {
         expect(request.workflowID) == "wf_123"
         expect(request.offeringID) == "offering_id"
         expect(request.checkpointRuleID) == "rule_123"
+        expect(request.traceID) == "trace_123"
     }
 
     func testKhepriCompatibleShape() throws {
@@ -61,6 +62,7 @@ class CheckpointEventsRequestTests: TestCase {
         expect(json).to(contain("\"workflow_id\":\"wf_123\""))
         expect(json).to(contain("\"offering_id\":\"offering_id\""))
         expect(json).to(contain("\"checkpoint_rule_id\":\"rule_123\""))
+        expect(json).to(contain("\"trace_id\":\"trace_123\""))
     }
 
     func testEachResultIsEncodedWithItsWireValue() throws {
@@ -90,6 +92,21 @@ class CheckpointEventsRequestTests: TestCase {
         expect(request.workflowID) == "wf_123"
         expect(request.offeringID) == "offering_id"
         expect(request.checkpointRuleID) == "rule_123"
+        expect(request.traceID) == "trace_123"
+    }
+
+    /// Hits stored by an SDK version without trace ids have no such key and must still be sent.
+    func testDecodesAHitStoredWithoutATraceId() throws {
+        let stored = try self.storedEvent(data: .init(id: self.id,
+                                                      identifier: "onboarding_complete",
+                                                      date: self.date,
+                                                      result: .noMatch))
+        expect(stored.encodedEvent).toNot(contain("trace"))
+
+        let request = try XCTUnwrap(FeatureEventsRequest.CheckpointEvent(storedEvent: stored))
+
+        expect(request.result) == "no_match"
+        expect(request.traceID).to(beNil())
     }
 
     func testOmitsIdsThatDidNotResolve() throws {
@@ -102,6 +119,7 @@ class CheckpointEventsRequestTests: TestCase {
         expect(json).toNot(contain("workflow_id"))
         expect(json).toNot(contain("offering_id"))
         expect(json).toNot(contain("checkpoint_rule_id"))
+        expect(json).toNot(contain("trace_id"))
     }
 
     /// khepri discriminates the events union on `type`, so nothing downstream reads a `discriminator` key.
@@ -139,7 +157,8 @@ class CheckpointEventsRequestTests: TestCase {
               result: .presentUI,
               workflowID: "wf_123",
               offeringID: "offering_id",
-              checkpointRuleID: "rule_123")
+              checkpointRuleID: "rule_123",
+              traceID: "trace_123")
     }
 
     private func storedEvent(appSessionID: UUID? = CheckpointEventsRequestTests.appSessionID,

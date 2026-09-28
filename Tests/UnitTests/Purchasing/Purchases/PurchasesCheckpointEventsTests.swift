@@ -64,6 +64,32 @@ class PurchasesCheckpointEventsTests: BasePurchasesTests {
         expect(event.data.checkpointRuleID) == "rule_123"
     }
 
+    /// The backend joins the hit to the workflow run it started on this id.
+    func testHitSharesTheTraceIdOfTheWorkflowItStarts() async throws {
+        self.setUpCheckpointPurchases(resolver: WorkflowCheckpointWorkflowResolver())
+
+        let resolution = try await self.purchases.resolveCheckpoint(
+            identifier: "onboarding_complete",
+            params: .init()
+        )
+
+        guard case let .matchedWorkflow(workflow) = resolution else {
+            fail("Expected a matched workflow, got \(resolution)")
+            return
+        }
+        let event = try await self.singleTrackedCheckpointEvent()
+        expect(event.data.traceID) == workflow.traceId
+    }
+
+    func testHitCarriesATraceIdWhenNoWorkflowStarts() async throws {
+        self.setUpCheckpointPurchases(resolver: MatchingCheckpointWorkflowResolver())
+
+        _ = try await self.purchases.resolveCheckpoint(identifier: "onboarding_complete", params: .init())
+
+        let event = try await self.singleTrackedCheckpointEvent()
+        expect(event.data.traceID).toNot(beNil())
+    }
+
     /// Resolution awaits the network, so the hit has to be dated when the checkpoint was reached.
     func testDatesTheHitBeforeResolving() async throws {
         let afterResolving = Self.hitDate.addingTimeInterval(30)
@@ -137,6 +163,42 @@ private final class MatchingCheckpointWorkflowResolver: CheckpointWorkflowResolv
         )
 
         return .init(.matchedOffering(offering), checkpointRuleID: "rule_123")
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+private final class WorkflowCheckpointWorkflowResolver: CheckpointWorkflowResolver {
+
+    func resolve(identifier: String, params: CheckpointParams) async throws -> ResolvedCheckpoint {
+        let workflow = PublishedWorkflow(
+            id: "wf_123",
+            displayName: "Test",
+            initialStepId: "step_1",
+            singleStepFallbackId: nil,
+            steps: [:],
+            screens: [:]
+        )
+        let response = OfferingsResponse(
+            currentOfferingId: nil,
+            offerings: [],
+            placements: nil,
+            targeting: nil,
+            uiConfig: nil
+        )
+        let offerings = Offerings(
+            offerings: [:],
+            currentOfferingID: nil,
+            placements: nil,
+            targeting: nil,
+            contents: Offerings.Contents(response: response, httpResponseOriginalSource: .mainServer),
+            loadedFromDiskCache: false
+        )
+
+        return .init(
+            .matchedWorkflow(.init(workflow: workflow, uiConfig: .empty, offerings: offerings)),
+            checkpointRuleID: "rule_123"
+        )
     }
 
 }

@@ -72,16 +72,26 @@ final class LocalRulesEvaluator: Sendable {
         logPrefix: String = "",
         predicate resolvePredicate: (Rule) async throws -> String
     ) async throws -> Rule? {
-        guard !rules.isEmpty else { return nil }
+        guard !rules.isEmpty else {
+            Logger.verbose(Strings.localRules.noRulesToEvaluate(logPrefix: logPrefix))
+            return nil
+        }
 
-        let snapshot = try await self.dimensionResolver.snapshot(
-            customVariables: customVariables
-        )
+        let snapshot: DimensionSnapshot
+        do {
+            snapshot = try await self.dimensionResolver.snapshot(
+                customVariables: customVariables
+            )
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            Logger.warn(Strings.localRules.dimensionResolutionFailed(logPrefix: logPrefix, error: error))
+            throw error
+        }
 
         Logger.verbose(Strings.localRules.evaluatingRules(
             logPrefix: logPrefix,
-            ruleCount: rules.count,
-            dimensions: snapshot.values.keys.sorted()
+            ruleCount: rules.count
         ))
 
         var firstEvaluationError: LocalRulesEvaluationError?
@@ -139,24 +149,10 @@ final class LocalRulesEvaluator: Sendable {
                 Logger.debug(Strings.localRules.ruleEvaluationFailed(
                     logPrefix: logPrefix,
                     ruleIndex: ruleIndex,
-                    errorKind: error.logName
+                    error: error
                 ))
                 return (false, error)
             }
         }
     }
-}
-
-private extension RulesEngine.EvaluationError {
-
-    var logName: String {
-        switch self {
-        case .parse: return "Parse"
-        case .unresolvedVariable: return "UnresolvedVariable"
-        case .typeMismatch: return "TypeMismatch"
-        case .unsupportedOperator: return "UnsupportedOperator"
-        case .unknown: return "Unknown"
-        }
-    }
-
 }

@@ -45,10 +45,17 @@ struct ResolvedCheckpoint {
 
     let resolution: CheckpointResolution
     let checkpointRuleID: String?
+    /// The matched workflow's trace id, so the hit and the workflow run join on it. Fresh otherwise.
+    let traceID: String
 
     init(_ resolution: CheckpointResolution, checkpointRuleID: String? = nil) {
         self.resolution = resolution
         self.checkpointRuleID = checkpointRuleID
+        if case let .matchedWorkflow(workflow) = resolution {
+            self.traceID = workflow.traceId
+        } else {
+            self.traceID = UUID().uuidString
+        }
     }
 
     /// Reports `rule` only when it was actually served.
@@ -295,14 +302,14 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             return Self.unservable(rule, reason: "its initial step was not found")
         }
 
-        if initialStep.type == Self.offeringStepType {
+        if initialStep.isOfferingStep {
             guard workflow.steps.count == 1 else {
                 return Self.unservable(rule, reason: "an offering step cannot be mixed with other steps")
             }
-            return await self.resolveOffering(rule, workflow: workflow, step: initialStep)
+            return await self.resolveOffering(rule, step: initialStep)
         }
 
-        if workflow.steps.values.contains(where: { $0.type == Self.offeringStepType }) {
+        if workflow.steps.values.contains(where: \.isOfferingStep) {
             return Self.unservable(rule, reason: "a UI workflow cannot contain offering steps")
         }
 
@@ -315,10 +322,9 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
     /// than treated as unservable, since a step of this kind renders nothing.
     private func resolveOffering(
         _ rule: CheckpointRule,
-        workflow: PublishedWorkflow,
         step: WorkflowStep
     ) async -> CheckpointResolution {
-        guard let offeringID = workflow.offeringIdentifier(for: step) else {
+        guard let offeringID = step.offeringIdentifier else {
             return Self.unservable(rule, reason: "the offering step has no valid offering identifier")
         }
         guard let match = await self.offering(identifier: offeringID, for: rule) else {
@@ -369,7 +375,6 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         return .noAction(.configurationUnavailable)
     }
 
-    private static let offeringStepType = "offering"
     #if DEBUG
     private static let simulatedErrorCheckpointIdentifier = "error_checkpoint"
     #endif

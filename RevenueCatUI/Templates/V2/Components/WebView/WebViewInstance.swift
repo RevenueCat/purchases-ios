@@ -35,13 +35,16 @@ final class WebViewInstance: ObservableObject {
 
     private weak var attachedHost: WebViewHostView?
 
-    /// A host that entered a window while the current host was still mounted. Remembering it lets the
-    /// current host complete the handoff when it leaves instead of stranding the web view off-screen.
-    private weak var pendingHost: WebViewHostView?
+    /// Hosts currently in a window, in entry order. Several is normal: a parent redraw can mount the new
+    /// host before unmounting the old one, and a looping carousel mounts copies of each page.
+    private var candidateHosts: [WeakHost] = []
 
     /// `true` while playback is suspended because no host is showing the web view. Tracked so suspend
     /// and resume stay paired, as WebKit requires.
     private(set) var isMediaPlaybackSuspended = false
+
+    /// The last suspension state requested during the current main-actor turn.
+    private var scheduledMediaSuspension: Bool?
 
     init(
         componentID: String,
@@ -114,54 +117,61 @@ final class WebViewInstance: ObservableObject {
         self.loadFailed = true
     }
 
-    func hostDidEnterWindow(_ host: WebViewHostView) {
-        guard let webView = self.webView else {
-            return
-        }
-
-        if let attachedHost = self.attachedHost,
-           attachedHost !== host,
-           attachedHost.window != nil,
-           webView.superview === attachedHost {
-            self.pendingHost = host
-            return
-        }
-
-        self.pendingHost = nil
-        self.attachWebView(to: host)
+    func reconcile(host: WebViewHostView) {
+        self.registerCandidate(host)
+        self.reconcileAttachment()
     }
 
     func hostDidLeaveWindow(_ host: WebViewHostView) {
-        if self.pendingHost === host {
-            self.pendingHost = nil
-        }
-
-        guard self.attachedHost === host else {
-            return
-        }
-
-        self.attachedHost = nil
-
-        if let pendingHost = self.pendingHost, pendingHost.window != nil {
-            self.pendingHost = nil
-            self.attachWebView(to: pendingHost)
-            return
-        }
-
-        // Nothing is showing the web view any more — the component was hidden, or the paywall went
-        // away. The web view survives on the view model, so without this an `autoplay` video would
-        // keep playing audio from a component that is no longer on screen.
-        self.setMediaPlaybackSuspended(true)
+        self.candidateHosts.removeAll { $0.host === host }
+        self.reconcileAttachment()
     }
 
-    /// Reasserts attachment for a host SwiftUI updated after it was already in a window. Unlike
-    /// ``hostDidEnterWindow(_:)``, updates from another mounted candidate do not compete for ownership.
-    func updateHost(_ host: WebViewHostView) {
-        guard self.attachedHost == nil || self.attachedHost === host else {
+    private func registerCandidate(_ host: WebViewHostView) {
+        guard !self.candidateHosts.contains(where: { $0.host === host }) else {
             return
         }
 
-        self.attachWebView(to: host)
+        self.candidateHosts.append(WeakHost(host))
+    }
+
+    /// Moves the web view to the host that should be showing it, and suspends playback while it is off-screen.
+    private func reconcileAttachment() {
+        guard self.webView != nil else {
+            return
+        }
+
+        self.candidateHosts.removeAll { $0.host?.window == nil }
+
+        guard let preferredHost = self.preferredHost() else {
+            // Nothing is showing the web view any more — the component was hidden, or the paywall went
+            // away. The web view survives on the view model, so without this an `autoplay` video would
+            // keep playing audio from a component that is no longer on screen.
+            self.attachedHost = nil
+            self.setMediaPlaybackSuspended(true)
+            return
+        }
+
+        self.setMediaPlaybackSuspended(preferredHost.carouselDistance > 1)
+        self.attachWebView(to: preferredHost)
+    }
+
+    /// The candidate closest to its carousel's active page. Ties go to the host already showing the web
+    /// view, then to the host that entered the window first, so a replacement host mounted during a
+    /// redraw only takes over once the current host leaves.
+    private func preferredHost() -> WebViewHostView? {
+        let candidates = self.candidateHosts.compactMap(\.host)
+        guard let closestDistance = candidates.map(\.carouselDistance).min() else {
+            return nil
+        }
+
+        if let attachedHost = self.attachedHost,
+           attachedHost.carouselDistance == closestDistance,
+           candidates.contains(where: { $0 === attachedHost }) {
+            return attachedHost
+        }
+
+        return candidates.first { $0.carouselDistance == closestDistance }
     }
 
     private func attachWebView(to host: WebViewHostView) {
@@ -170,7 +180,6 @@ final class WebViewInstance: ObservableObject {
         }
 
         self.attachedHost = host
-        self.setMediaPlaybackSuspended(false)
 
         guard webView.superview !== host else {
             return
@@ -188,8 +197,32 @@ final class WebViewInstance: ObservableObject {
     }
 
     /// Suspends rather than pauses: a paused page can restart itself by calling `play()`, whereas
-    /// suspension blocks the page and the user until it is lifted.
+    /// suspension blocks the page and the user until it is lifted. Applying the last request on the
+    /// next main-actor turn avoids toggling WebKit while carousel copies update their distances one by one.
     private func setMediaPlaybackSuspended(_ suspended: Bool) {
+        guard suspended != self.isMediaPlaybackSuspended else {
+            // A later host update restored the current state, so discard an intermediate request.
+            self.scheduledMediaSuspension = nil
+            return
+        }
+
+        let shouldScheduleFlush = self.scheduledMediaSuspension == nil
+        self.scheduledMediaSuspension = suspended
+        guard shouldScheduleFlush else {
+            return
+        }
+
+        Task { @MainActor [weak self] in
+            self?.flushScheduledMediaSuspension()
+        }
+    }
+
+    private func flushScheduledMediaSuspension() {
+        guard let suspended = self.scheduledMediaSuspension else {
+            return
+        }
+
+        self.scheduledMediaSuspension = nil
         guard suspended != self.isMediaPlaybackSuspended, let webView = self.webView else {
             return
         }
@@ -201,7 +234,8 @@ final class WebViewInstance: ObservableObject {
     func tearDown() {
         self.navigationDelegateObject = nil
         self.attachedHost = nil
-        self.pendingHost = nil
+        self.candidateHosts.removeAll()
+        self.scheduledMediaSuspension = nil
 
         guard let webView = self.webView else {
             return
@@ -221,6 +255,16 @@ final class WebViewInstance: ObservableObject {
         self.webView = nil
     }
 
+    private struct WeakHost {
+
+        weak var host: WebViewHostView?
+
+        init(_ host: WebViewHostView) {
+            self.host = host
+        }
+
+    }
+
 }
 
 /// SwiftUI-owned container that the shared `WKWebView` is re-parented into.
@@ -229,6 +273,9 @@ final class WebViewInstance: ObservableObject {
 final class WebViewHostView: NSView {
 
     var onMoveToWindow: ((WebViewHostView) -> Void)?
+
+    /// Distance from the active carousel page; `0` when active or not in a carousel. Closest host wins.
+    var carouselDistance: Int = 0
 
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
@@ -241,6 +288,9 @@ final class WebViewHostView: NSView {
 final class WebViewHostView: UIView {
 
     var onMoveToWindow: ((WebViewHostView) -> Void)?
+
+    /// Distance from the active carousel page; `0` when active or not in a carousel. Closest host wins.
+    var carouselDistance: Int = 0
 
     override func didMoveToWindow() {
         super.didMoveToWindow()

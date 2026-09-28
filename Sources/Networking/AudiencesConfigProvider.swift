@@ -25,7 +25,7 @@ struct AudienceConfigurationSnapshot: Equatable, Sendable {
 /// The topic-specific front door for canonical audience configuration.
 ///
 /// All published audience rules live in the immutable `default` blob.
-final class AudiencesConfigProvider: AudiencesConfigProviderType {
+final class AudiencesConfigProvider: AudiencesConfigProviderType, RemoteConfigStateObserver {
 
     private let manager: RemoteConfigManagerType
     private let cachedConfiguration = GenerationGuardedCache<
@@ -37,7 +37,33 @@ final class AudiencesConfigProvider: AudiencesConfigProviderType {
         self.manager = manager
     }
 
+    func remoteConfigStateDidChange(generation _: Int) {
+        Task { [weak self] in
+            await self?.warm()
+        }
+    }
+
+    func warm() async {
+        guard let snapshot = await self.manager.committedTopicCacheSnapshot(.audiences),
+              snapshot.key[Self.audiencesBlobItemKey]?.prefetch == true,
+              let blob = await self.manager.blobData(
+                  for: .audiences,
+                  itemKey: Self.audiencesBlobItemKey,
+                  policy: .cachedOnly
+              ) else { return }
+
+        guard let audiences = try? Self.decodeAudiences(from: blob),
+              self.manager.configGeneration == snapshot.generation else { return }
+        self.cachedConfiguration.store(
+            .init(audiences: audiences, configGeneration: snapshot.generation),
+            for: snapshot
+        )
+    }
+
     func configuration() async throws -> AudienceConfigurationSnapshot? {
+        if let cached = self.cachedConfiguration.value(currentGeneration: self.manager.configGeneration) {
+            return cached
+        }
         return try await self.manager.readConsistent {
             try await self.loadConfiguration()
         }

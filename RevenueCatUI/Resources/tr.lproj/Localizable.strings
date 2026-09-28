@@ -23,3 +23,5 @@
 "Default_offer_details_with_intro_offer" = "{{ sub_offer_duration }} denemenizi başlatın, ardından {{ total_price_and_per_month }}.";
 "Something went wrong" = "Bir şeyler yanlış gitti";
 "Purchase" = "Satın Al";
+"You are currently subscribed to this" = "Şu anda buna abonesiniz";
+"You've already purchased this" = "Bunu zaten satın aldınız";

@@ -23,3 +23,5 @@
 "Default_offer_details_with_intro_offer" = "Indítsa el a {{ sub_offer_duration }} próbaidőszakot, majd {{ total_price_and_per_month }}.";
 "Something went wrong" = "Valami elromlott";
 "Purchase" = "Vásárlás";
+"You are currently subscribed to this" = "Erre már előfizetett";
+"You've already purchased this" = "Ezt már megvásárolta";

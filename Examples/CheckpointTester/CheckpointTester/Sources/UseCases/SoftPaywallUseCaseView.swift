@@ -19,6 +19,7 @@ import SwiftUI
 
 struct SoftPaywallUseCaseView: View {
 
+    @ObservedObject var model: CheckpointDemoModel
     @ObservedObject var customVariables: CustomVariables
 
     @State private var didLoad = false
@@ -65,7 +66,8 @@ struct SoftPaywallUseCaseView: View {
     private func runCheckpoint() async {
         Purchases.shared.checkpoint(
             "soft_paywall",
-            customVariables: self.customVariables.checkpointCustomVariables
+            customVariables: self.customVariables.checkpointCustomVariables,
+            paywallPresenter: self.model.localPaywallPresenter
         ) { result in
             guard let result else {
                 self.status = "No completed flow. Content remains available."

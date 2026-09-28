@@ -146,7 +146,7 @@ class CustomerInfoManager {
             }
 
         case .fetchCurrent:
-            self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+            self.systemInfo.isApplicationBackgrounded { [self] isAppBackgrounded in
                 self.fetchAndCacheCustomerInfoData(
                     appUserID: appUserID,
                     isAppBackgrounded: isAppBackgrounded
@@ -197,7 +197,7 @@ class CustomerInfoManager {
                 }
             }
 
-            self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+            self.systemInfo.isApplicationBackgrounded { [self] isAppBackgrounded in
                 self.fetchAndCacheCustomerInfoDataIfStale(appUserID: appUserID,
                                                           isAppBackgrounded: isAppBackgrounded,
                                                           completion: completionIfNotCalledAlready)
@@ -206,7 +206,7 @@ class CustomerInfoManager {
         case .notStaleCachedOrFetched:
             let infoFromCache = try? self.cachedCustomerInfo(appUserID: appUserID)
 
-            self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+            self.systemInfo.isApplicationBackgrounded { [self] isAppBackgrounded in
                 let isCacheStale = self.deviceCache.isCustomerInfoCacheStale(
                     appUserID: appUserID,
                     isAppBackgrounded: isAppBackgrounded
@@ -379,14 +379,24 @@ class CustomerInfoManager {
                 return
             }
 
-            guard !$0.customerInfoObserversByIdentifier.isEmpty, lastSentCustomerInfo != customerInfo else {
+            guard !$0.customerInfoObserversByIdentifier.isEmpty else {
                 return
             }
 
-            if $0.lastSentCustomerInfo != nil {
-                Logger.debug(Strings.customerInfo.sending_updated_customerinfo_to_delegate)
-            } else {
+            let activeEntitlementsChanged = lastSentCustomerInfo.map {
+                Set($0.entitlements.active.keys) != Set(customerInfo.entitlements.active.keys)
+            } ?? false
+
+            guard lastSentCustomerInfo != customerInfo || activeEntitlementsChanged else {
+                return
+            }
+
+            if lastSentCustomerInfo == nil {
                 Logger.debug(Strings.customerInfo.sending_latest_customerinfo_to_delegate)
+            } else if lastSentCustomerInfo == customerInfo {
+                Logger.debug(Strings.customerInfo.sending_customerinfo_with_changed_active_entitlements_to_delegate)
+            } else {
+                Logger.debug(Strings.customerInfo.sending_updated_customerinfo_to_delegate)
             }
 
             $0.lastSentCustomerInfo = customerInfo

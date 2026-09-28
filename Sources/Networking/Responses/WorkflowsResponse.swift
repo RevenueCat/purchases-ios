@@ -67,7 +67,7 @@ import Foundation
 @_spi(Internal) public struct WorkflowStep {
 
     public let id: String
-    @_spi(Internal) public let type: String?
+    @_spi(Internal) public let type: String
     public let screenId: String?
     @DefaultDecodable.EmptyDictionary
     var paramValues: [String: AnyDecodable]
@@ -81,6 +81,9 @@ import Foundation
     public var stepTriggers: [WorkflowTrigger] { triggers }
     public var stepTriggerActions: [String: WorkflowTriggerAction] { triggerActions }
     let metadata: [String: AnyDecodable]?
+
+    /// Whether this terminal step returns an offering for app-owned presentation.
+    @_spi(Internal) public var isOfferingStep: Bool { self.type == "offering" }
 
     /// The step's `screen_type` from the backend (`metadata.screen_type`). `nil` = untagged (older
     /// workflows), `[]` = tagged with no known type; the distinction drives paywall-event gating (see
@@ -113,7 +116,7 @@ import Foundation
     // params), and are typed with the internal `AnyDecodable`, so they're defaulted rather than exposed.
     @_spi(Internal) public init(
         id: String,
-        type: String?,
+        type: String,
         screenId: String?,
         triggers: [WorkflowTrigger] = [],
         triggerActions: [String: WorkflowTriggerAction] = [:]

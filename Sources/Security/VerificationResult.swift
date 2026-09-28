@@ -81,6 +81,62 @@ extension VerificationResult {
 
 }
 
+/// Internal result of verifying an HTTP response signature, retaining the specific failure reason
+/// until it is converted to the public `VerificationResult` at an API boundary.
+enum SignatureVerificationResult: Equatable, Sendable {
+
+    case notRequested
+    case verified
+    case failed(FailureReason)
+
+    /// Internal classification of why HTTP response signature verification failed.
+    enum FailureReason: String, Error, Sendable {
+
+        case missingSignature = "MISSING_SIGNATURE"
+        case missingRequestTime = "MISSING_REQUEST_TIME"
+        case missingSignedPayload = "MISSING_SIGNED_PAYLOAD"
+        case invalidSignatureFormat = "INVALID_SIGNATURE_FORMAT"
+        case invalidIntermediateKeySignature = "INVALID_INTERMEDIATE_KEY_SIGNATURE"
+        case invalidIntermediateKey = "INVALID_INTERMEDIATE_KEY"
+        case invalidResponsePayload = "INVALID_RESPONSE_PAYLOAD"
+        case intermediateKeyExpired = "INTERMEDIATE_KEY_EXPIRED"
+        case payloadSignatureMismatch = "PAYLOAD_SIGNATURE_MISMATCH"
+        case unknown = "UNKNOWN"
+
+    }
+
+    var isFailed: Bool {
+        if case .failed = self {
+            return true
+        }
+
+        return false
+    }
+
+    /// The public representation, used only when exposing signature verification through the public API.
+    var result: VerificationResult {
+        switch self {
+        case .notRequested:
+            return .notRequested
+        case .verified:
+            return .verified
+        case .failed:
+            return .failed
+        }
+    }
+
+}
+
+extension SignatureVerificationResult {
+
+    var failureReason: FailureReason? {
+        guard case let .failed(reason) = self else { return nil }
+
+        return reason
+    }
+
+}
+
 extension VerificationResult: DefaultValueProvider {
 
     static let defaultValue: Self = .notRequested
