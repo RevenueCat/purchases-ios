@@ -14,6 +14,7 @@
 import Nimble
 @_spi(Internal) @testable import RevenueCat
 @testable import RevenueCatUI
+import SwiftUI
 import XCTest
 
 #if os(iOS) && canImport(WebKit)
@@ -290,6 +291,24 @@ final class HostedCheckoutTests: TestCase {
         expect((HostedCheckoutError.failed(code: nil) as NSError).code) == ErrorCode.unknownError.rawValue
         expect((HostedCheckoutError.failed(code: 99) as NSError).code) == ErrorCode.unknownError.rawValue
         expect((HostedCheckoutError.unconfirmed as NSError).code) == ErrorCode.unknownError.rawValue
+    }
+
+    func testTellsTheCustomerAFailedChargeFailed() {
+        expect(HostedCheckoutError.failed(code: 3).message(bundle: .main)) == Text("Payment failed.", bundle: .main)
+    }
+
+    /// Which step failed is nothing the customer can act on.
+    func testTellsTheCustomerSomethingWentWrongForAnyOtherFailure() {
+        for code in [nil, 1, 2, 4, 99] {
+            expect(HostedCheckoutError.failed(code: code).message(bundle: .main))
+                == Text("Something went wrong", bundle: .main)
+        }
+    }
+
+    /// The customer most likely paid, and the purchase may yet land.
+    func testTellsTheCustomerAnUnconfirmedPurchaseIsStillProcessing() {
+        expect(HostedCheckoutError.unconfirmed.message(bundle: .main))
+            == Text("Your purchase is still processing.", bundle: .main)
     }
 
     func testReportsErrorsInTheSDKsDomain() {
