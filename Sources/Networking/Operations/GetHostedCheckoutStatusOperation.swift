@@ -32,7 +32,7 @@ final class GetHostedCheckoutStatusOperation: CacheableNetworkOperation {
                         cacheKey: cacheKey
                     )
             },
-            individualizedCacheKeyPart: configuration.appUserID + "\n" + operationSessionID)
+            individualizedCacheKeyPart: configuration.appUserID + "-" + operationSessionID)
     }
 
     private init(configuration: UserSpecificConfiguration,
