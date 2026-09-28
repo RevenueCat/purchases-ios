@@ -28,3 +28,5 @@
 "You are currently subscribed to this" = "Već ste pretplaćeni na ovo";
 "You've already purchased this" = "Ovo ste već kupili";
 "Your purchase was successful." = "Kupovina je uspešno obavljena.";
+"Purchase unavailable" = "Kupovina nije dostupna";
+"This purchase isn't available in your region." = "Ova kupovina nije dostupna u vašem regionu.";

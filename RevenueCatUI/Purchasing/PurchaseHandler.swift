@@ -380,6 +380,19 @@ extension PurchaseHandler {
         return await self.purchases.pollDismissedHostedCheckout(operationSessionID: operationSessionID)
     }
 
+    /// Whether web purchase links opened in the browser go through Apple's external purchase flow first.
+    var useExternalPurchaseCustomLinks: Bool {
+        return self.purchases.useExternalPurchaseCustomLinks
+    }
+
+    /// Runs what Apple requires before a web purchase link takes the customer out of the app, with the paywall
+    /// marked as busy throughout so the button they tapped cannot start a second one.
+    func prepareExternalPurchaseLink() async -> ExternalPurchaseLinkResult {
+        return await self.withExternalPurchasePreparation {
+            await self.purchases.prepareExternalPurchaseLink()
+        }
+    }
+
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func invalidateCustomerInfoCache() {
         self.purchases.invalidateCustomerInfoCache()
@@ -1269,6 +1282,12 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 
     func pollDismissedHostedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
         return .undetermined
+    }
+
+    var useExternalPurchaseCustomLinks: Bool { false }
+
+    func prepareExternalPurchaseLink() async -> ExternalPurchaseLinkResult {
+        return .proceed(externalPurchaseTokenID: nil)
     }
 
     func restorePurchases() async throws -> CustomerInfo {

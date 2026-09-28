@@ -28,3 +28,5 @@
 "You are currently subscribed to this" = "Erre már előfizetett";
 "You've already purchased this" = "Ezt már megvásárolta";
 "Your purchase was successful." = "A vásárlás sikeresen megtörtént.";
+"Purchase unavailable" = "A vásárlás nem érhető el";
+"This purchase isn't available in your region." = "Ez a vásárlás nem érhető el az Ön régiójában.";
