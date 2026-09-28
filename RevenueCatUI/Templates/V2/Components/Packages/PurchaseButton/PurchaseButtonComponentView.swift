@@ -243,7 +243,7 @@ struct PurchaseButtonComponentView: View {
     private func handleHostedCheckoutOutcome(_ outcome: WebCheckoutSheetOutcome, session: HostedCheckoutSession) {
         switch outcome {
         case .returned(.success):
-            self.settleHostedCheckout(session)
+            self.resolveHostedCheckout(session)
         case .returned(.cancel):
             Task { await self.purchaseHandler.handleHostedCheckoutCancellation(package: self.packageContext.package) }
         case .dismissed:
@@ -253,13 +253,13 @@ struct PurchaseButtonComponentView: View {
         }
     }
 
-    private func settleHostedCheckout(_ session: HostedCheckoutSession) {
+    private func resolveHostedCheckout(_ session: HostedCheckoutSession) {
         let package = self.packageContext.package
 
         Task { @MainActor in
-            switch await HostedCheckout.settle(session,
-                                               package: package,
-                                               purchaseHandler: self.purchaseHandler) {
+            switch await HostedCheckout.resolve(session,
+                                                package: package,
+                                                purchaseHandler: self.purchaseHandler) {
             case .tellCustomerTheyAlreadyOwnIt:
                 if let package {
                     self.showAlreadyOwnedAlert(for: package)

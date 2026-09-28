@@ -61,7 +61,7 @@ enum HostedCheckout {
     ///
     /// Only a purchase the backend confirms counts as one. Anything else is an error, since the page told the
     /// customer the purchase went through.
-    enum Settlement: Equatable {
+    enum Resolution: Equatable {
 
         case purchased
         case tellCustomerTheyAlreadyOwnIt
@@ -90,14 +90,14 @@ enum HostedCheckout {
     ///
     /// - Parameter package: The package the checkout was started for, when it is still known.
     @MainActor
-    static func settle(_ session: HostedCheckoutSession,
-                       package: Package?,
-                       purchaseHandler: PurchaseHandler) async -> Settlement {
+    static func resolve(_ session: HostedCheckoutSession,
+                        package: Package?,
+                        purchaseHandler: PurchaseHandler) async -> Resolution {
         return await purchaseHandler.whileConfirmingHostedCheckout {
             let result = await purchaseHandler.pollHostedCheckout(operationSessionID: session.operationSessionID)
-            let settlement = Settlement(result)
+            let resolution = Resolution(result)
 
-            switch settlement {
+            switch resolution {
             case .purchased:
                 break
             case let .failed(error):
@@ -108,7 +108,7 @@ enum HostedCheckout {
                 break
             }
 
-            return settlement
+            return resolution
         }
     }
 
