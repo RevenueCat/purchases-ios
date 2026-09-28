@@ -33,6 +33,8 @@ enum HostedCheckoutStrings {
     case poll_timed_out(_ operationSessionID: String, timeout: TimeInterval)
     case poll_fetching_customer_info(_ operationSessionID: String)
     case poll_customer_info_refresh_failed(_ operationSessionID: String)
+    case dismissed_poll_start(_ operationSessionID: String)
+    case dismissed_poll_undetermined(_ operationSessionID: String)
 
 }
 
@@ -78,6 +80,12 @@ extension HostedCheckoutStrings: LogMessage {
         case let .poll_customer_info_refresh_failed(operationSessionID):
             return "Could not fetch CustomerInfo, though checkout session \(operationSessionID) says the " +
             "customer owns the product. Clearing the cached CustomerInfo, so the next read fetches it."
+        case let .dismissed_poll_start(operationSessionID):
+            return "Checkout session \(operationSessionID) was dismissed. Checking in the background whether " +
+            "the customer paid for it."
+        case let .dismissed_poll_undetermined(operationSessionID):
+            return "Dismissed checkout session \(operationSessionID) never said whether the customer paid for it. " +
+            "Clearing the cached CustomerInfo, so the next read fetches it."
         }
     }
 

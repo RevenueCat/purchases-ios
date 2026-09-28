@@ -30,6 +30,7 @@ class HostedCheckoutManagerTests: TestCase {
     private var settingsProvider: MockSDKSettingsConfigProvider!
     private var systemInfo: MockSystemInfo!
     private var poller: StubHostedCheckoutPoller!
+    private var dismissedCheckoutPoller: StubHostedCheckoutPoller!
     private var manager: HostedCheckoutManager!
 
     override func setUp() {
@@ -44,6 +45,7 @@ class HostedCheckoutManagerTests: TestCase {
         self.webBillingAPI.stubbedPostHostedCheckoutCompletionResult = .success(Self.response)
 
         self.poller = StubHostedCheckoutPoller(result: .succeeded)
+        self.dismissedCheckoutPoller = StubHostedCheckoutPoller(result: .succeeded)
 
         self.settingsProvider = MockSDKSettingsConfigProvider()
         self.settingsProvider.stubbedSettings = .allowingExternalPurchases(in: [Self.storefront])
@@ -339,6 +341,18 @@ class HostedCheckoutManagerTests: TestCase {
         expect(self.poller.receivedAppUserIDs) == ["session-owner"]
     }
 
+    func testAsksTheDismissedCheckoutPollerAboutADismissedSession() async {
+        self.dismissedCheckoutPoller.result = .undetermined
+
+        let result = await self.manager.pollDismissedCheckout(operationSessionID: Self.operationSessionID,
+                                                              appUserID: "session-owner")
+
+        expect(result) == .undetermined
+        expect(self.dismissedCheckoutPoller.receivedIDs) == [Self.operationSessionID]
+        expect(self.dismissedCheckoutPoller.receivedAppUserIDs) == ["session-owner"]
+        expect(self.poller.receivedIDs).to(beEmpty())
+    }
+
 }
 
 /// The loop itself is covered by `HostedCheckoutPollerTests`.
@@ -386,7 +400,8 @@ private extension HostedCheckoutManagerTests {
             ),
             webBillingAPI: self.webBillingAPI,
             currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID),
-            poller: self.poller
+            poller: self.poller,
+            dismissedCheckoutPoller: self.dismissedCheckoutPoller
         )
     }
 

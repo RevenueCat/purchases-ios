@@ -52,6 +52,31 @@ class HostedCheckoutPollerTests: TestCase {
         expect(sleeper.delays) == [1, 1]
     }
 
+    func testWaitsAsLongAsEachDelaySaysAndRepeatsTheLastOne() async {
+        let fetcher = StubStatusFetcher(results: [.status(.pending)])
+        let sleeper = RecordingHostedCheckoutSleeper()
+        let poller = HostedCheckoutPoller(statusFetcher: fetcher,
+                                          sleeper: sleeper,
+                                          dateProvider: ManualClock(),
+                                          delays: [1, 2, 4],
+                                          maxAttempts: 5,
+                                          timeout: 45)
+
+        let result = await poller.poll(operationSessionID: Self.operationSessionID, appUserID: Self.appUserID)
+
+        expect(result) == .undetermined
+        expect(fetcher.callCount) == 5
+        expect(sleeper.delays) == [1, 2, 4, 4]
+    }
+
+    /// Every wait of a dismissed checkout's poll fits in its timeout, which leaves the rest for the requests.
+    func testADismissedCheckoutIsAskedAboutOnceBeforeEachWaitAndOnceAfterTheLast() {
+        let delays = HostedCheckoutPoller.dismissedCheckoutDelays
+
+        expect(HostedCheckoutPoller.dismissedCheckoutMaxAttempts) == delays.count + 1
+        expect(delays.reduce(0, +)) < HostedCheckoutPoller.dismissedCheckoutTimeout
+    }
+
     /// Every attempt asks about the customer the session belongs to. The backend answers for no one else,
     /// so a poll that followed a customer who changed would stop answering.
     func testAsksAboutTheSameCustomerOnEveryAttempt() async {
@@ -144,7 +169,7 @@ class HostedCheckoutPollerTests: TestCase {
         let poller = HostedCheckoutPoller(statusFetcher: fetcher,
                                           sleeper: RecordingHostedCheckoutSleeper(),
                                           dateProvider: DateProvider(),
-                                          interval: 1,
+                                          delays: [1],
                                           maxAttempts: 30,
                                           timeout: 0.1)
 
@@ -215,7 +240,7 @@ class HostedCheckoutPollerTests: TestCase {
         let poller = HostedCheckoutPoller(statusFetcher: fetcher,
                                           sleeper: RecordingHostedCheckoutSleeper(),
                                           dateProvider: DateProvider(),
-                                          interval: 1,
+                                          delays: [1],
                                           maxAttempts: 30,
                                           timeout: 45)
 
@@ -275,7 +300,7 @@ private extension HostedCheckoutPollerTests {
         return HostedCheckoutPoller(statusFetcher: fetcher,
                                     sleeper: sleeper,
                                     dateProvider: clock,
-                                    interval: 1,
+                                    delays: [1],
                                     maxAttempts: maxAttempts,
                                     timeout: 45)
     }

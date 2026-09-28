@@ -991,7 +991,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             externalPurchaseManager: externalPurchaseManager,
             webBillingAPI: backend.webBilling,
             currentUserProvider: identityManager,
-            poller: HostedCheckoutPoller.makeDefault(webBillingAPI: backend.webBilling)
+            poller: HostedCheckoutPoller.makeDefault(webBillingAPI: backend.webBilling),
+            dismissedCheckoutPoller: HostedCheckoutPoller.makeForDismissedCheckout(webBillingAPI: backend.webBilling)
         )
 
         super.init()
@@ -1944,21 +1945,39 @@ public extension Purchases {
         let result = await self.hostedCheckoutManager.pollCheckout(operationSessionID: operationSessionID,
                                                                    appUserID: appUserID)
 
-        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        switch result {
-        case .succeeded, .alreadyPurchased:
-            Logger.verbose(Strings.hostedCheckout.poll_fetching_customer_info(operationSessionID))
-
-            if await self.fetchCustomerInfoRetryingTransientErrors(appUserID: appUserID) == nil {
-                Logger.warn(Strings.hostedCheckout.poll_customer_info_refresh_failed(operationSessionID))
-                self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
-            }
-        case .failed, .undetermined:
-            break
-        }
-        #endif
+        await self.refreshCustomerInfo(after: result, appUserID: appUserID, operationSessionID: operationSessionID)
 
         return result
+    }
+
+    /// Used by `RevenueCatUI` to check on a checkout the customer dismissed before it sent them anywhere, in case
+    /// they paid moments before. The paywall does not wait on this to settle on the dismissal.
+    ///
+    /// Handles `CustomerInfo` as ``pollHostedCheckout(operationSessionID:)`` does. When the session still has not
+    /// said whether the customer paid by the end, the cached `CustomerInfo` is cleared too, so the next read
+    /// fetches a purchase that lands later.
+    ///
+    /// Runs to the end even if the caller is cancelled, as when the paywall closes: what it does with
+    /// `CustomerInfo` is how the app learns of a purchase the paywall is no longer there to report.
+    @_spi(Internal) func pollDismissedHostedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
+        let appUserID = self.appUserID
+        Logger.debug(Strings.hostedCheckout.dismissed_poll_start(operationSessionID))
+
+        return await Task {
+            let result = await self.hostedCheckoutManager.pollDismissedCheckout(operationSessionID: operationSessionID,
+                                                                                appUserID: appUserID)
+
+            await self.refreshCustomerInfo(after: result, appUserID: appUserID, operationSessionID: operationSessionID)
+
+            #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+            if result == .undetermined {
+                Logger.debug(Strings.hostedCheckout.dismissed_poll_undetermined(operationSessionID))
+                self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
+            }
+            #endif
+
+            return result
+        }.value
     }
 
     /// Used by `RevenueCatUI` to create a support ticket
@@ -3059,6 +3078,26 @@ internal extension Purchases {
 // MARK: Private
 
 private extension Purchases {
+
+    /// Once a checkout session says the customer owns the product, fetches their `CustomerInfo` so the next read
+    /// finds it, or clears the cached one if no fetch lands.
+    func refreshCustomerInfo(after result: HostedCheckoutPollResult,
+                             appUserID: String,
+                             operationSessionID: String) async {
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        switch result {
+        case .succeeded, .alreadyPurchased:
+            Logger.verbose(Strings.hostedCheckout.poll_fetching_customer_info(operationSessionID))
+
+            if await self.fetchCustomerInfoRetryingTransientErrors(appUserID: appUserID) == nil {
+                Logger.warn(Strings.hostedCheckout.poll_customer_info_refresh_failed(operationSessionID))
+                self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
+            }
+        case .failed, .undetermined:
+            break
+        }
+        #endif
+    }
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     /// For a backend change made outside StoreKit, which no receipt post brings back. `nil` if no fetch lands.

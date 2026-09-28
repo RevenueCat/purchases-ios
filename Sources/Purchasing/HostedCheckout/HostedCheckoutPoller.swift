@@ -66,39 +66,61 @@ internal struct HostedCheckoutPoller: HostedCheckoutPolling {
 
     /// Thirty attempts a second apart, matching `purchases-js`.
     static let defaultMaxAttempts = 30
-    static let defaultInterval: TimeInterval = 1
+    static let defaultDelays: [TimeInterval] = [1]
     /// Leaves room for thirty attempts on a healthy connection.
     static let defaultTimeout: TimeInterval = 45
+
+    /// Nobody waits on the answer for a dismissed checkout, and most of those were abandoned and never finish, so
+    /// the attempts thin out: a payment made moments before the dismissal lands within the first few.
+    static let dismissedCheckoutDelays: [TimeInterval] = [1, 2, 3, 5, 8, 13, 20]
+    static let dismissedCheckoutMaxAttempts = 8
+    /// Leaves room for every attempt on a healthy connection.
+    static let dismissedCheckoutTimeout: TimeInterval = 60
 
     private let statusFetcher: HostedCheckoutStatusFetching
     private let sleeper: AsyncSleeper
     private let dateProvider: DateProvider
-    private let interval: TimeInterval
+    private let delays: [TimeInterval]
     let maxAttempts: Int
     let timeout: TimeInterval
 
+    /// - Parameter delays: The wait before each attempt after the first, in order. The last one repeats for any
+    /// attempts left once they run out.
     init(statusFetcher: HostedCheckoutStatusFetching,
          sleeper: AsyncSleeper,
          dateProvider: DateProvider,
-         interval: TimeInterval,
+         delays: [TimeInterval],
          maxAttempts: Int,
          timeout: TimeInterval) {
         self.statusFetcher = statusFetcher
         self.sleeper = sleeper
         self.dateProvider = dateProvider
-        self.interval = interval
+        self.delays = delays
         self.maxAttempts = maxAttempts
         self.timeout = timeout
     }
 
+    /// For a checkout that ended on its success page, while the customer waits on the answer.
     static func makeDefault(webBillingAPI: WebBillingAPI) -> HostedCheckoutPoller {
         return .init(
             statusFetcher: WebBillingStatusFetcher(webBillingAPI: webBillingAPI),
             sleeper: TaskSleeper(),
             dateProvider: DateProvider(),
-            interval: Self.defaultInterval,
+            delays: Self.defaultDelays,
             maxAttempts: Self.defaultMaxAttempts,
             timeout: Self.defaultTimeout
+        )
+    }
+
+    /// For a checkout the customer dismissed before it sent them anywhere, which nothing says they paid for.
+    static func makeForDismissedCheckout(webBillingAPI: WebBillingAPI) -> HostedCheckoutPoller {
+        return .init(
+            statusFetcher: WebBillingStatusFetcher(webBillingAPI: webBillingAPI),
+            sleeper: TaskSleeper(),
+            dateProvider: DateProvider(),
+            delays: Self.dismissedCheckoutDelays,
+            maxAttempts: Self.dismissedCheckoutMaxAttempts,
+            timeout: Self.dismissedCheckoutTimeout
         )
     }
 
@@ -109,7 +131,7 @@ internal struct HostedCheckoutPoller: HostedCheckoutPolling {
 
         for attempt in 0..<self.maxAttempts {
             if attempt > 0 {
-                try? await self.sleeper.sleep(seconds: self.interval)
+                try? await self.sleeper.sleep(seconds: self.delay(beforeAttempt: attempt))
             }
 
             if Task.isCancelled {
@@ -139,6 +161,10 @@ internal struct HostedCheckoutPoller: HostedCheckoutPolling {
 }
 
 private extension HostedCheckoutPoller {
+
+    func delay(beforeAttempt attempt: Int) -> TimeInterval {
+        return self.delays.dropFirst(attempt - 1).first ?? self.delays.last ?? 0
+    }
 
     /// A single attempt: either an answer to stop on, or a reason to ask again.
     enum PollAttemptResult {

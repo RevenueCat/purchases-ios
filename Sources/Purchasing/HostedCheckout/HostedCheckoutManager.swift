@@ -21,15 +21,18 @@ final class HostedCheckoutManager {
     private let webBillingAPI: WebBillingAPI
     private let currentUserProvider: CurrentUserProvider
     private let poller: HostedCheckoutPolling
+    private let dismissedCheckoutPoller: HostedCheckoutPolling
 
     init(externalPurchaseManager: ExternalPurchaseManager,
          webBillingAPI: WebBillingAPI,
          currentUserProvider: CurrentUserProvider,
-         poller: HostedCheckoutPolling) {
+         poller: HostedCheckoutPolling,
+         dismissedCheckoutPoller: HostedCheckoutPolling) {
         self.externalPurchaseManager = externalPurchaseManager
         self.webBillingAPI = webBillingAPI
         self.currentUserProvider = currentUserProvider
         self.poller = poller
+        self.dismissedCheckoutPoller = dismissedCheckoutPoller
     }
 
     /// Starts a checkout for `package`, in response to the customer deliberately asking to buy.
@@ -68,6 +71,14 @@ final class HostedCheckoutManager {
     /// customer who changes mid-poll would only ask about a session they do not own.
     func pollCheckout(operationSessionID: String, appUserID: String) async -> HostedCheckoutPollResult {
         return await self.poller.poll(operationSessionID: operationSessionID, appUserID: appUserID)
+    }
+
+    /// Checks on a checkout the customer dismissed before it sent them anywhere, in case they paid moments
+    /// before. Nothing waits on the answer, so this asks less often, for longer, than ``pollCheckout``.
+    ///
+    /// - Parameter appUserID: Read once by the caller, as for ``pollCheckout(operationSessionID:appUserID:)``.
+    func pollDismissedCheckout(operationSessionID: String, appUserID: String) async -> HostedCheckoutPollResult {
+        return await self.dismissedCheckoutPoller.poll(operationSessionID: operationSessionID, appUserID: appUserID)
     }
 
 }
