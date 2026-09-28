@@ -59,6 +59,18 @@ extension PurchasesHostedCheckoutTests {
         expect(self.backend.getCustomerInfoCallCount) == fetchesBefore + 1
     }
 
+    /// The customer got the product some other way, which the cache may not show yet.
+    func testFetchesCustomerInfoWhenTheCustomerAlreadyOwnsTheProduct() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try self.stubStatus(.failed(.init(code: 5, message: "product_already_purchased")))
+        let fetchesBefore = self.backend.getCustomerInfoCallCount
+
+        let result = await self.purchases.pollHostedCheckout(operationSessionID: Self.operationSessionID)
+
+        expect(result) == .alreadyPurchased
+        expect(self.backend.getCustomerInfoCallCount) == fetchesBefore + 1
+    }
+
     func testDoesNotFetchCustomerInfoWhenTheCheckoutDidNotLand() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         try self.stubStatus(.failed(.init(code: 3, message: "payment_charge_failed")))
