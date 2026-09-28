@@ -22,6 +22,8 @@
 "Continue" = "Kontynuuj";
 "Default_offer_details_with_intro_offer" = "Rozpocznij okres próbny {{ sub_offer_duration }}, a następnie {{ total_price_and_per_month }}.";
 "Something went wrong" = "Coś poszło nie tak";
+"Payment failed." = "Płatność nieudana.";
+"Your purchase is still processing." = "Zakup jest nadal przetwarzany.";
 "Purchase" = "Kup";
 "You are currently subscribed to this" = "Masz już subskrypcję tej pozycji";
 "You've already purchased this" = "Masz już wykupioną tę pozycję";
