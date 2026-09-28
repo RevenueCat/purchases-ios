@@ -751,29 +751,6 @@ platform :ios do
     pr_number
   end
 
-  private_lane :pr_upload_metadata do
-    pr_number = detect_pr_number
-    next nil unless pr_number
-
-    token = ENV["DANGER_GITHUB_API_TOKEN"]
-    UI.user_error!("DANGER_GITHUB_API_TOKEN is required to upload PR size analysis") if token.to_s.empty?
-
-    response = github_api(
-      server_url: "https://api.github.com",
-      api_token: token,
-      http_method: "GET",
-      path: "/repos/RevenueCat/#{REPO_NAME}/pulls/#{pr_number}"
-    )
-    pull_request = response[:json] || {}
-    base_sha = pull_request.dig("base", "sha")
-    UI.user_error!("Could not determine the base SHA for PR ##{pr_number}") if base_sha.to_s.empty?
-
-    {
-      number: pr_number,
-      base_sha: base_sha
-    }
-  end
-
   private_lane :pr_labels_for_api_gate do
     pr_number = detect_pr_number
     token = ENV["DANGER_GITHUB_API_TOKEN"]
@@ -1110,28 +1087,14 @@ platform :ios do
       UI.user_error!("Missing thinned IPA for Sentry upload at '#{ipa_path}'")
     end
 
-    sentry_args = {
+    sentry_args = sentry_ci_metadata(
+      repo_name: REPO_NAME,
       org_slug: SENTRY_ORG_SLUG,
-      project_slug: SENTRY_PROJECT_SLUG,
+      project_slug: SENTRY_PROJECT_SLUG
+    ).merge(
       ipa_path: ipa_path,
-      build_configuration: BINARY_SIZE_ANALYSIS_CONFIGURATION,
-      vcs_provider: "github",
-      head_repo_name: "RevenueCat/#{REPO_NAME}",
-      base_repo_name: "RevenueCat/#{REPO_NAME}",
-      force_git_metadata: true
-    }
-
-    head_sha = ENV["CIRCLE_SHA1"]
-    sentry_args[:head_sha] = head_sha if head_sha && !head_sha.empty?
-
-    head_ref = ENV["CIRCLE_BRANCH"]
-    sentry_args[:head_ref] = head_ref if head_ref && !head_ref.empty?
-
-    pr_metadata = pr_upload_metadata
-    if pr_metadata
-      sentry_args[:base_sha] = pr_metadata[:base_sha]
-      sentry_args[:pr_number] = pr_metadata[:number]
-    end
+      build_configuration: BINARY_SIZE_ANALYSIS_CONFIGURATION
+    )
 
     sentry_upload_build(sentry_args)
   end
