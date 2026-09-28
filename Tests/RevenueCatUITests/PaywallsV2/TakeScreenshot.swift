@@ -24,6 +24,8 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class TakeScreenshotTests: BaseSnapshotTest {
 
+    private static let exportDirectoryEnvironmentKey = "PAYWALL_SCREENSHOTS_EXPORT_DIR"
+
     func testPaywallValidationScreenshots() throws {
         let bundle = Bundle(for: Self.self)
 
@@ -68,6 +70,20 @@ class TakeScreenshotTests: BaseSnapshotTest {
 
         // Save PNG data
         if let pngData = image.pngData() {
+            if let exportDirectory = ProcessInfo.processInfo.environment[Self.exportDirectoryEnvironmentKey] {
+                let destination = URL(fileURLWithPath: exportDirectory).appendingPathComponent(filename)
+                do {
+                    try FileManager.default.createDirectory(
+                        at: destination.deletingLastPathComponent(),
+                        withIntermediateDirectories: true
+                    )
+                    try pngData.write(to: destination, options: .atomic)
+                } catch {
+                    XCTFail("Failed to write snapshot '\(filename)' to \(destination.path): \(error)")
+                }
+                return
+            }
+
             // 📎 Attach to test
             let attachment = XCTAttachment(data: pngData, uniformTypeIdentifier: "public.png")
             attachment.name = filename

@@ -506,17 +506,24 @@ platform :ios do
     # Add xcargs only if we have build settings to apply
     scan_options[:xcargs] = xcargs.join(' ') unless xcargs.empty?
 
-    scan(scan_options)
-
     image_output_dir = "#{output_dir}/images"
     FileUtils.mkdir_p(image_output_dir)
-    extract_xcresult_images(
-      xcresult_path: result_bundle_path,
-      output_dir: image_output_dir,
-      # The V2 recorder writes its screenshots as attachments on this test only.
-      # Keep this scoped while the shared action remains able to export all attachments for other callers.
-      test_id: "TakeScreenshotTests/testPaywallValidationScreenshots()"
-    )
+    test_runner_export_dir = "TEST_RUNNER_PAYWALL_SCREENSHOTS_EXPORT_DIR"
+    previous_export_dir = ENV[test_runner_export_dir]
+    ENV[test_runner_export_dir] = image_output_dir
+    begin
+      scan(scan_options)
+    ensure
+      if previous_export_dir
+        ENV[test_runner_export_dir] = previous_export_dir
+      else
+        ENV.delete(test_runner_export_dir)
+      end
+    end
+
+    pngs = Dir.glob("#{image_output_dir}/**/*.png", File::FNM_CASEFOLD)
+    UI.user_error!("No V2 snapshot PNGs found in #{image_output_dir}") if pngs.empty?
+    UI.message("Found #{pngs.count} V2 snapshot images")
 
     output_dir
   end
@@ -688,7 +695,7 @@ platform :ios do
       end
     end
 
-    add_preview_color_scheme_tags(image_output_dir)
+    add_preview_color_scheme_tags(image_output_dir: image_output_dir)
 
     send_to_emerge(
       app_id_suffix: ""
@@ -710,7 +717,8 @@ platform :ios do
     )
   end
 
-  private_lane :add_preview_color_scheme_tags do |image_output_dir|
+  private_lane :add_preview_color_scheme_tags do |options|
+    image_output_dir = options[:image_output_dir]
     Dir.glob("#{image_output_dir}/**/*.json").each do |sidecar_path|
       snapshot_metadata = JSON.parse(File.read(sidecar_path))
       color_scheme = snapshot_metadata.dig("context", "preview", "preferred_color_scheme")
