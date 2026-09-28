@@ -1930,9 +1930,9 @@ public extension Purchases {
     /// Used by `RevenueCatUI` to learn what became of a checkout the customer completed in the app,
     /// before settling the paywall on it.
     ///
-    /// When the backend confirms a purchase, fetches the customer's `CustomerInfo` before returning, so
-    /// callers that read it next find the new entitlement instead of the cached state from before the checkout.
-    /// A fetch that fails still reports the purchase, which did happen.
+    /// When the backend says the customer owns the product, having just bought it or not, fetches the customer's
+    /// `CustomerInfo` before returning, so callers that read it next find the entitlement instead of a cached
+    /// state from before. A fetch that fails does not change the result.
     @_spi(Internal) func pollHostedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
         let result = await self.hostedCheckoutManager.pollCheckout(operationSessionID: operationSessionID)
 
@@ -1940,7 +1940,7 @@ public extension Purchases {
     }
 
     /// Used by `RevenueCatUI` to learn what became of a checkout the customer dismissed before it sent them
-    /// anywhere, where nothing says whether they paid. Refreshes a confirmed purchase as
+    /// anywhere, where nothing says whether they paid. Fetches `CustomerInfo` as
     /// ``pollHostedCheckout(operationSessionID:)`` does.
     @_spi(Internal) func pollDismissedHostedCheckout(
         operationSessionID: String
@@ -1953,12 +1953,15 @@ public extension Purchases {
     private func refreshingCustomerInfo(after result: HostedCheckoutPollResult,
                                         operationSessionID: String) async -> HostedCheckoutPollResult {
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        if case .succeeded = result {
+        switch result {
+        case .succeeded, .alreadyPurchased:
             Logger.verbose(Strings.hostedCheckout.poll_fetching_customer_info(operationSessionID))
 
             if await self.fetchCurrentCustomerInfoRetryingTransientErrors() == nil {
                 Logger.warn(Strings.hostedCheckout.poll_customer_info_refresh_failed(operationSessionID))
             }
+        case .failed, .abandoned, .undetermined:
+            break
         }
         #endif
 
