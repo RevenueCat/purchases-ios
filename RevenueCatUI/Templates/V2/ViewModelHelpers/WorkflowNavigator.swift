@@ -33,9 +33,8 @@ final class WorkflowNavigator: ObservableObject {
     @Published private(set) var currentStepId: String
     private let workflow: PublishedWorkflow
     private var backStack: [String] = []
-    /// The current step's branch destinations, keyed by action id. Cleared on every step change, so each
-    /// visit re-resolves, and until a visit's resolve lands its branches route to their `fallbackStepId`.
-    private var resolvedBranchSteps: [String: String] = [:]
+    /// Keyed by action id. Empty until this visit's resolve lands.
+    private var currentStepBranches: [String: String] = [:]
     private var resolveTask: Task<Void, Never>?
 
     private let branchResolver: BranchResolver
@@ -128,13 +127,13 @@ extension WorkflowNavigator {
     /// Resolves the branches the current step can exit through, abandoning the previous step's resolve. Each
     /// visit routes on its own answer, including a step that targets itself.
     private func resolveStepExits() {
-        self.resolvedBranchSteps = [:]
+        self.currentStepBranches = [:]
         self.resolveTask?.cancel()
         self.resolveTask = Task { [weak self, branchResolver] in
             guard let step = self?.currentStep else { return }
             let resolved = await branchResolver.resolveBranches(in: step)
             guard !Task.isCancelled else { return }
-            self?.resolvedBranchSteps = resolved
+            self?.currentStepBranches = resolved
         }
     }
 
@@ -145,7 +144,7 @@ extension WorkflowNavigator {
         case .step(let stepId):
             return stepId
         case .branch(let branch):
-            guard let routed = self.resolvedBranchSteps[actionId], self.workflow.steps[routed] != nil else {
+            guard let routed = self.currentStepBranches[actionId], self.workflow.steps[routed] != nil else {
                 return branch.fallbackStepId
             }
             return routed
