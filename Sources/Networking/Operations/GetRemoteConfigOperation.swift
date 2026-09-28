@@ -144,3 +144,7 @@ private extension GetRemoteConfigOperation {
     }
 
 }
+
+extension GetRemoteConfigOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .remoteConfig }
+}

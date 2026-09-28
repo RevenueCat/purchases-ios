@@ -17,7 +17,7 @@ import Foundation
 class MockRedeemWebPurchaseAPI: RedeemWebPurchaseAPI {
 
     init() {
-        super.init(backendConfig: MockBackendConfiguration())
+        super.init(backendLanes: BackendLanes(configuration: MockBackendConfiguration()))
     }
 
     var invokedPostRedeemWebPurchase = false

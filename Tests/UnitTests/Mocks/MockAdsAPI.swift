@@ -17,7 +17,7 @@ import Foundation
 class MockAdsAPI: AdsAPI {
 
     init() {
-        super.init(backendConfig: MockBackendConfiguration())
+        super.init(backendLanes: BackendLanes(configuration: MockBackendConfiguration()))
     }
 
     var invokedGetRewardVerificationStatus = false

@@ -86,3 +86,7 @@ private extension GetVirtualCurrenciesOperation {
         }
     }
 }
+
+extension GetVirtualCurrenciesOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .default }
+}

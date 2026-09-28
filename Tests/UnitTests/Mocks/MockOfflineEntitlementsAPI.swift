@@ -17,7 +17,7 @@ import Foundation
 class MockOfflineEntitlementsAPI: OfflineEntitlementsAPI {
 
     init() {
-        super.init(backendConfig: MockBackendConfiguration())
+        super.init(backendLanes: BackendLanes(configuration: MockBackendConfiguration()))
     }
 
     var invokedGetProductEntitlementMapping = false

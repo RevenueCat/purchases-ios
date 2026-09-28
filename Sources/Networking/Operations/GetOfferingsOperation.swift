@@ -99,3 +99,7 @@ private extension GetOfferingsOperation {
     }
 
 }
+
+extension GetOfferingsOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .default }
+}

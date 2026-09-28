@@ -17,7 +17,7 @@ import Foundation
 class MockVirtualCurrenciesAPI: VirtualCurrenciesAPI {
 
     init() {
-        super.init(backendConfig: MockBackendConfiguration())
+        super.init(backendLanes: BackendLanes(configuration: MockBackendConfiguration()))
     }
 
     var invokedGetVirtualCurrencies = false

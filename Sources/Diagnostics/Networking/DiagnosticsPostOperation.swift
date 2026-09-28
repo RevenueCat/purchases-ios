@@ -47,3 +47,7 @@ final class DiagnosticsPostOperation: NetworkOperation {
 
 // Restating inherited @unchecked Sendable from Foundation's Operation
 extension DiagnosticsPostOperation: @unchecked Sendable {}
+
+extension DiagnosticsPostOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .default }
+}

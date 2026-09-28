@@ -67,20 +67,19 @@ class Backend {
     }
 
     convenience init(lanes: BackendLanes, attributionFetcher: AttributionFetcher) {
-        let backendConfig = lanes[.default]
-        let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
-        let identity = IdentityAPI(backendConfig: backendConfig)
-        let token = TokenAPI(backendConfig: backendConfig)
-        let offerings = OfferingsAPI(backendConfig: backendConfig)
-        let webBilling = WebBillingAPI(lanes: lanes)
-        let offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
-        let internalAPI = InternalAPI(backendConfig: backendConfig)
-        let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
-        let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
-        let externalPurchaseTokenAPI = ExternalPurchaseTokenAPI(backendConfig: lanes[.checkout])
-        let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
-        let adsAPI = AdsAPI(backendConfig: backendConfig)
-        let remoteConfigAPI = RemoteConfigAPI(backendConfig: lanes[.remoteConfig])
+        let customer = CustomerAPI(backendLanes: lanes, attributionFetcher: attributionFetcher)
+        let identity = IdentityAPI(backendLanes: lanes)
+        let token = TokenAPI(backendLanes: lanes)
+        let offerings = OfferingsAPI(backendLanes: lanes)
+        let webBilling = WebBillingAPI(backendLanes: lanes)
+        let offlineEntitlements = OfflineEntitlementsAPI(backendLanes: lanes)
+        let internalAPI = InternalAPI(backendLanes: lanes)
+        let customerCenterConfig = CustomerCenterConfigAPI(backendLanes: lanes)
+        let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendLanes: lanes)
+        let externalPurchaseTokenAPI = ExternalPurchaseTokenAPI(backendLanes: lanes)
+        let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendLanes: lanes)
+        let adsAPI = AdsAPI(backendLanes: lanes)
+        let remoteConfigAPI = RemoteConfigAPI(backendLanes: lanes)
 
         self.init(lanes: lanes,
                   customerAPI: customer,
@@ -112,7 +111,7 @@ class Backend {
                   virtualCurrenciesAPI: VirtualCurrenciesAPI,
                   adsAPI: AdsAPI,
                   remoteConfigAPI: RemoteConfigAPI) {
-        self.config = lanes[.default]
+        self.config = lanes.defaultConfiguration
 
         self.customer = customerAPI
         self.identity = identityAPI

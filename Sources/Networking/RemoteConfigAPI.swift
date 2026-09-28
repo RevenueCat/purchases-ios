@@ -33,10 +33,10 @@ class RemoteConfigAPI: RemoteConfigAPIType {
 
     private let callbackCache: CallbackCache<RemoteConfigCallback>
     private let fallbackCallbackCache: CallbackCache<RemoteConfigFallbackCallback>
-    private let backendConfig: BackendConfiguration
+    private let backendLanes: BackendLanes
 
-    init(backendConfig: BackendConfiguration) {
-        self.backendConfig = backendConfig
+    init(backendLanes: BackendLanes) {
+        self.backendLanes = backendLanes
         self.callbackCache = .init()
         self.fallbackCallbackCache = .init()
     }
@@ -46,8 +46,9 @@ class RemoteConfigAPI: RemoteConfigAPIType {
         isAppBackgrounded: Bool,
         completion: @escaping RemoteConfigResponseHandler
     ) {
+        let backendConfig = self.backendLanes[GetRemoteConfigOperation.self]
         let factory = GetRemoteConfigOperation.createFactory(
-            configuration: self.backendConfig,
+            configuration: backendConfig,
             callbackCache: self.callbackCache,
             request: request
         )
@@ -55,7 +56,7 @@ class RemoteConfigAPI: RemoteConfigAPIType {
         let callback = RemoteConfigCallback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.callbackCache.add(callback)
 
-        self.backendConfig.addCacheableOperation(
+        backendConfig.addCacheableOperation(
             with: factory,
             delay: .default(forBackgroundedApp: isAppBackgrounded),
             cacheStatus: cacheStatus
@@ -67,8 +68,9 @@ class RemoteConfigAPI: RemoteConfigAPIType {
         isAppBackgrounded: Bool,
         completion: @escaping FallbackResponseHandler
     ) {
+        let backendConfig = self.backendLanes[GetRemoteConfigFallbackOperation.self]
         let factory = GetRemoteConfigFallbackOperation.createFactory(
-            configuration: self.backendConfig,
+            configuration: backendConfig,
             callbackCache: self.fallbackCallbackCache,
             domain: domain
         )
@@ -76,7 +78,7 @@ class RemoteConfigAPI: RemoteConfigAPIType {
         let callback = RemoteConfigFallbackCallback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.fallbackCallbackCache.add(callback)
 
-        self.backendConfig.addCacheableOperation(
+        backendConfig.addCacheableOperation(
             with: factory,
             delay: .default(forBackgroundedApp: isAppBackgrounded),
             cacheStatus: cacheStatus

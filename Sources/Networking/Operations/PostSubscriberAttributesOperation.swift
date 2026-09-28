@@ -82,3 +82,7 @@ private extension PostSubscriberAttributesOperation {
     }
 
 }
+
+extension PostSubscriberAttributesOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .default }
+}

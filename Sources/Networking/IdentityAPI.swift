@@ -19,17 +19,18 @@ class IdentityAPI {
 
     private let logInCallbacksCache: CallbackCache<LogInCallback>
 
-    private let backendConfig: BackendConfiguration
+    private let backendLanes: BackendLanes
 
-    init(backendConfig: BackendConfiguration) {
-        self.backendConfig = backendConfig
+    init(backendLanes: BackendLanes) {
+        self.backendLanes = backendLanes
         self.logInCallbacksCache = CallbackCache<LogInCallback>()
     }
 
     func logIn(currentAppUserID: String,
                newAppUserID: String,
                completion: @escaping LogInResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+        let backendConfig = self.backendLanes[LogInOperation.self]
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: currentAppUserID)
 
         let factory = LogInOperation.createFactory(configuration: config,
@@ -39,7 +40,7 @@ class IdentityAPI {
         let loginCallback = LogInCallback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.logInCallbacksCache.add(loginCallback)
 
-        self.backendConfig.operationQueue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
+        backendConfig.operationQueue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
     }
 
 }

@@ -41,23 +41,24 @@ class MockBackend: Backend {
                                                     systemInfo: systemInfo)
 
         let backendConfig = MockBackendConfiguration()
-        let identity = MockIdentityAPI(backendConfig: backendConfig)
-        let offerings = MockOfferingsAPI(backendConfig: backendConfig)
-        let webBilling = MockWebBillingAPI(lanes: BackendLanes(configuration: backendConfig))
+        let backendLanes = BackendLanes(configuration: backendConfig)
+        let identity = MockIdentityAPI(backendLanes: backendLanes)
+        let offerings = MockOfferingsAPI(backendLanes: backendLanes)
+        let webBilling = MockWebBillingAPI(backendLanes: backendLanes)
         let offlineEntitlements = MockOfflineEntitlementsAPI()
-        let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
-        let internalAPI = InternalAPI(backendConfig: backendConfig)
-        let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
+        let customer = CustomerAPI(backendLanes: backendLanes, attributionFetcher: attributionFetcher)
+        let internalAPI = InternalAPI(backendLanes: backendLanes)
+        let customerCenterConfig = CustomerCenterConfigAPI(backendLanes: backendLanes)
         let redeemWebPurchaseAPI = MockRedeemWebPurchaseAPI()
         let externalPurchaseTokenAPI = MockExternalPurchaseTokenAPI()
         let virtualCurrenciesAPI = MockVirtualCurrenciesAPI()
         let adsAPI = MockAdsAPI()
-        let remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
+        let remoteConfigAPI = RemoteConfigAPI(backendLanes: backendLanes)
 
-        self.init(lanes: BackendLanes(configuration: backendConfig),
+        self.init(lanes: backendLanes,
                   customerAPI: customer,
                   identityAPI: identity,
-                  tokenAPI: MockTokenAPI(backendConfig: backendConfig),
+                  tokenAPI: MockTokenAPI(backendLanes: backendLanes),
                   offeringsAPI: offerings,
                   webBillingAPI: webBilling,
                   offlineEntitlements: offlineEntitlements,

@@ -70,3 +70,7 @@ private extension GetRemoteConfigFallbackOperation {
     }
 
 }
+
+extension GetRemoteConfigFallbackOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .remoteConfig }
+}

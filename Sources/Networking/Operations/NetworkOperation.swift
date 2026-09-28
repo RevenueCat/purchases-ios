@@ -192,6 +192,10 @@ class NetworkOperation: Operation {
 
 }
 
+protocol LaneRoutedOperation: NetworkOperation {
+    static var lane: RequestLane { get }
+}
+
 // Restating inherited @unchecked Sendable from Foundation's Operation
 extension NetworkOperation: @unchecked Sendable {}
 

@@ -78,3 +78,7 @@ private extension PostAttributionDataOperation {
     }
 
 }
+
+extension PostAttributionDataOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .default }
+}

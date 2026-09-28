@@ -129,3 +129,7 @@ extension PostExternalPurchaseTokenOperation.PostData: Encodable {
 // MARK: - HTTPRequestBody
 
 extension PostExternalPurchaseTokenOperation.PostData: HTTPRequestBody {}
+
+extension PostExternalPurchaseTokenOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .checkout }
+}

@@ -17,7 +17,7 @@ import Foundation
 class MockExternalPurchaseTokenAPI: ExternalPurchaseTokenAPI {
 
     init() {
-        super.init(backendConfig: MockBackendConfiguration())
+        super.init(backendLanes: BackendLanes(configuration: MockBackendConfiguration()))
     }
 
     var invokedPostExternalPurchaseToken = false

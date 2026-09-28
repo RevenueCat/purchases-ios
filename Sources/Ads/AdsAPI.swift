@@ -19,10 +19,10 @@ class AdsAPI {
     typealias RewardVerificationStatusResponseHandler = Backend.ResponseHandler<RewardVerificationStatusResponse>
 
     private let callbackCache: CallbackCache<RewardVerificationStatusCallback>
-    private let backendConfig: BackendConfiguration
+    private let backendLanes: BackendLanes
 
-    init(backendConfig: BackendConfiguration) {
-        self.backendConfig = backendConfig
+    init(backendLanes: BackendLanes) {
+        self.backendLanes = backendLanes
         self.callbackCache = .init()
     }
 
@@ -31,8 +31,9 @@ class AdsAPI {
         clientTransactionID: String,
         completion: @escaping RewardVerificationStatusResponseHandler
     ) {
+        let backendConfig = self.backendLanes[GetRewardVerificationStatusOperation.self]
         let config = GetRewardVerificationStatusOperation.Configuration(
-            httpClient: self.backendConfig.httpClient,
+            httpClient: backendConfig.httpClient,
             appUserID: appUserID,
             clientTransactionID: clientTransactionID
         )
@@ -45,7 +46,7 @@ class AdsAPI {
         let callback = RewardVerificationStatusCallback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.callbackCache.add(callback)
 
-        self.backendConfig.addCacheableOperation(
+        backendConfig.addCacheableOperation(
             with: factory,
             delay: .none,
             cacheStatus: cacheStatus

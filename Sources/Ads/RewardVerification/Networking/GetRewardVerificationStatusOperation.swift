@@ -114,3 +114,7 @@ private extension GetRewardVerificationStatusOperation {
     }
 
 }
+
+extension GetRewardVerificationStatusOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .default }
+}

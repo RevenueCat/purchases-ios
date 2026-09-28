@@ -24,11 +24,11 @@ class InternalAPI {
     private let healthReportAvailabilityCallbackCache: CallbackCache<HealthReportAvailabilityOperation.Callback>
     #endif
 
-    private let backendConfig: BackendConfiguration
+    private let backendLanes: BackendLanes
     private let healthCallbackCache: CallbackCache<HealthOperation.Callback>
 
-    init(backendConfig: BackendConfiguration) {
-        self.backendConfig = backendConfig
+    init(backendLanes: BackendLanes) {
+        self.backendLanes = backendLanes
         self.healthCallbackCache = .init()
         #if DEBUG
         self.healthReportCallbackCache = .init()
@@ -37,38 +37,41 @@ class InternalAPI {
     }
 
     func healthRequest(signatureVerification: Bool, completion: @escaping ResponseHandler) {
-        let factory = HealthOperation.createFactory(httpClient: self.backendConfig.httpClient,
+        let backendConfig = self.backendLanes[HealthOperation.self]
+        let factory = HealthOperation.createFactory(httpClient: backendConfig.httpClient,
                                                     callbackCache: self.healthCallbackCache,
                                                     signatureVerification: signatureVerification)
 
         let callback = HealthOperation.Callback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.healthCallbackCache.add(callback)
 
-        self.backendConfig.addCacheableOperation(with: factory,
-                                                 delay: .none,
-                                                 cacheStatus: cacheStatus)
+        backendConfig.addCacheableOperation(with: factory,
+                                            delay: .none,
+                                            cacheStatus: cacheStatus)
     }
 
     #if DEBUG
     func healthReportRequest(appUserID: String, completion: @escaping HealthReportResponseHandler) {
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+        let backendConfig = self.backendLanes[HealthReportOperation.self]
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
                                                                 appUserID: appUserID)
         let factory = HealthReportOperation.createFactory(configuration: config,
                                                           callbackCache: self.healthReportCallbackCache)
         let callback = HealthReportOperation.Callback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.healthReportCallbackCache.add(callback)
 
-        self.backendConfig.addCacheableOperation(with: factory,
-                                                 delay: .none,
-                                                 cacheStatus: cacheStatus)
+        backendConfig.addCacheableOperation(with: factory,
+                                            delay: .none,
+                                            cacheStatus: cacheStatus)
     }
 
     func healthReportAvailabilityRequest(
         appUserID: String,
         completion: @escaping HealthReportAvailabilityResponseHandler
     ) {
+        let backendConfig = self.backendLanes[HealthReportAvailabilityOperation.self]
         let config = NetworkOperation.UserSpecificConfiguration(
-            httpClient: self.backendConfig.httpClient,
+            httpClient: backendConfig.httpClient,
             appUserID: appUserID
         )
         let factory = HealthReportAvailabilityOperation.createFactory(
@@ -78,9 +81,9 @@ class InternalAPI {
         let callback = HealthReportAvailabilityOperation.Callback(cacheKey: factory.cacheKey, completion: completion)
         let cacheStatus = self.healthReportAvailabilityCallbackCache.add(callback)
 
-        self.backendConfig.addCacheableOperation(with: factory,
-                                                 delay: .none,
-                                                 cacheStatus: cacheStatus)
+        backendConfig.addCacheableOperation(with: factory,
+                                            delay: .none,
+                                            cacheStatus: cacheStatus)
     }
     #endif
 
@@ -91,15 +94,16 @@ class InternalAPI {
             return
         }
 
+        let backendConfig = self.backendLanes[PostFeatureEventsOperation.self]
         let request = FeatureEventsRequest(events: events)
         let operation = PostFeatureEventsOperation(
-            configuration: .init(httpClient: self.backendConfig.httpClient),
+            configuration: .init(httpClient: backendConfig.httpClient),
             request: request,
             path: HTTPRequest.FeatureEventsPath.postEvents,
             responseHandler: completion
         )
 
-        self.backendConfig.operationQueue.addOperation(operation)
+        backendConfig.operationQueue.addOperation(operation)
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -109,11 +113,12 @@ class InternalAPI {
             return
         }
 
-        let operation = DiagnosticsPostOperation(configuration: .init(httpClient: self.backendConfig.httpClient),
+        let backendConfig = self.backendLanes[DiagnosticsPostOperation.self]
+        let operation = DiagnosticsPostOperation(configuration: .init(httpClient: backendConfig.httpClient),
                                                  request: .init(events: events),
                                                  responseHandler: completion)
 
-        self.backendConfig.addDiagnosticsOperation(operation, delay: .long)
+        backendConfig.addDiagnosticsOperation(operation, delay: .long)
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -123,15 +128,16 @@ class InternalAPI {
             return
         }
 
+        let backendConfig = self.backendLanes[PostAdEventsOperation.self]
         let request = AdEventsRequest(events: events)
         let operation = PostAdEventsOperation(
-            configuration: .init(httpClient: self.backendConfig.httpClient),
+            configuration: .init(httpClient: backendConfig.httpClient),
             request: request,
             path: HTTPRequest.AdPath.postEvents,
             responseHandler: completion
         )
 
-        self.backendConfig.operationQueue.addOperation(operation)
+        backendConfig.operationQueue.addOperation(operation)
     }
 
 }

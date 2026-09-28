@@ -51,3 +51,7 @@ final class PostFeatureEventsOperation: NetworkOperation {
 
 // Restating inherited @unchecked Sendable from Foundation's Operation
 extension PostFeatureEventsOperation: @unchecked Sendable {}
+
+extension PostFeatureEventsOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .default }
+}

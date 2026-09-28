@@ -131,3 +131,7 @@ private extension GetIntroEligibilityOperation {
     }
 
 }
+
+extension GetIntroEligibilityOperation: LaneRoutedOperation {
+    static var lane: RequestLane { .default }
+}
