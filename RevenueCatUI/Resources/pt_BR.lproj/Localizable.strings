@@ -22,7 +22,7 @@
 "Continue" = "Continuar";
 "Default_offer_details_with_intro_offer" = "Comece sua avaliação de {{ sub_offer_duration }} e depois {{ total_price_and_per_month }}.";
 "Something went wrong" = "Algo deu errado";
-"Payment failed." = "Pagamento falhou.";
+"Payment failed." = "O pagamento não foi concluído.";
 "Your purchase is still processing." = "Sua compra ainda está sendo processada.";
 "Purchase" = "Comprar";
 "You are currently subscribed to this" = "Você já tem uma assinatura deste item";

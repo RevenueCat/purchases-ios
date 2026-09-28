@@ -22,9 +22,9 @@
 "Continue" = "ďalej";
 "Default_offer_details_with_intro_offer" = "Začnite skúšobnú verziu {{ sub_offer_duration }}, potom {{ total_price_and_per_month }}.";
 "Something went wrong" = "Niečo sa pokazilo";
-"Payment failed." = "Platba zlyhala.";
-"Your purchase is still processing." = "Váš nákup sa stále spracúva.";
+"Payment failed." = "Platba sa nepodarila.";
+"Your purchase is still processing." = "Nákup sa ešte spracúva.";
 "Purchase" = "Kúpiť";
 "You are currently subscribed to this" = "Toto máte aktuálne predplatené";
 "You've already purchased this" = "Toto ste si už zakúpili";
-"Your purchase was successful." = "Váš nákup bol úspešný.";
+"Your purchase was successful." = "Nákup prebehol úspešne.";
