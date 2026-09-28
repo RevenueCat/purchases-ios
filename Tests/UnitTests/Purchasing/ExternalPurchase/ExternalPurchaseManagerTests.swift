@@ -453,7 +453,7 @@ class ExternalPurchaseManagerTests: TestCase {
         return Self.onADevice(MockSystemInfo(
             finishTransactions: true,
             useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks,
-            disableExternalPurchasesInSimulator: true
+            enableExternalPurchasesInSimulator: false
         ))
     }
 

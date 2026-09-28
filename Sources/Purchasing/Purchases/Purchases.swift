@@ -359,7 +359,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      networkTimeout: NetworkTimeout = .default,
                      dangerousSettings: DangerousSettings? = nil,
                      useExternalPurchaseCustomLinks: Bool = false,
-                     disableExternalPurchasesInSimulator: Bool = false,
+                     enableExternalPurchasesInSimulator: Bool = true,
                      showStoreMessagesAutomatically: Bool,
                      diagnosticsEnabled: Bool = false,
                      preferredLocale: String?,
@@ -390,7 +390,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             responseVerificationMode: responseVerificationMode,
             dangerousSettings: dangerousSettings,
             useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks,
-            disableExternalPurchasesInSimulator: disableExternalPurchasesInSimulator,
+            enableExternalPurchasesInSimulator: enableExternalPurchasesInSimulator,
             preferredLocalesProvider: PreferredLocalesProvider(preferredLocaleOverride: preferredLocale)
         )
 
@@ -1962,13 +1962,13 @@ public extension Purchases {
     /// and every token minted is one Apple expects a report for.
     ///
     /// Does nothing while `useExternalPurchaseCustomLinks` is disabled, see
-    /// ``Configuration/Builder/with(useExternalPurchaseCustomLinks:disableExternalPurchasesInSimulator:)``: the
+    /// ``Configuration/Builder/with(useExternalPurchaseCustomLinks:enableExternalPurchasesInSimulator:)``: the
     /// caller is told to proceed with no token id to hand over, so the link keeps opening as it did before.
     @_spi(Internal) func prepareExternalPurchaseLink() async -> ExternalPurchaseLinkResult {
         return .init(preparationResult: await self.externalPurchaseManager.prepareExternalPurchase(flow: .linkOut))
     }
 
-    /// ``Configuration/Builder/with(useExternalPurchaseCustomLinks:disableExternalPurchasesInSimulator:)``, so that
+    /// ``Configuration/Builder/with(useExternalPurchaseCustomLinks:enableExternalPurchasesInSimulator:)``, so that
     /// `RevenueCatUI` only tells the customer something is under way when ``prepareExternalPurchaseLink()`` has
     /// work to do.
     @_spi(Internal) var useExternalPurchaseCustomLinks: Bool {
@@ -2313,7 +2313,7 @@ public extension Purchases {
                 networkTimeout: configuration.networkTimeout,
                 dangerousSettings: configuration.dangerousSettings,
                 useExternalPurchaseCustomLinks: configuration.useExternalPurchaseCustomLinks,
-                disableExternalPurchasesInSimulator: configuration.disableExternalPurchasesInSimulator,
+                enableExternalPurchasesInSimulator: configuration.enableExternalPurchasesInSimulator,
                 showStoreMessagesAutomatically: configuration.showStoreMessagesAutomatically,
                 diagnosticsEnabled: configuration.diagnosticsEnabled,
                 preferredLocale: configuration.preferredLocale,

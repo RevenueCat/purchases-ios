@@ -210,7 +210,7 @@ class HostedCheckoutManagerTests: TestCase {
         self.systemInfo = MockSystemInfo(
             finishTransactions: true,
             useExternalPurchaseCustomLinks: true,
-            disableExternalPurchasesInSimulator: true
+            enableExternalPurchasesInSimulator: false
         )
         self.systemInfo.stubbedIsRunningInSimulator = true
         self.manager = self.makeManager()
@@ -226,7 +226,7 @@ class HostedCheckoutManagerTests: TestCase {
         self.systemInfo = MockSystemInfo(
             finishTransactions: true,
             useExternalPurchaseCustomLinks: false,
-            disableExternalPurchasesInSimulator: true
+            enableExternalPurchasesInSimulator: false
         )
         self.systemInfo.stubbedIsRunningInSimulator = true
         self.manager = self.makeManager()

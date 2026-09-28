@@ -31,7 +31,7 @@ class MockSystemInfo: SystemInfo {
                      responseVerificationMode: Signing.ResponseVerificationMode = .disabled,
                      dangerousSettings: DangerousSettings,
                      useExternalPurchaseCustomLinks: Bool = false,
-                     disableExternalPurchasesInSimulator: Bool = false,
+                     enableExternalPurchasesInSimulator: Bool = true,
                      clock: ClockType = TestClock(),
                      preferredLocalesProvider: PreferredLocalesProvider = .mock()) {
         self.init(platformInfo: platformInfo,
@@ -43,7 +43,7 @@ class MockSystemInfo: SystemInfo {
                   responseVerificationMode: responseVerificationMode,
                   dangerousSettings: dangerousSettings,
                   useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks,
-                  disableExternalPurchasesInSimulator: disableExternalPurchasesInSimulator,
+                  enableExternalPurchasesInSimulator: enableExternalPurchasesInSimulator,
                   isAppBackgrounded: false,
                   clock: clock,
                   preferredLocalesProvider: preferredLocalesProvider)
@@ -59,7 +59,7 @@ class MockSystemInfo: SystemInfo {
                      apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
                      responseVerificationMode: Signing.ResponseVerificationMode = .disabled,
                      useExternalPurchaseCustomLinks: Bool = false,
-                     disableExternalPurchasesInSimulator: Bool = false,
+                     enableExternalPurchasesInSimulator: Bool = true,
                      clock: ClockType = TestClock(),
                      preferredLocalesProvider: PreferredLocalesProvider = .mock()) {
         let dangerousSettings = DangerousSettings(
@@ -79,7 +79,7 @@ class MockSystemInfo: SystemInfo {
                   responseVerificationMode: responseVerificationMode,
                   dangerousSettings: dangerousSettings,
                   useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks,
-                  disableExternalPurchasesInSimulator: disableExternalPurchasesInSimulator,
+                  enableExternalPurchasesInSimulator: enableExternalPurchasesInSimulator,
                   clock: clock,
                   preferredLocalesProvider: preferredLocalesProvider)
     }

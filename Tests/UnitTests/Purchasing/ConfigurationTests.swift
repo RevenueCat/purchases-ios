@@ -224,7 +224,7 @@ class ConfigurationTests: TestCase {
         let configuration = Configuration.Builder(withAPIKey: "test")
             .build()
         expect(configuration.useExternalPurchaseCustomLinks) == false
-        expect(configuration.disableExternalPurchasesInSimulator) == false
+        expect(configuration.enableExternalPurchasesInSimulator) == true
     }
 
     func testUseExternalPurchaseCustomLinksCanBeSet() {
@@ -232,15 +232,15 @@ class ConfigurationTests: TestCase {
             .with(useExternalPurchaseCustomLinks: true)
             .build()
         expect(configuration.useExternalPurchaseCustomLinks) == true
-        expect(configuration.disableExternalPurchasesInSimulator) == false
+        expect(configuration.enableExternalPurchasesInSimulator) == true
     }
 
-    func testDisableExternalPurchasesInSimulatorCanBeSet() {
+    func testEnableExternalPurchasesInSimulatorCanBeDisabled() {
         let configuration = Configuration.Builder(withAPIKey: "test")
-            .with(useExternalPurchaseCustomLinks: true, disableExternalPurchasesInSimulator: true)
+            .with(useExternalPurchaseCustomLinks: true, enableExternalPurchasesInSimulator: false)
             .build()
         expect(configuration.useExternalPurchaseCustomLinks) == true
-        expect(configuration.disableExternalPurchasesInSimulator) == true
+        expect(configuration.enableExternalPurchasesInSimulator) == false
     }
 
     // MARK: - Equality
@@ -303,12 +303,12 @@ class ConfigurationTests: TestCase {
         expect(lhs) != rhs
     }
 
-    func testDifferentDisableExternalPurchasesInSimulatorIsNotEqual() {
+    func testDifferentEnableExternalPurchasesInSimulatorIsNotEqual() {
         let lhs = Configuration.Builder(withAPIKey: "test")
-            .with(useExternalPurchaseCustomLinks: true, disableExternalPurchasesInSimulator: true)
+            .with(useExternalPurchaseCustomLinks: true, enableExternalPurchasesInSimulator: true)
             .build()
         let rhs = Configuration.Builder(withAPIKey: "test")
-            .with(useExternalPurchaseCustomLinks: true, disableExternalPurchasesInSimulator: false)
+            .with(useExternalPurchaseCustomLinks: true, enableExternalPurchasesInSimulator: false)
             .build()
 
         expect(lhs) != rhs
@@ -451,7 +451,7 @@ class ConfigurationTests: TestCase {
             .with(preferredUILocaleOverride: "en-US")
             .with(automaticDeviceIdentifierCollectionEnabled: true)
             .with(iamEnabled: false)
-            .with(useExternalPurchaseCustomLinks: false, disableExternalPurchasesInSimulator: false)
+            .with(useExternalPurchaseCustomLinks: false, enableExternalPurchasesInSimulator: true)
     }
 
 }
