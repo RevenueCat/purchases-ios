@@ -60,6 +60,16 @@ class BackendGetHostedCheckoutStatusTests: BaseBackendTests {
         expect(response.status) == .pending
     }
 
+    func testReadsAnInProgressSessionAsPending() throws {
+        self.mockStatus(Self.response(status: "in_progress"))
+
+        let response = try XCTUnwrap(waitUntilValue { completed in
+            self.getStatus(completion: completed)
+        }?.value)
+
+        expect(response.status) == .pending
+    }
+
     func testReadsASucceededSession() throws {
         self.mockStatus(Self.response(status: "succeeded"))
 
