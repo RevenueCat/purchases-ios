@@ -99,15 +99,15 @@ class TakeScreenshotTests: BaseSnapshotTest {
 
     private static func exportedFilename(from attachmentName: String) -> String {
         let attachmentURL = URL(fileURLWithPath: attachmentName)
-        let extension = attachmentURL.pathExtension
+        let fileExtension = attachmentURL.pathExtension
         let attachmentBaseName = attachmentURL.deletingPathExtension().lastPathComponent
         let exportedBaseName = attachmentBaseName.components(separatedBy: "__END").first ?? attachmentBaseName
 
-        if extension.isEmpty {
+        if fileExtension.isEmpty {
             return exportedBaseName
         }
 
-        return "\(exportedBaseName).\(extension)"
+        return "\(exportedBaseName).\(fileExtension)"
     }
 
 }
