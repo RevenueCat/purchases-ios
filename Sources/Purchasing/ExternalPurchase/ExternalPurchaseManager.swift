@@ -20,6 +20,7 @@ final class ExternalPurchaseManager {
     private let customLink: ExternalPurchaseCustomLinkType
     private let externalPurchaseTokenAPI: ExternalPurchaseTokenAPI
     private let currentUserProvider: CurrentUserProvider
+    private let settingsProvider: SDKSettingsConfigProviderType
     private let systemInfo: SystemInfo
 
     private let isPreparing: Atomic<Bool> = false
@@ -27,10 +28,12 @@ final class ExternalPurchaseManager {
     init(customLink: ExternalPurchaseCustomLinkType,
          externalPurchaseTokenAPI: ExternalPurchaseTokenAPI,
          currentUserProvider: CurrentUserProvider,
+         settingsProvider: SDKSettingsConfigProviderType,
          systemInfo: SystemInfo) {
         self.customLink = customLink
         self.externalPurchaseTokenAPI = externalPurchaseTokenAPI
         self.currentUserProvider = currentUserProvider
+        self.settingsProvider = settingsProvider
         self.systemInfo = systemInfo
     }
 
@@ -72,7 +75,12 @@ final class ExternalPurchaseManager {
         case .available:
             break
         case .notEligible:
-            Logger.debug(Strings.externalPurchase.custom_link_does_not_apply)
+            guard let storefront = await self.storefrontNotRequiringExternalPurchaseAPIs() else {
+                Logger.warn(Strings.externalPurchase.not_eligible)
+                return .stopped(.notEligible)
+            }
+
+            Logger.debug(Strings.externalPurchase.custom_link_does_not_apply(storefront))
             return .notApplicable
         case .paymentsNotAuthorized:
             Logger.warn(Strings.externalPurchase.payments_not_authorized)
@@ -110,12 +118,19 @@ internal enum ExternalPurchasePreparationResult: Equatable {
     case unregistered(FailureReason)
 
     /// Route the customer to the checkout with no identifier to hand over, as the app would outside Apple's
-    /// programme: it does not apply here, see ``ExternalPurchaseAvailability/notEligible``.
+    /// programme: its external purchase APIs are not required here.
     ///
     /// Nothing was shown and nothing was minted.
     case notApplicable
 
     enum StopReason: Equatable {
+
+        /// The customer is not eligible for Apple's external purchase programme, see
+        /// ``ExternalPurchaseAvailability/notEligible``, so they are offered nothing.
+        ///
+        /// In the storefronts where its APIs are not required, the purchase goes ahead as
+        /// ``ExternalPurchasePreparationResult/notApplicable`` instead.
+        case notEligible
 
         /// The device does not authorize payments, see ``ExternalPurchaseAvailability/paymentsNotAuthorized``.
         ///
@@ -155,6 +170,22 @@ private extension ExternalPurchaseManager {
     /// precondition for everything here.
     var takesPartInTheProgramme: Bool {
         return self.systemInfo.dangerousSettings.useExternalPurchaseCustomLinks
+    }
+
+    var storefront: String? {
+        return self.systemInfo.storefront?.countryCode.uppercased()
+    }
+
+    /// The customer's storefront, when it is one where Apple's external purchase APIs are not required, and
+    /// `nil` otherwise.
+    func storefrontNotRequiringExternalPurchaseAPIs() async -> String? {
+        guard let storefront = self.storefront,
+              await self.settingsProvider.settings().externalPurchases.appStore
+                .storefrontsAllowedWithoutStoreEligibility.contains(storefront) else {
+            return nil
+        }
+
+        return storefront
     }
 
     enum NoticeOutcome {
