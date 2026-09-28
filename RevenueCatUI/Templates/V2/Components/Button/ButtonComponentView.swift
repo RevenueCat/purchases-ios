@@ -29,6 +29,7 @@ struct ButtonComponentView: View {
     @State private var showCustomerCenter = false
     @State private var offerCodeRedemptionSheet = false
     @State private var showingWebPaywallLinkAlert = false
+    @State private var showingPurchaseUnavailableAlert = false
 
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
@@ -125,6 +126,8 @@ struct ButtonComponentView: View {
             .opacity(self.shouldBeDisabled ? 0.35 : 1.0)
             .offset(x: self.workflowRenderingContext.isHeader ? -self.headerPageOffset : 0)
             .opacity(self.workflowRenderingContext.isHeader ? self.headerButtonOpacity : 1)
+            .purchaseUnavailableAlert(isPresented: self.$showingPurchaseUnavailableAlert,
+                                      localizedBundle: self.viewModel.localizedBundle)
             #if canImport(SafariServices) && canImport(UIKit)
             .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
                 let url = self.inAppBrowserURL!
@@ -318,17 +321,24 @@ struct ButtonComponentView: View {
 #endif
     }
 
+    @MainActor
     private func openWebPaywallLink(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) async {
         guard !self.purchaseHandler.actionInProgress else {
             return
         }
 
-        guard let url = await ExternalPurchaseLink.urlToOpen(url,
-                                                             method: method,
-                                                             purchaseHandler: self.purchaseHandler) else {
-            return
+        switch await ExternalPurchaseLink.action(for: url, method: method, purchaseHandler: self.purchaseHandler) {
+        case let .open(url):
+            self.open(webPaywallLink: url)
+        case .tellCustomerThePurchaseIsUnavailable:
+            self.showingPurchaseUnavailableAlert = true
+        case .nothing:
+            break
         }
+    }
 
+    @MainActor
+    private func open(webPaywallLink url: URL) {
         self.purchaseHandler.invalidateCustomerInfoCache()
 #if os(watchOS)
         // watchOS doesn't support openURL with a completion handler, so we're just opening the URL.

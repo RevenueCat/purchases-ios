@@ -25,3 +25,5 @@
 "Purchase" = "Kupi";
 "You are currently subscribed to this" = "Na to ste že naročeni";
 "You've already purchased this" = "To ste že kupili";
+"Purchase unavailable" = "Nakup ni na voljo";
+"This purchase isn't available in your region." = "Ta nakup v vaši regiji ni na voljo.";

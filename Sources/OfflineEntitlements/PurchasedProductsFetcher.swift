@@ -45,6 +45,12 @@ final class PurchasedProductsFetcher: PurchasedProductsFetcherType {
     func fetchPurchasedProducts() async throws -> [PurchasedSK2Product] {
         var result: [PurchasedSK2Product] = []
 
+        // The SDK only finishes a transaction after posting it successfully, so any unfinished transaction
+        // is one the backend has not been told about yet. Fetched fresh every time, unlike the transactions cache.
+        let unfinishedTransactionIDs = Set(
+            await self.transactionFetcher.unfinishedVerifiedTransactions.map(\.transactionIdentifier)
+        )
+
         for transaction in try await self.transactions {
             switch transaction {
             case let .unverified(transaction, verificationError):
@@ -53,8 +59,11 @@ final class PurchasedProductsFetcher: PurchasedProductsFetcherType {
                                                                                      verificationError)
                 )
             case let .verified(verifiedTransaction):
-                result.append(.init(from: verifiedTransaction,
-                                    sandboxEnvironmentDetector: self.sandboxDetector))
+                result.append(.init(
+                    from: verifiedTransaction,
+                    sandboxEnvironmentDetector: self.sandboxDetector,
+                    isSynced: !unfinishedTransactionIDs.contains(String(verifiedTransaction.id))
+                ))
             }
         }
 

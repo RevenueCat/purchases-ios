@@ -25,3 +25,5 @@
 "Purchase" = "شراء";
 "You are currently subscribed to this" = "أنت مشترك في هذا العنصر بالفعل";
 "You've already purchased this" = "لقد اشتريت هذا العنصر بالفعل";
+"Purchase unavailable" = "الشراء غير متاح";
+"This purchase isn't available in your region." = "عملية الشراء هذه غير متاحة في منطقتك.";
