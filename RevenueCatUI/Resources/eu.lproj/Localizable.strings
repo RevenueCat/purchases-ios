@@ -25,3 +25,5 @@
 "Purchase" = "Erosi";
 "You are currently subscribed to this" = "Dagoeneko harpidetuta zaude honetara";
 "You've already purchased this" = "Dagoeneko erosi duzu hau";
+"Purchase unavailable" = "Erosketa ez dago erabilgarri";
+"This purchase isn't available in your region." = "Erosketa hau ez dago erabilgarri zure eskualdean.";

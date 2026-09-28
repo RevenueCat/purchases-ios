@@ -18,7 +18,7 @@ import Foundation
 /// Reports how a custom paywall presentation ended.
 ///
 /// Call this once when the presentation ends. RevenueCat ignores later calls for the same checkpoint.
-@_spi(CheckpointsInternal)
+@_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public typealias PaywallPresentationCompletion = @MainActor (PaywallPresentationResult) -> Void
 
@@ -27,7 +27,7 @@ public typealias PaywallPresentationCompletion = @MainActor (PaywallPresentation
 /// Set an instance on ``Purchases/paywallPresenter`` to use it for all checkpoint-selected offerings.
 /// The presenter owns its UI and reports how the presentation ended; RevenueCat owns purchase synchronization and
 /// determines which entitlements were obtained while the checkpoint was presented.
-@_spi(CheckpointsInternal)
+@_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 public protocol PaywallPresenter: AnyObject {
@@ -49,7 +49,7 @@ public protocol PaywallPresenter: AnyObject {
 /// later calls are ignored. Pass this closure to ``Purchases/checkpoint(_:customVariables:paywallPresenter:_:)``
 /// to override the global presenter for one checkpoint call. RevenueCat synchronizes purchases and determines which
 /// entitlements were obtained after the presentation ends.
-@_spi(CheckpointsInternal)
+@_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public typealias PaywallPresentationHandler = @MainActor (
     PaywallPresentationParams,
@@ -59,7 +59,7 @@ public typealias PaywallPresentationHandler = @MainActor (
 /// Context for a custom checkpoint paywall presentation.
 ///
 /// This separate type keeps the presenter's method signature extensible as presentation context grows.
-@_spi(CheckpointsInternal)
+@_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 public struct PaywallPresentationParams {
@@ -96,7 +96,7 @@ public struct PaywallPresentationParams {
 /// After ``continued`` or ``closed``, RevenueCat synchronizes purchases and refreshes customer information before
 /// completing the checkpoint. ``navigatedBack`` skips synchronization and does not invoke the checkpoint's passed
 /// callback.
-@_spi(CheckpointsInternal)
+@_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 public struct PaywallPresentationResult: Hashable {

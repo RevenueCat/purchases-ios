@@ -25,3 +25,5 @@
 "Purchase" = "Mua";
 "You are currently subscribed to this" = "Bạn đã đăng ký mục này";
 "You've already purchased this" = "Bạn đã mua mục này";
+"Purchase unavailable" = "Không thể mua";
+"This purchase isn't available in your region." = "Giao dịch mua này không khả dụng ở khu vực của bạn.";

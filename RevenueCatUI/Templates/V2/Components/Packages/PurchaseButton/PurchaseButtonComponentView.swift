@@ -40,6 +40,8 @@ struct PurchaseButtonComponentView: View {
 
     @State private var inAppBrowserURL: URL?
 
+    @State private var showingPurchaseUnavailableAlert = false
+
     #if os(iOS) && canImport(WebKit)
     @State private var hostedCheckoutViewModel: WebCheckoutViewModel?
 
@@ -86,6 +88,8 @@ struct PurchaseButtonComponentView: View {
         }
         .disabled(self.shouldBeDisabled)
         .opacity(self.shouldBeDisabled ? 0.35 : 1.0)
+        .purchaseUnavailableAlert(isPresented: self.$showingPurchaseUnavailableAlert,
+                                  localizedBundle: self.viewModel.localizedBundle)
         #if canImport(SafariServices) && canImport(UIKit)
         .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
             SafariView(url: self.inAppBrowserURL!)
@@ -181,6 +185,8 @@ struct PurchaseButtonComponentView: View {
             self.presentHostedCheckout(session)
         case .tellCustomerTheyAlreadyOwnIt:
             self.showAlreadyOwnedAlert(for: selectedPackage)
+        case .tellCustomerThePurchaseIsUnavailable:
+            self.showingPurchaseUnavailableAlert = true
         case .nothing:
             break
         }
@@ -230,6 +236,7 @@ struct PurchaseButtonComponentView: View {
     }
     #endif
 
+    @MainActor
     private func purchaseInWeb() async throws {
         self.logIfInPreview(package: self.packageContext.package)
 
@@ -254,15 +261,18 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
-        guard let url = await ExternalPurchaseLink.urlToOpen(
-            launchWebCheckout.url,
+        switch await ExternalPurchaseLink.action(
+            for: launchWebCheckout.url,
             method: launchWebCheckout.method,
             purchaseHandler: self.purchaseHandler
-        ) else {
-            return
+        ) {
+        case let .open(url):
+            self.openWebPaywallLink(url: url, launchWebCheckout: launchWebCheckout)
+        case .tellCustomerThePurchaseIsUnavailable:
+            self.showingPurchaseUnavailableAlert = true
+        case .nothing:
+            break
         }
-
-        self.openWebPaywallLink(url: url, launchWebCheckout: launchWebCheckout)
     }
 
     private func logPurchaseButtonInteractionForInApp(selectedPackage: Package) {

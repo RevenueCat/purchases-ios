@@ -25,3 +25,5 @@
 "Purchase" = "Koupit";
 "You are currently subscribed to this" = "Toto máte aktuálně předplacené";
 "You've already purchased this" = "Toto jste si již zakoupili";
+"Purchase unavailable" = "Nákup není k dispozici";
+"This purchase isn't available in your region." = "Tento nákup není ve vašem regionu k dispozici.";
