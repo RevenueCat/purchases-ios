@@ -700,10 +700,10 @@ extension PurchaseHandler {
     ) throws -> WorkflowContext {
         #if ENABLE_WORKFLOW_BRANCH_LOADING
         var resolvedInitialStepId = resolvedInitialStepId
-        if resolvedInitialStepId == nil, case let .step(stepId)? = workflow.initialStepTrigger {
+        if resolvedInitialStepId == nil, case let .step(stepId)? = workflow.initialTrigger {
             resolvedInitialStepId = stepId
         }
-        if resolvedInitialStepId == nil, case .branch? = workflow.initialStepTrigger {
+        if resolvedInitialStepId == nil, case .branch? = workflow.initialTrigger {
             return WorkflowContext(
                 workflow: workflow,
                 uiConfig: uiConfig,

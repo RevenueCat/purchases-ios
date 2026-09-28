@@ -114,7 +114,7 @@ import Foundation
             return nil
         }
         #if ENABLE_WORKFLOW_BRANCH_LOADING
-        if case .branch? = self.workflow.initialStepTrigger,
+        if case .branch? = self.workflow.initialTrigger,
            offeringId == self.offering(for: step)?.identifier {
             return nil
         }

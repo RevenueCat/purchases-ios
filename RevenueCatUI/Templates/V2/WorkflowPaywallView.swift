@@ -357,7 +357,7 @@ struct WorkflowPaywallView: View {
         let initialStepId = context.resolvedInitialStepId ?? context.workflow.initialStepId
         let branch: WorkflowBranch?
         if context.resolvedInitialStepId == nil,
-           case let .branch(initialBranch)? = context.workflow.initialStepTrigger {
+           case let .branch(initialBranch)? = context.workflow.initialTrigger {
             branch = initialBranch
         } else {
             branch = nil

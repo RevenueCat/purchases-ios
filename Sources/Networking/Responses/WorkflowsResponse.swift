@@ -210,7 +210,7 @@ import Foundation
     public let id: String
     let displayName: String
     public let initialStepId: String
-    public let initialStepTrigger: WorkflowTriggerAction?
+    public let initialTrigger: WorkflowTriggerAction?
     public let singleStepFallbackId: String?
     public let steps: [String: WorkflowStep]
     public let screens: [String: WorkflowScreen]
@@ -226,12 +226,12 @@ import Foundation
         steps: [String: WorkflowStep],
         screens: [String: WorkflowScreen],
         contentMaxWidth: Int? = nil,
-        initialStepTrigger: WorkflowTriggerAction? = nil
+        initialTrigger: WorkflowTriggerAction? = nil
     ) {
         self.id = id
         self.displayName = displayName
         self.initialStepId = initialStepId
-        self.initialStepTrigger = initialStepTrigger
+        self.initialTrigger = initialTrigger
         self.singleStepFallbackId = singleStepFallbackId
         self.steps = steps
         self.screens = screens
@@ -249,12 +249,12 @@ import Foundation
         screens: [String: WorkflowScreen],
         contentMaxWidth: Int?,
         metadata: [String: AnyDecodable]?,
-        initialStepTrigger: WorkflowTriggerAction? = nil
+        initialTrigger: WorkflowTriggerAction? = nil
     ) {
         self.id = id
         self.displayName = displayName
         self.initialStepId = initialStepId
-        self.initialStepTrigger = initialStepTrigger
+        self.initialTrigger = initialTrigger
         self.singleStepFallbackId = singleStepFallbackId
         self.steps = steps
         self.screens = screens
@@ -320,7 +320,7 @@ extension PublishedWorkflow: Decodable, Equatable, Sendable {
         case id
         case displayName
         case initialStepId
-        case initialStepTrigger
+        case initialTrigger
         case singleStepFallbackId
         case steps
         case screens
@@ -333,7 +333,7 @@ extension PublishedWorkflow: Decodable, Equatable, Sendable {
         self.id = try container.decode(String.self, forKey: .id)
         self.displayName = try container.decode(String.self, forKey: .displayName)
         self.initialStepId = try container.decode(String.self, forKey: .initialStepId)
-        self.initialStepTrigger = try container.decodeIfPresent(WorkflowTriggerAction.self, forKey: .initialStepTrigger)
+        self.initialTrigger = try container.decodeIfPresent(WorkflowTriggerAction.self, forKey: .initialTrigger)
         self.singleStepFallbackId = try container.decodeIfPresent(String.self, forKey: .singleStepFallbackId)
         self.steps = try container.decode([String: WorkflowStep].self, forKey: .steps)
         self.screens = try container.decode([String: WorkflowScreen].self, forKey: .screens)
