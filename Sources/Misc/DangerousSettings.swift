@@ -128,8 +128,8 @@ import Foundation
      * Defaults to `true`. Has no effect on a physical device, nor while ``useExternalPurchaseCustomLinks`` is
      * `false`.
      *
-     * - Note: StoreKit's `ExternalPurchaseCustomLink` APIs are unavailable in the simulator, so Apple's disclosure
-     * notice cannot be shown and an external purchase token cannot be minted there.
+     * - Note: `ExternalPurchaseCustomLink.isEligible` returns `false` in the simulator, so Apple's disclosure notice
+     * cannot be shown and an external purchase token cannot be minted there.
      */
     @_spi(Experimental) public var enableExternalPurchasesInSimulator: Bool {
         self.storage.enableExternalPurchasesInSimulator
