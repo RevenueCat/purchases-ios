@@ -57,19 +57,20 @@ extension HostedCheckoutStrings: LogMessage {
         case let .unrecognized_payment_status(paymentStatus):
             return "Unrecognized checkout payment status '\(paymentStatus)'. Treating the payment as undetermined."
         case let .poll_start(operationSessionID, maxAttempts):
-            return "Asking what became of checkout session \(operationSessionID), up to \(maxAttempts) times."
+            return "Starting to poll checkout session \(operationSessionID), up to \(maxAttempts) times."
         case let .poll_succeeded(operationSessionID):
             return "Checkout session \(operationSessionID) succeeded."
         case let .poll_failed(operationSessionID, code, message):
             let detail = code.map { "code \($0) (\(message ?? "no message"))" } ?? "no detail"
             return "Checkout session \(operationSessionID) failed with \(detail)."
         case let .poll_transient_error(operationSessionID, error):
-            return "Asking about checkout session \(operationSessionID) failed, trying again: " +
+            return "Polling checkout session \(operationSessionID) failed, trying again: " +
             "\(error.localizedDescription)"
         case let .poll_terminal_error(operationSessionID, error):
-            return "Giving up on checkout session \(operationSessionID): \(error.localizedDescription)"
+            return "Aborting polling checkout session \(operationSessionID) due to an error: " +
+            "\(error.localizedDescription)"
         case let .poll_cancelled(operationSessionID):
-            return "Stopped asking about checkout session \(operationSessionID) before it answered."
+            return "Polling checkout session \(operationSessionID) was cancelled before it answered."
         case let .poll_exhausted(operationSessionID, maxAttempts):
             return "Checkout session \(operationSessionID) was still under way after \(maxAttempts) attempts."
         case let .poll_timed_out(operationSessionID, timeout):
