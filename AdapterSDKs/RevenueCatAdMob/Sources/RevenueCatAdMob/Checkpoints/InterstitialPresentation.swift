@@ -124,9 +124,7 @@ internal final class InterstitialPresentation: NSObject, GoogleMobileAds.FullScr
             return
         }
 
-        Task { @MainActor [weak self] in
-            guard let self else { return }
-
+        Task { @MainActor in
             let loadedAd: any InterstitialPresentableAd
             do {
                 loadedAd = try await self.loadAd(adUnitID, placement, self)
