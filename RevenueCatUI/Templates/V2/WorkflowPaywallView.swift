@@ -454,10 +454,8 @@ struct WorkflowPaywallView: View {
         .onChangeOf(self.navigator.currentStepId) { _ in
             self.syncExitOfferBinding()
         }
-        // Resolving a step's branches when it becomes current keeps navigation synchronous without
-        // freezing routing at open time. Nothing waits on it: until it lands a branch takes its fallback,
-        // and the initial step cannot carry one.
-        .task(id: self.navigator.currentStepId) {
+        // Keyed on the visit, not the step id, so a step that targets itself re-resolves too.
+        .task(id: self.navigator.stepVisit) {
             await self.navigator.resolveBranchesForCurrentStep()
         }
         // Workflow-level injection: every page (current, outgoing, and hidden-but-mounted) shares

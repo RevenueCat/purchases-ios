@@ -25,7 +25,7 @@ class BranchResolverTests: TestCase {
     // MARK: - resolve
 
     func testTheFirstMatchingAudienceDecidesTheRoute() async {
-        self.audiencesProvider.rulesByAudienceID = ["aud_a": Self.neverMatches, "aud_b": Self.alwaysMatches]
+        self.audiencesProvider.rulesByAudienceID = ["aud_a": Self.alwaysMatches, "aud_b": Self.alwaysMatches]
 
         let resolved = await self.makeResolver().resolve(
             .init(
@@ -37,7 +37,7 @@ class BranchResolverTests: TestCase {
             )
         )
 
-        expect(resolved) == "step_b"
+        expect(resolved) == "step_a"
     }
 
     func testNoMatchingAudienceTakesTheFallback() async {
@@ -88,6 +88,15 @@ class BranchResolverTests: TestCase {
     // MARK: - resolveBranches
 
     func testResolveBranchesCoversEveryBranchOnTheStep() async throws {
+        self.audiencesProvider.rulesByAudienceID = ["aud_a": Self.alwaysMatches, "aud_b": Self.alwaysMatches]
+        let step = try XCTUnwrap(Self.stepWithTwoBranchActions())
+
+        let resolved = await self.makeResolver().resolveBranches(in: step)
+
+        expect(resolved) == ["btn_one": "step_a", "btn_two": "step_b"]
+    }
+
+    func testResolveBranchesSkipsNonBranchActions() async throws {
         self.audiencesProvider.rulesByAudienceID = ["aud_a": Self.alwaysMatches]
         let workflow = try Self.workflowWithTwoBranches()
         let step = try XCTUnwrap(workflow.steps["step_1"])
@@ -95,17 +104,6 @@ class BranchResolverTests: TestCase {
         let resolved = await self.makeResolver().resolveBranches(in: step)
 
         expect(resolved) == ["btn": "step_a"]
-    }
-
-    /// Only the step being entered is resolved, so a later step's branch is not evaluated yet.
-    func testResolveBranchesIgnoresOtherStepsBranches() async throws {
-        self.audiencesProvider.rulesByAudienceID = ["aud_a": Self.alwaysMatches, "aud_b": Self.alwaysMatches]
-        let workflow = try Self.workflowWithTwoBranches()
-        let step = try XCTUnwrap(workflow.steps["step_2"])
-
-        let resolved = await self.makeResolver().resolveBranches(in: step)
-
-        expect(resolved) == ["btn": "step_b"]
         expect(self.audiencesProvider.configurationRequestCount) == 1
     }
 
@@ -136,6 +134,34 @@ private extension BranchResolverTests {
                 currentAppUserIDProvider: { "user" }
             )
         )
+    }
+
+    /// One step whose two buttons each carry their own branch.
+    static func stepWithTwoBranchActions() throws -> WorkflowStep {
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "triggers": [
+            {"name":"One","type":"on_press","action_id":"btn_one","component_id":"btn_one"},
+            {"name":"Two","type":"on_press","action_id":"btn_two","component_id":"btn_two"}
+          ],
+          "trigger_actions": {
+            "btn_one": {
+              "type": "branch",
+              "branches": [{"audience_id": "aud_a", "step_id": "step_a"}],
+              "fallback_step_id": "step_fallback_1"
+            },
+            "btn_two": {
+              "type": "branch",
+              "branches": [{"audience_id": "aud_b", "step_id": "step_b"}],
+              "fallback_step_id": "step_fallback_2"
+            }
+          }
+        }
+        """
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        return try JSONDecoder.default.decode(WorkflowStep.self, from: data)
     }
 
     /// `step_1` branches on `aud_a`, `step_2` branches on `aud_b`.

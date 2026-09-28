@@ -33,13 +33,12 @@ final class WorkflowNavigator: ObservableObject {
     @Published private(set) var currentStepId: String
     private let workflow: PublishedWorkflow
     private var backStack: [String] = []
-    /// The current step's branch destinations, keyed by action id. Cleared whenever the step changes, so
-    /// reaching a step again re-resolves it. Until a step's resolve lands, its branches route to their
-    /// configured `fallbackStepId`.
+    /// The current step's branch destinations, keyed by action id. Cleared on every step change, so each
+    /// visit re-resolves, and until a visit's resolve lands its branches route to their `fallbackStepId`.
     private var resolvedBranchSteps: [String: String] = [:]
     /// Bumped on every step change, so a resolve started on one visit cannot apply to a later one. Step ids
-    /// repeat when navigating back, so they cannot tell two visits apart on their own.
-    private var stepVisit = 0
+    /// repeat, on back navigation and on a step that targets itself, so they cannot tell two visits apart.
+    @Published private(set) var stepVisit = 0
 
     private let branchResolver: BranchResolver?
 
@@ -49,8 +48,7 @@ final class WorkflowNavigator: ObservableObject {
         self.currentStepId = workflow.initialStepId
     }
 
-    /// Resolves the current step's branches. Nothing waits on this: until it lands those branches route to
-    /// their configured `fallbackStepId`. A result from a visit the user has already left is dropped.
+    /// A result from a visit the user has already left is dropped.
     func resolveBranchesForCurrentStep() async {
         guard let branchResolver, let step = self.currentStep else { return }
         let visit = self.stepVisit
@@ -133,12 +131,19 @@ extension WorkflowNavigator {
         self.stepVisit += 1
     }
 
-    /// A branch takes the route its audiences picked, or its fallback when none matched.
+    /// A branch takes the route its audiences picked, or its fallback when none matched. A route naming a
+    /// step the workflow does not contain also falls back, so config drift cannot leave the button dead.
     func nextStepId(for action: WorkflowTriggerAction?, actionId: String) -> String? {
         switch action {
-        case .step(let stepId): return stepId
-        case .branch(let branch): return self.resolvedBranchSteps[actionId] ?? branch.fallbackStepId
-        case .unknown, nil: return nil
+        case .step(let stepId):
+            return stepId
+        case .branch(let branch):
+            guard let routed = self.resolvedBranchSteps[actionId], self.workflow.steps[routed] != nil else {
+                return branch.fallbackStepId
+            }
+            return routed
+        case .unknown, nil:
+            return nil
         }
     }
 

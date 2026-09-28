@@ -220,22 +220,6 @@ final class WorkflowNavigatorTests: TestCase {
 
     // MARK: - Branch exits
 
-    func testAScreensBranchExitNavigatesToTheRouteItPicks() throws {
-        let workflow = try Self.makeWorkflow(
-            steps: [
-                makeStepWithBranchExit(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
-                makeStep(id: "step_2")
-            ],
-            initialStepId: "step_1"
-        )
-        let navigator = WorkflowNavigator(workflow: workflow)
-
-        let result = navigator.triggerAction(componentId: "btn_abc")
-
-        expect(result?.id) == "step_2"
-        expect(navigator.currentStepId) == "step_2"
-    }
-
     func testAResolvedBranchNavigatesToItsRouteInsteadOfTheFallback() async throws {
         let workflow = try Self.makeWorkflow(
             steps: [
@@ -353,6 +337,48 @@ final class WorkflowNavigatorTests: TestCase {
         await pending.value
 
         expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_2"
+    }
+
+    /// Config drift: the audiences pick a step the workflow no longer contains. The button must still
+    /// navigate, using the configured fallback, rather than doing nothing.
+    func testARouteNamingAMissingStepFallsBack() async throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStepWithBranchExit(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
+                makeStep(id: "step_2")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(
+            workflow: workflow,
+            branchResolver: StubBranchResolver(stepId: "step_gone")
+        )
+        await navigator.resolveBranchesForCurrentStep()
+
+        expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_2"
+    }
+
+    /// A step that targets itself is still a new visit, so its branches must resolve again.
+    func testAStepTargetingItselfStartsANewVisit() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStepWithBranchExit(
+                    id: "step_1",
+                    componentId: "btn_abc",
+                    actionId: "btn_abc",
+                    fallbackStepId: "step_1"
+                ),
+                makeStep(id: "step_2")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+        let before = navigator.stepVisit
+
+        _ = navigator.triggerAction(componentId: "btn_abc")
+
+        expect(navigator.currentStepId) == "step_1"
+        expect(navigator.stepVisit) > before
     }
 
     // MARK: - navigateBack

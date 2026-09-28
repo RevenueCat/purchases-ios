@@ -30,6 +30,7 @@ extension BranchResolver {
     @_spi(Internal) public func resolveBranches(in step: WorkflowStep) async -> [String: String] {
         var resolved: [String: String] = [:]
         for (actionId, action) in step.stepTriggerActions {
+            guard !Task.isCancelled else { return resolved }
             guard case .branch(let branch) = action else { continue }
             resolved[actionId] = await self.resolve(branch)
         }
@@ -47,8 +48,8 @@ final class DisabledBranchResolver: BranchResolver {
 
 }
 
-/// Resolves audiences in order and returns the first match. Mirrors how checkpoint rules resolve
-/// theirs, including the walk: a failure does not stop a later audience from winning.
+/// Resolves audiences in order and returns the first match. Unlike checkpoint rules, an audience that
+/// cannot be read never matches rather than ending the walk, so a later one can still win.
 final class DefaultBranchResolver: BranchResolver {
 
     private let audiencesConfigProvider: AudiencesConfigProviderType
@@ -104,6 +105,9 @@ final class DefaultBranchResolver: BranchResolver {
                 ))
             }
 
+            return branch.fallbackStepId
+        } catch is CancellationError {
+            // The step was left before this finished. Not a resolution failure, so it is not logged.
             return branch.fallbackStepId
         } catch {
             // Nothing matched and something went wrong on the way. Logged because it is
