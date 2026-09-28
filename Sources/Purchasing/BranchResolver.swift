@@ -18,15 +18,14 @@ import Foundation
 /// The return is not optional. There is always a `fallbackStepId`, so navigation is never blocked.
 @_spi(Internal) public protocol BranchResolver: AnyObject {
 
-    /// - Returns: the step id the branch routes to.
+    /// - Returns: the step the branch routes to.
     func resolve(_ branch: WorkflowBranch) async -> String
 
 }
 
 extension BranchResolver {
 
-    /// Resolves the branches a step can exit through, keyed by action id, every time that step becomes
-    /// current. Navigation stays synchronous: until this lands, a branch takes its fallback.
+    /// The branches a step can exit through, keyed by action id.
     @_spi(Internal) public func resolveBranches(in step: WorkflowStep) async -> [String: String] {
         var resolved: [String: String] = [:]
         for (actionId, action) in step.stepTriggerActions {
@@ -39,10 +38,10 @@ extension BranchResolver {
 
 }
 
-/// Used until branching is enabled, so every branch takes its fallback.
+/// Every branch takes its fallback. Goes away with `branchingEnabled` once branching ships.
 @_spi(Internal) public final class DisabledBranchResolver: BranchResolver {
 
-    /// Creates the resolver used while branching is disabled.
+    /// Creates the resolver used while branching is unreleased.
     @_spi(Internal) public init() {}
 
     /// - Returns: the branch's `fallbackStepId`, always.
@@ -52,8 +51,7 @@ extension BranchResolver {
 
 }
 
-/// Resolves audiences in order and returns the first match. Unlike checkpoint rules, an audience that
-/// cannot be read never matches rather than ending the walk, so a later one can still win.
+/// Resolves audiences in order and returns the first match.
 final class DefaultBranchResolver: BranchResolver {
 
     private let audiencesConfigProvider: AudiencesConfigProviderType
@@ -91,8 +89,6 @@ final class DefaultBranchResolver: BranchResolver {
         let unreadable = Atomic<[String]>([])
         let matched = try await self.localRulesEvaluator.match(in: branch.branches) { route in
             guard let audience = audiences[route.audienceId] else {
-                // Not thrown: `match` ends the walk on a resolution failure, and an audience we cannot
-                // read must not stop a later one from winning. Never matches instead.
                 unreadable.modify { $0.append(route.audienceId) }
                 return Self.neverMatches
             }
@@ -125,7 +121,8 @@ private enum BranchResolutionError: Error, CustomStringConvertible {
 
 private extension DefaultBranchResolver {
 
-    /// Stands in for an audience we could not read, so the walk continues to the next one.
+    /// Stands in for an audience we could not read. Thrown resolution would end the walk, and one
+    /// unreadable audience must not stop a later one from winning, so it never matches instead.
     static let neverMatches = #"{"==": [1, 0]}"#
 
 }

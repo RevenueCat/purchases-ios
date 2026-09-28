@@ -50,7 +50,7 @@ final class WorkflowNavigator: ObservableObject {
         self.resolveTask?.cancel()
     }
 
-    /// Waits for the current visit's resolve. Only tests need this: nothing in the UI waits on resolution.
+    /// The observation point for a resolve nothing else awaits.
     func waitForBranchResolution() async {
         await self.resolveTask?.value
     }
@@ -124,8 +124,7 @@ final class WorkflowNavigator: ObservableObject {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension WorkflowNavigator {
 
-    /// Resolves the branches the current step can exit through, abandoning the previous step's resolve. Each
-    /// visit routes on its own answer, including a step that targets itself.
+    /// Abandons the previous step's resolve, so every visit routes on its own answer.
     private func resolveStepExits() {
         self.currentStepBranches = [:]
         self.resolveTask?.cancel()
@@ -140,8 +139,7 @@ extension WorkflowNavigator {
         }
     }
 
-    /// A branch takes the route its audiences picked, or its fallback when none matched. A route naming a
-    /// step the workflow does not contain also falls back, so config drift cannot leave the button dead.
+    /// A branch falls back when nothing matched, and when the route names a step the workflow has lost.
     func nextStepId(for action: WorkflowTriggerAction?, actionId: String) -> String? {
         switch action {
         case .step(let stepId):
