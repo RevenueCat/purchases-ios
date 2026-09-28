@@ -15,7 +15,7 @@
 import Combine
 import Foundation
 import RevenueCat
-@_spi(CheckpointsInternal) import RevenueCatUI
+@_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
 
 enum PaywallPresenterMode: String, CaseIterable, Identifiable {
     case `default`

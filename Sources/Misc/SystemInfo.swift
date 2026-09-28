@@ -268,6 +268,10 @@ class SystemInfo {
     static let isRunningInSimulator = false
     #endif
 
+    var isRunningInSimulator: Bool {
+        return Self.isRunningInSimulator
+    }
+
     func isOperatingSystemAtLeast(_ version: OperatingSystemVersion) -> Bool {
         return ProcessInfo.processInfo.isOperatingSystemAtLeast(version)
     }

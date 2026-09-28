@@ -62,6 +62,7 @@ struct CustomerInfoDimensionProviderTests {
                     "auto_resume_at": .date(Self.date("2024-07-01T00:00:00Z")),
                     "is_active": .bool(true),
                     "is_sandbox": .bool(true),
+                    "is_synced": .bool(true),
                     "will_renew": .bool(false),
                     "is_in_grace_period": .bool(false),
                     "is_refunded": .bool(true),
@@ -79,7 +80,8 @@ struct CustomerInfoDimensionProviderTests {
                     "price_currency": .string("EUR"),
                     "purchased_at": .date(Self.date("2023-03-03T00:00:00Z")),
                     "original_purchased_at": .date(Self.date("2023-03-01T00:00:00Z")),
-                    "is_sandbox": .bool(false)
+                    "is_sandbox": .bool(false),
+                    "is_synced": .bool(true)
                 ]
             ]),
             "entitlements": .objectList([
@@ -102,6 +104,34 @@ struct CustomerInfoDimensionProviderTests {
                 ]
             ])
         ])
+    }
+
+    @Test
+    func offlineCustomerInfoReportsUnsyncedPurchasesAsNotSynced() async throws {
+        // Computed offline from the store's own records, one of which was never posted from this device.
+        let customerInfo = CustomerInfo(
+            from: [
+                Self.purchasedSK2Product(productIdentifier: "premium", isSynced: false),
+                Self.purchasedSK2Product(productIdentifier: "other", isSynced: true)
+            ],
+            mapping: ProductEntitlementMapping(entitlementsByProduct: ["premium": ["pro"], "other": ["pro"]]),
+            userID: Self.appUserID,
+            sandboxEnvironmentDetector: MockSandboxEnvironmentDetector(isSandbox: false)
+        )
+        #expect(customerInfo.isComputedOffline)
+        #expect(customerInfo.unsyncedProductIdentifiers == ["premium"])
+
+        let provider = CustomerInfoDimensionProvider(
+            currentAppUserIDProvider: { Self.appUserID },
+            customerInfoProvider: { _ in customerInfo }
+        )
+
+        let dimensions = try await provider.dimensions(at: Self.evaluationDate)
+
+        let purchases = Self.purchasesByProductIdentifier(from: dimensions)
+        #expect(purchases.count == 2)
+        #expect(purchases["premium"]?["is_synced"] == .bool(false))
+        #expect(purchases["other"]?["is_synced"] == .bool(true))
     }
 
     @Test
@@ -193,7 +223,9 @@ struct CustomerInfoDimensionProviderTests {
         let predicates = [
             #"{"==":[{"var":"app_user_id"},"current_user"]}"#,
             #"{"some":[{"var":"purchases"},{"and":[{"==":[{"var":"kind"},"subscription"]},{"var":"is_active"}]}]}"#,
-            #"{"some":[{"var":"entitlements"},{"and":[{"==":[{"var":"identifier"},"premium"]},{"var":"is_active"}]}]}"#
+            #"{"some":[{"var":"entitlements"},{"and":[{"==":[{"var":"identifier"},"premium"]},{"var":"is_active"}]}]}"#,
+            // Everything the backend sent is, by definition, known to it.
+            #"{"all":[{"var":"purchases"},{"var":"is_synced"}]}"#
         ]
 
         for predicate in predicates {
@@ -624,6 +656,17 @@ private extension CustomerInfoDimensionProviderTests {
             "product_identifier": productIdentifier,
             "purchase_date": "2024-05-01T00:00:00Z"
         ]
+    }
+
+    private static func purchasedSK2Product(productIdentifier: String, isSynced: Bool) -> PurchasedSK2Product {
+        return PurchasedSK2Product(
+            productIdentifier: productIdentifier,
+            id: productIdentifier,
+            productPlanIdentifier: nil,
+            subscription: .init(purchaseDate: Self.date("2024-05-01T00:00:00Z")),
+            entitlement: .init(productIdentifier: productIdentifier, rawData: [:]),
+            isSynced: isSynced
+        )
     }
 
     private static func productIdentifiers(from dimensions: [String: DimensionValue]) -> [String] {

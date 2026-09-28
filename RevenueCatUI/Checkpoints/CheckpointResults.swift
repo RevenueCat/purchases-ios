@@ -16,7 +16,7 @@ import Foundation
 @_spi(Internal) import RevenueCat
 
 /// An active entitlement reported after completing a checkpoint flow.
-@_spi(CheckpointsInternal)
+@_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct ObtainedEntitlement: Hashable, @unchecked Sendable {
 
@@ -40,7 +40,7 @@ public struct ObtainedEntitlement: Hashable, @unchecked Sendable {
 }
 
 /// The result of completing a checkpoint flow.
-@_spi(CheckpointsInternal)
+@_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct FlowResult: @unchecked Sendable {
 

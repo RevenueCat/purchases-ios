@@ -281,6 +281,38 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testLocalRulesReportSyncedAndUnsyncedPurchases() async throws {
+        // Renewals would create extra unfinished transactions.
+        self.setLongestTestSessionTimeRate(self.testSession)
+        let syncedProduct = try await self.monthlyPackage.storeProduct
+        let unsyncedProduct = try await self.annualPackage.storeProduct
+
+        // 1. Online purchase: posted to the backend and finished.
+        try await self.purchaseMonthlyProduct()
+
+        // 2. Offline purchase: the transaction stays unfinished and CustomerInfo is computed on device.
+        self.serverDown()
+        let offlineData = try await self.purchases.purchase(product: unsyncedProduct)
+        self.verifyCustomerInfoWasComputedOffline(customerInfo: offlineData.customerInfo)
+        self.verifySpecificTransactionWasNotFinished(try XCTUnwrap(offlineData.transaction))
+        expect(offlineData.customerInfo.unsyncedProductIdentifiers) == [unsyncedProduct.productIdentifier]
+
+        let offlinePurchases = try await self.localRulesPurchases(for: offlineData.customerInfo)
+        expect(offlinePurchases[syncedProduct.productIdentifier]?["is_synced"]) == .bool(true)
+        expect(offlinePurchases[unsyncedProduct.productIdentifier]?["is_synced"]) == .bool(false)
+
+        // 3. Server back: fetching CustomerInfo posts the unfinished transaction, so everything is synced.
+        self.allServersUp()
+        let onlineInfo = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
+        self.verifyCustomerInfoWasNotComputedOffline(customerInfo: onlineInfo)
+        expect(onlineInfo.unsyncedProductIdentifiers).to(beEmpty())
+
+        let onlinePurchases = try await self.localRulesPurchases(for: onlineInfo)
+        expect(onlinePurchases[syncedProduct.productIdentifier]?["is_synced"]) == .bool(true)
+        expect(onlinePurchases[unsyncedProduct.productIdentifier]?["is_synced"]) == .bool(true)
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testSimultanousCallsToGetCustomerInfoWithPendingTransactionPostsReceiptOnlyOnce() async throws {
         self.serverDown()
 
@@ -649,6 +681,28 @@ private extension BaseOfflineStoreKitIntegrationTests {
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func ensureEntitlementMappingIsAvailable() async throws {
         _ = try await self.purchases.productEntitlementMapping()
+    }
+
+}
+
+// MARK: - Local rules helpers
+
+private extension BaseOfflineStoreKitIntegrationTests {
+
+    /// Resolves the `customer_info` local rules dimension for `customerInfo`, indexing purchases by product identifier.
+    func localRulesPurchases(for customerInfo: CustomerInfo) async throws -> [String: [String: DimensionValue]] {
+        let provider = CustomerInfoDimensionProvider(
+            currentAppUserIDProvider: { customerInfo.originalAppUserId },
+            customerInfoProvider: { _ in customerInfo }
+        )
+        let dimensions = try await provider.dimensions(at: Date())
+
+        guard case let .objectList(purchases) = dimensions["purchases"] else { return [:] }
+
+        return purchases.reduce(into: [:]) { result, purchase in
+            guard case let .string(identifier) = purchase["product_identifier"] else { return }
+            result[identifier] = purchase
+        }
     }
 
 }
