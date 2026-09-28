@@ -660,37 +660,42 @@ platform :ios do
 
   private_lane :build_and_upload_paywalls_tester_snapshots_ios do |options|
     output_dir = File.expand_path("test_output/paywalls-tester-previews")
-    result_bundle_path = "#{output_dir}/PaywallsTesterPreviews.xcresult"
     image_output_dir = "#{output_dir}/images"
 
     FileUtils.rm_rf(output_dir)
     FileUtils.mkdir_p(output_dir)
 
-    scan(
-      workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
-      scheme: "PaywallsTester - Live Config",
-      device: ENV['DEVICE'] || "iPhone 16",
-      result_bundle: true,
-      result_bundle_path: result_bundle_path,
-      output_directory: output_dir,
-      output_types: "junit",
-      output_files: "tests.xml",
-      parallel_testing: false,
-    )
+    previous_export_dir = ENV["TEST_RUNNER_SNAPSHOTS_EXPORT_DIR"]
+    ENV["TEST_RUNNER_SNAPSHOTS_EXPORT_DIR"] = image_output_dir
+    begin
+      scan(
+        workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
+        scheme: "PaywallsTester - Live Config",
+        device: ENV['DEVICE'] || "iPhone 16",
+        output_directory: output_dir,
+        output_types: "junit",
+        output_files: "tests.xml",
+        parallel_testing: false,
+      )
+    ensure
+      if previous_export_dir
+        ENV["TEST_RUNNER_SNAPSHOTS_EXPORT_DIR"] = previous_export_dir
+      else
+        ENV.delete("TEST_RUNNER_SNAPSHOTS_EXPORT_DIR")
+      end
+    end
+
+    add_preview_color_scheme_tags(image_output_dir)
 
     send_to_emerge(
       app_id_suffix: ""
     )
 
-    extract_xcresult_images(
-      xcresult_path: result_bundle_path,
-      output_dir: image_output_dir,
-      include_test_identifier: true
-    )
-
     pngs = Dir.glob("#{image_output_dir}/**/*.png", File::FNM_CASEFOLD)
-    UI.user_error!("No Preview snapshot PNGs found in #{result_bundle_path}") if pngs.empty?
-    UI.message("Found #{pngs.count} Preview snapshot images to upload to Sentry")
+    UI.user_error!("No Preview snapshot PNGs found in #{image_output_dir}") if pngs.empty?
+    missing_sidecars = pngs.reject { |png| File.exist?(png.sub(/\.[^.]+\z/, ".json")) }
+    UI.user_error!("Missing Sentry metadata sidecars for #{missing_sidecars.count} Preview snapshots") if missing_sidecars.any?
+    UI.message("Found #{pngs.count} Preview snapshot images and metadata sidecars to upload to Sentry")
 
     sentry_upload_snapshots(
       sentry_snapshot_vcs_args.merge(
@@ -700,6 +705,18 @@ platform :ios do
         app_id: PAYWALLS_PREVIEW_SNAPSHOTS_APP_ID
       )
     )
+  end
+
+  private_lane :add_preview_color_scheme_tags do |image_output_dir|
+    Dir.glob("#{image_output_dir}/**/*.json").each do |sidecar_path|
+      snapshot_metadata = JSON.parse(File.read(sidecar_path))
+      color_scheme = snapshot_metadata.dig("context", "preview", "preferred_color_scheme")
+      next unless color_scheme
+
+      snapshot_metadata["tags"] ||= {}
+      snapshot_metadata["tags"]["color_scheme"] ||= color_scheme
+      File.write(sidecar_path, JSON.pretty_generate(snapshot_metadata))
+    end
   end
 
   private_lane :build_paywalls_tester_for_emerge_mac do |options|
