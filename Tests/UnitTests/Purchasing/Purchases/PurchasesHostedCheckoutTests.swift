@@ -93,17 +93,28 @@ extension PurchasesHostedCheckoutTests {
         expect(result) == .succeeded
     }
 
-    /// The cached `CustomerInfo` predates the purchase, so it must not be served as current once the fetch
-    /// meant to replace it fails.
-    func testMarksTheCachedCustomerInfoStaleWhenItCannotBeFetched() async throws {
+    /// The cached `CustomerInfo` predates the purchase. Marking it stale is not enough, since a stale cache is
+    /// still served, so it must be gone once the fetch meant to replace it fails.
+    func testClearsTheCachedCustomerInfoWhenItCannotBeFetched() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         try self.stubStatus(.succeeded)
         self.backend.overrideCustomerInfoResult = .failure(.networkError(.offlineConnection()))
-        let clearsBefore = self.deviceCache.clearCustomerInfoCacheTimestampCount
+        let appUserID = self.identityManager.currentAppUserID
+        self.deviceCache.cache(customerInfo: Data(), appUserID: appUserID)
 
         _ = await self.purchases.pollHostedCheckout(operationSessionID: Self.operationSessionID)
 
-        expect(self.deviceCache.clearCustomerInfoCacheTimestampCount) > clearsBefore
+        expect(self.deviceCache.cachedCustomerInfoData(appUserID: appUserID)).to(beNil())
+    }
+
+    func testKeepsTheFetchedCustomerInfo() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try self.stubStatus(.succeeded)
+        let clearsBefore = self.deviceCache.invokedClearCustomerInfoCacheCount
+
+        _ = await self.purchases.pollHostedCheckout(operationSessionID: Self.operationSessionID)
+
+        expect(self.deviceCache.invokedClearCustomerInfoCacheCount) == clearsBefore
     }
 
     // MARK: - A dismissed checkout
