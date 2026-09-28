@@ -103,7 +103,7 @@ class SystemInfo {
     /// Workflow branch routing. Off until branching ships, so a branch always takes its fallback.
     var branchingEnabled: Bool {
 #if ENABLE_WORKFLOW_BRANCHING
-        return self.remoteConfigEnabled
+        return true
 #else
         return false
 #endif

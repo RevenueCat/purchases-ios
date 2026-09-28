@@ -359,6 +359,38 @@ final class WorkflowNavigatorTests: TestCase {
         expect(resolver.callCount) == 2
     }
 
+    /// Resolution must run against the step just entered, not the one being left.
+    func testNavigatingResolvesTheStepBeingEntered() async throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStep(
+                    id: "step_1",
+                    triggers: [(componentId: "btn_go", actionId: "btn_go")],
+                    triggerActions: [(actionId: "btn_go", targetStepId: "step_2")]
+                ),
+                makeStepWithBranchExit(
+                    id: "step_2",
+                    componentId: "btn_abc",
+                    actionId: "btn_abc",
+                    fallbackStepId: "step_3",
+                    routeStepId: "step_4"
+                ),
+                makeStep(id: "step_3"),
+                makeStep(id: "step_4")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(
+            workflow: workflow,
+            branchResolver: RoutingBranchResolver()
+        )
+
+        _ = navigator.triggerAction(componentId: "btn_go")
+        await navigator.waitForBranchResolution()
+
+        expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_4"
+    }
+
     // MARK: - navigateBack
 
     func testNavigateBackFromInitialStepReturnsNil() throws {
@@ -646,6 +678,16 @@ private final class CountingBranchResolver: BranchResolver, @unchecked Sendable 
     func resolve(_ branch: WorkflowBranch) async -> String {
         self.callCount += 1
         return self.stepId
+    }
+
+}
+
+/// Answers each branch with its own configured route, so resolving the wrong step is visible.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class RoutingBranchResolver: BranchResolver {
+
+    func resolve(_ branch: WorkflowBranch) async -> String {
+        return branch.branches.first?.stepId ?? branch.fallbackStepId
     }
 
 }

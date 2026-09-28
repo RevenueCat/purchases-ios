@@ -82,8 +82,8 @@ final class WorkflowNavigator: ObservableObject {
         }
 
         backStack.append(currentStepId)
-        self.resolveStepExits()
         currentStepId = nextStep.step.id
+        self.resolveStepExits()
         return nextStep.step
     }
 
@@ -114,8 +114,8 @@ final class WorkflowNavigator: ObservableObject {
         guard let previousStepId = backStack.popLast() else {
             return nil
         }
-        self.resolveStepExits()
         currentStepId = previousStepId
+        self.resolveStepExits()
         return workflow.steps[previousStepId]
     }
 
@@ -129,9 +129,12 @@ extension WorkflowNavigator {
     private func resolveStepExits() {
         self.currentStepBranches = [:]
         self.resolveTask?.cancel()
+
+        guard let step = self.currentStep else { return }
         self.resolveTask = Task { [weak self, branchResolver] in
-            guard let step = self?.currentStep else { return }
             let resolved = await branchResolver.resolveBranches(in: step)
+            // Cancellation is what drops a previous step's answer: cancel() runs before the step changes,
+            // and this check and the write share one main actor block, so nothing lands out of order.
             guard !Task.isCancelled else { return }
             self?.currentStepBranches = resolved
         }
