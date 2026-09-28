@@ -667,7 +667,7 @@ struct WorkflowPaywallView: View {
         guard let step = self.navigator.currentStep else { return }
         let resolved = await self.purchaseHandler.resolvedBranchSteps(for: step)
         guard !resolved.isEmpty else { return }
-        self.navigator.recordResolvedBranches(resolved)
+        self.navigator.recordResolvedBranches(resolved, forStepId: step.id)
     }
 
     private func syncExitOfferBinding() {

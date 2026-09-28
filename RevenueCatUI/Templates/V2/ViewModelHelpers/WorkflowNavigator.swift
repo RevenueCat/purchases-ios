@@ -32,16 +32,18 @@ final class WorkflowNavigator: ObservableObject {
     @Published private(set) var currentStepId: String
     private let workflow: PublishedWorkflow
     private var backStack: [String] = []
-    /// Filled in as each step becomes current. A branch not in here yet takes its fallback.
-    private var resolvedBranchSteps: [WorkflowBranch: String] = [:]
+    /// The current step's branch destinations, keyed by action id. Cleared whenever the step changes, so
+    /// reaching a step again re-resolves it. A branch not in here yet takes its fallback.
+    private var resolvedBranchSteps: [String: String] = [:]
 
     init(workflow: PublishedWorkflow) {
         self.workflow = workflow
         self.currentStepId = workflow.initialStepId
     }
 
-    func recordResolvedBranches(_ resolved: [WorkflowBranch: String]) {
-        self.resolvedBranchSteps.merge(resolved) { _, new in new }
+    func recordResolvedBranches(_ resolved: [String: String], forStepId stepId: String) {
+        guard stepId == self.currentStepId else { return }
+        self.resolvedBranchSteps = resolved
     }
 
     var currentStep: WorkflowStep? {
@@ -71,6 +73,7 @@ final class WorkflowNavigator: ObservableObject {
         }
 
         backStack.append(currentStepId)
+        self.resolvedBranchSteps = [:]
         currentStepId = nextStep.step.id
         return nextStep.step
     }
@@ -86,7 +89,7 @@ final class WorkflowNavigator: ObservableObject {
                   $0.componentId == componentId && $0.type == triggerType
               }),
               let actionId = trigger.actionId,
-              let stepId = self.nextStepId(for: step.stepTriggerActions[actionId]),
+              let stepId = self.nextStepId(for: step.stepTriggerActions[actionId], actionId: actionId),
               let nextStep = workflow.steps[stepId] else {
             return nil
         }
@@ -102,6 +105,7 @@ final class WorkflowNavigator: ObservableObject {
         guard let previousStepId = backStack.popLast() else {
             return nil
         }
+        self.resolvedBranchSteps = [:]
         currentStepId = previousStepId
         return workflow.steps[previousStepId]
     }
@@ -112,10 +116,10 @@ final class WorkflowNavigator: ObservableObject {
 extension WorkflowNavigator {
 
     /// A branch takes the route its audiences picked, or its fallback when none matched.
-    func nextStepId(for action: WorkflowTriggerAction?) -> String? {
+    func nextStepId(for action: WorkflowTriggerAction?, actionId: String) -> String? {
         switch action {
         case .step(let stepId): return stepId
-        case .branch(let branch): return self.resolvedBranchSteps[branch] ?? branch.fallbackStepId
+        case .branch(let branch): return self.resolvedBranchSteps[actionId] ?? branch.fallbackStepId
         case .unknown, nil: return nil
         }
     }

@@ -244,9 +244,8 @@ final class WorkflowNavigatorTests: TestCase {
             ],
             initialStepId: "step_1"
         )
-        let branch = try XCTUnwrap(Self.onlyBranch(in: workflow))
         let navigator = WorkflowNavigator(workflow: workflow)
-        navigator.recordResolvedBranches([branch: "step_3"])
+        navigator.recordResolvedBranches(["btn_abc": "step_3"], forStepId: "step_1")
 
         let result = navigator.triggerAction(componentId: "btn_abc")
 
@@ -269,6 +268,25 @@ final class WorkflowNavigatorTests: TestCase {
         let result = navigator.triggerAction(componentId: "btn_abc")
 
         expect(result?.id) == "step_2"
+    }
+
+    func testReturningToAStepDropsItsPreviousBranchResolution() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStepWithBranchExit(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
+                makeStep(id: "step_2"),
+                makeStep(id: "step_3")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+        navigator.recordResolvedBranches(["btn_abc": "step_3"], forStepId: "step_1")
+
+        _ = navigator.triggerAction(componentId: "btn_abc")
+        _ = navigator.navigateBack()
+
+        // Back on step_1 with nothing resolved yet, so the fallback stands until the new pass lands.
+        expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_2"
     }
 
     // MARK: - navigateBack
@@ -465,16 +483,6 @@ private extension WorkflowNavigatorTests {
     /// Creates a `StepDescriptor` for a screen whose exit is a branch, rather than a routing step.
     ///
     /// The route names a different step than the fallback, so a test can tell the two apart.
-    static func onlyBranch(in workflow: PublishedWorkflow) -> WorkflowBranch? {
-        return workflow.steps.values
-            .flatMap { $0.stepTriggerActions.values }
-            .compactMap { action -> WorkflowBranch? in
-                guard case .branch(let branch) = action else { return nil }
-                return branch
-            }
-            .first
-    }
-
     func makeStepWithBranchExit(
         id: String,
         componentId: String,

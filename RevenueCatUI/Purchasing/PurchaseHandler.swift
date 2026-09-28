@@ -56,7 +56,7 @@ final class PurchaseHandler: ObservableObject {
 
 #if !os(tvOS)
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func resolvedBranchSteps(for step: WorkflowStep) async -> [WorkflowBranch: String] {
+    func resolvedBranchSteps(for step: WorkflowStep) async -> [String: String] {
         return await purchases.resolvedBranchSteps(for: step)
     }
 #endif
@@ -1203,7 +1203,7 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 
 #if !os(tvOS)
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func resolvedBranchSteps(for step: WorkflowStep) async -> [WorkflowBranch: String] {
+    func resolvedBranchSteps(for step: WorkflowStep) async -> [String: String] {
         return [:]
     }
 #endif

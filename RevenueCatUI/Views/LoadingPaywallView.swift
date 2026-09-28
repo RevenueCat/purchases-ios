@@ -158,7 +158,7 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func resolvedBranchSteps(for step: WorkflowStep) async -> [WorkflowBranch: String] {
+    func resolvedBranchSteps(for step: WorkflowStep) async -> [String: String] {
         return [:]
     }
 

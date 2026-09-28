@@ -94,8 +94,7 @@ class BranchResolverTests: TestCase {
 
         let resolved = await self.makeResolver().resolveBranches(in: step)
 
-        expect(resolved).to(haveCount(1))
-        expect(Set(resolved.values)) == ["step_a"]
+        expect(resolved) == ["btn": "step_a"]
     }
 
     /// Only the step being entered is resolved, so a later step's branch is not evaluated yet.
@@ -106,7 +105,7 @@ class BranchResolverTests: TestCase {
 
         let resolved = await self.makeResolver().resolveBranches(in: step)
 
-        expect(Set(resolved.values)) == ["step_b"]
+        expect(resolved) == ["btn": "step_b"]
         expect(self.audiencesProvider.configurationRequestCount) == 1
     }
 

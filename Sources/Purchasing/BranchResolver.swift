@@ -25,17 +25,13 @@ import Foundation
 
 extension BranchResolver {
 
-    /// Resolves the branches a step can exit through, when that step becomes current. Navigation stays
-    /// synchronous: until this lands, a branch takes its fallback.
-    func resolveBranches(in step: WorkflowStep) async -> [WorkflowBranch: String] {
-        let branches = Set(step.stepTriggerActions.values.compactMap { action -> WorkflowBranch? in
-            guard case .branch(let branch) = action else { return nil }
-            return branch
-        })
-
-        var resolved: [WorkflowBranch: String] = [:]
-        for branch in branches {
-            resolved[branch] = await self.resolve(branch)
+    /// Resolves the branches a step can exit through, keyed by action id, every time that step becomes
+    /// current. Navigation stays synchronous: until this lands, a branch takes its fallback.
+    func resolveBranches(in step: WorkflowStep) async -> [String: String] {
+        var resolved: [String: String] = [:]
+        for (actionId, action) in step.stepTriggerActions {
+            guard case .branch(let branch) = action else { continue }
+            resolved[actionId] = await self.resolve(branch)
         }
         return resolved
     }
