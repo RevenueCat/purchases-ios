@@ -407,7 +407,8 @@ private extension BaseCustomerInfoResponseHandlerTests {
         id: "product",
         productPlanIdentifier: nil,
         subscription: .init(purchaseDate: Date()),
-        entitlement: .init(productIdentifier: "entitlement", rawData: [:])
+        entitlement: .init(productIdentifier: "entitlement", rawData: [:]),
+        isSynced: true
     )
     static let mapping: ProductEntitlementMapping = .init(entitlementsByProduct: [
         "product": ["entitlement"]

@@ -12,7 +12,7 @@
 //  Created by Rick van der Linden.
 //
 
-@_spi(CheckpointsInternal) @testable import RevenueCatUI
+@_spi(InviteOnlyCheckpointsApi) @testable import RevenueCatUI
 import XCTest
 
 @MainActor
