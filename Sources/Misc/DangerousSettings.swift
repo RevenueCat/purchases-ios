@@ -62,7 +62,7 @@ import Foundation
         let customEntitlementComputation: Bool
         let forceAllowTestStoreInReleaseBuilds: Bool
         let useExternalPurchaseCustomLinks: Bool
-        let disableExternalPurchasesInSimulator: Bool
+        let enableExternalPurchasesInSimulator: Bool
     }
 
     internal let storage: Storage
@@ -121,15 +121,18 @@ import Foundation
     }
 
     /**
-     * Whether the simulator offers no external purchase, as a device does for a customer who is not
-     * [eligible](https://developer.apple.com/documentation/storekit/externalpurchasecustomlink/iseligible)
-     * for external purchases. Otherwise, the simulator offers them in any storefront.
+     * Whether the simulator offers external purchases in any storefront. When disabled, the simulator behaves
+     * as a device does for a customer who is not
+     * [eligible](https://developer.apple.com/documentation/storekit/externalpurchasecustomlink/iseligible).
      *
-     * Defaults to `false`. Has no effect on a physical device, nor while ``useExternalPurchaseCustomLinks`` is
+     * Defaults to `true`. Has no effect on a physical device, nor while ``useExternalPurchaseCustomLinks`` is
      * `false`.
+     *
+     * - Note: `ExternalPurchaseCustomLink.isEligible` returns `false` in the simulator, so Apple's disclosure notice
+     * cannot be shown and an external purchase token cannot be minted there.
      */
-    @_spi(Experimental) public var disableExternalPurchasesInSimulator: Bool {
-        self.storage.disableExternalPurchasesInSimulator
+    @_spi(Experimental) public var enableExternalPurchasesInSimulator: Bool {
+        self.storage.enableExternalPurchasesInSimulator
     }
 
     @objc public override convenience init() {
@@ -198,20 +201,17 @@ import Foundation
      * automatically.
      * - Parameter useExternalPurchaseCustomLinks: Whether a web purchase button that opens its link in the
      * external browser takes part in Apple's external purchase custom link programme.
-     * - Parameter disableExternalPurchasesInSimulator: Whether the simulator offers no external purchase, as a
-     * device does for a customer who is not
-     * [eligible](https://developer.apple.com/documentation/storekit/externalpurchasecustomlink/iseligible)
-     * for external purchases. Has no effect on a physical device, nor while `useExternalPurchaseCustomLinks` is
-     * `false`.
+     * - Parameter enableExternalPurchasesInSimulator: Whether the simulator offers external purchases in any
+     * storefront. Has no effect on a physical device, nor while `useExternalPurchaseCustomLinks` is `false`.
      */
     @_spi(Experimental) public convenience init(autoSyncPurchases: Bool,
                                                 useExternalPurchaseCustomLinks: Bool,
-                                                disableExternalPurchasesInSimulator: Bool) {
+                                                enableExternalPurchasesInSimulator: Bool) {
         self.init(autoSyncPurchases: autoSyncPurchases,
                   customEntitlementComputation: false,
                   internalSettings: Internal.default,
                   useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks,
-                  disableExternalPurchasesInSimulator: disableExternalPurchasesInSimulator)
+                  enableExternalPurchasesInSimulator: enableExternalPurchasesInSimulator)
     }
 
     /**
@@ -231,14 +231,14 @@ import Foundation
                   uiPreviewMode: Bool = false,
                   forceAllowTestStoreInReleaseBuilds: Bool = false,
                   useExternalPurchaseCustomLinks: Bool = false,
-                  disableExternalPurchasesInSimulator: Bool = false) {
+                  enableExternalPurchasesInSimulator: Bool = true) {
         self.storage = Storage(
             autoSyncPurchases: autoSyncPurchases,
             uiPreviewMode: uiPreviewMode,
             customEntitlementComputation: customEntitlementComputation,
             forceAllowTestStoreInReleaseBuilds: forceAllowTestStoreInReleaseBuilds,
             useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks,
-            disableExternalPurchasesInSimulator: disableExternalPurchasesInSimulator
+            enableExternalPurchasesInSimulator: enableExternalPurchasesInSimulator
         )
         self.internalSettings = internalSettings
     }

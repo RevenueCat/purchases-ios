@@ -60,13 +60,13 @@ final class DangerousSettingsTests: TestCase {
             != DangerousSettings(autoSyncPurchases: true, useExternalPurchaseCustomLinks: false)
     }
 
-    func testDifferentDisableExternalPurchasesInSimulatorIsNotEqual() {
+    func testDifferentEnableExternalPurchasesInSimulatorIsNotEqual() {
         expect(DangerousSettings(autoSyncPurchases: true,
                                  useExternalPurchaseCustomLinks: true,
-                                 disableExternalPurchasesInSimulator: true))
+                                 enableExternalPurchasesInSimulator: true))
             != DangerousSettings(autoSyncPurchases: true,
                                  useExternalPurchaseCustomLinks: true,
-                                 disableExternalPurchasesInSimulator: false)
+                                 enableExternalPurchasesInSimulator: false)
     }
 
     func testInternalSettingsAreExcludedFromEquality() {
@@ -115,20 +115,20 @@ final class DangerousSettingsTests: TestCase {
         expect(settings.forceAllowTestStoreInReleaseBuilds) == false
     }
 
-    // MARK: - disableExternalPurchasesInSimulator
+    // MARK: - enableExternalPurchasesInSimulator
 
-    func testDisableExternalPurchasesInSimulatorIsDisabledByDefault() {
-        expect(DangerousSettings().disableExternalPurchasesInSimulator) == false
+    func testEnableExternalPurchasesInSimulatorIsEnabledByDefault() {
+        expect(DangerousSettings().enableExternalPurchasesInSimulator) == true
         expect(DangerousSettings(autoSyncPurchases: true,
-                                 useExternalPurchaseCustomLinks: true).disableExternalPurchasesInSimulator) == false
+                                 useExternalPurchaseCustomLinks: true).enableExternalPurchasesInSimulator) == true
     }
 
-    func testDisableExternalPurchasesInSimulatorCanBeEnabled() {
+    func testEnableExternalPurchasesInSimulatorCanBeDisabled() {
         let settings = DangerousSettings(autoSyncPurchases: false,
                                          useExternalPurchaseCustomLinks: true,
-                                         disableExternalPurchasesInSimulator: true)
+                                         enableExternalPurchasesInSimulator: false)
 
-        expect(settings.disableExternalPurchasesInSimulator) == true
+        expect(settings.enableExternalPurchasesInSimulator) == false
         expect(settings.useExternalPurchaseCustomLinks) == true
         expect(settings.autoSyncPurchases) == false
         expect(settings.customEntitlementComputation) == false

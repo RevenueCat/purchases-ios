@@ -61,8 +61,8 @@ final class ExternalPurchaseManager {
     /// customer tapping twice sees a single notice and mints a single token.
     ///
     /// In the simulator, where StoreKit never finds the customer eligible, none of this runs and the purchase goes
-    /// ahead in any storefront, so that developers can try their web purchases out wherever they are, unless
-    /// ``DangerousSettings/disableExternalPurchasesInSimulator`` says otherwise.
+    /// ahead in any storefront, so that developers can try their web purchases out wherever they are.
+    /// ``DangerousSettings/enableExternalPurchasesInSimulator`` can turn this behavior off.
     func prepareExternalPurchase(flow: ExternalPurchaseFlow) async -> ExternalPurchasePreparationResult {
         guard self.takesPartInTheProgramme else {
             return .notApplicable
@@ -197,7 +197,7 @@ private extension ExternalPurchaseManager {
     }
 
     func prepareExternalPurchaseInSimulator() -> ExternalPurchasePreparationResult {
-        guard !self.systemInfo.dangerousSettings.disableExternalPurchasesInSimulator else {
+        guard self.systemInfo.dangerousSettings.enableExternalPurchasesInSimulator else {
             Logger.warn(Strings.externalPurchase.disabled_in_simulator)
             return .stopped(.notEligible)
         }
