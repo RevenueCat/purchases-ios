@@ -96,10 +96,6 @@ import Foundation
                 case "custom_web_checkout":
                     let customCheckout = try CustomWebCheckout(from: decoder)
                     self = .customWebCheckout(customCheckout)
-                // The in-app web checkout is not ready to ship. Until it is, this falls through to `.unknown`, which
-                // buys through StoreKit, as every released SDK does for this method.
-                // case "hosted_web_checkout":
-                //     self = .hostedWebCheckout
                 case "unknown":
                     self = .unknown
                 default:
