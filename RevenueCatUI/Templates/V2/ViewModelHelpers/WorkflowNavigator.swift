@@ -130,7 +130,6 @@ extension WorkflowNavigator {
         self.resolveTask?.cancel()
         self.resolveTask = nil
 
-        // A workflow without branches never reaches the resolver.
         guard let step = self.currentStep, step.hasBranchExit else { return }
         self.resolveTask = Task { [weak self, branchResolver] in
             let resolved = await branchResolver.resolveBranches(in: step)
