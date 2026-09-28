@@ -27,6 +27,7 @@ struct WorkflowForwardNavigationDestination {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@MainActor
 final class WorkflowNavigator: ObservableObject {
 
     @Published private(set) var currentStepId: String
@@ -36,6 +37,9 @@ final class WorkflowNavigator: ObservableObject {
     /// reaching a step again re-resolves it. Until a step's resolve lands, its branches route to their
     /// configured `fallbackStepId`.
     private var resolvedBranchSteps: [String: String] = [:]
+    /// Bumped on every step change, so a resolve started on one visit cannot apply to a later one. Step ids
+    /// repeat when navigating back, so they cannot tell two visits apart on their own.
+    private var stepVisit = 0
 
     private let branchResolver: BranchResolver?
 
@@ -46,15 +50,12 @@ final class WorkflowNavigator: ObservableObject {
     }
 
     /// Resolves the current step's branches. Nothing waits on this: until it lands those branches route to
-    /// their configured `fallbackStepId`. A result for a step the user already left is dropped.
+    /// their configured `fallbackStepId`. A result from a visit the user has already left is dropped.
     func resolveBranchesForCurrentStep() async {
         guard let branchResolver, let step = self.currentStep else { return }
+        let visit = self.stepVisit
         let resolved = await branchResolver.resolveBranches(in: step)
-        self.recordResolvedBranches(resolved, forStepId: step.id)
-    }
-
-    func recordResolvedBranches(_ resolved: [String: String], forStepId stepId: String) {
-        guard stepId == self.currentStepId else { return }
+        guard visit == self.stepVisit else { return }
         self.resolvedBranchSteps = resolved
     }
 
@@ -85,7 +86,7 @@ final class WorkflowNavigator: ObservableObject {
         }
 
         backStack.append(currentStepId)
-        self.resolvedBranchSteps = [:]
+        self.beginStepVisit()
         currentStepId = nextStep.step.id
         return nextStep.step
     }
@@ -117,7 +118,7 @@ final class WorkflowNavigator: ObservableObject {
         guard let previousStepId = backStack.popLast() else {
             return nil
         }
-        self.resolvedBranchSteps = [:]
+        self.beginStepVisit()
         currentStepId = previousStepId
         return workflow.steps[previousStepId]
     }
@@ -126,6 +127,11 @@ final class WorkflowNavigator: ObservableObject {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension WorkflowNavigator {
+
+    private func beginStepVisit() {
+        self.resolvedBranchSteps = [:]
+        self.stepVisit += 1
+    }
 
     /// A branch takes the route its audiences picked, or its fallback when none matched.
     func nextStepId(for action: WorkflowTriggerAction?, actionId: String) -> String? {
