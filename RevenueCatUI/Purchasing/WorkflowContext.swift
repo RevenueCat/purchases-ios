@@ -28,6 +28,9 @@ import Foundation
     /// Package context from `singleStepFallbackId`, precomputed because it is stable for a workflow.
     let workflowPackageContext: WorkflowPackageContext?
     let workflowBlobRef: String?
+    /// Every branch in the workflow, resolved once before it opens. Empty on the synchronous cache
+    /// seed, which only ever renders the initial step.
+    let resolvedBranchSteps: [WorkflowBranch: String]
 
     init(
         workflow: PublishedWorkflow,
@@ -35,9 +38,11 @@ import Foundation
         allOfferings: Offerings,
         initialOffering: Offering,
         presentedOfferingContext: PresentedOfferingContext?,
-        workflowBlobRef: String? = nil
+        workflowBlobRef: String? = nil,
+        resolvedBranchSteps: [WorkflowBranch: String] = [:]
     ) {
         self.workflowBlobRef = workflowBlobRef
+        self.resolvedBranchSteps = resolvedBranchSteps
         self.workflow = workflow
         self.uiConfig = uiConfig
         self.allOfferings = allOfferings

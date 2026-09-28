@@ -130,9 +130,14 @@ struct WorkflowStepEventTracker {
     }
 
     /// A step is terminal when none of its trigger actions navigate to another step. A branch exit
-    /// navigates too, so it counts here the same way the navigator treats it.
+    /// navigates too, whichever route it resolves to.
     static func isTerminalStep(_ step: WorkflowStep) -> Bool {
-        return !step.stepTriggerActions.values.contains { $0.nextStepId != nil }
+        return !step.stepTriggerActions.values.contains { action in
+            switch action {
+            case .step, .branch: return true
+            case .unknown: return false
+            }
+        }
     }
 
 }

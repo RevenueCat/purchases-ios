@@ -293,6 +293,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let offeringsFactory: OfferingsFactory
     private let offeringsManager: OfferingsManager
     private let workflowManager: WorkflowManager
+    private let branchResolver: BranchResolver
     private let offlineEntitlementsManager: OfflineEntitlementsManager
     private let productsManager: ProductsManagerType
     private let customerInfoManager: CustomerInfoManager
@@ -669,6 +670,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         let notificationCenter: NotificationCenter = .default
         let checkpointResolver: CheckpointWorkflowResolver
+        let branchResolver: BranchResolver
         if systemInfo.remoteConfigEnabled {
             RulesEngine.setLogger(RulesEngineLoggerBridge())
             let localRulesEvaluator = LocalRulesEvaluator(
@@ -714,8 +716,13 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     }
                 }
             )
+            branchResolver = DefaultBranchResolver(
+                audiencesConfigProvider: AudiencesConfigProvider(manager: remoteConfigManager),
+                localRulesEvaluator: localRulesEvaluator
+            )
         } else {
             checkpointResolver = DisabledCheckpointWorkflowResolver()
+            branchResolver = DisabledBranchResolver()
         }
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
@@ -850,6 +857,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   productsManager: productsManager,
                   offeringsManager: offeringsManager,
                   workflowManager: workflowManager,
+                  branchResolver: branchResolver,
                   remoteConfigManager: remoteConfigManager,
                   offlineEntitlementsManager: offlineEntitlementsManager,
                   purchasesOrchestrator: purchasesOrchestrator,
@@ -888,6 +896,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          productsManager: ProductsManagerType,
          offeringsManager: OfferingsManager,
          workflowManager: WorkflowManager,
+         branchResolver: BranchResolver = DisabledBranchResolver(),
          remoteConfigManager: RemoteConfigManagerType,
          offlineEntitlementsManager: OfflineEntitlementsManager,
          purchasesOrchestrator: PurchasesOrchestrator,
@@ -948,6 +957,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.productsManager = productsManager
         self.offeringsManager = offeringsManager
         self.workflowManager = workflowManager
+        self.branchResolver = branchResolver
         self.remoteConfigManager = systemInfo.remoteConfigEnabled ? remoteConfigManager : NoOpRemoteConfigManager()
         self.offlineEntitlementsManager = offlineEntitlementsManager
         self.purchasesOrchestrator = purchasesOrchestrator
@@ -1163,6 +1173,11 @@ public extension Purchases {
     @_spi(Internal)
     func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
         return self.workflowManager.cachedWorkflow(forOfferingId: offeringID)
+    }
+
+    @_spi(Internal)
+    func resolvedBranchSteps(for workflow: PublishedWorkflow) async -> [WorkflowBranch: String] {
+        return await self.branchResolver.resolveAll(in: workflow)
     }
 
     @_spi(Internal)

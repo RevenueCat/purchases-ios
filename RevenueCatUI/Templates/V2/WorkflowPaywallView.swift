@@ -313,7 +313,10 @@ struct WorkflowPaywallView: View {
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
         self.onPresentationError = onPresentationError
-        self._navigator = .init(wrappedValue: WorkflowNavigator(workflow: context.workflow))
+        self._navigator = .init(wrappedValue: WorkflowNavigator(
+            workflow: context.workflow,
+            resolvedBranchSteps: context.resolvedBranchSteps
+        ))
         self._stateStore = .init(
             wrappedValue: PaywallStateStore(declarations: Self.mergedStateDeclarations(in: context.workflow))
         )

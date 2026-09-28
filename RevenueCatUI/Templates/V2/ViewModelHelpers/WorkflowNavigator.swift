@@ -32,9 +32,11 @@ final class WorkflowNavigator: ObservableObject {
     @Published private(set) var currentStepId: String
     private let workflow: PublishedWorkflow
     private var backStack: [String] = []
+    private let resolvedBranchSteps: [WorkflowBranch: String]
 
-    init(workflow: PublishedWorkflow) {
+    init(workflow: PublishedWorkflow, resolvedBranchSteps: [WorkflowBranch: String] = [:]) {
         self.workflow = workflow
+        self.resolvedBranchSteps = resolvedBranchSteps
         self.currentStepId = workflow.initialStepId
     }
 
@@ -80,7 +82,7 @@ final class WorkflowNavigator: ObservableObject {
                   $0.componentId == componentId && $0.type == triggerType
               }),
               let actionId = trigger.actionId,
-              let stepId = step.stepTriggerActions[actionId]?.nextStepId,
+              let stepId = self.nextStepId(for: step.stepTriggerActions[actionId]),
               let nextStep = workflow.steps[stepId] else {
             return nil
         }
@@ -102,14 +104,15 @@ final class WorkflowNavigator: ObservableObject {
 
 }
 
-extension WorkflowTriggerAction {
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension WorkflowNavigator {
 
-    /// A branch takes its fallback until the audiences that pick a different route can be evaluated.
-    var nextStepId: String? {
-        switch self {
+    /// A branch takes the route its audiences picked, or its fallback when none matched.
+    func nextStepId(for action: WorkflowTriggerAction?) -> String? {
+        switch action {
         case .step(let stepId): return stepId
-        case .branch(let branch): return branch.fallbackStepId
-        case .unknown: return nil
+        case .branch(let branch): return self.resolvedBranchSteps[branch] ?? branch.fallbackStepId
+        case .unknown, nil: return nil
         }
     }
 

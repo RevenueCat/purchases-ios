@@ -52,6 +52,11 @@ final class PurchaseHandler: ObservableObject {
         purchases.subscriptionHistoryTracker
     }
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func resolvedBranchSteps(for workflow: PublishedWorkflow) async -> [WorkflowBranch: String] {
+        return await purchases.resolvedBranchSteps(for: workflow)
+    }
+
     /// `false` if this `PurchaseHandler` is not backend by a configured `Purchases`instance.
     let isConfigured: Bool
 
@@ -640,7 +645,8 @@ extension PurchaseHandler {
                 uiConfig: fetchResult.uiConfig,
                 allOfferings: allOfferings,
                 presentedOfferingContext: presentedOfferingContext,
-                workflowBlobRef: fetchResult.workflowBlobRef
+                workflowBlobRef: fetchResult.workflowBlobRef,
+                resolvedBranchSteps: await self.resolvedBranchSteps(for: fetchResult.workflow)
             )
         } catch WorkflowError.uiConfigUnavailable(let workflowId) {
             throw PaywallError.workflowUiConfigUnavailable(workflowId: workflowId)
@@ -660,7 +666,8 @@ extension PurchaseHandler {
         uiConfig: UIConfig,
         allOfferings: Offerings,
         presentedOfferingContext: PresentedOfferingContext?,
-        workflowBlobRef: String? = nil
+        workflowBlobRef: String? = nil,
+        resolvedBranchSteps: [WorkflowBranch: String] = [:]
     ) throws -> WorkflowContext {
         guard let step = workflow.steps[workflow.initialStepId] else {
             throw PaywallError.workflowInitialStepNotFound(
@@ -707,7 +714,8 @@ extension PurchaseHandler {
             allOfferings: allOfferings,
             initialOffering: offering,
             presentedOfferingContext: presentedOfferingContext,
-            workflowBlobRef: workflowBlobRef
+            workflowBlobRef: workflowBlobRef,
+            resolvedBranchSteps: resolvedBranchSteps
         )
     }
     #endif
@@ -1143,6 +1151,11 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 
     var subscriptionHistoryTracker: RevenueCat.SubscriptionHistoryTracker {
         SubscriptionHistoryTracker()
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func resolvedBranchSteps(for workflow: PublishedWorkflow) async -> [WorkflowBranch: String] {
+        return [:]
     }
 
     init(customerInfo: CustomerInfo? = nil, purchasesAreCompletedBy: PurchasesAreCompletedBy) {
