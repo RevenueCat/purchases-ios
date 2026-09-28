@@ -456,6 +456,24 @@ final class SubscriptionDetailViewModelTests: TestCase {
         await expect(mockPurchases.showManageSubscriptionsCallCount).toEventually(equal(2))
     }
 
+    func testReturningAfterAFailedOpenDoesNotRefreshOnMacOS() async throws {
+        let mockPurchases = MockCustomerCenterPurchases(
+            showManageSubscriptionsError: NSError(domain: "test", code: 1)
+        )
+        let (viewModel, customerInfoViewModel, actionWrapper, _) = try Self.makeManagementViewModel(
+            purchaseInformation: .mock(store: .appStore, isExpired: false),
+            mockPurchases: mockPurchases
+        )
+        viewModel.didAppear()
+
+        actionWrapper.handleAction(.showingManageSubscriptions)
+        await expect(customerInfoViewModel.manageSubscriptionsSheet).toEventually(beFalse())
+
+        NotificationCenter.default.post(name: NSApplication.didBecomeActiveNotification, object: nil)
+
+        await expect(mockPurchases.syncPurchasesCount).toNever(beGreaterThan(0), until: .milliseconds(300))
+    }
+
     // Without a subscription group or two products `SubscriptionStoreView` has nothing to show,
     // and macOS has no manage-subscriptions sheet to fall back to as iOS does.
     func testChangePlansWithoutAStoreViewOpensTheAppStoreOnMacOS() async throws {

@@ -150,6 +150,7 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
             return
         }
         self.lastManageSubscriptionsOpening = Date()
+        let hadOpenedManageSubscriptions = self.hasOpenedManageSubscriptions
         self.hasOpenedManageSubscriptions = true
         #endif
         self.customerInfoViewModel.manageSubscriptionsSheet = true
@@ -162,6 +163,7 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
                 // Nothing opened, so no return to the app will lower it, and a retry is welcome.
                 self?.customerInfoViewModel.manageSubscriptionsSheet = false
                 self?.lastManageSubscriptionsOpening = nil
+                self?.hasOpenedManageSubscriptions = hadOpenedManageSubscriptions
             }
         }
         #endif
