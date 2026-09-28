@@ -28,3 +28,5 @@
 "You are currently subscribed to this" = "Olet jo tilannut tämän";
 "You've already purchased this" = "Olet jo ostanut tämän";
 "Your purchase was successful." = "Ostoksesi onnistui.";
+"Purchase unavailable" = "Osto ei ole saatavilla";
+"This purchase isn't available in your region." = "Tämä osto ei ole saatavilla alueellasi.";
