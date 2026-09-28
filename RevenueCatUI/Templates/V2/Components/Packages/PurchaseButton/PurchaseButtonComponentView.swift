@@ -216,6 +216,8 @@ struct PurchaseButtonComponentView: View {
             self.presentHostedCheckout(session)
         case .tellCustomerTheyAlreadyOwnIt:
             self.showAlreadyOwnedAlert(for: selectedPackage)
+        case let .failed(error):
+            self.hostedCheckoutError = error
         case .nothing:
             break
         }

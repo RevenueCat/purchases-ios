@@ -30,6 +30,9 @@ enum HostedCheckout {
         /// Tell the customer they already own what they tried to buy, which is why no checkout opens.
         case tellCustomerTheyAlreadyOwnIt
 
+        /// Tell the customer the checkout could not be started.
+        case failed(HostedCheckoutError)
+
         /// Nothing to present, and nothing to offer instead.
         case nothing
 
@@ -39,7 +42,9 @@ enum HostedCheckout {
                 self = .present(session)
             case .alreadyPurchased:
                 self = .tellCustomerTheyAlreadyOwnIt
-            case .declinedByCustomer, .paymentsNotAuthorized, .alreadyStarting, .failed:
+            case .failed:
+                self = .failed(.notStarted)
+            case .declinedByCustomer, .paymentsNotAuthorized, .alreadyStarting:
                 self = .nothing
             }
         }
@@ -47,6 +52,7 @@ enum HostedCheckout {
     }
 
     /// Runs Apple's flow and creates the checkout session, once the app's purchase interceptor lets it.
+    @MainActor
     static func start(for package: Package,
                       purchaseHandler: PurchaseHandler,
                       purchaseInitiatedAction: PurchaseInitiatedAction?) async -> Action {
@@ -55,7 +61,13 @@ enum HostedCheckout {
             return .nothing
         }
 
-        return Action(await purchaseHandler.startHostedCheckout(package: package))
+        let action = Action(await purchaseHandler.startHostedCheckout(package: package))
+
+        if case let .failed(error) = action {
+            purchaseHandler.handleHostedCheckoutFailure(error, package: package)
+        }
+
+        return action
     }
 
     /// How the customer left a checkout that did not end on its cancel page.
@@ -142,8 +154,8 @@ enum HostedCheckout {
 
 }
 
-/// Why a checkout the customer was told succeeded did not end in a purchase, mapped onto the same public
-/// codes `purchases-js` reports for it, except for a failed charge.
+/// Why a hosted checkout did not end in a purchase, mapped onto the same public codes `purchases-js` reports
+/// for it, except for a failed charge.
 ///
 /// `purchases-js` reports a failed charge as `PaymentPendingError`, but on Apple platforms that code means a
 /// purchase awaiting approval, which apps commonly hold off on rather than treat as a failure.
@@ -154,6 +166,9 @@ enum HostedCheckoutError: Error, Equatable {
 
     /// The backend never said the session had finished.
     case unconfirmed
+
+    /// The checkout could not be started, so the customer never reached the page.
+    case notStarted
 
 }
 
@@ -177,6 +192,8 @@ extension HostedCheckoutError: CustomNSError {
             return .purchaseNotAllowedError
         case let .failed(code?) where Self.setupFailedCodes.contains(code):
             return .storeProblemError
+        case .notStarted:
+            return .storeProblemError
         case .failed, .unconfirmed:
             return .unknownError
         }
@@ -187,6 +204,8 @@ extension HostedCheckoutError: CustomNSError {
         case .failed(code: Self.paymentChargeFailedCode):
             return "The payment failed."
         case let .failed(code?) where Self.setupFailedCodes.contains(code):
+            return "The purchase could not be set up."
+        case .notStarted:
             return "The purchase could not be set up."
         case .failed:
             return "The purchase failed."
@@ -209,7 +228,7 @@ extension HostedCheckoutError {
         switch self {
         case .failed(code: Self.paymentChargeFailedCode):
             return Text("Payment failed.", bundle: bundle)
-        case .failed:
+        case .failed, .notStarted:
             return Text("Something went wrong", bundle: bundle)
         case .unconfirmed:
             return Text("Your purchase is still processing.", bundle: bundle)

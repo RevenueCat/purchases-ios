@@ -135,9 +135,26 @@ final class HostedCheckoutTests: TestCase {
     }
 
     /// Falling back to StoreKit here would charge a customer who is midway through a checkout that may yet
-    /// be resolved, so a failure offers nothing.
-    func testOffersNothingWhenTheCheckoutCouldNotBeCreated() {
-        expect(HostedCheckout.Action(.failed)) == .nothing
+    /// be resolved, so a failure offers nothing but telling them.
+    func testTellsTheCustomerWhenTheCheckoutCouldNotBeCreated() {
+        expect(HostedCheckout.Action(.failed)) == .failed(.notStarted)
+    }
+
+    @MainActor
+    func testReportsACheckoutThatCouldNotBeCreatedAsAPurchaseError() async {
+        let trackedEvents: Atomic<[PaywallEvent]> = .init([])
+        let purchases = Self.makePurchases(trackingInto: trackedEvents)
+        purchases.hostedCheckoutBlock = { _, _ in .failed }
+        let handler = Self.makeHandler(purchases: purchases)
+        handler.trackPaywallImpression(Self.impressionData)
+
+        _ = await HostedCheckout.start(for: TestData.annualPackage,
+                                       purchaseHandler: handler,
+                                       purchaseInitiatedAction: nil)
+
+        expect(handler.purchaseError as? HostedCheckoutError) == .notStarted
+        await expect(trackedEvents.value.contains(where: Self.isPurchaseError))
+            .toEventually(beTrue(), timeout: .seconds(2))
     }
 
     // MARK: - Settling on what the backend says
@@ -355,6 +372,10 @@ final class HostedCheckoutTests: TestCase {
         }
     }
 
+    func testReportsACheckoutThatCouldNotBeStartedAsAStoreProblem() {
+        expect((HostedCheckoutError.notStarted as NSError).code) == ErrorCode.storeProblemError.rawValue
+    }
+
     func testReportsAnyOtherFailureAsUnknown() {
         expect((HostedCheckoutError.failed(code: nil) as NSError).code) == ErrorCode.unknownError.rawValue
         expect((HostedCheckoutError.failed(code: 99) as NSError).code) == ErrorCode.unknownError.rawValue
@@ -371,6 +392,7 @@ final class HostedCheckoutTests: TestCase {
             expect(HostedCheckoutError.failed(code: code).message(bundle: .main))
                 == Text("Something went wrong", bundle: .main)
         }
+        expect(HostedCheckoutError.notStarted.message(bundle: .main)) == Text("Something went wrong", bundle: .main)
     }
 
     /// The customer most likely paid, and the purchase may yet land.
