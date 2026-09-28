@@ -209,6 +209,43 @@ class HostedCheckoutPollerTests: TestCase {
         expect(sleeper.delays).to(beEmpty())
     }
 
+    /// The request cannot be cancelled, but whoever is waiting on it no longer has to.
+    func testAnswersRightAwayWhenCancelledWhileARequestIsOut() async {
+        let fetcher = UnansweredStatusFetcher()
+        let poller = HostedCheckoutPoller(statusFetcher: fetcher,
+                                          sleeper: RecordingHostedCheckoutSleeper(),
+                                          dateProvider: DateProvider(),
+                                          interval: 1,
+                                          maxAttempts: 30,
+                                          timeout: 45)
+
+        let task = Task<HostedCheckoutPollResult, Never> {
+            await poller.poll(operationSessionID: Self.operationSessionID, appUserID: Self.appUserID)
+        }
+        await expect(fetcher.callCount.value).toEventually(equal(1))
+        let cancelledAt = Date()
+        task.cancel()
+
+        let result = await task.value
+
+        expect(result) == .undetermined
+        expect(Date().timeIntervalSince(cancelledAt)) < 5
+    }
+
+    func testAsksNothingMoreWhenCancelledBetweenAttempts() async {
+        let fetcher = StubStatusFetcher(results: [.status(.pending)])
+        let sleeper = RecordingHostedCheckoutSleeper()
+        sleeper.whileSleeping = { withUnsafeCurrentTask { $0?.cancel() } }
+        let poller = self.makePoller(fetcher: fetcher, sleeper: sleeper)
+
+        let result = await Task<HostedCheckoutPollResult, Never> {
+            await poller.poll(operationSessionID: Self.operationSessionID, appUserID: Self.appUserID)
+        }.value
+
+        expect(result) == .undetermined
+        expect(fetcher.callCount) == 1
+    }
+
     // MARK: - A dismissed checkout
 
     /// Nothing to wait for, so the session itself is never asked about.
@@ -351,6 +388,44 @@ class HostedCheckoutPollerTests: TestCase {
         expect(fetcher.callCount) == 4
     }
 
+    func testAnswersRightAwayWhenCancelledWhileAPaymentStatusRequestIsOut() async {
+        let fetcher = UnansweredStatusFetcher()
+        let poller = HostedCheckoutPoller(statusFetcher: fetcher,
+                                          sleeper: RecordingHostedCheckoutSleeper(),
+                                          dateProvider: DateProvider(),
+                                          interval: 1,
+                                          maxAttempts: 30,
+                                          timeout: 45)
+
+        let task = Task<HostedCheckoutPollResult, Never> {
+            await poller.pollDismissed(operationSessionID: Self.operationSessionID, appUserID: Self.appUserID)
+        }
+        await expect(fetcher.paymentStatusCallCount.value).toEventually(equal(1))
+        let cancelledAt = Date()
+        task.cancel()
+
+        let result = await task.value
+
+        expect(result) == .undetermined
+        expect(Date().timeIntervalSince(cancelledAt)) < 5
+        expect(fetcher.callCount.value) == 0
+    }
+
+    func testAsksNothingMoreWhenCancelledBeforeAskingAgainWhetherTheCustomerPaid() async {
+        let fetcher = StubStatusFetcher(paymentStatuses: [.paymentStatus(.unknown)], results: [.status(.succeeded)])
+        let sleeper = RecordingHostedCheckoutSleeper()
+        sleeper.whileSleeping = { withUnsafeCurrentTask { $0?.cancel() } }
+        let poller = self.makePoller(fetcher: fetcher, sleeper: sleeper)
+
+        let result = await Task<HostedCheckoutPollResult, Never> {
+            await poller.pollDismissed(operationSessionID: Self.operationSessionID, appUserID: Self.appUserID)
+        }.value
+
+        expect(result) == .undetermined
+        expect(fetcher.paymentStatusCallCount) == 1
+        expect(fetcher.callCount) == 0
+    }
+
 }
 
 private extension HostedCheckoutPollerTests {
@@ -363,18 +438,18 @@ private extension HostedCheckoutPollerTests {
     )
 
     func makePoller(fetcher: HostedCheckoutStatusFetching,
-                    sleeper: HostedCheckoutAsyncSleeper) -> HostedCheckoutPoller {
+                    sleeper: AsyncSleeper) -> HostedCheckoutPoller {
         return self.makePoller(fetcher: fetcher, sleeper: sleeper, maxAttempts: 30)
     }
 
     func makePoller(fetcher: HostedCheckoutStatusFetching,
-                    sleeper: HostedCheckoutAsyncSleeper,
+                    sleeper: AsyncSleeper,
                     maxAttempts: Int) -> HostedCheckoutPoller {
         return self.makePoller(fetcher: fetcher, sleeper: sleeper, clock: ManualClock(), maxAttempts: maxAttempts)
     }
 
     func makePoller(fetcher: HostedCheckoutStatusFetching,
-                    sleeper: HostedCheckoutAsyncSleeper,
+                    sleeper: AsyncSleeper,
                     clock: DateProvider,
                     maxAttempts: Int) -> HostedCheckoutPoller {
         return HostedCheckoutPoller(statusFetcher: fetcher,
@@ -494,14 +569,17 @@ private final class UnansweredStatusFetcher: HostedCheckoutStatusFetching {
 }
 
 /// Records what the loop would have waited, so a poll of any length runs instantly.
-private final class RecordingHostedCheckoutSleeper: HostedCheckoutAsyncSleeper, @unchecked Sendable {
+private final class RecordingHostedCheckoutSleeper: AsyncSleeper, @unchecked Sendable {
 
     private(set) var delays: [TimeInterval] = []
     var clock: ManualClock?
+    /// Runs on the polling task during each wait.
+    var whileSleeping: () -> Void = {}
 
     func sleep(seconds: TimeInterval) async throws {
         self.delays.append(seconds)
         self.clock?.advance(by: seconds)
+        self.whileSleeping()
     }
 
 }

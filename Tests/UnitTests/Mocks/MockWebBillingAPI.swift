@@ -88,6 +88,8 @@ class MockWebBillingAPI: WebBillingAPI {
     var invokedGetHostedCheckoutStatusCount = 0
     var invokedGetHostedCheckoutStatusParameters: GetHostedCheckoutStatusParameters?
     var stubbedGetHostedCheckoutStatusCompletionResult: Result<HostedCheckoutStatusResponse, BackendError>?
+    /// Runs while the request is out, before it answers.
+    var whileGettingHostedCheckoutStatus: () -> Void = {}
 
     override func getHostedCheckoutStatus(
         appUserID: String,
@@ -98,6 +100,7 @@ class MockWebBillingAPI: WebBillingAPI {
         self.invokedGetHostedCheckoutStatusCount += 1
         self.invokedGetHostedCheckoutStatusParameters = .init(appUserID: appUserID,
                                                               operationSessionID: operationSessionID)
+        self.whileGettingHostedCheckoutStatus()
 
         if let result = self.stubbedGetHostedCheckoutStatusCompletionResult {
             completion(result)

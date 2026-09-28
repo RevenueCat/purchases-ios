@@ -107,6 +107,33 @@ extension PurchasesHostedCheckoutTests {
         expect(self.deviceCache.cachedCustomerInfoData(appUserID: appUserID)).to(beNil())
     }
 
+    /// The purchase is on the account of the customer who made it, not on the one who logged in meanwhile.
+    func testFetchesTheBuyersCustomerInfoWhenAnotherCustomerLogsInDuringThePoll() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try self.stubStatus(.succeeded)
+        let buyer = self.identityManager.currentAppUserID
+        try self.logInWhileThePollRuns(Self.otherAppUserID)
+
+        _ = await self.purchases.pollHostedCheckout(operationSessionID: Self.operationSessionID)
+
+        expect(self.backend.userID) == buyer
+    }
+
+    func testClearsOnlyTheBuyersCachedCustomerInfoWhenAnotherCustomerLogsInDuringThePoll() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try self.stubStatus(.succeeded)
+        self.backend.overrideCustomerInfoResult = .failure(.networkError(.offlineConnection()))
+        let buyer = self.identityManager.currentAppUserID
+        self.deviceCache.cache(customerInfo: Data(), appUserID: buyer)
+        self.deviceCache.cache(customerInfo: Data(), appUserID: Self.otherAppUserID)
+        try self.logInWhileThePollRuns(Self.otherAppUserID)
+
+        _ = await self.purchases.pollHostedCheckout(operationSessionID: Self.operationSessionID)
+
+        expect(self.deviceCache.cachedCustomerInfoData(appUserID: buyer)).to(beNil())
+        expect(self.deviceCache.cachedCustomerInfoData(appUserID: Self.otherAppUserID)).toNot(beNil())
+    }
+
     func testKeepsTheFetchedCustomerInfo() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         try self.stubStatus(.succeeded)
@@ -147,11 +174,25 @@ extension PurchasesHostedCheckoutTests {
         expect(self.backend.getCustomerInfoCallCount) == fetchesBefore
     }
 
+    func testFetchesTheBuyersCustomerInfoWhenAnotherCustomerLogsInDuringADismissedPoll() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try self.stubPaymentStatus(.processing)
+        try self.stubStatus(.succeeded)
+        let buyer = self.identityManager.currentAppUserID
+        try self.logInWhileThePollRuns(Self.otherAppUserID)
+
+        _ = await self.purchases.pollDismissedHostedCheckout(operationSessionID: Self.operationSessionID)
+
+        expect(try self.mockWebBillingAPI.invokedGetHostedCheckoutStatusParameters?.appUserID) == buyer
+        expect(self.backend.userID) == buyer
+    }
+
 }
 
 private extension PurchasesHostedCheckoutTests {
 
     static let operationSessionID = "opsession_123"
+    static let otherAppUserID = "another_customer"
 
     func stubStatus(_ status: HostedCheckoutStatusResponse.Status) throws {
         try self.mockWebBillingAPI.stubbedGetHostedCheckoutStatusCompletionResult = .success(.init(status: status))
@@ -160,6 +201,11 @@ private extension PurchasesHostedCheckoutTests {
     func stubPaymentStatus(_ paymentStatus: HostedCheckoutPaymentStatusResponse.PaymentStatus) throws {
         try self.mockWebBillingAPI.stubbedGetHostedCheckoutPaymentStatusCompletionResult =
             .success(.init(paymentStatus: paymentStatus))
+    }
+
+    func logInWhileThePollRuns(_ appUserID: String) throws {
+        let identityManager: MockIdentityManager = self.identityManager
+        try self.mockWebBillingAPI.whileGettingHostedCheckoutStatus = { identityManager.mockAppUserID = appUserID }
     }
 
 }
