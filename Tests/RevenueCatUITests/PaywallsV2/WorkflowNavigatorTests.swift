@@ -427,11 +427,14 @@ private extension WorkflowNavigatorTests {
     }
 
     /// Creates a `StepDescriptor` for a screen whose exit is a branch, rather than a routing step.
+    ///
+    /// The route names a different step than the fallback, so a test can tell the two apart.
     func makeStepWithBranchExit(
         id: String,
         componentId: String,
         actionId: String,
-        fallbackStepId: String = "step_2"
+        fallbackStepId: String = "step_2",
+        routeStepId: String = "step_3"
     ) -> StepDescriptor {
         let json = """
         {
@@ -444,7 +447,7 @@ private extension WorkflowNavigatorTests {
           "trigger_actions": {
             "\(actionId)": {
               "type": "branch",
-              "branches": [{"audience_id": "aud_a", "step_id": "\(fallbackStepId)"}],
+              "branches": [{"audience_id": "aud_a", "step_id": "\(routeStepId)"}],
               "fallback_step_id": "\(fallbackStepId)"
             }
           }
