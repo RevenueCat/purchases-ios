@@ -63,6 +63,7 @@ struct ButtonComponentView: View {
     @Environment(\.closeWorkflowAction) private var closeWorkflowAction
     @Environment(\.workflowNavigateBackHandler) private var workflowNavigateBackHandler
     @Environment(\.workflowRenderingContext) private var workflowRenderingContext
+    @Environment(\.paywallCancelButtonInToolbar) private var paywallCancelButtonInToolbar
 
     private let viewModel: ButtonComponentViewModel
     private let onDismiss: () -> Void
@@ -108,62 +109,84 @@ struct ButtonComponentView: View {
                customVariables: self.customVariables,
                windowSize: self.paywallWindowSize
            ) {
-            AsyncButton {
-                try await performAction()
-            } label: {
-                StackComponentView(
-                    viewModel: self.viewModel.stackViewModel,
-                    onDismiss: self.onDismiss,
-                    showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
-                )
+            if self.isShownInToolbar {
+                // Zero-sized so the designed layout closes up around the missing button.
+                Color.clear
+                    .frame(width: 0, height: 0)
+                    .accessibilityHidden(true)
+                    .paywallCancelButtonMovedToToolbar()
+            } else {
+                self.button
             }
-            .applyIfLet(self.derivedAccessibilityLabel, apply: { view, label in
-                view.accessibilityLabel(label)
-            })
-            .withTransition(viewModel.component.transition)
-            .disabled(self.shouldBeDisabled)
-            .opacity(self.shouldBeDisabled ? 0.35 : 1.0)
-            .offset(x: self.workflowRenderingContext.isHeader ? -self.headerPageOffset : 0)
-            .opacity(self.workflowRenderingContext.isHeader ? self.headerButtonOpacity : 1)
-            #if canImport(SafariServices) && canImport(UIKit)
-            .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
-                let url = self.inAppBrowserURL!
-                SafariView(url: url)
-                    // Reported here rather than when the URL is assigned, so the listener only hears about
-                    // in-app browser opens that actually made it on screen.
-                    .onAppear { self.urlOpenedNotifier(url) }
-            }
-            #if os(iOS)
-            .applyIf(self.viewModel.opensCustomerCenter, apply: { view in
-                view.presentCustomerCenter(
-                    isPresented: self.$showCustomerCenter,
-                    purchaseHandler: self.purchaseHandler,
-                    onDismiss: {
-                        self.showCustomerCenter = false
-                    }
-                )
-            })
-            #endif
-            #endif
         }
     }
 
-    /// Resolved through the same `dismissalAction` the tap itself goes through, so the announced
-    /// word cannot drift from where the button actually leads.
-    private var derivedAccessibilityLabel: String? {
+    /// A close button that dismisses the paywall, which the hosting toolbar shows instead. Inside a
+    /// workflow with a step to return to, the same button goes back, so it stays in the layout.
+    private var isShownInToolbar: Bool {
+        guard self.paywallCancelButtonInToolbar,
+              case .navigateBack = self.viewModel.action else {
+            return false
+        }
+        return self.dismissesPaywall
+    }
+
+    /// Resolved through the same `dismissalAction` the tap itself goes through, so neither the
+    /// announced word nor the toolbar can drift from where the button actually leads.
+    private var dismissesPaywall: Bool {
         let dismissal = WorkflowPaywallView.dismissalAction(
             canNavigateBack: self.workflowRenderingContext.canNavigateBack,
             hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession
         )
 
-        let dismissesWorkflow: Bool
         if case .dismissWorkflow = dismissal {
-            dismissesWorkflow = true
-        } else {
-            dismissesWorkflow = false
+            return true
         }
+        return false
+    }
 
-        return self.viewModel.derivedAccessibilityLabel(dismissesPaywall: dismissesWorkflow)
+    private var button: some View {
+        AsyncButton {
+            try await performAction()
+        } label: {
+            StackComponentView(
+                viewModel: self.viewModel.stackViewModel,
+                onDismiss: self.onDismiss,
+                showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
+            )
+        }
+        .applyIfLet(self.derivedAccessibilityLabel, apply: { view, label in
+            view.accessibilityLabel(label)
+        })
+        .withTransition(viewModel.component.transition)
+        .disabled(self.shouldBeDisabled)
+        .opacity(self.shouldBeDisabled ? 0.35 : 1.0)
+        .offset(x: self.workflowRenderingContext.isHeader ? -self.headerPageOffset : 0)
+        .opacity(self.workflowRenderingContext.isHeader ? self.headerButtonOpacity : 1)
+        #if canImport(SafariServices) && canImport(UIKit)
+        .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
+            let url = self.inAppBrowserURL!
+            SafariView(url: url)
+                // Reported here rather than when the URL is assigned, so the listener only hears about
+                // in-app browser opens that actually made it on screen.
+                .onAppear { self.urlOpenedNotifier(url) }
+        }
+        #if os(iOS)
+        .applyIf(self.viewModel.opensCustomerCenter, apply: { view in
+            view.presentCustomerCenter(
+                isPresented: self.$showCustomerCenter,
+                purchaseHandler: self.purchaseHandler,
+                onDismiss: {
+                    self.showCustomerCenter = false
+                }
+            )
+        })
+        #endif
+        #endif
+    }
+
+    private var derivedAccessibilityLabel: String? {
+        return self.viewModel.derivedAccessibilityLabel(dismissesPaywall: self.dismissesPaywall)
     }
 
     private var headerPageOffset: CGFloat {

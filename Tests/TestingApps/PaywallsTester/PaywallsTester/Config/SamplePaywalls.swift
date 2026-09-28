@@ -889,17 +889,75 @@ extension SamplePaywallLoader {
                 background: .color(.init(light: .hex("#ffffff")))
             )),
             componentsLocalizations: [
-                "en_US": [
-                    "split_title": .string("Experience Pro today!"),
-                    "split_body": .string("Check out the power of all we offer."),
-                    "split_package_name": .string("Monthly"),
-                    "split_package_detail": .string("$9.99/mo"),
-                    "split_cta": .string("Continue"),
-                    "split_legal": .string("Cancel anytime. Restore purchases.")
-                ]
+                "en_US": Self.windowSplitLocalizations
             ],
             revision: 1,
             defaultLocaleIdentifier: "en_US"
+        )
+    }
+
+    private static let windowSplitLocalizations: PaywallComponent.LocalizationDictionary = [
+        "split_title": .string("Experience Pro today!"),
+        "split_body": .string("Check out the power of all we offer."),
+        "split_package_name": .string("Monthly"),
+        "split_package_detail": .string("$9.99/mo"),
+        "split_cta": .string("Continue"),
+        "split_legal": .string("Cancel anytime. Restore purchases.")
+    ]
+
+    /// The window split sample with a close button designed into its top trailing corner. Where
+    /// the presentation supports a vertical toolbar, such as full screen on iPhone Duo, the close
+    /// button moves into the side toolbar.
+    static func sideToolbarCloseComponentsData() -> PaywallComponentsData {
+        return .init(
+            templateName: "side-toolbar-close-demo",
+            assetBaseURL: Self.paywallAssetBaseURL,
+            componentsConfig: .init(base: .init(
+                stack: .init(
+                    components: [
+                        .stack(Self.designedCloseButtonRow()),
+                        .stack(Self.windowSplitWrapper())
+                    ],
+                    overflow: .default
+                ),
+                stickyFooter: nil,
+                background: .color(.init(light: .hex("#ffffff")))
+            )),
+            componentsLocalizations: [
+                "en_US": Self.windowSplitLocalizations.merging(["close_symbol": .string("✕")]) { $1 }
+            ],
+            revision: 1,
+            defaultLocaleIdentifier: "en_US"
+        )
+    }
+
+    private static func designedCloseButtonRow() -> PaywallComponent.StackComponent {
+        return .init(
+            components: [
+                .button(.init(
+                    action: .navigateBack,
+                    stack: .init(
+                        components: [
+                            .text(.init(
+                                text: "close_symbol",
+                                fontWeight: .bold,
+                                color: .init(light: .hex("#000000")),
+                                padding: .zero,
+                                margin: .zero,
+                                fontSize: 17
+                            ))
+                        ],
+                        size: .init(width: .fixed(32), height: .fixed(32)),
+                        backgroundColor: .init(light: .hex("#e0e0e0")),
+                        shape: .pill
+                    )
+                ))
+            ],
+            dimension: .horizontal(.center, .end),
+            size: .init(width: .fill, height: .fit(nil)),
+            spacing: 0,
+            backgroundColor: nil,
+            padding: .init(top: 8, bottom: 0, leading: 16, trailing: 16)
         )
     }
 

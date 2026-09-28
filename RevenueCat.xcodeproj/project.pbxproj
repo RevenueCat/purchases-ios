@@ -1138,6 +1138,7 @@
 		887A60832C1D037000E1A461 /* VersionDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FE62C1D037000E1A461 /* VersionDetector.swift */; };
 		887A60842C1D037000E1A461 /* ConsistentPackageContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FE82C1D037000E1A461 /* ConsistentPackageContentView.swift */; };
 		99C5EAC7E37845D1B8869B4E /* PaywallMediaAccessibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B04C629B98143508328E79A /* PaywallMediaAccessibility.swift */; };
+		FB2290476CAE952485848828 /* PaywallSideToolbarCancelButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8E6A97133FFDC1280C3CAA6 /* PaywallSideToolbarCancelButton.swift */; };
 		887A60852C1D037000E1A461 /* FitToAspectRatio.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FE92C1D037000E1A461 /* FitToAspectRatio.swift */; };
 		887A60862C1D037000E1A461 /* FooterHidingModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FEA2C1D037000E1A461 /* FooterHidingModifier.swift */; };
 		887A60872C1D037000E1A461 /* ViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FEB2C1D037000E1A461 /* ViewExtensions.swift */; };
@@ -2962,6 +2963,7 @@
 		A82500013C8D000000000002 /* KeyWindowFocusResigner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyWindowFocusResigner.swift; sourceTree = "<group>"; };
 		887A5FE82C1D037000E1A461 /* ConsistentPackageContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ConsistentPackageContentView.swift; sourceTree = "<group>"; };
 		4B04C629B98143508328E79A /* PaywallMediaAccessibility.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallMediaAccessibility.swift; sourceTree = "<group>"; };
+		F8E6A97133FFDC1280C3CAA6 /* PaywallSideToolbarCancelButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallSideToolbarCancelButton.swift; sourceTree = "<group>"; };
 		887A5FE92C1D037000E1A461 /* FitToAspectRatio.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FitToAspectRatio.swift; sourceTree = "<group>"; };
 		887A5FEA2C1D037000E1A461 /* FooterHidingModifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FooterHidingModifier.swift; sourceTree = "<group>"; };
 		887A5FEB2C1D037000E1A461 /* ViewExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewExtensions.swift; sourceTree = "<group>"; };
@@ -6393,6 +6395,7 @@
 			children = (
 				887A5FE82C1D037000E1A461 /* ConsistentPackageContentView.swift */,
 				4B04C629B98143508328E79A /* PaywallMediaAccessibility.swift */,
+				F8E6A97133FFDC1280C3CAA6 /* PaywallSideToolbarCancelButton.swift */,
 				88A543E42C37A4AF0039C6A5 /* ConsistentTierContentView.swift */,
 				887A5FE92C1D037000E1A461 /* FitToAspectRatio.swift */,
 				887A5FEA2C1D037000E1A461 /* FooterHidingModifier.swift */,
@@ -9358,6 +9361,7 @@
 				7707A94E2CAD94D2006E0313 /* ButtonComponentViewModel.swift in Sources */,
 				887A60842C1D037000E1A461 /* ConsistentPackageContentView.swift in Sources */,
 				99C5EAC7E37845D1B8869B4E /* PaywallMediaAccessibility.swift in Sources */,
+				FB2290476CAE952485848828 /* PaywallSideToolbarCancelButton.swift in Sources */,
 				887A60C42C1D037000E1A461 /* IconView.swift in Sources */,
 				830004012E261AC100143F9F /* PlatformImage.swift in Sources */,
 				887A60732C1D037000E1A461 /* ProcessedLocalizedConfiguration.swift in Sources */,

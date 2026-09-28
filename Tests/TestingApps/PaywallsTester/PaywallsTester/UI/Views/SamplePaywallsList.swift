@@ -27,6 +27,16 @@ struct SamplePaywallsList: View {
     @State
     private var presentingCustomerCenterFullScreen: Bool = false
 
+    #if DEBUG && os(iOS)
+    /// Presented by RevenueCatUI, which moves the close button automatically.
+    @State
+    private var revenueCatPresentedOffering: Offering?
+
+    /// Presented by the app, which opts in to moving the close button.
+    @State
+    private var appFullScreenOffering: Offering?
+    #endif
+
     var body: some View {
         NavigationView {
             self.list
@@ -35,6 +45,12 @@ struct SamplePaywallsList: View {
         .sheet(item: self.$display) { display in
             self.view(for: display)
         }
+        #if DEBUG && os(iOS)
+        .presentPaywall(offering: self.$revenueCatPresentedOffering, presentationMode: .fullScreen)
+        .fullScreenCover(item: self.$appFullScreenOffering) { offering in
+            Self.appPresentedSideToolbarClosePaywall(offering: offering)
+        }
+        #endif
         .navigationTitle("Paywalls")
         .navigationViewStyle(.automatic)
     }
@@ -108,6 +124,11 @@ struct SamplePaywallsList: View {
                 displayCloseButton: Self.displayCloseButton,
                 introEligibility: Self.introEligibility
             ))
+
+        #if os(iOS)
+        case .sideToolbarCloseSheet:
+            Self.appPresentedSideToolbarClosePaywall(offering: Self.sideToolbarCloseOffering)
+        #endif
         #endif
         #if canImport(UIKit) && os(iOS)
         case .customerCenterSheet,
@@ -189,6 +210,30 @@ struct SamplePaywallsList: View {
                     TemplateLabel(name: "Window split (foldable/iPad)", icon: "rectangle.split.2x1")
                 }
                 #endif
+            }
+            #endif
+
+            #if DEBUG && os(iOS)
+            // Run on iPhone Duo: where the presentation supports a vertical toolbar, the designed
+            // close button moves into the side toolbar. Elsewhere it stays in the paywall.
+            Section("iPhone Duo side toolbar close") {
+                Button {
+                    self.revenueCatPresentedOffering = Self.sideToolbarCloseOffering
+                } label: {
+                    TemplateLabel(name: "presentPaywall, full screen (automatic)", icon: "sidebar.right")
+                }
+
+                Button {
+                    self.appFullScreenOffering = Self.sideToolbarCloseOffering
+                } label: {
+                    TemplateLabel(name: "App's full-screen cover (opt-in)", icon: "rectangle.inset.filled")
+                }
+
+                Button {
+                    self.display = .sideToolbarCloseSheet
+                } label: {
+                    TemplateLabel(name: "App's sheet (opt-in)", icon: "rectangle.bottomhalf.inset.filled")
+                }
             }
             #endif
 
@@ -285,6 +330,22 @@ struct SamplePaywallsList: View {
 
     #if DEBUG
     private static let loader: SamplePaywallLoader = .init()
+
+    #if os(iOS)
+    private static var sideToolbarCloseOffering: Offering {
+        Self.loader.offering(with: SamplePaywallLoader.sideToolbarCloseComponentsData())
+    }
+
+    /// A `PaywallView` the app presents itself, which is how most apps embed paywalls. It can't
+    /// tell a modal root from a pushed view, so the app opts in at the root of its presentation.
+    private static func appPresentedSideToolbarClosePaywall(offering: Offering) -> some View {
+        PaywallView(configuration: .init(
+            offering: offering,
+            introEligibility: Self.introEligibility
+        ))
+        .movePaywallCancelButtonToSideToolbarWhenAppropriate()
+    }
+    #endif
     private static let introEligibility: TrialOrIntroEligibilityChecker = .init { packages in
         return Dictionary(
             uniqueKeysWithValues: Set(packages)
@@ -352,6 +413,8 @@ private extension SamplePaywallsList {
         case missingPaywall
         case unrecognizedPaywall
         case componentPaywall(PaywallComponentsData)
+        @available(watchOS, unavailable)
+        case sideToolbarCloseSheet
         #endif
 
         @available(watchOS, unavailable)
@@ -388,6 +451,9 @@ extension SamplePaywallsList.Display: Identifiable {
 
         case .componentPaywall:
             return "component-paywall"
+
+        case .sideToolbarCloseSheet:
+            return "side-toolbar-close-sheet"
 
         #endif
         case .customerCenterSheet:

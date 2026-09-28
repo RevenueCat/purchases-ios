@@ -201,6 +201,8 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         \.workflowNavigateBackHandler,
                         nil
                     )
+                    // The toolbar's close button dismisses the paywall, not this sheet.
+                    .environment(\.paywallCancelButtonInToolbar, false)
                     .applyIfLet(self.sheetHeight, apply: { view, height in
                         view.frame(height: height)
                     })
