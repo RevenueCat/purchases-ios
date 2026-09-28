@@ -73,7 +73,7 @@ enum HostedCheckout {
     /// Only a purchase the backend confirms counts as one, and only a checkout dismissed without paying
     /// counts as a cancellation. Anything else is an error: either the success page told the customer the
     /// purchase went through, or a payment was under way when they closed the sheet.
-    enum Settlement: Equatable {
+    enum Resolution: Equatable {
 
         case purchased
         case tellCustomerTheyAlreadyOwnIt
@@ -105,10 +105,10 @@ enum HostedCheckout {
     ///
     /// - Parameter package: The package the checkout was started for, when it is still known.
     @MainActor
-    static func settle(_ session: HostedCheckoutSession,
-                       after exit: Exit,
-                       package: Package?,
-                       purchaseHandler: PurchaseHandler) async -> Settlement {
+    static func resolve(_ session: HostedCheckoutSession,
+                        after exit: Exit,
+                        package: Package?,
+                        purchaseHandler: PurchaseHandler) async -> Resolution {
         return await purchaseHandler.whileConfirmingHostedCheckout {
             let operationSessionID = session.operationSessionID
             let result: HostedCheckoutPollResult
@@ -120,9 +120,9 @@ enum HostedCheckout {
                 result = await purchaseHandler.pollDismissedHostedCheckout(operationSessionID: operationSessionID)
             }
 
-            let settlement = Settlement(result)
+            let resolution = Resolution(result)
 
-            switch settlement {
+            switch resolution {
             case .purchased:
                 break
             case let .failed(error):
@@ -135,7 +135,7 @@ enum HostedCheckout {
                 break
             }
 
-            return settlement
+            return resolution
         }
     }
 

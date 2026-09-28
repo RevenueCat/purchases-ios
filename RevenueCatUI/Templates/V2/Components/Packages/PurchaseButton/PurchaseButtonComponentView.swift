@@ -243,24 +243,24 @@ struct PurchaseButtonComponentView: View {
     private func handleHostedCheckoutOutcome(_ outcome: WebCheckoutSheetOutcome, session: HostedCheckoutSession) {
         switch outcome {
         case .returned(.success):
-            self.settleHostedCheckout(session, after: .successPage)
+            self.resolveHostedCheckout(session, after: .successPage)
         case .returned(.cancel):
             Task { await self.purchaseHandler.handleHostedCheckoutCancellation(package: self.packageContext.package) }
         case .dismissed:
             // A payment may have gone through moments before the customer closed the sheet.
             Logger.debug(Strings.hosted_checkout_dismissed_without_returning)
-            self.settleHostedCheckout(session, after: .closedSheet)
+            self.resolveHostedCheckout(session, after: .closedSheet)
         }
     }
 
-    private func settleHostedCheckout(_ session: HostedCheckoutSession, after exit: HostedCheckout.Exit) {
+    private func resolveHostedCheckout(_ session: HostedCheckoutSession, after exit: HostedCheckout.Exit) {
         let package = self.packageContext.package
 
         Task { @MainActor in
-            switch await HostedCheckout.settle(session,
-                                               after: exit,
-                                               package: package,
-                                               purchaseHandler: self.purchaseHandler) {
+            switch await HostedCheckout.resolve(session,
+                                                after: exit,
+                                                package: package,
+                                                purchaseHandler: self.purchaseHandler) {
             case .tellCustomerTheyAlreadyOwnIt:
                 if let package {
                     self.showAlreadyOwnedAlert(for: package)
