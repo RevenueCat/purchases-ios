@@ -103,7 +103,11 @@ class TakeScreenshotTests: BaseSnapshotTest {
         let attachmentBaseName = attachmentURL.deletingPathExtension().lastPathComponent
         let exportedBaseName = attachmentBaseName.components(separatedBy: "__END").first ?? attachmentBaseName
 
-        return extension.isEmpty ? exportedBaseName : "\(exportedBaseName).\(extension)"
+        if extension.isEmpty {
+            return exportedBaseName
+        }
+
+        return "\(exportedBaseName).\(extension)"
     }
 
 }
