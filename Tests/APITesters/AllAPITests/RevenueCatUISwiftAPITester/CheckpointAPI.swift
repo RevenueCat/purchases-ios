@@ -13,7 +13,7 @@
 //
 
 import RevenueCat
-@_spi(CheckpointsInternal) import RevenueCatUI
+@_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
 
 func checkCheckpointAPI(_ purchases: Purchases) {
     let literalCustomVariables: [String: CustomVariableValue] = [
