@@ -36,7 +36,8 @@ struct HostedCheckoutStatusResponse: Equatable {
     /// Why a session failed.
     struct Failure: Equatable {
 
-        /// The backend's own code for the failure, which does not belong to ``BackendErrorCode``.
+        /// The backend's code for why the purchase failed. These codes are shared with the web purchase flow
+        /// in purchases-js.
         let code: Int
 
         /// A wire-level name such as `payment_charge_failed`, meant for logs.
