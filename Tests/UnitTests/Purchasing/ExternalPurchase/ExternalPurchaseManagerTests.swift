@@ -308,8 +308,9 @@ class ExternalPurchaseManagerTests: TestCase {
     /// Offers nothing even in a storefront allowed without eligibility, so the path taken by a customer who is
     /// offered nothing can be tried out in the simulator wherever the developer is.
     func testOffersNothingInTheSimulatorWhileExternalPurchasesAreDisabledThere() async {
-        self.systemInfo = Self.makeSystemInfoDisablingExternalPurchasesInSimulator(
-            useExternalPurchaseCustomLinks: true
+        self.systemInfo = Self.makeSystemInfo(
+            useExternalPurchaseCustomLinks: true,
+            enableExternalPurchasesInSimulator: false
         )
         self.systemInfo.stubbedStorefront = MockStorefront(countryCode: Self.allowedStorefront)
         self.systemInfo.stubbedIsRunningInSimulator = true
@@ -327,8 +328,9 @@ class ExternalPurchaseManagerTests: TestCase {
     }
 
     func testDisablingExternalPurchasesInTheSimulatorChangesNothingOnADevice() async {
-        self.systemInfo = Self.makeSystemInfoDisablingExternalPurchasesInSimulator(
-            useExternalPurchaseCustomLinks: true
+        self.systemInfo = Self.makeSystemInfo(
+            useExternalPurchaseCustomLinks: true,
+            enableExternalPurchasesInSimulator: false
         )
         self.manager = self.makeManager()
 
@@ -340,8 +342,9 @@ class ExternalPurchaseManagerTests: TestCase {
 
     /// An app outside the programme makes its purchases as it did before, whatever the simulator is told.
     func testDisablingExternalPurchasesInTheSimulatorIsIgnoredOutsideTheProgramme() async {
-        self.systemInfo = Self.makeSystemInfoDisablingExternalPurchasesInSimulator(
-            useExternalPurchaseCustomLinks: false
+        self.systemInfo = Self.makeSystemInfo(
+            useExternalPurchaseCustomLinks: false,
+            enableExternalPurchasesInSimulator: false
         )
         self.systemInfo.stubbedIsRunningInSimulator = true
         self.manager = self.makeManager()
@@ -440,25 +443,16 @@ class ExternalPurchaseManagerTests: TestCase {
 
     // MARK: - Helpers
 
-    private static func makeSystemInfo(useExternalPurchaseCustomLinks: Bool) -> MockSystemInfo {
-        return Self.onADevice(MockSystemInfo(
-            finishTransactions: true,
-            dangerousSettings: DangerousSettings(
-                autoSyncPurchases: true,
-                useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks
-            )
-        ))
-    }
-
-    private static func makeSystemInfoDisablingExternalPurchasesInSimulator(
-        useExternalPurchaseCustomLinks: Bool
+    private static func makeSystemInfo(
+        useExternalPurchaseCustomLinks: Bool,
+        enableExternalPurchasesInSimulator: Bool = true
     ) -> MockSystemInfo {
         return Self.onADevice(MockSystemInfo(
             finishTransactions: true,
             dangerousSettings: DangerousSettings(
                 autoSyncPurchases: true,
                 useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks,
-                disableExternalPurchasesInSimulator: true
+                enableExternalPurchasesInSimulator: enableExternalPurchasesInSimulator
             )
         ))
     }

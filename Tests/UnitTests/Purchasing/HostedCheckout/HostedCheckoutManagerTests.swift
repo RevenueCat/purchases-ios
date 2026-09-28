@@ -212,7 +212,7 @@ class HostedCheckoutManagerTests: TestCase {
             dangerousSettings: DangerousSettings(
                 autoSyncPurchases: true,
                 useExternalPurchaseCustomLinks: true,
-                disableExternalPurchasesInSimulator: true
+                enableExternalPurchasesInSimulator: false
             )
         )
         self.systemInfo.stubbedIsRunningInSimulator = true
@@ -231,7 +231,7 @@ class HostedCheckoutManagerTests: TestCase {
             dangerousSettings: DangerousSettings(
                 autoSyncPurchases: true,
                 useExternalPurchaseCustomLinks: false,
-                disableExternalPurchasesInSimulator: true
+                enableExternalPurchasesInSimulator: false
             )
         )
         self.systemInfo.stubbedIsRunningInSimulator = true

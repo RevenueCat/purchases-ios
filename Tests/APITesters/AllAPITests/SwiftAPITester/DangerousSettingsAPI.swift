@@ -20,7 +20,7 @@ func checkDangerousSettingsAPI() {
     let _: DangerousSettings = DangerousSettings(autoSyncPurchases: true, useExternalPurchaseCustomLinks: true)
     let _: DangerousSettings = DangerousSettings(autoSyncPurchases: true,
                                                  useExternalPurchaseCustomLinks: true,
-                                                 disableExternalPurchasesInSimulator: true)
+                                                 enableExternalPurchasesInSimulator: false)
     let settings: DangerousSettings = DangerousSettings(uiPreviewMode: true)
 
     let _: Bool = settings.autoSyncPurchases
@@ -28,5 +28,5 @@ func checkDangerousSettingsAPI() {
     let _: Bool = settings.uiPreviewMode
     let _: Bool = settings.forceAllowTestStoreInReleaseBuilds
     let _: Bool = settings.useExternalPurchaseCustomLinks
-    let _: Bool = settings.disableExternalPurchasesInSimulator
+    let _: Bool = settings.enableExternalPurchasesInSimulator
 }
