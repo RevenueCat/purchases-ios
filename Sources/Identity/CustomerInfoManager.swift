@@ -656,7 +656,8 @@ extension CustomerInfoManager {
         let previewCustomerInfo = CustomerInfo(response: previewCustomerInfoResponse,
                                                entitlementVerification: .verified,
                                                sandboxEnvironmentDetector: BundleSandboxEnvironmentDetector.default,
-                                               httpResponseOriginalSource: .mainServer)
+                                               httpResponseOriginalSource: .mainServer,
+                                               unsyncedProductIdentifiers: [])
         return previewCustomerInfo
     }
 

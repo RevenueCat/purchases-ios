@@ -72,13 +72,20 @@ private extension CustomerInfoDimensionProvider {
     }
 
     static func purchases(from customerInfo: CustomerInfo, at date: Date) -> [[String: DimensionValue]] {
+        // Only a CustomerInfo computed offline can hold a purchase the backend has not been told about.
+        let unsyncedProductIdentifiers = customerInfo.unsyncedProductIdentifiers
+
         let subscriptions = customerInfo.subscriptionsByProductIdentifier.values
             .sorted { $0.productIdentifier < $1.productIdentifier }
             .map { subscription in
                 DatedPurchase(
                     purchaseDate: subscription.purchaseDate,
                     store: subscription.store,
-                    values: Self.values(for: subscription, at: date)
+                    values: Self.values(
+                        for: subscription,
+                        at: date,
+                        isSynced: !unsyncedProductIdentifiers.contains(subscription.productIdentifier)
+                    )
                 )
             }
 
@@ -86,7 +93,10 @@ private extension CustomerInfoDimensionProvider {
             DatedPurchase(
                 purchaseDate: transaction.purchaseDate,
                 store: transaction.store,
-                values: Self.values(for: transaction)
+                values: Self.values(
+                    for: transaction,
+                    isSynced: !unsyncedProductIdentifiers.contains(transaction.productIdentifier)
+                )
             )
         }
 
@@ -143,7 +153,11 @@ private extension CustomerInfoDimensionProvider {
             }
     }
 
-    static func values(for subscription: SubscriptionInfo, at date: Date) -> [String: DimensionValue] {
+    static func values(
+        for subscription: SubscriptionInfo,
+        at date: Date,
+        isSynced: Bool
+    ) -> [String: DimensionValue] {
         let isInGracePeriod = subscription.gracePeriodExpiresDate.map { $0 > date } ?? false
 
         var values: [String: DimensionValue] = [
@@ -160,6 +174,7 @@ private extension CustomerInfoDimensionProvider {
             "purchased_at": .date(subscription.purchaseDate),
             "is_active": .bool(subscription.isActive),
             "is_sandbox": .bool(subscription.isSandbox),
+            "is_synced": .bool(isSynced),
             "will_renew": .bool(subscription.willRenew),
             "is_in_grace_period": .bool(isInGracePeriod),
             "is_refunded": .bool(subscription.refundedAt != nil),
@@ -182,7 +197,7 @@ private extension CustomerInfoDimensionProvider {
         return values
     }
 
-    static func values(for transaction: NonSubscriptionTransaction) -> [String: DimensionValue] {
+    static func values(for transaction: NonSubscriptionTransaction, isSynced: Bool) -> [String: DimensionValue] {
         var values: [String: DimensionValue] = [
             "kind": .string("non_subscription"),
             "product_identifier": .string(transaction.productIdentifier),
@@ -190,7 +205,8 @@ private extension CustomerInfoDimensionProvider {
             "transaction_identifier": .string(transaction.transactionIdentifier),
             "store_transaction_id": .string(transaction.storeTransactionIdentifier),
             "purchased_at": .date(transaction.purchaseDate),
-            "is_sandbox": .bool(transaction.isSandbox)
+            "is_sandbox": .bool(transaction.isSandbox),
+            "is_synced": .bool(isSynced)
         ]
 
         values.set("display_name", string: transaction.displayName)
