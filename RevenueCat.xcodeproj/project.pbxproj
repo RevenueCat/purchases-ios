@@ -1043,6 +1043,7 @@
 		4487A0612E90000000000006 /* HostedCheckoutStatusCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4487A0602E90000000000006 /* HostedCheckoutStatusCallback.swift */; };
 		4487A0712E90000000000007 /* GetHostedCheckoutStatusOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4487A0702E90000000000007 /* GetHostedCheckoutStatusOperation.swift */; };
 		4487A0812E90000000000008 /* HostedCheckoutPoller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4487A0802E90000000000008 /* HostedCheckoutPoller.swift */; };
+		4487A0C12E9000000000000C /* AsyncSleeper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4487A0C02E9000000000000C /* AsyncSleeper.swift */; };
 		755C26A62E310B7B006DD0AE /* BackendGetWebBillingProductsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755C26A52E310B7B006DD0AE /* BackendGetWebBillingProductsTests.swift */; };
 		4487A0412E90000000000004 /* BackendPostHostedCheckoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4487A0402E90000000000004 /* BackendPostHostedCheckoutTests.swift */; };
 		4487A0912E90000000000009 /* BackendGetHostedCheckoutStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4487A0902E90000000000009 /* BackendGetHostedCheckoutStatusTests.swift */; };
@@ -2861,6 +2862,7 @@
 		4487A0602E90000000000006 /* HostedCheckoutStatusCallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedCheckoutStatusCallback.swift; sourceTree = "<group>"; };
 		4487A0702E90000000000007 /* GetHostedCheckoutStatusOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetHostedCheckoutStatusOperation.swift; sourceTree = "<group>"; };
 		4487A0802E90000000000008 /* HostedCheckoutPoller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedCheckoutPoller.swift; sourceTree = "<group>"; };
+		4487A0C02E9000000000000C /* AsyncSleeper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncSleeper.swift; sourceTree = "<group>"; };
 		755C26A52E310B7B006DD0AE /* BackendGetWebBillingProductsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendGetWebBillingProductsTests.swift; sourceTree = "<group>"; };
 		4487A0402E90000000000004 /* BackendPostHostedCheckoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendPostHostedCheckoutTests.swift; sourceTree = "<group>"; };
 		4487A0902E90000000000009 /* BackendGetHostedCheckoutStatusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendGetHostedCheckoutStatusTests.swift; sourceTree = "<group>"; };
@@ -6155,6 +6157,7 @@
 			isa = PBXGroup;
 			children = (
 				167D67082EA151C400B4503F /* SynchronizedLargeItemCache.swift */,
+				4487A0C02E9000000000000C /* AsyncSleeper.swift */,
 				57A0FBEF2749C0C2009E2FC3 /* Atomic.swift */,
 				AC17E0A7E0000000000000B2 /* DeferredTask.swift */,
 				57EAE526274324C60060EB74 /* Lock.swift */,
@@ -8479,6 +8482,7 @@
 				AAAA44740000000000000022 /* ExternalPurchaseStrings.swift in Sources */,
 				AAAA44760000000000000002 /* HostedCheckoutManager.swift in Sources */,
 				4487A0812E90000000000008 /* HostedCheckoutPoller.swift in Sources */,
+				4487A0C12E9000000000000C /* AsyncSleeper.swift in Sources */,
 				AAAA44760000000000000012 /* HostedCheckoutSession.swift in Sources */,
 				AAAA44760000000000000022 /* HostedCheckoutStrings.swift in Sources */,
 				EF0100000000000000000012 /* ExternalPurchaseNotice.swift in Sources */,

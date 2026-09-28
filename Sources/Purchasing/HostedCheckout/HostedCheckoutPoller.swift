@@ -50,16 +50,9 @@ internal protocol HostedCheckoutStatusFetching: Sendable {
 
 }
 
-/// Async sleep abstraction used by the polling loop. Production wiring is ``HostedCheckoutPoller/TaskSleeper``.
-internal protocol HostedCheckoutAsyncSleeper: Sendable {
-
-    func sleep(seconds: TimeInterval) async throws
-
-}
-
 /// Bounded polling loop over the state of a checkout session.
 ///
-/// Keeps asking while the session is under way, and while the backend fails in ways that tend to pass
+/// Keeps polling while the session is under way, and while the backend fails in ways that tend to pass
 /// (``BackendError/isTransient``). Only a session the backend calls failed comes back as
 /// ``HostedCheckoutPollResult/failed``: everything else that stops the loop early is an answer the SDK does
 /// not have, not a purchase that did not happen.
@@ -78,14 +71,14 @@ internal struct HostedCheckoutPoller: HostedCheckoutPolling {
     static let defaultTimeout: TimeInterval = 45
 
     private let statusFetcher: HostedCheckoutStatusFetching
-    private let sleeper: HostedCheckoutAsyncSleeper
+    private let sleeper: AsyncSleeper
     private let dateProvider: DateProvider
     private let interval: TimeInterval
     let maxAttempts: Int
     let timeout: TimeInterval
 
     init(statusFetcher: HostedCheckoutStatusFetching,
-         sleeper: HostedCheckoutAsyncSleeper,
+         sleeper: AsyncSleeper,
          dateProvider: DateProvider,
          interval: TimeInterval,
          maxAttempts: Int,
@@ -115,18 +108,18 @@ internal struct HostedCheckoutPoller: HostedCheckoutPolling {
         let deadline = self.dateProvider.now().addingTimeInterval(self.timeout)
 
         for attempt in 0..<self.maxAttempts {
+            if attempt > 0 {
+                try? await self.sleeper.sleep(seconds: self.interval)
+            }
+
             if Task.isCancelled {
                 Logger.debug(Strings.hostedCheckout.poll_cancelled(operationSessionID))
                 return .undetermined
             }
 
-            if attempt > 0 {
-                try? await self.sleeper.sleep(seconds: self.interval)
-
-                guard self.dateProvider.now() < deadline else {
-                    Logger.warn(Strings.hostedCheckout.poll_timed_out(operationSessionID, timeout: self.timeout))
-                    return .undetermined
-                }
+            guard self.dateProvider.now() < deadline else {
+                Logger.warn(Strings.hostedCheckout.poll_timed_out(operationSessionID, timeout: self.timeout))
+                return .undetermined
             }
 
             switch await self.pollOnce(operationSessionID: operationSessionID,
@@ -158,7 +151,11 @@ private extension HostedCheckoutPoller {
         guard let fetched = await self.value(before: deadline, of: {
             await statusFetcher.fetchStatus(operationSessionID: operationSessionID, appUserID: appUserID)
         }) else {
-            Logger.warn(Strings.hostedCheckout.poll_timed_out(operationSessionID, timeout: self.timeout))
+            if Task.isCancelled {
+                Logger.debug(Strings.hostedCheckout.poll_cancelled(operationSessionID))
+            } else {
+                Logger.warn(Strings.hostedCheckout.poll_timed_out(operationSessionID, timeout: self.timeout))
+            }
             return .finished(.undetermined)
         }
 
@@ -199,28 +196,40 @@ private extension HostedCheckoutPoller {
         }
     }
 
-    /// `nil` when `deadline` comes first. A request cannot be cancelled, so one still out finishes unobserved.
+    /// `nil` when `deadline` comes first, or when the calling task is cancelled. A request cannot be cancelled,
+    /// so one still out finishes unobserved.
     ///
     /// Waits in real time rather than on `sleeper`, since that is the time a request takes.
     func value<Value>(before deadline: Date, of operation: @escaping @Sendable () async -> Value) async -> Value? {
         let timeLimit = max(0, deadline.timeIntervalSince(self.dateProvider.now()))
+        let pending: Atomic<UnsafeContinuation<Value?, Never>?> = nil
+        let finish: @Sendable (Value?) -> Void = { value in
+            pending.getAndSet(nil)?.resume(returning: value)
+        }
 
-        return await withUnsafeContinuation { continuation in
-            let resumed: Atomic<Bool> = false
-            let finish: @Sendable (Value?) -> Void = { value in
-                guard !resumed.getAndSet(true) else { return }
-                continuation.resume(returning: value)
-            }
+        return await withTaskCancellationHandler {
+            await withUnsafeContinuation { continuation in
+                pending.value = continuation
 
-            let timer = Task {
-                try await TaskSleeper().sleep(seconds: timeLimit)
-                finish(nil)
-            }
+                // The handler below runs straight away for a task cancelled before this point, when there
+                // was no continuation yet for it to resume.
+                guard !Task.isCancelled else {
+                    finish(nil)
+                    return
+                }
 
-            Task {
-                finish(await operation())
-                timer.cancel()
+                let timer = Task {
+                    try await TaskSleeper().sleep(seconds: timeLimit)
+                    finish(nil)
+                }
+
+                Task {
+                    finish(await operation())
+                    timer.cancel()
+                }
             }
+        } onCancel: {
+            finish(nil)
         }
     }
 
@@ -246,14 +255,6 @@ extension HostedCheckoutPoller {
                     completion: completion
                 )
             }
-        }
-
-    }
-
-    struct TaskSleeper: HostedCheckoutAsyncSleeper {
-
-        func sleep(seconds: TimeInterval) async throws {
-            try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
         }
 
     }
