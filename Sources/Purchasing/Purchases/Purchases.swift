@@ -1934,18 +1934,24 @@ public extension Purchases {
     /// When the backend says the customer owns the product, having just bought it or not, fetches the customer's
     /// `CustomerInfo` before returning, so callers that read it next find the entitlement instead of a cached
     /// state from before. A fetch that fails does not change the result, but clears that cached state, so the
-    /// next read fetches instead of serving it.
+    /// next read fetches instead of serving it. Both are for the customer the session belongs to, even if
+    /// another one has logged in while the poll ran.
+    ///
+    /// With custom entitlement computation the SDK does not fetch `CustomerInfo`, so only the poll runs: the
+    /// paywall still settles on its result.
     @_spi(Internal) func pollHostedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
-        let result = await self.hostedCheckoutManager.pollCheckout(operationSessionID: operationSessionID)
+        let appUserID = self.appUserID
+        let result = await self.hostedCheckoutManager.pollCheckout(operationSessionID: operationSessionID,
+                                                                   appUserID: appUserID)
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         switch result {
         case .succeeded, .alreadyPurchased:
             Logger.verbose(Strings.hostedCheckout.poll_fetching_customer_info(operationSessionID))
 
-            if await self.fetchCurrentCustomerInfoRetryingTransientErrors() == nil {
+            if await self.fetchCustomerInfoRetryingTransientErrors(appUserID: appUserID) == nil {
                 Logger.warn(Strings.hostedCheckout.poll_customer_info_refresh_failed(operationSessionID))
-                self.invalidateCustomerInfoCache()
+                self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
             }
         case .failed, .undetermined:
             break
@@ -2203,7 +2209,7 @@ extension Purchases {
         Logger.debug(AdsStrings.reward_verification_entitlement_fetching_customer_info(
             transactionID: clientTransactionID
         ))
-        let refreshed = await self.fetchCurrentCustomerInfoRetryingTransientErrors()
+        let refreshed = await self.fetchCustomerInfoRetryingTransientErrors(appUserID: self.appUserID)
         if refreshed == nil {
             Logger.warn(AdsStrings.reward_verification_entitlement_customer_info_refresh_failed(
                 transactionID: clientTransactionID
@@ -3056,10 +3062,10 @@ private extension Purchases {
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     /// For a backend change made outside StoreKit, which no receipt post brings back. `nil` if no fetch lands.
-    func fetchCurrentCustomerInfoRetryingTransientErrors() async -> CustomerInfo? {
+    func fetchCustomerInfoRetryingTransientErrors(appUserID: String) async -> CustomerInfo? {
         return await Async.retry(maximumRetries: 3) {
             do {
-                let info = try await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
+                let info = try await self.customerInfoManager.customerInfo(appUserID: appUserID,
                                                                            fetchPolicy: .fetchCurrent)
                 return (shouldRetry: false, info)
             } catch {
