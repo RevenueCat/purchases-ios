@@ -22,8 +22,8 @@
 "Continue" = "Blive ved";
 "Default_offer_details_with_intro_offer" = "Start din prøveperiode på {{ sub_offer_duration }} og derefter {{ total_price_and_per_month }}.";
 "Something went wrong" = "Noget gik galt";
-"Payment failed." = "Betalingen mislykkedes.";
-"Your purchase is still processing." = "Dit køb behandles stadig.";
+"Payment failed." = "Betalingen blev ikke gennemført.";
+"Your purchase is still processing." = "Dit køb er stadig under behandling.";
 "Purchase" = "Køb";
 "You are currently subscribed to this" = "Du abonnerer allerede på dette";
 "You've already purchased this" = "Du har allerede købt dette";
