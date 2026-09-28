@@ -501,7 +501,7 @@ private struct CarouselView<Content: View>: View {
                 start: index,
                 dragOffset: translation,
                 velocity: velocity,
-                pageWidth: cardWidth,
+                pageWidth: cardWidth + spacing,
                 count: data.count,
                 loop: loop
             )
@@ -652,7 +652,7 @@ struct CarouselDragVelocityTracker {
 
     private var lastTranslation: CGFloat = 0
     private var lastTime: Date?
-    private var velocity: CGFloat = 0
+    private var velocity: CGFloat?
 
     mutating func addSample(translation: CGFloat, at time: Date) {
         // A gap longer than the stall interval starts a new gesture (e.g. after a cancelled one).
@@ -665,7 +665,9 @@ struct CarouselDragVelocityTracker {
 
         let interval = max(time.timeIntervalSince(lastTime), Self.minSampleInterval)
         let sampleVelocity = (translation - self.lastTranslation) / CGFloat(interval)
-        self.velocity = Self.smoothing * self.velocity + (1 - Self.smoothing) * sampleVelocity
+        // The first measured interval seeds the average so short flicks aren't underestimated.
+        self.velocity = self.velocity.map { Self.smoothing * $0 + (1 - Self.smoothing) * sampleVelocity }
+            ?? sampleVelocity
         self.lastTranslation = translation
         self.lastTime = time
     }
@@ -673,7 +675,7 @@ struct CarouselDragVelocityTracker {
     /// Zero if the drag stalled before release, so a pause before lifting isn't a fling.
     func velocity(endingAt time: Date) -> CGFloat {
         guard let lastTime, time.timeIntervalSince(lastTime) <= Self.stallInterval else { return 0 }
-        return self.velocity
+        return self.velocity ?? 0
     }
 
 }
