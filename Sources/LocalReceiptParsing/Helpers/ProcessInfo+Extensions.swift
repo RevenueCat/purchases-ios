@@ -27,6 +27,7 @@ enum EnvironmentKey: String {
     case RCMockAdServicesToken = "RCMockAdServicesToken"
     case XCCloud = "XCODE_CLOUD"
     case xcodeRunningForPreviews = "XCODE_RUNNING_FOR_PREVIEWS"
+    case snapshotsRunningForPreviews = "SNAPSHOTS_RUNNING_FOR_PREVIEWS"
     case emergeIsRunningForSnapshots = "EMERGE_IS_RUNNING_FOR_SNAPSHOTS"
 
 }
@@ -65,9 +66,12 @@ extension ProcessInfo {
         return self[.XCCloud] == "1"
     }
 
-    /// `true` when running as part of an Xcode Preview (either in Xcode or on Emerge Tool's servers)
+    /// `true` when running as part of an Xcode Preview or a snapshot preview test.
     @_spi(Internal) public static var isRunningForPreviews: Bool {
-        return self[.xcodeRunningForPreviews] == "1" || self[.emergeIsRunningForSnapshots] == "1"
+        return self[.xcodeRunningForPreviews] == "1"
+            || self[.snapshotsRunningForPreviews] == "1"
+            // Legacy Emerge environment variable, kept while Emerge snapshot uploads remain enabled.
+            || self[.emergeIsRunningForSnapshots] == "1"
     }
 
     /// Returns a string identifying the platform and environment

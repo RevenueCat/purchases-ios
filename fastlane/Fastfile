@@ -512,7 +512,10 @@ platform :ios do
     FileUtils.mkdir_p(image_output_dir)
     extract_xcresult_images(
       xcresult_path: result_bundle_path,
-      output_dir: image_output_dir
+      output_dir: image_output_dir,
+      # The V2 recorder writes its screenshots as attachments on this test only.
+      # Keep this scoped while the shared action remains able to export all attachments for other callers.
+      test_id: "TakeScreenshotTests/testPaywallValidationScreenshots()"
     )
 
     output_dir

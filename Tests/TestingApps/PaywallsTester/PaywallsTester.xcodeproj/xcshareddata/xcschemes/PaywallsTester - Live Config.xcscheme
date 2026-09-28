@@ -30,7 +30,7 @@
       shouldAutocreateTestPlan = "YES">
       <EnvironmentVariables>
          <EnvironmentVariable
-            key = "EMERGE_IS_RUNNING_FOR_SNAPSHOTS"
+            key = "SNAPSHOTS_RUNNING_FOR_PREVIEWS"
             value = "1"
             isEnabled = "YES">
          </EnvironmentVariable>
