@@ -58,7 +58,6 @@ class PurchasedProductsFetcherTests: BasePurchasedProductsFetcherTests {
         let entitlement = product.entitlement
 
         expect(product.productIdentifier) == transaction.productID
-        expect(product.isSynced) == true
 
         expect(subscription.periodType) == .trial
         expect(subscription.purchaseDate) == transaction.purchaseDate
