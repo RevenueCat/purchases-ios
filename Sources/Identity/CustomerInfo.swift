@@ -202,7 +202,7 @@ public typealias ProductIdentifier = String
                      entitlementVerification: VerificationResult,
                      sandboxEnvironmentDetector: SandboxEnvironmentDetector,
                      httpResponseOriginalSource: HTTPResponseOriginalSource?,
-                     unsyncedProductIdentifiers: Set<String> = []) {
+                     unsyncedProductIdentifiers: Set<String>) {
         let originalSource = OriginalSource(entitlementVerification: entitlementVerification,
                                             httpResponseOriginalSource: httpResponseOriginalSource)
         self.init(data: .init(response: response,
@@ -238,7 +238,8 @@ public typealias ProductIdentifier = String
             response: response,
             entitlementVerification: entitlements.verification,
             schemaVersion: nil,
-            originalSource: .main
+            originalSource: .main,
+            unsyncedProductIdentifiers: []
         )
 
         self.init(
@@ -509,7 +510,7 @@ private extension CustomerInfo {
              entitlementVerification: VerificationResult,
              schemaVersion: String?,
              originalSource: CustomerInfo.OriginalSource,
-             unsyncedProductIdentifiers: Set<String> = []) {
+             unsyncedProductIdentifiers: Set<String>) {
             self.response = response
             self.entitlementVerification = entitlementVerification
             self.schemaVersion = schemaVersion

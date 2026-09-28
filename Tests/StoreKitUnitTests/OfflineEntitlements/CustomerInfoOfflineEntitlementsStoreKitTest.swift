@@ -305,7 +305,7 @@ private extension CustomerInfoOfflineEntitlementsStoreKitTest {
     ) -> CustomerInfo {
         return CustomerInfo(
             from: transactions.map {
-                PurchasedSK2Product(from: $0, sandboxEnvironmentDetector: self.sandboxDetector)
+                PurchasedSK2Product(from: $0, sandboxEnvironmentDetector: self.sandboxDetector, isSynced: true)
             },
             mapping: mapping,
             userID: Self.userID,
