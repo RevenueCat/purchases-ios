@@ -1932,7 +1932,8 @@ public extension Purchases {
     ///
     /// When the backend says the customer owns the product, having just bought it or not, fetches the customer's
     /// `CustomerInfo` before returning, so callers that read it next find the entitlement instead of a cached
-    /// state from before. A fetch that fails does not change the result.
+    /// state from before. A fetch that fails does not change the result, but clears that cached state, so the
+    /// next read fetches instead of serving it.
     @_spi(Internal) func pollHostedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
         let result = await self.hostedCheckoutManager.pollCheckout(operationSessionID: operationSessionID)
 
@@ -1943,6 +1944,7 @@ public extension Purchases {
 
             if await self.fetchCurrentCustomerInfoRetryingTransientErrors() == nil {
                 Logger.warn(Strings.hostedCheckout.poll_customer_info_refresh_failed(operationSessionID))
+                self.invalidateCustomerInfoCache()
             }
         case .failed, .undetermined:
             break
