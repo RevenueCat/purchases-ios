@@ -71,7 +71,9 @@ class TakeScreenshotTests: BaseSnapshotTest {
         // Save PNG data
         if let pngData = image.pngData() {
             if let exportDirectory = ProcessInfo.processInfo.environment[Self.exportDirectoryEnvironmentKey] {
-                let destination = URL(fileURLWithPath: exportDirectory).appendingPathComponent(filename)
+                // Match the xcresult exporter, which removes this attachment-only delimiter before upload.
+                let exportedFilename = Self.exportedFilename(from: filename)
+                let destination = URL(fileURLWithPath: exportDirectory).appendingPathComponent(exportedFilename)
                 do {
                     try FileManager.default.createDirectory(
                         at: destination.deletingLastPathComponent(),
@@ -93,6 +95,15 @@ class TakeScreenshotTests: BaseSnapshotTest {
         } else {
             print("❌ Failed to generate PNG data from image")
         }
+    }
+
+    private static func exportedFilename(from attachmentName: String) -> String {
+        let attachmentURL = URL(fileURLWithPath: attachmentName)
+        let extension = attachmentURL.pathExtension
+        let attachmentBaseName = attachmentURL.deletingPathExtension().lastPathComponent
+        let exportedBaseName = attachmentBaseName.components(separatedBy: "__END").first ?? attachmentBaseName
+
+        return extension.isEmpty ? exportedBaseName : "\(exportedBaseName).\(extension)"
     }
 
 }
