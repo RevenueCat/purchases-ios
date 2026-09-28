@@ -64,18 +64,16 @@ final class HostedCheckoutManager {
     /// The checkout page returning to its success URL does not mean the purchase has landed yet, so the
     /// backend is asked until it says one way or the other.
     ///
-    /// The customer is read once, here: the session belongs to whoever was current when the poll began, and
-    /// following a customer who changes mid-poll would only ask about a session they do not own.
-    func pollCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
-        return await self.poller.poll(operationSessionID: operationSessionID,
-                                      appUserID: self.currentUserProvider.currentAppUserID)
+    /// - Parameter appUserID: The customer the session belongs to, read once by the caller: following a
+    /// customer who changes mid-poll would only ask about a session they do not own.
+    func pollCheckout(operationSessionID: String, appUserID: String) async -> HostedCheckoutPollResult {
+        return await self.poller.poll(operationSessionID: operationSessionID, appUserID: appUserID)
     }
 
     /// Settles a checkout the customer dismissed before it sent them anywhere, where nothing says whether
-    /// they paid. The customer is read once, as in ``pollCheckout(operationSessionID:)``.
-    func pollDismissedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
-        return await self.poller.pollDismissed(operationSessionID: operationSessionID,
-                                               appUserID: self.currentUserProvider.currentAppUserID)
+    /// they paid. `appUserID` is read once by the caller, as in ``pollCheckout(operationSessionID:appUserID:)``.
+    func pollDismissedCheckout(operationSessionID: String, appUserID: String) async -> HostedCheckoutPollResult {
+        return await self.poller.pollDismissed(operationSessionID: operationSessionID, appUserID: appUserID)
     }
 
 }

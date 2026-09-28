@@ -324,28 +324,30 @@ class HostedCheckoutManagerTests: TestCase {
     func testAsksThePollerWhatBecameOfTheSession() async {
         self.poller.result = .failed(code: 3, message: "payment_charge_failed")
 
-        let result = await self.manager.pollCheckout(operationSessionID: Self.operationSessionID)
+        let result = await self.manager.pollCheckout(operationSessionID: Self.operationSessionID,
+                                                     appUserID: Self.appUserID)
 
         expect(result) == .failed(code: 3, message: "payment_charge_failed")
         expect(self.poller.receivedIDs) == [Self.operationSessionID]
     }
 
-    /// The session belongs to one customer, so the poll asks about that one rather than about whoever is
-    /// current by the time an attempt goes out.
-    func testAsksAboutTheSessionsOwnCustomer() async {
-        _ = await self.manager.pollCheckout(operationSessionID: Self.operationSessionID)
+    /// The caller says whose session it is, which need not be whoever is current by the time the poll runs.
+    func testAsksAboutTheCustomerItIsGiven() async {
+        _ = await self.manager.pollCheckout(operationSessionID: Self.operationSessionID,
+                                            appUserID: "session-owner")
 
-        expect(self.poller.receivedAppUserIDs) == [Self.appUserID]
+        expect(self.poller.receivedAppUserIDs) == ["session-owner"]
     }
 
     func testAsksThePollerWhatBecameOfADismissedSession() async {
         self.poller.result = .abandoned
 
-        let result = await self.manager.pollDismissedCheckout(operationSessionID: Self.operationSessionID)
+        let result = await self.manager.pollDismissedCheckout(operationSessionID: Self.operationSessionID,
+                                                              appUserID: "session-owner")
 
         expect(result) == .abandoned
         expect(self.poller.receivedDismissedIDs) == [Self.operationSessionID]
-        expect(self.poller.receivedAppUserIDs) == [Self.appUserID]
+        expect(self.poller.receivedAppUserIDs) == ["session-owner"]
         expect(self.poller.receivedIDs).to(beEmpty())
     }
 
