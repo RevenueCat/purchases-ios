@@ -86,9 +86,10 @@ extension HostedCheckoutStrings: LogMessage {
         case let .dismissed_without_paying(operationSessionID):
             return "Checkout session \(operationSessionID) was dismissed without a payment."
         case let .payment_status_unknown(operationSessionID):
-            return "The backend could not say whether checkout session \(operationSessionID) was paid for."
+            return "The backend does not know yet whether checkout session \(operationSessionID) was paid for."
         case let .payment_status_undetermined(operationSessionID):
-            return "Could not learn whether the dismissed checkout session \(operationSessionID) was paid for."
+            return "Gave up learning whether the dismissed checkout session \(operationSessionID) was paid for. " +
+            "Settling it as unconfirmed."
         }
     }
 
