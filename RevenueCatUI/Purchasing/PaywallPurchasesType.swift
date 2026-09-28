@@ -47,9 +47,6 @@ protocol PaywallPurchasesType: Sendable {
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult
 
     func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult?
-
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func resolvedBranchSteps(for step: WorkflowStep) async -> [String: String]
 #endif
 
     @Sendable
