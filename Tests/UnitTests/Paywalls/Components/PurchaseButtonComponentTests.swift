@@ -374,6 +374,26 @@ class PurchaseButtonComponentCodableTests: TestCase {
 
     // MARK: - Hosted web checkout
 
+    /// The in-app web checkout is disabled until it ships, so the button buys through StoreKit.
+    func testMethodHostedWebCheckoutDecodesAsUnknownWhileDisabled() throws {
+        let jsonString = """
+        {
+            "type": "purchase_button",
+            "action": "in_app_checkout",
+            "method": {
+                "type": "hosted_web_checkout"
+            },
+            "stack": \(jsonStringDefaultStack)
+        }
+        """
+        let jsonData = jsonString.data(using: .utf8)!
+        let decodedPurchaseButton = try JSONDecoder.default.decode(PaywallComponent.PurchaseButtonComponent.self,
+                                                                   from: jsonData)
+
+        XCTAssertEqual(decodedPurchaseButton.method, .unknown)
+    }
+
+    /*
     /// The action stays there so that SDKs that do not know the method still buy through StoreKit.
     func testMethodHostedWebCheckoutDecoding() throws {
         let jsonString = """
@@ -422,6 +442,7 @@ class PurchaseButtonComponentCodableTests: TestCase {
 
         XCTAssertEqual(decodedPurchaseButton.method, .hostedWebCheckout)
     }
+    */
 
     // MARK: - Method.description
 
