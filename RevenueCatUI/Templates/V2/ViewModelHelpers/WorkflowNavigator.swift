@@ -134,8 +134,7 @@ extension WorkflowNavigator {
         guard let step = self.currentStep, step.hasBranchExit else { return }
         self.resolveTask = Task { [weak self, branchResolver] in
             let resolved = await branchResolver.resolveBranches(in: step)
-            // Cancellation is what drops a previous step's answer: cancel() runs before the step changes,
-            // and this check and the write share one main actor block, so nothing lands out of order.
+            // Enough on its own: cancel() precedes the step change and this block never suspends.
             guard !Task.isCancelled else { return }
             self?.currentStepBranches = resolved
         }
