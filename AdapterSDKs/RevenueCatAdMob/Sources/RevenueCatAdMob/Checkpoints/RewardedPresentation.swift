@@ -173,9 +173,7 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
             return
         }
 
-        Task { @MainActor [weak self] in
-            guard let self else { return }
-
+        Task { @MainActor in
             let loadedAd: any RewardedPresentableAd
             do {
                 loadedAd = try await self.loadAd(adUnitID, placement, self)
