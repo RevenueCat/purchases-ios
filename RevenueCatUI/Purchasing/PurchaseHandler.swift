@@ -39,6 +39,8 @@ final class PurchaseHandler: ObservableObject {
     private var cancellables: Set<AnyCancellable> = Set()
 
     private let purchases: PaywallPurchasesType
+    /// Nil when there is no configured `Purchases` to build one from, e.g. previews and tests.
+    let branchResolver: BranchResolver?
     private let paywallEventTracker: PaywallEventTracker
     private let keyWindowFocusResigner: KeyWindowFocusResigning
 
@@ -182,6 +184,7 @@ final class PurchaseHandler: ObservableObject {
     ) {
         self.init(isConfigured: true,
                   purchases: purchases,
+                  branchResolver: purchases.branchResolver,
                   performPurchase: performPurchase,
                   performRestore: performRestore,
                   purchaseResultPublisher: purchaseResultPublisher,
@@ -193,6 +196,7 @@ final class PurchaseHandler: ObservableObject {
     init(
         isConfigured: Bool = true,
         purchases: PaywallPurchasesType,
+        branchResolver: BranchResolver? = nil,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
@@ -203,6 +207,7 @@ final class PurchaseHandler: ObservableObject {
     ) {
         self.isConfigured = isConfigured
         self.purchases = purchases
+        self.branchResolver = branchResolver
         self.paywallEventTracker = eventTracker
         self.keyWindowFocusResigner = keyWindowFocusResigner
         self.performPurchase = performPurchase

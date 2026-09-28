@@ -289,6 +289,39 @@ final class WorkflowNavigatorTests: TestCase {
         expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_2"
     }
 
+    func testResolvingTheCurrentStepRoutesItsBranchToTheResolvedStep() async throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStepWithBranchExit(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
+                makeStep(id: "step_2"),
+                makeStep(id: "step_3")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(
+            workflow: workflow,
+            branchResolver: StubBranchResolver(stepId: "step_3")
+        )
+
+        await navigator.resolveBranchesForCurrentStep()
+
+        expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_3"
+    }
+
+    func testWithoutAResolverEveryBranchTakesItsFallback() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStepWithBranchExit(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
+                makeStep(id: "step_2"),
+                makeStep(id: "step_3")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_2"
+    }
+
     // MARK: - navigateBack
 
     func testNavigateBackFromInitialStepReturnsNil() throws {
@@ -544,6 +577,21 @@ private extension WorkflowNavigatorTests {
         }
         """
         return StepDescriptor(id: id, json: json)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class StubBranchResolver: BranchResolver {
+
+    private let stepId: String
+
+    init(stepId: String) {
+        self.stepId = stepId
+    }
+
+    func resolve(_ branch: WorkflowBranch) async -> String {
+        return self.stepId
     }
 
 }

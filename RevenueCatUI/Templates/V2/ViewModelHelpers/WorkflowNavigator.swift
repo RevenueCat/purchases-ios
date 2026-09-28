@@ -33,12 +33,24 @@ final class WorkflowNavigator: ObservableObject {
     private let workflow: PublishedWorkflow
     private var backStack: [String] = []
     /// The current step's branch destinations, keyed by action id. Cleared whenever the step changes, so
-    /// reaching a step again re-resolves it. A branch not in here yet takes its fallback.
+    /// reaching a step again re-resolves it. Until a step's resolve lands, its branches route to their
+    /// configured `fallbackStepId`.
     private var resolvedBranchSteps: [String: String] = [:]
 
-    init(workflow: PublishedWorkflow) {
+    private let branchResolver: BranchResolver?
+
+    init(workflow: PublishedWorkflow, branchResolver: BranchResolver? = nil) {
         self.workflow = workflow
+        self.branchResolver = branchResolver
         self.currentStepId = workflow.initialStepId
+    }
+
+    /// Resolves the current step's branches. Nothing waits on this: until it lands those branches route to
+    /// their configured `fallbackStepId`. A result for a step the user already left is dropped.
+    func resolveBranchesForCurrentStep() async {
+        guard let branchResolver, let step = self.currentStep else { return }
+        let resolved = await branchResolver.resolveBranches(in: step)
+        self.recordResolvedBranches(resolved, forStepId: step.id)
     }
 
     func recordResolvedBranches(_ resolved: [String: String], forStepId stepId: String) {
