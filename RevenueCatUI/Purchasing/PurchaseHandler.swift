@@ -56,8 +56,8 @@ final class PurchaseHandler: ObservableObject {
 
 #if !os(tvOS)
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func resolvedBranchSteps(for workflow: PublishedWorkflow) async -> [WorkflowBranch: String] {
-        return await purchases.resolvedBranchSteps(for: workflow)
+    func resolvedBranchSteps(for step: WorkflowStep) async -> [WorkflowBranch: String] {
+        return await purchases.resolvedBranchSteps(for: step)
     }
 #endif
 
@@ -679,8 +679,7 @@ extension PurchaseHandler {
                 uiConfig: fetchResult.uiConfig,
                 allOfferings: allOfferings,
                 presentedOfferingContext: presentedOfferingContext,
-                workflowBlobRef: fetchResult.workflowBlobRef,
-                resolvedBranchSteps: await self.resolvedBranchSteps(for: fetchResult.workflow)
+                workflowBlobRef: fetchResult.workflowBlobRef
             )
         } catch WorkflowError.uiConfigUnavailable(let workflowId) {
             throw PaywallError.workflowUiConfigUnavailable(workflowId: workflowId)
@@ -701,7 +700,6 @@ extension PurchaseHandler {
         allOfferings: Offerings,
         presentedOfferingContext: PresentedOfferingContext?,
         workflowBlobRef: String? = nil,
-        resolvedBranchSteps: [WorkflowBranch: String] = [:],
         traceId: String? = nil
     ) throws -> WorkflowContext {
         guard let step = workflow.steps[workflow.initialStepId] else {
@@ -753,7 +751,6 @@ extension PurchaseHandler {
             initialOffering: offering,
             presentedOfferingContext: presentedOfferingContext,
             workflowBlobRef: workflowBlobRef,
-            resolvedBranchSteps: resolvedBranchSteps,
             traceId: traceId
         )
     }
@@ -1206,7 +1203,7 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 
 #if !os(tvOS)
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func resolvedBranchSteps(for workflow: PublishedWorkflow) async -> [WorkflowBranch: String] {
+    func resolvedBranchSteps(for step: WorkflowStep) async -> [WorkflowBranch: String] {
         return [:]
     }
 #endif

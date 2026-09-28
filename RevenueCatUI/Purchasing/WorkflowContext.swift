@@ -28,9 +28,6 @@ import Foundation
     /// Package context from `singleStepFallbackId`, precomputed because it is stable for a workflow.
     let workflowPackageContext: WorkflowPackageContext?
     let workflowBlobRef: String?
-    /// Every branch in the workflow, resolved once before it opens. Empty on the synchronous cache
-    /// seed, which only ever renders the initial step.
-    let resolvedBranchSteps: [WorkflowBranch: String]
     /// Set when a checkpoint started the workflow, so its events join the checkpoint hit.
     let traceId: String?
 
@@ -41,11 +38,9 @@ import Foundation
         initialOffering: Offering,
         presentedOfferingContext: PresentedOfferingContext?,
         workflowBlobRef: String? = nil,
-        resolvedBranchSteps: [WorkflowBranch: String] = [:],
         traceId: String? = nil
     ) {
         self.workflowBlobRef = workflowBlobRef
-        self.resolvedBranchSteps = resolvedBranchSteps
         self.traceId = traceId
         self.workflow = workflow
         self.uiConfig = uiConfig

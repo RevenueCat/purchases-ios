@@ -216,24 +216,6 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(resolved.offerings.all[self.offeringID], self.offering)
     }
 
-    // The checkpoint path presents the workflow without resolving again, so a branch left unresolved
-    // here silently takes its fallback for the whole run.
-    func testAMatchedWorkflowCarriesItsBranchesAlreadyResolved() async throws {
-        let branch = WorkflowBranch(
-            branches: [.init(audienceId: "audience", stepId: "routed")],
-            fallbackStepId: "fallback"
-        )
-        self.workflowsProvider.stubbedGetWorkflowResult[self.workflowID] = Self.workflowDataResult(
-            id: self.workflowID,
-            branch: branch
-        )
-
-        let resolution = try await self.resolve()
-        let resolved = try XCTUnwrap(Self.resolvedWorkflow(resolution))
-
-        XCTAssertEqual(resolved.resolvedBranchSteps, [branch: "routed"])
-    }
-
     func testCheckpointResolvesFirstRuleInServedOrder() async throws {
         let secondWorkflowID = "wf5678"
         self.checkpointsProvider.result = .success(CheckpointRuleSet(rules: [
@@ -960,17 +942,10 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         return CheckpointRule(id: "rule_\(workflowID)", audienceId: audienceID, workflowId: workflowID)
     }
 
-    private static func workflowDataResult(
-        id: String,
-        offeringID: String? = "default",
-        branch: WorkflowBranch? = nil
-    ) -> WorkflowDataResult {
+    private static func workflowDataResult(id: String, offeringID: String? = "default") -> WorkflowDataResult {
         var step = WorkflowStep(id: "step_1", type: "screen", screenId: nil)
         if let offeringID {
             step.paramValues = ["offering": .object(["identifier": .string(offeringID)])]
-        }
-        if let branch {
-            step.triggerActions = ["action": .branch(branch)]
         }
         return WorkflowDataResult(
             workflow: PublishedWorkflow(

@@ -85,25 +85,29 @@ class BranchResolverTests: TestCase {
         expect(self.audiencesProvider.configurationRequestCount) == 0
     }
 
-    // MARK: - resolveAll
+    // MARK: - resolveBranches
 
-    func testResolveAllCoversEveryBranchInTheWorkflow() async throws {
-        self.audiencesProvider.rulesByAudienceID = ["aud_a": Self.alwaysMatches, "aud_b": Self.neverMatches]
+    func testResolveBranchesCoversEveryBranchOnTheStep() async throws {
+        self.audiencesProvider.rulesByAudienceID = ["aud_a": Self.alwaysMatches]
         let workflow = try Self.workflowWithTwoBranches()
+        let step = try XCTUnwrap(workflow.steps["step_1"])
 
-        let resolved = await self.makeResolver().resolveAll(in: workflow)
+        let resolved = await self.makeResolver().resolveBranches(in: step)
 
-        expect(resolved).to(haveCount(2))
-        expect(Set(resolved.values)) == ["step_a", "step_fallback_2"]
+        expect(resolved).to(haveCount(1))
+        expect(Set(resolved.values)) == ["step_a"]
     }
 
-    func testResolveAllReadsTheConfigurationOncePerDistinctBranch() async throws {
-        self.audiencesProvider.rulesByAudienceID = ["aud_a": Self.alwaysMatches, "aud_b": Self.neverMatches]
+    /// Only the step being entered is resolved, so a later step's branch is not evaluated yet.
+    func testResolveBranchesIgnoresOtherStepsBranches() async throws {
+        self.audiencesProvider.rulesByAudienceID = ["aud_a": Self.alwaysMatches, "aud_b": Self.alwaysMatches]
         let workflow = try Self.workflowWithTwoBranches()
+        let step = try XCTUnwrap(workflow.steps["step_2"])
 
-        _ = await self.makeResolver().resolveAll(in: workflow)
+        let resolved = await self.makeResolver().resolveBranches(in: step)
 
-        expect(self.audiencesProvider.configurationRequestCount) == 2
+        expect(Set(resolved.values)) == ["step_b"]
+        expect(self.audiencesProvider.configurationRequestCount) == 1
     }
 
     // MARK: - disabled

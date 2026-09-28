@@ -313,10 +313,7 @@ struct WorkflowPaywallView: View {
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
         self.onPresentationError = onPresentationError
-        self._navigator = .init(wrappedValue: WorkflowNavigator(
-            workflow: context.workflow,
-            resolvedBranchSteps: context.resolvedBranchSteps
-        ))
+        self._navigator = .init(wrappedValue: WorkflowNavigator(workflow: context.workflow))
         self._stateStore = .init(
             wrappedValue: PaywallStateStore(declarations: Self.mergedStateDeclarations(in: context.workflow))
         )
@@ -453,6 +450,12 @@ struct WorkflowPaywallView: View {
         }
         .onChangeOf(self.navigator.currentStepId) { _ in
             self.syncExitOfferBinding()
+        }
+        // Resolving a step's branches when it becomes current keeps navigation synchronous without
+        // freezing routing at open time. Nothing waits on it: until it lands a branch takes its fallback,
+        // and the initial step cannot carry one.
+        .task(id: self.navigator.currentStepId) {
+            await self.resolveBranchesForCurrentStep()
         }
         // Workflow-level injection: every page (current, outgoing, and hidden-but-mounted) shares
         // this presentation session's state store. PaywallsV2View only creates its own store when
@@ -658,6 +661,13 @@ struct WorkflowPaywallView: View {
                 direction: .back
             )
         }
+    }
+
+    private func resolveBranchesForCurrentStep() async {
+        guard let step = self.navigator.currentStep else { return }
+        let resolved = await self.purchaseHandler.resolvedBranchSteps(for: step)
+        guard !resolved.isEmpty else { return }
+        self.navigator.recordResolvedBranches(resolved)
     }
 
     private func syncExitOfferBinding() {

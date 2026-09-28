@@ -245,7 +245,8 @@ final class WorkflowNavigatorTests: TestCase {
             initialStepId: "step_1"
         )
         let branch = try XCTUnwrap(Self.onlyBranch(in: workflow))
-        let navigator = WorkflowNavigator(workflow: workflow, resolvedBranchSteps: [branch: "step_3"])
+        let navigator = WorkflowNavigator(workflow: workflow)
+        navigator.recordResolvedBranches([branch: "step_3"])
 
         let result = navigator.triggerAction(componentId: "btn_abc")
 
@@ -253,6 +254,7 @@ final class WorkflowNavigatorTests: TestCase {
         expect(navigator.currentStepId) == "step_3"
     }
 
+    /// Nothing waits on resolution, so a tap that lands before it must still navigate.
     func testAnUnresolvedBranchTakesItsFallback() throws {
         let workflow = try Self.makeWorkflow(
             steps: [
@@ -262,7 +264,7 @@ final class WorkflowNavigatorTests: TestCase {
             ],
             initialStepId: "step_1"
         )
-        let navigator = WorkflowNavigator(workflow: workflow, resolvedBranchSteps: [:])
+        let navigator = WorkflowNavigator(workflow: workflow)
 
         let result = navigator.triggerAction(componentId: "btn_abc")
 

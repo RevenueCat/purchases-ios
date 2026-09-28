@@ -49,7 +49,7 @@ protocol PaywallPurchasesType: Sendable {
     func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult?
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func resolvedBranchSteps(for workflow: PublishedWorkflow) async -> [WorkflowBranch: String]
+    func resolvedBranchSteps(for step: WorkflowStep) async -> [WorkflowBranch: String]
 #endif
 
     @Sendable

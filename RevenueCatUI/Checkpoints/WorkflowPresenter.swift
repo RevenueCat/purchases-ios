@@ -183,8 +183,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
             offerings: presentation.workflow.offerings,
             uiConfig: presentation.workflow.uiConfig,
             workflowBlobRef: presentation.workflow.workflowBlobRef,
-            traceId: presentation.workflow.traceId,
-            resolvedBranchSteps: presentation.workflow.resolvedBranchSteps
+            traceId: presentation.workflow.traceId
         )
         let viewController = PaywallViewController(
             workflowContext: workflowContext,

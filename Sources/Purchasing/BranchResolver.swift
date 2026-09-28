@@ -25,16 +25,12 @@ import Foundation
 
 extension BranchResolver {
 
-    /// Resolves every branch in `workflow` up front, under one audiences snapshot, so navigation stays
-    /// synchronous and a config commit midway cannot route two taps differently.
-    ///
-    /// A workflow never opens on a branch, so this runs before the first step renders and nothing waits on it.
-    func resolveAll(in workflow: PublishedWorkflow) async -> [WorkflowBranch: String] {
-        let branches = Set(workflow.steps.values.flatMap { step in
-            step.stepTriggerActions.values.compactMap { action -> WorkflowBranch? in
-                guard case .branch(let branch) = action else { return nil }
-                return branch
-            }
+    /// Resolves the branches a step can exit through, when that step becomes current. Navigation stays
+    /// synchronous: until this lands, a branch takes its fallback.
+    func resolveBranches(in step: WorkflowStep) async -> [WorkflowBranch: String] {
+        let branches = Set(step.stepTriggerActions.values.compactMap { action -> WorkflowBranch? in
+            guard case .branch(let branch) = action else { return nil }
+            return branch
         })
 
         var resolved: [WorkflowBranch: String] = [:]

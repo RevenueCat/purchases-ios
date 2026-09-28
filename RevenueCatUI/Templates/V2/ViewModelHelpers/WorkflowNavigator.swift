@@ -32,12 +32,16 @@ final class WorkflowNavigator: ObservableObject {
     @Published private(set) var currentStepId: String
     private let workflow: PublishedWorkflow
     private var backStack: [String] = []
-    private let resolvedBranchSteps: [WorkflowBranch: String]
+    /// Filled in as each step becomes current. A branch not in here yet takes its fallback.
+    private var resolvedBranchSteps: [WorkflowBranch: String] = [:]
 
-    init(workflow: PublishedWorkflow, resolvedBranchSteps: [WorkflowBranch: String] = [:]) {
+    init(workflow: PublishedWorkflow) {
         self.workflow = workflow
-        self.resolvedBranchSteps = resolvedBranchSteps
         self.currentStepId = workflow.initialStepId
+    }
+
+    func recordResolvedBranches(_ resolved: [WorkflowBranch: String]) {
+        self.resolvedBranchSteps.merge(resolved) { _, new in new }
     }
 
     var currentStep: WorkflowStep? {
