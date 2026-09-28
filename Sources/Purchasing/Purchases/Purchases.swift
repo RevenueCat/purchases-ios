@@ -1937,8 +1937,8 @@ public extension Purchases {
     /// next read fetches instead of serving it. Both are for the customer the session belongs to, even if
     /// another one has logged in while the poll ran.
     ///
-    /// With custom entitlement computation the SDK does not fetch `CustomerInfo`, so only the poll runs: the
-    /// paywall still settles on its result.
+    /// Paywalls, the only caller, do not run with custom entitlement computation. This still compiles in that
+    /// mode, but without the `CustomerInfo` refresh, which the mode does not offer.
     @_spi(Internal) func pollHostedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
         let appUserID = self.appUserID
         let result = await self.hostedCheckoutManager.pollCheckout(operationSessionID: operationSessionID,
