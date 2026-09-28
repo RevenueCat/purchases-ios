@@ -325,9 +325,11 @@ platform :ios do
     UI.message("Found #{pngs.count} #{platform} paywall rendering images to upload to Sentry")
 
     sentry_upload_snapshots(
-      sentry_snapshot_vcs_args.merge(
+      sentry_ci_metadata(
+        repo_name: REPO_NAME,
         org_slug: SENTRY_ORG_SLUG,
-        project_slug: SENTRY_PROJECT_SLUG,
+        project_slug: SENTRY_PROJECT_SLUG
+      ).merge(
         path: images_path,
         app_id: "com.revenuecat.paywall-rendering-validation.#{platform}"
       )
@@ -594,53 +596,16 @@ platform :ios do
     UI.user_error!("No snapshot PNGs found in #{snapshots_path}. Recording may have failed.") if pngs.empty?
     UI.message("Found #{pngs.count} snapshot images to upload to Sentry")
 
-    sentry_args = sentry_snapshot_vcs_args.merge(
+    sentry_args = sentry_ci_metadata(
+      repo_name: REPO_NAME,
       org_slug: SENTRY_ORG_SLUG,
-      project_slug: SENTRY_PROJECT_SLUG,
+      project_slug: SENTRY_PROJECT_SLUG
+    ).merge(
       path: snapshots_path,
       app_id: PAYWALLS_V1_SNAPSHOTS_APP_ID
     )
 
     sentry_upload_snapshots(sentry_args)
-  end
-
-  private_lane :sentry_snapshot_vcs_args do
-    args = {
-      vcs_provider: "github",
-      head_repo_name: "RevenueCat/#{REPO_NAME}",
-      base_repo_name: "RevenueCat/#{REPO_NAME}",
-      force_git_metadata: true
-    }
-
-    head_sha = ENV["CIRCLE_SHA1"]
-    args[:head_sha] = head_sha if head_sha && !head_sha.empty?
-
-    head_ref = ENV["CIRCLE_BRANCH"]
-    args[:head_ref] = head_ref if head_ref && !head_ref.empty?
-
-    pr_number = detect_pr_number
-    if pr_number
-      args[:pr_number] = pr_number
-
-      github_token = ENV["DANGER_GITHUB_API_TOKEN"]
-      if github_token && !github_token.empty?
-        response = github_api(
-          server_url: "https://api.github.com",
-          api_token: github_token,
-          http_method: "GET",
-          path: "/repos/RevenueCat/#{REPO_NAME}/pulls/#{pr_number}"
-        )
-        pull_request = response[:json]
-        args[:head_repo_name] = pull_request.dig("head", "repo", "full_name")
-        args[:base_repo_name] = pull_request.dig("base", "repo", "full_name")
-        args[:base_sha] = pull_request.dig("base", "sha")
-        args[:base_ref] = pull_request.dig("base", "ref")
-      else
-        UI.important("DANGER_GITHUB_API_TOKEN is unavailable; Sentry CLI will infer snapshot base metadata")
-      end
-    end
-
-    args.compact
   end
 
   # Uploads snapshots to Emerge. Requires EMERGE_API_TOKEN to be available in the environment.
@@ -708,9 +673,11 @@ platform :ios do
     UI.message("Found #{pngs.count} Preview snapshot images and metadata sidecars to upload to Sentry")
 
     sentry_upload_snapshots(
-      sentry_snapshot_vcs_args.merge(
+      sentry_ci_metadata(
+        repo_name: REPO_NAME,
         org_slug: SENTRY_ORG_SLUG,
-        project_slug: SENTRY_PROJECT_SLUG,
+        project_slug: SENTRY_PROJECT_SLUG
+      ).merge(
         path: image_output_dir,
         app_id: PAYWALLS_PREVIEW_SNAPSHOTS_APP_ID
       )
