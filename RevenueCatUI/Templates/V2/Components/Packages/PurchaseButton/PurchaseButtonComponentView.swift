@@ -265,9 +265,26 @@ struct PurchaseButtonComponentView: View {
         case .returned(.cancel):
             Task { await self.purchaseHandler.handleHostedCheckoutCancellation(package: self.packageContext.package) }
         case .dismissed:
-            // A payment may have gone through moments before the customer closed the sheet. Settling that
-            // means asking the backend what became of the session, which is not wired up yet.
             Logger.debug(Strings.hosted_checkout_dismissed_without_returning)
+            self.settleHostedCheckoutDismissal(session)
+        }
+    }
+
+    private func settleHostedCheckoutDismissal(_ session: HostedCheckoutSession) {
+        let package = self.packageContext.package
+
+        Task { @MainActor in
+            guard await HostedCheckout.settleDismissal(of: session,
+                                                       package: package,
+                                                       purchaseHandler: self.purchaseHandler) else {
+                return
+            }
+
+            // A purchase the customer started since is left undisturbed. The app still learns of this one, from
+            // the `CustomerInfo` the SDK fetched on finding it.
+            guard !self.purchaseHandler.actionInProgress else { return }
+
+            self.isShowingHostedCheckoutPurchaseSucceeded = true
         }
     }
 

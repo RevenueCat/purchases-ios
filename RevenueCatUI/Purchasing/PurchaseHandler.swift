@@ -376,6 +376,10 @@ extension PurchaseHandler {
         return await self.purchases.pollHostedCheckout(operationSessionID: operationSessionID)
     }
 
+    func pollDismissedHostedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
+        return await self.purchases.pollDismissedHostedCheckout(operationSessionID: operationSessionID)
+    }
+
     /// Whether web purchase links opened in the browser go through Apple's external purchase flow first.
     var useExternalPurchaseCustomLinks: Bool {
         return self.purchases.useExternalPurchaseCustomLinks
@@ -1273,6 +1277,10 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
     }
 
     func pollHostedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
+        return .undetermined
+    }
+
+    func pollDismissedHostedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
         return .undetermined
     }
 

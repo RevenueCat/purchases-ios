@@ -279,6 +279,91 @@ final class HostedCheckoutTests: TestCase {
             .toNever(beTrue(), until: .milliseconds(300))
     }
 
+    // MARK: - A dismissed checkout
+
+    /// The customer most likely walked away, so the paywall settles on that before the background check answers.
+    @MainActor
+    func testReportsADismissedCheckoutAsCancelledBeforeCheckingOnIt() async {
+        let cancelledWhenAsked = Recorder<Bool?>()
+        let purchases = Self.makePurchases()
+        let handler = Self.makeHandler(purchases: purchases)
+        purchases.hostedCheckoutPollDismissedBlock = { _ in
+            await cancelledWhenAsked.record(await MainActor.run { handler.sessionPurchaseResult?.userCancelled })
+            return .undetermined
+        }
+
+        let landed = await HostedCheckout.settleDismissal(of: Self.session,
+                                                          package: TestData.annualPackage,
+                                                          purchaseHandler: handler)
+
+        let cancelled = await cancelledWhenAsked.values
+        expect(cancelled) == [true]
+        expect(landed) == false
+        expect(handler.purchaseError).to(beNil())
+    }
+
+    @MainActor
+    func testTracksADismissedCheckoutAsCancelled() async {
+        let trackedEvents: Atomic<[PaywallEvent]> = .init([])
+        let handler = Self.makeHandler(purchases: Self.makePurchases(trackingInto: trackedEvents))
+        handler.trackPaywallImpression(Self.impressionData)
+
+        _ = await HostedCheckout.settleDismissal(of: Self.session,
+                                                 package: TestData.annualPackage,
+                                                 purchaseHandler: handler)
+
+        await expect(trackedEvents.value.contains(where: Self.isCancel))
+            .toEventually(beTrue(), timeout: .seconds(2))
+    }
+
+    /// Nothing is under way from the customer's point of view, so the paywall stays free to use.
+    @MainActor
+    func testLeavesThePaywallIdleWhileCheckingOnADismissedCheckout() async {
+        let busyWhenAsked = Recorder<Bool>()
+        let sessionsAskedAbout = Recorder<String>()
+        let purchases = Self.makePurchases()
+        let handler = Self.makeHandler(purchases: purchases)
+        purchases.hostedCheckoutPollDismissedBlock = { operationSessionID in
+            await sessionsAskedAbout.record(operationSessionID)
+            await busyWhenAsked.record(await MainActor.run { handler.actionInProgress })
+            return .undetermined
+        }
+
+        _ = await HostedCheckout.settleDismissal(of: Self.session,
+                                                 package: TestData.annualPackage,
+                                                 purchaseHandler: handler)
+
+        let asked = await sessionsAskedAbout.values
+        let busy = await busyWhenAsked.values
+        expect(asked) == [Self.session.operationSessionID]
+        expect(busy) == [false]
+    }
+
+    @MainActor
+    func testSaysWhenAPurchaseLandedAfterTheCheckoutWasDismissed() async {
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollDismissedBlock = { _ in .succeeded }
+
+        let landed = await HostedCheckout.settleDismissal(of: Self.session,
+                                                          package: TestData.annualPackage,
+                                                          purchaseHandler: Self.makeHandler(purchases: purchases))
+
+        expect(landed) == true
+    }
+
+    /// The session failing because the customer already owned the product is no purchase to tell them about.
+    @MainActor
+    func testDoesNotCountAnAlreadyOwnedProductAsAPurchaseAfterADismissal() async {
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollDismissedBlock = { _ in .alreadyPurchased }
+
+        let landed = await HostedCheckout.settleDismissal(of: Self.session,
+                                                          package: TestData.annualPackage,
+                                                          purchaseHandler: Self.makeHandler(purchases: purchases))
+
+        expect(landed) == false
+    }
+
     // MARK: - Errors
 
     /// Not as a pending payment, which is what `purchases-js` reports: on Apple platforms that means a purchase

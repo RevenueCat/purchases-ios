@@ -118,6 +118,24 @@ enum HostedCheckout {
         }
     }
 
+    /// Settles a checkout the customer closed before the page sent them anywhere as the cancellation it most
+    /// likely is, without keeping them waiting. Then checks in the background whether they paid just before
+    /// closing it, since the sheet can close before the page gets to the success URL.
+    ///
+    /// - Returns: Whether a purchase landed after all, for the caller to tell the customer about and then report
+    /// with ``PurchaseHandler/handleHostedCheckoutPurchase()``.
+    /// - Parameter package: The package the checkout was started for, when it is still known.
+    @MainActor
+    static func settleDismissal(of session: HostedCheckoutSession,
+                                package: Package?,
+                                purchaseHandler: PurchaseHandler) async -> Bool {
+        await purchaseHandler.handleHostedCheckoutCancellation(package: package)
+
+        let result = await purchaseHandler.pollDismissedHostedCheckout(operationSessionID: session.operationSessionID)
+
+        return result == .succeeded
+    }
+
 }
 
 /// Why a checkout the customer was told succeeded did not end in a purchase, mapped onto the same public
