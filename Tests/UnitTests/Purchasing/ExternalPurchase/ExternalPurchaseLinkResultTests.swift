@@ -37,11 +37,12 @@ final class ExternalPurchaseLinkResultTests: TestCase {
         expect(result) == .proceed(externalPurchaseTokenID: nil)
     }
 
-    /// Being ineligible only keeps the link where the storefront allows it; anywhere else it opens nothing.
+    /// Being ineligible only keeps the link where the storefront allows it; anywhere else it opens nothing,
+    /// and the paywall tells the customer why.
     func testNothingOpensForAnIneligibleCustomer() {
         let result = ExternalPurchaseLinkResult(preparationResult: .stopped(.notEligible))
 
-        expect(result) == .stopped
+        expect(result) == .notEligible
     }
 
     /// Unlike being ineligible, a device that cannot authorize payments is not offered the link either.

@@ -19,45 +19,52 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum ExternalPurchaseLink {
 
-    /// The link to open for a web purchase, once whatever Apple requires before the customer leaves the app
-    /// has been done. `nil` when nothing should open, because the customer declined Apple's notice.
+    /// What the paywall does with the tap on a web purchase link.
+    enum Action: Equatable {
+
+        /// Open this link.
+        case open(URL)
+
+        /// Tell the customer the purchase is not available to them, which is why nothing opens.
+        case tellCustomerThePurchaseIsUnavailable
+
+        /// Open nothing, and offer nothing instead.
+        case nothing
+
+        init(_ result: ExternalPurchaseLinkResult, url: URL) {
+            switch result {
+            case let .proceed(externalPurchaseTokenID):
+                self = .open(externalPurchaseTokenID.map(url.appendingExternalPurchaseTokenID) ?? url)
+            case .notEligible:
+                self = .tellCustomerThePurchaseIsUnavailable
+            case .stopped:
+                self = .nothing
+            }
+        }
+
+    }
+
+    /// What to do with a web purchase link, once whatever Apple requires before the customer leaves the app
+    /// has been done.
     ///
     /// The paywall is marked as busy while Apple's flow runs, so the button the customer tapped cannot start a
     /// second one. Links that open straight away are not marked, to save a blink of a disabled button.
-    static func urlToOpen(_ url: URL,
-                          method: PaywallComponent.ButtonComponent.URLMethod,
-                          purchaseHandler: PurchaseHandler) async -> URL? {
-        guard self.applies(to: method) else {
-            return url
+    static func action(for url: URL,
+                       method: PaywallComponent.ButtonComponent.URLMethod,
+                       purchaseHandler: PurchaseHandler) async -> Action {
+        guard self.applies(to: method, purchaseHandler: purchaseHandler) else {
+            return .open(url)
         }
 
-        return await purchaseHandler.withExternalPurchasePreparation {
-            await self.urlToOpen(url)
-        }
+        return Action(await purchaseHandler.prepareExternalPurchaseLink(), url: url)
     }
 
     /// Whether opening a link with this method goes through Apple's external purchase flow.
     ///
     /// Only external browser links take part: leaving the app is what Apple's programme covers.
-    private static func applies(to method: PaywallComponent.ButtonComponent.URLMethod) -> Bool {
-        guard method == .externalBrowser, Purchases.isConfigured else {
-            return false
-        }
-
-        return Purchases.shared.useExternalPurchaseCustomLinks
-    }
-
-    private static func urlToOpen(_ url: URL) async -> URL? {
-        switch await Purchases.shared.prepareExternalPurchaseLink() {
-        case let .proceed(externalPurchaseTokenID):
-            guard let externalPurchaseTokenID else {
-                return url
-            }
-
-            return url.appendingExternalPurchaseTokenID(externalPurchaseTokenID)
-        case .stopped:
-            return nil
-        }
+    private static func applies(to method: PaywallComponent.ButtonComponent.URLMethod,
+                                purchaseHandler: PurchaseHandler) -> Bool {
+        return method == .externalBrowser && purchaseHandler.useExternalPurchaseCustomLinks
     }
 
 }

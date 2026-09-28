@@ -25,3 +25,5 @@
 "Purchase" = "Satın al";
 "You are currently subscribed to this" = "Siz artıq buna abunəsiniz";
 "You've already purchased this" = "Siz bunu artıq almısınız";
+"Purchase unavailable" = "Satınalma əlçatan deyil";
+"This purchase isn't available in your region." = "Bu satınalma sizin regionunuzda əlçatan deyil.";
