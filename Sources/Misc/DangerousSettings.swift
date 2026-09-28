@@ -121,12 +121,15 @@ import Foundation
     }
 
     /**
-     * Whether the simulator offers external purchases in any storefront, without showing Apple's disclosure
-     * notice or minting a token. When disabled, the simulator behaves as a device does for a customer who is not
+     * Whether the simulator offers external purchases in any storefront. When disabled, the simulator behaves
+     * as a device does for a customer who is not
      * [eligible](https://developer.apple.com/documentation/storekit/externalpurchasecustomlink/iseligible).
      *
      * Defaults to `true`. Has no effect on a physical device, nor while ``useExternalPurchaseCustomLinks`` is
      * `false`.
+     *
+     * - Note: StoreKit's `ExternalPurchaseCustomLink` APIs are unavailable in the simulator, so Apple's disclosure
+     * notice cannot be shown and an external purchase token cannot be minted there.
      */
     @_spi(Experimental) public var enableExternalPurchasesInSimulator: Bool {
         self.storage.enableExternalPurchasesInSimulator
@@ -199,8 +202,7 @@ import Foundation
      * - Parameter useExternalPurchaseCustomLinks: Whether a web purchase button that opens its link in the
      * external browser takes part in Apple's external purchase custom link programme.
      * - Parameter enableExternalPurchasesInSimulator: Whether the simulator offers external purchases in any
-     * storefront, without showing Apple's disclosure notice or minting a token. Has no effect on a physical device,
-     * nor while `useExternalPurchaseCustomLinks` is `false`.
+     * storefront. Has no effect on a physical device, nor while `useExternalPurchaseCustomLinks` is `false`.
      */
     @_spi(Experimental) public convenience init(autoSyncPurchases: Bool,
                                                 useExternalPurchaseCustomLinks: Bool,
