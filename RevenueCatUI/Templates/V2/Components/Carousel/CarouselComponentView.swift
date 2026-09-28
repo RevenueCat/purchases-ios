@@ -197,6 +197,7 @@ private struct CarouselView<Content: View>: View {
     @State private var translation: CGFloat = 0
     #else
     @GestureState private var translation: CGFloat = 0
+    @State private var dragVelocityTracker = CarouselDragVelocityTracker()
     #endif
 
     /// A timer for auto-play, if enabled.
@@ -303,14 +304,14 @@ private struct CarouselView<Content: View>: View {
             .background(
                 ScrollViewGestureCoordinator(
                     translation: $translation,
-                    onDragEnded: { translationX in
+                    onDragEnded: { translationX, velocityX in
                         guard abs(translationX) > 0 else {
                             self.translation = 0
                             return
                         }
 
                         self.dragOffset = translationX
-                        handleDragEnd(translation: translationX)
+                        handleDragEnd(translation: translationX, velocity: velocityX)
                         self.translation = 0
                     },
                     onDragStarted: {
@@ -322,15 +323,18 @@ private struct CarouselView<Content: View>: View {
             #else
             .simultaneousGesture(
                 DragGesture()
-                    .onChanged({ _ in
+                    .onChanged({ value in
                         pauseAutoPlay(for: 10)
+                        dragVelocityTracker.addSample(translation: value.translation.width, at: value.time)
                     })
                     .updating($translation) { value, state, _ in
                         state = value.translation.width
                     }
                     .onEnded { value in
+                        let velocity = dragVelocityTracker.velocity(endingAt: value.time)
+                        dragVelocityTracker = CarouselDragVelocityTracker()
                         self.dragOffset = value.translation.width
-                        handleDragEnd(translation: value.translation.width)
+                        handleDragEnd(translation: value.translation.width, velocity: velocity)
                     }
             )
             #endif
@@ -485,8 +489,7 @@ private struct CarouselView<Content: View>: View {
 
     // MARK: - Drag Handling
 
-    private func handleDragEnd(translation: CGFloat) {
-        let threshold = cardWidth * 0.2
+    private func handleDragEnd(translation: CGFloat, velocity: CGFloat) {
         let originalPageIndexBefore: Int? = self.originalCount > 0
             ? (self.loop ? self.index % self.originalCount : self.index)
             : nil
@@ -494,13 +497,14 @@ private struct CarouselView<Content: View>: View {
         withAnimation(.easeInOut(duration: 0.25)) {
             self.dragOffset = 0
 
-            if translation < -threshold {
-                // Swipe left => next
-                index += 1
-            } else if translation > threshold {
-                // Swipe right => prev
-                index -= 1
-            }
+            index = CarouselPaging.targetIndex(
+                start: index,
+                dragOffset: translation,
+                velocity: velocity,
+                pageWidth: cardWidth,
+                count: data.count,
+                loop: loop
+            )
 
             if loop {
                 expandDataIfNeeded()
@@ -597,6 +601,81 @@ private struct CarouselView<Content: View>: View {
         guard let lastID = data.last?.id else { return 0 }
         return lastID / originalCount
     }
+}
+
+enum CarouselPaging {
+
+    /// Release speed (pt/s) at or above which a release counts as a fling.
+    static let minFlingVelocity: CGFloat = 400
+
+    /// Fraction of a page a slow drag must exceed to move to the adjacent page.
+    static let snapPositionalThreshold: CGFloat = 0.5
+
+    /// Page to settle on after a drag. Negative `dragOffset`/`velocity` (pt, pt/s) move towards `start + 1`.
+    /// Mirrors Compose Pager: a fling picks the neighbour in the velocity direction, else the nearest page.
+    // swiftlint:disable:next function_parameter_count
+    static func targetIndex(
+        start: Int,
+        dragOffset: CGFloat,
+        velocity: CGFloat,
+        pageWidth: CGFloat,
+        count: Int,
+        loop: Bool
+    ) -> Int {
+        guard pageWidth > 0 else { return start }
+
+        var target: Int
+        if abs(velocity) >= minFlingVelocity {
+            let position = CGFloat(start) - dragOffset / pageWidth
+            target = velocity < 0 ? Int(position.rounded(.down)) + 1 : Int(position.rounded(.up)) - 1
+        } else if abs(dragOffset) > pageWidth * snapPositionalThreshold {
+            target = dragOffset < 0 ? start + 1 : start - 1
+        } else {
+            target = start
+        }
+
+        target = min(max(target, start - 1), start + 1)
+        if !loop {
+            target = min(max(target, 0), count - 1)
+        }
+        return target
+    }
+
+}
+
+/// Estimates horizontal drag velocity (pt/s) from `DragGesture` samples.
+struct CarouselDragVelocityTracker {
+
+    private static let smoothing: CGFloat = 0.6
+    private static let minSampleInterval: TimeInterval = 0.001
+    private static let stallInterval: TimeInterval = 0.1
+
+    private var lastTranslation: CGFloat = 0
+    private var lastTime: Date?
+    private var velocity: CGFloat = 0
+
+    mutating func addSample(translation: CGFloat, at time: Date) {
+        // A gap longer than the stall interval starts a new gesture (e.g. after a cancelled one).
+        guard let lastTime, time.timeIntervalSince(lastTime) <= Self.stallInterval else {
+            self = Self()
+            self.lastTranslation = translation
+            self.lastTime = time
+            return
+        }
+
+        let interval = max(time.timeIntervalSince(lastTime), Self.minSampleInterval)
+        let sampleVelocity = (translation - self.lastTranslation) / CGFloat(interval)
+        self.velocity = Self.smoothing * self.velocity + (1 - Self.smoothing) * sampleVelocity
+        self.lastTranslation = translation
+        self.lastTime = time
+    }
+
+    /// Zero if the drag stalled before release, so a pause before lifting isn't a fling.
+    func velocity(endingAt time: Date) -> CGFloat {
+        guard let lastTime, time.timeIntervalSince(lastTime) <= Self.stallInterval else { return 0 }
+        return self.velocity
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
