@@ -72,10 +72,11 @@ extension HostedCheckoutStrings: LogMessage {
         case let .poll_timed_out(operationSessionID, timeout):
             return "Checkout session \(operationSessionID) gave no answer within \(Int(timeout)) seconds."
         case let .poll_fetching_customer_info(operationSessionID):
-            return "Fetching CustomerInfo for the purchase checkout session \(operationSessionID) landed."
+            return "Fetching CustomerInfo, since checkout session \(operationSessionID) says the customer owns " +
+            "the product."
         case let .poll_customer_info_refresh_failed(operationSessionID):
-            return "Could not fetch CustomerInfo for the purchase checkout session \(operationSessionID) " +
-            "landed. The purchase still stands, and the next fetch will reflect it."
+            return "Could not fetch CustomerInfo, though checkout session \(operationSessionID) says the " +
+            "customer owns the product. The next fetch will reflect it."
         }
     }
 
