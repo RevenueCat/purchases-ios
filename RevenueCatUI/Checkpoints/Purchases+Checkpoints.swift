@@ -17,7 +17,7 @@ import Foundation
 
 #if os(iOS) && !targetEnvironment(macCatalyst)
 
-@_spi(CheckpointsInternal)
+@_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, *)
 public extension Purchases {
 

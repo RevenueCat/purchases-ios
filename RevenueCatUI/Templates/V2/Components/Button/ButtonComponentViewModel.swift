@@ -55,7 +55,7 @@ class ButtonComponentViewModel {
 
     private let componentVisible: Bool?
     private let announcesOwnContent: Bool
-    private let localizedBundle: Bundle
+    let localizedBundle: Bundle
     private let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedButtonPartial>?
 

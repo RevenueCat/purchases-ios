@@ -113,7 +113,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.91.0-SNAPSHOT"
+        return "5.92.0-SNAPSHOT"
     }
 
     static var installationMethod: String {
@@ -267,6 +267,10 @@ class SystemInfo {
     #else
     static let isRunningInSimulator = false
     #endif
+
+    var isRunningInSimulator: Bool {
+        return Self.isRunningInSimulator
+    }
 
     func isOperatingSystemAtLeast(_ version: OperatingSystemVersion) -> Bool {
         return ProcessInfo.processInfo.isOperatingSystemAtLeast(version)

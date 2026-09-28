@@ -30,7 +30,7 @@ class MockBackendConfiguration: BackendConfiguration {
         super.init(
             httpClient: httpClient,
             operationDispatcher: MockOperationDispatcher(),
-            operationQueue: Backend.QueueProvider.createBackendQueue(),
+            operationQueue: Backend.QueueProvider.createQueue(for: .default),
             diagnosticsQueue: Backend.QueueProvider.createDiagnosticsQueue(),
             systemInfo: systemInfo,
             offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
