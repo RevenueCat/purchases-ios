@@ -46,7 +46,7 @@ final class WorkflowNavigator: ObservableObject {
         self.workflow = workflow
         self.resolveBranches = resolveBranches
         self.currentStepId = workflow.initialStepId
-        self.resolveStepExits()
+        self.resolveCurrentStepBranches()
     }
 
     deinit {
@@ -86,7 +86,7 @@ final class WorkflowNavigator: ObservableObject {
 
         backStack.append(currentStepId)
         currentStepId = nextStep.step.id
-        self.resolveStepExits()
+        self.resolveCurrentStepBranches()
         return nextStep.step
     }
 
@@ -118,7 +118,7 @@ final class WorkflowNavigator: ObservableObject {
             return nil
         }
         currentStepId = previousStepId
-        self.resolveStepExits()
+        self.resolveCurrentStepBranches()
         return workflow.steps[previousStepId]
     }
 
@@ -128,12 +128,12 @@ final class WorkflowNavigator: ObservableObject {
 extension WorkflowNavigator {
 
     /// Abandons the previous step's resolve, so every visit routes on its own answer.
-    private func resolveStepExits() {
+    private func resolveCurrentStepBranches() {
         self.currentStepBranches = [:]
         self.resolveTask?.cancel()
         self.resolveTask = nil
 
-        guard let step = self.currentStep, step.hasBranchExit else { return }
+        guard let step = self.currentStep, step.hasBranchAction else { return }
         self.resolveTask = Task { [weak self, resolveBranches] in
             let resolved = await resolveBranches(step)
             // Enough on its own: cancel() precedes the step change and this block never suspends.
@@ -142,7 +142,7 @@ extension WorkflowNavigator {
         }
     }
 
-    /// A branch falls back when nothing matched, and when the route names a step the workflow has lost.
+    /// A branch falls back unless its route resolved to a step the workflow still has.
     func nextStepId(for action: WorkflowTriggerAction?, actionId: String) -> String? {
         switch action {
         case .step(let stepId):
@@ -162,7 +162,7 @@ extension WorkflowNavigator {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension WorkflowStep {
 
-    var hasBranchExit: Bool {
+    var hasBranchAction: Bool {
         return self.stepTriggerActions.values.contains { action in
             if case .branch = action { return true }
             return false

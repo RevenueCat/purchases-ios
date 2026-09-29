@@ -25,7 +25,7 @@ import Foundation
 
 extension BranchResolver {
 
-    /// The branches a step can exit through, keyed by action id.
+    /// The branch actions on a step, keyed by action id.
     func resolveBranches(in step: WorkflowStep) async -> [String: String] {
         var resolved: [String: String] = [:]
         for (actionId, action) in step.stepTriggerActions {
@@ -53,6 +53,10 @@ extension BranchResolver {
 
 /// Resolves audiences in order and returns the first match.
 final class DefaultBranchResolver: BranchResolver {
+
+    /// Stands in for an audience we could not read. Thrown resolution would end the walk, and one
+    /// unreadable audience must not stop a later one from winning, so it never matches instead.
+    private static let neverMatches = #"{"==": [1, 0]}"#
 
     private let audiencesConfigProvider: AudiencesConfigProviderType
     private let localRulesEvaluator: LocalRulesEvaluator
@@ -120,13 +124,5 @@ private enum BranchResolutionError: Error, CustomStringConvertible {
             return "could not read \(identifiers.joined(separator: ", "))"
         }
     }
-
-}
-
-private extension DefaultBranchResolver {
-
-    /// Stands in for an audience we could not read. Thrown resolution would end the walk, and one
-    /// unreadable audience must not stop a later one from winning, so it never matches instead.
-    static let neverMatches = #"{"==": [1, 0]}"#
 
 }
