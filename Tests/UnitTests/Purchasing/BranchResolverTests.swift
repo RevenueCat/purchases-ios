@@ -29,7 +29,7 @@ class BranchResolverTests: TestCase {
 
         let resolved = await self.makeResolver().resolve(
             .init(
-                branches: [
+                routes: [
                     .init(audienceId: "aud_a", stepId: "step_a"),
                     .init(audienceId: "aud_b", stepId: "step_b")
                 ],
@@ -44,7 +44,7 @@ class BranchResolverTests: TestCase {
         self.audiencesProvider.rulesByAudienceID = ["aud_a": Self.neverMatches]
 
         let resolved = await self.makeResolver().resolve(
-            .init(branches: [.init(audienceId: "aud_a", stepId: "step_a")], fallbackStepId: "step_fallback")
+            .init(routes: [.init(audienceId: "aud_a", stepId: "step_a")], fallbackStepId: "step_fallback")
         )
 
         expect(resolved) == "step_fallback"
@@ -55,7 +55,7 @@ class BranchResolverTests: TestCase {
 
         let resolved = await self.makeResolver().resolve(
             .init(
-                branches: [
+                routes: [
                     .init(audienceId: "aud_missing", stepId: "step_a"),
                     .init(audienceId: "aud_b", stepId: "step_b")
                 ],
@@ -70,7 +70,7 @@ class BranchResolverTests: TestCase {
         self.audiencesProvider.configurationUnavailable = true
 
         let resolved = await self.makeResolver().resolve(
-            .init(branches: [.init(audienceId: "aud_a", stepId: "step_a")], fallbackStepId: "step_fallback")
+            .init(routes: [.init(audienceId: "aud_a", stepId: "step_a")], fallbackStepId: "step_fallback")
         )
 
         expect(resolved) == "step_fallback"
@@ -78,7 +78,7 @@ class BranchResolverTests: TestCase {
 
     func testABranchWithNoRoutesNeverReadsTheConfiguration() async {
         let resolved = await self.makeResolver().resolve(
-            .init(branches: [], fallbackStepId: "step_fallback")
+            .init(routes: [], fallbackStepId: "step_fallback")
         )
 
         expect(resolved) == "step_fallback"

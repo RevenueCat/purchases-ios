@@ -352,7 +352,7 @@ final class WorkflowNavigatorTests: TestCase {
             resolveBranches: { step in
                 step.stepTriggerActions.compactMapValues { action in
                     guard case .branch(let branch) = action else { return nil }
-                    return branch.branches.first?.stepId
+                    return branch.routes.first?.stepId
                 }
             }
         )

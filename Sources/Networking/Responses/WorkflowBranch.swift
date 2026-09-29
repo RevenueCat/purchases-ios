@@ -30,12 +30,17 @@ import Foundation
 
     }
 
-    public let branches: [Route]
+    public let routes: [Route]
     public let fallbackStepId: String
 
-    @_spi(Internal) public init(branches: [Route], fallbackStepId: String) {
-        self.branches = branches
+    @_spi(Internal) public init(routes: [Route], fallbackStepId: String) {
+        self.routes = routes
         self.fallbackStepId = fallbackStepId
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case routes = "branches"
+        case fallbackStepId
     }
 
 }

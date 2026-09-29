@@ -70,7 +70,7 @@ final class DefaultBranchResolver: BranchResolver {
     }
 
     func resolve(_ branch: WorkflowBranch) async -> String {
-        guard !branch.branches.isEmpty else { return branch.fallbackStepId }
+        guard !branch.routes.isEmpty else { return branch.fallbackStepId }
 
         do {
             return try await self.route(branch) ?? branch.fallbackStepId
@@ -91,7 +91,7 @@ final class DefaultBranchResolver: BranchResolver {
         }
 
         let unreadable = Atomic<[String]>([])
-        let matched = try await self.localRulesEvaluator.match(in: branch.branches) { route in
+        let matched = try await self.localRulesEvaluator.match(in: branch.routes) { route in
             guard let audience = audiences[route.audienceId] else {
                 unreadable.modify { $0.append(route.audienceId) }
                 return Self.neverMatches
