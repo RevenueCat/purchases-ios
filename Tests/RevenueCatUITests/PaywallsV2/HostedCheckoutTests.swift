@@ -165,10 +165,10 @@ final class HostedCheckoutTests: TestCase {
     }
 
     func testAsksAboutTheSessionThatWasPresented() async {
-        let sessionsAskedAbout = Recorder<String>()
+        let sessionsAskedAbout = Recorder<HostedCheckoutSession>()
         let purchases = Self.makePurchases()
-        purchases.hostedCheckoutPollBlock = { operationSessionID in
-            await sessionsAskedAbout.record(operationSessionID)
+        purchases.hostedCheckoutPollBlock = { session in
+            await sessionsAskedAbout.record(session)
             return .succeeded
         }
 
@@ -177,7 +177,7 @@ final class HostedCheckoutTests: TestCase {
                                          purchaseHandler: Self.makeHandler(purchases: purchases))
 
         let asked = await sessionsAskedAbout.values
-        expect(asked) == [Self.session.operationSessionID]
+        expect(asked) == [Self.session]
     }
 
     @MainActor
