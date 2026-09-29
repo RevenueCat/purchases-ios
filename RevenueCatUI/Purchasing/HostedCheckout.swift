@@ -65,8 +65,8 @@ enum HostedCheckout {
 
     /// How the paywall settles on the outcome the backend gives for a checkout that ended on its success page.
     ///
-    /// Only a purchase the backend confirms counts as one. Anything else is an error, since the page told the
-    /// customer the purchase went through.
+    /// Only a purchase the backend confirms counts as one. Anything else is an error, since the success page
+    /// always tells the customer the purchase went through.
     enum Resolution: Equatable {
 
         case purchased
