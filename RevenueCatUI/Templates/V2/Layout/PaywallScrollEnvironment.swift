@@ -13,23 +13,12 @@
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct PaywallRootStackIsZLayerKey: EnvironmentKey {
-    static let defaultValue: Bool = false
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct PaywallAncestorScrollsVerticallyKey: EnvironmentKey {
     static let defaultValue: Bool = false
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension EnvironmentValues {
-
-    /// `true` when the paywall root stack is a z-layer (used to enable z-layer scrolling in bounded containers).
-    var paywallRootStackIsZLayer: Bool {
-        get { self[PaywallRootStackIsZLayerKey.self] }
-        set { self[PaywallRootStackIsZLayerKey.self] = newValue }
-    }
 
     /// `true` when this view is inside a vertically scrolling Paywalls V2 stack container.
     var paywallAncestorScrollsVertically: Bool {
