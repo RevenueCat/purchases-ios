@@ -100,7 +100,7 @@ enum HostedCheckout {
                         package: Package?,
                         purchaseHandler: PurchaseHandler) async -> Resolution {
         return await purchaseHandler.whileConfirmingHostedCheckout {
-            let result = await purchaseHandler.pollHostedCheckout(operationSessionID: session.operationSessionID)
+            let result = await purchaseHandler.pollHostedCheckout(session: session)
             let resolution = Resolution(result)
 
             switch resolution {
