@@ -129,7 +129,8 @@ final class WebViewWebsiteDataStoreSweeper: WebViewDataStoreSweeping {
     // There are certain cases where a consuming application will invoke the cache clearing path in our SDK
     // before a data store is initialized. In those cases, our SDK can crash with a EXC_BAD_ACCESS when attempting
     // to interact with the WebKit API. By creating one, we can ensure that the crash never happens, and we can
-    // clear the retired store
+    // clear the retired store. 
+    // reported in: https://github.com/RevenueCat/purchases-ios/issues/7830
     @MainActor
     private static func ensureWebKitIsReady() {
         _ = WKWebsiteDataStore.default()
