@@ -129,6 +129,9 @@ enum HostedCheckout {
     /// likely is, without keeping them waiting. Then checks in the background whether they paid just before
     /// closing it, since the sheet can close before the page gets to the success URL.
     ///
+    /// A purchase the paywall cannot report, for lack of the `CustomerInfo` showing it, is not worth interrupting a
+    /// customer who already left: the app finds it the next time it fetches their `CustomerInfo`.
+    ///
     /// - Returns: Whether a purchase landed after all, for the caller to tell the customer about and then report
     /// with ``PurchaseHandler/handleHostedCheckoutPurchase()``.
     /// - Parameter package: The package the checkout was started for, when it is still known.
@@ -138,9 +141,11 @@ enum HostedCheckout {
                                 purchaseHandler: PurchaseHandler) async -> Bool {
         await purchaseHandler.handleHostedCheckoutCancellation(package: package)
 
-        let result = await purchaseHandler.pollDismissedHostedCheckout(session: session)
+        guard await purchaseHandler.pollDismissedHostedCheckout(session: session) == .succeeded else {
+            return false
+        }
 
-        return result == .succeeded
+        return await purchaseHandler.canReportHostedCheckoutPurchase()
     }
 
 }

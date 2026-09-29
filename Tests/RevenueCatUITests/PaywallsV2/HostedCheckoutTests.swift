@@ -376,6 +376,25 @@ final class HostedCheckoutTests: TestCase {
         expect(landed) == true
     }
 
+    @MainActor
+    func testDoesNotCountAPurchaseAfterADismissalWithoutItsCustomerInfo() async {
+        let purchases = MockPurchases { _, _, _ in
+            return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { _ in
+        } customerInfo: {
+            throw ErrorCode.networkError
+        }
+        purchases.hostedCheckoutPollDismissedBlock = { _ in .succeeded }
+
+        let landed = await HostedCheckout.settleDismissal(of: Self.session,
+                                                          package: TestData.annualPackage,
+                                                          purchaseHandler: Self.makeHandler(purchases: purchases))
+
+        expect(landed) == false
+    }
+
     /// The session failing because the customer already owned the product is no purchase to tell them about.
     @MainActor
     func testDoesNotCountAnAlreadyOwnedProductAsAPurchaseAfterADismissal() async {
