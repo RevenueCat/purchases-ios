@@ -53,7 +53,7 @@ final class WorkflowNavigator: ObservableObject {
         self.resolveTask?.cancel()
     }
 
-    /// The observation point for a resolve nothing else awaits.
+    /// Tests only. Nothing in the UI waits for a resolve.
     func waitForBranchResolution() async {
         await self.resolveTask?.value
     }
