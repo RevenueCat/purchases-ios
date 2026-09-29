@@ -2033,7 +2033,7 @@ extension Purchases {
             clientTransactionID: clientTransactionID,
             trackingMetadata: trackingMetadata,
             captureMethod: .manual,
-            poller: RewardVerification.Poller.makeDefault()
+            poller: RewardVerification.Poller.makeDefault(adUnitID: trackingMetadata?.adUnitId)
         )
     }
 
@@ -2048,7 +2048,7 @@ extension Purchases {
             clientTransactionID: clientTransactionID,
             trackingMetadata: trackingMetadata,
             captureMethod: captureMethod,
-            poller: RewardVerification.Poller.makeDefault()
+            poller: RewardVerification.Poller.makeDefault(adUnitID: trackingMetadata?.adUnitId)
         )
     }
 
@@ -2215,12 +2215,14 @@ extension Purchases {
     ///
     /// - Throws: `BackendError`
     internal func fetchRewardVerificationStatus(
-        clientTransactionID: String
+        clientTransactionID: String,
+        adUnitID: String? = nil
     ) async throws -> RewardVerificationPollStatus {
         let response = try await Async.call { completion in
             self.backend.adsAPI.getRewardVerificationStatus(
                 appUserID: self.appUserID,
                 clientTransactionID: clientTransactionID,
+                adUnitID: adUnitID,
                 completion: completion
             )
         }

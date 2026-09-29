@@ -48,6 +48,56 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
         expect(self.httpClient.calls).to(haveCount(1))
     }
 
+    func testGetRewardVerificationStatusSendsAdUnitIDQueryParameter() throws {
+        self.httpClient.disableSnapshotTesting()
+        self.httpClient.mock(
+            requestPath: .rewardVerificationStatus(
+                appUserID: Self.userID,
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: "ca-app-pub-123/456"
+            ),
+            response: .init(statusCode: .success, response: Self.pendingResponse)
+        )
+
+        let result = waitUntilValue { completed in
+            self.adsAPI.getRewardVerificationStatus(
+                appUserID: Self.userID,
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: "ca-app-pub-123/456",
+                completion: completed
+            )
+        }
+
+        expect(result).to(beSuccess())
+        let url = try XCTUnwrap(self.httpClient.calls.first?.request.path.url(preferIAMPath: false))
+        expect(url.absoluteString) == "https://api.revenuecat.com/v1/subscribers/\(Self.userID)"
+            + "/ads/reward_verifications/\(Self.clientTransactionID)?ad_unit_id=ca-app-pub-123%2F456"
+    }
+
+    func testGetRewardVerificationStatusOmitsEmptyAdUnitID() throws {
+        self.httpClient.disableSnapshotTesting()
+        self.httpClient.mock(
+            requestPath: .rewardVerificationStatus(
+                appUserID: Self.userID,
+                clientTransactionID: Self.clientTransactionID
+            ),
+            response: .init(statusCode: .success, response: Self.pendingResponse)
+        )
+
+        let result = waitUntilValue { completed in
+            self.adsAPI.getRewardVerificationStatus(
+                appUserID: Self.userID,
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: "",
+                completion: completed
+            )
+        }
+
+        expect(result).to(beSuccess())
+        let url = try XCTUnwrap(self.httpClient.calls.first?.request.path.url(preferIAMPath: false))
+        expect(url.query).to(beNil())
+    }
+
     // MARK: - Response shapes
 
     func testGetRewardVerificationStatusVerified() throws {

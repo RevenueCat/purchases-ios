@@ -188,7 +188,7 @@ extension HTTPRequest {
         case postExternalPurchaseToken
         case postCreateTicket
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
-        case rewardVerificationStatus(appUserID: String, clientTransactionID: String)
+        case rewardVerificationStatus(appUserID: String, clientTransactionID: String, adUnitID: String? = nil)
         case remoteConfig(domain: String)
 
         case tokenLogin
@@ -483,8 +483,15 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .isPurchaseAllowedByRestoreBehavior(appUserID):
             return "subscribers/\(Self.escape(appUserID))/restore/eligibility"
 
-        case let .rewardVerificationStatus(appUserID, clientTransactionID):
-            return "subscribers/\(Self.escape(appUserID))/ads/reward_verifications/\(Self.escape(clientTransactionID))"
+        case let .rewardVerificationStatus(appUserID, clientTransactionID, adUnitID):
+            let path = "subscribers/\(Self.escape(appUserID))/ads/reward_verifications/"
+                + Self.escape(clientTransactionID)
+            guard let adUnitID = adUnitID?.notEmptyOrWhitespaces,
+                  let encodedAdUnitID = adUnitID.addingPercentEncoding(withAllowedCharacters: Self.queryValueAllowed)
+            else {
+                return path
+            }
+            return "\(path)?ad_unit_id=\(encodedAdUnitID)"
 
         case let .remoteConfig(domain):
             return "config/\(Self.escape(domain))"
@@ -662,6 +669,11 @@ extension HTTPRequest.Path: HTTPRequestPath {
     private static func escape(_ appUserID: String) -> String {
         return appUserID.trimmedAndEscaped
     }
+
+    // RFC 3986 unreserved characters, so `&`, `=`, `+` and `/` in a value can't alter the query.
+    private static let queryValueAllowed = CharacterSet(
+        charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~"
+    )
 }
 
 extension HTTPRequest.FallbackPath: HTTPRequestPath {

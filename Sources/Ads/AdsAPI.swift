@@ -29,12 +29,14 @@ class AdsAPI {
     func getRewardVerificationStatus(
         appUserID: String,
         clientTransactionID: String,
+        adUnitID: String? = nil,
         completion: @escaping RewardVerificationStatusResponseHandler
     ) {
         let config = GetRewardVerificationStatusOperation.Configuration(
             httpClient: self.backendConfig.httpClient,
             appUserID: appUserID,
-            clientTransactionID: clientTransactionID
+            clientTransactionID: clientTransactionID,
+            adUnitID: adUnitID
         )
 
         let factory = GetRewardVerificationStatusOperation.createFactory(

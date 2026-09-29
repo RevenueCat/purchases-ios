@@ -42,6 +42,15 @@ final class PurchasesRewardVerificationTests: BasePurchasesTests {
         expect(try self.mockAdsAPI.invokedGetRewardVerificationStatusParameters?.appUserID)
             == self.identityManager.currentAppUserID
         expect(try self.mockAdsAPI.invokedGetRewardVerificationStatusParameters?.clientTransactionID) == transactionID
+        expect(try self.mockAdsAPI.invokedGetRewardVerificationStatusParameters?.adUnitID).to(beNil())
+    }
+
+    func testFetchRewardVerificationStatusForwardsAdUnitID() async throws {
+        try self.mockAdsAPI.stubbedGetRewardVerificationStatusResult = .success(.init(status: .pending))
+
+        _ = try await self.purchases.fetchRewardVerificationStatus(clientTransactionID: "tx-id", adUnitID: "ad-unit")
+
+        expect(try self.mockAdsAPI.invokedGetRewardVerificationStatusParameters?.adUnitID) == "ad-unit"
     }
 
     func testFetchRewardVerificationStatusMapsVerifiedStatusWithVirtualCurrencyReward() async throws {
