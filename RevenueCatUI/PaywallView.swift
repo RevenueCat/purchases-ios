@@ -54,6 +54,8 @@ public struct PaywallView: View {
 
     private var promoOfferCache: PaywallPromoOfferCache?
 
+    private var workflowPresentationErrorHandler: ((NSError) -> Void)?
+
     private var initializationError: NSError?
 
     @Environment(\.onRequestedDismissal)
@@ -214,6 +216,7 @@ public struct PaywallView: View {
         self.fonts = configuration.fonts
         self.displayCloseButton = configuration.displayCloseButton
         self.promoOfferCache = configuration.promoOfferCache
+        self.workflowPresentationErrorHandler = configuration.workflowPresentationErrorHandler
 
         self.initializationError = Self.checkForConfigurationConsistency(purchaseHandler: configuration.purchaseHandler)
     }
@@ -260,6 +263,7 @@ public struct PaywallView: View {
             // If the parent view uses refreshable, it can be inherited by the paywall view
             // and pulling down in the paywall would execute the parent's refreshable action
             .refreshableDisabled()
+            .modifier(PaywallURLEventsModifier(purchaseHandler: self.purchaseHandler))
     }
 
     @MainActor
@@ -373,7 +377,8 @@ public struct PaywallView: View {
                         showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
                         displayCloseButton: self.displayCloseButton,
                         promoOfferCache: self.promoOfferCache,
-                        onDismiss: self.dismissRequested
+                        onDismiss: self.dismissRequested,
+                        onPresentationError: self.workflowPresentationErrorHandler
                     )
                 } else {
                     PaywallsV2View(
@@ -532,10 +537,6 @@ struct LoadedOfferingPaywallView: View {
                         value: self.purchaseHandler.purchaseError as NSError?)
             .preference(key: RestoreErrorPreferenceKey.self,
                         value: self.purchaseHandler.restoreError as NSError?)
-            .preference(key: WebCheckoutOpenedPreferenceKey.self,
-                        value: self.purchaseHandler.webCheckoutOpened)
-            .preference(key: URLOpenedPreferenceKey.self,
-                        value: self.purchaseHandler.urlOpened)
     }
 
     @ViewBuilder

@@ -30,15 +30,12 @@ struct CompatibilityContentUnavailableView: View {
     }
 
     var body: some View {
-
+        #if os(visionOS)
+        contentUnavailableView
+        #else
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
-            #if swift(>=5.9)
-            ContentUnavailableView {
-                Label { titleView }
-                icon: { iconView }
-            }
-            description: { description }
-
+            #if compiler(>=5.9)
+            contentUnavailableView
             #else
                 // In Xcode 14, any references to ContentUnavailableView would fail to compile since that entity
                 // was included with Xcode 15 and later.
@@ -58,8 +55,20 @@ struct CompatibilityContentUnavailableView: View {
                 }
             }.frame(maxHeight: .infinity)
         }
+        #endif
 
     }
+
+    #if compiler(>=5.9)
+    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    private var contentUnavailableView: some View {
+        ContentUnavailableView {
+            Label { titleView }
+            icon: { iconView }
+        }
+        description: { description }
+    }
+    #endif
 
     private var titleView: some View {
         Text(title)

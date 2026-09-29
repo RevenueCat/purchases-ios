@@ -56,6 +56,22 @@ extension Result where Success == Void {
 
 extension Result where Success: OptionalType {
 
+    /// Creates a `Result` from either a value or an error, when `Success` is itself optional.
+    ///
+    /// Takes `Success` rather than `Success?`: the unconstrained initializer would receive a doubly
+    /// optional value, in which an absent value promoted into the outer layer is indistinguishable
+    /// from a present one, so `error` would never be read.
+    ///
+    /// `nil` is a valid success when `Success` is optional, so `error` is checked first and takes
+    /// precedence, rather than being shadowed by a value that may be absent.
+    init(_ value: Success, _ error: @autoclosure () -> Failure?) {
+        if let error = error() {
+            self = .failure(error)
+        } else {
+            self = .success(value)
+        }
+    }
+
     /// Converts a `Result<Success?, Error>` into `Result<Success, Error>?`
     var asOptionalResult: Result<Success.Wrapped, Failure>? {
         switch self {

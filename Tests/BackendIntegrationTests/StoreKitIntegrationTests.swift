@@ -153,6 +153,54 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
     }
 }
 
+// MARK: - Billing Plans
+#if compiler(>=6.3.2)
+@available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+extension StoreKit2IntegrationTests {
+
+    func testCanPurchaseUpFrontBillingPlanProduct() async throws {
+        try AvailabilityChecks.skipBillingPlanTestIfOnUnsupportedOSVersion()
+
+        try await self.purchaseBillingPlanProduct(
+            Self.productIDWithBillingPlans,
+            expectedEntitlementIdentifier: "super_premium"
+        )
+    }
+
+    func testCanPurchaseMonthlyBillingPlanProduct() async throws {
+        try AvailabilityChecks.skipBillingPlanTestIfOnUnsupportedOSVersion()
+
+        try await self.purchaseBillingPlanProduct(
+            "\(Self.productIDWithBillingPlans):monthly",
+            expectedEntitlementIdentifier: "premium"
+        )
+    }
+
+    private func purchaseBillingPlanProduct(
+        _ productIdentifier: String,
+        expectedEntitlementIdentifier: String,
+        file: FileString = #file,
+        line: UInt = #line
+    ) async throws {
+        let product = try await self.product(productIdentifier)
+        expect(product.id) == productIdentifier
+        expect(product.productIdentifier) == Self.productIDWithBillingPlans
+
+        let result = try await self.purchase(product: product, file: file, line: line)
+        let transaction = try XCTUnwrap(result.transaction)
+
+        self.verifyCustomerInfoWasNotComputedOffline(customerInfo: result.customerInfo, file: file, line: line)
+
+        expect(result.customerInfo.allPurchasedProductIdentifiers).to(contain(productIdentifier))
+        expect(transaction.productIdentifier) == Self.productIDWithBillingPlans
+        expect(result.customerInfo.entitlements[expectedEntitlementIdentifier]?.isActive) == true
+
+        self.verifyAnyTransactionWasFinished(count: nil, file: file, line: line)
+    }
+
+}
+#endif
+
 class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
     override class var storeKitVersion: StoreKitVersion { .storeKit1 }
@@ -260,14 +308,16 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         expect(nonSubscription.storeTransactionIdentifier) == transaction.transactionIdentifier
         expect(info.allPurchasedProductIdentifiers).to(contain(Self.consumable10Coins))
 
-        self.verifyAnyTransactionWasFinished()
+        self.verifySpecificTransactionWasFinished(transaction)
     }
 
     func testCanPurchaseConsumableMultipleTimes() async throws {
         let count = 2
+        var transactions: [StoreTransaction] = []
 
         for _ in 0..<count {
-            try await self.purchaseConsumablePackage()
+            let result = try await self.purchaseConsumablePackage()
+            transactions.append(try XCTUnwrap(result.transaction))
         }
 
         let info = try await self.purchases.customerInfo()
@@ -275,26 +325,43 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         expect(info.nonSubscriptions.map(\.productIdentifier)) == Array(repeating: Self.consumable10Coins,
                                                                         count: count)
 
-        self.verifyAnyTransactionWasFinished(count: count)
+        for transaction in transactions {
+            self.verifySpecificTransactionWasFinished(transaction, count: nil)
+            if Self.storeKitVersion == .storeKit1 {
+                await self.verifyTransactionIsEventuallyRemovedFromSK1Queue(transaction)
+            }
+        }
     }
 
     func testCanPurchaseConsumableWithMultipleUsers() async throws {
+        if Self.storeKitVersion == .storeKit1 {
+            try AvailabilityChecks.lateSK1TransactionIdentifiersFinishOrSkipTest()
+        }
+
         func verifyPurchase(_ info: CustomerInfo) {
             expect(info.nonSubscriptions).to(haveCount(1))
             expect(info.nonSubscriptions.onlyElement?.productIdentifier) == Self.consumable10Coins
         }
 
         _ = try await self.purchases.logIn("user_1.\(UUID().uuidString)")
-        let info1 = try await self.purchaseConsumablePackage().customerInfo
-        verifyPurchase(info1)
+        let purchase1 = try await self.purchaseConsumablePackage()
+        let transaction1 = try XCTUnwrap(purchase1.transaction)
+        verifyPurchase(purchase1.customerInfo)
 
         let user2 = try await self.purchases.logIn("user_1.\(UUID().uuidString)").customerInfo
         expect(user2.nonSubscriptions).to(beEmpty())
 
-        let info2 = try await self.purchaseConsumablePackage().customerInfo
-        verifyPurchase(info2)
+        let purchase2 = try await self.purchaseConsumablePackage()
+        let transaction2 = try XCTUnwrap(purchase2.transaction)
+        verifyPurchase(purchase2.customerInfo)
 
-        self.verifyAnyTransactionWasFinished(count: 2)
+        expect(transaction1.transactionIdentifier).toNot(equal(transaction2.transactionIdentifier))
+        for transaction in [transaction1, transaction2] {
+            self.verifySpecificTransactionWasFinished(transaction)
+            if Self.storeKitVersion == .storeKit1 {
+                await self.verifyTransactionIsEventuallyRemovedFromSK1Queue(transaction)
+            }
+        }
     }
 
     func testCanPurchaseNonConsumable() async throws {
@@ -309,7 +376,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         try await self.verifyEntitlementWentThrough(info)
 
-        self.verifyAnyTransactionWasFinished()
+        self.verifySpecificTransactionWasFinished(transaction)
     }
 
     func testCanPurchaseNonRenewingSubscription() async throws {
@@ -324,7 +391,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         try await self.verifyEntitlementWentThrough(info)
 
-        self.verifyAnyTransactionWasFinished()
+        self.verifySpecificTransactionWasFinished(transaction)
     }
 
     func testCanPurchaseMultipleSubscriptions() async throws {
@@ -361,11 +428,14 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testPurchaseFailuresAreReportedCorrectly() async throws {
         try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
 
+        try AvailabilityChecks.simulatedPurchaseFailureWithSKTestWorksOrSkipTest()
+
         try await self.testSession.setSimulatedError(
             .purchase(Product.PurchaseError.purchaseNotAllowed),
             forAPI: .purchase
         )
 
+        self.continueAfterFailure = true
         do {
             try await self.purchaseMonthlyOffering()
             fail("Expected error")
@@ -378,6 +448,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     @available(iOS 17.0, tvOS 17.0, watchOS 10.0, macOS 14.0, *)
     func testPurchaseCancellationsAreReportedCorrectly() async throws {
         try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
+
+        try AvailabilityChecks.simulatedCancellationWithSKTestWorksOrSkipTest()
 
         try await self.testSession.setSimulatedError(.generic(.userCancelled), forAPI: .purchase)
 
@@ -512,10 +584,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         // 3. Renew subscription
         self.logger.clearMessages()
-        // swiftlint:disable:next force_try
-        try! await Task.sleep(nanoseconds: 3 * 1_000_000_000)
-
-        try await self.verifyReceiptIsEventuallyPosted()
+        try await self.verifyReceiptIsEventuallyPosted(timeout: .seconds(30))
 
         // 4. Verify new user does not have entitlement
         let currentCustomerInfo = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
@@ -546,11 +615,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         // 3. Renew subscription
         self.logger.clearMessages()
-
-        // swiftlint:disable:next force_try
-        try! await Task.sleep(nanoseconds: 3 * 1_000_000_000)
-
-        try await self.verifyReceiptIsEventuallyPosted()
+        try await self.verifyReceiptIsEventuallyPosted(timeout: .seconds(30))
 
         // 4. Verify new user does not have entitlement
         var currentCustomerInfo = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
@@ -572,6 +637,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testPurchaseAfterSigningIntoNewUser() async throws {
+        try AvailabilityChecks.activeRepurchaseWithoutSKTestDialogWorksOrSkipTest()
+
         let prefix = UUID().uuidString
         let userID1 = "\(prefix)-user-1"
         let userID2 = "\(prefix)-user-2"
@@ -627,6 +694,15 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         let product = try await self.monthlyPackage.storeProduct
 
+        if Self.storeKitVersion == .storeKit2, #available(iOS 27.0, tvOS 27.0, macOS 27.0, watchOS 27.0, *) {
+            let subscription = try XCTUnwrap(product.sk2Product?.subscription)
+            try await asyncWait(description: "Intro eligibility did not reset for \(product.productIdentifier)",
+                                timeout: .seconds(30)) {
+                await subscription.isEligibleForIntroOffer
+            }
+            await self.resetSingleton()
+        }
+
         let eligibility = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: product)
         expect(eligibility) == .eligible
     }
@@ -670,6 +746,16 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         _ = try await self.purchases.purchase(product: productWithNoTrial)
 
         let eligibility = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: productWithTrial)
+        #if os(iOS)
+        if Self.storeKitVersion == .storeKit2,
+           ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27 {
+            self.continueAfterFailure = true
+            XCTExpectFailure("iOS 27 StoreKitTest still reports intro eligibility after a same-group purchase") {
+                expect(eligibility) == .ineligible
+            }
+            return
+        }
+        #endif
         expect(eligibility) == .ineligible
     }
 
@@ -745,6 +831,10 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
 
     func testResubscribeAfterExpiration() async throws {
+        if Self.storeKitVersion == .storeKit2 {
+            try AvailabilityChecks.expiredRepurchaseWithSKTestWorksOrSkipTest()
+        }
+
         @discardableResult
         func subscribe() async throws -> CustomerInfo {
             return try await self.purchaseMonthlyOffering().customerInfo
@@ -839,6 +929,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testApplyPromotionalOfferDuringSubscription() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
+        try AvailabilityChecks.activeRepurchaseWithoutSKTestDialogWorksOrSkipTest()
+
         let user = UUID().uuidString
 
         let (_, created) = try await self.purchases.logIn(user)
@@ -870,6 +962,12 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     @available(iOS 15.2, tvOS 15.2, macOS 12.1, watchOS 8.3, *)
     func testPurchaseWithPromotionalOffer() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        if Self.storeKitVersion == .storeKit1 {
+            try AvailabilityChecks.expiredPromotionalOfferWithoutSKTestDialogWorksOrSkipTest()
+        } else {
+            try AvailabilityChecks.expiredRepurchaseWithSKTestWorksOrSkipTest()
+        }
 
         let user = UUID().uuidString
 
@@ -910,6 +1008,12 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     @available(iOS 15.2, tvOS 15.2, macOS 12.1, watchOS 8.3, *)
     func testPurchaseWithPromotionalOfferWithNonUUIDappUserId() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        if Self.storeKitVersion == .storeKit1 {
+            try AvailabilityChecks.expiredPromotionalOfferWithoutSKTestDialogWorksOrSkipTest()
+        } else {
+            try AvailabilityChecks.expiredRepurchaseWithSKTestWorksOrSkipTest()
+        }
 
         let user = "not_a_uuid.\(UUID().uuidString)"
 
@@ -1071,9 +1175,9 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         let result = try await self.purchase(params: params, file: #file, line: #line)
 
-        expect(result.transaction).toNot(beNil())
+        let transaction = try XCTUnwrap(result.transaction)
         try await self.verifyEntitlementWentThrough(result.customerInfo)
-        self.verifyAnyTransactionWasFinished()
+        self.verifySpecificTransactionWasFinished(transaction)
     }
     #endif
 }

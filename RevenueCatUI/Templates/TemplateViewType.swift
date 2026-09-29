@@ -176,7 +176,6 @@ extension View {
         case .footer, .condensedFooter:
             self
                 .fixedSize(horizontal: false, vertical: true)
-                .edgesIgnoringSafeArea(.bottom)
         }
     }
 

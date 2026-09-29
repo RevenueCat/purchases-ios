@@ -55,6 +55,14 @@ enum Constants {
     }
 
     /*
+     Pins the app user id so experiment enrollment is deterministic across runs.
+     Nil keeps the generated anonymous id.
+     */
+    static var appUserID: String? {
+        UserDefaults.standard.string(forKey: "app_user_id")
+    }
+
+    /*
      The API base URL to configure SystemInfo with
      To be used in (e2e) tests in order to test against different environments
      REVENUECAT_API_HOST = api-staging.revenuecat.com

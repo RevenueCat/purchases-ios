@@ -29,6 +29,7 @@ struct ButtonComponentView: View {
     @State private var showCustomerCenter = false
     @State private var offerCodeRedemptionSheet = false
     @State private var showingWebPaywallLinkAlert = false
+    @State private var showingPurchaseUnavailableAlert = false
 
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
@@ -61,6 +62,7 @@ struct ButtonComponentView: View {
     @Environment(\.urlOpenedNotifier) private var urlOpenedNotifier
     @Environment(\.workflowTriggerAction) private var workflowTriggerAction
     @Environment(\.closeWorkflowAction) private var closeWorkflowAction
+    @Environment(\.workflowNavigateBackHandler) private var workflowNavigateBackHandler
     @Environment(\.workflowRenderingContext) private var workflowRenderingContext
 
     private let viewModel: ButtonComponentViewModel
@@ -124,6 +126,8 @@ struct ButtonComponentView: View {
             .opacity(self.shouldBeDisabled ? 0.35 : 1.0)
             .offset(x: self.workflowRenderingContext.isHeader ? -self.headerPageOffset : 0)
             .opacity(self.workflowRenderingContext.isHeader ? self.headerButtonOpacity : 1)
+            .purchaseUnavailableAlert(isPresented: self.$showingPurchaseUnavailableAlert,
+                                      localizedBundle: self.viewModel.localizedBundle)
             #if canImport(SafariServices) && canImport(UIKit)
             .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
                 let url = self.inAppBrowserURL!
@@ -155,9 +159,14 @@ struct ButtonComponentView: View {
             hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession
         )
 
-        return self.viewModel.derivedAccessibilityLabel(
-            dismissesPaywall: dismissal == .dismissWorkflow
-        )
+        let dismissesWorkflow: Bool
+        if case .dismissWorkflow = dismissal {
+            dismissesWorkflow = true
+        } else {
+            dismissesWorkflow = false
+        }
+
+        return self.viewModel.derivedAccessibilityLabel(dismissesPaywall: dismissesWorkflow)
     }
 
     private var headerPageOffset: CGFloat {
@@ -186,15 +195,9 @@ struct ButtonComponentView: View {
         case .navigateTo(let destination):
             await navigateTo(destination: destination)
         case .navigateBack:
-            onDismiss()
+            self.navigateBack()
         case .closeWorkflow:
-            if let closeWorkflowAction {
-                closeWorkflowAction()
-            } else {
-                Logger.warning(
-                    Strings.paywall_close_workflow_action_not_handled(componentName: self.viewModel.component.name)
-                )
-            }
+            self.closeWorkflow()
         case .workflowTrigger:
             Logger.warning(
                 Strings.paywall_workflow_trigger_not_handled(componentName: self.viewModel.component.name)
@@ -214,6 +217,24 @@ struct ButtonComponentView: View {
                 )
                 openSheet(sheetViewModel)
             }
+        }
+    }
+
+    private func navigateBack() {
+        if let workflowNavigateBackHandler {
+            workflowNavigateBackHandler()
+        } else {
+            onDismiss()
+        }
+    }
+
+    private func closeWorkflow() {
+        if let closeWorkflowAction {
+            closeWorkflowAction()
+        } else {
+            Logger.warning(
+                Strings.paywall_close_workflow_action_not_handled(componentName: self.viewModel.component.name)
+            )
         }
     }
 
@@ -300,17 +321,24 @@ struct ButtonComponentView: View {
 #endif
     }
 
+    @MainActor
     private func openWebPaywallLink(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) async {
         guard !self.purchaseHandler.actionInProgress else {
             return
         }
 
-        guard let url = await ExternalPurchaseLink.urlToOpen(url,
-                                                             method: method,
-                                                             purchaseHandler: self.purchaseHandler) else {
-            return
+        switch await ExternalPurchaseLink.action(for: url, method: method, purchaseHandler: self.purchaseHandler) {
+        case let .open(url):
+            self.open(webPaywallLink: url)
+        case .tellCustomerThePurchaseIsUnavailable:
+            self.showingPurchaseUnavailableAlert = true
+        case .nothing:
+            break
         }
+    }
 
+    @MainActor
+    private func open(webPaywallLink url: URL) {
         self.purchaseHandler.invalidateCustomerInfoCache()
 #if os(watchOS)
         // watchOS doesn't support openURL with a completion handler, so we're just opening the URL.

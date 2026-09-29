@@ -144,6 +144,17 @@ class IdentityManagerTests: TestCase {
         assertCorrectlyIdentified(newManager, expectedAppUserID: newAppUserID)
     }
 
+    func testConfigureWithDifferentAppUserIDThanCachedLogsWarning() {
+        self.mockDeviceCache.stubbedAppUserID = IdentityManager.generateRandomID()
+
+        _ = self.create(appUserID: "rick")
+
+        self.logger.verifyMessageWasLogged(
+            Strings.identity.configured_app_user_id_differs_from_cached,
+            level: .warn
+        )
+    }
+
     func testNilAppUserIDBecomesAnonimous() {
         assertCorrectlyIdentifiedWithAnonymous(create(appUserID: nil))
     }

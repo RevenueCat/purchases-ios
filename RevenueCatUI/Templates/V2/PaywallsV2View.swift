@@ -260,6 +260,7 @@ struct PaywallsV2View: View {
                 }
             }
         )
+        .modifier(PaywallURLEventsModifier(purchaseHandler: self.purchaseHandler))
         // Only publish the state-store environment when this paywall owns the store (standalone).
         // Inside a workflow the store is injected and observed by `WorkflowPaywallView`;
         .applyIf(self.inheritedStateStore == nil) {
@@ -427,10 +428,6 @@ struct PaywallsV2View: View {
                         value: self.purchaseHandler.purchaseError as NSError?)
             .preference(key: RestoreErrorPreferenceKey.self,
                         value: self.purchaseHandler.restoreError as NSError?)
-            .preference(key: WebCheckoutOpenedPreferenceKey.self,
-                        value: self.purchaseHandler.webCheckoutOpened)
-            .preference(key: URLOpenedPreferenceKey.self,
-                        value: self.purchaseHandler.urlOpened)
             .disabled(self.purchaseHandler.actionInProgress)
             .onDisappear {
                 // Standalone closes on disappear. A workflow page closes here only if it is still the

@@ -293,6 +293,7 @@ struct LocalRulesEvaluatorTests {
 
     @Test
     func providerFailureIsThrown() async {
+        let logger = TestLogHandler(testIdentifier: #function)
         let evaluator = Self.evaluator(dimensionProviders: [
             FailingDimensionProvider(name: "store")
         ])
@@ -308,6 +309,10 @@ struct LocalRulesEvaluatorTests {
                 return
             }
             #expect(providerName == "store")
+            logger.verifyMessageWasLogged(
+                "Failed to resolve dimensions: providerFailed(providerName: \"store\", message: \"ProviderError()\").",
+                level: .warn
+            )
         } catch {
             Issue.record("Unexpected error: \(error)")
         }
@@ -417,7 +422,6 @@ struct LocalRulesEvaluatorTests {
         let previousLogLevel = Purchases.logLevel
         Purchases.logLevel = .verbose
         defer { Purchases.logLevel = previousLogLevel }
-
         let evaluator = Self.evaluator(dimensionProviders: [
             TestDimensionProvider(
                 name: "device",
@@ -470,6 +474,10 @@ struct LocalRulesEvaluatorTests {
 
     @Test
     func emptyBatchDoesNotCollectVariables() async throws {
+        let logger = TestLogHandler(testIdentifier: #function)
+        let previousLogLevel = Purchases.logLevel
+        Purchases.logLevel = .verbose
+        defer { Purchases.logLevel = previousLogLevel }
         let provider = TestDimensionProvider(
             name: "device",
             snapshots: [["value": .int(1)]]
@@ -479,6 +487,7 @@ struct LocalRulesEvaluatorTests {
         let rule = try await evaluator.match(in: [TestLocalRule<String>]())
         #expect(rule?.id == nil)
         #expect(await provider.invocationCount == 0)
+        logger.verifyMessageWasLogged("No rules to evaluate.", level: .verbose)
     }
 
     @Test
@@ -509,7 +518,7 @@ struct LocalRulesEvaluatorTests {
         ])
 
         logger.verifyMessageWasLogged(
-            "Evaluating 2 rules against dimensions [\"evaluated_at\", \"platform\"].",
+            "Evaluating 2 rules.",
             level: .verbose
         )
         logger.verifyMessageWasLogged("Rule 1 did not match.", level: .verbose)
@@ -552,7 +561,10 @@ struct LocalRulesEvaluatorTests {
             TestLocalRule(id: "malformed", predicate: "{not-json")
         ])
 
-        logger.verifyMessageWasLogged("Rule 1 could not be evaluated (Parse).", level: .debug)
+        logger.verifyMessageWasLogged(
+            regexPattern: "Rule 1 could not be evaluated \\(failed to parse predicate JSON: .+\\).",
+            level: .debug
+        )
         #expect(logger.messages.allSatisfy { !$0.message.contains("{not-json") })
     }
 
@@ -659,6 +671,7 @@ struct LocalRulesEvaluatorTests {
 
     @Test
     func cancellationIsThrownByMatch() async {
+        let logger = TestLogHandler(testIdentifier: #function)
         let evaluator = Self.evaluator(dimensionProviders: [
             CancellingDimensionProvider(name: "store")
         ])
@@ -673,6 +686,10 @@ struct LocalRulesEvaluatorTests {
         } catch {
             Issue.record("Unexpected error: \(error)")
         }
+
+        #expect(logger.messages.allSatisfy {
+            !($0.level == .warn && $0.message.contains("Failed to resolve dimensions"))
+        })
     }
 }
 

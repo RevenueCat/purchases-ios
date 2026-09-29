@@ -58,6 +58,8 @@ def setup_storekit_config(bundle_id, source_config)
   paths = get_storekit_paths(bundle_id)
   return false unless paths
 
+  return true if File.file?(paths[:storekit_dir])
+
   # Check if config already exists
   return true if File.exist?(paths[:storekit_file])
 

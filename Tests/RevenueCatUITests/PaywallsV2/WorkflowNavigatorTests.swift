@@ -75,6 +75,40 @@ final class WorkflowNavigatorTests: TestCase {
         expect(navigator.canNavigateBack) == true
     }
 
+    func testTriggerActionDestinationDoesNotMutateNavigator() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStep(id: "step_1", triggers: [("btn_abc", "btn_abc")], triggerActions: [("btn_abc", "step_2")]),
+                makeStep(id: "step_2")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        let destination = navigator.triggerActionDestination(componentId: "btn_abc")
+
+        expect(destination?.step.id) == "step_2"
+        expect(navigator.currentStepId) == "step_1"
+        expect(navigator.canNavigateBack) == false
+    }
+
+    func testFirstForwardDestinationHasBackNavigationAfterNavigation() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStep(id: "step_1", triggers: [("btn_abc", "btn_abc")], triggerActions: [("btn_abc", "step_2")]),
+                makeStep(id: "step_2")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        let destination = navigator.triggerActionDestination(componentId: "btn_abc")
+
+        // The destination is resolved without mutation, but committing it pushes the current step.
+        expect(destination?.canNavigateBackAfterNavigation) == true
+        expect(navigator.canNavigateBack) == false
+    }
+
     // MARK: - triggerAction failure cases
 
     func testTriggerActionWithUnknownComponentIdReturnsNil() throws {
