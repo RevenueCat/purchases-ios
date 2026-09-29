@@ -55,6 +55,7 @@ enum NetworkStrings {
     case api_request_redirect(from: URL, to: URL)
     case operation_state(NetworkOperation.Type, state: String)
     case request_handled_by_load_shedder(HTTPRequestPath)
+    case missing_dedicated_lane_configuration(laneName: String)
 
     #if DEBUG
     case api_request_forcing_server_error(HTTPRequest, serverErrorURL: URL)
@@ -165,6 +166,10 @@ extension NetworkStrings: LogMessage {
 
         case let .request_handled_by_load_shedder(path):
             return "Request was handled by load shedder: \(path.relativePath)"
+
+        case let .missing_dedicated_lane_configuration(laneName):
+            return "No dedicated configuration for '\(laneName)' request lane; " +
+            "requests will share the default lane instead."
 
         case let .api_request_queued_for_retry(httpMethod, retryNumber, path, backoffInterval):
             return "Queued request \(httpMethod) \(path) for retry number \(retryNumber) in \(backoffInterval) seconds."

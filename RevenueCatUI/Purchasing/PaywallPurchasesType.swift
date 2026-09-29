@@ -46,10 +46,6 @@ protocol PaywallPurchasesType: Sendable {
     @Sendable
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult
 
-    #if ENABLE_WORKFLOW_BRANCH_LOADING
-    func resolveBranch(_ branch: WorkflowBranch) async -> String
-    #endif
-
     func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult?
 #endif
 
@@ -59,6 +55,19 @@ protocol PaywallPurchasesType: Sendable {
         promotionalOffer: PromotionalOffer?,
         paywallEvent: PaywallEvent?
     ) async throws -> PurchaseResultData
+
+    /// Only to be called when the customer has deliberately asked to buy: Apple's disclosure notice is shown
+    /// and an external purchase token may be minted, which Apple expects a report for.
+    @Sendable
+    func startHostedCheckout(package: Package, paywallEvent: PaywallEvent?) async -> HostedCheckoutStartResult
+
+    /// Whether web purchase links opened in the browser go through Apple's external purchase flow first.
+    var useExternalPurchaseCustomLinks: Bool { get }
+
+    /// Only to be called when the customer has deliberately asked to buy: Apple's disclosure notice is shown
+    /// and an external purchase token may be minted, which Apple expects a report for.
+    @Sendable
+    func prepareExternalPurchaseLink() async -> ExternalPurchaseLinkResult
 
     @Sendable
     func restorePurchases() async throws -> CustomerInfo
@@ -96,14 +105,3 @@ protocol PaywallPurchasesType: Sendable {
 }
 
 extension Purchases: PaywallPurchasesType {}
-
-#if !os(tvOS) && ENABLE_WORKFLOW_BRANCH_LOADING
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension PaywallPurchasesType {
-
-    func resolveBranch(_ branch: WorkflowBranch) async -> String {
-        return branch.fallbackStepId
-    }
-
-}
-#endif

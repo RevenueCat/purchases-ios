@@ -52,7 +52,10 @@ extension CustomerInfo {
             response: content,
             entitlementVerification: Self.verification,
             sandboxEnvironmentDetector: sandboxEnvironmentDetector,
-            httpResponseOriginalSource: nil
+            httpResponseOriginalSource: nil,
+            unsyncedProductIdentifiers: Set(
+                purchasedSK2Products.lazy.filter { !$0.isSynced }.map(\.productIdentifier)
+            )
         )
     }
 

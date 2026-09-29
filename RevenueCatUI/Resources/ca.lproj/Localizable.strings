@@ -23,3 +23,7 @@
 "Default_offer_details_with_intro_offer" = "Inicieu la vostra prova de {{ sub_offer_duration }} i després {{ total_price_and_per_month }}.";
 "Something went wrong" = "Alguna cosa ha anat malament";
 "Purchase" = "Comprar";
+"You are currently subscribed to this" = "Ja hi estàs subscrit";
+"You've already purchased this" = "Ja has comprat això";
+"Purchase unavailable" = "Compra no disponible";
+"This purchase isn't available in your region." = "Aquesta compra no està disponible a la teva regió.";

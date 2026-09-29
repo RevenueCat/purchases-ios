@@ -36,6 +36,7 @@ enum CustomerInfoStrings {
     case updating_request_date(CustomerInfo, Date)
     case sending_latest_customerinfo_to_delegate
     case sending_updated_customerinfo_to_delegate
+    case sending_customerinfo_with_changed_active_entitlements_to_delegate
     case vending_cache
     case error_encoding_customerinfo(Error)
 
@@ -93,6 +94,8 @@ extension CustomerInfoStrings: LogMessage {
             return "Sending latest CustomerInfo to delegate."
         case .sending_updated_customerinfo_to_delegate:
             return "Sending updated CustomerInfo to delegate."
+        case .sending_customerinfo_with_changed_active_entitlements_to_delegate:
+            return "Sending CustomerInfo to delegate: active entitlements changed since last update."
         case .vending_cache:
             return "Vending CustomerInfo from cache."
         case let .error_encoding_customerinfo(error):

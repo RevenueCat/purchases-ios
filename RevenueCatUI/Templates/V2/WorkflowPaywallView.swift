@@ -338,7 +338,10 @@ struct WorkflowPaywallView: View {
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
         self.onPresentationError = onPresentationError
-        let navigator = WorkflowNavigator(workflow: context.workflow)
+        let navigator = WorkflowNavigator(
+            workflow: context.workflow,
+            branchResolver: purchaseHandler.branchResolver
+        )
         #if ENABLE_WORKFLOW_BRANCH_LOADING
         if let resolvedInitialStepId = context.resolvedInitialStepId {
             navigator.resolveInitialStep(to: resolvedInitialStepId)

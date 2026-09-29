@@ -632,4 +632,29 @@ class PaywallsV2LocaleResolutionTests: TestCase {
         expect(chosen) == Locale(identifier: "fr_FR")
     }
 
+    func testRegionalMatchIgnoresSeparatorAndKeyOrder() {
+        let cases: [(available: [String], preferred: String, expected: String)] = [
+            (["en_AU", "en_CA", "en_GB", "en_US"], "en-GB", "en_GB"),
+            (["en_AU", "en_CA", "en_GB", "en_US"], "en_GB", "en_GB"),
+            (["en_AU", "en_CA", "en_GB", "en_US"], "en-IE", "en_GB"),
+            (["zh_Hans", "zh_Hant"], "zh-Hant-TW", "zh_Hant"),
+            (["zh_Hans", "zh_Hant"], "zh-Hans-CN", "zh_Hans"),
+            (["pt_BR", "pt_PT"], "pt-PT", "pt_PT"),
+            (["es_ES", "es_MX"], "es-MX", "es_MX")
+        ]
+
+        for testCase in cases {
+            for available in [testCase.available, testCase.available.reversed()] {
+                let chosen = Locale.selectPreferredLocale(
+                    from: available.map(Locale.init(identifier:)),
+                    preferredLocales: [Locale(identifier: testCase.preferred)]
+                )
+                expect(chosen).to(
+                    equal(Locale(identifier: testCase.expected)),
+                    description: "\(testCase.preferred) from \(available)"
+                )
+            }
+        }
+    }
+
 }

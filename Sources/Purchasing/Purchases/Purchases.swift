@@ -293,12 +293,13 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let offeringsFactory: OfferingsFactory
     private let offeringsManager: OfferingsManager
     private let workflowManager: WorkflowManager
-    private let branchResolver: BranchResolver
+    @_spi(Internal) public let branchResolver: BranchResolver
     private let offlineEntitlementsManager: OfflineEntitlementsManager
     private let productsManager: ProductsManagerType
     private let customerInfoManager: CustomerInfoManager
     private let eventsManager: EventsManagerType?
     private let remoteConfigManager: RemoteConfigManagerType
+    private let sdkSettingsConfigProvider: SDKSettingsConfigProviderType
 
     private var _adTracker: Any?
 
@@ -616,6 +617,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             uiConfigProvider: uiConfigProvider
         )
         let checkpointsConfigProvider = CheckpointsConfigProvider(manager: remoteConfigManager)
+        let audiencesConfigProvider = AudiencesConfigProvider(manager: remoteConfigManager)
+        let sdkSettingsConfigProvider = SDKSettingsConfigProvider(manager: remoteConfigManager)
 
         let workflowManager = WorkflowManager(
             workflowsConfigProvider: workflowsConfigProvider,
@@ -672,6 +675,13 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let checkpointResolver: CheckpointWorkflowResolver
         let branchResolver: BranchResolver
         if systemInfo.remoteConfigEnabled {
+            let remoteConfigStateObservers: [any RemoteConfigStateObserver] = [
+                checkpointsConfigProvider,
+                audiencesConfigProvider
+            ]
+            for observer in remoteConfigStateObservers {
+                remoteConfigManager.addRemoteConfigStateObserver(observer)
+            }
             RulesEngine.setLogger(RulesEngineLoggerBridge())
             let localRulesEvaluator = LocalRulesEvaluator(
                 dimensionProviders: [
@@ -701,11 +711,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 ],
                 currentAppUserIDProvider: { identityManager.currentAppUserID }
             )
-            let audiencesConfigProvider = AudiencesConfigProvider(manager: remoteConfigManager)
-            branchResolver = DefaultBranchResolver(
-                audiencesConfigProvider: audiencesConfigProvider,
-                localRulesEvaluator: localRulesEvaluator
-            )
             checkpointResolver = DefaultCheckpointWorkflowResolver(
                 checkpointsConfigProvider: checkpointsConfigProvider,
                 audiencesConfigProvider: audiencesConfigProvider,
@@ -721,6 +726,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     }
                 }
             )
+            branchResolver = systemInfo.branchingEnabled
+                ? DefaultBranchResolver(
+                    audiencesConfigProvider: audiencesConfigProvider,
+                    localRulesEvaluator: localRulesEvaluator
+                )
+                : DisabledBranchResolver()
         } else {
             checkpointResolver = DisabledCheckpointWorkflowResolver()
             branchResolver = DisabledBranchResolver()
@@ -860,6 +871,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   workflowManager: workflowManager,
                   branchResolver: branchResolver,
                   remoteConfigManager: remoteConfigManager,
+                  sdkSettingsConfigProvider: sdkSettingsConfigProvider,
                   offlineEntitlementsManager: offlineEntitlementsManager,
                   purchasesOrchestrator: purchasesOrchestrator,
                   purchasedProductsFetcher: purchasedProductsFetcher,
@@ -899,6 +911,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          workflowManager: WorkflowManager,
          branchResolver: BranchResolver = DisabledBranchResolver(),
          remoteConfigManager: RemoteConfigManagerType,
+         sdkSettingsConfigProvider: SDKSettingsConfigProviderType,
          offlineEntitlementsManager: OfflineEntitlementsManager,
          purchasesOrchestrator: PurchasesOrchestrator,
          purchasedProductsFetcher: PurchasedProductsFetcherType?,
@@ -959,7 +972,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.offeringsManager = offeringsManager
         self.workflowManager = workflowManager
         self.branchResolver = branchResolver
-        self.remoteConfigManager = systemInfo.remoteConfigEnabled ? remoteConfigManager : NoOpRemoteConfigManager()
+        self.remoteConfigManager = systemInfo.remoteConfigEnabled
+            ? remoteConfigManager
+            : NoOpRemoteConfigManager()
+        self.sdkSettingsConfigProvider = sdkSettingsConfigProvider
         self.offlineEntitlementsManager = offlineEntitlementsManager
         self.purchasesOrchestrator = purchasesOrchestrator
         self.purchasedProductsFetcher = purchasedProductsFetcher
@@ -979,6 +995,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             customLink: StoreKitExternalPurchaseCustomLink(),
             externalPurchaseTokenAPI: backend.externalPurchaseTokenAPI,
             currentUserProvider: identityManager,
+            settingsProvider: self.sdkSettingsConfigProvider,
             systemInfo: systemInfo
         )
         self.externalPurchaseManager = externalPurchaseManager
@@ -1002,6 +1019,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         #endif
 
         self.purchasesOrchestrator.delegate = self
+        self.sdkSettingsConfigProvider.delegate = self
+        self.remoteConfigManager.addRemoteConfigStateObserver(self.sdkSettingsConfigProvider)
         #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.attribution.syncAttributesAndOfferingsIfNeededHandler = { completion in
             completion(nil, NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError)
@@ -1169,12 +1188,6 @@ public extension Purchases {
     @_spi(Internal)
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
         return try await self.workflowManager.getWorkflow(forOfferingId: offeringID)
-    }
-
-    /// Resolves an audience branch to the step that should be presented.
-    @_spi(Internal)
-    func resolveBranch(_ branch: WorkflowBranch) async -> String {
-        return await self.branchResolver.resolve(branch)
     }
 
     @_spi(Internal)
@@ -2743,6 +2756,12 @@ public extension Purchases {
 // async contexts in a much more simple way without errors like:
 // "Capture of 'self' with non-sendable type 'Purchases' in a `@Sendable` closure"
 extension Purchases: @unchecked Sendable {}
+
+extension Purchases: SDKSettingsConfigProviderDelegate {
+
+    func sdkSettingsConfigProviderDidUpdate(_: SDKSettings) {}
+
+}
 
 // MARK: Internal
 

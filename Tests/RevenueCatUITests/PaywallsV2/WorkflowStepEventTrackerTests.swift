@@ -67,6 +67,15 @@ final class WorkflowStepEventTrackerTests: TestCase {
         expect(started.isLastStep) == true
     }
 
+    func testAStepWhoseOnlyExitIsABranchIsNotTerminal() throws {
+        let workflow = try Self.makeBranchExitWorkflow()
+        let step1 = try XCTUnwrap(workflow.steps["step_1"])
+        let step2 = try XCTUnwrap(workflow.steps["step_2"])
+
+        expect(WorkflowStepEventTracker.isTerminalStep(step1)) == false
+        expect(WorkflowStepEventTracker.isTerminalStep(step2)) == true
+    }
+
     func testTrackBackNavigationUsesBackEntryReason() throws {
         let workflow = try Self.makeWorkflow()
         let tracker = self.makeTracker(workflow: workflow)
@@ -235,6 +244,40 @@ private extension WorkflowStepEventTrackerTests {
                 {"name":"Button","type":"on_press","action_id":"btn","component_id":"btn"}
               ],
               "trigger_actions": { "btn": {"type":"step","step_id":"step_2"} }
+            },
+            "step_2": { "id": "step_2", "type": "screen", "triggers": [], "trigger_actions": {} }
+          },
+          "screens": {},
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {}
+          }
+        }
+        """
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        return try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
+    }
+
+    static func makeBranchExitWorkflow() throws -> PublishedWorkflow {
+        let json = """
+        {
+          "id": "wf_test",
+          "display_name": "Test Workflow",
+          "initial_step_id": "step_1",
+          "steps": {
+            "step_1": {
+              "id": "step_1",
+              "type": "screen",
+              "triggers": [
+                {"name":"Button","type":"on_press","action_id":"btn","component_id":"btn"}
+              ],
+              "trigger_actions": {
+                "btn": {
+                  "type": "branch",
+                  "branches": [{"audience_id": "aud_a", "step_id": "step_3"}],
+                  "fallback_step_id": "step_2"
+                }
+              }
             },
             "step_2": { "id": "step_2", "type": "screen", "triggers": [], "trigger_actions": {} }
           },

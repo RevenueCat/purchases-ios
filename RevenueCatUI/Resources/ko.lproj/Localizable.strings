@@ -23,3 +23,7 @@
 "Default_offer_details_with_intro_offer" = "{{ sub_offer_duration }} 무료 체험을 시작한 후 {{ total_price_and_per_month }}을(를) 시작하세요.";
 "Something went wrong" = "문제가 발생했습니다";
 "Purchase" = "구매";
+"You are currently subscribed to this" = "현재 이 항목을 구독하고 있습니다";
+"You've already purchased this" = "이미 구입한 항목입니다";
+"Purchase unavailable" = "구입할 수 없음";
+"This purchase isn't available in your region." = "해당 지역에서는 이 항목을 구입할 수 없습니다.";
