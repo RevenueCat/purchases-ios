@@ -236,7 +236,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             rewardVerificationEnabled: true
         )
 
-        self.purchases.adTracker.trackAdRewardEarnedUnverified(data, captureMethod: .adapter)
+        self.purchases.adTracker.trackAdRewardEarnedUnverified(data, captureMethod: .iosAdMobAdapter)
 
         await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
 
@@ -266,7 +266,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             impressionId: "impression-123"
         )
 
-        self.purchases.adTracker.trackAdRewardVerified(data, captureMethod: .adapter)
+        self.purchases.adTracker.trackAdRewardVerified(data, captureMethod: .iosAdMobAdapter)
 
         await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
 
@@ -296,7 +296,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             failureReason: .backendError(reason: nil)
         )
 
-        self.purchases.adTracker.trackAdRewardFailedToVerify(data, captureMethod: .adapter)
+        self.purchases.adTracker.trackAdRewardFailedToVerify(data, captureMethod: .iosAdMobAdapter)
 
         await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
 
@@ -327,7 +327,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             reward: .virtualCurrency(code: "GOLD", amount: 100)
         )
 
-        self.purchases.adTracker.trackAdRewardGranted(data, captureMethod: .adapter)
+        self.purchases.adTracker.trackAdRewardGranted(data, captureMethod: .iosAdMobAdapter)
 
         await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
 
@@ -379,7 +379,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(trackedEvents.map(\.creationData.captureMethod)) == [.manual, .manual, .manual]
     }
 
-    func testAdapterEntryPointStampsAdapterCaptureMethod() async throws {
+    func testAdapterEntryPointStampsIOSAdMobAdapterCaptureMethod() async throws {
         let displayedData = AdDisplayed(
             networkName: "AdMob",
             mediatorName: .adMob,
@@ -388,15 +388,15 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             impressionId: "impression-123"
         )
 
-        self.purchases.adTracker.trackAdDisplayed(displayedData, captureMethod: .adapter)
+        self.purchases.adTracker.trackAdDisplayed(displayedData, captureMethod: .iosAdMobAdapter)
 
         await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
 
         let trackedEvents = try await self.mockEventsManager.trackedAdEvents
-        expect(trackedEvents.first?.creationData.captureMethod) == .adapter
+        expect(trackedEvents.first?.creationData.captureMethod) == .iosAdMobAdapter
     }
 
-    func testRewardTrackingStampsAdapterCaptureMethod() async throws {
+    func testRewardTrackingStampsIOSAdMobAdapterCaptureMethod() async throws {
         let data = AdRewardVerified(
             networkName: "AdMob",
             mediatorName: .adMob,
@@ -406,12 +406,12 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             impressionId: "impression-123"
         )
 
-        self.purchases.adTracker.trackAdRewardVerified(data, captureMethod: .adapter)
+        self.purchases.adTracker.trackAdRewardVerified(data, captureMethod: .iosAdMobAdapter)
 
         await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
 
         let trackedEvents = try await self.mockEventsManager.trackedAdEvents
-        expect(trackedEvents.first?.creationData.captureMethod) == .adapter
+        expect(trackedEvents.first?.creationData.captureMethod) == .iosAdMobAdapter
     }
 
 }
