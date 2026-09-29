@@ -157,7 +157,7 @@ final class HostedCheckoutTests: TestCase {
         expect(HostedCheckout.Resolution(.alreadyPurchased)) == .tellCustomerTheyAlreadyOwnIt
     }
 
-    /// The success page told the customer the purchase went through, so anything short of it is an error.
+    /// The success page always tells the customer the purchase went through, so anything short of it is an error.
     func testFailsWhenTheBackendDoesNotConfirmWhatTheSuccessPageSaid() {
         expect(HostedCheckout.Resolution(.failed(code: 3, message: "payment_charge_failed")))
             == .failed(.failed(code: 3))
