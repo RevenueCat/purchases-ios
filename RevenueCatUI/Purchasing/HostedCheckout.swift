@@ -89,8 +89,8 @@ enum HostedCheckout {
     /// How the paywall settles on the outcome the backend gives for a checkout.
     ///
     /// Only a purchase the backend confirms counts as one, and only a checkout dismissed without paying
-    /// counts as a cancellation. Anything else is an error: either the success page told the customer the
-    /// purchase went through, or a payment was under way when they closed the sheet.
+    /// counts as a cancellation. Anything else is an error: either the customer saw the success page, which
+    /// always tells them the purchase went through, or a payment was under way when they closed the sheet.
     enum Resolution: Equatable {
 
         case purchased

@@ -174,8 +174,8 @@ final class HostedCheckoutTests: TestCase {
         expect(HostedCheckout.Resolution(.alreadyPurchased)) == .tellCustomerTheyAlreadyOwnIt
     }
 
-    /// Either the success page told the customer the purchase went through, or a payment was under way
-    /// when they closed the sheet, so anything short of a purchase is an error.
+    /// Either the customer saw the success page, which always tells them the purchase went through, or a
+    /// payment was under way when they closed the sheet, so anything short of a purchase is an error.
     func testFailsWhenTheBackendDoesNotConfirmThePurchase() {
         expect(HostedCheckout.Resolution(.failed(code: 3, message: "payment_charge_failed")))
             == .failed(.failed(code: 3))
