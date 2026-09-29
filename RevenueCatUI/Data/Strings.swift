@@ -419,7 +419,7 @@ extension Strings: CustomStringConvertible {
             return "Web checkout content process terminated."
         case .hosted_checkout_dismissed_without_returning:
             return "The checkout was closed before the page reported an outcome. " +
-            "Whether a purchase was made will be confirmed with RevenueCat."
+            "It is kept, so that buying again carries on with it."
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"

@@ -27,6 +27,9 @@ enum HostedCheckout {
         /// Present this checkout to the customer.
         case present(HostedCheckoutSession)
 
+        /// Confirm this checkout, which the customer already paid for, without presenting anything.
+        case confirm(HostedCheckoutSession)
+
         /// Tell the customer they already own what they tried to buy, which is why no checkout opens.
         case tellCustomerTheyAlreadyOwnIt
 
@@ -40,11 +43,13 @@ enum HostedCheckout {
             switch result {
             case let .started(session), let .resumed(session):
                 self = .present(session)
+            case let .completed(session):
+                self = .confirm(session)
             case .alreadyPurchased:
                 self = .tellCustomerTheyAlreadyOwnIt
             case .notEligible:
                 self = .tellCustomerThePurchaseIsUnavailable
-            case .declinedByCustomer, .paymentsNotAuthorized, .alreadyStarting, .failed, .completed:
+            case .declinedByCustomer, .paymentsNotAuthorized, .alreadyStarting, .failed:
                 self = .nothing
             }
         }
@@ -52,6 +57,10 @@ enum HostedCheckout {
     }
 
     /// Runs Apple's flow and creates the checkout session, once the app's purchase interceptor lets it.
+    ///
+    /// The backend is asked to carry on with the checkout the paywall kept, if any, rather than create a second
+    /// one the customer could pay for as well.
+    @MainActor
     static func start(for package: Package,
                       purchaseHandler: PurchaseHandler,
                       purchaseInitiatedAction: PurchaseInitiatedAction?) async -> Action {
@@ -60,7 +69,73 @@ enum HostedCheckout {
             return .nothing
         }
 
-        return Action(await purchaseHandler.startHostedCheckout(package: package))
+        let previousSession = purchaseHandler.keptHostedCheckout?.session
+        let action = Action(await purchaseHandler.startHostedCheckout(package: package,
+                                                                      previousSession: previousSession))
+
+        if case .confirm = action {
+            purchaseHandler.keptHostedCheckout = nil
+        }
+
+        return action
+    }
+
+    /// A checkout the customer was given on this paywall, kept until it settles or the paywall goes, so that
+    /// tapping buy again carries on with it.
+    @MainActor
+    final class KeptCheckout {
+
+        let session: HostedCheckoutSession
+
+        /// The package the checkout was started for.
+        let package: Package
+
+        let viewModel: WebCheckoutViewModel
+
+        init(session: HostedCheckoutSession, package: Package, viewModel: WebCheckoutViewModel) {
+            self.session = session
+            self.package = package
+            self.viewModel = viewModel
+        }
+
+        /// Whether the page is still where the customer left it. One that failed to load, or reached a return URL,
+        /// is loaded afresh instead.
+        var canBePresentedAgain: Bool {
+            switch self.viewModel.loadState {
+            case .idle, .loading, .loaded, .navigating:
+                return true
+            case .failed, .finished:
+                return false
+            }
+        }
+
+    }
+
+    /// The checkout to present for `session`: the kept one where it is the same session and its page is still
+    /// usable, or a new one that replaces it.
+    ///
+    /// - Parameter package: The package the checkout was started for.
+    @MainActor
+    static func checkoutToPresent(_ session: HostedCheckoutSession,
+                                  package: Package,
+                                  purchaseHandler: PurchaseHandler) -> KeptCheckout {
+        if let kept = purchaseHandler.keptHostedCheckout, kept.session == session, kept.canBePresentedAgain {
+            return kept
+        }
+
+        let checkout = KeptCheckout(
+            session: session,
+            package: package,
+            viewModel: WebCheckoutViewModel(
+                checkoutURL: session.checkoutURL,
+                successURL: session.successURL,
+                cancelURL: session.cancelURL,
+                dataStoreIdentifierStore: .init()
+            )
+        )
+        purchaseHandler.keptHostedCheckout = checkout
+
+        return checkout
     }
 
     /// How the paywall settles on the outcome the backend gives for a checkout that ended on its success page.
