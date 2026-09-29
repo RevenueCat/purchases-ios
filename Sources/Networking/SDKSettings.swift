@@ -12,6 +12,15 @@ import Foundation
 struct SDKSettings: Decodable, Equatable {
 
     let externalPurchases: ExternalPurchases
+    let diagnostics: Diagnostics
+
+    init(
+        externalPurchases: ExternalPurchases = Self.noExternalPurchases,
+        diagnostics: Diagnostics = .init()
+    ) {
+        self.externalPurchases = externalPurchases
+        self.diagnostics = diagnostics
+    }
 
     /// The rules for purchases taken outside the store, one entry per store.
     struct ExternalPurchases: Decodable, Equatable {
@@ -20,18 +29,34 @@ struct SDKSettings: Decodable, Equatable {
 
     }
 
+    struct Diagnostics: Decodable, Equatable {
+
+        let enabled: Bool
+
+        init(enabled: Bool = false) {
+            self.enabled = enabled
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            self.enabled = try container.decodeIfPresent(Bool.self, forKey: .enabled) ?? false
+        }
+
+    }
+
 }
 
 extension SDKSettings {
 
     init() {
-        self.init(externalPurchases: Self.noExternalPurchases)
+        self.init(externalPurchases: Self.noExternalPurchases, diagnostics: .init())
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.externalPurchases = (try? container.decode(ExternalPurchases.self, forKey: .externalPurchases))
             ?? Self.noExternalPurchases
+        self.diagnostics = try container.decodeIfPresent(Diagnostics.self, forKey: .diagnostics) ?? .init()
     }
 
     private static let noExternalPurchases = ExternalPurchases(
@@ -69,6 +94,15 @@ private extension SDKSettings {
 
     enum CodingKeys: String, CodingKey {
         case externalPurchases
+        case diagnostics
+    }
+
+}
+
+private extension SDKSettings.Diagnostics {
+
+    enum CodingKeys: String, CodingKey {
+        case enabled
     }
 
 }
