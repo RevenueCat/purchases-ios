@@ -127,7 +127,6 @@ final class WorkflowNavigator: ObservableObject {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension WorkflowNavigator {
 
-    /// Abandons the previous step's resolve, so every visit routes on its own answer.
     private func resolveCurrentStepBranches() {
         self.currentStepBranches = [:]
         self.resolveTask?.cancel()
