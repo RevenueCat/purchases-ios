@@ -125,7 +125,7 @@ class BackendGetHostedCheckoutStatusTests: BaseBackendTests {
         expect(response.status) == .pending
     }
 
-    /// Only used for web product changes, so it says nothing about what became of this session.
+    /// Only used for web product changes, so it says nothing about the outcome of this session.
     func testIgnoresAnExpiredSession() throws {
         self.mockStatus(["status": "succeeded", "is_expired": true])
 

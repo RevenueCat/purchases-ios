@@ -32,7 +32,7 @@ import Foundation
 
 }
 
-/// Asks the backend what became of a checkout session, one attempt at a time.
+/// Asks the backend for the outcome of a checkout session, one attempt at a time.
 internal protocol HostedCheckoutPolling: Sendable {
 
     /// - Parameter appUserID: The customer the session belongs to, which every attempt asks about. The
