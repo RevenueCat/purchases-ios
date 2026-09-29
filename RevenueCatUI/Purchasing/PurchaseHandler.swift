@@ -39,7 +39,7 @@ final class PurchaseHandler: ObservableObject {
     private var cancellables: Set<AnyCancellable> = Set()
 
     private let purchases: PaywallPurchasesType
-    let resolveBranches: @Sendable (WorkflowStep) async -> [String: String]
+    let resolveBranches: @Sendable (WorkflowStep) async -> [WorkflowActionID: WorkflowStepID]
     private let paywallEventTracker: PaywallEventTracker
     private let keyWindowFocusResigner: KeyWindowFocusResigning
 
@@ -195,7 +195,8 @@ final class PurchaseHandler: ObservableObject {
     init(
         isConfigured: Bool = true,
         purchases: PaywallPurchasesType,
-        resolveBranches: @escaping @Sendable (WorkflowStep) async -> [String: String] = { _ in [:] },
+        resolveBranches: @escaping @Sendable (WorkflowStep) async -> [WorkflowActionID: WorkflowStepID]
+            = { _ in [:] },
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter

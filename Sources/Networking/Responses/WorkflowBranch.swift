@@ -14,6 +14,11 @@
 
 import Foundation
 
+/// Identifies a trigger action within a step.
+@_spi(Internal) public typealias WorkflowActionID = String
+/// Identifies a step within a workflow.
+@_spi(Internal) public typealias WorkflowStepID = String
+
 /// A `branch` trigger action. The first audience that matches decides the route.
 @_spi(Internal) public struct WorkflowBranch: Equatable, Sendable, Decodable {
 

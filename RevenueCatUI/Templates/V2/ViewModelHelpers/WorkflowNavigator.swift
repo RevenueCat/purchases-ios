@@ -33,15 +33,15 @@ final class WorkflowNavigator: ObservableObject {
     @Published private(set) var currentStepId: String
     private let workflow: PublishedWorkflow
     private var backStack: [String] = []
-    /// Keyed by action id. Empty until this visit's resolve lands.
-    private var currentStepBranches: [String: String] = [:]
+    private var currentStepBranches: [WorkflowActionID: WorkflowStepID] = [:]
     private var resolveTask: Task<Void, Never>?
 
-    private let resolveBranches: @Sendable (WorkflowStep) async -> [String: String]
+    private let resolveBranches: @Sendable (WorkflowStep) async -> [WorkflowActionID: WorkflowStepID]
 
     init(
         workflow: PublishedWorkflow,
-        resolveBranches: @escaping @Sendable (WorkflowStep) async -> [String: String] = { _ in [:] }
+        resolveBranches: @escaping @Sendable (WorkflowStep) async -> [WorkflowActionID: WorkflowStepID]
+            = { _ in [:] }
     ) {
         self.workflow = workflow
         self.resolveBranches = resolveBranches

@@ -19,15 +19,14 @@ import Foundation
 @_spi(Internal) public protocol BranchResolver: AnyObject {
 
     /// - Returns: the step the branch routes to.
-    func resolve(_ branch: WorkflowBranch) async -> String
+    func resolve(_ branch: WorkflowBranch) async -> WorkflowStepID
 
 }
 
 extension BranchResolver {
 
-    /// The branch actions on a step, keyed by action id.
-    func resolveBranches(in step: WorkflowStep) async -> [String: String] {
-        var resolved: [String: String] = [:]
+    func resolveBranches(in step: WorkflowStep) async -> [WorkflowActionID: WorkflowStepID] {
+        var resolved: [WorkflowActionID: WorkflowStepID] = [:]
         for (actionId, action) in step.stepTriggerActions {
             guard !Task.isCancelled else { return resolved }
             guard case .branch(let branch) = action else { continue }
@@ -45,7 +44,7 @@ extension BranchResolver {
     @_spi(Internal) public init() {}
 
     /// - Returns: the branch's `fallbackStepId`, always.
-    @_spi(Internal) public func resolve(_ branch: WorkflowBranch) async -> String {
+    @_spi(Internal) public func resolve(_ branch: WorkflowBranch) async -> WorkflowStepID {
         return branch.fallbackStepId
     }
 
@@ -69,7 +68,7 @@ final class DefaultBranchResolver: BranchResolver {
         self.localRulesEvaluator = localRulesEvaluator
     }
 
-    func resolve(_ branch: WorkflowBranch) async -> String {
+    func resolve(_ branch: WorkflowBranch) async -> WorkflowStepID {
         guard !branch.routes.isEmpty else { return branch.fallbackStepId }
 
         do {
@@ -84,7 +83,7 @@ final class DefaultBranchResolver: BranchResolver {
     }
 
     /// The step the first matching audience picks, or `nil` when none matched.
-    private func route(_ branch: WorkflowBranch) async throws -> String? {
+    private func route(_ branch: WorkflowBranch) async throws -> WorkflowStepID? {
         // One snapshot for the whole walk, so a config swap midway cannot mix two generations.
         guard let audiences = try await self.audiencesConfigProvider.configuration()?.audiences else {
             throw BranchResolutionError.noAudienceConfiguration
