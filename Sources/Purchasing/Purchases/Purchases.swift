@@ -1950,8 +1950,8 @@ public extension Purchases {
                                                  operationSessionID: operationSessionID)
     }
 
-    /// Used by `RevenueCatUI` to learn what became of a checkout the customer dismissed before it sent them
-    /// anywhere, where nothing says whether they paid. Fetches `CustomerInfo` as
+    /// Used by `RevenueCatUI` to determine the final outcome of a checkout the customer dismissed before it sent
+    /// them anywhere, where nothing says whether they paid. Fetches `CustomerInfo` as
     /// ``pollHostedCheckout(session:)`` does.
     @_spi(Internal) func pollDismissedHostedCheckout(
         session: HostedCheckoutSession
