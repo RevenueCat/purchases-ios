@@ -91,6 +91,9 @@ enum HostedCheckout {
     /// Asks the backend for the final outcome of a checkout that ended on its success page, then settles the
     /// paywall on it.
     ///
+    /// A purchase the backend confirms but the paywall cannot report, for lack of the `CustomerInfo` showing it,
+    /// settles as unconfirmed: as far as the app can tell, it is still processing.
+    ///
     /// A purchase is left for the caller to report with ``PurchaseHandler/handleHostedCheckoutPurchase()``
     /// once the customer has been told about it, since reporting it can close the paywall.
     ///
@@ -101,7 +104,11 @@ enum HostedCheckout {
                         purchaseHandler: PurchaseHandler) async -> Resolution {
         return await purchaseHandler.whileConfirmingHostedCheckout {
             let result = await purchaseHandler.pollHostedCheckout(session: session)
-            let resolution = Resolution(result)
+            var resolution = Resolution(result)
+
+            if resolution == .purchased, !(await purchaseHandler.canReportHostedCheckoutPurchase()) {
+                resolution = .failed(.unconfirmed)
+            }
 
             switch resolution {
             case .purchased:
@@ -138,8 +145,8 @@ enum HostedCheckout {
 
 }
 
-/// Why a checkout the customer was told succeeded did not end in a purchase, mapped onto the same public
-/// codes `purchases-js` reports for it, except for a failed charge.
+/// Why a checkout the customer was told succeeded did not end in a purchase the paywall could report, mapped onto
+/// the same public codes `purchases-js` reports for it, except for a failed charge.
 ///
 /// `purchases-js` reports a failed charge as `PaymentPendingError`, but on Apple platforms that code means a
 /// purchase awaiting approval, which apps commonly hold off on rather than treat as a failure.
@@ -148,7 +155,8 @@ enum HostedCheckoutError: Error, Equatable {
     /// The backend says the session failed. `code` is the backend's own, absent where it gave none.
     case failed(code: Int?)
 
-    /// The backend never said the session had finished.
+    /// The backend never said the session had finished, or said the purchase went through but the `CustomerInfo`
+    /// showing it could not be fetched.
     case unconfirmed
 
 }
@@ -199,8 +207,8 @@ extension HostedCheckoutError: CustomNSError {
 
 extension HostedCheckoutError {
 
-    /// What the paywall tells the customer. A purchase the backend has yet to confirm may still land, so it is not
-    /// called a failure.
+    /// What the paywall tells the customer. A purchase the paywall could not confirm may still land, or have landed
+    /// already, so it is not called a failure.
     func message(bundle: Bundle) -> Text {
         switch self {
         case .failed(code: Self.paymentChargeFailedCode):
