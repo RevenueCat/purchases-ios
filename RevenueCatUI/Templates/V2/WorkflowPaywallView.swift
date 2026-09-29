@@ -340,7 +340,7 @@ struct WorkflowPaywallView: View {
         self.onPresentationError = onPresentationError
         let navigator = WorkflowNavigator(
             workflow: context.workflow,
-            branchResolver: purchaseHandler.branchResolver
+            resolveBranches: purchaseHandler.resolveBranches
         )
         #if ENABLE_WORKFLOW_BRANCH_LOADING
         if let resolvedInitialStepId = context.resolvedInitialStepId {
@@ -367,7 +367,7 @@ struct WorkflowPaywallView: View {
         }
         self._showsSkeleton = .init(initialValue: branch != nil)
         self._skeletonComponents = .init(initialValue: branch.flatMap { branch in
-            guard let stepId = branch.branches.first?.stepId,
+            guard let stepId = branch.routes.first?.stepId,
                   let screenId = context.workflow.steps[stepId]?.screenId,
                   let screen = context.workflow.screens[screenId] else { return nil }
             let components = WorkflowScreenMapper.toPaywallComponents(
@@ -586,7 +586,7 @@ struct WorkflowPaywallView: View {
         switch self.presentationState {
         case let .resolvingBranch(branch):
             self.syncExitOfferBinding()
-            let stepId = await self.purchaseHandler.resolveBranch(branch)
+            let stepId = await self.purchaseHandler.resolveInitialBranch(branch)
             guard !Task.isCancelled else { return }
             self.updateInitialPriceFormatting(for: stepId)
             guard Self.presentationError(for: stepId, in: self.context) == nil,

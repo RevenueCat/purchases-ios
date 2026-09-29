@@ -33,27 +33,30 @@ final class WorkflowNavigator: ObservableObject {
     @Published private(set) var currentStepId: String
     private let workflow: PublishedWorkflow
     private var backStack: [String] = []
-    /// Keyed by action id. Empty until this visit's resolve lands.
-    private var currentStepBranches: [String: String] = [:]
+    private var currentStepBranches: [WorkflowActionID: WorkflowStepID] = [:]
     private var resolveTask: Task<Void, Never>?
 
-    private let branchResolver: BranchResolver
+    private let resolveBranches: @Sendable (WorkflowStep) async -> [WorkflowActionID: WorkflowStepID]
 
-    init(workflow: PublishedWorkflow, branchResolver: BranchResolver = DisabledBranchResolver()) {
+    init(
+        workflow: PublishedWorkflow,
+        resolveBranches: @escaping @Sendable (WorkflowStep) async -> [WorkflowActionID: WorkflowStepID]
+            = { _ in [:] }
+    ) {
         self.workflow = workflow
-        self.branchResolver = branchResolver
+        self.resolveBranches = resolveBranches
         self.currentStepId = workflow.initialStepId
         #if ENABLE_WORKFLOW_BRANCH_LOADING
         if case .branch? = workflow.initialTrigger { return }
         #endif
-        self.resolveStepExits()
+        self.resolveCurrentStepBranches()
     }
 
     deinit {
         self.resolveTask?.cancel()
     }
 
-    /// The observation point for a resolve nothing else awaits.
+    /// Tests only. Nothing in the UI waits for a resolve.
     func waitForBranchResolution() async {
         await self.resolveTask?.value
     }
@@ -62,7 +65,7 @@ final class WorkflowNavigator: ObservableObject {
     func resolveInitialStep(to stepId: String) {
         guard self.backStack.isEmpty, self.currentStepId == self.workflow.initialStepId else { return }
         self.currentStepId = stepId
-        self.resolveStepExits()
+        self.resolveCurrentStepBranches()
     }
 
     #endif
@@ -95,7 +98,7 @@ final class WorkflowNavigator: ObservableObject {
 
         backStack.append(currentStepId)
         currentStepId = nextStep.step.id
-        self.resolveStepExits()
+        self.resolveCurrentStepBranches()
         return nextStep.step
     }
 
@@ -127,7 +130,7 @@ final class WorkflowNavigator: ObservableObject {
             return nil
         }
         currentStepId = previousStepId
-        self.resolveStepExits()
+        self.resolveCurrentStepBranches()
         return workflow.steps[previousStepId]
     }
 
@@ -136,22 +139,21 @@ final class WorkflowNavigator: ObservableObject {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension WorkflowNavigator {
 
-    /// Abandons the previous step's resolve, so every visit routes on its own answer.
-    private func resolveStepExits() {
+    private func resolveCurrentStepBranches() {
         self.currentStepBranches = [:]
         self.resolveTask?.cancel()
         self.resolveTask = nil
 
-        guard let step = self.currentStep, step.hasBranchExit else { return }
-        self.resolveTask = Task { [weak self, branchResolver] in
-            let resolved = await branchResolver.resolveBranches(in: step)
+        guard let step = self.currentStep, step.hasBranchAction else { return }
+        self.resolveTask = Task { [weak self, resolveBranches] in
+            let resolved = await resolveBranches(step)
             // Enough on its own: cancel() precedes the step change and this block never suspends.
             guard !Task.isCancelled else { return }
             self?.currentStepBranches = resolved
         }
     }
 
-    /// A branch falls back when nothing matched, and when the route names a step the workflow has lost.
+    /// If the branch has not been resolved, pick the fallback.
     func nextStepId(for action: WorkflowTriggerAction?, actionId: String) -> String? {
         switch action {
         case .step(let stepId):
@@ -171,7 +173,7 @@ extension WorkflowNavigator {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension WorkflowStep {
 
-    var hasBranchExit: Bool {
+    var hasBranchAction: Bool {
         return self.stepTriggerActions.values.contains { action in
             if case .branch = action { return true }
             return false

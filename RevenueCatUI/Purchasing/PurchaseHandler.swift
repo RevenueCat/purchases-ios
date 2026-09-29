@@ -39,7 +39,8 @@ final class PurchaseHandler: ObservableObject {
     private var cancellables: Set<AnyCancellable> = Set()
 
     private let purchases: PaywallPurchasesType
-    let branchResolver: BranchResolver
+    private let resolveBranch: @Sendable (WorkflowBranch) async -> WorkflowStepID
+    let resolveBranches: @Sendable (WorkflowStep) async -> [WorkflowActionID: WorkflowStepID]
     private let paywallEventTracker: PaywallEventTracker
     private let keyWindowFocusResigner: KeyWindowFocusResigning
 
@@ -183,7 +184,8 @@ final class PurchaseHandler: ObservableObject {
     ) {
         self.init(isConfigured: true,
                   purchases: purchases,
-                  branchResolver: purchases.branchResolver,
+                  resolveBranch: { [purchases] in await purchases.resolveBranch($0) },
+                  resolveBranches: { [purchases] in await purchases.resolveBranches(in: $0) },
                   performPurchase: performPurchase,
                   performRestore: performRestore,
                   purchaseResultPublisher: purchaseResultPublisher,
@@ -195,7 +197,9 @@ final class PurchaseHandler: ObservableObject {
     init(
         isConfigured: Bool = true,
         purchases: PaywallPurchasesType,
-        branchResolver: BranchResolver = DisabledBranchResolver(),
+        resolveBranch: @escaping @Sendable (WorkflowBranch) async -> WorkflowStepID = { $0.fallbackStepId },
+        resolveBranches: @escaping @Sendable (WorkflowStep) async -> [WorkflowActionID: WorkflowStepID]
+            = { _ in [:] },
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
@@ -206,7 +210,8 @@ final class PurchaseHandler: ObservableObject {
     ) {
         self.isConfigured = isConfigured
         self.purchases = purchases
-        self.branchResolver = branchResolver
+        self.resolveBranch = resolveBranch
+        self.resolveBranches = resolveBranches
         self.paywallEventTracker = eventTracker
         self.keyWindowFocusResigner = keyWindowFocusResigner
         self.performPurchase = performPurchase
@@ -670,12 +675,12 @@ extension PurchaseHandler {
     }
 
     #if ENABLE_WORKFLOW_BRANCH_LOADING
-    func resolveBranch(_ branch: WorkflowBranch) async -> String {
-        let branchResolver = self.branchResolver
+    func resolveInitialBranch(_ branch: WorkflowBranch) async -> WorkflowStepID {
+        let resolveBranch = self.resolveBranch
         // A task group would wait for cancelled network work before returning the timeout result.
-        let results = AsyncStream<String>(bufferingPolicy: .bufferingOldest(1)) { continuation in
+        let results = AsyncStream<WorkflowStepID>(bufferingPolicy: .bufferingOldest(1)) { continuation in
             let resolution = Task<Void, Never> {
-                let stepId = await branchResolver.resolve(branch)
+                let stepId = await resolveBranch(branch)
                 guard !Task.isCancelled else { return }
                 continuation.yield(stepId)
                 continuation.finish()

@@ -19,15 +19,14 @@ import Foundation
 @_spi(Internal) public protocol BranchResolver: AnyObject {
 
     /// - Returns: the step the branch routes to.
-    func resolve(_ branch: WorkflowBranch) async -> String
+    func resolve(_ branch: WorkflowBranch) async -> WorkflowStepID
 
 }
 
 extension BranchResolver {
 
-    /// The branches a step can exit through, keyed by action id.
-    @_spi(Internal) public func resolveBranches(in step: WorkflowStep) async -> [String: String] {
-        var resolved: [String: String] = [:]
+    func resolveBranches(in step: WorkflowStep) async -> [WorkflowActionID: WorkflowStepID] {
+        var resolved: [WorkflowActionID: WorkflowStepID] = [:]
         for (actionId, action) in step.stepTriggerActions {
             guard !Task.isCancelled else { return resolved }
             guard case .branch(let branch) = action else { continue }
@@ -45,7 +44,7 @@ extension BranchResolver {
     @_spi(Internal) public init() {}
 
     /// - Returns: the branch's `fallbackStepId`, always.
-    @_spi(Internal) public func resolve(_ branch: WorkflowBranch) async -> String {
+    @_spi(Internal) public func resolve(_ branch: WorkflowBranch) async -> WorkflowStepID {
         return branch.fallbackStepId
     }
 
@@ -53,6 +52,10 @@ extension BranchResolver {
 
 /// Resolves audiences in order and returns the first match.
 final class DefaultBranchResolver: BranchResolver {
+
+    /// Stands in for an audience we could not read. Thrown resolution would end the walk, and one
+    /// unreadable audience must not stop a later one from winning, so it never matches instead.
+    private static let neverMatches = #"{"==": [1, 0]}"#
 
     private let audiencesConfigProvider: AudiencesConfigProviderType
     private let localRulesEvaluator: LocalRulesEvaluator
@@ -65,8 +68,8 @@ final class DefaultBranchResolver: BranchResolver {
         self.localRulesEvaluator = localRulesEvaluator
     }
 
-    func resolve(_ branch: WorkflowBranch) async -> String {
-        guard !branch.branches.isEmpty else { return branch.fallbackStepId }
+    func resolve(_ branch: WorkflowBranch) async -> WorkflowStepID {
+        guard !branch.routes.isEmpty else { return branch.fallbackStepId }
 
         do {
             return try await self.route(branch) ?? branch.fallbackStepId
@@ -80,14 +83,14 @@ final class DefaultBranchResolver: BranchResolver {
     }
 
     /// The step the first matching audience picks, or `nil` when none matched.
-    private func route(_ branch: WorkflowBranch) async throws -> String? {
+    private func route(_ branch: WorkflowBranch) async throws -> WorkflowStepID? {
         // One snapshot for the whole walk, so a config swap midway cannot mix two generations.
         guard let audiences = try await self.audiencesConfigProvider.configuration()?.audiences else {
             throw BranchResolutionError.noAudienceConfiguration
         }
 
         let unreadable = Atomic<[String]>([])
-        let matched = try await self.localRulesEvaluator.match(in: branch.branches) { route in
+        let matched = try await self.localRulesEvaluator.match(in: branch.routes) { route in
             guard let audience = audiences[route.audienceId] else {
                 unreadable.modify { $0.append(route.audienceId) }
                 return Self.neverMatches
@@ -120,13 +123,5 @@ private enum BranchResolutionError: Error, CustomStringConvertible {
             return "could not read \(identifiers.joined(separator: ", "))"
         }
     }
-
-}
-
-private extension DefaultBranchResolver {
-
-    /// Stands in for an audience we could not read. Thrown resolution would end the walk, and one
-    /// unreadable audience must not stop a later one from winning, so it never matches instead.
-    static let neverMatches = #"{"==": [1, 0]}"#
 
 }

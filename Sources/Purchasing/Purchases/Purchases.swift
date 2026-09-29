@@ -293,7 +293,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let offeringsFactory: OfferingsFactory
     private let offeringsManager: OfferingsManager
     private let workflowManager: WorkflowManager
-    @_spi(Internal) public let branchResolver: BranchResolver
+    private let branchResolver: BranchResolver
     private let offlineEntitlementsManager: OfflineEntitlementsManager
     private let productsManager: ProductsManagerType
     private let customerInfoManager: CustomerInfoManager
@@ -1193,6 +1193,16 @@ public extension Purchases {
     @_spi(Internal)
     func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
         return self.workflowManager.cachedWorkflow(forOfferingId: offeringID)
+    }
+
+    @_spi(Internal)
+    func resolveBranch(_ branch: WorkflowBranch) async -> WorkflowStepID {
+        return await self.branchResolver.resolve(branch)
+    }
+
+    @_spi(Internal)
+    func resolveBranches(in step: WorkflowStep) async -> [WorkflowActionID: WorkflowStepID] {
+        return await self.branchResolver.resolveBranches(in: step)
     }
 
     @_spi(Internal)
