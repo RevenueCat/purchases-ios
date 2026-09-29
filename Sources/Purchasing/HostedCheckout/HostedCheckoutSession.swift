@@ -20,6 +20,9 @@ import Foundation
 
     @_spi(Internal) public let operationSessionID: String
 
+    /// The customer the session was created for, who need not be the one logged in by the time it is settled.
+    @_spi(Internal) public let appUserID: String
+
     /// The provider-hosted page to present.
     @_spi(Internal) public let checkoutURL: URL
 
@@ -30,10 +33,12 @@ import Foundation
     @_spi(Internal) public let cancelURL: URL
 
     @_spi(Internal) public init(operationSessionID: String,
+                                appUserID: String,
                                 checkoutURL: URL,
                                 successURL: URL,
                                 cancelURL: URL) {
         self.operationSessionID = operationSessionID
+        self.appUserID = appUserID
         self.checkoutURL = checkoutURL
         self.successURL = successURL
         self.cancelURL = cancelURL
@@ -45,8 +50,9 @@ extension HostedCheckoutSession: Equatable, Sendable {}
 
 extension HostedCheckoutSession {
 
-    init(response: HostedCheckoutResponse) {
+    init(response: HostedCheckoutResponse, appUserID: String) {
         self.init(operationSessionID: response.operationSessionID,
+                  appUserID: appUserID,
                   checkoutURL: response.checkoutURL,
                   successURL: response.successURL,
                   cancelURL: response.cancelURL)

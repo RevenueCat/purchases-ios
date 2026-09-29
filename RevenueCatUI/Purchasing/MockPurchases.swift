@@ -114,12 +114,12 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
         return await block(package, paywallEvent)
     }
 
-    var hostedCheckoutPollBlock: (@Sendable (String) async -> HostedCheckoutPollResult)?
+    var hostedCheckoutPollBlock: (@Sendable (HostedCheckoutSession) async -> HostedCheckoutPollResult)?
 
-    func pollHostedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
+    func pollHostedCheckout(session: HostedCheckoutSession) async -> HostedCheckoutPollResult {
         guard let block = self.hostedCheckoutPollBlock else { return .undetermined }
 
-        return await block(operationSessionID)
+        return await block(session)
     }
 
     var useExternalPurchaseCustomLinks = false
@@ -214,7 +214,7 @@ extension PaywallPurchasesType {
         mapped.isUIPreviewMode = self.isUIPreviewMode
         mapped.remoteConfigEnabled = self.remoteConfigEnabled
         mapped.hostedCheckoutBlock = { await self.startHostedCheckout(package: $0, paywallEvent: $1) }
-        mapped.hostedCheckoutPollBlock = { await self.pollHostedCheckout(operationSessionID: $0) }
+        mapped.hostedCheckoutPollBlock = { await self.pollHostedCheckout(session: $0) }
         mapped.useExternalPurchaseCustomLinks = self.useExternalPurchaseCustomLinks
         mapped.externalPurchaseLinkBlock = { await self.prepareExternalPurchaseLink() }
         #if !os(tvOS)
@@ -249,7 +249,7 @@ extension PaywallPurchasesType {
         mapped.isUIPreviewMode = self.isUIPreviewMode
         mapped.remoteConfigEnabled = self.remoteConfigEnabled
         mapped.hostedCheckoutBlock = { await self.startHostedCheckout(package: $0, paywallEvent: $1) }
-        mapped.hostedCheckoutPollBlock = { await self.pollHostedCheckout(operationSessionID: $0) }
+        mapped.hostedCheckoutPollBlock = { await self.pollHostedCheckout(session: $0) }
         mapped.useExternalPurchaseCustomLinks = self.useExternalPurchaseCustomLinks
         mapped.externalPurchaseLinkBlock = { await self.prepareExternalPurchaseLink() }
         #if !os(tvOS)
