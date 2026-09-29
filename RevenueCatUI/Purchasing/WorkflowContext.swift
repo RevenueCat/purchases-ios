@@ -28,6 +28,8 @@ import Foundation
     /// Package context from `singleStepFallbackId`, precomputed because it is stable for a workflow.
     let workflowPackageContext: WorkflowPackageContext?
     let workflowBlobRef: String?
+    /// Set when a checkpoint started the workflow, so its events join the checkpoint hit.
+    let traceId: String?
 
     init(
         workflow: PublishedWorkflow,
@@ -35,9 +37,11 @@ import Foundation
         allOfferings: Offerings,
         initialOffering: Offering,
         presentedOfferingContext: PresentedOfferingContext?,
-        workflowBlobRef: String? = nil
+        workflowBlobRef: String? = nil,
+        traceId: String? = nil
     ) {
         self.workflowBlobRef = workflowBlobRef
+        self.traceId = traceId
         self.workflow = workflow
         self.uiConfig = uiConfig
         self.allOfferings = allOfferings
@@ -191,17 +195,20 @@ import Foundation
         for base: PaywallComponentsData.PaywallComponentsConfig,
         offering: Offering
     ) -> WorkflowPackageContext? {
-        let allComponents = base.stack.components
+        let allComponents = (base.header?.stack.components ?? [])
+            + base.stack.components
             + (base.stickyFooter?.stack.components ?? [])
         let packages = Self.collectPackages(in: allComponents, offering: offering)
+        let pagePackages = packages.filter { !$0.isInSheet }
+        let selectionCandidates = pagePackages.isEmpty ? packages : pagePackages
 
-        guard let selectedPackage = packages.first(where: { $0.isSelectedByDefault })?.package
-                ?? packages.first?.package else {
+        guard let selectedPackage = selectionCandidates.first(where: { $0.isSelectedByDefault })?.package
+                ?? selectionCandidates.first?.package else {
             return nil
         }
 
         let promoOfferCodes = packages.reduce(into: [String: String]()) { result, entry in
-            if let code = entry.promoOfferCode {
+            if let code = entry.promoOfferCode, result[entry.package.identifier] == nil {
                 result[entry.package.identifier] = code
             }
         }
@@ -267,26 +274,44 @@ import Foundation
         ).withPaywallComponents(paywallComponents)
     }
 
+    private struct CollectedPackage {
+
+        let package: Package
+        let isSelectedByDefault: Bool
+        let promoOfferCode: String?
+        let isInSheet: Bool
+
+    }
+
     private static func collectPackages(
         in components: [PaywallComponent],
-        offering: Offering
-    ) -> [(package: Package, isSelectedByDefault: Bool, promoOfferCode: String?)] {
+        offering: Offering,
+        isInSheet: Bool = false
+    ) -> [CollectedPackage] {
         return components.reduce(into: []) { result, component in
             switch component {
             case .package(let pkg):
                 if let rcPackage = offering.package(identifier: pkg.packageID) {
-                    result.append((package: rcPackage,
-                                   isSelectedByDefault: pkg.isSelectedByDefault,
-                                   promoOfferCode: pkg.applePromoOfferProductCode))
+                    result.append(.init(package: rcPackage,
+                                        isSelectedByDefault: pkg.isSelectedByDefault,
+                                        promoOfferCode: pkg.applePromoOfferProductCode,
+                                        isInSheet: isInSheet))
+                }
+                result += Self.collectPackages(in: pkg.stack.components, offering: offering, isInSheet: isInSheet)
+            case .button(let button):
+                result += Self.collectPackages(in: button.stack.components, offering: offering, isInSheet: isInSheet)
+                // Sheet plans contribute to pricing without overriding the page's initial selection.
+                if case let .navigateTo(.sheet(sheet)) = button.action, let sheet {
+                    result += Self.collectPackages(in: sheet.stack.components, offering: offering, isInSheet: true)
                 }
             case .stack(let stack):
-                result += Self.collectPackages(in: stack.components, offering: offering)
+                result += Self.collectPackages(in: stack.components, offering: offering, isInSheet: isInSheet)
             case .tabs(let tabs):
                 result += Self.collectPackages(
-                    in: tabs.tabs.flatMap { $0.stack.components }, offering: offering)
+                    in: tabs.tabs.flatMap { $0.stack.components }, offering: offering, isInSheet: isInSheet)
             case .carousel(let carousel):
                 result += Self.collectPackages(
-                    in: carousel.pages.flatMap { $0.components }, offering: offering)
+                    in: carousel.pages.flatMap { $0.components }, offering: offering, isInSheet: isInSheet)
             default:
                 break
             }

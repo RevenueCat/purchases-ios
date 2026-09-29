@@ -443,6 +443,28 @@ final class PaywallViewConfigurationTests: TestCase {
         }
     }
 
+    func testResolvePaywallViewDataFallsBackForTerminalOfferingStep() async throws {
+        let offering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+        purchases.offeringsBlock = { Self.createOfferings([offering], currentOfferingID: offering.identifier) }
+        purchases.workflowBlock = { _ in
+            try Self.createWorkflowDataResult(
+                offeringIdentifier: offering.identifier,
+                initialStepType: "offering",
+                initialScreenID: nil
+            )
+        }
+
+        let result = try await handler.resolvePaywallViewData(
+            for: .offering(offering),
+            remoteConfigEnabled: true
+        )
+
+        XCTAssertEqual(result.offering.identifier, offering.identifier)
+        XCTAssertNil(result.workflowContext)
+    }
+
     func testResolvePaywallViewDataThrowsWhenWorkflowInitialScreenIsUnavailable() async throws {
         let offering = Self.createOffering(identifier: "offering_a", paywall: nil)
         let purchases = Self.createMockPurchases()
@@ -785,12 +807,14 @@ private extension PaywallViewConfigurationTests {
     static func createWorkflowDataResult(
         offeringIdentifier: String,
         initialStepID: String = "step_1",
+        initialStepType: String = "screen",
         initialScreenID: String? = "screen_1"
     ) throws -> WorkflowDataResult {
         return .init(
             workflow: try self.createWorkflow(
                 offeringIdentifier: offeringIdentifier,
                 initialStepID: initialStepID,
+                initialStepType: initialStepType,
                 initialScreenID: initialScreenID
             ),
             uiConfig: PreviewUIConfig.make(),
@@ -801,6 +825,7 @@ private extension PaywallViewConfigurationTests {
     static func createWorkflow(
         offeringIdentifier: String,
         initialStepID: String = "step_1",
+        initialStepType: String = "screen",
         initialScreenID: String? = "screen_1"
     ) throws -> PublishedWorkflow {
         let screenIdentifier = initialScreenID.map { ",\n              \"screen_id\": \"\($0)\"" } ?? ""
@@ -812,7 +837,7 @@ private extension PaywallViewConfigurationTests {
           "steps": {
             "step_1": {
               "id": "step_1",
-              "type": "screen"\(screenIdentifier)
+              "type": "\(initialStepType)"\(screenIdentifier)
             }
           },
           "screens": {

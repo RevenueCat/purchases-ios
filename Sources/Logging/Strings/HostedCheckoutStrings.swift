@@ -20,6 +20,7 @@ enum HostedCheckoutStrings {
     case starting_checkout(_ packageID: String)
     case no_registered_token
     case session_created(_ operationSessionID: String)
+    case product_already_purchased(_ packageID: String)
     case error_creating_session(_ error: BackendError)
 
 }
@@ -34,6 +35,9 @@ extension HostedCheckoutStrings: LogMessage {
             return "Not starting a checkout: there is no registered external purchase token to attribute it to."
         case let .session_created(operationSessionID):
             return "Created checkout session \(operationSessionID)."
+        case let .product_already_purchased(packageID):
+            return "Not starting a checkout: this customer already has an active purchase for the product " +
+            "in package \(packageID)."
         case let .error_creating_session(error):
             return "Error creating the checkout session: \(error.localizedDescription)"
         }

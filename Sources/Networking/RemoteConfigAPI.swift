@@ -90,7 +90,7 @@ struct RemoteConfigFetchResult {
     /// `nil` represents a successful `204 No Content` response. Malformed or undecodable
     /// container bytes should fail before this result is created.
     let container: RemoteConfigContainer?
-    let verificationResult: VerificationResult
+    let verificationResult: SignatureVerificationResult
     let requestDate: Date?
 
     init(response: VerifiedHTTPResponse<RemoteConfigContainer?>) {
@@ -104,7 +104,7 @@ struct RemoteConfigFetchResult {
 struct RemoteConfigFallbackFetchResult {
 
     let configuration: RemoteConfiguration
-    let verificationResult: VerificationResult
+    let verificationResult: SignatureVerificationResult
 
     init(response: VerifiedHTTPResponse<RemoteConfiguration>) {
         self.configuration = response.body

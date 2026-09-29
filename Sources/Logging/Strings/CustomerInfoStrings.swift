@@ -25,6 +25,7 @@ enum CustomerInfoStrings {
     case no_cached_customerinfo
     case cached_customerinfo_incompatible_schema
     case not_caching_offline_customer_info
+    case not_sending_customerinfo_for_non_current_user(appUserID: String, currentAppUserID: String)
     case customerinfo_stale_updating_in_background
     case customerinfo_stale_updating_in_foreground
     case customerinfo_updated_from_network
@@ -35,6 +36,7 @@ enum CustomerInfoStrings {
     case updating_request_date(CustomerInfo, Date)
     case sending_latest_customerinfo_to_delegate
     case sending_updated_customerinfo_to_delegate
+    case sending_customerinfo_with_changed_active_entitlements_to_delegate
     case vending_cache
     case error_encoding_customerinfo(Error)
 
@@ -85,10 +87,15 @@ extension CustomerInfoStrings: LogMessage {
             "(\(error.localizedDescription)); falling back to fetching CustomerInfo."
         case let .updating_request_date(info, newRequestDate):
             return "Updating CustomerInfo '\(info.originalAppUserId)' request date: \(newRequestDate)"
+        case let .not_sending_customerinfo_for_non_current_user(appUserID, currentAppUserID):
+            return "Not sending CustomerInfo for '\(appUserID)' to delegate: " +
+            "current app user ID is '\(currentAppUserID)'."
         case .sending_latest_customerinfo_to_delegate:
             return "Sending latest CustomerInfo to delegate."
         case .sending_updated_customerinfo_to_delegate:
             return "Sending updated CustomerInfo to delegate."
+        case .sending_customerinfo_with_changed_active_entitlements_to_delegate:
+            return "Sending CustomerInfo to delegate: active entitlements changed since last update."
         case .vending_cache:
             return "Vending CustomerInfo from cache."
         case let .error_encoding_customerinfo(error):

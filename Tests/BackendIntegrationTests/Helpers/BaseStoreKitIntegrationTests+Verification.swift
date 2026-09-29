@@ -13,6 +13,7 @@
 
 import Foundation
 import Nimble
+import StoreKit
 import XCTest
 
 #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -23,6 +24,29 @@ import XCTest
 
 extension BaseStoreKitIntegrationTests {
 
+    // Match StoreKit's current identifier, not the SDK's captured fallback UUID (see PR #7739).
+    func storeKitIdentifier(for transaction: StoreTransaction) -> String? {
+        if Self.storeKitVersion == .storeKit1 {
+            return transaction.sk1Transaction?.transactionIdentifier
+        } else {
+            return transaction.transactionIdentifier
+        }
+    }
+
+    func verifyTransactionIsEventuallyRemovedFromSK1Queue(
+        _ transaction: StoreTransaction,
+        file: FileString = #filePath,
+        line: UInt = #line
+    ) async {
+        await expect(file: file, line: line) {
+            guard let identifier = self.storeKitIdentifier(for: transaction) else { return false }
+            return !SKPaymentQueue.default().transactions.contains {
+                $0.transactionIdentifier == identifier &&
+                    $0.payment.productIdentifier == transaction.productIdentifier
+            }
+        }.toEventually(beTrue(), timeout: .seconds(5))
+    }
+
     @discardableResult
     func verifyEntitlementWentThrough(
         _ customerInfo: CustomerInfo,
@@ -30,19 +54,17 @@ extension BaseStoreKitIntegrationTests {
         filename: StaticString = #file,
         line: UInt = #line
     ) async throws -> EntitlementInfo {
-        // This is used to throw an error when the test fails.
-        // For some reason XCTest is continuing execution even after a test failure
-        // despite having `self.continueAfterFailure = false`
-        //
-        // By doing this, instead of only calling `fail`, we ensure that
-        // Swift stops executing code when an assertion has failed,
-        // and therefore avoid code running after the test has already failed.
-        // This prevents test crashes from code calling `Purchases.shared` after the test has ended.
+        // Record the test failure, then stop this async helper by throwing a Swift error.
+        // Temporarily allow execution past `fail()` so we reach the explicit throw,
+        // and restore the original setting when leaving this scope.
         func failTest(_ message: String) async throws {
             struct ExpectationFailure: Swift.Error {}
 
             await self.printReceiptContent()
 
+            let previousContinueAfterFailure = self.continueAfterFailure
+            self.continueAfterFailure = true
+            defer { self.continueAfterFailure = previousContinueAfterFailure }
             fail(message, file: file, line: line)
             throw ExpectationFailure()
         }
@@ -138,6 +160,25 @@ extension BaseStoreKitIntegrationTests {
                                            expectedCount: count,
                                            file: file,
                                            line: line)
+    }
+
+    func verifySpecificTransactionIsEventuallyFinished(
+        _ transaction: StoreTransaction,
+        count: Int? = 1,
+        file: FileString = #file,
+        line: UInt = #line
+    ) async throws {
+        try await asyncWait(description: "StoreKit transaction identifier is not available", timeout: .seconds(5)) {
+            await self.storeKitIdentifier(for: transaction) != nil
+        }
+        let identifier = try XCTUnwrap(self.storeKitIdentifier(for: transaction))
+        try await self.verifySpecificTransactionIsEventuallyFinished(
+            transactionId: identifier,
+            productId: transaction.productIdentifier,
+            count: count,
+            file: file,
+            line: line
+        )
     }
 
     func verifySpecificTransactionIsEventuallyFinished(
@@ -246,12 +287,13 @@ extension BaseStoreKitIntegrationTests {
     }
 
     func verifyReceiptIsEventuallyPosted(
+        timeout: NimbleTimeInterval = .seconds(3),
         file: FileString = #file,
         line: UInt = #line
     ) async throws {
         try await self.logger.verifyMessageIsEventuallyLogged(
             Strings.network.operation_state(PostReceiptDataOperation.self, state: "Finished").description,
-            timeout: .seconds(3),
+            timeout: timeout,
             pollInterval: .milliseconds(100),
             file: file,
             line: line

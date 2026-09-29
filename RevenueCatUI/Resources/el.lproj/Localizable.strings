@@ -23,3 +23,7 @@
 "Default_offer_details_with_intro_offer" = "Ξεκινήστε τη δοκιμή {{ sub_offer_duration }} και μετά {{ total_price_and_per_month }}.";
 "Something went wrong" = "Κάτι πήγε στραβά";
 "Purchase" = "Αγορά";
+"You are currently subscribed to this" = "Έχετε ήδη συνδρομή σε αυτό";
+"You've already purchased this" = "Το έχετε ήδη αγοράσει";
+"Purchase unavailable" = "Η αγορά δεν είναι διαθέσιμη";
+"This purchase isn't available in your region." = "Αυτή η αγορά δεν είναι διαθέσιμη στην περιοχή σας.";

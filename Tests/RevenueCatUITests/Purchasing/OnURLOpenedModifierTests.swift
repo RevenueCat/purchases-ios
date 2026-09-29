@@ -12,151 +12,202 @@
 
 import Nimble
 @_spi(Internal) @testable import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 import SwiftUI
 import XCTest
 
 #if os(iOS)
 
-/// Verifies the `.onURLOpened` modifier's `PreferenceKey` plumbing.
+/// Exercises the production event bridge and public callback modifier in a hosted SwiftUI view.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 final class OnURLOpenedModifierTests: TestCase {
 
     private static let url = URL(string: "https://revenuecat.com/terms")!
 
-    func testOnURLOpenedReceivesTheOpenedURL() {
-        let handler: PurchaseHandler = .mock()
-        let openedURLs: Atomic<[URL]> = .init([])
-
-        let view = ProbeView(handler: handler) { url in
-            openedURLs.modify { $0.append(url) }
-        }
-
-        let (window, _) = Self.host(view)
-        defer {
-            window.isHidden = true
-            window.rootViewController = nil
-        }
-
-        expect(openedURLs.value).to(beEmpty())
-
-        // Mutating the handler directly isolates the preference/modifier plumbing from gesture handling.
-        handler.signalURLOpened(Self.url)
-        RunLoop.main.run(until: Date().addingTimeInterval(0.2))
-        expect(openedURLs.value) == [Self.url]
-    }
-
-    func testOnURLOpenedFiresAgainForTheSameURL() {
-        let handler: PurchaseHandler = .mock()
-        let openedURLs: Atomic<[URL]> = .init([])
-
-        let view = ProbeView(handler: handler) { url in
-            openedURLs.modify { $0.append(url) }
-        }
-
-        let (window, _) = Self.host(view)
-        defer {
-            window.isHidden = true
-            window.rootViewController = nil
-        }
-
-        handler.signalURLOpened(Self.url)
-        RunLoop.main.run(until: Date().addingTimeInterval(0.2))
-
-        // Must fire again, not be deduped as an identical value.
-        handler.signalURLOpened(Self.url)
-        RunLoop.main.run(until: Date().addingTimeInterval(0.2))
-
-        expect(openedURLs.value) == [Self.url, Self.url]
-    }
-
     func testOnURLOpenedFiresEvenWhenResetImmediatelyAfter() {
         let handler: PurchaseHandler = .mock()
-        let openedURLs: Atomic<[URL]> = .init([])
-
-        let view = ProbeView(handler: handler) { url in
-            openedURLs.modify { $0.append(url) }
-        }
-
-        let (window, _) = Self.host(view)
-        defer {
-            window.isHidden = true
-            window.rootViewController = nil
-        }
-
-        // Mirrors handleMainPaywallDismiss: signal then immediately reset, no RunLoop spin in between.
-        handler.signalURLOpened(Self.url)
-        handler.resetForNewSession()
-        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
-        expect(openedURLs.value) == [Self.url]
-    }
-
-    func testResetForNewSessionDeferredClearDoesNotWipeANewerSignal() {
-        // resetForNewSession's deferred clear is still pending when the same handler is reused for a new
-        // session that signals again within the same tick. The stale clear must not wipe the newer signal.
-        let handler: PurchaseHandler = .mock()
+        let received: Atomic<[URL]> = .init([])
+        let window = Self.host(Self.probe(handler).onURLOpened({ url in received.modify { $0.append(url) } }))
+        defer { Self.unhost(window) }
 
         handler.signalURLOpened(Self.url)
         handler.resetForNewSession()
-        // New session immediately reuses the same handler and signals again, same tick.
-        handler.signalURLOpened(Self.url)
-        let newSessionSignal = handler.urlOpened
 
-        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
-
-        expect(handler.urlOpened) == newSessionSignal
+        expect(received.value) == [Self.url]
     }
 
-    func testOnURLOpenedDoesNotFireOnNewViewAfterExitOfferClear() {
-        // clearURLOpened() must complete synchronously so a new view reusing this handler
-        // (the exit offer) doesn't see the stale signal as its own fresh one.
+    func testRepeatedEventsWithoutRendering() {
+        let handler: PurchaseHandler = .mock()
+        let received: Atomic<[URL]> = .init([])
+        let window = Self.host(Self.probe(handler).onURLOpened({ url in received.modify { $0.append(url) } }))
+        defer { Self.unhost(window) }
+
+        handler.signalURLOpened(Self.url)
+        handler.signalURLOpened(Self.url)
+
+        expect(received.value) == [Self.url, Self.url]
+    }
+
+    func testNewSessionImmediatelySignalsAgain() {
+        let handler: PurchaseHandler = .mock()
+        let received: Atomic<[URL]> = .init([])
+        let window = Self.host(Self.probe(handler).onURLOpened({ url in received.modify { $0.append(url) } }))
+        defer { Self.unhost(window) }
+
+        handler.signalURLOpened(Self.url)
+        handler.resetForNewSession()
+        handler.signalURLOpened(Self.url)
+
+        expect(received.value) == [Self.url, Self.url]
+    }
+
+    func testNewPresentationDoesNotReplayAndReceivesNewEvents() {
+        let handler: PurchaseHandler = .mock()
+        let oldReceived: Atomic<[URL]> = .init([])
+        let oldWindow = Self.host(Self.probe(handler).onURLOpened({ url in oldReceived.modify { $0.append(url) } }))
+        handler.signalURLOpened(Self.url)
+        expect(oldReceived.value) == [Self.url]
+        Self.unhost(oldWindow)
+        handler.resetForNewSession()
+
+        let received: Atomic<[URL]> = .init([])
+        let window = Self.host(Self.probe(handler).onURLOpened({ url in received.modify { $0.append(url) } }))
+        defer { Self.unhost(window) }
+        expect(received.value) == []
+        handler.signalURLOpened(Self.url)
+        expect(received.value) == [Self.url]
+        expect(oldReceived.value) == [Self.url]
+    }
+
+    func testUnmountedViewDoesNotReceiveEventsWhileControllerIsRetained() throws {
+        let handler: PurchaseHandler = .mock()
+        let received: Atomic<[URL]> = .init([])
+        let disappeared: Atomic<Bool> = .init(false)
+        let view = Self.probe(handler)
+            .onURLOpened({ url in received.modify { $0.append(url) } })
+            .onDisappear { disappeared.value = true }
+        let window = Self.host(view)
+        defer { Self.unhost(window) }
+        let controller = try XCTUnwrap(window.rootViewController)
+
+        handler.signalURLOpened(Self.url)
+        expect(received.value) == [Self.url]
+        Self.unhost(window)
+        expect(disappeared.value) == true
+
+        handler.resetForNewSession()
+        handler.signalURLOpened(Self.url)
+        expect(received.value) == [Self.url]
+        withExtendedLifetime(controller) {}
+    }
+
+    func testEventBeforeMountDoesNotReplayWithoutReset() {
         let handler: PurchaseHandler = .mock()
         handler.signalURLOpened(Self.url)
-        handler.clearURLOpened()
-
-        let openedURLs: Atomic<[URL]> = .init([])
-        let view = ProbeView(handler: handler) { url in
-            openedURLs.modify { $0.append(url) }
-        }
-
-        let (window, _) = Self.host(view)
-        defer {
-            window.isHidden = true
-            window.rootViewController = nil
-        }
-
-        RunLoop.main.run(until: Date().addingTimeInterval(0.2))
-        expect(openedURLs.value).to(beEmpty())
+        let received: Atomic<[URL]> = .init([])
+        let window = Self.host(Self.probe(handler).onURLOpened({ url in received.modify { $0.append(url) } }))
+        defer { Self.unhost(window) }
+        expect(received.value) == []
     }
 
-}
+    func testNestedBridgesAndRetainedPagesDeliverOnce() {
+        let handler: PurchaseHandler = .mock()
+        let received: Atomic<[URL]> = .init([])
+        let view = VStack {
+            Self.probe(handler)
+            Self.probe(handler)
+        }
+        .modifier(PaywallURLEventsModifier(purchaseHandler: handler))
+        .onURLOpened({ url in received.modify { $0.append(url) } })
+        let window = Self.host(view)
+        defer { Self.unhost(window) }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct ProbeView: View {
-
-    @ObservedObject var handler: PurchaseHandler
-    let onURLOpened: URLOpenedHandler
-
-    var body: some View {
-        Color.clear
-            .preference(key: URLOpenedPreferenceKey.self, value: self.handler.urlOpened)
-            .onURLOpened(self.onURLOpened)
+        handler.signalURLOpened(Self.url)
+        expect(received.value) == [Self.url]
     }
 
-}
+    func testNestedCallbackModifiersEachReceiveEvent() {
+        let handler: PurchaseHandler = .mock()
+        let received: Atomic<[URL]> = .init([])
+        let view = VStack {
+            Self.probe(handler).onURLOpened({ url in received.modify { $0.append(url) } })
+        }
+        .onURLOpened({ url in received.modify { $0.append(url) } })
+        let window = Self.host(view)
+        defer { Self.unhost(window) }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension OnURLOpenedModifierTests {
+        handler.signalURLOpened(Self.url)
+        expect(received.value) == [Self.url, Self.url]
+    }
 
-    static func host<Content: View>(_ view: Content) -> (UIWindow, UIView) {
-        let controller = UIHostingController(rootView: view.frame(width: 100, height: 100))
+    func testCallbackCanResetSession() {
+        let handler: PurchaseHandler = .mock()
+        let received: Atomic<[URL]> = .init([])
+        let view = Self.probe(handler).onURLOpened { url in
+            handler.resetForNewSession()
+            received.modify { $0.append(url) }
+        }
+        let window = Self.host(view)
+        defer { Self.unhost(window) }
+
+        handler.signalURLOpened(Self.url)
+        expect(received.value) == [Self.url]
+    }
+
+    func testOtherEventDoesNotInvokeCallback() {
+        let handler: PurchaseHandler = .mock()
+        let received: Atomic<[URL]> = .init([])
+        let window = Self.host(Self.probe(handler).onURLOpened({ url in received.modify { $0.append(url) } }))
+        defer { Self.unhost(window) }
+
+        handler.signalWebCheckoutOpened()
+        expect(received.value) == []
+    }
+
+    func testPaywallViewDeliversEventBeforeImmediateReset() {
+        let handler: PurchaseHandler = .mock()
+        let received: Atomic<Int> = .init(0)
+        let view = PaywallView(configuration: .init(
+            offering: TestData.offeringWithIntroOffer,
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: handler
+        ))
+        .onURLOpened { _ in
+            received.modify { $0 += 1 }
+        }
+        let window = Self.host(view)
+        defer { Self.unhost(window) }
+
+        handler.signalURLOpened(Self.url)
+        handler.resetForNewSession()
+        expect(received.value) == 1
+    }
+
+    private static func probe(_ handler: PurchaseHandler) -> some View {
+        Color.clear.modifier(PaywallURLEventsModifier(purchaseHandler: handler))
+    }
+
+    private static func host<Content: View>(_ view: Content) -> UIWindow {
+        let controller = UIHostingController(rootView: AnyView(view.frame(width: 100, height: 100)))
         let window = UIWindow(frame: CGRect(origin: .zero, size: CGSize(width: 100, height: 100)))
         window.rootViewController = controller
         window.makeKeyAndVisible()
         controller.view.layoutIfNeeded()
         RunLoop.main.run(until: Date().addingTimeInterval(0.1))
-        return (window, controller.view)
+        return window
+    }
+
+    private static func unhost(_ window: UIWindow) {
+        // Hiding a test window alone does not trigger onDisappear on older iOS.
+        if let controller = window.rootViewController as? UIHostingController<AnyView> {
+            controller.rootView = AnyView(EmptyView())
+            controller.view.layoutIfNeeded()
+        }
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+        window.isHidden = true
+        window.rootViewController = nil
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
     }
 
 }

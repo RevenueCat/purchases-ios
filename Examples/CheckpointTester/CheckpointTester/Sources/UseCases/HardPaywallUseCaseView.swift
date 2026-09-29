@@ -14,11 +14,12 @@
 
 import Foundation
 import RevenueCat
-@_spi(CheckpointsInternal) import RevenueCatUI
+@_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
 import SwiftUI
 
 struct HardPaywallUseCaseView: View {
 
+    @ObservedObject var model: CheckpointDemoModel
     @ObservedObject var customVariables: CustomVariables
 
     @State private var didLoad = false
@@ -74,7 +75,8 @@ struct HardPaywallUseCaseView: View {
     private func runCheckpoint() async {
         Purchases.shared.checkpoint(
             "hard_paywall",
-            customVariables: self.customVariablesForNextAttempt()
+            customVariables: self.customVariablesForNextAttempt(),
+            paywallPresenter: self.model.localPaywallPresenter
         ) { result in
             let obtained = result?.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted() ?? []
             guard !obtained.isEmpty else {

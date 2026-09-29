@@ -114,6 +114,9 @@ public class PaywallViewController: UIViewController {
     /// The prefetched exit offer, loaded while the main paywall is showing.
     private var exitOfferOffering: Offering?
 
+    /// Whether this controller resolves and presents exit offers.
+    private var shouldDisplayExitOffers = true
+
     /// Whether the embedded workflow paywall has reported its own exit offer at least once
     /// (even a `nil` one) for the current render, so a slower legacy `prefetchExitOffer` knows
     /// not to overwrite it.
@@ -131,6 +134,8 @@ public class PaywallViewController: UIViewController {
 
     var exitOfferOfferingForTesting: Offering? { self.exitOfferOffering }
 
+    var workflowContextForTesting: WorkflowContext? { self.configuration.injectedWorkflowContext }
+
     func simulateWorkflowExitOfferUpdate(_ offering: Offering?) {
         self.updateWorkflowExitOffer(offering)
     }
@@ -141,6 +146,12 @@ public class PaywallViewController: UIViewController {
 
     func simulateWorkflowPresentationError(_ error: NSError) {
         self.configuration.workflowPresentationErrorHandler?(error)
+    }
+
+    /// Prevents this controller from resolving or presenting exit offers.
+    func disableExitOffers() {
+        self.shouldDisplayExitOffers = false
+        self.exitOfferOffering = nil
     }
 
     /// Whether we're currently showing an exit offer (to prevent multiple presentations).
@@ -386,6 +397,8 @@ public class PaywallViewController: UIViewController {
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
+        guard self.shouldDisplayExitOffers else { return }
+
         // Set ourselves as the presentation controller delegate to intercept swipe-to-dismiss
         // for exit offer support. We store any existing delegate to forward calls to it.
         // Important: Only capture the original delegate if it's not self to prevent infinite recursion
@@ -487,6 +500,7 @@ public class PaywallViewController: UIViewController {
     /// paywall on a workflow-fetch failure, and that fallback still needs an exit offer.
     @MainActor
     private func prefetchExitOffer() async {
+        guard self.shouldDisplayExitOffers else { return }
         guard let offering = await self.purchaseHandler.resolveOffering(for: self.configuration.content) else {
             return
         }
@@ -505,6 +519,7 @@ public class PaywallViewController: UIViewController {
     /// exit-offer resolution to key off the single resolved paywall render instead of a separate,
     /// independently-timed prefetch; tracked as a follow-up rather than solved here.
     private func applyOfferingBasedExitOffer(_ offering: Offering?) {
+        guard self.shouldDisplayExitOffers else { return }
         guard !self.hasReceivedWorkflowExitOfferUpdate else { return }
         self.exitOfferOffering = offering
     }
@@ -523,6 +538,7 @@ public class PaywallViewController: UIViewController {
     /// Feeds the embedded workflow paywall's exit offer into `exitOfferOffering` so swipe/close can
     /// surface it. Render-dependent, so verified manually like `prefetchExitOffer`.
     private func updateWorkflowExitOffer(_ offering: Offering?) {
+        guard self.shouldDisplayExitOffers else { return }
         // The offering-based prefetch owns the offer when workflows are off; leave it alone.
         guard self.remoteConfigEnabled else { return }
 

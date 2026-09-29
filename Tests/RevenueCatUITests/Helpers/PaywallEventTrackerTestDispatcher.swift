@@ -10,16 +10,24 @@
 //  Created by Monika Mateska on 09/04/2026.
 
 import Foundation
+@testable import RevenueCat
 @testable import RevenueCatUI
 
-/// Test-only paywall event scheduling: uses `Task { }` so work inherits the caller's actor context.
-/// Prefer this over ``PaywallEventTracker/dispatcher()`` in tests that assert on tracked events,
-/// because `Task.detached(priority: .background)` can delay delivery on some CI environments.
+/// Executes test events in submission order, including when an event suspends.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum PaywallEventTrackerTestDispatcher {
 
-    static let value: PaywallEventTracker.EventDispatcher = { work in
-        Task { await work() }
+    static var value: PaywallEventTracker.EventDispatcher {
+        let tail: Atomic<Task<Void, Never>?> = .init(nil)
+        return { work in
+            tail.modify { task in
+                let previous = task
+                task = Task {
+                    await previous?.value
+                    await work()
+                }
+            }
+        }
     }
 
 }

@@ -65,6 +65,38 @@ final class PaywallAccessibilityUITests: XCTestCase {
         )
     }
 
+    // MARK: - Decorative media (images, icons, backgrounds)
+
+    func testDecorativeMediaIsNotAnnounced() throws {
+        let app = self.launchDecorativeMedia()
+        self.settle(app, seconds: 5)
+
+        try app.performAccessibilityAudit(for: [.sufficientElementDescription])
+    }
+
+    // MARK: - Package selection
+
+    /// The selected card carries the trait, so VoiceOver speaks the system's own word for it.
+    func testSelectedPackageCarriesTheTrait() throws {
+        let app = self.launchDecorativeMedia()
+
+        let selected = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Yearly")).firstMatch
+        XCTAssertTrue(selected.waitForExistence(timeout: 30), app.debugDescription)
+        XCTAssertTrue(selected.isSelected)
+
+        let unselected = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Monthly")).firstMatch
+        XCTAssertFalse(unselected.isSelected)
+    }
+
+    /// The label is left alone, so anything matching on card copy keeps working.
+    func testSelectionDoesNotChangeTheLabel() throws {
+        let app = self.launchDecorativeMedia()
+
+        let card = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Yearly")).firstMatch
+        XCTAssertTrue(card.waitForExistence(timeout: 30))
+        XCTAssertFalse(card.label.contains("Selected"), "State leaked into the label: \(card.label)")
+    }
+
     // MARK: - Spoken text
 
     /// The spoken variant is built from the source copy, so it still carries markdown when it
@@ -121,6 +153,26 @@ final class PaywallAccessibilityUITests: XCTestCase {
         )
 
         return app
+    }
+
+
+    private func launchDecorativeMedia() -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchEnvironment["PAYWALL_FIXTURE"] = "decorative_media"
+        app.launch()
+
+        XCTAssertTrue(
+            app.staticTexts["Unlock all Sundial Features"].waitForExistence(timeout: 30),
+            "Fixture did not render."
+        )
+
+        return app
+    }
+
+    /// Lets async layout and image downloads land before measuring.
+    private func settle(_ app: XCUIApplication, seconds: TimeInterval = 2) {
+        RunLoop.current.run(until: Date().addingTimeInterval(seconds))
+        _ = app.images.count
     }
 
 }

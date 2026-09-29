@@ -205,7 +205,7 @@ class BackendLoginWithSignatureVerificationTests: BaseBackendLoginTests {
         _ = self.mockLoginRequest(appUserID: currentAppUserID,
                                   statusCode: .createdSuccess,
                                   response: Self.mockCustomerInfoData,
-                                  verificationResult: .failed)
+                                  verificationResult: .failed(.unknown))
 
         let result = waitUntilValue { completed in
             self.identity.logIn(currentAppUserID: currentAppUserID,
@@ -225,7 +225,7 @@ private extension BaseBackendLoginTests {
         appUserID: String,
         statusCode: HTTPStatusCode = .success,
         response: [String: Any] = [:],
-        verificationResult: VerificationResult = .notRequested
+        verificationResult: SignatureVerificationResult = .notRequested
     ) -> HTTPRequest.Path {
         let path: HTTPRequest.Path = .logIn
         let response = MockHTTPClient.Response(statusCode: statusCode,

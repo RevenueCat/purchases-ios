@@ -73,6 +73,72 @@ enum AvailabilityChecks {
         }
     }
 
+    static func iOS27APIAvailableOrSkipTest() throws {
+        guard #available(iOS 27.0, tvOS 27.0, macOS 27.0, watchOS 27.0, visionOS 27.0, *) else {
+            throw XCTSkip("Required API is not available for this test.")
+        }
+    }
+
+    /// Switching Storefronts is broken in iOS 27.0. This is confirmed by Apple and is documented as a known issue
+    /// in the Xcode 27 release notes (184155259)
+    static func switchingStorefrontWithSKTestWorksOrSkipTest() throws {
+        if #available(iOS 27.2, tvOS 27.2, macOS 27.2, watchOS 27.2, *) {
+            // This bug was fixed in iOS 27.2 beta 1
+            return
+        }
+
+        if #available(iOS 27.0, tvOS 27.0, macOS 27.0, watchOS 27.0, *) {
+            throw XCTSkip("Switching Storefronts with SKTest is known to be broken on these OS versions.")
+        }
+    }
+
+    // StoreKitTest reproductions and affected tests: https://github.com/RevenueCat/purchases-ios/pull/7742.
+    // FB24877239
+    static func simulatedCancellationWithSKTestWorksOrSkipTest() throws {
+        try Self.skipOnIOS27(
+            "StoreKitTest returns .unknown instead of simulated .userCancelled; PR #7717 / #7742, FB24877239"
+        )
+    }
+
+    static func simulatedPurchaseFailureWithSKTestWorksOrSkipTest() throws {
+        try Self.skipOnIOS27("StoreKitTest returns .unknown instead of simulated .purchaseNotAllowed; PR #7742")
+    }
+
+    static func activeRepurchaseWithoutSKTestDialogWorksOrSkipTest() throws {
+        try Self.skipOnIOS27("StoreKitTest shows an active purchase dialog despite disableDialogs; PR #7742")
+    }
+
+    static func expiredRepurchaseWithSKTestWorksOrSkipTest() throws {
+        try Self.skipOnIOS27("StoreKitTest returns the expired SK2 transaction when repurchasing; PR #7742")
+    }
+
+    static func expiredPromotionalOfferWithoutSKTestDialogWorksOrSkipTest() throws {
+        try Self.skipOnIOS27("StoreKitTest blocks an expired SK1 promotional offer on a purchase dialog; PR #7742")
+    }
+
+    static func unfinishedTransactionsWithSKTestWorkOrSkipTest(includingTVOS: Bool = false) throws {
+        #if os(tvOS)
+        try XCTSkipIf(includingTVOS && ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27,
+                      "StoreKitTest omits purchased transactions from Transaction.unfinished; PR #7742")
+        #endif
+        try Self.skipOnIOS27("StoreKitTest omits purchased transactions from Transaction.unfinished; PR #7742")
+    }
+
+    // Unresolved SDK behavior, not established StoreKitTest bugs. Production fixes are outside this stack.
+    static func concurrentSK1ReceiptRefreshDeduplicatesOrSkipTest() throws {
+        try Self.skipOnIOS27("Concurrent SK1 receipt refresh can prevent deduplication; SDK follow-up PR #7738")
+    }
+
+    static func lateSK1TransactionIdentifiersFinishOrSkipTest() throws {
+        try Self.skipOnIOS27("Late SK1 transaction identifiers can prevent finishing; SDK follow-up PR #7739")
+    }
+
+    private static func skipOnIOS27(_ reason: String) throws {
+        #if os(iOS)
+        try XCTSkipIf(ProcessInfo.processInfo.operatingSystemVersion.majorVersion == 27, reason)
+        #endif
+    }
+
     /// Opposite of `iOS15APIAvailableOrSkipTest`.
     static func iOS15APINotAvailableOrSkipTest() throws {
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
@@ -115,42 +181,47 @@ enum AvailabilityChecks {
 
     static func skipIfCompiler63OrLater() throws {
         /*
-         Beginning with Xcode 26.4 beta 1 and compiler version 6.3.0.119.2, the compiler stopped resolving
-         StaticString overloads correctly.
+         Our `.logIn(...)` and `.identifyCurrentUser(...)` APIs pair a `StaticString` overload with a
+         `@_disfavoredOverload String` one: we try to push developers to use the `String`-taking versions by
+         marking the `StaticString` versions as deprecated, but favored by the typechecker, so that hardcoding
+         an app user ID — which would identify every user as the same person — warns at compile time.
 
-         For example, given:
+         Beginning with Xcode 26.4 beta 1 and compiler version 6.3.0.119.2, `@_disfavoredOverload` stopped
+         steering string literals toward those `StaticString` overloads, so the warning is silently lost:
+         `logging_in_with_static_string` is no longer logged and the tests asserting it fail.
+
+         As of compiler 6.4 (Xcode 27.0) the attribute is still honored, but only for an unlabeled,
+         closure-free call to a member:
 
          ```swift
-         @_disfavoredOverload
-         func thing(_ str: String) { print("REGULAR", str) }
+         class Subject {
+             func unlabeled(_ s: StaticString) -> String { "STATIC" }
+             @_disfavoredOverload func unlabeled(_ s: String) -> String { "REGULAR" }
 
-         func thing(_ str: StaticString) { print("STATIC", str) }
+             func labeled(as s: StaticString) -> String { "STATIC" }
+             @_disfavoredOverload func labeled(as s: String) -> String { "REGULAR" }
+         }
 
-         thing("hello") // should be of type "StaticString"
-
-         let s = "world" // inferred to be of type "String"
-         thing(s)
+         subject.unlabeled("literal")    // "STATIC"  — as intended
+         subject.labeled(as: "literal")  // "REGULAR" — literal binds to the String overload
          ```
 
-         This should print
-         ```
-         STATIC hello
-         REGULAR world
-         ```
+         It is also ignored when the call passes a closure, and when the overloads are global functions.
+         Pairs whose `String` sibling is optional (`String?`) are unaffected: reaching `String?` from a
+         literal costs an extra optional injection, so `StaticString` wins on conversion ranking regardless.
 
-         But, starting with v6.3, always prints
-         ```
-         REGULAR hello
-         REGULAR world
-         ```
-
-         This affects our `.logIn(...)` APIs, where we try to push developers to use the `String`-taking versions
-         by marking the `StaticString` versions as deprecated, but favored by the typechecker. Until we determine
-         the correct way to deal with this, we'll leave the APIs in place but skip the unit tests that are verifying
-         this functionality.
+         The tests still gated here are the labeled and closure-taking APIs. Until we determine the correct
+         way to deal with this, we'll leave the APIs in place but skip those tests.
          */
         #if compiler(>=6.3)
         throw XCTSkip("Unavailable on Swift 6.3 or later")
         #endif
+    }
+
+    static func skipBillingPlanTestIfOnUnsupportedOSVersion() throws {
+        // Billing plans are available starting in iOS 26.4, but due to a bug that prevents
+        // products from being fetched with SKTest in iOS 26.X-27.0, billing plans cannot be
+        // tested with SKTest until iOS 27.0+.
+        try Self.iOS27APIAvailableOrSkipTest()
     }
 }

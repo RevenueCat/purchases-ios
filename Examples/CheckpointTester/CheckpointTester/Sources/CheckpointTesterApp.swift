@@ -14,7 +14,7 @@
 
 import Foundation
 import RevenueCat
-@_spi(CheckpointsInternal) import RevenueCatUI
+@_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
 import SwiftUI
 
 @main
@@ -27,6 +27,7 @@ struct CheckpointTesterApp: App {
 
         Purchases.logLevel = .debug
         Self.configurePurchases()
+        model.configurePaywallPresenter()
     }
 
     var body: some Scene {

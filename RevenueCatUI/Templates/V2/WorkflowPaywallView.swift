@@ -283,8 +283,8 @@ struct WorkflowPaywallView: View {
     @StateObject private var promoOfferCacheOwner: PromoOfferCacheOwner
     @State private var presentationState: PresentationState
     /// Owns the per-impression workflow step event state machine (trace id, fire-once flags, gating).
-    /// Created in `init`, so a new presentation (new view identity) yields a fresh `traceId`, matching
-    /// Android's per-impression `workflowTraceId`. Its sequence/gating is unit tested in
+    /// Created in `init`, so a new presentation (new view identity) yields a fresh `traceId`, unless a
+    /// checkpoint passed the one its hit carries. Its sequence/gating is unit tested in
     /// `WorkflowStepEventCoordinatorTests`.
     @State private var stepEventCoordinator: WorkflowStepEventCoordinator
     @State private var transitionState: WorkflowPageTransitionState<RenderedPage>
@@ -347,6 +347,7 @@ struct WorkflowPaywallView: View {
         self._stepEventCoordinator = .init(
             wrappedValue: WorkflowStepEventCoordinator(
                 workflow: context.workflow,
+                traceId: context.traceId ?? UUID().uuidString,
                 workflowBlobRef: context.workflowBlobRef,
                 sink: { [purchaseHandler] event in purchaseHandler.track(event) }
             )
@@ -410,7 +411,7 @@ struct WorkflowPaywallView: View {
         // Re-emitted on every step change because navigator is @StateObject with @Published
         // currentStepId. The exit offer is resolved synchronously from allOfferings on the
         // triggering step; when the user navigates away the value becomes nil, clearing
-        // exitOfferOffering — matching Android's shouldTriggerExitOfferForCurrentStep guard.
+        // exitOfferOffering.
         .preference(
             key: WorkflowExitOfferPreferenceKey.self,
             value: self.presentationState.hasFailed
@@ -460,6 +461,7 @@ struct WorkflowPaywallView: View {
         .environment(\.paywallStateValues, self.stateStore.values)
         .environment(\.paywallStateDefaults, self.stateStore.defaults)
         .displayError(self.workflowPresentationError, onDismiss: self.onDismiss)
+        .modifier(PaywallURLEventsModifier(purchaseHandler: self.purchaseHandler))
     }
 
     // MARK: - Helpers
@@ -869,7 +871,7 @@ struct WorkflowPaywallView: View {
         return .init(
             stepId: stepId,
             content: .init(paywallComponents: paywallComponents, offering: offering),
-            stepType: step.type ?? "screen",
+            stepType: step.type,
             screenType: step.stepScreenType,
             isSingleStepFallback: stepId == context.workflow.singleStepFallbackId,
             headerComponent: screen.componentsConfig.base.header,

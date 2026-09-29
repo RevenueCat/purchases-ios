@@ -60,6 +60,15 @@ final class DangerousSettingsTests: TestCase {
             != DangerousSettings(autoSyncPurchases: true, useExternalPurchaseCustomLinks: false)
     }
 
+    func testDifferentEnableExternalPurchasesInSimulatorIsNotEqual() {
+        expect(DangerousSettings(autoSyncPurchases: true,
+                                 useExternalPurchaseCustomLinks: true,
+                                 enableExternalPurchasesInSimulator: true))
+            != DangerousSettings(autoSyncPurchases: true,
+                                 useExternalPurchaseCustomLinks: true,
+                                 enableExternalPurchasesInSimulator: false)
+    }
+
     func testInternalSettingsAreExcludedFromEquality() {
         let defaultInternal: InternalDangerousSettingsType = DangerousSettings.Internal.default
         let customInternal: InternalDangerousSettingsType = DangerousSettings.Internal(enableReceiptFetchRetry: true)
@@ -104,6 +113,25 @@ final class DangerousSettingsTests: TestCase {
         expect(settings.uiPreviewMode) == false
         expect(settings.customEntitlementComputation) == false
         expect(settings.forceAllowTestStoreInReleaseBuilds) == false
+    }
+
+    // MARK: - enableExternalPurchasesInSimulator
+
+    func testEnableExternalPurchasesInSimulatorIsEnabledByDefault() {
+        expect(DangerousSettings().enableExternalPurchasesInSimulator) == true
+        expect(DangerousSettings(autoSyncPurchases: true,
+                                 useExternalPurchaseCustomLinks: true).enableExternalPurchasesInSimulator) == true
+    }
+
+    func testEnableExternalPurchasesInSimulatorCanBeDisabled() {
+        let settings = DangerousSettings(autoSyncPurchases: false,
+                                         useExternalPurchaseCustomLinks: true,
+                                         enableExternalPurchasesInSimulator: false)
+
+        expect(settings.enableExternalPurchasesInSimulator) == false
+        expect(settings.useExternalPurchaseCustomLinks) == true
+        expect(settings.autoSyncPurchases) == false
+        expect(settings.customEntitlementComputation) == false
     }
 
     // MARK: - Internal settings

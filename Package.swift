@@ -101,7 +101,10 @@ let package = Package(
                 resources: [
                     .copy("../Sources/PrivacyInfo.xcprivacy")
                 ],
-                swiftSettings: [visionOSSetting] + ciCompilerFlags + additionalCompilerFlags),
+                swiftSettings: [
+                    visionOSSetting,
+                    .define("ENABLE_PAYWALL_MIN_MAX_SIZING")
+                ] + ciCompilerFlags + additionalCompilerFlags),
         .target(name: "RevenueCat_CustomEntitlementComputation",
                 path: "CustomEntitlementComputation",
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
@@ -130,7 +133,7 @@ let package = Package(
                     .process("Resources/icons.xcassets"),
                     .process("Resources/Media.xcassets")
                 ],
-                swiftSettings: ciCompilerFlags + additionalCompilerFlags),
+                swiftSettings: [.define("ENABLE_PAYWALL_MIN_MAX_SIZING")] + ciCompilerFlags + additionalCompilerFlags),
         .testTarget(name: "RevenueCatUITests",
                     dependencies: [
                         "RevenueCatUI",

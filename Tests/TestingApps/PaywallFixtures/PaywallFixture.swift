@@ -44,6 +44,12 @@ enum PaywallFixture: String, CaseIterable {
     /// Every offer price variable next to its `_with_zero` twin, on a free trial. The pair is the
     /// point: the plain ones render the localized word, the `_with_zero` ones render the amount.
     case offerPriceWithZero = "offer_price_with_zero"
+    /// The reported paywall's own configuration, decoded from JSON, rendered through `PaywallView`.
+    /// Here to answer whether the defect travels with the config or with the rendering host.
+    case reportedTabs = "reported_tabs"
+
+    /// A button opening a bottom sheet, for checking what is reachable while it is up.
+    case sheetOverContent = "sheet_over_content"
 
     var title: String {
         switch self {
@@ -61,6 +67,10 @@ enum PaywallFixture: String, CaseIterable {
             return "Spoken text and markdown links"
         case .offerPriceWithZero:
             return "Offer price with zero"
+        case .reportedTabs:
+            return "Reported tabbed paywall (real config)"
+        case .sheetOverContent:
+            return "Sheet over content"
         }
     }
 
@@ -80,6 +90,10 @@ enum PaywallFixture: String, CaseIterable {
             return Self.spokenTextAndLinksComponentsData()
         case .offerPriceWithZero:
             return Self.offerPriceWithZeroComponentsData()
+        case .reportedTabs:
+            return Self.decodeResource("reported_tabs")
+        case .sheetOverContent:
+            return Self.sheetOverContentComponentsData()
         }
     }
 
@@ -88,7 +102,7 @@ enum PaywallFixture: String, CaseIterable {
         switch self {
         case .iconOnlyButton, .fixedPillOverflowScroll:
             return [Self.monthlyPackage(offeringIdentifier: self.rawValue)]
-        case .spokenTextAndLinks:
+        case .spokenTextAndLinks, .sheetOverContent:
             return [Self.annualPackage(offeringIdentifier: self.rawValue)]
         case .badgeRulesPerOffer:
             return [Self.annualPackageWithPromoOffer(offeringIdentifier: self.rawValue)]
@@ -101,6 +115,8 @@ enum PaywallFixture: String, CaseIterable {
                 Self.weeklyPackage(offeringIdentifier: self.rawValue),
                 Self.lifetimePackage(offeringIdentifier: self.rawValue)
             ]
+        case .reportedTabs:
+            return Self.reportedTabsPackages(offeringIdentifier: self.rawValue)
         case .decorativeMedia:
             return [
                 Self.annualPackage(offeringIdentifier: self.rawValue),
@@ -127,6 +143,50 @@ enum PaywallFixture: String, CaseIterable {
 }
 
 private extension PaywallFixture {
+
+    /// Decodes a fixture payload shipped as a bundled JSON resource, the same shape the backend
+    /// sends. Traps rather than falling back: a silently empty paywall reads as a passing test.
+    static func decodeResource<T: Decodable>(_ name: String) -> T {
+        // A path override lets a bisect swap the payload without rebuilding the app.
+        let override = ProcessInfo.processInfo.environment["PAYWALL_FIXTURE_JSON_\(name.uppercased())"]
+        let url = override.map { URL(fileURLWithPath: $0) }
+            ?? Bundle.main.url(forResource: name, withExtension: "json")
+        guard let url, let data = try? Data(contentsOf: url) else {
+            fatalError("Missing fixture resource \(name).json")
+        }
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        do {
+            return try decoder.decode(T.self, from: data)
+        } catch {
+            fatalError("Could not decode \(name).json: \(error)")
+        }
+    }
+
+    /// The six packages the reported configuration references, by the identifiers it uses.
+    static func reportedTabsPackages(offeringIdentifier: String) -> [Package] {
+        func plan(_ identifier: String, _ type: PackageType, _ title: String,
+                  _ price: Decimal, _ priceString: String,
+                  _ unit: SubscriptionPeriod.Unit) -> Package {
+            return Self.package(
+                identifier: identifier,
+                packageType: type,
+                title: title,
+                price: price,
+                priceString: priceString,
+                period: .init(value: 1, unit: unit),
+                offeringIdentifier: offeringIdentifier
+            )
+        }
+        return [
+            plan("tier_one_monthly", .monthly, "Tier one monthly", 2.99, "$2.99", .month),
+            plan("tier_one_yearly", .annual, "Tier one yearly", 29.99, "$29.99", .year),
+            plan("tier_two_monthly", .monthly, "Tier two monthly", 4.99, "$4.99", .month),
+            plan("tier_two_yearly", .annual, "Tier two yearly", 49.99, "$49.99", .year),
+            plan("tier_three_monthly", .monthly, "Tier three monthly", 9.99, "$9.99", .month),
+            plan("tier_three_yearly", .annual, "Tier three yearly", 99.99, "$99.99", .year)
+        ]
+    }
 
     /// Period words the SDK expects to find when resolving variables. An empty `localizations` map
     /// is not equivalent: components that reference them render nothing.
@@ -325,6 +385,30 @@ private extension PaywallFixture {
             price: 1.99,
             priceString: "$1.99",
             period: .init(value: 1, unit: .week),
+            offeringIdentifier: offeringIdentifier
+        )
+    }
+
+    static func sixMonthPackage(offeringIdentifier: String) -> Package {
+        return Self.package(
+            identifier: "$rc_six_month",
+            packageType: .sixMonth,
+            title: "Six month",
+            price: 24.99,
+            priceString: "$24.99",
+            period: .init(value: 6, unit: .month),
+            offeringIdentifier: offeringIdentifier
+        )
+    }
+
+    static func threeMonthPackage(offeringIdentifier: String) -> Package {
+        return Self.package(
+            identifier: "$rc_three_month",
+            packageType: .threeMonth,
+            title: "Three month",
+            price: 14.99,
+            priceString: "$14.99",
+            period: .init(value: 3, unit: .month),
             offeringIdentifier: offeringIdentifier
         )
     }
@@ -571,6 +655,61 @@ private extension PaywallFixture {
 
     /// A package row with a fixed 22x22 pill ring and a 10x10 dot. `overflow: scroll` wraps the
     /// ring in a scroll view, which must not change its size.
+    static func sheetOverContentComponentsData() -> PaywallComponentsData {
+        let sheet = PaywallComponent.ButtonComponent.Sheet(
+            id: "sheet-over-content",
+            name: "Sheet",
+            stack: .init(
+                components: [
+                    .text(.init(text: "sheet_text_lid", color: .init(light: .hex("#000000"))))
+                ],
+                size: .init(width: .fill, height: .fit(nil)),
+                backgroundColor: .init(light: .hex("#ffffff")),
+                padding: .init(top: 32, bottom: 32, leading: 24, trailing: 24)
+            ),
+            backgroundBlur: true,
+            size: .init(width: .fill, height: .fixed(240))
+        )
+
+        return .init(
+            templateName: "fixture-sheet-over-content",
+            assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
+            componentsConfig: .init(base: .init(
+                stack: .init(
+                    components: [
+                        .text(.init(text: "behind_text_lid", color: .init(light: .hex("#000000")))),
+                        .button(.init(
+                            action: .navigateTo(destination: .sheet(sheet: sheet)),
+                            stack: .init(
+                                components: [
+                                    .text(.init(text: "open_lid", color: .init(light: .hex("#000000"))))
+                                ],
+                                size: .init(width: .fit(nil), height: .fit(nil)),
+                                padding: .init(top: 12, bottom: 12, leading: 16, trailing: 16)
+                            )
+                        ))
+                    ],
+                    dimension: .vertical(.center, .start),
+                    size: .init(width: .fill, height: .fill),
+                    spacing: 24,
+                    backgroundColor: .init(light: .hex("#ffffff")),
+                    padding: .init(top: 80, bottom: 24, leading: 16, trailing: 16)
+                ),
+                stickyFooter: nil,
+                background: .color(.init(light: .hex("#ffffff")))
+            )),
+            componentsLocalizations: [
+                "en_US": [
+                    "behind_text_lid": .string("Text behind the sheet"),
+                    "open_lid": .string("Open the sheet"),
+                    "sheet_text_lid": .string("Text inside the sheet")
+                ]
+            ],
+            revision: 1,
+            defaultLocaleIdentifier: "en_US"
+        )
+    }
+
     static func spokenTextAndLinksComponentsData() -> PaywallComponentsData {
         return .init(
             templateName: "fixture-spoken-text-and-links",

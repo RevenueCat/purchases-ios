@@ -12,6 +12,9 @@
 //  Created by Will Taylor on 5/5/25.
 
 import SwiftUI
+#if os(iOS) || os(visionOS)
+import UIKit
+#endif
 
 @_spi(Internal) import RevenueCat
 
@@ -116,6 +119,13 @@ struct BottomSheetOverlayModifier: ViewModifier {
         )
     }
 
+    /// A sheet is not a new screen to UIKit, so VoiceOver holds its focus until told otherwise.
+    private static func announceScreenChange() {
+#if os(iOS) || os(visionOS)
+        UIAccessibility.post(notification: .screenChanged, argument: nil)
+#endif
+    }
+
     /// One hop so the content's own measurements land before anything moves.
     private func settleAfterLayout(sheetID: String) {
         DispatchQueue.main.async {
@@ -123,24 +133,24 @@ struct BottomSheetOverlayModifier: ViewModifier {
             withAnimation(Self.presentationAnimation) {
                 self.settledSheetID = sheetID
             }
+            Self.announceScreenChange()
         }
     }
 
-    var sheetHeight: CGFloat? {
-        guard let size = self.sheetViewModel?.sheet.size else {
-            return nil
-        }
-
-        switch size.height {
+    static func resolvedHeight(
+        for constraint: PaywallComponent.SizeConstraint,
+        parentHeight: CGFloat?
+    ) -> CGFloat? {
+        switch constraint {
         case .fit, .fill:
             return nil
         case .fixed(let height):
             return CGFloat(height)
-        case .relative(let percent, _):
-            guard let parentHeight = self.parentHeight else {
+        case let .relative(percent, minMax):
+            guard let parentHeight else {
                 return nil
             }
-            return parentHeight * percent
+            return minMax.clamped(parentHeight * percent)
         }
     }
 
@@ -149,6 +159,8 @@ struct BottomSheetOverlayModifier: ViewModifier {
             content
                 .blur(radius: sheetViewModel?.sheet.backgroundBlur == true ? 10 : 0)
                 .animation(.easeInOut(duration: 0.25), value: sheetViewModel?.sheet.backgroundBlur)
+                // Blur is visual only: without this VoiceOver still walks what is behind.
+                .accessibilityHidden(self.sheetViewModel != nil)
 
             // Invisible tap area that covers the screen
             if sheetViewModel != nil {
@@ -157,6 +169,8 @@ struct BottomSheetOverlayModifier: ViewModifier {
                     .onTapGesture {
                         sheetViewModel = nil
                     }
+                    // Nothing to announce: dismissal is reachable from inside the sheet.
+                    .accessibilityHidden(true)
             }
 
             // Sheet content
@@ -182,13 +196,11 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         \.workflowRenderingContext,
                         self.workflowRenderingContext.withoutBackNavigation()
                     )
+                    .applySheetSize(sheetViewModel.sheet.size, parentHeight: self.parentHeight)
                     .environment(
                         \.workflowNavigateBackHandler,
                         nil
                     )
-                    .applyIfLet(self.sheetHeight, apply: { view, height in
-                        view.frame(height: height)
-                    })
                     // Hidden until the first layout pass has settled, then animated in.
                     .offset(y: self.presentationPlan(for: sheetViewModel).isPresented ? 0 : (self.parentHeight ?? 2000))
                     .opacity(self.presentationPlan(for: sheetViewModel).isPresented ? 1 : 0)
@@ -205,6 +217,16 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         if self.mountedSheetID == sheetViewModel.sheet.id {
                             self.mountedSheetID = nil
                         }
+                        // Hand focus back to the paywall. Skipped when another sheet took its
+                        // place, since that one announces itself once it settles.
+                        if self.sheetViewModel == nil {
+                            Self.announceScreenChange()
+                        }
+                    }
+                    // A sheet need not author a close button, so without this a screen reader
+                    // could have no way out.
+                    .accessibilityAction(.escape) {
+                        self.sheetViewModel = nil
                     }
                     // Tie the sheet content's identity to the sheet's `id` so that
                     // switching to a different sheet disposes the previous sheet's
@@ -216,6 +238,10 @@ struct BottomSheetOverlayModifier: ViewModifier {
                     .id(sheetViewModel.sheet.id)
                 }
             }
+            // Hiding the paywall doesn't reach into its ScrollView, so VoiceOver still walked it.
+            // Only checkable with Accessibility Inspector or VoiceOver: XCUITest lists hidden elements.
+            .accessibilityElement(children: .contain)
+            .accessibilityAddTraits(self.sheetViewModel != nil ? .isModal : [])
             .background(
                 GeometryReader { proxy in
                     Color.clear
@@ -244,6 +270,40 @@ struct BottomSheetOverlayModifier: ViewModifier {
             }
         }
     }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension View {
+
+    @ViewBuilder
+    func applySheetSize(_ size: PaywallComponent.Size?, parentHeight: CGFloat?) -> some View {
+        if let size {
+            self
+                #if ENABLE_PAYWALL_MIN_MAX_SIZING
+                .applyWidth(size.width, alignment: .center)
+                #endif
+                .applySheetHeight(size.height, parentHeight: parentHeight)
+        } else {
+            self
+        }
+    }
+
+    @ViewBuilder
+    func applySheetHeight(_ constraint: PaywallComponent.SizeConstraint, parentHeight: CGFloat?) -> some View {
+        switch constraint {
+        case .fit:
+            self
+        case let .fill(minMax):
+            self.applyHeightLimits(minMax, alignment: .center)
+        case .fixed, .relative:
+            self.applyIfLet(
+                BottomSheetOverlayModifier.resolvedHeight(for: constraint, parentHeight: parentHeight)
+            ) { view, height in
+                view.frame(height: height)
+            }
+        }
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

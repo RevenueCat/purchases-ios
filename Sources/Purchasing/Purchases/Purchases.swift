@@ -298,6 +298,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let customerInfoManager: CustomerInfoManager
     private let eventsManager: EventsManagerType?
     private let remoteConfigManager: RemoteConfigManagerType
+    private let sdkSettingsConfigProvider: SDKSettingsConfigProviderType
 
     private var _adTracker: Any?
 
@@ -531,6 +532,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               attributeSyncing: subscriberAttributesManager,
                                               appUserID: appUserID
         )
+        customerInfoManager.currentUserProvider = identityManager
         let remoteConfigManager: RemoteConfigManagerType = {
             guard let remoteConfigDiskCache else { return NoOpRemoteConfigManager() }
 
@@ -614,6 +616,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             uiConfigProvider: uiConfigProvider
         )
         let checkpointsConfigProvider = CheckpointsConfigProvider(manager: remoteConfigManager)
+        let audiencesConfigProvider = AudiencesConfigProvider(manager: remoteConfigManager)
+        let sdkSettingsConfigProvider = SDKSettingsConfigProvider(manager: remoteConfigManager)
 
         let workflowManager = WorkflowManager(
             workflowsConfigProvider: workflowsConfigProvider,
@@ -669,6 +673,13 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let notificationCenter: NotificationCenter = .default
         let checkpointResolver: CheckpointWorkflowResolver
         if systemInfo.remoteConfigEnabled {
+            let remoteConfigStateObservers: [any RemoteConfigStateObserver] = [
+                checkpointsConfigProvider,
+                audiencesConfigProvider
+            ]
+            for observer in remoteConfigStateObservers {
+                remoteConfigManager.addRemoteConfigStateObserver(observer)
+            }
             RulesEngine.setLogger(RulesEngineLoggerBridge())
             let localRulesEvaluator = LocalRulesEvaluator(
                 dimensionProviders: [
@@ -700,7 +711,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             )
             checkpointResolver = DefaultCheckpointWorkflowResolver(
                 checkpointsConfigProvider: checkpointsConfigProvider,
-                audiencesConfigProvider: AudiencesConfigProvider(manager: remoteConfigManager),
+                audiencesConfigProvider: audiencesConfigProvider,
                 localRulesEvaluator: localRulesEvaluator,
                 workflowManager: workflowManager,
                 offeringsProvider: {
@@ -850,6 +861,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   offeringsManager: offeringsManager,
                   workflowManager: workflowManager,
                   remoteConfigManager: remoteConfigManager,
+                  sdkSettingsConfigProvider: sdkSettingsConfigProvider,
                   offlineEntitlementsManager: offlineEntitlementsManager,
                   purchasesOrchestrator: purchasesOrchestrator,
                   purchasedProductsFetcher: purchasedProductsFetcher,
@@ -888,6 +900,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          offeringsManager: OfferingsManager,
          workflowManager: WorkflowManager,
          remoteConfigManager: RemoteConfigManagerType,
+         sdkSettingsConfigProvider: SDKSettingsConfigProviderType,
          offlineEntitlementsManager: OfflineEntitlementsManager,
          purchasesOrchestrator: PurchasesOrchestrator,
          purchasedProductsFetcher: PurchasedProductsFetcherType?,
@@ -947,7 +960,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.productsManager = productsManager
         self.offeringsManager = offeringsManager
         self.workflowManager = workflowManager
-        self.remoteConfigManager = systemInfo.remoteConfigEnabled ? remoteConfigManager : NoOpRemoteConfigManager()
+        self.remoteConfigManager = systemInfo.remoteConfigEnabled
+            ? remoteConfigManager
+            : NoOpRemoteConfigManager()
+        self.sdkSettingsConfigProvider = sdkSettingsConfigProvider
         self.offlineEntitlementsManager = offlineEntitlementsManager
         self.purchasesOrchestrator = purchasesOrchestrator
         self.purchasedProductsFetcher = purchasedProductsFetcher
@@ -967,6 +983,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             customLink: StoreKitExternalPurchaseCustomLink(),
             externalPurchaseTokenAPI: backend.externalPurchaseTokenAPI,
             currentUserProvider: identityManager,
+            settingsProvider: self.sdkSettingsConfigProvider,
             systemInfo: systemInfo
         )
         self.externalPurchaseManager = externalPurchaseManager
@@ -990,6 +1007,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         #endif
 
         self.purchasesOrchestrator.delegate = self
+        self.sdkSettingsConfigProvider.delegate = self
+        self.remoteConfigManager.addRemoteConfigStateObserver(self.sdkSettingsConfigProvider)
         #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.attribution.syncAttributesAndOfferingsIfNeededHandler = { completion in
             completion(nil, NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError)
@@ -2013,7 +2032,7 @@ extension Purchases {
     }
 
     /// Adapter entry point: identical to the public overload, but lets an official RevenueCat
-    /// ad-network adapter stamp `captureMethod: .adapter` on the tracked events instead of `.manual`.
+    /// ad-network adapter stamp `captureMethod: .iosAdMobAdapter` on the tracked events instead of `.manual`.
     @_spi(Internal) public func pollRewardVerification(
         clientTransactionID: String,
         trackingMetadata: RewardedAdTrackingMetadata?,
@@ -2726,6 +2745,12 @@ public extension Purchases {
 // "Capture of 'self' with non-sendable type 'Purchases' in a `@Sendable` closure"
 extension Purchases: @unchecked Sendable {}
 
+extension Purchases: SDKSettingsConfigProviderDelegate {
+
+    func sdkSettingsConfigProviderDidUpdate(_: SDKSettings) {}
+
+}
+
 // MARK: Internal
 
 extension Purchases {
@@ -2957,6 +2982,10 @@ internal extension Purchases {
 
 internal extension Purchases {
 
+    /// Tests can observe queued warmups without retaining Purchases or changing their scheduling.
+    static let eligibilityCacheWarmupStarted: Atomic<(@Sendable () -> (@Sendable () -> Void))?> = .init(nil)
+    static let eligibilityCacheWarmupTaskCreated: Atomic<(@Sendable (Task<Void, Never>) -> Void)?> = .init(nil)
+
     var networkTimeout: TimeInterval {
         return self.backend.networkTimeout
     }
@@ -3041,8 +3070,15 @@ private extension Purchases {
         // Note: it's important that we observe "will enter foreground" instead of
         // "did become active" so that we don't trigger cache updates in the middle
         // of purchases due to pop-ups stealing focus from the app.
-        self.updateAllCachesIfNeeded(isAppBackgrounded: false, fetchContext: .foreground)
-        self.dispatchSyncSubscriberAttributes()
+        let appUserID = self.appUserID
+        self.updateAllCachesIfNeeded(
+            isAppBackgrounded: false,
+            fetchContext: .foreground,
+            customerInfoCompletion: { [weak self] result in
+                guard case .success = result, self?.appUserID == appUserID else { return }
+                self?.dispatchSyncSubscriberAttributes()
+            }
+        )
         self.transactionMetadataSyncHelper.syncIfNeeded(
             allowSharingAppStoreAccount: self.purchasesOrchestrator.allowSharingAppStoreAccount
         )
@@ -3065,7 +3101,8 @@ private extension Purchases {
     }
 
     @objc func applicationWillResignActive() {
-        self.dispatchSyncSubscriberAttributes()
+        self.dispatchSyncSubscriberAttributesIfCustomerInfoAvailable()
+
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.purchasesOrchestrator.postEventsIfNeeded()
         #endif
@@ -3099,6 +3136,18 @@ private extension Purchases {
             self.syncSubscriberAttributes()
         }
         #endif
+    }
+
+    private func dispatchSyncSubscriberAttributesIfCustomerInfoAvailable() {
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        // Ensure the customer is created server-side before syncing attributes.
+        guard self.hasCachedCustomerInfo(for: self.appUserID) else { return }
+        self.dispatchSyncSubscriberAttributes()
+        #endif
+    }
+
+    private func hasCachedCustomerInfo(for appUserID: String) -> Bool {
+        return (try? self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)) != nil
     }
 
     private func performInitialForegroundSetup() {
@@ -3148,7 +3197,11 @@ private extension Purchases {
     }
     #endif
 
-    func updateAllCachesIfNeeded(isAppBackgrounded: Bool, fetchContext: RemoteConfigFetchContext) {
+    func updateAllCachesIfNeeded(
+        isAppBackgrounded: Bool,
+        fetchContext: RemoteConfigFetchContext,
+        customerInfoCompletion: CustomerInfoManager.CustomerInfoCompletion? = nil
+    ) {
         guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
             // No need to update caches every time when in UI preview mode.
             // Only needed at configuration time
@@ -3158,7 +3211,7 @@ private extension Purchases {
         if !self.systemInfo.dangerousSettings.customEntitlementComputation {
             self.customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: self.appUserID,
                                                                       isAppBackgrounded: isAppBackgrounded,
-                                                                      completion: nil)
+                                                                      completion: customerInfoCompletion)
             self.offlineEntitlementsManager.updateProductsEntitlementsCacheIfStale(
                 isAppBackgrounded: isAppBackgrounded,
                 completion: nil
@@ -3247,9 +3300,20 @@ private extension Purchases {
         guard let cache = self.paywallCache else {
             return
         }
-        self.operationDispatcher.dispatchOnWorkerThread {
+        #if DEBUG
+        let warmupFinished = Self.eligibilityCacheWarmupStarted.value?()
+        #endif
+        let warmupTask = self.operationDispatcher.dispatchOnWorkerThread {
+            #if DEBUG
+            defer { warmupFinished?() }
+            #endif
             await cache.warmUpEligibilityCache(offerings: offerings)
         }
+        #if DEBUG
+        Self.eligibilityCacheWarmupTaskCreated.value?(warmupTask)
+        #else
+        _ = warmupTask
+        #endif
         self.operationDispatcher.dispatchOnWorkerThread {
             await cache.warmUpPaywallAssetsCache(offerings: offerings)
         }

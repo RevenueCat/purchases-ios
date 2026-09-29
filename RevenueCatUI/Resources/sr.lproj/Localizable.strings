@@ -23,3 +23,7 @@
 "Default_offer_details_with_intro_offer" = "Започните пробни период од {{ sub_offer_duration }}, затим {{ total_price_and_per_month }}.";
 "Something went wrong" = "Нешто није у реду";
 "Purchase" = "Купи";
+"You are currently subscribed to this" = "Већ сте претплаћени на ово";
+"You've already purchased this" = "Ово сте већ купили";
+"Purchase unavailable" = "Куповина није доступна";
+"This purchase isn't available in your region." = "Ова куповина није доступна у вашем региону.";
