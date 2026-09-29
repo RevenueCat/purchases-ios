@@ -70,7 +70,7 @@ protocol PaywallPurchasesType: Sendable {
     func prepareExternalPurchaseLink() async -> ExternalPurchaseLinkResult
 
     @Sendable
-    func pollHostedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult
+    func pollHostedCheckout(session: HostedCheckoutSession) async -> HostedCheckoutPollResult
 
     @Sendable
     func restorePurchases() async throws -> CustomerInfo

@@ -67,8 +67,8 @@ final class HostedCheckoutManager {
     /// The checkout page returning to its success URL does not mean the purchase has landed yet, so the
     /// backend is asked until it says one way or the other.
     ///
-    /// - Parameter appUserID: The customer the session belongs to, read once by the caller: following a
-    /// customer who changes mid-poll would only ask about a session they do not own.
+    /// - Parameter appUserID: The customer the session was created for. Whoever is logged in by now may not
+    /// own the session.
     func pollCheckout(operationSessionID: String, appUserID: String) async -> HostedCheckoutPollResult {
         return await self.poller.poll(operationSessionID: operationSessionID, appUserID: appUserID)
     }
@@ -118,9 +118,10 @@ private extension HostedCheckoutManager {
     func createSession(package: Package,
                        paywall: PaywallEvent.Data?,
                        externalPurchaseTokenID: String?) async -> HostedCheckoutStartResult {
+        let appUserID = self.currentUserProvider.currentAppUserID
         let result: Result<HostedCheckoutResponse, BackendError> = await Async.call { completion in
             self.webBillingAPI.postHostedCheckout(
-                appUserID: self.currentUserProvider.currentAppUserID,
+                appUserID: appUserID,
                 packageID: package.identifier,
                 presentedOfferingContext: package.presentedOfferingContext,
                 paywall: paywall.map { .init(paywallEventData: $0) },
@@ -132,7 +133,7 @@ private extension HostedCheckoutManager {
         switch result {
         case let .success(response):
             Logger.debug(Strings.hostedCheckout.session_created(response.operationSessionID))
-            return .started(.init(response: response))
+            return .started(.init(response: response, appUserID: appUserID))
         case let .failure(error):
             guard !error.isProductAlreadyPurchased else {
                 Logger.warn(Strings.hostedCheckout.product_already_purchased(package.identifier))
