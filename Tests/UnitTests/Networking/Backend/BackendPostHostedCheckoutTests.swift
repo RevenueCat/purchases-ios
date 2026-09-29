@@ -189,6 +189,9 @@ class BackendPostHostedCheckoutTests: BaseBackendTests {
 
     /// Each asks the backend about a different session, which it could hand back.
     func testRequestsForDifferentPreviousSessionsAreNotReused() {
+        // What the request carries is covered by `testSendsThePreviousSession`.
+        self.httpClient.disableSnapshotTesting()
+
         self.expectTwoCalls(varying: { previousOperationSessionID in
             self.postHostedCheckout(appUserID: Self.userID,
                                     packageID: Self.packageID,
