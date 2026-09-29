@@ -99,7 +99,7 @@ class WebBillingAPI {
         )
     }
 
-    /// Asks what became of a checkout session.
+    /// Asks for the outcome of a checkout session.
     ///
     /// - Parameter operationSessionID: The session to ask about, as returned by ``postHostedCheckout``.
     /// Answered with a 404 where this customer does not own it.
