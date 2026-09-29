@@ -150,6 +150,34 @@ extension PurchasesHostedCheckoutTests {
         expect(self.deviceCache.cachedCustomerInfoData(appUserID: Self.otherAppUserID)).toNot(beNil())
     }
 
+    func testSendsTheLandedPurchaseToTheListeners() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try self.stubStatus(.succeeded)
+        let purchased = try Self.customerInfoWithActiveEntitlement()
+        self.backend.overrideCustomerInfoResult = .success(purchased)
+        let session = self.startedSession()
+
+        _ = await self.purchases.pollHostedCheckout(session: session)
+
+        expect(self.customerInfoManager.lastSentCustomerInfo) == purchased
+        await expect(self.purchasesDelegate.customerInfo).toEventually(equal(purchased))
+    }
+
+    /// The listeners follow whoever is logged in, so the buyer's `CustomerInfo` would pass for theirs.
+    func testDoesNotSendTheBuyersCustomerInfoToTheListenersWhenAnotherCustomerLogsInDuringThePoll() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try self.stubStatus(.succeeded)
+        let purchased = try Self.customerInfoWithActiveEntitlement()
+        self.backend.overrideCustomerInfoResult = .success(purchased)
+        let session = self.startedSession()
+        try self.logInWhileThePollRuns(Self.otherAppUserID)
+
+        _ = await self.purchases.pollHostedCheckout(session: session)
+
+        expect(self.backend.userID) == session.appUserID
+        expect(self.customerInfoManager.lastSentCustomerInfo) != purchased
+    }
+
     func testKeepsTheFetchedCustomerInfo() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         try self.stubStatus(.succeeded)
@@ -219,6 +247,33 @@ private extension PurchasesHostedCheckoutTests {
                      checkoutURL: URL(string: "https://pay.example.com/session")!,
                      successURL: URL(string: "https://api.revenuecat.com/checkout-return?status=success")!,
                      cancelURL: URL(string: "https://api.revenuecat.com/checkout-return?status=cancel")!)
+    }
+
+    static func customerInfoWithActiveEntitlement() throws -> CustomerInfo {
+        let expirationDate = ISO8601DateFormatter.default.string(from: Date().addingTimeInterval(60 * 60))
+
+        return try CustomerInfo(data: [
+            "request_date": ISO8601DateFormatter.default.string(from: Date()),
+            "subscriber": [
+                "original_app_user_id": BasePurchasesTests.appUserID,
+                "first_seen": "2019-06-17T16:05:33Z",
+                "subscriptions": [
+                    "monthly": [
+                        "expires_date": expirationDate,
+                        "purchase_date": "2026-09-28T10:00:00Z",
+                        "store": "rc_billing"
+                    ] as [String: Any]
+                ],
+                "non_subscriptions": [:] as [String: Any],
+                "entitlements": [
+                    "pro": [
+                        "product_identifier": "monthly",
+                        "expires_date": expirationDate,
+                        "purchase_date": "2026-09-28T10:00:00Z"
+                    ] as [String: Any]
+                ]
+            ] as [String: Any]
+        ])
     }
 
     /// A session as the checkout creates it, for whoever is logged in when it starts.
