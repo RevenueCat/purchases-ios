@@ -22,6 +22,17 @@ import XCTest
 @MainActor
 final class BottomSheetSwitchTests: TestCase {
 
+    func testRelativeSheetHeightIsClampedToMinMax() {
+        let clamped = PaywallComponent.SizeConstraint.relative(0.5, .init(min: 300, max: 400))
+
+        XCTAssertEqual(BottomSheetOverlayModifier.resolvedHeight(for: clamped, parentHeight: 1000), 400)
+        XCTAssertEqual(BottomSheetOverlayModifier.resolvedHeight(for: clamped, parentHeight: 700), 350)
+        XCTAssertEqual(BottomSheetOverlayModifier.resolvedHeight(for: clamped, parentHeight: 400), 300)
+        XCTAssertNil(BottomSheetOverlayModifier.resolvedHeight(for: clamped, parentHeight: nil))
+        XCTAssertEqual(BottomSheetOverlayModifier.resolvedHeight(for: .fixed(120), parentHeight: nil), 120)
+        XCTAssertNil(BottomSheetOverlayModifier.resolvedHeight(for: .fit(nil), parentHeight: 1000))
+    }
+
     /// Regression test for a bug where switching from one bottom sheet to another before the
     /// dismiss animation finished kept the previous sheet's content alive (most visibly, a video
     /// from the previous sheet kept playing in the newly-opened sheet).
@@ -39,17 +50,6 @@ final class BottomSheetSwitchTests: TestCase {
     /// sheet A, then switches directly to sheet B without letting the sheet settle back to `nil`.
     /// With the fix the content is disposed and recreated → the appear callback fires again.
     /// Without the fix the content is reused → the appear callback does not fire for sheet B.
-    func testRelativeSheetHeightIsClampedToMinMax() {
-        let clamped = PaywallComponent.SizeConstraint.relative(0.5, .init(min: 300, max: 400))
-
-        XCTAssertEqual(BottomSheetOverlayModifier.resolvedHeight(for: clamped, parentHeight: 1000), 400)
-        XCTAssertEqual(BottomSheetOverlayModifier.resolvedHeight(for: clamped, parentHeight: 700), 350)
-        XCTAssertEqual(BottomSheetOverlayModifier.resolvedHeight(for: clamped, parentHeight: 400), 300)
-        XCTAssertNil(BottomSheetOverlayModifier.resolvedHeight(for: clamped, parentHeight: nil))
-        XCTAssertEqual(BottomSheetOverlayModifier.resolvedHeight(for: .fixed(120), parentHeight: nil), 120)
-        XCTAssertNil(BottomSheetOverlayModifier.resolvedHeight(for: .fit(nil), parentHeight: 1000))
-    }
-
     func testSwitchingSheetsRecreatesContent() throws {
         let holder = SheetHolder()
         holder.sheet = try Self.makeSheetViewModel(id: "sheetA", text: "Sheet A")
