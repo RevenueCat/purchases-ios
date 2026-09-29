@@ -23,6 +23,7 @@ final class HostedCheckoutTests: TestCase {
 
     private static let session = HostedCheckoutSession(
         operationSessionID: "oper_1",
+        appUserID: "app_user_1",
         checkoutURL: URL(string: "https://checkout.stripe.com/c/pay/session_1")!,
         successURL: URL(string: "https://api.revenuecat.com/rcbilling/v1/hosted-checkout-return?status=success")!,
         cancelURL: URL(string: "https://api.revenuecat.com/rcbilling/v1/hosted-checkout-return?status=cancel")!

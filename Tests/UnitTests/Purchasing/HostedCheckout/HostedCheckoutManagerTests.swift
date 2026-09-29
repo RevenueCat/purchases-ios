@@ -408,6 +408,7 @@ private extension HostedCheckoutManagerTests {
                                                  cancelURL: cancelURL)
 
     static let session = HostedCheckoutSession(operationSessionID: operationSessionID,
+                                               appUserID: appUserID,
                                                checkoutURL: checkoutURL,
                                                successURL: successURL,
                                                cancelURL: cancelURL)
