@@ -376,6 +376,12 @@ extension PurchaseHandler {
         return await self.purchases.pollHostedCheckout(session: session)
     }
 
+    /// Whether a checkout the backend confirmed can be reported, which takes the `CustomerInfo` showing the
+    /// purchase. The SDK fetches it while confirming the purchase, but that fetch can fail.
+    func canReportHostedCheckoutPurchase() async -> Bool {
+        return (try? await self.purchases.customerInfo()) != nil
+    }
+
     /// Whether web purchase links opened in the browser go through Apple's external purchase flow first.
     var useExternalPurchaseCustomLinks: Bool {
         return self.purchases.useExternalPurchaseCustomLinks
