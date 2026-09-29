@@ -141,7 +141,7 @@ extension WorkflowNavigator {
         }
     }
 
-    /// A branch falls back unless its route resolved to a step the workflow still has.
+    /// If the branch has not been resolved, pick the fallback.
     func nextStepId(for action: WorkflowTriggerAction?, actionId: String) -> String? {
         switch action {
         case .step(let stepId):
