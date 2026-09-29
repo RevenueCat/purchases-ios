@@ -110,6 +110,8 @@ struct StackComponentView: View {
     @ViewBuilder
     // swiftlint:disable:next function_body_length
     private func make(style: StackComponentStyle) -> some View {
+        let contentInsets = style.padding.extend(by: style.border?.width ?? 0)
+
         Group {
             switch style.dimension {
             case .vertical(let horizontalAlignment, let distribution):
@@ -122,6 +124,7 @@ struct StackComponentView: View {
                 )
                 // This alignment positions the inner VStack horizontally and vertically
                 .size(style.size,
+                      subtracting: contentInsets,
                       horizontalAlignment: horizontalAlignment.frameAlignment,
                       verticalAlignment: distribution.verticalFrameAlignment)
             case .horizontal(let verticalAlignment, let distribution):
@@ -134,6 +137,7 @@ struct StackComponentView: View {
                 )
                 // This alignment positions the inner VStack horizontally and vertically
                 .size(style.size,
+                      subtracting: contentInsets,
                       horizontalAlignment: distribution.horizontalFrameAlignment,
                       verticalAlignment: verticalAlignment.frameAlignment)
             case .zlayer(let alignment):
@@ -147,12 +151,13 @@ struct StackComponentView: View {
                 }
                 // These alignments define the position of inner components inside the ZStack
                 .size(style.size,
+                      subtracting: contentInsets,
                       horizontalAlignment: alignment.stackAlignment,
                       verticalAlignment: alignment.stackAlignment)
             }
         }
         .hidden(if: self.showActivityIndicatorOverContent)
-        .padding(style.padding.extend(by: style.border?.width ?? 0))
+        .padding(contentInsets)
         .padding(additionalPadding)
         .applyIf(self.showActivityIndicatorOverContent, apply: { view in
             view.progressOverlay(for: style.backgroundStyle)

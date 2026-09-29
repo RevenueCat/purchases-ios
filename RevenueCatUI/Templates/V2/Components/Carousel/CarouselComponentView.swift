@@ -70,6 +70,8 @@ struct CarouselComponentView: View {
             colorScheme: colorScheme
         ) { style in
             if style.visible {
+                let contentInsets = style.padding.extend(by: style.border?.width ?? 0)
+
                 GeometryReader { reader in
                     CarouselView(
                         width: reader.size.width,
@@ -112,8 +114,8 @@ struct CarouselComponentView: View {
                 // entire tab subtree.
                 .id(ObjectIdentifier(self.viewModel))
                 // Style the carousel
-                .size(style.size)
-                .padding(style.padding.extend(by: style.border?.width ?? 0))
+                .size(style.size, subtracting: contentInsets)
+                .padding(contentInsets)
                 .shape(border: style.border,
                        shape: style.shape,
                        background: style.backgroundStyle,

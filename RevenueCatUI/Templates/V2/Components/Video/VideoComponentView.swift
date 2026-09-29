@@ -89,6 +89,7 @@ struct VideoComponentView: View {
             ) { style in
                 if style.visible {
                     let viewData = style.viewData(forDarkMode: colorScheme == .dark)
+                    let contentInsets = style.padding.extend(by: style.border?.width ?? 0)
 
                     ZStack {
                         // Determine if video player will render
@@ -145,15 +146,19 @@ struct VideoComponentView: View {
                         self.resolveSource(viewData: newViewData)
                         self.playerRefreshToggle.toggle()
                     }
-                    .applyMediaWidth(size: style.size)
-                    .applyMediaHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
+                    .applyMediaWidth(size: style.size, subtracting: contentInsets)
+                    .applyMediaHeight(
+                        size: style.size,
+                        aspectRatio: self.aspectRatio(style: style),
+                        subtracting: contentInsets
+                    )
                     .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
                         view.overlay(
                             Color.clear.backgroundStyle(.color(colorOverlay))
                                 .allowsHitTesting(false)
                         )
                     })
-                    .padding(style.padding.extend(by: style.border?.width ?? 0))
+                    .padding(contentInsets)
                     .shape(border: style.border, shape: style.shape)
                     .clipped()
                     .shadow(shadow: style.shadow, shape: style.shape?.toInsettableShape(size: size))
