@@ -77,6 +77,9 @@ struct ImageComponentView: View {
     @Environment(\.requestSizeCalculation)
     private var requestSizeCalculation
 
+    @Environment(\.displayScale)
+    private var displayScale
+
     let viewModel: ImageComponentViewModel
 
     var renderForPreview: Bool {
@@ -248,8 +251,8 @@ struct ImageComponentView: View {
         with style: ImageComponentStyle
     ) -> some View {
         content
-            .applyMediaWidth(size: style.size)
-            .applyMediaHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
+            .applyMediaWidth(size: style.size, intrinsicSize: self.intrinsicSize(style: style))
+            .applyMediaHeight(size: style.size, intrinsicSize: self.intrinsicSize(style: style))
             .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
                 view.overlay(
                     Color.clear
@@ -279,6 +282,11 @@ struct ImageComponentView: View {
     private func aspectRatio(style: ImageComponentStyle) -> Double {
         let (width, height) = self.imageSize(style: style)
         return Double(width) / Double(height)
+    }
+
+    private func intrinsicSize(style: ImageComponentStyle) -> CGSize {
+        let (width, height) = self.imageSize(style: style)
+        return MediaIntrinsicSize.points(pixelWidth: width, pixelHeight: height, displayScale: self.displayScale)
     }
 
     private func imageSize(style: ImageComponentStyle) -> (width: Int, height: Int) {

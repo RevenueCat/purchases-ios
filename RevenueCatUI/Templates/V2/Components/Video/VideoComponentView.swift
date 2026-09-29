@@ -29,6 +29,9 @@ struct VideoComponentView: View {
     @EnvironmentObject
     private var paywallPromoOfferCache: PaywallPromoOfferCache
 
+    @Environment(\.displayScale)
+    private var displayScale
+
     @Environment(\.componentViewState)
     private var componentViewState
 
@@ -145,8 +148,8 @@ struct VideoComponentView: View {
                         self.resolveSource(viewData: newViewData)
                         self.playerRefreshToggle.toggle()
                     }
-                    .applyMediaWidth(size: style.size)
-                    .applyMediaHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
+                    .applyMediaWidth(size: style.size, intrinsicSize: self.intrinsicSize(style: style))
+                    .applyMediaHeight(size: style.size, intrinsicSize: self.intrinsicSize(style: style))
                     .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
                         view.overlay(
                             Color.clear.backgroundStyle(.color(colorOverlay))
@@ -217,6 +220,11 @@ struct VideoComponentView: View {
     private func aspectRatio(style: VideoComponentStyle) -> Double {
         let (width, height) = self.videoSize(style: style)
         return Double(width) / Double(height)
+    }
+
+    private func intrinsicSize(style: VideoComponentStyle) -> CGSize {
+        let (width, height) = self.videoSize(style: style)
+        return MediaIntrinsicSize.points(pixelWidth: width, pixelHeight: height, displayScale: self.displayScale)
     }
 
     private func updatePlayableState(isPlayable newValue: Bool) {
