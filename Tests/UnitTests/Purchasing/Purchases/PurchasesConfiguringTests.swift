@@ -18,6 +18,36 @@ import XCTest
 
 class PurchasesConfiguringTests: BasePurchasesTests {
 
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testRemoteDiagnosticsSettingOverridesSDKConfiguration() {
+        expect(
+            resolvedDiagnosticsCollectionDecision(remoteDiagnosticsEnabled: false, diagnosticsEnabled: true)
+        ) == .disabled
+        expect(
+            resolvedDiagnosticsCollectionDecision(remoteDiagnosticsEnabled: true, diagnosticsEnabled: false)
+        ) == .enabled
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testMissingRemoteDiagnosticsSettingDefersToSDKConfiguration() {
+        expect(
+            resolvedDiagnosticsCollectionDecision(remoteDiagnosticsEnabled: nil, diagnosticsEnabled: false)
+        ) == .disabled
+        expect(
+            resolvedDiagnosticsCollectionDecision(remoteDiagnosticsEnabled: nil, diagnosticsEnabled: true)
+        ) == .enabled
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testInitialDiagnosticsCollectionIsUndeterminedWhenRemoteConfigIsAvailable() {
+        expect(
+            initialDiagnosticsCollectionDecision(diagnosticsEnabled: false, remoteConfigEnabled: true)
+        ) == .undetermined
+        expect(
+            initialDiagnosticsCollectionDecision(diagnosticsEnabled: true, remoteConfigEnabled: true)
+        ) == .undetermined
+    }
+
     func testIsAbleToBeInitialized() {
         self.setupPurchases()
         expect(self.purchases).toNot(beNil())

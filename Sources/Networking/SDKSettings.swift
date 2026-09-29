@@ -12,11 +12,11 @@ import Foundation
 struct SDKSettings: Decodable, Equatable {
 
     let externalPurchases: ExternalPurchases
-    let diagnostics: Diagnostics
+    let diagnostics: Diagnostics?
 
     init(
         externalPurchases: ExternalPurchases = Self.noExternalPurchases,
-        diagnostics: Diagnostics = .init()
+        diagnostics: Diagnostics? = nil
     ) {
         self.externalPurchases = externalPurchases
         self.diagnostics = diagnostics
@@ -31,15 +31,15 @@ struct SDKSettings: Decodable, Equatable {
 
     struct Diagnostics: Decodable, Equatable {
 
-        let enabled: Bool
+        let enabled: Bool?
 
-        init(enabled: Bool = false) {
+        init(enabled: Bool? = nil) {
             self.enabled = enabled
         }
 
         init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            self.enabled = (try? container.decode(Bool.self, forKey: .enabled)) ?? false
+            self.enabled = try container.decodeIfPresent(Bool.self, forKey: .enabled)
         }
 
     }
@@ -49,14 +49,14 @@ struct SDKSettings: Decodable, Equatable {
 extension SDKSettings {
 
     init() {
-        self.init(externalPurchases: Self.noExternalPurchases, diagnostics: .init())
+        self.init(externalPurchases: Self.noExternalPurchases)
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.externalPurchases = (try? container.decode(ExternalPurchases.self, forKey: .externalPurchases))
             ?? Self.noExternalPurchases
-        self.diagnostics = (try? container.decode(Diagnostics.self, forKey: .diagnostics)) ?? .init()
+        self.diagnostics = try? container.decode(Diagnostics.self, forKey: .diagnostics)
     }
 
     private static let noExternalPurchases = ExternalPurchases(

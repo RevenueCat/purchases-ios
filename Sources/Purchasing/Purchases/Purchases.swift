@@ -1033,7 +1033,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.purchasesOrchestrator.delegate = self
         self.sdkSettingsConfigProvider.delegate = self
         if !self.systemInfo.remoteConfigEnabled {
-            self.setDiagnosticsCollectionEnabled(shouldEnableFromRemoteConfig: false)
+            self.setDiagnosticsCollectionDecision(remoteDiagnosticsEnabled: nil)
         }
         #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.attribution.syncAttributesAndOfferingsIfNeededHandler = { completion in
@@ -2773,18 +2773,20 @@ public extension Purchases {
 extension Purchases: SDKSettingsConfigProviderDelegate {
 
     func sdkSettingsConfigProviderDidUpdate(_ settings: SDKSettings) {
-        self.setDiagnosticsCollectionDecision(shouldEnableFromRemoteConfig: settings.diagnostics.enabled)
+        self.setDiagnosticsCollectionDecision(remoteDiagnosticsEnabled: settings.diagnostics?.enabled)
     }
 
-    private func setDiagnosticsCollectionDecision(shouldEnableFromRemoteConfig: Bool) {
+    private func setDiagnosticsCollectionDecision(remoteDiagnosticsEnabled: Bool?) {
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
             let isEnabledBySDKConfiguration = self.currentConfiguration?.diagnosticsEnabled ?? false
-            let diagnosticsCollectionEnabled = isEnabledBySDKConfiguration || shouldEnableFromRemoteConfig
+            let decision = resolvedDiagnosticsCollectionDecision(
+                remoteDiagnosticsEnabled: remoteDiagnosticsEnabled,
+                diagnosticsEnabled: isEnabledBySDKConfiguration
+            )
             Logger.debug(Strings.diagnostics.diagnostics_collection_decision(
-                isEnabled: diagnosticsCollectionEnabled,
-                isEnabledBySDKConfiguration: isEnabledBySDKConfiguration
+                isEnabled: decision == .enabled,
+                isEnabledBySDKConfiguration: remoteDiagnosticsEnabled == nil
             ))
-            let decision = DiagnosticsCollectionDecision(enabled: diagnosticsCollectionEnabled)
             self.diagnosticsTracker?.setCollectionDecision(decision)
             Task { [weak self] in
                 await self?.purchasesOrchestrator.diagnosticsSynchronizer?.setCollectionDecision(decision)
@@ -2805,14 +2807,19 @@ extension Purchases: SDKSettingsConfigProviderDelegate {
 extension Purchases: @unchecked Sendable {}
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-private func initialDiagnosticsCollectionDecision(
+func initialDiagnosticsCollectionDecision(
     diagnosticsEnabled: Bool,
     remoteConfigEnabled: Bool
 ) -> DiagnosticsCollectionDecision {
-    if diagnosticsEnabled {
-        return .enabled
-    }
-    return remoteConfigEnabled ? .undetermined : .disabled
+    return remoteConfigEnabled ? .undetermined : .init(enabled: diagnosticsEnabled)
+}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+func resolvedDiagnosticsCollectionDecision(
+    remoteDiagnosticsEnabled: Bool?,
+    diagnosticsEnabled: Bool
+) -> DiagnosticsCollectionDecision {
+    return .init(enabled: remoteDiagnosticsEnabled ?? diagnosticsEnabled)
 }
 
 // MARK: Internal
