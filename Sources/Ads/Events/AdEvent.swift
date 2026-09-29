@@ -42,7 +42,6 @@ internal protocol AdImpressionEventData: AdEventData {
 
     /// Auto-captured by an official RevenueCat ad-network adapter.
     /// Retained so events stored by older adapter versions can still be decoded and sent.
-    @available(*, deprecated, message: "Use iosAdMobAdapter instead.")
     case adapter
 
     /// Reported via the public `trackAd*` tracking API.
