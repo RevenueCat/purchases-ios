@@ -378,8 +378,15 @@ extension PurchaseHandler {
 
     /// Runs `confirmation` with the paywall showing a purchase under way, for a checkout the backend still has
     /// to confirm.
+    ///
+    /// A checkout confirmed while the customer is busy with something else, as when its page returned after they
+    /// closed it, is confirmed without showing it: that would end what they are doing.
     @MainActor
     func whileConfirmingHostedCheckout<T>(_ confirmation: () async -> T) async -> T {
+        guard !self.actionInProgress else {
+            return await confirmation()
+        }
+
         self.purchaseError = nil
         self.startAction(.purchase)
         defer { self.actionTypeInProgress = nil }

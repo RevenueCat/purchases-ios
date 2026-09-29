@@ -278,8 +278,11 @@ struct PurchaseButtonComponentView: View {
             }
         case .dismissed:
             // The checkout stays kept: a customer who paid moments before closing the sheet has that purchase
-            // confirmed when they tap buy again.
+            // confirmed once the page reaches its success URL, or when they tap buy again.
             Logger.debug(Strings.hosted_checkout_dismissed_without_returning)
+            HostedCheckout.confirmOnSuccessWhileHidden(checkout, purchaseHandler: self.purchaseHandler) { checkout in
+                self.resolveHostedCheckout(checkout.session, package: checkout.package)
+            }
             Task { await self.purchaseHandler.handleHostedCheckoutCancellation(package: checkout.package) }
         }
     }

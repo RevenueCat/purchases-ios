@@ -262,6 +262,78 @@ final class HostedCheckoutTests: TestCase {
         expect(handler.keptHostedCheckout).to(beNil())
     }
 
+    // MARK: - Returning while hidden
+
+    /// The provider redirects once a payment the customer made moments before closing the sheet goes through.
+    @MainActor
+    func testConfirmsTheKeptCheckoutWhenItsPageReachesTheSuccessURLWhileHidden() {
+        let handler = Self.makeHandler(purchases: Self.makePurchases())
+        let kept = Self.makeKeptCheckout(for: Self.session)
+        handler.keptHostedCheckout = kept
+        var confirmed: [HostedCheckout.KeptCheckout] = []
+
+        HostedCheckout.confirmOnSuccessWhileHidden(kept, purchaseHandler: handler) { confirmed.append($0) }
+        Self.navigate(kept.viewModel, to: Self.session.successURL)
+
+        expect(confirmed).to(haveCount(1))
+        expect(confirmed.first) === kept
+        expect(handler.keptHostedCheckout).to(beNil())
+    }
+
+    @MainActor
+    func testLeavesTheKeptCheckoutWhenItsPageReachesTheCancelURLWhileHidden() {
+        let handler = Self.makeHandler(purchases: Self.makePurchases())
+        let kept = Self.makeKeptCheckout(for: Self.session)
+        handler.keptHostedCheckout = kept
+        var confirmed = 0
+
+        HostedCheckout.confirmOnSuccessWhileHidden(kept, purchaseHandler: handler) { _ in confirmed += 1 }
+        Self.navigate(kept.viewModel, to: Self.session.cancelURL)
+
+        expect(confirmed) == 0
+        expect(handler.keptHostedCheckout) === kept
+    }
+
+    /// The customer moved on to another checkout, which is the one that carries their purchase now.
+    @MainActor
+    func testDoesNotConfirmACheckoutThatIsNoLongerKept() {
+        let handler = Self.makeHandler(purchases: Self.makePurchases())
+        let kept = Self.makeKeptCheckout(for: Self.session)
+        handler.keptHostedCheckout = kept
+        var confirmed = 0
+
+        HostedCheckout.confirmOnSuccessWhileHidden(kept, purchaseHandler: handler) { _ in confirmed += 1 }
+        let replacement = HostedCheckout.checkoutToPresent(Self.otherSession,
+                                                           package: TestData.monthlyPackage,
+                                                           purchaseHandler: handler)
+        Self.navigate(kept.viewModel, to: Self.session.successURL)
+
+        expect(confirmed) == 0
+        expect(handler.keptHostedCheckout) === replacement
+    }
+
+    /// Taking over the paywall's busy state would end whatever the customer is doing in the meantime.
+    @MainActor
+    func testConfirmsWithoutShowingItWhileAnotherActionIsUnderWay() async {
+        let actionsWhilePolling = Recorder<PurchaseHandler.ActionType?>()
+        let purchases = Self.makePurchases()
+        let handler = Self.makeHandler(purchases: purchases)
+        purchases.hostedCheckoutPollBlock = { _ in
+            await actionsWhilePolling.record(await MainActor.run { handler.actionTypeInProgress })
+            return .succeeded
+        }
+        handler.actionTypeInProgress = .restore
+
+        let resolution = await HostedCheckout.resolve(Self.session,
+                                                      package: TestData.annualPackage,
+                                                      purchaseHandler: handler)
+
+        let actions = await actionsWhilePolling.values
+        expect(resolution) == .purchased
+        expect(actions) == [.restore]
+        expect(handler.actionTypeInProgress) == .restore
+    }
+
     // MARK: - Settling on what the backend says
 
     func testCountsAConfirmedPurchase() {
@@ -489,6 +561,14 @@ private extension HostedCheckoutTests {
         successURL: session.successURL,
         cancelURL: session.cancelURL
     )
+
+    /// Has the page navigate to `url`, as the provider's redirect does.
+    @MainActor
+    static func navigate(_ viewModel: WebCheckoutViewModel, to url: URL) {
+        viewModel.webView(viewModel.webView,
+                          decidePolicyFor: MainFrameNavigationAction(url: url),
+                          decisionHandler: { _ in })
+    }
 
     @MainActor
     static func makeKeptCheckout(for session: HostedCheckoutSession) -> HostedCheckout.KeptCheckout {

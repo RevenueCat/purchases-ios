@@ -111,6 +111,29 @@ enum HostedCheckout {
 
     }
 
+    /// Confirms the kept checkout should its page reach the success URL while the sheet is closed, which the
+    /// provider does once a payment the customer made moments before closing it goes through.
+    ///
+    /// A page that reaches the cancel URL is left as it is: it is loaded afresh when the customer taps buy again.
+    ///
+    /// - Parameter onSuccess: Called with the checkout to confirm, once it is no longer kept.
+    @MainActor
+    static func confirmOnSuccessWhileHidden(_ checkout: KeptCheckout,
+                                            purchaseHandler: PurchaseHandler,
+                                            onSuccess: @escaping @MainActor (KeptCheckout) -> Void) {
+        checkout.viewModel.onFinished = { [weak checkout, weak purchaseHandler] in
+            guard let checkout,
+                  let purchaseHandler,
+                  purchaseHandler.keptHostedCheckout === checkout,
+                  checkout.viewModel.returnStatus == .success else {
+                return
+            }
+
+            purchaseHandler.keptHostedCheckout = nil
+            onSuccess(checkout)
+        }
+    }
+
     /// The checkout to present for `session`: the kept one where it is the same session and its page is still
     /// usable, or a new one that replaces it.
     ///
