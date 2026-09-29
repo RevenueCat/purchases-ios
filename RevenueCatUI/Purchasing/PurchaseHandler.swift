@@ -372,12 +372,12 @@ extension PurchaseHandler {
         return await confirmation()
     }
 
-    func pollHostedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
-        return await self.purchases.pollHostedCheckout(operationSessionID: operationSessionID)
+    func pollHostedCheckout(session: HostedCheckoutSession) async -> HostedCheckoutPollResult {
+        return await self.purchases.pollHostedCheckout(session: session)
     }
 
-    func pollDismissedHostedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
-        return await self.purchases.pollDismissedHostedCheckout(operationSessionID: operationSessionID)
+    func pollDismissedHostedCheckout(session: HostedCheckoutSession) async -> HostedCheckoutPollResult {
+        return await self.purchases.pollDismissedHostedCheckout(session: session)
     }
 
     /// Whether web purchase links opened in the browser go through Apple's external purchase flow first.
@@ -1276,11 +1276,11 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
         return .failed
     }
 
-    func pollHostedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
+    func pollHostedCheckout(session: HostedCheckoutSession) async -> HostedCheckoutPollResult {
         return .undetermined
     }
 
-    func pollDismissedHostedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
+    func pollDismissedHostedCheckout(session: HostedCheckoutSession) async -> HostedCheckoutPollResult {
         return .undetermined
     }
 

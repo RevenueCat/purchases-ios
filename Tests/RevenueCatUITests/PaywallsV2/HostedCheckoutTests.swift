@@ -24,6 +24,7 @@ final class HostedCheckoutTests: TestCase {
 
     private static let session = HostedCheckoutSession(
         operationSessionID: "oper_1",
+        appUserID: "app_user_1",
         checkoutURL: URL(string: "https://checkout.stripe.com/c/pay/session_1")!,
         successURL: URL(string: "https://api.revenuecat.com/rcbilling/v1/hosted-checkout-return?status=success")!,
         cancelURL: URL(string: "https://api.revenuecat.com/rcbilling/v1/hosted-checkout-return?status=cancel")!
@@ -164,10 +165,10 @@ final class HostedCheckoutTests: TestCase {
     }
 
     func testAsksAboutTheSessionThatWasPresented() async {
-        let sessionsAskedAbout = Recorder<String>()
+        let sessionsAskedAbout = Recorder<HostedCheckoutSession>()
         let purchases = Self.makePurchases()
-        purchases.hostedCheckoutPollBlock = { operationSessionID in
-            await sessionsAskedAbout.record(operationSessionID)
+        purchases.hostedCheckoutPollBlock = { session in
+            await sessionsAskedAbout.record(session)
             return .succeeded
         }
 
@@ -176,7 +177,7 @@ final class HostedCheckoutTests: TestCase {
                                          purchaseHandler: Self.makeHandler(purchases: purchases))
 
         let asked = await sessionsAskedAbout.values
-        expect(asked) == [Self.session.operationSessionID]
+        expect(asked) == [Self.session]
     }
 
     @MainActor
@@ -320,11 +321,11 @@ final class HostedCheckoutTests: TestCase {
     @MainActor
     func testLeavesThePaywallIdleWhileCheckingOnADismissedCheckout() async {
         let busyWhenAsked = Recorder<Bool>()
-        let sessionsAskedAbout = Recorder<String>()
+        let sessionsAskedAbout = Recorder<HostedCheckoutSession>()
         let purchases = Self.makePurchases()
         let handler = Self.makeHandler(purchases: purchases)
-        purchases.hostedCheckoutPollDismissedBlock = { operationSessionID in
-            await sessionsAskedAbout.record(operationSessionID)
+        purchases.hostedCheckoutPollDismissedBlock = { session in
+            await sessionsAskedAbout.record(session)
             await busyWhenAsked.record(await MainActor.run { handler.actionInProgress })
             return .undetermined
         }
@@ -335,7 +336,7 @@ final class HostedCheckoutTests: TestCase {
 
         let asked = await sessionsAskedAbout.values
         let busy = await busyWhenAsked.values
-        expect(asked) == [Self.session.operationSessionID]
+        expect(asked) == [Self.session]
         expect(busy) == [false]
     }
 
