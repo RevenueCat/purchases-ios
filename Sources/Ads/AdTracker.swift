@@ -112,14 +112,8 @@ public final class AdTracker: NSObject {
      ```
      */
     public func trackRewardedAdPromptShown(_ data: RewardedAdPromptShown) {
-        self.trackRewardedAdPromptShown(data, captureMethod: .manual)
-    }
-
-    /// Internal entry point that stamps the event's `capture_method`.
-    @_spi(Internal) public func trackRewardedAdPromptShown(_ data: RewardedAdPromptShown,
-                                                           captureMethod: AdEventCaptureMethod) {
         Task {
-            let event = AdEvent.rewardedAdPromptShown(.init(captureMethod: captureMethod), data)
+            let event = AdEvent.rewardedAdPromptShown(.init(captureMethod: .manual), data)
             await self.eventsManager?.track(adEvent: event)
         }
     }
@@ -143,14 +137,8 @@ public final class AdTracker: NSObject {
      ```
      */
     public func trackRewardedAdPromptAccepted(_ data: RewardedAdPromptAccepted) {
-        self.trackRewardedAdPromptAccepted(data, captureMethod: .manual)
-    }
-
-    /// Internal entry point that stamps the event's `capture_method`.
-    @_spi(Internal) public func trackRewardedAdPromptAccepted(_ data: RewardedAdPromptAccepted,
-                                                              captureMethod: AdEventCaptureMethod) {
         Task {
-            let event = AdEvent.rewardedAdPromptAccepted(.init(captureMethod: captureMethod), data)
+            let event = AdEvent.rewardedAdPromptAccepted(.init(captureMethod: .manual), data)
             await self.eventsManager?.track(adEvent: event)
         }
     }
