@@ -74,7 +74,7 @@ enum HostedCheckout {
 
     }
 
-    /// How the paywall settles once the backend has said what became of a checkout.
+    /// How the paywall settles on the outcome the backend gives for a checkout.
     ///
     /// Only a purchase the backend confirms counts as one, and only a checkout dismissed without paying
     /// counts as a cancellation. Anything else is an error: either the success page told the customer the
@@ -103,8 +103,8 @@ enum HostedCheckout {
 
     }
 
-    /// Asks the backend what became of a checkout the customer left without going through its cancel page,
-    /// then settles the paywall on the answer.
+    /// Asks the backend for the final outcome of a checkout the customer left without going through its cancel
+    /// page, then settles the paywall on it.
     ///
     /// A purchase is left for the caller to report with ``PurchaseHandler/handleHostedCheckoutPurchase()``
     /// once the customer has been told about it, since reporting it can close the paywall.
