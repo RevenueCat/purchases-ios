@@ -340,7 +340,7 @@ struct WorkflowPaywallView: View {
         self.onPresentationError = onPresentationError
         let navigator = WorkflowNavigator(
             workflow: context.workflow,
-            resolveBranches: purchaseHandler.resolveBranches
+            resolveBranch: purchaseHandler.resolveBranch
         )
         #if ENABLE_WORKFLOW_BRANCH_LOADING
         if let resolvedInitialStepId = context.resolvedInitialStepId {

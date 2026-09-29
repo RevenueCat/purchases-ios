@@ -36,15 +36,14 @@ final class WorkflowNavigator: ObservableObject {
     private var currentStepBranches: [WorkflowActionID: WorkflowStepID] = [:]
     private var resolveTask: Task<Void, Never>?
 
-    private let resolveBranches: @Sendable (WorkflowStep) async -> [WorkflowActionID: WorkflowStepID]
+    private let resolveBranch: @Sendable (WorkflowBranch) async -> WorkflowStepID
 
     init(
         workflow: PublishedWorkflow,
-        resolveBranches: @escaping @Sendable (WorkflowStep) async -> [WorkflowActionID: WorkflowStepID]
-            = { _ in [:] }
+        resolveBranch: @escaping @Sendable (WorkflowBranch) async -> WorkflowStepID = { $0.fallbackStepId }
     ) {
         self.workflow = workflow
-        self.resolveBranches = resolveBranches
+        self.resolveBranch = resolveBranch
         self.currentStepId = workflow.initialStepId
         #if ENABLE_WORKFLOW_BRANCH_LOADING
         if case .branch? = workflow.initialTrigger { return }
@@ -145,8 +144,13 @@ extension WorkflowNavigator {
         self.resolveTask = nil
 
         guard let step = self.currentStep, step.hasBranchAction else { return }
-        self.resolveTask = Task { [weak self, resolveBranches] in
-            let resolved = await resolveBranches(step)
+        self.resolveTask = Task { [weak self, resolveBranch] in
+            var resolved: [WorkflowActionID: WorkflowStepID] = [:]
+            for (actionId, action) in step.stepTriggerActions {
+                guard !Task.isCancelled else { return }
+                guard case .branch(let branch) = action else { continue }
+                resolved[actionId] = await resolveBranch(branch)
+            }
             // Enough on its own: cancel() precedes the step change and this block never suspends.
             guard !Task.isCancelled else { return }
             self?.currentStepBranches = resolved

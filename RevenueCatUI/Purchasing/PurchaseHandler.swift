@@ -39,8 +39,7 @@ final class PurchaseHandler: ObservableObject {
     private var cancellables: Set<AnyCancellable> = Set()
 
     private let purchases: PaywallPurchasesType
-    private let resolveBranch: @Sendable (WorkflowBranch) async -> WorkflowStepID
-    let resolveBranches: @Sendable (WorkflowStep) async -> [WorkflowActionID: WorkflowStepID]
+    let resolveBranch: @Sendable (WorkflowBranch) async -> WorkflowStepID
     private let paywallEventTracker: PaywallEventTracker
     private let keyWindowFocusResigner: KeyWindowFocusResigning
 
@@ -185,7 +184,6 @@ final class PurchaseHandler: ObservableObject {
         self.init(isConfigured: true,
                   purchases: purchases,
                   resolveBranch: { [purchases] in await purchases.resolveBranch($0) },
-                  resolveBranches: { [purchases] in await purchases.resolveBranches(in: $0) },
                   performPurchase: performPurchase,
                   performRestore: performRestore,
                   purchaseResultPublisher: purchaseResultPublisher,
@@ -198,8 +196,6 @@ final class PurchaseHandler: ObservableObject {
         isConfigured: Bool = true,
         purchases: PaywallPurchasesType,
         resolveBranch: @escaping @Sendable (WorkflowBranch) async -> WorkflowStepID = { $0.fallbackStepId },
-        resolveBranches: @escaping @Sendable (WorkflowStep) async -> [WorkflowActionID: WorkflowStepID]
-            = { _ in [:] },
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
@@ -211,7 +207,6 @@ final class PurchaseHandler: ObservableObject {
         self.isConfigured = isConfigured
         self.purchases = purchases
         self.resolveBranch = resolveBranch
-        self.resolveBranches = resolveBranches
         self.paywallEventTracker = eventTracker
         self.keyWindowFocusResigner = keyWindowFocusResigner
         self.performPurchase = performPurchase

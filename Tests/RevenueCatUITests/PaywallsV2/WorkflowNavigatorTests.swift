@@ -231,7 +231,7 @@ final class WorkflowNavigatorTests: TestCase {
         )
         let navigator = WorkflowNavigator(
             workflow: workflow,
-            resolveBranches: { _ in ["btn_abc": "step_3"] }
+            resolveBranch: { _ in "step_3" }
         )
         await navigator.waitForBranchResolution()
 
@@ -252,7 +252,7 @@ final class WorkflowNavigatorTests: TestCase {
         )
         let navigator = WorkflowNavigator(
             workflow: workflow,
-            resolveBranches: { _ in ["btn_abc": "step_3"] }
+            resolveBranch: { _ in "step_3" }
         )
         await navigator.waitForBranchResolution()
 
@@ -290,7 +290,7 @@ final class WorkflowNavigatorTests: TestCase {
         )
         let navigator = WorkflowNavigator(
             workflow: workflow,
-            resolveBranches: { _ in ["btn_abc": "step_gone"] }
+            resolveBranch: { _ in "step_gone" }
         )
         await navigator.waitForBranchResolution()
 
@@ -315,7 +315,7 @@ final class WorkflowNavigatorTests: TestCase {
         let calls = Atomic<Int>(0)
         let navigator = WorkflowNavigator(workflow: workflow) { _ in
             calls.modify { $0 += 1 }
-            return ["btn_abc": "step_1"]
+            return "step_1"
         }
         await navigator.waitForBranchResolution()
 
@@ -349,12 +349,7 @@ final class WorkflowNavigatorTests: TestCase {
         )
         let navigator = WorkflowNavigator(
             workflow: workflow,
-            resolveBranches: { step in
-                step.stepTriggerActions.compactMapValues { action in
-                    guard case .branch(let branch) = action else { return nil }
-                    return branch.routes.first?.stepId
-                }
-            }
+            resolveBranch: { $0.routes.first?.stepId ?? $0.fallbackStepId }
         )
 
         _ = navigator.triggerAction(componentId: "btn_go")
@@ -376,7 +371,7 @@ final class WorkflowNavigatorTests: TestCase {
         )
         let navigator = WorkflowNavigator(
             workflow: workflow,
-            resolveBranches: { _ in ["btn_abc": "step_3"] }
+            resolveBranch: { _ in "step_3" }
         )
 
         expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_2"
