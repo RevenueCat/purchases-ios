@@ -50,12 +50,18 @@ extension HostedCheckoutSession: Equatable, Sendable {}
 
 extension HostedCheckoutSession {
 
-    init(response: HostedCheckoutResponse, appUserID: String) {
-        self.init(operationSessionID: response.operationSessionID,
+    init(operationSessionID: String, page: HostedCheckoutResponse.Page, appUserID: String) {
+        self.init(operationSessionID: operationSessionID,
                   appUserID: appUserID,
-                  checkoutURL: response.checkoutURL,
-                  successURL: response.successURL,
-                  cancelURL: response.cancelURL)
+                  checkoutURL: page.checkoutURL,
+                  successURL: page.successURL,
+                  cancelURL: page.cancelURL)
+    }
+
+    /// The checkout page is the success page itself: the provider already took the payment for this session, but
+    /// the backend had not heard about it yet when it was asked.
+    var isAlreadyPaid: Bool {
+        return self.checkoutURL == self.successURL
     }
 
 }

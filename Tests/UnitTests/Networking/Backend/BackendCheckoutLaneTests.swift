@@ -52,6 +52,7 @@ final class BackendCheckoutLaneTests: BaseBackendTests {
                 presentedOfferingContext: .init(offeringIdentifier: Self.offeringID),
                 paywall: nil,
                 externalPurchaseTokenID: nil,
+                previousOperationSessionID: nil,
                 completion: { _ in completed() }
             )
         }
@@ -162,6 +163,7 @@ final class BackendCheckoutLaneTests: BaseBackendTests {
                 presentedOfferingContext: .init(offeringIdentifier: Self.offeringID),
                 paywall: nil,
                 externalPurchaseTokenID: nil,
+                previousOperationSessionID: nil,
                 completion: { _ in completed() }
             )
         }
@@ -221,7 +223,8 @@ final class BackendCheckoutLaneTests: BaseBackendTests {
             packageID: Self.packageID,
             presentedOfferingContext: .init(offeringIdentifier: Self.offeringID),
             paywall: nil,
-            externalPurchaseTokenID: Self.tokenID
+            externalPurchaseTokenID: Self.tokenID,
+            previousOperationSessionID: nil
         ) { checkoutResult.value = $0 }
 
         expect(tokenResult.value).toEventuallyNot(beNil(), timeout: .seconds(5))
@@ -377,6 +380,7 @@ final class BackendCheckoutLaneParallelTests: TestCase {
                 presentedOfferingContext: .init(offeringIdentifier: "default"),
                 paywall: nil,
                 externalPurchaseTokenID: nil,
+                previousOperationSessionID: nil,
                 completion: completed
             )
         }
@@ -443,7 +447,8 @@ final class BackendCheckoutLaneParallelTests: TestCase {
             packageID: Self.packageID,
             presentedOfferingContext: .init(offeringIdentifier: "default"),
             paywall: nil,
-            externalPurchaseTokenID: nil
+            externalPurchaseTokenID: nil,
+            previousOperationSessionID: nil
         ) { result in
             checkoutResult.value = result
         }

@@ -13,27 +13,85 @@
 
 import Foundation
 
-/// The checkout session the backend created with the payment provider.
-struct HostedCheckoutResponse: Decodable {
+/// The checkout session the backend has for the customer, either a new one or the one they were given before.
+struct HostedCheckoutResponse: Equatable {
 
     /// Identifies the session for the whole of its life, including when asking the backend what became
     /// of it once the checkout page is gone.
     let operationSessionID: String
 
-    /// The provider-hosted page to present.
-    let checkoutURL: URL
+    let outcome: Outcome
 
-    /// Where the provider sends the customer once checkout succeeds.
-    ///
-    /// Returned rather than assumed so that the SDK does not have to know how the backend builds it.
-    let successURL: URL
+    enum Outcome: Equatable {
 
-    /// Where the provider sends the customer once checkout is abandoned.
-    let cancelURL: URL
+        /// A new session. Any previous one is not coming back.
+        case created(Page)
 
-    // The decoder converts from snake case, which yields `Id` and `Url` rather than `ID` and `URL`.
+        /// The previous session, which the customer can carry on with.
+        case resumed(Page)
+
+        /// The previous session already ended in a purchase, so there is no page to present.
+        case succeeded
+
+    }
+
+    /// What a session is presented with.
+    struct Page: Equatable {
+
+        /// The provider-hosted page to present.
+        let checkoutURL: URL
+
+        /// Where the provider sends the customer once checkout succeeds.
+        ///
+        /// Returned rather than assumed so that the SDK does not have to know how the backend builds it.
+        let successURL: URL
+
+        /// Where the provider sends the customer once checkout is abandoned.
+        let cancelURL: URL
+
+    }
+
+}
+
+extension HostedCheckoutResponse: Decodable {
+
+    // The decoder converts from snake case, which yields `Id` rather than `ID`.
     private enum CodingKeys: String, CodingKey {
         case operationSessionID = "operationSessionId"
+        case outcome
+    }
+
+    private enum RawOutcome {
+        static let created = "created"
+        static let resumed = "resumed"
+        static let succeeded = "succeeded"
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        self.operationSessionID = try container.decode(String.self, forKey: .operationSessionID)
+
+        // Backends that predate resuming send no outcome, and every session they return is a new one.
+        switch try container.decodeIfPresent(String.self, forKey: .outcome) {
+        case RawOutcome.succeeded:
+            self.outcome = .succeeded
+        case RawOutcome.resumed:
+            self.outcome = .resumed(try Page(from: decoder))
+        case RawOutcome.created?, nil:
+            self.outcome = .created(try Page(from: decoder))
+        case let unrecognized?:
+            Logger.warn(Strings.hostedCheckout.unrecognized_outcome(unrecognized))
+            self.outcome = .created(try Page(from: decoder))
+        }
+    }
+
+}
+
+extension HostedCheckoutResponse.Page: Decodable {
+
+    // The decoder converts from snake case, which yields `Url` rather than `URL`.
+    private enum CodingKeys: String, CodingKey {
         case checkoutURL = "checkoutUrl"
         case successURL = "successUrl"
         case cancelURL = "cancelUrl"

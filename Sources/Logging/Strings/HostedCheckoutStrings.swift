@@ -20,6 +20,11 @@ enum HostedCheckoutStrings {
     case starting_checkout(_ packageID: String)
     case no_registered_token
     case session_created(_ operationSessionID: String)
+    case session_resumed(_ operationSessionID: String)
+    case previous_session_paid(_ operationSessionID: String)
+    case succeeded_without_previous_session(_ operationSessionID: String)
+    case not_resuming_session_for_another_user(_ operationSessionID: String)
+    case unrecognized_outcome(_ outcome: String)
     case product_already_purchased(_ packageID: String)
     case error_creating_session(_ error: BackendError)
     case unrecognized_status(_ status: String)
@@ -46,6 +51,18 @@ extension HostedCheckoutStrings: LogMessage {
             return "Not starting a checkout: there is no registered external purchase token to attribute it to."
         case let .session_created(operationSessionID):
             return "Created checkout session \(operationSessionID)."
+        case let .session_resumed(operationSessionID):
+            return "Resuming checkout session \(operationSessionID)."
+        case let .previous_session_paid(operationSessionID):
+            return "Checkout session \(operationSessionID) was already paid for. Confirming it instead of " +
+            "starting another checkout."
+        case let .succeeded_without_previous_session(operationSessionID):
+            return "Not starting a checkout: the backend says checkout session \(operationSessionID) already " +
+            "succeeded, but it was not asked about a previous session."
+        case let .not_resuming_session_for_another_user(operationSessionID):
+            return "Not resuming checkout session \(operationSessionID): it was created for another customer."
+        case let .unrecognized_outcome(outcome):
+            return "Unrecognized checkout session outcome '\(outcome)'. Treating the session as a new one."
         case let .product_already_purchased(packageID):
             return "Not starting a checkout: this customer already has an active purchase for the product " +
             "in package \(packageID)."

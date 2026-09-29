@@ -357,7 +357,9 @@ extension PurchaseHandler {
         if let paywallEvent { self.track(paywallEvent) }
 
         return await self.withExternalPurchasePreparation {
-            await self.purchases.startHostedCheckout(package: package, paywallEvent: paywallEvent)
+            await self.purchases.startHostedCheckout(package: package,
+                                                     paywallEvent: paywallEvent,
+                                                     previousSession: nil)
         }
     }
 
@@ -1274,7 +1276,9 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
         throw ErrorCode.configurationError
     }
 
-    func startHostedCheckout(package: Package, paywallEvent: PaywallEvent?) async -> HostedCheckoutStartResult {
+    func startHostedCheckout(package: Package,
+                             paywallEvent: PaywallEvent?,
+                             previousSession: HostedCheckoutSession?) async -> HostedCheckoutStartResult {
         return .failed
     }
 
