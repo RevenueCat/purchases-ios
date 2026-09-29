@@ -37,11 +37,14 @@ final class WorkflowNavigator: ObservableObject {
     private var currentStepBranches: [String: String] = [:]
     private var resolveTask: Task<Void, Never>?
 
-    private let branchResolver: BranchResolver
+    private let resolveBranches: @Sendable (WorkflowStep) async -> [String: String]
 
-    init(workflow: PublishedWorkflow, branchResolver: BranchResolver = DisabledBranchResolver()) {
+    init(
+        workflow: PublishedWorkflow,
+        resolveBranches: @escaping @Sendable (WorkflowStep) async -> [String: String] = { _ in [:] }
+    ) {
         self.workflow = workflow
-        self.branchResolver = branchResolver
+        self.resolveBranches = resolveBranches
         self.currentStepId = workflow.initialStepId
         self.resolveStepExits()
     }
@@ -131,8 +134,8 @@ extension WorkflowNavigator {
         self.resolveTask = nil
 
         guard let step = self.currentStep, step.hasBranchExit else { return }
-        self.resolveTask = Task { [weak self, branchResolver] in
-            let resolved = await branchResolver.resolveBranches(in: step)
+        self.resolveTask = Task { [weak self, resolveBranches] in
+            let resolved = await resolveBranches(step)
             // Enough on its own: cancel() precedes the step change and this block never suspends.
             guard !Task.isCancelled else { return }
             self?.currentStepBranches = resolved

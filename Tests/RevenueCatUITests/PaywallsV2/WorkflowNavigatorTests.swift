@@ -231,7 +231,7 @@ final class WorkflowNavigatorTests: TestCase {
         )
         let navigator = WorkflowNavigator(
             workflow: workflow,
-            branchResolver: StubBranchResolver(stepId: "step_3")
+            resolveBranches: { _ in ["btn_abc": "step_3"] }
         )
         await navigator.waitForBranchResolution()
 
@@ -252,7 +252,7 @@ final class WorkflowNavigatorTests: TestCase {
         )
         let navigator = WorkflowNavigator(
             workflow: workflow,
-            branchResolver: StubBranchResolver(stepId: "step_3")
+            resolveBranches: { _ in ["btn_abc": "step_3"] }
         )
         await navigator.waitForBranchResolution()
 
@@ -290,7 +290,7 @@ final class WorkflowNavigatorTests: TestCase {
         )
         let navigator = WorkflowNavigator(
             workflow: workflow,
-            branchResolver: StubBranchResolver(stepId: "step_gone")
+            resolveBranches: { _ in ["btn_abc": "step_gone"] }
         )
         await navigator.waitForBranchResolution()
 
@@ -312,15 +312,18 @@ final class WorkflowNavigatorTests: TestCase {
             ],
             initialStepId: "step_1"
         )
-        let resolver = CountingBranchResolver(stepId: "step_1")
-        let navigator = WorkflowNavigator(workflow: workflow, branchResolver: resolver)
+        let calls = Atomic<Int>(0)
+        let navigator = WorkflowNavigator(workflow: workflow) { _ in
+            calls.modify { $0 += 1 }
+            return ["btn_abc": "step_1"]
+        }
         await navigator.waitForBranchResolution()
 
         _ = navigator.triggerAction(componentId: "btn_abc")
         await navigator.waitForBranchResolution()
 
         expect(navigator.currentStepId) == "step_1"
-        expect(resolver.callCount) == 2
+        expect(calls.value) == 2
     }
 
     /// Resolution must run against the step just entered, not the one being left.
@@ -346,7 +349,12 @@ final class WorkflowNavigatorTests: TestCase {
         )
         let navigator = WorkflowNavigator(
             workflow: workflow,
-            branchResolver: RoutingBranchResolver()
+            resolveBranches: { step in
+                step.stepTriggerActions.compactMapValues { action in
+                    guard case .branch(let branch) = action else { return nil }
+                    return branch.branches.first?.stepId
+                }
+            }
         )
 
         _ = navigator.triggerAction(componentId: "btn_go")
@@ -368,7 +376,7 @@ final class WorkflowNavigatorTests: TestCase {
         )
         let navigator = WorkflowNavigator(
             workflow: workflow,
-            branchResolver: StubBranchResolver(stepId: "step_3")
+            resolveBranches: { _ in ["btn_abc": "step_3"] }
         )
 
         expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_2"
@@ -629,48 +637,6 @@ private extension WorkflowNavigatorTests {
         }
         """
         return StepDescriptor(id: id, json: json)
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private final class StubBranchResolver: BranchResolver {
-
-    private let stepId: String
-
-    init(stepId: String) {
-        self.stepId = stepId
-    }
-
-    func resolve(_ branch: WorkflowBranch) async -> String {
-        return self.stepId
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private final class CountingBranchResolver: BranchResolver, @unchecked Sendable {
-
-    private let stepId: String
-    private(set) var callCount = 0
-
-    init(stepId: String) {
-        self.stepId = stepId
-    }
-
-    func resolve(_ branch: WorkflowBranch) async -> String {
-        self.callCount += 1
-        return self.stepId
-    }
-
-}
-
-/// Answers each branch with its own configured route, so resolving the wrong step is visible.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private final class RoutingBranchResolver: BranchResolver {
-
-    func resolve(_ branch: WorkflowBranch) async -> String {
-        return branch.branches.first?.stepId ?? branch.fallbackStepId
     }
 
 }

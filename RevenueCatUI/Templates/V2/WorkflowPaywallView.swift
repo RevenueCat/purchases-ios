@@ -315,7 +315,7 @@ struct WorkflowPaywallView: View {
         self.onPresentationError = onPresentationError
         self._navigator = .init(wrappedValue: WorkflowNavigator(
             workflow: context.workflow,
-            branchResolver: purchaseHandler.branchResolver
+            resolveBranches: purchaseHandler.resolveBranches
         ))
         self._stateStore = .init(
             wrappedValue: PaywallStateStore(declarations: Self.mergedStateDeclarations(in: context.workflow))

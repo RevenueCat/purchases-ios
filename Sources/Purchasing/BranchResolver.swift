@@ -26,7 +26,7 @@ import Foundation
 extension BranchResolver {
 
     /// The branches a step can exit through, keyed by action id.
-    @_spi(Internal) public func resolveBranches(in step: WorkflowStep) async -> [String: String] {
+    func resolveBranches(in step: WorkflowStep) async -> [String: String] {
         var resolved: [String: String] = [:]
         for (actionId, action) in step.stepTriggerActions {
             guard !Task.isCancelled else { return resolved }
