@@ -161,9 +161,11 @@ struct StackComponentView: View {
             style.dimension,
             size: style.size,
             enabled: style.scrollable ?? self.isScrollableByDefault,
-            scrollPreference: style.scrollable,
-            paywallRootStackIsZLayer: self.paywallRootStackIsZLayer,
-            ancestorScrollsVertically: self.paywallAncestorScrollsVertically
+            zLayerShouldScroll: PaywallZLayerScrollPolicy.shouldApplyScroll(
+                stackScrollPreference: style.scrollable,
+                paywallRootStackIsZLayer: self.paywallRootStackIsZLayer,
+                ancestorScrollsVertically: self.paywallAncestorScrollsVertically
+            )
         )
         .shape(border: nil,
                shape: style.shape,
@@ -205,9 +207,7 @@ fileprivate extension View {
         _ dimension: PaywallComponent.Dimension,
         size: PaywallComponent.Size,
         enabled: Bool,
-        scrollPreference: Bool?,
-        paywallRootStackIsZLayer: Bool,
-        ancestorScrollsVertically: Bool
+        zLayerShouldScroll: Bool
     ) -> some View {
         switch dimension {
         case .horizontal(let verticalAlignment, let distribution):
@@ -239,11 +239,7 @@ fileprivate extension View {
                 self
             }
         case .zlayer(let alignment):
-            if PaywallZLayerScrollPolicy.shouldApplyScroll(
-                stackScrollPreference: scrollPreference,
-                paywallRootStackIsZLayer: paywallRootStackIsZLayer,
-                ancestorScrollsVertically: ancestorScrollsVertically
-            ) {
+            if zLayerShouldScroll {
                 self.scrollableIfNecessaryWhenAvailable(
                     .vertical,
                     fillContent: true,
