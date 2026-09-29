@@ -63,7 +63,7 @@ enum HostedCheckout {
         return Action(await purchaseHandler.startHostedCheckout(package: package))
     }
 
-    /// How the paywall settles once the backend has said what became of a checkout that ended on its success page.
+    /// How the paywall settles on the outcome the backend gives for a checkout that ended on its success page.
     ///
     /// Only a purchase the backend confirms counts as one. Anything else is an error, since the page told the
     /// customer the purchase went through.
@@ -88,8 +88,8 @@ enum HostedCheckout {
 
     }
 
-    /// Asks the backend what became of a checkout that ended on its success page, then settles the paywall on
-    /// the answer.
+    /// Asks the backend for the final outcome of a checkout that ended on its success page, then settles the
+    /// paywall on it.
     ///
     /// - Parameter package: The package the checkout was started for, when it is still known.
     @MainActor
