@@ -76,7 +76,8 @@ final class HostedCheckoutManager {
     /// Checks on a checkout the customer dismissed before it sent them anywhere, in case they paid moments
     /// before. Nothing waits on the answer, so this asks less often, for longer, than ``pollCheckout``.
     ///
-    /// - Parameter appUserID: Read once by the caller, as for ``pollCheckout(operationSessionID:appUserID:)``.
+    /// - Parameter appUserID: The customer the session was created for, as for
+    /// ``pollCheckout(operationSessionID:appUserID:)``.
     func pollDismissedCheckout(operationSessionID: String, appUserID: String) async -> HostedCheckoutPollResult {
         return await self.dismissedCheckoutPoller.poll(operationSessionID: operationSessionID, appUserID: appUserID)
     }

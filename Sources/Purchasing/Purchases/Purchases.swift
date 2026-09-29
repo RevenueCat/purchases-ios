@@ -1954,14 +1954,17 @@ public extension Purchases {
     /// Used by `RevenueCatUI` to check on a checkout the customer dismissed before it sent them anywhere, in case
     /// they paid moments before. The paywall does not wait on this to settle on the dismissal.
     ///
-    /// Handles `CustomerInfo` as ``pollHostedCheckout(operationSessionID:)`` does. When the session still has not
-    /// said whether the customer paid by the end, the cached `CustomerInfo` is cleared too, so the next read
-    /// fetches a purchase that lands later.
+    /// Handles `CustomerInfo` as ``pollHostedCheckout(session:)`` does. When the session still has not said
+    /// whether the customer paid by the end, the cached `CustomerInfo` is cleared too, so the next read fetches
+    /// a purchase that lands later.
     ///
     /// Runs to the end even if the caller is cancelled, as when the paywall closes: what it does with
     /// `CustomerInfo` is how the app learns of a purchase the paywall is no longer there to report.
-    @_spi(Internal) func pollDismissedHostedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
-        let appUserID = self.appUserID
+    @_spi(Internal) func pollDismissedHostedCheckout(
+        session: HostedCheckoutSession
+    ) async -> HostedCheckoutPollResult {
+        let operationSessionID = session.operationSessionID
+        let appUserID = session.appUserID
         Logger.debug(Strings.hostedCheckout.dismissed_poll_start(operationSessionID))
 
         return await Task {

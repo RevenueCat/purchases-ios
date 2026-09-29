@@ -166,9 +166,10 @@ extension PurchasesHostedCheckoutTests {
     func testFetchesCustomerInfoWhenADismissedCheckoutLands() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         try self.stubStatus(.succeeded)
+        let session = self.startedSession()
         let fetchesBefore = self.backend.getCustomerInfoCallCount
 
-        let result = await self.purchases.pollDismissedHostedCheckout(operationSessionID: Self.operationSessionID)
+        let result = await self.purchases.pollDismissedHostedCheckout(session: session)
 
         expect(result) == .succeeded
         expect(self.backend.getCustomerInfoCallCount) == fetchesBefore + 1
@@ -186,22 +187,23 @@ extension PurchasesHostedCheckoutTests {
                                                message: "The operation session is invalid."),
                                          .notFoundError))
         )
-        let appUserID = self.identityManager.currentAppUserID
-        self.deviceCache.cache(customerInfo: Data(), appUserID: appUserID)
+        let session = self.startedSession()
+        self.deviceCache.cache(customerInfo: Data(), appUserID: session.appUserID)
 
-        let result = await self.purchases.pollDismissedHostedCheckout(operationSessionID: Self.operationSessionID)
+        let result = await self.purchases.pollDismissedHostedCheckout(session: session)
 
         expect(result) == .undetermined
-        expect(self.deviceCache.cachedCustomerInfoData(appUserID: appUserID)).to(beNil())
+        expect(self.deviceCache.cachedCustomerInfoData(appUserID: session.appUserID)).to(beNil())
     }
 
     func testKeepsTheCachedCustomerInfoWhenADismissedCheckoutFailed() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         try self.stubStatus(.failed(.init(code: 3, message: "payment_charge_failed")))
+        let session = self.startedSession()
         let fetchesBefore = self.backend.getCustomerInfoCallCount
         let clearsBefore = self.deviceCache.invokedClearCustomerInfoCacheCount
 
-        _ = await self.purchases.pollDismissedHostedCheckout(operationSessionID: Self.operationSessionID)
+        _ = await self.purchases.pollDismissedHostedCheckout(session: session)
 
         expect(self.backend.getCustomerInfoCallCount) == fetchesBefore
         expect(self.deviceCache.invokedClearCustomerInfoCacheCount) == clearsBefore
@@ -212,11 +214,12 @@ extension PurchasesHostedCheckoutTests {
     func testFinishesADismissedCheckoutsPollWhenTheCallerIsCancelled() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         try self.stubStatus(.succeeded)
+        let session = self.startedSession()
         let fetchesBefore = self.backend.getCustomerInfoCallCount
         let purchases: Purchases = self.purchases
 
         let caller = Task<HostedCheckoutPollResult, Never> {
-            await purchases.pollDismissedHostedCheckout(operationSessionID: Self.operationSessionID)
+            await purchases.pollDismissedHostedCheckout(session: session)
         }
         caller.cancel()
         let result = await caller.value
@@ -225,16 +228,28 @@ extension PurchasesHostedCheckoutTests {
         expect(self.backend.getCustomerInfoCallCount) == fetchesBefore + 1
     }
 
+    func testFetchesTheBuyersCustomerInfoWhenAnotherCustomerLogsInBeforeADismissedPoll() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try self.stubStatus(.succeeded)
+        let session = self.startedSession()
+        self.identityManager.mockAppUserID = Self.otherAppUserID
+
+        _ = await self.purchases.pollDismissedHostedCheckout(session: session)
+
+        expect(try self.mockWebBillingAPI.invokedGetHostedCheckoutStatusParameters?.appUserID) == session.appUserID
+        expect(self.backend.userID) == session.appUserID
+    }
+
     func testFetchesTheBuyersCustomerInfoWhenAnotherCustomerLogsInDuringADismissedPoll() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         try self.stubStatus(.succeeded)
-        let buyer = self.identityManager.currentAppUserID
+        let session = self.startedSession()
         try self.logInWhileThePollRuns(Self.otherAppUserID)
 
-        _ = await self.purchases.pollDismissedHostedCheckout(operationSessionID: Self.operationSessionID)
+        _ = await self.purchases.pollDismissedHostedCheckout(session: session)
 
-        expect(try self.mockWebBillingAPI.invokedGetHostedCheckoutStatusParameters?.appUserID) == buyer
-        expect(self.backend.userID) == buyer
+        expect(try self.mockWebBillingAPI.invokedGetHostedCheckoutStatusParameters?.appUserID) == session.appUserID
+        expect(self.backend.userID) == session.appUserID
     }
 
 }
