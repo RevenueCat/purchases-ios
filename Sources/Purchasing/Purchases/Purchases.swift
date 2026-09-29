@@ -1928,19 +1928,20 @@ public extension Purchases {
         return await self.hostedCheckoutManager.startCheckout(package: package, paywall: paywallEvent?.data)
     }
 
-    /// Used by `RevenueCatUI` to learn what became of a checkout the customer completed in the app,
+    /// Used by `RevenueCatUI` to determine the final outcome of a checkout the customer completed in the app,
     /// before settling the paywall on it.
     ///
     /// When the backend says the customer owns the product, having just bought it or not, fetches the customer's
     /// `CustomerInfo` before returning, so callers that read it next find the entitlement instead of a cached
     /// state from before. A fetch that fails does not change the result, but clears that cached state, so the
-    /// next read fetches instead of serving it. Both are for the customer the session belongs to, even if
-    /// another one has logged in while the poll ran.
+    /// next read fetches instead of serving it. Both are for the customer the session was created for, even if
+    /// another one has logged in since.
     ///
     /// Paywalls, the only caller, do not run with custom entitlement computation. This still compiles in that
     /// mode, but without the `CustomerInfo` refresh, which the mode does not offer.
-    @_spi(Internal) func pollHostedCheckout(operationSessionID: String) async -> HostedCheckoutPollResult {
-        let appUserID = self.appUserID
+    @_spi(Internal) func pollHostedCheckout(session: HostedCheckoutSession) async -> HostedCheckoutPollResult {
+        let operationSessionID = session.operationSessionID
+        let appUserID = session.appUserID
         let result = await self.hostedCheckoutManager.pollCheckout(operationSessionID: operationSessionID,
                                                                    appUserID: appUserID)
 
@@ -1951,11 +1952,12 @@ public extension Purchases {
 
     /// Used by `RevenueCatUI` to learn what became of a checkout the customer dismissed before it sent them
     /// anywhere, where nothing says whether they paid. Fetches `CustomerInfo` as
-    /// ``pollHostedCheckout(operationSessionID:)`` does.
+    /// ``pollHostedCheckout(session:)`` does.
     @_spi(Internal) func pollDismissedHostedCheckout(
-        operationSessionID: String
+        session: HostedCheckoutSession
     ) async -> HostedCheckoutPollResult {
-        let appUserID = self.appUserID
+        let operationSessionID = session.operationSessionID
+        let appUserID = session.appUserID
         let result = await self.hostedCheckoutManager.pollDismissedCheckout(operationSessionID: operationSessionID,
                                                                             appUserID: appUserID)
 
