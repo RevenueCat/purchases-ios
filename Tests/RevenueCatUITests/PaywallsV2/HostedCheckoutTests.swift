@@ -275,6 +275,31 @@ final class HostedCheckoutTests: TestCase {
         expect(handler.purchaseError).to(beNil())
     }
 
+    /// The SDK fetches the `CustomerInfo` showing the purchase while confirming it, but that fetch can fail.
+    @MainActor
+    func testTellsTheCustomerAConfirmedPurchaseIsStillProcessingWithoutItsCustomerInfo() async {
+        let purchases = MockPurchases { _, _, _ in
+            return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { _ in
+        } customerInfo: {
+            throw ErrorCode.networkError
+        }
+        purchases.hostedCheckoutPollBlock = { _ in .succeeded }
+        let handler = Self.makeHandler(purchases: purchases)
+
+        let resolution = await HostedCheckout.resolve(Self.session,
+                                                      after: .successPage,
+                                                      package: TestData.annualPackage,
+                                                      purchaseHandler: handler)
+
+        expect(resolution) == .failed(.unconfirmed)
+        expect(handler.purchaseError as? HostedCheckoutError) == .unconfirmed
+        expect(handler.sessionPurchaseResult).to(beNil())
+        expect(handler.actionInProgress) == false
+    }
+
     @MainActor
     func testReportsAFailureAfterTheSuccessPageAsAPurchaseError() async {
         let purchases = Self.makePurchases()
