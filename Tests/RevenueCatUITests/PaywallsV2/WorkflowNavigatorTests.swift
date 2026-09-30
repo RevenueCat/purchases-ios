@@ -396,7 +396,6 @@ final class WorkflowNavigatorTests: TestCase {
 
     // MARK: - initial trigger
 
-    /// Nothing renders until the first step is routed, so the view waits on this one resolve.
     func testAnInitialTriggerPicksTheFirstStep() async throws {
         let workflow = try Self.makeWorkflow(
             steps: [makeStep(id: "step_1"), makeStep(id: "step_3")],
@@ -411,18 +410,19 @@ final class WorkflowNavigatorTests: TestCase {
         expect(navigator.currentStepId) == "step_3"
     }
 
-    func testWithNoResolverTheInitialTriggerIsIgnored() async throws {
+    /// `initial_step_id` is the branch's own fallback, so `currentStepId` cannot tell "ignored" from
+    /// "resolved to the fallback". The view gates its loading state on this, so assert it directly.
+    func testWithNoResolverThereIsNoInitialBranchToWaitOn() throws {
         let workflow = try Self.makeWorkflow(
             steps: [makeStep(id: "step_1"), makeStep(id: "step_3")],
             initialRouteStepId: "step_3"
         )
-        let navigator = WorkflowNavigator(workflow: workflow)
-        await navigator.waitForInitialStep()
 
-        expect(navigator.currentStepId) == "step_1"
+        expect(WorkflowNavigator.initialBranch(in: workflow, resolveBranch: nil)).to(beNil())
+        expect(WorkflowNavigator.initialBranch(in: workflow, resolveBranch: { _ in "step_3" })).toNot(beNil())
     }
 
-    /// Config drift: `initial_step_id` is the initial branch's fallback, so an unknown route stays put.
+    /// Config drift: the audiences pick a step the workflow does not have.
     func testAnInitialRouteNamingAMissingStepStaysOnTheFallback() async throws {
         let workflow = try Self.makeWorkflow(
             steps: [makeStep(id: "step_1")],

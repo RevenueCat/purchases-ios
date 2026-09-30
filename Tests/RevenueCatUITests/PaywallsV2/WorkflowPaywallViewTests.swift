@@ -975,10 +975,44 @@ extension WorkflowPaywallViewTests {
         )
     }
 
-    /// The first page is built from the step `initialTrigger` routed to, not from the fallback the
-    /// skeleton was drawn from.
+    /// The impression names the screen that actually rendered, so it is the one signal that
+    /// distinguishes "the page was built from the route" from "only the navigator routed".
     @MainActor
     func testTheFirstPageIsBuiltFromTheStepTheInitialTriggerPicked() async throws {
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            initialRouteStepId: "step_terminal"
+        )
+        let view = WorkflowPaywallView(
+            context: context,
+            purchaseHandler: .mock(resolveBranch: { _ in "step_terminal" }),
+            introEligibilityChecker: .producing(eligibility: .eligible),
+            showZeroDecimalPlacePrices: false,
+            displayCloseButton: false,
+            promoOfferCache: nil,
+            onDismiss: {}
+        )
+
+        let dispose = try view.addToHierarchy()
+        defer { dispose() }
+
+        await expect(self.impressionScreenIds).toEventually(equal(["screen_terminal"]), timeout: .seconds(3))
+    }
+
+    /// Every `paywallIdentifier` an impression event reported, in order.
+    private var impressionScreenIds: [String] {
+        return self.logger.messages
+            .map(\.message)
+            .filter { $0.contains("Tracking event: impression(") }
+            .compactMap { message in
+                guard let range = message.range(of: "paywallIdentifier: Optional(\"") else { return nil }
+                return message[range.upperBound...].prefix(while: { $0 != "\"" }).description
+            }
+    }
+
+    /// A routed step that cannot render reports against the routed step, not the fallback.
+    @MainActor
+    func testAnUnrenderableRoutedFirstStepReportsThatStep() async throws {
         let context = try Self.makeContext(
             singleStepFallbackId: "step_terminal",
             initialRouteStepId: "step_terminal",

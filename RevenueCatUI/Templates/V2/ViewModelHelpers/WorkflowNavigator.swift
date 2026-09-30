@@ -33,13 +33,8 @@ final class WorkflowNavigator: ObservableObject {
     @Published private(set) var currentStepId: String
     private let workflow: PublishedWorkflow
     private var backStack: [String] = []
-    private var currentStepBranches: [WorkflowActionID: WorkflowStepID] = [:]
-    private var resolveTask: Task<Void, Never>?
+    private let branches: WorkflowStepBranches
     private var initialStepTask: Task<Void, Never>?
-
-    /// `nil` while branch routing is unreleased: every branch takes its fallback and an
-    /// `initialTrigger` is ignored. Stops being optional once branching ships.
-    private let resolveBranch: (@Sendable (WorkflowBranch) async -> WorkflowStepID)?
 
     /// The branch that has to route the first step before anything can render.
     static func initialBranch(
@@ -54,34 +49,32 @@ final class WorkflowNavigator: ObservableObject {
         workflow: PublishedWorkflow,
         resolveBranch: (@Sendable (WorkflowBranch) async -> WorkflowStepID)? = nil
     ) {
-        let initialBranch = Self.initialBranch(in: workflow, resolveBranch: resolveBranch)
         self.workflow = workflow
-        self.resolveBranch = resolveBranch
+        self.branches = WorkflowStepBranches(resolve: resolveBranch)
         self.currentStepId = workflow.initialStepId
 
-        guard let initialBranch else {
-            self.resolveCurrentStepBranches()
+        guard let resolveBranch,
+              let initialBranch = Self.initialBranch(in: workflow, resolveBranch: resolveBranch) else {
+            self.branches.enter(self.currentStep)
             return
         }
-        let task = Task { [weak self, resolveBranch] in
-            let stepId = await resolveBranch?(initialBranch) ?? initialBranch.fallbackStepId
+        self.initialStepTask = Task { [weak self] in
+            let stepId = await resolveBranch(initialBranch)
             guard !Task.isCancelled else { return }
             self?.enterInitialStep(stepId)
         }
-        self.resolveTask = task
-        self.initialStepTask = task
     }
 
-    /// `initialStepId` is the initial branch's fallback, so an unknown route just stays put.
+    /// An unknown route just stays put, on the fallback `currentStepId` already holds.
     private func enterInitialStep(_ stepId: WorkflowStepID) {
         if self.workflow.steps[stepId] != nil {
             self.currentStepId = stepId
         }
-        self.resolveCurrentStepBranches()
+        self.branches.enter(self.currentStep)
     }
 
     deinit {
-        self.resolveTask?.cancel()
+        self.initialStepTask?.cancel()
     }
 
     /// The one resolve the UI waits on: there is nothing to render until the first step is known.
@@ -91,7 +84,7 @@ final class WorkflowNavigator: ObservableObject {
 
     /// Tests only. Nothing in the UI waits for a step's own branches to resolve.
     func waitForBranchResolution() async {
-        await self.resolveTask?.value
+        await self.branches.settled()
     }
 
     var currentStep: WorkflowStep? {
@@ -122,7 +115,7 @@ final class WorkflowNavigator: ObservableObject {
 
         backStack.append(currentStepId)
         currentStepId = nextStep.step.id
-        self.resolveCurrentStepBranches()
+        self.branches.enter(self.currentStep)
         return nextStep.step
     }
 
@@ -154,7 +147,7 @@ final class WorkflowNavigator: ObservableObject {
             return nil
         }
         currentStepId = previousStepId
-        self.resolveCurrentStepBranches()
+        self.branches.enter(self.currentStep)
         return workflow.steps[previousStepId]
     }
 
@@ -163,39 +156,68 @@ final class WorkflowNavigator: ObservableObject {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension WorkflowNavigator {
 
-    private func resolveCurrentStepBranches() {
-        self.currentStepBranches = [:]
-        self.resolveTask?.cancel()
-        self.resolveTask = nil
-
-        guard let resolveBranch = self.resolveBranch,
-              let step = self.currentStep, step.hasBranchAction else { return }
-        self.resolveTask = Task { [weak self] in
-            var resolved: [WorkflowActionID: WorkflowStepID] = [:]
-            for (actionId, action) in step.stepTriggerActions {
-                guard !Task.isCancelled else { return }
-                guard case .branch(let branch) = action else { continue }
-                resolved[actionId] = await resolveBranch(branch)
-            }
-            // Enough on its own: cancel() precedes the step change and this block never suspends.
-            guard !Task.isCancelled else { return }
-            self?.currentStepBranches = resolved
-        }
-    }
-
     /// If the branch has not been resolved, pick the fallback.
     func nextStepId(for action: WorkflowTriggerAction?, actionId: String) -> String? {
         switch action {
         case .step(let stepId):
             return stepId
         case .branch(let branch):
-            guard let routed = self.currentStepBranches[actionId], self.workflow.steps[routed] != nil else {
+            guard let routed = self.branches.route(for: actionId), self.workflow.steps[routed] != nil else {
                 return branch.fallbackStepId
             }
             return routed
         case .unknown, nil:
             return nil
         }
+    }
+
+}
+
+/// Where each of a step's `branch` actions routes. Cleared when the step is left, so every visit
+/// routes on its own answer.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@MainActor
+final class WorkflowStepBranches {
+
+    /// `nil` while branch routing is unreleased: every branch takes its fallback.
+    private let resolve: (@Sendable (WorkflowBranch) async -> WorkflowStepID)?
+    private var routes: [WorkflowActionID: WorkflowStepID] = [:]
+    private var task: Task<Void, Never>?
+
+    init(resolve: (@Sendable (WorkflowBranch) async -> WorkflowStepID)?) {
+        self.resolve = resolve
+    }
+
+    deinit {
+        self.task?.cancel()
+    }
+
+    /// Starts resolving the branches on the step just entered, abandoning the previous step's.
+    func enter(_ step: WorkflowStep?) {
+        self.routes = [:]
+        self.task?.cancel()
+        self.task = nil
+
+        guard let resolve = self.resolve, let step, step.hasBranchAction else { return }
+        self.task = Task { [weak self] in
+            var resolved: [WorkflowActionID: WorkflowStepID] = [:]
+            for (actionId, action) in step.stepTriggerActions {
+                guard !Task.isCancelled else { return }
+                guard case .branch(let branch) = action else { continue }
+                resolved[actionId] = await resolve(branch)
+            }
+            // Enough on its own: cancel() precedes the step change and this block never suspends.
+            guard !Task.isCancelled else { return }
+            self?.routes = resolved
+        }
+    }
+
+    func route(for actionId: WorkflowActionID) -> WorkflowStepID? {
+        return self.routes[actionId]
+    }
+
+    func settled() async {
+        await self.task?.value
     }
 
 }

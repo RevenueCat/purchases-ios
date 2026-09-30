@@ -23,7 +23,7 @@ import Foundation
 /// one workflow presentation (it is owned by `@State` in the view), matching Android's per-impression
 /// `workflowTraceId`. The `sink` is injectable so the event sequence can be unit tested.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct WorkflowStepEventTracker {
+final class WorkflowStepEventTracker {
 
     enum EntryReason: String {
         case start
@@ -32,6 +32,9 @@ struct WorkflowStepEventTracker {
     }
 
     private let workflow: PublishedWorkflow
+    /// The step the workflow opened on. `initialStepId` only names the fallback once `initialTrigger`
+    /// routes the first screen.
+    private var entryStepId: String?
     let traceId: String
     private let workflowBlobRef: String?
     private let sink: (WorkflowEvent) -> Void
@@ -50,6 +53,7 @@ struct WorkflowStepEventTracker {
 
     /// Emits `stepStarted` for the first step shown in the impression.
     func trackInitialStep(_ step: WorkflowStep) {
+        self.entryStepId = step.id
         self.trackStepStarted(step, fromStepId: nil, entryReason: .start)
     }
 
@@ -109,7 +113,7 @@ struct WorkflowStepEventTracker {
             fromStepId: fromStepId,
             toStepId: toStepId,
             entryReason: entryReason,
-            isFirstStep: step.id == self.workflow.initialStepId,
+            isFirstStep: step.id == (self.entryStepId ?? self.workflow.initialStepId),
             isLastStep: Self.isTerminalStep(step),
             experiment: self.experimentData(for: step)
         )

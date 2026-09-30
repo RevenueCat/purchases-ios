@@ -444,9 +444,7 @@ struct WorkflowPaywallView: View {
         // exitOfferOffering.
         .preference(
             key: WorkflowExitOfferPreferenceKey.self,
-            value: self.presentationState.hasFailed
-                ? nil
-                : Self.exitOfferContext(for: self.context, currentStepId: self.navigator.currentStepId)
+            value: self.currentExitOfferContext
         )
         // Write the exit offer directly via the binding injected by PresentingPaywallModifier.
         // This is more reliable than the preference key when the workflow is inside a sheet,
@@ -484,6 +482,7 @@ struct WorkflowPaywallView: View {
         .task {
             guard self.resolvesInitialStep else { return }
             await self.navigator.waitForInitialStep()
+            guard !Task.isCancelled else { return }
             self.startInitialStep()
         }
         // Workflow-level injection: every page (current, outgoing, and hidden-but-mounted) shares
@@ -709,12 +708,17 @@ struct WorkflowPaywallView: View {
         }
     }
 
+    /// `nil` until a step is on screen: while the initial branch resolves, `currentStepId` is only the
+    /// fallback and its exit offer belongs to a screen the user may never reach.
+    private var currentExitOfferContext: WorkflowExitOfferContext? {
+        guard !self.presentationState.hasFailed, self.transitionState.currentPage != nil else {
+            return nil
+        }
+        return Self.exitOfferContext(for: self.context, currentStepId: self.navigator.currentStepId)
+    }
+
     private func syncExitOfferBinding() {
-        self.exitOfferOfferingBinding.wrappedValue = self.presentationState.hasFailed
-            ? nil
-            : Self.exitOfferContext(
-                for: self.context, currentStepId: self.navigator.currentStepId
-            )?.exitOfferOffering
+        self.exitOfferOfferingBinding.wrappedValue = self.currentExitOfferContext?.exitOfferOffering
     }
 
     // MARK: - Workflow step event tracking
@@ -1066,7 +1070,11 @@ struct WorkflowPaywallView: View {
     }
 
     /// Builds the first page once `initialTrigger` picked its step, replacing the skeleton.
+    /// SwiftUI re-runs `.task` when the view reappears, so this must not rebuild over the pages the
+    /// back stack still points at.
     private func startInitialStep() {
+        guard self.transitionState.currentPage == nil, !self.presentationState.hasFailed else { return }
+
         let stepId = self.navigator.currentStepId
         self.skeletonPage = nil
 
