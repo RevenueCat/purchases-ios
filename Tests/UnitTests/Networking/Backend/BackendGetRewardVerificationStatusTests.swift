@@ -71,7 +71,7 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
         expect(result).to(beSuccess())
         let url = try XCTUnwrap(self.httpClient.calls.first?.request.path.url(preferIAMPath: false))
         expect(url.absoluteString) == "https://api.revenuecat.com/v1/subscribers/\(Self.userID)"
-            + "/ads/reward_verifications/\(Self.clientTransactionID)?ad_unit_id=ca-app-pub-123%2F456"
+            + "/ads/reward_verifications/\(Self.clientTransactionID)?ad_unit_id=ca-app-pub-123/456"
     }
 
     func testGetRewardVerificationStatusOmitsEmptyAdUnitID() throws {

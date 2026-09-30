@@ -569,15 +569,15 @@ class HTTPRequestTests: TestCase {
         expect(path.relativeIAMPath) == expected
     }
 
-    func testRewardVerificationStatusPathPercentEncodesAdUnitID() {
+    func testRewardVerificationStatusPathKeepsAdUnitIDSlashAndPercentEncodesUnsafeCharacters() {
         let path: HTTPRequest.Path = .rewardVerificationStatus(
             appUserID: Self.userID,
             clientTransactionID: Self.clientTransactionID,
-            adUnitID: "ca-app-pub-123/456 a&b=c+d?é"
+            adUnitID: "ca-app-pub-123/456 é"
         )
 
         expect(path.relativePath) == "/v1/subscribers/\(Self.userID)/ads/reward_verifications/"
-            + "\(Self.clientTransactionID)?ad_unit_id=ca-app-pub-123%2F456%20a%26b%3Dc%2Bd%3F%C3%A9"
+            + "\(Self.clientTransactionID)?ad_unit_id=ca-app-pub-123/456%20%C3%A9"
     }
 
     func testRewardVerificationStatusPathOmitsAdUnitIDWhenMissingOrEmpty() {

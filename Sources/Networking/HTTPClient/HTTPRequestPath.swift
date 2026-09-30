@@ -487,7 +487,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
             let path = "subscribers/\(Self.escape(appUserID))/ads/reward_verifications/"
                 + Self.escape(clientTransactionID)
             guard let adUnitID = adUnitID?.notEmptyOrWhitespaces,
-                  let encodedAdUnitID = adUnitID.addingPercentEncoding(withAllowedCharacters: Self.queryValueAllowed)
+                  let encodedAdUnitID = adUnitID.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
             else {
                 return path
             }
@@ -669,11 +669,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
     private static func escape(_ appUserID: String) -> String {
         return appUserID.trimmedAndEscaped
     }
-
-    // RFC 3986 unreserved characters, so `&`, `=`, `+` and `/` in a value can't alter the query.
-    private static let queryValueAllowed = CharacterSet(
-        charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~"
-    )
 }
 
 extension HTTPRequest.FallbackPath: HTTPRequestPath {
