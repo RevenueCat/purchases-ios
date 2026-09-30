@@ -437,13 +437,13 @@ private extension AdFeatureEventsRequestTests {
         precision: .exact
     )
 
-    static let rewardedAdPromptShownData: RewardedAdPromptShown = .init(
+    static let rewardedAdPromptShownData: AdRewardPromptShown = .init(
         mediatorName: .appLovin,
         placement: "home_screen",
         adUnitId: "ca-app-pub-123456789"
     )
 
-    static let rewardedAdPromptAcceptedData: RewardedAdPromptAccepted = .init(
+    static let rewardedAdPromptAcceptedData: AdRewardPromptAccepted = .init(
         mediatorName: .appLovin,
         placement: "home_screen",
         adUnitId: "ca-app-pub-123456789"
