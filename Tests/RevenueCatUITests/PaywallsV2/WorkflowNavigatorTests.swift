@@ -578,8 +578,6 @@ private extension WorkflowNavigatorTests {
             .map { "\"\($0.id)\": \($0.json)" }
             .joined(separator: ",\n")
 
-        // Shape khepri publishes: the first step's branch is hoisted out of `steps` and
-        // `initial_step_id` names its fallback.
         let initialTriggerJSON = initialRouteStepId.map {
             """
             "initial_trigger": {

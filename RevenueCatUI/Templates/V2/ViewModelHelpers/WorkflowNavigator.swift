@@ -81,8 +81,7 @@ final class WorkflowNavigator: ObservableObject {
         self.resolveTask?.cancel()
     }
 
-    /// Completes once `initialTrigger` picked the first step. Returns right away when nothing had to
-    /// be routed. This is the one resolve the UI waits on: it has nothing to render until it lands.
+    /// The one resolve the UI waits on: there is nothing to render until the first step is known.
     func waitForInitialStep() async {
         await self.initialStepTask?.value
     }

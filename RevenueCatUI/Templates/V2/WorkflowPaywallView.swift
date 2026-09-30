@@ -332,8 +332,6 @@ struct WorkflowPaywallView: View {
             )
         ))
         let initialStepId = context.workflow.initialStepId
-        // The first step is still being routed, so the workflow starts with no page. `startInitialStep`
-        // builds it once `initialTrigger` lands.
         let resolvesInitialStep = WorkflowNavigator.initialBranch(
             in: context.workflow,
             branchingEnabled: purchaseHandler.branchingEnabled

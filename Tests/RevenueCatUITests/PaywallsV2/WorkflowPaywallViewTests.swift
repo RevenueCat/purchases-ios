@@ -686,8 +686,6 @@ private extension WorkflowPaywallViewTests {
             terminalScreenJSON = ""
         }
 
-        // Shape khepri publishes: the first step's branch is hoisted out of `steps` and
-        // `initial_step_id` names its fallback.
         let initialTriggerJSON = initialRouteStepId.map {
             """
             "initial_trigger": { "type": "branch",
