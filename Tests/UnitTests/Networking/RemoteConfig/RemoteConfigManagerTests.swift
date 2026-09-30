@@ -906,6 +906,18 @@ final class RemoteConfigManagerTests: TestCase {
         expect(observer.refreshFinishedContexts) == [.appStart]
     }
 
+    func testLifecycleObserverReceivesRefreshCompletionForTerminalFailure() {
+        let observer = RemoteConfigLifecycleObserverSpy()
+        self.manager.addConfigLifecycleObserver(observer)
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .forbidden)))
+
+        expect(observer.observedGenerations) == [0, 0]
+        expect(observer.refreshFinishedContexts) == [.appStart]
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigFallbackCount) == 0
+    }
+
     func testLifecycleObserverReceivesRefreshFinishedAfterFallbackSettles() {
         let observer = RemoteConfigLifecycleObserverSpy()
         self.manager.addConfigLifecycleObserver(observer)
