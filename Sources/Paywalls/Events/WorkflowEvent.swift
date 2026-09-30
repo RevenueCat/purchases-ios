@@ -134,20 +134,10 @@ extension WorkflowEvent {
 
         public var experimentId: String
         public var experimentVariant: String
-        /// Where `blob_ref` was stored before it moved to `Data`. Only read, so events queued before
-        /// an upgrade still send it.
-        var legacyWorkflowBlobRef: String?
 
         public init(experimentId: String, experimentVariant: String) {
             self.experimentId = experimentId
             self.experimentVariant = experimentVariant
-        }
-
-        // swiftlint:disable:next nesting
-        private enum CodingKeys: String, CodingKey {
-            case experimentId
-            case experimentVariant
-            case legacyWorkflowBlobRef = "workflowBlobRef"
         }
 
     }

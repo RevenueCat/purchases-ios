@@ -180,36 +180,6 @@ class WorkflowEventsRequestTests: TestCase {
         expect(json).toNot(contain("experiment_id"))
     }
 
-    func testBlobRefStoredInsideExperimentBeforeUpgradeIsStillSent() throws {
-        let event = WorkflowEvent.stepStarted(
-            .init(id: id, date: date),
-            .init(
-                workflowId: "wfl_abc",
-                stepId: "step-1",
-                experiment: .init(experimentId: "exp-1", experimentVariant: "variant-a")
-            )
-        )
-        let stored = try XCTUnwrap(storedEvent(from: event))
-        let legacyEncodedEvent = stored.encodedEvent.replacingOccurrences(
-            of: "\"experiment\":{",
-            with: "\"experiment\":{\"workflow_blob_ref\":\"blob-ref-1\","
-        )
-        expect(legacyEncodedEvent) != stored.encodedEvent
-
-        var envelope = try XCTUnwrap(
-            JSONSerialization.jsonObject(with: JSONEncoder().encode(stored)) as? [String: Any]
-        )
-        envelope["event"] = legacyEncodedEvent
-        let legacyStored = try JSONDecoder().decode(
-            StoredFeatureEvent.self,
-            from: JSONSerialization.data(withJSONObject: envelope)
-        )
-        let request = try XCTUnwrap(FeatureEventsRequest.WorkflowEvent(storedEvent: legacyStored))
-
-        expect(request.properties.workflowBlobRef) == "blob-ref-1"
-        expect(request.properties.experimentId) == "exp-1"
-    }
-
     func testFallbackOriginalStepIdInWireFormat() throws {
         let event = WorkflowEvent.stepStarted(
             .init(id: id, date: date),

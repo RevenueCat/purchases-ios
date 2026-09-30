@@ -87,7 +87,7 @@ extension FeatureEventsRequest.WorkflowEvent {
                     isLastStep: event.data.isLastStep,
                     experimentId: event.data.experiment?.experimentId,
                     experimentVariant: event.data.experiment?.experimentVariant,
-                    workflowBlobRef: event.data.workflowBlobRef ?? event.data.experiment?.legacyWorkflowBlobRef,
+                    workflowBlobRef: event.data.workflowBlobRef,
                     fallbackOriginalStepId: event.data.fallbackOriginalStepId
                 )
             )
