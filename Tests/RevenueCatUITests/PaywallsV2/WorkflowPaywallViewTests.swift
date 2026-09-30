@@ -596,6 +596,7 @@ private extension WorkflowPaywallViewTests {
         initialScreenJSON: String? = nil,
         initialStepJSON: String? = nil,
         initialStepId: String = "step_initial",
+        initialRouteStepId: String? = nil,
         terminalScreenJSON: String? = nil,
         extraOfferings: [Offering] = []
     ) throws -> WorkflowContext {
@@ -606,6 +607,7 @@ private extension WorkflowPaywallViewTests {
             initialScreenJSON: initialScreenJSON,
             initialStepJSON: initialStepJSON,
             initialStepId: initialStepId,
+            initialRouteStepId: initialRouteStepId,
             terminalScreenJSON: terminalScreenJSON,
             offeringId: offeringId
         )
@@ -657,6 +659,7 @@ private extension WorkflowPaywallViewTests {
         initialScreenJSON customInitialScreenJSON: String? = nil,
         initialStepJSON customInitialStepJSON: String? = nil,
         initialStepId: String = "step_initial",
+        initialRouteStepId: String? = nil,
         terminalScreenJSON customTerminalScreenJSON: String? = nil,
         offeringId: String
     ) throws -> PublishedWorkflow {
@@ -683,11 +686,22 @@ private extension WorkflowPaywallViewTests {
             terminalScreenJSON = ""
         }
 
+        // Shape khepri publishes: the first step's branch is hoisted out of `steps` and
+        // `initial_step_id` names its fallback.
+        let initialTriggerJSON = initialRouteStepId.map {
+            """
+            "initial_trigger": { "type": "branch",
+              "routes": [{"audience_id": "aud_a", "step_id": "\($0)"}],
+              "fallback_step_id": "\(initialStepId)" },
+            """
+        } ?? ""
+
         let json = """
         {
           "id": "wf_test",
           "display_name": "Test",
           "initial_step_id": "\(initialStepId)",
+          \(initialTriggerJSON)
           \(workflowStepIdJSON)
           "steps": {
             \(initialStepJSON)
@@ -958,6 +972,39 @@ extension WorkflowPaywallViewTests {
         let expectedLog = "\(expectedMessage): Offering 'missing_offering' not found for step 'step_initial'."
         self.logger.verifyMessageWasLogged(
             expectedLog,
+            level: .error,
+            expectedCount: 1
+        )
+    }
+
+    /// The first page is built from the step `initialTrigger` routed to, not from the fallback the
+    /// skeleton was drawn from.
+    @MainActor
+    func testTheFirstPageIsBuiltFromTheStepTheInitialTriggerPicked() async throws {
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            initialRouteStepId: "step_terminal",
+            terminalScreenJSON: Self.makeScreenJSON(offeringId: "missing_offering")
+        )
+        let view = WorkflowPaywallView(
+            context: context,
+            purchaseHandler: .mock(branchingEnabled: true, resolveBranch: { _ in "step_terminal" }),
+            introEligibilityChecker: .producing(eligibility: .eligible),
+            showZeroDecimalPlacePrices: false,
+            displayCloseButton: false,
+            promoOfferCache: nil,
+            onDismiss: {}
+        )
+        let dispose = try view.addToHierarchy()
+        defer { dispose() }
+
+        await expect(self.logger.messages).toEventuallyNot(beEmpty(), timeout: .seconds(3))
+        let expectedMessage = Strings.workflow_paywall_invalid_state(
+            currentStepId: "step_terminal",
+            screenId: "screen_terminal"
+        )
+        self.logger.verifyMessageWasLogged(
+            "\(expectedMessage): Offering 'missing_offering' not found for step 'step_terminal'.",
             level: .error,
             expectedCount: 1
         )

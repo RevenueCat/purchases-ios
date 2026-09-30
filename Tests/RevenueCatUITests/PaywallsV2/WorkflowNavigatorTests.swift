@@ -231,7 +231,7 @@ final class WorkflowNavigatorTests: TestCase {
         )
         let navigator = WorkflowNavigator(
             workflow: workflow,
-            resolveBranches: { _ in ["btn_abc": "step_3"] }
+            resolveBranch: { _ in "step_3" }
         )
         await navigator.waitForBranchResolution()
 
@@ -252,7 +252,7 @@ final class WorkflowNavigatorTests: TestCase {
         )
         let navigator = WorkflowNavigator(
             workflow: workflow,
-            resolveBranches: { _ in ["btn_abc": "step_3"] }
+            resolveBranch: { _ in "step_3" }
         )
         await navigator.waitForBranchResolution()
 
@@ -290,7 +290,7 @@ final class WorkflowNavigatorTests: TestCase {
         )
         let navigator = WorkflowNavigator(
             workflow: workflow,
-            resolveBranches: { _ in ["btn_abc": "step_gone"] }
+            resolveBranch: { _ in "step_gone" }
         )
         await navigator.waitForBranchResolution()
 
@@ -315,7 +315,7 @@ final class WorkflowNavigatorTests: TestCase {
         let calls = Atomic<Int>(0)
         let navigator = WorkflowNavigator(workflow: workflow) { _ in
             calls.modify { $0 += 1 }
-            return ["btn_abc": "step_1"]
+            return "step_1"
         }
         await navigator.waitForBranchResolution()
 
@@ -349,12 +349,7 @@ final class WorkflowNavigatorTests: TestCase {
         )
         let navigator = WorkflowNavigator(
             workflow: workflow,
-            resolveBranches: { step in
-                step.stepTriggerActions.compactMapValues { action in
-                    guard case .branch(let branch) = action else { return nil }
-                    return branch.routes.first?.stepId
-                }
-            }
+            resolveBranch: { $0.routes.first?.stepId ?? $0.fallbackStepId }
         )
 
         _ = navigator.triggerAction(componentId: "btn_go")
@@ -376,10 +371,89 @@ final class WorkflowNavigatorTests: TestCase {
         )
         let navigator = WorkflowNavigator(
             workflow: workflow,
-            resolveBranches: { _ in ["btn_abc": "step_3"] }
+            resolveBranch: { _ in "step_3" }
         )
 
         expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_2"
+    }
+
+    /// A screen can have more than one audience-routed button, and entering it resolves all of them.
+    func testEveryBranchOnTheStepResolves() async throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStepWithTwoBranchExits(id: "step_1"),
+                makeStep(id: "step_a"),
+                makeStep(id: "step_b")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow) { $0.routes.first?.stepId ?? $0.fallbackStepId }
+        await navigator.waitForBranchResolution()
+
+        expect(navigator.triggerActionDestination(componentId: "btn_one")?.step.id) == "step_a"
+        expect(navigator.triggerActionDestination(componentId: "btn_two")?.step.id) == "step_b"
+    }
+
+    // MARK: - initial trigger
+
+    /// Nothing renders until the first step is routed, so the view waits on this one resolve.
+    func testAnInitialTriggerPicksTheFirstStep() async throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [makeStep(id: "step_1"), makeStep(id: "step_3")],
+            initialRouteStepId: "step_3"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow, branchingEnabled: true) { _ in "step_3" }
+
+        expect(navigator.currentStepId) == "step_1"
+
+        await navigator.waitForInitialStep()
+
+        expect(navigator.currentStepId) == "step_3"
+    }
+
+    func testWithBranchingDisabledTheInitialTriggerIsNotResolved() async throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [makeStep(id: "step_1"), makeStep(id: "step_3")],
+            initialRouteStepId: "step_3"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow) { _ in "step_3" }
+        await navigator.waitForInitialStep()
+
+        expect(navigator.currentStepId) == "step_1"
+    }
+
+    /// Config drift: `initial_step_id` is the initial branch's fallback, so an unknown route stays put.
+    func testAnInitialRouteNamingAMissingStepStaysOnTheFallback() async throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [makeStep(id: "step_1")],
+            initialRouteStepId: "step_gone"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow, branchingEnabled: true) { _ in "step_gone" }
+        await navigator.waitForInitialStep()
+
+        expect(navigator.currentStepId) == "step_1"
+    }
+
+    /// The routed step's own branches have to resolve too, otherwise entering through the initial
+    /// trigger leaves every exit on its fallback.
+    func testTheStepTheInitialTriggerPicksResolvesItsOwnBranches() async throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStep(id: "step_1"),
+                makeStepWithBranchExit(id: "step_4", componentId: "btn_abc", actionId: "btn_abc"),
+                makeStep(id: "step_2"),
+                makeStep(id: "step_3")
+            ],
+            initialRouteStepId: "step_4"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow, branchingEnabled: true) { branch in
+            branch.routes.first?.stepId ?? branch.fallbackStepId
+        }
+        await navigator.waitForInitialStep()
+        await navigator.waitForBranchResolution()
+
+        expect(navigator.currentStepId) == "step_4"
+        expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_3"
     }
 
     // MARK: - navigateBack
@@ -497,17 +571,31 @@ private extension WorkflowNavigatorTests {
     /// Builds a `PublishedWorkflow` from a list of pre-encoded step descriptors and an initialStepId.
     static func makeWorkflow(
         steps: [StepDescriptor] = [StepDescriptor(id: "step_1", json: #"{"id":"step_1","type":"screen"}"#)],
-        initialStepId: String = "step_1"
+        initialStepId: String = "step_1",
+        initialRouteStepId: String? = nil
     ) throws -> PublishedWorkflow {
         let stepsJSON = steps
             .map { "\"\($0.id)\": \($0.json)" }
             .joined(separator: ",\n")
+
+        // Shape khepri publishes: the first step's branch is hoisted out of `steps` and
+        // `initial_step_id` names its fallback.
+        let initialTriggerJSON = initialRouteStepId.map {
+            """
+            "initial_trigger": {
+              "type": "branch",
+              "routes": [{"audience_id": "aud_a", "step_id": "\($0)"}],
+              "fallback_step_id": "\(initialStepId)"
+            },
+            """
+        } ?? ""
 
         let json = """
         {
           "id": "wf_test",
           "display_name": "Test Workflow",
           "initial_step_id": "\(initialStepId)",
+          \(initialTriggerJSON)
           "steps": {
             \(stepsJSON)
           },
@@ -594,8 +682,36 @@ private extension WorkflowNavigatorTests {
           "trigger_actions": {
             "\(actionId)": {
               "type": "branch",
-              "branches": [{"audience_id": "aud_a", "step_id": "\(routeStepId)"}],
+              "routes": [{"audience_id": "aud_a", "step_id": "\(routeStepId)"}],
               "fallback_step_id": "\(fallbackStepId)"
+            }
+          }
+        }
+        """
+        return StepDescriptor(id: id, json: json)
+    }
+
+    /// Creates a `StepDescriptor` for a screen with two buttons, each carrying its own branch.
+    func makeStepWithTwoBranchExits(id: String) -> StepDescriptor {
+        let json = """
+        {
+          "id": "\(id)",
+          "type": "screen",
+          "screen_id": "screen_\(id)",
+          "triggers": [
+            {"name":"One","type":"on_press","action_id":"btn_one","component_id":"btn_one"},
+            {"name":"Two","type":"on_press","action_id":"btn_two","component_id":"btn_two"}
+          ],
+          "trigger_actions": {
+            "btn_one": {
+              "type": "branch",
+              "routes": [{"audience_id": "aud_a", "step_id": "step_a"}],
+              "fallback_step_id": "step_1"
+            },
+            "btn_two": {
+              "type": "branch",
+              "routes": [{"audience_id": "aud_b", "step_id": "step_b"}],
+              "fallback_step_id": "step_1"
             }
           }
         }

@@ -126,6 +126,59 @@ class WorkflowResponseTests: TestCase {
         expect(workflow.metadata).toNot(beNil())
     }
 
+    /// Shape from khepri's workflows topic snapshot: the initial branch is hoisted out of `steps` and
+    /// `initial_step_id` names its fallback.
+    func testDecodePublishedWorkflowWithInitialTrigger() throws {
+        let json = """
+        {
+          "id": "wf_initial",
+          "display_name": "Initial branch",
+          "initial_step_id": "screen_a",
+          "initial_trigger": {
+            "type": "branch",
+            "routes": [{ "audience_id": "audsnap0011223344", "step_id": "screen_b" }],
+            "fallback_step_id": "screen_a"
+          },
+          "steps": {},
+          "screens": {},
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {},
+            "variable_config": { "variable_compatibility_map": {}, "function_compatibility_map": {} }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: json)
+
+        expect(workflow.initialStepId) == "screen_a"
+        expect(workflow.initialTrigger) == .branch(.init(
+            routes: [.init(audienceId: "audsnap0011223344", stepId: "screen_b")],
+            fallbackStepId: "screen_a"
+        ))
+    }
+
+    func testDecodePublishedWorkflowWithoutInitialTriggerDecodesToNil() throws {
+        let json = """
+        {
+          "id": "wf_min",
+          "display_name": "Minimal",
+          "initial_step_id": "step_1",
+          "steps": {},
+          "screens": {},
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {},
+            "variable_config": { "variable_compatibility_map": {}, "function_compatibility_map": {} }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: json)
+
+        expect(workflow.initialTrigger).to(beNil())
+    }
+
     func testDecodeWorkflowTriggerAction() throws {
         let json = """
         { "type": "step", "step_id": "step_3" }
@@ -183,7 +236,7 @@ class WorkflowResponseTests: TestCase {
         let json = """
         {
           "type": "branch",
-          "branches": [
+          "routes": [
             { "audience_id": "aud_a", "step_id": "step_a" },
             { "audience_id": "aud_b", "step_id": "step_b" }
           ],
@@ -204,7 +257,7 @@ class WorkflowResponseTests: TestCase {
 
     func testDecodeBranchTriggerActionMissingTheFallbackDecodesToUnknown() throws {
         let json = """
-        { "type": "branch", "branches": [{ "audience_id": "aud_a", "step_id": "step_a" }] }
+        { "type": "branch", "routes": [{ "audience_id": "aud_a", "step_id": "step_a" }] }
         """.data(using: .utf8)!
 
         let action = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: json)
@@ -212,9 +265,9 @@ class WorkflowResponseTests: TestCase {
         expect(action) == .unknown
     }
 
-    func testDecodeBranchTriggerActionWithNoBranchesStillRoutesToTheFallback() throws {
+    func testDecodeBranchTriggerActionWithNoRoutesStillRoutesToTheFallback() throws {
         let json = """
-        { "type": "branch", "branches": [], "fallback_step_id": "step_default" }
+        { "type": "branch", "routes": [], "fallback_step_id": "step_default" }
         """.data(using: .utf8)!
 
         let action = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: json)
@@ -286,7 +339,7 @@ class WorkflowResponseTests: TestCase {
               "type": "screen",
               "trigger_actions": {
                 "btn_1": { "type": "step", "step_id": "step_2" },
-                "branch": { "type": "branch", "branches": [] }
+                "branch": { "type": "branch", "routes": [] }
               }
             }
           },

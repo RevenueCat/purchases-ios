@@ -35,17 +35,44 @@ final class WorkflowNavigator: ObservableObject {
     private var backStack: [String] = []
     private var currentStepBranches: [WorkflowActionID: WorkflowStepID] = [:]
     private var resolveTask: Task<Void, Never>?
+    private var initialStepTask: Task<Void, Never>?
 
-    private let resolveBranches: @Sendable (WorkflowStep) async -> [WorkflowActionID: WorkflowStepID]
+    private let resolveBranch: @Sendable (WorkflowBranch) async -> WorkflowStepID
+
+    /// The branch that has to route the first step before anything can render.
+    static func initialBranch(in workflow: PublishedWorkflow, branchingEnabled: Bool) -> WorkflowBranch? {
+        guard branchingEnabled, case .branch(let branch) = workflow.initialTrigger else { return nil }
+        return branch
+    }
 
     init(
         workflow: PublishedWorkflow,
-        resolveBranches: @escaping @Sendable (WorkflowStep) async -> [WorkflowActionID: WorkflowStepID]
-            = { _ in [:] }
+        branchingEnabled: Bool = false,
+        resolveBranch: @escaping @Sendable (WorkflowBranch) async -> WorkflowStepID = { $0.fallbackStepId }
     ) {
+        let initialBranch = Self.initialBranch(in: workflow, branchingEnabled: branchingEnabled)
         self.workflow = workflow
-        self.resolveBranches = resolveBranches
+        self.resolveBranch = resolveBranch
         self.currentStepId = workflow.initialStepId
+
+        guard let initialBranch else {
+            self.resolveCurrentStepBranches()
+            return
+        }
+        let task = Task { [weak self, resolveBranch] in
+            let stepId = await resolveBranch(initialBranch)
+            guard !Task.isCancelled else { return }
+            self?.enterInitialStep(stepId)
+        }
+        self.resolveTask = task
+        self.initialStepTask = task
+    }
+
+    /// `initialStepId` is the initial branch's fallback, so an unknown route just stays put.
+    private func enterInitialStep(_ stepId: WorkflowStepID) {
+        if self.workflow.steps[stepId] != nil {
+            self.currentStepId = stepId
+        }
         self.resolveCurrentStepBranches()
     }
 
@@ -53,7 +80,13 @@ final class WorkflowNavigator: ObservableObject {
         self.resolveTask?.cancel()
     }
 
-    /// Tests only. Nothing in the UI waits for a resolve.
+    /// Completes once `initialTrigger` picked the first step. Returns right away when nothing had to
+    /// be routed. This is the one resolve the UI waits on: it has nothing to render until it lands.
+    func waitForInitialStep() async {
+        await self.initialStepTask?.value
+    }
+
+    /// Tests only. Nothing in the UI waits for a step's own branches to resolve.
     func waitForBranchResolution() async {
         await self.resolveTask?.value
     }
@@ -133,8 +166,13 @@ extension WorkflowNavigator {
         self.resolveTask = nil
 
         guard let step = self.currentStep, step.hasBranchAction else { return }
-        self.resolveTask = Task { [weak self, resolveBranches] in
-            let resolved = await resolveBranches(step)
+        self.resolveTask = Task { [weak self, resolveBranch] in
+            var resolved: [WorkflowActionID: WorkflowStepID] = [:]
+            for (actionId, action) in step.stepTriggerActions {
+                guard !Task.isCancelled else { return }
+                guard case .branch(let branch) = action else { continue }
+                resolved[actionId] = await resolveBranch(branch)
+            }
             // Enough on its own: cancel() precedes the step change and this block never suspends.
             guard !Task.isCancelled else { return }
             self?.currentStepBranches = resolved
