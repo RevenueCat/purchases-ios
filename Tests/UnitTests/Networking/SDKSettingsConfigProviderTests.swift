@@ -72,7 +72,7 @@ class SDKSettingsConfigProviderTests: TestCase {
         self.delegate.expectation = expectation
         self.provider.delegate = self.delegate
 
-        await self.provider.loadAndDeliverSettings()
+        await self.provider.readAndDeliverSettings()
 
         await self.fulfillment(of: [expectation], timeout: 1)
         expect(self.provider.cachedSettings()) == SDKSettings()
@@ -80,7 +80,7 @@ class SDKSettingsConfigProviderTests: TestCase {
     }
 
     func testInvalidatesCachedSettingsWhenGenerationChanges() async {
-        await self.provider.loadAndDeliverSettings()
+        await self.provider.readAndDeliverSettings()
 
         self.manager.configGeneration += 1
 
@@ -90,9 +90,9 @@ class SDKSettingsConfigProviderTests: TestCase {
     func testDoesNotNotifyDelegateWhenSettingsHaveNotChanged() async {
         self.provider.delegate = self.delegate
 
-        await self.provider.loadAndDeliverSettings()
+        await self.provider.readAndDeliverSettings()
         self.manager.configGeneration += 1
-        await self.provider.loadAndDeliverSettings()
+        await self.provider.readAndDeliverSettings()
 
         expect(self.delegate.invokedDidUpdateCount) == 1
     }
@@ -101,7 +101,7 @@ class SDKSettingsConfigProviderTests: TestCase {
         self.manager.stubbedHasCommittedConfig = false
         self.provider.delegate = self.delegate
 
-        await self.provider.loadAndDeliverSettings()
+        await self.provider.readAndDeliverSettings()
 
         expect(self.provider.cachedSettings()).to(beNil())
         expect(self.delegate.settings).to(beNil())
@@ -118,8 +118,8 @@ class SDKSettingsConfigProviderTests: TestCase {
         expect(self.provider.cachedSettings()) == SDKSettings()
     }
 
-    func testInitialStateDoesNotLoadSettings() {
-        self.provider.remoteConfigEventReceived(.initialState(generation: self.manager.configGeneration))
+    func testObserverRegisteredDoesNotLoadSettings() {
+        self.provider.remoteConfigEventReceived(.observerRegistered(generation: self.manager.configGeneration))
 
         expect(self.manager.invokedCommittedTopicAfterInFlightRefreshCount) == 0
     }
