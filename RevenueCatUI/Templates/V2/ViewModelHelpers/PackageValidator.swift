@@ -90,12 +90,20 @@ class PackageValidator {
         self.scopedPackageInfos.filter { $0.scope != .independent }.map(\.info)
     }
 
+    var allPackageInfos: [PackageInfo] {
+        self.scopedPackageInfos.map(\.info)
+    }
+
     var hasPageScopedPackages: Bool {
         self.scopedPackageInfos.contains { $0.scope == .page }
     }
 
     private var pageScopedPackageInfos: [PackageInfo] {
         self.scopedPackageInfos.filter { $0.scope == .page }.map(\.info)
+    }
+
+    var pagePackages: [Package] {
+        self.pageScopedPackageInfos.map(\.package)
     }
 
     /// Resolution runs on every render, so each distinct warning is logged once.

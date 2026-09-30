@@ -38,7 +38,7 @@ struct IndependentPackageSelectionView<Content: View>: View {
         self.content = content
         self._selection = StateObject(wrappedValue: selection ?? PackageContext(
             package: validator.defaultSelectedPackage(in: .provisional),
-            variableContext: .init(packages: validator.packageInfos.map(\.package))
+            variableContext: .init(packages: validator.pagePackages)
         ))
     }
 
@@ -69,7 +69,7 @@ struct IndependentPackageSelectionView<Content: View>: View {
         let initializePageSelection = !didInitializeSelection && validator.hasPageScopedPackages
         didInitializeSelection = true
         let variableContext = PackageContext.VariableContext(
-            packages: validator.packageInfos.map(\.package),
+            packages: validator.pagePackages,
             showZeroDecimalPlacePrices: parentContext.variableContext.showZeroDecimalPlacePrices
         )
         guard initializePageSelection ||

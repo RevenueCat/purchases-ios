@@ -39,6 +39,41 @@ final class MixedTabsDefaultPackageVisibilityTests: TestCase {
     private static let tab2Id = "tab2"
     private static let tab3Id = "tab3"
 
+    func testIndependentPackagesRemainAvailableForEligibilityWithoutEnteringSharedSelection() throws {
+        let components = Self.paywallComponents(components: [
+            Self.packageComponent(
+                packageID: TestData.annualPackage.identifier,
+                isSelectedByDefault: true
+            ),
+            .stack(.init(components: [
+                .package(.init(
+                    packageID: TestData.monthlyPackage.identifier,
+                    isSelectedByDefault: true,
+                    applePromoOfferProductCode: "monthly-promo",
+                    stack: Self.textStack("Monthly")
+                ))
+            ], purchaseContext: .init()))
+        ])
+
+        let state = try PaywallsV2View.createPaywallState(
+            componentsConfig: components.data.componentsConfig.base,
+            componentsLocalizations: components.data.componentsLocalizations,
+            preferredLocales: [Locale(identifier: "en_US")],
+            defaultLocale: "en_US",
+            uiConfigProvider: UIConfigProvider(uiConfig: components.uiConfig),
+            offering: Self.offering,
+            introEligibilityChecker: .producing(eligibility: .eligible),
+            showZeroDecimalPlacePrices: false,
+            colorScheme: .light
+        ).get()
+
+        XCTAssertEqual(state.sharedSelectionPackages.map(\.identifier), [TestData.annualPackage.identifier])
+        XCTAssertEqual(state.packageInfos.map(\.package.identifier), [
+            TestData.annualPackage.identifier, TestData.monthlyPackage.identifier
+        ])
+        XCTAssertEqual(state.packageInfos.last?.promotionalOfferProductCode, "monthly-promo")
+    }
+
     /// The break vegaro pointed at: a package inside any tab used to make the page skip reconciling
     /// entirely, so the hidden annual card stayed selected with nothing on screen to show it.
     func testPageSelectionMovesOffHiddenDefaultWhenAnotherTabHoldsPackages() throws {
@@ -136,6 +171,36 @@ final class MixedTabsDefaultPackageVisibilityTests: TestCase {
             packageContext.variableContext.mostExpensivePricePerMonth,
             pageBasis.mostExpensivePricePerMonth
         )
+    }
+
+    func testIndependentTabSelectionKeepsTheOutsideTabPriceBasis() throws {
+        let (paywallState, tabControlContext) = try Self.mixedLayoutState(tabs: .packagesInFirstTab)
+        let pagePackages = paywallState.viewModelFactory.packageValidator.pagePackages
+        let pageBasis = PackageContext.VariableContext(packages: pagePackages)
+        let tabBasis = PackageContext.VariableContext(packages: [TestData.weeklyPackage])
+        XCTAssertNotEqual(pageBasis.mostExpensivePricePerMonth, tabBasis.mostExpensivePricePerMonth)
+
+        let packageContext = PackageContext(package: TestData.annualPackage, variableContext: pageBasis)
+        let dispose = try Self.loadedPaywallView(
+            paywallState: paywallState,
+            packageContext: packageContext,
+            canTrial: true
+        )
+        .environment(\.independentPurchaseContext, true)
+        .addToHierarchy()
+        defer { dispose() }
+
+        Self.settle()
+
+        XCTAssertEqual(packageContext.package?.identifier, TestData.weeklyPackage.identifier)
+        XCTAssertEqual(packageContext.variableContext.mostExpensivePricePerMonth,
+                       pageBasis.mostExpensivePricePerMonth)
+
+        tabControlContext.selectedTabId = Self.tab2Id
+        Self.settle()
+        XCTAssertEqual(packageContext.package?.identifier, TestData.annualPackage.identifier)
+        XCTAssertEqual(packageContext.variableContext.mostExpensivePricePerMonth,
+                       pageBasis.mostExpensivePricePerMonth)
     }
 
     /// The showing tab repeats the page's hidden default, so a card carrying that identifier IS on
@@ -586,7 +651,8 @@ private extension MixedTabsDefaultPackageVisibilityTests {
 
     static func loadedPaywallView(
         paywallState: PaywallState,
-        packageContext: PackageContext
+        packageContext: PackageContext,
+        canTrial: Bool = false
     ) -> some View {
         let introOfferEligibilityContext = IntroOfferEligibilityContext(
             introEligibilityChecker: .producing(eligibility: .eligible)
@@ -606,7 +672,7 @@ private extension MixedTabsDefaultPackageVisibilityTests {
             subscriptionHistoryTracker: SubscriptionHistoryTracker()
         ))
         .environment(\.screenCondition, .compact)
-        .customPaywallVariables(["can_trial": .bool(false)])
+        .customPaywallVariables(["can_trial": .bool(canTrial)])
     }
 
     static func paywallView(

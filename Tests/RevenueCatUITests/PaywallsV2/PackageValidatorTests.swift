@@ -30,6 +30,9 @@ final class PackageValidatorTests: TestCase {
 
         XCTAssertEqual(parent.packages.count, 2)
         XCTAssertEqual(parent.packageInfos.map(\.package.identifier), [TestData.annualPackage.identifier])
+        XCTAssertEqual(parent.allPackageInfos.map(\.package.identifier), [
+            TestData.annualPackage.identifier, TestData.monthlyPackage.identifier
+        ])
         XCTAssertEqual(parent.defaultSelectedPackage(in: Self.context())?.identifier, TestData.annualPackage.identifier)
         XCTAssertEqual(child.defaultSelectedPackage(in: Self.context())?.identifier, TestData.monthlyPackage.identifier)
         XCTAssertFalse(parent.isRendering(TestData.monthlyPackage, in: Self.context()))
@@ -43,6 +46,22 @@ final class PackageValidatorTests: TestCase {
 
         XCTAssertTrue(parent.isValid)
         XCTAssertNil(parent.defaultSelectedPackage(in: Self.context()))
+    }
+
+    func testIndependentPagePriceBasisExcludesTabsAndNestedContexts() {
+        let independent = PackageValidator()
+        let nested = PackageValidator()
+        independent.add(Self.makePackageInfo(package: TestData.annualPackage, isSelectedByDefault: true, visible: true))
+        independent.addTabScoped(Self.makePackageInfo(
+            package: TestData.monthlyPackage, isSelectedByDefault: false, visible: true
+        ))
+        nested.add(Self.makePackageInfo(package: TestData.weeklyPackage, isSelectedByDefault: true, visible: true))
+        independent.addIndependentScope(nested)
+
+        XCTAssertEqual(independent.pagePackages.map(\.identifier), [TestData.annualPackage.identifier])
+        XCTAssertEqual(independent.allPackageInfos.map(\.package.identifier), [
+            TestData.annualPackage.identifier, TestData.monthlyPackage.identifier, TestData.weeklyPackage.identifier
+        ])
     }
 
     func testDefaultSelectedPackageSkipsStaticallyHiddenSelectedPackage() {
