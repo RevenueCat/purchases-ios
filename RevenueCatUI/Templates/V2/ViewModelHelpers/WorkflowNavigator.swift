@@ -40,6 +40,7 @@ final class WorkflowNavigator: ObservableObject {
     private let resolveBranch: @Sendable (WorkflowBranch) async -> WorkflowStepID
 
     /// The branch that has to route the first step before anything can render.
+    /// `branchingEnabled` goes away once branching ships; then an `initialTrigger` always routes.
     static func initialBranch(in workflow: PublishedWorkflow, branchingEnabled: Bool) -> WorkflowBranch? {
         guard branchingEnabled, case .branch(let branch) = workflow.initialTrigger else { return nil }
         return branch

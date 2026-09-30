@@ -274,7 +274,7 @@ private extension WorkflowStepEventTrackerTests {
               "trigger_actions": {
                 "btn": {
                   "type": "branch",
-                  "branches": [{"audience_id": "aud_a", "step_id": "step_3"}],
+                  "routes": [{"audience_id": "aud_a", "step_id": "step_3"}],
                   "fallback_step_id": "step_2"
                 }
               }

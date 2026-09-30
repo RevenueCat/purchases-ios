@@ -40,6 +40,7 @@ final class PurchaseHandler: ObservableObject {
 
     private let purchases: PaywallPurchasesType
     let resolveBranch: @Sendable (WorkflowBranch) async -> WorkflowStepID
+    /// Unreleased. Goes away with `DisabledBranchResolver` once branching ships.
     let branchingEnabled: Bool
     private let paywallEventTracker: PaywallEventTracker
     private let keyWindowFocusResigner: KeyWindowFocusResigning
