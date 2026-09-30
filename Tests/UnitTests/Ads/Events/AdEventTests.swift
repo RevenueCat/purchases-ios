@@ -66,6 +66,80 @@ class AdEventTests: TestCase {
         expect(event1) == event2
     }
 
+    // MARK: - RewardedAdPromptShown Equality
+
+    func testRewardedAdPromptShownEqualityWithDifferentPlacement() {
+        let event1 = RewardedAdPromptShown(
+            mediatorName: .appLovin,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123"
+        )
+
+        let event2 = RewardedAdPromptShown(
+            mediatorName: .appLovin,
+            placement: "settings_screen",
+            adUnitId: "ca-app-pub-123"
+        )
+
+        expect(event1) != event2
+        expect(event1.hash) != event2.hash
+    }
+
+    func testRewardedAdPromptShownEqualityWithSameProperties() {
+        let event1 = RewardedAdPromptShown(
+            mediatorName: .appLovin,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123"
+        )
+
+        let event2 = RewardedAdPromptShown(
+            mediatorName: .appLovin,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123"
+        )
+
+        expect(event1) == event2
+        expect(event1.hash) == event2.hash
+        expect(event1.adFormat) == .rewarded
+    }
+
+    // MARK: - RewardedAdPromptAccepted Equality
+
+    func testRewardedAdPromptAcceptedEqualityWithDifferentPlacement() {
+        let event1 = RewardedAdPromptAccepted(
+            mediatorName: .appLovin,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123"
+        )
+
+        let event2 = RewardedAdPromptAccepted(
+            mediatorName: .appLovin,
+            placement: "settings_screen",
+            adUnitId: "ca-app-pub-123"
+        )
+
+        expect(event1) != event2
+        expect(event1.hash) != event2.hash
+    }
+
+    func testRewardedAdPromptAcceptedEqualityWithSameProperties() {
+        let event1 = RewardedAdPromptAccepted(
+            mediatorName: .appLovin,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123"
+        )
+
+        let event2 = RewardedAdPromptAccepted(
+            mediatorName: .appLovin,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123"
+        )
+
+        expect(event1) == event2
+        expect(event1.hash) == event2.hash
+        expect(event1.adFormat) == .rewarded
+    }
+
     // MARK: - AdLoaded Equality
 
     func testAdLoadedEqualityWithDifferentAdFormat() {
