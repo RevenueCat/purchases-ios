@@ -149,6 +149,31 @@ class DiagnosticsTrackerTests: TestCase {
         expect(entries).to(beEmpty())
     }
 
+    func testDisablingDiagnosticsPreventsPreviouslyQueuedEventsFromPersisting() async {
+        self.diagnosticsDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = false
+        self.tracker = .init(
+            diagnosticsFileHandler: self.handler,
+            collectionDecision: .undetermined,
+            diagnosticsDispatcher: self.diagnosticsDispatcher,
+            dateProvider: self.dateProvider
+        )
+        let event = DiagnosticsEvent(
+            name: .httpRequestPerformed,
+            properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
+            timestamp: Self.eventTimestamp1,
+            appSessionId: SystemInfo.appSessionID
+        )
+
+        self.tracker.track(event)
+        self.tracker.setCollectionDecision(.disabled)
+
+        await self.diagnosticsDispatcher.invokeDispatchedAsyncWorkerThreadBlock(at: 1)
+        await self.diagnosticsDispatcher.invokeDispatchedAsyncWorkerThreadBlock(at: 0)
+
+        let entries = await self.handler.getEntries()
+        expect(entries).to(beEmpty())
+    }
+
     func testTrackMultipleEvents() async {
         let appSessionId = SystemInfo.appSessionID
         let event1 = DiagnosticsEvent(name: .httpRequestPerformed,

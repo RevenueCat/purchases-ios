@@ -230,7 +230,9 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
 
     private func persist(_ event: DiagnosticsEvent) {
         self.diagnosticsDispatcher.dispatchOnWorkerThread {
+            guard self.collectionDecision.value != .disabled else { return }
             await self.clearDiagnosticsFileIfTooBig()
+            guard self.collectionDecision.value != .disabled else { return }
             await self.diagnosticsFileHandler.appendEvent(diagnosticsEvent: event)
         }
     }
