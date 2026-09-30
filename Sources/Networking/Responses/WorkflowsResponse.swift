@@ -99,11 +99,10 @@ import Foundation
         }
     }
 
-    /// Set on `<id>~f` fallback copies khepri publishes for audience-targeted experiments: the id of
-    /// the step they were copied from (`metadata.fallback_original_step_id`).
+    /// Set on khepri's `<id>~f` fallback copies: the id of the step they were copied from.
     public var fallbackOriginalStepId: String? { Self.string(self.metadata?[Self.fallbackOriginalStepIdKey]) }
 
-    /// Read from `metadata` first; `param_values` is where khepri published it before moving it.
+    /// `metadata` first, `param_values` for blobs published before khepri moves them to `metadata`.
     public var experimentId: String? { self.experimentParam(Self.experimentIdParam) }
 
     public var experimentVariant: String? { self.experimentParam(Self.experimentVariantParam) }

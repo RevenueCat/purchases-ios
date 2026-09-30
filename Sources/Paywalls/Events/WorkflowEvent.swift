@@ -66,10 +66,7 @@ extension WorkflowEvent {
         public var entryReason: String?
         public var isFirstStep: Bool?
         public var isLastStep: Bool?
-        /// Content identity of the workflow payload the step came from, so khepri resolves the step
-        /// against that exact blob.
         public var workflowBlobRef: String?
-        /// Set when the step is a `~f` fallback copy; see `WorkflowStep.fallbackOriginalStepId`.
         public var fallbackOriginalStepId: String?
         public var experiment: ExperimentData?
 
