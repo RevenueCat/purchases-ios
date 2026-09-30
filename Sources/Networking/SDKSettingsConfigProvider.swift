@@ -67,20 +67,28 @@ final class SDKSettingsConfigProvider: SDKSettingsConfigProviderType, RemoteConf
         }
     }
 
+    /// Warms the synchronous cache from an already committed config without notifying the delegate.
+    func warmCachedSettings() async {
+        let generation = self.manager.configGeneration
+        let topic = await self.manager.topic(.sdkSettings, policy: .cachedOnly)
+        _ = await self.decodeAndCacheSettings(from: topic, generation: generation)
+    }
+
     /// Waits for a refresh already in flight, then reads, caches, and delivers the latest committed settings.
     func readAndDeliverSettings() async {
         let generation = self.manager.configGeneration
         let topic = await self.manager.committedTopicAfterInFlightRefresh(.sdkSettings)
-        guard await self.manager.hasCommittedConfig() else { return }
-        let settings = self.decodeSettingsOrFallback(from: topic?[Self.defaultItemKey])
-        guard self.manager.configGeneration == generation else { return }
+        guard let settings = await self.decodeAndCacheSettings(from: topic, generation: generation) else { return }
 
-        self.cache.store(settings, for: .init(generation: generation, key: Self.cacheKey))
         self.notifyDelegate(settings, generation: generation)
     }
 
     func remoteConfigEventReceived(_ event: RemoteConfigLifecycleEvent) {
         switch event {
+        case .observerRegistered:
+            Task { [weak self] in
+                await self?.warmCachedSettings()
+            }
         case .committed, .refreshFinished(fetchContext: .appStart, generation: _):
             Task { [weak self] in
                 await self?.readAndDeliverSettings()
@@ -97,6 +105,19 @@ final class SDKSettingsConfigProvider: SDKSettingsConfigProviderType, RemoteConf
             Logger.error(Strings.codable.decoding_error(error, SDKSettings.self))
             return Self.fallbackSettings
         }
+    }
+
+    private func decodeAndCacheSettings(
+        from topic: RemoteConfiguration.ConfigTopic?,
+        generation: Int
+    ) async -> SDKSettings? {
+        guard await self.manager.hasCommittedConfig(), self.manager.configGeneration == generation else {
+            return nil
+        }
+
+        let settings = self.decodeSettingsOrFallback(from: topic?[Self.defaultItemKey])
+        self.cache.store(settings, for: .init(generation: generation, key: Self.cacheKey))
+        return settings
     }
 
     private func notifyDelegate(_ settings: SDKSettings, generation: Int) {

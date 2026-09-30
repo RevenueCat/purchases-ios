@@ -209,10 +209,22 @@ class SDKSettingsConfigProviderTests: TestCase {
         expect(self.provider.cachedSettings()?.diagnostics?.enabled) == true
     }
 
-    func testObserverRegisteredDoesNotLoadSettings() {
+    func testObserverRegistrationDoesNotWaitForAnInFlightRefresh() {
         self.provider.remoteConfigEventReceived(.observerRegistered(generation: self.manager.configGeneration))
 
         expect(self.manager.invokedCommittedTopicAfterInFlightRefreshCount) == 0
+    }
+
+    func testObserverRegistrationWarmsCachedSettingsWithoutNotifyingDelegate() async {
+        self.manager.stubbedTopics[.sdkSettings] = [
+            "default": .init(content: ["diagnostics": ["enabled": true]])
+        ]
+        self.provider.delegate = self.delegate
+
+        self.provider.remoteConfigEventReceived(.observerRegistered(generation: self.manager.configGeneration))
+
+        await expect(self.provider.cachedSettings()?.diagnostics?.enabled).toEventually(equal(true))
+        expect(self.delegate.settings).to(beNil())
     }
 
     func testRepeatedAppStartRefreshCompletionsReloadSettingsWithoutRedeliveringUnchangedSettings() async {
