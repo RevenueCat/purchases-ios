@@ -8,7 +8,7 @@
 
 import Foundation
 
-protocol SDKSettingsConfigProviderType: AnyObject, RemoteConfigStateObserver {
+protocol SDKSettingsConfigProviderType: AnyObject, RemoteConfigLifecycleObserver {
 
     func settings() async -> SDKSettings
     func cachedSettings() -> SDKSettings?
@@ -23,7 +23,10 @@ protocol SDKSettingsConfigProviderDelegate: AnyObject {
 }
 
 /// Loads SDK settings from the `sdk_settings` topic's inline `default` item.
-final class SDKSettingsConfigProvider: SDKSettingsConfigProviderType, RemoteConfigStateObserver {
+///
+/// A remote-config commit loads and delivers the new settings. The session's first app-start refresh is also
+/// resolved, including when that refresh does not commit a new config.
+final class SDKSettingsConfigProvider: SDKSettingsConfigProviderType, RemoteConfigLifecycleObserver {
 
     private let manager: RemoteConfigManagerType
     private let cache = GenerationGuardedCache<String, SDKSettings>()
@@ -63,27 +66,52 @@ final class SDKSettingsConfigProvider: SDKSettingsConfigProviderType, RemoteConf
         }
     }
 
-    func remoteConfigStateDidChange(generation _: Int) {
-        Task { [weak self] in
-            await self?.refresh()
+    /// Waits for a refresh already in flight, then caches and delivers the latest committed settings.
+    func loadAndDeliverSettings() async {
+        let generation = self.manager.configGeneration
+        let topic = await self.manager.committedTopicAfterInFlightRefresh(.sdkSettings)
+        guard await self.manager.hasCommittedConfig() else { return }
+        self.cacheAndDeliverSettings(from: topic, generation: generation)
+    }
+
+    func remoteConfigEventReceived(_ event: RemoteConfigLifecycleEvent) {
+        switch event {
+        case .initialState:
+            break
+        case .committed:
+            Task { [weak self] in
+                await self?.loadAndDeliverSettings()
+            }
+        case .refreshFinished(fetchContext: .appStart, generation: _):
+            Task { [weak self] in
+                await self?.loadAndDeliverSettings()
+            }
+        case .refreshFinished:
+            break
         }
     }
 
-    func refresh() async {
-        guard await self.manager.hasCommittedConfig() else { return }
-
-        let generation = self.manager.configGeneration
-        let settings: SDKSettings
-        do {
-            let item = await self.manager.topic(.sdkSettings, policy: .cachedOnly)?[Self.defaultItemKey]
-            settings = try item.map(Self.decodeSettings) ?? Self.fallbackSettings
-        } catch {
-            Logger.error(Strings.codable.decoding_error(error, SDKSettings.self))
-            settings = Self.fallbackSettings
-        }
+    private func cacheAndDeliverSettings(
+        from topic: RemoteConfiguration.ConfigTopic?,
+        generation: Int
+    ) {
+        let settings = self.decodeSettingsOrFallback(from: topic?[Self.defaultItemKey])
         guard self.manager.configGeneration == generation else { return }
 
         self.cache.store(settings, for: .init(generation: generation, key: Self.cacheKey))
+        self.notifyDelegate(settings, generation: generation)
+    }
+
+    private func decodeSettingsOrFallback(from item: RemoteConfiguration.ConfigItem?) -> SDKSettings {
+        do {
+            return try item.map(Self.decodeSettings) ?? Self.fallbackSettings
+        } catch {
+            Logger.error(Strings.codable.decoding_error(error, SDKSettings.self))
+            return Self.fallbackSettings
+        }
+    }
+
+    private func notifyDelegate(_ settings: SDKSettings, generation: Int) {
         guard let delegate = self.delegate else { return }
 
         let didChange = self.lastDeliveredSettings.modify { previous in

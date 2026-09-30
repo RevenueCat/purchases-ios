@@ -679,13 +679,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let checkpointResolver: CheckpointWorkflowResolver
         let branchResolver: BranchResolver
         if systemInfo.remoteConfigEnabled {
-            let remoteConfigStateObservers: [any RemoteConfigStateObserver] = [
+            remoteConfigManager.addConfigLifecycleObservers([
                 checkpointsConfigProvider,
-                audiencesConfigProvider
-            ]
-            for observer in remoteConfigStateObservers {
-                remoteConfigManager.addRemoteConfigStateObserver(observer)
-            }
+                audiencesConfigProvider,
+                sdkSettingsConfigProvider
+            ])
             RulesEngine.setLogger(RulesEngineLoggerBridge())
             let localRulesEvaluator = LocalRulesEvaluator(
                 dimensionProviders: [
@@ -1024,7 +1022,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         self.purchasesOrchestrator.delegate = self
         self.sdkSettingsConfigProvider.delegate = self
-        self.remoteConfigManager.addRemoteConfigStateObserver(self.sdkSettingsConfigProvider)
         #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.attribution.syncAttributesAndOfferingsIfNeededHandler = { completion in
             completion(nil, NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError)

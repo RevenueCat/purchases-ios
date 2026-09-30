@@ -32,7 +32,7 @@ enum CheckpointRulesProviderError: Error, Equatable {
 ///
 /// Items are keyed by checkpoint identifier. Decoded rule sets are retained for their exact committed topic
 /// snapshot, so repeated hits avoid reading and decoding the same blob while config is unchanged.
-final class CheckpointsConfigProvider: CheckpointsConfigProviderType, RemoteConfigStateObserver {
+final class CheckpointsConfigProvider: CheckpointsConfigProviderType, RemoteConfigLifecycleObserver {
 
     private let manager: RemoteConfigManagerType
     private let cacheLock = Lock()
@@ -45,9 +45,14 @@ final class CheckpointsConfigProvider: CheckpointsConfigProviderType, RemoteConf
         self.manager = manager
     }
 
-    func remoteConfigStateDidChange(generation _: Int) {
-        Task { [weak self] in
-            await self?.warm()
+    func remoteConfigEventReceived(_ event: RemoteConfigLifecycleEvent) {
+        switch event {
+        case .observerRegistered, .committed:
+            Task { [weak self] in
+                await self?.warm()
+            }
+        case .refreshFinished:
+            break
         }
     }
 
