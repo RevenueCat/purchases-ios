@@ -68,9 +68,7 @@ class PackageValidator {
     var hasDeclaredPackages = false
 
     func addIndependentScope(_ validator: PackageValidator) {
-        for packageInfo in validator.scopedPackageInfos {
-            self.scopedPackageInfos.append((packageInfo.info, .independent))
-        }
+        self.scopedPackageInfos.append(contentsOf: validator.scopedPackageInfos.map { ($0.info, .independent) })
     }
 
     func addNestedScopes(from validator: PackageValidator) {

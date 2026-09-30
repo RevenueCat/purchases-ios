@@ -21,7 +21,6 @@ private struct PlanSelectionDefaultPackageKey: EnvironmentKey {
     static let defaultValue: Package? = nil
 }
 
-/// Marks descendants of a Stack that explicitly owns independent purchase selection.
 private struct IndependentPurchaseContextKey: EnvironmentKey {
     static let defaultValue = false
 }

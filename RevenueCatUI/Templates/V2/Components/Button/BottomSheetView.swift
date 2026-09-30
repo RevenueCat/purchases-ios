@@ -47,13 +47,11 @@ struct SheetViewModel: Equatable {
         self.sheetStackViewModel = sheetStackViewModel
         self.presentingPackageContext = presentingPackageContext
         self.presentingDefaultPackage = presentingDefaultPackage
-        if let validator = sheetStackViewModel.independentPackageValidator {
-            self.independentPackageContext = PackageContext(
+        self.independentPackageContext = sheetStackViewModel.independentPackageValidator.map { validator in
+            PackageContext(
                 package: validator.defaultSelectedPackage(in: .provisional),
                 variableContext: .init(packages: validator.pagePackages)
             )
-        } else {
-            self.independentPackageContext = nil
         }
     }
 

@@ -20,7 +20,7 @@ import XCTest
 final class PartialComponentTests: TestCase {
 
     // Properties of full components that partials can't have
-    static let ignoredProperties = ["type", "components", "overrides"]
+    static let ignoredProperties = ["type", "components", "overrides", "purchaseContext"]
 
     static let sampleURL = URL(string: "https://revenuecat.com")!
 
@@ -86,6 +86,11 @@ final class PartialComponentTests: TestCase {
                 )
             }
         }
+    }
+
+    func testPartialStackCannotOverridePurchaseContext() {
+        let partial = Mirror(reflecting: PaywallComponent.PartialStackComponent())
+        XCTAssertFalse(partial.children.contains { $0.label == "purchaseContext" })
     }
 
     // Helper function to check if a value is optional
