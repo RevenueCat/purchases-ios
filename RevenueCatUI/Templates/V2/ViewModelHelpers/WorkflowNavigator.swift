@@ -65,7 +65,8 @@ final class WorkflowNavigator: ObservableObject {
         }
     }
 
-    /// An unknown route just stays put, on the fallback `currentStepId` already holds.
+    /// A route the workflow does not have is ignored, leaving `currentStepId` on `initialStepId`,
+    /// which is this branch's fallback.
     private func enterInitialStep(_ stepId: WorkflowStepID) {
         if self.workflow.steps[stepId] != nil {
             self.currentStepId = stepId
