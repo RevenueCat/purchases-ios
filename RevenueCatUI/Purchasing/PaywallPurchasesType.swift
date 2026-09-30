@@ -11,6 +11,7 @@
 //
 //  Created by Nacho Soto on 9/12/23.
 
+import Foundation
 @_spi(Internal) import RevenueCat
 
 /// A simplified protocol for the subset of `PurchasesType` needed for `RevenueCatUI`.
@@ -67,7 +68,7 @@ protocol PaywallPurchasesType: Sendable {
     /// Only to be called when the customer has deliberately asked to buy: Apple's disclosure notice is shown
     /// and an external purchase token may be minted, which Apple expects a report for.
     @Sendable
-    func prepareExternalPurchaseLink() async -> ExternalPurchaseLinkResult
+    func prepareExternalPurchaseLink(destinationURL: URL) async -> ExternalPurchaseLinkResult
 
     @Sendable
     func restorePurchases() async throws -> CustomerInfo

@@ -11,6 +11,7 @@
 //
 //  Created by Nacho Soto on 9/12/23.
 
+import Foundation
 @_spi(Internal) import RevenueCat
 
 #if DEBUG
@@ -115,12 +116,14 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
     }
 
     var useExternalPurchaseCustomLinks = false
-    var externalPurchaseLinkBlock: (@Sendable () async -> ExternalPurchaseLinkResult)?
+    var externalPurchaseLinkBlock: (@Sendable (URL) async -> ExternalPurchaseLinkResult)?
+    private(set) var lastExternalPurchaseLinkURL: URL?
 
-    func prepareExternalPurchaseLink() async -> ExternalPurchaseLinkResult {
+    func prepareExternalPurchaseLink(destinationURL: URL) async -> ExternalPurchaseLinkResult {
+        self.lastExternalPurchaseLinkURL = destinationURL
         guard let block = self.externalPurchaseLinkBlock else { return .proceed(externalPurchaseTokenID: nil) }
 
-        return await block()
+        return await block(destinationURL)
     }
 
     func restorePurchases() async throws -> CustomerInfo {
@@ -207,7 +210,7 @@ extension PaywallPurchasesType {
         mapped.remoteConfigEnabled = self.remoteConfigEnabled
         mapped.hostedCheckoutBlock = { await self.startHostedCheckout(package: $0, paywallEvent: $1) }
         mapped.useExternalPurchaseCustomLinks = self.useExternalPurchaseCustomLinks
-        mapped.externalPurchaseLinkBlock = { await self.prepareExternalPurchaseLink() }
+        mapped.externalPurchaseLinkBlock = { await self.prepareExternalPurchaseLink(destinationURL: $0) }
         #if !os(tvOS)
         mapped.workflowBlock = { try await self.workflow(forOfferingIdentifier: $0) }
         mapped.cachedWorkflowBlock = { self.cachedWorkflow(forOfferingIdentifier: $0) }
@@ -241,7 +244,7 @@ extension PaywallPurchasesType {
         mapped.remoteConfigEnabled = self.remoteConfigEnabled
         mapped.hostedCheckoutBlock = { await self.startHostedCheckout(package: $0, paywallEvent: $1) }
         mapped.useExternalPurchaseCustomLinks = self.useExternalPurchaseCustomLinks
-        mapped.externalPurchaseLinkBlock = { await self.prepareExternalPurchaseLink() }
+        mapped.externalPurchaseLinkBlock = { await self.prepareExternalPurchaseLink(destinationURL: $0) }
         #if !os(tvOS)
         mapped.workflowBlock = { try await self.workflow(forOfferingIdentifier: $0) }
         mapped.cachedWorkflowBlock = { self.cachedWorkflow(forOfferingIdentifier: $0) }
