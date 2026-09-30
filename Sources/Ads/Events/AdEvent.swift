@@ -206,7 +206,7 @@ public final class AdFailedToLoad: NSObject,
 /// Report this event when the app prompts the user to watch a rewarded ad,
 /// for example a "Watch an ad to earn coins" button. This event is rewarded-only and manual-only:
 /// adapters never emit it, because only the app knows when the prompt is presented.
-public final class RewardedAdPromptShown: NSObject,
+public final class AdRewardPromptShown: NSObject,
                                          AdEventData,
                                          Codable,
                                          @unchecked Sendable {
@@ -239,7 +239,7 @@ public final class RewardedAdPromptShown: NSObject,
     // MARK: - NSObject overrides for equality
 
     public override func isEqual(_ object: Any?) -> Bool {
-        guard let other = object as? RewardedAdPromptShown else { return false }
+        guard let other = object as? AdRewardPromptShown else { return false }
         return self.mediatorName == other.mediatorName &&
                self.adFormat == other.adFormat &&
                self.placement == other.placement &&
@@ -269,7 +269,7 @@ public final class RewardedAdPromptShown: NSObject,
 /// Report this event when the user accepts a rewarded ad prompt,
 /// for example by tapping a "Watch an ad to earn coins" button. This event is rewarded-only and manual-only:
 /// adapters never emit it, because only the app knows when the prompt is accepted.
-public final class RewardedAdPromptAccepted: NSObject,
+public final class AdRewardPromptAccepted: NSObject,
                                             AdEventData,
                                             Codable,
                                             @unchecked Sendable {
@@ -302,7 +302,7 @@ public final class RewardedAdPromptAccepted: NSObject,
     // MARK: - NSObject overrides for equality
 
     public override func isEqual(_ object: Any?) -> Bool {
-        guard let other = object as? RewardedAdPromptAccepted else { return false }
+        guard let other = object as? AdRewardPromptAccepted else { return false }
         return self.mediatorName == other.mediatorName &&
                self.adFormat == other.adFormat &&
                self.placement == other.placement &&
@@ -775,10 +775,10 @@ internal enum AdEvent: Equatable, Codable, Sendable {
     case rewardGranted(CreationData, AdRewardGranted)
 
     /// The app prompted the user to watch a rewarded ad.
-    case rewardedAdPromptShown(CreationData, RewardedAdPromptShown)
+    case rewardedAdPromptShown(CreationData, AdRewardPromptShown)
 
     /// The user accepted a rewarded ad prompt.
-    case rewardedAdPromptAccepted(CreationData, RewardedAdPromptAccepted)
+    case rewardedAdPromptAccepted(CreationData, AdRewardPromptAccepted)
 
 }
 

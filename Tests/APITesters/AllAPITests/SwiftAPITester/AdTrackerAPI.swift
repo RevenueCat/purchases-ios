@@ -59,12 +59,12 @@ func checkAdTrackerAPI() {
         let _: Int? = failedToLoad.mediatorErrorCode
         adTracker.trackAdFailedToLoad(failedToLoad)
 
-        let rewardedAdPromptShown: RewardedAdPromptShown = RewardedAdPromptShown(
+        let rewardedAdPromptShown: AdRewardPromptShown = AdRewardPromptShown(
             mediatorName: mediatorName,
             placement: nil,
             adUnitId: ""
         )
-        let _: RewardedAdPromptShown = RewardedAdPromptShown(
+        let _: AdRewardPromptShown = AdRewardPromptShown(
             mediatorName: mediatorName,
             adUnitId: ""
         )
@@ -74,12 +74,12 @@ func checkAdTrackerAPI() {
         let _: String = rewardedAdPromptShown.adUnitId
         adTracker.trackRewardedAdPromptShown(rewardedAdPromptShown)
 
-        let rewardedAdPromptAccepted: RewardedAdPromptAccepted = RewardedAdPromptAccepted(
+        let rewardedAdPromptAccepted: AdRewardPromptAccepted = AdRewardPromptAccepted(
             mediatorName: mediatorName,
             placement: nil,
             adUnitId: ""
         )
-        let _: RewardedAdPromptAccepted = RewardedAdPromptAccepted(
+        let _: AdRewardPromptAccepted = AdRewardPromptAccepted(
             mediatorName: mediatorName,
             adUnitId: ""
         )
