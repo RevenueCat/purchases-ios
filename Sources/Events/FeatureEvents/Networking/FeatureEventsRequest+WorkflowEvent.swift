@@ -45,6 +45,7 @@ extension FeatureEventsRequest {
             let experimentId: String?
             let experimentVariant: String?
             let workflowBlobRef: String?
+            let fallbackOriginalStepId: String?
         }
         // swiftlint:enable nesting
 
@@ -86,7 +87,8 @@ extension FeatureEventsRequest.WorkflowEvent {
                     isLastStep: event.data.isLastStep,
                     experimentId: event.data.experiment?.experimentId,
                     experimentVariant: event.data.experiment?.experimentVariant,
-                    workflowBlobRef: event.data.experiment?.workflowBlobRef
+                    workflowBlobRef: event.data.workflowBlobRef ?? event.data.experiment?.legacyWorkflowBlobRef,
+                    fallbackOriginalStepId: event.data.fallbackOriginalStepId
                 )
             )
         } catch {
@@ -181,6 +183,7 @@ extension FeatureEventsRequest.WorkflowEvent.Properties: Encodable {
         try container.encodeIfPresent(experimentId, forKey: .experimentId)
         try container.encodeIfPresent(experimentVariant, forKey: .experimentVariant)
         try container.encodeIfPresent(workflowBlobRef, forKey: .workflowBlobRef)
+        try container.encodeIfPresent(fallbackOriginalStepId, forKey: .fallbackOriginalStepId)
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -196,6 +199,7 @@ extension FeatureEventsRequest.WorkflowEvent.Properties: Encodable {
         case experimentId = "experiment_id"
         case experimentVariant = "experiment_variant"
         case workflowBlobRef = "blob_ref"
+        case fallbackOriginalStepId = "fallback_original_step_id"
 
     }
 

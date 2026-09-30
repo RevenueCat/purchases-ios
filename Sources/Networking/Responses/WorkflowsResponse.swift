@@ -99,17 +99,27 @@ import Foundation
         }
     }
 
-    public var experimentId: String? { self.stringParam(Self.experimentIdParam) }
+    /// Set on `<id>~f` fallback copies khepri publishes for audience-targeted experiments: the id of
+    /// the step they were copied from (`metadata.fallback_original_step_id`).
+    public var fallbackOriginalStepId: String? { Self.string(self.metadata?[Self.fallbackOriginalStepIdKey]) }
 
-    public var experimentVariant: String? { self.stringParam(Self.experimentVariantParam) }
+    /// Read from `metadata` first; `param_values` is where khepri published it before moving it.
+    public var experimentId: String? { self.experimentParam(Self.experimentIdParam) }
 
-    private func stringParam(_ key: String) -> String? {
-        guard case let .string(value)? = self.paramValues[key] else { return nil }
-        return value
+    public var experimentVariant: String? { self.experimentParam(Self.experimentVariantParam) }
+
+    private func experimentParam(_ key: String) -> String? {
+        return Self.string(self.metadata?[key]) ?? Self.string(self.paramValues[key])
+    }
+
+    private static func string(_ value: AnyDecodable?) -> String? {
+        guard case let .string(string)? = value else { return nil }
+        return string
     }
 
     private static let experimentIdParam = "experiment_id"
     private static let experimentVariantParam = "experiment_variant"
+    private static let fallbackOriginalStepIdKey = "fallback_original_step_id"
 
     // `paramValues`, `outputs`, and `metadata` carry backend step config that the renderer doesn't
     // read directly (`metadata` via `stepScreenType`, `paramValues` via the experiment

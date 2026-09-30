@@ -66,6 +66,11 @@ extension WorkflowEvent {
         public var entryReason: String?
         public var isFirstStep: Bool?
         public var isLastStep: Bool?
+        /// Content identity of the workflow payload the step came from, so khepri resolves the step
+        /// against that exact blob.
+        public var workflowBlobRef: String?
+        /// Set when the step is a `~f` fallback copy; see `WorkflowStep.fallbackOriginalStepId`.
+        public var fallbackOriginalStepId: String?
         public var experiment: ExperimentData?
 
         public init(
@@ -81,6 +86,8 @@ extension WorkflowEvent {
             entryReason: String? = nil,
             isFirstStep: Bool? = nil,
             isLastStep: Bool? = nil,
+            workflowBlobRef: String? = nil,
+            fallbackOriginalStepId: String? = nil,
             experiment: ExperimentData? = nil
         ) {
             self.workflowId = workflowId
@@ -95,6 +102,8 @@ extension WorkflowEvent {
             self.entryReason = entryReason
             self.isFirstStep = isFirstStep
             self.isLastStep = isLastStep
+            self.workflowBlobRef = workflowBlobRef
+            self.fallbackOriginalStepId = fallbackOriginalStepId
             self.experiment = experiment
         }
 
@@ -128,12 +137,20 @@ extension WorkflowEvent {
 
         public var experimentId: String
         public var experimentVariant: String
-        public var workflowBlobRef: String
+        /// Where `blob_ref` was stored before it moved to `Data`. Only read, so events queued before
+        /// an upgrade still send it.
+        var legacyWorkflowBlobRef: String?
 
-        public init(experimentId: String, experimentVariant: String, workflowBlobRef: String) {
+        public init(experimentId: String, experimentVariant: String) {
             self.experimentId = experimentId
             self.experimentVariant = experimentVariant
-            self.workflowBlobRef = workflowBlobRef
+        }
+
+        // swiftlint:disable:next nesting
+        private enum CodingKeys: String, CodingKey {
+            case experimentId
+            case experimentVariant
+            case legacyWorkflowBlobRef = "workflowBlobRef"
         }
 
     }
