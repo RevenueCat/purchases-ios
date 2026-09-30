@@ -11,7 +11,23 @@
 
 import SwiftUI
 
-#if !os(tvOS) && ENABLE_WORKFLOW_BRANCH_LOADING
+#if !os(tvOS)
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension View {
+
+    @ViewBuilder
+    func workflowSkeletonShimmer() -> some View {
+        #if ENABLE_WORKFLOW_BRANCH_LOADING
+        self.modifier(WorkflowSkeletonShimmer())
+        #else
+        self
+        #endif
+    }
+
+}
+
+#if ENABLE_WORKFLOW_BRANCH_LOADING
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct WorkflowSkeletonShimmer: ViewModifier {
@@ -66,5 +82,7 @@ extension EnvironmentValues {
     }
 
 }
+
+#endif
 
 #endif

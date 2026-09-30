@@ -27,8 +27,8 @@ struct WorkflowSkeleton {
         let light = Self.brightness(background.light, colors: colors, dark: false)
         let dark = Self.brightness(background.dark ?? background.light, colors: colors, dark: true)
         let transform = Self(
-            tone: .init(light: .hex(light < 0.5 ? "#383838" : "#D8D8D8"),
-                        dark: .hex(dark < 0.5 ? "#383838" : "#D8D8D8")),
+            tone: .init(light: light < 0.5 ? Self.darkPlaceholderColor : Self.lightPlaceholderColor,
+                        dark: dark < 0.5 ? Self.darkPlaceholderColor : Self.lightPlaceholderColor),
             colors: colors
         )
         let base = data.componentsConfig.base
@@ -168,12 +168,17 @@ struct WorkflowSkeleton {
     }
 
     private static let clear = PaywallComponent.ColorScheme(light: .hex("#00000000"))
+    private static let darkPlaceholderColor = PaywallComponent.ColorInfo.hex("#383838")
+    private static let lightPlaceholderColor = PaywallComponent.ColorInfo.hex("#D8D8D8")
+    private static let mediaBackgroundFallback = PaywallComponent.ColorScheme(
+        light: .hex("#FFFFFF"), dark: .hex("#151515")
+    )
 
     private static func backgroundColor(_ background: PaywallComponent.Background) -> PaywallComponent.ColorScheme {
         switch background {
         case let .color(color): return color
         case let .image(_, _, overlay), let .video(_, _, _, _, _, overlay):
-            return overlay ?? .init(light: .hex("#FFFFFF"), dark: .hex("#151515"))
+            return overlay ?? Self.mediaBackgroundFallback
         }
     }
 
