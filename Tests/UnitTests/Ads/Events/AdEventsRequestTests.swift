@@ -115,6 +115,34 @@ class AdFeatureEventsRequestTests: TestCase {
         assertSnapshot(of: requestEvent, as: .formattedJson)
     }
 
+    func testRewardedAdPromptShownEvent() throws {
+        let event = AdEvent.rewardedAdPromptShown(Self.eventCreationData, Self.rewardedAdPromptShownData)
+        let storedEvent = try Self.createStoredAdEvent(from: event)
+        let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        expect(requestEvent.type) == .rewardedAdPromptShown
+        expect(requestEvent.adFormat) == "rewarded"
+        expect(requestEvent.captureMethod) == "manual"
+        expect(requestEvent.impressionId).to(beNil())
+        expect(requestEvent.networkName).to(beNil())
+
+        assertSnapshot(of: requestEvent, as: .formattedJson)
+    }
+
+    func testRewardedAdPromptAcceptedEvent() throws {
+        let event = AdEvent.rewardedAdPromptAccepted(Self.eventCreationData, Self.rewardedAdPromptAcceptedData)
+        let storedEvent = try Self.createStoredAdEvent(from: event)
+        let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        expect(requestEvent.type) == .rewardedAdPromptAccepted
+        expect(requestEvent.adFormat) == "rewarded"
+        expect(requestEvent.captureMethod) == "manual"
+        expect(requestEvent.impressionId).to(beNil())
+        expect(requestEvent.networkName).to(beNil())
+
+        assertSnapshot(of: requestEvent, as: .formattedJson)
+    }
+
     func testCanInitFromDeserializedEvent() throws {
         let expectedUserID = "test-user"
         let adEventCreationData: AdEvent.CreationData = .init(
@@ -407,6 +435,18 @@ private extension AdFeatureEventsRequestTests {
         revenueMicros: 1500000,
         currency: "USD",
         precision: .exact
+    )
+
+    static let rewardedAdPromptShownData: RewardedAdPromptShown = .init(
+        mediatorName: .appLovin,
+        placement: "home_screen",
+        adUnitId: "ca-app-pub-123456789"
+    )
+
+    static let rewardedAdPromptAcceptedData: RewardedAdPromptAccepted = .init(
+        mediatorName: .appLovin,
+        placement: "home_screen",
+        adUnitId: "ca-app-pub-123456789"
     )
 
     static let rewardEarnedUnverifiedData: AdRewardEarnedUnverified = .init(

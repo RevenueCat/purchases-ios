@@ -55,6 +55,54 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.mediatorErrorCode) == 3
     }
 
+    func testTrackRewardedAdPromptShownStoresEvent() async throws {
+        let promptShownData = RewardedAdPromptShown(
+            mediatorName: .appLovin,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123"
+        )
+
+        self.purchases.adTracker.trackRewardedAdPromptShown(promptShownData)
+
+        await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
+
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents
+
+        guard case let .rewardedAdPromptShown(_, eventData) = trackedEvents.first else {
+            fail("Expected AdEvent.rewardedAdPromptShown but got \(String(describing: trackedEvents.first))")
+            return
+        }
+
+        expect(eventData.mediatorName) == .appLovin
+        expect(eventData.adFormat) == .rewarded
+        expect(eventData.placement) == "home_screen"
+        expect(eventData.adUnitId) == "ca-app-pub-123"
+    }
+
+    func testTrackRewardedAdPromptAcceptedStoresEvent() async throws {
+        let promptAcceptedData = RewardedAdPromptAccepted(
+            mediatorName: .appLovin,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123"
+        )
+
+        self.purchases.adTracker.trackRewardedAdPromptAccepted(promptAcceptedData)
+
+        await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
+
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents
+
+        guard case let .rewardedAdPromptAccepted(_, eventData) = trackedEvents.first else {
+            fail("Expected AdEvent.rewardedAdPromptAccepted but got \(String(describing: trackedEvents.first))")
+            return
+        }
+
+        expect(eventData.mediatorName) == .appLovin
+        expect(eventData.adFormat) == .rewarded
+        expect(eventData.placement) == "home_screen"
+        expect(eventData.adUnitId) == "ca-app-pub-123"
+    }
+
     func testTrackAdLoadedStoresEvent() async throws {
         let loadedData = AdLoaded(
             networkName: "AdMob",
@@ -312,12 +360,23 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             impressionId: "impression-123"
         )
 
-        self.purchases.adTracker.trackAdDisplayed(displayedData)
+        let promptShownData = RewardedAdPromptShown(
+            mediatorName: .appLovin,
+            adUnitId: "ca-app-pub-123"
+        )
+        let promptAcceptedData = RewardedAdPromptAccepted(
+            mediatorName: .appLovin,
+            adUnitId: "ca-app-pub-123"
+        )
 
-        await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
+        self.purchases.adTracker.trackAdDisplayed(displayedData)
+        self.purchases.adTracker.trackRewardedAdPromptShown(promptShownData)
+        self.purchases.adTracker.trackRewardedAdPromptAccepted(promptAcceptedData)
+
+        await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(3))
 
         let trackedEvents = try await self.mockEventsManager.trackedAdEvents
-        expect(trackedEvents.first?.creationData.captureMethod) == .manual
+        expect(trackedEvents.map(\.creationData.captureMethod)) == [.manual, .manual, .manual]
     }
 
     func testAdapterEntryPointStampsIOSAdMobAdapterCaptureMethod() async throws {
