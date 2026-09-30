@@ -16,6 +16,19 @@ import XCTest
 
 @_spi(Internal) @_spi(Experimental) @testable import RevenueCat
 
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+private final class DiagnosticsSynchronizerSpy: DiagnosticsSynchronizerType {
+
+    let collectionDecisions: Atomic<[DiagnosticsCollectionDecision]> = .init([])
+
+    func setCollectionDecision(_ decision: DiagnosticsCollectionDecision) async {
+        self.collectionDecisions.modify { $0.append(decision) }
+    }
+
+    func syncDiagnosticsIfNeeded() async throws {}
+
+}
+
 class PurchasesConfiguringTests: BasePurchasesTests {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -46,6 +59,25 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(
             initialDiagnosticsCollectionDecision(diagnosticsEnabled: true, remoteConfigEnabled: true)
         ) == .undetermined
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testSDKSettingsUpdateConfiguresDiagnosticsTrackerAndSynchronizer() async throws {
+        let settingsProvider = MockSDKSettingsConfigProvider()
+        let synchronizer = DiagnosticsSynchronizerSpy()
+        self.initializePurchasesInstance(
+            appUserId: Self.appUserID,
+            sdkSettingsConfigProvider: settingsProvider
+        )
+        self.purchasesOrchestrator._diagnosticsSynchronizer = synchronizer
+
+        settingsProvider.delegate?.sdkSettingsConfigProviderDidUpdate(
+            .init(diagnostics: .init(enabled: true))
+        )
+
+        let tracker = try self.mockDiagnosticsTracker
+        expect(tracker.collectionDecisions.value) == [.enabled]
+        await expect(synchronizer.collectionDecisions.value).toEventually(equal([.enabled]))
     }
 
     func testIsAbleToBeInitialized() {
