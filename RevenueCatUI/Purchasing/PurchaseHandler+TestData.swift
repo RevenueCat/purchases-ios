@@ -35,8 +35,7 @@ extension PurchaseHandler {
         performRestore: PerformRestore? = nil,
         preferredLocaleOverride: String? = nil,
         remoteConfigEnabled: Bool = false,
-        branchingEnabled: Bool = false,
-        resolveBranch: @escaping @Sendable (WorkflowBranch) async -> WorkflowStepID = { $0.fallbackStepId },
+        resolveBranch: (@Sendable (WorkflowBranch) async -> WorkflowStepID)? = nil,
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = Just(
             (
                 transaction: nil,
@@ -68,7 +67,6 @@ extension PurchaseHandler {
         return self.init(
             purchases: purchases,
             resolveBranch: resolveBranch,
-            branchingEnabled: branchingEnabled,
             performPurchase: performPurchase,
             performRestore: performRestore,
             purchaseResultPublisher: purchaseResultPublisher,

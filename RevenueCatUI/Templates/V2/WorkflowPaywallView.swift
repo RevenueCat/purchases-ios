@@ -320,7 +320,6 @@ struct WorkflowPaywallView: View {
         self.onPresentationError = onPresentationError
         self._navigator = .init(wrappedValue: WorkflowNavigator(
             workflow: context.workflow,
-            branchingEnabled: purchaseHandler.branchingEnabled,
             resolveBranch: purchaseHandler.resolveBranch
         ))
         self._stateStore = .init(
@@ -334,7 +333,7 @@ struct WorkflowPaywallView: View {
         let initialStepId = context.workflow.initialStepId
         let resolvesInitialStep = WorkflowNavigator.initialBranch(
             in: context.workflow,
-            branchingEnabled: purchaseHandler.branchingEnabled
+            resolveBranch: purchaseHandler.resolveBranch
         ) != nil
         self.resolvesInitialStep = resolvesInitialStep
         let initialPackageInput = Self.buildPackageInput(

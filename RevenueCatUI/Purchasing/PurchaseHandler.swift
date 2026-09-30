@@ -39,9 +39,8 @@ final class PurchaseHandler: ObservableObject {
     private var cancellables: Set<AnyCancellable> = Set()
 
     private let purchases: PaywallPurchasesType
-    let resolveBranch: @Sendable (WorkflowBranch) async -> WorkflowStepID
-    /// Unreleased. Goes away with `DisabledBranchResolver` once branching ships.
-    let branchingEnabled: Bool
+    /// `nil` while branch routing is unreleased. Stops being optional once branching ships.
+    let resolveBranch: (@Sendable (WorkflowBranch) async -> WorkflowStepID)?
     private let paywallEventTracker: PaywallEventTracker
     private let keyWindowFocusResigner: KeyWindowFocusResigning
 
@@ -183,10 +182,13 @@ final class PurchaseHandler: ObservableObject {
                      eventTracker: PaywallEventTracker = .shared,
                      keyWindowFocusResigner: KeyWindowFocusResigning = KeyWindowFocusResigner()
     ) {
+        var resolveBranch: (@Sendable (WorkflowBranch) async -> WorkflowStepID)?
+        if purchases.branchingEnabled {
+            resolveBranch = { [purchases] branch in await purchases.resolveBranch(branch) }
+        }
         self.init(isConfigured: true,
                   purchases: purchases,
-                  resolveBranch: { [purchases] in await purchases.resolveBranch($0) },
-                  branchingEnabled: purchases.branchingEnabled,
+                  resolveBranch: resolveBranch,
                   performPurchase: performPurchase,
                   performRestore: performRestore,
                   purchaseResultPublisher: purchaseResultPublisher,
@@ -198,8 +200,7 @@ final class PurchaseHandler: ObservableObject {
     init(
         isConfigured: Bool = true,
         purchases: PaywallPurchasesType,
-        resolveBranch: @escaping @Sendable (WorkflowBranch) async -> WorkflowStepID = { $0.fallbackStepId },
-        branchingEnabled: Bool = false,
+        resolveBranch: (@Sendable (WorkflowBranch) async -> WorkflowStepID)? = nil,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
@@ -211,7 +212,6 @@ final class PurchaseHandler: ObservableObject {
         self.isConfigured = isConfigured
         self.purchases = purchases
         self.resolveBranch = resolveBranch
-        self.branchingEnabled = branchingEnabled
         self.paywallEventTracker = eventTracker
         self.keyWindowFocusResigner = keyWindowFocusResigner
         self.performPurchase = performPurchase

@@ -986,7 +986,7 @@ extension WorkflowPaywallViewTests {
         )
         let view = WorkflowPaywallView(
             context: context,
-            purchaseHandler: .mock(branchingEnabled: true, resolveBranch: { _ in "step_terminal" }),
+            purchaseHandler: .mock(resolveBranch: { _ in "step_terminal" }),
             introEligibilityChecker: .producing(eligibility: .eligible),
             showZeroDecimalPlacePrices: false,
             displayCloseButton: false,

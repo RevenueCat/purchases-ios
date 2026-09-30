@@ -263,7 +263,7 @@ final class WorkflowNavigatorTests: TestCase {
         expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_2"
     }
 
-    func testWithBranchingDisabledEveryBranchTakesItsFallback() async throws {
+    func testWithNoResolverEveryBranchTakesItsFallback() async throws {
         let workflow = try Self.makeWorkflow(
             steps: [
                 makeStepWithBranchExit(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
@@ -402,7 +402,7 @@ final class WorkflowNavigatorTests: TestCase {
             steps: [makeStep(id: "step_1"), makeStep(id: "step_3")],
             initialRouteStepId: "step_3"
         )
-        let navigator = WorkflowNavigator(workflow: workflow, branchingEnabled: true) { _ in "step_3" }
+        let navigator = WorkflowNavigator(workflow: workflow) { _ in "step_3" }
 
         expect(navigator.currentStepId) == "step_1"
 
@@ -411,12 +411,12 @@ final class WorkflowNavigatorTests: TestCase {
         expect(navigator.currentStepId) == "step_3"
     }
 
-    func testWithBranchingDisabledTheInitialTriggerIsNotResolved() async throws {
+    func testWithNoResolverTheInitialTriggerIsIgnored() async throws {
         let workflow = try Self.makeWorkflow(
             steps: [makeStep(id: "step_1"), makeStep(id: "step_3")],
             initialRouteStepId: "step_3"
         )
-        let navigator = WorkflowNavigator(workflow: workflow) { _ in "step_3" }
+        let navigator = WorkflowNavigator(workflow: workflow)
         await navigator.waitForInitialStep()
 
         expect(navigator.currentStepId) == "step_1"
@@ -428,7 +428,7 @@ final class WorkflowNavigatorTests: TestCase {
             steps: [makeStep(id: "step_1")],
             initialRouteStepId: "step_gone"
         )
-        let navigator = WorkflowNavigator(workflow: workflow, branchingEnabled: true) { _ in "step_gone" }
+        let navigator = WorkflowNavigator(workflow: workflow) { _ in "step_gone" }
         await navigator.waitForInitialStep()
 
         expect(navigator.currentStepId) == "step_1"
@@ -446,7 +446,7 @@ final class WorkflowNavigatorTests: TestCase {
             ],
             initialRouteStepId: "step_4"
         )
-        let navigator = WorkflowNavigator(workflow: workflow, branchingEnabled: true) { branch in
+        let navigator = WorkflowNavigator(workflow: workflow) { branch in
             branch.routes.first?.stepId ?? branch.fallbackStepId
         }
         await navigator.waitForInitialStep()
