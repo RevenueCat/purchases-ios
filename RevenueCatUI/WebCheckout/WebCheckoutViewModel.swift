@@ -69,17 +69,15 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
 
     /// - Parameter checkoutURL: The provider-hosted page to present.
     /// - Parameter successURL: Where the provider sends the customer once checkout succeeds.
-    /// - Parameter cancelURL: Where the provider sends the customer once checkout is abandoned.
     /// - Parameter dataStoreIdentifierStore: Supplies the website data store shared with RevenueCat's
     /// other web views.
     init(
         checkoutURL: URL,
         successURL: URL,
-        cancelURL: URL,
         dataStoreIdentifierStore: WebViewDataStoreIdentifierStore
     ) {
         self.checkoutURL = checkoutURL
-        self.returnURL = WebCheckoutReturnURL(successURL: successURL, cancelURL: cancelURL)
+        self.returnURL = WebCheckoutReturnURL(successURL: successURL)
         self.webView = Self.makeWebView(dataStoreID: dataStoreIdentifierStore.identifier())
 
         super.init()
@@ -88,7 +86,7 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
         self.webView.uiDelegate = self
 
         if self.returnURL == nil {
-            Logger.error(Strings.web_checkout_unusable_return_urls(success: successURL, cancel: cancelURL))
+            Logger.error(Strings.web_checkout_unusable_return_url(successURL))
         }
     }
 
@@ -141,14 +139,12 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
 
         self.loadState = .finished
 
-        if let status = self.returnURL?.status(of: url) {
-            self.returnStatus = status
-        } else {
+        // An unreadable return is left without a status, as if the customer had closed the sheet, rather than
+        // guessed optimistically: the caller confirms the outcome against the backend either way, and a wrong
+        // `success` would show the customer a purchase that never happened.
+        self.returnStatus = self.returnURL?.status(of: url)
+        if self.returnStatus == nil {
             Logger.warning(Strings.web_checkout_return_status_missing)
-            // Reported as a cancel rather than guessed optimistically: the caller confirms the outcome
-            // against the backend either way, and a wrong `success` would show the customer a purchase
-            // that never happened.
-            self.returnStatus = .cancel
         }
 
         self.onFinished?()

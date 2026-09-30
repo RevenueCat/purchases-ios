@@ -340,7 +340,6 @@ private extension HostedCheckoutManagerTests {
     static let operationSessionID = "opse4e63d6a8a2c4"
     static let checkoutURL = URL(string: "https://pay.example.com/session")!
     static let successURL = URL(string: "https://api.revenuecat.com/checkout-return?status=success")!
-    static let cancelURL = URL(string: "https://api.revenuecat.com/checkout-return?status=cancel")!
 
     static let alreadyPurchasedError: BackendError = .networkError(
         .errorResponse(.init(code: .productAlreadyPurchased,
@@ -351,13 +350,11 @@ private extension HostedCheckoutManagerTests {
 
     static let response = HostedCheckoutResponse(operationSessionID: operationSessionID,
                                                  checkoutURL: checkoutURL,
-                                                 successURL: successURL,
-                                                 cancelURL: cancelURL)
+                                                 successURL: successURL)
 
     static let session = HostedCheckoutSession(operationSessionID: operationSessionID,
                                                checkoutURL: checkoutURL,
-                                               successURL: successURL,
-                                               cancelURL: cancelURL)
+                                               successURL: successURL)
 
     static let package = Package(
         identifier: "$rc_monthly",

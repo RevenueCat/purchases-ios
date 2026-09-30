@@ -21,7 +21,6 @@ final class WebCheckoutSheetOutcomeTests: TestCase {
 
     func testReportsTheStatusThePageReturnedWith() {
         XCTAssertEqual(WebCheckoutSheetOutcome(returnedStatus: .success), .returned(.success))
-        XCTAssertEqual(WebCheckoutSheetOutcome(returnedStatus: .cancel), .returned(.cancel))
     }
 
     func testTreatsASheetThatWentWithoutAStatusAsDismissedByTheCustomer() {
