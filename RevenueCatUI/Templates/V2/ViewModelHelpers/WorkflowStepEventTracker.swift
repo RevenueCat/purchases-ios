@@ -111,6 +111,8 @@ struct WorkflowStepEventTracker {
             entryReason: entryReason,
             isFirstStep: step.id == self.workflow.initialStepId,
             isLastStep: Self.isTerminalStep(step),
+            workflowBlobRef: self.workflowBlobRef,
+            fallbackOriginalStepId: step.fallbackOriginalStepId,
             experiment: self.experimentData(for: step)
         )
     }
@@ -118,15 +120,11 @@ struct WorkflowStepEventTracker {
     private func experimentData(for step: WorkflowStep) -> WorkflowEvent.ExperimentData? {
         guard let experimentId = step.experimentId,
               let experimentVariant = step.experimentVariant,
-              let workflowBlobRef = self.workflowBlobRef else {
+              self.workflowBlobRef != nil else {
             return nil
         }
 
-        return .init(
-            experimentId: experimentId,
-            experimentVariant: experimentVariant,
-            workflowBlobRef: workflowBlobRef
-        )
+        return .init(experimentId: experimentId, experimentVariant: experimentVariant)
     }
 
     /// A step is terminal when none of its trigger actions navigate to another step. Mirrors Android's
