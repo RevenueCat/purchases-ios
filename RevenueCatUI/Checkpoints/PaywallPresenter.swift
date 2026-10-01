@@ -70,6 +70,12 @@ public struct PaywallPresentationParams {
     /// The custom variables supplied to the checkpoint.
     public let customVariables: [String: CustomVariableValue]
 
+    /// How the checkpoint requested that its UI be presented.
+    ///
+    /// This is always either ``CheckpointPresentationMode/fullScreen`` or ``CheckpointPresentationMode/sheet``;
+    /// ``CheckpointPresentationMode/default`` is resolved by the SDK before the custom presenter is called.
+    public let presentationMode: CheckpointPresentationMode
+
     /// The offering for which to present the paywall.
     public let offering: Offering
 
@@ -82,10 +88,12 @@ public struct PaywallPresentationParams {
     init(
         checkpointIdentifier: String,
         customVariables: [String: CustomVariableValue] = [:],
+        presentationMode: CheckpointPresentationMode = .sheet,
         offering: Offering
     ) {
         self.checkpointIdentifier = checkpointIdentifier
         self.customVariables = customVariables
+        self.presentationMode = presentationMode
         self.offering = offering
     }
 
