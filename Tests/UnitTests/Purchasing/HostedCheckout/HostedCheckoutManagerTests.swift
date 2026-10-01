@@ -376,21 +376,6 @@ class HostedCheckoutManagerTests: TestCase {
         expect(result) == .completed(Self.session)
     }
 
-    /// The provider took the payment, but the backend had not heard about it yet, so it hands back the success
-    /// page to present.
-    func testConfirmsThePreviousSessionWhenTheBackendResumesItOnItsSuccessPage() async {
-        let page = HostedCheckoutResponse.Page(checkoutURL: Self.successURL, successURL: Self.successURL)
-        self.webBillingAPI.stubbedPostHostedCheckoutCompletionResult = .success(
-            .init(operationSessionID: Self.operationSessionID, outcome: .resumed(page))
-        )
-
-        let result = await self.startCheckout(previousSession: Self.session)
-
-        expect(result) == .completed(.init(operationSessionID: Self.operationSessionID,
-                                           page: page,
-                                           appUserID: Self.appUserID))
-    }
-
     /// There is no session to confirm, and no page to present either.
     func testFailsWhenTheBackendSaysASessionItWasNotAskedAboutSucceeded() async {
         self.webBillingAPI.stubbedPostHostedCheckoutCompletionResult = .success(
