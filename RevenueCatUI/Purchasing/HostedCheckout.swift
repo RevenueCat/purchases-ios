@@ -177,9 +177,9 @@ enum HostedCheckout {
         case tellCustomerTheyAlreadyOwnIt
         case failed(HostedCheckoutError)
 
-        /// - Parameter customerInfo: The `CustomerInfo` showing the purchase, when the backend confirmed one and
-        /// it could be fetched. Without it, the purchase cannot be reported, so as far as the app can tell it is
-        /// still processing.
+        /// - Parameter customerInfo: The `CustomerInfo` the poll fetched for the customer the session was created
+        /// for, when the backend confirmed the purchase and it could be fetched. Without it, the purchase cannot be
+        /// reported, so as far as the app can tell it is still processing.
         init(_ result: HostedCheckoutPollResult, customerInfo: CustomerInfo?) {
             switch result {
             case .succeeded:
@@ -211,8 +211,7 @@ enum HostedCheckout {
                         package: Package?,
                         purchaseHandler: PurchaseHandler) async -> Resolution {
         return await purchaseHandler.whileConfirmingHostedCheckout {
-            let result = await purchaseHandler.pollHostedCheckout(session: session)
-            let customerInfo = result == .succeeded ? await purchaseHandler.hostedCheckoutPurchaseCustomerInfo() : nil
+            let (result, customerInfo) = await purchaseHandler.pollHostedCheckout(session: session)
             let resolution = Resolution(result, customerInfo: customerInfo)
 
             switch resolution {

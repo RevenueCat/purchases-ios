@@ -399,14 +399,9 @@ extension PurchaseHandler {
         return await confirmation()
     }
 
-    func pollHostedCheckout(session: HostedCheckoutSession) async -> HostedCheckoutPollResult {
+    func pollHostedCheckout(session: HostedCheckoutSession) async -> (result: HostedCheckoutPollResult,
+                                                                      customerInfo: CustomerInfo?) {
         return await self.purchases.pollHostedCheckout(session: session)
-    }
-
-    /// The `CustomerInfo` a checkout the backend confirmed is reported with, when it can be fetched. The SDK
-    /// fetches it while confirming the purchase, but that fetch can fail.
-    func hostedCheckoutPurchaseCustomerInfo() async -> CustomerInfo? {
-        return try? await self.purchases.customerInfo()
     }
 
     /// Whether web purchase links opened in the browser go through Apple's external purchase flow first.
@@ -1312,8 +1307,9 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
         return .failed
     }
 
-    func pollHostedCheckout(session: HostedCheckoutSession) async -> HostedCheckoutPollResult {
-        return .undetermined
+    func pollHostedCheckout(session: HostedCheckoutSession) async -> (result: HostedCheckoutPollResult,
+                                                                      customerInfo: CustomerInfo?) {
+        return (.undetermined, nil)
     }
 
     var useExternalPurchaseCustomLinks: Bool { false }
