@@ -407,15 +407,19 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let deviceCache = DeviceCache(systemInfo: systemInfo, userDefaults: userDefaults)
 
         let diagnosticsFileHandler: DiagnosticsFileHandlerType? = {
-            guard diagnosticsEnabled,
-                  dangerousSettings?.uiPreviewMode != true,
+            guard dangerousSettings?.uiPreviewMode != true,
                   #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return nil }
             return DiagnosticsFileHandler()
         }()
 
         let diagnosticsTracker: DiagnosticsTrackerType? = {
             if let handler = diagnosticsFileHandler, #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-                return DiagnosticsTracker(diagnosticsFileHandler: handler)
+                return DiagnosticsTracker(
+                    diagnosticsFileHandler: handler,
+                    collectionDecision: initialDiagnosticsCollectionDecision(
+                        remoteConfigEnabled: systemInfo.remoteConfigEnabled
+                    )
+                )
             } else {
                 if diagnosticsEnabled {
                     Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
@@ -679,13 +683,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let checkpointResolver: CheckpointWorkflowResolver
         let branchResolver: BranchResolver
         if systemInfo.remoteConfigEnabled {
-            let remoteConfigStateObservers: [any RemoteConfigStateObserver] = [
+            remoteConfigManager.addConfigLifecycleObservers([
                 checkpointsConfigProvider,
-                audiencesConfigProvider
-            ]
-            for observer in remoteConfigStateObservers {
-                remoteConfigManager.addRemoteConfigStateObserver(observer)
-            }
+                audiencesConfigProvider,
+                sdkSettingsConfigProvider
+            ])
             RulesEngine.setLogger(RulesEngineLoggerBridge())
             let localRulesEvaluator = LocalRulesEvaluator(
                 dimensionProviders: [
@@ -743,21 +745,24 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 let diagnosticsSynchronizer: DiagnosticsSynchronizer?
-                if diagnosticsEnabled {
-                    if let diagnosticsFileHandler = diagnosticsFileHandler {
-                        let synchronizedUserDefaults = SynchronizedUserDefaults(userDefaults: userDefaults)
-                        diagnosticsSynchronizer = DiagnosticsSynchronizer(internalAPI: backend.internalAPI,
-                                                                          handler: diagnosticsFileHandler,
-                                                                          tracker: diagnosticsTracker,
-                                                                          userDefaults: synchronizedUserDefaults)
-                        Task {
-                            await diagnosticsFileHandler.updateDelegate(diagnosticsSynchronizer)
-                        }
-                    } else {
-                        Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
-                        diagnosticsSynchronizer = nil
+                if let diagnosticsFileHandler = diagnosticsFileHandler {
+                    let synchronizedUserDefaults = SynchronizedUserDefaults(userDefaults: userDefaults)
+                    diagnosticsSynchronizer = DiagnosticsSynchronizer(
+                        internalAPI: backend.internalAPI,
+                        handler: diagnosticsFileHandler,
+                        tracker: diagnosticsTracker,
+                        userDefaults: synchronizedUserDefaults,
+                        collectionDecision: initialDiagnosticsCollectionDecision(
+                            remoteConfigEnabled: systemInfo.remoteConfigEnabled
+                        )
+                    )
+                    Task {
+                        await diagnosticsFileHandler.updateDelegate(diagnosticsSynchronizer)
                     }
                 } else {
+                    if diagnosticsEnabled {
+                        Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
+                    }
                     diagnosticsSynchronizer = nil
                 }
                 let storeKit2ObserverModePurchaseDetector = StoreKit2ObserverModePurchaseDetector(
@@ -888,6 +893,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   currentConfiguration: currentConfiguration,
                   webBundleEventBus: webBundleEventBus
         )
+
     }
 
     // swiftlint:disable:next function_body_length
@@ -1024,7 +1030,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         self.purchasesOrchestrator.delegate = self
         self.sdkSettingsConfigProvider.delegate = self
-        self.remoteConfigManager.addRemoteConfigStateObserver(self.sdkSettingsConfigProvider)
+        if !self.systemInfo.remoteConfigEnabled {
+            self.setDiagnosticsCollectionDecision(remoteDiagnosticsEnabled: nil)
+        }
         #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.attribution.syncAttributesAndOfferingsIfNeededHandler = { completion in
             completion(nil, NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError)
@@ -2050,7 +2058,7 @@ extension Purchases {
             clientTransactionID: clientTransactionID,
             trackingMetadata: trackingMetadata,
             captureMethod: .manual,
-            poller: RewardVerification.Poller.makeDefault()
+            poller: RewardVerification.Poller.makeDefault(adUnitID: trackingMetadata?.adUnitId)
         )
     }
 
@@ -2065,7 +2073,7 @@ extension Purchases {
             clientTransactionID: clientTransactionID,
             trackingMetadata: trackingMetadata,
             captureMethod: captureMethod,
-            poller: RewardVerification.Poller.makeDefault()
+            poller: RewardVerification.Poller.makeDefault(adUnitID: trackingMetadata?.adUnitId)
         )
     }
 
@@ -2232,12 +2240,14 @@ extension Purchases {
     ///
     /// - Throws: `BackendError`
     internal func fetchRewardVerificationStatus(
-        clientTransactionID: String
+        clientTransactionID: String,
+        adUnitID: String?
     ) async throws -> RewardVerificationPollStatus {
         let response = try await Async.call { completion in
             self.backend.adsAPI.getRewardVerificationStatus(
                 appUserID: self.appUserID,
                 clientTransactionID: clientTransactionID,
+                adUnitID: adUnitID,
                 completion: completion
             )
         }
@@ -2760,6 +2770,32 @@ public extension Purchases {
 
 }
 
+extension Purchases: SDKSettingsConfigProviderDelegate {
+
+    func sdkSettingsConfigProviderDidUpdate(_ settings: SDKSettings) {
+        self.setDiagnosticsCollectionDecision(remoteDiagnosticsEnabled: settings.diagnostics?.enabled)
+    }
+
+    private func setDiagnosticsCollectionDecision(remoteDiagnosticsEnabled: Bool?) {
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            let isEnabledBySDKConfiguration = self.currentConfiguration?.diagnosticsEnabled ?? false
+            let decision = resolvedDiagnosticsCollectionDecision(
+                remoteDiagnosticsEnabled: remoteDiagnosticsEnabled,
+                diagnosticsEnabled: isEnabledBySDKConfiguration
+            )
+            Logger.debug(Strings.diagnostics.diagnostics_collection_decision(
+                isEnabled: decision == .enabled,
+                isEnabledBySDKConfiguration: remoteDiagnosticsEnabled == nil
+            ))
+            self.diagnosticsTracker?.setCollectionDecision(decision)
+            Task { [weak self] in
+                await self?.purchasesOrchestrator.diagnosticsSynchronizer?.setCollectionDecision(decision)
+            }
+        }
+    }
+
+}
+
 // @unchecked because:
 // - It contains `NotificationCenter`, which isn't thread-safe as of Swift 5.7.
 // - It has a mutable `privateDelegate` (this isn't actually thread-safe!)
@@ -2770,10 +2806,19 @@ public extension Purchases {
 // "Capture of 'self' with non-sendable type 'Purchases' in a `@Sendable` closure"
 extension Purchases: @unchecked Sendable {}
 
-extension Purchases: SDKSettingsConfigProviderDelegate {
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+func initialDiagnosticsCollectionDecision(
+    remoteConfigEnabled: Bool
+) -> DiagnosticsCollectionDecision {
+    return remoteConfigEnabled ? .undetermined : .disabled
+}
 
-    func sdkSettingsConfigProviderDidUpdate(_: SDKSettings) {}
-
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+func resolvedDiagnosticsCollectionDecision(
+    remoteDiagnosticsEnabled: Bool?,
+    diagnosticsEnabled: Bool
+) -> DiagnosticsCollectionDecision {
+    return .init(enabled: remoteDiagnosticsEnabled ?? diagnosticsEnabled)
 }
 
 // MARK: Internal

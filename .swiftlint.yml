@@ -119,6 +119,13 @@ custom_rules:
       - "AdapterSDKs/RevenueCatAdMob/Sources/.*\\.swift"
     regex: '(?s)(?<!@_spi\(Internal\)\s)\bpublic\s+(?:indirect\s+)?enum\s+[A-Z]'
 
+  no_protocol_suffix_naming:
+    included: ".*\\.swift"
+    name: "No 'Protocol' suffix on protocols"
+    regex: '\bprotocol\s+\w+Protocol\b'
+    message: "Use the 'Type' suffix for protocols (e.g. FooType), not 'Protocol'."
+    severity: warning
+
 identifier_name:
   max_length:
     warning: 60
