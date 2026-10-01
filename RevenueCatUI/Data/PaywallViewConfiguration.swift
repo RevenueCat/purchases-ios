@@ -24,6 +24,8 @@ struct PaywallViewConfiguration {
     var introEligibility: TrialOrIntroEligibilityChecker?
     var purchaseHandler: PurchaseHandler
     var promoOfferCache: PaywallPromoOfferCache?
+    /// Whether the paywall presents purchase and restore errors instead of delegating presentation to its host.
+    var displaysPurchaseAndRestoreErrors: Bool
     #if !os(tvOS)
     /// Receives a workflow configuration error so checkpoint presentation can report an error outcome.
     var workflowPresentationErrorHandler: ((NSError) -> Void)?
@@ -41,6 +43,7 @@ struct PaywallViewConfiguration {
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler,
         promoOfferCache: PaywallPromoOfferCache? = nil,
+        displaysPurchaseAndRestoreErrors: Bool = true,
         workflowPresentationErrorHandler: ((NSError) -> Void)? = nil
     ) {
         self.content = content
@@ -50,6 +53,7 @@ struct PaywallViewConfiguration {
         self.introEligibility = introEligibility
         self.purchaseHandler = purchaseHandler
         self.promoOfferCache = promoOfferCache
+        self.displaysPurchaseAndRestoreErrors = displaysPurchaseAndRestoreErrors
         #if !os(tvOS)
         self.workflowPresentationErrorHandler = workflowPresentationErrorHandler
         #endif

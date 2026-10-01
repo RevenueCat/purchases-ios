@@ -40,7 +40,11 @@ final class WorkflowPresenterTests: TestCase {
     }
 
     func testWorkflowPresentationErrorProducesErrorOutcomeAfterDismissal() throws {
-        let presentation = try Self.renderablePresentation(customVariables: [:])
+        var receivedParams: ErrorPresentationParams?
+        let presentation = try Self.renderablePresentation(
+            customVariables: ["source": "test"],
+            errorPresentationHandler: { params, _ in receivedParams = params }
+        )
         let presenter = WorkflowPresenter { _ in true }
         let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
 
@@ -52,6 +56,31 @@ final class WorkflowPresenterTests: TestCase {
         guard case .failed? = execution else {
             return XCTFail("Expected a configuration error outcome")
         }
+        XCTAssertEqual(receivedParams?.checkpointIdentifier, "test_checkpoint")
+        XCTAssertEqual(receivedParams?.customVariables, ["source": "test"])
+        XCTAssertEqual(receivedParams?.error as NSError?, error)
+        XCTAssertEqual(receivedParams?.flowCanContinue, false)
+    }
+
+    func testPurchaseErrorIsRoutedWhileWorkflowRemainsPresented() throws {
+        var receivedParams: ErrorPresentationParams?
+        let presentation = Self.presentation(
+            customVariables: ["source": "test"],
+            errorPresentationHandler: { params, _ in receivedParams = params }
+        )
+        let presenter = WorkflowPresenter { _ in true }
+        let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.purchaseInvalidError.rawValue)
+
+        try presenter.startPresentation(presentation)
+        presenter.paywallViewController(
+            PaywallViewController(offering: nil),
+            didFailPurchasingWith: error
+        )
+
+        XCTAssertEqual(receivedParams?.checkpointIdentifier, "test_checkpoint")
+        XCTAssertEqual(receivedParams?.customVariables, ["source": "test"])
+        XCTAssertEqual(receivedParams?.error as NSError?, error)
+        XCTAssertEqual(receivedParams?.flowCanContinue, true)
     }
 
     func testWorkflowPresentationErrorDoesNotReplaceEarlierPurchaseOutcome() throws {
@@ -384,17 +413,25 @@ final class WorkflowPresenterTests: TestCase {
 
     private static func presentation(
         customVariables: [String: CustomVariableValue] = [:],
-        initialActiveEntitlementIdentifiers: Set<String>? = nil
+        initialActiveEntitlementIdentifiers: Set<String>? = nil,
+        errorPresentationHandler: @escaping ErrorPresentationHandler = {
+            _, completion in completion.complete(.continued)
+        }
     ) -> WorkflowPresentationRequest {
         return WorkflowPresentationRequest(
+            checkpointIdentifier: "test_checkpoint",
             workflow: self.workflow(),
             customVariables: customVariables,
-            initialActiveEntitlementIdentifiers: initialActiveEntitlementIdentifiers
+            initialActiveEntitlementIdentifiers: initialActiveEntitlementIdentifiers,
+            errorPresentationHandler: errorPresentationHandler
         )
     }
 
     private static func renderablePresentation(
-        customVariables: [String: CustomVariableValue]
+        customVariables: [String: CustomVariableValue],
+        errorPresentationHandler: @escaping ErrorPresentationHandler = {
+            _, completion in completion.complete(.continued)
+        }
     ) throws -> WorkflowPresentationRequest {
         let resolvedWorkflow = self.workflow()
         let screen = WorkflowScreen(
@@ -415,12 +452,14 @@ final class WorkflowPresenterTests: TestCase {
             screens: ["screen-id": screen]
         )
         return WorkflowPresentationRequest(
+            checkpointIdentifier: "test_checkpoint",
             workflow: ResolvedCheckpointWorkflow(
                 workflow: workflow,
                 uiConfig: resolvedWorkflow.uiConfig,
                 offerings: resolvedWorkflow.offerings
             ),
-            customVariables: customVariables
+            customVariables: customVariables,
+            errorPresentationHandler: errorPresentationHandler
         )
     }
 
@@ -478,6 +517,27 @@ final class WorkflowPresenterTests: TestCase {
 @available(iOS 15.0, macOS 12.0, *)
 @MainActor
 final class DefaultPaywallPresenterTests: TestCase {
+
+    func testPurchaseErrorIsRoutedWhilePaywallRemainsPresented() {
+        var receivedParams: ErrorPresentationParams?
+        let presenter = DefaultPaywallPresenter()
+        let controller = self.makePaywallViewController()
+        let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.purchaseInvalidError.rawValue)
+        let params = PaywallPresentationParams(
+            checkpointIdentifier: "test_checkpoint",
+            customVariables: ["source": "test"],
+            offering: Self.offering(),
+            errorPresentationHandler: { params, _ in receivedParams = params }
+        )
+
+        presenter.prepareForPresentation(params: params)
+        presenter.paywallViewController(controller, didFailPurchasingWith: error)
+
+        XCTAssertEqual(receivedParams?.checkpointIdentifier, "test_checkpoint")
+        XCTAssertEqual(receivedParams?.customVariables, ["source": "test"])
+        XCTAssertEqual(receivedParams?.error as NSError?, error)
+        XCTAssertEqual(receivedParams?.flowCanContinue, true)
+    }
 
     func testNavigatingBackWithoutPurchaseOrRestoreReportsNavigatedBack() {
         let presenter = DefaultPaywallPresenter()
@@ -626,6 +686,15 @@ final class DefaultPaywallPresenterTests: TestCase {
                 availablePackages: [],
                 webCheckoutUrl: nil
             )
+        )
+    }
+
+    private static func offering() -> Offering {
+        return Offering(
+            identifier: "offering-id",
+            serverDescription: "Test offering",
+            availablePackages: [],
+            webCheckoutUrl: nil
         )
     }
 

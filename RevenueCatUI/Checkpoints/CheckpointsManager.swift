@@ -74,6 +74,12 @@ final class CheckpointsManager {
         params: CheckpointCallParams
     ) async throws -> CheckpointPresentationOutcome {
         let globalPaywallPresenter = self.paywallPresenter
+        let errorPresentationHandler = self.errorPresentationHandler(
+            for: params,
+            defaultHandler: {
+                return { _, completion in completion.complete(.continued) }
+            }
+        )
 
         guard CheckpointIdentifierValidator.isValid(identifier) else {
             Logger.error(CheckpointIdentifierValidator.invalidIdentifierLogMessage(identifier))
@@ -83,9 +89,11 @@ final class CheckpointsManager {
         switch try await self.resolveCheckpoint(identifier, params) {
         case let .matchedWorkflow(workflow):
             let presentation = WorkflowPresentationRequest(
+                checkpointIdentifier: identifier,
                 workflow: workflow,
                 customVariables: params.customVariables,
-                initialActiveEntitlementIdentifiers: self.initialActiveEntitlementIdentifiers()
+                initialActiveEntitlementIdentifiers: self.initialActiveEntitlementIdentifiers(),
+                errorPresentationHandler: errorPresentationHandler
             )
             return try await self.checkpointPresenter.presentWorkflow(presentation)
         case let .matchedOffering(offering):
@@ -93,7 +101,8 @@ final class CheckpointsManager {
                 params: .init(
                     checkpointIdentifier: identifier,
                     customVariables: params.customVariables,
-                    offering: offering
+                    offering: offering,
+                    errorPresentationHandler: errorPresentationHandler
                 ),
                 globalPaywallPresenter: globalPaywallPresenter,
                 localPaywallPresentationHandler: params.localPaywallPresentationHandler
