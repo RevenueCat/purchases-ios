@@ -282,7 +282,8 @@ class BasePurchasesTests: TestCase {
         checkpointResolver: CheckpointWorkflowResolver = DisabledCheckpointWorkflowResolver(),
         dateProvider: DateProvider = DateProvider(),
         webBundleEventBus: WebBundleEventBus = .shared,
-        paywallCache: PaywallCacheWarmingType? = nil
+        paywallCache: PaywallCacheWarmingType? = nil,
+        sdkSettingsConfigProvider: SDKSettingsConfigProviderType? = nil
     ) {
         self.purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
@@ -366,7 +367,7 @@ class BasePurchasesTests: TestCase {
                                     operationDispatcher: self.mockOperationDispatcher
                                    ),
                                    remoteConfigManager: self.mockRemoteConfigManager,
-                                   sdkSettingsConfigProvider: SDKSettingsConfigProvider(
+                                   sdkSettingsConfigProvider: sdkSettingsConfigProvider ?? SDKSettingsConfigProvider(
                                     manager: self.mockRemoteConfigManager
                                    ),
                                    offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
