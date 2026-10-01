@@ -297,14 +297,15 @@ final class HostedCheckoutTests: TestCase {
     }
 
     @MainActor
-    func testLeavesTheKeptCheckoutWhenItsPageReachesTheCancelURLWhileHidden() {
+    func testLeavesTheKeptCheckoutWhenItsPageReturnsWithoutSucceedingWhileHidden() {
         let handler = Self.makeHandler(purchases: Self.makePurchases())
         let kept = Self.makeKeptCheckout(for: Self.session)
         handler.keptHostedCheckout = kept
         var confirmed = 0
 
         HostedCheckout.confirmOnSuccessWhileHidden(kept, purchaseHandler: handler) { _ in confirmed += 1 }
-        Self.navigate(kept.viewModel, to: Self.session.cancelURL)
+        Self.navigate(kept.viewModel,
+                      to: URL(string: "https://api.revenuecat.com/rcbilling/v1/hosted-checkout-return?status=cancel")!)
 
         expect(confirmed) == 0
         expect(handler.keptHostedCheckout) === kept

@@ -121,7 +121,7 @@ enum HostedCheckout {
     /// Confirms the kept checkout should its page reach the success URL while the sheet is closed, which the
     /// provider does once a payment the customer made moments before closing it goes through.
     ///
-    /// A page that reaches the cancel URL is left as it is: it is loaded afresh when the customer taps buy again.
+    /// A page that returns any other way is left as it is: it is loaded afresh when the customer taps buy again.
     ///
     /// - Parameter onSuccess: Called with the checkout to confirm, once it is no longer kept.
     @MainActor
