@@ -44,6 +44,21 @@ enum PaywallPresenterMode: String, CaseIterable, Identifiable {
     }
 }
 
+extension CheckpointPresentationMode {
+
+    static var testerCases: [Self] { [.default, .fullScreen, .sheet] }
+
+    var title: String {
+        switch self {
+        case .default: return "Default"
+        case .fullScreen: return "Full screen"
+        case .sheet: return "Sheet"
+        default: return self.description
+        }
+    }
+
+}
+
 final class CheckpointDemoModel: ObservableObject {
 
     struct OutcomeAlert: Identifiable {
