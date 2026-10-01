@@ -300,14 +300,12 @@ private extension BackendPostHostedCheckoutTests {
     static let response: [String: Any] = [
         "operation_session_id": "op_session_id",
         "checkout_url": "https://checkout.stripe.com/c/pay/cs_test_123",
-        "success_url": "\(returnEndpoint)?status=success",
-        "cancel_url": "\(returnEndpoint)?status=cancel"
+        "success_url": "\(returnEndpoint)?status=success"
     ]
 
     static let page = HostedCheckoutResponse.Page(
         checkoutURL: URL(string: "https://checkout.stripe.com/c/pay/cs_test_123")!,
-        successURL: URL(string: "\(returnEndpoint)?status=success")!,
-        cancelURL: URL(string: "\(returnEndpoint)?status=cancel")!
+        successURL: URL(string: "\(returnEndpoint)?status=success")!
     )
 
     static func decode(_ response: [String: Any]) throws -> HostedCheckoutResponse {

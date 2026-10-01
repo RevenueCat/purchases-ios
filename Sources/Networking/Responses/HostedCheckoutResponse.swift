@@ -46,9 +46,6 @@ struct HostedCheckoutResponse: Equatable {
         /// Returned rather than assumed so that the SDK does not have to know how the backend builds it.
         let successURL: URL
 
-        /// Where the provider sends the customer once checkout is abandoned.
-        let cancelURL: URL
-
     }
 
 }
@@ -94,7 +91,6 @@ extension HostedCheckoutResponse.Page: Decodable {
     private enum CodingKeys: String, CodingKey {
         case checkoutURL = "checkoutUrl"
         case successURL = "successUrl"
-        case cancelURL = "cancelUrl"
     }
 
 }

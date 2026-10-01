@@ -222,6 +222,8 @@ struct PurchaseButtonComponentView: View {
             self.showAlreadyOwnedAlert(for: selectedPackage)
         case .tellCustomerThePurchaseIsUnavailable:
             self.showingPurchaseUnavailableAlert = true
+        case let .failed(error):
+            self.hostedCheckoutError = error
         case .nothing:
             break
         }
@@ -253,7 +255,6 @@ struct PurchaseButtonComponentView: View {
         self.hostedCheckoutViewModel = WebCheckoutViewModel(
             checkoutURL: session.checkoutURL,
             successURL: session.successURL,
-            cancelURL: session.cancelURL,
             dataStoreIdentifierStore: .init()
         )
     }
@@ -262,8 +263,6 @@ struct PurchaseButtonComponentView: View {
         switch outcome {
         case .returned(.success):
             self.resolveHostedCheckout(session)
-        case .returned(.cancel):
-            Task { await self.purchaseHandler.handleHostedCheckoutCancellation(package: self.packageContext.package) }
         case .dismissed:
             // A payment may have gone through moments before the customer closed the sheet. Settling that
             // means asking the backend what became of the session, which is not wired up yet.
