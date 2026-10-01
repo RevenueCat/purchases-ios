@@ -54,10 +54,23 @@ extension PurchasesHostedCheckoutTests {
         let session = self.startedSession()
         let fetchesBefore = self.backend.getCustomerInfoCallCount
 
-        let result = await self.purchases.pollHostedCheckout(session: session)
+        let (result, _) = await self.purchases.pollHostedCheckout(session: session)
 
         expect(result) == .succeeded
         expect(self.backend.getCustomerInfoCallCount) == fetchesBefore + 1
+    }
+
+    /// The paywall reports the purchase with it, rather than fetching it again.
+    func testReturnsTheFetchedCustomerInfoOnceTheCheckoutLands() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try self.stubStatus(.succeeded)
+        let purchased = try Self.customerInfoWithActiveEntitlement()
+        self.backend.overrideCustomerInfoResult = .success(purchased)
+        let session = self.startedSession()
+
+        let (_, customerInfo) = await self.purchases.pollHostedCheckout(session: session)
+
+        expect(customerInfo) == purchased
     }
 
     /// The customer got the product some other way, which the cache may not show yet.
@@ -67,7 +80,7 @@ extension PurchasesHostedCheckoutTests {
         let session = self.startedSession()
         let fetchesBefore = self.backend.getCustomerInfoCallCount
 
-        let result = await self.purchases.pollHostedCheckout(session: session)
+        let (result, _) = await self.purchases.pollHostedCheckout(session: session)
 
         expect(result) == .alreadyPurchased
         expect(self.backend.getCustomerInfoCallCount) == fetchesBefore + 1
@@ -79,9 +92,10 @@ extension PurchasesHostedCheckoutTests {
         let session = self.startedSession()
         let fetchesBefore = self.backend.getCustomerInfoCallCount
 
-        let result = await self.purchases.pollHostedCheckout(session: session)
+        let (result, customerInfo) = await self.purchases.pollHostedCheckout(session: session)
 
         expect(result) == .failed(code: 3, message: "payment_charge_failed")
+        expect(customerInfo).to(beNil())
         expect(self.backend.getCustomerInfoCallCount) == fetchesBefore
     }
 
@@ -92,9 +106,10 @@ extension PurchasesHostedCheckoutTests {
         self.backend.overrideCustomerInfoResult = .failure(.networkError(.offlineConnection()))
         let session = self.startedSession()
 
-        let result = await self.purchases.pollHostedCheckout(session: session)
+        let (result, customerInfo) = await self.purchases.pollHostedCheckout(session: session)
 
         expect(result) == .succeeded
+        expect(customerInfo).to(beNil())
     }
 
     /// The cached `CustomerInfo` predates the purchase. Marking it stale is not enough, since a stale cache is
@@ -133,6 +148,21 @@ extension PurchasesHostedCheckoutTests {
         _ = await self.purchases.pollHostedCheckout(session: session)
 
         expect(self.backend.userID) == session.appUserID
+    }
+
+    /// The paywall reports the purchase with it, so it has to be the buyer's, not that of whoever is logged in.
+    func testReturnsTheBuyersCustomerInfoWhenAnotherCustomerLogsInDuringThePoll() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try self.stubStatus(.succeeded)
+        let purchased = try Self.customerInfoWithActiveEntitlement()
+        self.backend.overrideCustomerInfoResult = .success(purchased)
+        let session = self.startedSession()
+        try self.logInWhileThePollRuns(Self.otherAppUserID)
+
+        let (_, customerInfo) = await self.purchases.pollHostedCheckout(session: session)
+
+        expect(self.backend.userID) == session.appUserID
+        expect(customerInfo) == purchased
     }
 
     func testClearsOnlyTheBuyersCachedCustomerInfoWhenAnotherCustomerLogsInDuringThePoll() async throws {
