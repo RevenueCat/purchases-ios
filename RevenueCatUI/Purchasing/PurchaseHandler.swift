@@ -39,6 +39,7 @@ final class PurchaseHandler: ObservableObject {
     private var cancellables: Set<AnyCancellable> = Set()
 
     private let purchases: PaywallPurchasesType
+    let resolveBranches: @Sendable (WorkflowStep) async -> [WorkflowActionID: WorkflowStepID]
     private let paywallEventTracker: PaywallEventTracker
     private let keyWindowFocusResigner: KeyWindowFocusResigning
 
@@ -182,6 +183,7 @@ final class PurchaseHandler: ObservableObject {
     ) {
         self.init(isConfigured: true,
                   purchases: purchases,
+                  resolveBranches: { [purchases] in await purchases.resolveBranches(in: $0) },
                   performPurchase: performPurchase,
                   performRestore: performRestore,
                   purchaseResultPublisher: purchaseResultPublisher,
@@ -193,6 +195,8 @@ final class PurchaseHandler: ObservableObject {
     init(
         isConfigured: Bool = true,
         purchases: PaywallPurchasesType,
+        resolveBranches: @escaping @Sendable (WorkflowStep) async -> [WorkflowActionID: WorkflowStepID]
+            = { _ in [:] },
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
@@ -203,6 +207,7 @@ final class PurchaseHandler: ObservableObject {
     ) {
         self.isConfigured = isConfigured
         self.purchases = purchases
+        self.resolveBranches = resolveBranches
         self.paywallEventTracker = eventTracker
         self.keyWindowFocusResigner = keyWindowFocusResigner
         self.performPurchase = performPurchase
