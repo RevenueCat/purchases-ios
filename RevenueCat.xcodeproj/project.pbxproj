@@ -1110,6 +1110,8 @@
 		80CDB7B62E69C35100D7DB9E /* CustomerCenterStylingUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80CDB7B52E69C35100D7DB9E /* CustomerCenterStylingUtilities.swift */; };
 		80E80EF226970E04008F245A /* ReceiptFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E80EF026970DC3008F245A /* ReceiptFetcher.swift */; };
 		81BD918A48974816AEEF22C6 /* WorkflowStepEventTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8F7749E65DE2FD7FDCB105 /* WorkflowStepEventTracker.swift */; };
+		8218F275D8114FE8A8A5C481 /* WorkflowSkeleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F2A7E65C54B49218B63ED11 /* WorkflowSkeleton.swift */; };
+		8218F275D8114FE8A8A5C482 /* WorkflowSkeletonShimmer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F2A7E65C54B49218B63ED12 /* WorkflowSkeletonShimmer.swift */; };
 		830003FF2E26162000143F9F /* PlatformFont.swift in Sources */ = {isa = PBXBuildFile; fileRef = 830003FE2E26161D00143F9F /* PlatformFont.swift */; };
 		830004012E261AC100143F9F /* PlatformImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 830004002E261ABE00143F9F /* PlatformImage.swift */; };
 		831660B62E3AAA4E00855312 /* FixMacButtonsModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 831660B52E3AAA4900855312 /* FixMacButtonsModifier.swift */; };
@@ -2837,6 +2839,8 @@
 		5A8F581105413FA192D2446A /* AccessorOperators.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AccessorOperators.swift; sourceTree = "<group>"; };
 		5C3DF79A7BCAA00FD8DCBD07 /* PublishedWorkflowCodableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublishedWorkflowCodableTests.swift; sourceTree = "<group>"; };
 		5E8F7749E65DE2FD7FDCB105 /* WorkflowStepEventTracker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowStepEventTracker.swift; sourceTree = "<group>"; };
+		5F2A7E65C54B49218B63ED11 /* WorkflowSkeleton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowSkeleton.swift; sourceTree = "<group>"; };
+		5F2A7E65C54B49218B63ED12 /* WorkflowSkeletonShimmer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowSkeletonShimmer.swift; sourceTree = "<group>"; };
 		61F92C8B490F4B78AC8B1AAF /* ErrorCode+Conformances.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ErrorCode+Conformances.swift"; sourceTree = "<group>"; };
 		64FEF3704AAACD669F3BF4E0 /* BackendTokenLoginTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendTokenLoginTests.swift; sourceTree = "<group>"; };
 		65279ABC122869A50AEB8A27 /* ExitOffer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExitOffer.swift; sourceTree = "<group>"; };
@@ -4117,6 +4121,7 @@
 				88B1BAE72C813A3C001B7EE5 /* PaywallComponentTypeTransformers.swift */,
 				2C08B3342CDD16550024857B /* PaywallComponentViewModel.swift */,
 				DB1FC9502F9A1B23009A95EA /* WorkflowScreenMapper.swift */,
+				5F2A7E65C54B49218B63ED11 /* WorkflowSkeleton.swift */,
 				6A10AD61D82EB73FC5338DA2 /* WorkflowNavigator.swift */,
 				5E8F7749E65DE2FD7FDCB105 /* WorkflowStepEventTracker.swift */,
 				323A476D8518423CBF843BE1 /* WorkflowStepEventCoordinator.swift */,
@@ -6762,6 +6767,7 @@
 				2C7457432CEA6470004ACE52 /* Components */,
 				2C7457222CE713DA004ACE52 /* Previews */,
 				800A129055A298C390AED0B5 /* WorkflowPaywallView.swift */,
+				5F2A7E65C54B49218B63ED12 /* WorkflowSkeletonShimmer.swift */,
 				AB70B73749FDB04A429A0E13 /* Layout */,
 			);
 			path = V2;
@@ -9422,6 +9428,8 @@
 				97B9F00926E0977B0DAAD7D7 /* EnvironmentValues+Workflow.swift in Sources */,
 				150BEBF14F59182317CDA8DA /* WorkflowContext.swift in Sources */,
 				C53CDAA4FC3E6B51CC70D724 /* WorkflowPaywallView.swift in Sources */,
+				8218F275D8114FE8A8A5C481 /* WorkflowSkeleton.swift in Sources */,
+				8218F275D8114FE8A8A5C482 /* WorkflowSkeletonShimmer.swift in Sources */,
 				C1311C20A12B3813D86A2EDF /* WorkflowPreview.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
