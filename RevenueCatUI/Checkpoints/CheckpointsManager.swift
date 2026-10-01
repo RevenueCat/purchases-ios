@@ -63,6 +63,7 @@ final class CheckpointsManager {
             let presentation = WorkflowPresentationRequest(
                 workflow: workflow,
                 customVariables: params.customVariables,
+                presentationMode: params.presentationMode,
                 initialActiveEntitlementIdentifiers: self.initialActiveEntitlementIdentifiers()
             )
             return try await self.checkpointPresenter.presentWorkflow(presentation)
@@ -71,6 +72,7 @@ final class CheckpointsManager {
                 params: .init(
                     checkpointIdentifier: identifier,
                     customVariables: params.customVariables,
+                    presentationMode: params.presentationMode,
                     offering: offering
                 ),
                 globalPaywallPresenter: globalPaywallPresenter,
