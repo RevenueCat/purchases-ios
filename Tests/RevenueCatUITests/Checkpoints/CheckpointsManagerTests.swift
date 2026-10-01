@@ -61,6 +61,61 @@ final class CheckpointsManagerTests: TestCase {
         ])
     }
 
+    func testErrorPresentationHandlerPrefersLocalPresenter() {
+        let globalPresenter = MockErrorPresenter()
+        let manager = CheckpointsManager { _, _ in .noAction(.unknownCheckpoint) }
+        manager.errorPresenter = globalPresenter
+        var localCallCount = 0
+        var defaultCallCount = 0
+
+        let handler = manager.errorPresentationHandler(
+            for: .init(errorPresenter: { _, _ in localCallCount += 1 }),
+            defaultHandler: {
+                defaultCallCount += 1
+                return { _, _ in }
+            }
+        )
+        handler(Self.errorPresentationParams, Self.errorPresentationCompletion)
+
+        XCTAssertEqual(localCallCount, 1)
+        XCTAssertEqual(globalPresenter.callCount, 0)
+        XCTAssertEqual(defaultCallCount, 0)
+    }
+
+    func testErrorPresentationHandlerUsesGlobalPresenterWithoutLocalPresenter() {
+        let globalPresenter = MockErrorPresenter()
+        let manager = CheckpointsManager { _, _ in .noAction(.unknownCheckpoint) }
+        manager.errorPresenter = globalPresenter
+        var defaultCallCount = 0
+
+        let handler = manager.errorPresentationHandler(
+            for: .init(),
+            defaultHandler: {
+                defaultCallCount += 1
+                return { _, _ in }
+            }
+        )
+        handler(Self.errorPresentationParams, Self.errorPresentationCompletion)
+
+        XCTAssertEqual(globalPresenter.callCount, 1)
+        XCTAssertEqual(defaultCallCount, 0)
+    }
+
+    func testErrorPresentationHandlerUsesDefaultWithoutCustomPresenter() {
+        let manager = CheckpointsManager { _, _ in .noAction(.unknownCheckpoint) }
+        var defaultCallCount = 0
+
+        let handler = manager.errorPresentationHandler(
+            for: .init(),
+            defaultHandler: {
+                return { _, _ in defaultCallCount += 1 }
+            }
+        )
+        handler(Self.errorPresentationParams, Self.errorPresentationCompletion)
+
+        XCTAssertEqual(defaultCallCount, 1)
+    }
+
     func testNoActionDoesNotPresentAnything() async throws {
         let manager = CheckpointsManager { _, _ in .noAction(.unknownCheckpoint) }
 
@@ -867,6 +922,24 @@ final class CheckpointsManagerTests: TestCase {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension CheckpointsManagerTests {
+
+    static var errorPresentationParams: ErrorPresentationParams {
+        return .init(
+            checkpointIdentifier: "test_checkpoint",
+            error: NSError(domain: "test", code: 1),
+            customVariables: [:],
+            flowCanContinue: true
+        )
+    }
+
+    static var errorPresentationCompletion: ErrorPresentationCompletion {
+        return .init { _ in }
+    }
+
+}
+
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension CheckpointsManager {
@@ -935,6 +1008,18 @@ private final class MockPaywallPresenter: PaywallPresenter {
         self.callCount += 1
         self.receivedParams = params
         completion(.continued)
+    }
+
+}
+
+@MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class MockErrorPresenter: ErrorPresenter {
+
+    private(set) var callCount = 0
+
+    func present(params: ErrorPresentationParams, completion: ErrorPresentationCompletion) {
+        self.callCount += 1
     }
 
 }
