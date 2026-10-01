@@ -412,7 +412,7 @@ import Foundation
     enum SizeConstraint: Codable, Sendable, Hashable {
 
         // optional default size to show during loading and initial content size calculations
-        case fit(UInt?, MinMax = .null)
+        case fit(UInt?)
         case fill(MinMax)
         case fixed(UInt)
 
@@ -434,13 +434,11 @@ import Foundation
             var container = encoder.container(keyedBy: CodingKeys.self)
 
             switch self {
-            case let .fit(value, minMax):
+            case let .fit(value):
                 try container.encode(SizeConstraintType.fit.rawValue, forKey: .type)
                 if let value {
                     try container.encode(value, forKey: .default)
                 }
-                try container.encodeIfPresent(minMax.min, forKey: .min)
-                try container.encodeIfPresent(minMax.max, forKey: .max)
             case let .fill(minMax):
                 try container.encode(SizeConstraintType.fill.rawValue, forKey: .type)
                 try container.encodeIfPresent(minMax.min, forKey: .min)
@@ -468,8 +466,9 @@ import Foundation
 
                 switch type {
                 case .fit:
+                    // Fit sizes content to its intrinsic size; min/max are intentionally not applied.
                     let value = try container.decodeIfPresent(UInt.self, forKey: .default)
-                    self = .fit(value, minMax)
+                    self = .fit(value)
                 case .fill:
                     self = .fill(minMax)
                 case .fixed:
@@ -480,7 +479,7 @@ import Foundation
                     self = .relative(value, minMax)
                 }
             } catch {
-                self = .fit(nil, .null)
+                self = .fit(nil)
             }
         }
 
@@ -506,8 +505,8 @@ import Foundation
 
         public static func == (lhs: SizeConstraint, rhs: SizeConstraint) -> Bool {
             switch (lhs, rhs) {
-            case let (.fit(leftDefault, leftMinMax), .fit(rightDefault, rightMinMax)):
-                return leftDefault == rightDefault && leftMinMax == rightMinMax
+            case let (.fit(left), .fit(right)):
+                return left == right
             case let (.fill(left), .fill(right)):
                 return left == right
             case let (.fixed(left), .fixed(right)):

@@ -15,7 +15,7 @@ import Foundation
 import Nimble
 import XCTest
 
-@_spi(Experimental) @_spi(Internal) @testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class HostedCheckoutManagerTests: TestCase {
 
@@ -212,11 +212,8 @@ class HostedCheckoutManagerTests: TestCase {
     func testCreatesNoSessionInTheSimulatorWhileExternalPurchasesAreDisabledThere() async {
         self.systemInfo = MockSystemInfo(
             finishTransactions: true,
-            dangerousSettings: DangerousSettings(
-                autoSyncPurchases: true,
-                useExternalPurchaseCustomLinks: true,
-                enableExternalPurchasesInSimulator: false
-            )
+            useExternalPurchaseCustomLinks: true,
+            enableExternalPurchasesInSimulator: false
         )
         self.systemInfo.stubbedIsRunningInSimulator = true
         self.manager = self.makeManager()
@@ -231,11 +228,8 @@ class HostedCheckoutManagerTests: TestCase {
     func testCreatesTheSessionInTheSimulatorOutsideTheProgrammeWhileExternalPurchasesAreDisabledThere() async {
         self.systemInfo = MockSystemInfo(
             finishTransactions: true,
-            dangerousSettings: DangerousSettings(
-                autoSyncPurchases: true,
-                useExternalPurchaseCustomLinks: false,
-                enableExternalPurchasesInSimulator: false
-            )
+            useExternalPurchaseCustomLinks: false,
+            enableExternalPurchasesInSimulator: false
         )
         self.systemInfo.stubbedIsRunningInSimulator = true
         self.manager = self.makeManager()
@@ -366,10 +360,7 @@ private extension HostedCheckoutManagerTests {
     static func makeSystemInfo(useExternalPurchaseCustomLinks: Bool) -> MockSystemInfo {
         let systemInfo = MockSystemInfo(
             finishTransactions: true,
-            dangerousSettings: DangerousSettings(
-                autoSyncPurchases: true,
-                useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks
-            )
+            useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks
         )
         systemInfo.stubbedIsRunningInSimulator = false
         return systemInfo
@@ -393,7 +384,6 @@ private extension HostedCheckoutManagerTests {
     static let operationSessionID = "opse4e63d6a8a2c4"
     static let checkoutURL = URL(string: "https://pay.example.com/session")!
     static let successURL = URL(string: "https://api.revenuecat.com/checkout-return?status=success")!
-    static let cancelURL = URL(string: "https://api.revenuecat.com/checkout-return?status=cancel")!
 
     static let alreadyPurchasedError: BackendError = .networkError(
         .errorResponse(.init(code: .productAlreadyPurchased,
@@ -404,14 +394,12 @@ private extension HostedCheckoutManagerTests {
 
     static let response = HostedCheckoutResponse(operationSessionID: operationSessionID,
                                                  checkoutURL: checkoutURL,
-                                                 successURL: successURL,
-                                                 cancelURL: cancelURL)
+                                                 successURL: successURL)
 
     static let session = HostedCheckoutSession(operationSessionID: operationSessionID,
                                                appUserID: appUserID,
                                                checkoutURL: checkoutURL,
-                                               successURL: successURL,
-                                               cancelURL: cancelURL)
+                                               successURL: successURL)
 
     static let package = Package(
         identifier: "$rc_monthly",

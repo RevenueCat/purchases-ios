@@ -194,7 +194,7 @@ class WorkflowResponseTests: TestCase {
         let action = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: json)
 
         expect(action) == .branch(.init(
-            branches: [
+            routes: [
                 .init(audienceId: "aud_a", stepId: "step_a"),
                 .init(audienceId: "aud_b", stepId: "step_b")
             ],
@@ -219,7 +219,7 @@ class WorkflowResponseTests: TestCase {
 
         let action = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: json)
 
-        expect(action) == .branch(.init(branches: [], fallbackStepId: "step_default"))
+        expect(action) == .branch(.init(routes: [], fallbackStepId: "step_default"))
     }
 
     func testDecodeStepTriggerActionMissingItsStepIdDecodesToUnknown() throws {

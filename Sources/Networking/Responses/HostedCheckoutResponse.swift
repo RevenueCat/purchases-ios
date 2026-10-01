@@ -28,15 +28,11 @@ struct HostedCheckoutResponse: Decodable {
     /// Returned rather than assumed so that the SDK does not have to know how the backend builds it.
     let successURL: URL
 
-    /// Where the provider sends the customer once checkout is abandoned.
-    let cancelURL: URL
-
     // The decoder converts from snake case, which yields `Id` and `Url` rather than `ID` and `URL`.
     private enum CodingKeys: String, CodingKey {
         case operationSessionID = "operationSessionId"
         case checkoutURL = "checkoutUrl"
         case successURL = "successUrl"
-        case cancelURL = "cancelUrl"
     }
 
 }

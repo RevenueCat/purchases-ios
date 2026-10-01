@@ -1005,7 +1005,7 @@ platform :ios do
       xcodebuild(
         workspace: '.',
         scheme: 'RevenueCatUI',
-        destination: "platform=" + platform + ",name=" + destination,
+        destination: platform == 'macOS' ? "platform=macOS" : "platform=" + platform + ",name=" + destination,
         sdk: sdk,
         result_bundle_path: 'fastlane/test_output/revenuecatui.xcresult',
         report_formats: [:junit],

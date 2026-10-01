@@ -61,8 +61,6 @@ import Foundation
         let uiPreviewMode: Bool
         let customEntitlementComputation: Bool
         let forceAllowTestStoreInReleaseBuilds: Bool
-        let useExternalPurchaseCustomLinks: Bool
-        let enableExternalPurchasesInSimulator: Bool
     }
 
     internal let storage: Storage
@@ -107,33 +105,6 @@ import Foundation
      * never uploaded to the App Store), to make sure no builds using the Test Store reach the stores.
      */
     @objc public var forceAllowTestStoreInReleaseBuilds: Bool { self.storage.forceAllowTestStoreInReleaseBuilds }
-
-    /**
-     * Whether a web purchase button that opens its link in the external browser takes part in Apple's
-     * external purchase custom link programme: the customer is shown Apple's disclosure notice, and the
-     * purchase is reported to Apple.
-     *
-     * Disabled by default. Enabling it requires the app to be enrolled in the programme and to carry the
-     * corresponding entitlement.
-     */
-    @_spi(Experimental) public var useExternalPurchaseCustomLinks: Bool {
-        self.storage.useExternalPurchaseCustomLinks
-    }
-
-    /**
-     * Whether the simulator offers external purchases in any storefront. When disabled, the simulator behaves
-     * as a device does for a customer who is not
-     * [eligible](https://developer.apple.com/documentation/storekit/externalpurchasecustomlink/iseligible).
-     *
-     * Defaults to `true`. Has no effect on a physical device, nor while ``useExternalPurchaseCustomLinks`` is
-     * `false`.
-     *
-     * - Note: `ExternalPurchaseCustomLink.isEligible` returns `false` in the simulator, so Apple's disclosure notice
-     * cannot be shown and an external purchase token cannot be minted there.
-     */
-    @_spi(Experimental) public var enableExternalPurchasesInSimulator: Bool {
-        self.storage.enableExternalPurchasesInSimulator
-    }
 
     @objc public override convenience init() {
         self.init(autoSyncPurchases: true)
@@ -181,40 +152,6 @@ import Foundation
     }
 
     /**
-     * - Parameter autoSyncPurchases: Disable or enable subscribing to the StoreKit queue.
-     * If this is disabled, RevenueCat won't observe the StoreKit queue, and it will not sync any purchase
-     * automatically.
-     * - Parameter useExternalPurchaseCustomLinks: Whether a web purchase button that opens its link in the
-     * external browser takes part in Apple's external purchase custom link programme.
-     */
-    @_spi(Experimental) public convenience init(autoSyncPurchases: Bool,
-                                                useExternalPurchaseCustomLinks: Bool) {
-        self.init(autoSyncPurchases: autoSyncPurchases,
-                  customEntitlementComputation: false,
-                  internalSettings: Internal.default,
-                  useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks)
-    }
-
-    /**
-     * - Parameter autoSyncPurchases: Disable or enable subscribing to the StoreKit queue.
-     * If this is disabled, RevenueCat won't observe the StoreKit queue, and it will not sync any purchase
-     * automatically.
-     * - Parameter useExternalPurchaseCustomLinks: Whether a web purchase button that opens its link in the
-     * external browser takes part in Apple's external purchase custom link programme.
-     * - Parameter enableExternalPurchasesInSimulator: Whether the simulator offers external purchases in any
-     * storefront. Has no effect on a physical device, nor while `useExternalPurchaseCustomLinks` is `false`.
-     */
-    @_spi(Experimental) public convenience init(autoSyncPurchases: Bool,
-                                                useExternalPurchaseCustomLinks: Bool,
-                                                enableExternalPurchasesInSimulator: Bool) {
-        self.init(autoSyncPurchases: autoSyncPurchases,
-                  customEntitlementComputation: false,
-                  internalSettings: Internal.default,
-                  useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks,
-                  enableExternalPurchasesInSimulator: enableExternalPurchasesInSimulator)
-    }
-
-    /**
      * Used to initialize the SDK in UI preview mode.
      *
      * - Parameter uiPreviewMode: if `true`, the SDK will return a set of mock products instead
@@ -229,16 +166,12 @@ import Foundation
                   customEntitlementComputation: Bool = false,
                   internalSettings: InternalDangerousSettingsType,
                   uiPreviewMode: Bool = false,
-                  forceAllowTestStoreInReleaseBuilds: Bool = false,
-                  useExternalPurchaseCustomLinks: Bool = false,
-                  enableExternalPurchasesInSimulator: Bool = true) {
+                  forceAllowTestStoreInReleaseBuilds: Bool = false) {
         self.storage = Storage(
             autoSyncPurchases: autoSyncPurchases,
             uiPreviewMode: uiPreviewMode,
             customEntitlementComputation: customEntitlementComputation,
-            forceAllowTestStoreInReleaseBuilds: forceAllowTestStoreInReleaseBuilds,
-            useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks,
-            enableExternalPurchasesInSimulator: enableExternalPurchasesInSimulator
+            forceAllowTestStoreInReleaseBuilds: forceAllowTestStoreInReleaseBuilds
         )
         self.internalSettings = internalSettings
     }
