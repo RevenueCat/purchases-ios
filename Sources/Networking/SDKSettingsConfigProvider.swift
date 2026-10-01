@@ -93,7 +93,7 @@ final class SDKSettingsConfigProvider: SDKSettingsConfigProviderType, RemoteConf
             Task { [weak self] in
                 await self?.readAndDeliverSettings()
             }
-        default:
+        case .refreshFinished:
             break
         }
     }
