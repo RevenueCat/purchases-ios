@@ -55,7 +55,7 @@ final class WorkflowNavigator: ObservableObject {
 
         guard let resolveBranch,
               let initialBranch = Self.initialBranch(in: workflow, resolveBranch: resolveBranch) else {
-            self.branches.enter(self.currentStep)
+            self.branches.resolveBranches(in: self.currentStep)
             return
         }
         self.initialStepTask = Task { [weak self] in
@@ -71,7 +71,7 @@ final class WorkflowNavigator: ObservableObject {
         if self.workflow.steps[stepId] != nil {
             self.currentStepId = stepId
         }
-        self.branches.enter(self.currentStep)
+        self.branches.resolveBranches(in: self.currentStep)
     }
 
     deinit {
@@ -116,7 +116,7 @@ final class WorkflowNavigator: ObservableObject {
 
         backStack.append(currentStepId)
         currentStepId = nextStep.step.id
-        self.branches.enter(self.currentStep)
+        self.branches.resolveBranches(in: self.currentStep)
         return nextStep.step
     }
 
@@ -148,7 +148,7 @@ final class WorkflowNavigator: ObservableObject {
             return nil
         }
         currentStepId = previousStepId
-        self.branches.enter(self.currentStep)
+        self.branches.resolveBranches(in: self.currentStep)
         return workflow.steps[previousStepId]
     }
 
@@ -194,7 +194,7 @@ final class WorkflowStepBranches {
     }
 
     /// Starts resolving the branches on the step just entered, abandoning the previous step's.
-    func enter(_ step: WorkflowStep?) {
+    func resolveBranches(in step: WorkflowStep?) {
         self.routes = [:]
         self.task?.cancel()
         self.task = nil
