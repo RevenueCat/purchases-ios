@@ -195,8 +195,29 @@ public class PaywallViewController: UIViewController {
     }
 
     #if !os(tvOS)
+    internal convenience init(
+        checkpointOffering offering: Offering,
+        displayCloseButton: Bool,
+        workflowPresentationErrorHandler: ((NSError) -> Void)?
+    ) {
+        self.init(
+            content: .optionalOffering(offering),
+            fonts: DefaultPaywallFontProvider(),
+            displayCloseButton: displayCloseButton,
+            shouldBlockTouchEvents: false,
+            performPurchase: nil,
+            performRestore: nil,
+            dismissRequestedHandler: nil
+        )
+
+        var configuration = self.configuration
+        configuration.displaysPurchaseAndRestoreErrors = false
+        configuration.workflowPresentationErrorHandler = workflowPresentationErrorHandler
+        self.configuration = configuration
+    }
+
     /// Creates a paywall view controller from a pre-built workflow context.
-    convenience init(
+    internal convenience init(
         workflowContext: WorkflowContext,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
@@ -218,6 +239,7 @@ public class PaywallViewController: UIViewController {
         var configuration = self.configuration
         configuration.introEligibility = introEligibility
         configuration.injectedWorkflowContext = workflowContext
+        configuration.displaysPurchaseAndRestoreErrors = false
         configuration.workflowPresentationErrorHandler = workflowPresentationErrorHandler
         self.configuration = configuration
     }

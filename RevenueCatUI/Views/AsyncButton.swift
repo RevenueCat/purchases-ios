@@ -26,6 +26,9 @@ struct AsyncButton<Label>: View where Label: View {
     @State
     private var error: NSError?
 
+    @Environment(\.asyncButtonDisplaysErrors)
+    private var displaysErrors
+
     init(
         action: @escaping Action,
         @ViewBuilder label: () -> Label
@@ -40,13 +43,30 @@ struct AsyncButton<Label>: View where Label: View {
                 do {
                     try await self.action()
                 } catch let error as NSError {
-                    self.error = error
+                    if self.displaysErrors {
+                        self.error = error
+                    }
                 }
             }
         } label: {
             self.label
         }
         .displayError(self.$error)
+    }
+
+}
+
+private struct AsyncButtonDisplaysErrorsKey: EnvironmentKey {
+
+    static let defaultValue = true
+
+}
+
+extension EnvironmentValues {
+
+    var asyncButtonDisplaysErrors: Bool {
+        get { return self[AsyncButtonDisplaysErrorsKey.self] }
+        set { self[AsyncButtonDisplaysErrorsKey.self] = newValue }
     }
 
 }

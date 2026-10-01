@@ -185,6 +185,7 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
 
     private let cachedCustomerInfoProvider: CheckpointsManager.CachedCustomerInfoProvider
     private var completion: PaywallPresentationCompletion?
+    private var presentationParams: PaywallPresentationParams?
     private var initialActiveEntitlementIdentifiers: Set<String>?
     private var didPurchaseOrRestoreAccess = false
 
@@ -207,8 +208,13 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
             return
         }
 
-        self.prepareForPresentation()
-        let controller = makeDefaultCheckpointPaywallViewController(params: params)
+        self.prepareForPresentation(params: params)
+        let controller = makeDefaultCheckpointPaywallViewController(
+            params: params,
+            workflowPresentationErrorHandler: { [weak self] error in
+                self?.presentError(error, flowCanContinue: false)
+            }
+        )
         controller.delegate = self
         controller.modalPresentationStyle = params.presentationMode.modalPresentationStyle
         self.completion = completion
@@ -228,11 +234,27 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         return dismissalReason == .navigatedBack ? .navigatedBack : .closed
     }
 
-    func prepareForPresentation() {
+    func prepareForPresentation(params: PaywallPresentationParams? = nil) {
+        self.presentationParams = params
         self.initialActiveEntitlementIdentifiers = self.cachedCustomerInfoProvider().map { customerInfo in
             Set(customerInfo.entitlements.active.keys)
         }
         self.didPurchaseOrRestoreAccess = false
+    }
+
+    private func presentError(_ error: any Error, flowCanContinue: Bool) {
+        guard let params = self.presentationParams,
+              let handler = params.errorPresentationHandler else { return }
+
+        handler(
+            .init(
+                checkpointIdentifier: params.checkpointIdentifier,
+                error: error,
+                customVariables: params.customVariables,
+                flowCanContinue: flowCanContinue
+            ),
+            .init { _ in }
+        )
     }
 
     private func didCompleteRestore(
@@ -254,6 +276,7 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
 
     private func takeCompletion() -> PaywallPresentationCompletion? {
         defer { self.completion = nil }
+        self.presentationParams = nil
         return self.completion
     }
 
@@ -278,6 +301,20 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
     nonisolated func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {
         MainActor.assumeIsolated { self.finish(controller) }
     }
+
+    nonisolated func paywallViewController(
+        _ controller: PaywallViewController,
+        didFailPurchasingWith error: NSError
+    ) {
+        MainActor.assumeIsolated { self.presentError(error, flowCanContinue: true) }
+    }
+
+    nonisolated func paywallViewController(
+        _ controller: PaywallViewController,
+        didFailRestoringWith error: NSError
+    ) {
+        MainActor.assumeIsolated { self.presentError(error, flowCanContinue: true) }
+    }
     #else
     func paywallViewController(
         _ controller: PaywallViewController,
@@ -297,14 +334,35 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
     func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {
         self.finish(controller)
     }
+
+    func paywallViewController(
+        _ controller: PaywallViewController,
+        didFailPurchasingWith error: NSError
+    ) {
+        self.presentError(error, flowCanContinue: true)
+    }
+
+    func paywallViewController(
+        _ controller: PaywallViewController,
+        didFailRestoringWith error: NSError
+    ) {
+        self.presentError(error, flowCanContinue: true)
+    }
     #endif
 
 }
 
 @MainActor
 @available(iOS 15.0, macOS 12.0, *)
-func makeDefaultCheckpointPaywallViewController(params: PaywallPresentationParams) -> PaywallViewController {
-    let controller = PaywallViewController(offering: params.offering, displayCloseButton: true)
+func makeDefaultCheckpointPaywallViewController(
+    params: PaywallPresentationParams,
+    workflowPresentationErrorHandler: ((NSError) -> Void)? = nil
+) -> PaywallViewController {
+    let controller = PaywallViewController(
+        checkpointOffering: params.offering,
+        displayCloseButton: true,
+        workflowPresentationErrorHandler: workflowPresentationErrorHandler
+    )
     controller.disableExitOffers()
     controller.customVariables = params.customVariables
     return controller
