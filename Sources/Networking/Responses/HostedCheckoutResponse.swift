@@ -83,7 +83,6 @@ extension HostedCheckoutResponse: Decodable {
 
 extension HostedCheckoutResponse.Page: Decodable {
 
-    // The decoder converts from snake case, which yields `Url` rather than `URL`.
     private enum CodingKeys: String, CodingKey {
         case checkoutURL = "checkoutUrl"
         case successURL = "successUrl"
