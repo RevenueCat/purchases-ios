@@ -66,6 +66,22 @@ private func checkPaywallPresentationAPI(
 }
 
 @MainActor
+private func checkErrorPresentationAPI(_ presenter: ErrorPresenter) {
+    let _: ErrorPresenter = presenter
+    let presenter: ErrorPresentationHandler = { params, completion in
+        let _: String = params.checkpointIdentifier
+        let _: any Error = params.error
+        let _: [String: CustomVariableValue] = params.customVariables
+        let _: Bool = params.flowCanContinue
+        completion.complete(.retry)
+        completion.complete(.continued)
+        completion.complete(.navigateBack)
+    }
+
+    let _: ErrorPresentationHandler = presenter
+}
+
+@MainActor
 private final class CheckpointAPIPaywallPresenter: PaywallPresenter {
 
     func present(
@@ -73,6 +89,15 @@ private final class CheckpointAPIPaywallPresenter: PaywallPresenter {
         completion: @escaping PaywallPresentationCompletion
     ) {
         completion(.continued)
+    }
+
+}
+
+@MainActor
+private final class CheckpointAPIErrorPresenter: ErrorPresenter {
+
+    func present(params: ErrorPresentationParams, completion: ErrorPresentationCompletion) {
+        completion.complete(.continued)
     }
 
 }
