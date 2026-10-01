@@ -118,10 +118,9 @@ enum HostedCheckout {
 
     }
 
-    /// Confirms the kept checkout should its page reach the success URL while the sheet is closed, which the
-    /// provider does once a payment the customer made moments before closing it goes through.
-    ///
-    /// A page that returns any other way is left as it is: it is loaded afresh when the customer taps buy again.
+    /// Watches the kept checkout's page while the sheet is closed, and confirms the purchase if the page reaches the
+    /// success URL. That happens when the customer paid just before closing the sheet: the provider redirects the page
+    /// once the payment goes through.
     ///
     /// - Parameter onSuccess: Called with the checkout to confirm, once it is no longer kept.
     @MainActor
