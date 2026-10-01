@@ -42,8 +42,6 @@ struct HostedCheckoutResponse: Equatable {
         let checkoutURL: URL
 
         /// Where the provider sends the customer once checkout succeeds.
-        ///
-        /// Returned rather than assumed so that the SDK does not have to know how the backend builds it.
         let successURL: URL
 
     }
@@ -52,7 +50,6 @@ struct HostedCheckoutResponse: Equatable {
 
 extension HostedCheckoutResponse: Decodable {
 
-    // The decoder converts from snake case, which yields `Id` rather than `ID`.
     private enum CodingKeys: String, CodingKey {
         case operationSessionID = "operationSessionId"
         case outcome
@@ -69,7 +66,6 @@ extension HostedCheckoutResponse: Decodable {
 
         self.operationSessionID = try container.decode(String.self, forKey: .operationSessionID)
 
-        // Backends that predate resuming send no outcome, and every session they return is a new one.
         switch try container.decodeIfPresent(String.self, forKey: .outcome) {
         case RawOutcome.succeeded:
             self.outcome = .succeeded
