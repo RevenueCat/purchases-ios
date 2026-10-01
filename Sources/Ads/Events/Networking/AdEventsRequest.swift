@@ -89,6 +89,8 @@ extension AdEventsRequest.AdEventRequest {
         case rewardVerified = "rc_ads_ad_reward_sdk_verified"
         case rewardFailedToVerify = "rc_ads_ad_reward_sdk_failed_to_verify"
         case rewardGranted = "rc_ads_ad_reward_sdk_granted"
+        case rewardedAdPromptShown = "rc_ads_rewarded_ad_prompt_shown"
+        case rewardedAdPromptAccepted = "rc_ads_rewarded_ad_prompt_accepted"
 
     }
 
@@ -152,6 +154,8 @@ private extension AdEvent {
         case .rewardVerified: return .rewardVerified
         case .rewardFailedToVerify: return .rewardFailedToVerify
         case .rewardGranted: return .rewardGranted
+        case .rewardedAdPromptShown: return .rewardedAdPromptShown
+        case .rewardedAdPromptAccepted: return .rewardedAdPromptAccepted
         }
 
     }

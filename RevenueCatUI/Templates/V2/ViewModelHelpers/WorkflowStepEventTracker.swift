@@ -129,12 +129,13 @@ struct WorkflowStepEventTracker {
         )
     }
 
-    /// A step is terminal when none of its trigger actions navigate to another step. Mirrors Android's
-    /// `isTerminalStep` (`triggerActions.values.none { it is WorkflowTriggerAction.Step }`).
+    /// A step is terminal when none of its trigger actions navigate to another step.
     static func isTerminalStep(_ step: WorkflowStep) -> Bool {
         return !step.stepTriggerActions.values.contains { action in
-            if case .step = action { return true }
-            return false
+            switch action {
+            case .step, .branch: return true
+            case .unknown: return false
+            }
         }
     }
 

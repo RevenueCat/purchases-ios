@@ -226,6 +226,8 @@ struct PurchaseButtonComponentView: View {
             self.showAlreadyOwnedAlert(for: selectedPackage)
         case .tellCustomerThePurchaseIsUnavailable:
             self.showingPurchaseUnavailableAlert = true
+        case let .failed(error):
+            self.hostedCheckoutError = error
         case .nothing:
             break
         }
@@ -265,17 +267,12 @@ struct PurchaseButtonComponentView: View {
     private func handleHostedCheckoutOutcome(_ outcome: WebCheckoutSheetOutcome,
                                              checkout: HostedCheckout.KeptCheckout) {
         switch outcome {
-        case let .returned(status):
+        case .returned(.success):
             if self.purchaseHandler.keptHostedCheckout === checkout {
                 self.purchaseHandler.keptHostedCheckout = nil
             }
 
-            switch status {
-            case .success:
-                self.resolveHostedCheckout(checkout.session, package: checkout.package)
-            case .cancel:
-                Task { await self.purchaseHandler.handleHostedCheckoutCancellation(package: checkout.package) }
-            }
+            self.resolveHostedCheckout(checkout.session, package: checkout.package)
         case .dismissed:
             // The checkout stays kept: a customer who paid moments before closing the sheet has that purchase
             // confirmed once the page reaches its success URL, or when they tap buy again.
