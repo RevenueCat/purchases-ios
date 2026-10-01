@@ -346,7 +346,7 @@ final class HostedCheckoutTests: TestCase {
                                                       purchaseHandler: handler)
 
         let actions = await actionsWhilePolling.values
-        expect(resolution) == .purchased
+        expect(resolution) == .purchased(TestData.customerInfo)
         expect(actions) == [.restore]
         expect(handler.actionTypeInProgress) == .restore
     }
