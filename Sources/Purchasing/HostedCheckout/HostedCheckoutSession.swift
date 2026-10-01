@@ -52,10 +52,4 @@ extension HostedCheckoutSession {
                   successURL: page.successURL)
     }
 
-    /// The checkout page is the success page itself: the provider already took the payment for this session, but
-    /// the backend had not heard about it yet when it was asked.
-    var isAlreadyPaid: Bool {
-        return self.checkoutURL == self.successURL
-    }
-
 }
