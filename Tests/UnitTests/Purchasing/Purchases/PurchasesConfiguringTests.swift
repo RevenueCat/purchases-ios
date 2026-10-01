@@ -63,6 +63,8 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSDKSettingsUpdateConfiguresDiagnosticsTrackerAndSynchronizer() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
         let settingsProvider = MockSDKSettingsConfigProvider()
         let synchronizer = DiagnosticsSynchronizerSpy()
         self.initializePurchasesInstance(
