@@ -381,10 +381,10 @@ extension PurchaseHandler {
         return await self.purchases.pollHostedCheckout(session: session)
     }
 
-    /// Whether a checkout the backend confirmed can be reported, which takes the `CustomerInfo` showing the
-    /// purchase. The SDK fetches it while confirming the purchase, but that fetch can fail.
-    func canReportHostedCheckoutPurchase() async -> Bool {
-        return (try? await self.purchases.customerInfo()) != nil
+    /// The `CustomerInfo` a checkout the backend confirmed is reported with, when it can be fetched. The SDK
+    /// fetches it while confirming the purchase, but that fetch can fail.
+    func hostedCheckoutPurchaseCustomerInfo() async -> CustomerInfo? {
+        return try? await self.purchases.customerInfo()
     }
 
     /// Whether web purchase links opened in the browser go through Apple's external purchase flow first.
@@ -918,10 +918,10 @@ extension PurchaseHandler {
     /// the customer has been told the purchase went through.
     ///
     /// There is no transaction to hand over: what was bought is known to the backend, so the paywall follows
-    /// the `CustomerInfo` the SDK fetched when confirming it.
+    /// the `CustomerInfo` fetched when confirming it.
     @MainActor
-    func handleHostedCheckoutPurchase() async {
-        await self.reportHostedCheckoutOutcome(userCancelled: false)
+    func handleHostedCheckoutPurchase(customerInfo: CustomerInfo) {
+        self.reportHostedCheckoutOutcome(customerInfo: customerInfo, userCancelled: false)
     }
 
     /// Reports a checkout that failed, as opposed to one the customer walked away from.
@@ -960,6 +960,11 @@ extension PurchaseHandler {
             return
         }
 
+        self.reportHostedCheckoutOutcome(customerInfo: customerInfo, userCancelled: userCancelled)
+    }
+
+    @MainActor
+    private func reportHostedCheckoutOutcome(customerInfo: CustomerInfo, userCancelled: Bool) {
         let resultInfo: PurchaseResultData = (transaction: nil,
                                               customerInfo: customerInfo,
                                               userCancelled: userCancelled)

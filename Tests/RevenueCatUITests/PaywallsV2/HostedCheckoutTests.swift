@@ -166,18 +166,23 @@ final class HostedCheckoutTests: TestCase {
     // MARK: - Settling on what the backend says
 
     func testCountsAConfirmedPurchase() {
-        expect(HostedCheckout.Resolution(.succeeded)) == .purchased
+        expect(HostedCheckout.Resolution(.succeeded, customerInfo: TestData.customerInfo))
+            == .purchased(TestData.customerInfo)
+    }
+
+    func testTreatsAConfirmedPurchaseWithoutItsCustomerInfoAsUnconfirmed() {
+        expect(HostedCheckout.Resolution(.succeeded, customerInfo: nil)) == .failed(.unconfirmed)
     }
 
     func testTellsTheCustomerTheyAlreadyOwnIt() {
-        expect(HostedCheckout.Resolution(.alreadyPurchased)) == .tellCustomerTheyAlreadyOwnIt
+        expect(HostedCheckout.Resolution(.alreadyPurchased, customerInfo: nil)) == .tellCustomerTheyAlreadyOwnIt
     }
 
     /// The success page always tells the customer the purchase went through, so anything short of it is an error.
     func testFailsWhenTheBackendDoesNotConfirmWhatTheSuccessPageSaid() {
-        expect(HostedCheckout.Resolution(.failed(code: 3, message: "payment_charge_failed")))
+        expect(HostedCheckout.Resolution(.failed(code: 3, message: "payment_charge_failed"), customerInfo: nil))
             == .failed(.failed(code: 3))
-        expect(HostedCheckout.Resolution(.undetermined)) == .failed(.unconfirmed)
+        expect(HostedCheckout.Resolution(.undetermined, customerInfo: nil)) == .failed(.unconfirmed)
     }
 
     func testAsksAboutTheSessionThatWasPresented() async {
@@ -226,19 +231,30 @@ final class HostedCheckoutTests: TestCase {
                                                       package: TestData.annualPackage,
                                                       purchaseHandler: handler)
 
-        expect(resolution) == .purchased
+        expect(resolution) == .purchased(TestData.customerInfo)
         expect(handler.sessionPurchaseResult).to(beNil())
         expect(handler.purchaseError).to(beNil())
         expect(handler.actionInProgress) == false
     }
 
+    /// Reporting happens as the customer dismisses the alert, so it uses the `CustomerInfo` fetched while the
+    /// paywall still showed the purchase under way rather than fetching it again.
     @MainActor
-    func testReportsAConfirmedPurchaseAsCompleted() async {
-        let handler = Self.makeHandler(purchases: Self.makePurchases())
+    func testReportsAConfirmedPurchaseAsCompletedWithoutFetchingItsCustomerInfoAgain() {
+        let purchases = MockPurchases { _, _, _ in
+            return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { _ in
+        } customerInfo: {
+            throw ErrorCode.networkError
+        }
+        let handler = Self.makeHandler(purchases: purchases)
 
-        await handler.handleHostedCheckoutPurchase()
+        handler.handleHostedCheckoutPurchase(customerInfo: TestData.customerInfo)
 
         expect(handler.sessionPurchaseResult?.userCancelled) == false
+        expect(handler.sessionPurchaseResult?.customerInfo) == TestData.customerInfo
         expect(handler.purchaseError).to(beNil())
     }
 
