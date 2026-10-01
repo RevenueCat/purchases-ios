@@ -51,11 +51,15 @@ public struct CheckpointPresentationMode: Hashable, CustomStringConvertible, Sen
 extension CheckpointPresentationMode {
 
     var modalPresentationStyle: UIModalPresentationStyle {
+#if os(tvOS)
+        return .fullScreen
+#else
         switch self {
         case .fullScreen: return .fullScreen
         case .default, .sheet: return .pageSheet
         default: return .pageSheet
         }
+#endif
     }
 
 }
