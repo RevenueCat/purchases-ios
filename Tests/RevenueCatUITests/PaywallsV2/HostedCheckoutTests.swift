@@ -210,20 +210,72 @@ final class HostedCheckoutTests: TestCase {
         expect(sent) == [nil]
     }
 
-    /// Once confirming it, there is nothing left to carry on with.
+    /// Confirming the payment can still fail, and tapping buy again should then retry it.
     @MainActor
-    func testReleasesTheKeptCheckoutWhenItWasAlreadyPaidFor() async {
+    func testKeepsACheckoutThatWasAlreadyPaidForUntilItIsConfirmed() async {
         let purchases = Self.makePurchases()
         purchases.hostedCheckoutBlock = { _, _, _ in .completed(Self.session) }
         let handler = Self.makeHandler(purchases: purchases)
-        handler.keptHostedCheckout = Self.makeKeptCheckout(for: Self.session)
+        let kept = Self.makeKeptCheckout(for: Self.session)
+        handler.keptHostedCheckout = kept
 
         let action = await HostedCheckout.start(for: TestData.annualPackage,
                                                 purchaseHandler: handler,
                                                 purchaseInitiatedAction: nil)
 
         expect(action) == .confirm(Self.session)
+        expect(handler.keptHostedCheckout) === kept
+    }
+
+    @MainActor
+    func testReleasesTheKeptCheckoutOnceItsPurchaseIsConfirmed() async {
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollBlock = { _ in .succeeded }
+        let handler = Self.makeHandler(purchases: purchases)
+        handler.keptHostedCheckout = Self.makeKeptCheckout(for: Self.session)
+
+        _ = await HostedCheckout.resolve(Self.session, package: TestData.annualPackage, purchaseHandler: handler)
+
         expect(handler.keptHostedCheckout).to(beNil())
+    }
+
+    @MainActor
+    func testReleasesTheKeptCheckoutForAProductTheCustomerAlreadyOwned() async {
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollBlock = { _ in .alreadyPurchased }
+        let handler = Self.makeHandler(purchases: purchases)
+        handler.keptHostedCheckout = Self.makeKeptCheckout(for: Self.session)
+
+        _ = await HostedCheckout.resolve(Self.session, package: TestData.annualPackage, purchaseHandler: handler)
+
+        expect(handler.keptHostedCheckout).to(beNil())
+    }
+
+    /// Otherwise tapping buy again would start a second checkout while this payment may still be landing.
+    @MainActor
+    func testKeepsTheCheckoutWhenItsPurchaseCouldNotBeConfirmed() async {
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollBlock = { _ in .undetermined }
+        let handler = Self.makeHandler(purchases: purchases)
+        let kept = Self.makeKeptCheckout(for: Self.session)
+        handler.keptHostedCheckout = kept
+
+        _ = await HostedCheckout.resolve(Self.session, package: TestData.annualPackage, purchaseHandler: handler)
+
+        expect(handler.keptHostedCheckout) === kept
+    }
+
+    @MainActor
+    func testLeavesAKeptCheckoutForAnotherSessionWhenConfirmingAPurchase() async {
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollBlock = { _ in .succeeded }
+        let handler = Self.makeHandler(purchases: purchases)
+        let other = Self.makeKeptCheckout(for: Self.otherSession)
+        handler.keptHostedCheckout = other
+
+        _ = await HostedCheckout.resolve(Self.session, package: TestData.annualPackage, purchaseHandler: handler)
+
+        expect(handler.keptHostedCheckout) === other
     }
 
     /// The customer comes back to the page as they left it, rather than to one loading afresh.
