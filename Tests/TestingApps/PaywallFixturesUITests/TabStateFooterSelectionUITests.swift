@@ -39,23 +39,9 @@ final class TabStateFooterSelectionUITests: XCTestCase {
         XCTAssertFalse(app.buttons["Monthly selected"].exists)
     }
 
-    /// Switching tab swaps which wrapper stack is shown. The selection has to follow, or the
-    /// paywall reads as having nothing chosen while Continue still holds the previous tier's card.
+    /// Switching tab swaps which wrapper stack is shown, and the selection has to follow each time,
+    /// or the paywall reads as having nothing chosen while Continue still holds another tier's card.
     func testSwitchingTabMovesSelectionToTheShowingTier() throws {
-        let app = self.launchFixture()
-        XCTAssertTrue(app.buttons["Annual selected"].waitForExistence(timeout: 10))
-
-        app.buttons["Weekly tab"].tap()
-
-        XCTAssertTrue(
-            app.buttons["Weekly selected"].waitForExistence(timeout: 5),
-            "The tier now showing owns the selection. \(Self.visibleLabels(in: app))"
-        )
-        XCTAssertFalse(app.buttons["Annual selected"].exists)
-    }
-
-    /// And back again, so the fix is not "always pick the first tier".
-    func testSwitchingTabAgainFollowsTheNewTier() throws {
         let app = self.launchFixture()
         XCTAssertTrue(app.buttons["Annual selected"].waitForExistence(timeout: 10))
 

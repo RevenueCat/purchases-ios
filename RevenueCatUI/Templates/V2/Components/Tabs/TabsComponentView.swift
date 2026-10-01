@@ -111,12 +111,6 @@ struct LoadedTabsComponentView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
-    @Environment(\.paywallStateValues)
-    private var paywallStateValues
-
-    @Environment(\.paywallStateDefaults)
-    private var paywallStateDefaults
-
     @Environment(\.customPaywallVariables)
     private var customVariables
 
@@ -248,8 +242,6 @@ struct LoadedTabsComponentView: View {
             condition: self.screenCondition,
             customVariables: self.customVariables,
             windowSize: self.paywallWindowSize,
-            stateValues: self.paywallStateValues,
-            stateDefaults: self.paywallStateDefaults,
             isEligibleForIntroOffer: { [introOfferEligibilityContext] in
                 introOfferEligibilityContext.isEligible(package: $0)
             },
@@ -365,10 +357,6 @@ struct LoadedTabsComponentView: View {
             // Intro and promo eligibility both land after first render and can flip a package's
             // visibility. `isPaywallLoading` goes false once both have resolved.
             .onChangeOf(self.isPaywallLoading) { _ in
-                self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
-            }
-            // A state update can hide the selected package via a `state` condition.
-            .onChangeOf(self.paywallStateValues) { _ in
                 self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
             }
             // A window resize (rotation, Split View, Stage Manager) can hide the

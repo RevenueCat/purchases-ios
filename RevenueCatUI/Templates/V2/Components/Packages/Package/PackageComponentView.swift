@@ -41,12 +41,6 @@ struct PackageComponentView: View {
     @Environment(\.selectedPackageId)
     private var selectedPackageId
 
-    @Environment(\.paywallStateValues)
-    private var paywallStateValues
-
-    @Environment(\.paywallStateDefaults)
-    private var paywallStateDefaults
-
     let viewModel: PackageComponentViewModel
     let onDismiss: () -> Void
 
@@ -73,9 +67,7 @@ struct PackageComponentView: View {
                ),
                selectedPackageId: selectedPackageId,
                customVariables: customVariables,
-               windowSize: paywallWindowSize,
-               stateValues: paywallStateValues,
-               stateDefaults: paywallStateDefaults
+               windowSize: paywallWindowSize
            ) {
             StackComponentView(
                 viewModel: self.viewModel.stackViewModel,
