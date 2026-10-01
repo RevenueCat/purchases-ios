@@ -85,7 +85,7 @@ final class WorkflowNavigator: ObservableObject {
 
     /// Tests only. Nothing in the UI waits for a step's own branches to resolve.
     func waitForBranchResolution() async {
-        await self.branches.settled()
+        await self.branches.waitForResolution()
     }
 
     var currentStep: WorkflowStep? {
@@ -217,7 +217,8 @@ final class WorkflowStepBranches {
         return self.routes[actionId]
     }
 
-    func settled() async {
+    /// Tests only. Nothing in the UI waits for a step's branches.
+    func waitForResolution() async {
         await self.task?.value
     }
 
