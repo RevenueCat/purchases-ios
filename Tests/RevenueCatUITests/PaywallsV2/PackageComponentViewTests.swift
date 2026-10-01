@@ -83,34 +83,13 @@ final class PackageComponentViewTests: TestCase {
             Self.visible(viewModel, stateValues: ["selected_tier": .string("monthly")]),
             "The rule matches the current state, so the card is revealed."
         )
-    }
-
-    /// The declared default stands in until the store publishes a value, so the first frame resolves
-    /// the same way every other component does.
-    func testStateVisibilityOverrideFallsBackToDeclaredDefault() throws {
-        let viewModel = try Self.makeViewModel(
-            component: Self.stateGatedComponent(package: TestData.monthlyPackage),
-            package: TestData.monthlyPackage
-        )
-
         XCTAssertTrue(
             Self.visible(viewModel, stateDefaults: ["selected_tier": .string("monthly")]),
             "With no published value the declared default decides the rule."
         )
-    }
-
-    /// A control rather than a regression: this passes with or without the state hand-off, since the
-    /// card's hidden base stands either way. It is here so the two above cannot be satisfied by
-    /// simply revealing every card.
-    func testStateVisibilityOverrideKeepsCardHiddenForAnotherState() throws {
-        let viewModel = try Self.makeViewModel(
-            component: Self.stateGatedComponent(package: TestData.monthlyPackage),
-            package: TestData.monthlyPackage
-        )
-
         XCTAssertFalse(
             Self.visible(viewModel, stateValues: ["selected_tier": .string("annual")]),
-            "The rule does not match, so the card stays hidden."
+            "Control: the rule does not match, so the card stays hidden."
         )
     }
 

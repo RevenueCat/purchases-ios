@@ -745,20 +745,25 @@ struct LoadedPaywallsV2View: View {
             .environment(\.planSelectionDefaultPackage, self.defaultPackage)
             .environmentObject(self.selectedPackageContext)
             .edgesIgnoringSafeArea(.bottom)
-            // Each of these can change which packages render, so the selection is re-checked:
-            // offer eligibility landing, leaving a tab, a window resize, a state update.
             .onAppear {
                 self.reconcileSelection()
             }
+            // Intro and promo eligibility both land after first render and can flip a package's
+            // visibility. `isPaywallLoading` goes false once both have resolved.
             .onChangeOf(self.isPaywallLoading) { _ in
                 self.reconcileSelection()
             }
+            // Leaving a tab can restore a package a rule hides, and this doesn't depend on
+            // `onAppear` ordering.
             .onChangeOf(self.selectedPackageContext.package?.identifier) { _ in
                 self.reconcileSelection()
             }
+            // A window resize (rotation, Split View, Stage Manager) can hide the
+            // selected package via a window size condition.
             .onChangeOf(self.paywallWindowSize) { _ in
                 self.reconcileSelection()
             }
+            // A state update, such as switching tabs, can hide the selected package's container.
             .onChangeOf(self.paywallStateValues) { _ in
                 self.reconcileSelection()
             }

@@ -52,11 +52,14 @@ struct PackageSelectionContext {
     /// For the few places that must seed a selection before the render environment exists (view `init`).
     /// Rules keyed on custom variables or offer eligibility cannot be evaluated yet, so a selection made
     /// with this is provisional and has to be reconciled once the body resolves the real context.
-    ///
-    /// State is the exception: the declared defaults are known here, and without them a stack shown
-    /// only for the default state reads as hidden and nothing gets seeded.
+    static var provisional: PackageSelectionContext {
+        return .provisional(stateDefaults: [:])
+    }
+
+    /// State defaults are known before the environment exists. Without them a stack shown only for the
+    /// default state reads as hidden and nothing gets seeded.
     static func provisional(
-        stateDefaults: [String: PaywallComponent.ConditionValue] = [:]
+        stateDefaults: [String: PaywallComponent.ConditionValue]
     ) -> PackageSelectionContext {
         return .init(
             condition: .compact,
@@ -72,25 +75,12 @@ struct PackageSelectionContext {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PackageValidator {
 
-    private let visibilityGraph: PackageVisibilityGraph
-
-    /// Defaults to an empty graph, which gates nothing: correct for a validator built outside the
-    /// component walk, such as a preview.
-    init(visibilityGraph: PackageVisibilityGraph = PackageVisibilityGraph()) {
-        self.visibilityGraph = visibilityGraph
-    }
-
-    struct PackageInfo {
-
-        let package: Package
-        let isSelectedByDefault: Bool
-        let visibilityResolver: PackageVisibilityResolver
-        let promotionalOfferProductCode: String?
-
-        /// The enclosing component this package was walked under, in the visibility graph.
-        var visibilityNode: Int?
-
-    }
+    typealias PackageInfo = (
+        package: Package,
+        isSelectedByDefault: Bool,
+        visibilityResolver: PackageVisibilityResolver,
+        promotionalOfferProductCode: String?
+    )
 
     /// Where a package was declared: a page-level resolution must never return a tab-only package.
     private enum Scope {
@@ -132,11 +122,6 @@ class PackageValidator {
     }
 
     private func isVisible(_ info: PackageInfo, in context: PackageSelectionContext) -> Bool {
-        // The rule that hides a package is usually on a container, not on the card.
-        guard self.visibilityGraph.isVisible(node: info.visibilityNode, package: info.package, in: context) else {
-            return false
-        }
-
         return info.visibilityResolver.visible(
             // Nothing is selected yet, since selection is what's being resolved. Pinning these keeps
             // a `selected` or `selected_package` rule from oscillating.

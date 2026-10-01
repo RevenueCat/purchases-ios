@@ -29,14 +29,20 @@ struct PackageVisibilityResolver {
     private let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedPackagePartial>?
 
+    /// The enclosing components that can hide this package. The rule hiding a package is usually on a
+    /// container, not on the card. Empty for the renderer, which only draws a card its parents show.
+    private let ancestors: [VisibilityGate]
+
     init(
         component: PaywallComponent.PackageComponent,
         uiConfigProvider: UIConfigProvider,
-        discardRules: Bool
+        discardRules: Bool,
+        ancestors: [VisibilityGate] = []
     ) {
         self.componentVisible = component.visible
         self.uiConfigProvider = uiConfigProvider
         self.presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
+        self.ancestors = ancestors
     }
 
     // swiftlint:disable:next function_parameter_count
@@ -59,6 +65,19 @@ struct PackageVisibilityResolver {
             windowSize: windowSize
         )
 
+        let ancestorsVisible = self.ancestors.allSatisfy {
+            $0.isVisible(
+                condition: condition,
+                isEligibleForIntroOffer: isEligibleForIntroOffer,
+                isEligibleForPromoOffer: isEligibleForPromoOffer,
+                conditionContext: conditionContext
+            )
+        }
+
+        guard ancestorsVisible else {
+            return false
+        }
+
         let partial = PresentedPackagePartial.buildPartial(
             state: state,
             condition: condition,
@@ -69,6 +88,52 @@ struct PackageVisibilityResolver {
         )
 
         return partial?.visible ?? self.componentVisible ?? true
+    }
+
+}
+
+/// One enclosing component's own visibility, type-erased so a package can hold the whole chain.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct VisibilityGate {
+
+    private let resolve: (ScreenCondition, Bool, Bool, ConditionContext) -> Bool
+
+    /// Nil when the component cannot hide anything, so a chain only holds real gates.
+    init?<Partial: PaywallPartialComponent & PresentedPartial>(
+        visible: Bool?,
+        overrides: PaywallComponent.ComponentOverrides<Partial>?,
+        visibleKeyPath: KeyPath<Partial, Bool?>,
+        discardRules: Bool
+    ) {
+        guard visible != nil || overrides?.contains(where: { $0.properties[keyPath: visibleKeyPath] != nil }) == true
+        else {
+            return nil
+        }
+
+        let presentedOverrides = overrides?.toPresentedOverrides(discardRules: discardRules)
+
+        self.resolve = { condition, isEligibleForIntroOffer, isEligibleForPromoOffer, conditionContext in
+            let partial = Partial.buildPartial(
+                // A container is never selected; only the package is.
+                state: .default,
+                condition: condition,
+                isEligibleForIntroOffer: isEligibleForIntroOffer,
+                isEligibleForPromoOffer: isEligibleForPromoOffer,
+                conditionContext: conditionContext,
+                with: presentedOverrides
+            )
+
+            return partial?[keyPath: visibleKeyPath] ?? visible ?? true
+        }
+    }
+
+    func isVisible(
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        conditionContext: ConditionContext
+    ) -> Bool {
+        return self.resolve(condition, isEligibleForIntroOffer, isEligibleForPromoOffer, conditionContext)
     }
 
 }
