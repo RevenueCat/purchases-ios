@@ -122,14 +122,6 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
         return await block(session)
     }
 
-    var hostedCheckoutPollDismissedBlock: (@Sendable (HostedCheckoutSession) async -> HostedCheckoutPollResult)?
-
-    func pollDismissedHostedCheckout(session: HostedCheckoutSession) async -> HostedCheckoutPollResult {
-        guard let block = self.hostedCheckoutPollDismissedBlock else { return .undetermined }
-
-        return await block(session)
-    }
-
     var useExternalPurchaseCustomLinks = false
     var externalPurchaseLinkBlock: (@Sendable () async -> ExternalPurchaseLinkResult)?
 
@@ -223,7 +215,6 @@ extension PaywallPurchasesType {
         mapped.remoteConfigEnabled = self.remoteConfigEnabled
         mapped.hostedCheckoutBlock = { await self.startHostedCheckout(package: $0, paywallEvent: $1) }
         mapped.hostedCheckoutPollBlock = { await self.pollHostedCheckout(session: $0) }
-        mapped.hostedCheckoutPollDismissedBlock = { await self.pollDismissedHostedCheckout(session: $0) }
         mapped.useExternalPurchaseCustomLinks = self.useExternalPurchaseCustomLinks
         mapped.externalPurchaseLinkBlock = { await self.prepareExternalPurchaseLink() }
         #if !os(tvOS)
@@ -259,7 +250,6 @@ extension PaywallPurchasesType {
         mapped.remoteConfigEnabled = self.remoteConfigEnabled
         mapped.hostedCheckoutBlock = { await self.startHostedCheckout(package: $0, paywallEvent: $1) }
         mapped.hostedCheckoutPollBlock = { await self.pollHostedCheckout(session: $0) }
-        mapped.hostedCheckoutPollDismissedBlock = { await self.pollDismissedHostedCheckout(session: $0) }
         mapped.useExternalPurchaseCustomLinks = self.useExternalPurchaseCustomLinks
         mapped.externalPurchaseLinkBlock = { await self.prepareExternalPurchaseLink() }
         #if !os(tvOS)

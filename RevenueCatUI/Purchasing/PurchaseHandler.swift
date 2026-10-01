@@ -381,10 +381,6 @@ extension PurchaseHandler {
         return await self.purchases.pollHostedCheckout(session: session)
     }
 
-    func pollDismissedHostedCheckout(session: HostedCheckoutSession) async -> HostedCheckoutPollResult {
-        return await self.purchases.pollDismissedHostedCheckout(session: session)
-    }
-
     /// Whether a checkout the backend confirmed can be reported, which takes the `CustomerInfo` showing the
     /// purchase. The SDK fetches it while confirming the purchase, but that fetch can fail.
     func canReportHostedCheckoutPurchase() async -> Bool {
@@ -1288,10 +1284,6 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
     }
 
     func pollHostedCheckout(session: HostedCheckoutSession) async -> HostedCheckoutPollResult {
-        return .undetermined
-    }
-
-    func pollDismissedHostedCheckout(session: HostedCheckoutSession) async -> HostedCheckoutPollResult {
         return .undetermined
     }
 

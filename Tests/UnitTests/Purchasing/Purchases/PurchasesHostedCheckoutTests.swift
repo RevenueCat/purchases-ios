@@ -189,51 +189,6 @@ extension PurchasesHostedCheckoutTests {
         expect(self.deviceCache.invokedClearCustomerInfoCacheCount) == clearsBefore
     }
 
-    // MARK: - A dismissed checkout
-
-    func testFetchesCustomerInfoOnceADismissedCheckoutLands() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-        try self.stubPaymentStatus(.processing)
-        try self.stubStatus(.succeeded)
-        let session = self.startedSession()
-        let fetchesBefore = self.backend.getCustomerInfoCallCount
-
-        let result = await self.purchases.pollDismissedHostedCheckout(session: session)
-
-        expect(result) == .succeeded
-        expect(self.backend.getCustomerInfoCallCount) == fetchesBefore + 1
-
-        let parameters = try XCTUnwrap(try self.mockWebBillingAPI.invokedGetHostedCheckoutPaymentStatusParameters)
-        expect(parameters.operationSessionID) == Self.operationSessionID
-        expect(parameters.appUserID) == session.appUserID
-    }
-
-    func testDoesNotAskAboutADismissedCheckoutTheCustomerDidNotPayFor() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-        try self.stubPaymentStatus(.open)
-        let session = self.startedSession()
-        let fetchesBefore = self.backend.getCustomerInfoCallCount
-
-        let result = await self.purchases.pollDismissedHostedCheckout(session: session)
-
-        expect(result) == .abandoned
-        expect(try self.mockWebBillingAPI.invokedGetHostedCheckoutStatus) == false
-        expect(self.backend.getCustomerInfoCallCount) == fetchesBefore
-    }
-
-    func testFetchesTheBuyersCustomerInfoWhenAnotherCustomerLogsInDuringADismissedPoll() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-        try self.stubPaymentStatus(.processing)
-        try self.stubStatus(.succeeded)
-        let session = self.startedSession()
-        try self.logInWhileThePollRuns(Self.otherAppUserID)
-
-        _ = await self.purchases.pollDismissedHostedCheckout(session: session)
-
-        expect(try self.mockWebBillingAPI.invokedGetHostedCheckoutStatusParameters?.appUserID) == session.appUserID
-        expect(self.backend.userID) == session.appUserID
-    }
-
 }
 
 private extension PurchasesHostedCheckoutTests {
@@ -282,11 +237,6 @@ private extension PurchasesHostedCheckoutTests {
 
     func stubStatus(_ status: HostedCheckoutStatusResponse.Status) throws {
         try self.mockWebBillingAPI.stubbedGetHostedCheckoutStatusCompletionResult = .success(.init(status: status))
-    }
-
-    func stubPaymentStatus(_ paymentStatus: HostedCheckoutPaymentStatusResponse.PaymentStatus) throws {
-        try self.mockWebBillingAPI.stubbedGetHostedCheckoutPaymentStatusCompletionResult =
-            .success(.init(paymentStatus: paymentStatus))
     }
 
     func logInWhileThePollRuns(_ appUserID: String) throws {

@@ -1966,30 +1966,6 @@ public extension Purchases {
         let result = await self.hostedCheckoutManager.pollCheckout(operationSessionID: operationSessionID,
                                                                    appUserID: appUserID)
 
-        return await self.refreshingCustomerInfo(after: result,
-                                                 appUserID: appUserID,
-                                                 operationSessionID: operationSessionID)
-    }
-
-    /// Used by `RevenueCatUI` to determine the final outcome of a checkout the customer dismissed before it sent
-    /// them anywhere, where nothing says whether they paid. Fetches `CustomerInfo` as
-    /// ``pollHostedCheckout(session:)`` does.
-    @_spi(Internal) func pollDismissedHostedCheckout(
-        session: HostedCheckoutSession
-    ) async -> HostedCheckoutPollResult {
-        let operationSessionID = session.operationSessionID
-        let appUserID = session.appUserID
-        let result = await self.hostedCheckoutManager.pollDismissedCheckout(operationSessionID: operationSessionID,
-                                                                            appUserID: appUserID)
-
-        return await self.refreshingCustomerInfo(after: result,
-                                                 appUserID: appUserID,
-                                                 operationSessionID: operationSessionID)
-    }
-
-    private func refreshingCustomerInfo(after result: HostedCheckoutPollResult,
-                                        appUserID: String,
-                                        operationSessionID: String) async -> HostedCheckoutPollResult {
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         switch result {
         case .succeeded, .alreadyPurchased:
@@ -1999,7 +1975,7 @@ public extension Purchases {
                 Logger.warn(Strings.hostedCheckout.poll_customer_info_refresh_failed(operationSessionID))
                 self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
             }
-        case .failed, .abandoned, .undetermined:
+        case .failed, .undetermined:
             break
         }
         #endif

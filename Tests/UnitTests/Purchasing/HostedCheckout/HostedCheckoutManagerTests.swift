@@ -333,18 +333,6 @@ class HostedCheckoutManagerTests: TestCase {
         expect(self.poller.receivedAppUserIDs) == ["session-owner"]
     }
 
-    func testAsksThePollerWhatBecameOfADismissedSession() async {
-        self.poller.result = .abandoned
-
-        let result = await self.manager.pollDismissedCheckout(operationSessionID: Self.operationSessionID,
-                                                              appUserID: "session-owner")
-
-        expect(result) == .abandoned
-        expect(self.poller.receivedDismissedIDs) == [Self.operationSessionID]
-        expect(self.poller.receivedAppUserIDs) == ["session-owner"]
-        expect(self.poller.receivedIDs).to(beEmpty())
-    }
-
 }
 
 /// The loop itself is covered by `HostedCheckoutPollerTests`.
@@ -352,7 +340,6 @@ private final class StubHostedCheckoutPoller: HostedCheckoutPolling, @unchecked 
 
     var result: HostedCheckoutPollResult
     private(set) var receivedIDs: [String] = []
-    private(set) var receivedDismissedIDs: [String] = []
     private(set) var receivedAppUserIDs: [String] = []
 
     init(result: HostedCheckoutPollResult) {
@@ -361,13 +348,6 @@ private final class StubHostedCheckoutPoller: HostedCheckoutPolling, @unchecked 
 
     func poll(operationSessionID: String, appUserID: String) async -> HostedCheckoutPollResult {
         self.receivedIDs.append(operationSessionID)
-        self.receivedAppUserIDs.append(appUserID)
-
-        return self.result
-    }
-
-    func pollDismissed(operationSessionID: String, appUserID: String) async -> HostedCheckoutPollResult {
-        self.receivedDismissedIDs.append(operationSessionID)
         self.receivedAppUserIDs.append(appUserID)
 
         return self.result

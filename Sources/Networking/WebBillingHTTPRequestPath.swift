@@ -27,8 +27,7 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
         case .getWebOfferingProducts,
              .getWebBillingProducts,
              .postHostedCheckout,
-             .getHostedCheckoutStatus,
-             .getHostedCheckoutPaymentStatus:
+             .getHostedCheckoutStatus:
             return true
         }
     }
@@ -39,8 +38,7 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
              .getWebBillingProducts:
             return true
         case .postHostedCheckout,
-             .getHostedCheckoutStatus,
-             .getHostedCheckoutPaymentStatus:
+             .getHostedCheckoutStatus:
             return false
         }
     }
@@ -50,8 +48,7 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
         case .getWebOfferingProducts,
              .getWebBillingProducts,
              .postHostedCheckout,
-             .getHostedCheckoutStatus,
-             .getHostedCheckoutPaymentStatus:
+             .getHostedCheckoutStatus:
             return false
         }
     }
@@ -61,8 +58,7 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
         case .getWebOfferingProducts,
              .getWebBillingProducts,
              .postHostedCheckout,
-             .getHostedCheckoutStatus,
-             .getHostedCheckoutPaymentStatus:
+             .getHostedCheckoutStatus:
             return false
         }
     }
@@ -82,9 +78,6 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
         case let .getHostedCheckoutStatus(operationSessionID, appUserID):
             return "/rcbilling/v1/hosted-checkout/\(operationSessionID.trimmedAndEscaped)" +
             "?app_user_id=\(appUserID.trimmedAndEscapedForQuery)"
-        case let .getHostedCheckoutPaymentStatus(operationSessionID, appUserID):
-            return "/rcbilling/v1/hosted-checkout/\(operationSessionID.trimmedAndEscaped)/payment-status" +
-            "?app_user_id=\(appUserID.trimmedAndEscapedForQuery)"
         }
     }
 
@@ -98,8 +91,7 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
             }.joined(separator: "&")
             return "/rcbilling/v1/customer/products?\(encodedProductIds)"
         case .postHostedCheckout,
-             .getHostedCheckoutStatus,
-             .getHostedCheckoutPaymentStatus:
+             .getHostedCheckoutStatus:
             return self.relativePath
         }
     }
@@ -114,8 +106,6 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
             return "post_hosted_checkout"
         case .getHostedCheckoutStatus:
             return "get_hosted_checkout_status"
-        case .getHostedCheckoutPaymentStatus:
-            return "get_hosted_checkout_payment_status"
         }
     }
 

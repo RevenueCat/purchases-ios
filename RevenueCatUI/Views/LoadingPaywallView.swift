@@ -196,10 +196,6 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
         fatalError("Should not be able to purchase")
     }
 
-    func pollDismissedHostedCheckout(session: HostedCheckoutSession) async -> HostedCheckoutPollResult {
-        fatalError("Should not be able to purchase")
-    }
-
     var useExternalPurchaseCustomLinks: Bool { false }
 
     func prepareExternalPurchaseLink() async -> ExternalPurchaseLinkResult {

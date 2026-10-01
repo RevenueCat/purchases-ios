@@ -262,20 +262,19 @@ struct PurchaseButtonComponentView: View {
     private func handleHostedCheckoutOutcome(_ outcome: WebCheckoutSheetOutcome, session: HostedCheckoutSession) {
         switch outcome {
         case .returned(.success):
-            self.resolveHostedCheckout(session, after: .successPage)
+            self.resolveHostedCheckout(session)
         case .dismissed:
-            // A payment may have gone through moments before the customer closed the sheet.
+            // A payment may have gone through moments before the customer closed the sheet. Settling that
+            // means asking the backend what became of the session, which is not wired up yet.
             Logger.debug(Strings.hosted_checkout_dismissed_without_returning)
-            self.resolveHostedCheckout(session, after: .closedSheet)
         }
     }
 
-    private func resolveHostedCheckout(_ session: HostedCheckoutSession, after exit: HostedCheckout.Exit) {
+    private func resolveHostedCheckout(_ session: HostedCheckoutSession) {
         let package = self.packageContext.package
 
         Task { @MainActor in
             switch await HostedCheckout.resolve(session,
-                                                after: exit,
                                                 package: package,
                                                 purchaseHandler: self.purchaseHandler) {
             case .tellCustomerTheyAlreadyOwnIt:
@@ -286,8 +285,6 @@ struct PurchaseButtonComponentView: View {
                 self.hostedCheckoutError = error
             case .purchased:
                 self.isShowingHostedCheckoutPurchaseSucceeded = true
-            case .cancelled:
-                break
             }
         }
     }

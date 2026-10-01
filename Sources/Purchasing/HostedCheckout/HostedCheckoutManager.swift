@@ -70,13 +70,6 @@ final class HostedCheckoutManager {
         return await self.poller.poll(operationSessionID: operationSessionID, appUserID: appUserID)
     }
 
-    /// Settles a checkout the customer dismissed before it sent them anywhere, where nothing says whether
-    /// they paid. `appUserID` is the customer the session was created for, as in
-    /// ``pollCheckout(operationSessionID:appUserID:)``.
-    func pollDismissedCheckout(operationSessionID: String, appUserID: String) async -> HostedCheckoutPollResult {
-        return await self.poller.pollDismissed(operationSessionID: operationSessionID, appUserID: appUserID)
-    }
-
 }
 
 /// What the caller should do once ``HostedCheckoutManager`` has been asked to start a checkout.

@@ -23,7 +23,6 @@ enum HostedCheckoutStrings {
     case product_already_purchased(_ packageID: String)
     case error_creating_session(_ error: BackendError)
     case unrecognized_status(_ status: String)
-    case unrecognized_payment_status(_ paymentStatus: String)
     case poll_start(_ operationSessionID: String, maxAttempts: Int)
     case poll_succeeded(_ operationSessionID: String)
     case poll_failed(_ operationSessionID: String, code: Int?, message: String?)
@@ -34,9 +33,6 @@ enum HostedCheckoutStrings {
     case poll_timed_out(_ operationSessionID: String, timeout: TimeInterval)
     case poll_fetching_customer_info(_ operationSessionID: String)
     case poll_customer_info_refresh_failed(_ operationSessionID: String)
-    case dismissed_without_paying(_ operationSessionID: String)
-    case payment_status_unknown(_ operationSessionID: String)
-    case payment_status_undetermined(_ operationSessionID: String)
 
 }
 
@@ -57,8 +53,6 @@ extension HostedCheckoutStrings: LogMessage {
             return "Error creating the checkout session: \(error.localizedDescription)"
         case let .unrecognized_status(status):
             return "Unrecognized checkout session status '\(status)'. Treating the session as still under way."
-        case let .unrecognized_payment_status(paymentStatus):
-            return "Unrecognized checkout payment status '\(paymentStatus)'. Treating the payment as undetermined."
         case let .poll_start(operationSessionID, maxAttempts):
             return "Starting to poll checkout session \(operationSessionID), up to \(maxAttempts) times."
         case let .poll_succeeded(operationSessionID):
@@ -84,13 +78,6 @@ extension HostedCheckoutStrings: LogMessage {
         case let .poll_customer_info_refresh_failed(operationSessionID):
             return "Could not fetch CustomerInfo, though checkout session \(operationSessionID) says the " +
             "customer owns the product. Clearing the cached CustomerInfo, so the next read fetches it."
-        case let .dismissed_without_paying(operationSessionID):
-            return "Checkout session \(operationSessionID) was dismissed without a payment."
-        case let .payment_status_unknown(operationSessionID):
-            return "The backend does not know yet whether checkout session \(operationSessionID) was paid for."
-        case let .payment_status_undetermined(operationSessionID):
-            return "Gave up learning whether the dismissed checkout session \(operationSessionID) was paid for. " +
-            "Settling it as unconfirmed."
         }
     }
 

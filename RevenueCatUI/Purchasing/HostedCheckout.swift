@@ -75,28 +75,15 @@ enum HostedCheckout {
         return action
     }
 
-    /// How the customer left a checkout that did not end on its cancel page.
-    enum Exit {
-
-        /// The page sent them to the success URL.
-        case successPage
-
-        /// They closed the sheet before the page sent them anywhere.
-        case closedSheet
-
-    }
-
-    /// How the paywall settles on the outcome the backend gives for a checkout.
+    /// How the paywall settles on the outcome the backend gives for a checkout that ended on its success page.
     ///
-    /// Only a purchase the backend confirms counts as one, and only a checkout dismissed without paying
-    /// counts as a cancellation. Anything else is an error: either the customer saw the success page, which
-    /// always tells them the purchase went through, or a payment was under way when they closed the sheet.
+    /// Only a purchase the backend confirms counts as one. Anything else is an error, since the success page
+    /// always tells the customer the purchase went through.
     enum Resolution: Equatable {
 
         case purchased
         case tellCustomerTheyAlreadyOwnIt
         case failed(HostedCheckoutError)
-        case cancelled
 
         init(_ result: HostedCheckoutPollResult) {
             switch result {
@@ -108,15 +95,13 @@ enum HostedCheckout {
                 self = .failed(.failed(code: code))
             case .undetermined:
                 self = .failed(.unconfirmed)
-            case .abandoned:
-                self = .cancelled
             }
         }
 
     }
 
-    /// Asks the backend for the final outcome of a checkout the customer left without going through its cancel
-    /// page, then settles the paywall on it.
+    /// Asks the backend for the final outcome of a checkout that ended on its success page, then settles the
+    /// paywall on it.
     ///
     /// A purchase the backend confirms but the paywall cannot report, for lack of the `CustomerInfo` showing it,
     /// settles as unconfirmed: as far as the app can tell, it is still processing.
@@ -127,19 +112,10 @@ enum HostedCheckout {
     /// - Parameter package: The package the checkout was started for, when it is still known.
     @MainActor
     static func resolve(_ session: HostedCheckoutSession,
-                        after exit: Exit,
                         package: Package?,
                         purchaseHandler: PurchaseHandler) async -> Resolution {
         return await purchaseHandler.whileConfirmingHostedCheckout {
-            let result: HostedCheckoutPollResult
-
-            switch exit {
-            case .successPage:
-                result = await purchaseHandler.pollHostedCheckout(session: session)
-            case .closedSheet:
-                result = await purchaseHandler.pollDismissedHostedCheckout(session: session)
-            }
-
+            let result = await purchaseHandler.pollHostedCheckout(session: session)
             var resolution = Resolution(result)
 
             if resolution == .purchased, !(await purchaseHandler.canReportHostedCheckoutPurchase()) {
@@ -151,8 +127,6 @@ enum HostedCheckout {
                 break
             case let .failed(error):
                 purchaseHandler.handleHostedCheckoutFailure(error, package: package)
-            case .cancelled:
-                await purchaseHandler.handleHostedCheckoutCancellation(package: package)
             case .tellCustomerTheyAlreadyOwnIt:
                 // Neither a purchase nor a cancellation, just as when the checkout never opened for this reason:
                 // the paywall only tells the customer.
