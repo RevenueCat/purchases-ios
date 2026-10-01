@@ -1069,9 +1069,9 @@ struct WorkflowPaywallView: View {
         )
     }
 
-    /// Builds the first page once `initialTrigger` picked its step, replacing the skeleton.
-    /// SwiftUI re-runs `.task` when the view reappears, so this must not rebuild over the pages the
-    /// back stack still points at.
+    /// Builds the first page from `initialTrigger`, replacing the skeleton. `.task` re-runs when the
+    /// view reappears but the back stack survives, so building twice would leave `seenPages` holding
+    /// only this step and break back navigation.
     private func startInitialStep() {
         guard self.transitionState.currentPage == nil, !self.presentationState.hasFailed else { return }
 
