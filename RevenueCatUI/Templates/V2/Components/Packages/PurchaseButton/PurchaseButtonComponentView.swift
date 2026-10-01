@@ -269,10 +269,6 @@ struct PurchaseButtonComponentView: View {
                                              checkout: HostedCheckout.KeptCheckout) {
         switch outcome {
         case .returned(.success):
-            if self.purchaseHandler.keptHostedCheckout === checkout {
-                self.purchaseHandler.keptHostedCheckout = nil
-            }
-
             self.resolveHostedCheckout(checkout.session, package: checkout.package)
         case .dismissed:
             // The checkout stays kept: a customer who paid moments before closing the sheet has that purchase

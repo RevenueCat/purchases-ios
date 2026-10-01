@@ -78,9 +78,7 @@ enum HostedCheckout {
         let action = Action(await purchaseHandler.startHostedCheckout(package: package,
                                                                       previousSession: previousSession))
 
-        if case .confirm = action {
-            purchaseHandler.keptHostedCheckout = nil
-        } else if case let .failed(error) = action {
+        if case let .failed(error) = action {
             purchaseHandler.handleHostedCheckoutFailure(error, package: package)
         }
 
@@ -193,16 +191,26 @@ enum HostedCheckout {
 
             switch resolution {
             case .purchased:
-                break
+                Self.releaseKeptCheckout(for: session, purchaseHandler: purchaseHandler)
             case let .failed(error):
+                // The checkout stays kept, so that tapping buy again confirms this payment rather than starting a
+                // second checkout the customer could pay for too.
                 purchaseHandler.handleHostedCheckoutFailure(error, package: package)
             case .tellCustomerTheyAlreadyOwnIt:
                 // Neither a purchase nor a cancellation, just as when the checkout never opened for this reason:
                 // the paywall only tells the customer.
-                break
+                Self.releaseKeptCheckout(for: session, purchaseHandler: purchaseHandler)
             }
 
             return resolution
+        }
+    }
+
+    /// Leaves alone a checkout that has since replaced the one being resolved.
+    @MainActor
+    private static func releaseKeptCheckout(for session: HostedCheckoutSession, purchaseHandler: PurchaseHandler) {
+        if purchaseHandler.keptHostedCheckout?.session == session {
+            purchaseHandler.keptHostedCheckout = nil
         }
     }
 
