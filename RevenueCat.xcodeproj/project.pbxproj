@@ -1515,7 +1515,7 @@
 		73A670000000000000000001 /* CheckpointIdentifierValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A670000000000000000011 /* CheckpointIdentifierValidator.swift */; };
 		73A640000000000000000003 /* WorkflowPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000013 /* WorkflowPresenter.swift */; };
 		73A640000000000000000004 /* WorkflowPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000014 /* WorkflowPresentation.swift */; };
-		73A640000000000000000005 /* CheckpointPresentationMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000015 /* CheckpointPresentationMode.swift */; };
+		73A640000000000000000020 /* CheckpointPresentationMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000021 /* CheckpointPresentationMode.swift */; };
 		73A640000000000000000005 /* CheckpointsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000015 /* CheckpointsManager.swift */; };
 		73A680000000000000000001 /* CheckpointPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A680000000000000000011 /* CheckpointPresenter.swift */; };
 		73A680000000000000000003 /* PaywallPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A680000000000000000013 /* PaywallPresenter.swift */; };
@@ -2200,7 +2200,7 @@
 		73A670000000000000000011 /* CheckpointIdentifierValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointIdentifierValidator.swift; sourceTree = "<group>"; };
 		73A640000000000000000013 /* WorkflowPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowPresenter.swift; sourceTree = "<group>"; };
 		73A640000000000000000014 /* WorkflowPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowPresentation.swift; sourceTree = "<group>"; };
-		73A640000000000000000015 /* CheckpointPresentationMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointPresentationMode.swift; sourceTree = "<group>"; };
+		73A640000000000000000021 /* CheckpointPresentationMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointPresentationMode.swift; sourceTree = "<group>"; };
 		73A640000000000000000015 /* CheckpointsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointsManager.swift; sourceTree = "<group>"; };
 		73A680000000000000000011 /* CheckpointPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointPresenter.swift; sourceTree = "<group>"; };
 		73A680000000000000000013 /* PaywallPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallPresenter.swift; sourceTree = "<group>"; };
@@ -3904,7 +3904,7 @@
 				73A670000000000000000011 /* CheckpointIdentifierValidator.swift */,
 				73A680000000000000000011 /* CheckpointPresenter.swift */,
 				73A640000000000000000014 /* WorkflowPresentation.swift */,
-				73A640000000000000000015 /* CheckpointPresentationMode.swift */,
+				73A640000000000000000021 /* CheckpointPresentationMode.swift */,
 				73A640000000000000000013 /* WorkflowPresenter.swift */,
 				73A640000000000000000015 /* CheckpointsManager.swift */,
 				73A680000000000000000013 /* PaywallPresenter.swift */,
@@ -9086,7 +9086,7 @@
 				73A670000000000000000001 /* CheckpointIdentifierValidator.swift in Sources */,
 				73A680000000000000000001 /* CheckpointPresenter.swift in Sources */,
 				73A640000000000000000004 /* WorkflowPresentation.swift in Sources */,
-				73A640000000000000000005 /* CheckpointPresentationMode.swift in Sources */,
+				73A640000000000000000020 /* CheckpointPresentationMode.swift in Sources */,
 				73A640000000000000000003 /* WorkflowPresenter.swift in Sources */,
 				73A640000000000000000005 /* CheckpointsManager.swift in Sources */,
 				73A680000000000000000003 /* PaywallPresenter.swift in Sources */,
