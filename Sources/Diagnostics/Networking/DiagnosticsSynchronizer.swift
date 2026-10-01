@@ -37,7 +37,7 @@ actor DiagnosticsSynchronizer: DiagnosticsSynchronizerType {
         handler: DiagnosticsFileHandlerType,
         tracker: DiagnosticsTrackerType?,
         userDefaults: SynchronizedUserDefaults,
-        collectionDecision: DiagnosticsCollectionDecision = .enabled
+        collectionDecision: DiagnosticsCollectionDecision
     ) {
         self.internalAPI = internalAPI
         self.handler = handler

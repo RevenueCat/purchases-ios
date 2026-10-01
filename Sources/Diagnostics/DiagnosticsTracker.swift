@@ -194,7 +194,7 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
     private let appSessionID: UUID
 
     init(diagnosticsFileHandler: DiagnosticsFileHandlerType,
-         collectionDecision: DiagnosticsCollectionDecision = .enabled,
+         collectionDecision: DiagnosticsCollectionDecision,
          diagnosticsDispatcher: OperationDispatcher = .default,
          dateProvider: DateProvider = DateProvider(),
          appSessionID: UUID = SystemInfo.appSessionID) {

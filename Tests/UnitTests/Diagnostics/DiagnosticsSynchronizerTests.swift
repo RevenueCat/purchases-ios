@@ -42,7 +42,8 @@ class DiagnosticsSynchronizerTests: TestCase {
         self.synchronizer = .init(internalAPI: self.api,
                                   handler: self.handler,
                                   tracker: self.tracker,
-                                  userDefaults: .init(userDefaults: self.userDefaults))
+                                  userDefaults: .init(userDefaults: self.userDefaults),
+                                  collectionDecision: .enabled)
     }
 
     override func tearDownWithError() throws {
@@ -375,7 +376,8 @@ private extension DiagnosticsSynchronizerTests {
         self.synchronizer = .init(internalAPI: self.api,
                                   handler: self.handler,
                                   tracker: self.tracker,
-                                  userDefaults: .init(userDefaults: mockUserDefaults))
+                                  userDefaults: .init(userDefaults: mockUserDefaults),
+                                  collectionDecision: .enabled)
 
         return mockUserDefaults
     }

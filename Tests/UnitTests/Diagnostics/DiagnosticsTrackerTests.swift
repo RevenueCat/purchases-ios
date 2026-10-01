@@ -35,6 +35,7 @@ class DiagnosticsTrackerTests: TestCase {
         self.diagnosticsDispatcher = MockOperationDispatcher()
         self.dateProvider = .init(stubbedNow: Self.eventTimestamp1, subsequentNows: Self.eventTimestamp2)
         self.tracker = .init(diagnosticsFileHandler: self.handler,
+                             collectionDecision: .enabled,
                              diagnosticsDispatcher: self.diagnosticsDispatcher,
                              dateProvider: self.dateProvider)
     }
