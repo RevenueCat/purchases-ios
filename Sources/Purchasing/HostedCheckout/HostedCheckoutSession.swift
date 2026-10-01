@@ -29,19 +29,14 @@ import Foundation
     /// Where the provider sends the customer once checkout succeeds.
     @_spi(Internal) public let successURL: URL
 
-    /// Where the provider sends the customer once checkout is abandoned.
-    @_spi(Internal) public let cancelURL: URL
-
     @_spi(Internal) public init(operationSessionID: String,
                                 appUserID: String,
                                 checkoutURL: URL,
-                                successURL: URL,
-                                cancelURL: URL) {
+                                successURL: URL) {
         self.operationSessionID = operationSessionID
         self.appUserID = appUserID
         self.checkoutURL = checkoutURL
         self.successURL = successURL
-        self.cancelURL = cancelURL
     }
 
 }
@@ -54,8 +49,7 @@ extension HostedCheckoutSession {
         self.init(operationSessionID: response.operationSessionID,
                   appUserID: appUserID,
                   checkoutURL: response.checkoutURL,
-                  successURL: response.successURL,
-                  cancelURL: response.cancelURL)
+                  successURL: response.successURL)
     }
 
 }
