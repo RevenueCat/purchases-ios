@@ -345,7 +345,7 @@ final class HostedCheckoutTests: TestCase {
 
         expect(confirmed).to(haveCount(1))
         expect(confirmed.first) === kept
-        expect(handler.keptHostedCheckout).to(beNil())
+        expect(handler.keptHostedCheckout) === kept
     }
 
     @MainActor

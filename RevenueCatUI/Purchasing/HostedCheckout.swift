@@ -120,7 +120,7 @@ enum HostedCheckout {
     /// success URL. That happens when the customer paid just before closing the sheet: the provider redirects the page
     /// once the payment goes through.
     ///
-    /// - Parameter onSuccess: Called with the checkout to confirm, once it is no longer kept.
+    /// - Parameter onSuccess: Called with the checkout to confirm.
     @MainActor
     static func confirmOnSuccessWhileHidden(_ checkout: KeptCheckout,
                                             purchaseHandler: PurchaseHandler,
@@ -133,7 +133,6 @@ enum HostedCheckout {
                 return
             }
 
-            purchaseHandler.keptHostedCheckout = nil
             onSuccess(checkout)
         }
     }
