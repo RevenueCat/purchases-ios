@@ -1088,7 +1088,6 @@ platform :ios do
     end
 
     sentry_args = sentry_ci_metadata(
-      repo_name: REPO_NAME,
       org_slug: SENTRY_ORG_SLUG,
       project_slug: SENTRY_PROJECT_SLUG
     ).merge(

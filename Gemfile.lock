@@ -6,7 +6,7 @@ GIT
 
 GIT
   remote: https://github.com/RevenueCat/fastlane-plugin-revenuecat_internal
-  revision: a56ca90dbf17e9bfdf3800e1d0646f1272a55c18
+  revision: 60df5241e3d8a5b6d10f2747c84dfd7936c2b6f1
   branch: rickvdl/sentry-ci-metadata
   specs:
     fastlane-plugin-revenuecat_internal (0.1.0)
