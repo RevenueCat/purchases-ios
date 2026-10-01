@@ -66,8 +66,11 @@ private func checkPaywallPresentationAPI(
 }
 
 @MainActor
-private func checkErrorPresentationAPI(_ presenter: ErrorPresenter) {
-    let _: ErrorPresenter = presenter
+private func checkErrorPresentationAPI(_ purchases: Purchases) {
+    let globalPresenter = CheckpointAPIErrorPresenter()
+    purchases.errorPresenter = globalPresenter
+    let _: ErrorPresenter? = purchases.errorPresenter
+
     let presenter: ErrorPresentationHandler = { params, completion in
         let _: String = params.checkpointIdentifier
         let _: any Error = params.error
@@ -79,6 +82,7 @@ private func checkErrorPresentationAPI(_ presenter: ErrorPresenter) {
     }
 
     let _: ErrorPresentationHandler = presenter
+    purchases.checkpoint("test_checkpoint", errorPresenter: presenter) { _ in }
 }
 
 @MainActor
