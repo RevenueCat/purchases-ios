@@ -30,6 +30,21 @@ final class AudiencesConfigProviderTests: TestCase {
         expect(manager.invokedBlobDataParameters).to(beEmpty())
     }
 
+    func testLifecycleCommitWarmsAudienceConfiguration() async throws {
+        let manager = MockRemoteConfigManager()
+        manager.stubbedTopics[.audiences] = ["default": .init(blobRef: "audiences-ref", prefetch: true)]
+        manager.stubbedBlobData[.audiences] = [
+            "default": #"{ "aud_123": { "id": "aud_123", "rules": {} } }"#.asData
+        ]
+        let provider = AudiencesConfigProvider(manager: manager)
+
+        provider.remoteConfigEventReceived(.committed(generation: manager.configGeneration))
+
+        await expect(manager.invokedCachedBlobDataParameters.count).toEventually(equal(1))
+        let configuration = try await provider.configuration()
+        expect(configuration?.audiences["aud_123"]?.id) == "aud_123"
+    }
+
     func testWarmSkipsAudienceConfigurationWithoutPrefetch() async throws {
         let manager = MockRemoteConfigManager()
         manager.stubbedTopics[.audiences] = ["default": .init(blobRef: "audiences-ref", prefetch: false)]

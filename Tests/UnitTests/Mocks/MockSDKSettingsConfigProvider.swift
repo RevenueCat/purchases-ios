@@ -32,7 +32,7 @@ final class MockSDKSettingsConfigProvider: SDKSettingsConfigProviderType {
         return self.stubbedCachedSettings
     }
 
-    func remoteConfigStateDidChange(generation _: Int) {}
+    func remoteConfigEventReceived(_: RemoteConfigLifecycleEvent) {}
 
 }
 

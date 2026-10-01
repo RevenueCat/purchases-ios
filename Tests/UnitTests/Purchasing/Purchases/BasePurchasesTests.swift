@@ -743,6 +743,8 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
         return self.stubbedHasCommittedConfig
     }
 
+    func addConfigLifecycleObserver(_ observer: RemoteConfigLifecycleObserver) {}
+
     var stubbedTopics: [RemoteConfigTopic: RemoteConfiguration.ConfigTopic] = [:]
     var stubbedBlobData: [RemoteConfigTopic: [String: Data]] = [:]
     private let _invokedCachedBlobDataParameters: Atomic<[(topic: RemoteConfigTopic, itemKey: String)]> = .init([])

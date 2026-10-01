@@ -62,16 +62,17 @@ class SDKSettingsConfigProviderTests: TestCase {
         expect(settings) == SDKSettings()
     }
 
-    func testHasNoCachedSettingsBeforeRefresh() {
+    func testHasNoCachedSettingsBeforeLoading() {
         expect(self.provider.cachedSettings()).to(beNil())
     }
 
-    func testCachesSettingsBeforeNotifyingDelegateWhenRefreshed() async {
+    func testLoadsAndDeliversSettingsAfterTheInFlightRefreshResolves() async {
+        self.manager.committedTopicAfterInFlightRefreshHandler = { _ in ["default": .init()] }
         let expectation = self.expectation(description: "settings updated")
         self.delegate.expectation = expectation
         self.provider.delegate = self.delegate
 
-        await self.provider.refresh()
+        await self.provider.readAndDeliverSettings()
 
         await self.fulfillment(of: [expectation], timeout: 1)
         expect(self.provider.cachedSettings()) == SDKSettings()
@@ -79,7 +80,7 @@ class SDKSettingsConfigProviderTests: TestCase {
     }
 
     func testInvalidatesCachedSettingsWhenGenerationChanges() async {
-        await self.provider.refresh()
+        await self.provider.readAndDeliverSettings()
 
         self.manager.configGeneration += 1
 
@@ -89,9 +90,9 @@ class SDKSettingsConfigProviderTests: TestCase {
     func testDoesNotNotifyDelegateWhenSettingsHaveNotChanged() async {
         self.provider.delegate = self.delegate
 
-        await self.provider.refresh()
+        await self.provider.readAndDeliverSettings()
         self.manager.configGeneration += 1
-        await self.provider.refresh()
+        await self.provider.readAndDeliverSettings()
 
         expect(self.delegate.invokedDidUpdateCount) == 1
     }
@@ -100,21 +101,46 @@ class SDKSettingsConfigProviderTests: TestCase {
         self.manager.stubbedHasCommittedConfig = false
         self.provider.delegate = self.delegate
 
-        await self.provider.refresh()
+        await self.provider.readAndDeliverSettings()
 
         expect(self.provider.cachedSettings()).to(beNil())
         expect(self.delegate.settings).to(beNil())
     }
 
-    func testStateObserverRefreshesAndNotifiesDelegate() async {
+    func testConfigLifecycleCommitLoadsAndNotifiesDelegate() async {
         let expectation = self.expectation(description: "settings updated")
         self.delegate.expectation = expectation
         self.provider.delegate = self.delegate
 
-        self.provider.remoteConfigStateDidChange(generation: self.manager.configGeneration)
+        self.provider.remoteConfigEventReceived(.committed(generation: self.manager.configGeneration))
 
         await self.fulfillment(of: [expectation], timeout: 1)
         expect(self.provider.cachedSettings()) == SDKSettings()
+    }
+
+    func testObserverRegisteredDoesNotLoadSettings() {
+        self.provider.remoteConfigEventReceived(.observerRegistered(generation: self.manager.configGeneration))
+
+        expect(self.manager.invokedCommittedTopicAfterInFlightRefreshCount) == 0
+    }
+
+    func testRepeatedAppStartRefreshCompletionsReloadSettingsWithoutRedeliveringUnchangedSettings() async {
+        let expectation = self.expectation(description: "settings updated")
+        self.delegate.expectation = expectation
+        self.provider.delegate = self.delegate
+
+        self.provider.remoteConfigEventReceived(
+            .refreshFinished(fetchContext: .appStart, generation: self.manager.configGeneration)
+        )
+
+        await self.fulfillment(of: [expectation], timeout: 1)
+
+        self.provider.remoteConfigEventReceived(
+            .refreshFinished(fetchContext: .appStart, generation: self.manager.configGeneration)
+        )
+
+        await expect(self.manager.invokedCommittedTopicAfterInFlightRefreshCount).toEventually(equal(2))
+        await expect(self.delegate.invokedDidUpdateCount).toEventually(equal(1))
     }
 
 }
