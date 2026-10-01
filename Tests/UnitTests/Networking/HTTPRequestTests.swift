@@ -36,7 +36,7 @@ class HTTPRequestTests: TestCase {
         .postSubscriberAttributes(appUserID: userID),
         .health,
         .getProductEntitlementMapping,
-        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID),
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil),
         .remoteConfig(domain: "app"),
         .postExternalPurchaseToken
     ]
@@ -55,7 +55,7 @@ class HTTPRequestTests: TestCase {
         .health,
         .getOfferings(appUserID: userID),
         .getProductEntitlementMapping,
-        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID),
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil),
         .remoteConfig(domain: "app")
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path> = [
@@ -64,7 +64,7 @@ class HTTPRequestTests: TestCase {
         .postReceiptData,
         .health,
         .remoteConfig(domain: "app"),
-        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID)
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil)
     ]
     private static let pathsWithUserID: [HTTPRequest.Path] = [
         .getCustomerInfo(appUserID: anonymousUser),
@@ -551,7 +551,7 @@ class HTTPRequestTests: TestCase {
         .postRedeemWebPurchase: "subscribers/redeem_purchase",
         .postCreateTicket: "customercenter/support/create-ticket",
         .isPurchaseAllowedByRestoreBehavior(appUserID: userID): "customer/restore/eligibility",
-        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID):
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil):
             "subscribers/\(userID)/ads/reward_verifications/\(clientTransactionID)",
         .remoteConfig(domain: "app"): "config/app"
     ]

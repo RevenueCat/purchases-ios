@@ -188,7 +188,7 @@ extension HTTPRequest {
         case postExternalPurchaseToken
         case postCreateTicket
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
-        case rewardVerificationStatus(appUserID: String, clientTransactionID: String, adUnitID: String? = nil)
+        case rewardVerificationStatus(appUserID: String, clientTransactionID: String, adUnitID: String?)
         case remoteConfig(domain: String)
 
         case tokenLogin

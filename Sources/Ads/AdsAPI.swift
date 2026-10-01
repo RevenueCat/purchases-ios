@@ -29,7 +29,7 @@ class AdsAPI {
     func getRewardVerificationStatus(
         appUserID: String,
         clientTransactionID: String,
-        adUnitID: String? = nil,
+        adUnitID: String?,
         completion: @escaping RewardVerificationStatusResponseHandler
     ) {
         let config = GetRewardVerificationStatusOperation.Configuration(

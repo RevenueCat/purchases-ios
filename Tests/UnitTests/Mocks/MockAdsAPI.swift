@@ -33,7 +33,7 @@ class MockAdsAPI: AdsAPI {
     override func getRewardVerificationStatus(
         appUserID: String,
         clientTransactionID: String,
-        adUnitID: String? = nil,
+        adUnitID: String?,
         completion: @escaping RewardVerificationStatusResponseHandler
     ) {
         invokedGetRewardVerificationStatus = true

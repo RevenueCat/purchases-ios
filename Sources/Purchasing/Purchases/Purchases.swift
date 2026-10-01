@@ -2216,7 +2216,7 @@ extension Purchases {
     /// - Throws: `BackendError`
     internal func fetchRewardVerificationStatus(
         clientTransactionID: String,
-        adUnitID: String? = nil
+        adUnitID: String?
     ) async throws -> RewardVerificationPollStatus {
         let response = try await Async.call { completion in
             self.backend.adsAPI.getRewardVerificationStatus(

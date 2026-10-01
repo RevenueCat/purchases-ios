@@ -68,7 +68,7 @@ internal extension RewardVerification {
 
         /// Production poller wired to `Purchases.shared.fetchRewardVerificationStatus(...)` and
         /// `Task.sleep`.
-        static func makeDefault(adUnitID: String? = nil) -> Poller {
+        static func makeDefault(adUnitID: String?) -> Poller {
             Poller(
                 statusPoller: PurchasesStatusPoller(adUnitID: adUnitID),
                 sleeper: TaskSleeper()
