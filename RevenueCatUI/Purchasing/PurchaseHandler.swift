@@ -39,11 +39,18 @@ final class PurchaseHandler: ObservableObject {
     private var cancellables: Set<AnyCancellable> = Set()
 
     private let purchases: PaywallPurchasesType
+    let resolveBranches: @Sendable (WorkflowStep) async -> [WorkflowActionID: WorkflowStepID]
     private let paywallEventTracker: PaywallEventTracker
     private let keyWindowFocusResigner: KeyWindowFocusResigning
 
     /// Side-by-side paywalls should use separate `PurchaseHandler` instances so each keeps its own session.
     private var activePaywallSessionID: PaywallEvent.SessionID?
+
+    #if os(iOS) && canImport(WebKit)
+    /// The checkout this paywall's customer was last given and has not settled. Released with the paywall
+    /// session, so a customer who comes back later starts afresh.
+    var keptHostedCheckout: HostedCheckout.KeptCheckout?
+    #endif
 
     /// Where responsibility for completing purchases lies
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
@@ -182,6 +189,7 @@ final class PurchaseHandler: ObservableObject {
     ) {
         self.init(isConfigured: true,
                   purchases: purchases,
+                  resolveBranches: { [purchases] in await purchases.resolveBranches(in: $0) },
                   performPurchase: performPurchase,
                   performRestore: performRestore,
                   purchaseResultPublisher: purchaseResultPublisher,
@@ -193,6 +201,8 @@ final class PurchaseHandler: ObservableObject {
     init(
         isConfigured: Bool = true,
         purchases: PaywallPurchasesType,
+        resolveBranches: @escaping @Sendable (WorkflowStep) async -> [WorkflowActionID: WorkflowStepID]
+            = { _ in [:] },
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
@@ -203,6 +213,7 @@ final class PurchaseHandler: ObservableObject {
     ) {
         self.isConfigured = isConfigured
         self.purchases = purchases
+        self.resolveBranches = resolveBranches
         self.paywallEventTracker = eventTracker
         self.keyWindowFocusResigner = keyWindowFocusResigner
         self.performPurchase = performPurchase
@@ -286,6 +297,9 @@ final class PurchaseHandler: ObservableObject {
         self.purchaseResult = nil
         self.restoredCustomerInfo = nil
         self.activePaywallSessionID = nil
+        #if os(iOS) && canImport(WebKit)
+        self.keptHostedCheckout = nil
+        #endif
     }
 
 }
@@ -350,15 +364,49 @@ extension PurchaseHandler {
 
     /// Asks for a checkout the customer completes without leaving the app, with the paywall marked as busy
     /// throughout so the button they tapped cannot start a second one.
-    func startHostedCheckout(package: Package) async -> HostedCheckoutStartResult {
+    ///
+    /// - Parameter previousSession: The checkout this paywall gave the customer before, for the backend to
+    /// hand back if they can still carry on with it.
+    func startHostedCheckout(package: Package,
+                             previousSession: HostedCheckoutSession?) async -> HostedCheckoutStartResult {
         // Carried so that the purchase the customer makes on the page is attributed to the paywall that sent
         // them there.
         let paywallEvent = self.createPurchaseInitiatedEvent(package: package)
         if let paywallEvent { self.track(paywallEvent) }
 
         return await self.withExternalPurchasePreparation {
-            await self.purchases.startHostedCheckout(package: package, paywallEvent: paywallEvent)
+            await self.purchases.startHostedCheckout(package: package,
+                                                     paywallEvent: paywallEvent,
+                                                     previousSession: previousSession)
         }
+    }
+
+    /// Runs `confirmation` with the paywall showing a purchase under way, for a checkout the backend still has
+    /// to confirm.
+    ///
+    /// A checkout confirmed while the customer is busy with something else, as when its page returned after they
+    /// closed it, is confirmed without showing it: that would end what they are doing.
+    @MainActor
+    func whileConfirmingHostedCheckout<T>(_ confirmation: () async -> T) async -> T {
+        guard !self.actionInProgress else {
+            return await confirmation()
+        }
+
+        self.purchaseError = nil
+        self.startAction(.purchase)
+        defer { self.actionTypeInProgress = nil }
+
+        return await confirmation()
+    }
+
+    func pollHostedCheckout(session: HostedCheckoutSession) async -> HostedCheckoutPollResult {
+        return await self.purchases.pollHostedCheckout(session: session)
+    }
+
+    /// Whether a checkout the backend confirmed can be reported, which takes the `CustomerInfo` showing the
+    /// purchase. The SDK fetches it while confirming the purchase, but that fetch can fail.
+    func canReportHostedCheckoutPurchase() async -> Bool {
+        return (try? await self.purchases.customerInfo()) != nil
     }
 
     /// Whether web purchase links opened in the browser go through Apple's external purchase flow first.
@@ -888,18 +936,27 @@ extension PurchaseHandler {
 
     // MARK: - Hosted checkout
 
-    /// Reports a checkout the customer completed on a page presented inside the app.
+    /// Reports a checkout the backend confirmed the customer completed on a page presented inside the app, once
+    /// the customer has been told the purchase went through.
     ///
     /// There is no transaction to hand over: what was bought is known to the backend, so the paywall follows
-    /// the refreshed `CustomerInfo`.
+    /// the `CustomerInfo` the SDK fetched when confirming it.
     @MainActor
     func handleHostedCheckoutPurchase() async {
-        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        // The purchase was made outside StoreKit, so whatever is cached was fetched before it happened.
-        self.purchases.invalidateCustomerInfoCache()
-        #endif
-
         await self.reportHostedCheckoutOutcome(userCancelled: false)
+    }
+
+    /// Reports a checkout that failed, as opposed to one the customer walked away from.
+    ///
+    /// - Parameter package: The package the checkout was started for, when it is still known. Only used to
+    /// track the failure.
+    @MainActor
+    func handleHostedCheckoutFailure(_ error: Error, package: Package?) {
+        if let package {
+            self.trackPurchaseError(package: package, error: error)
+        }
+
+        self.purchaseError = error
     }
 
     /// Reports a checkout the customer abandoned on a page presented inside the app.
@@ -1244,8 +1301,14 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
         throw ErrorCode.configurationError
     }
 
-    func startHostedCheckout(package: Package, paywallEvent: PaywallEvent?) async -> HostedCheckoutStartResult {
+    func startHostedCheckout(package: Package,
+                             paywallEvent: PaywallEvent?,
+                             previousSession: HostedCheckoutSession?) async -> HostedCheckoutStartResult {
         return .failed
+    }
+
+    func pollHostedCheckout(session: HostedCheckoutSession) async -> HostedCheckoutPollResult {
+        return .undetermined
     }
 
     var useExternalPurchaseCustomLinks: Bool { false }

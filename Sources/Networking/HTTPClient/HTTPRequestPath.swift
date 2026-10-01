@@ -219,6 +219,7 @@ extension HTTPRequest {
         case getWebOfferingProducts(appUserID: String)
         case getWebBillingProducts(userId: String, productIds: Set<String>)
         case postHostedCheckout
+        case getHostedCheckoutStatus(operationSessionID: String, appUserID: String)
 
     }
 
@@ -342,6 +343,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .getCustomerInfo,
                 .logIn,
                 .postReceiptData,
+                .postRedeemWebPurchase,
                 .health,
                 .getOfferings,
                 .getProductEntitlementMapping,
@@ -358,7 +360,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postAttributionData,
                 .postAdServicesToken,
                 .postOfferForSigning,
-                .postRedeemWebPurchase,
                 .postExternalPurchaseToken,
                 .getCustomerCenterConfig,
                 .postCreateTicket,
@@ -374,6 +375,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .getCustomerInfo,
                 .logIn,
                 .postReceiptData,
+                .postRedeemWebPurchase,
                 .getVirtualCurrencies,
                 .spendVirtualCurrencies,
                 .health,
@@ -391,7 +393,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postAttributionData,
                 .postAdServicesToken,
                 .postOfferForSigning,
-                .postRedeemWebPurchase,
                 .postExternalPurchaseToken,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,

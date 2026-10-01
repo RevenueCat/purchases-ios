@@ -22,8 +22,11 @@
 "Continue" = "לְהַמשִׁיך";
 "Default_offer_details_with_intro_offer" = "התחל את תקופת הניסיון של {{ sub_offer_duration }} ולאחר מכן {{ total_price_and_per_month }}.";
 "Something went wrong" = "משהו השתבש";
+"Payment failed." = "התשלום נכשל.";
+"Your purchase is still processing." = "הרכישה שלך עדיין בעיבוד.";
 "Purchase" = "רכישה";
 "You are currently subscribed to this" = "יש לך כבר מנוי לפריט הזה";
 "You've already purchased this" = "כבר רכשת את הפריט הזה";
+"Your purchase was successful." = "הרכישה שלך בוצעה בהצלחה.";
 "Purchase unavailable" = "הרכישה אינה זמינה";
 "This purchase isn't available in your region." = "רכישה זו אינה זמינה באזור שלך.";

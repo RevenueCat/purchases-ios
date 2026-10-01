@@ -188,7 +188,13 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
         fatalError("Should not be able to purchase")
     }
 
-    func startHostedCheckout(package: Package, paywallEvent: PaywallEvent?) async -> HostedCheckoutStartResult {
+    func startHostedCheckout(package: Package,
+                             paywallEvent: PaywallEvent?,
+                             previousSession: HostedCheckoutSession?) async -> HostedCheckoutStartResult {
+        fatalError("Should not be able to purchase")
+    }
+
+    func pollHostedCheckout(session: HostedCheckoutSession) async -> HostedCheckoutPollResult {
         fatalError("Should not be able to purchase")
     }
 

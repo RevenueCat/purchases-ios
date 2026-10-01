@@ -20,23 +20,23 @@ import Foundation
 
     @_spi(Internal) public let operationSessionID: String
 
+    /// The customer the session was created for, who need not be the one logged in by the time it is settled.
+    @_spi(Internal) public let appUserID: String
+
     /// The provider-hosted page to present.
     @_spi(Internal) public let checkoutURL: URL
 
     /// Where the provider sends the customer once checkout succeeds.
     @_spi(Internal) public let successURL: URL
 
-    /// Where the provider sends the customer once checkout is abandoned.
-    @_spi(Internal) public let cancelURL: URL
-
     @_spi(Internal) public init(operationSessionID: String,
+                                appUserID: String,
                                 checkoutURL: URL,
-                                successURL: URL,
-                                cancelURL: URL) {
+                                successURL: URL) {
         self.operationSessionID = operationSessionID
+        self.appUserID = appUserID
         self.checkoutURL = checkoutURL
         self.successURL = successURL
-        self.cancelURL = cancelURL
     }
 
 }
@@ -45,11 +45,17 @@ extension HostedCheckoutSession: Equatable, Sendable {}
 
 extension HostedCheckoutSession {
 
-    init(response: HostedCheckoutResponse) {
-        self.init(operationSessionID: response.operationSessionID,
-                  checkoutURL: response.checkoutURL,
-                  successURL: response.successURL,
-                  cancelURL: response.cancelURL)
+    init(operationSessionID: String, page: HostedCheckoutResponse.Page, appUserID: String) {
+        self.init(operationSessionID: operationSessionID,
+                  appUserID: appUserID,
+                  checkoutURL: page.checkoutURL,
+                  successURL: page.successURL)
+    }
+
+    /// The checkout page is the success page itself: the provider already took the payment for this session, but
+    /// the backend had not heard about it yet when it was asked.
+    var isAlreadyPaid: Bool {
+        return self.checkoutURL == self.successURL
     }
 
 }

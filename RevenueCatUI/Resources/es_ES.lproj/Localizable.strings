@@ -22,8 +22,11 @@
 "Continue" = "Continuar";
 "Default_offer_details_with_intro_offer" = "{{ sub_offer_duration }} gratis y luego {{ total_price_and_per_month }}.";
 "Something went wrong" = "Algo salió mal";
+"Payment failed." = "El pago ha fallado.";
+"Your purchase is still processing." = "Tu compra aún se está procesando.";
 "Purchase" = "Comprar";
 "You are currently subscribed to this" = "Ya estás suscrito a esto";
 "You've already purchased this" = "Ya has comprado esto";
+"Your purchase was successful." = "Tu compra se ha realizado correctamente.";
 "Purchase unavailable" = "Compra no disponible";
 "This purchase isn't available in your region." = "Esta compra no está disponible en tu región.";

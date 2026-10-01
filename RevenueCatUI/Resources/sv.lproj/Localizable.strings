@@ -22,8 +22,11 @@
 "Continue" = "Fortsätta";
 "Default_offer_details_with_intro_offer" = "Starta din provperiod på {{ sub_offer_duration }} och sedan {{ total_price_and_per_month }}.";
 "Something went wrong" = "Något gick fel";
+"Payment failed." = "Betalningen gick inte igenom.";
+"Your purchase is still processing." = "Ditt köp behandlas fortfarande.";
 "Purchase" = "Köp";
 "You are currently subscribed to this" = "Du abonnerar redan på detta";
 "You've already purchased this" = "Du har redan köpt detta";
+"Your purchase was successful." = "Ditt köp har genomförts.";
 "Purchase unavailable" = "Köpet är inte tillgängligt";
 "This purchase isn't available in your region." = "Det här köpet är inte tillgängligt i din region.";
