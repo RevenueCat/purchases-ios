@@ -81,14 +81,18 @@ enum HostedCheckout {
     /// always tells the customer the purchase went through.
     enum Resolution: Equatable {
 
-        case purchased
+        /// Carries the `CustomerInfo` the purchase is reported with, fetched before the customer is told about it.
+        case purchased(CustomerInfo)
         case tellCustomerTheyAlreadyOwnIt
         case failed(HostedCheckoutError)
 
-        init(_ result: HostedCheckoutPollResult) {
+        /// - Parameter customerInfo: The `CustomerInfo` showing the purchase, when the backend confirmed one and
+        /// it could be fetched. Without it, the purchase cannot be reported, so as far as the app can tell it is
+        /// still processing.
+        init(_ result: HostedCheckoutPollResult, customerInfo: CustomerInfo?) {
             switch result {
             case .succeeded:
-                self = .purchased
+                self = customerInfo.map(Self.purchased) ?? .failed(.unconfirmed)
             case .alreadyPurchased:
                 self = .tellCustomerTheyAlreadyOwnIt
             case let .failed(code, _):
@@ -106,8 +110,9 @@ enum HostedCheckout {
     /// A purchase the backend confirms but the paywall cannot report, for lack of the `CustomerInfo` showing it,
     /// settles as unconfirmed: as far as the app can tell, it is still processing.
     ///
-    /// A purchase is left for the caller to report with ``PurchaseHandler/handleHostedCheckoutPurchase()``
-    /// once the customer has been told about it, since reporting it can close the paywall.
+    /// A purchase is left for the caller to report with
+    /// ``PurchaseHandler/handleHostedCheckoutPurchase(customerInfo:)`` once the customer has been told about it,
+    /// since reporting it can close the paywall.
     ///
     /// - Parameter package: The package the checkout was started for, when it is still known.
     @MainActor
@@ -116,11 +121,8 @@ enum HostedCheckout {
                         purchaseHandler: PurchaseHandler) async -> Resolution {
         return await purchaseHandler.whileConfirmingHostedCheckout {
             let result = await purchaseHandler.pollHostedCheckout(session: session)
-            var resolution = Resolution(result)
-
-            if resolution == .purchased, !(await purchaseHandler.canReportHostedCheckoutPurchase()) {
-                resolution = .failed(.unconfirmed)
-            }
+            let customerInfo = result == .succeeded ? await purchaseHandler.hostedCheckoutPurchaseCustomerInfo() : nil
+            let resolution = Resolution(result, customerInfo: customerInfo)
 
             switch resolution {
             case .purchased:
