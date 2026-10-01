@@ -15,6 +15,8 @@ import Foundation
 import Nimble
 import XCTest
 
+// swiftlint:disable type_body_length
+
 @_spi(Internal) @testable import RevenueCat
 
 class UiConfigProviderTests: TestCase {
@@ -63,20 +65,94 @@ class UiConfigProviderTests: TestCase {
         expect(uiConfig).to(beNil())
     }
 
-    func testAssemblesUiConfigWhenVariableConfigPartIsMissing() async throws {
-        // variableConfig has decode-time defaults, so omitting it entirely must not fail assembly.
+    func testReturnsNilWhenVariableConfigPartIsMissing() async throws {
         self.stub(app: #"{"colors": {}, "fonts": {}}"#, localizations: #"{}"#,
-                  variableConfig: nil, customVariables: nil)
+                  variableConfig: nil, customVariables: #"{}"#)
 
         let uiConfig = await self.provider.getUiConfig()
 
-        expect(uiConfig).toNot(beNil())
+        expect(uiConfig).to(beNil())
     }
 
-    func testAssemblesUiConfigWhenCustomVariablesPartIsMissing() async throws {
-        // customVariables has decode-time defaults, so omitting it entirely must not fail assembly.
+    func testReturnsNilWhenCustomVariablesPartIsMissing() async throws {
         self.stub(app: #"{"colors": {}, "fonts": {}}"#, localizations: #"{}"#,
-                  variableConfig: nil, customVariables: nil)
+                  variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
+                  customVariables: nil)
+
+        let uiConfig = await self.provider.getUiConfig()
+
+        expect(uiConfig).to(beNil())
+    }
+
+    func testEmptyTopicReturnsNilWithoutAttemptingBlobMergeOrLoggingWarning() async {
+        self.mockManager.stubbedTopics[.uiConfig] = [:]
+
+        let uiConfig = await self.provider.getUiConfig()
+
+        expect(uiConfig).to(beNil())
+        expect(self.mockManager.invokedMergeItemsBlobDataParameters).to(beEmpty())
+        expect(self.mockManager.invokedCommittedTopicAfterInFlightRefreshCount) == 1
+        self.logger.verifyMessageWasNotLogged(
+            Strings.remoteConfig.uiConfigMissingRequiredPart,
+            level: .warn,
+            allowNoMessages: true
+        )
+    }
+
+    func testEmptyTopicUsesPartsCommittedByInFlightRefresh() async throws {
+        self.stub(
+            app: #"{"colors": {}, "fonts": {}}"#,
+            localizations: #"{"en_US": {"day": "Day"}}"#,
+            variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
+            customVariables: #"{}"#
+        )
+        let refreshedTopic = try XCTUnwrap(self.mockManager.stubbedTopics[.uiConfig])
+        self.mockManager.stubbedTopics[.uiConfig] = [:]
+        self.mockManager.committedTopicAfterInFlightRefreshHandler = { [mockManager] topic in
+            mockManager?.configGeneration += 1
+            mockManager?.stubbedTopics[topic] = refreshedTopic
+            return refreshedTopic
+        }
+
+        let uiConfig = await self.provider.getUiConfig()
+
+        expect(uiConfig?.localizations["en_US"]?["day"]) == "Day"
+        expect(self.mockManager.invokedCommittedTopicAfterInFlightRefreshCount) == 1
+        expect(self.mockManager.invokedMergeItemsBlobDataParameters.count) == 1
+    }
+
+    func testMalformedVariableConfigReturnsNil() async throws {
+        self.stub(app: #"{"colors": {}, "fonts": {}}"#, localizations: #"{"en_US": {"day": "Day"}}"#,
+                  variableConfig: #"{"variable_compatibility_map": "not-a-dictionary"}"#,
+                  customVariables: #"{}"#)
+
+        let uiConfig = await self.provider.getUiConfig()
+
+        expect(uiConfig).to(beNil())
+        self.logger.verifyMessageWasLogged(
+            "Failed to decode merged ui_config",
+            level: .error
+        )
+    }
+
+    func testMalformedCustomVariablesReturnsNil() async throws {
+        self.stub(app: #"{"colors": {}, "fonts": {}}"#, localizations: #"{"en_US": {"day": "Day"}}"#,
+                  variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
+                  customVariables: #"{"user_name": "not-a-definition"}"#)
+
+        let uiConfig = await self.provider.getUiConfig()
+
+        expect(uiConfig).to(beNil())
+        self.logger.verifyMessageWasLogged(
+            "Failed to decode merged ui_config",
+            level: .error
+        )
+    }
+
+    func testNullCustomVariablesReturnsUiConfigWithEmptyCustomVariables() async throws {
+        self.stub(app: #"{"colors": {}, "fonts": {}}"#, localizations: #"{"en_US": {"day": "Day"}}"#,
+                  variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
+                  customVariables: #"null"#)
 
         let uiConfig = await self.provider.getUiConfig()
 
@@ -84,18 +160,131 @@ class UiConfigProviderTests: TestCase {
         expect(uiConfig?.customVariables).to(beEmpty())
     }
 
-    func testMalformedVariableConfigFallsBackToDefaultInsteadOfFailingTheWholeAssembly() async throws {
-        // variable_config is syntactically valid JSON but the wrong shape for VariableConfig, which used
-        // to fail the single merged decode of the whole UIConfig, discarding good app/localizations data.
-        self.stub(app: #"{"colors": {}, "fonts": {}}"#, localizations: #"{"en_US": {"day": "Day"}}"#,
-                  variableConfig: #"{"variable_compatibility_map": "not-a-dictionary"}"#, customVariables: nil)
+    func testCachesDecodedUiConfigAndSkipsBlobMergeOnUnchangedGenerationAndTopic() async throws {
+        self.stub(
+            app: #"{"colors": {}, "fonts": {}}"#,
+            localizations: #"{"en_US": {"day": "Day"}}"#,
+            variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
+            customVariables: #"{}"#
+        )
 
-        let uiConfig = await self.provider.getUiConfig()
+        let first = await self.provider.getUiConfig()
+        let mergesAfterFirst = self.mockManager.invokedMergeItemsBlobDataParameters.count
+        let second = await self.provider.getUiConfig()
 
-        expect(uiConfig).toNot(beNil())
-        expect(uiConfig?.localizations["en_US"]?["day"]) == "Day"
-        expect(uiConfig?.variableConfig.variableCompatibilityMap).to(beEmpty())
-        self.logger.verifyMessageWasLogged("Failed to decode ui_config part 'variable_config'", level: .error)
+        expect(first).toNot(beNil())
+        expect(second?.localizations["en_US"]?["day"]) == "Day"
+        expect(mergesAfterFirst) == 1
+        expect(self.mockManager.invokedMergeItemsBlobDataParameters.count) == mergesAfterFirst
+        expect(self.provider.cachedUiConfig()?.localizations["en_US"]?["day"]) == "Day"
+    }
+
+    func testReDecodesWhenUiConfigGenerationChanges() async throws {
+        self.stub(
+            app: #"{"colors": {}, "fonts": {}}"#,
+            localizations: #"{"en_US": {"day": "Day"}}"#,
+            variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
+            customVariables: #"{}"#
+        )
+        _ = await self.provider.getUiConfig()
+        self.mockManager.configGeneration += 1
+
+        _ = await self.provider.getUiConfig()
+
+        expect(self.mockManager.invokedMergeItemsBlobDataParameters.count) == 2
+        expect(self.provider.cachedUiConfig()).toNot(beNil())
+    }
+
+    func testStoresUiConfigWhenGenerationChangesDuringInitialTopicRead() async throws {
+        self.stub(
+            app: #"{"colors": {}, "fonts": {}}"#,
+            localizations: #"{"en_US": {"day": "Day"}}"#,
+            variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
+            customVariables: #"{}"#
+        )
+        self.mockManager.shouldStoreTopicCompletion = true
+        let topic = try XCTUnwrap(self.mockManager.stubbedTopics[.uiConfig])
+
+        async let uiConfig = self.provider.getUiConfig()
+        await self.waitUntilTopicRequested()
+        self.mockManager.configGeneration += 1
+        self.mockManager.completeStoredTopic(with: topic)
+
+        let resolvedUiConfig = await uiConfig
+        expect(resolvedUiConfig).toNot(beNil())
+        expect(self.provider.cachedUiConfig()).toNot(beNil())
+    }
+
+    func testRetriesAndCachesUiConfigWhenGenerationChangesDuringDecode() async throws {
+        self.stub(
+            app: #"{"colors": {}, "fonts": {}}"#,
+            localizations: #"{"en_US": {"day": "Day"}}"#,
+            variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
+            customVariables: #"{}"#
+        )
+        self.mockManager.shouldStoreBlobDataCompletion = true
+
+        async let uiConfig = self.provider.getUiConfig()
+        await self.waitUntilBlobDataRequested()
+        self.mockManager.configGeneration += 1
+        self.mockManager.completeStoredBlobReads()
+
+        let resolvedUiConfig = await uiConfig
+        expect(resolvedUiConfig).toNot(beNil())
+        expect(self.provider.cachedUiConfig()).toNot(beNil())
+        expect(self.mockManager.invokedMergeItemsBlobDataParameters.count) == 2
+    }
+
+    func testCachedUiConfigReturnsNilWhenGenerationChangesWithoutRewarming() async throws {
+        self.stub(
+            app: #"{"colors": {}, "fonts": {}}"#,
+            localizations: #"{"en_US": {"day": "Day"}}"#,
+            variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
+            customVariables: #"{}"#
+        )
+        _ = await self.provider.getUiConfig()
+
+        self.mockManager.configGeneration += 1
+
+        expect(self.provider.cachedUiConfig()).to(beNil())
+    }
+
+    func testCachedUiConfigReturnsNilWhenGenerationChangesBetweenGenerationReadAndCacheLookup() async throws {
+        self.stub(
+            app: #"{"colors": {}, "fonts": {}}"#,
+            localizations: #"{"en_US": {"day": "Day"}}"#,
+            variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
+            customVariables: #"{}"#
+        )
+        _ = await self.provider.getUiConfig()
+
+        var didAdvanceGeneration = false
+        let mockManager = try XCTUnwrap(self.mockManager)
+        self.mockManager.onConfigGenerationRead = { [mockManager] in
+            guard !didAdvanceGeneration else { return }
+
+            didAdvanceGeneration = true
+            mockManager.onConfigGenerationRead = nil
+            mockManager.configGeneration += 1
+        }
+
+        expect(self.provider.cachedUiConfig()).to(beNil())
+        expect(didAdvanceGeneration) == true
+    }
+
+    func testReDecodesWhenUiConfigTopicChanges() async throws {
+        self.stub(
+            app: #"{"colors": {}, "fonts": {}}"#,
+            localizations: #"{"en_US": {"day": "Day"}}"#,
+            variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
+            customVariables: #"{}"#
+        )
+        _ = await self.provider.getUiConfig()
+        self.mockManager.stubbedTopics[.uiConfig]?["app"] = .init(blobRef: "app-v2")
+
+        _ = await self.provider.getUiConfig()
+
+        expect(self.mockManager.invokedMergeItemsBlobDataParameters.count) == 2
     }
 
     func testLogsWarningWhenARequiredPartIsMissing() async throws {
@@ -106,26 +295,29 @@ class UiConfigProviderTests: TestCase {
         self.logger.verifyMessageWasLogged(Strings.remoteConfig.uiConfigMissingRequiredPart, level: .warn)
     }
 
-    func testRequestsWireItemKeysNotCamelCased() async throws {
-        self.stub(
-            app: #"{"colors": {}, "fonts": {}}"#,
-            localizations: #"{"en_US": {"day": "Day"}}"#,
-            variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
-            customVariables: #"{"user_name": {"type": "string", "default_value": "Friend"}}"#
-        )
+    func testRequestsMergedBlobDataForWireItemKeysNotCamelCased() async throws {
+        self.mockManager.stubbedTopics[.uiConfig] = [
+            "app": .init(),
+            "localizations": .init(),
+            "variable_config": .init(),
+            "custom_variables": .init()
+        ]
 
         _ = await self.provider.getUiConfig()
 
-        let requestedKeys = self.mockManager.invokedBlobDataParameters
-            .filter { $0.topic == .uiConfig }
-            .map(\.itemKey)
-
-        expect(Set(requestedKeys)) == Set(["app", "localizations", "variable_config", "custom_variables"])
+        expect(self.mockManager.invokedMergeItemsBlobDataParameters.count) == 1
+        expect(self.mockManager.invokedMergeItemsBlobDataParameters.first?.topic) == .uiConfig
+        expect(self.mockManager.invokedMergeItemsBlobDataParameters.first?.itemKeys) == [
+            "app",
+            "localizations",
+            "variable_config",
+            "custom_variables"
+        ]
     }
 
 #else
 
-    func testAssemblesEmptyUiConfigWhenRequiredPartsArePresent() async throws {
+    func testAssemblesUiConfigWhenRequiredPartsArePresent() async throws {
         self.stub(
             app: #"{"colors": {}, "fonts": {}}"#,
             localizations: #"{"en_US": {"day": "Day"}}"#,
@@ -147,6 +339,21 @@ class UiConfigProviderTests: TestCase {
         if let variableConfig { data["variable_config"] = Data(variableConfig.utf8) }
         if let customVariables { data["custom_variables"] = Data(customVariables.utf8) }
         self.mockManager.stubbedBlobData[.uiConfig] = data
+        self.mockManager.stubbedTopics[.uiConfig] = data.keys.reduce(into: [:]) { topic, key in
+            topic[key] = RemoteConfiguration.ConfigItem()
+        }
+    }
+
+    private func waitUntilTopicRequested() async {
+        while self.mockManager.invokedTopicCount == 0 {
+            await Task.yield()
+        }
+    }
+
+    private func waitUntilBlobDataRequested() async {
+        while self.mockManager.invokedBlobDataParameters.isEmpty {
+            await Task.yield()
+        }
     }
 
 }

@@ -93,7 +93,6 @@ extension PaywallData {
     // swiftlint:disable:next function_parameter_count
     func configuration(
         for offering: Offering,
-        activelySubscribedProductIdentifiers: Set<String>,
         template: PaywallTemplate,
         mode: PaywallViewMode,
         fonts: PaywallFontProvider,
@@ -104,7 +103,6 @@ extension PaywallData {
             TemplateViewConfiguration(
                 mode: mode,
                 packages: try .create(with: offering.availablePackages,
-                                      activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
                                       filter: self.config.packages,
                                       default: self.config.defaultPackage,
                                       localization: self.localizedConfiguration,
@@ -178,7 +176,6 @@ extension View {
         case .footer, .condensedFooter:
             self
                 .fixedSize(horizontal: false, vertical: true)
-                .edgesIgnoringSafeArea(.bottom)
         }
     }
 

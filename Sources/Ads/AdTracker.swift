@@ -52,8 +52,7 @@ import Foundation
  ))
  ```
  */
-@_spi(Experimental) @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-@objc(RCAdTracker)
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 public final class AdTracker: NSObject {
 
     private let eventsManager: EventsManagerType?
@@ -82,7 +81,7 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    @_spi(Experimental) @objc public func trackAdFailedToLoad(_ data: AdFailedToLoad) {
+    public func trackAdFailedToLoad(_ data: AdFailedToLoad) {
         self.trackAdFailedToLoad(data, captureMethod: .manual)
     }
 
@@ -90,6 +89,56 @@ public final class AdTracker: NSObject {
     @_spi(Internal) public func trackAdFailedToLoad(_ data: AdFailedToLoad, captureMethod: AdEventCaptureMethod) {
         Task {
             let event = AdEvent.failedToLoad(.init(captureMethod: captureMethod), data)
+            await self.eventsManager?.track(adEvent: event)
+        }
+    }
+
+    /**
+     Tracks when the app prompts the user to watch a rewarded ad.
+
+     Call this method when your UI presents a rewarded ad prompt, such as a "Watch an ad to earn coins" button.
+     This event is rewarded-only and manual-only: official RevenueCat adapters never emit it,
+     because only the app knows when the prompt is presented.
+
+     - Parameter data: The rewarded ad prompt shown event data
+
+     ## Example:
+     ```swift
+     Purchases.shared.adTracker.trackRewardedAdPromptShown(.init(
+         mediatorName: .appLovin,
+         placement: "home_screen",
+         adUnitId: "ca-app-pub-123"
+     ))
+     ```
+     */
+    public func trackRewardedAdPromptShown(_ data: AdRewardPromptShown) {
+        Task {
+            let event = AdEvent.rewardedAdPromptShown(.init(captureMethod: .manual), data)
+            await self.eventsManager?.track(adEvent: event)
+        }
+    }
+
+    /**
+     Tracks when the user accepts a rewarded ad prompt.
+
+     Call this method when the user accepts a rewarded ad prompt, such as tapping a "Watch an ad to earn coins" button.
+     This event is rewarded-only and manual-only: official RevenueCat adapters never emit it,
+     because only the app knows when the prompt is accepted.
+
+     - Parameter data: The rewarded ad prompt accepted event data
+
+     ## Example:
+     ```swift
+     Purchases.shared.adTracker.trackRewardedAdPromptAccepted(.init(
+         mediatorName: .appLovin,
+         placement: "home_screen",
+         adUnitId: "ca-app-pub-123"
+     ))
+     ```
+     */
+    public func trackRewardedAdPromptAccepted(_ data: AdRewardPromptAccepted) {
+        Task {
+            let event = AdEvent.rewardedAdPromptAccepted(.init(captureMethod: .manual), data)
             await self.eventsManager?.track(adEvent: event)
         }
     }
@@ -113,7 +162,7 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    @_spi(Experimental) @objc public func trackAdLoaded(_ data: AdLoaded) {
+    public func trackAdLoaded(_ data: AdLoaded) {
         self.trackAdLoaded(data, captureMethod: .manual)
     }
 
@@ -144,7 +193,7 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    @_spi(Experimental) @objc public func trackAdDisplayed(_ data: AdDisplayed) {
+    public func trackAdDisplayed(_ data: AdDisplayed) {
         self.trackAdDisplayed(data, captureMethod: .manual)
     }
 
@@ -174,7 +223,7 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    @_spi(Experimental) @objc public func trackAdOpened(_ data: AdOpened) {
+    public func trackAdOpened(_ data: AdOpened) {
         self.trackAdOpened(data, captureMethod: .manual)
     }
 
@@ -208,7 +257,7 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    @_spi(Experimental) @objc public func trackAdRevenue(_ data: AdRevenue) {
+    public func trackAdRevenue(_ data: AdRevenue) {
         self.trackAdRevenue(data, captureMethod: .manual)
     }
 
@@ -255,6 +304,19 @@ public final class AdTracker: NSObject {
                                                             captureMethod: AdEventCaptureMethod) {
         Task {
             let event = AdEvent.rewardFailedToVerify(.init(captureMethod: captureMethod), data)
+            await self.eventsManager?.track(adEvent: event)
+        }
+    }
+
+    /**
+     Tracks a single reward grant resulting from successful server-side verification.
+
+     - Parameter data: The reward-granted event data
+     */
+    @_spi(Internal) public func trackAdRewardGranted(_ data: AdRewardGranted,
+                                                     captureMethod: AdEventCaptureMethod) {
+        Task {
+            let event = AdEvent.rewardGranted(.init(captureMethod: captureMethod), data)
             await self.eventsManager?.track(adEvent: event)
         }
     }

@@ -29,7 +29,11 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
     let shouldShowSeeAllPurchases: Bool
 
     override var relevantPathsForPurchase: [CustomerCenterConfigData.HelpPath] {
-        paths.relevantPaths(for: nil, allowMissingPurchase: allowMissingPurchase)
+        paths.relevantPaths(
+            for: nil,
+            allowMissingPurchase: allowMissingPurchase,
+            localization: localization
+        )
     }
 
     init(
@@ -38,7 +42,8 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
         shouldShowSeeAllPurchases: Bool,
         refundRequestStatus: RefundRequestStatus? = nil,
         purchasesProvider: CustomerCenterPurchasesType,
-        loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil) {
+        loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType? = nil,
+        localization: CustomerCenterConfigData.Localization = .default) {
             self.shouldShowSeeAllPurchases = shouldShowSeeAllPurchases
 
             super.init(
@@ -47,7 +52,8 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
                 purchaseInformation: nil,
                 refundRequestStatus: refundRequestStatus,
                 purchasesProvider: purchasesProvider,
-                loadPromotionalOfferUseCase: loadPromotionalOfferUseCase
+                loadPromotionalOfferUseCase: loadPromotionalOfferUseCase,
+                localization: localization
             )
         }
 

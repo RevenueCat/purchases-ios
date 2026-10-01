@@ -42,7 +42,7 @@ class TakeScreenshotTests: BaseSnapshotTest {
         for offering in paywallPreviewsResourceLoader.allOfferings {
             let offeringId = offering.id
 
-            if offering.paywallComponents != nil {
+            if offering.internalPaywallComponents != nil {
                 let view = Self.createPaywall(offering: offering)
                     .frame(width: 450, height: 1000)
                 self.snapshotAndSave(view: view,

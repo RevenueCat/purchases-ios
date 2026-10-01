@@ -1,6 +1,6 @@
 import Foundation
-@_spi(Experimental) import RevenueCat
-@_spi(Experimental) import RevenueCatAdMob
+import RevenueCat
+import RevenueCatAdMob
 
 struct Message: Equatable {
     let text: String
@@ -28,6 +28,10 @@ struct Message: Equatable {
     private static let verificationUnsupportedRewardText = """
     ✅ Verified
     ⚠️ Unsupported reward
+    """
+    private static let verificationEntitlementGrantedTemplate = """
+    ✅ Verified
+    🎁 Reward granted: entitlement %@
     """
     private static let verificationUnhandledRewardTypeText = """
     ✅ Verified
@@ -75,6 +79,12 @@ struct Message: Equatable {
                     "\(virtualCurrency.amount)",
                     virtualCurrency.code
                 ),
+                severity: .success,
+                isLoading: false
+            )
+        } else if let entitlement = reward.entitlement {
+            return .init(
+                text: String(format: Self.verificationEntitlementGrantedTemplate, entitlement.identifier),
                 severity: .success,
                 isLoading: false
             )

@@ -22,7 +22,8 @@ extension HTTPResponse where Body == Data? {
         requestHeaders: HTTPRequest.Headers,
         publicKey: Signing.PublicKey?,
         isLoadShedderResponse: Bool,
-        isFallbackUrlResponse: Bool
+        isFallbackUrlResponse: Bool,
+        iamEnabled: Bool
     ) -> VerifiedHTTPResponse<Body> {
         let verificationResult = Self.verificationResult(
             body: self.body,
@@ -33,11 +34,12 @@ extension HTTPResponse where Body == Data? {
             request: request,
             publicKey: publicKey,
             signing: signing,
+            iamEnabled: iamEnabled,
             isFallbackUrlResponse: isFallbackUrlResponse
         )
 
         #if DEBUG
-        if verificationResult == .failed, ProcessInfo.isRunningRevenueCatTests {
+        if verificationResult.isFailed, ProcessInfo.isRunningRevenueCatTests {
             Logger.warn(Strings.signing.invalid_signature_data(
                 request,
                 self.body,
@@ -62,10 +64,29 @@ extension HTTPResponse where Body == Data? {
         request: HTTPRequest,
         publicKey: Signing.PublicKey?,
         signing: SigningType,
+        iamEnabled: Bool,
         isFallbackUrlResponse: Bool
-    ) -> VerificationResult {
+    ) -> SignatureVerificationResult {
         guard let publicKey = publicKey, statusCode.isSuccessfulResponse else {
             return .notRequested
+        }
+
+        guard let signature = HTTPResponse.value(
+            forCaseInsensitiveHeaderField: .signature,
+            in: responseHeaders
+        ) else {
+            if request.path.supportsSignatureVerification {
+                Logger.warn(Strings.signing.signature_was_requested_but_not_provided(request))
+                return .failed(.missingSignature)
+            } else {
+                return .notRequested
+            }
+        }
+
+        guard let requestDate = requestDate else {
+            Logger.warn(Strings.signing.request_date_missing_from_headers(request))
+
+            return .failed(.missingRequestTime)
         }
 
         let contextProvider = request.path.responseSignatureContextProvider
@@ -75,43 +96,31 @@ extension HTTPResponse where Body == Data? {
         } catch {
             Logger.warn(Strings.signing.signature_payload_failed_creation(request, error))
 
-            return .failed
+            return .failed(.invalidResponsePayload)
         }
 
-        guard let signature = HTTPResponse.value(
-            forCaseInsensitiveHeaderField: .signature,
-            in: responseHeaders
-        ) else {
-            if request.path.supportsSignatureVerification {
-                Logger.warn(Strings.signing.signature_was_requested_but_not_provided(request))
-                return .failed
-            } else {
-                return .notRequested
-            }
+        let etag = HTTPResponse.value(forCaseInsensitiveHeaderField: .eTag, in: responseHeaders)
+        guard message != nil || etag != nil else {
+            Logger.warn(Strings.signing.signed_payload_missing(request))
+
+            return .failed(.missingSignedPayload)
         }
 
-        guard let requestDate = requestDate else {
-            Logger.warn(Strings.signing.request_date_missing_from_headers(request))
-
-            return .failed
-        }
-
-        if signing.verify(signature: signature,
-                          with: .init(
-                            path: request.path,
-                            message: message,
-                            requestHeaders: requestHeaders,
-                            requestBody: contextProvider.requestBodyForSignature(for: request),
-                            nonce: request.nonce,
-                            etag: HTTPResponse.value(forCaseInsensitiveHeaderField: .eTag, in: responseHeaders),
-                            requestDate: requestDate.millisecondsSince1970,
-                            useFallbackPath: isFallbackUrlResponse
-                          ),
-                          publicKey: publicKey) {
-            return .verified
-        } else {
-            return .failed
-        }
+        return signing.verificationResult(
+            for: signature,
+            with: .init(
+                path: request.path,
+                iamEnabled: iamEnabled,
+                message: message,
+                requestHeaders: requestHeaders,
+                requestBody: contextProvider.requestBodyForSignature(for: request),
+                nonce: request.nonce,
+                etag: etag,
+                requestDate: requestDate.millisecondsSince1970,
+                useFallbackPath: isFallbackUrlResponse
+            ),
+            publicKey: publicKey
+        )
     }
 
 }

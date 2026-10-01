@@ -206,6 +206,7 @@ class ImageLoaderTests: TestCase {
         let backgroundImage = try XCTUnwrap(
             PaywallData
                 .createDefault(with: [TestData.monthlyPackage], locale: .current)
+                .withLocalImages
                 .backgroundImageURL
         )
         // We don't want the test to make an actual request loading this

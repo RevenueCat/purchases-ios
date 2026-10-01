@@ -147,7 +147,7 @@ private enum PurchaseButtonInPackagePreview {
                     text: nameTextLid,
                     fontWeight: .bold,
                     color: .init(light: .hex("#000000")),
-                    size: .init(width: .fill, height: .fit),
+                    size: .init(width: .fill, height: .fit(nil)),
                     padding: .zero,
                     margin: .zero,
                     horizontalAlignment: .leading
@@ -155,14 +155,14 @@ private enum PurchaseButtonInPackagePreview {
                 .text(.init(
                     text: detailTextLid,
                     color: .init(light: .hex("#000000")),
-                    size: .init(width: .fill, height: .fit),
+                    size: .init(width: .fill, height: .fit(nil)),
                     padding: .zero,
                     margin: .zero,
                     horizontalAlignment: .leading
                 ))
             ],
             dimension: .vertical(.leading, .start),
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             spacing: 0,
             backgroundColor: nil,
             padding: PaywallComponent.Padding(top: 10,
@@ -239,7 +239,7 @@ private enum PurchaseButtonInPackagePreview {
             ))
         ],
         dimension: .vertical(.center, .start),
-        size: .init(width: .fill, height: .fit),
+        size: .init(width: .fill, height: .fit(nil)),
         spacing: 30,
         backgroundColor: nil
     )

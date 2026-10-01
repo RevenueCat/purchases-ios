@@ -178,6 +178,9 @@ extension PostReceiptDataOperation {
         var workflowId: String?
         var stepId: String?
 
+        /// Encoded inside the nested paywall object for transaction attribution.
+        var traceId: String?
+
     }
 
     struct AppliedTargetingRule {
@@ -244,7 +247,8 @@ private extension PurchasedTransactionData {
                      localeIdentifier: paywall.data.localeIdentifier,
                      source: paywall.data.source,
                      workflowId: paywall.data.workflowId,
-                     stepId: paywall.data.stepId)
+                     stepId: paywall.data.stepId,
+                     traceId: paywall.data.traceId)
     }
 }
 
@@ -371,6 +375,7 @@ extension PostReceiptDataOperation.Paywall: Codable {
         case darkMode
         case localeIdentifier = "locale"
         case source
+        case traceId
 
     }
 }

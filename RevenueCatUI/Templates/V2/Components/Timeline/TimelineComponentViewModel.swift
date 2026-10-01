@@ -53,11 +53,13 @@ class TimelineComponentViewModel {
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
         customVariables: [String: CustomVariableValue],
+        windowSize: CGSize? = nil,
         @ViewBuilder apply: @escaping (TimelineComponentStyle) -> some View
     ) -> some View {
         let conditionContext = self.uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: customVariables
+            customVariables: customVariables,
+            windowSize: windowSize
         )
         let partial = PresentedTimelinePartial.buildPartial(
             state: state,
@@ -120,11 +122,13 @@ class TimelineItemViewModel {
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
         customVariables: [String: CustomVariableValue],
+        windowSize: CGSize? = nil,
         @ViewBuilder apply: @escaping (TimelineItemStyle) -> some View
     ) -> some View {
         let conditionContext = self.uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: customVariables
+            customVariables: customVariables,
+            windowSize: windowSize
         )
         let partial = PresentedTimelineItemPartial.buildPartial(
             state: state,

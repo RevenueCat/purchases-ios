@@ -86,10 +86,6 @@ struct PurchaseButton: View {
             guard !self.purchaseHandler.actionInProgress else {
                 return
             }
-            guard !self.selectedPackage.currentlySubscribed else {
-                Logger.warning(Strings.product_already_subscribed)
-                return
-            }
 
             let selectedContent = self.selectedPackage.content
             self.componentInteractionLogger(.paywallPurchaseButtonAction(
@@ -251,7 +247,6 @@ struct PurchaseButton_Previews: PreviewProvider {
                 context: .init(discountRelativeToMostExpensivePerMonth: nil),
                 locale: .current
             ),
-            currentlySubscribed: false,
             discountRelativeToMostExpensivePerMonth: nil
         )
         private static let packages: TemplateViewConfiguration.PackageConfiguration = .single(Self.package)

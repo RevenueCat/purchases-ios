@@ -7,7 +7,7 @@
 import Foundation
 
 #if os(iOS) && canImport(GoogleMobileAds)
-@_spi(Experimental) import RevenueCat
+import RevenueCat
 
 @available(iOS 15.0, *)
 internal extension RewardVerification {

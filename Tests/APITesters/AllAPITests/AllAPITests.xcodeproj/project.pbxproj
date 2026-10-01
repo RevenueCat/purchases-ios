@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C4E7A0022F3B4C5D006E7F81 /* CheckpointAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E7A0012F3B4C5D006E7F81 /* CheckpointAPI.swift */; };
 		1E8A60812CDCF29D0034ACF3 /* RedeemWebPurchasesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E8A60802CDCF29D0034ACF3 /* RedeemWebPurchasesAPI.swift */; };
 		1EB697C22CD26218003000FC /* WebPurchaseRedemptionResultAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EB697C12CD26218003000FC /* WebPurchaseRedemptionResultAPI.swift */; };
 		2D4C60E12C5AD1BC00A29FD2 /* AllAPITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2D4C60D82C5AD1BC00A29FD2 /* AllAPITests.framework */; };
@@ -128,8 +129,6 @@
 		35370AC82CFF8317004F0A64 /* RCSubscriptionInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 35370AC72CFF8312004F0A64 /* RCSubscriptionInfoAPI.m */; };
 		5780280B2E8FD3ED00E75FED /* ProductPaidPriceAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5780280A2E8FD3ED00E75FED /* ProductPaidPriceAPI.swift */; };
 		75C1B6AD2D48D4550011512D /* DangerousSettingsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C1B6AC2D48D4550011512D /* DangerousSettingsAPI.swift */; };
-		9025C5432EA67FC000845BCE /* RCAdTrackerAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = 9025C5412EA67FC000845BCE /* RCAdTrackerAPI.h */; };
-		9025C5442EA67FC000845BCE /* RCAdTrackerAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 9025C5422EA67FC000845BCE /* RCAdTrackerAPI.m */; };
 		A1171A012EBA900100000001 /* RCInstallmentsInfoAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = A1171A002EBA900100000001 /* RCInstallmentsInfoAPI.h */; };
 		A1171A032EBA900100000001 /* RCInstallmentsInfoAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = A1171A022EBA900100000001 /* RCInstallmentsInfoAPI.m */; };
 		FD181EF12D72451000A8EBE2 /* VirtualCurrencyAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD181EF02D72451000A8EBE2 /* VirtualCurrencyAPI.swift */; };
@@ -227,6 +226,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		C4E7A0012F3B4C5D006E7F81 /* CheckpointAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointAPI.swift; sourceTree = "<group>"; };
 		1E8A60802CDCF29D0034ACF3 /* RedeemWebPurchasesAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedeemWebPurchasesAPI.swift; sourceTree = "<group>"; };
 		1EB697C12CD26218003000FC /* WebPurchaseRedemptionResultAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebPurchaseRedemptionResultAPI.swift; sourceTree = "<group>"; };
 		2D4C60D82C5AD1BC00A29FD2 /* AllAPITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AllAPITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -371,8 +371,6 @@
 		5780280A2E8FD3ED00E75FED /* ProductPaidPriceAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductPaidPriceAPI.swift; sourceTree = "<group>"; };
 		75C1B6AC2D48D4550011512D /* DangerousSettingsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DangerousSettingsAPI.swift; sourceTree = "<group>"; };
 		75C1B6AE2D48D4DB0011512D /* RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		9025C5412EA67FC000845BCE /* RCAdTrackerAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCAdTrackerAPI.h; sourceTree = "<group>"; };
-		9025C5422EA67FC000845BCE /* RCAdTrackerAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCAdTrackerAPI.m; sourceTree = "<group>"; };
 		A1171A002EBA900100000001 /* RCInstallmentsInfoAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCInstallmentsInfoAPI.h; sourceTree = "<group>"; };
 		A1171A022EBA900100000001 /* RCInstallmentsInfoAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCInstallmentsInfoAPI.m; sourceTree = "<group>"; };
 		FD181EF02D72451000A8EBE2 /* VirtualCurrencyAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyAPI.swift; sourceTree = "<group>"; };
@@ -499,8 +497,6 @@
 		2D4C613E2C5AD30400A29FD2 /* ObjcAPITester */ = {
 			isa = PBXGroup;
 			children = (
-				9025C5412EA67FC000845BCE /* RCAdTrackerAPI.h */,
-				9025C5422EA67FC000845BCE /* RCAdTrackerAPI.m */,
 				35370AC72CFF8312004F0A64 /* RCSubscriptionInfoAPI.m */,
 				35370AC42CFF82F8004F0A64 /* RCSubscriptionInfoAPI.h */,
 				2D4C61732C5AD31900A29FD2 /* main.m */,
@@ -587,6 +583,7 @@
 		2D4C61B42C5AD61800A29FD2 /* SwiftAPITester */ = {
 			isa = PBXGroup;
 			children = (
+				C4E7A0012F3B4C5D006E7F81 /* CheckpointAPI.swift */,
 				5780280A2E8FD3ED00E75FED /* ProductPaidPriceAPI.swift */,
 				3502630D2CF61E9A00894270 /* SubscriptionInfoAPI.swift */,
 				2D4C61D32C5AD62900A29FD2 /* AttributionNetworkAPI.swift */,
@@ -702,7 +699,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9025C5432EA67FC000845BCE /* RCAdTrackerAPI.h in Headers */,
 				2D4C61402C5AD30400A29FD2 /* ObjcAPITester.h in Headers */,
 				FD2A4F9A2D721D3D00ED3367 /* RCVirtualCurrencyAPI.h in Headers */,
 				35370AC52CFF8304004F0A64 /* RCSubscriptionInfoAPI.h in Headers */,
@@ -1049,7 +1045,6 @@
 				2D4C617C2C5AD31A00A29FD2 /* RCStoreKitVersionAPI.m in Sources */,
 				2D4C61902C5AD31A00A29FD2 /* main.m in Sources */,
 				2D4C61932C5AD31A00A29FD2 /* RCPurchasesAPI.m in Sources */,
-				9025C5442EA67FC000845BCE /* RCAdTrackerAPI.m in Sources */,
 				35370AC82CFF8317004F0A64 /* RCSubscriptionInfoAPI.m in Sources */,
 				A1171A032EBA900100000001 /* RCInstallmentsInfoAPI.m in Sources */,
 				2D4C618C2C5AD31A00A29FD2 /* RCPurchasesDiagnosticsAPI.m in Sources */,
@@ -1060,6 +1055,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C4E7A0022F3B4C5D006E7F81 /* CheckpointAPI.swift in Sources */,
 				2D4C61F42C5AD62A00A29FD2 /* ErrorCodesAPI.swift in Sources */,
 				2D4C61E12C5AD62A00A29FD2 /* StoreKitVersionAPI.swift in Sources */,
 				2D4C61F72C5AD62A00A29FD2 /* OfferingsAPI.swift in Sources */,

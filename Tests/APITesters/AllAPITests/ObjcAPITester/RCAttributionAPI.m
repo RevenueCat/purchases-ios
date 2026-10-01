@@ -48,6 +48,8 @@
     [a setSolarEngineAccountId: @""];
     [a setSolarEngineVisitorId: nil];
     [a setSolarEngineVisitorId: @""];
+    [a setSingularDeviceID: nil];
+    [a setSingularDeviceID: @""];
     [a setMixpanelDistinctID: nil];
     [a setMixpanelDistinctID: @""];
     [a setFirebaseAppInstanceID: nil];

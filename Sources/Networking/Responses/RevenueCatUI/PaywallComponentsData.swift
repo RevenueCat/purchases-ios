@@ -296,15 +296,39 @@ private extension PaywallComponentsData {
 
 @_spi(Internal) extension PaywallComponentsData {
 
-    public struct EquatableError: Equatable, Sendable {
-        let description: String
+    public struct EquatableError: Equatable, Sendable, CustomStringConvertible {
+        public let description: String
 
         init(_ error: Error) {
-            self.description = String(describing: error)
+            // For decoding errors, prefer the concise underlying message over the full
+            // `String(describing:)` dump (which also includes the type and coding path).
+            if let decodingError = error as? DecodingError {
+                self.description = decodingError.debugMessage
+            } else {
+                self.description = String(describing: error)
+            }
         }
 
         public static func == (lhs: EquatableError, rhs: EquatableError) -> Bool {
             return lhs.description == rhs.description
+        }
+    }
+
+}
+
+private extension DecodingError {
+
+    /// The concise, human-readable message from the error's context (e.g.
+    /// `Failed to decode unknown type "web_view"`), without the type or coding path noise.
+    var debugMessage: String {
+        switch self {
+        case let .typeMismatch(_, context),
+             let .valueNotFound(_, context),
+             let .keyNotFound(_, context),
+             let .dataCorrupted(context):
+            return context.debugDescription
+        @unknown default:
+            return String(describing: self)
         }
     }
 

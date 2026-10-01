@@ -19,6 +19,16 @@ import SwiftUI
 typealias PresentedStackPartial = PaywallComponent.PartialStackComponent
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct BadgeContents {
+
+    let badge: PaywallComponent.Badge
+
+    /// One per component in `badge.stack`.
+    let viewModels: [PaywallComponentViewModel]
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class StackComponentViewModel {
 
     let component: PaywallComponent.StackComponent
@@ -26,9 +36,10 @@ class StackComponentViewModel {
     private let presentedOverrides: PresentedOverrides<PresentedStackPartial>?
 
     let viewModels: [PaywallComponentViewModel]
-    let badgeViewModels: [PaywallComponentViewModel]
 
-    /// Whether the first child is a full-width image or video.
+    let badgeViewModels: [BadgeContents]
+
+    /// Whether the first child is a full-width image, video, or web view.
     /// Used by ZStack rendering to push non-hero children below the safe area.
     var firstChildIsFullWidthMedia: Bool {
         guard case .zlayer = component.dimension else { return false }
@@ -38,10 +49,43 @@ class StackComponentViewModel {
         }) else { return false }
         switch first {
         case .image(let image):
-            return image.size.width == .fill
+            return image.size.width.isFill
         case .video(let video):
-            return video.size.width == .fill
+            return video.size.width.isFill
+        case .webView(let webView):
+            return webView.size.width.isFill
         default:
+            return false
+        }
+    }
+
+    /// Whether this stack renders anything a screen reader can announce, at any depth.
+    /// Anything uncertain counts as `true`, so a derived label never overrides wording that works.
+    var containsAnnounceableContent: Bool {
+        guard self.component.visible ?? true else {
+            return false
+        }
+
+        return self.viewModels.contains(where: Self.announces)
+            || self.badgeViewModels.contains { $0.viewModels.contains(where: Self.announces) }
+    }
+
+    private static func announces(_ viewModel: PaywallComponentViewModel) -> Bool {
+        switch viewModel {
+        case .text(let text):
+            return text.announcesText
+        case .stack(let stack):
+            return stack.containsAnnounceableContent
+        case .stickyFooter(let footer):
+            return footer.stackViewModel.containsAnnounceableContent
+
+        // Composites that own text of their own, or a subtree we do not walk.
+        case .root, .button, .package, .purchaseButton, .timeline, .tabs, .tabControl,
+             .tabControlButton, .tabControlToggle, .carousel, .countdown:
+            return true
+
+        // Purely visual.
+        case .icon, .image, .video, .webView:
             return false
         }
     }
@@ -51,7 +95,7 @@ class StackComponentViewModel {
     init(
         component: PaywallComponent.StackComponent,
         viewModels: [PaywallComponentViewModel],
-        badgeViewModels: [PaywallComponentViewModel],
+        badgeViewModels: [BadgeContents],
         uiConfigProvider: UIConfigProvider,
         discardRules: Bool = false
     ) {
@@ -83,13 +127,15 @@ class StackComponentViewModel {
         customVariables: [String: CustomVariableValue],
         stateValues: [String: PaywallComponent.ConditionValue] = [:],
         stateDefaults: [String: PaywallComponent.ConditionValue] = [:],
+        windowSize: CGSize? = nil,
         colorScheme: ColorScheme
     ) -> StackComponentStyle {
         let conditionContext = self.uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
             customVariables: customVariables,
             stateValues: stateValues,
-            stateDefaults: stateDefaults
+            stateDefaults: stateDefaults,
+            windowSize: windowSize
         )
 
         let partial = PresentedStackPartial.buildPartial(
@@ -101,9 +147,13 @@ class StackComponentViewModel {
             with: self.presentedOverrides
         )
 
+        let presentedBadge = partial?.badge ?? self.component.badge
+        let presentedBadgeViewModels = presentedBadge
+            .flatMap { badge in self.badgeViewModels.first { $0.badge === badge }?.viewModels } ?? []
+
         return StackComponentStyle(
             uiConfigProvider: self.uiConfigProvider,
-            badgeViewModels: self.badgeViewModels,
+            badgeViewModels: presentedBadgeViewModels,
             visible: partial?.visible ?? self.component.visible ?? true,
             dimension: partial?.dimension ?? self.component.dimension,
             size: partial?.size ?? self.component.size,
@@ -115,7 +165,7 @@ class StackComponentViewModel {
             shape: partial?.shape ?? self.component.shape,
             border: partial?.border ?? self.component.border,
             shadow: partial?.shadow ?? self.component.shadow,
-            badge: partial?.badge ?? self.component.badge,
+            badge: presentedBadge,
             overflow: partial?.overflow ?? self.component.overflow,
             colorScheme: colorScheme
         )
@@ -132,6 +182,7 @@ class StackComponentViewModel {
         customVariables: [String: CustomVariableValue],
         stateValues: [String: PaywallComponent.ConditionValue] = [:],
         stateDefaults: [String: PaywallComponent.ConditionValue] = [:],
+        windowSize: CGSize? = nil,
         colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (StackComponentStyle) -> some View
     ) -> some View {
@@ -144,6 +195,7 @@ class StackComponentViewModel {
             customVariables: customVariables,
             stateValues: stateValues,
             stateDefaults: stateDefaults,
+            windowSize: windowSize,
             colorScheme: colorScheme
         )
         apply(style)
@@ -267,9 +319,10 @@ struct StackComponentStyle {
         case .spaceBetween, .spaceAround, .spaceEvenly:
             // We dont want to use a flex stack if its axis is set to fit.
             // Otherwise we would be adding Spacer()'s which would make the stack act as fill.
-            if self.size.height == .fit {
+            switch self.size.height {
+            case .fit:
                 return .normal
-            } else {
+            default:
                 return .flex
             }
         }
@@ -287,9 +340,10 @@ struct StackComponentStyle {
         case .spaceBetween, .spaceAround, .spaceEvenly:
             // We dont want to use a flex stack if its axis is set to fit.
             // Otherwise we would be adding Spacer()'s which would make the stack act as fill.
-            if self.size.width == .fit {
+            switch self.size.width {
+            case .fit:
                 return .normal
-            } else {
+            default:
                 return .flex
             }
         }

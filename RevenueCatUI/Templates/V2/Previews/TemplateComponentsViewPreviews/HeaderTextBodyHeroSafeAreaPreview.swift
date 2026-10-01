@@ -62,7 +62,7 @@ private enum HeaderTextBodyHeroSafeAreaPreview {
             ))
         ],
         dimension: .vertical(.leading, .start),
-        size: .init(width: .fill, height: .fit),
+        size: .init(width: .fill, height: .fit(nil)),
         spacing: 0,
         padding: .init(top: 0, bottom: 8, leading: 12, trailing: 12)
     )
@@ -106,7 +106,7 @@ private enum HeaderTextBodyHeroSafeAreaPreview {
             ))
         ],
         dimension: .vertical(.center, .start),
-        size: .init(width: .fill, height: .fit),
+        size: .init(width: .fill, height: .fit(nil)),
         spacing: 12,
         backgroundColor: .init(light: .hex("#FFFFFF")),
         padding: .init(top: 28, bottom: 28, leading: 24, trailing: 24)
@@ -146,7 +146,7 @@ private enum HeaderTextBodyHeroSafeAreaPreview {
                     ))
                 ],
                 dimension: .vertical(.center, .center),
-                size: .init(width: .fill, height: .fit),
+                size: .init(width: .fill, height: .fit(nil)),
                 spacing: 0,
                 backgroundColor: .init(light: .hex("#9DF3D8")),
                 padding: .init(top: 14, bottom: 14, leading: 16, trailing: 16)
@@ -162,7 +162,7 @@ private enum HeaderTextBodyHeroSafeAreaPreview {
             ))
         ],
         dimension: .vertical(.center, .start),
-        size: .init(width: .fill, height: .fit),
+        size: .init(width: .fill, height: .fit(nil)),
         spacing: 12,
         backgroundColor: .init(light: .hex("#FFFFFF")),
         padding: .init(top: 12, bottom: 12, leading: 16, trailing: 16)

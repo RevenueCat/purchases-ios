@@ -15,7 +15,7 @@ import Foundation
 import Nimble
 import XCTest
 
-@_spi(Internal) @_spi(Experimental) @testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
 
@@ -31,7 +31,8 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
         self.httpClient.mock(
             requestPath: .rewardVerificationStatus(
                 appUserID: Self.userID,
-                clientTransactionID: Self.clientTransactionID
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: nil
             ),
             response: .init(statusCode: .success, response: Self.verifiedResponse)
         )
@@ -40,6 +41,7 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
             self.adsAPI.getRewardVerificationStatus(
                 appUserID: Self.userID,
                 clientTransactionID: Self.clientTransactionID,
+                adUnitID: nil,
                 completion: completed
             )
         }
@@ -48,13 +50,65 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
         expect(self.httpClient.calls).to(haveCount(1))
     }
 
+    func testGetRewardVerificationStatusSendsAdUnitIDQueryParameter() throws {
+        self.httpClient.disableSnapshotTesting()
+        self.httpClient.mock(
+            requestPath: .rewardVerificationStatus(
+                appUserID: Self.userID,
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: "ca-app-pub-123/456"
+            ),
+            response: .init(statusCode: .success, response: Self.pendingResponse)
+        )
+
+        let result = waitUntilValue { completed in
+            self.adsAPI.getRewardVerificationStatus(
+                appUserID: Self.userID,
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: "ca-app-pub-123/456",
+                completion: completed
+            )
+        }
+
+        expect(result).to(beSuccess())
+        let url = try XCTUnwrap(self.httpClient.calls.first?.request.path.url(preferIAMPath: false))
+        expect(url.absoluteString) == "https://api.revenuecat.com/v1/subscribers/\(Self.userID)"
+            + "/ads/reward_verifications/\(Self.clientTransactionID)?ad_unit_id=ca-app-pub-123/456"
+    }
+
+    func testGetRewardVerificationStatusOmitsEmptyAdUnitID() throws {
+        self.httpClient.disableSnapshotTesting()
+        self.httpClient.mock(
+            requestPath: .rewardVerificationStatus(
+                appUserID: Self.userID,
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: nil
+            ),
+            response: .init(statusCode: .success, response: Self.pendingResponse)
+        )
+
+        let result = waitUntilValue { completed in
+            self.adsAPI.getRewardVerificationStatus(
+                appUserID: Self.userID,
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: "",
+                completion: completed
+            )
+        }
+
+        expect(result).to(beSuccess())
+        let url = try XCTUnwrap(self.httpClient.calls.first?.request.path.url(preferIAMPath: false))
+        expect(url.query).to(beNil())
+    }
+
     // MARK: - Response shapes
 
     func testGetRewardVerificationStatusVerified() throws {
         self.httpClient.mock(
             requestPath: .rewardVerificationStatus(
                 appUserID: Self.userID,
-                clientTransactionID: Self.clientTransactionID
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: nil
             ),
             response: .init(statusCode: .success, response: Self.verifiedResponse)
         )
@@ -63,6 +117,7 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
             self.adsAPI.getRewardVerificationStatus(
                 appUserID: Self.userID,
                 clientTransactionID: Self.clientTransactionID,
+                adUnitID: nil,
                 completion: completed
             )
         }
@@ -76,7 +131,8 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
         self.httpClient.mock(
             requestPath: .rewardVerificationStatus(
                 appUserID: Self.userID,
-                clientTransactionID: Self.clientTransactionID
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: nil
             ),
             response: .init(statusCode: .success, response: Self.pendingResponse)
         )
@@ -85,6 +141,7 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
             self.adsAPI.getRewardVerificationStatus(
                 appUserID: Self.userID,
                 clientTransactionID: Self.clientTransactionID,
+                adUnitID: nil,
                 completion: completed
             )
         }
@@ -97,7 +154,8 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
         self.httpClient.mock(
             requestPath: .rewardVerificationStatus(
                 appUserID: Self.userID,
-                clientTransactionID: Self.clientTransactionID
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: nil
             ),
             response: .init(statusCode: .success, response: Self.failedResponse)
         )
@@ -106,6 +164,7 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
             self.adsAPI.getRewardVerificationStatus(
                 appUserID: Self.userID,
                 clientTransactionID: Self.clientTransactionID,
+                adUnitID: nil,
                 completion: completed
             )
         }
@@ -118,7 +177,8 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
         self.httpClient.mock(
             requestPath: .rewardVerificationStatus(
                 appUserID: Self.userID,
-                clientTransactionID: Self.clientTransactionID
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: nil
             ),
             response: .init(statusCode: .success, response: Self.failedWithReasonResponse)
         )
@@ -127,6 +187,7 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
             self.adsAPI.getRewardVerificationStatus(
                 appUserID: Self.userID,
                 clientTransactionID: Self.clientTransactionID,
+                adUnitID: nil,
                 completion: completed
             )
         }
@@ -143,7 +204,8 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
         self.httpClient.mock(
             requestPath: .rewardVerificationStatus(
                 appUserID: Self.userID,
-                clientTransactionID: Self.clientTransactionID
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: nil
             ),
             response: .init(statusCode: .success, response: ["status": "some_future_state"])
         )
@@ -152,6 +214,7 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
             self.adsAPI.getRewardVerificationStatus(
                 appUserID: Self.userID,
                 clientTransactionID: Self.clientTransactionID,
+                adUnitID: nil,
                 completion: completed
             )
         }
@@ -174,7 +237,8 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
         self.httpClient.mock(
             requestPath: .rewardVerificationStatus(
                 appUserID: Self.userID,
-                clientTransactionID: Self.clientTransactionID
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: nil
             ),
             response: .init(error: .unexpectedResponse(nil))
         )
@@ -183,6 +247,7 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
             self.adsAPI.getRewardVerificationStatus(
                 appUserID: Self.userID,
                 clientTransactionID: Self.clientTransactionID,
+                adUnitID: nil,
                 completion: completed
             )
         }
@@ -196,7 +261,8 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
         self.httpClient.mock(
             requestPath: .rewardVerificationStatus(
                 appUserID: Self.userID,
-                clientTransactionID: Self.clientTransactionID
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: nil
             ),
             response: .init(error: mockedError)
         )
@@ -205,6 +271,7 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
             self.adsAPI.getRewardVerificationStatus(
                 appUserID: Self.userID,
                 clientTransactionID: Self.clientTransactionID,
+                adUnitID: nil,
                 completion: completed
             )
         }
@@ -219,7 +286,8 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
         waitUntil { completed in
             self.adsAPI.getRewardVerificationStatus(
                 appUserID: "",
-                clientTransactionID: Self.clientTransactionID
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: nil
             ) { _ in completed() }
         }
 
@@ -230,7 +298,8 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
         let receivedError = waitUntilValue { completed in
             self.adsAPI.getRewardVerificationStatus(
                 appUserID: "",
-                clientTransactionID: Self.clientTransactionID
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: nil
             ) { result in
                 completed(result.error)
             }
@@ -243,7 +312,8 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
         waitUntil { completed in
             self.adsAPI.getRewardVerificationStatus(
                 appUserID: Self.userID,
-                clientTransactionID: ""
+                clientTransactionID: "",
+                adUnitID: nil
             ) { _ in completed() }
         }
 
@@ -254,7 +324,8 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
         let receivedError = waitUntilValue { completed in
             self.adsAPI.getRewardVerificationStatus(
                 appUserID: Self.userID,
-                clientTransactionID: ""
+                clientTransactionID: "",
+                adUnitID: nil
             ) { result in
                 completed(result.error)
             }
@@ -269,7 +340,8 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
         self.httpClient.mock(
             requestPath: .rewardVerificationStatus(
                 appUserID: Self.userID,
-                clientTransactionID: Self.clientTransactionID
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: nil
             ),
             response: .init(statusCode: .success,
                             response: Self.pendingResponse,
@@ -278,12 +350,14 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
 
         self.adsAPI.getRewardVerificationStatus(
             appUserID: Self.userID,
-            clientTransactionID: Self.clientTransactionID
+            clientTransactionID: Self.clientTransactionID,
+            adUnitID: nil
         ) { _ in }
 
         self.adsAPI.getRewardVerificationStatus(
             appUserID: Self.userID,
-            clientTransactionID: Self.clientTransactionID
+            clientTransactionID: Self.clientTransactionID,
+            adUnitID: nil
         ) { _ in }
 
         // Both calls share a cache key (UUID is per-ad), so only one HTTP request fires.
@@ -301,25 +375,29 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
         self.httpClient.mock(
             requestPath: .rewardVerificationStatus(
                 appUserID: Self.userID,
-                clientTransactionID: Self.clientTransactionID
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: nil
             ),
             response: response
         )
         self.httpClient.mock(
             requestPath: .rewardVerificationStatus(
                 appUserID: Self.userID,
-                clientTransactionID: secondTransactionID
+                clientTransactionID: secondTransactionID,
+                adUnitID: nil
             ),
             response: response
         )
 
         self.adsAPI.getRewardVerificationStatus(
             appUserID: Self.userID,
-            clientTransactionID: Self.clientTransactionID
+            clientTransactionID: Self.clientTransactionID,
+            adUnitID: nil
         ) { _ in }
         self.adsAPI.getRewardVerificationStatus(
             appUserID: Self.userID,
-            clientTransactionID: secondTransactionID
+            clientTransactionID: secondTransactionID,
+            adUnitID: nil
         ) { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(2))
@@ -333,7 +411,8 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
         self.httpClient.mock(
             requestPath: .rewardVerificationStatus(
                 appUserID: Self.userID,
-                clientTransactionID: Self.clientTransactionID
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: nil
             ),
             response: .init(statusCode: .success, response: Self.pendingResponse)
         )
@@ -341,14 +420,16 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
         waitUntil { completed in
             self.adsAPI.getRewardVerificationStatus(
                 appUserID: Self.userID,
-                clientTransactionID: Self.clientTransactionID
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: nil
             ) { _ in completed() }
         }
 
         waitUntil { completed in
             self.adsAPI.getRewardVerificationStatus(
                 appUserID: Self.userID,
-                clientTransactionID: Self.clientTransactionID
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: nil
             ) { _ in completed() }
         }
 

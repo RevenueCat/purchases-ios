@@ -65,6 +65,7 @@ enum PurchaseStrings {
     case callback_not_found_for_request(request: SKRequest)
     case duplicate_refund_request(details: String)
     case failed_refund_request(details: String)
+    case ineligible_refund_request(details: String)
     case unknown_refund_request_error(details: String)
     case unknown_refund_request_error_type(details: String)
     case unknown_refund_request_status
@@ -77,6 +78,7 @@ enum PurchaseStrings {
     case begin_refund_customer_info_error(entitlementID: String?)
     case missing_cached_customer_info
     case sk2_transactions_update_received_transaction(productID: String)
+    case sk2_queue_receipt_post_waiting_for_purchase(productID: String)
     case transaction_poster_handling_transaction(transactionID: String,
                                                  productID: String,
                                                  transactionDate: Date,
@@ -292,6 +294,8 @@ extension PurchaseStrings: LogMessage {
             "or already approved: \(details)"
         case .failed_refund_request(let details):
             return "Refund request submission failed: \(details)"
+        case .ineligible_refund_request(let details):
+            return "This transaction is not eligible for a refund request: \(details)"
         case .unknown_refund_request_error_type(let details):
             return "Unknown RefundRequestError type from the AppStore: \(details)"
         case .unknown_refund_request_error(let details):
@@ -321,6 +325,10 @@ extension PurchaseStrings: LogMessage {
 
         case let .sk2_transactions_update_received_transaction(productID):
             return "StoreKit.Transaction.updates: received transaction for product '\(productID)'"
+
+        case let .sk2_queue_receipt_post_waiting_for_purchase(productID):
+            return "StoreKit.Transaction.updates: waiting for in-flight purchase receipt post to finish " +
+            "before posting receipt from the queue for product '\(productID)'"
 
         case let .transaction_poster_handling_transaction(transactionID,
                                                           productID,

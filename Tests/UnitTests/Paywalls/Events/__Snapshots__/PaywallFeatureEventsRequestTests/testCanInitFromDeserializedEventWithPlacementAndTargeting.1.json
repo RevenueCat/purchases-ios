@@ -8,6 +8,7 @@
   "paywall_id" : "test_paywall_id_1",
   "paywall_revision" : 5,
   "presented_offering_context" : {
+    "paywall_id" : "test_paywall_id_1",
     "placement_identifier" : "home_banner",
     "targeting_revision" : 3,
     "targeting_rule_id" : "rule_abc123"

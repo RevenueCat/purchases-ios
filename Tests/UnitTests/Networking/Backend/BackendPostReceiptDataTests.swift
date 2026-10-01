@@ -779,7 +779,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             originalSubscriberInfo.value = result.value
             callOrder.value.initialGet = true
 
-            self.httpClient.mocks.removeValue(forKey: getCustomerInfoPath.url!)
+            self.httpClient.mocks.removeValue(forKey: getCustomerInfoPath.url(preferIAMPath: false)!)
         }
 
         backend.post(receipt: Self.receipt,
@@ -1196,7 +1196,7 @@ class BackendPostReceiptWithSignatureVerificationTests: BaseBackendPostReceiptDa
             requestPath: .postReceiptData,
             response: .init(statusCode: .success,
                             response: Self.validCustomerResponse,
-                            verificationResult: .failed)
+                            verificationResult: .failed(.unknown))
         )
 
         let result = waitUntilValue { completed in

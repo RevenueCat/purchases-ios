@@ -17,6 +17,7 @@ import XCTest
 #if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@MainActor
 final class WorkflowNavigatorTests: TestCase {
 
     // MARK: - Initialization
@@ -73,6 +74,40 @@ final class WorkflowNavigatorTests: TestCase {
         navigator.triggerAction(componentId: "btn_abc")
 
         expect(navigator.canNavigateBack) == true
+    }
+
+    func testTriggerActionDestinationDoesNotMutateNavigator() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStep(id: "step_1", triggers: [("btn_abc", "btn_abc")], triggerActions: [("btn_abc", "step_2")]),
+                makeStep(id: "step_2")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        let destination = navigator.triggerActionDestination(componentId: "btn_abc")
+
+        expect(destination?.step.id) == "step_2"
+        expect(navigator.currentStepId) == "step_1"
+        expect(navigator.canNavigateBack) == false
+    }
+
+    func testFirstForwardDestinationHasBackNavigationAfterNavigation() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStep(id: "step_1", triggers: [("btn_abc", "btn_abc")], triggerActions: [("btn_abc", "step_2")]),
+                makeStep(id: "step_2")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        let destination = navigator.triggerActionDestination(componentId: "btn_abc")
+
+        // The destination is resolved without mutation, but committing it pushes the current step.
+        expect(destination?.canNavigateBackAfterNavigation) == true
+        expect(navigator.canNavigateBack) == false
     }
 
     // MARK: - triggerAction failure cases
@@ -181,6 +216,170 @@ final class WorkflowNavigatorTests: TestCase {
         expect(result).to(beNil())
         expect(navigator.currentStepId) == "step_1"
         expect(navigator.canNavigateBack) == false
+    }
+
+    // MARK: - Branch exits
+
+    func testAResolvedBranchNavigatesToItsRouteInsteadOfTheFallback() async throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStepWithBranchExit(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
+                makeStep(id: "step_2"),
+                makeStep(id: "step_3")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(
+            workflow: workflow,
+            resolveBranches: { _ in ["btn_abc": "step_3"] }
+        )
+        await navigator.waitForBranchResolution()
+
+        let result = navigator.triggerAction(componentId: "btn_abc")
+
+        expect(result?.id) == "step_3"
+        expect(navigator.currentStepId) == "step_3"
+    }
+
+    func testReturningToAStepDropsItsPreviousBranchResolution() async throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStepWithBranchExit(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
+                makeStep(id: "step_2"),
+                makeStep(id: "step_3")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(
+            workflow: workflow,
+            resolveBranches: { _ in ["btn_abc": "step_3"] }
+        )
+        await navigator.waitForBranchResolution()
+
+        _ = navigator.triggerAction(componentId: "btn_abc")
+        _ = navigator.navigateBack()
+
+        // Back on step_1 with nothing resolved yet, so the fallback stands until the new pass lands.
+        expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_2"
+    }
+
+    func testWithBranchingDisabledEveryBranchTakesItsFallback() async throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStepWithBranchExit(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
+                makeStep(id: "step_2"),
+                makeStep(id: "step_3")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+        await navigator.waitForBranchResolution()
+
+        expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_2"
+    }
+
+    /// Config drift: the audiences pick a step the workflow no longer contains. The button must still
+    /// navigate, using the configured fallback, rather than doing nothing.
+    func testARouteNamingAMissingStepFallsBack() async throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStepWithBranchExit(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
+                makeStep(id: "step_2")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(
+            workflow: workflow,
+            resolveBranches: { _ in ["btn_abc": "step_gone"] }
+        )
+        await navigator.waitForBranchResolution()
+
+        expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_2"
+    }
+
+    /// A step that targets itself is still a new visit, so its branches resolve again.
+    func testAStepTargetingItselfResolvesAgain() async throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStepWithBranchExit(
+                    id: "step_1",
+                    componentId: "btn_abc",
+                    actionId: "btn_abc",
+                    fallbackStepId: "step_1"
+                ),
+                makeStep(id: "step_2"),
+                makeStep(id: "step_3")
+            ],
+            initialStepId: "step_1"
+        )
+        let calls = Atomic<Int>(0)
+        let navigator = WorkflowNavigator(workflow: workflow) { _ in
+            calls.modify { $0 += 1 }
+            return ["btn_abc": "step_1"]
+        }
+        await navigator.waitForBranchResolution()
+
+        _ = navigator.triggerAction(componentId: "btn_abc")
+        await navigator.waitForBranchResolution()
+
+        expect(navigator.currentStepId) == "step_1"
+        expect(calls.value) == 2
+    }
+
+    /// Resolution must run against the step just entered, not the one being left.
+    func testNavigatingResolvesTheStepBeingEntered() async throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStep(
+                    id: "step_1",
+                    triggers: [(componentId: "btn_go", actionId: "btn_go")],
+                    triggerActions: [(actionId: "btn_go", targetStepId: "step_2")]
+                ),
+                makeStepWithBranchExit(
+                    id: "step_2",
+                    componentId: "btn_abc",
+                    actionId: "btn_abc",
+                    fallbackStepId: "step_3",
+                    routeStepId: "step_4"
+                ),
+                makeStep(id: "step_3"),
+                makeStep(id: "step_4")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(
+            workflow: workflow,
+            resolveBranches: { step in
+                step.stepTriggerActions.compactMapValues { action in
+                    guard case .branch(let branch) = action else { return nil }
+                    return branch.routes.first?.stepId
+                }
+            }
+        )
+
+        _ = navigator.triggerAction(componentId: "btn_go")
+        await navigator.waitForBranchResolution()
+
+        expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_4"
+    }
+
+    /// Nothing waits on resolution. The body is synchronous from init to the tap, so the resolve task
+    /// provably has not run, and the branch must still navigate.
+    func testATapBeforeResolutionTakesTheFallback() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStepWithBranchExit(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),
+                makeStep(id: "step_2"),
+                makeStep(id: "step_3")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(
+            workflow: workflow,
+            resolveBranches: { _ in ["btn_abc": "step_3"] }
+        )
+
+        expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_2"
     }
 
     // MARK: - navigateBack
@@ -369,6 +568,36 @@ private extension WorkflowNavigatorTests {
           "type": "screen",
           "triggers": \(triggersJSON),
           "trigger_actions": \(actionsJSON)
+        }
+        """
+        return StepDescriptor(id: id, json: json)
+    }
+
+    /// Creates a `StepDescriptor` for a screen whose exit is a branch, rather than a routing step.
+    ///
+    /// The route names a different step than the fallback, so a test can tell the two apart.
+    func makeStepWithBranchExit(
+        id: String,
+        componentId: String,
+        actionId: String,
+        fallbackStepId: String = "step_2",
+        routeStepId: String = "step_3"
+    ) -> StepDescriptor {
+        let json = """
+        {
+          "id": "\(id)",
+          "type": "screen",
+          "screen_id": "screen_\(id)",
+          "triggers": [
+            {"name":"Button","type":"on_press","action_id":"\(actionId)","component_id":"\(componentId)"}
+          ],
+          "trigger_actions": {
+            "\(actionId)": {
+              "type": "branch",
+              "branches": [{"audience_id": "aud_a", "step_id": "\(routeStepId)"}],
+              "fallback_step_id": "\(fallbackStepId)"
+            }
+          }
         }
         """
         return StepDescriptor(id: id, json: json)

@@ -44,21 +44,18 @@ class CachedOfferingsUsageIntegrationTest: BaseStoreKitIntegrationTests {
     func testCachedOfferingsAreNotUsedWhenCachedOfferingsExistsServerReturns4xx() async throws {
         _ = try await Purchases.shared.offerings()
 
-        self.forceServerErrorStrategy = ForceServerErrorStrategy(
-            fakeResponseWithoutPerformingRequest: { (request: HTTPClient.Request) -> (HTTPURLResponse, Data)? in
-                guard case HTTPRequest.Path.getOfferings(appUserID: _) = request.httpRequest.path else {
-                    return nil
-                }
-                return (
-                    HTTPURLResponse(url: request.httpRequest.path.url!,
-                                    statusCode: 401,
-                                    httpVersion: nil,
-                                    headerFields: nil)!,
-                    Data()
-                )
-            },
-            shouldForceServerError: { _ in true}
-        )
+        self.forceServerErrorStrategy = ForceServerErrorStrategy { (request: HTTPClient.Request) in
+            guard case HTTPRequest.Path.getOfferings(appUserID: _) = request.httpRequest.path else {
+                return .defaultServerError
+            }
+            return .fakeResponse(
+                HTTPURLResponse(url: request.httpRequest.path.url(preferIAMPath: false)!,
+                                statusCode: 401,
+                                httpVersion: nil,
+                                headerFields: nil)!,
+                Data()
+            )
+        }
         await resetSingleton()
 
         do {

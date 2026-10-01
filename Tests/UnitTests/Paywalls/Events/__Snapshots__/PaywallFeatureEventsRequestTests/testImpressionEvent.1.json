@@ -7,6 +7,9 @@
   "offering_id" : "offering",
   "paywall_id" : "test_paywall_id",
   "paywall_revision" : 0,
+  "presented_offering_context" : {
+    "paywall_id" : "test_paywall_id"
+  },
   "session_id" : "98CC0F1D-7665-4093-9624-1D7308FFF4DB",
   "timestamp" : 1694029328000,
   "type" : "paywall_impression",

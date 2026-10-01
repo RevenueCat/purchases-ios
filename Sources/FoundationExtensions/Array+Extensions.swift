@@ -50,3 +50,14 @@ extension Sequence where Element: AdditiveArithmetic {
     }
 
 }
+
+extension Sequence where Element: Hashable {
+
+    /// Returns the sequence's unique elements, preserving each element's first occurrence.
+    func deduplicated() -> [Element] {
+        var seen: Set<Element> = []
+
+        return self.filter { seen.insert($0).inserted }
+    }
+
+}

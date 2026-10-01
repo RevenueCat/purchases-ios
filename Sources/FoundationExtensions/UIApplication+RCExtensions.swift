@@ -37,6 +37,49 @@ extension UIApplication {
         return scenes.first as? UIWindowScene
     }
 
+    /// The topmost view controller in the current foreground window scene.
+    @_spi(Internal)
+    @available(macCatalyst 13.1, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(watchOSApplicationExtension, unavailable)
+    @MainActor
+    public var currentPresentationViewController: UIViewController? {
+        guard let windowScene = self.currentWindowScene else { return nil }
+
+        let window: UIWindow?
+        if #available(iOS 15.0, macCatalyst 15.0, tvOS 15.0, *) {
+            window = windowScene.keyWindow
+        } else {
+            window = windowScene.windows.first { $0.isKeyWindow }
+        }
+
+        return window?.rootViewController?.topMostViewController
+    }
+
+}
+
+private extension UIViewController {
+
+    var topMostViewController: UIViewController {
+        if let presentedViewController {
+            return presentedViewController.topMostViewController
+        }
+        if let navigationController = self as? UINavigationController {
+            return navigationController.visibleViewController?.topMostViewController
+                ?? navigationController
+        }
+        if let tabBarController = self as? UITabBarController {
+            return tabBarController.selectedViewController?.topMostViewController
+                ?? tabBarController
+        }
+        if let splitViewController = self as? UISplitViewController,
+           let lastViewController = splitViewController.viewControllers.last {
+            return lastViewController.topMostViewController
+        }
+        return self
+    }
+
 }
 
 #endif

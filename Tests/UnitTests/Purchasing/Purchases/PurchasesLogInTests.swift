@@ -11,11 +11,12 @@
 //
 //  Created by Nacho Soto on 8/15/22.
 
+@preconcurrency import Combine
 import Nimble
 import StoreKit
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class BasePurchasesLogInTests: BasePurchasesTests {}
 
@@ -42,6 +43,23 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
         expect(result?.value) == (Self.mockLoggedInInfo, created)
         expect(self.identityManager.invokedLogInCount) == 1
         expect(self.identityManager.invokedLogInParametersList) == [Self.appUserID]
+    }
+
+    func testLogInTrimsAppUserIDForIdentityAndRemoteConfigRefresh() {
+        self.systemInfo.stubbedRemoteConfigEnabled = true
+        Purchases.clearSingleton()
+        self.initializePurchasesInstance(appUserId: nil)
+        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
+        let baselineRefreshCount = self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount
+
+        waitUntil { completed in
+            self.purchases.logIn("  \(Self.appUserID)  ") { _, _, _ in
+                completed()
+            }
+        }
+
+        expect(self.identityManager.invokedLogInParametersList) == [Self.appUserID]
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount) == baselineRefreshCount + 1
     }
 
     func testLogInWithFailure() {
@@ -83,7 +101,32 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
         expect(self.backend.getCustomerInfoCallCount) == 2
         expect(self.identityManager.invokedLogOutCount) == 1
         expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount) == baselineRemoteConfigRefreshCount + 1
-        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last) == true
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last?.isAppBackgrounded) == true
+    }
+
+    func testLogOutPublishesWebBundleCacheClearEvent() async {
+        let eventBus = WebBundleEventBus()
+        Purchases.clearSingleton()
+        self.initializePurchasesInstance(appUserId: Self.appUserID, webBundleEventBus: eventBus)
+        self.identityManager.mockLogOutError = nil
+        self.backend.overrideCustomerInfoResult = .success(Self.mockLoggedOutInfo)
+        let cacheClearReceived = self.expectation(description: "Web bundle cache clear received")
+        let logoutCompleted = self.expectation(description: "Log out completed")
+        let cancellable = eventBus.publisher
+            .dropFirst()
+            .sink { event in
+                if event == .cacheClearRequested {
+                    cacheClearReceived.fulfill()
+                }
+            }
+
+        self.purchases.logOut { _, error in
+            XCTAssertNil(error)
+            logoutCompleted.fulfill()
+        }
+
+        await self.fulfillment(of: [cacheClearReceived, logoutCompleted], timeout: 1)
+        withExtendedLifetime(cancellable) {}
     }
 
     func testLogOutWithFailure() {
@@ -146,7 +189,7 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
         self.purchases.internalSwitchUser(to: "test-user-id")
 
         expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount) == baselineRefreshCount + 1
-        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last) == true
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last?.isAppBackgrounded) == true
     }
 
     func testSwitchUserNoOpIfAppUserIDIsSameAsCurrent() {
@@ -191,7 +234,8 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
         let parameters = try XCTUnwrap(self.mockOfferingsManager.invokedUpdateOfferingsCacheParameters)
         expect(parameters.appUserID) == Self.mockLoggedInInfo.originalAppUserId
         expect(parameters.isAppBackgrounded) == isAppBackgrounded
-        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last) == isAppBackgrounded
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last?.isAppBackgrounded) ==
+            isAppBackgrounded
     }
 
     func testLogInFailureDoesNotUpdateOfferingsCache() {
@@ -249,7 +293,8 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
     }
 
     @available(*, deprecated)
-    func testCompletionBlockLogInWithStaticStringLogsMessage() {
+    func testCompletionBlockLogInWithStaticStringLogsMessage() throws {
+        try AvailabilityChecks.skipIfCompiler63OrLater() // contains explanatory comment
         self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
 
         waitUntil { completed in
@@ -283,9 +328,10 @@ class ExistingUserPurchasesLogInTests: BasePurchasesLogInTests {
 
         waitUntil { completed in
             self.purchases.logIn(newAppUserID) { customerInfo, _, _ in
-                // since we're using a mocked identity manager, we need to manually call
-                // customer info manager to update the customer info and trigger an actual
+                // since we're using a mocked identity manager, we need to manually switch the current
+                // user and call customer info manager to update the customer info and trigger an actual
                 // call in the monitorChanges observation
+                self.identityManager.mockAppUserID = newAppUserID
                 self.customerInfoManager.cache(customerInfo: customerInfo!, appUserID: newAppUserID)
                 completed()
             }
@@ -303,9 +349,10 @@ class ExistingUserPurchasesLogInTests: BasePurchasesLogInTests {
 
         waitUntil { completed in
             self.purchases.logIn(newAppUserID) { customerInfo, _, _ in
-                // since we're using a mocked identity manager, we need to manually call
-                // customer info manager to update the customer info and trigger an actual
+                // since we're using a mocked identity manager, we need to manually switch the current
+                // user and call customer info manager to update the customer info and trigger an actual
                 // call in the monitorChanges observation
+                self.identityManager.mockAppUserID = newAppUserID
                 self.customerInfoManager.cache(customerInfo: customerInfo!, appUserID: newAppUserID)
                 completed()
             }
@@ -325,9 +372,10 @@ class ExistingUserPurchasesLogInTests: BasePurchasesLogInTests {
 
         waitUntil { completed in
             self.purchases.logIn(newAppUserID) { customerInfo, _, _ in
-                // since we're using a mocked identity manager, we need to manually call
-                // customer info manager to update the customer info and trigger an actual
+                // since we're using a mocked identity manager, we need to manually switch the current
+                // user and call customer info manager to update the customer info and trigger an actual
                 // call in the monitorChanges observation
+                self.identityManager.mockAppUserID = newAppUserID
                 self.customerInfoManager.cache(customerInfo: customerInfo!, appUserID: newAppUserID)
                 completed()
             }

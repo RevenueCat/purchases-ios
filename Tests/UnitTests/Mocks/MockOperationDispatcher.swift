@@ -79,18 +79,23 @@ class MockOperationDispatcher: OperationDispatcher {
     var invokedDispatchAsyncOnWorkerThread = false
     var invokedDispatchAsyncOnWorkerThreadCount = 0
     var invokedDispatchAsyncOnWorkerThreadDelayParam: JitterableDelay?
+    private(set) var dispatchedAsyncWorkerThreadBlocks: [@Sendable () async -> Void] = []
 
+    @discardableResult
     override func dispatchOnWorkerThread(
         jitterableDelay delay: JitterableDelay = .none,
         block: @escaping @Sendable () async -> Void
-    ) {
+    ) -> Task<Void, Never> {
         self.invokedDispatchAsyncOnWorkerThreadDelayParam = delay
         self.invokedDispatchAsyncOnWorkerThread = true
         self.invokedDispatchAsyncOnWorkerThreadCount += 1
-
         if self.forwardToOriginalDispatchOnWorkerThread {
-            super.dispatchOnWorkerThread(jitterableDelay: delay, block: block)
-        } else if self.shouldInvokeDispatchOnWorkerThreadBlock {
+            return super.dispatchOnWorkerThread(jitterableDelay: delay, block: block)
+        }
+
+        self.dispatchedAsyncWorkerThreadBlocks.append(block)
+
+        if self.shouldInvokeDispatchOnWorkerThreadBlock {
             // We want to wait for the async task to finish before leaving this function
             // Use a dispatch group to wait for the async task to finish    
             let dispatchGroup = DispatchGroup()
@@ -111,6 +116,20 @@ class MockOperationDispatcher: OperationDispatcher {
                 XCTFail("Dispatch on worker thread timed out")
             }
         }
+        // Work above either completed synchronously or is held for explicit invocation by the test.
+        return Task {}
+    }
+
+    func invokeAllDispatchedAsyncWorkerThreadBlocks() async {
+        while !self.dispatchedAsyncWorkerThreadBlocks.isEmpty {
+            let block = self.dispatchedAsyncWorkerThreadBlocks.removeFirst()
+            await block()
+        }
+    }
+
+    func invokeDispatchedAsyncWorkerThreadBlock(at index: Int) async {
+        let block = self.dispatchedAsyncWorkerThreadBlocks.remove(at: index)
+        await block()
     }
 
     var invokedDispatchOnWorkerThreadWithTimeInterval = false

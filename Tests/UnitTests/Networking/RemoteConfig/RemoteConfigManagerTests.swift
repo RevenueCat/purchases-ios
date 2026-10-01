@@ -5,6 +5,8 @@
 //  Created by Rick van der Linden.
 //  Copyright © 2026 RevenueCat, Inc. All rights reserved.
 
+// swiftlint:disable file_length type_body_length
+
 import Foundation
 import Nimble
 @testable import RevenueCat
@@ -13,6 +15,7 @@ import XCTest
 final class RemoteConfigManagerTests: TestCase {
 
     private static let appUserID = "app-user-id"
+    private static let refreshAttemptCooldownElapsedInterval: TimeInterval = 61
 
     private var remoteConfigAPI: MockRemoteConfigAPI!
     private var diskCache: MockRemoteConfigDiskCache!
@@ -57,44 +60,220 @@ final class RemoteConfigManagerTests: TestCase {
         try super.tearDownWithError()
     }
 
-    func testIsDisabledDefaultsToFalse() {
-        expect(self.manager.isDisabled) == false
+    func testRefreshRemoteConfigIfStaleSendsForegroundFetchContext() {
+        // The first committed request is forced to `.appStart`, so prime it before asserting a `.foreground` refresh.
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
+        self.dateProvider.advance(by: 6)
+
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .foreground
+    }
+
+    func testRefreshRemoteConfigSendsPassedFetchContext() {
+        // The first committed request is forced to `.appStart`, so prime it before asserting the passed context.
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
+
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .identityChange
+    }
+
+    func testFirstRefreshIsForcedToAppStartRegardlessOfRequestedContext() {
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .appStart
+    }
+
+    func testFirstStaleRefreshIsForcedToAppStartRegardlessOfRequestedContext() {
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .appStart
+    }
+
+    func testOnlyTheFirstRefreshIsForcedToAppStart() {
+        // First request forced to `.appStart`; the next committed request reports its own context.
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .appStart
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
+
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .identityChange
+    }
+
+    func testRefreshKeepsForcingAppStartUntilARefreshSucceeds() {
+        // A failed first refresh must not consume the forced `.appStart`, so the next attempt is forced too.
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .appStart
+        self.remoteConfigAPI.complete(with: .failure(.networkError(.networkError(NSError(domain: "test", code: 1)))))
+        self.remoteConfigAPI.completeFallback(with: .failure(Self.backendError(statusCode: .internalServerError)))
+
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .appStart
+
+        // Once a refresh succeeds, the forcing stops and later refreshes report their own context.
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .identityChange
+    }
+
+    func testForcingStopsOnceA200ConfigIsPersisted() throws {
+        self.diskCache.stubbedRead = nil
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": [],
+          "topics": {}
+        }
+        """
+
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .appStart
+        self.remoteConfigAPI.complete(with: .success(.test(container: try Self.container(config: response))))
+
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .identityChange
+    }
+
+    func testA200ThatFailsToParseKeepsForcingAppStart() throws {
+        self.diskCache.stubbedRead = nil
+
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .appStart
+        // A 200 whose body fails to parse commits nothing, so the initial config is still not committed.
+        self.remoteConfigAPI.complete(with: .success(.test(container: try Self.container(config: "{ not valid json"))))
+
+        // The next refresh must still be forced to `.appStart`, since no config landed yet.
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .appStart
+    }
+
+    func testForcingStopsOnceTheFallbackCommitsItsConfig() {
+        self.diskCache.stubbedRead = nil
+        let configuration = RemoteConfiguration(
+            domain: "app",
+            manifest: "v1.1710000100.sources:etag",
+            activeTopics: [],
+            prefetchBlobs: [],
+            topics: .init(entries: [:])
+        )
+
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .appStart
+
+        // The main request fails on a cold cache, routing to the fallback, which commits its config.
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
+        self.remoteConfigAPI.completeFallback(with: .success(.test(configuration: configuration)))
+
+        // The fallback commit counts as the initial config, so later refreshes report their own context.
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .identityChange
     }
 
     func testRefreshRemoteConfigIfStaleRefreshesWhenNeverRefreshed() {
-        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
     }
 
     func testNoContentResponseMarksRefreshAsFresh() {
-        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
 
-        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
     }
 
-    func testFailureDoesNotMarkRefreshAsFresh() {
-        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
-        self.remoteConfigAPI.complete(with: .failure(.networkError(.networkError(NSError(domain: "test", code: 1)))))
+    func testFreshRefreshDoesNotStartAnotherRequest() {
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
 
-        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+    }
+
+    func testSuccessfulRefreshDoesNotApplyFailureCooldown() {
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
+
+        self.dateProvider.advance(by: 6)
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+    }
+
+    func testFailureDoesNotMarkRefreshAsFresh() {
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(.networkError(.networkError(NSError(domain: "test", code: 1)))))
+        self.remoteConfigAPI.completeFallback(with: .failure(Self.backendError(statusCode: .internalServerError)))
+
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+
+        self.dateProvider.advance(by: Self.refreshAttemptCooldownElapsedInterval)
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+    }
+
+    func testForcedRefreshBypassesFailureCooldown() {
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(.networkError(.networkError(NSError(domain: "test", code: 1)))))
+        self.remoteConfigAPI.completeFallback(with: .failure(Self.backendError(statusCode: .internalServerError)))
+
+        self.manager.refreshRemoteConfig(fetchContext: .read, isAppBackgrounded: false)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
     }
 
     func testRefreshRemoteConfigIfStaleUsesForegroundAndBackgroundDurations() {
-        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
 
         self.dateProvider.advance(by: 6)
-        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: true)
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: true)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
 
-        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
+
+        self.dateProvider.advance(by: 6)
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: true)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+
+        self.dateProvider.advance(by: 5)
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: true)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 3
+    }
+
+    func testClearCacheClearsRefreshAttemptCooldown() {
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(.networkError(.networkError(NSError(domain: "test", code: 1)))))
+        self.remoteConfigAPI.completeFallback(with: .failure(Self.backendError(statusCode: .internalServerError)))
+
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+
+        self.manager.clearCache(forAppUserID: Self.appUserID)
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
     }
@@ -102,8 +281,8 @@ final class RemoteConfigManagerTests: TestCase {
     func testClosePreventsNewRefreshes() {
         self.manager.close()
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
-        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 0
     }
@@ -152,7 +331,7 @@ final class RemoteConfigManagerTests: TestCase {
         }
         """
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.manager.close()
         self.remoteConfigAPI.complete(
             with: .success(.test(container: try Self.container(config: response)))
@@ -166,41 +345,212 @@ final class RemoteConfigManagerTests: TestCase {
     func testFirstRunSendsDefaultAppDomainManifest() throws {
         self.diskCache.stubbedRead = nil
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.appUserID) == Self.appUserID
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .appStart
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.manifest).to(beNil())
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.prefetchedBlobs).to(beEmpty())
     }
 
     func testSubsequentRunReplaysPersistedManifest() throws {
         let persistedManifest = "v1.1710000100.sources:etag1"
+        let lastRefreshTime = Date(timeIntervalSince1970: 1_785_309_842)
         self.blobStore.stubbedContainsRefs = ["prefetchedBlob"]
         self.diskCache.stubbedRead = Self.persisted(
             domain: "custom",
             manifest: persistedManifest,
             prefetchBlobs: ["prefetchedBlob"],
-            topics: .init()
+            topics: .init(),
+            lastRefreshTimeMilliseconds: lastRefreshTime.millisecondsSince1970
         )
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: true)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: true)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.appUserID) == Self.appUserID
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.domain) == "custom"
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.manifest) == persistedManifest
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.prefetchedBlobs) == ["prefetchedBlob"]
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.lastRefreshTime) == lastRefreshTime
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.isAppBackgrounded) == true
     }
 
+    func testClearCacheDropsLastRefreshTime() {
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.sources:etag1",
+            lastRefreshTimeMilliseconds: 123_000
+        )
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.lastRefreshTime)
+            == Date(timeIntervalSince1970: 123)
+        self.dateProvider.advance(by: 456)
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
+
+        self.manager.clearCache(forAppUserID: "new-user")
+        self.currentUserProvider.mockAppUserID = "new-user"
+        self.diskCache.stubbedRead = Self.persisted(manifest: "v1.1710000100.sources:etag2")
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.lastRefreshTime).to(beNil())
+    }
+
+    func testNoContentResponsePersistsAndSendsSuccessfulPollTime() {
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.sources:etag1",
+            lastRefreshTimeMilliseconds: 1_000
+        )
+        self.diskCache.writeHandler = { configuration in
+            self.diskCache.stubbedRead = configuration
+            return true
+        }
+        self.dateProvider.advance(by: 123)
+        let serverRequestTime = Date(timeIntervalSince1970: 456)
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .success(.test(
+            container: nil,
+            requestDate: serverRequestTime
+        )))
+
+        expect(self.diskCache.invokedWriteParameter?.lastRefreshTimeMilliseconds) == 456_000
+
+        self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.lastRefreshTime)
+            == serverRequestTime
+    }
+
+    func testNoContentResponseWithoutServerRequestTimeKeepsPreviousRefreshTime() {
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.sources:etag1",
+            lastRefreshTimeMilliseconds: 1_000
+        )
+        self.dateProvider.advance(by: 123)
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
+
+        expect(self.diskCache.invokedWriteCount) == 0
+
+        self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.lastRefreshTime)
+            == Date(millisecondsSince1970: 1_000)
+    }
+
+    func testNoContentResponseWriteFailureStillMarksRefreshAsFresh() {
+        let manager = RemoteConfigManager(
+            remoteConfigAPI: self.remoteConfigAPI,
+            diskCache: self.diskCache,
+            blobStore: self.blobStore,
+            blobFetcher: self.blobFetcher,
+            currentUserProvider: self.currentUserProvider,
+            dateProvider: self.dateProvider,
+            cacheDurationInSeconds: { _ in 120 }
+        )
+        self.diskCache.stubbedRead = Self.persisted(manifest: "v1.1710000100.sources:etag1")
+        self.diskCache.stubbedWriteResult = false
+
+        manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .success(.test(
+            container: nil,
+            requestDate: Date(timeIntervalSince1970: 10)
+        )))
+        expect(self.diskCache.invokedWriteCount) == 1
+
+        self.dateProvider.advance(by: Self.refreshAttemptCooldownElapsedInterval)
+        manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+    }
+
+    func testNoContentResponseUsesClientTimeForStaleness() {
+        let manager = RemoteConfigManager(
+            remoteConfigAPI: self.remoteConfigAPI,
+            diskCache: self.diskCache,
+            blobStore: self.blobStore,
+            blobFetcher: self.blobFetcher,
+            currentUserProvider: self.currentUserProvider,
+            dateProvider: self.dateProvider,
+            cacheDurationInSeconds: { _ in 120 }
+        )
+        self.diskCache.stubbedRead = Self.persisted(manifest: "v1.1710000100.sources:etag1")
+        self.dateProvider.advance(by: 100)
+
+        manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .success(.test(
+            container: nil,
+            requestDate: Date(timeIntervalSince1970: 0)
+        )))
+
+        self.dateProvider.advance(by: Self.refreshAttemptCooldownElapsedInterval)
+        manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+    }
+
+    func testAppRestartRefreshesAndAppliesUpdatedConfig() async throws {
+        // Feed committed config back into the read path so the manager serves what it persists.
+        self.diskCache.writeHandler = { configuration in
+            self.diskCache.stubbedRead = configuration
+            return true
+        }
+        // Simulate a prior run that persisted config vA.
+        let persistedManifest = "v1.1710000100.sources:etagA"
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: persistedManifest,
+            topics: .init(entries: ["sources": ["api": .init(content: ["url": "https://cached.revenuecat.com"])]])
+        )
+
+        // The restart starts from the prior run's config: vA is served without needing a fetch.
+        let maybeCachedTopic = await self.manager.topic(.sources)
+        let cachedTopic = try XCTUnwrap(maybeCachedTopic)
+        expect(cachedTopic["api"]?.content["url"]) == "https://cached.revenuecat.com"
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 0
+
+        // Restarting the app triggers an `.appStart` refresh that sends the persisted (vA) manifest
+        // for a delta sync, rather than reusing the cached config as-is.
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .appStart
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.manifest) == persistedManifest
+
+        // The backend returns an updated config vB (new manifest + changed topic content).
+        let updatedManifest = "v1.1710000200.sources:etagB"
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "\(updatedManifest)",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "api": { "url": "https://updated.revenuecat.com" }
+            }
+          }
+        }
+        """
+        self.remoteConfigAPI.complete(
+            with: .success(.test(container: try Self.container(config: response)))
+        )
+
+        // After the restart's refresh the manager is on vB: it commits the new version and now serves
+        // the updated topic, not the persisted vA.
+        expect(self.diskCache.invokedWriteParameter?.manifest) == updatedManifest
+        let maybeTopic = await self.manager.topic(.sources)
+        let topic = try XCTUnwrap(maybeTopic)
+        expect(topic["api"]?.content["url"]) == "https://updated.revenuecat.com"
+    }
+
     func testOverlappingRefreshesAreIgnoredUntilInFlightRefreshCompletes() {
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
-        self.manager.refreshRemoteConfig(isAppBackgrounded: true)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: true)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
 
         self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
-        self.manager.refreshRemoteConfig(isAppBackgrounded: true)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: true)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.isAppBackgrounded) == true
@@ -214,7 +564,7 @@ final class RemoteConfigManagerTests: TestCase {
             topics: .init()
         )
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: true)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: true)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.prefetchedBlobs) == ["cachedBlob"]
         expect(self.blobStore.invokedCachedRefsCount) == 1
@@ -233,14 +583,68 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 0
     }
 
-    func testTopicReturnsNilWhenRemoteConfigIsDisabledDuringCommittedRead() async {
+    func testCommittedTopicAfterInFlightRefreshReturnsLatestTopic() async throws {
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.sources:etag1",
+            topics: .init(entries: ["sources": [:]])
+        )
+        self.diskCache.writeHandler = { configuration in
+            self.diskCache.stubbedRead = configuration
+            return true
+        }
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "api": { "url": "https://api.revenuecat.com" }
+            }
+          }
+        }
+        """
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        let completed: Atomic<Bool> = false
+
+        let topic = Task {
+            let result = await self.manager.committedTopicAfterInFlightRefresh(.sources)
+            completed.value = true
+            return result
+        }
+        await self.waitForRemoteConfigRequestCount(1)
+        await self.yield()
+        expect(completed.value) == false
+        self.remoteConfigAPI.complete(
+            with: .success(.test(container: try Self.container(config: response)))
+        )
+
+        let refreshedTopic = await topic.value
+        expect(completed.value) == true
+        expect(refreshedTopic?["api"]?.content["url"]) == "https://api.revenuecat.com"
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+    }
+
+    func testCommittedTopicAfterInFlightRefreshDoesNotStartRefresh() async {
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.sources:etag1",
+            topics: .init(entries: ["sources": [:]])
+        )
+
+        let topic = await self.manager.committedTopicAfterInFlightRefresh(.sources)
+
+        expect(topic).to(beEmpty())
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 0
+    }
+
+    func testTopicReturnsCommittedValueWhenClientErrorLandsDuringRead() async {
         let item = RemoteConfiguration.ConfigItem(content: ["url": "https://api.revenuecat.com"])
         let persisted = Self.persisted(
             manifest: "v1.1710000100.sources:etag1",
             topics: .init(entries: ["sources": ["api": item]])
         )
         self.diskCache.stubbedRead = persisted
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.diskCache.readHandler = {
             self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .forbidden)))
             return persisted
@@ -248,7 +652,7 @@ final class RemoteConfigManagerTests: TestCase {
 
         let topic = await self.manager.topic(.sources)
 
-        expect(topic).to(beNil())
+        expect(topic?["api"]?.content["url"]) == "https://api.revenuecat.com"
     }
 
     @MainActor
@@ -323,7 +727,7 @@ final class RemoteConfigManagerTests: TestCase {
         """
 
         let task = Task {
-            await self.manager.topic(.sources)
+            await self.manager.topic(.sources)?["api"]?.content["url"]
         }
         await self.waitForRemoteConfigRequestCount(1)
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.isAppBackgrounded) == false
@@ -331,9 +735,8 @@ final class RemoteConfigManagerTests: TestCase {
             with: .success(.test(container: try Self.container(config: response)))
         )
 
-        let maybeTopic = await task.value
-        let topic = try XCTUnwrap(maybeTopic)
-        expect(topic["api"]?.content["url"]) == "https://api.revenuecat.com"
+        let apiURL = await task.value
+        expect(apiURL) == AnyDecodable.string("https://api.revenuecat.com")
     }
 
     func testTopicMissingAfterFreshRefreshDoesNotTriggerAnotherRefresh() async throws {
@@ -355,20 +758,49 @@ final class RemoteConfigManagerTests: TestCase {
         """
 
         let firstRead = Task {
-            await self.manager.topic(.workflows)
+            await self.manager.topic(.workflows) == nil
         }
         await self.waitForRemoteConfigRequestCount(1)
         self.remoteConfigAPI.complete(
             with: .success(.test(container: try Self.container(config: response)))
         )
 
-        let firstTopic = await firstRead.value
-        expect(firstTopic).to(beNil())
+        let didMissTopic = await firstRead.value
+        expect(didMissTopic) == true
 
         let secondRead = await self.manager.topic(.workflows)
 
         expect(secondRead).to(beNil())
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+    }
+
+    func testTopicColdReadFailureUsesFailureCooldown() async {
+        let firstRead = Task {
+            await self.manager.topic(.sources)
+        }
+        await self.waitForRemoteConfigRequestCount(1)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
+        self.remoteConfigAPI.completeFallback(with: .failure(Self.backendError(statusCode: .internalServerError)))
+
+        let firstTopic = await firstRead.value
+        expect(firstTopic).to(beNil())
+
+        let secondTopic = await self.manager.topic(.sources)
+
+        expect(secondTopic).to(beNil())
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+
+        self.dateProvider.advance(by: Self.refreshAttemptCooldownElapsedInterval)
+        let thirdRead = Task {
+            await self.manager.topic(.sources)
+        }
+        await self.waitForRemoteConfigRequestCount(2)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
+        self.remoteConfigAPI.completeFallback(with: .failure(Self.backendError(statusCode: .internalServerError)))
+
+        let thirdTopic = await thirdRead.value
+        expect(thirdTopic).to(beNil())
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
     }
 
     func testTopicWaitsForInFlightRefreshBeforeReturningMissingTopic() async throws {
@@ -389,9 +821,9 @@ final class RemoteConfigManagerTests: TestCase {
         }
         """
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         let task = Task {
-            await self.manager.topic(.sources)
+            await self.manager.topic(.sources)?["api"]?.content["url"]
         }
         await self.waitForRemoteConfigRequestCount(1)
         await self.waitForDiskCacheReadCount(2)
@@ -399,25 +831,24 @@ final class RemoteConfigManagerTests: TestCase {
             with: .success(.test(container: try Self.container(config: response)))
         )
 
-        let maybeTopic = await task.value
-        let topic = try XCTUnwrap(maybeTopic)
-        expect(topic["api"]?.content["url"]) == "https://api.revenuecat.com"
+        let apiURL = await task.value
+        expect(apiURL) == AnyDecodable.string("https://api.revenuecat.com")
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
     }
 
-    func testTopicReturnsNilWhenRemoteConfigIsDisabledEvenWithCachedTopic() async {
+    func testTopicReturnsCachedTopicAfterClientError() async {
         self.diskCache.stubbedRead = Self.persisted(
             manifest: "v1.1710000100.sources:etag1",
             topics: .init(entries: [
                 "sources": ["api": .init(content: ["url": "https://api.revenuecat.com"])]
             ])
         )
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .forbidden)))
 
         let topic = await self.manager.topic(.sources)
 
-        expect(topic).to(beNil())
+        expect(topic?["api"]?.content["url"]) == "https://api.revenuecat.com"
     }
 
     func testBlobDataDecodesExternalBlob() async throws {
@@ -433,6 +864,161 @@ final class RemoteConfigManagerTests: TestCase {
         expect(value) == WorkflowPayload(id: "workflow")
         expect(self.blobFetcher.invokedEnsureDownloadedRefs) == [ref]
         expect(self.blobStore.invokedReadRefs) == [ref]
+    }
+
+    func testCachedBlobDataReadsLocalBlobWithoutInvokingDownloader() async {
+        let ref = RCContainerTestData.blobRef(for: #"{"id":"workflow"}"#.asData)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: ["workflows": ["default": .init(blobRef: ref)]])
+        )
+        self.blobStore.stubbedReadDataByRef[ref] = #"{"id":"workflow"}"#.asData
+
+        let data = await self.manager.blobData(for: .workflows, itemKey: "default", policy: .cachedOnly)
+
+        expect(data) == #"{"id":"workflow"}"#.asData
+        expect(self.blobFetcher.invokedEnsureDownloadedRefs).to(beEmpty())
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 0
+    }
+
+    func testLifecycleObserverReceivesInitialStateCommitAndRefreshCompletion() throws {
+        let observer = RemoteConfigLifecycleObserverSpy()
+        self.manager.addConfigLifecycleObserver(observer)
+        let response = """
+        { "domain": "app", "manifest": "v1.test", "active_topics": [], "topics": {} }
+        """
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .success(.test(container: try Self.container(config: response))))
+
+        expect(observer.observedGenerations) == [0, 1, 1]
+        expect(observer.refreshFinishedContexts) == [.appStart]
+    }
+
+    func testLifecycleObserverReceivesRefreshCompletionForNoOpRefresh() {
+        let observer = RemoteConfigLifecycleObserverSpy()
+        self.manager.addConfigLifecycleObserver(observer)
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
+
+        expect(observer.observedGenerations) == [0, 0]
+        expect(observer.refreshFinishedContexts) == [.appStart]
+    }
+
+    func testLifecycleObserverReceivesRefreshCompletionForTerminalFailure() {
+        let observer = RemoteConfigLifecycleObserverSpy()
+        self.manager.addConfigLifecycleObserver(observer)
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .forbidden)))
+
+        expect(observer.observedGenerations) == [0, 0]
+        expect(observer.refreshFinishedContexts) == [.appStart]
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigFallbackCount) == 0
+    }
+
+    func testLifecycleObserverReceivesRefreshFinishedAfterFallbackSettles() {
+        let observer = RemoteConfigLifecycleObserverSpy()
+        self.manager.addConfigLifecycleObserver(observer)
+        let configuration = RemoteConfiguration(
+            domain: "app",
+            manifest: "v1.test",
+            activeTopics: [],
+            prefetchBlobs: [],
+            topics: .init(entries: [:])
+        )
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
+
+        expect(observer.observedGenerations) == [0]
+
+        self.remoteConfigAPI.completeFallback(with: .success(.test(configuration: configuration)))
+
+        expect(observer.refreshFinishedContexts) == [.appStart]
+        expect(observer.observedGenerations) == [0, 1, 1]
+    }
+
+    func testDoesNotRetainLifecycleObserver() {
+        var observer: RemoteConfigLifecycleObserverSpy? = .init()
+        weak var weakObserver = observer
+
+        self.manager.addConfigLifecycleObserver(observer!)
+        observer = nil
+
+        expect(weakObserver).to(beNil())
+    }
+
+    func testEnsureBlobsDownloadedDelegatesToBlobFetcher() async {
+        let refs = ["ref-1", "ref-2"]
+
+        let result = await self.manager.ensureBlobsDownloaded(refs)
+
+        expect(result) == true
+        expect(self.blobFetcher.invokedEnsureAllDownloadedRefs) == refs
+    }
+
+    func testAwaitTopicReadyWaitsOnlyForPrefetchFlaggedBlobs() async throws {
+        let prefetchRef = RCContainerTestData.blobRef(for: #"{"id":"wf-1"}"#.asData)
+        let onDemandRef = RCContainerTestData.blobRef(for: #"{"id":"wf-2"}"#.asData)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: [
+                "workflows": [
+                    "wf-1": .init(blobRef: prefetchRef, prefetch: true),
+                    "wf-2": .init(blobRef: onDemandRef, prefetch: false)
+                ]
+            ])
+        )
+
+        let maybeTopic = await self.manager.awaitTopicAndPrefetchBlobsReady(.workflows)
+        let topic = try XCTUnwrap(maybeTopic)
+
+        expect(topic["wf-1"]?.blobRef) == prefetchRef
+        expect(topic["wf-2"]?.blobRef) == onDemandRef
+        expect(self.blobFetcher.invokedEnsureAllDownloadedRefs) == [prefetchRef]
+    }
+
+    func testAwaitTopicReadyRetriesWhenTopicChangesWhileWaitingOnBlobs() async throws {
+        let firstRef = RCContainerTestData.blobRef(for: #"{"id":"wf-1"}"#.asData)
+        let secondRef = RCContainerTestData.blobRef(for: #"{"id":"wf-2"}"#.asData)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: ["workflows": ["wf-1": .init(blobRef: firstRef, prefetch: true)]])
+        )
+
+        // Simulate the topic being invalidated and refetched (e.g. an identity change) while the
+        // first blob wait is in flight, by swapping the disk cache's content only on that first
+        // call. The retry's own wait then settles on the new topic's own prefetch refs.
+        self.blobFetcher.ensureAllDownloadedHandler = { _ in
+            guard self.blobFetcher.invokedEnsureAllDownloadedCount == 1 else { return }
+            self.diskCache.stubbedRead = Self.persisted(
+                manifest: "v1.1710000100.workflows:etag2",
+                topics: .init(entries: ["workflows": ["wf-2": .init(blobRef: secondRef, prefetch: true)]])
+            )
+        }
+
+        let maybeTopic = await self.manager.awaitTopicAndPrefetchBlobsReady(.workflows)
+        let topic = try XCTUnwrap(maybeTopic)
+
+        expect(topic["wf-2"]?.blobRef) == secondRef
+        expect(topic["wf-1"]).to(beNil())
+        expect(self.blobFetcher.invokedEnsureAllDownloadedCount) == 2
+        expect(self.blobFetcher.invokedEnsureAllDownloadedRefs) == [secondRef]
+    }
+
+    func testAwaitTopicReadyReturnsNilWhenTopicUnavailable() async {
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: ["workflows": ["wf-1": .init(blobRef: "wf-1-ref", prefetch: true)]])
+        )
+        self.manager.close()
+
+        let topic = await self.manager.awaitTopicAndPrefetchBlobsReady(.workflows)
+
+        expect(topic).to(beNil())
+        expect(self.blobFetcher.invokedEnsureAllDownloadedRefs).to(beEmpty())
     }
 
     func testBlobDataReturnsNilWhenExternalBlobDownloadFails() async {
@@ -781,7 +1367,7 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
     }
 
-    func testMergeItemsBlobDataReturnsNilWhenRemoteConfigIsDisabledWithoutReadingBlobs() async throws {
+    func testMergeItemsBlobDataUsesCachedBlobsAfterClientError() async throws {
         let blob = #"{"value":"one"}"#.asData
         let ref = RCContainerTestData.blobRef(for: blob)
         self.diskCache.stubbedRead = Self.persisted(
@@ -789,7 +1375,7 @@ final class RemoteConfigManagerTests: TestCase {
             topics: .init(entries: ["workflows": ["wf1": .init(blobRef: ref)]])
         )
         self.blobStore.stubbedReadDataByRef[ref] = blob
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .forbidden)))
 
         let value = try await self.manager.mergeItemsBlobData(
@@ -798,13 +1384,9 @@ final class RemoteConfigManagerTests: TestCase {
             as: SingleMergedWorkflowPayload.self
         )
 
-        expect(value).to(beNil())
-        expect(self.blobFetcher.invokedEnsureDownloadedRefs).to(beEmpty())
-        expect(self.blobStore.invokedReadRefs).to(beEmpty())
-        self.logger.verifyMessageWasLogged(
-            Strings.remoteConfig.mergeItemsBlobDataDisabled(topic: .workflows, itemKeys: ["wf1"]),
-            level: .warn
-        )
+        expect(value) == SingleMergedWorkflowPayload(wf1: .init(value: "one"))
+        expect(self.blobFetcher.invokedEnsureDownloadedRefs) == [ref]
+        expect(self.blobStore.invokedReadRefs) == [ref]
     }
 
     func testMergeItemsBlobDataThrowsWhenBlobDataIsNotValidJSON() async throws {
@@ -875,8 +1457,124 @@ final class RemoteConfigManagerTests: TestCase {
         expect(value) == MergedPrimitivePayload(wf1: "hello", wf2: 42)
     }
 
+    func testMergeItemsBlobDataEscapesItemKeysRequiringJSONEscaping() async throws {
+        struct MergedEscapedKeyPayload: Decodable, Equatable {
+            let escapedKey: MergedSection
+
+            // swiftlint:disable:next nesting
+            enum CodingKeys: String, CodingKey {
+                case escapedKey = #"weird"key\slash{brace},colon:end"#
+            }
+        }
+
+        let blob = #"{"value":"escaped"}"#.asData
+        let itemKey = #"weird"key\slash{brace},colon:end"#
+        let ref = RCContainerTestData.blobRef(for: blob)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: ["workflows": [itemKey: .init(blobRef: ref)]])
+        )
+        self.blobStore.stubbedReadDataByRef[ref] = blob
+
+        let value = try await self.manager.mergeItemsBlobData(
+            for: .workflows,
+            itemKeys: [itemKey],
+            as: MergedEscapedKeyPayload.self
+        )
+
+        expect(value) == MergedEscapedKeyPayload(escapedKey: .init(value: "escaped"))
+    }
+
+    func testMergeItemsBlobDataSupportsUnicodeItemKeys() async throws {
+        struct MergedUnicodeKeyPayload: Decodable, Equatable {
+            let unicodeKey: MergedSection
+
+            // swiftlint:disable:next nesting
+            enum CodingKeys: String, CodingKey {
+                case unicodeKey = "日本語🎉café"
+            }
+        }
+
+        let blob = #"{"value":"unicode"}"#.asData
+        let itemKey = "日本語🎉café"
+        let ref = RCContainerTestData.blobRef(for: blob)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: ["workflows": [itemKey: .init(blobRef: ref)]])
+        )
+        self.blobStore.stubbedReadDataByRef[ref] = blob
+
+        let value = try await self.manager.mergeItemsBlobData(
+            for: .workflows,
+            itemKeys: [itemKey],
+            as: MergedUnicodeKeyPayload.self
+        )
+
+        expect(value) == MergedUnicodeKeyPayload(unicodeKey: .init(value: "unicode"))
+    }
+
+    func testMergeItemsBlobDataAcceptsBlobsWithSurroundingWhitespace() async throws {
+        let blob = "\n   {\"value\":\"spaced\"}   \n".asData
+        let ref = RCContainerTestData.blobRef(for: blob)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: ["workflows": ["wf1": .init(blobRef: ref)]])
+        )
+        self.blobStore.stubbedReadDataByRef[ref] = blob
+
+        let value = try await self.manager.mergeItemsBlobData(
+            for: .workflows,
+            itemKeys: ["wf1"],
+            as: SingleMergedWorkflowPayload.self
+        )
+
+        expect(value) == SingleMergedWorkflowPayload(wf1: .init(value: "spaced"))
+    }
+
+    func testMergeItemsBlobDataMergesMultipleKeysAndBlobs() async throws {
+        struct MergedMultiPayload: Decodable, Equatable {
+            let wf1: MergedSection
+            let wf2: MergedSection
+            let wf3: MergedSection
+        }
+
+        let firstBlob = #"{"value":"one"}"#.asData
+        let secondBlob = #"{"value":"two"}"#.asData
+        let thirdBlob = #"{"value":"three"}"#.asData
+        let firstRef = RCContainerTestData.blobRef(for: firstBlob)
+        let secondRef = RCContainerTestData.blobRef(for: secondBlob)
+        let thirdRef = RCContainerTestData.blobRef(for: thirdBlob)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: [
+                "workflows": [
+                    "wf1": .init(blobRef: firstRef),
+                    "wf2": .init(blobRef: secondRef),
+                    "wf3": .init(blobRef: thirdRef)
+                ]
+            ])
+        )
+        self.blobStore.stubbedReadDataByRef[firstRef] = firstBlob
+        self.blobStore.stubbedReadDataByRef[secondRef] = secondBlob
+        self.blobStore.stubbedReadDataByRef[thirdRef] = thirdBlob
+
+        let value = try await self.manager.mergeItemsBlobData(
+            for: .workflows,
+            itemKeys: ["wf1", "wf2", "wf3"],
+            as: MergedMultiPayload.self
+        )
+
+        expect(value) == MergedMultiPayload(
+            wf1: .init(value: "one"),
+            wf2: .init(value: "two"),
+            wf3: .init(value: "three")
+        )
+    }
+
     func testContainerResponsePersistsServerManifestAndChangedTopics() throws {
         self.diskCache.stubbedRead = nil
+        self.dateProvider.advance(by: 123)
+        let serverRequestTime = Date(timeIntervalSince1970: 456)
         let response = """
         {
           "domain": "app",
@@ -891,9 +1589,12 @@ final class RemoteConfigManagerTests: TestCase {
         }
         """
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
-            with: .success(.test(container: try Self.container(config: response)))
+            with: .success(.test(
+                container: try Self.container(config: response),
+                requestDate: serverRequestTime
+            ))
         )
 
         expect(self.diskCache.invokedWriteCount) == 1
@@ -903,6 +1604,50 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.diskCache.invokedWriteParameter?.activeTopics) == ["sources"]
         expect(self.diskCache.invokedWriteParameter?.prefetchBlobs) == ["newBlob"]
         expect(Self.blobRefsByTopic(from: self.diskCache.invokedWriteParameter?.topics)) == ["sources": ["newBlob"]]
+        expect(self.diskCache.invokedWriteParameter?.lastRefreshTimeMilliseconds) == 456_000
+    }
+
+    func testContainerResponseWithoutServerRequestTimeCarriesPreviousRefreshTimeForward() throws {
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.sources:etag1",
+            lastRefreshTimeMilliseconds: 1_000
+        )
+        self.dateProvider.advance(by: 123)
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": [],
+          "topics": {}
+        }
+        """
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(
+            with: .success(.test(container: try Self.container(config: response)))
+        )
+
+        expect(self.diskCache.invokedWriteParameter?.lastRefreshTimeMilliseconds) == 1_000
+    }
+
+    func testFirstContainerResponseWithoutServerRequestTimeDoesNotPersistClientTime() throws {
+        self.diskCache.stubbedRead = nil
+        self.dateProvider.advance(by: 123)
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag1",
+          "active_topics": [],
+          "topics": {}
+        }
+        """
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(
+            with: .success(.test(container: try Self.container(config: response)))
+        )
+
+        expect(self.diskCache.invokedWriteParameter?.lastRefreshTimeMilliseconds).to(beNil())
     }
 
     func testContainerResponseDecodesCompressedConfigElement() throws {
@@ -919,7 +1664,7 @@ final class RemoteConfigManagerTests: TestCase {
         }
         """
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
             with: .success(.test(container: try Self.compressedContainer(
                 config: response,
@@ -952,13 +1697,50 @@ final class RemoteConfigManagerTests: TestCase {
         }
         """
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
             with: .success(.test(container: try Self.container(config: response)))
         )
 
         expect(Self.blobRefsByTopic(from: self.diskCache.invokedWriteParameter?.topics)) == ["sources": ["newSources"]]
         expect(self.blobStore.invokedRetainOnlyParameters) == Set(["newSources"])
+    }
+
+    func testContainerResponsePrunesBlobRefsForItemsDroppedFromChangedTopic() throws {
+        let keptRef = "keptBlob"
+        let removedRef = "removedBlob"
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: [
+                "workflows": [
+                    "kept": .init(blobRef: keptRef),
+                    "removed": .init(blobRef: removedRef)
+                ]
+            ])
+        )
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.workflows:etag2",
+          "active_topics": ["workflows"],
+          "topics": {
+            "workflows": {
+              "kept": { "blob_ref": "\(keptRef)" }
+            }
+          }
+        }
+        """
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(
+            with: .success(.test(container: try Self.container(config: response)))
+        )
+
+        let workflows = try XCTUnwrap(self.diskCache.invokedWriteParameter?.topics.entries["workflows"])
+        expect(Set(workflows.keys)) == Set(["kept"])
+        expect(workflows["kept"]?.blobRef) == keptRef
+        expect(workflows["removed"]).to(beNil())
+        expect(self.blobStore.invokedRetainOnlyParameters) == Set([keptRef])
     }
 
     func testContainerResponseKeepsPreviousEntriesForUnchangedTopicsStillActive() throws {
@@ -986,7 +1768,7 @@ final class RemoteConfigManagerTests: TestCase {
         }
         """
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
             with: .success(.test(container: try Self.container(config: response)))
         )
@@ -1016,7 +1798,7 @@ final class RemoteConfigManagerTests: TestCase {
         }
         """
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
             with: .success(.test(container: try Self.container(config: response)))
         )
@@ -1027,7 +1809,7 @@ final class RemoteConfigManagerTests: TestCase {
         expect(item?.content["priority"]) == 100
     }
 
-    func testNoContentResponseWithPersistedCacheLeavesCacheUntouched() {
+    func testNoContentResponseWithPersistedCacheUpdatesOnlyRefreshTime() {
         let previous = Self.persisted(
             domain: "app",
             manifest: "v1.1710000100.sources:etag1",
@@ -1036,26 +1818,37 @@ final class RemoteConfigManagerTests: TestCase {
             topics: .init(entries: ["sources": ["default": .init(blobRef: "sourceBlob")]])
         )
         self.diskCache.stubbedRead = previous
+        self.dateProvider.advance(by: 123)
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
-        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .success(.test(
+            container: nil,
+            requestDate: Date(timeIntervalSince1970: 123)
+        )))
 
-        expect(self.diskCache.invokedWriteCount) == 0
+        expect(self.diskCache.invokedWriteCount) == 1
+        expect(self.diskCache.invokedWriteParameter) == previous.withLastRefreshTime(
+            Date(timeIntervalSince1970: 123)
+        )
         expect(self.blobStore.invokedWriteCount) == 0
         expect(self.blobStore.invokedRetainOnlyCount) == 0
         expect(self.blobFetcher.invokedPrefetchCount) == 0
     }
 
-    func testNoContentResponseWithNoPersistedCacheLeavesCacheUntouched() {
+    func testNoContentResponseWithNoPersistedCacheDoesNotSendRefreshTime() {
         self.diskCache.stubbedRead = nil
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
 
         expect(self.diskCache.invokedWriteCount) == 0
         expect(self.blobStore.invokedWriteCount) == 0
         expect(self.blobStore.invokedRetainOnlyCount) == 0
         expect(self.blobFetcher.invokedPrefetchCount) == 0
+
+        self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.lastRefreshTime).to(beNil())
     }
 
     func testBackendErrorLeavesCacheUntouched() {
@@ -1063,10 +1856,11 @@ final class RemoteConfigManagerTests: TestCase {
             manifest: "v1.1710000100.sources:etag1"
         )
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
             with: .failure(.networkError(.networkError(NSError(domain: "test", code: 1))))
         )
+        self.remoteConfigAPI.completeFallback(with: .failure(Self.backendError(statusCode: .internalServerError)))
 
         expect(self.diskCache.invokedWriteCount) == 0
         expect(self.blobStore.invokedWriteCount) == 0
@@ -1074,73 +1868,207 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.blobFetcher.invokedPrefetchCount) == 0
     }
 
-    func testFourHundredResponseDisablesRemoteConfig() {
+    func testMalformedTopicItemLeavesCacheUntouchedAndReleasesRefreshGuard() throws {
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "api": "not-an-object"
+            }
+          }
+        }
+        """
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(
+            with: .success(.test(container: try Self.container(config: response)))
+        )
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+        expect(self.diskCache.invokedWriteCount) == 0
+        expect(self.blobStore.invokedWriteCount) == 0
+        expect(self.blobStore.invokedRetainOnlyCount) == 0
+        expect(self.blobFetcher.invokedPrefetchCount) == 0
+    }
+
+    func testFourHundredResponseAllowsLaterRefresh() {
         self.diskCache.stubbedRead = Self.persisted(
             manifest: "v1.1710000100.sources:etag1"
         )
+        let error = Self.backendError(statusCode: .invalidRequest)
 
-        expect(self.manager.isDisabled) == false
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
-        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .invalidRequest)))
-        expect(self.manager.isDisabled) == true
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(error))
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+        expect(self.diskCache.invokedReadCount) == 2
+        expect(self.diskCache.invokedWriteCount) == 0
+        expect(self.blobStore.invokedWriteCount) == 0
+        expect(self.blobStore.invokedRetainOnlyCount) == 0
+        expect(self.blobFetcher.invokedPrefetchCount) == 0
+        self.logger.verifyMessageWasLogged(
+            "Remote config refresh failed. Keeping cached configuration. Error: \(error)",
+            level: .error
+        )
+    }
+
+    func testTooManyRequestsResponseAllowsLaterRefresh() {
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .tooManyRequests)))
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+        expect(self.diskCache.invokedReadCount) == 2
+    }
+
+    func testServerErrorAllowsLaterRefresh() {
+        let error = Self.backendError(statusCode: .internalServerError)
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(error))
+        self.remoteConfigAPI.completeFallback(with: .failure(error))
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+        expect(self.diskCache.invokedReadCount) == 2
+        self.logger.verifyMessageWasLogged(
+            "Remote config refresh failed. Keeping cached configuration. Error: \(error)",
+            level: .error
+        )
+    }
+
+    func testFallbackClientErrorAllowsLaterRefresh() {
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
+        self.remoteConfigAPI.completeFallback(with: .failure(Self.backendError(statusCode: .invalidRequest)))
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigFallbackCount) == 1
+        expect(self.diskCache.invokedReadCount) == 2
+    }
+
+    func testPrimaryServerErrorTriggersFallbackConfigRequest() {
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: true)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigFallbackCount) == 1
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigFallbackParameters?.domain) == "app"
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigFallbackParameters?.isAppBackgrounded) == true
+    }
+
+    func testPrimaryServerErrorWithPersistedCacheDoesNotTriggerFallbackConfigRequest() {
+        self.diskCache.stubbedRead = Self.persisted(domain: "app", manifest: "cached-manifest")
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: true)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigFallbackCount) == 0
+        expect(self.diskCache.invokedWriteCount) == 0
+    }
+
+    func testPrimaryServerErrorWithProxyURLDoesNotTriggerFallbackConfigRequest() throws {
+        SystemInfo.proxyURL = try XCTUnwrap(URL(string: "https://proxy.revenuecat.com"))
+        defer { SystemInfo.proxyURL = nil }
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: true)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigFallbackCount) == 0
+        expect(self.diskCache.invokedWriteCount) == 0
+    }
+
+    func testPrimaryClientErrorDoesNotTriggerFallbackAndAllowsLaterRefresh() {
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .forbidden)))
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigFallbackCount) == 0
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+    }
+
+    func testFallbackConfigSuccessPersistsConfigurationWithoutRequestTimeOrInlineBlobExtraction() {
+        self.dateProvider.advance(by: 123)
+        let serverRequestTime = Date(timeIntervalSince1970: 456)
+        let prefetchedRef = RCContainerTestData.blobRef(for: #"{"id":"prefetched"}"#.asData)
+        let retainedRef = RCContainerTestData.blobRef(for: #"{"id":"retained"}"#.asData)
+        let configuration = RemoteConfiguration(
+            domain: "app",
+            manifest: "v1.1710000100.workflows:etag2",
+            activeTopics: ["workflows"],
+            prefetchBlobs: [prefetchedRef],
+            topics: .init(entries: [
+                "workflows": ["default": .init(blobRef: retainedRef)]
+            ])
+        )
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
+        self.remoteConfigAPI.completeFallback(with: .success(.test(
+            configuration: configuration,
+            requestDate: serverRequestTime
+        )))
+
+        expect(self.diskCache.invokedWriteCount) == 1
+        expect(self.diskCache.invokedWriteParameter?.manifest) == "v1.1710000100.workflows:etag2"
+        expect(self.diskCache.invokedWriteParameter?.lastRefreshTimeMilliseconds).to(beNil())
+        expect(Self.blobRefsByTopic(from: self.diskCache.invokedWriteParameter?.topics)) == [
+            "workflows": [retainedRef]
+        ]
+        expect(self.blobStore.invokedWriteCount) == 0
+        expect(self.blobStore.invokedRetainOnlyParameters) == Set([prefetchedRef, retainedRef])
+        expect(self.blobFetcher.invokedPrefetchRefs) == [prefetchedRef]
+    }
+
+    func testFallbackConfigFailureLeavesCacheUntouchedAndDoesNotMarkRefreshFresh() {
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
+        self.remoteConfigAPI.completeFallback(with: .failure(Self.backendError(statusCode: .internalServerError)))
+
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
-        expect(self.diskCache.invokedReadCount) == 1
+
+        self.dateProvider.advance(by: Self.refreshAttemptCooldownElapsedInterval)
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
         expect(self.diskCache.invokedWriteCount) == 0
         expect(self.blobStore.invokedWriteCount) == 0
         expect(self.blobStore.invokedRetainOnlyCount) == 0
         expect(self.blobFetcher.invokedPrefetchCount) == 0
     }
 
-    func testTooManyRequestsResponseDisablesRemoteConfig() {
-        expect(self.manager.isDisabled) == false
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
-        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .tooManyRequests)))
-        expect(self.manager.isDisabled) == true
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
-
-        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
-        expect(self.diskCache.invokedReadCount) == 1
-    }
-
-    func testServerErrorDoesNotDisableRemoteConfig() {
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
-        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
-        expect(self.manager.isDisabled) == false
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
-
-        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
-        expect(self.diskCache.invokedReadCount) == 2
-    }
-
-    func testTransportNetworkErrorDoesNotDisableRemoteConfig() {
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+    func testTransportNetworkErrorAllowsLaterRefresh() {
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
             with: .failure(.networkError(.networkError(NSError(domain: "test", code: 1))))
         )
-        expect(self.manager.isDisabled) == false
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.remoteConfigAPI.completeFallback(with: .failure(Self.backendError(statusCode: .internalServerError)))
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
         expect(self.diskCache.invokedReadCount) == 2
     }
 
-    func testClearCacheDoesNotReenableDisabledRemoteConfigRefresh() {
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+    func testClearCacheAfterClientErrorAllowsRefresh() {
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .forbidden)))
-        expect(self.manager.isDisabled) == true
-        self.manager.clearCache()
-        expect(self.manager.isDisabled) == true
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.clearCache(forAppUserID: Self.appUserID)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
 
-        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
         expect(self.diskCache.invokedClearCount) == 1
         expect(self.blobStore.invokedClearCount) == 1
     }
 
     func testMalformedConfigPayloadLeavesCacheUntouched() throws {
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
             with: .success(.test(container: try Self.container(config: "{ not valid json")))
         )
@@ -1166,7 +2094,7 @@ final class RemoteConfigManagerTests: TestCase {
         """
         let invalidContentElement = "{ invalid content element json".asData
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
             with: .success(.test(
                 container: try Self.container(config: response, contentElements: [invalidContentElement])
@@ -1198,7 +2126,7 @@ final class RemoteConfigManagerTests: TestCase {
         }
         """
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         let task = Task {
             await self.manager.blobData(for: .workflows, itemKey: "default")
         }
@@ -1235,11 +2163,17 @@ final class RemoteConfigManagerTests: TestCase {
         }
         """
 
+        // The first committed request is forced to `.appStart`, so prime it before asserting the cold read's `.read`.
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
+        self.dateProvider.advance(by: 6)
+
         let task = Task {
             await self.manager.blobData(for: .workflows, itemKey: "default")
         }
-        await self.waitForRemoteConfigRequestCount(1)
+        await self.waitForRemoteConfigRequestCount(2)
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.isAppBackgrounded) == false
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .read
         self.remoteConfigAPI.complete(
             with: .success(.test(container: try Self.container(config: response)))
         )
@@ -1297,8 +2231,46 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.appUserID) == "new-user"
     }
 
+    func testBlobDataColdReadAfterIdentityClearUsesBoundAppUserIDWhenTriggeringRefresh() async {
+        self.currentUserProvider.mockAppUserID = "old-user"
+        self.manager.clearCache(forAppUserID: "new-user")
+
+        let task = Task {
+            await self.manager.blobData(for: .sources, itemKey: "api")
+        }
+        await self.waitForRemoteConfigRequestCount(1)
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
+        _ = await task.value
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.appUserID) == "new-user"
+    }
+
+    func testBlobDataColdReadUsesBoundAppUserIDIfIdentityClearRacesCurrentUserRead() async {
+        self.currentUserProvider.mockAppUserID = "old-user"
+        self.currentUserProvider.currentAppUserIDRequested = { [manager] in
+            manager?.clearCache(forAppUserID: "new-user")
+        }
+
+        let task = Task {
+            await self.manager.blobData(for: .sources, itemKey: "api")
+        }
+        await self.waitForRemoteConfigRequestCount(1)
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
+        _ = await task.value
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.appUserID) == "new-user"
+    }
+
+    func testRefreshUsesBoundAppUserIDIfIdentityClearRacesRefreshPreparation() {
+        self.manager.clearCache(forAppUserID: "new-user")
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.appUserID) == "new-user"
+    }
+
     func testBlobDataNoContentRefreshCompletesWaitingRead() async {
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
 
         let task = Task {
             await self.manager.blobData(for: .sources, itemKey: "api")
@@ -1312,7 +2284,7 @@ final class RemoteConfigManagerTests: TestCase {
     }
 
     func testBlobDataFailedRefreshCompletesWaitingRead() async {
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
 
         let task = Task {
             await self.manager.blobData(for: .sources, itemKey: "api")
@@ -1320,13 +2292,14 @@ final class RemoteConfigManagerTests: TestCase {
         await self.waitForRemoteConfigRequestCount(1)
         await self.waitForDiskCacheReadCount(2)
         self.remoteConfigAPI.complete(with: .failure(.networkError(.networkError(NSError(domain: "test", code: 1)))))
+        self.remoteConfigAPI.completeFallback(with: .failure(Self.backendError(statusCode: .internalServerError)))
 
         let data = await task.value
         expect(data).to(beNil())
     }
 
     func testBlobDataMalformedRefreshCompletesWaitingRead() async throws {
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
 
         let task = Task {
             await self.manager.blobData(for: .sources, itemKey: "api")
@@ -1342,14 +2315,14 @@ final class RemoteConfigManagerTests: TestCase {
     }
 
     func testBlobDataClearCacheCompletesWaitingRead() async {
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
 
         let task = Task {
             await self.manager.blobData(for: .sources, itemKey: "api")
         }
         await self.waitForRemoteConfigRequestCount(1)
         await self.waitForDiskCacheReadCount(2)
-        self.manager.clearCache()
+        self.manager.clearCache(forAppUserID: Self.appUserID)
 
         let data = await task.value
         expect(data).to(beNil())
@@ -1360,7 +2333,7 @@ final class RemoteConfigManagerTests: TestCase {
         self.diskCache.readHandler = {
             if !didClearDuringRead {
                 didClearDuringRead = true
-                self.manager.clearCache()
+                self.manager.clearCache(forAppUserID: Self.appUserID)
             }
 
             return Self.persisted(
@@ -1381,7 +2354,7 @@ final class RemoteConfigManagerTests: TestCase {
         self.diskCache.readHandler = {
             if !didClearDuringRead {
                 didClearDuringRead = true
-                self.manager.clearCache()
+                self.manager.clearCache(forAppUserID: Self.appUserID)
             }
 
             return Self.persisted(
@@ -1399,7 +2372,7 @@ final class RemoteConfigManagerTests: TestCase {
     }
 
     func testBlobDataCloseCompletesWaitingRead() async {
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
 
         let task = Task {
             await self.manager.blobData(for: .sources, itemKey: "api")
@@ -1412,32 +2385,37 @@ final class RemoteConfigManagerTests: TestCase {
         expect(data).to(beNil())
     }
 
-    func testBlobDataDoesNotTriggerRefreshWhenRemoteConfigIsDisabled() async {
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+    func testBlobDataTriggersAnotherRefreshAfterClientError() async {
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .forbidden)))
 
-        let data = await self.manager.blobData(for: .sources, itemKey: "api")
+        let task = Task {
+            await self.manager.blobData(for: .sources, itemKey: "api")
+        }
+        await self.waitForRemoteConfigRequestCount(2)
+        self.remoteConfigAPI.complete(at: 1, with: .failure(Self.backendError(statusCode: .forbidden)))
+
+        let data = await task.value
 
         expect(data).to(beNil())
-        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
     }
 
-    func testBlobDataDoesNotFetchExternalBlobWhenRemoteConfigIsDisabled() async {
-        let ref = RCContainerTestData.blobRef(for: #"{"id":"workflow"}"#.asData)
+    func testBlobDataFetchesExternalBlobAfterClientError() async {
+        let blob = #"{"id":"workflow"}"#.asData
+        let ref = RCContainerTestData.blobRef(for: blob)
         self.diskCache.stubbedRead = Self.persisted(
             manifest: "v1.1710000100.workflows:etag1",
             topics: .init(entries: ["workflows": ["default": .init(blobRef: ref)]])
         )
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.blobStore.stubbedReadDataByRef[ref] = blob
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .forbidden)))
-        let readCountAfterDisabling = self.diskCache.invokedReadCount
-
         let data = await self.manager.blobData(for: .workflows, itemKey: "default")
 
-        expect(data).to(beNil())
-        expect(self.diskCache.invokedReadCount) == readCountAfterDisabling
-        expect(self.blobFetcher.invokedEnsureDownloadedRefs).to(beEmpty())
-        expect(self.blobStore.invokedReadRefs).to(beEmpty())
+        expect(data) == blob
+        expect(self.blobFetcher.invokedEnsureDownloadedRefs) == [ref]
+        expect(self.blobStore.invokedReadRefs) == [ref]
     }
 
     func testContainerResponseCachesInlineContentElements() throws {
@@ -1456,7 +2434,7 @@ final class RemoteConfigManagerTests: TestCase {
         }
         """
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
             with: .success(.test(
                 container: try Self.container(config: response, contentElements: [blob]),
@@ -1488,7 +2466,7 @@ final class RemoteConfigManagerTests: TestCase {
         }
         """
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
             with: .success(.test(
                 container: try Self.container(config: response, contentElements: [blob]),
@@ -1509,7 +2487,7 @@ final class RemoteConfigManagerTests: TestCase {
         let workflowBlobRef = RCContainerTestData.blobRef(for: RCContainerTestData.workflowBlob)
         let summerWorkflowBlobRef = RCContainerTestData.blobRef(for: RCContainerTestData.summerWorkflowBlob)
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
             with: .success(.test(
                 container: container,
@@ -1541,7 +2519,7 @@ final class RemoteConfigManagerTests: TestCase {
         }
         """
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
             with: .success(.test(
                 container: try Self.compressedContainer(
@@ -1572,7 +2550,7 @@ final class RemoteConfigManagerTests: TestCase {
         }
         """
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
             with: .success(.test(
                 container: try Self.compressedContainer(
@@ -1603,7 +2581,7 @@ final class RemoteConfigManagerTests: TestCase {
         }
         """
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
             with: .success(.test(
                 container: try RemoteConfigContainer(
@@ -1639,7 +2617,7 @@ final class RemoteConfigManagerTests: TestCase {
         }
         """
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
             with: .success(.test(
                 container: try Self.container(config: response, contentElements: [referencedBlob, unreferencedBlob]),
@@ -1669,7 +2647,7 @@ final class RemoteConfigManagerTests: TestCase {
         }
         """
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
             with: .success(.test(
                 container: try Self.container(config: response, contentElements: [prefetchBlob]),
@@ -1708,7 +2686,7 @@ final class RemoteConfigManagerTests: TestCase {
             }
         )
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
             with: .success(.test(
                 container: try RemoteConfigContainer(data: containerData),
@@ -1738,7 +2716,7 @@ final class RemoteConfigManagerTests: TestCase {
         }
         """
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
             with: .success(.test(
                 container: try Self.container(config: response),
@@ -1762,7 +2740,7 @@ final class RemoteConfigManagerTests: TestCase {
         }
         """
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
             with: .success(.test(
                 container: try Self.container(config: response),
@@ -1785,7 +2763,7 @@ final class RemoteConfigManagerTests: TestCase {
         }
         """
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
             with: .success(.test(
                 container: try Self.container(config: response),
@@ -1794,6 +2772,41 @@ final class RemoteConfigManagerTests: TestCase {
         )
 
         expect(self.blobFetcher.invokedPrefetchRefs) == [cachedRef, missingRef]
+    }
+
+    func testContainerResponsePrefetchesItemLevelPrefetchBlobRefs() throws {
+        let serverPrefetchRef = RCContainerTestData.blobRef(for: "server prefetch".asData)
+        let itemPrefetchRef = RCContainerTestData.blobRef(for: "item prefetch".asData)
+        let itemOnDemandRef = RCContainerTestData.blobRef(for: "item on demand".asData)
+        let cachedItemPrefetchRef = RCContainerTestData.blobRef(for: "cached item prefetch".asData)
+        self.blobStore.stubbedContainsRefs = [cachedItemPrefetchRef]
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.workflows:etag2",
+          "active_topics": ["workflows"],
+          "prefetch_blobs": ["\(serverPrefetchRef)"],
+          "topics": {
+            "workflows": {
+              "wf-1": { "blob_ref": "\(itemPrefetchRef)", "prefetch": true },
+              "wf-2": { "blob_ref": "\(itemOnDemandRef)", "prefetch": false },
+              "wf-3": { "blob_ref": "\(cachedItemPrefetchRef)", "prefetch": true },
+              "wf-4": { "prefetch": true },
+              "wf-5": { "blob_ref": "\(serverPrefetchRef)", "prefetch": true }
+            }
+          }
+        }
+        """
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(
+            with: .success(.test(
+                container: try Self.container(config: response),
+                verificationResult: .verified
+            ))
+        )
+
+        expect(self.blobFetcher.invokedPrefetchRefs) == [serverPrefetchRef, itemPrefetchRef]
     }
 
     func testContainerResponseDoesNotPruneBlobStoreWhenCacheWriteFails() throws {
@@ -1818,7 +2831,7 @@ final class RemoteConfigManagerTests: TestCase {
         }
         """
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
             with: .success(.test(
                 container: try Self.container(config: response, contentElements: [blob]),
@@ -1841,17 +2854,22 @@ final class RemoteConfigManagerTests: TestCase {
         }
         """
 
-        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
             with: .success(.test(container: try Self.container(config: response)))
         )
-        self.manager.refreshRemoteConfigIfStale(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+
+        self.dateProvider.advance(by: Self.refreshAttemptCooldownElapsedInterval)
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
     }
 
     func testClearCacheWipesDiskCacheAndBlobStore() {
-        self.manager.clearCache()
+        self.manager.clearCache(forAppUserID: Self.appUserID)
 
         expect(self.diskCache.invokedClearCount) == 1
         expect(self.blobStore.invokedClearCount) == 1
@@ -1872,8 +2890,8 @@ final class RemoteConfigManagerTests: TestCase {
         }
         """
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
-        self.manager.clearCache()
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.manager.clearCache(forAppUserID: Self.appUserID)
         self.remoteConfigAPI.complete(
             at: 0,
             with: .success(.test(container: try Self.container(config: response)))
@@ -1886,11 +2904,11 @@ final class RemoteConfigManagerTests: TestCase {
 
     func testClearCacheWhileBuildingRequestDoesNotSendStaleRequest() {
         self.diskCache.readHandler = { [manager] in
-            manager?.clearCache()
+            manager?.clearCache(forAppUserID: Self.appUserID)
             return nil
         }
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 0
         expect(self.diskCache.invokedClearCount) == 1
@@ -1898,17 +2916,17 @@ final class RemoteConfigManagerTests: TestCase {
     }
 
     func testStaleNoContentResponseDoesNotReleaseNewerRefreshGuard() {
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
-        self.manager.clearCache()
-        self.manager.refreshRemoteConfig(isAppBackgrounded: true)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.manager.clearCache(forAppUserID: Self.appUserID)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: true)
 
         self.remoteConfigAPI.complete(at: 0, with: .success(.test(container: nil)))
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
 
         self.remoteConfigAPI.complete(at: 1, with: .success(.test(container: nil)))
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 3
     }
@@ -1927,59 +2945,54 @@ final class RemoteConfigManagerTests: TestCase {
         }
         """
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
-        self.manager.clearCache()
-        self.manager.refreshRemoteConfig(isAppBackgrounded: true)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.manager.clearCache(forAppUserID: Self.appUserID)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: true)
 
         self.remoteConfigAPI.complete(
             at: 0,
             with: .success(.test(container: try Self.container(config: response)))
         )
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
         expect(self.diskCache.invokedWriteCount) == 0
 
         self.remoteConfigAPI.complete(at: 1, with: .success(.test(container: nil)))
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 3
     }
 
     func testStaleErrorResponseDoesNotReleaseNewerRefreshGuard() {
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
-        self.manager.clearCache()
-        self.manager.refreshRemoteConfig(isAppBackgrounded: true)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.manager.clearCache(forAppUserID: Self.appUserID)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: true)
 
         self.remoteConfigAPI.complete(
             at: 0,
             with: .failure(.networkError(.networkError(NSError(domain: "test", code: 1))))
         )
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
 
         self.remoteConfigAPI.complete(at: 1, with: .success(.test(container: nil)))
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 3
     }
 
-    func testStaleFourHundredResponseDoesNotDisableRemoteConfig() {
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
-        self.manager.clearCache()
-        self.manager.refreshRemoteConfig(isAppBackgrounded: true)
+    func testRefreshRemoteConfigIfStaleRetriesAfterClientErrorOnceCooldownExpires() {
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .invalidRequest)))
 
-        self.remoteConfigAPI.complete(at: 0, with: .failure(Self.backendError(statusCode: .invalidRequest)))
-        expect(self.manager.isDisabled) == false
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
 
+        self.dateProvider.advance(by: Self.refreshAttemptCooldownElapsedInterval)
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
-
-        self.remoteConfigAPI.complete(at: 1, with: .success(.test(container: nil)))
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
-
-        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 3
     }
 
     func testManagerCanSyncAgainAfterClearCache() throws {
@@ -1997,8 +3010,8 @@ final class RemoteConfigManagerTests: TestCase {
         }
         """
 
-        self.manager.clearCache()
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.clearCache(forAppUserID: Self.appUserID)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(
             with: .success(.test(container: try Self.container(config: response)))
         )
@@ -2035,7 +3048,7 @@ final class RemoteConfigManagerTests: TestCase {
             clearEntered.signal()
         }
 
-        self.manager.refreshRemoteConfig(isAppBackgrounded: false)
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         DispatchQueue.global().async {
             self.remoteConfigAPI.complete(
                 with: .success(.test(container: container))
@@ -2044,7 +3057,7 @@ final class RemoteConfigManagerTests: TestCase {
         expect(writeStarted.wait(timeout: .now() + .seconds(5))) == .success
 
         DispatchQueue.global().async {
-            self.manager.clearCache()
+            self.manager.clearCache(forAppUserID: Self.appUserID)
         }
 
         expect(clearEntered.wait(timeout: .now() + .milliseconds(200))) == .timedOut
@@ -2056,6 +3069,50 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.diskCache.invokedClearCount) == 1
     }
 
+    func testReadConsistentlyStopsWhenTaskIsCanceledBeforeTheRead() async {
+        let manager = MockRemoteConfigManager()
+        let readStarted = XCTestExpectation(description: "Read started")
+        var gateContinuation: AsyncStream<Void>.Continuation!
+        let gate = AsyncStream<Void> { gateContinuation = $0 }
+        let task = Task {
+            try await manager.readConsistent {
+                readStarted.fulfill()
+                for await _ in gate { break }
+                return "value"
+            }
+        }
+        await fulfillment(of: [readStarted], timeout: 1)
+        task.cancel()
+        gateContinuation.yield(())
+        gateContinuation.finish()
+
+        do {
+            _ = try await task.value
+            XCTFail("Expected cancellation to stop the read")
+        } catch is CancellationError {
+            // Expected.
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+}
+
+private final class RemoteConfigLifecycleObserverSpy: RemoteConfigLifecycleObserver {
+
+    var observedGenerations: [Int] = []
+    var refreshFinishedContexts: [RemoteConfigFetchContext] = []
+
+    func remoteConfigEventReceived(_ event: RemoteConfigLifecycleEvent) {
+        switch event {
+        case let .observerRegistered(generation), let .committed(generation):
+            self.observedGenerations.append(generation)
+        case let .refreshFinished(fetchContext, generation):
+            self.observedGenerations.append(generation)
+            self.refreshFinishedContexts.append(fetchContext)
+        }
+    }
+
 }
 
 private extension RemoteConfigManagerTests {
@@ -2065,14 +3122,16 @@ private extension RemoteConfigManagerTests {
         manifest: String,
         activeTopics: [String] = [],
         prefetchBlobs: [String] = [],
-        topics: RemoteConfiguration.Topics = .init()
+        topics: RemoteConfiguration.Topics = .init(),
+        lastRefreshTimeMilliseconds: UInt64? = nil
     ) -> PersistedRemoteConfiguration {
         return PersistedRemoteConfiguration(
             domain: domain,
             manifest: manifest,
             activeTopics: activeTopics,
             prefetchBlobs: prefetchBlobs,
-            topics: topics
+            topics: topics,
+            lastRefreshTimeMilliseconds: lastRefreshTimeMilliseconds
         )
     }
 
@@ -2236,6 +3295,78 @@ private extension RemoteConfigManagerTests {
         let defaultValue: String
     }
 
+    func testReadConsistentlyRetriesOnceWhenSuccessfulReadIsSuperseded() async throws {
+        let manager = MockRemoteConfigManager()
+        var generationReads = 0
+        manager.onConfigGenerationRead = {
+            generationReads += 1
+            if generationReads == 2 {
+                manager.configGeneration = 1
+            }
+        }
+
+        let result = try await manager.readConsistent { "value" }
+
+        expect(result) == "value"
+        expect(generationReads) == 4
+    }
+
+    func testReadConsistentlyThrowsStaleAfterTwoStaleReads() async {
+        let manager = MockRemoteConfigManager()
+        var generationReads = 0
+        manager.onConfigGenerationRead = {
+            generationReads += 1
+            if generationReads == 2 || generationReads == 4 {
+                manager.configGeneration += 1
+            }
+        }
+
+        do {
+            _ = try await manager.readConsistent { "value" }
+            XCTFail("Expected the stale-read error to be thrown")
+        } catch let error as RemoteConfigConsistencyError {
+            expect(error) == .stale
+            expect(generationReads) == 4
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    func testReadConsistentlyRetriesWhenThrowingReadIsSuperseded() async throws {
+        let manager = MockRemoteConfigManager()
+        var invocationCount = 0
+
+        let result = try await manager.readConsistent {
+            invocationCount += 1
+            if invocationCount == 1 {
+                manager.configGeneration += 1
+                throw CheckpointRulesProviderError.payloadUnavailable
+            }
+            return "value"
+        }
+
+        expect(result) == "value"
+        expect(invocationCount) == 2
+    }
+
+    func testReadConsistentlyPropagatesErrorsWithoutRetrying() async {
+        let manager = MockRemoteConfigManager()
+        var invocationCount = 0
+
+        do {
+            _ = try await manager.readConsistent {
+                invocationCount += 1
+                throw NSError(domain: "test", code: 1)
+            }
+            XCTFail("Expected the read error to be propagated")
+        } catch let error as NSError {
+            expect(error.domain) == "test"
+            expect(invocationCount) == 1
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
 }
 
 private extension RemoteConfigFetchResult {
@@ -2244,12 +3375,34 @@ private extension RemoteConfigFetchResult {
     /// represents a `204 No Content` response.
     static func test(
         container: RemoteConfigContainer?,
-        verificationResult: VerificationResult = .verified
+        verificationResult: SignatureVerificationResult = .verified,
+        requestDate: Date? = nil
     ) -> RemoteConfigFetchResult {
         return RemoteConfigFetchResult(response: .init(
             httpStatusCode: container == nil ? .noContent : .success,
             responseHeaders: [:],
             body: container,
+            requestDate: requestDate,
+            verificationResult: verificationResult,
+            isLoadShedderResponse: false,
+            isFallbackUrlResponse: false
+        ))
+    }
+
+}
+
+private extension RemoteConfigFallbackFetchResult {
+
+    static func test(
+        configuration: RemoteConfiguration,
+        verificationResult: SignatureVerificationResult = .verified,
+        requestDate: Date? = nil
+    ) -> RemoteConfigFallbackFetchResult {
+        return RemoteConfigFallbackFetchResult(response: .init(
+            httpStatusCode: .success,
+            responseHeaders: [:],
+            body: configuration,
+            requestDate: requestDate,
             verificationResult: verificationResult,
             isLoadShedderResponse: false,
             isFallbackUrlResponse: false
@@ -2269,8 +3422,18 @@ private final class MockRemoteConfigAPI: RemoteConfigAPIType {
         request: RemoteConfigRequest,
         isAppBackgrounded: Bool
     )] = []
+    private(set) var invokedGetRemoteConfigFallbackCount = 0
+    private(set) var invokedGetRemoteConfigFallbackParameters: (
+        domain: String,
+        isAppBackgrounded: Bool
+    )?
+    private(set) var invokedGetRemoteConfigFallbackParametersList: [(
+        domain: String,
+        isAppBackgrounded: Bool
+    )] = []
 
     private var completions: [Backend.ResponseHandler<RemoteConfigFetchResult>] = []
+    private var fallbackCompletions: [Backend.ResponseHandler<RemoteConfigFallbackFetchResult>] = []
 
     func getRemoteConfig(
         request: RemoteConfigRequest,
@@ -2283,8 +3446,23 @@ private final class MockRemoteConfigAPI: RemoteConfigAPIType {
         self.completions.append(completion)
     }
 
+    func getRemoteConfigFallback(
+        domain: String,
+        isAppBackgrounded: Bool,
+        completion: @escaping Backend.ResponseHandler<RemoteConfigFallbackFetchResult>
+    ) {
+        self.invokedGetRemoteConfigFallbackCount += 1
+        self.invokedGetRemoteConfigFallbackParameters = (domain, isAppBackgrounded)
+        self.invokedGetRemoteConfigFallbackParametersList.append((domain, isAppBackgrounded))
+        self.fallbackCompletions.append(completion)
+    }
+
     func complete(with result: Result<RemoteConfigFetchResult, BackendError>) {
         self.completions.last?(result)
+    }
+
+    func completeFallback(with result: Result<RemoteConfigFallbackFetchResult, BackendError>) {
+        self.fallbackCompletions.last?(result)
     }
 
     func complete(
@@ -2412,8 +3590,13 @@ private final class MockRemoteConfigBlobFetcher: RemoteConfigBlobFetcherType {
         return self.stubbedEnsureDownloadedResult
     }
 
+    var ensureAllDownloadedHandler: (([String]) -> Void)?
+    private(set) var invokedEnsureAllDownloadedCount = 0
+
     func ensureAllDownloaded(refs: [String]) async -> Bool {
+        self.invokedEnsureAllDownloadedCount += 1
         self.invokedEnsureAllDownloadedRefs = refs
+        self.ensureAllDownloadedHandler?(refs)
         return true
     }
 

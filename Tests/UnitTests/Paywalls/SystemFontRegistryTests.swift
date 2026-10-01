@@ -14,19 +14,59 @@ import XCTest
 
 final class SystemFontRegistryTests: TestCase {
 
-    func testIsAlreadyRegisteredErrorReturnsTrueForCoreTextAlreadyRegistered() {
+    func testAlreadyRegisteredErrorIsRecoverable() {
         let error = NSError(domain: kCTFontManagerErrorDomain as String,
                             code: CTFontManagerError.alreadyRegistered.rawValue)
 
-        XCTAssertTrue(SystemFontRegistry.isAlreadyRegisteredError(error))
+        XCTAssertTrue(SystemFontRegistry.isRecoverableRegistrationError(error))
     }
 
-    func testIsAlreadyRegisteredErrorReturnsFalseForOtherErrors() {
-        let wrongDomain = NSError(domain: "com.revenuecat.test", code: 0)
+    func testDuplicatedNameErrorIsRecoverable() {
+        // Raised when a face with this name is already loaded from a different file,
+        // e.g. one bundled through `UIAppFonts`.
+        let error = NSError(domain: kCTFontManagerErrorDomain as String,
+                            code: CTFontManagerError.duplicatedName.rawValue)
+
+        XCTAssertTrue(SystemFontRegistry.isRecoverableRegistrationError(error))
+    }
+
+    func testRecoverableErrorCodesMatchCoreText() {
+        // Guards against the tolerated codes silently changing meaning.
+        XCTAssertEqual(CTFontManagerError.alreadyRegistered.rawValue, 105)
+        XCTAssertEqual(CTFontManagerError.duplicatedName.rawValue, 305)
+    }
+
+    func testGenuineRegistrationFailuresAreNotRecoverable() {
+        let failures: [CTFontManagerError] = [
+            .fileNotFound,
+            .insufficientPermissions,
+            .unrecognizedFormat,
+            .invalidFontData,
+            .exceededResourceLimit,
+            .notRegistered,
+            .registrationFailed,
+            .missingEntitlement,
+            .insufficientInfo,
+            .invalidFilePath,
+            .unsupportedScope
+        ]
+
+        for failure in failures {
+            let error = NSError(domain: kCTFontManagerErrorDomain as String, code: failure.rawValue)
+
+            XCTAssertFalse(SystemFontRegistry.isRecoverableRegistrationError(error),
+                           "Expected CTFontManagerError code \(failure.rawValue) to be surfaced")
+        }
+    }
+
+    func testIsRecoverableRegistrationErrorReturnsFalseForOtherErrors() {
+        // Same code, but not a CoreText error.
+        let wrongDomain = NSError(domain: "com.revenuecat.test",
+                                  code: CTFontManagerError.duplicatedName.rawValue)
         let wrongCode = NSError(domain: kCTFontManagerErrorDomain as String, code: -1)
 
-        XCTAssertFalse(SystemFontRegistry.isAlreadyRegisteredError(wrongDomain))
-        XCTAssertFalse(SystemFontRegistry.isAlreadyRegisteredError(wrongCode))
-        XCTAssertFalse(SystemFontRegistry.isAlreadyRegisteredError(nil))
+        XCTAssertFalse(SystemFontRegistry.isRecoverableRegistrationError(wrongDomain))
+        XCTAssertFalse(SystemFontRegistry.isRecoverableRegistrationError(wrongCode))
+        XCTAssertFalse(SystemFontRegistry.isRecoverableRegistrationError(nil))
     }
 }

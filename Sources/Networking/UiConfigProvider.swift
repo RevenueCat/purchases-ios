@@ -9,72 +9,140 @@ import Foundation
 
 /// Assembles a ``UIConfig`` from the `ui_config` topic's four blob items (`app`, `localizations`,
 /// `variable_config`, `custom_variables`). Item keys are literal wire names, not camelCased: unlike
-/// `ConfigItem.content`, they're raw dictionary keys and aren't run through `.convertFromSnakeCase`.
+/// `ConfigItem.content`, they are raw dictionary keys and aren't run through `.convertFromSnakeCase`.
 final class UiConfigProvider {
 
     private let manager: RemoteConfigManagerType
+    private let cache = GenerationGuardedCache<RemoteConfiguration.ConfigTopic, UIConfig>()
 
     init(manager: RemoteConfigManagerType) {
         self.manager = manager
     }
 
 #if !os(tvOS)
-    /// Assembles a ``UIConfig`` from the `ui_config` topic's parts. Returns `nil` when a required part
-    /// (`app` or `localizations`) is unavailable or fails to decode.
-    ///
-    /// Each part decodes independently: a malformed `variable_config` or `custom_variables` blob falls
-    /// back to its own default instead of invalidating the whole result, since those parts already have
-    /// defaults `UIConfig` can use elsewhere.
+    /// Assembles a ``UIConfig`` from the `ui_config` topic's parts. Returns `nil` when any part is unavailable
+    /// or fails to decode, so callers never render with a partially assembled configuration.
     func getUiConfig() async -> UIConfig? {
-        async let app = self.decodePart(UIConfig.AppConfig.self, itemKey: Self.appKey)
-        async let localizations = self.decodePart([String: [String: String]].self, itemKey: Self.localizationsKey)
-        async let variableConfig = self.decodePart(UIConfig.VariableConfig.self, itemKey: Self.variableConfigKey)
-        async let customVariables = self.decodePart(
-            [String: UIConfig.CustomVariableDefinition].self,
-            itemKey: Self.customVariablesKey
-        )
+        return try? await self.manager.readConsistent { await self.getUiConfigOnce() }
+    }
 
-        guard let app = await app, let localizations = await localizations else {
-            Logger.warn(Strings.remoteConfig.uiConfigMissingRequiredPart)
+    private func getUiConfigOnce() async -> UIConfig? {
+        guard let snapshot = await self.topicSnapshotWithUiConfigParts() else {
             return nil
         }
 
-        return UIConfig(
-            app: app,
-            localizations: localizations,
-            variableConfig: await variableConfig ?? Self.defaultVariableConfig,
-            customVariables: await customVariables ?? [:]
-        )
+        if let cached = self.cache.value(for: snapshot) {
+            return cached
+        }
+
+        guard let uiConfig = await self.assembleUiConfig() else {
+            return nil
+        }
+
+        guard await self.manager.isCurrent(snapshot, for: .uiConfig) else {
+            self.cache.clearIfStale(currentGeneration: self.manager.configGeneration)
+            return nil
+        }
+
+        self.cache.store(uiConfig, for: snapshot)
+        return uiConfig
     }
 
-    private func decodePart<T: Decodable>(_ type: T.Type, itemKey: String) async -> T? {
+    /// Returns the in-memory config without awaiting remote-config state. This is used only to seed
+    /// first-frame workflow rendering after the offerings readiness gate has already warmed config.
+    func cachedUiConfig() -> UIConfig? {
+        return self.manager.withCurrentConfigGeneration { generation in
+            self.cachedUiConfig(currentGeneration: generation)
+        }
+    }
+
+    func cachedUiConfig(currentGeneration: Int) -> UIConfig? {
+        return self.cache.value(currentGeneration: currentGeneration)
+    }
+
+    private func assembleUiConfig() async -> UIConfig? {
         do {
-            return try await self.manager.blobData(for: .uiConfig, itemKey: itemKey, as: type)
+            guard let uiConfig = try await self.manager.mergeItemsBlobData(
+                for: .uiConfig,
+                itemKeys: Self.itemKeys,
+                as: UIConfig.self
+            ) else {
+                Logger.warn(Strings.remoteConfig.uiConfigMissingRequiredPart)
+                return nil
+            }
+
+            return uiConfig
         } catch {
-            Logger.error(Strings.remoteConfig.uiConfigPartDecodeFailed(itemKey: itemKey, error: error))
+            Logger.error(Strings.remoteConfig.uiConfigDecodeFailed(error))
             return nil
         }
     }
 
-    private static let defaultVariableConfig = UIConfig.VariableConfig(
-        variableCompatibilityMap: [:],
-        functionCompatibilityMap: [:]
-    )
 #else
     // Paywalls V2 (and therefore workflows) aren't supported on tvOS, where `UIConfig` carries no fields.
     func getUiConfig() async -> UIConfig? {
+        return try? await self.manager.readConsistent { await self.getUiConfigOnce() }
+    }
+
+    private func getUiConfigOnce() async -> UIConfig? {
+        guard let snapshot = await self.topicSnapshotWithUiConfigParts() else {
+            return nil
+        }
+
+        if let cached = self.cache.value(for: snapshot) {
+            return cached
+        }
+
         guard await self.manager.blobData(for: .uiConfig, itemKey: Self.appKey) != nil,
               await self.manager.blobData(for: .uiConfig, itemKey: Self.localizationsKey) != nil else {
             Logger.warn(Strings.remoteConfig.uiConfigMissingRequiredPart)
             return nil
         }
+
+        guard await self.manager.isCurrent(snapshot, for: .uiConfig) else {
+            self.cache.clearIfStale(currentGeneration: self.manager.configGeneration)
+            return nil
+        }
+
+        self.cache.store(.empty, for: snapshot)
         return .empty
     }
+
+    func cachedUiConfig() -> UIConfig? {
+        return self.manager.withCurrentConfigGeneration { generation in
+            self.cachedUiConfig(currentGeneration: generation)
+        }
+    }
+
+    func cachedUiConfig(currentGeneration: Int) -> UIConfig? {
+        return self.cache.value(currentGeneration: currentGeneration)
+    }
 #endif
+
+    private func topicSnapshotWithUiConfigParts() async
+    -> GenerationGuardedCacheSnapshot<RemoteConfiguration.ConfigTopic>? {
+        guard var snapshot = await self.manager.topicCacheSnapshot(.uiConfig) else { return nil }
+        guard !Self.itemKeys.contains(where: snapshot.key.keys.contains) else { return snapshot }
+
+        guard let refreshedSnapshot = await self.manager
+            .committedTopicCacheSnapshotAfterInFlightRefresh(.uiConfig) else { return nil }
+        snapshot = refreshedSnapshot
+        return Self.itemKeys.contains(where: snapshot.key.keys.contains) ? snapshot : nil
+    }
 
     private static let appKey = "app"
     private static let localizationsKey = "localizations"
     private static let variableConfigKey = "variable_config"
     private static let customVariablesKey = "custom_variables"
+    private static var itemKeys: [String] {
+        return [
+            Self.appKey,
+            Self.localizationsKey,
+            Self.variableConfigKey,
+            Self.customVariablesKey
+        ]
+    }
 
 }
+
+extension UiConfigProvider: @unchecked Sendable {}

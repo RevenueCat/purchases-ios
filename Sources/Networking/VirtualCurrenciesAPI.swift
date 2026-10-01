@@ -49,4 +49,19 @@ class VirtualCurrenciesAPI {
             cacheStatus: cacheStatus
         )
     }
+
+    func spendVirtualCurrencies(amounts: [String: Int],
+                                reference: String?,
+                                completion: @escaping VirtualCurrenciesResponseHandler) {
+        let config = NetworkOperation.Configuration(
+            httpClient: self.backendConfig.httpClient
+        )
+
+        let operation = SpendVirtualCurrenciesOperation(configuration: config,
+                                                        amounts: amounts,
+                                                        reference: reference,
+                                                        handler: completion)
+
+        self.backendConfig.operationQueue.addOperation(operation)
+    }
 }

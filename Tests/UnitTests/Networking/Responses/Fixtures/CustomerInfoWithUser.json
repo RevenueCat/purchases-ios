@@ -1,0 +1,33 @@
+{
+    "schema_version": "4",
+    "original_source": "main",
+    "request_date": "2022-03-08T17:42:58Z",
+    "request_date_ms": 1646761378845,
+    "subscriber": {
+        "first_seen": "2022-03-08T17:42:58Z",
+        "last_seen": "2022-03-08T17:42:58Z",
+        "management_url": "https://apps.apple.com/account/subscriptions",
+        "non_subscriptions": {},
+        "original_app_user_id": "$RCAnonymousID:5b6fdbac3a0c4f879e43d269ecdf9ba1",
+        "original_application_version": "1.0",
+        "original_purchase_date": "2022-04-12T00:03:24Z",
+        "other_purchases": {},
+        "subscriptions": {},
+        "entitlements": {}
+    },
+    "user": {
+        "amr": ["pwd"],
+        "id": "user-123",
+        "identities": [
+            {
+                "id": "user-123",
+                "method": "email",
+                "provider_id": "email-provider-1"
+            },
+            {
+                "id": null,
+                "method": "anonymous"
+            }
+        ]
+    }
+}

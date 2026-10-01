@@ -39,19 +39,29 @@ class MockOfferingsAPI: OfferingsAPI {
 
     var invokedGetOfferingsForAppUserID = false
     var invokedGetOfferingsForAppUserIDCount = 0
-    var invokedGetOfferingsForAppUserIDParameters: (appUserID: String?, isAppBackgrounded: Bool, completion: OfferingsAPI.OfferingsResponseHandler?)?
-    var invokedGetOfferingsForAppUserIDParametersList = [(appUserID: String?, isAppBackgrounded: Bool, completion: OfferingsAPI.OfferingsResponseHandler?)]()
+    var invokedGetOfferingsForAppUserIDParameters: (appUserID: String?,
+                                                     isAppBackgrounded: Bool,
+                                                     completion: OfferingsAPI.OfferingsResponseHandler?)?
+    var invokedGetOfferingsForAppUserIDParametersList = [(appUserID: String?,
+                                                          isAppBackgrounded: Bool,
+                                                          completion: OfferingsAPI.OfferingsResponseHandler?)]()
     var stubbedGetOfferingsCompletionResult: Result<Offerings.Contents, BackendError>?
-
+    var stubbedGetOfferingsRawResponseData: Data?
     override func getOfferings(appUserID: String,
                                isAppBackgrounded: Bool,
                                completion: @escaping OfferingsResponseHandler) {
         self.invokedGetOfferingsForAppUserID = true
         self.invokedGetOfferingsForAppUserIDCount += 1
         self.invokedGetOfferingsForAppUserIDParameters = (appUserID, isAppBackgrounded, completion)
-        self.invokedGetOfferingsForAppUserIDParametersList.append((appUserID, isAppBackgrounded, completion))
+        self.invokedGetOfferingsForAppUserIDParametersList.append(
+            (appUserID, isAppBackgrounded, completion)
+        )
 
-        completion(self.stubbedGetOfferingsCompletionResult!)
+        completion(
+            self.stubbedGetOfferingsCompletionResult!.map {
+                OfferingsFetchResult(contents: $0, rawResponseData: self.stubbedGetOfferingsRawResponseData)
+            }
+        )
     }
 
     var invokedGetWebOfferingProducts = false

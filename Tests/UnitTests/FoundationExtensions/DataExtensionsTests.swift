@@ -74,6 +74,54 @@ class DataExtensionsTests: TestCase {
         expect(random1) != random2
     }
 
+    func testBase64URLEncodedInitDecodesStringWithoutPadding() throws {
+        let expected = try XCTUnwrap("hello".data(using: .utf8))
+
+        let data = try XCTUnwrap(Data(base64URLEncoded: "aGVsbG8"))
+
+        expect(data) == expected
+    }
+
+    func testBase64URLEncodedInitAddsRequiredPadding() throws {
+        let expected = try XCTUnwrap("hi".data(using: .utf8))
+
+        let data = try XCTUnwrap(Data(base64URLEncoded: "aGk"))
+
+        expect(data) == expected
+    }
+
+    func testBase64URLEncodedInitReplacesURLSafeCharacters() throws {
+        // These three bytes base64-encode to "+/+/", which uses "-_-_" in the URL-safe alphabet.
+        let expected = Data([0xFB, 0xFF, 0xBF])
+
+        let data = try XCTUnwrap(Data(base64URLEncoded: "-_-_"))
+
+        expect(data) == expected
+    }
+
+    func testBase64URLEncodedInitRoundTripsArbitraryData() throws {
+        let original = Data((0...255).map { UInt8($0) })
+
+        let urlSafeString = original.base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
+
+        let decoded = try XCTUnwrap(Data(base64URLEncoded: urlSafeString))
+
+        expect(decoded) == original
+    }
+
+    func testBase64URLEncodedInitWithEmptyStringReturnsEmptyData() throws {
+        let data = try XCTUnwrap(Data(base64URLEncoded: ""))
+
+        expect(data) == Data()
+    }
+
+    func testBase64URLEncodedInitReturnsNilForInvalidInput() {
+        expect(Data(base64URLEncoded: "not!valid base64")).to(beNil())
+    }
+
 }
 
 extension DataExtensionsTests {

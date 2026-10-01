@@ -25,14 +25,45 @@ import Foundation
     @_spi(Internal) public static func makeContext(
         workflow: PublishedWorkflow,
         offerings: [Offering],
-        presentedOfferingContext: PresentedOfferingContext? = nil
+        uiConfig: UIConfig = UIConfig(
+            app: .init(colors: [:], fonts: [:]),
+            localizations: [:],
+            variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
+        ),
+        presentedOfferingContext: PresentedOfferingContext? = nil,
+        workflowBlobRef: String? = nil,
+        traceId: String? = nil
     ) throws -> WorkflowContext {
-        let allOfferings = Offerings.preview(offerings: offerings)
+        return try self.makeContext(
+            workflow: workflow,
+            offerings: .preview(offerings: offerings),
+            uiConfig: uiConfig,
+            presentedOfferingContext: presentedOfferingContext,
+            workflowBlobRef: workflowBlobRef,
+            traceId: traceId
+        )
+    }
+
+    /// Builds a render-ready ``WorkflowContext`` while preserving the complete offerings bundle.
+    @_spi(Internal) public static func makeContext(
+        workflow: PublishedWorkflow,
+        offerings: Offerings,
+        uiConfig: UIConfig = UIConfig(
+            app: .init(colors: [:], fonts: [:]),
+            localizations: [:],
+            variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
+        ),
+        presentedOfferingContext: PresentedOfferingContext? = nil,
+        workflowBlobRef: String? = nil,
+        traceId: String? = nil
+    ) throws -> WorkflowContext {
         return try PurchaseHandler.makeWorkflowContext(
             workflow: workflow,
-            allOfferings: allOfferings,
+            uiConfig: uiConfig,
+            allOfferings: offerings,
             presentedOfferingContext: presentedOfferingContext,
-            triggerOfferingIdentifier: workflow.id
+            workflowBlobRef: workflowBlobRef,
+            traceId: traceId
         )
     }
 

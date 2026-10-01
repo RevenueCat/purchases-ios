@@ -53,7 +53,7 @@ import Foundation
             visible: Bool? = nil,
             components: [PaywallComponent],
             dimension: Dimension = .vertical(.center, .start),
-            size: Size = .init(width: .fill, height: .fit),
+            size: Size = .init(width: .fill, height: .fit(nil)),
             spacing: CGFloat? = nil,
             backgroundColor: ColorScheme? = nil,
             background: Background? = nil,

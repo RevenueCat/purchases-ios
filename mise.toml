@@ -1,18 +1,26 @@
+[settings]
+lockfile = true
+
+[settings.ruby]
+compile = false
+
 [tools]
 tuist = "4.48.2"
 swiftlint = "0.62.2"
+ruby = "3.2.0"
+xcbeautify = "2.30.1"
 
 [hooks]
-postinstall = "mise run install"
+postinstall = { task = "tuist-install" }
 
-[tasks.install]
+[tasks.tuist-install]
 description = "Resolve Swift Package dependencies via Tuist"
 run = "tuist install"
 
 # Shell setup task (no automated test); verified manually via `mise run setup-worktree`.
 [tasks.setup-worktree]
 description = "Prepare a git worktree: link Local.xcconfig from the primary checkout and resolve deps. Run `tuist generate <Target>` afterwards."
-depends = ["install"]
+depends = ["tuist-install"]
 run = """
 #!/usr/bin/env bash
 set -euo pipefail

@@ -27,6 +27,7 @@ import Foundation
         public let stack: PaywallComponent.StackComponent
         public let name: String?
         public let id: String?
+        public let hapticFeedbackEnabled: Bool?
 
         public let overrides: ComponentOverrides<PartialPackageComponent>?
 
@@ -38,6 +39,7 @@ import Foundation
             stack: PaywallComponent.StackComponent,
             name: String? = nil,
             id: String? = nil,
+            hapticFeedbackEnabled: Bool? = nil,
             overrides: ComponentOverrides<PartialPackageComponent>? = nil
         ) {
             self.type = .package
@@ -48,6 +50,7 @@ import Foundation
             self.stack = stack
             self.name = name
             self.id = id
+            self.hapticFeedbackEnabled = hapticFeedbackEnabled
             self.overrides = overrides
         }
 
@@ -60,6 +63,7 @@ import Foundation
             hasher.combine(stack)
             hasher.combine(name)
             hasher.combine(id)
+            hasher.combine(hapticFeedbackEnabled)
             hasher.combine(overrides)
         }
 
@@ -72,6 +76,7 @@ import Foundation
                    lhs.stack == rhs.stack &&
                    lhs.name == rhs.name &&
                    lhs.id == rhs.id &&
+                   lhs.hapticFeedbackEnabled == rhs.hapticFeedbackEnabled &&
                    lhs.overrides == rhs.overrides
         }
     }
@@ -106,6 +111,7 @@ extension PaywallComponent.PackageComponent {
         case stack
         case name
         case id
+        case hapticFeedbackEnabled
         case overrides
     }
 

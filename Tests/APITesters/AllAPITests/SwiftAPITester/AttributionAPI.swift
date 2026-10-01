@@ -64,6 +64,9 @@ func checkAttributionAPI() {
     attribution.setSolarEngineVisitorId("")
     attribution.setSolarEngineVisitorId(nil)
 
+    attribution.setSingularDeviceID("")
+    attribution.setSingularDeviceID(nil)
+
     attribution.setMixpanelDistinctID("")
     attribution.setMixpanelDistinctID(nil)
 

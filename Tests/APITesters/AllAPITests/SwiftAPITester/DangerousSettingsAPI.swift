@@ -16,9 +16,11 @@
 func checkDangerousSettingsAPI() {
     let _: DangerousSettings = DangerousSettings()
     let _: DangerousSettings = DangerousSettings(autoSyncPurchases: true)
+    let _: DangerousSettings = DangerousSettings(autoSyncPurchases: true, forceAllowTestStoreInReleaseBuilds: true)
     let settings: DangerousSettings = DangerousSettings(uiPreviewMode: true)
 
     let _: Bool = settings.autoSyncPurchases
     let _: Bool = settings.customEntitlementComputation
     let _: Bool = settings.uiPreviewMode
+    let _: Bool = settings.forceAllowTestStoreInReleaseBuilds
 }

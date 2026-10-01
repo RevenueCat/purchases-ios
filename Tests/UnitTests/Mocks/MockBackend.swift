@@ -29,6 +29,10 @@ class MockBackend: Backend {
     var invokedPostReceiptDataParametersList: [PostReceiptParameters] = []
     var onPostReceipt: (() -> Void)?
 
+    /// When set, the next `post(receipt:)` call defers its completion until this gate is opened.
+    /// Consumed after a single use. Used to deterministically test ordering of concurrent receipt posts.
+    let deferredPostReceiptCompletionGate: Atomic<MockAsyncGate?> = nil
+
     public convenience init() {
         let systemInfo = MockSystemInfo(platformInfo: nil,
                                         finishTransactions: false,
@@ -39,28 +43,29 @@ class MockBackend: Backend {
         let backendConfig = MockBackendConfiguration()
         let identity = MockIdentityAPI(backendConfig: backendConfig)
         let offerings = MockOfferingsAPI(backendConfig: backendConfig)
-        let webBilling = MockWebBillingAPI(backendConfig: backendConfig)
+        let webBilling = MockWebBillingAPI(lanes: BackendLanes(configuration: backendConfig))
         let offlineEntitlements = MockOfflineEntitlementsAPI()
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         let internalAPI = InternalAPI(backendConfig: backendConfig)
         let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
         let redeemWebPurchaseAPI = MockRedeemWebPurchaseAPI()
+        let externalPurchaseTokenAPI = MockExternalPurchaseTokenAPI()
         let virtualCurrenciesAPI = MockVirtualCurrenciesAPI()
-        let workflowsAPI = MockWorkflowsAPI()
         let adsAPI = MockAdsAPI()
         let remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
 
-        self.init(backendConfig: backendConfig,
+        self.init(lanes: BackendLanes(configuration: backendConfig),
                   customerAPI: customer,
                   identityAPI: identity,
+                  tokenAPI: MockTokenAPI(backendConfig: backendConfig),
                   offeringsAPI: offerings,
                   webBillingAPI: webBilling,
                   offlineEntitlements: offlineEntitlements,
                   internalAPI: internalAPI,
                   customerCenterConfig: customerCenterConfig,
                   redeemWebPurchaseAPI: redeemWebPurchaseAPI,
+                  externalPurchaseTokenAPI: externalPurchaseTokenAPI,
                   virtualCurrenciesAPI: virtualCurrenciesAPI,
-                  workflowsAPI: workflowsAPI,
                   adsAPI: adsAPI,
                   remoteConfigAPI: remoteConfigAPI)
     }
@@ -106,7 +111,15 @@ class MockBackend: Backend {
 
         self.onPostReceipt?()
 
-        completion(stubbedPostReceiptResult ?? .failure(.missingAppUserID()))
+        let result = stubbedPostReceiptResult ?? .failure(.missingAppUserID())
+        if let gate = self.deferredPostReceiptCompletionGate.getAndSet(nil) {
+            Task {
+                await gate.wait()
+                completion(result)
+            }
+        } else {
+            completion(result)
+        }
     }
 
     var invokedGetSubscriberData = false
@@ -121,6 +134,10 @@ class MockBackend: Backend {
                                                    completion: CustomerAPI.CustomerInfoResponseHandler?)]()
 
     var stubbedGetCustomerInfoResult: Result<CustomerInfo, BackendError> = .failure(.missingAppUserID())
+    let completedGetCustomerInfoCount: Atomic<Int> = .init(0)
+
+    /// When set, getCustomerInfo calls defer completion until this shared barrier is opened.
+    let deferredGetCustomerInfoCompletionGate: Atomic<MockAsyncGate?> = nil
 
     override func getCustomerInfo(appUserID: String,
                                   isAppBackgrounded: Bool,
@@ -131,7 +148,17 @@ class MockBackend: Backend {
         invokedGetSubscriberDataParameters = (appUserID, isAppBackgrounded, allowComputingOffline, completion)
         invokedGetSubscriberDataParametersList.append((appUserID, isAppBackgrounded, allowComputingOffline, completion))
 
-        completion(self.stubbedGetCustomerInfoResult)
+        let result = self.stubbedGetCustomerInfoResult
+        if let gate = self.deferredGetCustomerInfoCompletionGate.value {
+            Task {
+                await gate.wait()
+                completion(result)
+                self.completedGetCustomerInfoCount.modify { $0 += 1 }
+            }
+        } else {
+            completion(result)
+            self.completedGetCustomerInfoCount.modify { $0 += 1 }
+        }
     }
 
     var invokedPostAttributionData = false

@@ -24,7 +24,7 @@ let project = Project(
                 base: ([:] as SettingsDictionary).appendingTuistSwiftConditions()
             )
         )
-    ],
+    ].addingXcodeDeploymentTargetOverrides(),
     schemes: [
         .scheme(
             name: "RevenueCatUI",

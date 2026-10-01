@@ -14,26 +14,107 @@
 import Nimble
 import XCTest
 
-@_spi(Internal) @testable import RevenueCat
+@_spi(Internal) @_spi(Experimental) @testable import RevenueCat
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+private final class DiagnosticsSynchronizerSpy: DiagnosticsSynchronizerType {
+
+    let collectionDecisions: Atomic<[DiagnosticsCollectionDecision]> = .init([])
+
+    func setCollectionDecision(_ decision: DiagnosticsCollectionDecision) async {
+        self.collectionDecisions.modify { $0.append(decision) }
+    }
+
+    func syncDiagnosticsIfNeeded() async throws {}
+
+}
 
 class PurchasesConfiguringTests: BasePurchasesTests {
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testRemoteDiagnosticsSettingOverridesSDKConfiguration() {
+        expect(
+            resolvedDiagnosticsCollectionDecision(remoteDiagnosticsEnabled: false, diagnosticsEnabled: true)
+        ) == .disabled
+        expect(
+            resolvedDiagnosticsCollectionDecision(remoteDiagnosticsEnabled: true, diagnosticsEnabled: false)
+        ) == .enabled
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testMissingRemoteDiagnosticsSettingDefersToSDKConfiguration() {
+        expect(
+            resolvedDiagnosticsCollectionDecision(remoteDiagnosticsEnabled: nil, diagnosticsEnabled: false)
+        ) == .disabled
+        expect(
+            resolvedDiagnosticsCollectionDecision(remoteDiagnosticsEnabled: nil, diagnosticsEnabled: true)
+        ) == .enabled
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testInitialDiagnosticsCollectionDependsOnRemoteConfigAvailability() {
+        expect(
+            initialDiagnosticsCollectionDecision(remoteConfigEnabled: true)
+        ) == .undetermined
+        expect(
+            initialDiagnosticsCollectionDecision(remoteConfigEnabled: false)
+        ) == .disabled
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testSDKSettingsUpdateConfiguresDiagnosticsTrackerAndSynchronizer() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let settingsProvider = MockSDKSettingsConfigProvider()
+        let synchronizer = DiagnosticsSynchronizerSpy()
+        self.initializePurchasesInstance(
+            appUserId: Self.appUserID,
+            sdkSettingsConfigProvider: settingsProvider
+        )
+        self.purchasesOrchestrator._diagnosticsSynchronizer = synchronizer
+
+        settingsProvider.delegate?.sdkSettingsConfigProviderDidUpdate(
+            .init(diagnostics: .init(enabled: true))
+        )
+
+        let tracker = try self.mockDiagnosticsTracker
+        expect(tracker.collectionDecisions.value) == [.enabled]
+        await expect(synchronizer.collectionDecisions.value).toEventually(equal([.enabled]))
+    }
 
     func testIsAbleToBeInitialized() {
         self.setupPurchases()
         expect(self.purchases).toNot(beNil())
     }
 
-    func testRemoteConfigFeatureOffUsesNoOpManager() {
-        self.setupPurchases()
+    func testConfiguredStoreEnvironmentDerivesProviderNameFromAPIKey() {
+        let environments = [
+            ("mac_key", "mac_app_store"),
+            ("appl_key", "app_store"),
+            ("test_key", "test_store"),
+            ("legacykey", "app_store"),
+            ("unknown_key", "unknown")
+        ]
 
-        self.notificationCenter.fireNotifications()
+        for (apiKey, expectedProviderName) in environments {
+            let environment = ConfiguredStoreEnvironment(apiKey: apiKey, storeFrontCountryCode: nil)
 
-        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount) == 0
-        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigIfStaleCount) == 0
+            expect(environment.entitlementProviderName()) == expectedProviderName
+        }
     }
 
-    func testRemoteConfigFeatureOnRefreshesDuringLifecycleCacheUpdates() {
-        self.systemInfo.stubbedRemoteConfigEnabled = true
+    func testConfiguredStoreEnvironmentReadsCurrentStorefront() {
+        let systemInfo = MockSystemInfo(finishTransactions: true, apiKey: "appl_key")
+        let environment = ConfiguredStoreEnvironment(systemInfo: systemInfo)
+
+        expect(environment.storeFrontCountryCode).to(beNil())
+
+        systemInfo.stubbedStorefront = MockStorefront(countryCode: "USA")
+
+        expect(environment.storeFrontCountryCode) == "USA"
+    }
+
+    func testRemoteConfigRefreshesDuringLifecycleCacheUpdatesByDefault() {
         self.setupPurchases()
 
         expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount).toEventually(equal(1))
@@ -79,6 +160,22 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(Purchases.isConfigured) == true
     }
 
+    func testKeychainAccessGroupPassedThroughConfiguration() {
+        let configurationBuilder = Configuration.Builder(withAPIKey: "")
+            .with(iamEnabled: true, keychainAccessGroup: "group.com.revenuecat.shared")
+        let purchases = Purchases.configure(with: configurationBuilder.build())
+
+        expect(purchases.currentConfiguration?.keychainAccessGroup) == "group.com.revenuecat.shared"
+    }
+
+    func testKeychainAccessGroupIsNilWhenNotConfigured() {
+        let configurationBuilder = Configuration.Builder(withAPIKey: "")
+            .with(iamEnabled: true)
+        let purchases = Purchases.configure(with: configurationBuilder.build())
+
+        expect(purchases.currentConfiguration?.keychainAccessGroup).to(beNil())
+    }
+
     func testConfigurationPassedThroughTimeouts() {
         let networkTimeoutSeconds: TimeInterval = 9
         let configurationBuilder = Configuration.Builder(withAPIKey: "")
@@ -88,6 +185,9 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
         expect(purchases.networkTimeout) == networkTimeoutSeconds
         expect(purchases.storeKitTimeout) == networkTimeoutSeconds
+        // The shared timeout manager must be built from the configured timeout too, otherwise every
+        // request would silently fall back to the built-in tiers.
+        expect(purchases.requestTimeoutManagerBaseTimeout) == networkTimeoutSeconds
     }
 
     func testSharedInstanceIsSetWhenConfiguring() {

@@ -320,7 +320,7 @@ struct ConditionalStackVisibility_Previews: PreviewProvider {
                             color: .init(light: .hex("#000000"))
                         ))
                     ],
-                    size: .init(width: .fill, height: .fit),
+                    size: .init(width: .fill, height: .fit(nil)),
                     backgroundColor: .init(light: .hex("#ff0000")),
                     overrides: [
                         .init(
@@ -356,7 +356,7 @@ struct ConditionalStackVisibility_Previews: PreviewProvider {
                             color: .init(light: .hex("#ffffff"))
                         ))
                     ],
-                    size: .init(width: .fill, height: .fit),
+                    size: .init(width: .fill, height: .fit(nil)),
                     backgroundColor: .init(light: .hex("#007AFF")),
                     padding: .init(top: 12, bottom: 12, leading: 16, trailing: 16),
                     overrides: [
@@ -405,7 +405,7 @@ struct ConditionalStackVisibility_Previews: PreviewProvider {
                             ]
                         ))
                     ],
-                    size: .init(width: .fill, height: .fit)
+                    size: .init(width: .fill, height: .fit(nil))
                 ),
                 localizationProvider: .init(
                     locale: Locale.current,
@@ -445,7 +445,7 @@ struct ConditionalStackVisibility_Previews: PreviewProvider {
                             ]
                         ))
                     ],
-                    size: .init(width: .fill, height: .fit)
+                    size: .init(width: .fill, height: .fit(nil))
                 ),
                 localizationProvider: .init(
                     locale: Locale.current,

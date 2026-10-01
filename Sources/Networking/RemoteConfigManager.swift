@@ -9,24 +9,41 @@ import Foundation
 
 // swiftlint:disable file_length
 
+enum RemoteConfigReadPolicy: Equatable {
+    case fetchIfNeeded
+    case cachedOnly
+}
+
 protocol RemoteConfigManagerType: AnyObject {
 
-    /// Whether remote config should be ignored for the current manager lifetime.
-    var isDisabled: Bool { get }
-    func refreshRemoteConfig(isAppBackgrounded: Bool)
-    func refreshRemoteConfigIfStale(isAppBackgrounded: Bool)
+    /// Monotonically increases whenever committed remote config state is replaced or invalidated.
+    var configGeneration: Int { get }
+
+    /// Whether a remote configuration has been committed and is available to read.
+    func hasCommittedConfig() async -> Bool
+
+    /// Registers an observer for remote-config lifecycle events.
+    func addConfigLifecycleObserver(_ observer: RemoteConfigLifecycleObserver)
+
+    func refreshRemoteConfig(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool)
+    func refreshRemoteConfigIfStale(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool)
 
     /// Returns the committed item index for a known topic.
     ///
     /// If the topic is not cached, this waits for an in-flight refresh or triggers one foreground refresh before
-    /// reading again. Returns `nil` when the endpoint is disabled or the topic is still unavailable after refresh.
-    func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic?
+    /// reading again. Returns `nil` when the topic is still unavailable after refresh.
+    func topic(_ topic: RemoteConfigTopic, policy: RemoteConfigReadPolicy) async -> RemoteConfiguration.ConfigTopic?
+
+    /// Waits for the refresh currently in flight, if any, then returns the latest committed topic.
+    /// Unlike `topic(_:)`, this never starts a refresh.
+    func committedTopicAfterInFlightRefresh(_ topic: RemoteConfigTopic) async
+    -> RemoteConfiguration.ConfigTopic?
 
     /// Returns the blob payload bytes for an item referenced by `blob_ref`.
     ///
     /// Inline item metadata is exposed through `topic(_:)`; items without `blob_ref` return `nil`. Missing items
     /// wait for an in-flight refresh or trigger one foreground refresh before resolving the blob on demand.
-    func blobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data?
+    func blobData(for topic: RemoteConfigTopic, itemKey: String, policy: RemoteConfigReadPolicy) async -> Data?
 
     /// Decodes a blob payload as a concrete `Decodable` type.
     ///
@@ -36,6 +53,12 @@ protocol RemoteConfigManagerType: AnyObject {
         itemKey: String,
         as type: T.Type
     ) async throws -> T?
+
+    /// Ensures every blob in `refs` has finished downloading (or failed), joining any already
+    /// in-flight or queued (e.g. prefetch) download for the same ref instead of starting a
+    /// duplicate. Returns once every ref has settled; the `Bool` reports whether all succeeded.
+    @discardableResult
+    func ensureBlobsDownloaded(_ refs: [String]) async -> Bool
 
     /// Decodes multiple blob payloads into one keyed JSON object.
     ///
@@ -47,25 +70,147 @@ protocol RemoteConfigManagerType: AnyObject {
         as type: T.Type
     ) async throws -> T?
 
+    /// Returns `topic`'s committed item index once every item flagged for prefetch has also finished
+    /// downloading its blob (or failed). Behaves like `topic(_:)` otherwise: waits for an in-flight
+    /// refresh or triggers one foreground refresh before reading, and returns `nil` when the topic is
+    /// still unavailable after refresh.
+    ///
+    /// If the topic is invalidated (e.g. an identity change) while waiting on its blobs, this re-reads
+    /// and waits again on the new snapshot's own prefetch refs rather than returning one paired with
+    /// stale blob-wait results.
+    func awaitTopicAndPrefetchBlobsReady(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic?
+
     func clearCache()
+    func clearCache(forAppUserID appUserID: String)
     func close()
 
 }
 
+enum RemoteConfigConsistencyError: Error, Equatable {
+
+    case stale
+
+}
+
 extension RemoteConfigManagerType {
+    func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
+        return await self.topic(topic, policy: .fetchIfNeeded)
+    }
+
+    func blobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data? {
+        return await self.blobData(for: topic, itemKey: itemKey, policy: .fetchIfNeeded)
+    }
+
+    /// Registers an observer weakly for remote-config lifecycle events.
+    func addConfigLifecycleObserver(_ observer: RemoteConfigLifecycleObserver) {}
+
+    func addConfigLifecycleObservers(_ observers: [any RemoteConfigLifecycleObserver]) {
+        for observer in observers {
+            self.addConfigLifecycleObserver(observer)
+        }
+    }
+
+    /// Performs a read against one config generation and retries once if a successful read was
+    /// superseded while suspended. Errors and cancellation are propagated immediately. An exhausted
+    /// stale read throws `RemoteConfigConsistencyError.stale`.
+    func readConsistent<Value>(
+        _ operation: () async throws -> Value?
+    ) async throws -> Value? {
+        for attempt in 0...1 {
+            try Task.checkCancellation()
+            let generation = self.configGeneration
+            do {
+                let value = try await operation()
+                try Task.checkCancellation()
+
+                guard self.configGeneration == generation else {
+                    guard attempt == 0 else {
+                        throw RemoteConfigConsistencyError.stale
+                    }
+                    Logger.verbose(RemoteConfigStrings.remoteConfigReadRetry)
+                    continue
+                }
+
+                return value
+            } catch let error as CancellationError {
+                throw error
+            } catch {
+                guard self.configGeneration != generation else { throw error }
+                guard attempt == 0 else {
+                    throw RemoteConfigConsistencyError.stale
+                }
+                Logger.verbose(RemoteConfigStrings.remoteConfigReadRetry)
+            }
+        }
+
+        return nil
+    }
+
+    func withCurrentConfigGeneration<T>(_ operation: (Int) -> T?) -> T? {
+        let generation = self.configGeneration
+        guard let value = operation(generation),
+              self.configGeneration == generation else {
+            return nil
+        }
+
+        return value
+    }
+
+    func topicCacheSnapshot(_ topic: RemoteConfigTopic) async
+    -> GenerationGuardedCacheSnapshot<RemoteConfiguration.ConfigTopic>? {
+        guard let configTopic = await self.topic(topic) else { return nil }
+        return .init(generation: self.configGeneration, key: configTopic)
+    }
+
+    /// Returns a snapshot of already-committed topic metadata without waiting for or triggering a config refresh.
+    func committedTopicCacheSnapshot(_ topic: RemoteConfigTopic) async
+    -> GenerationGuardedCacheSnapshot<RemoteConfiguration.ConfigTopic>? {
+        guard let configTopic = await self.topic(topic, policy: .cachedOnly) else { return nil }
+        return .init(generation: self.configGeneration, key: configTopic)
+    }
+
+    func committedTopicCacheSnapshotAfterInFlightRefresh(_ topic: RemoteConfigTopic) async
+    -> GenerationGuardedCacheSnapshot<RemoteConfiguration.ConfigTopic>? {
+        guard let configTopic = await self.committedTopicAfterInFlightRefresh(topic) else { return nil }
+        return .init(generation: self.configGeneration, key: configTopic)
+    }
+
+    func isCurrent(
+        _ snapshot: GenerationGuardedCacheSnapshot<RemoteConfiguration.ConfigTopic>,
+        for topic: RemoteConfigTopic
+    ) async -> Bool {
+        guard self.configGeneration == snapshot.generation,
+              await self.topic(topic) == snapshot.key else {
+            return false
+        }
+
+        return true
+    }
+
+    func awaitTopicAndPrefetchBlobsReady(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
+        guard var committed = await self.topic(topic) else { return nil }
+
+        while true {
+            let prefetchRefs = committed.values.compactMap { $0.prefetch ? $0.blobRef : nil }
+            await self.ensureBlobsDownloaded(prefetchRefs)
+
+            // The topic could have been invalidated and refetched (e.g. an identity change) while
+            // waiting on its blobs. Re-reading and comparing catches that without needing this
+            // generic extension to see RemoteConfigManager's private epoch tracking.
+            guard let latest = await self.topic(topic) else { return nil }
+            guard latest != committed else { return committed }
+            committed = latest
+        }
+    }
 
     func mergeItemsBlobData<T: Decodable>(
         for topic: RemoteConfigTopic,
         itemKeys: [String],
         as type: T.Type
     ) async throws -> T? {
-        let uniqueItemKeys = Self.uniqueItemKeys(itemKeys)
+        let uniqueItemKeys = itemKeys.deduplicated()
         guard !uniqueItemKeys.isEmpty else {
             Logger.warn(Strings.remoteConfig.mergeItemsBlobDataEmpty(topic: topic))
-            return nil
-        }
-        guard !self.isDisabled else {
-            Logger.warn(Strings.remoteConfig.mergeItemsBlobDataDisabled(topic: topic, itemKeys: uniqueItemKeys))
             return nil
         }
 
@@ -95,43 +240,64 @@ extension RemoteConfigManagerType {
             return nil
         }
 
-        var mergedBlobValues: [String: Any] = [:]
-        for itemKey in uniqueItemKeys {
-            guard let resolvedBlob = resolvedBlobs[itemKey],
-                  let data = resolvedBlob else { return nil }
-            mergedBlobValues[itemKey] = try JSONDecoder.default.decode(AnyDecodable.self, from: data).asAny
+        guard let mergedData = try Self.makeJSONEnvelopeData(
+            orderedItemKeys: uniqueItemKeys,
+            resolvedBlobs: resolvedBlobs
+        ) else {
+            return nil
         }
 
-        let mergedData = try JSONSerialization.data(withJSONObject: mergedBlobValues)
         return try JSONDecoder.default.decode(type, from: mergedData)
     }
 
-    private static func uniqueItemKeys(_ itemKeys: [String]) -> [String] {
-        var seen: Set<String> = []
-        var uniqueItemKeys: [String] = []
-
-        for itemKey in itemKeys where seen.insert(itemKey).inserted {
-            uniqueItemKeys.append(itemKey)
+    /// Builds a keyed JSON object `{"<itemKey>":<blobBytes>,...}` from already-encoded blob payloads.
+    ///
+    /// Each blob is a valid JSON value that is appended verbatim, avoiding a decode -> encode -> decode
+    /// cycle. Item keys keep the order of `orderedItemKeys` and are escaped via `JSONEncoder.default`.
+    /// Returns `nil` if any key has no resolved blob data.
+    private static func makeJSONEnvelopeData(
+        orderedItemKeys: [String],
+        resolvedBlobs: [String: Data?]
+    ) throws -> Data? {
+        var envelope = Data("{".utf8)
+        for (index, itemKey) in orderedItemKeys.enumerated() {
+            guard let resolvedBlob = resolvedBlobs[itemKey],
+                  let data = resolvedBlob else { return nil }
+            if index > 0 {
+                envelope.append(contentsOf: ",".utf8)
+            }
+            envelope.append(try JSONEncoder.default.encode(itemKey))
+            envelope.append(contentsOf: ":".utf8)
+            envelope.append(data)
         }
-
-        return uniqueItemKeys
+        envelope.append(contentsOf: "}".utf8)
+        return envelope
     }
 
 }
 
 final class NoOpRemoteConfigManager: RemoteConfigManagerType {
 
-    let isDisabled = true
+    let configGeneration = 0
 
-    func refreshRemoteConfig(isAppBackgrounded: Bool) {}
+    func refreshRemoteConfig(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool) {}
 
-    func refreshRemoteConfigIfStale(isAppBackgrounded: Bool) {}
+    func refreshRemoteConfigIfStale(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool) {}
 
-    func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
+    func hasCommittedConfig() async -> Bool {
+        return false
+    }
+
+    func topic(_ topic: RemoteConfigTopic, policy: RemoteConfigReadPolicy) async -> RemoteConfiguration.ConfigTopic? {
         return nil
     }
 
-    func blobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data? {
+    func committedTopicAfterInFlightRefresh(_ topic: RemoteConfigTopic) async
+    -> RemoteConfiguration.ConfigTopic? {
+        return nil
+    }
+
+    func blobData(for topic: RemoteConfigTopic, itemKey: String, policy: RemoteConfigReadPolicy) async -> Data? {
         return nil
     }
 
@@ -143,9 +309,29 @@ final class NoOpRemoteConfigManager: RemoteConfigManagerType {
         return nil
     }
 
+    func ensureBlobsDownloaded(_ refs: [String]) async -> Bool {
+        return false
+    }
+
     func clearCache() {}
 
+    func clearCache(forAppUserID appUserID: String) {}
+
     func close() {}
+
+}
+
+enum RemoteConfigLifecycleEvent {
+
+    case observerRegistered(generation: Int)
+    case committed(generation: Int)
+    case refreshFinished(fetchContext: RemoteConfigFetchContext, generation: Int)
+
+}
+
+protocol RemoteConfigLifecycleObserver: AnyObject {
+
+    func remoteConfigEventReceived(_ event: RemoteConfigLifecycleEvent)
 
 }
 
@@ -157,6 +343,7 @@ final class NoOpRemoteConfigManager: RemoteConfigManagerType {
 final class RemoteConfigManager: RemoteConfigManagerType {
 
     private static let defaultDomain = "app"
+    private static let refreshAttemptCooldownInSeconds: TimeInterval = 60
 
     private let remoteConfigAPI: RemoteConfigAPIType
     private let diskCache: RemoteConfigDiskCacheType
@@ -165,6 +352,13 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     private let currentUserProvider: CurrentUserProvider
     private let dateProvider: DateProvider
     private let cacheDurationInSeconds: (Bool) -> TimeInterval
+
+    /// Immutable per-request snapshot chosen under `lock`.
+    fileprivate struct RefreshRequestContext {
+        let epoch: Int
+        let requestAppUserID: String
+        let fetchContext: RemoteConfigFetchContext
+    }
 
     /// Runs blocking committed-state reads away from the caller's executor.
     private let readQueue = DispatchQueue(label: "com.revenuecat.remote-config.read")
@@ -175,8 +369,11 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     /// Tracks the single config refresh whose completion read APIs may await.
     private var isRefreshing = false
 
-    /// Session-scoped kill switch set by disabling client errors. This is intentionally not reset by cache clears.
-    private var isDisabledInternal = false
+    /// Forces refreshes to report `.appStart` until the session's first config is committed, regardless of the
+    /// caller's context, so the backend always sees `app_start` on a fresh app open. Set under `lock` only once config
+    /// is durably committed (persisted from a 200 or the fallback) or confirmed current (204); a failed refresh or an
+    /// undecodable/unpersistable 200 keeps forcing `.appStart` until a later attempt actually commits config.
+    private var hasCommittedInitialConfig = false
 
     /// Teardown guard that prevents new refresh work after `close()`.
     private var isClosed = false
@@ -184,14 +381,34 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     /// Incremented when local state is invalidated so late responses from older users/sessions are dropped.
     private var epoch = 0
 
-    /// In-memory staleness marker. Only successful `200` and `204` responses mark the config fresh.
+    /// Incremented whenever committed config changes or becomes invalid. Async cache warmers use this
+    /// as a stale-write guard so older work cannot repopulate memory after a newer config is active.
+    private var generation = 0
+
+    /// App user ID captured by an identity-bound cache clear.
+    ///
+    /// During login/switch/logout, `clearCache` can bump the epoch before every caller observes the new user from
+    /// `CurrentUserProvider`. Storing the cleared identity under the same lock makes refresh preparation prefer this
+    /// ID over the provider value, so a request is either created for the cleared identity or treated as stale later.
+    private var identityBoundAppUserID: String?
+
+    /// Client-clock time when this process last completed a successful `200` or `204` refresh.
+    ///
+    /// This is memory-only and is compared with `dateProvider.now()` to decide when the local cache is stale.
     private var lastRefreshedAt: Date?
+
+    /// Client-clock time when this process last attempted a stale-gated refresh.
+    ///
+    /// This is memory-only and drives the local retry cooldown. The configuration stores its main-server request
+    /// time separately for refresh requests.
+    private var lastRefreshAttemptAt: Date?
 
     /// Read callers waiting for the current refresh to finish before rereading committed config state.
     ///
     /// These continuations carry no result because callers decide what to do by rereading disk state after the
     /// refresh, clear, close, or failure completes.
     private var refreshContinuations: [CheckedContinuation<Void, Never>] = []
+    private var configLifecycleObservers: [(RemoteConfigLifecycleEvent) -> Void] = []
 
     init(
         remoteConfigAPI: RemoteConfigAPIType,
@@ -211,46 +428,75 @@ final class RemoteConfigManager: RemoteConfigManagerType {
         self.cacheDurationInSeconds = cacheDurationInSeconds
     }
 
-    var isDisabled: Bool {
+    var configGeneration: Int {
         return self.lock.perform {
-            self.isDisabledInternal
+            self.generation
+        }
+    }
+
+    func topic(_ topic: RemoteConfigTopic, policy: RemoteConfigReadPolicy) async -> RemoteConfiguration.ConfigTopic? {
+        return await self.readCommittedState(refreshIfMissing: policy == .fetchIfNeeded) {
+            await self.committedTopic(topic)
+        }
+    }
+
+    func blobData(for topic: RemoteConfigTopic, itemKey: String, policy: RemoteConfigReadPolicy) async -> Data? {
+        guard let itemSnapshot = await self.readCommittedStateSnapshot(refreshIfMissing: policy == .fetchIfNeeded, {
+            await self.committedTopic(topic)?[itemKey]
+        }), let item = itemSnapshot.value, let ref = item.blobRef else { return nil }
+
+        return await self.readCommittedState(epoch: itemSnapshot.epoch) {
+            policy == .cachedOnly ? await self.readBlob(ref: ref) : await self.blobData(for: item)
+        }
+    }
+
+    func addConfigLifecycleObserver(_ observer: RemoteConfigLifecycleObserver) {
+        self.lock.perform {
+            self.configLifecycleObservers.append { [weak observer] event in
+                observer?.remoteConfigEventReceived(event)
+            }
+        }
+        observer.remoteConfigEventReceived(.observerRegistered(generation: self.configGeneration))
+    }
+
+    func hasCommittedConfig() async -> Bool {
+        return await self.performRead {
+            self.diskCache.read() != nil
         }
     }
 
     private var canReadCommittedState: Bool {
         return self.lock.perform {
-            !self.isDisabledInternal && !self.isClosed
+            !self.isClosed
         }
     }
 
-    func refreshRemoteConfig(isAppBackgrounded: Bool) {
-        guard let requestEpoch = self.prepareRefreshIfNeeded() else { return }
+    func refreshRemoteConfig(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool) {
+        let appUserID = self.currentUserProvider.currentAppUserID
+        guard let requestContext = self.prepareRefreshIfNeeded(
+            fetchContext: fetchContext,
+            appUserID: appUserID
+        ) else { return }
 
-        self.startRefresh(isAppBackgrounded: isAppBackgrounded, requestEpoch: requestEpoch)
+        self.startRefresh(isAppBackgrounded: isAppBackgrounded, requestContext: requestContext)
     }
 
-    func refreshRemoteConfigIfStale(isAppBackgrounded: Bool) {
-        guard let requestEpoch = self.prepareRefreshIfStale(isAppBackgrounded: isAppBackgrounded) else { return }
+    func refreshRemoteConfigIfStale(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool) {
+        let appUserID = self.currentUserProvider.currentAppUserID
+        guard let requestContext = self.prepareRefreshIfStale(
+            fetchContext: fetchContext,
+            isAppBackgrounded: isAppBackgrounded,
+            appUserID: appUserID
+        ) else { return }
 
-        self.startRefresh(isAppBackgrounded: isAppBackgrounded, requestEpoch: requestEpoch)
+        self.startRefresh(isAppBackgrounded: isAppBackgrounded, requestContext: requestContext)
     }
 
-    func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
-        return await self.readCommittedState(refreshIfMissing: true) {
+    func committedTopicAfterInFlightRefresh(_ topic: RemoteConfigTopic) async
+    -> RemoteConfiguration.ConfigTopic? {
+        _ = await self.awaitInFlightRefresh()
+        return await self.readCommittedState {
             await self.committedTopic(topic)
-        }
-    }
-
-    func blobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data? {
-        guard let itemSnapshot = await self.readCommittedStateSnapshot(refreshIfMissing: true, {
-            await self.committedTopic(topic)?[itemKey]
-        }),
-              let item = itemSnapshot.value else {
-            return nil
-        }
-
-        return await self.readCommittedState(epoch: itemSnapshot.epoch) {
-            await self.blobData(for: item)
         }
     }
 
@@ -264,15 +510,26 @@ final class RemoteConfigManager: RemoteConfigManagerType {
         return try JSONDecoder.default.decode(type, from: data)
     }
 
+    func ensureBlobsDownloaded(_ refs: [String]) async -> Bool {
+        return await self.blobFetcher.ensureAllDownloaded(refs: refs)
+    }
+
     /// Wipes cached remote config state, for example after an identity change.
     ///
     /// The epoch bump, refresh-guard release, and cache wipe are serialized with response persistence so a late
     /// response for a previous user is either fully persisted before the wipe or dropped after the epoch changes.
     func clearCache() {
+        self.clearCache(forAppUserID: self.currentUserProvider.currentAppUserID)
+    }
+
+    func clearCache(forAppUserID appUserID: String) {
         let continuations = self.lock.perform {
             self.epoch += 1
+            self.generation += 1
+            self.identityBoundAppUserID = appUserID
             self.isRefreshing = false
             self.lastRefreshedAt = nil
+            self.lastRefreshAttemptAt = nil
             self.diskCache.clear()
             self.blobStore.clear()
             return self.drainRefreshContinuations()
@@ -283,6 +540,7 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     func close() {
         let continuations = self.lock.perform {
             self.epoch += 1
+            self.generation += 1
             self.isClosed = true
             self.isRefreshing = false
             return self.drainRefreshContinuations()
@@ -294,44 +552,73 @@ final class RemoteConfigManager: RemoteConfigManagerType {
 
 private extension RemoteConfigManager {
 
-    func prepareRefreshIfNeeded() -> Int? {
+    /// Overrides a refresh's context to `.appStart` until the session's first config is committed, so the backend
+    /// always sees `app_start` first on a fresh app open. Must be called within `lock`.
+    func fetchContextForRefresh(_ requested: RemoteConfigFetchContext) -> RemoteConfigFetchContext {
+        return self.hasCommittedInitialConfig ? requested : .appStart
+    }
+
+    func prepareRefreshIfNeeded(
+        fetchContext: RemoteConfigFetchContext,
+        appUserID: String
+    ) -> RefreshRequestContext? {
         return self.lock.perform {
             guard !self.isRefreshing,
-                  !self.isDisabledInternal,
                   !self.isClosed else { return nil }
+
+            let requestAppUserID = self.identityBoundAppUserID ?? appUserID
             self.isRefreshing = true
-            return self.epoch
+            return .init(
+                epoch: self.epoch,
+                requestAppUserID: requestAppUserID,
+                fetchContext: self.fetchContextForRefresh(fetchContext)
+            )
         }
     }
 
     func prepareRefreshIfStale(
+        fetchContext: RemoteConfigFetchContext,
         isAppBackgrounded: Bool,
+        appUserID: String,
         expectedEpoch: Int? = nil
-    ) -> Int? {
+    ) -> RefreshRequestContext? {
         return self.lock.perform {
             guard !self.isRefreshing,
-                  !self.isDisabledInternal,
                   !self.isClosed else { return nil }
+            let now = self.dateProvider.now()
             if let expectedEpoch {
-                guard self.epoch == expectedEpoch else { return nil }
+                guard self.epoch == expectedEpoch || self.identityBoundAppUserID != nil else { return nil }
             }
             if let lastRefreshedAt = self.lastRefreshedAt {
-                guard self.dateProvider.now().timeIntervalSince(lastRefreshedAt)
+                guard now.timeIntervalSince(lastRefreshedAt)
                     > self.cacheDurationInSeconds(isAppBackgrounded) else { return nil }
             }
+            if let lastRefreshAttemptAt = self.lastRefreshAttemptAt {
+                guard now.timeIntervalSince(lastRefreshAttemptAt)
+                    > Self.refreshAttemptCooldownInSeconds else { return nil }
+            }
 
+            let requestAppUserID = self.identityBoundAppUserID ?? appUserID
             self.isRefreshing = true
-            return self.epoch
+            self.lastRefreshAttemptAt = now
+            return .init(
+                epoch: self.epoch,
+                requestAppUserID: requestAppUserID,
+                fetchContext: self.fetchContextForRefresh(fetchContext)
+            )
         }
     }
 
-    func startRefresh(isAppBackgrounded: Bool, requestEpoch: Int) {
+    func startRefresh(isAppBackgrounded: Bool, requestContext: RefreshRequestContext) {
         let persisted = self.diskCache.read()
         let request = RemoteConfigRequest(
-            appUserID: self.currentUserProvider.currentAppUserID,
+            fetchContext: requestContext.fetchContext,
+            appUserID: requestContext.requestAppUserID,
             domain: persisted?.domain ?? Self.defaultDomain,
             manifest: persisted?.manifest,
-            prefetchedBlobs: self.cachedPrefetchedBlobRefs(from: persisted)
+            prefetchedBlobs: self.cachedPrefetchedBlobRefs(from: persisted),
+            // Replay the persisted main-server request date.
+            lastRefreshTime: persisted?.lastRefreshTime
         )
 
         Logger.verbose(Strings.remoteConfig.refreshing(
@@ -342,7 +629,7 @@ private extension RemoteConfigManager {
             request: request,
             persisted: persisted,
             isAppBackgrounded: isAppBackgrounded,
-            requestEpoch: requestEpoch
+            requestContext: requestContext
         )
     }
 
@@ -350,12 +637,12 @@ private extension RemoteConfigManager {
         request: RemoteConfigRequest,
         persisted: PersistedRemoteConfiguration?,
         isAppBackgrounded: Bool,
-        requestEpoch: Int
+        requestContext: RefreshRequestContext
     ) {
         // Keep the epoch check and operation enqueue atomic with clearCache(), so a clear cannot slip in between them.
         // This assumes getRemoteConfig only registers/enqueues work and does not synchronously call its completion.
         self.lock.perform {
-            guard self.epoch == requestEpoch else { return }
+            guard self.epoch == requestContext.epoch else { return }
 
             self.remoteConfigAPI.getRemoteConfig(
                 request: request,
@@ -368,19 +655,25 @@ private extension RemoteConfigManager {
                     self.handleSuccess(
                         fetchResult,
                         previous: persisted,
-                        requestEpoch: requestEpoch
+                        requestContext: requestContext
                     )
                 case let .failure(error):
-                    self.handleFailure(error, requestEpoch: requestEpoch)
+                    self.handleFailure(
+                        error,
+                        request: request,
+                        previous: persisted,
+                        isAppBackgrounded: isAppBackgrounded,
+                        requestContext: requestContext
+                    )
                 }
             }
         }
     }
 
     @discardableResult
-    func releaseGuardIfOwned(requestEpoch: Int) -> Bool {
+    func releaseGuardIfOwned(requestContext: RefreshRequestContext) -> Bool {
         let continuations = self.lock.perform {
-            guard self.epoch == requestEpoch else { return nil as [CheckedContinuation<Void, Never>]? }
+            guard self.epoch == requestContext.epoch else { return nil as [CheckedContinuation<Void, Never>]? }
             self.isRefreshing = false
             return self.drainRefreshContinuations()
         }
@@ -390,17 +683,28 @@ private extension RemoteConfigManager {
         return true
     }
 
+    func finishRefresh(requestContext: RefreshRequestContext) {
+        guard self.releaseGuardIfOwned(requestContext: requestContext) else { return }
+        self.notifyConfigLifecycleObservers(
+            .refreshFinished(fetchContext: requestContext.fetchContext, generation: self.configGeneration)
+        )
+    }
+
     func handleSuccess(
         _ fetchResult: RemoteConfigFetchResult,
         previous: PersistedRemoteConfiguration?,
-        requestEpoch: Int
+        requestContext: RefreshRequestContext
     ) {
-        guard self.isCurrent(requestEpoch) else { return }
-        defer { self.releaseGuardIfOwned(requestEpoch: requestEpoch) }
+        guard self.isCurrent(requestContext.epoch) else { return }
+        defer { self.finishRefresh(requestContext: requestContext) }
 
         guard let container = fetchResult.container else {
             Logger.debug(Strings.remoteConfig.notModified)
-            self.markRefreshedIfCurrent(requestEpoch)
+            self.markRefreshedIfCurrent(
+                requestContext.epoch,
+                previous: previous,
+                requestDate: fetchResult.requestDate
+            )
             return
         }
 
@@ -412,16 +716,25 @@ private extension RemoteConfigManager {
                 )
             }
 
-            self.lock.perform {
-                guard self.epoch == requestEpoch else { return }
+            let committedGeneration = self.lock.perform { () -> Int? in
+                guard self.epoch == requestContext.epoch else { return nil }
+                // Prefer this response's main-server request date, carrying forward the persisted value as needed.
+                let lastRefreshTime = fetchResult.requestDate ?? previous?.lastRefreshTime
                 let didPersist = self.persist(
                     container: container,
                     previous: previous,
-                    response: response
+                    response: response,
+                    lastRefreshTime: lastRefreshTime
                 )
                 if didPersist {
-                    self.markRefreshed()
+                    self.generation += 1
+                    self.markRefreshed(at: self.dateProvider.now())
+                    return self.generation
                 }
+                return nil
+            }
+            if let committedGeneration {
+                self.notifyConfigLifecycleObservers(.committed(generation: committedGeneration))
             }
         } catch {
             Logger.error(Strings.remoteConfig.failedToParseResponse(error))
@@ -431,27 +744,101 @@ private extension RemoteConfigManager {
 
     func handleFailure(
         _ error: BackendError,
-        requestEpoch: Int
+        request: RemoteConfigRequest,
+        previous: PersistedRemoteConfiguration?,
+        isAppBackgrounded: Bool,
+        requestContext: RefreshRequestContext
     ) {
-        let continuations = self.lock.perform {
-            guard self.epoch == requestEpoch else { return nil as [CheckedContinuation<Void, Never>]? }
-
-            self.disableRefreshIfNeeded(for: error)
-            self.isRefreshing = false
-
-            return self.drainRefreshContinuations()
+        guard error.isRemoteConfigFallbackEligible,
+              !self.hasUsableCachedConfig(previous, for: request.domain),
+              SystemInfo.proxyURL == nil else {
+            self.handleFinalFailure(error, requestContext: requestContext)
+            return
         }
 
-        guard let continuations else { return }
-        continuations.forEach { $0.resume() }
-
-        Logger.error(Strings.remoteConfig.refreshFailed(error))
+        self.enqueueRemoteConfigFallbackIfCurrent(
+            domain: request.domain,
+            previous: previous,
+            isAppBackgrounded: isAppBackgrounded,
+            requestContext: requestContext
+        )
     }
 
-    func disableRefreshIfNeeded(for error: BackendError) {
-        guard error.isRemoteConfigDisablingClientError else { return }
+    func hasUsableCachedConfig(
+        _ previous: PersistedRemoteConfiguration?,
+        for domain: String
+    ) -> Bool {
+        return previous?.domain == domain
+    }
 
-        self.isDisabledInternal = true
+    func enqueueRemoteConfigFallbackIfCurrent(
+        domain: String,
+        previous: PersistedRemoteConfiguration?,
+        isAppBackgrounded: Bool,
+        requestContext: RefreshRequestContext
+    ) {
+        self.lock.perform {
+            guard self.epoch == requestContext.epoch else { return }
+
+            self.remoteConfigAPI.getRemoteConfigFallback(
+                domain: domain,
+                isAppBackgrounded: isAppBackgrounded
+            ) { [weak self] result in
+                guard let self else { return }
+
+                switch result {
+                case let .success(fallbackResult):
+                    self.handleRemoteConfigFallbackSuccess(
+                        fallbackResult,
+                        previous: previous,
+                        requestContext: requestContext
+                    )
+                case let .failure(fallbackError):
+                    self.handleFinalFailure(
+                        fallbackError,
+                        requestContext: requestContext
+                    )
+                }
+            }
+        }
+    }
+
+    func handleRemoteConfigFallbackSuccess(
+        _ fallbackResult: RemoteConfigFallbackFetchResult,
+        previous: PersistedRemoteConfiguration?,
+        requestContext: RefreshRequestContext
+    ) {
+        guard self.isCurrent(requestContext.epoch) else { return }
+        defer { self.finishRefresh(requestContext: requestContext) }
+
+        let committedGeneration = self.lock.perform { () -> Int? in
+            guard self.epoch == requestContext.epoch else { return nil }
+            // Keep the persisted refresh time associated with main API responses.
+            let didPersist = self.persist(
+                container: nil,
+                previous: previous,
+                response: fallbackResult.configuration,
+                lastRefreshTime: previous?.lastRefreshTime
+            )
+            if didPersist {
+                self.generation += 1
+                self.markRefreshed(at: self.dateProvider.now())
+                return self.generation
+            }
+            return nil
+        }
+        if let committedGeneration {
+            self.notifyConfigLifecycleObservers(.committed(generation: committedGeneration))
+        }
+    }
+
+    func handleFinalFailure(
+        _ error: BackendError,
+        requestContext: RefreshRequestContext
+    ) {
+        guard self.isCurrent(requestContext.epoch) else { return }
+        self.finishRefresh(requestContext: requestContext)
+        Logger.error(Strings.remoteConfig.refreshFailed(error))
     }
 
     func isCurrent(_ requestEpoch: Int) -> Bool {
@@ -460,16 +847,30 @@ private extension RemoteConfigManager {
         }
     }
 
-    func markRefreshedIfCurrent(_ requestEpoch: Int) {
+    func markRefreshedIfCurrent(
+        _ requestEpoch: Int,
+        previous: PersistedRemoteConfiguration?,
+        requestDate: Date?
+    ) {
         self.lock.perform {
             guard self.epoch == requestEpoch else { return }
 
-            self.markRefreshed()
+            // A response request date advances the persisted main-server time.
+            if let previous, let requestDate {
+                self.diskCache.write(previous.withLastRefreshTime(requestDate))
+            }
+            // Local staleness starts when this response lands, independently of the server timestamp above.
+            self.markRefreshed(at: self.dateProvider.now())
         }
     }
 
-    func markRefreshed() {
-        self.lastRefreshedAt = self.dateProvider.now()
+    /// Records a landed refresh using the client clock and marks the session's initial config as committed, so later
+    /// refreshes stop being forced to `.appStart`. This timestamp drives local staleness; the main-server request
+    /// timestamp is persisted separately. Must be called within `lock`.
+    func markRefreshed(at date: Date) {
+        self.hasCommittedInitialConfig = true
+        self.lastRefreshedAt = date
+        self.lastRefreshAttemptAt = nil
     }
 
     /// Waits for committed config state to become available for read APIs.
@@ -493,11 +894,14 @@ private extension RemoteConfigManager {
             guard self.canReadCommittedState else { return }
         }
 
-        if let requestEpoch = self.prepareRefreshIfStale(
+        let appUserID = self.currentUserProvider.currentAppUserID
+        if let requestContext = self.prepareRefreshIfStale(
+            fetchContext: .read,
             isAppBackgrounded: false,
+            appUserID: appUserID,
             expectedEpoch: expectedEpoch
         ) {
-            self.startRefresh(isAppBackgrounded: false, requestEpoch: requestEpoch)
+            self.startRefresh(isAppBackgrounded: false, requestContext: requestContext)
         }
         _ = await self.awaitInFlightRefresh()
     }
@@ -534,8 +938,8 @@ private extension RemoteConfigManager {
     /// Reads committed state only if the manager remains on the same epoch for the whole operation.
     ///
     /// If the value is missing, callers may opt into the read-facade behavior of awaiting or triggering one
-    /// foreground refresh before reading again. If `clearCache()`, `close()`, or disable happens during either
-    /// read, the result is discarded.
+    /// foreground refresh before reading again. If `clearCache()` or `close()` happens during either read,
+    /// the result is discarded.
     func readCommittedState<T>(
         refreshIfMissing: Bool = false,
         _ operation: () async -> T?
@@ -584,7 +988,7 @@ private extension RemoteConfigManager {
 
     func currentReadableEpoch() -> Int? {
         return self.lock.perform {
-            guard !self.isDisabledInternal, !self.isClosed else { return nil }
+            guard !self.isClosed else { return nil }
 
             return self.epoch
         }
@@ -592,7 +996,7 @@ private extension RemoteConfigManager {
 
     func isReadable(epoch: Int) -> Bool {
         return self.lock.perform {
-            !self.isDisabledInternal && !self.isClosed && self.epoch == epoch
+            !self.isClosed && self.epoch == epoch
         }
     }
 
@@ -601,6 +1005,11 @@ private extension RemoteConfigManager {
         return await self.performRead {
             self.diskCache.topic(topic)
         }
+    }
+
+    func notifyConfigLifecycleObservers(_ event: RemoteConfigLifecycleEvent) {
+        let observers = self.lock.perform { self.configLifecycleObservers }
+        observers.forEach { $0(event) }
     }
 
     /// Resolves an external blob item through the high-priority fetch path.
@@ -624,9 +1033,10 @@ private extension RemoteConfigManager {
 
     /// Performs small blocking cache reads on the manager's read queue.
     func performRead<T>(_ operation: @escaping () -> T) async -> T {
+        let operation = SendableReadOperation(run: operation)
         return await withCheckedContinuation { continuation in
             self.readQueue.async {
-                continuation.resume(returning: operation())
+                continuation.resume(returning: operation.run())
             }
         }
     }
@@ -641,9 +1051,10 @@ private extension RemoteConfigManager {
 
     /// Persists the config sync state and any valid inline blobs from a successful container response.
     func persist(
-        container: RemoteConfigContainer,
+        container: RemoteConfigContainer?,
         previous: PersistedRemoteConfiguration?,
-        response: RemoteConfiguration
+        response: RemoteConfiguration,
+        lastRefreshTime: Date?
     ) -> Bool {
         Logger.debug(Strings.remoteConfig.receivedConfiguration(
             activeTopics: response.activeTopics, changedTopics: Array(response.topics.entries.keys)
@@ -663,12 +1074,15 @@ private extension RemoteConfigManager {
             manifest: response.manifest,
             activeTopics: response.activeTopics,
             prefetchBlobs: response.prefetchBlobs,
-            topics: postSyncTopics
+            topics: postSyncTopics,
+            lastRefreshTimeMilliseconds: lastRefreshTime?.millisecondsSince1970
         )
 
         guard self.diskCache.write(persistedConfiguration) else { return false }
 
-        self.extractInlineBlobs(from: container, keepingOnly: postSyncReferencedBlobRefs)
+        if let container {
+            self.extractInlineBlobs(from: container, keepingOnly: postSyncReferencedBlobRefs)
+        }
         self.blobStore.retainOnly(postSyncReferencedBlobRefs)
 
         Logger.debug(Strings.remoteConfig.persistedConfiguration(
@@ -677,7 +1091,10 @@ private extension RemoteConfigManager {
             referencedBlobCount: postSyncReferencedBlobRefs.count
         ))
 
-        let refsToPrefetch = response.prefetchBlobs.filter { !self.blobStore.contains(ref: $0) }
+        let refsToPrefetch = self.postSyncPrefetchBlobRefs(
+            response: response,
+            postSyncTopics: postSyncTopics
+        ).filter { !self.blobStore.contains(ref: $0) }
         Logger.verbose(Strings.remoteConfig.prefetchingBlobCount(refsToPrefetch.count))
         self.blobFetcher.prefetch(refs: refsToPrefetch)
 
@@ -687,7 +1104,8 @@ private extension RemoteConfigManager {
     /// Returns the full topic index that should be persisted after this response is applied.
     ///
     /// Changed topics overwrite previous entries, unchanged active topics keep previous entries, and inactive topics
-    /// are removed.
+    /// are removed. Changed topics are full replacements, not item-level patches, so removed items fall out of
+    /// the persisted topic index and blob retention set.
     func postSyncTopics(
         previous: PersistedRemoteConfiguration?,
         response: RemoteConfiguration
@@ -708,6 +1126,23 @@ private extension RemoteConfigManager {
         postSyncTopics: RemoteConfiguration.Topics
     ) -> Set<String> {
         return Set(response.prefetchBlobs).union(postSyncTopics.blobRefs)
+    }
+
+    /// Returns the post-sync blob refs the SDK should proactively warm.
+    ///
+    /// This includes server-requested prefetch blobs plus any active-topic item whose metadata has
+    /// `prefetch: true`.
+    func postSyncPrefetchBlobRefs(
+        response: RemoteConfiguration,
+        postSyncTopics: RemoteConfiguration.Topics
+    ) -> [String] {
+        let itemPrefetchBlobRefs = postSyncTopics.entries.values.flatMap { topic in
+            topic.values
+                .filter(\.prefetch)
+                .compactMap(\.blobRef)
+        }
+
+        return (response.prefetchBlobs + itemPrefetchBlobRefs).deduplicated()
     }
 
     /// Writes valid inline content elements that are referenced by this config response.
@@ -741,15 +1176,21 @@ private extension RemoteConfigManager {
 
 }
 
+private struct SendableReadOperation<T>: @unchecked Sendable {
+
+    let run: () -> T
+
+}
+
 private extension BackendError {
 
-    /// Client errors disable remote config refreshes as a safety mechanism for the current manager lifetime.
-    var isRemoteConfigDisablingClientError: Bool {
-        guard case let .networkError(.errorResponse(_, statusCode, _)) = self else {
+    /// Failures that can retry against a fallback host are eligible for the JSON fallback config request.
+    var isRemoteConfigFallbackEligible: Bool {
+        guard case let .networkError(networkError) = self else {
             return false
         }
 
-        return 400...499 ~= statusCode.rawValue
+        return networkError.isAllowedToRetryWithFallbackHost
     }
 
 }

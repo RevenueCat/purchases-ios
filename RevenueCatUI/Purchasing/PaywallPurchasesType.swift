@@ -29,6 +29,9 @@ protocol PaywallPurchasesType: Sendable {
     /// property is only useful for reading the override value.
     var preferredLocaleOverride: String? { get }
 
+    /// Whether remote config (and, with it, paywall workflows) is enabled.
+    var remoteConfigEnabled: Bool { get }
+
     /// Returns a tracker of user's subscription history
     var subscriptionHistoryTracker: SubscriptionHistoryTracker { get }
 
@@ -37,12 +40,12 @@ protocol PaywallPurchasesType: Sendable {
 
     var cachedOfferings: Offerings? { get }
 
+    var configuredStoreEnvironment: ConfiguredStoreEnvironment { get }
+
 #if !os(tvOS)
     @Sendable
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult
 
-    /// Synchronously returns the cached workflow for `offeringID` when present and fresh, otherwise
-    /// `nil`. Used to seed the workflow paywall without waiting on the async resolve path.
     func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult?
 #endif
 
@@ -52,6 +55,19 @@ protocol PaywallPurchasesType: Sendable {
         promotionalOffer: PromotionalOffer?,
         paywallEvent: PaywallEvent?
     ) async throws -> PurchaseResultData
+
+    /// Only to be called when the customer has deliberately asked to buy: Apple's disclosure notice is shown
+    /// and an external purchase token may be minted, which Apple expects a report for.
+    @Sendable
+    func startHostedCheckout(package: Package, paywallEvent: PaywallEvent?) async -> HostedCheckoutStartResult
+
+    /// Whether web purchase links opened in the browser go through Apple's external purchase flow first.
+    var useExternalPurchaseCustomLinks: Bool { get }
+
+    /// Only to be called when the customer has deliberately asked to buy: Apple's disclosure notice is shown
+    /// and an external purchase token may be minted, which Apple expects a report for.
+    @Sendable
+    func prepareExternalPurchaseLink() async -> ExternalPurchaseLinkResult
 
     @Sendable
     func restorePurchases() async throws -> CustomerInfo

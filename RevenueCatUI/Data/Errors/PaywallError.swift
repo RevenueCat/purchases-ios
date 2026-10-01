@@ -25,6 +25,18 @@ enum PaywallError: Error {
     /// The selected offering was not found.
     case offeringNotFound(identifier: String)
 
+    /// The workflow was resolved without the UI config required to render it.
+    case workflowUiConfigUnavailable(workflowId: String)
+
+    /// The workflow's initial step could not be found.
+    case workflowInitialStepNotFound(stepId: String, workflowId: String)
+
+    /// The workflow's initial step does not identify a screen.
+    case workflowInitialStepMissingScreenIdentifier(stepId: String, workflowId: String)
+
+    /// The screen identified by the workflow's initial step could not be found.
+    case workflowInitialScreenNotFound(screenId: String, workflowId: String)
+
     /// The PaywallView must be initialized with ``performPurchase`` and ``performRestore``
     /// when ``purchasesAreCompletedBy`` is ``.myApp``
     case performPurchaseAndRestoreHandlersNotDefined(missingBlocks: String)
@@ -53,6 +65,14 @@ extension PaywallError: CustomNSError, CustomStringConvertible {
 
         case let .offeringNotFound(identifier):
             return "The RevenueCat dashboard does not have an offering with identifier '\(identifier)'."
+        case let .workflowUiConfigUnavailable(workflowId):
+            return "The RevenueCat dashboard workflow '\(workflowId)' is missing its UI configuration."
+        case let .workflowInitialStepNotFound(stepId, workflowId):
+            return "Initial step '\(stepId)' not found in workflow '\(workflowId)'"
+        case let .workflowInitialStepMissingScreenIdentifier(stepId, workflowId):
+            return "Step '\(stepId)' has no screen_id in workflow '\(workflowId)'"
+        case let .workflowInitialScreenNotFound(screenId, workflowId):
+            return "Screen '\(screenId)' not found in workflow '\(workflowId)'"
         case .performPurchaseAndRestoreHandlersNotDefined:
             return "PaywallView has not been correctly initialized. purchasesAreCompletedBy is set to .myApp, and so " +
             "the PaywallView must be initialized with a PerformPurchase and PerformRestore handler."

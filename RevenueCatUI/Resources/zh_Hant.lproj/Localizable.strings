@@ -1,4 +1,8 @@
 "OK" = "好的";
+"Close" = "關閉";
+"Go back" = "返回";
+"Manage subscription" = "管理訂閱";
+"Redeem code" = "兌換代碼";
 "All subscriptions" = "所有訂閱";
 "Privacy" = "隱私";
 "Privacy policy" = "隱私權政策";
@@ -19,3 +23,7 @@
 "Default_offer_details_with_intro_offer" = "試用期{{ sub_offer_duration }}，屆滿後{{ total_price_and_per_month }}。";
 "Something went wrong" = "發生錯誤";
 "Purchase" = "購買";
+"You are currently subscribed to this" = "您目前已訂閱此項目";
+"You've already purchased this" = "您已購買此項目";
+"Purchase unavailable" = "無法購買";
+"This purchase isn't available in your region." = "您所在的地區不提供此項購買。";

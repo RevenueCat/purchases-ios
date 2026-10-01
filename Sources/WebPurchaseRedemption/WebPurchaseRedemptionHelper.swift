@@ -35,14 +35,15 @@ actor WebPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType {
 
     func handleRedeemWebPurchase(redemptionToken: String) async -> WebPurchaseRedemptionResult {
         Logger.verbose(Strings.webRedemption.redeeming_web_purchase)
+        let appUserID = self.identityManager.currentAppUserID
         return await withCheckedContinuation { continuation in
-            self.backend.redeemWebPurchaseAPI.postRedeemWebPurchase(appUserID: identityManager.currentAppUserID,
+            self.backend.redeemWebPurchaseAPI.postRedeemWebPurchase(appUserID: appUserID,
                                                                     redemptionToken: redemptionToken) { result in
                 switch result {
                 case let .success(customerInfo):
                     Logger.debug(Strings.webRedemption.redeemed_web_purchase)
                     self.customerInfoManager.cache(customerInfo: customerInfo,
-                                                   appUserID: self.identityManager.currentAppUserID)
+                                                   appUserID: appUserID)
                     continuation.resume(returning: .success(customerInfo))
                 case let .failure(error):
                     Logger.error(Strings.webRedemption.error_redeeming_web_purchase(error))

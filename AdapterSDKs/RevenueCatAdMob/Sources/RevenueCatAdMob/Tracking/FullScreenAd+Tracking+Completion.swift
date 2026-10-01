@@ -8,10 +8,10 @@ import Foundation
 
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
-@_spi(Experimental) import RevenueCat
+import RevenueCat
 
 @available(iOS 15.0, *)
-@_spi(Experimental) public extension GoogleMobileAds.InterstitialAd {
+public extension GoogleMobileAds.InterstitialAd {
 
     /// Loads an interstitial ad, reports to RevenueCat, and forwards callbacks.
     ///
@@ -44,7 +44,7 @@ import GoogleMobileAds
 }
 
 @available(iOS 15.0, *)
-@_spi(Experimental) public extension GoogleMobileAds.AppOpenAd {
+public extension GoogleMobileAds.AppOpenAd {
 
     /// Loads an app open ad, reports to RevenueCat, and forwards callbacks.
     ///
@@ -77,7 +77,7 @@ import GoogleMobileAds
 }
 
 @available(iOS 15.0, *)
-@_spi(Experimental) public extension GoogleMobileAds.RewardedAd {
+public extension GoogleMobileAds.RewardedAd {
 
     /// Loads a rewarded ad, reports to RevenueCat, and forwards callbacks.
     ///
@@ -110,7 +110,7 @@ import GoogleMobileAds
 }
 
 @available(iOS 15.0, *)
-@_spi(Experimental) public extension GoogleMobileAds.RewardedInterstitialAd {
+public extension GoogleMobileAds.RewardedInterstitialAd {
 
     /// Loads a rewarded interstitial ad, reports to RevenueCat, and forwards callbacks.
     ///

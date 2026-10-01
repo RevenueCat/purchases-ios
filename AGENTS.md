@@ -157,7 +157,7 @@ The project uses **Tuist** for managing the Xcode workspace. See **`Contributing
 
 Example combining multiple variables:
 ```bash
-TUIST_RC_API_KEY=appl_xxxxx TUIST_LAUNCH_ARGUMENTS="-EnableWorkflowsEndpoint" tuist generate PaywallsTester
+TUIST_RC_API_KEY=appl_xxxxx TUIST_SWIFT_CONDITIONS="MY_FEATURE_FLAG" tuist generate PaywallsTester
 ```
 
 ### Target Specifications
@@ -240,3 +240,7 @@ When reviewing a pull request:
 - **Check Android SDK** when unsure about cross-platform implementation details — new features should follow existing patterns across SDKs
 - **Never commit Claude-related files** — do not stage or commit `.claude/` directory, `settings.local.json`, or any AI tool configuration files
 - **Never commit API keys or secrets** — do not stage or commit API keys, tokens, credentials, or any sensitive data
+- **Remove dead code in your PR** — delete unused parameters, unreachable branches, and leftover scaffolding before requesting review
+- **Don't widen access control for tests** — don't add `internal`/`public` accessors solely for test access; inject dependencies via protocols or test at the appropriate layer
+- **Extract shared helpers** — before duplicating logic, check for existing utilities (e.g., `AvailabilityChecks` for OS-specific test skips); factor common code into helpers
+- **Prefer structs for data holders** — use structs instead of classes for value-like types unless Obj-C compatibility is required

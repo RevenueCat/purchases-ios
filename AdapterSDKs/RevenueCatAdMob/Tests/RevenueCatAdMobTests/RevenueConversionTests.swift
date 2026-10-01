@@ -2,8 +2,8 @@ import XCTest
 
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
-@_spi(Experimental) import RevenueCat
-@_spi(Experimental) @testable import RevenueCatAdMob
+import RevenueCat
+@testable import RevenueCatAdMob
 
 @available(iOS 15.0, *)
 final class RevenueConversionTests: AdapterTestCase {

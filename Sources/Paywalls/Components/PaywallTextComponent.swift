@@ -41,7 +41,7 @@ import Foundation
             fontWeight: FontWeight = .regular,
             color: ColorScheme,
             backgroundColor: ColorScheme? = nil,
-            size: Size = .init(width: .fill, height: .fit),
+            size: Size = .init(width: .fill, height: .fit(nil)),
             padding: Padding = .zero,
             margin: Padding = .zero,
             fontSize: CGFloat = 16,

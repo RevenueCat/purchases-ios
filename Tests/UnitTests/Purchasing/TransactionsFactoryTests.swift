@@ -37,6 +37,48 @@ class TransactionsFactoryTests: TestCase {
 
     }
 
+    func testNonSubscriptionsCarryTheDisplayNameAndOriginalPurchaseDate() throws {
+        let transactions = try TransactionsFactory.nonSubscriptionTransactions(
+            withSubscriptionsData: [
+                "100_coins": [
+                    [
+                        "id": "72c26cc69c",
+                        "store_transaction_id": "1",
+                        "is_sandbox": false,
+                        "original_purchase_date": "1990-08-30T02:40:36Z",
+                        "purchase_date": "2019-07-11T18:36:20Z",
+                        "display_name": "100 Coins",
+                        "store": "app_store"
+                    ]
+                ]
+            ]
+        )
+
+        let transaction = try XCTUnwrap(transactions.first)
+        expect(transaction.displayName) == "100 Coins"
+        expect(transaction.originalPurchaseDate) == ISO8601DateFormatter().date(from: "1990-08-30T02:40:36Z")
+    }
+
+    func testNonSubscriptionsOmitADisplayNameAndOriginalPurchaseDateTheStoreDidNotSend() throws {
+        let transactions = try TransactionsFactory.nonSubscriptionTransactions(
+            withSubscriptionsData: [
+                "100_coins": [
+                    [
+                        "id": "72c26cc69c",
+                        "store_transaction_id": "1",
+                        "is_sandbox": false,
+                        "purchase_date": "2019-07-11T18:36:20Z",
+                        "store": "app_store"
+                    ]
+                ]
+            ]
+        )
+
+        let transaction = try XCTUnwrap(transactions.first)
+        expect(transaction.displayName).to(beNil())
+        expect(transaction.originalPurchaseDate).to(beNil())
+    }
+
     func testNonSubscriptionsIsEmptyIfThereAreNoNonSubscriptions() {
         let list = TransactionsFactory.nonSubscriptionTransactions(withSubscriptionsData: [:])
         expect(list).to(beEmpty())

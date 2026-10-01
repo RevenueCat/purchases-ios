@@ -33,10 +33,10 @@ class BaseHTTPResponseTest: TestCase {
         return try T.create(with: self.data(for: name, file: file, line: line))
     }
 
-    private static func data(
+    static func data(
         for fileName: String,
-        file: StaticString,
-        line: UInt
+        file: StaticString = #filePath,
+        line: UInt = #line
     ) throws -> Data {
         let url = try XCTUnwrap(
             Bundle(for: BundleToken.self).url(forResource: fileName,

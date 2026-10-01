@@ -101,52 +101,9 @@ class SecureItemAttributesTests: TestCase {
 }
 
 // MARK: - SecureItemStorage default implementation tests
-
-/// In-memory mock that records calls and supports configurable error injection.
-private class MockSecureItemStorage: SecureItemStorage {
-
-    var storedItems: [String: Data] = [:]
-    var errorToThrow: SecureStorageError?
-
-    // Call-tracking
-    private(set) var saveCallCount = 0
-    private(set) var deleteCallCount = 0
-    private(set) var lastSaveIdentifier: String?
-    private(set) var lastSaveContents: Data?
-    private(set) var lastSaveAttributes: SecureItemAttributes?
-    private(set) var lastDeleteIdentifier: String?
-
-    func allItemIdentifiers() throws -> [String] {
-        if let error = errorToThrow { throw error }
-        return Array(storedItems.keys)
-    }
-
-    func readItem(identifier: String) throws -> Data? {
-        if let error = errorToThrow { throw error }
-        return storedItems[identifier]
-    }
-
-    func saveItem(
-        identifier: String,
-        contents: Data,
-        attributes: SecureItemAttributes
-    ) throws {
-        if let error = errorToThrow { throw error }
-        saveCallCount += 1
-        lastSaveIdentifier = identifier
-        lastSaveContents = contents
-        lastSaveAttributes = attributes
-        storedItems[identifier] = contents
-    }
-
-    func deleteItem(identifier: String) throws {
-        if let error = errorToThrow { throw error }
-        deleteCallCount += 1
-        lastDeleteIdentifier = identifier
-        storedItems.removeValue(forKey: identifier)
-    }
-
-}
+//
+// `MockSecureItemStorage` (used below) lives in Tests/UnitTests/Mocks/MockSecureItemStorage.swift
+// so it can be shared with other tests (e.g. TokenManagerTests).
 
 class MockSecureItemStorageTests: TestCase {
 

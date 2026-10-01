@@ -16,6 +16,9 @@ enum RemoteConfigTopic: String {
     case workflows
     case uiConfig = "ui_config"
     case sources
+    case checkpointRules = "checkpoint_rules"
+    case audiences
+    case sdkSettings = "sdk_settings"
 
     var wireName: String {
         return self.rawValue

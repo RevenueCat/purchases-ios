@@ -18,6 +18,8 @@ func main() -> Int {
 
     checkAttributionNetworkEnums()
 
+    checkAuthenticationAPI()
+
     checkEntitlementInfoAPI()
     checkEntitlementInfoEnums()
     checkEntitlementInfosAPI()
@@ -34,6 +36,9 @@ func main() -> Int {
     checkPromotionalOfferAPI()
 
     checkPurchasesAPI()
+    #if os(iOS) || os(tvOS) || VISION_OS
+    checkUIApplicationSPIAPI()
+    #endif
 
     checkConfigurationAPI()
 
@@ -75,6 +80,8 @@ func main() -> Int {
     checkAdRewardAPI()
     checkVirtualCurrencyRewardAPI()
     checkEntitlementRewardAPI()
+
+    checkAdTrackerAPI()
 
     return 0
 }

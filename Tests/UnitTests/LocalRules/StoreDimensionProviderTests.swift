@@ -1,0 +1,88 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  StoreDimensionProviderTests.swift
+//
+//  Created by Rick van der Linden on 8/12/26.
+//
+
+// Swift Testing is only available with the Xcode 16+ toolchain
+#if compiler(>=5.9)
+#if canImport(Testing)
+
+import Foundation
+import Testing
+
+@testable import RevenueCat
+
+@Suite("Store dimension provider")
+struct StoreDimensionProviderTests {
+
+    @Test
+    func providesCanonicalStorefrontAtTheRoot() async throws {
+        let provider = StoreDimensionProvider(storefrontCountryCodeProvider: { "USA" })
+
+        #expect(provider.name == "store")
+        #expect(try await provider.dimensions(at: Date()) == [
+            "storefront": .string("USA")
+        ])
+    }
+
+    @Test
+    func omitsUnavailableOrEmptyStoreCountry() async throws {
+        let unavailableProvider = StoreDimensionProvider(storefrontCountryCodeProvider: { nil })
+        let emptyProvider = StoreDimensionProvider(storefrontCountryCodeProvider: { "" })
+
+        #expect(try await unavailableProvider.dimensions(at: Date()).isEmpty)
+        #expect(try await emptyProvider.dimensions(at: Date()).isEmpty)
+    }
+
+    @Test
+    func collectsStoreCountryForEverySnapshot() async throws {
+        let storefrontCountryCode = Atomic<String?>("USA")
+        let provider = StoreDimensionProvider(
+            storefrontCountryCodeProvider: { storefrontCountryCode.value }
+        )
+
+        let first = try await provider.dimensions(at: Date())
+        storefrontCountryCode.value = "NLD"
+        let second = try await provider.dimensions(at: Date())
+
+        #expect(first["storefront"] == .string("USA"))
+        #expect(second["storefront"] == .string("NLD"))
+    }
+
+    @Test
+    func storefrontCanBeEvaluatedUsingCanonicalPath() async throws {
+        let evaluator = LocalRulesEvaluator(
+            dimensionProviders: [
+                StoreDimensionProvider(storefrontCountryCodeProvider: { "NLD" })
+            ],
+            currentAppUserIDProvider: { "user" }
+        )
+
+        let match = try await evaluator.match(in: [
+            TestStoreRule(
+                predicate: #"{"==":[{"var":"storefront"},"NLD"]}"#
+            )
+        ])
+
+        #expect(match != nil)
+    }
+
+}
+
+private struct TestStoreRule: LocalRule {
+
+    let predicate: String
+
+}
+
+#endif
+#endif

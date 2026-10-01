@@ -13,7 +13,7 @@
 import Foundation
 
 /// Entitlement reward granted after successful reward verification.
-@_spi(Experimental) public struct EntitlementReward: Sendable, Equatable {
+public struct EntitlementReward: Sendable, Equatable {
 
     /// Entitlement identifier.
     public let identifier: String

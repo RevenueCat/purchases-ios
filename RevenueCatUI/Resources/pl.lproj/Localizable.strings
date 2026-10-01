@@ -1,4 +1,8 @@
 "OK" = "OK";
+"Close" = "Zamknij";
+"Go back" = "Wróć";
+"Manage subscription" = "Zarządzaj subskrypcją";
+"Redeem code" = "Wykorzystaj kod";
 "All subscriptions" = "Wszystkie subskrypcje";
 "Privacy" = "Prywatność";
 "Privacy policy" = "Polityka prywatności";
@@ -19,3 +23,7 @@
 "Default_offer_details_with_intro_offer" = "Rozpocznij okres próbny {{ sub_offer_duration }}, a następnie {{ total_price_and_per_month }}.";
 "Something went wrong" = "Coś poszło nie tak";
 "Purchase" = "Kup";
+"You are currently subscribed to this" = "Masz już subskrypcję tej pozycji";
+"You've already purchased this" = "Masz już wykupioną tę pozycję";
+"Purchase unavailable" = "Zakup niedostępny";
+"This purchase isn't available in your region." = "Ten zakup jest niedostępny w Twoim regionie.";

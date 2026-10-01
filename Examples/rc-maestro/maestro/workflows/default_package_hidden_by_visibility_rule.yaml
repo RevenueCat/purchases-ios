@@ -1,0 +1,60 @@
+# Regression test for a default-selected package hidden by a conditional-visibility rule.
+#
+# The paywall's default tab holds two groups of package cards, swapped on the `can_trial` custom
+# variable. The card marked "selected by default" is the trial annual one, which the rule hides when
+# `can_trial=false`. The SDK used to keep that hidden card selected, so no radio button appeared
+# filled and the purchase button targeted a package that wasn't on screen.
+#
+# Rendered radio state isn't assertable, so the flow taps the purchase button and reads back which
+# package the SDK was about to buy. `onPurchaseInitiated` declines, so no StoreKit sheet opens.
+#
+# Expected: the first package that actually renders in document order, `$rc_monthly`.
+# Before the fix this reported `$rc_annual` (the hidden trial card).
+#
+# FIXTURE REQUIREMENT: the group shown when `can_trial=false` must not contain the same package
+# identifier as the default-selected card. Selection is compared by package identifier, so a visible
+# card reusing `$rc_annual` would satisfy the selection and render filled, hiding the bug entirely.
+# On workflow `wff08801936be34317` that means the non-trial group holds only `$rc_monthly`; the
+# duplicate `$rc_annual` card has to go. Covered by
+# `PackageValidatorTests.testDuplicatePackageIdentifierAcrossGroupsMasksAHiddenDefault`.
+#
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store \
+#     Examples/rc-maestro/maestro/workflows/default_package_hidden_by_visibility_rule.yaml
+
+appId: com.revenuecat.maestro.ios
+name: Default-selected package hidden by a visibility rule falls back to a visible package
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+# Dismiss any leftover system alerts from previous test runs.
+- pressKey: home
+- launchApp:
+    arguments:
+        e2e_test_flow: open_default_package_visibility
+        can_trial: "false"
+- assertVisible: "entitlement (pro): nil"
+- extendedWaitUntil:
+    visible: "Present Paywall"
+    timeout: 15000
+- tapOn:
+    text: "Present Paywall"
+
+# The non-trial group is on screen and the trial group is hidden.
+- extendedWaitUntil:
+    visible: "Get subscription benefits for the whole family"
+    timeout: 15000
+- assertNotVisible: "(New members only) Start 2-week free trial"
+- takeScreenshot: "default_package_hidden_by_visibility_rule - paywall"
+
+- tapOn:
+    text: "Get subscription benefits for the whole family"
+
+# The fallback picked a package that renders, not the hidden default-selected one.
+- extendedWaitUntil:
+    visible: "selected package: \\$rc_monthly"
+    timeout: 15000
+- assertNotVisible: "selected package: \\$rc_annual"
+- takeScreenshot: "default_package_hidden_by_visibility_rule - selected package"

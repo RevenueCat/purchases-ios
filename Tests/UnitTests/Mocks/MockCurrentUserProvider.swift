@@ -17,12 +17,14 @@ final class MockCurrentUserProvider: CurrentUserProvider {
 
     var mockIsAnonymous = false
     var mockAppUserID: String
+    var currentAppUserIDRequested: (() -> Void)?
 
     init(mockAppUserID: String) {
         self.mockAppUserID = mockAppUserID
     }
 
     var currentAppUserID: String {
+        self.currentAppUserIDRequested?()
         return self.mockIsAnonymous
             ? self.mockAnonymousID
             : self.mockAppUserID

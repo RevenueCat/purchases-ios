@@ -68,8 +68,10 @@ struct ComponentsView: View {
             )
         case .text(let viewModel):
             TextComponentView(viewModel: viewModel)
+                .workflowSkeletonShimmer()
         case .image(let viewModel):
             ImageComponentView(viewModel: viewModel)
+                .workflowSkeletonShimmer()
         case .icon(let viewModel):
             IconComponentView(viewModel: viewModel)
         case .stack(let viewModel):
@@ -77,6 +79,7 @@ struct ComponentsView: View {
                 viewModel: viewModel,
                 onDismiss: onDismiss
             )
+            .workflowSkeletonShimmer()
         case .button(let viewModel):
             ButtonComponentView(viewModel: viewModel, onDismiss: onDismiss)
         case .package(let viewModel):
@@ -101,6 +104,8 @@ struct ComponentsView: View {
             VideoComponentView(viewModel: viewModel)
         case .countdown(let viewModel):
             CountdownComponentView(viewModel: viewModel, onDismiss: onDismiss)
+        case .webView(let viewModel):
+            WebViewComponentView(viewModel: viewModel)
         }
     }
 }

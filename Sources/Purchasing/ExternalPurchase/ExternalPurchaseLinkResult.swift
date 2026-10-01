@@ -1,0 +1,60 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  ExternalPurchaseLinkResult.swift
+//
+//  Created by Antonio Pallares on 8/9/26.
+
+import Foundation
+
+/// What the caller should do once the SDK has been asked to prepare a link that takes the customer out of the
+/// app to pay on the web.
+@_spi(Internal) public enum ExternalPurchaseLinkResult {
+
+    /// Open the link, handing `externalPurchaseTokenID` to the checkout page when there is one.
+    case proceed(externalPurchaseTokenID: String?)
+
+    /// Open nothing: the customer is not eligible to be taken outside the App Store to pay.
+    case notEligible
+
+    /// Open nothing: the customer declined Apple's disclosure notice, it could not be shown, the device does
+    /// not authorize payments, or another link is already being prepared.
+    case stopped
+
+}
+
+extension ExternalPurchaseLinkResult: Equatable, Sendable {}
+
+extension ExternalPurchaseLinkResult {
+
+    init(preparationResult: ExternalPurchasePreparationResult) {
+        switch preparationResult {
+        case let .registered(tokenID):
+            self = .proceed(externalPurchaseTokenID: tokenID)
+        case .unregistered:
+            // The customer is still allowed to buy, with nothing for the checkout to tie the purchase back to.
+            self = .proceed(externalPurchaseTokenID: nil)
+        case .notApplicable:
+            // No notice sheet was shown and no purchase token was minted, and the external purchase proceeds.
+            self = .proceed(externalPurchaseTokenID: nil)
+        case .stopped(.notEligible):
+            self = .notEligible
+        case .stopped(.paymentsNotAuthorized):
+            // Apple asks that a device which cannot authorize payments be offered no purchase at all, so the
+            // link is not opened either.
+            self = .stopped
+        case .stopped(.alreadyPreparing):
+            // The preparation already under way is the one that opens the link.
+            self = .stopped
+        case .stopped(.customerCancelledNotice), .stopped(.noticeFailed):
+            self = .stopped
+        }
+    }
+
+}

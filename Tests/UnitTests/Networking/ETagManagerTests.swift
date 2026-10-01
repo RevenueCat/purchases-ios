@@ -303,29 +303,7 @@ class ETagManagerTests: TestCase {
                 body: responseObject,
                 eTag: Self.testETag,
                 statusCode: .success,
-                verificationResult: .failed
-            ),
-            request: request,
-            retried: false,
-            isFallbackURLRequest: false
-        )
-
-        expect(response).toNot(beNil())
-        expect(self.mockCache.saveDataInvocations.count) == 0
-    }
-
-    func testResponseIsNotStoredIfVerifiedOnDevice() throws {
-        let request = URLRequest(url: Self.testURL)
-
-        let responseObject = Data()
-
-        let response = self.eTagManager.httpResultFromCacheOrBackend(
-            with: self.responseForTest(
-                url: Self.testURL,
-                body: responseObject,
-                eTag: Self.testETag,
-                statusCode: .success,
-                verificationResult: .verifiedOnDevice
+                verificationResult: .failed(.unknown)
             ),
             request: request,
             retried: false,
@@ -588,7 +566,7 @@ class ETagManagerTests: TestCase {
         let response = self.eTagManager.eTagHeader(for: request, withSignatureVerification: false)
         expect(response) == [
             ETagManager.eTagRequestHeader.rawValue: Self.testETag,
-            ETagManager.eTagValidationTimeRequestHeader.rawValue: validationTime.millisecondsSince1970.description
+            ETagManager.lastRefreshTimeRequestHeader.rawValue: validationTime.millisecondsSince1970.description
         ]
     }
 
@@ -862,7 +840,7 @@ class ETagManagerTests: TestCase {
                                        body: nil,
                                        eTag: Self.testETag,
                                        statusCode: .notModified,
-                                       verificationResult: .failed),
+                                       verificationResult: .failed(.unknown)),
             request: request,
             retried: true,
             isFallbackURLRequest: false
@@ -870,7 +848,7 @@ class ETagManagerTests: TestCase {
         expect(response).toNot(beNil())
         expect(response?.httpStatusCode) == .success
         expect(response?.body) == actualResponse
-        expect(response?.verificationResult) == .failed
+        expect(response?.verificationResult) == .failed(.unknown)
     }
 
     func testCachedResponseIsReturnedWithNewVerificationResult() throws {
@@ -1182,7 +1160,7 @@ private extension ETagManagerTests {
         eTag: String?,
         statusCode: HTTPStatusCode,
         requestDate: Date? = nil,
-        verificationResult: RevenueCat.VerificationResult = .defaultValue,
+        verificationResult: SignatureVerificationResult = .notRequested,
         isLoadShedderResponse: Bool = false,
         isFallbackUrlResponse: Bool = false
     ) -> VerifiedHTTPResponse<Data?> {
@@ -1195,8 +1173,8 @@ private extension ETagManagerTests {
                      isFallbackUrlResponse: isFallbackUrlResponse)
     }
 
-    private static let testURL = HTTPRequest.Path.getCustomerInfo(appUserID: "appUserID").url!
-    private static let testURL2 = HTTPRequest.Path.getCustomerInfo(appUserID: "appUserID_2").url!
+    private static let testURL = HTTPRequest.Path.getCustomerInfo(appUserID: "appUserID").url(preferIAMPath: false)!
+    private static let testURL2 = HTTPRequest.Path.getCustomerInfo(appUserID: "appUserID_2").url(preferIAMPath: false)!
 
     static let testETag = "etag_1"
 

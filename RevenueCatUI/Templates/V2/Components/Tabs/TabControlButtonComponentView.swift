@@ -38,11 +38,18 @@ struct TabControlButtonComponentView: View {
     @Environment(\.componentInteractionLogger)
     private var componentInteractionLogger
 
+    @Environment(\.selectionHapticFeedback)
+    private var hapticFeedback
+
     private let viewModel: TabControlButtonComponentViewModel
     private let onDismiss: () -> Void
 
     private var selectedState: ComponentViewState {
         return self.tabControlContext.selectedTabId == self.viewModel.component.tabId ? .selected : .default
+    }
+
+    private var hapticFeedbackEnabled: Bool {
+        self.viewModel.component.hapticFeedbackEnabled ?? true
     }
 
     init(viewModel: TabControlButtonComponentViewModel, onDismiss: @escaping () -> Void) {
@@ -57,6 +64,14 @@ struct TabControlButtonComponentView: View {
 
             self.tabControlContext.selectedTabId = destinationTabId
             self.trackTabcomponentInteraction(originTabId: originTabId, destinationTabId: destinationTabId)
+
+            if Self.shouldTriggerHapticFeedback(
+                originTabId: originTabId,
+                destinationTabId: destinationTabId,
+                hapticFeedbackEnabled: self.hapticFeedbackEnabled
+            ) {
+                self.hapticFeedback()
+            }
         } label: {
             StackComponentView(
                 viewModel: self.viewModel.stackViewModel,
@@ -64,7 +79,11 @@ struct TabControlButtonComponentView: View {
             )
             .environment(\.componentViewState, self.selectedState)
         }
-
+        .onAppear {
+            if self.hapticFeedbackEnabled {
+                self.hapticFeedback.prepare()
+            }
+        }
     }
 
     private func trackTabcomponentInteraction(originTabId: String, destinationTabId: String) {
@@ -81,6 +100,14 @@ struct TabControlButtonComponentView: View {
                 defaultIndex: self.tabControlContext.defaultTabIndex
             )
         ))
+    }
+
+    static func shouldTriggerHapticFeedback(
+        originTabId: String,
+        destinationTabId: String,
+        hapticFeedbackEnabled: Bool
+    ) -> Bool {
+        return hapticFeedbackEnabled && originTabId != destinationTabId
     }
 
 }

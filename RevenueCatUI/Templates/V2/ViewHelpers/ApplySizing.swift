@@ -14,6 +14,8 @@
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
+#if !os(tvOS) // For Paywalls V2
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
 
@@ -22,12 +24,15 @@ extension View {
         switch size.width {
         case .fit:
             self
-        case .fill:
-            self.frame(maxWidth: .infinity)
+        case let .fill(minMax):
+            // See `applyWidth`: `minWidth: 0` keeps an oversized child from widening its ancestors.
+            self
+                .frame(minWidth: 0, maxWidth: .infinity)
+                .applyWidthLimits(minMax, alignment: .center)
         case .fixed(let value):
             self.frame(width: Double(value))
-        default:
-            self
+        case let .relative(_, minMax):
+            self.applyWidthLimits(minMax, alignment: .center)
         }
     }
 
@@ -36,9 +41,7 @@ extension View {
         switch size.height {
         case .fit:
             switch size.width {
-            case .fit:
-                self
-            case .fill:
+            case .fit, .fill, .relative:
                 self
             case .fixed(let value):
                 // This is the only change versus the regular .size() modifier.
@@ -47,16 +50,18 @@ extension View {
                 // Otherwise the view would grow vertically to occupy available space.
                 // See "Image streching vertically" preview
                 self.frame(height: Double(value) / aspectRatio)
-            default:
-                self
             }
-        case .fill:
-            self.frame(maxHeight: .infinity)
+        case let .fill(minMax):
+            self
+                .frame(minHeight: 0, maxHeight: .infinity)
+                .applyHeightLimits(minMax, alignment: .center)
         case .fixed(let value):
             self.frame(height: Double(value))
-        default:
-            self
+        case let .relative(_, minMax):
+            self.applyHeightLimits(minMax, alignment: .center)
         }
     }
 
 }
+
+#endif

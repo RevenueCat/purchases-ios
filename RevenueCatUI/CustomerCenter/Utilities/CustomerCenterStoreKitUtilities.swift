@@ -19,14 +19,19 @@ import RevenueCat
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
 final class CustomerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType {
 
-    func renewalPriceFromRenewalInfo(for product: StoreProduct) async -> (price: Decimal, currencyCode: String)? {
+    func renewalPriceFromRenewalInfo(for product: StoreProduct) async -> RenewalPriceData? {
 
         #if compiler(>=6.0)
         guard let renewalInfo = await renewalInfo(for: product) else { return nil }
         guard let renewalPrice = renewalInfo.renewalPrice else { return nil }
         guard let currencyCode = currencyCode(fromRenewalInfo: renewalInfo) else { return nil }
 
-        return (renewalPrice, currencyCode)
+        return RenewalPriceData(
+            price: renewalPrice,
+            currencyCode: currencyCode,
+            productIdentifier: renewalInfo.currentProductID,
+            autoRenewPreference: renewalInfo.autoRenewPreference
+        )
         #else
         return nil
         #endif

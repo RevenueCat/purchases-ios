@@ -23,6 +23,8 @@ import XCTest
 @MainActor
 class PurchaseHandlerTests: TestCase {
 
+    private static let urlOpenedURL = URL(string: "https://revenuecat.com/terms")!
+
     private var purchaseResult = CurrentValueSubject<PurchaseResultData, Never>((nil, TestData.customerInfo, false))
 
     lazy var purchaseResultPublisher = purchaseResult.dropFirst().eraseToAnyPublisher()
@@ -91,7 +93,7 @@ class PurchaseHandlerTests: TestCase {
     func testResetForNewSessionClearsRestoredCustomerInfo() async throws {
         // The handler is held as a @StateObject and reused across present/dismiss cycles, so a successful
         // restore from one session must not leak into the next (it is a per-session completion signal that
-        // gates workflows_close abandonment).
+        // gates workflow_close abandonment).
         let handler: PurchaseHandler = .mock()
         handler.setRestored(TestData.customerInfo, success: true)
         expect(handler.restoredCustomerInfo?.success) == true
@@ -99,6 +101,52 @@ class PurchaseHandlerTests: TestCase {
         handler.resetForNewSession()
 
         expect(handler.restoredCustomerInfo).to(beNil())
+    }
+
+    @MainActor
+    func testURLEventsSurviveImmediateResetAndRepeat() {
+        let handler: PurchaseHandler = .mock()
+        var urls: [URL] = []
+        var checkoutCount = 0
+        let urlSubscription = handler.urlOpenedPublisher.sink { urls.append($0) }
+        let checkoutSubscription = handler.webCheckoutOpenedPublisher.sink { checkoutCount += 1 }
+        defer {
+            urlSubscription.cancel()
+            checkoutSubscription.cancel()
+        }
+
+        handler.signalURLOpened(Self.urlOpenedURL)
+        handler.signalWebCheckoutOpened()
+        handler.resetForNewSession()
+        handler.signalURLOpened(Self.urlOpenedURL)
+        handler.signalWebCheckoutOpened()
+
+        expect(urls) == [Self.urlOpenedURL, Self.urlOpenedURL]
+        expect(checkoutCount) == 2
+    }
+
+    @MainActor
+    func testURLEventsDoNotReplayToNewSubscribers() {
+        let handler: PurchaseHandler = .mock()
+        handler.signalURLOpened(Self.urlOpenedURL)
+        handler.signalWebCheckoutOpened()
+
+        var urls: [URL] = []
+        var checkoutCount = 0
+        let urlSubscription = handler.urlOpenedPublisher.sink { urls.append($0) }
+        let checkoutSubscription = handler.webCheckoutOpenedPublisher.sink { checkoutCount += 1 }
+        defer {
+            urlSubscription.cancel()
+            checkoutSubscription.cancel()
+        }
+
+        expect(urls).to(beEmpty())
+        expect(checkoutCount) == 0
+        handler.resetForNewSession()
+        handler.signalURLOpened(Self.urlOpenedURL)
+        handler.signalWebCheckoutOpened()
+        expect(urls) == [Self.urlOpenedURL]
+        expect(checkoutCount) == 1
     }
 
     func testCancelEventContainsProductIdentifierWhenCompletedByRevenueCat() async throws {
@@ -416,6 +464,30 @@ class PurchaseHandlerTests: TestCase {
 
         // Wait for restore task to complete
         _ = try await task.value
+
+        expect(handler.actionInProgress) == false
+    }
+
+    func testExternalPurchasePreparationMarksThePaywallForAsLongAsItRuns() async throws {
+        let handler: PurchaseHandler = .mock()
+
+        await handler.withExternalPurchasePreparation {
+            expect(handler.actionTypeInProgress) == .externalPurchasePreparation
+        }
+
+        expect(handler.actionInProgress) == false
+    }
+
+    /// A second tap can reach the wrapper before the first one has marked the paywall, and must not free it
+    /// while Apple's notice from the first tap is still up.
+    func testAnExternalPurchasePreparationDoesNotFreeThePaywallItDidNotMark() async throws {
+        let handler: PurchaseHandler = .mock()
+
+        await handler.withExternalPurchasePreparation {
+            await handler.withExternalPurchasePreparation {}
+
+            expect(handler.actionTypeInProgress) == .externalPurchasePreparation
+        }
 
         expect(handler.actionInProgress) == false
     }
@@ -845,6 +917,70 @@ private extension PurchaseHandlerTests {
         """
         )
     }()
+
+}
+
+#endif
+
+#if os(macOS)
+
+@available(macOS 12.0, *)
+@MainActor
+final class PurchaseHandlerMacOSTests: TestCase {
+
+    func testResignsFirstResponderBeforePublishingActionInProgress() async throws {
+        var events: [String] = []
+        let focusResigner = KeyWindowFocusResignerSpy {
+            events.append("resigned")
+        }
+        let purchases = MockPurchases { _, _, _ in
+            return (
+                transaction: nil,
+                customerInfo: TestData.customerInfo,
+                userCancelled: false
+            )
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { _ in
+        } customerInfo: {
+            return TestData.customerInfo
+        }
+        let handler = PurchaseHandler(
+            purchases: purchases,
+            eventTracker: .init(
+                purchases: purchases,
+                eventDispatcher: PaywallEventTrackerTestDispatcher.value
+            ),
+            keyWindowFocusResigner: focusResigner
+        )
+        let cancellable = handler.$actionTypeInProgress
+            .dropFirst()
+            .compactMap { $0 }
+            .sink { _ in
+                events.append("published")
+            }
+
+        _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
+
+        expect(events.prefix(2)) == ["resigned", "published"]
+        withExtendedLifetime(cancellable) {}
+    }
+
+}
+
+@available(macOS 12.0, *)
+@MainActor
+private final class KeyWindowFocusResignerSpy: KeyWindowFocusResigning {
+
+    private let onResign: () -> Void
+
+    init(onResign: @escaping () -> Void) {
+        self.onResign = onResign
+    }
+
+    func resignFirstResponder() {
+        self.onResign()
+    }
 
 }
 

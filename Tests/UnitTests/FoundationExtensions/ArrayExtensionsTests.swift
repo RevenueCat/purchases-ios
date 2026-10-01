@@ -89,4 +89,18 @@ class ArrayExtensionsTests: TestCase {
         expect([1, 2, 3].sum()) == 6
     }
 
+    // MARK: - deduplicated
+
+    func testDeduplicatedWithEmptyArray() {
+        expect([Int]().deduplicated()) == []
+    }
+
+    func testDeduplicatedPreservesFirstOccurrenceOrder() {
+        expect([3, 1, 2, 3, 2, 4, 1].deduplicated()) == [3, 1, 2, 4]
+    }
+
+    func testDeduplicatedWithStrings() {
+        expect(["a", "b", "a", "c", "b"].deduplicated()) == ["a", "b", "c"]
+    }
+
 }

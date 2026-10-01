@@ -19,19 +19,18 @@ class ATTConsentStatusIntegrationTests: BaseStoreKitIntegrationTests {
 
     private var attribution: Attribution!
     private var userID: String!
-    private var syncedAttributes: [(userID: String, attributes: [String: String])] = []
+    private let syncedAttributes: Atomic<[(userID: String, attributes: [String: String])]> = .init([])
 
     private static let attKey = ReservedSubscriberAttribute.consentStatus.rawValue
 
     @MainActor
-    override func setUp() {
-        super.setUp()
+    override func configurePurchases() {
+        super.configurePurchases()
 
         self.attribution = Purchases.shared.attribution
         self.attribution.delegate = self
 
         self.userID = Purchases.shared.appUserID
-        self.syncedAttributes = []
     }
 
     // MARK: - ATT consent status syncing
@@ -49,7 +48,7 @@ class ATTConsentStatusIntegrationTests: BaseStoreKitIntegrationTests {
         let firstSyncCount = self.attSyncCount(forUserID: self.userID)
         expect(firstSyncCount) >= 1
 
-        self.syncedAttributes = []
+        self.syncedAttributes.value = []
 
         // Second sync: ATT should not sync again (value unchanged)
         _ = try await self.syncAttributes()
@@ -59,7 +58,7 @@ class ATTConsentStatusIntegrationTests: BaseStoreKitIntegrationTests {
     func testATTConsentStatusIsSyncedForNewUserAfterLogIn() async throws {
         // Flush ATT for initial user
         _ = try await self.syncAttributes()
-        self.syncedAttributes = []
+        self.syncedAttributes.value = []
 
         let newUserID = UUID().uuidString
         _ = try await self.purchases.logIn(newUserID)
@@ -75,7 +74,7 @@ class ATTConsentStatusIntegrationTests: BaseStoreKitIntegrationTests {
 
         // Flush ATT for logged-in user
         _ = try await self.syncAttributes()
-        self.syncedAttributes = []
+        self.syncedAttributes.value = []
 
         _ = try await self.purchases.logOut()
 
@@ -91,7 +90,7 @@ class ATTConsentStatusIntegrationTests: BaseStoreKitIntegrationTests {
 
         // Flush ATT for user1
         _ = try await self.syncAttributes()
-        self.syncedAttributes = []
+        self.syncedAttributes.value = []
 
         let user2 = UUID().uuidString
         _ = try await self.purchases.logIn(user2)
@@ -108,9 +107,9 @@ extension ATTConsentStatusIntegrationTests: AttributionDelegate {
 
     func attribution(didFinishSyncingAttributes attributes: SubscriberAttribute.Dictionary,
                      forUserID userID: String) {
-        self.syncedAttributes.append(
-            (userID: userID, attributes: attributes.mapValues { $0.value })
-        )
+        self.syncedAttributes.modify {
+            $0.append((userID: userID, attributes: attributes.mapValues { $0.value }))
+        }
     }
 
 }
@@ -143,17 +142,17 @@ private extension ATTConsentStatusIntegrationTests {
         file: FileString = #file,
         line: UInt = #line
     ) {
-        expect(file: file, line: line, self.syncedAttributes).to(
+        expect(file: file, line: line, self.syncedAttributes.value).to(
             containElementSatisfying {
                 $0.userID == userID && $0.attributes[Self.attKey] == expectedValue
             },
             description: "Expected $attConsentStatus=\(expectedValue) for \(userID). "
-                + "Synced: \(self.syncedAttributes)"
+                + "Synced: \(self.syncedAttributes.value)"
         )
     }
 
     func attSyncCount(forUserID userID: String) -> Int {
-        self.syncedAttributes.filter {
+        self.syncedAttributes.value.filter {
             $0.userID == userID && $0.attributes[Self.attKey] != nil
         }.count
     }

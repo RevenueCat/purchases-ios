@@ -52,7 +52,7 @@ import Foundation
         let userDefaults: UserDefaults?
         let storeKitVersion: StoreKitVersion
         let dangerousSettings: DangerousSettings?
-        let networkTimeout: TimeInterval
+        let networkTimeout: NetworkTimeout
         let storeKit1Timeout: TimeInterval
         let platformInfo: Purchases.PlatformInfo?
         let entitlementVerificationMode: EntitlementVerificationMode
@@ -60,6 +60,10 @@ import Foundation
         let preferredLocale: String?
         let automaticDeviceIdentifierCollectionEnabled: Bool
         let diagnosticsEnabled: Bool
+        let iamEnabled: Bool
+        let keychainAccessGroup: String?
+        let useExternalPurchaseCustomLinks: Bool
+        let enableExternalPurchasesInSimulator: Bool
     }
 
     internal let storage: Storage
@@ -73,7 +77,7 @@ import Foundation
     var userDefaults: UserDefaults? { self.storage.userDefaults }
     var storeKitVersion: StoreKitVersion { self.storage.storeKitVersion }
     var dangerousSettings: DangerousSettings? { self.storage.dangerousSettings }
-    var networkTimeout: TimeInterval { self.storage.networkTimeout }
+    var networkTimeout: NetworkTimeout { self.storage.networkTimeout }
     var storeKit1Timeout: TimeInterval { self.storage.storeKit1Timeout }
     var platformInfo: Purchases.PlatformInfo? { self.storage.platformInfo }
     var showStoreMessagesAutomatically: Bool { self.storage.showStoreMessagesAutomatically }
@@ -82,6 +86,10 @@ import Foundation
         self.storage.automaticDeviceIdentifierCollectionEnabled
     }
     internal var diagnosticsEnabled: Bool { self.storage.diagnosticsEnabled }
+    internal var iamEnabled: Bool { self.storage.iamEnabled }
+    internal var keychainAccessGroup: String? { self.storage.keychainAccessGroup }
+    internal var useExternalPurchaseCustomLinks: Bool { self.storage.useExternalPurchaseCustomLinks }
+    internal var enableExternalPurchasesInSimulator: Bool { self.storage.enableExternalPurchasesInSimulator }
 
     private init(with builder: Builder) {
         self.storage = Storage(
@@ -98,7 +106,11 @@ import Foundation
             showStoreMessagesAutomatically: builder.showStoreMessagesAutomatically,
             preferredLocale: builder.preferredLocale,
             automaticDeviceIdentifierCollectionEnabled: builder.automaticDeviceIdentifierCollectionEnabled,
-            diagnosticsEnabled: builder.diagnosticsEnabled
+            diagnosticsEnabled: builder.diagnosticsEnabled,
+            iamEnabled: builder.iamEnabled,
+            keychainAccessGroup: builder.keychainAccessGroup,
+            useExternalPurchaseCustomLinks: builder.useExternalPurchaseCustomLinks,
+            enableExternalPurchasesInSimulator: builder.enableExternalPurchasesInSimulator
         )
     }
 
@@ -143,13 +155,17 @@ import Foundation
         private(set) var purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat
         private(set) var userDefaults: UserDefaults?
         private(set) var dangerousSettings: DangerousSettings?
-        private(set) var networkTimeout = Configuration.networkTimeoutDefault
+        private(set) var networkTimeout: NetworkTimeout = .default
         private(set) var storeKit1Timeout = Configuration.storeKitRequestTimeoutDefault
         private(set) var platformInfo: Purchases.PlatformInfo?
         private(set) var entitlementVerificationMode: EntitlementVerificationMode = .informational
         private(set) var showStoreMessagesAutomatically: Bool = true
         private(set) var diagnosticsEnabled: Bool = false
+        private(set) var iamEnabled: Bool = false
+        private(set) var keychainAccessGroup: String?
         private(set) var storeKitVersion: StoreKitVersion = .default
+        private(set) var useExternalPurchaseCustomLinks: Bool = false
+        private(set) var enableExternalPurchasesInSimulator: Bool = true
 
         /// The preferred locale for the requests.
         ///
@@ -251,7 +267,7 @@ import Foundation
 
         /// Set `networkTimeout`.
         @objc public func with(networkTimeout: TimeInterval) -> Builder {
-            self.networkTimeout = clamped(timeout: networkTimeout)
+            self.networkTimeout = .custom(clamped(timeout: networkTimeout))
             return self
         }
 
@@ -356,6 +372,55 @@ import Foundation
         /// by calling ``Purchases/collectDeviceIdentifiers()``
         @objc public func with(automaticDeviceIdentifierCollectionEnabled: Bool) -> Builder {
             self.automaticDeviceIdentifierCollectionEnabled = automaticDeviceIdentifierCollectionEnabled
+            return self
+        }
+
+        /// Set `iamEnabled`. This is *disabled* by default.
+        ///
+        /// Enabling tells the SDK to prefer using token-based user sessions for communicating with the server.
+        ///
+        /// - SeeAlso: ``with(iamEnabled:keychainAccessGroup:)``
+        @_spi(Internal)
+        @objc(withIAMEnabled:) public func with(iamEnabled: Bool) -> Builder {
+            self.iamEnabled = iamEnabled
+            self.keychainAccessGroup = nil
+            return self
+        }
+
+        /// Set `iamEnabled` with a specific keychain access group. This is *disabled* by default.
+        ///
+        /// Enabling tells the SDK to prefer using token-based user sessions for communicating with the server.
+        /// Use the `keychainAccessGroup` parameter to share tokens between your app and its extensions.
+        @_spi(Internal)
+        @objc(withIAMEnabled:keychainAccessGroup:) public func with(iamEnabled: Bool,
+                                                                    keychainAccessGroup: String) -> Builder {
+            self.iamEnabled = iamEnabled
+            self.keychainAccessGroup = keychainAccessGroup
+            return self
+        }
+
+        /// Set `useExternalPurchaseCustomLinks`. This is *disabled* by default.
+        ///
+        /// Enabling it makes a web purchase button that opens its link in the external browser take part in
+        /// Apple's external purchase custom link programme: the customer is shown Apple's disclosure notice,
+        /// and the purchase is reported to Apple.
+        ///
+        /// - Parameter enableExternalPurchasesInSimulator: Whether the simulator offers external purchases in any
+        /// storefront. When disabled, the simulator behaves as a device does for a customer who is not
+        /// [eligible](https://developer.apple.com/documentation/storekit/externalpurchasecustomlink/iseligible).
+        /// Defaults to `true`. Has no effect on a physical device, nor while `useExternalPurchaseCustomLinks` is
+        /// `false`.
+        ///
+        /// - Important: The app has to carry Apple's external purchase link entitlement, otherwise no
+        /// purchase can be made outside the App Store.
+        ///
+        /// - Note: `ExternalPurchaseCustomLink.isEligible` returns `false` in the simulator, so Apple's disclosure
+        /// notice cannot be shown and an external purchase token cannot be minted there.
+        @_spi(Experimental)
+        public func with(useExternalPurchaseCustomLinks: Bool,
+                         enableExternalPurchasesInSimulator: Bool = true) -> Builder {
+            self.useExternalPurchaseCustomLinks = useExternalPurchaseCustomLinks
+            self.enableExternalPurchasesInSimulator = enableExternalPurchasesInSimulator
             return self
         }
 
@@ -503,6 +568,15 @@ extension Configuration {
 
 extension Configuration.APIKeyValidationResult {
 
+    /// Whether configuring the SDK with this API key must be blocked in Release builds.
+    /// `uiPreviewMode` and `forceAllowTestStoreInReleaseBuilds` are opt-ins that intentionally bypass the guard.
+    // Visible for testing
+    func shouldBlockSimulatedStoreAPIKeyInRelease(dangerousSettings: DangerousSettings) -> Bool {
+        return self == .simulatedStore
+            && !dangerousSettings.uiPreviewMode
+            && !dangerousSettings.forceAllowTestStoreInReleaseBuilds
+    }
+
     func checkForSimulatedStoreAPIKeyInRelease(systemInfo: SystemInfo, apiKey: String) {
         // The `BYPASS_SIMULATED_STORE_RELEASE_CHECK` compilation flag opts out of the Release-build
         // safeguard. It exists for SDK consumers (e.g. purchases-kmp) that ship the SDK as a
@@ -510,7 +584,7 @@ extension Configuration.APIKeyValidationResult {
         // otherwise crash apps that use a Test Store API key during development. Setting this flag
         // means apps shipped to production with a Test Store API key won't be caught at runtime.
         #if !DEBUG && !BYPASS_SIMULATED_STORE_RELEASE_CHECK
-        guard self == .simulatedStore, !systemInfo.dangerousSettings.uiPreviewMode else {
+        guard self.shouldBlockSimulatedStoreAPIKeyInRelease(dangerousSettings: systemInfo.dangerousSettings) else {
             return
         }
 

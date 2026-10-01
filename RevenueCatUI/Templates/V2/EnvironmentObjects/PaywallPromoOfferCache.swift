@@ -67,6 +67,12 @@ internal final class PaywallPromoOfferCache: ObservableObject {
         self.init(subscriptionHistoryTracker: nil, simulateEligible: simulateEligible)
     }
 
+    /// The cache a preview needs for `simulateEligible`, or `nil` to leave the real one in place.
+    /// Single mapping site, so an initializer that forwards the flag cannot forget to build it.
+    static func simulated(if simulateEligible: Bool) -> PaywallPromoOfferCache? {
+        return simulateEligible ? PaywallPromoOfferCache(simulateEligible: true) : nil
+    }
+
     // MARK: - Public API
 
     func computeEligibility(for packageInfos: [PackageInfo]) async {

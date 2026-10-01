@@ -13,7 +13,7 @@
 import Foundation
 
 /// Result delivered to the app after reward verification polling for a presented rewarded ad.
-@_spi(Experimental) public struct RewardVerificationResult: Sendable, Equatable {
+public struct RewardVerificationResult: Sendable, Equatable {
 
     private enum Storage: Equatable, Sendable {
         case verified(reward: AdReward, moreRewards: [AdReward])

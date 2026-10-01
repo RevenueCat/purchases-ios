@@ -50,7 +50,6 @@ extension TemplateViewConfiguration {
 
         let content: RevenueCat.Package
         let localization: ProcessedLocalizedConfiguration
-        let currentlySubscribed: Bool
         let discountRelativeToMostExpensivePerMonth: Double?
 
     }
@@ -156,7 +155,6 @@ extension TemplateViewConfiguration.PackageConfiguration {
     // swiftlint:disable:next function_parameter_count
     static func create(
         with packages: [RevenueCat.Package],
-        activelySubscribedProductIdentifiers: Set<String>,
         filter: [String],
         default: String?,
         localization: PaywallData.LocalizedConfiguration?,
@@ -189,7 +187,6 @@ extension TemplateViewConfiguration.PackageConfiguration {
 
         return try Self.create(
             with: packages,
-            activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
             parameters: parameters,
             locale: locale,
             showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
@@ -201,7 +198,6 @@ extension TemplateViewConfiguration.PackageConfiguration {
     // swiftlint:disable:next function_body_length
     private static func create(
         with packages: [RevenueCat.Package],
-        activelySubscribedProductIdentifiers: Set<String>,
         parameters: Parameters,
         locale: Locale,
         showZeroDecimalPlacePrices: Bool
@@ -211,7 +207,6 @@ extension TemplateViewConfiguration.PackageConfiguration {
             let filteredPackages = Self.processPackages(
                 from: packages,
                 filter: filter,
-                activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
                 localization: localization,
                 locale: locale,
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
@@ -247,7 +242,6 @@ extension TemplateViewConfiguration.PackageConfiguration {
                 let filteredPackages = Self.processPackages(
                     from: packages,
                     filter: tier.packages,
-                    activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
                     localization: localization,
                     locale: locale,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
@@ -291,11 +285,9 @@ extension TemplateViewConfiguration.PackageConfiguration {
         }
     }
 
-    // swiftlint:disable:next function_parameter_count
     private static func processPackages(
         from packages: [RevenueCat.Package],
         filter: [String],
-        activelySubscribedProductIdentifiers: Set<String>,
         localization: PaywallData.LocalizedConfiguration,
         locale: Locale,
         showZeroDecimalPlacePrices: Bool
@@ -317,9 +309,6 @@ extension TemplateViewConfiguration.PackageConfiguration {
                         context: .init(discountRelativeToMostExpensivePerMonth: discount,
                                        showZeroDecimalPlacePrices: showZeroDecimalPlacePrices),
                         locale: locale
-                    ),
-                    currentlySubscribed: activelySubscribedProductIdentifiers.contains(
-                        package.storeProduct.productIdentifier
                     ),
                     discountRelativeToMostExpensivePerMonth: discount
                 )

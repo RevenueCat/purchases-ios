@@ -34,11 +34,10 @@ struct LoadingPaywallView: View {
                 identifier: Self.offeringIdentifier,
                 serverDescription: "",
                 metadata: [:],
-                paywall: Self.paywall,
+                paywall: Self.defaultPaywall,
                 availablePackages: Self.packages,
                 webCheckoutUrl: nil
             ),
-            activelySubscribedProductIdentifiers: [],
             paywall: Self.defaultPaywall,
             template: Self.template,
             mode: self.mode,
@@ -52,26 +51,10 @@ struct LoadingPaywallView: View {
         .allowsHitTesting(false)
         .redacted(reason: .placeholder)
         .shimmering(enable: self.mode.shouldDisplayBackground && self.shimmer)
-        .background {
-            TemplateBackgroundImageView(
-                url: Self.defaultPaywall.backgroundImageURL,
-                lowResUrl: Self.defaultPaywall.backgroundLowResImageURL,
-                blurred: true,
-                ignoreSafeArea: self.mode.shouldDisplayBackground
-            )
-        }
     }
 
     private static let template: PaywallTemplate = PaywallData.defaultTemplate
     private static let defaultPaywall: PaywallData = .createDefault(with: Self.packages, locale: .current)
-
-    private static let paywall: PaywallData = {
-        var paywall: PaywallData = Self.defaultPaywall
-        // Hide background so it doesn't get shimmer
-        paywall.config.images.background = nil
-
-        return paywall
-    }()
 
     private static let packages: [Package] = [
         Self.monthlyPackage,
@@ -163,6 +146,8 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
 
     var isUIPreviewMode: Bool { false }
 
+    var remoteConfigEnabled: Bool { false }
+
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         get { return .myApp }
         set { _ = newValue }
@@ -175,6 +160,11 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
     func offerings() async throws -> Offerings { throw ErrorCode.configurationError }
 
     var cachedOfferings: Offerings? { nil }
+
+    let configuredStoreEnvironment = ConfiguredStoreEnvironment(
+        apiKey: "test_",
+        storeFrontCountryCode: nil
+    )
 
 #if !os(tvOS)
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
@@ -195,6 +185,16 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
         promotionalOffer: PromotionalOffer?,
         paywallEvent: PaywallEvent?
     ) async throws -> PurchaseResultData {
+        fatalError("Should not be able to purchase")
+    }
+
+    func startHostedCheckout(package: Package, paywallEvent: PaywallEvent?) async -> HostedCheckoutStartResult {
+        fatalError("Should not be able to purchase")
+    }
+
+    var useExternalPurchaseCustomLinks: Bool { false }
+
+    func prepareExternalPurchaseLink() async -> ExternalPurchaseLinkResult {
         fatalError("Should not be able to purchase")
     }
 

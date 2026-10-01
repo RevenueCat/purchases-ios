@@ -35,7 +35,6 @@ class PaywallFooterTests: TestCase {
         _ = try Text("")
             .originalTemplatePaywallFooter(
                 offering: Self.offering,
-                customerInfo: TestData.customerInfo,
                 introEligibility: .producing(eligibility: .eligible),
                 purchaseHandler: Self.purchaseHandler,
                 purchaseStarted: { package in packageBeingPurchased = package }
@@ -55,7 +54,6 @@ class PaywallFooterTests: TestCase {
         _ = try Text("")
             .originalTemplatePaywallFooter(
                 offering: Self.offering,
-                customerInfo: TestData.customerInfo,
                 introEligibility: .producing(eligibility: .eligible),
                 purchaseHandler: Self.purchaseHandler,
                 purchaseCompleted: { customerInfo = $0 }
@@ -75,7 +73,6 @@ class PaywallFooterTests: TestCase {
         _ = try Text("")
             .originalTemplatePaywallFooter(
                 offering: Self.offering,
-                customerInfo: TestData.customerInfo,
                 introEligibility: .producing(eligibility: .eligible),
                 purchaseHandler: Self.failingHandler,
                 purchaseFailure: { error = $0 }
@@ -95,7 +92,6 @@ class PaywallFooterTests: TestCase {
         _ = try Text("")
             .originalTemplatePaywallFooter(
                 offering: Self.offering,
-                customerInfo: TestData.customerInfo,
                 introEligibility: .producing(eligibility: .eligible),
                 purchaseHandler: Self.purchaseHandler,
                 restoreStarted: { started = true }
@@ -115,7 +111,6 @@ class PaywallFooterTests: TestCase {
         _ = try Text("")
             .originalTemplatePaywallFooter(
                 offering: Self.offering,
-                customerInfo: TestData.customerInfo,
                 introEligibility: .producing(eligibility: .eligible),
                 purchaseHandler: Self.purchaseHandler,
                 restoreCompleted: { customerInfo = $0 }
@@ -137,7 +132,6 @@ class PaywallFooterTests: TestCase {
         _ = try Text("")
             .originalTemplatePaywallFooter(
                 offering: Self.offering,
-                customerInfo: TestData.customerInfo,
                 introEligibility: .producing(eligibility: .eligible),
                 purchaseHandler: Self.failingHandler,
                 restoreFailure: { error = $0 }
@@ -164,7 +158,6 @@ class PaywallFooterTests: TestCase {
         _ = try Text("")
             .originalTemplatePaywallFooter(
                 offering: Self.offering,
-                customerInfo: TestData.customerInfo,
                 introEligibility: .producing(eligibility: .eligible),
                 purchaseHandler: handler
             )
@@ -188,7 +181,6 @@ class PaywallFooterTests: TestCase {
         _ = try Text("")
             .originalTemplatePaywallFooter(
                 offering: Self.offering,
-                customerInfo: TestData.customerInfo,
                 introEligibility: .producing(eligibility: .eligible),
                 purchaseHandler: handler
             )

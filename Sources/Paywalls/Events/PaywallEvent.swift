@@ -157,6 +157,7 @@ extension PaywallEvent {
         var errorMessage: String?
         @_spi(Internal) public var workflowId: String?
         @_spi(Internal) public var stepId: String?
+        @_spi(Internal) public var traceId: String?
 
         #if !os(tvOS) // For Paywalls V2
         @_spi(Internal)
@@ -268,7 +269,8 @@ extension PaywallEvent {
             errorCode: Int? = nil,
             errorMessage: String? = nil,
             workflowId: String? = nil,
-            stepId: String? = nil
+            stepId: String? = nil,
+            traceId: String? = nil
         ) {
             self.paywallIdentifier = paywallIdentifier
             self.offeringIdentifier = offeringIdentifier
@@ -287,6 +289,7 @@ extension PaywallEvent {
             self.errorMessage = errorMessage
             self.workflowId = workflowId
             self.stepId = stepId
+            self.traceId = traceId
         }
 
     }

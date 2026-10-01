@@ -36,7 +36,7 @@ class WorkflowEventsRequestTests: TestCase {
         let stored = try XCTUnwrap(storedEvent(from: event))
         let request = try XCTUnwrap(FeatureEventsRequest.WorkflowEvent(storedEvent: stored))
 
-        expect(request.eventName) == "workflows_step_started"
+        expect(request.eventName) == "workflow_step_started"
     }
 
     func testStepCompletedEventNameInWireFormat() throws {
@@ -47,7 +47,7 @@ class WorkflowEventsRequestTests: TestCase {
         let stored = try XCTUnwrap(storedEvent(from: event))
         let request = try XCTUnwrap(FeatureEventsRequest.WorkflowEvent(storedEvent: stored))
 
-        expect(request.eventName) == "workflows_step_completed"
+        expect(request.eventName) == "workflow_step_completed"
     }
 
     func testWireFormatCarriesExpectedFields() throws {
@@ -124,7 +124,7 @@ class WorkflowEventsRequestTests: TestCase {
         let stored = try XCTUnwrap(storedEvent(from: event))
         let request = try XCTUnwrap(FeatureEventsRequest.WorkflowEvent(storedEvent: stored))
 
-        expect(request.eventName) == "workflows_close"
+        expect(request.eventName) == "workflow_close"
     }
 
     func testClosePropertiesCarryStepPositionAndOmitNavigationFields() throws {
@@ -152,7 +152,7 @@ class WorkflowEventsRequestTests: TestCase {
         )
         let json = try encodedJSON(from: event)
 
-        expect(json).to(contain("\"event_name\":\"workflows_close\""))
+        expect(json).to(contain("\"event_name\":\"workflow_close\""))
         expect(json).to(contain("\"workflow_id\":\"wfl_abc\""))
         expect(json).to(contain("\"step_id\":\"step-1\""))
         expect(json).to(contain("\"is_first_step\":true"))
@@ -160,6 +160,42 @@ class WorkflowEventsRequestTests: TestCase {
         expect(json).toNot(contain("from_step_id"))
         expect(json).toNot(contain("to_step_id"))
         expect(json).toNot(contain("entry_reason"))
+    }
+
+    func testWorkflowBlobRefInWireFormat() throws {
+        let event = WorkflowEvent.stepStarted(
+            .init(id: id, date: date),
+            .init(
+                workflowId: "wfl_abc",
+                stepId: "step-1",
+                experiment: .init(experimentId: "exp-1", experimentVariant: "variant-a", workflowBlobRef: "blob-ref-1")
+            )
+        )
+        let stored = try XCTUnwrap(storedEvent(from: event))
+        let request = try XCTUnwrap(FeatureEventsRequest.WorkflowEvent(storedEvent: stored))
+        let json = try encodedJSON(from: event)
+
+        expect(request.properties.workflowBlobRef) == "blob-ref-1"
+        expect(json).to(contain("\"blob_ref\":\"blob-ref-1\""))
+    }
+
+    func testCloseKeepsExperimentPropertiesInWireFormat() throws {
+        let event = WorkflowEvent.close(
+            .init(id: id, date: date),
+            .init(
+                workflowId: "wfl_abc",
+                stepId: "step-1",
+                experiment: .init(
+                    experimentId: "exp-1",
+                    experimentVariant: "variant-a",
+                    workflowBlobRef: "blob-ref-1"
+                )
+            )
+        )
+        let json = try encodedJSON(from: event)
+
+        expect(json).to(contain("\"experiment_id\":\"exp-1\""))
+        expect(json).to(contain("\"experiment_variant\":\"variant-a\""))
     }
 
     // MARK: - JSON serialization
@@ -219,7 +255,7 @@ class WorkflowEventsRequestTests: TestCase {
         expect(json).toNot(contain("is_last_step"))
         expect(json).toNot(contain("experiment_id"))
         expect(json).toNot(contain("experiment_variant"))
-        expect(json).toNot(contain("is_last_variant_step"))
+        expect(json).toNot(contain("blob_ref"))
     }
 
     func testExperimentPropertiesInWireFormat() throws {
@@ -228,9 +264,11 @@ class WorkflowEventsRequestTests: TestCase {
             .init(
                 workflowId: "wfl_abc",
                 stepId: "step-1",
-                experimentId: "exp-1",
-                experimentVariant: "variant-a",
-                isLastVariantStep: true
+                experiment: .init(
+                    experimentId: "exp-1",
+                    experimentVariant: "variant-a",
+                    workflowBlobRef: "blob-ref-1"
+                )
             )
         )
         let stored = try XCTUnwrap(storedEvent(from: event))
@@ -238,7 +276,6 @@ class WorkflowEventsRequestTests: TestCase {
 
         expect(request.properties.experimentId) == "exp-1"
         expect(request.properties.experimentVariant) == "variant-a"
-        expect(request.properties.isLastVariantStep) == true
     }
 
     func testExperimentPropertiesInJSON() throws {
@@ -247,16 +284,17 @@ class WorkflowEventsRequestTests: TestCase {
             .init(
                 workflowId: "wfl_abc",
                 stepId: "step-1",
-                experimentId: "exp-1",
-                experimentVariant: "variant-a",
-                isLastVariantStep: false
+                experiment: .init(
+                    experimentId: "exp-1",
+                    experimentVariant: "variant-a",
+                    workflowBlobRef: "blob-ref-1"
+                )
             )
         )
         let json = try encodedJSON(from: event)
 
         expect(json).to(contain("\"experiment_id\":\"exp-1\""))
         expect(json).to(contain("\"experiment_variant\":\"variant-a\""))
-        expect(json).to(contain("\"is_last_variant_step\":false"))
     }
 
     func testKhepriCompatibleShapeForStepStarted() throws {
@@ -278,7 +316,7 @@ class WorkflowEventsRequestTests: TestCase {
 
         expect(json).to(contain("\"type\":\"workflows\""))
         expect(json).to(contain("\"version\":1"))
-        expect(json).to(contain("\"event_name\":\"workflows_step_started\""))
+        expect(json).to(contain("\"event_name\":\"workflow_step_started\""))
         expect(json).to(contain("\"timestamp_ms\":\(date.millisecondsSince1970)"))
         expect(json).to(contain("\"app_user_id\":\"\(Self.userID)\""))
         expect(json).to(contain("\"workflow_id\":\"wfl_abc\""))

@@ -16,6 +16,7 @@ import Foundation
 class Backend {
 
     let identity: IdentityAPI
+    let token: TokenAPI
     let offerings: OfferingsAPI
     let webBilling: WebBillingAPI
     let offlineEntitlements: OfflineEntitlementsAPI
@@ -23,8 +24,8 @@ class Backend {
     let internalAPI: InternalAPI
     let customerCenterConfig: CustomerCenterConfigAPI
     let redeemWebPurchaseAPI: RedeemWebPurchaseAPI
+    let externalPurchaseTokenAPI: ExternalPurchaseTokenAPI
     let virtualCurrenciesAPI: VirtualCurrenciesAPI
-    let workflowsAPI: WorkflowsAPI
     let adsAPI: AdsAPI
     let remoteConfigAPI: RemoteConfigAPI
 
@@ -32,90 +33,105 @@ class Backend {
 
     convenience init(
         systemInfo: SystemInfo,
-        httpClientTimeout: TimeInterval = Configuration.networkTimeoutDefault,
+        httpClientTimeout: NetworkTimeout = .default,
         eTagManager: ETagManager,
+        tokenManager: TokenManager,
         operationDispatcher: OperationDispatcher,
         attributionFetcher: AttributionFetcher,
         offlineCustomerInfoCreator: OfflineCustomerInfoCreator?,
         diagnosticsTracker: DiagnosticsTrackerType?,
+        apiSourceProvider: RemoteConfigSourceProviderType?,
+        timeoutManager: HTTPRequestTimeoutManagerType,
         dateProvider: DateProvider = DateProvider()
     ) {
-        let httpClient = HTTPClient(systemInfo: systemInfo,
-                                    eTagManager: eTagManager,
-                                    signing: Signing(apiKey: systemInfo.apiKey, clock: systemInfo.clock),
-                                    diagnosticsTracker: diagnosticsTracker,
-                                    requestTimeout: httpClientTimeout,
-                                    operationDispatcher: OperationDispatcher.default)
-        let config = BackendConfiguration(httpClient: httpClient,
+        // A single `apiSourceFailover` shared by every lane's HTTPClient, so they all walk one source
+        // list and one health-check cache; handle tokens keep concurrent unhealthy reports from double-advancing it.
+        let apiSourceFailover = apiSourceProvider.map {
+            APISourceFailover(usesRemoteConfigAPISources:
+                                systemInfo.dangerousSettings.internalSettings.usesRemoteConfigAPISources,
+                              sourceProvider: $0,
+                              healthChecker: SourceHealthChecker())
+        }
+        let factory = BackendLanesFactory(systemInfo: systemInfo,
+                                          eTagManager: eTagManager,
+                                          tokenManager: tokenManager,
+                                          diagnosticsTracker: diagnosticsTracker,
+                                          networkTimeout: httpClientTimeout,
+                                          apiSourceFailover: apiSourceFailover,
+                                          timeoutManager: timeoutManager,
                                           operationDispatcher: operationDispatcher,
-                                          operationQueue: QueueProvider.createBackendQueue(),
-                                          diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
-                                          workflowsQueue: QueueProvider.createWorkflowsQueue(),
-                                          systemInfo: systemInfo,
                                           offlineCustomerInfoCreator: offlineCustomerInfoCreator,
                                           dateProvider: dateProvider)
-        self.init(backendConfig: config, attributionFetcher: attributionFetcher)
+        let lanes = factory.makeLanes(dedicatedLanes: [.remoteConfig, .checkout])
+        self.init(lanes: lanes, attributionFetcher: attributionFetcher)
     }
 
-    convenience init(backendConfig: BackendConfiguration, attributionFetcher: AttributionFetcher) {
+    convenience init(lanes: BackendLanes, attributionFetcher: AttributionFetcher) {
+        let backendConfig = lanes[.default]
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         let identity = IdentityAPI(backendConfig: backendConfig)
+        let token = TokenAPI(backendConfig: backendConfig)
         let offerings = OfferingsAPI(backendConfig: backendConfig)
-        let webBilling = WebBillingAPI(backendConfig: backendConfig)
+        let webBilling = WebBillingAPI(lanes: lanes)
         let offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
         let internalAPI = InternalAPI(backendConfig: backendConfig)
         let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
         let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
+        let externalPurchaseTokenAPI = ExternalPurchaseTokenAPI(backendConfig: lanes[.checkout])
         let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
-        let workflowsAPI = WorkflowsAPI(backendConfig: backendConfig)
         let adsAPI = AdsAPI(backendConfig: backendConfig)
-        let remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
+        let remoteConfigAPI = RemoteConfigAPI(backendConfig: lanes[.remoteConfig])
 
-        self.init(backendConfig: backendConfig,
+        self.init(lanes: lanes,
                   customerAPI: customer,
                   identityAPI: identity,
+                  tokenAPI: token,
                   offeringsAPI: offerings,
                   webBillingAPI: webBilling,
                   offlineEntitlements: offlineEntitlements,
                   internalAPI: internalAPI,
                   customerCenterConfig: customerCenterConfig,
                   redeemWebPurchaseAPI: redeemWebPurchaseAPI,
+                  externalPurchaseTokenAPI: externalPurchaseTokenAPI,
                   virtualCurrenciesAPI: virtualCurrenciesAPI,
-                  workflowsAPI: workflowsAPI,
                   adsAPI: adsAPI,
                   remoteConfigAPI: remoteConfigAPI)
     }
 
-    required init(backendConfig: BackendConfiguration,
+    required init(lanes: BackendLanes,
                   customerAPI: CustomerAPI,
                   identityAPI: IdentityAPI,
+                  tokenAPI: TokenAPI,
                   offeringsAPI: OfferingsAPI,
                   webBillingAPI: WebBillingAPI,
                   offlineEntitlements: OfflineEntitlementsAPI,
                   internalAPI: InternalAPI,
                   customerCenterConfig: CustomerCenterConfigAPI,
                   redeemWebPurchaseAPI: RedeemWebPurchaseAPI,
+                  externalPurchaseTokenAPI: ExternalPurchaseTokenAPI,
                   virtualCurrenciesAPI: VirtualCurrenciesAPI,
-                  workflowsAPI: WorkflowsAPI,
                   adsAPI: AdsAPI,
                   remoteConfigAPI: RemoteConfigAPI) {
-        self.config = backendConfig
+        self.config = lanes[.default]
 
         self.customer = customerAPI
         self.identity = identityAPI
+        self.token = tokenAPI
         self.offerings = offeringsAPI
         self.webBilling = webBillingAPI
         self.offlineEntitlements = offlineEntitlements
         self.internalAPI = internalAPI
         self.customerCenterConfig = customerCenterConfig
         self.redeemWebPurchaseAPI = redeemWebPurchaseAPI
+        self.externalPurchaseTokenAPI = externalPurchaseTokenAPI
         self.virtualCurrenciesAPI = virtualCurrenciesAPI
-        self.workflowsAPI = workflowsAPI
         self.adsAPI = adsAPI
         self.remoteConfigAPI = remoteConfigAPI
     }
 
     func clearHTTPClientCaches() {
+        // Every lane's HTTPClient shares one ETagManager, so clearing it through the default lane
+        // clears it for all of them.
         self.config.clearCache()
     }
 
@@ -254,12 +270,11 @@ extension Backend {
 
     enum QueueProvider {
 
-        private static let maxConcurrentWorkflowOperations = 4
-
-        static func createBackendQueue() -> OperationQueue {
+        static func createQueue(for lane: RequestLane) -> OperationQueue {
             let operationQueue = OperationQueue()
-            operationQueue.name = "RC Backend Queue"
+            operationQueue.name = "RC \(lane.name) Queue"
             operationQueue.maxConcurrentOperationCount = 1
+            operationQueue.qualityOfService = lane.qualityOfService
             return operationQueue
         }
 
@@ -268,18 +283,6 @@ extension Backend {
             operationQueue.name = "RC Diagnostics Queue"
             operationQueue.maxConcurrentOperationCount = 1
             operationQueue.qualityOfService = .background
-            return operationQueue
-        }
-
-        static func createWorkflowsQueue() -> OperationQueue {
-            let operationQueue = OperationQueue()
-            operationQueue.name = "RC Workflows Queue"
-            // Workflow prefetches run here so their CDN asset downloads overlap instead of serializing
-            // on the single backend queue. Capped at 4; each GetWorkflowOperation holds its slot
-            // through the CDN download, so this bounds concurrent CDN downloads at 4 too.
-            // Intentionally no `.background` QoS (unlike the diagnostics queue): these prefetches gate
-            // offerings delivery, so they keep the default QoS like the main backend queue.
-            operationQueue.maxConcurrentOperationCount = Self.maxConcurrentWorkflowOperations
             return operationQueue
         }
 
@@ -293,6 +296,14 @@ extension Backend {
 
     var networkTimeout: TimeInterval {
         return self.config.httpClient.timeout
+    }
+
+    var requestTimeoutManagerBaseTimeout: TimeInterval {
+        return self.config.httpClient.requestTimeoutManager.timeout(host: nil,
+                                                                    isFallbackHostRequest: false,
+                                                                    endpointSupportsFallbackURLs: false,
+                                                                    isProxied: false,
+                                                                    reTieredTimeoutsEnabled: true)
     }
 
     var offlineCustomerInfoEnabled: Bool {

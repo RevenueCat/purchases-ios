@@ -71,6 +71,8 @@ class OfferingsFactory {
             return nil
         }
 
+        let hasPaywallComponents = offering.hasPaywallComponents
+            || (uiConfig != nil && offering.paywallComponents != nil)
         let paywallComponents: Offering.PaywallComponents? = {
             if let uiConfig, let paywallComponents = offering.paywallComponents {
                 return .init(
@@ -81,22 +83,12 @@ class OfferingsFactory {
             return nil
         }()
 
-        let paywallDraftComponents: Offering.PaywallComponents? = {
-            if let uiConfig, let paywallDraftComponents = offering.draftPaywallComponents {
-                return .init(
-                    uiConfig: uiConfig,
-                    data: paywallDraftComponents
-                )
-            }
-            return nil
-        }()
-
         return Offering(identifier: offering.identifier,
                         serverDescription: offering.description,
                         metadata: offering.metadata.mapValues(\.asAny),
                         paywall: offering.paywall,
                         paywallComponents: paywallComponents,
-                        draftPaywallComponents: paywallDraftComponents,
+                        hasPaywallComponents: hasPaywallComponents,
                         availablePackages: availablePackages,
                         webCheckoutUrl: offering.webCheckoutUrl)
     }
@@ -131,8 +123,6 @@ class OfferingsFactory {
 // @unchecked because:
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
 extension OfferingsFactory: @unchecked Sendable {}
-
-// MARK: - Private
 
 private extension Package {
 

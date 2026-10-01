@@ -36,6 +36,9 @@ struct CarouselComponentView: View {
     @Environment(\.screenCondition)
     private var screenCondition
 
+    @Environment(\.paywallWindowSize)
+    private var paywallWindowSize
+
     @Environment(\.colorScheme)
     private var colorScheme
 
@@ -63,6 +66,7 @@ struct CarouselComponentView: View {
             ),
             selectedPackageId: self.selectedPackageId,
             customVariables: self.customVariables,
+            windowSize: self.paywallWindowSize,
             colorScheme: colorScheme
         ) { style in
             if style.visible {
@@ -157,6 +161,9 @@ private struct CarouselItem<Content: View>: Identifiable {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct CarouselView<Content: View>: View {
     // MARK: - Configuration
+
+    @Environment(\.carouselState)
+    private var ancestorCarouselState
 
     private let pageAlignment: VerticalAlignment
     private let width: CGFloat
@@ -274,7 +281,7 @@ private struct CarouselView<Content: View>: View {
                         .environment(\.carouselState, CarouselState(
                             activeIndex: index,
                             pageIndex: pageIndex,
-                            originalCount: originalCount
+                            ancestorDistanceFromActive: self.ancestorCarouselState?.distanceFromActive ?? 0
                         ))
                         // ensure rendering doesn't need to wait on size calculations as the item
                         // attempts to enter the view

@@ -16,7 +16,7 @@ import Foundation
 
 class ETagManager {
     static let eTagRequestHeader = HTTPClient.RequestHeader.eTag
-    static let eTagValidationTimeRequestHeader = HTTPClient.RequestHeader.eTagValidationTime
+    static let lastRefreshTimeRequestHeader = HTTPClient.RequestHeader.lastRefreshTime
     static let eTagResponseHeader = HTTPClient.ResponseHeader.eTag
 
     private let cache: SynchronizedLargeItemCache
@@ -75,7 +75,7 @@ class ETagManager {
 
         return [
             HTTPClient.RequestHeader.eTag.rawValue: etag,
-            HTTPClient.RequestHeader.eTagValidationTime.rawValue: date
+            HTTPClient.RequestHeader.lastRefreshTime.rawValue: date
         ]
             .compactMapValues { $0 }
     }
@@ -167,7 +167,7 @@ private extension ETagManager {
 
     func storedETagAndResponse(for request: URLRequest) -> Response? {
         if let cacheKey = Self.cacheKey(for: request) {
-            return try? self.cache.value(forKey: cacheKey)
+            return try? self.cache.value(forKey: cacheKey, decoder: .default)
         }
         return nil
     }
@@ -184,7 +184,7 @@ private extension ETagManager {
                         eTag: eTag,
                         statusCode: response.httpStatusCode,
                         data: data,
-                        verificationResult: response.verificationResult,
+                        verificationResult: response.verificationResult.result,
                         isLoadShedderResponse: isLoadShedderResponse,
                         isFallbackUrlResponse: isFallbackURLRequest
                     ),
@@ -290,7 +290,7 @@ extension ETagManager.Response {
     fileprivate func asResponse(
         withRequestDate requestDate: Date?,
         headers: HTTPClient.ResponseHeaders,
-        responseVerificationResult: VerificationResult
+        responseVerificationResult: SignatureVerificationResult
     ) -> VerifiedHTTPResponse<Data> {
         return HTTPResponse(
             httpStatusCode: self.statusCode,
@@ -329,12 +329,12 @@ private extension VerifiedHTTPResponse {
 
 }
 
-private extension VerificationResult {
+private extension SignatureVerificationResult {
 
     var shouldStore: Bool {
         switch self {
         case .notRequested, .verified: return true
-        case .verifiedOnDevice, .failed: return false
+        case .failed: return false
         }
     }
 

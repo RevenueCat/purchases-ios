@@ -23,15 +23,15 @@ class MockBackendConfiguration: BackendConfiguration {
         }
         let httpClient = MockHTTPClient(systemInfo: systemInfo,
                                         eTagManager: MockETagManager(),
+                                        tokenManager: MockTokenManager(),
                                         diagnosticsTracker: diagnosticsTracker,
-                                        requestTimeout: 7)
+                                        networkTimeout: .custom(7))
 
         super.init(
             httpClient: httpClient,
             operationDispatcher: MockOperationDispatcher(),
-            operationQueue: Backend.QueueProvider.createBackendQueue(),
+            operationQueue: Backend.QueueProvider.createQueue(for: .default),
             diagnosticsQueue: Backend.QueueProvider.createDiagnosticsQueue(),
-            workflowsQueue: Backend.QueueProvider.createWorkflowsQueue(),
             systemInfo: systemInfo,
             offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
             dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate)

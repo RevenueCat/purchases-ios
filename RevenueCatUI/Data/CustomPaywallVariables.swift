@@ -11,12 +11,13 @@
 //
 //  Created by Facundo Menzella on 1/22/26.
 
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
-/// A value type for custom paywall variables that can be passed to paywalls at runtime.
+/// A value type for custom variables that can be passed to RevenueCat UI at runtime.
 ///
-/// Custom variables allow developers to personalize paywall text with dynamic values.
-/// Variables are defined in the RevenueCat dashboard and can be overridden at runtime.
+/// Custom variables allow developers to personalize RevenueCat UI and supply values for checkpoint targeting.
+/// Variables are defined in the RevenueCat dashboard and can be supplied at runtime.
 ///
 /// ### Usage
 /// ```swift
@@ -126,6 +127,22 @@ public struct CustomVariableValue: Sendable, Equatable, Hashable {
         return false
     }
 
+    /// Maps the underlying value while keeping storage handling exhaustive.
+    ///
+    /// This intentionally switches over every storage case so adding a new custom-variable type produces a
+    /// compiler error instead of silently coercing that type to one of the existing representations.
+    internal func map<Value>(
+        string: (String) -> Value,
+        number: (Double) -> Value,
+        boolean: (Bool) -> Value
+    ) -> Value {
+        switch self.storage {
+        case let .string(value): return string(value)
+        case let .number(value): return number(value)
+        case let .bool(value): return boolean(value)
+        }
+    }
+
 }
 
 // MARK: - ExpressibleByStringLiteral
@@ -136,6 +153,71 @@ extension CustomVariableValue: ExpressibleByStringLiteral {
     /// Creates a custom variable value from a string literal.
     public init(stringLiteral value: String) {
         self = .string(value)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension CustomVariableValue: ExpressibleByIntegerLiteral {
+
+    /// Creates a numeric custom variable value from an integer literal.
+    public init(integerLiteral value: Int64) {
+        self = .number(Double(value))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension CustomVariableValue: ExpressibleByFloatLiteral {
+
+    /// Creates a numeric custom variable value from a floating-point literal.
+    public init(floatLiteral value: Double) {
+        self = .number(value)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension CustomVariableValue: ExpressibleByBooleanLiteral {
+
+    /// Creates a Boolean custom variable value from a Boolean literal.
+    public init(booleanLiteral value: Bool) {
+        self = .bool(value)
+    }
+
+}
+
+// MARK: - Foundation Bridge
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension CustomVariableValue {
+
+    /// Creates a custom variable value from a supported Foundation primitive.
+    ///
+    /// This is intended only for Objective-C and hybrid SDK bridges. Native Swift integrations should use
+    /// ``string(_:)``, ``number(_:)``, or ``bool(_:)`` instead.
+    @_spi(Internal)
+    public init?(foundationValue: Any) {
+        guard let value = RevenueCat.CheckpointValue(foundationValue: foundationValue) else { return nil }
+
+        switch value {
+        case let .string(value): self = .string(value)
+        case let .double(value): self = .number(value)
+        case let .boolean(value): self = .bool(value)
+        }
+    }
+
+    /// The equivalent Foundation primitive value.
+    ///
+    /// This is intended only for Objective-C and hybrid SDK bridges. Native Swift integrations should pass
+    /// ``CustomVariableValue`` directly.
+    @_spi(Internal)
+    public var foundationValue: Any {
+        switch self.storage {
+        case let .string(value): return value
+        case let .number(value): return NSNumber(value: value)
+        case let .bool(value): return NSNumber(value: value)
+        }
     }
 
 }
@@ -157,7 +239,9 @@ extension EnvironmentValues {
     /// Use the `.customPaywallVariables(_:)` view modifier to set this value.
     public var customPaywallVariables: [String: CustomVariableValue] {
         get { self[CustomPaywallVariablesKey.self] }
-        set { self[CustomPaywallVariablesKey.self] = newValue }
+        set {
+            self[CustomPaywallVariablesKey.self] = RevenueCat.CustomVariableKeyValidator.validateAndFilter(newValue)
+        }
     }
 
 }
@@ -190,50 +274,13 @@ extension View {
     ///
     /// - Parameter variables: A dictionary mapping variable names to their values.
     ///   The keys should match the variable names defined in the dashboard (without the `custom.` prefix).
+    ///   Invalid keys are ignored.
     /// - Returns: A view with the custom variables set in the environment.
     public func customPaywallVariables(
         _ variables: [String: CustomVariableValue]
     ) -> some View {
-        #if DEBUG
-        CustomVariableKeyValidator.validate(variables)
-        #endif
         return environment(\.customPaywallVariables, variables)
     }
-
-}
-
-// MARK: - Key Validator
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-enum CustomVariableKeyValidator {
-
-    /// Validates a single custom variable key and logs a warning if invalid.
-    /// Only performs validation in DEBUG builds.
-    static func validate(_ key: String) {
-        #if DEBUG
-        if !isValidKey(key) {
-            Logger.warning(Strings.paywall_custom_variable_invalid_key(key: key))
-        }
-        #endif
-    }
-
-    /// Validates all keys in a custom variables dictionary and logs warnings for invalid keys.
-    /// Only performs validation in DEBUG builds.
-    static func validate(_ variables: [String: CustomVariableValue]) {
-        #if DEBUG
-        for key in variables.keys where !isValidKey(key) {
-            Logger.warning(Strings.paywall_custom_variable_invalid_key(key: key))
-        }
-        #endif
-    }
-
-    #if DEBUG
-    private static func isValidKey(_ key: String) -> Bool {
-        guard !key.isEmpty else { return false }
-        guard let first = key.first, first.isLetter else { return false }
-        return key.allSatisfy { $0.isLetter || $0.isNumber || $0 == "_" }
-    }
-    #endif
 
 }
 
