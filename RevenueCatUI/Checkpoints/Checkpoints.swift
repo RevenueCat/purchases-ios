@@ -33,15 +33,18 @@ final class CheckpointCallParams: @unchecked Sendable {
     let customVariables: [String: CustomVariableValue]
     let localPaywallPresentationHandler: PaywallPresentationHandler?
     let presentationMode: FlowPresentationMode
+    let localErrorPresentationHandler: ErrorPresentationHandler?
 
     init(
         customVariables: [String: CustomVariableValue] = [:],
         presentationMode: FlowPresentationMode = .default,
-        paywallPresenter: PaywallPresentationHandler? = nil
+        paywallPresenter: PaywallPresentationHandler? = nil,
+        errorPresenter: ErrorPresentationHandler? = nil
     ) {
         self.customVariables = RevenueCat.CustomVariableKeyValidator.validateAndFilter(customVariables)
         self.presentationMode = presentationMode.resolved
         self.localPaywallPresentationHandler = paywallPresenter
+        self.localErrorPresentationHandler = errorPresenter
     }
 
     var coreParams: RevenueCat.CheckpointParams {

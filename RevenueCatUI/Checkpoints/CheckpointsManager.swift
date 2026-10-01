@@ -27,6 +27,7 @@ final class CheckpointsManager {
     private let cachedCustomerInfoProvider: CachedCustomerInfoProvider
     private let checkpointPresenter: CheckpointPresenterType
     var paywallPresenter: PaywallPresenter?
+    var errorPresenter: ErrorPresenter?
 
     init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
@@ -45,6 +46,10 @@ final class CheckpointsManager {
 
     func setPaywallPresenter(_ presenter: PaywallPresenter?) {
         self.paywallPresenter = presenter
+    }
+
+    func setErrorPresenter(_ presenter: ErrorPresenter?) {
+        self.errorPresenter = presenter
     }
 
     func executeCheckpoint(
