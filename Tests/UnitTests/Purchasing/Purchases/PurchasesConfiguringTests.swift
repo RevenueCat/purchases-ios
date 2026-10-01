@@ -52,13 +52,13 @@ class PurchasesConfiguringTests: BasePurchasesTests {
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func testInitialDiagnosticsCollectionIsUndeterminedWhenRemoteConfigIsAvailable() {
+    func testInitialDiagnosticsCollectionDependsOnRemoteConfigAvailability() {
         expect(
-            initialDiagnosticsCollectionDecision(diagnosticsEnabled: false, remoteConfigEnabled: true)
+            initialDiagnosticsCollectionDecision(remoteConfigEnabled: true)
         ) == .undetermined
         expect(
-            initialDiagnosticsCollectionDecision(diagnosticsEnabled: true, remoteConfigEnabled: true)
-        ) == .undetermined
+            initialDiagnosticsCollectionDecision(remoteConfigEnabled: false)
+        ) == .disabled
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

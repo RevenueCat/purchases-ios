@@ -417,7 +417,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 return DiagnosticsTracker(
                     diagnosticsFileHandler: handler,
                     collectionDecision: initialDiagnosticsCollectionDecision(
-                        diagnosticsEnabled: diagnosticsEnabled,
                         remoteConfigEnabled: systemInfo.remoteConfigEnabled
                     )
                 )
@@ -754,7 +753,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                         tracker: diagnosticsTracker,
                         userDefaults: synchronizedUserDefaults,
                         collectionDecision: initialDiagnosticsCollectionDecision(
-                            diagnosticsEnabled: diagnosticsEnabled,
                             remoteConfigEnabled: systemInfo.remoteConfigEnabled
                         )
                     )
@@ -2808,10 +2806,9 @@ extension Purchases: @unchecked Sendable {}
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 func initialDiagnosticsCollectionDecision(
-    diagnosticsEnabled: Bool,
     remoteConfigEnabled: Bool
 ) -> DiagnosticsCollectionDecision {
-    return remoteConfigEnabled ? .undetermined : .init(enabled: diagnosticsEnabled)
+    return remoteConfigEnabled ? .undetermined : .disabled
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
