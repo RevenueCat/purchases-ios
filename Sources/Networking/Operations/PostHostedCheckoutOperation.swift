@@ -16,7 +16,7 @@ import Foundation
 /// Creates a checkout session for in-app web checkout, where a payment provider's page is presented
 /// inside the app instead of the purchase being handed off to the browser.
 ///
-/// The response carries the page to present and the two return URLs that mark the end of the checkout, or says the
+/// The response carries the page to present and the success URL that marks the end of the checkout, or says the
 /// session the customer was given before already ended in a purchase.
 final class PostHostedCheckoutOperation: CacheableNetworkOperation {
 

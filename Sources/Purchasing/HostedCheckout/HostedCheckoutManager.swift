@@ -182,11 +182,6 @@ private extension HostedCheckoutManager {
                 return .started(session)
             }
 
-            if session.isAlreadyPaid {
-                Logger.debug(Strings.hostedCheckout.previous_session_paid(operationSessionID))
-                return .completed(session)
-            }
-
             Logger.debug(Strings.hostedCheckout.session_resumed(operationSessionID))
             return .resumed(session)
 
