@@ -150,7 +150,6 @@ enum HostedCheckout {
     /// always tells the customer the purchase went through.
     enum Resolution: Equatable {
 
-        /// Carries the `CustomerInfo` the purchase is reported with, fetched before the customer is told about it.
         case purchased(CustomerInfo)
         case tellCustomerTheyAlreadyOwnIt
         case failed(HostedCheckoutError)
