@@ -94,6 +94,56 @@ public final class AdTracker: NSObject {
     }
 
     /**
+     Tracks when the app prompts the user to watch a rewarded ad.
+
+     Call this method when your UI presents a rewarded ad prompt, such as a "Watch an ad to earn coins" button.
+     This event is rewarded-only and manual-only: official RevenueCat adapters never emit it,
+     because only the app knows when the prompt is presented.
+
+     - Parameter data: The rewarded ad prompt shown event data
+
+     ## Example:
+     ```swift
+     Purchases.shared.adTracker.trackRewardedAdPromptShown(.init(
+         mediatorName: .appLovin,
+         placement: "home_screen",
+         adUnitId: "ca-app-pub-123"
+     ))
+     ```
+     */
+    public func trackRewardedAdPromptShown(_ data: AdRewardPromptShown) {
+        Task {
+            let event = AdEvent.rewardedAdPromptShown(.init(captureMethod: .manual), data)
+            await self.eventsManager?.track(adEvent: event)
+        }
+    }
+
+    /**
+     Tracks when the user accepts a rewarded ad prompt.
+
+     Call this method when the user accepts a rewarded ad prompt, such as tapping a "Watch an ad to earn coins" button.
+     This event is rewarded-only and manual-only: official RevenueCat adapters never emit it,
+     because only the app knows when the prompt is accepted.
+
+     - Parameter data: The rewarded ad prompt accepted event data
+
+     ## Example:
+     ```swift
+     Purchases.shared.adTracker.trackRewardedAdPromptAccepted(.init(
+         mediatorName: .appLovin,
+         placement: "home_screen",
+         adUnitId: "ca-app-pub-123"
+     ))
+     ```
+     */
+    public func trackRewardedAdPromptAccepted(_ data: AdRewardPromptAccepted) {
+        Task {
+            let event = AdEvent.rewardedAdPromptAccepted(.init(captureMethod: .manual), data)
+            await self.eventsManager?.track(adEvent: event)
+        }
+    }
+
+    /**
      Tracks when an ad successfully loads.
 
      Call this method from your ad SDK's load callback to report successful ad loads to RevenueCat.

@@ -905,6 +905,49 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(signingRequest.publicKey).toNot(beNil())
     }
 
+    func testWebPurchaseRedemptionSignatureBindsAppUserIDAndRedemptionToken() throws {
+        let responseContent = "response".asData
+        let requestBody = PostRedeemWebPurchaseOperation.PostData(
+            appUserID: "test-user-id",
+            redemptionToken: "test-redemption-token"
+        )
+
+        self.mockResponse(
+            path: HTTPRequest.Path.postRedeemWebPurchase,
+            signature: Self.sampleSignature,
+            requestDate: Self.date1,
+            body: responseContent,
+            statusCode: .success
+        )
+
+        self.signing.stubbedVerificationResult = .verified
+
+        let request: HTTPRequest = .createWithResponseVerification(
+            method: .post(requestBody),
+            path: .postRedeemWebPurchase
+        )
+
+        let response: DataResponse? = waitUntilValue { completion in
+            self.client.perform(request, completionHandler: completion)
+        }
+
+        expect(response).to(beSuccess())
+        expect(response?.value?.verificationResult) == .verified
+
+        let signingRequest = try XCTUnwrap(self.signing.requests.onlyElement)
+        let signingBody = try XCTUnwrap(
+            signingRequest.parameters.requestBody as? PostRedeemWebPurchaseOperation.PostData
+        )
+
+        expect(signingRequest.parameters.path.relativePath)
+            == HTTPRequest.Path.postRedeemWebPurchase.relativePath
+        expect(signingRequest.parameters.nonce) == request.nonce
+        expect(signingBody.appUserID) == requestBody.appUserID
+        expect(signingBody.redemptionToken) == requestBody.redemptionToken
+        expect(signingBody.contentForSignature.map(\.key)) == ["app_user_id", "redemption_token"]
+        expect(signingBody.contentForSignature.map(\.value)) == ["test-user-id", "test-redemption-token"]
+    }
+
     func testDisabledHeaderSignatureVerification() throws {
         self.changeClient(.informational, disableHeaderSignatureVerification: true)
 

@@ -78,6 +78,20 @@ final class WebViewWebsiteDataStoreSweeperTests: TestCase {
         XCTAssertTrue(store.pendingRemovalIdentifiers().isEmpty)
     }
 
+    #if compiler(>=5.9) && !os(tvOS) && !os(watchOS) && canImport(WebKit)
+    @available(iOS 17.0, macOS 14.0, *)
+    func testProductionSweeperDoesNotCrashBeforeWebKitIsInitialized() async throws {
+        let store = try self.makeStore()
+        _ = store.identifier()
+        store.retireCurrentIdentifier()
+        let sweeper = WebViewWebsiteDataStoreSweeper(store: store)
+
+        await sweeper.sweepStores()
+
+        XCTAssertTrue(store.pendingRemovalIdentifiers().isEmpty)
+    }
+    #endif
+
     func testSweepStoresRemovesClearedIdentifiersFromPending() async throws {
         let store = try self.makeStore()
         let first = store.identifier()

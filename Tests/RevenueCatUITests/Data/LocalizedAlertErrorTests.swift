@@ -38,7 +38,12 @@ class LocalizedAlertErrorCodeTests: TestCase {
     }
 
     func testFailureReason() {
+        #if os(macOS)
+        expect(Self.error.failureReason) == "Error 2: There was a problem with the App Store. " +
+            "This could also indicate the purchase dialog was cancelled."
+        #else
         expect(Self.error.failureReason) == "Error 2: There was a problem with the App Store."
+        #endif
     }
 
 }

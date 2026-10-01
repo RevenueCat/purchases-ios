@@ -55,6 +55,13 @@ class SystemInfo {
     let platformFlavorVersion: String?
     let responseVerificationMode: Signing.ResponseVerificationMode
     let dangerousSettings: DangerousSettings
+
+    /// Whether the app takes part in Apple's external purchase custom link programme, and whether the simulator
+    /// offers external purchases in any storefront, see
+    /// ``Configuration/Builder/with(useExternalPurchaseCustomLinks:enableExternalPurchasesInSimulator:)``.
+    let useExternalPurchaseCustomLinks: Bool
+    let enableExternalPurchasesInSimulator: Bool
+
     let clock: ClockType
     private let preferredLocalesProvider: PreferredLocalesProvider
 
@@ -98,6 +105,15 @@ class SystemInfo {
     /// since the two ship together.
     var remoteConfigEnabled: Bool {
         return !self.dangerousSettings.customEntitlementComputation
+    }
+
+    /// Workflow branch routing, unreleased. Goes away with `DisabledBranchResolver` once branching ships.
+    var branchingEnabled: Bool {
+#if ENABLE_WORKFLOW_BRANCHING
+        return true
+#else
+        return false
+#endif
     }
 
     var isDebugBuild: Bool {
@@ -218,6 +234,8 @@ class SystemInfo {
          apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
          responseVerificationMode: Signing.ResponseVerificationMode = .default,
          dangerousSettings: DangerousSettings? = nil,
+         useExternalPurchaseCustomLinks: Bool = false,
+         enableExternalPurchasesInSimulator: Bool = true,
          isAppBackgrounded: Bool? = nil,
          clock: ClockType = Clock.default,
          preferredLocalesProvider: PreferredLocalesProvider) {
@@ -235,6 +253,8 @@ class SystemInfo {
         self.storefrontProvider = storefrontProvider
         self.responseVerificationMode = responseVerificationMode
         self.dangerousSettings = dangerousSettings ?? DangerousSettings()
+        self.useExternalPurchaseCustomLinks = useExternalPurchaseCustomLinks
+        self.enableExternalPurchasesInSimulator = enableExternalPurchasesInSimulator
         self.clock = clock
         self.preferredLocalesProvider = preferredLocalesProvider
 
