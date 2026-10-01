@@ -983,9 +983,13 @@ extension WorkflowPaywallViewTests {
             singleStepFallbackId: "step_terminal",
             initialRouteStepId: "step_terminal"
         )
+        let events: Atomic<[PaywallEvent]> = .init([])
         let view = WorkflowPaywallView(
             context: context,
-            purchaseHandler: .mock(resolveBranch: { _ in "step_terminal" }),
+            purchaseHandler: .mock(
+                resolveBranch: { _ in "step_terminal" },
+                trackEvent: { event in events.modify { $0.append(event) } }
+            ),
             introEligibilityChecker: .producing(eligibility: .eligible),
             showZeroDecimalPlacePrices: false,
             displayCloseButton: false,
@@ -996,18 +1000,8 @@ extension WorkflowPaywallViewTests {
         let dispose = try view.addToHierarchy()
         defer { dispose() }
 
-        await expect(self.impressionScreenIds).toEventually(equal(["screen_terminal"]), timeout: .seconds(3))
-    }
-
-    /// Every `paywallIdentifier` an impression event reported, in order.
-    private var impressionScreenIds: [String] {
-        return self.logger.messages
-            .map(\.message)
-            .filter { $0.contains("Tracking event: impression(") }
-            .compactMap { message in
-                guard let range = message.range(of: "paywallIdentifier: Optional(\"") else { return nil }
-                return message[range.upperBound...].prefix(while: { $0 != "\"" }).description
-            }
+        await expect(events.value.compactMap { $0.data.paywallIdentifier })
+            .toEventually(equal(["screen_terminal"]), timeout: .seconds(3))
     }
 
     /// A routed step that cannot render reports against the routed step, not the fallback.

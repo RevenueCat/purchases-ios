@@ -36,6 +36,7 @@ extension PurchaseHandler {
         preferredLocaleOverride: String? = nil,
         remoteConfigEnabled: Bool = false,
         resolveBranch: (@Sendable (WorkflowBranch) async -> WorkflowStepID)? = nil,
+        trackEvent: ((PaywallEvent) -> Void)? = nil,
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = Just(
             (
                 transaction: nil,
@@ -59,6 +60,7 @@ extension PurchaseHandler {
             } restorePurchases: {
                 return customerInfo
             } trackEvent: { event in
+                trackEvent?(event)
                 Logger.debug("Tracking event: \(event)")
             } customerInfo: {
                 return customerInfo

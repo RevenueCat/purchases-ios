@@ -36,15 +36,6 @@ final class WorkflowNavigator: ObservableObject {
     private let branches: WorkflowStepBranches
     private var initialStepTask: Task<Void, Never>?
 
-    /// The branch that has to route the first step before anything can render.
-    static func initialBranch(
-        in workflow: PublishedWorkflow,
-        resolveBranch: (@Sendable (WorkflowBranch) async -> WorkflowStepID)?
-    ) -> WorkflowBranch? {
-        guard resolveBranch != nil, case .branch(let branch) = workflow.initialTrigger else { return nil }
-        return branch
-    }
-
     init(
         workflow: PublishedWorkflow,
         resolveBranch: (@Sendable (WorkflowBranch) async -> WorkflowStepID)? = nil
@@ -53,8 +44,7 @@ final class WorkflowNavigator: ObservableObject {
         self.branches = WorkflowStepBranches(resolve: resolveBranch)
         self.currentStepId = workflow.initialStepId
 
-        guard let resolveBranch,
-              let initialBranch = Self.initialBranch(in: workflow, resolveBranch: resolveBranch) else {
+        guard let resolveBranch, let initialBranch = workflow.initialBranch else {
             self.branches.resolveBranches(in: self.currentStep)
             return
         }
@@ -178,7 +168,7 @@ extension WorkflowNavigator {
 /// routes on its own answer.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
-final class WorkflowStepBranches {
+private final class WorkflowStepBranches {
 
     /// `nil` while branch routing is unreleased: every branch takes its fallback.
     private let resolve: (@Sendable (WorkflowBranch) async -> WorkflowStepID)?
@@ -220,6 +210,17 @@ final class WorkflowStepBranches {
     /// Tests only. Nothing in the UI waits for a step's branches.
     func waitForResolution() async {
         await self.task?.value
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PublishedWorkflow {
+
+    /// The branch that has to route the first step before anything can render.
+    var initialBranch: WorkflowBranch? {
+        guard case .branch(let branch) = self.initialTrigger else { return nil }
+        return branch
     }
 
 }

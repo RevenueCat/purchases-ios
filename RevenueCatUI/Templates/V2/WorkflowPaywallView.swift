@@ -269,9 +269,6 @@ struct WorkflowPaywallView: View {
     private let displayCloseButton: Bool
     private let onDismiss: () -> Void
     private let onPresentationError: ((NSError) -> Void)?
-    /// Whether the first step is audience-routed, so nothing can be rendered until `initialTrigger` lands.
-    private let resolvesInitialStep: Bool
-
     @StateObject private var navigator: WorkflowNavigator
     /// One paywall state store per workflow presentation: all screens read and write the same
     /// store, so values survive screen navigation and reset only when the presentation ends
@@ -331,40 +328,36 @@ struct WorkflowPaywallView: View {
             )
         ))
         let initialStepId = context.workflow.initialStepId
-        let resolvesInitialStep = WorkflowNavigator.initialBranch(
-            in: context.workflow,
-            resolveBranch: purchaseHandler.resolveBranch
-        ) != nil
-        self.resolvesInitialStep = resolvesInitialStep
-        let initialPackageInput = Self.buildPackageInput(
-            stepId: initialStepId,
-            context: context,
-            preferredPackage: nil,
-            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
-        )
-        let initialPresentationError = resolvesInitialStep
-            ? nil
-            : Self.presentationError(for: initialStepId, in: context)
-        let initialPage = !resolvesInitialStep && initialPresentationError == nil
-            ? Self.renderedPage(
+        var initialPresentationError: NSError?
+        var initialPage: RenderedPage?
+        var skeletonPage: RenderedPage?
+
+        func page(showCloseButton: Bool, skeleton: Bool) -> RenderedPage? {
+            return Self.renderedPage(
                 from: context,
                 stepId: initialStepId,
-                showCloseButton: displayCloseButton,
+                showCloseButton: showCloseButton,
                 introEligibilityChecker: introEligibilityChecker,
-                packageInput: initialPackageInput
+                packageInput: Self.buildPackageInput(
+                    stepId: initialStepId,
+                    context: context,
+                    preferredPackage: nil,
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                ),
+                skeleton: skeleton
             )
-            : nil
-        self._skeletonPage = .init(wrappedValue: resolvesInitialStep
-            ? Self.skeletonPage(
-                from: context,
-                stepId: initialStepId,
-                // Nothing on the placeholder is tappable, so a close button would only be dead.
-                showCloseButton: false,
-                introEligibilityChecker: introEligibilityChecker,
-                packageInput: initialPackageInput
-            )
-            : nil
-        )
+        }
+
+        if purchaseHandler.resolveBranch != nil && context.workflow.initialBranch != nil {
+            // Nothing on the placeholder is tappable, so a close button would only be dead.
+            skeletonPage = Self.skeletonEnabled ? page(showCloseButton: false, skeleton: true) : nil
+        } else {
+            initialPresentationError = Self.presentationError(for: initialStepId, in: context)
+            initialPage = initialPresentationError == nil
+                ? page(showCloseButton: displayCloseButton, skeleton: false)
+                : nil
+        }
+        self._skeletonPage = .init(wrappedValue: skeletonPage)
         self._presentationState = .init(
             initialValue: initialPresentationError.map {
                 .failing(error: $0)
@@ -380,6 +373,19 @@ struct WorkflowPaywallView: View {
         )
         self._seenPages = .init(wrappedValue: initialPage.map { [$0] } ?? [])
         self._transitionState = .init(wrappedValue: .init(currentPage: initialPage))
+    }
+
+    /// Whether the first step is audience-routed, so nothing can be rendered until `initialTrigger` lands.
+    private var resolvesInitialStep: Bool {
+        return self.purchaseHandler.resolveBranch != nil && self.context.workflow.initialBranch != nil
+    }
+
+    static var skeletonEnabled: Bool {
+        #if ENABLE_WORKFLOW_BRANCH_LOADING
+        return true
+        #else
+        return false
+        #endif
     }
 
     /// Merged across all screens so a key declared on a screen the user has not reached yet is
@@ -907,7 +913,7 @@ struct WorkflowPaywallView: View {
         showCloseButton: Bool,
         introEligibilityChecker: TrialOrIntroEligibilityChecker,
         packageInput: RenderedPagePackageInput,
-        transform: ((Offering.PaywallComponents) -> Offering.PaywallComponents)? = nil
+        skeleton: Bool = false
     ) -> RenderedPage? {
         guard let step = context.workflow.steps[stepId],
               let screenId = step.screenId,
@@ -915,12 +921,22 @@ struct WorkflowPaywallView: View {
             return nil
         }
 
-        let mapped = WorkflowScreenMapper.toPaywallComponents(
+        var paywallComponents = WorkflowScreenMapper.toPaywallComponents(
             screen: screen,
             uiConfig: context.uiConfig,
             paywallId: screenId
         )
-        let paywallComponents = transform?(mapped) ?? mapped
+        #if ENABLE_WORKFLOW_BRANCH_LOADING
+        if skeleton {
+            paywallComponents = .init(
+                uiConfig: paywallComponents.uiConfig,
+                data: WorkflowSkeleton.transform(
+                    paywallComponents.data,
+                    colors: paywallComponents.uiConfig.app.colors
+                )
+            )
+        }
+        #endif
         let offering = WorkflowContext.renderingOffering(
             baseOffering: context.offering(for: step),
             paywallComponents: paywallComponents
@@ -938,35 +954,6 @@ struct WorkflowPaywallView: View {
             packageContext: packageInput.packageContext,
             effectiveWorkflowPackageContext: packageInput.effectiveWorkflowPackageContext
         )
-    }
-
-    private static func skeletonPage(
-        from context: WorkflowContext,
-        stepId: String,
-        showCloseButton: Bool,
-        introEligibilityChecker: TrialOrIntroEligibilityChecker,
-        packageInput: RenderedPagePackageInput
-    ) -> RenderedPage? {
-        #if ENABLE_WORKFLOW_BRANCH_LOADING
-        return Self.renderedPage(
-            from: context,
-            stepId: stepId,
-            showCloseButton: showCloseButton,
-            introEligibilityChecker: introEligibilityChecker,
-            packageInput: packageInput,
-            transform: { components in
-                .init(
-                    uiConfig: components.uiConfig,
-                    data: WorkflowSkeleton.transform(
-                        components.data,
-                        colors: components.uiConfig.app.colors
-                    )
-                )
-            }
-        )
-        #else
-        return nil
-        #endif
     }
 
     /// A reached step must have a screen, and any offering it declares must be available, before it is made
@@ -1079,17 +1066,10 @@ struct WorkflowPaywallView: View {
         self.skeletonPage = nil
 
         guard Self.presentationError(for: stepId, in: self.context) == nil,
-              let page = Self.renderedPage(
-                  from: self.context,
+              let page = self.renderedPageForForwardNavigation(
                   stepId: stepId,
-                  showCloseButton: self.displayCloseButton,
-                  introEligibilityChecker: self.introEligibilityChecker,
-                  packageInput: Self.buildPackageInput(
-                      stepId: stepId,
-                      context: self.context,
-                      preferredPackage: nil,
-                      showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices
-                  )
+                  canNavigateBack: false,
+                  carryForwardPackage: nil
               ) else {
             self.failWorkflowPresentation(for: stepId)
             return

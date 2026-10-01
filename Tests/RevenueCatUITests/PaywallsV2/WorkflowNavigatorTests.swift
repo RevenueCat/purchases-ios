@@ -410,18 +410,6 @@ final class WorkflowNavigatorTests: TestCase {
         expect(navigator.currentStepId) == "step_3"
     }
 
-    /// `initial_step_id` is the branch's own fallback, so `currentStepId` cannot tell "ignored" from
-    /// "resolved to the fallback". The view gates its loading state on this, so assert it directly.
-    func testWithNoResolverThereIsNoInitialBranchToWaitOn() throws {
-        let workflow = try Self.makeWorkflow(
-            steps: [makeStep(id: "step_1"), makeStep(id: "step_3")],
-            initialRouteStepId: "step_3"
-        )
-
-        expect(WorkflowNavigator.initialBranch(in: workflow, resolveBranch: nil)).to(beNil())
-        expect(WorkflowNavigator.initialBranch(in: workflow, resolveBranch: { _ in "step_3" })).toNot(beNil())
-    }
-
     /// Config drift: the audiences pick a step the workflow does not have.
     func testAnInitialRouteNamingAMissingStepStaysOnTheFallback() async throws {
         let workflow = try Self.makeWorkflow(
