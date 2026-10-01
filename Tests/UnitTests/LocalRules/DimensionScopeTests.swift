@@ -110,6 +110,7 @@ private extension DimensionScopeTests {
                 "expires_at": .int(4_102_444_800_000),
                 "is_active": .bool(true),
                 "is_sandbox": .bool(false),
+                "is_synced": .bool(true),
                 "will_renew": .bool(true),
                 "is_in_grace_period": .bool(false),
                 "is_refunded": .bool(false),

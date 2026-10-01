@@ -33,15 +33,18 @@ struct WorkflowStepEventTracker {
 
     private let workflow: PublishedWorkflow
     let traceId: String
+    private let workflowBlobRef: String?
     private let sink: (WorkflowEvent) -> Void
 
     init(
         workflow: PublishedWorkflow,
         traceId: String,
+        workflowBlobRef: String? = nil,
         sink: @escaping (WorkflowEvent) -> Void
     ) {
         self.workflow = workflow
         self.traceId = traceId
+        self.workflowBlobRef = workflowBlobRef
         self.sink = sink
     }
 
@@ -107,16 +110,32 @@ struct WorkflowStepEventTracker {
             toStepId: toStepId,
             entryReason: entryReason,
             isFirstStep: step.id == self.workflow.initialStepId,
-            isLastStep: Self.isTerminalStep(step)
+            isLastStep: Self.isTerminalStep(step),
+            experiment: self.experimentData(for: step)
         )
     }
 
-    /// A step is terminal when none of its trigger actions navigate to another step. Mirrors Android's
-    /// `isTerminalStep` (`triggerActions.values.none { it is WorkflowTriggerAction.Step }`).
+    private func experimentData(for step: WorkflowStep) -> WorkflowEvent.ExperimentData? {
+        guard let experimentId = step.experimentId,
+              let experimentVariant = step.experimentVariant,
+              let workflowBlobRef = self.workflowBlobRef else {
+            return nil
+        }
+
+        return .init(
+            experimentId: experimentId,
+            experimentVariant: experimentVariant,
+            workflowBlobRef: workflowBlobRef
+        )
+    }
+
+    /// A step is terminal when none of its trigger actions navigate to another step.
     static func isTerminalStep(_ step: WorkflowStep) -> Bool {
         return !step.stepTriggerActions.values.contains { action in
-            if case .step = action { return true }
-            return false
+            switch action {
+            case .step, .branch: return true
+            case .unknown: return false
+            }
         }
     }
 

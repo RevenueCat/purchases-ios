@@ -49,20 +49,6 @@ class WorkflowsConfigProviderTests: TestCase {
         )
     }
 
-    func testOfferingIdByWorkflowIdReturnsIdentifiersAndOfferingMetadata() async {
-        self.commit(workflows: [
-            "workflow-with-offering": .init(
-                blobRef: "offering-ref",
-                content: ["offering_identifier": "premium_annual"]
-            ),
-            "workflow-without-offering": .init(blobRef: "no-offering-ref", content: [:])
-        ])
-
-        let workflows = await self.provider.offeringIdByWorkflowId()
-
-        expect(workflows) == ["workflow-with-offering": "premium_annual"]
-    }
-
     func testResolvesAWorkflowAlreadyCommittedToTheWorkflowsTopic() async throws {
         let workflowJSON = try Self.workflowJSON(id: "wf-1")
         self.commit(
@@ -92,6 +78,37 @@ class WorkflowsConfigProviderTests: TestCase {
         expect(workflowResult.workflow.id) == "wf-1"
         // enrolled_variants is intentionally out of scope for the config-topic path.
         expect(workflowResult.enrolledVariants).to(beNil())
+    }
+
+    func testResolvedWorkflowsCarryTheirWorkflowBlobRef() async throws {
+        self.commit(
+            workflows: [
+                "wf-prefetch": .init(
+                    blobRef: "wf-prefetch-ref",
+                    prefetch: true,
+                    content: ["offering_identifier": "premium"]
+                ),
+                "wf-plain": .init(blobRef: "wf-plain-ref", content: ["offering_identifier": "basic"])
+            ],
+            uiConfig: Self.uiConfigTopic,
+            blobs: Self.uiConfigBlobs.merging([
+                "wf-prefetch-ref": try Self.workflowJSON(id: "wf-prefetch"),
+                "wf-plain-ref": try Self.workflowJSON(id: "wf-plain")
+            ]) { current, _ in current }
+        )
+
+        let plain = await self.provider.getWorkflow(workflowId: "wf-plain")
+        expect(plain.value?.workflowBlobRef) == "wf-plain-ref"
+
+        async let cachedWorkflowIDs = self.provider.cachePrefetchedWorkflowBodyData(includingOfferingId: "basic")
+        async let uiConfigReady = self.uiConfigProvider.getUiConfig()
+        _ = await (cachedWorkflowIDs, uiConfigReady)
+
+        let cachedRead = await self.provider.getWorkflow(workflowId: "wf-prefetch")
+        let prewarm = await self.provider.decodeCachedWorkflowForAssetPrewarming(workflowId: "wf-prefetch")
+        expect(cachedRead.value?.workflowBlobRef) == "wf-prefetch-ref"
+        expect(prewarm.value?.workflowBlobRef) == "wf-prefetch-ref"
+        expect(self.provider.cachedWorkflow(forOfferingId: "premium")?.workflowBlobRef) == "wf-prefetch-ref"
     }
 
     func testFailsWithUiConfigUnavailableWhenTheWorkflowResolvesButUiConfigIsUnavailable() async throws {

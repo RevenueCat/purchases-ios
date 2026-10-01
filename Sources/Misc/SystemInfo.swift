@@ -55,6 +55,13 @@ class SystemInfo {
     let platformFlavorVersion: String?
     let responseVerificationMode: Signing.ResponseVerificationMode
     let dangerousSettings: DangerousSettings
+
+    /// Whether the app takes part in Apple's external purchase custom link programme, and whether the simulator
+    /// offers external purchases in any storefront, see
+    /// ``Configuration/Builder/with(useExternalPurchaseCustomLinks:enableExternalPurchasesInSimulator:)``.
+    let useExternalPurchaseCustomLinks: Bool
+    let enableExternalPurchasesInSimulator: Bool
+
     let clock: ClockType
     private let preferredLocalesProvider: PreferredLocalesProvider
 
@@ -100,6 +107,15 @@ class SystemInfo {
         return !self.dangerousSettings.customEntitlementComputation
     }
 
+    /// Workflow branch routing, unreleased. Goes away with `DisabledBranchResolver` once branching ships.
+    var branchingEnabled: Bool {
+#if ENABLE_WORKFLOW_BRANCHING
+        return true
+#else
+        return false
+#endif
+    }
+
     var isDebugBuild: Bool {
 #if DEBUG
         return true
@@ -113,7 +129,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.90.0-SNAPSHOT"
+        return "5.93.0-SNAPSHOT"
     }
 
     static var installationMethod: String {
@@ -218,6 +234,8 @@ class SystemInfo {
          apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
          responseVerificationMode: Signing.ResponseVerificationMode = .default,
          dangerousSettings: DangerousSettings? = nil,
+         useExternalPurchaseCustomLinks: Bool = false,
+         enableExternalPurchasesInSimulator: Bool = true,
          isAppBackgrounded: Bool? = nil,
          clock: ClockType = Clock.default,
          preferredLocalesProvider: PreferredLocalesProvider) {
@@ -235,6 +253,8 @@ class SystemInfo {
         self.storefrontProvider = storefrontProvider
         self.responseVerificationMode = responseVerificationMode
         self.dangerousSettings = dangerousSettings ?? DangerousSettings()
+        self.useExternalPurchaseCustomLinks = useExternalPurchaseCustomLinks
+        self.enableExternalPurchasesInSimulator = enableExternalPurchasesInSimulator
         self.clock = clock
         self.preferredLocalesProvider = preferredLocalesProvider
 
@@ -267,6 +287,10 @@ class SystemInfo {
     #else
     static let isRunningInSimulator = false
     #endif
+
+    var isRunningInSimulator: Bool {
+        return Self.isRunningInSimulator
+    }
 
     func isOperatingSystemAtLeast(_ version: OperatingSystemVersion) -> Bool {
         return ProcessInfo.processInfo.isOperatingSystemAtLeast(version)
@@ -402,13 +426,13 @@ extension SystemInfo {
         #elseif os(watchOS)
         if #available(watchOS 9, *) {
             return WKApplication.didBecomeActiveNotification
-        } else if #available(watchOS 7, *) {
+        }
+        if #available(watchOS 7, *) {
             // Work around for "Symbol not found" dyld crashes on watchOS 7.0..<9.0
             return Notification.Name("WKApplicationDidBecomeActiveNotification")
-        } else {
-            // There's no equivalent notification available on watchOS <7.
-            return nil
         }
+        // There's no equivalent notification available on watchOS <7.
+        return nil
         #endif
     }
 

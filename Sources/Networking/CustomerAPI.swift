@@ -52,6 +52,7 @@ final class CustomerAPI {
         )
 
         let callback = CustomerInfoCallback(cacheKey: factory.cacheKey,
+                                            appUserID: appUserID,
                                             source: factory.operationType,
                                             completion: completion)
         let cacheStatus = self.customerInfoCallbackCache.addOrAppendToPostReceiptDataOperation(callback: callback)
@@ -176,6 +177,7 @@ final class CustomerAPI {
         )
 
         let callbackObject = CustomerInfoCallback(cacheKey: factory.cacheKey,
+                                                  appUserID: appUserID,
                                                   source: PostReceiptDataOperation.self,
                                                   completion: completion)
 

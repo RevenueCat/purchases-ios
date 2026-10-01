@@ -41,6 +41,7 @@ enum TestMessage: LogMessage {
     case unfinished_transactions([StoreKit.VerificationResult<StoreKit.Transaction>])
     case unable_parse_receipt_without_sdk
     case error_parsing_receipt(Error)
+    case eligibility_warmup_did_not_finish(pending: Int)
 
 }
 
@@ -93,6 +94,9 @@ extension TestMessage {
 
         case let .error_parsing_receipt(error):
             return "Error parsing local receipt: \(error)"
+
+        case let .eligibility_warmup_did_not_finish(pending):
+            return "Eligibility cache warmup did not finish; \(pending) operations remain"
         }
     }
 

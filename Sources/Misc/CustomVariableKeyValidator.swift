@@ -16,13 +16,13 @@ import Foundation
 
 private enum CustomVariableKeyValidatorStrings: LogMessage {
 
-    case invalidKey(String, maxLength: Int)
+    case invalidKey(String)
 
     var description: String {
         switch self {
-        case let .invalidKey(key, maxLength):
+        case let .invalidKey(key):
             return "Custom variable key '\(key)' is invalid and will be ignored. " +
-                "Keys must be 1–\(maxLength) characters and contain only ASCII letters, numbers, and underscores."
+                "Keys must not be empty and contain only letters, numbers, and underscores."
         }
     }
 
@@ -34,24 +34,14 @@ private enum CustomVariableKeyValidatorStrings: LogMessage {
 @_spi(Internal)
 public struct CustomVariableKeyValidator {
 
-    private static let maxLength = 255
-
     private init() {}
 
     /// Returns whether a key can be addressed using a `custom.<key>` path.
     public static func isValidKey(_ key: String) -> Bool {
-        guard (1...Self.maxLength).contains(key.utf8.count) else { return false }
-
-        return key.utf8.allSatisfy { character in
-            switch character {
-            case UInt8(ascii: "a")...UInt8(ascii: "z"),
-                 UInt8(ascii: "A")...UInt8(ascii: "Z"),
-                 UInt8(ascii: "0")...UInt8(ascii: "9"),
-                 UInt8(ascii: "_"):
-                return true
-            default:
-                return false
-            }
+        return !key.isEmpty && key.unicodeScalars.allSatisfy { scalar in
+            scalar.properties.isAlphabetic ||
+                scalar.properties.generalCategory == .decimalNumber ||
+                scalar.value == 0x5F
         }
     }
 
@@ -60,7 +50,7 @@ public struct CustomVariableKeyValidator {
         return variables.filter { key, _ in
             guard Self.isValidKey(key) else {
                 #if DEBUG
-                Logger.warn(CustomVariableKeyValidatorStrings.invalidKey(key, maxLength: Self.maxLength))
+                Logger.warn(CustomVariableKeyValidatorStrings.invalidKey(key))
                 #endif
                 return false
             }

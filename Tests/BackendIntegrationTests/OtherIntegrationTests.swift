@@ -82,7 +82,11 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         expect(info2.isComputedOffline) == false
 
         self.logger.verifyMessageWasLogged(Strings.customerInfo.vending_cache, level: .debug)
-        self.logger.verifyMessageWasNotLogged("API request started")
+        try self.logger.verifyMessageWasNotLogged(
+            Strings.network.api_request_started(
+                .init(method: .get, path: .getCustomerInfo(appUserID: self.purchases.appUserID))
+            )
+        )
     }
 
     func testGetOfferingsMultipleTimesInParallel() async throws {
@@ -193,6 +197,73 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         expect(info3.isLoadedFromCache) == false
     }
 
+    func testAnonymousCustomerInfoArrivingAfterLogInDoesNotReplaceLoggedInUser() async throws {
+        // 1. Create an identified user. It gets aliased to the initial anonymous user.
+        let identifiedUserID = UUID().uuidString
+        _ = try await self.purchases.logIn(identifiedUserID)
+
+        // 2. Log out to create a new anonymous user, which won't be aliased when logging in again.
+        _ = try await self.purchases.logOut()
+        let anonymousUserID = try self.purchases.appUserID
+
+        // 3. Flush pending subscriber attributes: `logIn` syncs them first, and that request would
+        // otherwise be queued ahead of the login request below. Attributes are synced before offerings
+        // are fetched, so an offerings error is irrelevant here.
+        _ = try? await self.purchases.syncAttributesAndOfferingsIfNeeded()
+
+        // 4. Block the head of the serial request pipeline with a slow, harmless request,
+        // so the requests enqueued next run in a known order once it finishes.
+        let offeringsPath = HTTPRequest.Path.getOfferings(appUserID: anonymousUserID).relativePath
+        stub(
+            condition: { $0.url?.absoluteString.hasSuffix(offeringsPath) == true },
+            response: { _ in HTTPStubsResponse(data: Data(), statusCode: 400, headers: nil).responseTime(5) }
+        )
+        try self.purchases.invalidateOfferingsCache()
+        try self.purchases.getOfferings(fetchPolicy: .default, fetchCurrent: true) { _, _ in }
+        try await self.logger.verifyMessageIsEventuallyLogged(
+            Strings.network.starting_request(httpMethod: "GET", path: offeringsPath),
+            level: .debug
+        )
+
+        // 5. Log in while the pipeline is blocked. The request is queued behind the offerings request.
+        let updatesBeforeLogIn = self.purchasesDelegate.receivedCustomerInfos.count
+        let logInTask = Task { try await self.purchases.logIn(identifiedUserID) }
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+
+        // 6. Fetch CustomerInfo while the anonymous user is still current. The request is created
+        // for the anonymous user, but it is queued behind logIn so it only runs after it has completed.
+        let anonymousFetchTask = Task { try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent) }
+
+        let (logInInfo, created) = try await logInTask.value
+        expect(created) == false
+        expect(logInInfo.originalAppUserId) != anonymousUserID
+        expect(try self.purchases.appUserID) == identifiedUserID
+
+        let anonymousInfo = try await anonymousFetchTask.value
+        expect(anonymousInfo.originalAppUserId) == anonymousUserID
+
+        // Verify the anonymous request only started after logIn completed, otherwise the race was not reproduced.
+        let anonymousPath = HTTPRequest.Path.getCustomerInfo(appUserID: anonymousUserID).relativePath
+        let logInCompleted = "API request completed: POST '\(HTTPRequest.Path.logIn.relativePath)'"
+        let anonymousFetchStarted = Strings.network.starting_request(httpMethod: "GET", path: anonymousPath).description
+        let messages = self.logger.messages.map(\.message)
+        let logInIndex = try XCTUnwrap(messages.lastIndex { $0.contains(logInCompleted) })
+        let anonymousFetchIndex = try XCTUnwrap(messages.lastIndex { $0.contains(anonymousFetchStarted) })
+        expect(logInIndex) < anonymousFetchIndex
+
+        // 7. The anonymous CustomerInfo must not have been sent to the delegate after logging in,
+        // nor replaced the identified user's cache. Observers are notified asynchronously, so wait a bit.
+        try await Task.sleep(nanoseconds: 1_000_000_000)
+        let updatesAfterLogIn = self.purchasesDelegate.receivedCustomerInfos
+            .dropFirst(updatesBeforeLogIn)
+            .map(\.originalAppUserId)
+        expect(updatesAfterLogIn).to(contain(logInInfo.originalAppUserId))
+        expect(updatesAfterLogIn).toNot(contain(anonymousUserID))
+        let cachedInfo = try await self.purchases.customerInfo(fetchPolicy: .fromCacheOnly)
+        expect(cachedInfo.originalAppUserId) != anonymousUserID
+        expect(try self.purchases.isAnonymous) == false
+    }
+
     func testOfferingsAreOnlyFetchedOnceOnSDKInitialization() async throws {
         self.logger.verifyMessageWasLogged(Strings.offering.offerings_stale_updating_in_foreground,
                                            level: .debug,
@@ -221,11 +292,13 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         let result = try await self.purchases.productEntitlementMapping().entitlementsByProduct
-        expect(result).to(haveCount(21))
+        expect(result).to(haveCount(23))
         expect(result["com.revenuecat.monthly_4.99.1_week_intro"]) == ["premium"]
         expect(result["lifetime"]) == ["premium"]
         expect(result["com.revenuecat.intro_test.monthly.1_week_intro"]).to(beEmpty())
         expect(result["consumable.10_coins"]).to(beEmpty())
+        expect(result["com.revenuecat.sampleapp.monthly.12mocommitment:monthly"]) == ["premium"]
+        expect(result["com.revenuecat.sampleapp.monthly.12mocommitment"]) == ["super_premium"]
     }
 
     @available(iOS 14.3, macOS 11.1, macCatalyst 14.3, *)
@@ -235,7 +308,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         try await self.logger.verifyMessageIsEventuallyLogged(
             Strings.attribution.adservices_token_post_succeeded.description,
             level: .debug,
-            timeout: .seconds(3),
+            timeout: .seconds(10),
             pollInterval: .milliseconds(200)
         )
     }

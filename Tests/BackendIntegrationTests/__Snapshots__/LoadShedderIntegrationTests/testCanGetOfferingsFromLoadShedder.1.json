@@ -2506,7 +2506,11 @@
 
       },
       "variable_compatibility_map" : {
-
+        "product.offer_price_with_zero" : "product.offer_price",
+        "product.offer_price_with_zero_per_day" : "product.offer_price_per_day",
+        "product.offer_price_with_zero_per_month" : "product.offer_price_per_month",
+        "product.offer_price_with_zero_per_week" : "product.offer_price_per_week",
+        "product.offer_price_with_zero_per_year" : "product.offer_price_per_year"
       }
     }
   }

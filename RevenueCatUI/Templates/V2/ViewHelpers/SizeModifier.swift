@@ -32,14 +32,15 @@ struct SizeModifier: ViewModifier {
 
 extension View {
 
+    /// A zero minimum prevents oversized children from widening Fill ancestors.
     @ViewBuilder
     func applyWidth(_ sizeConstraint: PaywallComponent.SizeConstraint, alignment: Alignment) -> some View {
         switch sizeConstraint {
-        case let .fit(_, minMax):
-            self.applyWidthLimits(minMax, alignment: alignment)
+        case .fit:
+            self
         case let .fill(minMax):
             self
-                .frame(maxWidth: .infinity, alignment: alignment)
+                .frame(minWidth: 0, maxWidth: .infinity, alignment: alignment)
                 .applyWidthLimits(minMax, alignment: alignment)
         case .fixed(let value):
             self
@@ -53,11 +54,11 @@ extension View {
     @ViewBuilder
     func applyHeight(_ sizeConstraint: PaywallComponent.SizeConstraint, alignment: Alignment) -> some View {
         switch sizeConstraint {
-        case let .fit(_, minMax):
-            self.applyHeightLimits(minMax, alignment: alignment)
+        case .fit:
+            self
         case let .fill(minMax):
             self
-                .frame(maxHeight: .infinity, alignment: alignment)
+                .frame(minHeight: 0, maxHeight: .infinity, alignment: alignment)
                 .applyHeightLimits(minMax, alignment: alignment)
         case .fixed(let value):
             self

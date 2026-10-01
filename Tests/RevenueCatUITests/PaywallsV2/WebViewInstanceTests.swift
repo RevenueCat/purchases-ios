@@ -129,7 +129,12 @@ final class WebViewInstanceTests: TestCase {
             let owned = try XCTUnwrap(viewModel.webViewInstance())
             let ownedWebView = owned.webView { WKWebView(frame: .zero) }
             // Built through the real representable so the coordinator's captures are the shipping ones.
-            _ = WebViewRepresentable(url: Self.url, instance: owned, idStore: store).makeCoordinator()
+            _ = WebViewRepresentable(
+                url: Self.url,
+                instance: owned,
+                idStore: store,
+                carouselDistance: 0
+            ).makeCoordinator()
 
             instance = owned
             webView = ownedWebView
@@ -209,7 +214,7 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
         let webView = instance.webView { WKWebView(frame: .zero) }
         let host = self.makeWindowedHost()
 
-        instance.hostDidEnterWindow(host)
+        instance.reconcile(host: host)
 
         XCTAssertTrue(webView.superview === host)
     }
@@ -219,8 +224,8 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
         let webView = instance.webView { WKWebView(frame: .zero) }
         let host = self.makeWindowedHost()
 
-        instance.hostDidEnterWindow(host)
-        instance.updateHost(host)
+        instance.reconcile(host: host)
+        instance.reconcile(host: host)
 
         XCTAssertTrue(webView.superview === host)
         XCTAssertEqual(host.subviews.count, 1)
@@ -232,22 +237,22 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
         let displayed = self.makeWindowedHost()
         let other = self.makeWindowedHost()
 
-        instance.hostDidEnterWindow(displayed)
-        instance.hostDidEnterWindow(other)
+        instance.reconcile(host: displayed)
+        instance.reconcile(host: other)
 
         XCTAssertTrue(webView.superview === displayed)
     }
 
     /// SwiftUI may mount the incoming representable before unmounting the outgoing one. The incoming
     /// request must complete when the outgoing host leaves without requiring another update callback.
-    func testPendingHostTakesTheWebViewWhenTheCurrentHostLeavesItsWindow() {
+    func testIncomingCandidateTakesTheWebViewWhenTheAttachedHostLeavesItsWindow() {
         let instance = Self.makeInstance()
         let webView = instance.webView { WKWebView(frame: .zero) }
         let outgoing = self.makeWindowedHost()
         let incoming = self.makeWindowedHost()
 
-        instance.hostDidEnterWindow(outgoing)
-        instance.hostDidEnterWindow(incoming)
+        instance.reconcile(host: outgoing)
+        instance.reconcile(host: incoming)
         XCTAssertTrue(webView.superview === outgoing)
 
         outgoing.removeFromSuperview()
@@ -256,62 +261,193 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
         XCTAssertTrue(webView.superview === incoming)
     }
 
-    func testPendingHostIsForgottenIfItLeavesBeforeTheCurrentHost() {
+    func testCandidateIsRemovedIfItLeavesBeforeTheAttachedHost() {
         let instance = Self.makeInstance()
         let webView = instance.webView { WKWebView(frame: .zero) }
         let displayed = self.makeWindowedHost()
-        let pending = self.makeWindowedHost()
+        let candidate = self.makeWindowedHost()
 
-        instance.hostDidEnterWindow(displayed)
-        instance.hostDidEnterWindow(pending)
-        pending.removeFromSuperview()
-        instance.hostDidLeaveWindow(pending)
+        instance.reconcile(host: displayed)
+        instance.reconcile(host: candidate)
+        candidate.removeFromSuperview()
+        instance.hostDidLeaveWindow(candidate)
         displayed.removeFromSuperview()
         instance.hostDidLeaveWindow(displayed)
 
         XCTAssertTrue(webView.superview === displayed)
     }
 
+    // MARK: - Carousel copies
+
+    /// In a looping carousel the off-screen copy at the start of the strip enters the window first; the
+    /// copy the user is looking at must win regardless.
+    func testActiveCarouselPageTakesTheWebViewFromAnEarlierOffscreenCopy() {
+        let instance = Self.makeInstance()
+        let webView = instance.webView { WKWebView(frame: .zero) }
+        let offscreenCopy = self.makeWindowedHost(carouselDistance: 3)
+        let activeCopy = self.makeWindowedHost(carouselDistance: 0)
+
+        instance.reconcile(host: offscreenCopy)
+        XCTAssertTrue(webView.superview === offscreenCopy)
+
+        instance.reconcile(host: activeCopy)
+
+        XCTAssertTrue(webView.superview === activeCopy)
+    }
+
+    func testFartherCarouselCopyCannotTakeTheWebViewFromTheActivePage() {
+        let instance = Self.makeInstance()
+        let webView = instance.webView { WKWebView(frame: .zero) }
+        let activeCopy = self.makeWindowedHost(carouselDistance: 0)
+        let neighborCopy = self.makeWindowedHost(carouselDistance: 1)
+
+        instance.reconcile(host: activeCopy)
+        instance.reconcile(host: neighborCopy)
+        // Repeated SwiftUI updates from a farther candidate must not change ownership.
+        instance.reconcile(host: neighborCopy)
+
+        XCTAssertTrue(webView.superview === activeCopy)
+    }
+
+    /// Swiping changes every copy's distance without any host leaving the window.
+    func testWebViewFollowsTheActivePageWhenTheCarouselMoves() {
+        let instance = Self.makeInstance()
+        let webView = instance.webView { WKWebView(frame: .zero) }
+        let firstCopy = self.makeWindowedHost(carouselDistance: 0)
+        let secondCopy = self.makeWindowedHost(carouselDistance: 2)
+
+        instance.reconcile(host: firstCopy)
+        instance.reconcile(host: secondCopy)
+        XCTAssertTrue(webView.superview === firstCopy)
+
+        firstCopy.carouselDistance = 2
+        instance.reconcile(host: firstCopy)
+
+        secondCopy.carouselDistance = 0
+        instance.reconcile(host: secondCopy)
+
+        XCTAssertTrue(webView.superview === secondCopy)
+        XCTAssertFalse(instance.isMediaPlaybackSuspended)
+    }
+
+    /// A 2-page loop peeks both neighbours at equal distance; the holder must not bounce between them.
+    func testEquallyDistantCopiesDoNotStealTheWebViewFromEachOther() {
+        let instance = Self.makeInstance()
+        let webView = instance.webView { WKWebView(frame: .zero) }
+        let leftNeighbor = self.makeWindowedHost(carouselDistance: 1)
+        let rightNeighbor = self.makeWindowedHost(carouselDistance: 1)
+
+        instance.reconcile(host: leftNeighbor)
+        instance.reconcile(host: rightNeighbor)
+        // Repeated updates in either order must preserve the attached winner of the tie.
+        instance.reconcile(host: rightNeighbor)
+        instance.reconcile(host: leftNeighbor)
+
+        XCTAssertTrue(webView.superview === leftNeighbor)
+    }
+
+    func testWebViewFallsBackToTheClosestRemainingCopyWhenTheActiveOneLeaves() {
+        let instance = Self.makeInstance()
+        let webView = instance.webView { WKWebView(frame: .zero) }
+        let farCopy = self.makeWindowedHost(carouselDistance: 3)
+        let activeCopy = self.makeWindowedHost(carouselDistance: 0)
+        let nearCopy = self.makeWindowedHost(carouselDistance: 1)
+
+        instance.reconcile(host: farCopy)
+        instance.reconcile(host: activeCopy)
+        instance.reconcile(host: nearCopy)
+
+        activeCopy.removeFromSuperview()
+        instance.hostDidLeaveWindow(activeCopy)
+
+        XCTAssertTrue(webView.superview === nearCopy)
+    }
+
     // MARK: - Media playback
 
     /// The web view outlives the subtree now, so a hidden component would otherwise keep playing.
-    func testMediaIsSuspendedOnceNoHostIsShowingTheWebView() {
+    func testMediaIsSuspendedOnceNoHostIsShowingTheWebView() async {
         let instance = Self.makeInstance()
         _ = instance.webView { WKWebView(frame: .zero) }
         let host = self.makeWindowedHost()
 
-        instance.hostDidEnterWindow(host)
+        instance.reconcile(host: host)
         XCTAssertFalse(instance.isMediaPlaybackSuspended)
 
         host.removeFromSuperview()
         instance.hostDidLeaveWindow(host)
+        await Task.yield()
 
         XCTAssertTrue(instance.isMediaPlaybackSuspended)
     }
 
-    func testMediaResumesWhenTheComponentIsShownAgain() {
+    func testMediaIsSuspendedUntilCarouselPageIsActiveOrNeighboring() async {
         let instance = Self.makeInstance()
         _ = instance.webView { WKWebView(frame: .zero) }
-        let host = self.makeWindowedHost()
+        let host = self.makeWindowedHost(carouselDistance: 2)
 
-        instance.hostDidEnterWindow(host)
-        host.removeFromSuperview()
-        instance.hostDidLeaveWindow(host)
+        instance.reconcile(host: host)
+        await Task.yield()
+        XCTAssertTrue(instance.isMediaPlaybackSuspended)
 
-        instance.hostDidEnterWindow(self.makeWindowedHost())
+        host.carouselDistance = 1
+        instance.reconcile(host: host)
+        await Task.yield()
 
         XCTAssertFalse(instance.isMediaPlaybackSuspended)
     }
 
-    /// A `ViewThatFits` swap hands the web view straight over, so playback must not be interrupted.
+    func testMediaSuspensionIgnoresIntermediateCarouselDistancesDuringSwipe() async {
+        let instance = Self.makeInstance()
+        _ = instance.webView { WKWebView(frame: .zero) }
+        let firstCopy = self.makeWindowedHost(carouselDistance: 4)
+        let secondCopy = self.makeWindowedHost(carouselDistance: 1)
+        let thirdCopy = self.makeWindowedHost(carouselDistance: 2)
+
+        instance.reconcile(host: firstCopy)
+        instance.reconcile(host: secondCopy)
+        instance.reconcile(host: thirdCopy)
+
+        // SwiftUI refreshes each copy separately after the active index changes. The intermediate
+        // distances must not suspend playback before the final copy receives its new distance.
+        firstCopy.carouselDistance = 5
+        instance.reconcile(host: firstCopy)
+        secondCopy.carouselDistance = 2
+        instance.reconcile(host: secondCopy)
+        XCTAssertFalse(instance.isMediaPlaybackSuspended)
+        thirdCopy.carouselDistance = 1
+        instance.reconcile(host: thirdCopy)
+        await Task.yield()
+
+        XCTAssertFalse(instance.isMediaPlaybackSuspended)
+    }
+
+    func testMediaResumesWhenTheComponentIsShownAgain() async {
+        let instance = Self.makeInstance()
+        _ = instance.webView { WKWebView(frame: .zero) }
+        let host = self.makeWindowedHost()
+
+        instance.reconcile(host: host)
+        host.removeFromSuperview()
+        instance.hostDidLeaveWindow(host)
+        await Task.yield()
+        XCTAssertTrue(instance.isMediaPlaybackSuspended)
+
+        instance.reconcile(host: self.makeWindowedHost())
+        await Task.yield()
+
+        XCTAssertFalse(instance.isMediaPlaybackSuspended)
+    }
+
+    /// A redraw hands the web view straight over to the new host, so playback must not be interrupted.
     func testHandoffBetweenCandidatesDoesNotSuspendMedia() {
         let instance = Self.makeInstance()
         _ = instance.webView { WKWebView(frame: .zero) }
         let outgoing = self.makeWindowedHost()
         let incoming = self.makeWindowedHost()
 
-        instance.hostDidEnterWindow(outgoing)
-        instance.hostDidEnterWindow(incoming)
+        instance.reconcile(host: outgoing)
+        instance.reconcile(host: incoming)
         outgoing.removeFromSuperview()
         instance.hostDidLeaveWindow(outgoing)
 
@@ -322,7 +458,7 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
         let instance = Self.makeInstance()
         let webView = instance.webView { WKWebView(frame: .zero) }
         let host = self.makeWindowedHost()
-        instance.hostDidEnterWindow(host)
+        instance.reconcile(host: host)
 
         instance.tearDown()
 
@@ -340,8 +476,9 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
         )
     }
 
-    private func makeWindowedHost() -> WebViewHostView {
+    private func makeWindowedHost(carouselDistance: Int = 0) -> WebViewHostView {
         let host = WebViewHostView()
+        host.carouselDistance = carouselDistance
 
         #if os(macOS)
         let window = NSWindow(

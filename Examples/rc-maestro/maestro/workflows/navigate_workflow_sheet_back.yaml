@@ -1,0 +1,57 @@
+# Opens an isolated workflow fixture, advances to its second screen, opens a bottom sheet, and
+# verifies that the sheet's `navigate_back` action closes only the sheet rather than navigating the
+# parent workflow back to screen 1.
+#
+# The test-store offering `workflow_sheet_back` must provide the labels and `Back`
+# `navigate_back` action asserted below.
+#
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/navigate_workflow_sheet_back.yaml
+
+appId: com.revenuecat.maestro.ios
+name: Navigate back from a workflow bottom sheet
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+- pressKey: home
+- launchApp:
+    arguments:
+        e2e_test_flow: open_workflow
+        workflow_offering_identifier: workflow_sheet_back
+- assertVisible: "entitlement (pro): nil"
+- extendedWaitUntil:
+    visible: "Present Paywall"
+    timeout: 15000
+- tapOn:
+    text: "Present Paywall"
+
+# Screen 1
+- extendedWaitUntil:
+    visible: "Workflow sheet back - screen 1"
+    timeout: 15000
+- tapOn:
+    text: "Continue"
+
+# Screen 2
+- extendedWaitUntil:
+    visible: "Workflow sheet back - screen 2"
+    timeout: 15000
+- tapOn:
+    text: "Open sheet"
+
+# Sheet
+- extendedWaitUntil:
+    visible: "Workflow sheet back - sheet"
+    timeout: 15000
+- extendedWaitUntil:
+    visible: "Back"
+    timeout: 15000
+- tapOn:
+    text: "Back"
+
+# The sheet closes, while the parent workflow stays on screen 2.
+- assertNotVisible: "Workflow sheet back - sheet"
+- assertNotVisible: "Back"
+- assertVisible: "Workflow sheet back - screen 2"

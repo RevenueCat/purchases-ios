@@ -80,10 +80,12 @@ extension XCTestCase {
 
     func waitUntilUnfinishedTransactions(
         condition: @Sendable @escaping (Int) -> Bool,
+        timeout: NimbleTimeInterval = defaultTimeout,
         file: FileString = #fileID,
         line: UInt = #line
     ) async throws {
         try await asyncWait(
+            timeout: timeout,
             file: file,
             line: line,
             description: { "Transaction expectation never met: \($0 ?? [])" },
@@ -92,8 +94,17 @@ extension XCTestCase {
         )
     }
 
-    func waitUntilNoUnfinishedTransactions(file: FileString = #fileID, line: UInt = #line) async throws {
-        try await self.waitUntilUnfinishedTransactions { $0 == 0 }
+    func waitUntilNoUnfinishedTransactions(
+        timeout: NimbleTimeInterval = defaultTimeout,
+        file: FileString = #fileID,
+        line: UInt = #line
+    ) async throws {
+        try await self.waitUntilUnfinishedTransactions(
+            condition: { $0 == 0 },
+            timeout: timeout,
+            file: file,
+            line: line
+        )
     }
 
     func deleteAllTransactions(session: SKTestSession) async {

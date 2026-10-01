@@ -131,7 +131,7 @@ extension PostHostedCheckoutOperation {
 
     struct Paywall {
 
-        let paywallID: String
+        let paywallID: String?
         let sessionID: String
 
         // Sent at the top level of the body as `presented_workflow_id`/`presented_step_id`, not inside

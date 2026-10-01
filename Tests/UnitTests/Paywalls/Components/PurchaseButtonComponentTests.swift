@@ -401,6 +401,13 @@ class PurchaseButtonComponentCodableTests: TestCase {
         )
     }
 
+    func testMethodDescriptionHostedWebCheckout() {
+        XCTAssertEqual(
+            PaywallComponent.PurchaseButtonComponent.Method.hostedWebCheckout.description,
+            "hosted_web_checkout"
+        )
+    }
+
     func testMethodDescriptionUnknown() {
         XCTAssertEqual(PaywallComponent.PurchaseButtonComponent.Method.unknown.description, "unknown")
     }
