@@ -245,8 +245,7 @@ private extension PurchasesHostedCheckoutTests {
         return .init(operationSessionID: Self.operationSessionID,
                      appUserID: appUserID,
                      checkoutURL: URL(string: "https://pay.example.com/session")!,
-                     successURL: URL(string: "https://api.revenuecat.com/checkout-return?status=success")!,
-                     cancelURL: URL(string: "https://api.revenuecat.com/checkout-return?status=cancel")!)
+                     successURL: URL(string: "https://api.revenuecat.com/checkout-return?status=success")!)
     }
 
     static func customerInfoWithActiveEntitlement() throws -> CustomerInfo {

@@ -62,6 +62,8 @@ import Foundation
         let diagnosticsEnabled: Bool
         let iamEnabled: Bool
         let keychainAccessGroup: String?
+        let useExternalPurchaseCustomLinks: Bool
+        let enableExternalPurchasesInSimulator: Bool
     }
 
     internal let storage: Storage
@@ -86,6 +88,8 @@ import Foundation
     internal var diagnosticsEnabled: Bool { self.storage.diagnosticsEnabled }
     internal var iamEnabled: Bool { self.storage.iamEnabled }
     internal var keychainAccessGroup: String? { self.storage.keychainAccessGroup }
+    internal var useExternalPurchaseCustomLinks: Bool { self.storage.useExternalPurchaseCustomLinks }
+    internal var enableExternalPurchasesInSimulator: Bool { self.storage.enableExternalPurchasesInSimulator }
 
     private init(with builder: Builder) {
         self.storage = Storage(
@@ -104,7 +108,9 @@ import Foundation
             automaticDeviceIdentifierCollectionEnabled: builder.automaticDeviceIdentifierCollectionEnabled,
             diagnosticsEnabled: builder.diagnosticsEnabled,
             iamEnabled: builder.iamEnabled,
-            keychainAccessGroup: builder.keychainAccessGroup
+            keychainAccessGroup: builder.keychainAccessGroup,
+            useExternalPurchaseCustomLinks: builder.useExternalPurchaseCustomLinks,
+            enableExternalPurchasesInSimulator: builder.enableExternalPurchasesInSimulator
         )
     }
 
@@ -158,6 +164,8 @@ import Foundation
         private(set) var iamEnabled: Bool = false
         private(set) var keychainAccessGroup: String?
         private(set) var storeKitVersion: StoreKitVersion = .default
+        private(set) var useExternalPurchaseCustomLinks: Bool = false
+        private(set) var enableExternalPurchasesInSimulator: Bool = true
 
         /// The preferred locale for the requests.
         ///
@@ -388,6 +396,31 @@ import Foundation
                                                                     keychainAccessGroup: String) -> Builder {
             self.iamEnabled = iamEnabled
             self.keychainAccessGroup = keychainAccessGroup
+            return self
+        }
+
+        /// Set `useExternalPurchaseCustomLinks`. This is *disabled* by default.
+        ///
+        /// Enabling it makes a web purchase button that opens its link in the external browser take part in
+        /// Apple's external purchase custom link programme: the customer is shown Apple's disclosure notice,
+        /// and the purchase is reported to Apple.
+        ///
+        /// - Parameter enableExternalPurchasesInSimulator: Whether the simulator offers external purchases in any
+        /// storefront. When disabled, the simulator behaves as a device does for a customer who is not
+        /// [eligible](https://developer.apple.com/documentation/storekit/externalpurchasecustomlink/iseligible).
+        /// Defaults to `true`. Has no effect on a physical device, nor while `useExternalPurchaseCustomLinks` is
+        /// `false`.
+        ///
+        /// - Important: The app has to carry Apple's external purchase link entitlement, otherwise no
+        /// purchase can be made outside the App Store.
+        ///
+        /// - Note: `ExternalPurchaseCustomLink.isEligible` returns `false` in the simulator, so Apple's disclosure
+        /// notice cannot be shown and an external purchase token cannot be minted there.
+        @_spi(Experimental)
+        public func with(useExternalPurchaseCustomLinks: Bool,
+                         enableExternalPurchasesInSimulator: Bool = true) -> Builder {
+            self.useExternalPurchaseCustomLinks = useExternalPurchaseCustomLinks
+            self.enableExternalPurchasesInSimulator = enableExternalPurchasesInSimulator
             return self
         }
 

@@ -26,8 +26,7 @@ final class HostedCheckoutTests: TestCase {
         operationSessionID: "oper_1",
         appUserID: "app_user_1",
         checkoutURL: URL(string: "https://checkout.stripe.com/c/pay/session_1")!,
-        successURL: URL(string: "https://api.revenuecat.com/rcbilling/v1/hosted-checkout-return?status=success")!,
-        cancelURL: URL(string: "https://api.revenuecat.com/rcbilling/v1/hosted-checkout-return?status=cancel")!
+        successURL: URL(string: "https://api.revenuecat.com/rcbilling/v1/hosted-checkout-return?status=success")!
     )
 
     /// The checkout is asked for through the handler, which is the paywall's only way to the SDK.

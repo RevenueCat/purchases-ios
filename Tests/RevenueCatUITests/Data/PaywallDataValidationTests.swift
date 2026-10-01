@@ -17,6 +17,9 @@ import Nimble
 import SnapshotTesting
 import XCTest
 
+// Legacy paywalls are unsupported on macOS, so validation always fails there.
+#if !os(macOS)
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PaywallDataValidationTests: TestCase {
 
@@ -348,3 +351,5 @@ private extension PaywallDataValidationTests {
     )
 
 }
+
+#endif

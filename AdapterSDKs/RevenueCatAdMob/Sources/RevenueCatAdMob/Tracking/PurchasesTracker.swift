@@ -18,19 +18,19 @@ internal extension Tracking {
         var isConfigured: Bool { Purchases.isConfigured }
 
         func trackAdLoaded(_ data: AdLoaded) {
-            Purchases.shared.adTracker.trackAdLoaded(data, captureMethod: .adapter)
+            Purchases.shared.adTracker.trackAdLoaded(data, captureMethod: .iosAdMobAdapter)
         }
         func trackAdDisplayed(_ data: AdDisplayed) {
-            Purchases.shared.adTracker.trackAdDisplayed(data, captureMethod: .adapter)
+            Purchases.shared.adTracker.trackAdDisplayed(data, captureMethod: .iosAdMobAdapter)
         }
         func trackAdOpened(_ data: AdOpened) {
-            Purchases.shared.adTracker.trackAdOpened(data, captureMethod: .adapter)
+            Purchases.shared.adTracker.trackAdOpened(data, captureMethod: .iosAdMobAdapter)
         }
         func trackAdRevenue(_ data: AdRevenue) {
-            Purchases.shared.adTracker.trackAdRevenue(data, captureMethod: .adapter)
+            Purchases.shared.adTracker.trackAdRevenue(data, captureMethod: .iosAdMobAdapter)
         }
         func trackAdFailedToLoad(_ data: AdFailedToLoad) {
-            Purchases.shared.adTracker.trackAdFailedToLoad(data, captureMethod: .adapter)
+            Purchases.shared.adTracker.trackAdFailedToLoad(data, captureMethod: .iosAdMobAdapter)
         }
 
     }

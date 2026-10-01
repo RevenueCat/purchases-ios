@@ -47,7 +47,7 @@ extension ExternalPurchaseStrings: LogMessage {
             "no notice shown and no token minted, whatever the storefront. Use a device in an allowed region " +
             "to try that flow out."
         case .disabled_in_simulator:
-            return "Not preparing an external purchase: DangerousSettings.enableExternalPurchasesInSimulator " +
+            return "Not preparing an external purchase: enableExternalPurchasesInSimulator " +
             "is false, making the simulator behave as a physical device does for a customer who is not eligible " +
             "for external purchases."
         case .not_eligible:

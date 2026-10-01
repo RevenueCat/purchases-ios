@@ -255,7 +255,6 @@ struct PurchaseButtonComponentView: View {
         self.hostedCheckoutViewModel = WebCheckoutViewModel(
             checkoutURL: session.checkoutURL,
             successURL: session.successURL,
-            cancelURL: session.cancelURL,
             dataStoreIdentifierStore: .init()
         )
     }
@@ -264,8 +263,6 @@ struct PurchaseButtonComponentView: View {
         switch outcome {
         case .returned(.success):
             self.resolveHostedCheckout(session, after: .successPage)
-        case .returned(.cancel):
-            Task { await self.purchaseHandler.handleHostedCheckoutCancellation(package: self.packageContext.package) }
         case .dismissed:
             // A payment may have gone through moments before the customer closed the sheet.
             Logger.debug(Strings.hosted_checkout_dismissed_without_returning)
