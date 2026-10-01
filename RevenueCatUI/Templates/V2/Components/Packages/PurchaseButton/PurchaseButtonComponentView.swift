@@ -50,7 +50,7 @@ struct PurchaseButtonComponentView: View {
 
     @State private var alreadyOwnedCategory: StoreProduct.ProductCategory?
 
-    @State private var isShowingHostedCheckoutPurchaseSucceeded = false
+    @State private var hostedCheckoutPurchaseCustomerInfo: CustomerInfo?
 
     @State private var hostedCheckoutError: HostedCheckoutError?
     #endif
@@ -134,14 +134,15 @@ struct PurchaseButtonComponentView: View {
         }
         .alert(
             Text(verbatim: ""),
-            isPresented: self.$isShowingHostedCheckoutPurchaseSucceeded
-        ) {
+            isPresented: .isNotNil(self.$hostedCheckoutPurchaseCustomerInfo),
+            presenting: self.hostedCheckoutPurchaseCustomerInfo
+        ) { customerInfo in
             Button {
-                Task { await self.purchaseHandler.handleHostedCheckoutPurchase() }
+                self.purchaseHandler.handleHostedCheckoutPurchase(customerInfo: customerInfo)
             } label: {
                 Text("OK", bundle: self.viewModel.localizedBundle)
             }
-        } message: {
+        } message: { _ in
             Text("Your purchase was successful.", bundle: self.viewModel.localizedBundle)
         }
         #endif
@@ -291,8 +292,8 @@ struct PurchaseButtonComponentView: View {
                 self.showAlreadyOwnedAlert(for: package)
             case let .failed(error):
                 self.hostedCheckoutError = error
-            case .purchased:
-                self.isShowingHostedCheckoutPurchaseSucceeded = true
+            case let .purchased(customerInfo):
+                self.hostedCheckoutPurchaseCustomerInfo = customerInfo
             }
         }
     }
