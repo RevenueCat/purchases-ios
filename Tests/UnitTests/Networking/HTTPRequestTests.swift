@@ -34,6 +34,7 @@ class HTTPRequestTests: TestCase {
         .postOfferForSigning,
         .postReceiptData,
         .postSubscriberAttributes(appUserID: userID),
+        .postRedeemWebPurchase,
         .health,
         .getProductEntitlementMapping,
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID),
@@ -52,6 +53,7 @@ class HTTPRequestTests: TestCase {
         .getCustomerInfo(appUserID: userID),
         .logIn,
         .postReceiptData,
+        .postRedeemWebPurchase,
         .health,
         .getOfferings(appUserID: userID),
         .getProductEntitlementMapping,
@@ -62,6 +64,7 @@ class HTTPRequestTests: TestCase {
         .getCustomerInfo(appUserID: userID),
         .logIn,
         .postReceiptData,
+        .postRedeemWebPurchase,
         .health,
         .remoteConfig(domain: "app"),
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID)
