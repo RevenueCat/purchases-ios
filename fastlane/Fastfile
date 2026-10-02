@@ -21,20 +21,6 @@ def current_version_number
   File.read("#{File.dirname(__FILE__)}/../.version").strip
 end
 
-# Highest stable release lower than `version`, ignoring any prerelease suffix (e.g. 5.93.0-SNAPSHOT -> 5.92.x).
-# Read from the purchases-ios-spm mirror, which is what the SDK update tests depend on.
-def latest_release_version_before(version)
-  current = Gem::Version.new(version.split("-").first)
-  tags = Fastlane::Actions.sh("git", "ls-remote", "--tags", "--refs", "https://github.com/RevenueCat/purchases-ios-spm.git", log: false)
-  releases = tags.lines
-                 .map { |line| line.split("refs/tags/").last.strip }
-                 .select { |tag| tag.match?(/\A\d+\.\d+\.\d+\z/) }
-                 .map { |tag| Gem::Version.new(tag) }
-                 .select { |release| release < current }
-  UI.user_error!("No release found before #{version}") if releases.empty?
-  releases.max.to_s
-end
-
 # Hack to work around a Fastlane quirk where plugin actions are run from the parent of the current working directory.
 # We switch to the first subdirectory, then run the action. The action will run from the parent of the subdirectory, which is
 # our actual current working directory.
@@ -1490,7 +1476,11 @@ platform :ios do
     base_path = File.expand_path("..", Dir.pwd)
     output_dir = File.expand_path(options[:output_dir] || "build/sdk_update_tests", base_path)
     project_dir = "#{base_path}/Projects/SDKUpdateTester"
-    release_version = options[:release_version] || latest_release_version_before(current_version_number)
+    # Read from the purchases-ios-spm mirror, which is what the release app depends on.
+    release_version = options[:release_version] || get_latest_release_before_version(
+      repo_name: "purchases-ios-spm",
+      version: current_version_number
+    )
 
     api_key = ENV["REVENUECAT_API_KEY"]
     UI.user_error!("REVENUECAT_API_KEY environment variable must be set") unless api_key
@@ -1554,9 +1544,8 @@ platform :ios do
   end
 
   # Runs an SDK update test case: installs the app built against the released SDK and runs the test case's
-  # 1_before_update.yaml flow, then installs the app built against the local SDK over it (keeping its data, like
-  # an app update) and runs the 2_after_update.yaml flow.
-  # The whole sequence is retried from a clean install on failure.
+  # before_update.yaml flow, then installs the app built against the local SDK over it (keeping its data, like
+  # an app update) and runs the after_update.yaml flow.
   # Parameters:
   #   - test_case: name of the flows directory in Projects/SDKUpdateTester/maestro (e.g. "anonymous_user").
   #   - apps_dir: output_dir of build_sdk_update_test_apps. Defaults to build/sdk_update_tests.
@@ -1567,63 +1556,23 @@ platform :ios do
     test_case = options[:test_case] || UI.user_error!("test_case is required")
     base_path = File.expand_path("..", Dir.pwd)
     apps_dir = File.expand_path(options[:apps_dir] || "build/sdk_update_tests", base_path)
-    output_dir = File.expand_path(options[:output_dir] || "fastlane/test_output/sdk_update_tests/#{test_case}", base_path)
-    max_attempts = Integer(options.fetch(:max_attempts, 3))
     flows_dir = "#{base_path}/Projects/SDKUpdateTester/maestro/#{test_case}"
-    bundle_id = "com.revenuecat.SDKUpdateTester"
-
-    UI.user_error!("Flows directory not found: #{flows_dir}") unless File.directory?(flows_dir)
-    apps = %w[release local].to_h do |name|
-      app_path = "#{apps_dir}/#{name}/SDKUpdateTester.app"
-      UI.user_error!("App not found: #{app_path}. Run build_sdk_update_test_apps first.") unless File.directory?(app_path)
-      [name, { path: app_path, sdk_version: File.read("#{apps_dir}/#{name}/version.txt").strip }]
+    app = lambda do |name|
+      version_path = "#{apps_dir}/#{name}/version.txt"
+      UI.user_error!("#{version_path} not found. Run build_sdk_update_test_apps first.") unless File.exist?(version_path)
+      { app_path: "#{apps_dir}/#{name}/SDKUpdateTester.app", sdk_version: File.read(version_path).strip }
     end
-    commit = sh("git", "rev-parse", "--short", "HEAD", log: false).strip
 
-    FileUtils.rm_rf(output_dir)
-    (1..max_attempts).each do |attempt|
-      attempt_dir = "#{output_dir}/attempt_#{attempt}"
-      screenshots_dir = "#{attempt_dir}/reference_screenshots"
-      FileUtils.mkdir_p(screenshots_dir)
-      # Unique per attempt, so that retries don't start with a user that already purchased.
-      app_user_id = "sdk-update-test-#{commit}-#{Time.now.to_i}-#{attempt}"
-
-      begin
-        UI.message("SDK update test '#{test_case}', attempt #{attempt}/#{max_attempts}")
-        sh("xcrun", "simctl", "uninstall", "booted", bundle_id)
-
-        [%w[release 1_before_update], %w[local 2_after_update]].each do |app_name, flow_name|
-          app = apps[app_name]
-          UI.message("Installing app built against SDK #{app[:sdk_version]} (#{app_name})")
-          sh("xcrun", "simctl", "install", "booted", app[:path])
-          sh(
-            "maestro", "test",
-            "--format", "junit",
-            "--output", "#{attempt_dir}/#{flow_name}/report.xml",
-            "--test-output-dir", "#{attempt_dir}/#{flow_name}",
-            "-e", "SCREENSHOTS_DIR=#{screenshots_dir}",
-            "-e", "EXPECTED_SDK_VERSION=#{app[:sdk_version]}",
-            "-e", "APP_USER_ID=#{app_user_id}",
-            "#{flows_dir}/#{flow_name}.yaml"
-          )
-        end
-
-        UI.success("✅ SDK update test '#{test_case}' passed on attempt #{attempt}")
-        break
-      rescue StandardError => e
-        UI.error("SDK update test '#{test_case}' attempt #{attempt} failed: #{e.message}")
-        raise e if attempt >= max_attempts
-      ensure
-        # Only the reports of the last attempt are kept for CircleCI test results, so that retried failures
-        # don't show up as failed tests.
-        FileUtils.rm_rf("#{output_dir}/junit")
-        Dir.glob("#{attempt_dir}/*/report.xml").each do |report|
-          destination = "#{output_dir}/junit/#{File.basename(File.dirname(report))}.xml"
-          FileUtils.mkdir_p(File.dirname(destination))
-          FileUtils.cp(report, destination)
-        end
-      end
-    end
+    run_sdk_update_maestro_test(
+      platform: "ios",
+      app_id: "com.revenuecat.SDKUpdateTester",
+      steps: [
+        app.call("release").merge(flow: "#{flows_dir}/before_update.yaml"),
+        app.call("local").merge(flow: "#{flows_dir}/after_update.yaml")
+      ],
+      output_dir: File.expand_path(options[:output_dir] || "fastlane/test_output/sdk_update_tests/#{test_case}", base_path),
+      max_attempts: Integer(options.fetch(:max_attempts, 3))
+    )
   end
 
   desc "replace API KEY for installation and integration tests"
