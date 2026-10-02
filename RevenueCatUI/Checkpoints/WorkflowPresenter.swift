@@ -31,6 +31,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
 
     enum PresentationUpdate {
         case outcome(CheckpointPresentationOutcome)
+        case recoverableErrorHandled
         case workflowPresentationError(NSError)
         case dismissalReason(WorkflowDismissalReason)
     }
@@ -50,6 +51,10 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
                 guard !self.outcome.hasCustomerInfo || outcome.hasCustomerInfo else { return false }
                 self.outcome = outcome
                 self.hasReportedOutcome = true
+            case .recoverableErrorHandled:
+                guard case .failed = self.outcome else { return false }
+                self.outcome = .completed(customerInfo: nil)
+                self.hasReportedOutcome = false
             case let .workflowPresentationError(error):
                 guard !self.hasReportedOutcome else { return false }
                 Logger.error(error.localizedDescription)
@@ -156,14 +161,18 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         guard self.activeErrorPresentationID == presentationID,
               self.presentationState != nil else { return }
         self.activeErrorPresentationID = nil
-        self.stage(.outcome(.completed(customerInfo: nil)))
 
         switch result.action {
         case .retry where flowCanContinue:
-            break
+            self.stage(.recoverableErrorHandled)
         case .retry, .continue:
+            self.stage(.outcome(.completed(customerInfo: nil)))
             controller?.continueAfterCheckpointError()
+        case .navigateBack where flowCanContinue:
+            self.stage(.recoverableErrorHandled)
+            controller?.navigateBackAfterCheckpointError(flowCanContinue: true)
         case .navigateBack:
+            self.stage(.outcome(.completed(customerInfo: nil)))
             controller?.navigateBackAfterCheckpointError(flowCanContinue: flowCanContinue)
         }
     }
