@@ -41,6 +41,8 @@ struct PurchaseView: View {
             }
         }
         .padding()
+        // Top-aligned so the status message appearing below doesn't shift the screenshotted label.
+        .frame(maxHeight: .infinity, alignment: .top)
         .navigationTitle("Purchase")
         .task {
             do {

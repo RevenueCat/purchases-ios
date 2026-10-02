@@ -53,6 +53,8 @@ struct HomeView: View {
                 }
             }
             .padding()
+            // Top-aligned so messages appearing below don't shift the screenshotted labels.
+            .frame(maxHeight: .infinity, alignment: .top)
             .navigationTitle("SDK Update Tester")
         }
     }
