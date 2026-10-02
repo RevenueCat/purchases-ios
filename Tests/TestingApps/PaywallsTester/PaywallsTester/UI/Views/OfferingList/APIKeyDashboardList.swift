@@ -246,6 +246,9 @@ struct APIKeyDashboardList: View {
 
     @ViewBuilder
     private func list(with data: Data) -> some View {
+        let firstPaywallSection = data.sections.first {
+            $0 != .noPaywall && !self.filteredOfferings(for: $0, in: data).isEmpty
+        }
         List {
             #if DEBUG && !os(tvOS)
             self.workflowsSection
@@ -303,7 +306,10 @@ struct APIKeyDashboardList: View {
                             }
                         }
                     } header: {
-                        Text(verbatim: section.title)
+                        SectionHeader(
+                            title: section.title,
+                            caption: section == firstPaywallSection || section == .noPaywall ? section.caption : nil
+                        )
                     }
                 }
             }
@@ -448,7 +454,11 @@ struct APIKeyDashboardList: View {
                     #endif
                 }
             } header: {
-                Text("Flows")
+                SectionHeader(
+                    title: "Flows",
+                    caption: "Every flow the SDK synced, opened by id. \"Offering\" is the one it's attached to in "
+                        + "the dashboard. Without one, apps only reach the flow through a checkpoint."
+                )
             }
         }
     }
@@ -569,6 +579,22 @@ struct APIKeyDashboardList: View {
         }
     }
 
+    private struct SectionHeader: View {
+        let title: String
+        let caption: String?
+
+        var body: some View {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(verbatim: self.title)
+                if let caption {
+                    Text(verbatim: caption)
+                        .font(.caption)
+                        .textCase(nil)
+                }
+            }
+        }
+    }
+
     private struct OfferButton: View {
         let offering: Offering
         var detail: String?
@@ -642,6 +668,12 @@ extension APIKeyDashboardList.PaywallSection: CustomStringConvertible {
 
     var title: String {
         return self == .noPaywall ? self.description : "Paywalls · \(self.description)"
+    }
+
+    var caption: String {
+        return self == .noPaywall
+            ? "No paywall or flow attached. Opens what an app gets, usually the fallback paywall."
+            : "Offerings with a paywall attached directly and no flow. Opened by offering."
     }
 
 }
