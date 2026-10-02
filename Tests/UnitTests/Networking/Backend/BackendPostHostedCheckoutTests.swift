@@ -98,7 +98,6 @@ class BackendPostHostedCheckoutTests: BaseBackendTests {
         expect(response.operationSessionID) == "op_session_id"
         expect(response.checkoutURL) == URL(string: "https://checkout.stripe.com/c/pay/cs_test_123")
         expect(response.successURL) == URL(string: "\(Self.returnEndpoint)?status=success")
-        expect(response.cancelURL) == URL(string: "\(Self.returnEndpoint)?status=cancel")
     }
 
     /// Creating a checkout session answers `201`, so that is the status the flow actually has to read.
@@ -220,8 +219,7 @@ private extension BackendPostHostedCheckoutTests {
     static let response: [String: Any] = [
         "operation_session_id": "op_session_id",
         "checkout_url": "https://checkout.stripe.com/c/pay/cs_test_123",
-        "success_url": "\(returnEndpoint)?status=success",
-        "cancel_url": "\(returnEndpoint)?status=cancel"
+        "success_url": "\(returnEndpoint)?status=success"
     ]
 
     /// Fires `request` twice, changing one input, and expects both to reach the network rather than

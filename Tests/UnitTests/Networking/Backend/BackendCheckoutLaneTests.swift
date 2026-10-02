@@ -216,8 +216,7 @@ private extension BackendCheckoutLaneTests {
     static let hostedCheckoutResponse: [String: Any] = [
         "operation_session_id": "op_session_id",
         "checkout_url": "https://checkout.stripe.com/c/pay/cs_test_123",
-        "success_url": "https://api.revenuecat.com/rcbilling/v1/hosted-checkout-return?status=success",
-        "cancel_url": "https://api.revenuecat.com/rcbilling/v1/hosted-checkout-return?status=cancel"
+        "success_url": "https://api.revenuecat.com/rcbilling/v1/hosted-checkout-return?status=success"
     ]
 
     static let externalPurchaseTokenResponse: [String: Any] = [
@@ -439,8 +438,7 @@ private extension BackendCheckoutLaneParallelTests {
     static let hostedCheckoutResponseData = Data("""
     {"operation_session_id":"op_session_id",\
     "checkout_url":"https://checkout.stripe.com/c/pay/cs_test_123",\
-    "success_url":"https://example.com/success",\
-    "cancel_url":"https://example.com/cancel"}
+    "success_url":"https://example.com/success"}
     """.utf8)
 
     static let tokenRefreshResponseData = Data("""
