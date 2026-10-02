@@ -129,11 +129,27 @@ struct ContentView: View {
                         .foregroundStyle(.secondary)
                 }
 
+                Section("Error presenter") {
+                    Picker("Presentation mode", selection: self.$model.errorPresenterMode) {
+                        ForEach(ErrorPresenterMode.allCases) { mode in
+                            Text(mode.title).tag(mode)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+
+                    Text(self.model.errorPresenterMode.description)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
             }
             .navigationTitle("Checkpoint Tester")
             .subscriberAttributeToolbar(isPresented: self.$isSubscriberAttributeEditorPresented)
             .onChange(of: self.model.paywallPresenterMode) { _ in
                 self.model.configurePaywallPresenter()
+            }
+            .onChange(of: self.model.errorPresenterMode) { _ in
+                self.model.configureErrorPresenter()
             }
         }
     }
