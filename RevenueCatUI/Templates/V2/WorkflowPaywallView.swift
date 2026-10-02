@@ -270,7 +270,7 @@ struct WorkflowPaywallView: View {
     private let onDismiss: () -> Void
     private let onPresentationError: ((NSError) -> Void)?
 
-    @ObservedObject private var navigationRequest: WorkflowNavigationRequest
+    @ObservedObject private var backNavigationBridge: WorkflowBackNavigationBridge
 
     @StateObject private var navigator: WorkflowNavigator
     /// One paywall state store per workflow presentation: all screens read and write the same
@@ -309,7 +309,7 @@ struct WorkflowPaywallView: View {
         displayCloseButton: Bool,
         promoOfferCache: PaywallPromoOfferCache?,
         onDismiss: @escaping () -> Void,
-        navigationRequest: WorkflowNavigationRequest = WorkflowNavigationRequest(),
+        backNavigationBridge: WorkflowBackNavigationBridge = WorkflowBackNavigationBridge(),
         onPresentationError: ((NSError) -> Void)? = nil
     ) {
         self.context = context
@@ -318,7 +318,7 @@ struct WorkflowPaywallView: View {
         self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
-        self._navigationRequest = .init(wrappedValue: navigationRequest)
+        self._backNavigationBridge = .init(wrappedValue: backNavigationBridge)
         self.onPresentationError = onPresentationError
         self._navigator = .init(wrappedValue: WorkflowNavigator(
             workflow: context.workflow,
@@ -463,7 +463,7 @@ struct WorkflowPaywallView: View {
         // Must use exitOfferContext(for:currentStepId:), not context.exitOfferOffering, because
         // exitOfferOffering is not step-aware — it is non-nil for any step whenever configured.
         .onAppear {
-            self.navigationRequest.workflowDidAppear()
+            self.backNavigationBridge.workflowDidAppear()
             switch self.presentationState {
             case .failing:
                 self.exitOfferOfferingBinding.wrappedValue = nil
@@ -486,12 +486,12 @@ struct WorkflowPaywallView: View {
         // A late configuration failure tracks the same lifecycle immediately before showing its error;
         // the coordinator's fire-once guards prevent this hook from duplicating those events later.
         .onDisappear {
-            self.navigationRequest.workflowDidDisappear()
+            self.backNavigationBridge.workflowDidDisappear()
             self.trackCurrentWorkflowLeft()
         }
-        .onChangeOf(self.navigationRequest.hasPendingBackNavigationRequest) { isPending in
+        .onChangeOf(self.backNavigationBridge.hasPendingBackNavigationRequest) { isPending in
             guard isPending else { return }
-            self.handlePendingNavigationRequest()
+            self.handlePendingBackNavigationRequest()
         }
         .onChangeOf(self.navigator.currentStepId) { _ in
             self.syncExitOfferBinding()
@@ -734,8 +734,8 @@ struct WorkflowPaywallView: View {
         return Self.exitOfferContext(for: self.context, currentStepId: self.navigator.currentStepId)
     }
 
-    private func handlePendingNavigationRequest() {
-        guard self.navigationRequest.takePendingNavigateBackRequest(
+    private func handlePendingBackNavigationRequest() {
+        guard self.backNavigationBridge.takePendingBackNavigationRequest(
             isTransitioning: self.transitionState.isTransitioning
         ) else {
             return
@@ -927,7 +927,7 @@ struct WorkflowPaywallView: View {
 
         self.transitionState.completeTransition()
         self.activeTransitionID = nil
-        self.handlePendingNavigationRequest()
+        self.handlePendingBackNavigationRequest()
     }
 
     private static func renderedPage(

@@ -250,8 +250,8 @@ final class WorkflowPresenterTests: TestCase {
         var completion: ErrorPresentationCompletion?
         let presenter = WorkflowPresenter { _ in true }
         let controller = self.makePaywallViewControllerForDismissalRecording()
-        let navigationRequest = controller.workflowNavigationRequestForTesting
-        navigationRequest.workflowDidAppear()
+        let navigationBridge = controller.workflowBackNavigationBridgeForTesting
+        navigationBridge.workflowDidAppear()
         let presentation = Self.presentation(
             errorPresentationHandler: { _, value in completion = value }
         )
@@ -263,21 +263,21 @@ final class WorkflowPresenterTests: TestCase {
         )
         completion?.complete(.navigateBack)
 
-        XCTAssertTrue(navigationRequest.hasPendingBackNavigationRequest)
+        XCTAssertTrue(navigationBridge.hasPendingBackNavigationRequest)
         XCTAssertEqual(controller.dismissCallCount, 0)
     }
 
-    func testWorkflowBackNavigationRequestWaitsForActiveTransitionToFinish() {
-        let navigationRequest = WorkflowNavigationRequest()
-        navigationRequest.workflowDidAppear()
+    func testWorkflowBackNavigationBridgeWaitsForActiveTransitionToFinish() {
+        let navigationBridge = WorkflowBackNavigationBridge()
+        navigationBridge.workflowDidAppear()
 
-        XCTAssertTrue(navigationRequest.navigateBack())
-        XCTAssertTrue(navigationRequest.hasPendingBackNavigationRequest)
-        XCTAssertFalse(navigationRequest.takePendingNavigateBackRequest(isTransitioning: true))
-        XCTAssertTrue(navigationRequest.hasPendingBackNavigationRequest)
-        XCTAssertTrue(navigationRequest.takePendingNavigateBackRequest(isTransitioning: false))
-        XCTAssertFalse(navigationRequest.hasPendingBackNavigationRequest)
-        XCTAssertFalse(navigationRequest.takePendingNavigateBackRequest(isTransitioning: false))
+        XCTAssertTrue(navigationBridge.navigateBack())
+        XCTAssertTrue(navigationBridge.hasPendingBackNavigationRequest)
+        XCTAssertFalse(navigationBridge.takePendingBackNavigationRequest(isTransitioning: true))
+        XCTAssertTrue(navigationBridge.hasPendingBackNavigationRequest)
+        XCTAssertTrue(navigationBridge.takePendingBackNavigationRequest(isTransitioning: false))
+        XCTAssertFalse(navigationBridge.hasPendingBackNavigationRequest)
+        XCTAssertFalse(navigationBridge.takePendingBackNavigationRequest(isTransitioning: false))
     }
 
     func testNewerWorkflowErrorPresentationSupersedesEarlierCompletion() throws {
