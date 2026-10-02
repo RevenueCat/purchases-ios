@@ -1,0 +1,36 @@
+# Opens a workflow (offering `[offering-without-text]`) whose first screen has no text components, so it
+# is published with an empty localization table. The screen must render instead of the fallback paywall,
+# and its icon-only button in the middle advances to screen 2.
+#
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/workflow_screen_without_text.yaml
+
+appId: com.revenuecat.maestro.ios
+name: Workflow screen without text renders and navigates
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+# Dismiss any leftover system alerts from previous test runs.
+- pressKey: home
+- launchApp:
+    arguments:
+        e2e_test_flow: open_workflow
+        workflow_offering_identifier: "[offering-without-text]"
+- extendedWaitUntil:
+    visible: "Present Paywall"
+    timeout: 15000
+- tapOn:
+    text: "Present Paywall"
+
+# Screen 1 has no text; its only button is an icon in the middle.
+- waitForAnimationToEnd
+- takeScreenshot: "workflow_screen_without_text - screen 1"
+- tapOn:
+    point: "50%,50%"
+
+# Screen 2
+- extendedWaitUntil:
+    visible: "Buy"
+    timeout: 15000
