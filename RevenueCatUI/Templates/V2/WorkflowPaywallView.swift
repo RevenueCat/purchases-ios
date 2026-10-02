@@ -489,7 +489,8 @@ struct WorkflowPaywallView: View {
             self.navigationRequest.workflowDidDisappear()
             self.trackCurrentWorkflowLeft()
         }
-        .onChangeOf(self.navigationRequest.navigateBackRequestID) { _ in
+        .onChangeOf(self.navigationRequest.hasPendingBackNavigationRequest) { isPending in
+            guard isPending else { return }
             self.handlePendingNavigationRequest()
         }
         .onChangeOf(self.navigator.currentStepId) { _ in

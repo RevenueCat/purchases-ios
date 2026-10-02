@@ -68,9 +68,8 @@ struct PaywallViewConfiguration {
 #if !os(tvOS)
 final class WorkflowNavigationRequest: ObservableObject {
 
-    @Published private(set) var navigateBackRequestID = 0
+    @Published private(set) var hasPendingBackNavigationRequest = false
     private(set) var hasActiveWorkflow = false
-    private var handledNavigateBackRequestID = 0
 
     func workflowDidAppear() {
         self.hasActiveWorkflow = true
@@ -78,23 +77,23 @@ final class WorkflowNavigationRequest: ObservableObject {
 
     func workflowDidDisappear() {
         self.hasActiveWorkflow = false
-        self.handledNavigateBackRequestID = self.navigateBackRequestID
+        self.hasPendingBackNavigationRequest = false
     }
 
     @discardableResult
     func navigateBack() -> Bool {
         guard self.hasActiveWorkflow else { return false }
-        self.navigateBackRequestID += 1
+        self.hasPendingBackNavigationRequest = true
         return true
     }
 
     func takePendingNavigateBackRequest(isTransitioning: Bool) -> Bool {
         guard !isTransitioning,
-              self.handledNavigateBackRequestID != self.navigateBackRequestID else {
+              self.hasPendingBackNavigationRequest else {
             return false
         }
 
-        self.handledNavigateBackRequestID = self.navigateBackRequestID
+        self.hasPendingBackNavigationRequest = false
         return true
     }
 

@@ -263,7 +263,7 @@ final class WorkflowPresenterTests: TestCase {
         )
         completion?.complete(.navigateBack)
 
-        XCTAssertEqual(navigationRequest.navigateBackRequestID, 1)
+        XCTAssertTrue(navigationRequest.hasPendingBackNavigationRequest)
         XCTAssertEqual(controller.dismissCallCount, 0)
     }
 
@@ -272,8 +272,11 @@ final class WorkflowPresenterTests: TestCase {
         navigationRequest.workflowDidAppear()
 
         XCTAssertTrue(navigationRequest.navigateBack())
+        XCTAssertTrue(navigationRequest.hasPendingBackNavigationRequest)
         XCTAssertFalse(navigationRequest.takePendingNavigateBackRequest(isTransitioning: true))
+        XCTAssertTrue(navigationRequest.hasPendingBackNavigationRequest)
         XCTAssertTrue(navigationRequest.takePendingNavigateBackRequest(isTransitioning: false))
+        XCTAssertFalse(navigationRequest.hasPendingBackNavigationRequest)
         XCTAssertFalse(navigationRequest.takePendingNavigateBackRequest(isTransitioning: false))
     }
 
