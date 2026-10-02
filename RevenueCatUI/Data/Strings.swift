@@ -144,6 +144,7 @@ enum Strings {
     case paywall_workflow_trigger_not_handled(componentName: String?)
     case workflow_package_context_unresolvable(stepId: String)
     case offering_has_no_workflow_falling_back_to_default_paywall(offeringIdentifier: String)
+    case checkpoint_ad_step_without_ad_presenter(checkpointIdentifier: String)
     case purchases_did_configure
 
 }
@@ -459,6 +460,9 @@ extension Strings: CustomStringConvertible {
             "Price/period variables may not resolve on packageless screens."
         case let .offering_has_no_workflow_falling_back_to_default_paywall(offeringIdentifier):
             return "Offering '\(offeringIdentifier)' has no workflow. Falling back to the default paywall."
+        case let .checkpoint_ad_step_without_ad_presenter(checkpointIdentifier):
+            return "Checkpoint '\(checkpointIdentifier)' resolved to an ad step, but no ad presenter is set on " +
+            "Purchases.adPresenter. Nothing was presented."
         case .purchases_did_configure:
             return "Purchases notified purchases-ui of configuration"
         case .web_view_context_encoding_failed(let error):
