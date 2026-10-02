@@ -83,7 +83,7 @@ extension StoreProduct.ProductType {
 
     init(_ type: SK2Product.ProductType) {
         #if compiler(>=6.4)
-        if #available(iOS 27.0, macOS 27.0, tvOS 27.0, watchOS 27.0, *) {
+        if #available(iOS 27.0, macOS 27.0, tvOS 27.0, watchOS 27.0, visionOS 27.0, *) {
             switch type {
             case .consumable: self = .consumable
             case .nonConsumable: self = .nonConsumable
