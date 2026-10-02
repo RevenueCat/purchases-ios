@@ -303,7 +303,7 @@ struct APIKeyDashboardList: View {
                             }
                         }
                     } header: {
-                        Text(verbatim: section.description)
+                        Text(verbatim: section.title)
                     }
                 }
             }
@@ -638,6 +638,10 @@ extension APIKeyDashboardList.PaywallSection: CustomStringConvertible {
         case .noPaywall:
             return "Unclaimed offerings"
         }
+    }
+
+    var title: String {
+        return self == .noPaywall ? self.description : "Paywalls · \(self.description)"
     }
 
 }
