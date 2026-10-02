@@ -69,11 +69,16 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         }
     }
 
+    private struct ActiveErrorPresentation {
+        let id: UUID
+        let flowCanContinue: Bool
+    }
+
     private let presentationStarter: PresentationStarter?
     private var presentationState: PresentationState?
     private var pendingContinuation: Continuation?
     private weak var presentedViewController: PaywallViewController?
-    private var activeErrorPresentationID: UUID?
+    private var activeErrorPresentation: ActiveErrorPresentation?
 
     init(presentationStarter: PresentationStarter? = nil) {
         self.presentationStarter = presentationStarter
@@ -133,8 +138,11 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         controller: PaywallViewController? = nil
     ) {
         guard let state = self.presentationState else { return }
-        let presentationID = UUID()
-        self.activeErrorPresentationID = presentationID
+        if flowCanContinue, self.activeErrorPresentation?.flowCanContinue == false {
+            return
+        }
+        let presentation = ActiveErrorPresentation(id: UUID(), flowCanContinue: flowCanContinue)
+        self.activeErrorPresentation = presentation
         let controller = controller ?? self.presentedViewController
         state.errorPresentationHandler(
             .init(
@@ -147,7 +155,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
                 self?.handleErrorPresentationResult(
                     result,
                     flowCanContinue: flowCanContinue,
-                    presentationID: presentationID,
+                    presentationID: presentation.id,
                     controller: controller
                 )
             }
@@ -160,9 +168,9 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         presentationID: UUID,
         controller: PaywallViewController?
     ) {
-        guard self.activeErrorPresentationID == presentationID,
+        guard self.activeErrorPresentation?.id == presentationID,
               self.presentationState != nil else { return }
-        self.activeErrorPresentationID = nil
+        self.activeErrorPresentation = nil
 
         switch result.action {
         case .retry where flowCanContinue:
@@ -212,7 +220,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
 
     private func takePresentationState() -> PresentationState? {
         defer { self.presentationState = nil }
-        self.activeErrorPresentationID = nil
+        self.activeErrorPresentation = nil
         self.presentedViewController = nil
         return self.presentationState
     }
@@ -285,7 +293,7 @@ extension WorkflowPresenter {
         transaction: StoreTransaction?
     ) {
         MainActor.assumeIsolated {
-            self.activeErrorPresentationID = nil
+            self.activeErrorPresentation = nil
             self.stage(.outcome(.completed(customerInfo: customerInfo)))
         }
     }
@@ -295,7 +303,7 @@ extension WorkflowPresenter {
         didFinishRestoringWith customerInfo: CustomerInfo
     ) {
         MainActor.assumeIsolated {
-            self.activeErrorPresentationID = nil
+            self.activeErrorPresentation = nil
             self.didCompleteRestore(customerInfo: customerInfo)
         }
     }
@@ -325,7 +333,7 @@ extension WorkflowPresenter {
 
     nonisolated func paywallViewControllerDidOpenWebCheckout(_ controller: PaywallViewController) {
         MainActor.assumeIsolated {
-            self.activeErrorPresentationID = nil
+            self.activeErrorPresentation = nil
             self.stage(.outcome(.completed(customerInfo: nil)))
         }
     }
@@ -342,7 +350,7 @@ extension WorkflowPresenter {
         didFinishPurchasingWith customerInfo: CustomerInfo,
         transaction: StoreTransaction?
     ) {
-        self.activeErrorPresentationID = nil
+        self.activeErrorPresentation = nil
         self.stage(.outcome(.completed(customerInfo: customerInfo)))
     }
 
@@ -350,7 +358,7 @@ extension WorkflowPresenter {
         _ controller: PaywallViewController,
         didFinishRestoringWith customerInfo: CustomerInfo
     ) {
-        self.activeErrorPresentationID = nil
+        self.activeErrorPresentation = nil
         self.didCompleteRestore(customerInfo: customerInfo)
     }
 
@@ -374,7 +382,7 @@ extension WorkflowPresenter {
     }
 
     func paywallViewControllerDidOpenWebCheckout(_ controller: PaywallViewController) {
-        self.activeErrorPresentationID = nil
+        self.activeErrorPresentation = nil
         self.stage(.outcome(.completed(customerInfo: nil)))
     }
 
