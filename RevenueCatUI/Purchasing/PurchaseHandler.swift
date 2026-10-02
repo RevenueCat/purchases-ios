@@ -377,14 +377,9 @@ extension PurchaseHandler {
         return await confirmation()
     }
 
-    func pollHostedCheckout(session: HostedCheckoutSession) async -> HostedCheckoutPollResult {
+    func pollHostedCheckout(session: HostedCheckoutSession) async -> (result: HostedCheckoutPollResult,
+                                                                      customerInfo: CustomerInfo?) {
         return await self.purchases.pollHostedCheckout(session: session)
-    }
-
-    /// Whether a checkout the backend confirmed can be reported, which takes the `CustomerInfo` showing the
-    /// purchase. The SDK fetches it while confirming the purchase, but that fetch can fail.
-    func canReportHostedCheckoutPurchase() async -> Bool {
-        return (try? await self.purchases.customerInfo()) != nil
     }
 
     /// Whether web purchase links opened in the browser go through Apple's external purchase flow first.
@@ -914,13 +909,14 @@ extension PurchaseHandler {
 
     // MARK: - Hosted checkout
 
-    /// Reports a checkout the backend confirmed the customer completed on a page presented inside the app.
+    /// Reports a checkout the backend confirmed the customer completed on a page presented inside the app, once
+    /// the customer has been told the purchase went through.
     ///
     /// There is no transaction to hand over: what was bought is known to the backend, so the paywall follows
-    /// the `CustomerInfo` the SDK fetched when confirming it.
+    /// the `CustomerInfo` fetched when confirming it.
     @MainActor
-    func handleHostedCheckoutPurchase() async {
-        await self.reportHostedCheckoutOutcome(userCancelled: false)
+    func handleHostedCheckoutPurchase(customerInfo: CustomerInfo) {
+        self.reportHostedCheckoutOutcome(customerInfo: customerInfo, userCancelled: false)
     }
 
     /// Reports a checkout that failed, as opposed to one the customer walked away from.
@@ -959,6 +955,11 @@ extension PurchaseHandler {
             return
         }
 
+        self.reportHostedCheckoutOutcome(customerInfo: customerInfo, userCancelled: userCancelled)
+    }
+
+    @MainActor
+    private func reportHostedCheckoutOutcome(customerInfo: CustomerInfo, userCancelled: Bool) {
         let resultInfo: PurchaseResultData = (transaction: nil,
                                               customerInfo: customerInfo,
                                               userCancelled: userCancelled)
@@ -1282,8 +1283,9 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
         return .failed
     }
 
-    func pollHostedCheckout(session: HostedCheckoutSession) async -> HostedCheckoutPollResult {
-        return .undetermined
+    func pollHostedCheckout(session: HostedCheckoutSession) async -> (result: HostedCheckoutPollResult,
+                                                                      customerInfo: CustomerInfo?) {
+        return (.undetermined, nil)
     }
 
     var useExternalPurchaseCustomLinks: Bool { false }

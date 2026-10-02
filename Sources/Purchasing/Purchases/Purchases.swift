@@ -1961,14 +1961,16 @@ public extension Purchases {
     /// before settling the paywall on it.
     ///
     /// When the backend says the customer owns the product, having just bought it or not, fetches the customer's
-    /// `CustomerInfo` before returning, so callers that read it next find the entitlement instead of a cached
-    /// state from before. A fetch that fails does not change the result, but clears that cached state, so the
-    /// next read fetches instead of serving it. Both are for the customer the session was created for, even if
-    /// another one has logged in since.
+    /// `CustomerInfo` and returns it, so the paywall reports the purchase with it, and callers that read it next
+    /// find the entitlement instead of a cached state from before. A fetch that fails returns no `CustomerInfo`,
+    /// and clears that cached state, so the next read fetches instead of serving it. Both are for the customer the
+    /// session was created for, even if another one has logged in since.
     ///
     /// Paywalls, the only caller, do not run with custom entitlement computation. This still compiles in that
-    /// mode, but without the `CustomerInfo` refresh, which the mode does not offer.
-    @_spi(Internal) func pollHostedCheckout(session: HostedCheckoutSession) async -> HostedCheckoutPollResult {
+    /// mode, but without the `CustomerInfo` refresh, which the mode does not offer, so it never returns one.
+    @_spi(Internal) func pollHostedCheckout(
+        session: HostedCheckoutSession
+    ) async -> (result: HostedCheckoutPollResult, customerInfo: CustomerInfo?) {
         let operationSessionID = session.operationSessionID
         let appUserID = session.appUserID
         let result = await self.hostedCheckoutManager.pollCheckout(operationSessionID: operationSessionID,
@@ -1979,16 +1981,19 @@ public extension Purchases {
         case .succeeded, .alreadyPurchased:
             Logger.verbose(Strings.hostedCheckout.poll_fetching_customer_info(operationSessionID))
 
-            if await self.fetchCustomerInfoRetryingTransientErrors(appUserID: appUserID) == nil {
+            let customerInfo = await self.fetchCustomerInfoRetryingTransientErrors(appUserID: appUserID)
+            if customerInfo == nil {
                 Logger.warn(Strings.hostedCheckout.poll_customer_info_refresh_failed(operationSessionID))
                 self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
             }
-        case .failed, .undetermined:
-            break
-        }
-        #endif
 
-        return result
+            return (result, customerInfo)
+        case .failed, .undetermined:
+            return (result, nil)
+        }
+        #else
+        return (result, nil)
+        #endif
     }
 
     /// Used by `RevenueCatUI` to create a support ticket

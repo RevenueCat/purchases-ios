@@ -26,5 +26,6 @@
 "Your purchase is still processing." = "Kjøpet ditt behandles fortsatt.";
 "Purchase" = "Kjøp";
 "You've already purchased this" = "Du har allerede kjøpt dette";
+"Your purchase was successful." = "Kjøpet ditt er fullført.";
 "Purchase unavailable" = "Kjøpet er ikke tilgjengelig";
 "This purchase isn't available in your region." = "Dette kjøpet er ikke tilgjengelig i regionen din.";

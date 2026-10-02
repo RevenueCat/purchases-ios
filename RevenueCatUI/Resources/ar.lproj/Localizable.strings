@@ -26,5 +26,6 @@
 "Your purchase is still processing." = "لا تزال عملية الشراء قيد المعالجة.";
 "Purchase" = "شراء";
 "You've already purchased this" = "لقد اشتريت هذا العنصر بالفعل";
+"Your purchase was successful." = "تمت عملية الشراء بنجاح.";
 "Purchase unavailable" = "الشراء غير متاح";
 "This purchase isn't available in your region." = "عملية الشراء هذه غير متاحة في منطقتك.";

@@ -26,5 +26,6 @@
 "Your purchase is still processing." = "Ваша куповина се још обрађује.";
 "Purchase" = "Купи";
 "You've already purchased this" = "Ово сте већ купили";
+"Your purchase was successful." = "Куповина је успешно обављена.";
 "Purchase unavailable" = "Куповина није доступна";
 "This purchase isn't available in your region." = "Ова куповина није доступна у вашем региону.";

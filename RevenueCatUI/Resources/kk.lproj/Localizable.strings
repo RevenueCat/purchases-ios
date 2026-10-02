@@ -26,5 +26,6 @@
 "Your purchase is still processing." = "Сатып алуыңыз әлі өңделуде.";
 "Purchase" = "Сатып алу";
 "You've already purchased this" = "Сіз бұны әлдеқашан сатып алғансыз";
+"Your purchase was successful." = "Сатып алу сәтті аяқталды.";
 "Purchase unavailable" = "Сатып алу қолжетімсіз";
 "This purchase isn't available in your region." = "Бұл сатып алу сіздің аймағыңызда қолжетімсіз.";

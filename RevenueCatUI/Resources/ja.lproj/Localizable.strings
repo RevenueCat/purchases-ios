@@ -26,5 +26,6 @@
 "Your purchase is still processing." = "購入はまだ処理中です。";
 "Purchase" = "購入";
 "You've already purchased this" = "この項目はすでに購入済みです";
+"Your purchase was successful." = "購入が完了しました。";
 "Purchase unavailable" = "購入できません";
 "This purchase isn't available in your region." = "この項目はお住まいの地域では購入できません。";
