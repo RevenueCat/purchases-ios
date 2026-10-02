@@ -167,6 +167,42 @@ final class WorkflowPresenterTests: TestCase {
         }
     }
 
+    func testWorkflowErrorIsPresentedAfterRetryingPurchaseError() throws {
+        var presentedErrors: [ErrorPresentationParams] = []
+        var completions: [ErrorPresentationCompletion] = []
+        let presentation = try Self.renderablePresentation(
+            customVariables: [:],
+            errorPresentationHandler: { params, completion in
+                presentedErrors.append(params)
+                completions.append(completion)
+            }
+        )
+        let presenter = WorkflowPresenter { _ in true }
+        let controller = try presenter.makePaywallViewController(for: presentation)
+
+        try presenter.startPresentation(presentation)
+        presenter.paywallViewController(
+            controller,
+            didFailPurchasingWith: NSError(
+                domain: ErrorCode.errorDomain,
+                code: ErrorCode.purchaseInvalidError.rawValue
+            )
+        )
+        try XCTUnwrap(completions.first).complete(.retry)
+
+        controller.simulateWorkflowPresentationError(
+            NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
+        )
+
+        XCTAssertEqual(presentedErrors.map(\.flowCanContinue), [true, false])
+        XCTAssertEqual(completions.count, 2)
+        try XCTUnwrap(completions.last).complete(.continue)
+
+        guard case .completed(nil)? = presenter.presentationDidDismiss() else {
+            return XCTFail("Expected the handled terminal error to complete the workflow")
+        }
+    }
+
     func testContinueAfterPurchaseErrorDismissesWorkflow() throws {
         var completion: ErrorPresentationCompletion?
         let presenter = WorkflowPresenter { _ in true }
