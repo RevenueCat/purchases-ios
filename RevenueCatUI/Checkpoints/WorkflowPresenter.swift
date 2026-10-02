@@ -12,6 +12,8 @@
 //  Created by Rick van der Linden.
 //
 
+// swiftlint:disable file_length
+
 import Foundation
 @_spi(Internal) import RevenueCat
 
@@ -283,7 +285,7 @@ extension WorkflowPresenter {
         didFinishPurchasingWith customerInfo: CustomerInfo,
         transaction: StoreTransaction?
     ) {
-        MainActor.assumeIsolated { () -> Void in
+        MainActor.assumeIsolated {
             self.activeErrorPresentationID = nil
             self.stage(.outcome(.completed(customerInfo: customerInfo)))
         }
@@ -323,7 +325,7 @@ extension WorkflowPresenter {
     }
 
     nonisolated func paywallViewControllerDidOpenWebCheckout(_ controller: PaywallViewController) {
-        MainActor.assumeIsolated { () -> Void in
+        MainActor.assumeIsolated {
             self.activeErrorPresentationID = nil
             self.stage(.outcome(.completed(customerInfo: nil)))
         }

@@ -679,8 +679,8 @@ final class WorkflowPresenterTests: TestCase {
     private static func presentation(
         customVariables: [String: CustomVariableValue] = [:],
         initialActiveEntitlementIdentifiers: Set<String>? = nil,
-        errorPresentationHandler: @escaping ErrorPresentationHandler = {
-            _, completion in completion.complete(.continue)
+        errorPresentationHandler: @escaping ErrorPresentationHandler = { _, completion in
+            completion.complete(.continue)
         }
     ) -> WorkflowPresentationRequest {
         return WorkflowPresentationRequest(
@@ -695,8 +695,8 @@ final class WorkflowPresenterTests: TestCase {
 
     private static func renderablePresentation(
         customVariables: [String: CustomVariableValue],
-        errorPresentationHandler: @escaping ErrorPresentationHandler = {
-            _, completion in completion.complete(.continue)
+        errorPresentationHandler: @escaping ErrorPresentationHandler = { _, completion in
+            completion.complete(.continue)
         }
     ) throws -> WorkflowPresentationRequest {
         let resolvedWorkflow = self.workflow()
