@@ -515,6 +515,8 @@ platform :ios do
     platform = ENV['PLATFORM'] || 'iOS Simulator'
     destination = ENV['DEVICE'] || "iPhone 17,OS=26.2"
     sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
+    layout_snapshots_path = File.expand_path("../Tests/RevenueCatUITests/PaywallsV2/__Snapshots__/RootViewScrollSnapshotTests")
+    FileUtils.rm_rf(layout_snapshots_path)
     begin
       xcodebuild(
         workspace: '.',
@@ -537,6 +539,13 @@ platform :ios do
     end
 
     upload_v1_snapshots_to_emerge
+
+    UI.user_error!("Expected five root scroll layout snapshots") unless Dir.glob("#{layout_snapshots_path}/*.png").count == 5
+    upload_snapshots_to_emerge(
+      name: "PaywallsTester V2 scroll layout",
+      id: "com.revenuecat.PaywallsTester.v2-layout-snapshots",
+      images_path: layout_snapshots_path
+    )
   end
 
   desc "Upload V1 template snapshots to Emerge using BYOS"
@@ -554,34 +563,6 @@ platform :ios do
     )
   end
 
-  desc "Record V2 scroll layout snapshots and upload to Emerge"
-  lane :record_and_upload_v2_layout_snapshots do
-    snapshots_path = File.expand_path("../Tests/RevenueCatUITests/PaywallsV2/__Snapshots__/RootViewScrollSnapshotTests")
-    # Remove stale output so a failed build cannot upload images from a previous run.
-    FileUtils.rm_rf(snapshots_path)
-    xcodebuild(
-      workspace: '.',
-      scheme: 'RevenueCatUI',
-      destination: "platform=iOS Simulator,name=" + (ENV['DEVICE'] || "iPhone 17,OS=26.5"),
-      sdk: 'iphonesimulator',
-      result_bundle_path: 'fastlane/test_output/v2-layout-snapshots.xcresult',
-      report_formats: [:junit],
-      report_path: 'fastlane/test_output/v2-layout-snapshots/tests.xml',
-      test: true,
-      xcargs: "-testPlan CI-V2-Layout-Snapshots"
-    )
-
-    UI.user_error!("Expected five V2 layout snapshots") unless Dir.glob("#{snapshots_path}/*.png").count == 5
-    upload_output = upload_snapshots_to_emerge(
-      name: "PaywallsTester V2 scroll layout",
-      id: "com.revenuecat.PaywallsTester.v2-layout-snapshots",
-      images_path: snapshots_path,
-      resolve_pr_from_branch: true
-    )
-    # Emerge 0.1 can log an upload error while returning exit status zero.
-    UI.user_error!("Emerge did not confirm a successful snapshot upload") unless upload_output.include?("Upload completed successfully!")
-  end
-
   # Uploads snapshots to Emerge. Requires EMERGE_API_TOKEN to be available in the environment.
   #
   # Pass `client_library` + `project_root` to let Emerge discover snapshots from a supported
@@ -592,19 +573,6 @@ platform :ios do
     id = options[:id] || UI.user_error!("No id provided for the Emerge upload")
 
     pr_number = detect_pr_number
-    if !pr_number && options[:resolve_pr_from_branch] && ENV["DANGER_GITHUB_API_TOKEN"]
-      branch = ENV["CIRCLE_BRANCH"].to_s.strip
-      branch = sh("git", "rev-parse", "--abbrev-ref", "HEAD").strip if branch.empty?
-      UI.user_error!("Cannot resolve snapshot PR from a detached checkout without CIRCLE_BRANCH") if branch == "HEAD"
-      query = URI.encode_www_form(head: "RevenueCat:#{branch}", state: "open")
-      response = github_api(
-        server_url: "https://api.github.com",
-        api_token: ENV["DANGER_GITHUB_API_TOKEN"],
-        http_method: "GET",
-        path: "/repos/RevenueCat/purchases-ios/pulls?#{query}"
-      )
-      pr_number = response[:json].first&.fetch("number").to_s unless response[:json].empty?
-    end
 
     args = [
       "bundle", "exec", "emerge", "upload", "snapshots",
