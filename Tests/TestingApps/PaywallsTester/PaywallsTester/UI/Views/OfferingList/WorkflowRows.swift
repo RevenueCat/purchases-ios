@@ -18,12 +18,19 @@ struct WorkflowRow: Identifiable {
     let listing: WorkflowListing
     let name: String?
     let error: String?
+    /// Offerings this flow's screens use, claimed or not.
+    let offeringIdentifiers: Set<String>
 
     var id: String { self.listing.workflowId }
 
     var subtitle: String {
         if let error { return error }
         return self.listing.offeringIdentifier.map { "Offering: \($0)" } ?? "No claimed offering"
+    }
+
+    func uses(_ offeringIdentifier: String) -> Bool {
+        return self.listing.offeringIdentifier == offeringIdentifier
+            || self.offeringIdentifiers.contains(offeringIdentifier)
     }
 
     func matches(_ searchText: String) -> Bool {
@@ -40,9 +47,19 @@ struct WorkflowRow: Identifiable {
                 group.addTask {
                     do {
                         let result = try await Purchases.shared.workflow(withIdentifier: listing.workflowId)
-                        return .init(listing: listing, name: result.workflow.displayName, error: nil)
+                        return .init(
+                            listing: listing,
+                            name: result.workflow.displayName,
+                            error: nil,
+                            offeringIdentifiers: Set(result.workflow.screens.values.compactMap(\.offeringIdentifier))
+                        )
                     } catch {
-                        return .init(listing: listing, name: nil, error: error.localizedDescription)
+                        return .init(
+                            listing: listing,
+                            name: nil,
+                            error: error.localizedDescription,
+                            offeringIdentifiers: []
+                        )
                     }
                 }
             }

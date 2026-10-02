@@ -280,10 +280,19 @@ struct APIKeyDashboardList: View {
                             } else {
                                 #if !os(watchOS)
                                 OfferButton(offering: offering) {
-                                    self.isLoadingPaywall = true
-                                    self.presentedPaywall = .init(offering: offering, mode: .workflow)
+                                    self.openOfferingWithoutPaywall(offering)
                                 }
                                 .contextMenu {
+                                    #if DEBUG && !os(tvOS)
+                                    ForEach(self.flows(using: offering)) { flow in
+                                        Button {
+                                            self.openWorkflow(flow.id, fullScreen: false)
+                                        } label: {
+                                            Text("Flow: \(flow.name ?? flow.id)")
+                                            Image(systemName: PaywallTesterViewMode.workflow.icon)
+                                        }
+                                    }
+                                    #endif
                                     self.button(for: .workflow, offering: offering)
                                     self.button(for: .presentWorkflow, offering: offering)
                                 }
@@ -448,6 +457,11 @@ struct APIKeyDashboardList: View {
         }
     }
 
+    /// Flows whose screens use `offering`, including ones that never claimed it.
+    private func flows(using offering: Offering) -> [WorkflowRow] {
+        return self.workflowRows.filter { $0.uses(offering.identifier) }
+    }
+
     private func openWorkflow(_ workflowId: String, fullScreen: Bool) {
         self.isLoadingPaywall = true
         Task {
@@ -587,6 +601,18 @@ struct APIKeyDashboardList: View {
             }
             .buttonStyle(.plain)
         }
+    }
+
+    /// An unclaimed offering has no workflow mapped to it, so it's opened through a flow that uses it.
+    private func openOfferingWithoutPaywall(_ offering: Offering) {
+        #if DEBUG && !os(tvOS)
+        if let flow = self.flows(using: offering).first {
+            self.openWorkflow(flow.id, fullScreen: false)
+            return
+        }
+        #endif
+        self.isLoadingPaywall = true
+        self.presentedPaywall = .init(offering: offering, mode: .workflow)
     }
 
     #if targetEnvironment(macCatalyst)
