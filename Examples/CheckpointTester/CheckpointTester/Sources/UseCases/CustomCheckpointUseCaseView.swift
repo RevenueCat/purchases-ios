@@ -20,7 +20,7 @@ struct CustomCheckpointUseCaseView: View {
 
     @ObservedObject var model: CheckpointDemoModel
     @ObservedObject var customVariables: CustomVariables
-    @ObservedObject private var rewardPollLog = RewardPollLog.shared
+    @ObservedObject private var checkpointLog = CheckpointDebugLog.shared
 
     @State private var identifier = ""
     @State private var status: String?
@@ -48,11 +48,20 @@ struct CustomCheckpointUseCaseView: View {
                 }
             }
 
-            if !self.rewardPollLog.lines.isEmpty {
-                Section("Reward verification polling") {
-                    ForEach(Array(self.rewardPollLog.lines.enumerated()), id: \.offset) { _, line in
+            if !self.checkpointLog.lines.isEmpty {
+                Section {
+                    ForEach(Array(self.checkpointLog.lines.enumerated()), id: \.offset) { _, line in
                         Text(line)
                             .font(.caption.monospaced())
+                    }
+                } header: {
+                    HStack {
+                        Text("Checkpoint log")
+                        Spacer()
+                        Button("Clear") {
+                            self.checkpointLog.clear()
+                        }
+                        .font(.caption)
                     }
                 }
             }
@@ -66,7 +75,7 @@ struct CustomCheckpointUseCaseView: View {
         let identifier = self.trimmedIdentifier
         let paywallPresenter = self.model.localPaywallPresenter
         self.status = "Checkpoint requested."
-        self.rewardPollLog.clear()
+        self.checkpointLog.record("[\(identifier)] requested \(Self.timestamp())")
 
         Purchases.shared.checkpoint(
             identifier,
@@ -74,9 +83,17 @@ struct CustomCheckpointUseCaseView: View {
             paywallPresenter: paywallPresenter
         ) { result in
             Task { @MainActor in
-                self.status = Self.describe(result)
+                let description = Self.describe(result)
+                self.status = description
+                self.checkpointLog.record("[\(identifier)] \(description) \(Self.timestamp())")
             }
         }
+    }
+
+    private static func timestamp() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm:ss"
+        return "(\(formatter.string(from: Date())))"
     }
 
     private static func describe(_ result: FlowResult?) -> String {

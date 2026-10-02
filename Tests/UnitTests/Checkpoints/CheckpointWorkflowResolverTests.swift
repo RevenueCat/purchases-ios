@@ -983,29 +983,117 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
     }
 
+    // MARK: - Chained ad workflows
+
+    func testChainedAdStepsResolveAsOneAdWorkflow() async throws {
+        self.stubAdWorkflow(
+            adIdentifier: "ad_unit_1",
+            mediator: "admob",
+            triggerActions: [ResolvedAdStep.triggerActionId: .step(stepId: "step_2")],
+            extraSteps: [
+                "step_2": Self.adStep(
+                    id: "step_2",
+                    adIdentifier: "ad_unit_2",
+                    adFormat: "rewarded",
+                    triggerActions: [ResolvedAdStep.triggerActionId: .step(stepId: "step_3")]
+                ),
+                "step_3": Self.adStep(id: "step_3", adIdentifier: "ad_unit_3")
+            ]
+        )
+
+        let resolution = try await self.resolve()
+
+        let workflow = try XCTUnwrap(Self.resolvedAdWorkflow(resolution))
+        XCTAssertEqual(workflow.initialStep.adIdentifier, "ad_unit_1")
+        XCTAssertEqual(workflow.initialStep.nextStepId, "step_2")
+        XCTAssertEqual(workflow.steps.keys.sorted(), ["step_1", "step_2", "step_3"])
+        XCTAssertEqual(workflow.steps["step_2"]?.adFormat, .rewarded)
+        XCTAssertEqual(workflow.steps["step_2"]?.nextStepId, "step_3")
+        XCTAssertNil(workflow.steps["step_3"]?.nextStepId)
+        XCTAssertEqual(workflow.nextStep(after: workflow.initialStep), workflow.steps["step_2"])
+        XCTAssertNil(workflow.nextStep(after: try XCTUnwrap(workflow.steps["step_3"])))
+    }
+
+    func testChainedAdStepMissingAnAdIdentifierResolvesConfigurationUnavailable() async throws {
+        self.stubAdWorkflow(
+            adIdentifier: "ad_unit_1",
+            mediator: "admob",
+            triggerActions: [ResolvedAdStep.triggerActionId: .step(stepId: "step_2")],
+            extraSteps: ["step_2": Self.adStep(id: "step_2", adIdentifier: nil)]
+        )
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    func testAdStepChainedToAScreenStepResolvesConfigurationUnavailable() async throws {
+        self.stubAdWorkflow(
+            adIdentifier: "ad_unit_1",
+            mediator: "admob",
+            triggerActions: [ResolvedAdStep.triggerActionId: .step(stepId: "step_2")],
+            extraSteps: ["step_2": WorkflowStep(id: "step_2", type: "screen", screenId: nil)]
+        )
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    func testAdStepTriggerActionThatDoesNotReachAStepIsDropped() async throws {
+        self.stubAdWorkflow(
+            adIdentifier: "ad_unit_1",
+            mediator: "admob",
+            triggerActions: [ResolvedAdStep.triggerActionId: .step(stepId: "missing_step")]
+        )
+
+        let resolution = try await self.resolve()
+
+        XCTAssertNil(Self.resolvedAd(resolution)?.nextStepId)
+    }
+
+    func testAdStepTriggerActionThatIsNotAStepIsDropped() async throws {
+        self.stubAdWorkflow(
+            adIdentifier: "ad_unit_1",
+            mediator: "admob",
+            triggerActions: [ResolvedAdStep.triggerActionId: .unknown]
+        )
+
+        let resolution = try await self.resolve()
+
+        XCTAssertNil(Self.resolvedAd(resolution)?.nextStepId)
+    }
+
+    func testAdStepIgnoresTriggerActionsOtherThanItsOwn() async throws {
+        self.stubAdWorkflow(
+            adIdentifier: "ad_unit_1",
+            mediator: "admob",
+            triggerActions: ["on_ad_shown": .step(stepId: "step_2")],
+            extraSteps: ["step_2": Self.adStep(id: "step_2", adIdentifier: "ad_unit_2")]
+        )
+
+        let resolution = try await self.resolve()
+
+        XCTAssertNil(Self.resolvedAd(resolution)?.nextStepId)
+    }
+
     private func stubAdWorkflow(
         adIdentifier: String?,
         mediator: String?,
         adFormat: String? = "interstitial",
+        triggerActions: [String: WorkflowTriggerAction] = [:],
         initialStepID: String? = nil,
         extraSteps: [String: WorkflowStep] = [:]
     ) {
         let stepID = "step_1"
-        var step = WorkflowStep(id: stepID, type: "ad", screenId: nil)
-        var paramValues: [String: AnyDecodable] = [:]
-        if let adIdentifier {
-            paramValues["ad_identifier"] = .string(adIdentifier)
-        }
-        if let mediator {
-            paramValues["mediator"] = .string(mediator)
-        }
-        if let adFormat {
-            paramValues["ad_format"] = .string(adFormat)
-        }
-        step.paramValues = paramValues
-
         var steps = extraSteps
-        steps[stepID] = step
+        steps[stepID] = Self.adStep(
+            id: stepID,
+            adIdentifier: adIdentifier,
+            mediator: mediator,
+            adFormat: adFormat,
+            triggerActions: triggerActions
+        )
 
         self.workflowsProvider.stubbedGetWorkflowResult[self.workflowID] = WorkflowDataResult(
             workflow: PublishedWorkflow(
@@ -1019,6 +1107,28 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
             uiConfig: .empty,
             enrolledVariants: nil
         )
+    }
+
+    private static func adStep(
+        id: String,
+        adIdentifier: String?,
+        mediator: String? = "admob",
+        adFormat: String? = "interstitial",
+        triggerActions: [String: WorkflowTriggerAction] = [:]
+    ) -> WorkflowStep {
+        var step = WorkflowStep(id: id, type: "ad", screenId: nil, triggerActions: triggerActions)
+        var paramValues: [String: AnyDecodable] = [:]
+        if let adIdentifier {
+            paramValues["ad_identifier"] = .string(adIdentifier)
+        }
+        if let mediator {
+            paramValues["mediator"] = .string(mediator)
+        }
+        if let adFormat {
+            paramValues["ad_format"] = .string(adFormat)
+        }
+        step.paramValues = paramValues
+        return step
     }
 
     private func stubOfferingWorkflow(
@@ -1100,9 +1210,13 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         return offering
     }
 
+    private static func resolvedAdWorkflow(_ resolution: CheckpointResolution) -> ResolvedAdWorkflow? {
+        guard case let .matchedAd(workflow) = resolution else { return nil }
+        return workflow
+    }
+
     private static func resolvedAd(_ resolution: CheckpointResolution) -> ResolvedAdStep? {
-        guard case let .matchedAd(step) = resolution else { return nil }
-        return step
+        return Self.resolvedAdWorkflow(resolution)?.initialStep
     }
 
     private static func rule(workflowID: String, audienceID: String = "audience") -> CheckpointRule {
