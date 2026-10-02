@@ -23,6 +23,7 @@
   "testTargets" : [
     {
       "skippedTests" : [
+        "RootViewScrollSnapshotTests",
         "OtherPaywallViewTests",
         "PaywallViewDynamicTypeTests",
         "PaywallViewLocalizationTests",

@@ -33,6 +33,7 @@ const JOBS = {
   "pod-lib-lint": ["slack-secrets"],
   "remote-config-production-tests": ["config-endpoint-tests", "slack-secrets"],
   "revenuecat-admob-tests": ["slack-secrets"],
+  "record-and-upload-paywalls-v2-layout-snapshots": ["slack-secrets"],
   "run-all-maestro-e2e-tests": ["e2e-tests", "slack-secrets"],
   "run-paywall-accessibility-ui-tests": [],
   "run-workflow-maestro-tests": ["e2e-tests", "slack-secrets"],

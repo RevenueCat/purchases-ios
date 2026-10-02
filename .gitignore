@@ -109,3 +109,6 @@ Tests/TestingApps/PaywallsTester/PaywallsTester/PaywallsTester.storekit
 
 # Claude Code
 .claude/
+
+# Recorded V2 scroll layout snapshots (uploaded to Emerge, not stored in git)
+Tests/RevenueCatUITests/PaywallsV2/__Snapshots__/RootViewScrollSnapshotTests/

@@ -554,6 +554,31 @@ platform :ios do
     )
   end
 
+  desc "Record V2 scroll layout snapshots and upload to Emerge"
+  lane :record_and_upload_v2_layout_snapshots do
+    snapshots_path = File.expand_path("../Tests/RevenueCatUITests/PaywallsV2/__Snapshots__/RootViewScrollSnapshotTests")
+    # Remove stale output so a failed build cannot upload images from a previous run.
+    FileUtils.rm_rf(snapshots_path)
+    xcodebuild(
+      workspace: '.',
+      scheme: 'RevenueCatUI',
+      destination: "platform=iOS Simulator,name=" + (ENV['DEVICE'] || "iPhone 17,OS=26.5"),
+      sdk: 'iphonesimulator',
+      result_bundle_path: 'fastlane/test_output/v2-layout-snapshots.xcresult',
+      report_formats: [:junit],
+      report_path: 'fastlane/test_output/v2-layout-snapshots/tests.xml',
+      test: true,
+      xcargs: "-testPlan CI-V2-Layout-Snapshots"
+    )
+
+    UI.user_error!("Expected five V2 layout snapshots") unless Dir.glob("#{snapshots_path}/*.png").count == 5
+    upload_snapshots_to_emerge(
+      name: "PaywallsTester V2 scroll layout",
+      id: "com.revenuecat.PaywallsTester.v2-layout-snapshots",
+      images_path: snapshots_path
+    )
+  end
+
   # Uploads snapshots to Emerge. Requires EMERGE_API_TOKEN to be available in the environment.
   #
   # Pass `client_library` + `project_root` to let Emerge discover snapshots from a supported
