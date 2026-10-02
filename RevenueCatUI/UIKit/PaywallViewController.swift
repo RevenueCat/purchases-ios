@@ -136,8 +136,8 @@ public class PaywallViewController: UIViewController {
 
     var workflowContextForTesting: WorkflowContext? { self.configuration.injectedWorkflowContext }
 
-    var workflowNavigationRequestForTesting: WorkflowNavigationRequest {
-        return self.configuration.workflowNavigationRequest
+    var workflowBackNavigationBridgeForTesting: WorkflowBackNavigationBridge {
+        return self.configuration.workflowBackNavigationBridge
     }
 
     func simulateWorkflowExitOfferUpdate(_ offering: Offering?) {
@@ -157,7 +157,7 @@ public class PaywallViewController: UIViewController {
     }
 
     func navigateBackAfterCheckpointError(flowCanContinue: Bool) {
-        if flowCanContinue, self.configuration.workflowNavigationRequest.navigateBack() {
+        if flowCanContinue, self.configuration.workflowBackNavigationBridge.navigateBack() {
             return
         }
         self.workflowDismissalReason = .navigatedBack

@@ -28,7 +28,7 @@ struct PaywallViewConfiguration {
     /// Whether the paywall presents purchase and restore errors instead of delegating presentation to its host.
     var displaysPurchaseAndRestoreErrors: Bool
     #if !os(tvOS)
-    var workflowNavigationRequest = WorkflowNavigationRequest()
+    var workflowBackNavigationBridge = WorkflowBackNavigationBridge()
     /// Receives a workflow configuration error so checkpoint presentation can report an error outcome.
     var workflowPresentationErrorHandler: ((NSError) -> Void)?
     /// A pre-built workflow context to seed directly (injection/preview path), bypassing the
@@ -66,7 +66,7 @@ struct PaywallViewConfiguration {
 }
 
 #if !os(tvOS)
-final class WorkflowNavigationRequest: ObservableObject {
+final class WorkflowBackNavigationBridge: ObservableObject {
 
     @Published private(set) var hasPendingBackNavigationRequest = false
     private(set) var hasActiveWorkflow = false
@@ -87,7 +87,7 @@ final class WorkflowNavigationRequest: ObservableObject {
         return true
     }
 
-    func takePendingNavigateBackRequest(isTransitioning: Bool) -> Bool {
+    func takePendingBackNavigationRequest(isTransitioning: Bool) -> Bool {
         guard !isTransitioning,
               self.hasPendingBackNavigationRequest else {
             return false
