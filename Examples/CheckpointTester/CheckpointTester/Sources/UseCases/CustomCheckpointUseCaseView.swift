@@ -68,7 +68,8 @@ struct CustomCheckpointUseCaseView: View {
             identifier,
             customVariables: self.customVariables.checkpointCustomVariables,
             presentationMode: self.presentationMode,
-            paywallPresenter: paywallPresenter
+            paywallPresenter: paywallPresenter,
+            errorPresenter: self.model.localErrorPresenter
         ) { result in
             Task { @MainActor in
                 self.status = Self.describe(result)
