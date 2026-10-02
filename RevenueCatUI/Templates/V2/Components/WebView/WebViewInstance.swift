@@ -279,18 +279,20 @@ final class WebViewInstance: ObservableObject {
 final class WebViewHostView: NSView {
 
     var onMoveToWindow: ((WebViewHostView) -> Void)?
-    /// Called the first time the host is laid out, so the instance can prefer it over hosts that never are.
+    /// Called the first time the host is laid out after entering a window, so the instance can prefer it
+    /// over hosts that never are.
     var onFirstLayout: ((WebViewHostView) -> Void)?
 
     /// Distance from the active carousel page; `0` when active or not in a carousel. Closest host wins.
     var carouselDistance: Int = 0
 
-    /// Whether the host has gone through at least one layout pass. A host that never does is not
-    /// actually being displayed (for example the losing branch of a `ViewThatFits`).
+    /// Whether the host has gone through a layout pass since entering its current window. A host that
+    /// never does is not actually being displayed (for example the losing branch of a `ViewThatFits`).
     private(set) var hasLaidOut = false
 
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
+        self.hasLaidOut = false
         self.onMoveToWindow?(self)
     }
 
@@ -307,18 +309,20 @@ final class WebViewHostView: NSView {
 final class WebViewHostView: UIView {
 
     var onMoveToWindow: ((WebViewHostView) -> Void)?
-    /// Called the first time the host is laid out, so the instance can prefer it over hosts that never are.
+    /// Called the first time the host is laid out after entering a window, so the instance can prefer it
+    /// over hosts that never are.
     var onFirstLayout: ((WebViewHostView) -> Void)?
 
     /// Distance from the active carousel page; `0` when active or not in a carousel. Closest host wins.
     var carouselDistance: Int = 0
 
-    /// Whether the host has gone through at least one layout pass. A host that never does is not
-    /// actually being displayed (for example the losing branch of a `ViewThatFits`).
+    /// Whether the host has gone through a layout pass since entering its current window. A host that
+    /// never does is not actually being displayed (for example the losing branch of a `ViewThatFits`).
     private(set) var hasLaidOut = false
 
     override func didMoveToWindow() {
         super.didMoveToWindow()
+        self.hasLaidOut = false
         self.onMoveToWindow?(self)
     }
 

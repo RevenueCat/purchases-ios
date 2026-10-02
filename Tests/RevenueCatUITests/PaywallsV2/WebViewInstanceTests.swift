@@ -357,6 +357,25 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
         XCTAssertEqual(reports, 1)
     }
 
+    func testHostReportsItsFirstLayoutAgainAfterReenteringWindow() throws {
+        let host = self.makeWindowedHost()
+        let container = try XCTUnwrap(host.superview)
+        var reports = 0
+        host.onFirstLayout = { _ in reports += 1 }
+
+        self.layOut(host)
+        host.removeFromSuperview()
+        container.addSubview(host)
+
+        XCTAssertFalse(host.hasLaidOut)
+
+        self.layOut(host)
+        self.layOut(host)
+
+        XCTAssertTrue(host.hasLaidOut)
+        XCTAssertEqual(reports, 2)
+    }
+
     // MARK: - Carousel copies
 
     /// In a looping carousel the off-screen copy at the start of the strip enters the window first; the
