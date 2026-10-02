@@ -939,7 +939,7 @@ final class DefaultPaywallPresenterTests: TestCase {
         let controller = self.makePaywallViewController()
         let delegate: PaywallViewControllerDelegate = presenter
 
-        presenter.prepareForPresentation()
+        presenter.prepareForPresentation(params: Self.presentationParams)
 
         delegate.paywallViewController?(
             controller,
@@ -957,7 +957,7 @@ final class DefaultPaywallPresenterTests: TestCase {
         let controller = self.makePaywallViewControllerForDismissalRecording()
         let delegate: PaywallViewControllerDelegate = presenter
 
-        presenter.prepareForPresentation()
+        presenter.prepareForPresentation(params: Self.presentationParams)
         delegate.paywallViewController?(
             controller,
             didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["premium", "pro"])
@@ -974,7 +974,7 @@ final class DefaultPaywallPresenterTests: TestCase {
         let controller = self.makePaywallViewControllerForDismissalRecording()
         let delegate: PaywallViewControllerDelegate = presenter
 
-        presenter.prepareForPresentation()
+        presenter.prepareForPresentation(params: Self.presentationParams)
         delegate.paywallViewController?(
             controller,
             didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["pro"])
@@ -991,7 +991,7 @@ final class DefaultPaywallPresenterTests: TestCase {
         let controller = self.makePaywallViewControllerForDismissalRecording()
         let delegate: PaywallViewControllerDelegate = presenter
 
-        presenter.prepareForPresentation()
+        presenter.prepareForPresentation(params: Self.presentationParams)
         delegate.paywallViewController?(
             controller,
             didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["pro"])
@@ -1006,7 +1006,7 @@ final class DefaultPaywallPresenterTests: TestCase {
         let controller = self.makePaywallViewControllerForDismissalRecording()
         let delegate: PaywallViewControllerDelegate = presenter
 
-        presenter.prepareForPresentation()
+        presenter.prepareForPresentation(params: Self.presentationParams)
         delegate.paywallViewController?(
             controller,
             didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["pro"])
@@ -1021,7 +1021,7 @@ final class DefaultPaywallPresenterTests: TestCase {
         let controller = self.makePaywallViewControllerForDismissalRecording()
         let delegate: PaywallViewControllerDelegate = presenter
 
-        presenter.prepareForPresentation()
+        presenter.prepareForPresentation(params: Self.presentationParams)
         delegate.paywallViewController?(
             controller,
             didFinishRestoringWith: try Self.customerInfo(activeEntitlements: [])
@@ -1036,7 +1036,7 @@ final class DefaultPaywallPresenterTests: TestCase {
         let controller = self.makePaywallViewController()
         let delegate: PaywallViewControllerDelegate = presenter
 
-        presenter.prepareForPresentation()
+        presenter.prepareForPresentation(params: Self.presentationParams)
         delegate.paywallViewController?(
             controller,
             didFinishPurchasingWith: TestData.customerInfo,
@@ -1044,7 +1044,7 @@ final class DefaultPaywallPresenterTests: TestCase {
         )
         XCTAssertEqual(presenter.presentationResult(dismissalReason: .navigatedBack), .continued)
 
-        presenter.prepareForPresentation()
+        presenter.prepareForPresentation(params: Self.presentationParams)
 
         XCTAssertEqual(presenter.presentationResult(dismissalReason: .navigatedBack), .navigatedBack)
     }
@@ -1085,6 +1085,10 @@ final class DefaultPaywallPresenterTests: TestCase {
             availablePackages: [],
             webCheckoutUrl: nil
         )
+    }
+
+    private static var presentationParams: PaywallPresentationParams {
+        return .init(checkpointIdentifier: "test_checkpoint", offering: Self.offering())
     }
 
     private func makePaywallViewControllerForDismissalRecording() -> DismissRecordingPaywallViewController {
