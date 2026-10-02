@@ -32,9 +32,8 @@ final class WorkflowStepEventTracker {
     }
 
     private let workflow: PublishedWorkflow
-    /// The step the workflow opened on. `initialStepId` only names the fallback once `initialTrigger`
-    /// routes the first screen.
-    private var entryStepId: String?
+    /// The step `initialTrigger` picked, once shown. `initialStepId` is only its fallback.
+    private var resolvedInitialStepId: String?
     let traceId: String
     private let workflowBlobRef: String?
     private let sink: (WorkflowEvent) -> Void
@@ -53,7 +52,7 @@ final class WorkflowStepEventTracker {
 
     /// Emits `stepStarted` for the first step shown in the impression.
     func trackInitialStep(_ step: WorkflowStep) {
-        self.entryStepId = step.id
+        self.resolvedInitialStepId = step.id
         self.trackStepStarted(step, fromStepId: nil, entryReason: .start)
     }
 
@@ -113,7 +112,7 @@ final class WorkflowStepEventTracker {
             fromStepId: fromStepId,
             toStepId: toStepId,
             entryReason: entryReason,
-            isFirstStep: step.id == (self.entryStepId ?? self.workflow.initialStepId),
+            isFirstStep: step.id == (self.resolvedInitialStepId ?? self.workflow.initialStepId),
             isLastStep: Self.isTerminalStep(step),
             experiment: self.experimentData(for: step)
         )

@@ -349,7 +349,7 @@ struct WorkflowPaywallView: View {
         }
 
         if purchaseHandler.resolveBranch != nil && context.workflow.initialBranch != nil {
-            // Nothing on the placeholder is tappable, so a close button would only be dead.
+            // The placeholder is not interactive, so a close button on it would not respond.
             skeletonPage = Self.skeletonEnabled ? page(showCloseButton: false, skeleton: true) : nil
         } else {
             initialPresentationError = Self.presentationError(for: initialStepId, in: context)
