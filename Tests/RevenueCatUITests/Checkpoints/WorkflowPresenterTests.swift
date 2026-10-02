@@ -267,6 +267,16 @@ final class WorkflowPresenterTests: TestCase {
         XCTAssertEqual(controller.dismissCallCount, 0)
     }
 
+    func testWorkflowBackNavigationRequestWaitsForActiveTransitionToFinish() {
+        let navigationRequest = WorkflowNavigationRequest()
+        navigationRequest.workflowDidAppear()
+
+        XCTAssertTrue(navigationRequest.navigateBack())
+        XCTAssertFalse(navigationRequest.takePendingNavigateBackRequest(isTransitioning: true))
+        XCTAssertTrue(navigationRequest.takePendingNavigateBackRequest(isTransitioning: false))
+        XCTAssertFalse(navigationRequest.takePendingNavigateBackRequest(isTransitioning: false))
+    }
+
     func testNewerWorkflowErrorPresentationSupersedesEarlierCompletion() throws {
         var completions: [ErrorPresentationCompletion] = []
         let presenter = WorkflowPresenter { _ in true }

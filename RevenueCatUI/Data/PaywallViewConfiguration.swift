@@ -70,6 +70,7 @@ final class WorkflowNavigationRequest: ObservableObject {
 
     @Published private(set) var navigateBackRequestID = 0
     private(set) var hasActiveWorkflow = false
+    private var handledNavigateBackRequestID = 0
 
     func workflowDidAppear() {
         self.hasActiveWorkflow = true
@@ -77,12 +78,23 @@ final class WorkflowNavigationRequest: ObservableObject {
 
     func workflowDidDisappear() {
         self.hasActiveWorkflow = false
+        self.handledNavigateBackRequestID = self.navigateBackRequestID
     }
 
     @discardableResult
     func navigateBack() -> Bool {
         guard self.hasActiveWorkflow else { return false }
         self.navigateBackRequestID += 1
+        return true
+    }
+
+    func takePendingNavigateBackRequest(isTransitioning: Bool) -> Bool {
+        guard !isTransitioning,
+              self.handledNavigateBackRequestID != self.navigateBackRequestID else {
+            return false
+        }
+
+        self.handledNavigateBackRequestID = self.navigateBackRequestID
         return true
     }
 

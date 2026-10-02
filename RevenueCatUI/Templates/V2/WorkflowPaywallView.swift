@@ -490,8 +490,7 @@ struct WorkflowPaywallView: View {
             self.trackCurrentWorkflowLeft()
         }
         .onChangeOf(self.navigationRequest.navigateBackRequestID) { _ in
-            self.presentationState = .active
-            self.handleDismiss(dismissalReason: .navigatedBack)
+            self.handlePendingNavigationRequest()
         }
         .onChangeOf(self.navigator.currentStepId) { _ in
             self.syncExitOfferBinding()
@@ -734,6 +733,17 @@ struct WorkflowPaywallView: View {
         return Self.exitOfferContext(for: self.context, currentStepId: self.navigator.currentStepId)
     }
 
+    private func handlePendingNavigationRequest() {
+        guard self.navigationRequest.takePendingNavigateBackRequest(
+            isTransitioning: self.transitionState.isTransitioning
+        ) else {
+            return
+        }
+
+        self.presentationState = .active
+        self.handleDismiss(dismissalReason: .navigatedBack)
+    }
+
     private func syncExitOfferBinding() {
         self.exitOfferOfferingBinding.wrappedValue = self.currentExitOfferContext?.exitOfferOffering
     }
@@ -916,6 +926,7 @@ struct WorkflowPaywallView: View {
 
         self.transitionState.completeTransition()
         self.activeTransitionID = nil
+        self.handlePendingNavigationRequest()
     }
 
     private static func renderedPage(
