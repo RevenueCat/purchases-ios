@@ -87,7 +87,7 @@ struct APIKeyDashboardList: View {
     @State
     private var presentedWorkflowExitOffer: Offering?
 
-    #if !os(tvOS)
+    #if DEBUG && !os(tvOS)
     @State
     private var workflowRows: [WorkflowRow] = []
 
@@ -196,7 +196,7 @@ struct APIKeyDashboardList: View {
                 by: PaywallSection.init(offering:)
             )
 
-            #if !os(tvOS)
+            #if DEBUG && !os(tvOS)
             self.workflowRows = await WorkflowRow.loadAll()
             #endif
 
@@ -242,7 +242,7 @@ struct APIKeyDashboardList: View {
     @ViewBuilder
     private func list(with data: Data) -> some View {
         List {
-            #if !os(tvOS)
+            #if DEBUG && !os(tvOS)
             self.workflowsSection
             #endif
             ForEach(data.sections, id: \.self) { section in
@@ -377,7 +377,7 @@ struct APIKeyDashboardList: View {
                         self.isLoadingPaywall = false
                     }
                 }
-                #if !os(tvOS)
+                #if DEBUG && !os(tvOS)
                 .sheet(item: self.$presentedWorkflowSheet) { workflow in
                     self.workflowPaywallView(for: workflow)
                 }
@@ -402,7 +402,7 @@ struct APIKeyDashboardList: View {
                 )
     }
 
-    #if !os(tvOS)
+    #if DEBUG && !os(tvOS)
     @ViewBuilder
     private var workflowsSection: some View {
         let rows = self.searchText.isEmpty

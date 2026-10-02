@@ -208,7 +208,7 @@ import Foundation
 @_spi(Internal) public struct PublishedWorkflow {
 
     public let id: String
-    @_spi(Internal) public let displayName: String
+    let displayName: String
     public let initialStepId: String
     public let singleStepFallbackId: String?
     public let steps: [String: WorkflowStep]
@@ -260,10 +260,10 @@ import Foundation
 }
 
 /// A workflow in the synced `workflows` topic, with the offering it claims, if any.
-@_spi(Internal) public struct WorkflowListing: Equatable {
+struct WorkflowListing: Equatable {
 
-    public let workflowId: String
-    public let offeringIdentifier: String?
+    let workflowId: String
+    let offeringIdentifier: String?
 
 }
 

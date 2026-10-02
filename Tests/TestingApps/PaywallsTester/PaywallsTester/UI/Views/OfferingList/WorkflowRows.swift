@@ -5,9 +5,10 @@
 //  Created by RevenueCat.
 //
 
-#if !os(tvOS)
+// Reads internal SDK methods, so it's Debug-only.
+#if DEBUG && !os(tvOS)
 
-@_spi(Internal) import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 @_spi(Internal) import RevenueCatUI
 import SwiftUI
 
