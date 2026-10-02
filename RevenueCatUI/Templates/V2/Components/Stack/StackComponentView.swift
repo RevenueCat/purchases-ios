@@ -157,12 +157,17 @@ struct StackComponentView: View {
         .applyIf(self.showActivityIndicatorOverContent, apply: { view in
             view.progressOverlay(for: style.backgroundStyle)
         })
+        // Preserve legacy root hints unless this stack explicitly stops scrolling.
+        .environment(\.paywallRootStackIsZLayer, self.paywallRootStackIsZLayer && style.scrollable != false)
         .scrollableIfEnabled(
             style.dimension,
             size: style.size,
             enabled: style.scrollable ?? self.isScrollableByDefault,
-            paywallRootStackIsZLayer: self.paywallRootStackIsZLayer,
-            ancestorScrollsVertically: self.paywallAncestorScrollsVertically
+            zLayerShouldScroll: PaywallZLayerScrollPolicy.shouldApplyScroll(
+                stackScrollPreference: style.scrollable,
+                paywallRootStackIsZLayer: self.paywallRootStackIsZLayer || self.isScrollableByDefault,
+                ancestorScrollsVertically: self.paywallAncestorScrollsVertically
+            )
         )
         .shape(border: nil,
                shape: style.shape,
@@ -203,9 +208,8 @@ fileprivate extension View {
     func scrollableIfEnabled(
         _ dimension: PaywallComponent.Dimension,
         size: PaywallComponent.Size,
-        enabled: Bool = true,
-        paywallRootStackIsZLayer: Bool = false,
-        ancestorScrollsVertically: Bool = false
+        enabled: Bool,
+        zLayerShouldScroll: Bool
     ) -> some View {
         switch dimension {
         case .horizontal(let verticalAlignment, let distribution):
@@ -237,11 +241,7 @@ fileprivate extension View {
                 self
             }
         case .zlayer(let alignment):
-            if PaywallZLayerScrollPolicy.shouldApplyScroll(
-                stackScrollingEnabled: enabled,
-                paywallRootStackIsZLayer: paywallRootStackIsZLayer,
-                ancestorScrollsVertically: ancestorScrollsVertically
-            ) {
+            if zLayerShouldScroll {
                 self.scrollableIfNecessaryWhenAvailable(
                     .vertical,
                     fillContent: true,
