@@ -77,8 +77,9 @@ final class CheckpointsManager {
         let errorPresentationHandler = self.errorPresentationHandler(
             for: params,
             defaultHandler: {
+                let presenter = DefaultErrorPresenter()
                 return { params, completion in
-                    completion.complete(params.flowCanContinue ? .retry : .continue)
+                    presenter.present(params: params, completion: completion)
                 }
             }
         )

@@ -36,7 +36,8 @@ public extension Purchases {
     ///
     /// This presenter is used when the individual
     /// ``checkpoint(_:customVariables:paywallPresenter:errorPresenter:_:)`` call does not provide an `errorPresenter`
-    /// closure. A closure passed to a checkpoint call overrides this presenter for that call.
+    /// closure. A closure passed to a checkpoint call overrides this presenter for that call. When neither is set,
+    /// the SDK handles error presentation by default.
     @MainActor
     var errorPresenter: ErrorPresenter? {
         get { return self.checkpointsManager.errorPresenter }
