@@ -136,6 +136,10 @@ public class PaywallViewController: UIViewController {
 
     var workflowContextForTesting: WorkflowContext? { self.configuration.injectedWorkflowContext }
 
+    var workflowNavigationRequestForTesting: WorkflowNavigationRequest {
+        return self.configuration.workflowNavigationRequest
+    }
+
     func simulateWorkflowExitOfferUpdate(_ offering: Offering?) {
         self.updateWorkflowExitOffer(offering)
     }
@@ -146,6 +150,18 @@ public class PaywallViewController: UIViewController {
 
     func simulateWorkflowPresentationError(_ error: NSError) {
         self.configuration.workflowPresentationErrorHandler?(error)
+    }
+
+    func continueAfterCheckpointError() {
+        self.dismiss(animated: true)
+    }
+
+    func navigateBackAfterCheckpointError(flowCanContinue: Bool) {
+        if flowCanContinue, self.configuration.workflowNavigationRequest.navigateBack() {
+            return
+        }
+        self.workflowDismissalReason = .navigatedBack
+        self.dismiss(animated: true)
     }
 
     /// Prevents this controller from resolving or presenting exit offers.

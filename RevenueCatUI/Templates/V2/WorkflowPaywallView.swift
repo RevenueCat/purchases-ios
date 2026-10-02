@@ -270,6 +270,8 @@ struct WorkflowPaywallView: View {
     private let onDismiss: () -> Void
     private let onPresentationError: ((NSError) -> Void)?
 
+    @ObservedObject private var navigationRequest: WorkflowNavigationRequest
+
     @StateObject private var navigator: WorkflowNavigator
     /// One paywall state store per workflow presentation: all screens read and write the same
     /// store, so values survive screen navigation and reset only when the presentation ends
@@ -304,6 +306,7 @@ struct WorkflowPaywallView: View {
         displayCloseButton: Bool,
         promoOfferCache: PaywallPromoOfferCache?,
         onDismiss: @escaping () -> Void,
+        navigationRequest: WorkflowNavigationRequest = WorkflowNavigationRequest(),
         onPresentationError: ((NSError) -> Void)? = nil
     ) {
         self.context = context
@@ -312,6 +315,7 @@ struct WorkflowPaywallView: View {
         self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
+        self._navigationRequest = .init(wrappedValue: navigationRequest)
         self.onPresentationError = onPresentationError
         self._navigator = .init(wrappedValue: WorkflowNavigator(
             workflow: context.workflow,
@@ -427,6 +431,7 @@ struct WorkflowPaywallView: View {
         // Must use exitOfferContext(for:currentStepId:), not context.exitOfferOffering, because
         // exitOfferOffering is not step-aware — it is non-nil for any step whenever configured.
         .onAppear {
+            self.navigationRequest.workflowDidAppear()
             switch self.presentationState {
             case .failing:
                 self.exitOfferOfferingBinding.wrappedValue = nil
@@ -449,7 +454,12 @@ struct WorkflowPaywallView: View {
         // A late configuration failure tracks the same lifecycle immediately before showing its error;
         // the coordinator's fire-once guards prevent this hook from duplicating those events later.
         .onDisappear {
+            self.navigationRequest.workflowDidDisappear()
             self.trackCurrentWorkflowLeft()
+        }
+        .onChangeOf(self.navigationRequest.navigateBackRequestID) { _ in
+            self.presentationState = .active
+            self.handleDismiss(dismissalReason: .navigatedBack)
         }
         .onChangeOf(self.navigator.currentStepId) { _ in
             self.syncExitOfferBinding()
@@ -1019,7 +1029,10 @@ struct WorkflowPaywallView: View {
             screenId: self.context.workflow.steps[stepId]?.screenId
         )
         Logger.error("\(message): \(error.localizedDescription)")
-        self.onPresentationError?(error)
+        if let onPresentationError = self.onPresentationError {
+            self.presentationState = .failureReported
+            onPresentationError(error)
+        }
     }
 
 }

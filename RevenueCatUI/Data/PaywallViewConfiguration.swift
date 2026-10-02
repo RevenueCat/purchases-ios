@@ -5,6 +5,7 @@
 //  Created by Nacho Soto on 1/19/24.
 //
 
+import Combine
 import Foundation
 
 @_spi(Internal) import RevenueCat
@@ -27,6 +28,7 @@ struct PaywallViewConfiguration {
     /// Whether the paywall presents purchase and restore errors instead of delegating presentation to its host.
     var displaysPurchaseAndRestoreErrors: Bool
     #if !os(tvOS)
+    var workflowNavigationRequest = WorkflowNavigationRequest()
     /// Receives a workflow configuration error so checkpoint presentation can report an error outcome.
     var workflowPresentationErrorHandler: ((NSError) -> Void)?
     /// A pre-built workflow context to seed directly (injection/preview path), bypassing the
@@ -62,6 +64,30 @@ struct PaywallViewConfiguration {
     }
 
 }
+
+#if !os(tvOS)
+final class WorkflowNavigationRequest: ObservableObject {
+
+    @Published private(set) var navigateBackRequestID = 0
+    private(set) var hasActiveWorkflow = false
+
+    func workflowDidAppear() {
+        self.hasActiveWorkflow = true
+    }
+
+    func workflowDidDisappear() {
+        self.hasActiveWorkflow = false
+    }
+
+    @discardableResult
+    func navigateBack() -> Bool {
+        guard self.hasActiveWorkflow else { return false }
+        self.navigateBackRequestID += 1
+        return true
+    }
+
+}
+#endif
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallViewConfiguration {

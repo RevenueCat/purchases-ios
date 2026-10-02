@@ -76,13 +76,14 @@ public final class ErrorPresentationParams {
 
 /// Completes checkpoint error handling.
 ///
-/// Call ``complete(_:)`` exactly once after handling the error. Later calls for the same checkpoint are ignored.
+/// Call ``complete(_:)`` exactly once after handling the error. Later calls on the same completion are ignored.
 @_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 public final class ErrorPresentationCompletion {
 
     private let complete: (Result) -> Void
+    private var hasCompleted = false
 
     init(complete: @escaping (Result) -> Void) {
         self.complete = complete
@@ -90,19 +91,21 @@ public final class ErrorPresentationCompletion {
 
     /// Reports how the checkpoint flow should proceed.
     public func complete(_ result: Result) {
+        guard !self.hasCompleted else { return }
+        self.hasCompleted = true
         self.complete(result)
     }
 
     /// A requested action following error presentation.
     public struct Result: Sendable {
 
-        fileprivate enum Action: Sendable {
+        enum Action: Sendable {
             case retry
             case `continue`
             case navigateBack
         }
 
-        fileprivate let action: Action
+        let action: Action
 
         private init(_ action: Action) {
             self.action = action

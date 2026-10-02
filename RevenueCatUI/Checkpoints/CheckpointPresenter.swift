@@ -188,6 +188,8 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
     private var presentationParams: PaywallPresentationParams?
     private var initialActiveEntitlementIdentifiers: Set<String>?
     private var didPurchaseOrRestoreAccess = false
+    private weak var presentedViewController: PaywallViewController?
+    private var activeErrorPresentationID: UUID?
 
     init(
         cachedCustomerInfoProvider: @escaping CheckpointsManager.CachedCustomerInfoProvider = { nil }
@@ -215,6 +217,7 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
                 self?.presentError(error, flowCanContinue: false)
             }
         )
+        self.presentedViewController = controller
         controller.delegate = self
         self.completion = completion
         presentationContext.present(controller, animated: true)
@@ -235,15 +238,23 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
 
     func prepareForPresentation(params: PaywallPresentationParams? = nil) {
         self.presentationParams = params
+        self.activeErrorPresentationID = nil
         self.initialActiveEntitlementIdentifiers = self.cachedCustomerInfoProvider().map { customerInfo in
             Set(customerInfo.entitlements.active.keys)
         }
         self.didPurchaseOrRestoreAccess = false
     }
 
-    private func presentError(_ error: any Error, flowCanContinue: Bool) {
+    private func presentError(
+        _ error: any Error,
+        flowCanContinue: Bool,
+        controller: PaywallViewController? = nil
+    ) {
         guard let params = self.presentationParams,
               let handler = params.errorPresentationHandler else { return }
+        let presentationID = UUID()
+        self.activeErrorPresentationID = presentationID
+        let controller = controller ?? self.presentedViewController
 
         handler(
             .init(
@@ -252,8 +263,35 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
                 customVariables: params.customVariables,
                 flowCanContinue: flowCanContinue
             ),
-            .init { _ in }
+            .init { [weak self, weak controller] result in
+                self?.handleErrorPresentationResult(
+                    result,
+                    flowCanContinue: flowCanContinue,
+                    presentationID: presentationID,
+                    controller: controller
+                )
+            }
         )
+    }
+
+    private func handleErrorPresentationResult(
+        _ result: ErrorPresentationCompletion.Result,
+        flowCanContinue: Bool,
+        presentationID: UUID,
+        controller: PaywallViewController?
+    ) {
+        guard self.activeErrorPresentationID == presentationID,
+              self.presentationParams != nil else { return }
+        self.activeErrorPresentationID = nil
+
+        switch result.action {
+        case .retry where flowCanContinue:
+            break
+        case .retry, .continue:
+            controller?.continueAfterCheckpointError()
+        case .navigateBack:
+            controller?.navigateBackAfterCheckpointError(flowCanContinue: flowCanContinue)
+        }
     }
 
     private func didCompleteRestore(
@@ -264,6 +302,7 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
             comparedTo: self.initialActiveEntitlementIdentifiers
         ) else { return }
 
+        self.activeErrorPresentationID = nil
         self.didPurchaseOrRestoreAccess = true
         controller.dismiss(animated: true)
     }
@@ -276,6 +315,8 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
     private func takeCompletion() -> PaywallPresentationCompletion? {
         defer { self.completion = nil }
         self.presentationParams = nil
+        self.activeErrorPresentationID = nil
+        self.presentedViewController = nil
         return self.completion
     }
 
@@ -285,7 +326,10 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         didFinishPurchasingWith customerInfo: CustomerInfo,
         transaction: StoreTransaction?
     ) {
-        MainActor.assumeIsolated { self.didPurchaseOrRestoreAccess = true }
+        MainActor.assumeIsolated {
+            self.activeErrorPresentationID = nil
+            self.didPurchaseOrRestoreAccess = true
+        }
     }
 
     nonisolated func paywallViewController(
@@ -307,7 +351,7 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
     ) {
         MainActor.assumeIsolated {
             guard !error.isPurchaseCancellation else { return }
-            self.presentError(error, flowCanContinue: true)
+            self.presentError(error, flowCanContinue: true, controller: controller)
         }
     }
 
@@ -315,7 +359,9 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         _ controller: PaywallViewController,
         didFailRestoringWith error: NSError
     ) {
-        MainActor.assumeIsolated { self.presentError(error, flowCanContinue: true) }
+        MainActor.assumeIsolated {
+            self.presentError(error, flowCanContinue: true, controller: controller)
+        }
     }
     #else
     func paywallViewController(
@@ -323,6 +369,7 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         didFinishPurchasingWith customerInfo: CustomerInfo,
         transaction: StoreTransaction?
     ) {
+        self.activeErrorPresentationID = nil
         self.didPurchaseOrRestoreAccess = true
     }
 
@@ -342,14 +389,14 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         didFailPurchasingWith error: NSError
     ) {
         guard !error.isPurchaseCancellation else { return }
-        self.presentError(error, flowCanContinue: true)
+        self.presentError(error, flowCanContinue: true, controller: controller)
     }
 
     func paywallViewController(
         _ controller: PaywallViewController,
         didFailRestoringWith error: NSError
     ) {
-        self.presentError(error, flowCanContinue: true)
+        self.presentError(error, flowCanContinue: true, controller: controller)
     }
     #endif
 
