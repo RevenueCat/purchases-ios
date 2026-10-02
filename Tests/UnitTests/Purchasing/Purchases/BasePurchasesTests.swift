@@ -283,7 +283,8 @@ class BasePurchasesTests: TestCase {
         dateProvider: DateProvider = DateProvider(),
         webBundleEventBus: WebBundleEventBus = .shared,
         paywallCache: PaywallCacheWarmingType? = nil,
-        sdkSettingsConfigProvider: SDKSettingsConfigProviderType? = nil
+        sdkSettingsConfigProvider: SDKSettingsConfigProviderType? = nil,
+        subscriberDimensionsConfigProvider: SubscriberDimensionsConfigProviderType? = nil
     ) {
         self.purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
@@ -370,6 +371,8 @@ class BasePurchasesTests: TestCase {
                                    sdkSettingsConfigProvider: sdkSettingsConfigProvider ?? SDKSettingsConfigProvider(
                                     manager: self.mockRemoteConfigManager
                                    ),
+                                   subscriberDimensionsConfigProvider: subscriberDimensionsConfigProvider
+                                   ?? SubscriberDimensionsConfigProvider(manager: self.mockRemoteConfigManager),
                                    offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
                                    purchasesOrchestrator: self.purchasesOrchestrator,
                                    purchasedProductsFetcher: self.mockPurchasedProductsFetcher,
