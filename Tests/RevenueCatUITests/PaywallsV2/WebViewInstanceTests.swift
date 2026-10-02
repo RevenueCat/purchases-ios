@@ -243,6 +243,36 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
         XCTAssertTrue(webView.superview === displayed)
     }
 
+    #if !os(macOS)
+    /// `scrollableIfNecessary` keeps both `ViewThatFits` branches mounted; the unchosen one can enter the
+    /// window first but sits under the chosen one, so the copy on top must take the web view.
+    func testFrontmostHostTakesTheWebViewFromACoveredCopyThatClaimedItFirst() {
+        let instance = Self.makeInstance()
+        let webView = instance.webView { WKWebView(frame: .zero) }
+        let window = self.makeVisibleWindow()
+        let covered = Self.addHost(to: window)
+        let frontmost = Self.addHost(to: window)
+
+        instance.reconcile(host: covered)
+        instance.reconcile(host: frontmost)
+
+        XCTAssertTrue(webView.superview === frontmost)
+    }
+
+    func testCoveredCopyCannotTakeTheWebViewFromTheFrontmostHost() {
+        let instance = Self.makeInstance()
+        let webView = instance.webView { WKWebView(frame: .zero) }
+        let window = self.makeVisibleWindow()
+        let covered = Self.addHost(to: window)
+        let frontmost = Self.addHost(to: window)
+
+        instance.reconcile(host: frontmost)
+        instance.reconcile(host: covered)
+
+        XCTAssertTrue(webView.superview === frontmost)
+    }
+    #endif
+
     /// SwiftUI may mount the incoming representable before unmounting the outgoing one. The incoming
     /// request must complete when the outgoing host leaves without requiring another update callback.
     func testIncomingCandidateTakesTheWebViewWhenTheAttachedHostLeavesItsWindow() {
@@ -496,6 +526,23 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
         self.windows.append(window)
         return host
     }
+
+    #if !os(macOS)
+    /// A shown window, so hit testing (which skips hidden views) can tell which host is on top.
+    private func makeVisibleWindow() -> UIWindow {
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 320, height: 480))
+        window.isHidden = false
+        self.windows.append(window)
+        return window
+    }
+
+    /// Adds a host over the same area as earlier ones, so each new host covers the previous.
+    private static func addHost(to window: UIWindow) -> WebViewHostView {
+        let host = WebViewHostView(frame: CGRect(x: 20, y: 20, width: 120, height: 120))
+        window.addSubview(host)
+        return host
+    }
+    #endif
 
 }
 

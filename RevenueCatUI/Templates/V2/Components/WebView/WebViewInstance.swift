@@ -156,22 +156,27 @@ final class WebViewInstance: ObservableObject {
         self.attachWebView(to: preferredHost)
     }
 
-    /// The candidate closest to its carousel's active page. Ties go to the host already showing the web
-    /// view, then to the host that entered the window first, so a replacement host mounted during a
-    /// redraw only takes over once the current host leaves.
+    /// The candidate closest to its carousel's active page, preferring one that is frontmost on screen:
+    /// `scrollableIfNecessary` keeps both `ViewThatFits` branches of the paywall mounted, and the branch
+    /// that wasn't chosen sits underneath the chosen one, so the first host to enter the window can be one
+    /// nobody sees. Ties go to the host already showing the web view, then to the host that entered the
+    /// window first, so a replacement host mounted during a redraw only takes over once the current host leaves.
     private func preferredHost() -> WebViewHostView? {
         let candidates = self.candidateHosts.compactMap(\.host)
         guard let closestDistance = candidates.map(\.carouselDistance).min() else {
             return nil
         }
 
-        if let attachedHost = self.attachedHost,
-           attachedHost.carouselDistance == closestDistance,
-           candidates.contains(where: { $0 === attachedHost }) {
+        let closest = candidates.filter { $0.carouselDistance == closestDistance }
+        let frontmost = closest.filter(\.isFrontmost)
+        // Nothing hit-testable (e.g. mid-transition, or hit testing disabled): keep the previous behavior.
+        let pool = frontmost.isEmpty ? closest : frontmost
+
+        if let attachedHost = self.attachedHost, pool.contains(where: { $0 === attachedHost }) {
             return attachedHost
         }
 
-        return candidates.first { $0.carouselDistance == closestDistance }
+        return pool.first
     }
 
     private func attachWebView(to host: WebViewHostView) {
@@ -277,6 +282,9 @@ final class WebViewHostView: NSView {
     /// Distance from the active carousel page; `0` when active or not in a carousel. Closest host wins.
     var carouselDistance: Int = 0
 
+    /// Not evaluated on macOS, so host selection there keeps its first-come behavior.
+    var isFrontmost: Bool { false }
+
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
         self.onMoveToWindow?(self)
@@ -289,12 +297,33 @@ final class WebViewHostView: UIView {
 
     var onMoveToWindow: ((WebViewHostView) -> Void)?
 
+    /// Called after layout, when a host's position or the branch on top may have changed.
+    var onLayout: ((WebViewHostView) -> Void)?
+
     /// Distance from the active carousel page; `0` when active or not in a carousel. Closest host wins.
     var carouselDistance: Int = 0
+
+    /// Whether a touch at this host's centre would land in it, i.e. this copy is the one on top rather than
+    /// a `ViewThatFits` branch mounted underneath the chosen one.
+    var isFrontmost: Bool {
+        guard let window = self.window, !self.bounds.isEmpty else {
+            return false
+        }
+        let center = self.convert(CGPoint(x: self.bounds.midX, y: self.bounds.midY), to: window)
+        guard let hit = window.hitTest(center, with: nil) else {
+            return false
+        }
+        return hit === self || hit.isDescendant(of: self)
+    }
 
     override func didMoveToWindow() {
         super.didMoveToWindow()
         self.onMoveToWindow?(self)
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        self.onLayout?(self)
     }
 
 }

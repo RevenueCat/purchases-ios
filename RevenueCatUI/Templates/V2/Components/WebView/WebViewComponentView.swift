@@ -244,6 +244,14 @@ struct WebViewRepresentable: PlatformViewRepresentable {
                 instance?.reconcile(host: host)
             }
         }
+        #if !os(macOS)
+        // Re-evaluate once laid out: which copy is on top is only known after layout.
+        host.onLayout = { [weak instance] host in
+            if host.window != nil {
+                instance?.reconcile(host: host)
+            }
+        }
+        #endif
 
         return host
     }
