@@ -2784,6 +2784,8 @@ extension RevenueCat.StoreProduct {
     case nonConsumable
     case nonRenewableSubscription
     case autoRenewableSubscription
+    case subscriptionBundle
+    case subscriptionSuite
     public init?(rawValue: Swift.Int)
     public typealias RawValue = Swift.Int
     public var rawValue: Swift.Int {
