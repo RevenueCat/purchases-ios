@@ -1687,43 +1687,9 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
 
-  # Builds the SDKUpdateTester app against the latest released SDK and against the local SDK, and shares both
-  # apps with the run-sdk-update-test jobs through the workspace.
-  build-sdk-update-test-apps:
-    executor:
-      name: macos-executor
-      xcode_version: "27.0.0"
-    steps:
-      - checkout
-      - install-dependencies:
-          install_xcbeautify: false
-      - revenuecat/install-mise-tools:
-          tools: tuist
-      - run:
-          name: Build SDK update test apps
-          command: |
-            REVENUECAT_API_KEY="${RC_E2E_TEST_API_KEY_PRODUCTION_TEST_STORE}" bundle exec fastlane build_sdk_update_test_apps
-          no_output_timeout: 20m
-      # Not storing the apps as artifacts, since they contain the API key.
-      - store_artifacts:
-          path: build/sdk_update_tests/release/xcodebuild.log
-          destination: release/xcodebuild.log
-      - store_artifacts:
-          path: build/sdk_update_tests/local/xcodebuild.log
-          destination: local/xcodebuild.log
-      - persist_to_workspace:
-          root: build/sdk_update_tests
-          paths:
-            - release/SDKUpdateTester.app
-            - release/version.txt
-            - local/SDKUpdateTester.app
-            - local/version.txt
-
+  # Builds the SDKUpdateTester app against the latest released SDK and against the local SDK, then runs each SDK
+  # update test case with them.
   run-sdk-update-test:
-    parameters:
-      test_case:
-        type: enum
-        enum: ["anonymous_user", "logged_in_user"]
     executor:
       name: macos-executor
       xcode_version: "27.0.0"
@@ -1735,17 +1701,37 @@ jobs:
       - checkout
       - install-dependencies:
           install_xcbeautify: false
+      - revenuecat/install-mise-tools:
+          tools: tuist
       - revenuecat/install-maestro
-      - attach_workspace:
-          at: build/sdk_update_tests
       - run:
-          name: Run SDK update test (<< parameters.test_case >>)
-          command: bundle exec fastlane run_sdk_update_test test_case:<< parameters.test_case >>
+          name: Build SDK update test apps
+          command: |
+            REVENUECAT_API_KEY="${RC_E2E_TEST_API_KEY_PRODUCTION_TEST_STORE}" bundle exec fastlane build_sdk_update_test_apps
+          no_output_timeout: 20m
+      - run:
+          name: Run SDK update test (anonymous_user)
+          command: bundle exec fastlane run_sdk_update_test test_case:anonymous_user
           no_output_timeout: 15m
-      - store_test_results:
-          path: fastlane/test_output/sdk_update_tests/<< parameters.test_case >>/junit
+      - run:
+          name: Run SDK update test (logged_in_user)
+          command: bundle exec fastlane run_sdk_update_test test_case:logged_in_user
+          no_output_timeout: 15m
+          when: always
+      # Not storing the apps as artifacts, since they contain the API key.
       - store_artifacts:
-          path: fastlane/test_output/sdk_update_tests/<< parameters.test_case >>
+          path: build/sdk_update_tests/release/xcodebuild.log
+          destination: release/xcodebuild.log
+      - store_artifacts:
+          path: build/sdk_update_tests/local/xcodebuild.log
+          destination: local/xcodebuild.log
+      # One path per test case, since their output also contains the reports of retried attempts.
+      - store_test_results:
+          path: fastlane/test_output/sdk_update_tests/anonymous_user/junit
+      - store_test_results:
+          path: fastlane/test_output/sdk_update_tests/logged_in_user/junit
+      - store_artifacts:
+          path: fastlane/test_output/sdk_update_tests
 
   release-checks:
     executor:
@@ -2624,21 +2610,11 @@ workflows:
           context:
             - e2e-tests
             - slack-secrets
-      - build-sdk-update-test-apps:
+      - run-sdk-update-test:
           requires:
             - approve-full-tests
           context:
             - e2e-tests
-      - run-sdk-update-test:
-          name: run-sdk-update-test-anonymous-user
-          test_case: anonymous_user
-          requires:
-            - build-sdk-update-test-apps
-      - run-sdk-update-test:
-          name: run-sdk-update-test-logged-in-user
-          test_case: logged_in_user
-          requires:
-            - build-sdk-update-test-apps
       - docs-build:
           requires:
             - approve-full-tests
@@ -2690,8 +2666,7 @@ workflows:
             - deploy-purchase-tester
             - run-workflow-maestro-tests
             - run-all-maestro-e2e-tests
-            - run-sdk-update-test-anonymous-user
-            - run-sdk-update-test-logged-in-user
+            - run-sdk-update-test
             - docs-build
 
   deploy-tag:
@@ -2928,19 +2903,9 @@ workflows:
           context:
             - e2e-tests
             - slack-secrets
-      - build-sdk-update-test-apps:
+      - run-sdk-update-test:
           context:
             - e2e-tests
-      - run-sdk-update-test:
-          name: run-sdk-update-test-anonymous-user
-          test_case: anonymous_user
-          requires:
-            - build-sdk-update-test-apps
-      - run-sdk-update-test:
-          name: run-sdk-update-test-logged-in-user
-          test_case: logged_in_user
-          requires:
-            - build-sdk-update-test-apps
       - backend-integration-tests-SK1:
           context:
             - slack-secrets
@@ -3051,8 +3016,7 @@ workflows:
             - check-api-changes
             - run-all-maestro-e2e-tests
             - run-workflow-maestro-tests
-            - run-sdk-update-test-anonymous-user
-            - run-sdk-update-test-logged-in-user
+            - run-sdk-update-test
             - lint
             - run-test-ios-26
             - run-test-ios-27
