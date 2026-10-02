@@ -10,6 +10,19 @@ import RevenueCat
 final class APISurfaceTests: AdapterTestCase {
 
     @MainActor
+    func testCheckpointPresenterEntryPointsRemainAvailableInSwift() {
+        let presenter: AdPresenter = AdMobPresenter()
+        let present: (
+            AdMobPresenter
+        ) -> (AdPresentationParams, @escaping AdPresentationCompletion) -> Void = AdMobPresenter.present(
+            params:completion:
+        )
+
+        XCTAssertNotNil(presenter)
+        XCTAssertNotNil(present)
+    }
+
+    @MainActor
     func testInterstitialCheckpointPresenterEntryPointsRemainAvailableInSwift() {
         let presenter: AdPresenter = AdMobInterstitialPresenter()
         let present: (
