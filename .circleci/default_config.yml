@@ -2402,27 +2402,9 @@ workflows:
   #
   # Boolean parameters like generate_snapshots, generate_revenuecatui_snapshots,
   # and generate_swiftinterface can be set to true from the CircleCI UI.
-  # TEMP: only run the SDK update tests while iterating on them.
-  tmp-sdk-update-tests:
-    jobs:
-      - build-sdk-update-test-apps:
-          context:
-            - e2e-tests
-      - run-sdk-update-test:
-          name: run-sdk-update-test-anonymous-user
-          test_case: anonymous_user
-          requires:
-            - build-sdk-update-test-apps
-      - run-sdk-update-test:
-          name: run-sdk-update-test-logged-in-user
-          test_case: logged_in_user
-          requires:
-            - build-sdk-update-test-apps
-
   run-all-tests:
     when:
       and:
-        - equal: [true, false] # TEMP
         - not:
             equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - not:
@@ -2779,16 +2761,14 @@ workflows:
 
   danger:
     when:
-      and:
-        - equal: [true, false] # TEMP
-        - or:
-            - not:
-                matches:
-                  pattern: "^generated_(snapshots|swiftinterface)/.*"
-                  value: << pipeline.git.branch >>
-            - matches:
-                pattern: "^generated_(snapshots|swiftinterface)/main-.*"
-                value: << pipeline.git.branch >>
+      or:
+        - not:
+            matches:
+              pattern: "^generated_(snapshots|swiftinterface)/.*"
+              value: << pipeline.git.branch >>
+        - matches:
+            pattern: "^generated_(snapshots|swiftinterface)/main-.*"
+            value: << pipeline.git.branch >>
     jobs:
       - danger:
           filters:
