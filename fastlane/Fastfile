@@ -593,7 +593,9 @@ platform :ios do
 
     pr_number = detect_pr_number
     if !pr_number && options[:resolve_pr_from_branch] && ENV["DANGER_GITHUB_API_TOKEN"]
-      branch = sh("git", "rev-parse", "--abbrev-ref", "HEAD").strip
+      branch = ENV["CIRCLE_BRANCH"].to_s.strip
+      branch = sh("git", "rev-parse", "--abbrev-ref", "HEAD").strip if branch.empty?
+      UI.user_error!("Cannot resolve snapshot PR from a detached checkout without CIRCLE_BRANCH") if branch == "HEAD"
       query = URI.encode_www_form(head: "RevenueCat:#{branch}", state: "open")
       response = github_api(
         server_url: "https://api.github.com",
