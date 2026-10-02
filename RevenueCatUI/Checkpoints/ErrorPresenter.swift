@@ -17,7 +17,9 @@ import Foundation
 
 /// Presents an error from a RevenueCat-presented checkpoint flow.
 ///
-/// The presenter owns its UI and decides how the flow proceeds afterwards.
+/// The presenter owns its UI and decides how the flow proceeds afterwards. Set one globally through
+/// ``Purchases/errorPresenter`` or for an individual checkpoint call. When neither is set, the SDK handles error
+/// presentation by default.
 @_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
