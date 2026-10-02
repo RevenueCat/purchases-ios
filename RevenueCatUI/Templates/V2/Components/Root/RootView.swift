@@ -43,6 +43,10 @@ struct RootView: View {
     private let defaultPackage: Package?
 
     @State private var sheetViewModel: SheetViewModel?
+    @State private var sheetHasIndependentSelection = false
+    @State private var sheetPackageContext: PackageContext?
+    @State private var sheetPresentingPackageContext: PackageContext?
+    @State private var sheetPresentingDefaultPackage: Package?
     @State private var packageSelectionSheetComponentName: String?
     @State private var packageBeforeOpeningSheet: Package?
     @State private var overlaidHeaderHeight: CGFloat = 0
@@ -157,27 +161,41 @@ struct RootView: View {
                 _ = self.componentInteractionLogger(
                     .paywallPackageSelectionSheetOpen(
                         sheetComponentName: sheetViewModel.sheet.name,
-                        rootSelectedPackage: self.packageContext.package
+                        rootSelectedPackage: (sheetViewModel.presentingPackageContext ?? self.packageContext).package
                     )
                 )
             }
         )
         .onChangeOf(sheetViewModel) { newValue in
             if let newValue {
+                self.sheetHasIndependentSelection = newValue.sheetStackViewModel.independentPackageValidator != nil
+                self.sheetPackageContext = newValue.independentPackageContext
+                self.sheetPresentingPackageContext = newValue.presentingPackageContext
+                self.sheetPresentingDefaultPackage = newValue.presentingDefaultPackage
                 self.packageSelectionSheetComponentName = newValue.sheet.name
                 if self.workflowPackageContext != nil {
-                    self.packageBeforeOpeningSheet = self.packageContext.package
+                    self.packageBeforeOpeningSheet = (newValue.presentingPackageContext ?? self.packageContext).package
                 }
             } else {
                 // Reset package selection when sheet is dismissed; snapshot sheet name before clear for analytics.
-                let selectionInSheetContext = self.packageContext.package
-                self.packageContext.package = Self.restoredPackageAfterSheetDismissal(
-                    workflowPackageContext: self.workflowPackageContext,
-                    packageBeforeOpeningSheet: self.packageBeforeOpeningSheet,
-                    defaultPackage: self.defaultPackage
-                )
+                let presentingContext = self.sheetPresentingPackageContext ?? self.packageContext
+                let selectionInSheetContext = self.sheetPackageContext.map { $0.package } ?? presentingContext.package
+                if !self.sheetHasIndependentSelection {
+                    let defaultPackage = presentingContext === self.packageContext
+                        ? self.defaultPackage
+                        : self.sheetPresentingDefaultPackage
+                    presentingContext.package = Self.restoredPackageAfterSheetDismissal(
+                        workflowPackageContext: self.workflowPackageContext,
+                        packageBeforeOpeningSheet: self.packageBeforeOpeningSheet,
+                        defaultPackage: defaultPackage
+                    )
+                }
+                self.sheetHasIndependentSelection = false
+                self.sheetPackageContext = nil
+                self.sheetPresentingPackageContext = nil
+                self.sheetPresentingDefaultPackage = nil
                 self.packageBeforeOpeningSheet = nil
-                let resultingRootPackage = self.packageContext.package
+                let resultingRootPackage = presentingContext.package
                 let sheetName = self.packageSelectionSheetComponentName
                 self.packageSelectionSheetComponentName = nil
                 _ = self.componentInteractionLogger(
