@@ -49,6 +49,12 @@ extension StoreProduct {
         /// An auto-renewable subscription.
         case autoRenewableSubscription
 
+        /// A subscription bundle.
+        case subscriptionBundle
+
+        /// A subscription suite.
+        case subscriptionSuite
+
     }
 
 }
@@ -61,6 +67,8 @@ extension StoreProduct.ProductType {
         case .nonConsumable: return .nonSubscription
         case .nonRenewableSubscription: return .subscription
         case .autoRenewableSubscription: return .subscription
+        case .subscriptionBundle: return .subscription
+        case .subscriptionSuite: return .subscription
         }
     }
 
@@ -74,16 +82,41 @@ extension StoreProduct.ProductType {
 extension StoreProduct.ProductType {
 
     init(_ type: SK2Product.ProductType) {
+        #if compiler(>=6.4)
+        if #available(iOS 27.0, macOS 27.0, tvOS 27.0, watchOS 27.0, *) {
+            switch type {
+            case .consumable: self = .consumable
+            case .nonConsumable: self = .nonConsumable
+            case .nonRenewable: self = .nonRenewableSubscription
+            case .autoRenewable: self = .autoRenewableSubscription
+            case .subscriptionBundle: self = .subscriptionBundle
+            case .subscriptionSuite: self = .subscriptionSuite
+
+            default:
+                Logger.warn(Strings.storeKit.sk2_unknown_product_type(String(describing: type)))
+                self = .defaultType
+            }
+        } else {
+            self = Self.parseProductTypePreOS27(type)
+        }
+        #else
+        self = Self.parseProductTypePreOS27(type)
+        #endif
+
+    }
+
+    /// Converts a `SK2Product.ProductType` to a StoreProduct.ProductType` using only values
+    /// available before OS 27.
+    private static func parseProductTypePreOS27(_ type: SK2Product.ProductType) -> StoreProduct.ProductType {
         switch type {
-        case .consumable: self = .consumable
-        case .nonConsumable: self = .nonConsumable
-        case .nonRenewable: self = .nonRenewableSubscription
-        case .autoRenewable: self = .autoRenewableSubscription
+        case .consumable: return .consumable
+        case .nonConsumable: return .nonConsumable
+        case .nonRenewable: return .nonRenewableSubscription
+        case .autoRenewable: return .autoRenewableSubscription
 
         default:
             Logger.warn(Strings.storeKit.sk2_unknown_product_type(String(describing: type)))
-
-            self = .defaultType
+            return .defaultType
         }
     }
 
