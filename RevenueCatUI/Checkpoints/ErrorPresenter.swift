@@ -101,6 +101,7 @@ public final class ErrorPresentationCompletion {
     /// A requested action following error presentation.
     public struct Result: Sendable {
 
+        // swiftlint:disable:next nesting
         enum Action: Sendable {
             case retry
             case `continue`
