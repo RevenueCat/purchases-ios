@@ -224,6 +224,8 @@ struct PurchaseButtonComponentView: View {
             self.showingAlreadyOwnedAlert = true
         case .tellCustomerThePurchaseIsUnavailable:
             self.showingPurchaseUnavailableAlert = true
+        case let .failed(error):
+            self.hostedCheckoutError = error
         case .nothing:
             break
         }
