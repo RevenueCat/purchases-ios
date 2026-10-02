@@ -28,6 +28,8 @@ struct WorkflowRow: Identifiable {
         return self.listing.offeringIdentifier.map { "Offering: \($0)" } ?? "No claimed offering"
     }
 
+    var claimedOfferingIdentifier: String? { self.listing.offeringIdentifier }
+
     func uses(_ offeringIdentifier: String) -> Bool {
         return self.listing.offeringIdentifier == offeringIdentifier
             || self.offeringIdentifiers.contains(offeringIdentifier)

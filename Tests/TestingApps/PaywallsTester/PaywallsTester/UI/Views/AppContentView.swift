@@ -40,7 +40,7 @@ struct AppContentView: View {
             if Purchases.isConfigured {
                 APIKeyDashboardList()
                     .tabItem {
-                        Label("Live Paywalls", systemImage: "testtube.2")
+                        Label(APIKeyDashboardList.title, systemImage: "testtube.2")
                     }
                     .tag(Tab.livePaywalls)
             }
