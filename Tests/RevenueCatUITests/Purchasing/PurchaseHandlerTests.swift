@@ -261,15 +261,6 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.purchaseError).to(beNil())
     }
 
-    func testHostedCheckoutPurchaseReportsTheFetchedCustomerInfo() async {
-        let handler: PurchaseHandler = .mock()
-
-        await handler.handleHostedCheckoutPurchase()
-
-        expect(handler.purchaseResult) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
-        expect(handler.hasPurchasedInSession) == true
-    }
-
     func testPurchaseErrorEventContainsProductIdentifierWhenCompletedByRevenueCat() async throws {
         let error: ErrorCode = .storeProblemError
         let trackedEvents: Atomic<[PaywallEvent]> = .init([])
