@@ -26,6 +26,17 @@ extension String {
             .addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) ?? ""
     }
 
+    /// For a query value, where `urlQueryAllowed` would leave `+&=?;` literal: a `+` reaches the backend
+    /// as a space, and the rest split or end the parameter.
+    var trimmedAndEscapedForQuery: String {
+        return self
+            .trimmingWhitespacesAndNewLines
+            .addingPercentEncoding(withAllowedCharacters: Self.queryValueAllowed) ?? ""
+    }
+
+    private static let queryValueAllowed = CharacterSet.urlQueryAllowed
+        .subtracting(CharacterSet(charactersIn: "+&=?;"))
+
     /// Returns `nil` if `self` is an empty string.
     var notEmpty: String? {
         return self.isEmpty

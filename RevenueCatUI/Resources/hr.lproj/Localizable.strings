@@ -22,7 +22,10 @@
 "Continue" = "Nastaviti";
 "Default_offer_details_with_intro_offer" = "Započnite probno razdoblje od {{ sub_offer_duration }}, a zatim {{ total_price_and_per_month }}.";
 "Something went wrong" = "Nešto je pošlo po zlu";
+"Payment failed." = "Plaćanje nije uspjelo.";
+"Your purchase is still processing." = "Vaša se kupnja još obrađuje.";
 "Purchase" = "Kupi";
 "You've already purchased this" = "Ovo ste već kupili";
+"Your purchase was successful." = "Kupnja je uspješno obavljena.";
 "Purchase unavailable" = "Kupnja nije dostupna";
 "This purchase isn't available in your region." = "Ova kupnja nije dostupna u vašoj regiji.";
