@@ -219,6 +219,7 @@ extension HTTPRequest {
         case getWebOfferingProducts(appUserID: String)
         case getWebBillingProducts(userId: String, productIds: Set<String>)
         case postHostedCheckout
+        case getHostedCheckoutStatus(operationSessionID: String, appUserID: String)
 
     }
 
