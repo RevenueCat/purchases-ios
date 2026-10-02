@@ -188,7 +188,7 @@ extension HTTPRequest {
         case postExternalPurchaseToken
         case postCreateTicket
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
-        case rewardVerificationStatus(appUserID: String, clientTransactionID: String)
+        case rewardVerificationStatus(appUserID: String, clientTransactionID: String, adUnitID: String?)
         case remoteConfig(domain: String)
 
         case tokenLogin
@@ -342,6 +342,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .getCustomerInfo,
                 .logIn,
                 .postReceiptData,
+                .postRedeemWebPurchase,
                 .health,
                 .getOfferings,
                 .getProductEntitlementMapping,
@@ -358,7 +359,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postAttributionData,
                 .postAdServicesToken,
                 .postOfferForSigning,
-                .postRedeemWebPurchase,
                 .postExternalPurchaseToken,
                 .getCustomerCenterConfig,
                 .postCreateTicket,
@@ -374,6 +374,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .getCustomerInfo,
                 .logIn,
                 .postReceiptData,
+                .postRedeemWebPurchase,
                 .getVirtualCurrencies,
                 .spendVirtualCurrencies,
                 .health,
@@ -391,7 +392,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postAttributionData,
                 .postAdServicesToken,
                 .postOfferForSigning,
-                .postRedeemWebPurchase,
                 .postExternalPurchaseToken,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
@@ -483,8 +483,15 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .isPurchaseAllowedByRestoreBehavior(appUserID):
             return "subscribers/\(Self.escape(appUserID))/restore/eligibility"
 
-        case let .rewardVerificationStatus(appUserID, clientTransactionID):
-            return "subscribers/\(Self.escape(appUserID))/ads/reward_verifications/\(Self.escape(clientTransactionID))"
+        case let .rewardVerificationStatus(appUserID, clientTransactionID, adUnitID):
+            let path = "subscribers/\(Self.escape(appUserID))/ads/reward_verifications/"
+                + Self.escape(clientTransactionID)
+            guard let adUnitID = adUnitID?.notEmptyOrWhitespaces,
+                  let encodedAdUnitID = adUnitID.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+            else {
+                return path
+            }
+            return "\(path)?ad_unit_id=\(encodedAdUnitID)"
 
         case let .remoteConfig(domain):
             return "config/\(Self.escape(domain))"

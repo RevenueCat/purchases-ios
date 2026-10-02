@@ -66,16 +66,16 @@ class AdEventTests: TestCase {
         expect(event1) == event2
     }
 
-    // MARK: - RewardedAdPromptShown Equality
+    // MARK: - AdRewardPromptShown Equality
 
     func testRewardedAdPromptShownEqualityWithDifferentPlacement() {
-        let event1 = RewardedAdPromptShown(
+        let event1 = AdRewardPromptShown(
             mediatorName: .appLovin,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123"
         )
 
-        let event2 = RewardedAdPromptShown(
+        let event2 = AdRewardPromptShown(
             mediatorName: .appLovin,
             placement: "settings_screen",
             adUnitId: "ca-app-pub-123"
@@ -86,13 +86,13 @@ class AdEventTests: TestCase {
     }
 
     func testRewardedAdPromptShownEqualityWithSameProperties() {
-        let event1 = RewardedAdPromptShown(
+        let event1 = AdRewardPromptShown(
             mediatorName: .appLovin,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123"
         )
 
-        let event2 = RewardedAdPromptShown(
+        let event2 = AdRewardPromptShown(
             mediatorName: .appLovin,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123"
@@ -103,16 +103,16 @@ class AdEventTests: TestCase {
         expect(event1.adFormat) == .rewarded
     }
 
-    // MARK: - RewardedAdPromptAccepted Equality
+    // MARK: - AdRewardPromptAccepted Equality
 
     func testRewardedAdPromptAcceptedEqualityWithDifferentPlacement() {
-        let event1 = RewardedAdPromptAccepted(
+        let event1 = AdRewardPromptAccepted(
             mediatorName: .appLovin,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123"
         )
 
-        let event2 = RewardedAdPromptAccepted(
+        let event2 = AdRewardPromptAccepted(
             mediatorName: .appLovin,
             placement: "settings_screen",
             adUnitId: "ca-app-pub-123"
@@ -123,13 +123,13 @@ class AdEventTests: TestCase {
     }
 
     func testRewardedAdPromptAcceptedEqualityWithSameProperties() {
-        let event1 = RewardedAdPromptAccepted(
+        let event1 = AdRewardPromptAccepted(
             mediatorName: .appLovin,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123"
         )
 
-        let event2 = RewardedAdPromptAccepted(
+        let event2 = AdRewardPromptAccepted(
             mediatorName: .appLovin,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123"

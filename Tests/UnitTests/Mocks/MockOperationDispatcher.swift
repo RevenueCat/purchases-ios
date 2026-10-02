@@ -127,6 +127,11 @@ class MockOperationDispatcher: OperationDispatcher {
         }
     }
 
+    func invokeDispatchedAsyncWorkerThreadBlock(at index: Int) async {
+        let block = self.dispatchedAsyncWorkerThreadBlocks.remove(at: index)
+        await block()
+    }
+
     var invokedDispatchOnWorkerThreadWithTimeInterval = false
     var invokedDispatchOnWorkerThreadWithTimeIntervalCount = 0
     var shouldInvokeDispatchOnWorkerThreadBlockWithTimeInterval = true

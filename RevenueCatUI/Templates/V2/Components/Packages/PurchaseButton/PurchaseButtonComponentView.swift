@@ -45,7 +45,7 @@ struct PurchaseButtonComponentView: View {
     #if os(iOS) && canImport(WebKit)
     @State private var hostedCheckoutViewModel: WebCheckoutViewModel?
 
-    @State private var alreadyOwnedCategory: StoreProduct.ProductCategory?
+    @State private var showingAlreadyOwnedAlert = false
     #endif
 
     private let viewModel: PurchaseButtonComponentViewModel
@@ -99,12 +99,13 @@ struct PurchaseButtonComponentView: View {
         .webCheckoutSheet(viewModel: self.$hostedCheckoutViewModel) { outcome in
             self.handleHostedCheckoutOutcome(outcome)
         }
+        // The checkout does not say whether the product is a subscription, so the title has to fit either.
         .alert(
-            self.alreadyOwnedTitle,
-            isPresented: .isNotNil(self.$alreadyOwnedCategory)
+            Text("You've already purchased this", bundle: self.viewModel.localizedBundle),
+            isPresented: self.$showingAlreadyOwnedAlert
         ) {
             Button {
-                self.alreadyOwnedCategory = nil
+                self.showingAlreadyOwnedAlert = false
             } label: {
                 Text("OK", bundle: self.viewModel.localizedBundle)
             }
@@ -184,7 +185,7 @@ struct PurchaseButtonComponentView: View {
         case let .present(session):
             self.presentHostedCheckout(session)
         case .tellCustomerTheyAlreadyOwnIt:
-            self.showAlreadyOwnedAlert(for: selectedPackage)
+            self.showingAlreadyOwnedAlert = true
         case .tellCustomerThePurchaseIsUnavailable:
             self.showingPurchaseUnavailableAlert = true
         case .nothing:
@@ -198,20 +199,6 @@ struct PurchaseButtonComponentView: View {
     }
 
     #if os(iOS) && canImport(WebKit)
-    private var alreadyOwnedTitle: Text {
-        switch self.alreadyOwnedCategory {
-        case .subscription:
-            return Text("You are currently subscribed to this", bundle: self.viewModel.localizedBundle)
-        case .nonSubscription, .none:
-            return Text("You've already purchased this", bundle: self.viewModel.localizedBundle)
-        }
-    }
-
-    @MainActor
-    private func showAlreadyOwnedAlert(for package: Package) {
-        self.alreadyOwnedCategory = package.storeProduct.productCategory
-    }
-
     @MainActor
     private func presentHostedCheckout(_ session: HostedCheckoutSession) {
         self.hostedCheckoutViewModel = WebCheckoutViewModel(

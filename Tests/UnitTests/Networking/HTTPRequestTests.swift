@@ -34,9 +34,10 @@ class HTTPRequestTests: TestCase {
         .postOfferForSigning,
         .postReceiptData,
         .postSubscriberAttributes(appUserID: userID),
+        .postRedeemWebPurchase,
         .health,
         .getProductEntitlementMapping,
-        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID),
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil),
         .remoteConfig(domain: "app"),
         .postExternalPurchaseToken
     ]
@@ -52,19 +53,21 @@ class HTTPRequestTests: TestCase {
         .getCustomerInfo(appUserID: userID),
         .logIn,
         .postReceiptData,
+        .postRedeemWebPurchase,
         .health,
         .getOfferings(appUserID: userID),
         .getProductEntitlementMapping,
-        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID),
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil),
         .remoteConfig(domain: "app")
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path> = [
         .getCustomerInfo(appUserID: userID),
         .logIn,
         .postReceiptData,
+        .postRedeemWebPurchase,
         .health,
         .remoteConfig(domain: "app"),
-        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID)
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil)
     ]
     private static let pathsWithUserID: [HTTPRequest.Path] = [
         .getCustomerInfo(appUserID: anonymousUser),
@@ -551,10 +554,49 @@ class HTTPRequestTests: TestCase {
         .postRedeemWebPurchase: "subscribers/redeem_purchase",
         .postCreateTicket: "customercenter/support/create-ticket",
         .isPurchaseAllowedByRestoreBehavior(appUserID: userID): "customer/restore/eligibility",
-        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID):
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil):
             "subscribers/\(userID)/ads/reward_verifications/\(clientTransactionID)",
         .remoteConfig(domain: "app"): "config/app"
     ]
+
+    func testRewardVerificationStatusPathIncludesAdUnitIDQueryParameter() {
+        let path: HTTPRequest.Path = .rewardVerificationStatus(
+            appUserID: Self.userID,
+            clientTransactionID: Self.clientTransactionID,
+            adUnitID: "ad_unit"
+        )
+        let expected = "/v1/subscribers/\(Self.userID)/ads/reward_verifications/\(Self.clientTransactionID)"
+            + "?ad_unit_id=ad_unit"
+
+        expect(path.relativePath) == expected
+        expect(path.relativeIAMPath) == expected
+    }
+
+    func testRewardVerificationStatusPathKeepsAdUnitIDSlashAndPercentEncodesUnsafeCharacters() {
+        let path: HTTPRequest.Path = .rewardVerificationStatus(
+            appUserID: Self.userID,
+            clientTransactionID: Self.clientTransactionID,
+            adUnitID: "ca-app-pub-123/456 é"
+        )
+
+        expect(path.relativePath) == "/v1/subscribers/\(Self.userID)/ads/reward_verifications/"
+            + "\(Self.clientTransactionID)?ad_unit_id=ca-app-pub-123/456%20%C3%A9"
+    }
+
+    func testRewardVerificationStatusPathOmitsAdUnitIDWhenMissingOrEmpty() {
+        let expected = "/v1/subscribers/\(Self.userID)/ads/reward_verifications/\(Self.clientTransactionID)"
+
+        for adUnitID in [nil, "", "  "] {
+            let path: HTTPRequest.Path = .rewardVerificationStatus(
+                appUserID: Self.userID,
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: adUnitID
+            )
+
+            expect(path.relativePath) == expected
+            expect(path.relativeIAMPath) == expected
+        }
+    }
 
     func testRelativeIAMPathMatchesExpectedComponentPerPath() {
         for (path, expectedComponent) in Self.iamPathComponentsByPath {
