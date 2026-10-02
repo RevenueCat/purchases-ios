@@ -11,6 +11,10 @@ import SwiftUI
 
 struct PurchaseView: View {
 
+    // Same offering and package as rc-maestro's subscribe_from_v1_paywall test, which also expects them to grant
+    // the "pro" entitlement.
+    private static let offeringIdentifier = "paywall_v1"
+
     @State private var activeEntitlements: String = "Loading..."
     @State private var isPurchasing = false
     @State private var statusMessage: String?
@@ -68,8 +72,9 @@ struct PurchaseView: View {
         Task {
             defer { isPurchasing = false }
             do {
-                guard let package = try await Purchases.shared.offerings().current?.availablePackages.first else {
-                    statusMessage = "No package found in the current offering"
+                let offering = try await Purchases.shared.offerings().offering(identifier: Self.offeringIdentifier)
+                guard let package = offering?.monthly else {
+                    statusMessage = "No monthly package found in the '\(Self.offeringIdentifier)' offering"
                     return
                 }
                 let result = try await Purchases.shared.purchase(package: package)
