@@ -29,6 +29,7 @@ class HostedCheckoutManagerTests: TestCase {
     private var webBillingAPI: MockWebBillingAPI!
     private var settingsProvider: MockSDKSettingsConfigProvider!
     private var systemInfo: MockSystemInfo!
+    private var poller: StubHostedCheckoutPoller!
     private var manager: HostedCheckoutManager!
 
     override func setUp() {
@@ -41,6 +42,8 @@ class HostedCheckoutManagerTests: TestCase {
 
         self.webBillingAPI = MockWebBillingAPI(lanes: BackendLanes(configuration: MockBackendConfiguration()))
         self.webBillingAPI.stubbedPostHostedCheckoutCompletionResult = .success(Self.response)
+
+        self.poller = StubHostedCheckoutPoller(result: .succeeded)
 
         self.settingsProvider = MockSDKSettingsConfigProvider()
         self.settingsProvider.stubbedSettings = .allowingExternalPurchases(in: [Self.storefront])
@@ -310,6 +313,46 @@ class HostedCheckoutManagerTests: TestCase {
         expect(result) == .alreadyPurchased
     }
 
+    // MARK: - Settling
+
+    func testAsksThePollerWhatBecameOfTheSession() async {
+        self.poller.result = .failed(code: 3, message: "payment_charge_failed")
+
+        let result = await self.manager.pollCheckout(operationSessionID: Self.operationSessionID,
+                                                     appUserID: Self.appUserID)
+
+        expect(result) == .failed(code: 3, message: "payment_charge_failed")
+        expect(self.poller.receivedIDs) == [Self.operationSessionID]
+    }
+
+    /// The caller says whose session it is, which need not be whoever is current by the time the poll runs.
+    func testAsksAboutTheCustomerItIsGiven() async {
+        _ = await self.manager.pollCheckout(operationSessionID: Self.operationSessionID,
+                                            appUserID: "session-owner")
+
+        expect(self.poller.receivedAppUserIDs) == ["session-owner"]
+    }
+
+}
+
+/// The loop itself is covered by `HostedCheckoutPollerTests`.
+private final class StubHostedCheckoutPoller: HostedCheckoutPolling, @unchecked Sendable {
+
+    var result: HostedCheckoutPollResult
+    private(set) var receivedIDs: [String] = []
+    private(set) var receivedAppUserIDs: [String] = []
+
+    init(result: HostedCheckoutPollResult) {
+        self.result = result
+    }
+
+    func poll(operationSessionID: String, appUserID: String) async -> HostedCheckoutPollResult {
+        self.receivedIDs.append(operationSessionID)
+        self.receivedAppUserIDs.append(appUserID)
+
+        return self.result
+    }
+
 }
 
 private extension HostedCheckoutManagerTests {
@@ -333,7 +376,8 @@ private extension HostedCheckoutManagerTests {
                 systemInfo: self.systemInfo
             ),
             webBillingAPI: self.webBillingAPI,
-            currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID)
+            currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID),
+            poller: self.poller
         )
     }
 
@@ -353,6 +397,7 @@ private extension HostedCheckoutManagerTests {
                                                  successURL: successURL)
 
     static let session = HostedCheckoutSession(operationSessionID: operationSessionID,
+                                               appUserID: appUserID,
                                                checkoutURL: checkoutURL,
                                                successURL: successURL)
 

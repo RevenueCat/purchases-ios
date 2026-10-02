@@ -1012,7 +1012,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.hostedCheckoutManager = HostedCheckoutManager(
             externalPurchaseManager: externalPurchaseManager,
             webBillingAPI: backend.webBilling,
-            currentUserProvider: identityManager
+            currentUserProvider: identityManager,
+            poller: HostedCheckoutPoller.makeDefault(webBillingAPI: backend.webBilling)
         )
 
         super.init()
@@ -1956,6 +1957,40 @@ public extension Purchases {
         return await self.hostedCheckoutManager.startCheckout(package: package, paywall: paywallEvent?.data)
     }
 
+    /// Used by `RevenueCatUI` to determine the final outcome of a checkout the customer completed in the app,
+    /// before settling the paywall on it.
+    ///
+    /// When the backend says the customer owns the product, having just bought it or not, fetches the customer's
+    /// `CustomerInfo` before returning, so callers that read it next find the entitlement instead of a cached
+    /// state from before. A fetch that fails does not change the result, but clears that cached state, so the
+    /// next read fetches instead of serving it. Both are for the customer the session was created for, even if
+    /// another one has logged in since.
+    ///
+    /// Paywalls, the only caller, do not run with custom entitlement computation. This still compiles in that
+    /// mode, but without the `CustomerInfo` refresh, which the mode does not offer.
+    @_spi(Internal) func pollHostedCheckout(session: HostedCheckoutSession) async -> HostedCheckoutPollResult {
+        let operationSessionID = session.operationSessionID
+        let appUserID = session.appUserID
+        let result = await self.hostedCheckoutManager.pollCheckout(operationSessionID: operationSessionID,
+                                                                   appUserID: appUserID)
+
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        switch result {
+        case .succeeded, .alreadyPurchased:
+            Logger.verbose(Strings.hostedCheckout.poll_fetching_customer_info(operationSessionID))
+
+            if await self.fetchCustomerInfoRetryingTransientErrors(appUserID: appUserID) == nil {
+                Logger.warn(Strings.hostedCheckout.poll_customer_info_refresh_failed(operationSessionID))
+                self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
+            }
+        case .failed, .undetermined:
+            break
+        }
+        #endif
+
+        return result
+    }
+
     /// Used by `RevenueCatUI` to create a support ticket
     @_spi(Internal) func createTicket(customerEmail: String, ticketDescription: String) async throws -> Bool {
         let response = try await Async.call { completion in
@@ -2206,18 +2241,7 @@ extension Purchases {
         Logger.debug(AdsStrings.reward_verification_entitlement_fetching_customer_info(
             transactionID: clientTransactionID
         ))
-        let refreshed: CustomerInfo? = await Async.retry(maximumRetries: 3) {
-            do {
-                let info = try await self.customerInfoManager.customerInfo(
-                    appUserID: self.appUserID,
-                    fetchPolicy: .fetchCurrent
-                )
-                return (shouldRetry: false, info)
-            } catch {
-                let isTransient = (error as? BackendError)?.isTransient ?? false
-                return (shouldRetry: isTransient, nil)
-            }
-        }
+        let refreshed = await self.fetchCustomerInfoRetryingTransientErrors(appUserID: self.appUserID)
         if refreshed == nil {
             Logger.warn(AdsStrings.reward_verification_entitlement_customer_info_refresh_failed(
                 transactionID: clientTransactionID
@@ -3106,6 +3130,22 @@ internal extension Purchases {
 // MARK: Private
 
 private extension Purchases {
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    /// For a backend change made outside StoreKit, which no receipt post brings back. `nil` if no fetch lands.
+    func fetchCustomerInfoRetryingTransientErrors(appUserID: String) async -> CustomerInfo? {
+        return await Async.retry(maximumRetries: 3) {
+            do {
+                let info = try await self.customerInfoManager.customerInfo(appUserID: appUserID,
+                                                                           fetchPolicy: .fetchCurrent)
+                return (shouldRetry: false, info)
+            } catch {
+                let isTransient = (error as? BackendError)?.isTransient ?? false
+                return (shouldRetry: isTransient, nil)
+            }
+        }
+    }
+    #endif
 
     func handleCustomerInfoChanged(from old: CustomerInfo?, to new: CustomerInfo) {
         if old != nil {
