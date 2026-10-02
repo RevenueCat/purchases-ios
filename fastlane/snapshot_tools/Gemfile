@@ -1,3 +1,0 @@
-source "https://rubygems.org"
-
-gem "emerge", "0.3.0"
