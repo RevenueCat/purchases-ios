@@ -103,6 +103,33 @@ final class WorkflowPresenterTests: TestCase {
         }
     }
 
+    func testPurchaseAndRestoreErrorsDoNotReplaceWorkflowPresentationError() throws {
+        var presentedErrors: [ErrorPresentationParams] = []
+        var completions: [ErrorPresentationCompletion] = []
+        let presentation = try Self.renderablePresentation(
+            customVariables: [:],
+            errorPresentationHandler: { params, completion in
+                presentedErrors.append(params)
+                completions.append(completion)
+            }
+        )
+        let presenter = WorkflowPresenter { _ in true }
+        let workflowError = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
+        let purchaseError = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.purchaseInvalidError.rawValue)
+
+        try presenter.startPresentation(presentation)
+        let viewController = try presenter.makePaywallViewController(for: presentation)
+        viewController.simulateWorkflowPresentationError(workflowError)
+        presenter.paywallViewController(viewController, didFailPurchasingWith: purchaseError)
+        presenter.paywallViewController(viewController, didFailRestoringWith: purchaseError)
+
+        XCTAssertEqual(presentedErrors.map(\.flowCanContinue), [false])
+        try XCTUnwrap(completions.first).complete(.retry)
+        guard case .completed(nil)? = presenter.presentationDidDismiss() else {
+            return XCTFail("Expected the terminal error completion to remain active")
+        }
+    }
+
     func testPurchaseErrorIsRoutedWhileWorkflowRemainsPresented() throws {
         var receivedParams: ErrorPresentationParams?
         let presentation = Self.presentation(
