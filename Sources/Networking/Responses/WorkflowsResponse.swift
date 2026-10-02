@@ -208,7 +208,7 @@ import Foundation
 @_spi(Internal) public struct PublishedWorkflow {
 
     public let id: String
-    let displayName: String
+    @_spi(Internal) public let displayName: String
     public let initialStepId: String
     public let singleStepFallbackId: String?
     public let steps: [String: WorkflowStep]
@@ -256,6 +256,14 @@ import Foundation
         self.contentMaxWidth = contentMaxWidth
         self.metadata = metadata
     }
+
+}
+
+/// A workflow in the synced `workflows` topic, with the offering it claims, if any.
+@_spi(Internal) public struct WorkflowListing: Equatable {
+
+    public let workflowId: String
+    public let offeringIdentifier: String?
 
 }
 

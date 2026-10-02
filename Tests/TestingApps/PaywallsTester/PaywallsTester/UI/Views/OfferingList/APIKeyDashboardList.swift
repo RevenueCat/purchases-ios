@@ -87,6 +87,20 @@ struct APIKeyDashboardList: View {
     @State
     private var presentedWorkflowExitOffer: Offering?
 
+    #if !os(tvOS)
+    @State
+    private var workflowRows: [WorkflowRow] = []
+
+    @State
+    private var presentedWorkflowSheet: PresentedWorkflow?
+
+    @State
+    private var presentedWorkflowFull: PresentedWorkflow?
+    #endif
+
+    @State
+    private var workflowLoadError: String?
+
     @State
     private var isLoadingPaywall: Bool = false
 
@@ -182,6 +196,10 @@ struct APIKeyDashboardList: View {
                 by: PaywallSection.init(offering:)
             )
 
+            #if !os(tvOS)
+            self.workflowRows = await WorkflowRow.loadAll()
+            #endif
+
             self.offerings = .success(
                 .init(
                     sections: Array(offeringsBySection.keys).sorted(),
@@ -224,6 +242,9 @@ struct APIKeyDashboardList: View {
     @ViewBuilder
     private func list(with data: Data) -> some View {
         List {
+            #if !os(tvOS)
+            self.workflowsSection
+            #endif
             ForEach(data.sections, id: \.self) { section in
                 let offerings = filteredOfferings(for: section, in: data)
                 if !offerings.isEmpty {
@@ -356,7 +377,102 @@ struct APIKeyDashboardList: View {
                         self.isLoadingPaywall = false
                     }
                 }
+                #if !os(tvOS)
+                .sheet(item: self.$presentedWorkflowSheet) { workflow in
+                    self.workflowPaywallView(for: workflow)
+                }
+                #if os(macOS)
+                .sheet(item: self.$presentedWorkflowFull) { workflow in
+                    self.workflowPaywallView(for: workflow)
+                }
+                #else
+                .fullScreenCover(item: self.$presentedWorkflowFull) { workflow in
+                    self.workflowPaywallView(for: workflow)
+                }
+                #endif
+                #endif
+                .alert(
+                    "Couldn't open flow",
+                    isPresented: .init(
+                        get: { self.workflowLoadError != nil },
+                        set: { if !$0 { self.workflowLoadError = nil } }
+                    ),
+                    actions: {},
+                    message: { Text(self.workflowLoadError ?? "") }
+                )
     }
+
+    #if !os(tvOS)
+    @ViewBuilder
+    private var workflowsSection: some View {
+        let rows = self.searchText.isEmpty
+            ? self.workflowRows
+            : self.workflowRows.filter { $0.matches(self.searchText) }
+
+        if !rows.isEmpty {
+            Section {
+                ForEach(rows) { row in
+                    Button {
+                        self.openWorkflow(row.id, fullScreen: false)
+                    } label: {
+                        VStack(alignment: .leading) {
+                            Text(row.name ?? row.id)
+                            Text(row.subtitle)
+                                .font(.caption)
+                                .foregroundStyle(row.error == nil ? Color.secondary : Color.red)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    #if !os(watchOS)
+                    .contextMenu {
+                        Button {
+                            self.openWorkflow(row.id, fullScreen: false)
+                        } label: {
+                            Text(PaywallTesterViewMode.workflow.name)
+                            Image(systemName: PaywallTesterViewMode.workflow.icon)
+                        }
+                        Button {
+                            self.openWorkflow(row.id, fullScreen: true)
+                        } label: {
+                            Text(PaywallTesterViewMode.presentWorkflow.name)
+                            Image(systemName: PaywallTesterViewMode.presentWorkflow.icon)
+                        }
+                    }
+                    #endif
+                }
+            } header: {
+                Text("Flows")
+            }
+        }
+    }
+
+    private func openWorkflow(_ workflowId: String, fullScreen: Bool) {
+        self.isLoadingPaywall = true
+        Task {
+            defer { self.isLoadingPaywall = false }
+            do {
+                let workflow = try await PresentedWorkflow.load(workflowId: workflowId)
+                if fullScreen {
+                    self.presentedWorkflowFull = workflow
+                } else {
+                    self.presentedWorkflowSheet = workflow
+                }
+            } catch {
+                self.workflowLoadError = error.localizedDescription
+            }
+        }
+    }
+
+    private func workflowPaywallView(for workflow: PresentedWorkflow) -> some View {
+        PaywallView(workflowContext: workflow.context, displayCloseButton: true)
+            .customPaywallVariables(self.customVariables)
+            .onURLOpened { url in
+                print("Paywall Handler - onURLOpened: \(url)")
+            }
+    }
+    #endif
 
     #if !os(watchOS)
     @ViewBuilder

@@ -363,6 +363,20 @@ class WorkflowsConfigProviderTests: TestCase {
                                       expectedCount: 1)
     }
 
+    func testWorkflowListingsIncludeWorkflowsThatClaimNoOffering() async {
+        self.commit(workflows: [
+            "wf-claimed": .init(blobRef: "claimed-ref", content: ["offering_identifier": "premium"]),
+            "wf-unclaimed": .init(blobRef: "unclaimed-ref")
+        ])
+
+        let listings = await self.provider.workflowListings()
+
+        expect(listings) == [
+            .init(workflowId: "wf-claimed", offeringIdentifier: "premium"),
+            .init(workflowId: "wf-unclaimed", offeringIdentifier: nil)
+        ]
+    }
+
     func testOfferingIdMapReflectsATopicChangeInsteadOfServingAStaleCachedMap() async throws {
         // Regression: workflowId(forOfferingId:) caches its offeringId -> workflowId map keyed by the
         // topic snapshot it was built from, to avoid rescanning content on every call. This proves a

@@ -12,6 +12,7 @@ import Foundation
 protocol WorkflowsConfigProviderType {
 
     func workflowId(forOfferingId offeringId: String) async -> String?
+    func workflowListings() async -> [WorkflowListing]
     func getWorkflow(workflowId: String) async -> Result<WorkflowDataResult, WorkflowResolutionError>
     func decodeCachedWorkflowForAssetPrewarming(
         workflowId: String
@@ -93,6 +94,19 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         let map = self.buildOfferingIdMap(from: topic)
         self.cachedOfferingIdMap.value = (topic: topic, map: map)
         return map[offeringId]
+    }
+
+    /// Every workflow in the `workflows` topic, including ones that claim no offering and so are
+    /// unreachable through ``workflowId(forOfferingId:)``.
+    func workflowListings() async -> [WorkflowListing] {
+        guard let topic = await self.manager.topic(.workflows) else { return [] }
+
+        return topic.keys.sorted().map { workflowId in
+            guard case let .string(offeringId)? = topic[workflowId]?.content[Self.offeringIdentifierKey] else {
+                return .init(workflowId: workflowId, offeringIdentifier: nil)
+            }
+            return .init(workflowId: workflowId, offeringIdentifier: offeringId)
+        }
     }
 
     /// Resolves `workflowId` into a ``WorkflowDataResult``, or the specific ``WorkflowResolutionError``

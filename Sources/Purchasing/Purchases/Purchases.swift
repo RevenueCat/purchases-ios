@@ -1203,6 +1203,16 @@ public extension Purchases {
     }
 
     @_spi(Internal)
+    func workflowListings() async -> [WorkflowListing] {
+        return await self.workflowManager.workflowListings()
+    }
+
+    @_spi(Internal)
+    func workflow(withIdentifier workflowID: String) async throws -> WorkflowDataResult {
+        return try await self.workflowManager.getWorkflow(workflowId: workflowID)
+    }
+
+    @_spi(Internal)
     func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
         return self.workflowManager.cachedWorkflow(forOfferingId: offeringID)
     }
