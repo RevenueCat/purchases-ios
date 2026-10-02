@@ -11,9 +11,8 @@ import SwiftUI
 
 struct PurchaseView: View {
 
-    // Same offering and package as rc-maestro's subscribe_from_v1_paywall test, which also expects them to grant
-    // the "pro" entitlement.
-    private static let offeringIdentifier = "paywall_v1"
+    // An offering also used by rc-maestro's E2E tests, which only require it to have no paywall attached.
+    private static let offeringIdentifier = "no_paywall"
 
     @State private var activeEntitlements: String = "Loading..."
     @State private var isPurchasing = false
