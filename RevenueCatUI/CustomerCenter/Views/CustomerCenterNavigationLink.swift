@@ -8,12 +8,16 @@
 import RevenueCat
 import SwiftUI
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 
 /// A view that provides a navigation link to ``CustomerCenterView`` with a customizable label.
 ///
 /// This is the **preferred way** to integrate ``CustomerCenterView`` into your `NavigationView`,
 /// ensuring proper navigation behavior by pre-setting navigation options.
+///
+/// On macOS, place it in a `NavigationStack` or a `NavigationSplitView`. A macOS `NavigationView`
+/// cannot push from its detail column, so the Customer Center's own screens (a purchase's detail,
+/// the purchase history) would never appear there.
 ///
 /// ## Example Usage
 /// ```swift
@@ -26,8 +30,7 @@ import SwiftUI
 ///
 /// CustomerCenterNavigationLink(Text("Customer Center"))
 /// ```
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 public struct CustomerCenterNavigationLink<Label: View>: View {

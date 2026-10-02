@@ -15,7 +15,7 @@
 
 import SwiftUI
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 
 /// A SwiftUI view that displays a label and content in a layout that adapts to the iOS version.
 ///
@@ -60,8 +60,7 @@ import SwiftUI
 ///     Text("John Doe")
 /// }
 /// ```
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct CompatibilityLabeledContent<Label: View, Content: View>: View {
@@ -69,27 +68,36 @@ struct CompatibilityLabeledContent<Label: View, Content: View>: View {
     @ViewBuilder let label: () -> Label
     @ViewBuilder let content: () -> Content
 
+    // Split in two: an inline `if #available` here made `ContentBuilder` ask for `buildLimitedAvailability` on macOS.
     var body: some View {
-        if #available(iOS 16.0, *) {
-            LabeledContent {
-                content()
-            } label: {
-                label()
-            }
+        if #available(iOS 16.0, macOS 13.0, *) {
+            modernBody
         } else {
-            HStack {
-                label()
+            legacyBody
+        }
+    }
 
-                Spacer()
+    @available(iOS 16.0, macOS 13.0, *)
+    private var modernBody: some View {
+        LabeledContent {
+            content()
+        } label: {
+            label()
+        }
+    }
 
-                content()
-            }
+    private var legacyBody: some View {
+        HStack {
+            label()
+
+            Spacer()
+
+            content()
         }
     }
 }
 
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension CompatibilityLabeledContent where Label == Text {
@@ -99,8 +107,7 @@ extension CompatibilityLabeledContent where Label == Text {
     }
 }
 
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension CompatibilityLabeledContent where Label == Text, Content == EmptyView {
@@ -110,8 +117,7 @@ extension CompatibilityLabeledContent where Label == Text, Content == EmptyView 
     }
 }
 
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension CompatibilityLabeledContent where Label == Text, Content == Text {

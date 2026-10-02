@@ -13,14 +13,16 @@
 //  Created by Cesar de la Vega on 17/6/24.
 //
 
+#if canImport(AppKit)
+import AppKit
+#endif
 @_spi(Internal) import RevenueCat
 import StoreKit
 import SwiftUI
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct PromotionalOfferView: View {
@@ -115,7 +117,7 @@ struct PromotionalOfferView: View {
 
         var body: some View {
             if let appIcon = AppIconHelper.getAppIcon() {
-                Image(uiImage: appIcon)
+                Image(platformImage: appIcon)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 70, height: 70)
@@ -132,7 +134,10 @@ struct PromotionalOfferView: View {
 
     private enum AppIconHelper {
 
-        static func getAppIcon() -> UIImage? {
+        static func getAppIcon() -> PlatformImage? {
+            #if os(macOS)
+            return NSApplication.shared.applicationIconImage
+            #else
             guard let iconsDictionary = Bundle.main.infoDictionary?["CFBundleIcons"] as? [String: Any],
                   let primaryIcons = iconsDictionary["CFBundlePrimaryIcon"] as? [String: Any],
                   let iconFiles = primaryIcons["CFBundleIconFiles"] as? [String],
@@ -140,13 +145,13 @@ struct PromotionalOfferView: View {
                 return nil
             }
             return UIImage(named: lastIcon)
+            #endif
         }
 
     }
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct PromotionalOfferHeaderView: View {
@@ -184,8 +189,7 @@ struct PromotionalOfferHeaderView: View {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct PromoOfferButtonView: View {
@@ -244,8 +248,7 @@ struct PromoOfferButtonView: View {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 /// An enum representing the possible actions that a user can take on the PromotionalOfferView
@@ -261,8 +264,7 @@ enum PromotionalOfferViewAction {
     case promotionalCodeRedemptionFailed(Error)
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension PromotionalOfferViewAction {

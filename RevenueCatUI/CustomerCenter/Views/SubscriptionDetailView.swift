@@ -14,10 +14,9 @@
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 // swiftlint:disable file_length
@@ -50,6 +49,11 @@ struct SubscriptionDetailView: View {
     @State
     private var showSimulatorAlert: Bool = false
 
+    /// Whether the row holding the close button already carries this screen's title (see
+    /// `drawsTitleInCloseRow`), which only the Customer Center's root has: a detail pushed from
+    /// the purchase list keeps its navigation title.
+    private let titleIsInCloseRow: Bool
+
     init(
         customerInfoViewModel: CustomerCenterViewModel,
         screen: CustomerCenterConfigData.Screen,
@@ -58,7 +62,8 @@ struct SubscriptionDetailView: View {
         showVirtualCurrencies: Bool,
         allowsMissingPurchaseAction: Bool,
         purchasesProvider: CustomerCenterPurchasesType,
-        actionWrapper: CustomerCenterActionWrapper) {
+        actionWrapper: CustomerCenterActionWrapper,
+        titleIsInCloseRow: Bool = false) {
             let viewModel = SubscriptionDetailViewModel(
                 customerInfoViewModel: customerInfoViewModel,
                 screen: screen,
@@ -72,16 +77,19 @@ struct SubscriptionDetailView: View {
 
             self.init(
                 customerInfoViewModel: customerInfoViewModel,
-                viewModel: viewModel
+                viewModel: viewModel,
+                titleIsInCloseRow: titleIsInCloseRow
             )
         }
 
     fileprivate init(
         customerInfoViewModel: CustomerCenterViewModel,
-        viewModel: SubscriptionDetailViewModel
+        viewModel: SubscriptionDetailViewModel,
+        titleIsInCloseRow: Bool = false
     ) {
         self.customerInfoViewModel = customerInfoViewModel
         self._viewModel = .init(wrappedValue: viewModel)
+        self.titleIsInCloseRow = titleIsInCloseRow
     }
 
     var body: some View {
@@ -157,14 +165,17 @@ struct SubscriptionDetailView: View {
                     .environment(\.appearance, appearance)
                     .environment(\.localization, localization)
                     .environment(\.navigationOptions, navigationOptions)
+                    .customerCenterSheetFrame()
                 }
             }
+            #if os(iOS)
             .sheet(item: self.$viewModel.inAppBrowserURL,
                    onDismiss: {
                 self.viewModel.onDismissInAppBrowser()
             }, content: { inAppBrowserURL in
                 SafariView(url: inAppBrowserURL.url)
             })
+            #endif
             .sheet(
                 item: $viewModel.promotionalOfferData
             ) { promotionalOfferData in
@@ -181,6 +192,7 @@ struct SubscriptionDetailView: View {
                 .interactiveDismissDisabled()
                 .environment(\.appearance, appearance)
                 .environment(\.localization, localization)
+                .customerCenterSheetFrame()
             }
             .sheet(isPresented: $viewModel.showCreateTicket) {
                 CreateTicketView(
@@ -190,6 +202,7 @@ struct SubscriptionDetailView: View {
                 .environment(\.appearance, appearance)
                 .environment(\.localization, localization)
                 .environment(\.navigationOptions, navigationOptions)
+                .customerCenterSheetFrame()
             }
             .alert(isPresented: $showSimulatorAlert, content: {
                 return Alert(
@@ -201,11 +214,30 @@ struct SubscriptionDetailView: View {
 
 }
 
-@available(iOS 15.0, *)
+@available(iOS 15.0, macOS 13.0, *)
 private extension SubscriptionDetailView {
 
     @ViewBuilder
     var content: some View {
+        page
+        .overlay {
+            RestorePurchasesAlert(
+                isPresented: self.$viewModel.showRestoreAlert,
+                actionWrapper: self.viewModel.actionWrapper,
+                customerCenterViewModel: customerInfoViewModel
+            )
+        }
+        .applyIf(self.viewModel.screen.type == .management && !titleIsInCloseRow, apply: {
+            $0.navigationTitle(self.viewModel.screen.title)
+                .compatibleInlineNavigationBarTitle()
+        })
+    }
+
+    @ViewBuilder
+    var page: some View {
+        #if os(macOS)
+        macPage
+        #else
         ScrollViewWithOSBackground {
             LazyVStack(spacing: 0) {
                 if viewModel.isRefreshing {
@@ -259,12 +291,7 @@ private extension SubscriptionDetailView {
                 if viewModel.shouldShowCreateTicketButton(supportTickets: support?.supportTickets) {
                     createTicketButton
                         .padding(.vertical, 16)
-                } else if let url = support?.supportURL(
-                    localization: localization,
-                    purchasesProvider: viewModel.purchasesProvider
-                ),
-                  viewModel.shouldShowContactSupport,
-                  URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator {
+                } else if let url = contactSupportURL {
                         contactSupportView(url)
                             .padding(.vertical, 16)
                 }
@@ -276,19 +303,121 @@ private extension SubscriptionDetailView {
             .opacity(viewModel.isRefreshing ? 0.5 : 1)
             .animation(.easeInOut(duration: 0.3), value: viewModel.isRefreshing)
         }
-        .overlay {
-            RestorePurchasesAlert(
-                isPresented: self.$viewModel.showRestoreAlert,
-                actionWrapper: self.viewModel.actionWrapper,
-                customerCenterViewModel: customerInfoViewModel
-            )
-        }
-        .applyIf(self.viewModel.screen.type == .management, apply: {
-            $0.navigationTitle(self.viewModel.screen.title)
-                .navigationBarTitleDisplayMode(.inline)
-        })
+        #endif
     }
 
+    /// The URL "Contact support" opens when the screen offers it as a link rather than as a
+    /// ticket form, or `nil` when it offers neither.
+    var contactSupportURL: URL? {
+        guard let url = support?.supportURL(
+            localization: localization,
+            purchasesProvider: viewModel.purchasesProvider
+        ),
+              viewModel.shouldShowContactSupport,
+              URLUtilities.canOpenURL(url) || RuntimeUtils.isSimulator else {
+            return nil
+        }
+        return url
+    }
+
+    #if os(macOS)
+    /// The Mac's layout of this screen: a grouped form with a section for each group of cards
+    /// the iOS layout stacks, and the same content and actions.
+    var macPage: some View {
+        Form {
+            if viewModel.isRefreshing {
+                Section {
+                    ProgressView()
+                        .controlSize(.small)
+                        .frame(maxWidth: .infinity)
+                }
+            }
+
+            if !customerInfoViewModel.hasAnyPurchases {
+                Section {
+                    NoSubscriptionsCardView(
+                        screenOffering: viewModel.screen.offering,
+                        screen: viewModel.screen,
+                        localization: localization,
+                        purchasesProvider: viewModel.purchasesProvider
+                    )
+                }
+            } else {
+                if let purchaseInformation = self.viewModel.purchaseInformation {
+                    Section {
+                        PurchaseInformationCardView(
+                            purchaseInformation: purchaseInformation,
+                            localization: localization,
+                            accessibilityIdentifier: "0",
+                            refundStatus: viewModel.refundRequestStatus,
+                            showChevron: false
+                        )
+                    }
+                }
+
+                if let virtualCurrencies = customerInfoViewModel.virtualCurrencies,
+                   !virtualCurrencies.all.isEmpty,
+                   viewModel.showVirtualCurrencies {
+                    VirtualCurrenciesScrollViewWithOSBackgroundSection(
+                        virtualCurrencies: virtualCurrencies,
+                        onSeeAllInAppCurrenciesButtonTapped: self.viewModel.displayAllInAppCurrenciesScreen
+                    )
+                }
+            }
+
+            if !viewModel.relevantPathsForPurchase.isEmpty {
+                Section {
+                    ActiveSubscriptionButtonsView(viewModel: viewModel)
+                }
+            }
+
+            // An empty section still takes its spacing in a grouped form, so it is left out.
+            let showsCreateTicket = viewModel.shouldShowCreateTicketButton(supportTickets: support?.supportTickets)
+            let supportURL = showsCreateTicket ? nil : contactSupportURL
+            if viewModel.showPurchaseHistory || showsCreateTicket || supportURL != nil {
+                Section {
+                    if viewModel.showPurchaseHistory {
+                        Button {
+                            viewModel.showAllPurchases = true
+                        } label: {
+                            CustomerCenterMacRowLabel(title: localization[.seeAllPurchases], showsChevron: true)
+                        }
+                        .customerCenterMacRow()
+                    }
+
+                    if showsCreateTicket {
+                        Button {
+                            viewModel.showCreateTicket = true
+                        } label: {
+                            CustomerCenterMacRowLabel(title: localization[.contactSupport])
+                        }
+                        .customerCenterMacRow()
+                    } else if let supportURL {
+                        Button {
+                            openURL(supportURL)
+                        } label: {
+                            CustomerCenterMacRowLabel(title: localization[.contactSupport])
+                        }
+                        .customerCenterMacRow()
+                    }
+                }
+            }
+
+            if customerInfoViewModel.shouldShowUserDetailsSection {
+                AccountDetailsSection(
+                    originalPurchaseDate: customerInfoViewModel.originalPurchaseDate,
+                    originalAppUserId: customerInfoViewModel.originalAppUserId,
+                    localization: localization
+                )
+            }
+        }
+        .formStyle(.grouped)
+        .opacity(viewModel.isRefreshing ? 0.5 : 1)
+        .animation(.easeInOut(duration: 0.3), value: viewModel.isRefreshing)
+    }
+    #endif
+
+    #if !os(macOS)
     @ViewBuilder
     var accountDetailsView: some View {
         Spacer().frame(height: 16)
@@ -338,11 +467,11 @@ private extension SubscriptionDetailView {
         .buttonStyle(.customerCenterButtonStyle(for: colorScheme))
         .tint(colorScheme == .dark ? .white : .black)
     }
+    #endif
 }
 
 #if DEBUG
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct SubscriptionDetailView_Previews: PreviewProvider {

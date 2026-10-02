@@ -13,13 +13,13 @@
 //  Created by Facundo Menzella on 15/1/25.
 //
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
 extension PurchaseInformation {
 
-    @available(iOS 15.0, *)
+    @available(iOS 15.0, macOS 13.0, *)
     var purchaseDetailDebugItems: [PurchaseDetailItem] {
 #if DEBUG
         debugItems
@@ -28,7 +28,7 @@ extension PurchaseInformation {
 #endif
     }
 
-    @available(iOS 15.0, *)
+    @available(iOS 15.0, macOS 13.0, *)
     func purchaseDetailItems(localization: CustomerCenterConfigData.Localization) -> [PurchaseDetailItem] {
         var items: [PurchaseDetailItem] = []
         items.append(.paidPrice(pricePaidString(localizations: localization)))
@@ -71,7 +71,7 @@ extension PurchaseInformation {
     }
 }
 
-@available(iOS 15.0, *)
+@available(iOS 15.0, macOS 13.0, *)
 private extension PurchaseInformation {
     var debugItems: [PurchaseDetailItem] {
         var items: [PurchaseDetailItem] = [

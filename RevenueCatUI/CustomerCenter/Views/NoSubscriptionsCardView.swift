@@ -14,10 +14,9 @@
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct NoSubscriptionsCardView: View {
@@ -98,12 +97,17 @@ struct NoSubscriptionsCardView: View {
                 })
             }
         }
+        #if os(macOS)
+        // A row of the grouped form the Mac lays the Customer Center out in, which draws the card.
+        .padding(.vertical, 12)
+        #else
         .padding(16)
         #if compiler(>=5.9)
         .background(Color(colorScheme == .light
                           ? UIColor.systemBackground
                           : UIColor.secondarySystemBackground),
                     in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
+        #endif
         #endif
         .animation(.easeInOut(duration: 0.3), value: viewModel.isLoadingOffering)
         .sheet(isPresented: $viewModel.showOffering, content: {
@@ -125,6 +129,20 @@ struct NoSubscriptionsCardView: View {
                 }
             }
             .paywallSource(.customerCenter)
+            #if os(macOS)
+            // iOS lets the customer swipe the paywall away; a Mac sheet has no such gesture, so it
+            // gets the Customer Center's close button, floating over the paywall's corner. Not the
+            // paywall's own: that one wraps the paywall in a navigation view, which the Mac draws
+            // as two columns, and a Paywalls V2 design ignores it. The paywall fills the sheet, so
+            // the button stays in its corner while the paywall loads.
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .dismissCircleButtonToolbarIfNeeded(
+                navigationOptions: .default,
+                floatsOverContent: true,
+                customDismiss: { viewModel.showOffering = false }
+            )
+            #endif
+            .customerCenterSheetFrame()
         })
         .onAppear {
             viewModel.refreshOffering()
@@ -132,8 +150,7 @@ struct NoSubscriptionsCardView: View {
     }
 }
 
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 private struct BuySubscriptionButtonStyle: ButtonStyle {
@@ -148,8 +165,8 @@ private struct BuySubscriptionButtonStyle: ButtonStyle {
         configuration.label
             .foregroundStyle(
                 Color(colorScheme == .light
-                                  ? UIColor.systemBackground
-                                  : UIColor.secondarySystemBackground)
+                                  ? PlatformColor.systemBackground
+                                  : PlatformColor.secondarySystemBackground)
             )
             .font(.system(size: 17, weight: .semibold))
             .frame(maxWidth: .infinity)
@@ -168,8 +185,7 @@ private struct BuySubscriptionButtonStyle: ButtonStyle {
 }
 
 #if DEBUG
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct NoSubscriptionsCardView_Previews: PreviewProvider {

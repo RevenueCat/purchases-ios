@@ -9,8 +9,8 @@ import SwiftUI
 import RevenueCat
 import RevenueCatUI
 
-#if canImport(UIKit) && os(iOS)
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+#if os(iOS) || os(macOS)
+@available(iOS 15.0, macOS 13.0, tvOS 15.0, *)
 struct TestViewPlusPresentCustomerCenter: View {
 
     @State private var isPresented = false
@@ -65,7 +65,7 @@ struct TestViewPlusPresentCustomerCenter: View {
     }
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@available(iOS 15.0, macOS 13.0, tvOS 15.0, *)
 struct TestCustomerCenterViewActionsAPI: View {
     var body: some View {
         CustomerCenterView()

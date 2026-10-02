@@ -12,11 +12,11 @@
 //  Created by RevenueCat on 3/7/24.
 //
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
-@available(iOS 15.0, *)
+@available(iOS 15.0, macOS 13.0, *)
 struct PurchaseHistoryView: View {
 
     @Environment(\.colorScheme)
@@ -44,7 +44,7 @@ struct PurchaseHistoryView: View {
             .environment(\.localization, localization)
         }
         .navigationTitle(localization[.purchaseHistory])
-        .listStyle(.insetGrouped)
+        .compatibleInsetGroupedListStyle()
         .onAppear {
 #if DEBUG
             guard !ProcessInfo.isRunningForPreviews else { return }
@@ -57,6 +57,50 @@ struct PurchaseHistoryView: View {
 
     @ViewBuilder
     private var contentView: some View {
+        #if os(macOS)
+        // The Mac's layout of this screen: a grouped form with a section per group of purchases.
+        Form {
+            if viewModel.isLoading {
+                Section {
+                    ProgressView()
+                        .controlSize(.small)
+                        .frame(maxWidth: .infinity)
+                }
+            } else if viewModel.errorMessage != nil {
+                Section {
+                    ErrorView()
+                }
+            } else if !viewModel.isEmpty {
+                if !viewModel.activeSubscriptions.isEmpty {
+                    PurchasesInformationSection(
+                        title: localization[.subscriptionsSectionTitle],
+                        items: viewModel.activeSubscriptions,
+                        localization: localization) { purchase in
+                            viewModel.selectedPurchase = purchase
+                        }
+                }
+
+                if !viewModel.inactiveSubscriptions.isEmpty {
+                    PurchasesInformationSection(
+                        title: localization[.inactive],
+                        items: viewModel.inactiveSubscriptions,
+                        localization: localization) { purchase in
+                            viewModel.selectedPurchase = purchase
+                        }
+                }
+
+                if !viewModel.nonSubscriptions.isEmpty {
+                    PurchasesInformationSection(
+                        title: localization[.purchasesSectionTitle],
+                        items: viewModel.nonSubscriptions,
+                        localization: localization) { purchase in
+                            viewModel.selectedPurchase = purchase
+                        }
+                }
+            }
+        }
+        .formStyle(.grouped)
+        #else
         ScrollViewWithOSBackground {
             LazyVStack(spacing: 0) {
                 if viewModel.isLoading {
@@ -96,11 +140,12 @@ struct PurchaseHistoryView: View {
                 }
             }
         }
+        #endif
     }
 }
 
 #if DEBUG
-@available(iOS 15.0, *)
+@available(iOS 15.0, macOS 13.0, *)
 struct PurchaseHistoryView_Previews: PreviewProvider {
     static var previews: some View {
         let customerInfo = CustomerInfoFixtures.customerInfo(
@@ -143,7 +188,7 @@ struct PurchaseHistoryView_Previews: PreviewProvider {
                     localization: CustomerCenterConfigData.mock().localization
                 )
             )
-            .navigationBarTitleDisplayMode(.inline)
+            .compatibleInlineNavigationBarTitle()
         }
     }
 }

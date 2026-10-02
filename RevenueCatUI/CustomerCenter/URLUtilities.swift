@@ -16,13 +16,17 @@
 import Foundation
 import SwiftUI
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
+
+#if canImport(UIKit)
 import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 
 enum URLUtilities {
 
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    @available(macOS, unavailable)
+    @available(iOS 15.0, macOS 13.0, tvOS 15.0, watchOS 8.0, *)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     static func createMailURLIfPossible(email: String, subject: String, body: String) -> URL? {
@@ -52,6 +56,7 @@ enum URLUtilities {
     }
 
     static func openURLIfNotAppExtension(_ url: URL) {
+        #if canImport(UIKit)
         guard !UIApplication.isAppExtension,
               let application = UIApplication.extensionSafeApplication else {
             return
@@ -62,14 +67,21 @@ enum URLUtilities {
         let methodIMP: IMP! = application.method(for: selector)
         let openURLMethod = unsafeBitCast(methodIMP, to: ClosureType.self)
         openURLMethod(application, selector, url as NSURL, nil, nil)
+        #elseif canImport(AppKit)
+        NSWorkspace.shared.open(url)
+        #endif
     }
 
     static func canOpenURL(_ url: URL) -> Bool {
+        #if canImport(UIKit)
         guard !UIApplication.isAppExtension,
               let application = UIApplication.extensionSafeApplication else {
             return false
         }
         return application.canOpenURL(url)
+        #elseif canImport(AppKit)
+        return NSWorkspace.shared.urlForApplication(toOpen: url) != nil
+        #endif
     }
 
 }

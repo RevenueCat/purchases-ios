@@ -11,7 +11,7 @@
 //
 //  Created by Will Taylor on 4/21/25.
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 
 @_spi(Internal) import RevenueCat
 import SwiftUI
@@ -32,8 +32,7 @@ import SwiftUI
 ///     )
 /// }
 /// ```
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct VirtualCurrencyBalancesScreen: View {
@@ -55,7 +54,7 @@ struct VirtualCurrencyBalancesScreen: View {
     }
 
     var body: some View {
-        List {
+        CompatibilityGroupedList {
             switch self.viewModel.viewState {
             case .loading:
                 HStack {
@@ -101,7 +100,7 @@ struct VirtualCurrencyBalancesScreen: View {
 struct VirtualCurrencyBalancesScreen_Previews: PreviewProvider {
 
     static var previews: some View {
-        if #available(iOS 15.0, *) {
+        if #available(iOS 15.0, macOS 13.0, *) {
             CompatibilityNavigationStack {
                 VirtualCurrencyBalancesScreen(
                     viewModel: VirtualCurrencyBalancesScreenViewModel(
@@ -110,7 +109,7 @@ struct VirtualCurrencyBalancesScreen_Previews: PreviewProvider {
                     )
                 )
                 .environment(\.localization, CustomerCenterConfigData.Localization.default)
-                .navigationBarTitleDisplayMode(.inline)
+                .compatibleInlineNavigationBarTitle()
                 .previewDisplayName("Loaded With 0 VC Balances")
             }
             .previewDisplayName("Loaded With 0 VC Balances")
@@ -129,7 +128,7 @@ struct VirtualCurrencyBalancesScreen_Previews: PreviewProvider {
                     )
                 )
                 .environment(\.localization, CustomerCenterConfigData.Localization.default)
-                .navigationBarTitleDisplayMode(.inline)
+                .compatibleInlineNavigationBarTitle()
             }
             .previewDisplayName("Loaded with 4 VC Balances")
 
@@ -141,7 +140,7 @@ struct VirtualCurrencyBalancesScreen_Previews: PreviewProvider {
                     )
                 )
                 .environment(\.localization, CustomerCenterConfigData.Localization.default)
-                .navigationBarTitleDisplayMode(.inline)
+                .compatibleInlineNavigationBarTitle()
             }
             .previewDisplayName("Error")
         } else {

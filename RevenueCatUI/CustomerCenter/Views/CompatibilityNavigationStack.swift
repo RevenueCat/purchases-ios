@@ -13,12 +13,11 @@
 //  Created by Cody Kerns on 8/15/24.
 //
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 
 import SwiftUI
 
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct CompatibilityNavigationStack<Content: View>: View {
@@ -26,7 +25,7 @@ struct CompatibilityNavigationStack<Content: View>: View {
     @ViewBuilder var content: () -> Content
 
     var body: some View {
-        if #available(iOS 16.0, *) {
+        if #available(iOS 16.0, macOS 13.0, *) {
             NavigationStack(root: content)
         } else {
             NavigationView(content: content)
@@ -44,7 +43,7 @@ extension View {
         usesNavigationStack: Bool,
         @ViewBuilder destination: @escaping () -> Destination
     ) -> some View {
-        if #available(iOS 16.0, *), usesNavigationStack {
+        if #available(iOS 16.0, macOS 13.0, *), usesNavigationStack {
             self.navigationDestination(isPresented: isPresented, destination: destination)
         } else {
             self.background(

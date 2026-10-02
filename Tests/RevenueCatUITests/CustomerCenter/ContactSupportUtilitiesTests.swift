@@ -16,8 +16,7 @@ import Nimble
 @_spi(Internal)@testable import RevenueCatUI
 import XCTest
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 class ContactSupportUtilitiesTest: TestCase {
@@ -47,6 +46,17 @@ class ContactSupportUtilitiesTest: TestCase {
         expect(body).to(contain("- OS Version:"))
 
     }
+
+    #if os(macOS)
+    func testBodyIncludesTheMacOSVersionAndHardwareModel() {
+        // Same setup as the test above; only the assertions differ.
+        let body = support.calculateBody(localization, purchasesProvider: CustomerCenterPurchases())
+
+        expect(body).toNot(contain("- Device: Unknown"))
+        expect(body).toNot(contain("- OS Version: Unknown"))
+        expect(body).to(match("- OS Version: \\d+\\.\\d+"))
+    }
+    #endif
 
     func testSupportEmailBodyWithGivenDataIsCorrect() {
         let givenData = [("test1", "test2"), ("test3", "test4")]

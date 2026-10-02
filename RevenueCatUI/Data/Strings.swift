@@ -91,6 +91,8 @@ enum Strings {
     case promo_offer_not_eligible_for_product(String, String)
     case could_not_find_target_product(String, String)
     case could_not_find_discount_for_target_product(String, String)
+    case could_not_show_manage_subscriptions(Error)
+    case could_not_show_manage_subscriptions_purchases_not_configured
 
     // UIConfigProvider
     case localizationNotFound(identifier: String)
@@ -333,6 +335,12 @@ extension Strings: CustomStringConvertible {
 
         case let .could_not_find_discount_for_target_product(offerIdentifier, productIdentifier):
             return "Could not find offer with id \(offerIdentifier) for target product \(productIdentifier)"
+
+        case let .could_not_show_manage_subscriptions(error):
+            return "Could not show manage subscriptions: \(error)"
+
+        case .could_not_show_manage_subscriptions_purchases_not_configured:
+            return "Could not show manage subscriptions: Purchases has not been configured."
 
         case .failed_to_open_url_external_browser(let url):
             return "Failed to open URL in external browser: \(url)"

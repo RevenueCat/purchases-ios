@@ -18,10 +18,9 @@ import SwiftUI
 
 import RevenueCat
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor

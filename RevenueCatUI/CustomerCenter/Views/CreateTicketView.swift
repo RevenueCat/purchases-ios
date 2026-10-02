@@ -14,10 +14,9 @@
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct CreateTicketView: View {
@@ -72,19 +71,37 @@ struct CreateTicketView: View {
         EmailValidator.isValid(email)
     }
 
+    /// Applies `.textContentType(.emailAddress)`. On macOS, `.emailAddress` needs macOS 14.0,
+    /// one version above this view's own macOS 13.0 floor, so older macOS skips it.
+    @ViewBuilder
+    private func applyEmailContentType<V: View>(_ view: V) -> some View {
+        #if os(macOS)
+        if #available(macOS 14.0, *) {
+            view.textContentType(.emailAddress)
+        } else {
+            view
+        }
+        #else
+        view.textContentType(.emailAddress)
+        #endif
+    }
+
     var body: some View {
         CompatibilityNavigationStack {
             Form {
                 Section(header: Text(localization[.email])) {
-                    TextField(localization[.enterEmail], text: $email)
-                        .keyboardType(.emailAddress)
-                        .autocapitalization(.none)
-                        .textContentType(.emailAddress)
-                        .focused($focusedField, equals: .email)
-                        .submitLabel(.next)
-                        .onSubmit {
-                            focusedField = .description
-                        }
+                    applyEmailContentType(
+                        TextField(localization[.enterEmail], text: $email)
+                            #if os(iOS)
+                            .keyboardType(.emailAddress)
+                            .autocapitalization(.none)
+                            #endif
+                    )
+                    .focused($focusedField, equals: .email)
+                    .submitLabel(.next)
+                    .onSubmit {
+                        focusedField = .description
+                    }
 
                     if hasAttemptedSubmit && !email.isEmpty && !isValidEmail {
                         Text("Please enter a valid email address")
@@ -137,13 +154,21 @@ struct CreateTicketView: View {
                     }
                 }
             }
+            #if os(macOS)
+            // The default macOS form style lays fields out in label columns; the grouped one is
+            // the Mac's settings look.
+            .formStyle(.grouped)
+            #endif
             .dismissCircleButtonToolbarIfNeeded(
                 navigationOptions: navigationOptions,
+                // A macOS sheet never draws the `.principal` title below, so the Mac shows it
+                // next to the close button.
+                title: localization[.supportTicketCreate],
                 customDismiss: {
                     isPresented = false
                 }
             )
-            .navigationBarTitleDisplayMode(.inline)
+            .compatibleInlineNavigationBarTitle()
             .toolbar(content: {
                 ToolbarItem(placement: .principal) {
                     Text(localization[.supportTicketCreate])
@@ -200,8 +225,7 @@ struct CreateTicketView: View {
 }
 
 #if DEBUG
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct CreateTicketView_Previews: PreviewProvider {
