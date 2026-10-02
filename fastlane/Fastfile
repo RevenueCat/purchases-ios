@@ -572,11 +572,14 @@ platform :ios do
     )
 
     UI.user_error!("Expected five V2 layout snapshots") unless Dir.glob("#{snapshots_path}/*.png").count == 5
-    upload_snapshots_to_emerge(
+    upload_output = upload_snapshots_to_emerge(
       name: "PaywallsTester V2 scroll layout",
       id: "com.revenuecat.PaywallsTester.v2-layout-snapshots",
-      images_path: snapshots_path
+      images_path: snapshots_path,
+      resolve_pr_from_branch: true
     )
+    # Emerge 0.1 can log an upload error while returning exit status zero.
+    UI.user_error!("Emerge did not confirm a successful snapshot upload") unless upload_output.include?("Upload completed successfully!")
   end
 
   # Uploads snapshots to Emerge. Requires EMERGE_API_TOKEN to be available in the environment.
@@ -589,6 +592,17 @@ platform :ios do
     id = options[:id] || UI.user_error!("No id provided for the Emerge upload")
 
     pr_number = detect_pr_number
+    if !pr_number && options[:resolve_pr_from_branch] && ENV["DANGER_GITHUB_API_TOKEN"]
+      branch = sh("git", "rev-parse", "--abbrev-ref", "HEAD").strip
+      query = URI.encode_www_form(head: "RevenueCat:#{branch}", state: "open")
+      response = github_api(
+        server_url: "https://api.github.com",
+        api_token: ENV["DANGER_GITHUB_API_TOKEN"],
+        http_method: "GET",
+        path: "/repos/RevenueCat/purchases-ios/pulls?#{query}"
+      )
+      pr_number = response[:json].first&.fetch("number").to_s unless response[:json].empty?
+    end
 
     args = [
       "bundle", "exec", "emerge", "upload", "snapshots",
