@@ -576,7 +576,8 @@ platform :ios do
       name: "PaywallsTester V2 scroll layout",
       id: "com.revenuecat.PaywallsTester.v2-layout-snapshots",
       images_path: snapshots_path,
-      resolve_pr_from_branch: true
+      resolve_pr_from_branch: true,
+      isolated_cli: true
     )
     # Emerge 0.1 can log an upload error while returning exit status zero.
     UI.user_error!("Emerge did not confirm a successful snapshot upload") unless upload_output.include?("Upload completed successfully!")
@@ -617,7 +618,14 @@ platform :ios do
     args.push("--pr-number", pr_number) if pr_number
     args.push(options[:images_path]) if options[:images_path]
 
-    sh(*args)
+    if options[:isolated_cli]
+      # The newer CLI requires an xcodeproj version incompatible with CocoaPods in the main bundle.
+      Bundler.with_unbundled_env do
+        sh("env", "BUNDLE_GEMFILE=#{File.expand_path('snapshot_tools/Gemfile')}", *args)
+      end
+    else
+      sh(*args)
+    end
   end
 
   lane :build_paywalls_tester_for_emerge_ios do |options|

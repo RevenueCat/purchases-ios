@@ -866,6 +866,9 @@ jobs:
       - checkout
       - install-dependencies:
           install_xcbeautify: false
+      - run:
+          name: Install isolated Emerge snapshot client
+          command: bundle install --gemfile fastlane/snapshot_tools/Gemfile
       - update-spm-installation-commit
       - run:
           name: Record V2 layout snapshots and upload to Emerge
