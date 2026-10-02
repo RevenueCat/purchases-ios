@@ -252,6 +252,7 @@ extension WorkflowPresenter {
         didFailPurchasingWith error: NSError
     ) {
         MainActor.assumeIsolated {
+            guard !error.isPurchaseCancellation else { return }
             Logger.error(error.localizedDescription)
             guard self.stage(.outcome(.failed)) else { return }
             self.presentError(error, flowCanContinue: true)
@@ -301,6 +302,7 @@ extension WorkflowPresenter {
         _ controller: PaywallViewController,
         didFailPurchasingWith error: NSError
     ) {
+        guard !error.isPurchaseCancellation else { return }
         Logger.error(error.localizedDescription)
         guard self.stage(.outcome(.failed)) else { return }
         self.presentError(error, flowCanContinue: true)

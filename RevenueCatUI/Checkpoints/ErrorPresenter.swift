@@ -13,6 +13,7 @@
 //
 
 import Foundation
+@_spi(Internal) import RevenueCat
 
 /// Presents an error from a RevenueCat-presented checkpoint flow.
 ///
@@ -46,13 +47,17 @@ public final class ErrorPresentationParams {
     /// The identifier of the checkpoint that failed.
     public let checkpointIdentifier: String
 
-    /// The error that prevented the checkpoint from completing.
+    /// The error that occurred.
     public let error: any Error
 
     /// The custom variables supplied to the checkpoint call.
     public let customVariables: [String: CustomVariableValue]
 
-    /// Whether the flow remains on screen and can be retried after this error.
+    /// Whether the flow can continue after this error.
+    ///
+    /// This is `true` when a purchase or restore fails and the paywall remains available for another attempt. It is
+    /// `false` when the paywall has nothing it can display or a workflow step is invalid. A flow that cannot be
+    /// presented at all does not reach the error presenter.
     public let flowCanContinue: Bool
 
     init(
@@ -93,7 +98,7 @@ public final class ErrorPresentationCompletion {
 
         fileprivate enum Action: Sendable {
             case retry
-            case continued
+            case `continue`
             case navigateBack
         }
 
@@ -104,13 +109,26 @@ public final class ErrorPresentationCompletion {
         }
 
         /// Resumes the flow at the current paywall so the user can try again.
+        ///
+        /// When ``ErrorPresentationParams/flowCanContinue`` is `false`, the flow ends as with ``continue``.
         public static let retry = Self(.retry)
 
         /// Ends the flow as if the user had closed it and lets the checkpoint continue.
-        public static let continued = Self(.continued)
+        public static let `continue` = Self(.continue)
 
-        /// Navigates to the previous workflow step, or ends the flow if there is no prior step.
+        /// Acts as system back by navigating to the previous workflow step.
+        ///
+        /// If there is no previous step, or ``ErrorPresentationParams/flowCanContinue`` is `false`, the flow ends as
+        /// if the user had navigated back and the checkpoint callback is not invoked.
         public static let navigateBack = Self(.navigateBack)
+    }
+
+}
+
+extension NSError {
+
+    var isPurchaseCancellation: Bool {
+        return self.domain == ErrorCode.errorDomain && self.code == ErrorCode.purchaseCancelledError.rawValue
     }
 
 }

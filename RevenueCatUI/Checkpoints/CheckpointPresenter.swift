@@ -306,7 +306,10 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         _ controller: PaywallViewController,
         didFailPurchasingWith error: NSError
     ) {
-        MainActor.assumeIsolated { self.presentError(error, flowCanContinue: true) }
+        MainActor.assumeIsolated {
+            guard !error.isPurchaseCancellation else { return }
+            self.presentError(error, flowCanContinue: true)
+        }
     }
 
     nonisolated func paywallViewController(
@@ -339,6 +342,7 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         _ controller: PaywallViewController,
         didFailPurchasingWith error: NSError
     ) {
+        guard !error.isPurchaseCancellation else { return }
         self.presentError(error, flowCanContinue: true)
     }
 
