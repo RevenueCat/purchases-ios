@@ -515,8 +515,6 @@ platform :ios do
     platform = ENV['PLATFORM'] || 'iOS Simulator'
     destination = ENV['DEVICE'] || "iPhone 17,OS=26.2"
     sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
-    layout_snapshots_path = File.expand_path("../Tests/RevenueCatUITests/PaywallsV2/__Snapshots__/RootViewScrollSnapshotTests")
-    FileUtils.rm_rf(layout_snapshots_path)
     begin
       xcodebuild(
         workspace: '.',
@@ -539,13 +537,6 @@ platform :ios do
     end
 
     upload_v1_snapshots_to_emerge
-
-    UI.user_error!("Expected five root scroll layout snapshots") unless Dir.glob("#{layout_snapshots_path}/*.png").count == 5
-    upload_snapshots_to_emerge(
-      name: "PaywallsTester V2 scroll layout",
-      id: "com.revenuecat.PaywallsTester.v2-layout-snapshots",
-      images_path: layout_snapshots_path
-    )
   end
 
   desc "Upload V1 template snapshots to Emerge using BYOS"

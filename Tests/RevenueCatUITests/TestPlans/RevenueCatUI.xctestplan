@@ -16,7 +16,6 @@
   "testTargets" : [
     {
       "skippedTests" : [
-        "RootViewScrollSnapshotTests",
         "TakeScreenshotTests",
         "TakeScreenshotTests\/testPaywallValidationScreenshots()"
       ],
