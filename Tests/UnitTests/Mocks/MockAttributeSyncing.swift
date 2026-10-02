@@ -27,6 +27,51 @@ class MockAttributeSyncing: AttributeSyncing {
         completion()
     }
 
+    var invokedStoreAttributesParametersList: [(attributes: [String: String], appUserID: String)] = []
+    var stubbedStoredAttributes: SubscriberAttribute.Dictionary?
+
+    func storeAndGetUnsyncedAttributes(_ attributes: [String: String],
+                                       appUserID: String) -> SubscriberAttribute.Dictionary {
+        self.invokedStoreAttributesParametersList.append((attributes, appUserID))
+
+        if let stubbedStoredAttributes = self.stubbedStoredAttributes {
+            return stubbedStoredAttributes
+        }
+
+        return SubscriberAttribute.Dictionary(
+            uniqueKeysWithValues: attributes.map { ($0.key, SubscriberAttribute(withKey: $0.key, value: $0.value)) }
+        )
+    }
+
+    var invokedRefreshATTStatusAndGetUnsyncedAttributesUserIDs: [String] = []
+    var stubbedUnsyncedAttributes: SubscriberAttribute.Dictionary = [:]
+
+    func refreshATTStatusAndGetUnsyncedAttributes(appUserID: String) -> SubscriberAttribute.Dictionary {
+        self.invokedRefreshATTStatusAndGetUnsyncedAttributesUserIDs.append(appUserID)
+
+        return self.stubbedUnsyncedAttributes
+    }
+
+    var invokedSyncAttributesForUsersOtherThanParametersList: [
+        (appUserIDs: Set<String>, currentAppUserID: String)
+    ] = []
+    var onSyncAttributesForUsersOtherThan: (() -> Void)?
+
+    func syncAttributesForUsersOtherThan(_ appUserIDs: Set<String>, currentAppUserID: String) {
+        self.invokedSyncAttributesForUsersOtherThanParametersList.append((appUserIDs, currentAppUserID))
+        self.onSyncAttributesForUsersOtherThan?()
+    }
+
+    var invokedHandleAttributesSentOnLogInParametersList: [
+        (attributes: SubscriberAttribute.Dictionary, appUserID: String, errorResponse: ErrorResponse?)
+    ] = []
+
+    func handleAttributesSentOnLogIn(_ attributes: SubscriberAttribute.Dictionary,
+                                     appUserID: String,
+                                     errorResponse: ErrorResponse?) {
+        self.invokedHandleAttributesSentOnLogInParametersList.append((attributes, appUserID, errorResponse))
+    }
+
 }
 
 // `AttributeSyncing` requires types to be `Sendable`.

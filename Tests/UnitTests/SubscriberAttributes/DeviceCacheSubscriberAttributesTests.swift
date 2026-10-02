@@ -683,4 +683,72 @@ class DeviceCacheSubscriberAttributesTests: TestCase {
             .mockValues["com.revenuecat.userdefaults.subscriberAttributes"] as? [String: [String: [String: NSObject]]]
         expect(valuesAfterCallingDelete) == subscriberAttributes
     }
+
+    // MARK: deleteSubscriberAttributes
+
+    func testDeleteSubscriberAttributesOnlyDeletesTheGivenKeys() {
+        let userID = "userID"
+        let song = SubscriberAttribute(withKey: "song", value: "Whole Lotta Love")
+        mockUserDefaults.mockValues = [
+            "com.revenuecat.userdefaults.subscriberAttributes": [
+                userID: [
+                    "band": SubscriberAttribute(withKey: "band", value: "Led Zeppelin").asDictionary(),
+                    "song": song.asDictionary()
+                ]
+            ]
+        ]
+
+        self.deviceCache.deleteSubscriberAttributes(keys: ["band"], appUserID: userID)
+
+        expect(self.storedAttributes()?[userID]) == ["song": song.asDictionary()]
+    }
+
+    func testDeleteSubscriberAttributesDoesntAffectOtherUserIDs() {
+        let otherUserID = "otherUserID"
+        let otherUserBand = SubscriberAttribute(withKey: "band", value: "Metallica")
+        mockUserDefaults.mockValues = [
+            "com.revenuecat.userdefaults.subscriberAttributes": [
+                "userID": ["band": SubscriberAttribute(withKey: "band", value: "Led Zeppelin").asDictionary()],
+                otherUserID: ["band": otherUserBand.asDictionary()]
+            ]
+        ]
+
+        self.deviceCache.deleteSubscriberAttributes(keys: ["band"], appUserID: "userID")
+
+        expect(self.storedAttributes()?["userID"]).to(beEmpty())
+        expect(self.storedAttributes()?[otherUserID]) == ["band": otherUserBand.asDictionary()]
+    }
+
+    func testDeleteSubscriberAttributesNoOpsWithoutKeys() {
+        let subscriberAttributes = [
+            "userID": ["band": SubscriberAttribute(withKey: "band", value: "Led Zeppelin").asDictionary()]
+        ]
+        mockUserDefaults.mockValues = [
+            "com.revenuecat.userdefaults.subscriberAttributes": subscriberAttributes
+        ]
+
+        self.deviceCache.deleteSubscriberAttributes(keys: [], appUserID: "userID")
+
+        expect(self.mockUserDefaults.setObjectForKeyCalledValue).to(beNil())
+        expect(self.storedAttributes()) == subscriberAttributes
+    }
+
+    func testDeleteSubscriberAttributesForUnknownUserIDDoesNotStoreAnything() {
+        let subscriberAttributes = [
+            "userID": ["band": SubscriberAttribute(withKey: "band", value: "Led Zeppelin").asDictionary()]
+        ]
+        mockUserDefaults.mockValues = [
+            "com.revenuecat.userdefaults.subscriberAttributes": subscriberAttributes
+        ]
+
+        self.deviceCache.deleteSubscriberAttributes(keys: ["band"], appUserID: "unknownUserID")
+
+        expect(self.storedAttributes()) == subscriberAttributes
+    }
+
+    private func storedAttributes() -> [String: [String: [String: NSObject]]]? {
+        return self.mockUserDefaults.mockValues[
+            "com.revenuecat.userdefaults.subscriberAttributes"
+        ] as? [String: [String: [String: NSObject]]]
+    }
 }
