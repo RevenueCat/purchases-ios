@@ -19,6 +19,7 @@
         "OtherPaywallViewTests",
         "PaywallViewDynamicTypeTests",
         "PaywallViewLocalizationTests",
+        "RootViewScrollSnapshotTests",
         "Template1ViewTests",
         "Template2ViewTests",
         "Template3ViewTests",
