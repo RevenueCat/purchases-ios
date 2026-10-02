@@ -22,6 +22,8 @@
 "Continue" = "teruskan";
 "Default_offer_details_with_intro_offer" = "Mulakan percubaan {{ sub_offer_duration }} anda, kemudian {{ total_price_and_per_month }}.";
 "Something went wrong" = "Ada sesuatu yang tidak kena";
+"Payment failed." = "Pembayaran gagal.";
+"Your purchase is still processing." = "Pembelian anda masih diproses.";
 "Purchase" = "Beli";
 "You've already purchased this" = "Anda sudah membeli ini";
 "Purchase unavailable" = "Pembelian tidak tersedia";

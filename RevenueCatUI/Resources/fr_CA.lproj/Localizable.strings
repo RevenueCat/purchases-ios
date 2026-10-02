@@ -22,6 +22,8 @@
 "Continue" = "Continuer";
 "Default_offer_details_with_intro_offer" = "Démarrez votre essai de {{ sub_offer_duration }}, puis de {{ total_price_and_per_month }}.";
 "Something went wrong" = "Une erreur s’est produite";
+"Payment failed." = "Le paiement a échoué.";
+"Your purchase is still processing." = "Votre achat est toujours en cours de traitement.";
 "Purchase" = "Acheter";
 "You've already purchased this" = "Vous avez déjà acheté cet article";
 "Purchase unavailable" = "Achat non disponible";

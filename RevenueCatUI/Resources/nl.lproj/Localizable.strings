@@ -22,6 +22,8 @@
 "Continue" = "Doorgaan";
 "Default_offer_details_with_intro_offer" = "Start uw proefperiode van {{ sub_offer_duration }} en daarna {{ total_price_and_per_month }}.";
 "Something went wrong" = "Er is iets misgegaan";
+"Payment failed." = "De betaling is mislukt.";
+"Your purchase is still processing." = "Uw aankoop wordt nog verwerkt.";
 "Purchase" = "Kopen";
 "You've already purchased this" = "U hebt dit al gekocht";
 "Purchase unavailable" = "Aankoop niet beschikbaar";

@@ -22,6 +22,8 @@
 "Continue" = "ďalej";
 "Default_offer_details_with_intro_offer" = "Začnite skúšobnú verziu {{ sub_offer_duration }}, potom {{ total_price_and_per_month }}.";
 "Something went wrong" = "Niečo sa pokazilo";
+"Payment failed." = "Platba sa nepodarila.";
+"Your purchase is still processing." = "Nákup sa ešte spracúva.";
 "Purchase" = "Kúpiť";
 "You've already purchased this" = "Toto ste si už zakúpili";
 "Purchase unavailable" = "Nákup nie je k dispozícii";

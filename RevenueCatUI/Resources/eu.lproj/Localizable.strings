@@ -22,6 +22,8 @@
 "Continue" = "Jarraitu";
 "Default_offer_details_with_intro_offer" = "Hasi zure {{ sub_offer_duration }} probako aldia, gero {{ total_price_and_per_month }}.";
 "Something went wrong" = "Zerbait gaizki joan da";
+"Payment failed." = "Ordainketak huts egin du.";
+"Your purchase is still processing." = "Zure erosketa oraindik prozesatzen ari da.";
 "Purchase" = "Erosi";
 "You've already purchased this" = "Dagoeneko erosi duzu hau";
 "Purchase unavailable" = "Erosketa ez dago erabilgarri";

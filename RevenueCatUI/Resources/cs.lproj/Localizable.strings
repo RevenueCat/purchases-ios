@@ -22,6 +22,8 @@
 "Continue" = "Pokračovat";
 "Default_offer_details_with_intro_offer" = "Začněte {{ sub_offer_duration }} zkušební období, poté {{ total_price_and_per_month }}.";
 "Something went wrong" = "Něco se pokazilo";
+"Payment failed." = "Platba se nezdařila.";
+"Your purchase is still processing." = "Nákup se ještě zpracovává.";
 "Purchase" = "Koupit";
 "You've already purchased this" = "Toto jste si již zakoupili";
 "Purchase unavailable" = "Nákup není k dispozici";

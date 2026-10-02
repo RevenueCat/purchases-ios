@@ -13,6 +13,7 @@
 
 import Foundation
 @_spi(Internal) import RevenueCat
+import SwiftUI
 
 #if os(iOS) && canImport(WebKit)
 
@@ -60,6 +61,142 @@ enum HostedCheckout {
         }
 
         return Action(await purchaseHandler.startHostedCheckout(package: package))
+    }
+
+    /// How the paywall settles on the outcome the backend gives for a checkout that ended on its success page.
+    ///
+    /// Only a purchase the backend confirms counts as one. Anything else is an error, since the success page
+    /// always tells the customer the purchase went through.
+    enum Resolution: Equatable {
+
+        case purchased
+        case tellCustomerTheyAlreadyOwnIt
+        case failed(HostedCheckoutError)
+
+        init(_ result: HostedCheckoutPollResult) {
+            switch result {
+            case .succeeded:
+                self = .purchased
+            case .alreadyPurchased:
+                self = .tellCustomerTheyAlreadyOwnIt
+            case let .failed(code, _):
+                self = .failed(.failed(code: code))
+            case .undetermined:
+                self = .failed(.unconfirmed)
+            }
+        }
+
+    }
+
+    /// Asks the backend for the final outcome of a checkout that ended on its success page, then settles the
+    /// paywall on it.
+    ///
+    /// A purchase the backend confirms but the paywall cannot report, for lack of the `CustomerInfo` showing it,
+    /// settles as unconfirmed: as far as the app can tell, it is still processing.
+    ///
+    /// - Parameter package: The package the checkout was started for, when it is still known.
+    @MainActor
+    static func resolve(_ session: HostedCheckoutSession,
+                        package: Package?,
+                        purchaseHandler: PurchaseHandler) async -> Resolution {
+        return await purchaseHandler.whileConfirmingHostedCheckout {
+            let result = await purchaseHandler.pollHostedCheckout(session: session)
+            var resolution = Resolution(result)
+
+            if resolution == .purchased, !(await purchaseHandler.canReportHostedCheckoutPurchase()) {
+                resolution = .failed(.unconfirmed)
+            }
+
+            switch resolution {
+            case .purchased:
+                await purchaseHandler.handleHostedCheckoutPurchase()
+            case let .failed(error):
+                purchaseHandler.handleHostedCheckoutFailure(error, package: package)
+            case .tellCustomerTheyAlreadyOwnIt:
+                // Neither a purchase nor a cancellation, just as when the checkout never opened for this reason:
+                // the paywall only tells the customer.
+                break
+            }
+
+            return resolution
+        }
+    }
+
+}
+
+/// Why a checkout the customer was told succeeded did not end in a purchase the paywall could report, mapped onto
+/// the same public codes `purchases-js` reports for it, except for a failed charge.
+///
+/// `purchases-js` reports a failed charge as `PaymentPendingError`, but on Apple platforms that code means a
+/// purchase awaiting approval, which apps commonly hold off on rather than treat as a failure.
+enum HostedCheckoutError: Error, Equatable {
+
+    /// The backend says the session failed. `code` is the backend's own, absent where it gave none.
+    case failed(code: Int?)
+
+    /// The backend never said the session had finished, or said the purchase went through but the `CustomerInfo`
+    /// showing it could not be fetched.
+    case unconfirmed
+
+}
+
+extension HostedCheckoutError: CustomNSError {
+
+    static var errorDomain: String {
+        return ErrorCode.errorDomain
+    }
+
+    var errorCode: Int {
+        return self.publicCode.rawValue
+    }
+
+    var errorUserInfo: [String: Any] {
+        return [NSLocalizedDescriptionKey: self.errorDescription]
+    }
+
+    private var publicCode: ErrorCode {
+        switch self {
+        case .failed(code: Self.paymentChargeFailedCode):
+            return .purchaseNotAllowedError
+        case let .failed(code?) where Self.setupFailedCodes.contains(code):
+            return .storeProblemError
+        case .failed, .unconfirmed:
+            return .unknownError
+        }
+    }
+
+    private var errorDescription: String {
+        switch self {
+        case .failed(code: Self.paymentChargeFailedCode):
+            return "The payment failed."
+        case let .failed(code?) where Self.setupFailedCodes.contains(code):
+            return "The purchase could not be set up."
+        case .failed:
+            return "The purchase failed."
+        case .unconfirmed:
+            return "The purchase could not be confirmed."
+        }
+    }
+
+    /// Creating the setup intent, creating the payment method, and completing the setup intent.
+    private static let setupFailedCodes: Set<Int> = [1, 2, 4]
+    private static let paymentChargeFailedCode = 3
+
+}
+
+extension HostedCheckoutError {
+
+    /// What the paywall tells the customer. A purchase the paywall could not confirm may still land, or have landed
+    /// already, so it is not called a failure.
+    func message(bundle: Bundle) -> Text {
+        switch self {
+        case .failed(code: Self.paymentChargeFailedCode):
+            return Text("Payment failed.", bundle: bundle)
+        case .failed:
+            return Text("Something went wrong", bundle: bundle)
+        case .unconfirmed:
+            return Text("Your purchase is still processing.", bundle: bundle)
+        }
     }
 
 }

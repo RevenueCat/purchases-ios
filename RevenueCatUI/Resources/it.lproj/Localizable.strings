@@ -22,6 +22,8 @@
 "Continue" = "Continua";
 "Default_offer_details_with_intro_offer" = "Inizia la tua prova di {{ sub_offer_duration }}, poi {{ total_price_and_per_month }}.";
 "Something went wrong" = "Qualcosa è andato storto";
+"Payment failed." = "Il pagamento non è andato a buon fine.";
+"Your purchase is still processing." = "Il tuo acquisto è ancora in elaborazione.";
 "Purchase" = "Acquista";
 "You've already purchased this" = "Hai già acquistato questo articolo";
 "Purchase unavailable" = "Acquisto non disponibile";

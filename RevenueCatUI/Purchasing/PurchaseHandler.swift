@@ -366,6 +366,27 @@ extension PurchaseHandler {
         }
     }
 
+    /// Runs `confirmation` with the paywall showing a purchase under way, for a checkout the backend still has
+    /// to confirm.
+    @MainActor
+    func whileConfirmingHostedCheckout<T>(_ confirmation: () async -> T) async -> T {
+        self.purchaseError = nil
+        self.startAction(.purchase)
+        defer { self.actionTypeInProgress = nil }
+
+        return await confirmation()
+    }
+
+    func pollHostedCheckout(session: HostedCheckoutSession) async -> HostedCheckoutPollResult {
+        return await self.purchases.pollHostedCheckout(session: session)
+    }
+
+    /// Whether a checkout the backend confirmed can be reported, which takes the `CustomerInfo` showing the
+    /// purchase. The SDK fetches it while confirming the purchase, but that fetch can fail.
+    func canReportHostedCheckoutPurchase() async -> Bool {
+        return (try? await self.purchases.customerInfo()) != nil
+    }
+
     /// Whether web purchase links opened in the browser go through Apple's external purchase flow first.
     var useExternalPurchaseCustomLinks: Bool {
         return self.purchases.useExternalPurchaseCustomLinks
@@ -893,18 +914,26 @@ extension PurchaseHandler {
 
     // MARK: - Hosted checkout
 
-    /// Reports a checkout the customer completed on a page presented inside the app.
+    /// Reports a checkout the backend confirmed the customer completed on a page presented inside the app.
     ///
     /// There is no transaction to hand over: what was bought is known to the backend, so the paywall follows
-    /// the refreshed `CustomerInfo`.
+    /// the `CustomerInfo` the SDK fetched when confirming it.
     @MainActor
     func handleHostedCheckoutPurchase() async {
-        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        // The purchase was made outside StoreKit, so whatever is cached was fetched before it happened.
-        self.purchases.invalidateCustomerInfoCache()
-        #endif
-
         await self.reportHostedCheckoutOutcome(userCancelled: false)
+    }
+
+    /// Reports a checkout that failed, as opposed to one the customer walked away from.
+    ///
+    /// - Parameter package: The package the checkout was started for, when it is still known. Only used to
+    /// track the failure.
+    @MainActor
+    func handleHostedCheckoutFailure(_ error: Error, package: Package?) {
+        if let package {
+            self.trackPurchaseError(package: package, error: error)
+        }
+
+        self.purchaseError = error
     }
 
     /// Reports a checkout the customer abandoned on a page presented inside the app.
@@ -1251,6 +1280,10 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 
     func startHostedCheckout(package: Package, paywallEvent: PaywallEvent?) async -> HostedCheckoutStartResult {
         return .failed
+    }
+
+    func pollHostedCheckout(session: HostedCheckoutSession) async -> HostedCheckoutPollResult {
+        return .undetermined
     }
 
     var useExternalPurchaseCustomLinks: Bool { false }

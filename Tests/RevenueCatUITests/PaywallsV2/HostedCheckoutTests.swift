@@ -14,6 +14,7 @@
 import Nimble
 @_spi(Internal) @testable import RevenueCat
 @testable import RevenueCatUI
+import SwiftUI
 import XCTest
 
 #if os(iOS) && canImport(WebKit)
@@ -145,17 +146,209 @@ final class HostedCheckoutTests: TestCase {
         expect(HostedCheckout.Action(.failed)) == .nothing
     }
 
+    // MARK: - Settling on what the backend says
+
+    func testCountsAConfirmedPurchase() {
+        expect(HostedCheckout.Resolution(.succeeded)) == .purchased
+    }
+
+    func testTellsTheCustomerTheyAlreadyOwnIt() {
+        expect(HostedCheckout.Resolution(.alreadyPurchased)) == .tellCustomerTheyAlreadyOwnIt
+    }
+
+    /// The success page always tells the customer the purchase went through, so anything short of it is an error.
+    func testFailsWhenTheBackendDoesNotConfirmWhatTheSuccessPageSaid() {
+        expect(HostedCheckout.Resolution(.failed(code: 3, message: "payment_charge_failed")))
+            == .failed(.failed(code: 3))
+        expect(HostedCheckout.Resolution(.undetermined)) == .failed(.unconfirmed)
+    }
+
+    func testAsksAboutTheSessionThatWasPresented() async {
+        let sessionsAskedAbout = Recorder<HostedCheckoutSession>()
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollBlock = { session in
+            await sessionsAskedAbout.record(session)
+            return .succeeded
+        }
+
+        _ = await HostedCheckout.resolve(Self.session,
+                                         package: TestData.annualPackage,
+                                         purchaseHandler: Self.makeHandler(purchases: purchases))
+
+        let asked = await sessionsAskedAbout.values
+        expect(asked) == [Self.session]
+    }
+
+    @MainActor
+    func testShowsThePurchaseUnderWayUntilTheBackendAnswers() async {
+        let actionsWhilePolling = Recorder<Bool>()
+        let purchases = Self.makePurchases()
+        let handler = Self.makeHandler(purchases: purchases)
+        purchases.hostedCheckoutPollBlock = { _ in
+            await actionsWhilePolling.record(await MainActor.run { handler.actionTypeInProgress == .purchase })
+            return .succeeded
+        }
+
+        _ = await HostedCheckout.resolve(Self.session,
+                                         package: TestData.annualPackage,
+                                         purchaseHandler: handler)
+
+        let wasPurchasing = await actionsWhilePolling.values
+        expect(wasPurchasing) == [true]
+        expect(handler.actionInProgress) == false
+    }
+
+    @MainActor
+    func testReportsAConfirmedPurchaseAsCompleted() async {
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollBlock = { _ in .succeeded }
+        let handler = Self.makeHandler(purchases: purchases)
+
+        let resolution = await HostedCheckout.resolve(Self.session,
+                                                      package: TestData.annualPackage,
+                                                      purchaseHandler: handler)
+
+        expect(resolution) == .purchased
+        expect(handler.sessionPurchaseResult?.userCancelled) == false
+        expect(handler.purchaseError).to(beNil())
+    }
+
+    /// The SDK fetches the `CustomerInfo` showing the purchase while confirming it, but that fetch can fail.
+    @MainActor
+    func testTellsTheCustomerAConfirmedPurchaseIsStillProcessingWithoutItsCustomerInfo() async {
+        let purchases = MockPurchases { _, _, _ in
+            return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { _ in
+        } customerInfo: {
+            throw ErrorCode.networkError
+        }
+        purchases.hostedCheckoutPollBlock = { _ in .succeeded }
+        let handler = Self.makeHandler(purchases: purchases)
+
+        let resolution = await HostedCheckout.resolve(Self.session,
+                                                      package: TestData.annualPackage,
+                                                      purchaseHandler: handler)
+
+        expect(resolution) == .failed(.unconfirmed)
+        expect(handler.purchaseError as? HostedCheckoutError) == .unconfirmed
+        expect(handler.sessionPurchaseResult).to(beNil())
+        expect(handler.actionInProgress) == false
+    }
+
+    @MainActor
+    func testReportsAFailureAfterTheSuccessPageAsAPurchaseError() async {
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollBlock = { _ in .undetermined }
+        let handler = Self.makeHandler(purchases: purchases)
+
+        let resolution = await HostedCheckout.resolve(Self.session,
+                                                      package: TestData.annualPackage,
+                                                      purchaseHandler: handler)
+
+        expect(resolution) == .failed(.unconfirmed)
+        expect(handler.purchaseError as? HostedCheckoutError) == .unconfirmed
+        expect(handler.sessionPurchaseResult).to(beNil())
+    }
+
+    @MainActor
+    func testTracksAFailureAfterTheSuccessPageAsAPurchaseError() async {
+        let trackedEvents: Atomic<[PaywallEvent]> = .init([])
+        let purchases = Self.makePurchases(trackingInto: trackedEvents)
+        purchases.hostedCheckoutPollBlock = { _ in .failed(code: 3, message: "payment_charge_failed") }
+        let handler = Self.makeHandler(purchases: purchases)
+        handler.trackPaywallImpression(Self.impressionData)
+
+        _ = await HostedCheckout.resolve(Self.session,
+                                         package: TestData.annualPackage,
+                                         purchaseHandler: handler)
+
+        await expect(trackedEvents.value.contains(where: Self.isPurchaseError))
+            .toEventually(beTrue(), timeout: .seconds(2))
+        expect(trackedEvents.value.first(where: Self.isPurchaseError)?.data.packageId)
+            == TestData.annualPackage.identifier
+    }
+
+    /// Settles as when the checkout never opened for this reason: the paywall tells the customer, and reports
+    /// neither a purchase nor a cancellation.
+    @MainActor
+    func testReportsNothingForAProductTheCustomerAlreadyOwned() async {
+        let trackedEvents: Atomic<[PaywallEvent]> = .init([])
+        let purchases = Self.makePurchases(trackingInto: trackedEvents)
+        purchases.hostedCheckoutPollBlock = { _ in .alreadyPurchased }
+        let handler = Self.makeHandler(purchases: purchases)
+        handler.trackPaywallImpression(Self.impressionData)
+
+        _ = await HostedCheckout.resolve(Self.session,
+                                         package: TestData.annualPackage,
+                                         purchaseHandler: handler)
+
+        expect(handler.sessionPurchaseResult).to(beNil())
+        expect(handler.purchaseError).to(beNil())
+        expect(handler.actionInProgress) == false
+        await expect(trackedEvents.value.contains(where: Self.isCancel))
+            .toNever(beTrue(), until: .milliseconds(300))
+    }
+
+    // MARK: - Errors
+
+    /// Not as a pending payment, which is what `purchases-js` reports: on Apple platforms that means a purchase
+    /// awaiting approval.
+    func testReportsAFailedChargeAsAPurchaseThatWasNotAllowed() {
+        expect((HostedCheckoutError.failed(code: 3) as NSError).code) == ErrorCode.purchaseNotAllowedError.rawValue
+    }
+
+    func testReportsAFailedSetupAsAStoreProblem() {
+        for code in [1, 2, 4] {
+            expect((HostedCheckoutError.failed(code: code) as NSError).code) == ErrorCode.storeProblemError.rawValue
+        }
+    }
+
+    func testReportsAnyOtherFailureAsUnknown() {
+        expect((HostedCheckoutError.failed(code: nil) as NSError).code) == ErrorCode.unknownError.rawValue
+        expect((HostedCheckoutError.failed(code: 99) as NSError).code) == ErrorCode.unknownError.rawValue
+        expect((HostedCheckoutError.unconfirmed as NSError).code) == ErrorCode.unknownError.rawValue
+    }
+
+    func testTellsTheCustomerAFailedChargeFailed() {
+        expect(HostedCheckoutError.failed(code: 3).message(bundle: .main)) == Text("Payment failed.", bundle: .main)
+    }
+
+    /// Which step failed is nothing the customer can act on.
+    func testTellsTheCustomerSomethingWentWrongForAnyOtherFailure() {
+        for code in [nil, 1, 2, 4, 99] {
+            expect(HostedCheckoutError.failed(code: code).message(bundle: .main))
+                == Text("Something went wrong", bundle: .main)
+        }
+    }
+
+    /// The customer most likely paid, and the purchase may yet land.
+    func testTellsTheCustomerAnUnconfirmedPurchaseIsStillProcessing() {
+        expect(HostedCheckoutError.unconfirmed.message(bundle: .main))
+            == Text("Your purchase is still processing.", bundle: .main)
+    }
+
+    func testReportsErrorsInTheSDKsDomain() {
+        expect((HostedCheckoutError.unconfirmed as NSError).domain) == ErrorCode.errorDomain
+    }
+
 }
 
 @available(iOS 15.0, *)
 private extension HostedCheckoutTests {
 
     static func makePurchases() -> MockPurchases {
+        return self.makePurchases(trackingInto: .init([]))
+    }
+
+    static func makePurchases(trackingInto trackedEvents: Atomic<[PaywallEvent]>) -> MockPurchases {
         return MockPurchases { _, _, _ in
             return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
         } restorePurchases: {
             return TestData.customerInfo
-        } trackEvent: { _ in
+        } trackEvent: { event in
+            trackedEvents.modify { $0.append(event) }
         } customerInfo: {
             return TestData.customerInfo
         }
@@ -182,6 +375,16 @@ private extension HostedCheckoutTests {
 
     static func isPurchaseInitiated(_ event: PaywallEvent) -> Bool {
         if case .purchaseInitiated = event { return true }
+        return false
+    }
+
+    static func isPurchaseError(_ event: PaywallEvent) -> Bool {
+        if case .purchaseError = event { return true }
+        return false
+    }
+
+    static func isCancel(_ event: PaywallEvent) -> Bool {
+        if case .cancel = event { return true }
         return false
     }
 
