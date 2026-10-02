@@ -39,7 +39,8 @@ final class PurchaseHandler: ObservableObject {
     private var cancellables: Set<AnyCancellable> = Set()
 
     private let purchases: PaywallPurchasesType
-    let resolveBranches: @Sendable (WorkflowStep) async -> [WorkflowActionID: WorkflowStepID]
+    /// `nil` while branch routing is unreleased. Stops being optional once branching ships.
+    let resolveBranch: (@Sendable (WorkflowBranch) async -> WorkflowStepID)?
     private let paywallEventTracker: PaywallEventTracker
     private let keyWindowFocusResigner: KeyWindowFocusResigning
 
@@ -181,9 +182,13 @@ final class PurchaseHandler: ObservableObject {
                      eventTracker: PaywallEventTracker = .shared,
                      keyWindowFocusResigner: KeyWindowFocusResigning = KeyWindowFocusResigner()
     ) {
+        var resolveBranch: (@Sendable (WorkflowBranch) async -> WorkflowStepID)?
+        if purchases.branchingEnabled {
+            resolveBranch = { [purchases] branch in await purchases.resolveBranch(branch) }
+        }
         self.init(isConfigured: true,
                   purchases: purchases,
-                  resolveBranches: { [purchases] in await purchases.resolveBranches(in: $0) },
+                  resolveBranch: resolveBranch,
                   performPurchase: performPurchase,
                   performRestore: performRestore,
                   purchaseResultPublisher: purchaseResultPublisher,
@@ -195,8 +200,7 @@ final class PurchaseHandler: ObservableObject {
     init(
         isConfigured: Bool = true,
         purchases: PaywallPurchasesType,
-        resolveBranches: @escaping @Sendable (WorkflowStep) async -> [WorkflowActionID: WorkflowStepID]
-            = { _ in [:] },
+        resolveBranch: (@Sendable (WorkflowBranch) async -> WorkflowStepID)? = nil,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
@@ -207,7 +211,7 @@ final class PurchaseHandler: ObservableObject {
     ) {
         self.isConfigured = isConfigured
         self.purchases = purchases
-        self.resolveBranches = resolveBranches
+        self.resolveBranch = resolveBranch
         self.paywallEventTracker = eventTracker
         self.keyWindowFocusResigner = keyWindowFocusResigner
         self.performPurchase = performPurchase

@@ -43,9 +43,4 @@ import Foundation
         self.fallbackStepId = fallbackStepId
     }
 
-    private enum CodingKeys: String, CodingKey {
-        case routes = "branches"
-        case fallbackStepId
-    }
-
 }
