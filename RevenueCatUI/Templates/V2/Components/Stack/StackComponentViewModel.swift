@@ -222,6 +222,7 @@ extension PresentedStackPartial: PresentedPartial {
         let shape = other?.shape ?? base?.shape
         let border = other?.border ?? base?.border
         let shadow = other?.shadow ?? base?.shadow
+        let overflow = other?.overflow ?? base?.overflow
         let badge = other?.badge ?? base?.badge
 
         return .init(
@@ -237,6 +238,7 @@ extension PresentedStackPartial: PresentedPartial {
             shape: shape,
             border: border,
             shadow: shadow,
+            overflow: overflow,
             badge: badge
         )
     }

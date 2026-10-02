@@ -54,12 +54,14 @@ struct StackComponentView: View {
     @Environment(\.paywallStateDefaults)
     private var paywallStateDefaults
 
+    @Environment(\.paywallRootStackIsZLayer)
+    private var paywallRootStackIsZLayer
+
     @Environment(\.paywallAncestorScrollsVertically)
     private var paywallAncestorScrollsVertically
 
     private let viewModel: StackComponentViewModel
     private let isScrollableByDefault: Bool
-    private let paywallRootStackIsZLayer: Bool
     private let onDismiss: () -> Void
     /// Used when this stack needs more padding than defined in the component, e.g. to avoid being drawn in the safe
     /// area when displayed as a sticky footer.
@@ -69,14 +71,12 @@ struct StackComponentView: View {
     init(
         viewModel: StackComponentViewModel,
         isScrollableByDefault: Bool = false,
-        paywallRootStackIsZLayer: Bool = false,
         onDismiss: @escaping () -> Void,
         additionalPadding: EdgeInsets? = nil,
         showActivityIndicatorOverContent: Bool = false
     ) {
         self.viewModel = viewModel
         self.isScrollableByDefault = isScrollableByDefault
-        self.paywallRootStackIsZLayer = paywallRootStackIsZLayer
         self.onDismiss = onDismiss
         self.additionalPadding = additionalPadding ?? EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
         self.showActivityIndicatorOverContent = showActivityIndicatorOverContent
@@ -157,13 +157,15 @@ struct StackComponentView: View {
         .applyIf(self.showActivityIndicatorOverContent, apply: { view in
             view.progressOverlay(for: style.backgroundStyle)
         })
+        // Preserve legacy root hints unless this stack explicitly stops scrolling.
+        .environment(\.paywallRootStackIsZLayer, self.paywallRootStackIsZLayer && style.scrollable != false)
         .scrollableIfEnabled(
             style.dimension,
             size: style.size,
             enabled: style.scrollable ?? self.isScrollableByDefault,
             zLayerShouldScroll: PaywallZLayerScrollPolicy.shouldApplyScroll(
                 stackScrollPreference: style.scrollable,
-                paywallRootStackIsZLayer: self.paywallRootStackIsZLayer,
+                paywallRootStackIsZLayer: self.paywallRootStackIsZLayer || self.isScrollableByDefault,
                 ancestorScrollsVertically: self.paywallAncestorScrollsVertically
             )
         )

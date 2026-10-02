@@ -100,7 +100,6 @@ struct RootView: View {
                 StackComponentView(
                     viewModel: viewModel.stackViewModel,
                     isScrollableByDefault: true,
-                    paywallRootStackIsZLayer: self.paywallRootStackIsZLayer,
                     onDismiss: onDismiss,
                     additionalPadding: EdgeInsets(top: 0, leading: 0, bottom: overlaidFooterHeight, trailing: 0)
                 )
@@ -146,6 +145,7 @@ struct RootView: View {
                 }
             }
         }
+        .environment(\.paywallRootStackIsZLayer, self.paywallRootStackIsZLayer)
         .environment(\.openSheet, { sheet in
             self.sheetViewModel = sheet
         })
