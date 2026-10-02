@@ -128,7 +128,7 @@ final class WorkflowPresenterExecutionTests: TestCase {
             checkpointIdentifier: "test_checkpoint",
             workflow: self.workflow(),
             customVariables: customVariables,
-            errorPresentationHandler: { _, completion in completion.complete(.continued) }
+            errorPresentationHandler: { _, completion in completion.complete(.continue) }
         )
     }
 

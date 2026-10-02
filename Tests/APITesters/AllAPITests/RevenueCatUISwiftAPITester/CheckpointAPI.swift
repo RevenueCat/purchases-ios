@@ -77,7 +77,7 @@ private func checkErrorPresentationAPI(_ purchases: Purchases) {
         let _: [String: CustomVariableValue] = params.customVariables
         let _: Bool = params.flowCanContinue
         completion.complete(.retry)
-        completion.complete(.continued)
+        completion.complete(.continue)
         completion.complete(.navigateBack)
     }
 
@@ -101,7 +101,7 @@ private final class CheckpointAPIPaywallPresenter: PaywallPresenter {
 private final class CheckpointAPIErrorPresenter: ErrorPresenter {
 
     func present(params: ErrorPresentationParams, completion: ErrorPresentationCompletion) {
-        completion.complete(.continued)
+        completion.complete(.continue)
     }
 
 }
