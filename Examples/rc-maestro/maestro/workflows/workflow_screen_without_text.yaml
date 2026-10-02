@@ -17,7 +17,8 @@ env:
 - launchApp:
     arguments:
         e2e_test_flow: open_workflow
-        workflow_offering_identifier: "[offering-without-text]"
+        # Extra quotes: launch args are parsed as plists, so a bare `[...]` never reaches the app.
+        workflow_offering_identifier: '"[offering-without-text]"'
 - extendedWaitUntil:
     visible: "Present Paywall"
     timeout: 15000
