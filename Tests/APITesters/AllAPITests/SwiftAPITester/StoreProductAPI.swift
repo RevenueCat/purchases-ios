@@ -76,6 +76,8 @@ func checkProductType(_ type: StoreProduct.ProductType) {
     case .nonConsumable: break
     case .nonRenewableSubscription: break
     case .autoRenewableSubscription: break
+    case .subscriptionBundle: break
+    case .subscriptionSuite: break
     @unknown default: break
     }
 }
