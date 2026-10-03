@@ -17,6 +17,10 @@ final class WebViewComponentViewModel: Hashable {
     private let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedWebViewPartial>?
 
+    lazy var visibilityResolver = PaywallComponentVisibilityResolver(
+        self.component.visible, self.uiConfigProvider, self.presentedOverrides, visible: { $0.visible }
+    )
+
     #if !os(watchOS) && canImport(WebKit)
     @MainActor
     private var storedWebViewInstance: WebViewInstance?

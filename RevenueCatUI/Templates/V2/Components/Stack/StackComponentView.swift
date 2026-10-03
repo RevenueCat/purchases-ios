@@ -89,6 +89,23 @@ struct StackComponentView: View {
         let isEligibleForPromoOffer = self.paywallPromoOfferCache.isMostLikelyEligible(
             for: self.packageContext.package
         )
+        let visibilityContext = PaywallComponentVisibilityContext(
+            componentViewState: self.componentViewState,
+            screenCondition: self.screenCondition,
+            packageContext: self.packageContext,
+            introOfferEligibilityContext: self.introOfferEligibilityContext,
+            paywallPromoOfferCache: self.paywallPromoOfferCache,
+            selectedPackageId: self.selectedPackageId,
+            customVariables: self.customVariables,
+            stateValues: self.paywallStateValues,
+            stateDefaults: self.paywallStateDefaults,
+            windowSize: self.paywallWindowSize
+        )
+        let visibleChildren = self.viewModel.viewModels.enumerated().compactMap { index, viewModel in
+            viewModel.isVisible(in: visibilityContext)
+                ? IdentifiedPaywallComponentViewModel(id: index, viewModel: viewModel)
+                : nil
+        }
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
@@ -102,14 +119,17 @@ struct StackComponentView: View {
             colorScheme: colorScheme
         ) { style in
             if style.visible {
-                self.make(style: style)
+                self.make(style: style, children: visibleChildren)
             }
         }
     }
 
     @ViewBuilder
     // swiftlint:disable:next function_body_length
-    private func make(style: StackComponentStyle) -> some View {
+    private func make(
+        style: StackComponentStyle,
+        children: [IdentifiedPaywallComponentViewModel]
+    ) -> some View {
         Group {
             switch style.dimension {
             case .vertical(let horizontalAlignment, let distribution):
@@ -117,7 +137,7 @@ struct StackComponentView: View {
                     style: style,
                     horizontalAlignment: horizontalAlignment,
                     distribution: distribution,
-                    viewModels: self.viewModel.viewModels,
+                    children: children,
                     onDismiss: self.onDismiss
                 )
                 // This alignment positions the inner VStack horizontally and vertically
@@ -129,7 +149,7 @@ struct StackComponentView: View {
                     style: style,
                     verticalAlignment: verticalAlignment,
                     distribution: distribution,
-                    viewModels: self.viewModel.viewModels,
+                    children: children,
                     onDismiss: self.onDismiss
                 )
                 // This alignment positions the inner VStack horizontally and vertically
@@ -311,7 +331,7 @@ struct VerticalStack: View {
     let horizontalAlignment: PaywallComponent.HorizontalAlignment
     let distribution: PaywallComponent.FlexDistribution
 
-    let viewModels: [PaywallComponentViewModel]
+    let children: [IdentifiedPaywallComponentViewModel]
     let onDismiss: () -> Void
 
     var body: some View {
@@ -327,17 +347,16 @@ struct VerticalStack: View {
                 alignment: horizontalAlignment.stackAlignment,
                 spacing: style.spacing
             ) {
-                ComponentsView(
-                    componentViewModels: self.viewModels,
-                    onDismiss: self.onDismiss
-                )
+                ForEach(self.children) { child in
+                    ComponentsView(componentViewModels: [child.viewModel], onDismiss: self.onDismiss)
+                }
             }
         case .flex:
             FlexVStack(
                 alignment: horizontalAlignment.stackAlignment,
                 spacing: style.spacing,
                 justifyContent: distribution.justifyContent,
-                componentViewModels: self.viewModels,
+                componentViewModels: self.children,
                 onDismiss: self.onDismiss
             )
         }
@@ -352,7 +371,7 @@ struct HorizontalStack: View {
     let verticalAlignment: PaywallComponent.VerticalAlignment
     let distribution: PaywallComponent.FlexDistribution
 
-    let viewModels: [PaywallComponentViewModel]
+    let children: [IdentifiedPaywallComponentViewModel]
     let onDismiss: () -> Void
 
     var body: some View {
@@ -363,17 +382,16 @@ struct HorizontalStack: View {
                 alignment: verticalAlignment.stackAlignment,
                 spacing: style.spacing
             ) {
-                ComponentsView(
-                    componentViewModels: self.viewModels,
-                    onDismiss: self.onDismiss
-                )
+                ForEach(self.children) { child in
+                    ComponentsView(componentViewModels: [child.viewModel], onDismiss: self.onDismiss)
+                }
             }
         case .flex:
             FlexHStack(
                 alignment: verticalAlignment.stackAlignment,
                 spacing: style.spacing,
                 justifyContent: distribution.justifyContent,
-                componentViewModels: self.viewModels,
+                componentViewModels: self.children,
                 onDismiss: self.onDismiss
             )
         }
