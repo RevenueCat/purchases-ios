@@ -116,7 +116,7 @@ private enum PaywallPresenterDemo {
                 }
             )
         )
-        controller.modalPresentationStyle = .pageSheet
+        controller.modalPresentationStyle = params.presentationMode.testerModalPresentationStyle
         session.bind(to: controller)
         presenter.present(controller, animated: true)
     }
@@ -141,8 +141,7 @@ private enum PaywallPresenterDemo {
                 }
             )
         )
-        controller.modalPresentationStyle = .overFullScreen
-        controller.view.backgroundColor = .clear
+        controller.modalPresentationStyle = params.presentationMode.testerModalPresentationStyle
         session.bind(to: controller)
         presenter.present(controller, animated: false)
     }
@@ -160,6 +159,18 @@ private enum PaywallPresenterDemo {
             viewController = presentedViewController
         }
         return viewController
+    }
+
+}
+
+private extension CheckpointPresentationMode {
+
+    var testerModalPresentationStyle: UIModalPresentationStyle {
+        switch self {
+        case .fullScreen: return .fullScreen
+        case .default, .sheet: return .pageSheet
+        default: return .pageSheet
+        }
     }
 
 }

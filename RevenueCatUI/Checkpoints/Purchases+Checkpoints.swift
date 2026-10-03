@@ -41,18 +41,21 @@ public extension Purchases {
     ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard. It must start with a letter,
     ///     contain only ASCII letters, numbers, underscores, and hyphens, and be no more than 255 characters.
     ///   - customVariables: Values usable in checkpoint targeting rules, feature events, and the presented flow.
+    ///   - presentationMode: How the SDK presents a matching workflow or its own paywall. Defaults to a sheet.
     ///   - paywallPresenter: A custom presenter used if this checkpoint selects an offering. This overrides the global
     ///     ``paywallPresenter`` for this call.
     ///   - onPassed: Called on the main actor when the checkpoint completes.
     func checkpoint(
         _ identifier: String,
         customVariables: [String: CustomVariableValue] = [:],
+        presentationMode: CheckpointPresentationMode = .default,
         paywallPresenter: PaywallPresentationHandler? = nil,
         _ onPassed: @escaping (FlowResult?) -> Void
     ) {
         self.performCheckpoint(
             identifier,
             customVariables: customVariables,
+            presentationMode: presentationMode,
             paywallPresenter: paywallPresenter,
             onPassed: onPassed
         )
@@ -66,13 +69,18 @@ private extension Purchases {
     func performCheckpoint(
         _ identifier: String,
         customVariables: [String: CustomVariableValue],
+        presentationMode: CheckpointPresentationMode,
         paywallPresenter: PaywallPresentationHandler?,
         onPassed: @escaping (FlowResult?) -> Void
     ) {
         Task { @MainActor in
             switch await self.checkpointsManager.checkpointForCallback(
                 identifier: identifier,
-                params: .init(customVariables: customVariables, paywallPresenter: paywallPresenter)
+                params: .init(
+                    customVariables: customVariables,
+                    presentationMode: presentationMode,
+                    paywallPresenter: paywallPresenter
+                )
             ) {
             case let .completed(result): onPassed(result)
             case .suppressed: break
