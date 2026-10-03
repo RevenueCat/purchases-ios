@@ -268,6 +268,9 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               sdkSettingsConfigProvider: SDKSettingsConfigProvider(
                                 manager: NoOpRemoteConfigManager()
                               ),
+                              subscriberDimensionsConfigProvider: SubscriberDimensionsConfigProvider(
+                                manager: NoOpRemoteConfigManager()
+                              ),
                               offlineEntitlementsManager: mockOfflineEntitlementsManager,
                               purchasesOrchestrator: purchasesOrchestrator,
                               purchasedProductsFetcher: mockPurchasedProductsFetcher,
