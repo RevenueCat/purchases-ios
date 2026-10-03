@@ -373,11 +373,15 @@ private struct PackageButton: View {
                 Text(firstRow)
                     .frame(maxWidth: .infinity)
                     .font(self.font(for: .title).bold())
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
             }
 
             Text(secondRow)
                 .frame(maxWidth: .infinity)
                 .font(self.font(for: .title3).weight(.regular))
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
         }
     }
 
