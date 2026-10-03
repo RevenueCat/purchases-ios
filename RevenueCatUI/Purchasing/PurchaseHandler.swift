@@ -46,6 +46,12 @@ final class PurchaseHandler: ObservableObject {
     /// Side-by-side paywalls should use separate `PurchaseHandler` instances so each keeps its own session.
     private var activePaywallSessionID: PaywallEvent.SessionID?
 
+    #if os(iOS) && canImport(WebKit)
+    /// The checkout this paywall's customer was last given and has not settled. Released with the paywall
+    /// session, so a customer who comes back later starts afresh.
+    var keptHostedCheckout: HostedCheckout.KeptCheckout?
+    #endif
+
     /// Where responsibility for completing purchases lies
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         purchases.purchasesAreCompletedBy
@@ -291,6 +297,9 @@ final class PurchaseHandler: ObservableObject {
         self.purchaseResult = nil
         self.restoredCustomerInfo = nil
         self.activePaywallSessionID = nil
+        #if os(iOS) && canImport(WebKit)
+        self.keptHostedCheckout = nil
+        #endif
     }
 
 }
@@ -355,7 +364,11 @@ extension PurchaseHandler {
 
     /// Asks for a checkout the customer completes without leaving the app, with the paywall marked as busy
     /// throughout so the button they tapped cannot start a second one.
-    func startHostedCheckout(package: Package) async -> HostedCheckoutStartResult {
+    ///
+    /// - Parameter previousSession: The checkout this paywall gave the customer before, for the backend to
+    /// hand back if they can still carry on with it.
+    func startHostedCheckout(package: Package,
+                             previousSession: HostedCheckoutSession?) async -> HostedCheckoutStartResult {
         // Carried so that the purchase the customer makes on the page is attributed to the paywall that sent
         // them there.
         let paywallEvent = self.createPurchaseInitiatedEvent(package: package)
@@ -364,7 +377,7 @@ extension PurchaseHandler {
         return await self.withExternalPurchasePreparation {
             await self.purchases.startHostedCheckout(package: package,
                                                      paywallEvent: paywallEvent,
-                                                     previousSession: nil)
+                                                     previousSession: previousSession)
         }
     }
 
