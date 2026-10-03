@@ -2029,13 +2029,15 @@ public extension Purchases {
     /// Does nothing while `useExternalPurchaseCustomLinks` is disabled, see
     /// ``Configuration/Builder/with(useExternalPurchaseCustomLinks:enableExternalPurchasesInSimulator:)``: the
     /// caller is told to proceed with no token id to hand over, so the link keeps opening as it did before.
-    @_spi(Internal) func prepareExternalPurchaseLink() async -> ExternalPurchaseLinkResult {
-        return .init(preparationResult: await self.externalPurchaseManager.prepareExternalPurchase(flow: .linkOut))
+    @_spi(Internal) func prepareExternalPurchaseLink(destinationURL: URL) async -> ExternalPurchaseLinkResult {
+        return .init(preparationResult: await self.externalPurchaseManager.prepareExternalPurchase(
+            flow: .linkOut(destinationURL: destinationURL)
+        ))
     }
 
     /// ``Configuration/Builder/with(useExternalPurchaseCustomLinks:enableExternalPurchasesInSimulator:)``, so that
-    /// `RevenueCatUI` only tells the customer something is under way when ``prepareExternalPurchaseLink()`` has
-    /// work to do.
+    /// `RevenueCatUI` only tells the customer something is under way when
+    /// ``prepareExternalPurchaseLink(destinationURL:)`` has work to do.
     @_spi(Internal) var useExternalPurchaseCustomLinks: Bool {
         return self.systemInfo.useExternalPurchaseCustomLinks
     }

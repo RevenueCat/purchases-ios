@@ -389,9 +389,9 @@ extension PurchaseHandler {
 
     /// Runs what Apple requires before a web purchase link takes the customer out of the app, with the paywall
     /// marked as busy throughout so the button they tapped cannot start a second one.
-    func prepareExternalPurchaseLink() async -> ExternalPurchaseLinkResult {
+    func prepareExternalPurchaseLink(destinationURL: URL) async -> ExternalPurchaseLinkResult {
         return await self.withExternalPurchasePreparation {
-            await self.purchases.prepareExternalPurchaseLink()
+            await self.purchases.prepareExternalPurchaseLink(destinationURL: destinationURL)
         }
     }
 
@@ -1290,7 +1290,7 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 
     var useExternalPurchaseCustomLinks: Bool { false }
 
-    func prepareExternalPurchaseLink() async -> ExternalPurchaseLinkResult {
+    func prepareExternalPurchaseLink(destinationURL: URL) async -> ExternalPurchaseLinkResult {
         return .proceed(externalPurchaseTokenID: nil)
     }
 

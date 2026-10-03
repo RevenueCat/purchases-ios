@@ -24,6 +24,7 @@ class ExternalPurchaseManagerTests: TestCase {
     private static let tokenID = "ept13dcbc01adaa44db9b1691a6be2f9929"
     private static let allowedStorefront = "USA"
     private static let otherStorefront = "ESP"
+    private static let destinationURL = URL(string: "https://pay.rev.cat/checkout")!
 
     private var customLink: MockExternalPurchaseCustomLink!
     private var externalPurchaseTokenAPI: MockExternalPurchaseTokenAPI!
@@ -66,10 +67,10 @@ class ExternalPurchaseManagerTests: TestCase {
     }
 
     func testLinkOutPurchasesShowTheBrowserNoticeAndRequestALinkOutToken() async {
-        let result = await self.manager.prepareExternalPurchase(flow: .linkOut)
+        let result = await self.manager.prepareExternalPurchase(flow: .linkOut(destinationURL: Self.destinationURL))
 
         expect(result) == .registered(tokenID: Self.tokenID)
-        expect(self.customLink.invokedNoticeTypes) == [.browser]
+        expect(self.customLink.invokedNoticeTypes) == [.browser(destinationURL: Self.destinationURL)]
         expect(self.customLink.invokedTokenTypes) == [.linkOut]
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenParameters?.purchaseType) == .linkOut
     }
@@ -249,7 +250,7 @@ class ExternalPurchaseManagerTests: TestCase {
         let availability = await self.manager.externalPurchaseAvailability()
         expect(availability) == .notEligible
 
-        let result = await self.manager.prepareExternalPurchase(flow: .linkOut)
+        let result = await self.manager.prepareExternalPurchase(flow: .linkOut(destinationURL: Self.destinationURL))
 
         expect(result) == .notApplicable
         expect(self.customLink.invokedAvailabilityCount) == 0
@@ -265,7 +266,7 @@ class ExternalPurchaseManagerTests: TestCase {
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
         self.manager = self.makeManager()
 
-        _ = await self.manager.prepareExternalPurchase(flow: .linkOut)
+        _ = await self.manager.prepareExternalPurchase(flow: .linkOut(destinationURL: Self.destinationURL))
 
         self.logger.verifyMessageWasNotLogged(
             Strings.externalPurchase.custom_link_does_not_apply(Self.allowedStorefront),
@@ -299,7 +300,7 @@ class ExternalPurchaseManagerTests: TestCase {
         self.systemInfo.stubbedIsRunningInSimulator = true
         self.manager = self.makeManager()
 
-        let result = await self.manager.prepareExternalPurchase(flow: .linkOut)
+        let result = await self.manager.prepareExternalPurchase(flow: .linkOut(destinationURL: Self.destinationURL))
 
         expect(result) == .notApplicable
         expect(self.settingsProvider.invokedSettingsCount) == 0
@@ -346,7 +347,7 @@ class ExternalPurchaseManagerTests: TestCase {
         self.systemInfo.stubbedIsRunningInSimulator = true
         self.manager = self.makeManager()
 
-        let result = await self.manager.prepareExternalPurchase(flow: .linkOut)
+        let result = await self.manager.prepareExternalPurchase(flow: .linkOut(destinationURL: Self.destinationURL))
 
         expect(result) == .notApplicable
         self.logger.verifyMessageWasNotLogged(Strings.externalPurchase.disabled_in_simulator, allowNoMessages: true)
@@ -358,7 +359,7 @@ class ExternalPurchaseManagerTests: TestCase {
         self.systemInfo.stubbedIsRunningInSimulator = true
         self.manager = self.makeManager()
 
-        let result = await self.manager.prepareExternalPurchase(flow: .linkOut)
+        let result = await self.manager.prepareExternalPurchase(flow: .linkOut(destinationURL: Self.destinationURL))
 
         expect(result) == .notApplicable
         self.logger.verifyMessageWasNotLogged(Strings.externalPurchase.custom_link_skipped_in_simulator,
@@ -417,25 +418,28 @@ class ExternalPurchaseManagerTests: TestCase {
         let secondResult: Atomic<ExternalPurchasePreparationResult?> = nil
 
         self.customLink.whileShowingNotice = {
-            secondResult.value = await manager.prepareExternalPurchase(flow: .linkOut)
+            secondResult.value = await manager.prepareExternalPurchase(
+                flow: .linkOut(destinationURL: Self.destinationURL)
+            )
         }
 
-        let firstResult = await manager.prepareExternalPurchase(flow: .linkOut)
+        let firstResult = await manager.prepareExternalPurchase(flow: .linkOut(destinationURL: Self.destinationURL))
 
         expect(secondResult.value) == .stopped(.alreadyPreparing)
         expect(firstResult) == .registered(tokenID: Self.tokenID)
-        expect(self.customLink.invokedNoticeTypes) == [.browser]
+        expect(self.customLink.invokedNoticeTypes) == [.browser(destinationURL: Self.destinationURL)]
         expect(self.customLink.invokedTokenTypes) == [.linkOut]
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenCount) == 1
     }
 
     func testPreparesAgainOnceTheFirstOneIsDone() async {
-        let first = await self.manager.prepareExternalPurchase(flow: .linkOut)
-        let second = await self.manager.prepareExternalPurchase(flow: .linkOut)
+        let first = await self.manager.prepareExternalPurchase(flow: .linkOut(destinationURL: Self.destinationURL))
+        let second = await self.manager.prepareExternalPurchase(flow: .linkOut(destinationURL: Self.destinationURL))
 
         expect(first) == .registered(tokenID: Self.tokenID)
         expect(second) == .registered(tokenID: Self.tokenID)
-        expect(self.customLink.invokedNoticeTypes) == [.browser, .browser]
+        expect(self.customLink.invokedNoticeTypes) == [.browser(destinationURL: Self.destinationURL),
+                                                     .browser(destinationURL: Self.destinationURL)]
     }
 
     // MARK: - Helpers
