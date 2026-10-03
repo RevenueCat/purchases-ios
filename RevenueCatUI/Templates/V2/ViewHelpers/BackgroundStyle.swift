@@ -174,7 +174,7 @@ extension DisplayableColorScheme {
 #if DEBUG
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct BackgrounDStyle_Previews: PreviewProvider {
+struct BackgroundStyle_Previews: PreviewProvider {
 
     static let lightUrl = URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!
     static let darkUrl = URL(string: "https://assets.pawwalls.com/954459_1710750526.jpeg")!

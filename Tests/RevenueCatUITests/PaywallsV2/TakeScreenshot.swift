@@ -24,6 +24,8 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class TakeScreenshotTests: BaseSnapshotTest {
 
+    private static let exportDirectoryEnvironmentKey = "PAYWALL_SCREENSHOTS_EXPORT_DIR"
+
     func testPaywallValidationScreenshots() throws {
         let bundle = Bundle(for: Self.self)
 
@@ -68,6 +70,22 @@ class TakeScreenshotTests: BaseSnapshotTest {
 
         // Save PNG data
         if let pngData = image.pngData() {
+            if let exportDirectory = ProcessInfo.processInfo.environment[Self.exportDirectoryEnvironmentKey] {
+                // Match the xcresult exporter, which removes this attachment-only delimiter before upload.
+                let exportedFilename = Self.exportedFilename(from: filename)
+                let destination = URL(fileURLWithPath: exportDirectory).appendingPathComponent(exportedFilename)
+                do {
+                    try FileManager.default.createDirectory(
+                        at: destination.deletingLastPathComponent(),
+                        withIntermediateDirectories: true
+                    )
+                    try pngData.write(to: destination, options: .atomic)
+                } catch {
+                    XCTFail("Failed to write snapshot '\(filename)' to \(destination.path): \(error)")
+                }
+                return
+            }
+
             // 📎 Attach to test
             let attachment = XCTAttachment(data: pngData, uniformTypeIdentifier: "public.png")
             attachment.name = filename
@@ -77,6 +95,19 @@ class TakeScreenshotTests: BaseSnapshotTest {
         } else {
             print("❌ Failed to generate PNG data from image")
         }
+    }
+
+    private static func exportedFilename(from attachmentName: String) -> String {
+        let attachmentURL = URL(fileURLWithPath: attachmentName)
+        let fileExtension = attachmentURL.pathExtension
+        let attachmentBaseName = attachmentURL.deletingPathExtension().lastPathComponent
+        let exportedBaseName = attachmentBaseName.components(separatedBy: "__END").first ?? attachmentBaseName
+
+        if fileExtension.isEmpty {
+            return exportedBaseName
+        }
+
+        return "\(exportedBaseName).\(fileExtension)"
     }
 
 }
