@@ -23,7 +23,7 @@ import Foundation
 
 }
 
-/// Every branch takes its fallback. Goes away with `branchingEnabled` once branching ships.
+/// Every branch takes its fallback. Used when remote config is off, so no audience can be read.
 @_spi(Internal) public final class DisabledBranchResolver: BranchResolver {
 
     /// Creates the resolver used while branching is unreleased.

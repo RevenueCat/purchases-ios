@@ -39,8 +39,7 @@ final class PurchaseHandler: ObservableObject {
     private var cancellables: Set<AnyCancellable> = Set()
 
     private let purchases: PaywallPurchasesType
-    /// `nil` while branch routing is unreleased. Stops being optional once branching ships.
-    let resolveBranch: (@Sendable (WorkflowBranch) async -> WorkflowStepID)?
+    let resolveBranch: @Sendable (WorkflowBranch) async -> WorkflowStepID
     private let paywallEventTracker: PaywallEventTracker
     private let keyWindowFocusResigner: KeyWindowFocusResigning
 
@@ -177,13 +176,9 @@ final class PurchaseHandler: ObservableObject {
                      eventTracker: PaywallEventTracker = .shared,
                      keyWindowFocusResigner: KeyWindowFocusResigning = KeyWindowFocusResigner()
     ) {
-        var resolveBranch: (@Sendable (WorkflowBranch) async -> WorkflowStepID)?
-        if purchases.branchingEnabled {
-            resolveBranch = { [purchases] branch in await purchases.resolveBranch(branch) }
-        }
         self.init(isConfigured: true,
                   purchases: purchases,
-                  resolveBranch: resolveBranch,
+                  resolveBranch: { [purchases] branch in await purchases.resolveBranch(branch) },
                   performPurchase: performPurchase,
                   performRestore: performRestore,
                   purchaseResultPublisher: purchaseResultPublisher,
@@ -195,7 +190,7 @@ final class PurchaseHandler: ObservableObject {
     init(
         isConfigured: Bool = true,
         purchases: PaywallPurchasesType,
-        resolveBranch: (@Sendable (WorkflowBranch) async -> WorkflowStepID)? = nil,
+        resolveBranch: @escaping @Sendable (WorkflowBranch) async -> WorkflowStepID = { $0.fallbackStepId },
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
