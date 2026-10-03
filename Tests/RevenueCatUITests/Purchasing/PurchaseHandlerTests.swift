@@ -47,8 +47,7 @@ class PurchaseHandlerTests: TestCase {
 
         _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
 
-        expect(handler.purchaseResult?.customerInfo) === TestData.customerInfo
-        expect(handler.purchaseResult?.userCancelled) == false
+        expect(handler.purchaseResult) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
         expect(handler.restoredCustomerInfo).to(beNil())
         expect(handler.hasPurchasedInSession) == true
         expect(handler.packageBeingPurchased).to(beNil())
@@ -60,8 +59,7 @@ class PurchaseHandlerTests: TestCase {
         let handler: PurchaseHandler = .cancelling()
 
         _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
-        expect(handler.purchaseResult?.userCancelled) == true
-        expect(handler.purchaseResult?.customerInfo) === TestData.customerInfo
+        expect(handler.purchaseResult) == .cancelled
         expect(handler.hasPurchasedInSession) == false
         expect(handler.packageBeingPurchased).to(beNil())
         expect(handler.restoreInProgress) == false
@@ -237,6 +235,30 @@ class PurchaseHandlerTests: TestCase {
             return false
         }))
         expect(cancelEvent.data.productId) == TestData.packageWithIntroOffer.storeProduct.productIdentifier
+    }
+
+    func testCancellingAPurchaseCompletedByMyAppDoesNotNeedCustomerInfo() async throws {
+        let handler = Self.handlerFailingToFetchCustomerInfo(
+            purchasesAreCompletedBy: .myApp,
+            performPurchase: { _ in (userCancelled: true, error: nil) }
+        )
+
+        _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
+
+        expect(handler.purchaseResult) == .cancelled
+        expect(handler.sessionPurchaseResult) == .cancelled
+        expect(handler.purchaseError).to(beNil())
+    }
+
+    func testHostedCheckoutCancellationDoesNotNeedCustomerInfo() {
+        let handler = Self.handlerFailingToFetchCustomerInfo(purchasesAreCompletedBy: .revenueCat,
+                                                             performPurchase: nil)
+
+        handler.handleHostedCheckoutCancellation(package: TestData.packageWithIntroOffer)
+
+        expect(handler.purchaseResult) == .cancelled
+        expect(handler.sessionPurchaseResult) == .cancelled
+        expect(handler.purchaseError).to(beNil())
     }
 
     func testPurchaseErrorEventContainsProductIdentifierWhenCompletedByRevenueCat() async throws {
@@ -693,7 +715,7 @@ class PurchaseHandlerTests: TestCase {
 
         let transaction = StoreTransaction(MockStoreTransaction())
         for _ in 0...10 {
-            purchaseResult.send((transaction, TestData.customerInfo, true))
+            purchaseResult.send((transaction, TestData.customerInfo, false))
             await Task.yield()
         }
 
@@ -701,7 +723,7 @@ class PurchaseHandlerTests: TestCase {
 
         let transaction2 = StoreTransaction(MockStoreTransaction())
         for _ in 0...10 {
-            purchaseResult.send((transaction2, TestData.customerInfo, true))
+            purchaseResult.send((transaction2, TestData.customerInfo, false))
             await Task.yield()
         }
 
@@ -917,6 +939,26 @@ private extension PurchaseHandlerTests {
         """
         )
     }()
+
+    static func handlerFailingToFetchCustomerInfo(
+        purchasesAreCompletedBy: PurchasesAreCompletedBy,
+        performPurchase: PerformPurchase?
+    ) -> PurchaseHandler {
+        let purchases = MockPurchases(purchasesAreCompletedBy: purchasesAreCompletedBy) { _, _, _ in
+            return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: true)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { _ in
+        } customerInfo: {
+            throw ErrorCode.networkError
+        }
+
+        return PurchaseHandler(
+            purchases: purchases,
+            performPurchase: performPurchase,
+            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
+        )
+    }
 
 }
 
