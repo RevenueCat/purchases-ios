@@ -32,7 +32,7 @@ final class HostedCheckoutTests: TestCase {
     /// The checkout is asked for through the handler, which is the paywall's only way to the SDK.
     func testAsksTheHandlerForTheCheckout() async {
         let purchases = Self.makePurchases()
-        purchases.hostedCheckoutBlock = { _, _ in .started(Self.session) }
+        purchases.hostedCheckoutBlock = { _, _, _ in .started(Self.session) }
 
         let action = await HostedCheckout.start(for: TestData.annualPackage,
                                                 purchaseHandler: Self.makeHandler(purchases: purchases),
@@ -56,7 +56,7 @@ final class HostedCheckoutTests: TestCase {
         } customerInfo: {
             return TestData.customerInfo
         }
-        purchases.hostedCheckoutBlock = { _, paywallEvent in
+        purchases.hostedCheckoutBlock = { _, paywallEvent, _ in
             eventsSentWithTheCheckout.modify { $0.append(paywallEvent) }
             return .started(Self.session)
         }
@@ -77,7 +77,7 @@ final class HostedCheckoutTests: TestCase {
     func testStartsNoCheckoutWhenTheAppStopsThePurchase() async {
         let checkoutsStarted = Recorder<String>()
         let purchases = Self.makePurchases()
-        purchases.hostedCheckoutBlock = { package, _ in
+        purchases.hostedCheckoutBlock = { package, _, _ in
             await checkoutsStarted.record(package.identifier)
             return .started(Self.session)
         }
@@ -95,7 +95,7 @@ final class HostedCheckoutTests: TestCase {
     func testStartsTheCheckoutOnceTheAppLetsThePurchaseThrough() async {
         let packagesIntercepted = Recorder<String>()
         let purchases = Self.makePurchases()
-        purchases.hostedCheckoutBlock = { _, _ in .started(Self.session) }
+        purchases.hostedCheckoutBlock = { _, _, _ in .started(Self.session) }
 
         let action = await HostedCheckout.start(
             for: TestData.annualPackage,
@@ -150,7 +150,7 @@ final class HostedCheckoutTests: TestCase {
     func testReportsACheckoutThatCouldNotBeCreatedAsAPurchaseError() async {
         let trackedEvents: Atomic<[PaywallEvent]> = .init([])
         let purchases = Self.makePurchases(trackingInto: trackedEvents)
-        purchases.hostedCheckoutBlock = { _, _ in .failed }
+        purchases.hostedCheckoutBlock = { _, _, _ in .failed }
         let handler = Self.makeHandler(purchases: purchases)
         handler.trackPaywallImpression(Self.impressionData)
 

@@ -41,7 +41,7 @@ enum HostedCheckout {
 
         init(_ result: HostedCheckoutStartResult) {
             switch result {
-            case let .started(session):
+            case let .started(session), let .resumed(session):
                 self = .present(session)
             case .alreadyPurchased:
                 self = .tellCustomerTheyAlreadyOwnIt
@@ -49,7 +49,7 @@ enum HostedCheckout {
                 self = .tellCustomerThePurchaseIsUnavailable
             case .failed:
                 self = .failed(.notStarted)
-            case .declinedByCustomer, .paymentsNotAuthorized, .alreadyStarting:
+            case .declinedByCustomer, .paymentsNotAuthorized, .alreadyStarting, .completed:
                 self = .nothing
             }
         }

@@ -58,6 +58,8 @@ class WebBillingAPI {
     /// - Parameter paywall: The paywall the checkout was started from, where it was started from one.
     /// - Parameter externalPurchaseTokenID: Identifies the Apple external purchase token registered for
     /// this purchase. Pass `nil` where no token applies.
+    /// - Parameter previousOperationSessionID: The session this customer was given before, for the backend to
+    /// resume instead of creating a new one where it can.
     // swiftlint:disable:next function_parameter_count
     func postHostedCheckout(
         appUserID: String,
@@ -65,6 +67,7 @@ class WebBillingAPI {
         presentedOfferingContext: PresentedOfferingContext,
         paywall: PostHostedCheckoutOperation.Paywall?,
         externalPurchaseTokenID: String?,
+        previousOperationSessionID: String?,
         completion: @escaping HostedCheckoutResponseHandler
     ) {
         // Runs on the checkout lane so hosted checkout is not delayed by unrelated backend work.
@@ -81,7 +84,8 @@ class WebBillingAPI {
                                 .init(revision: $0.revision, ruleID: $0.ruleId)
                             },
                             paywall: paywall,
-                            externalPurchaseTokenID: externalPurchaseTokenID),
+                            externalPurchaseTokenID: externalPurchaseTokenID,
+                            previousOperationSessionID: previousOperationSessionID),
             hostedCheckoutCallbackCache: self.hostedCheckoutCallbackCache
         )
 

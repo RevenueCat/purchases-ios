@@ -1950,11 +1950,17 @@ public extension Purchases {
     ///
     /// Only to be called when the customer has deliberately asked to buy: it shows Apple's disclosure notice
     /// and mints an external purchase token, which Apple expects a report for.
+    ///
+    /// - Parameter previousSession: A session this customer was given before that has not been settled, which
+    /// the backend hands back where they can still carry on with it, so that they cannot pay for it twice.
     @_spi(Internal) func startHostedCheckout(
         package: Package,
-        paywallEvent: PaywallEvent?
+        paywallEvent: PaywallEvent?,
+        previousSession: HostedCheckoutSession?
     ) async -> HostedCheckoutStartResult {
-        return await self.hostedCheckoutManager.startCheckout(package: package, paywall: paywallEvent?.data)
+        return await self.hostedCheckoutManager.startCheckout(package: package,
+                                                              paywall: paywallEvent?.data,
+                                                              previousSession: previousSession)
     }
 
     /// Used by `RevenueCatUI` to determine the final outcome of a checkout the customer completed in the app,
