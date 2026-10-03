@@ -34,6 +34,28 @@ struct ViewModelFactory {
     /// Set when any component in the paywall contains unsupported conditions.
     private(set) var discardRules: Bool = false
 
+    /// The enclosing components that can hide what is being walked right now.
+    private var ancestorGates: [VisibilityGate] = []
+
+    private func descending<Partial: PaywallPartialComponent & PresentedPartial>(
+        into visible: Bool?,
+        _ overrides: PaywallComponent.ComponentOverrides<Partial>?,
+        _ visibleKeyPath: KeyPath<Partial, Bool?>
+    ) -> ViewModelFactory {
+        guard let gate = VisibilityGate(
+            visible: visible,
+            overrides: overrides,
+            visibleKeyPath: visibleKeyPath,
+            discardRules: self.discardRules
+        ) else {
+            return self
+        }
+
+        var copy = self
+        copy.ancestorGates.append(gate)
+        return copy
+    }
+
     mutating func toRootViewModel(
         componentsConfig: PaywallComponentsData.PaywallComponentsConfig,
         offering: Offering,
@@ -158,7 +180,11 @@ struct ViewModelFactory {
                 )
             )
         case .button(let component):
-            let stackViewModel = try toStackViewModel(
+            let childFactory = self.descending(
+                into: component.visible, component.overrides, \PaywallComponent.PartialButtonComponent.visible
+            )
+
+            let stackViewModel = try childFactory.toStackViewModel(
                 component: component.stack,
                 packageValidator: packageValidator,
                 purchaseButtonCollector: purchaseButtonCollector,
@@ -171,7 +197,7 @@ struct ViewModelFactory {
             var sheetStackViewModel: StackComponentViewModel?
 
             if case let .navigateTo(.sheet(sheet)) = component.action, let sheet {
-                sheetStackViewModel = try toStackViewModel(
+                sheetStackViewModel = try childFactory.toStackViewModel(
                     component: sheet.stack,
                     packageValidator: packageValidator,
                     purchaseButtonCollector: purchaseButtonCollector,
@@ -204,7 +230,8 @@ struct ViewModelFactory {
                         visibilityResolver: PackageVisibilityResolver(
                             component: component,
                             uiConfigProvider: uiConfigProvider,
-                            discardRules: discardRules
+                            discardRules: discardRules,
+                            ancestors: self.ancestorGates
                         ),
                         promotionalOfferProductCode: component.applePromoOfferProductCode
                     )
@@ -215,7 +242,11 @@ struct ViewModelFactory {
             // we can see if the package has a purchase button inside of it
             let packagePurchaseButtonCollector = PurchaseButtonCollector()
 
-            let stackViewModel = try toStackViewModel(
+            let childFactory = self.descending(
+                into: component.visible, component.overrides, \PaywallComponent.PartialPackageComponent.visible
+            )
+
+            let stackViewModel = try childFactory.toStackViewModel(
                 component: component.stack,
                 packageValidator: packageValidator,
                 purchaseButtonCollector: packagePurchaseButtonCollector,
@@ -373,10 +404,15 @@ struct ViewModelFactory {
                 colorScheme: colorScheme
             )
 
+            // The tabs component's own visibility gates the packages in every tab.
+            let tabContentFactory = self.descending(
+                into: component.visible, component.overrides, \PaywallComponent.PartialTabsComponent.visible
+            )
+
             let tabViewModels: [TabViewModel] = try component.tabs.map { tab in
                 let tabPackageValidator = PackageValidator()
 
-                let stackViewModel = try toStackViewModel(
+                let stackViewModel = try tabContentFactory.toStackViewModel(
                     component: tab.stack,
                     packageValidator: tabPackageValidator,
                     purchaseButtonCollector: purchaseButtonCollector,
@@ -442,8 +478,12 @@ struct ViewModelFactory {
                 )
             )
         case .carousel(let component):
+            let childFactory = self.descending(
+                into: component.visible, component.overrides, \PaywallComponent.PartialCarouselComponent.visible
+            )
+
             let pageStackViewModels = try component.pages.map { stackComponent in
-                try toStackViewModel(
+                try childFactory.toStackViewModel(
                     component: stackComponent,
                     packageValidator: packageValidator,
                     purchaseButtonCollector: purchaseButtonCollector,
@@ -540,13 +580,18 @@ struct ViewModelFactory {
         offering: Offering,
         colorScheme: ColorScheme
     ) throws -> StackComponentViewModel {
+        // Badges keep the parent gates, matching where they render.
+        let childFactory = self.descending(
+            into: component.visible, component.overrides, \PaywallComponent.PartialStackComponent.visible
+        )
+
         let viewModels = try component.components.filter {
             // fallback_header is injected by the dashboard for old SDK compatibility.
             // New SDKs render the header from PaywallComponentsConfig.header instead.
             if case .fallbackHeader = $0 { return false }
             return true
         }.map { component in
-            try self.toViewModel(
+            try childFactory.toViewModel(
                 component: component,
                 packageValidator: packageValidator,
                 purchaseButtonCollector: purchaseButtonCollector,
