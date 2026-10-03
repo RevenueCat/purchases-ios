@@ -136,6 +136,10 @@ public class PaywallViewController: UIViewController {
 
     var workflowContextForTesting: WorkflowContext? { self.configuration.injectedWorkflowContext }
 
+    var workflowBackNavigationBridgeForTesting: WorkflowBackNavigationBridge {
+        return self.configuration.workflowBackNavigationBridge
+    }
+
     func simulateWorkflowExitOfferUpdate(_ offering: Offering?) {
         self.updateWorkflowExitOffer(offering)
     }
@@ -146,6 +150,18 @@ public class PaywallViewController: UIViewController {
 
     func simulateWorkflowPresentationError(_ error: NSError) {
         self.configuration.workflowPresentationErrorHandler?(error)
+    }
+
+    func continueAfterCheckpointError() {
+        self.dismiss(animated: true)
+    }
+
+    func navigateBackAfterCheckpointError(flowCanContinue: Bool) {
+        if flowCanContinue, self.configuration.workflowBackNavigationBridge.navigateBack() {
+            return
+        }
+        self.workflowDismissalReason = .navigatedBack
+        self.dismiss(animated: true)
     }
 
     /// Prevents this controller from resolving or presenting exit offers.
@@ -195,8 +211,29 @@ public class PaywallViewController: UIViewController {
     }
 
     #if !os(tvOS)
+    internal convenience init(
+        checkpointOffering offering: Offering,
+        displayCloseButton: Bool,
+        workflowPresentationErrorHandler: ((NSError) -> Void)?
+    ) {
+        self.init(
+            content: .optionalOffering(offering),
+            fonts: DefaultPaywallFontProvider(),
+            displayCloseButton: displayCloseButton,
+            shouldBlockTouchEvents: false,
+            performPurchase: nil,
+            performRestore: nil,
+            dismissRequestedHandler: nil
+        )
+
+        var configuration = self.configuration
+        configuration.displaysPurchaseAndRestoreErrors = false
+        configuration.workflowPresentationErrorHandler = workflowPresentationErrorHandler
+        self.configuration = configuration
+    }
+
     /// Creates a paywall view controller from a pre-built workflow context.
-    convenience init(
+    internal convenience init(
         workflowContext: WorkflowContext,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
@@ -218,6 +255,7 @@ public class PaywallViewController: UIViewController {
         var configuration = self.configuration
         configuration.introEligibility = introEligibility
         configuration.injectedWorkflowContext = workflowContext
+        configuration.displaysPurchaseAndRestoreErrors = false
         configuration.workflowPresentationErrorHandler = workflowPresentationErrorHandler
         self.configuration = configuration
     }
