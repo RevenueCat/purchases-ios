@@ -258,6 +258,22 @@ run API Tests
 
 run_maestro_e2e_tests
 
+### ios build_sdk_update_test_apps
+
+```sh
+[bundle exec] fastlane ios build_sdk_update_test_apps
+```
+
+Build the SDK update test apps
+
+### ios run_sdk_update_test
+
+```sh
+[bundle exec] fastlane ios run_sdk_update_test
+```
+
+Run an SDK update Maestro test case
+
 ### ios replace_api_key_integration_tests
 
 ```sh

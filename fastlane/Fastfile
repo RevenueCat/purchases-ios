@@ -1465,6 +1465,116 @@ platform :ios do
     end
   end
 
+  # Builds the SDKUpdateTester app twice, in parallel: against the latest released SDK and against the local SDK.
+  # Each app is copied to <output_dir>/<release|local>/SDKUpdateTester.app, next to a version.txt file with the
+  # SDK version it was built against.
+  # Parameters:
+  #   - release_version: released SDK version to build against. Defaults to the latest release before the current version.
+  #   - output_dir: defaults to build/sdk_update_tests, relative to the repository root.
+  desc "Build the SDK update test apps"
+  lane :build_sdk_update_test_apps do |options|
+    base_path = File.expand_path("..", Dir.pwd)
+    output_dir = File.expand_path(options[:output_dir] || "build/sdk_update_tests", base_path)
+    project_dir = "#{base_path}/Projects/SDKUpdateTester"
+    # Read from the purchases-ios-spm mirror, which is what the release app depends on.
+    release_version = options[:release_version] || get_latest_release_before_version(
+      repo_name: "purchases-ios-spm",
+      version: current_version_number
+    )
+
+    api_key = ENV["REVENUECAT_API_KEY"]
+    UI.user_error!("REVENUECAT_API_KEY environment variable must be set") unless api_key
+    setup_xcconfig(api_key: api_key)
+
+    builds = {
+      "release" => {
+        project: "SDKUpdateTester-Release",
+        sdk_version: release_version,
+        tuist_env: { "TUIST_SDK_UPDATE_TESTER_RELEASE_VERSION" => release_version }
+      },
+      "local" => {
+        project: "SDKUpdateTester-Local",
+        sdk_version: current_version_number,
+        tuist_env: {}
+      }
+    }
+    UI.message("Building SDK update test apps with SDK versions: #{builds.transform_values { |build| build[:sdk_version] }}")
+
+    # Generating sequentially because both projects share the same Derived folder.
+    builds.each_value do |build|
+      sh(build[:tuist_env], "tuist", "generate", "--path", project_dir, "--no-open")
+    end
+
+    FileUtils.rm_rf(output_dir)
+    build_processes = builds.map do |name, build|
+      FileUtils.mkdir_p("#{output_dir}/#{name}")
+      log_path = "#{output_dir}/#{name}/xcodebuild.log"
+      UI.message("Building #{name} app. Logs: #{log_path}")
+      pid = Process.spawn(
+        "xcodebuild", "build",
+        "-project", "#{project_dir}/#{build[:project]}.xcodeproj",
+        "-scheme", "SDKUpdateTester",
+        "-configuration", "Debug",
+        "-destination", "generic/platform=iOS Simulator",
+        "-derivedDataPath", "#{base_path}/build/sdk_update_tests_derived_data/#{name}",
+        "ARCHS=arm64",
+        out: log_path,
+        err: [:child, :out]
+      )
+      [name, pid, log_path]
+    end
+
+    failed_builds = build_processes.reject do |name, pid, log_path|
+      _, status = Process.wait2(pid)
+      UI.message("Finished building #{name} app (#{status.success? ? 'succeeded' : 'failed'})")
+      status.success?
+    end
+    failed_builds.each do |name, _, log_path|
+      UI.error("Build of #{name} app failed. Last lines of #{log_path}:")
+      UI.error(File.readlines(log_path).last(50).join)
+    end
+    UI.user_error!("Failed to build SDK update test apps: #{failed_builds.map(&:first).join(', ')}") unless failed_builds.empty?
+
+    builds.each do |name, build|
+      app_path = "#{base_path}/build/sdk_update_tests_derived_data/#{name}/Build/Products/Debug-iphonesimulator/SDKUpdateTester.app"
+      FileUtils.cp_r(app_path, "#{output_dir}/#{name}/")
+      File.write("#{output_dir}/#{name}/version.txt", build[:sdk_version])
+    end
+    UI.success("✅ SDK update test apps available in #{output_dir}")
+  end
+
+  # Runs an SDK update test case: installs the app built against the released SDK and runs the test case's
+  # before_update.yaml flow, then installs the app built against the local SDK over it (keeping its data, like
+  # an app update) and runs the after_update.yaml flow.
+  # Parameters:
+  #   - test_case: name of the flows directory in Projects/SDKUpdateTester/maestro (e.g. "anonymous_user").
+  #   - apps_dir: output_dir of build_sdk_update_test_apps. Defaults to build/sdk_update_tests.
+  #   - output_dir: defaults to fastlane/test_output/sdk_update_tests/<test_case>.
+  #   - max_attempts: defaults to 3.
+  desc "Run an SDK update Maestro test case"
+  lane :run_sdk_update_test do |options|
+    test_case = options[:test_case] || UI.user_error!("test_case is required")
+    base_path = File.expand_path("..", Dir.pwd)
+    apps_dir = File.expand_path(options[:apps_dir] || "build/sdk_update_tests", base_path)
+    flows_dir = "#{base_path}/Projects/SDKUpdateTester/maestro/#{test_case}"
+    app = lambda do |name|
+      version_path = "#{apps_dir}/#{name}/version.txt"
+      UI.user_error!("#{version_path} not found. Run build_sdk_update_test_apps first.") unless File.exist?(version_path)
+      { app_path: "#{apps_dir}/#{name}/SDKUpdateTester.app", sdk_version: File.read(version_path).strip }
+    end
+
+    run_sdk_update_maestro_test(
+      platform: "ios",
+      app_id: "com.revenuecat.SDKUpdateTester",
+      steps: [
+        app.call("release").merge(flow: "#{flows_dir}/before_update.yaml"),
+        app.call("local").merge(flow: "#{flows_dir}/after_update.yaml")
+      ],
+      output_dir: File.expand_path(options[:output_dir] || "fastlane/test_output/sdk_update_tests/#{test_case}", base_path),
+      max_attempts: Integer(options.fetch(:max_attempts, 3))
+    )
+  end
+
   desc "replace API KEY for installation and integration tests"
   lane :replace_api_key_integration_tests do
     replace_text_in_files(

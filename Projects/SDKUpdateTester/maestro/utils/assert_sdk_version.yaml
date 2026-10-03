@@ -1,0 +1,11 @@
+# Asserts that the running app was built against the expected SDK version.
+# Requires the EXPECTED_SDK_VERSION environment variable.
+
+appId: com.revenuecat.SDKUpdateTester
+name: Assert SDK version
+---
+- extendedWaitUntil:
+    visible:
+      id: sdk_version
+      text: "RevenueCat SDK ${EXPECTED_SDK_VERSION}"
+    timeout: 30000

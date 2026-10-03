@@ -1,0 +1,27 @@
+# Run after updating the SDK. Asserts that the app user ID and the active entitlements match the reference
+# screenshots taken before the update. Does not log in nor purchase anything.
+# Requires the SCREENSHOTS_DIR and EXPECTED_SDK_VERSION environment variables.
+
+appId: com.revenuecat.SDKUpdateTester
+name: Assert state preserved after SDK update
+---
+# Not clearing the state: the data persisted by the previous SDK version must be kept.
+- launchApp
+- runFlow: assert_sdk_version.yaml
+- assertScreenshot:
+    path: ${SCREENSHOTS_DIR}/app_user_id.png
+    cropOn:
+      id: app_user_id
+    thresholdPercentage: 99
+- tapOn:
+    id: purchase_screen_button
+- extendedWaitUntil:
+    notVisible:
+      id: active_entitlements
+      text: "Loading\\.\\.\\."
+    timeout: 30000
+- assertScreenshot:
+    path: ${SCREENSHOTS_DIR}/active_entitlements.png
+    cropOn:
+      id: active_entitlements
+    thresholdPercentage: 99
