@@ -53,10 +53,6 @@ struct PurchaseView: View {
             } catch {
                 activeEntitlements = "Error: \(error.localizedDescription)"
             }
-
-            for await customerInfo in Purchases.shared.customerInfoStream {
-                update(with: customerInfo)
-            }
         }
     }
 
