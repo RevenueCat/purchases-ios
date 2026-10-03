@@ -55,6 +55,7 @@ extension SwiftUI.View {
 
     func snapshot(
         size: CGSize,
+        precision: Float = 1,
         record: Bool? = nil,
         separateOSVersions: Bool = true,
         file: FileString = #filePath,
@@ -74,7 +75,12 @@ extension SwiftUI.View {
             controller
         ).toEventually(
             haveValidSnapshot(
-                as: .image(perceptualPrecision: perceptualPrecision, size: size, traits: traits),
+                as: .image(
+                    precision: precision,
+                    perceptualPrecision: perceptualPrecision,
+                    size: size,
+                    traits: traits
+                ),
                 named: "1", // Force each retry to end in `.1.png`
                 separateOSVersions: separateOSVersions,
                 record: record,
