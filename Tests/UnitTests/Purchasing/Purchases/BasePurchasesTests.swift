@@ -720,6 +720,7 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
     private(set) var invokedRefreshRemoteConfigCount = 0
     private(set) var invokedRefreshRemoteConfigIfStaleCount = 0
     private(set) var invokedCommittedTopicAfterInFlightRefreshCount = 0
+    private(set) var invokedConfigItemParameters: [(topic: RemoteConfigTopic, itemKey: String)] = []
     private(set) var invokedClearCacheCount = 0
     private(set) var invokedCloseCount = 0
     private(set) var invokedRefreshRemoteConfigParametersList: [RefreshParameters] = []
@@ -817,6 +818,15 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
         for read in self._storedCachedBlobReads.getAndSet([]) {
             read.continuation.resume(returning: read.data)
         }
+    }
+
+    func configItem(
+        for topic: RemoteConfigTopic,
+        itemKey: String,
+        policy: RemoteConfigReadPolicy
+    ) async -> RemoteConfiguration.ConfigItem? {
+        self.invokedConfigItemParameters.append((topic, itemKey))
+        return self.stubbedTopics[topic]?[itemKey]
     }
 
     var committedTopicAfterInFlightRefreshHandler:
