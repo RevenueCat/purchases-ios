@@ -1476,9 +1476,9 @@ platform :ios do
     base_path = File.expand_path("..", Dir.pwd)
     output_dir = File.expand_path(options[:output_dir] || "build/sdk_update_tests", base_path)
     project_dir = "#{base_path}/Projects/SDKUpdateTester"
-    # Read from the purchases-ios-spm mirror, which is what the release app depends on.
+    # The release app depends on the purchases-ios-spm mirror, which only has tags, not GitHub releases.
     release_version = options[:release_version] || get_latest_release_before_version(
-      repo_name: "purchases-ios-spm",
+      repo_name: "purchases-ios",
       version: current_version_number
     )
 
