@@ -1288,6 +1288,7 @@ private struct WorkflowHeaderOverlayPageView: View {
                 state: PaywallsV2View.createPaywallState(
                     componentsConfig: paywallComponents.data.componentsConfig.base,
                     componentsLocalizations: paywallComponents.data.componentsLocalizations,
+                    componentsVideoLocalizations: paywallComponents.data.componentsVideoLocalizations,
                     preferredLocales: purchaseHandler.preferredLocales,
                     defaultLocale: paywallComponents.data.defaultLocale,
                     uiConfigProvider: uiConfigProvider,

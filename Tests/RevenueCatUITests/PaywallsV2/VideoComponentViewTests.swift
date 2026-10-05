@@ -98,10 +98,243 @@ final class VideoComponentViewTests: TestCase {
         XCTAssertEqual(maxWidth, 146)
     }
 
+    func testResolvesLocalizedVideoForComponentLid() throws {
+        let component = PaywallComponent.VideoComponent(
+            source: Self.videoUrls("default"),
+            overrideVideoLid: "video_lid"
+        )
+
+        let style = try Self.style(
+            for: component,
+            localizedVideos: ["video_lid": Self.videoUrls("localized")]
+        )
+
+        XCTAssertEqual(style.url, Self.videoURL("localized"))
+    }
+
+    func testUsesSourceWithoutLid() throws {
+        let component = PaywallComponent.VideoComponent(source: Self.videoUrls("default"))
+
+        let style = try Self.style(
+            for: component,
+            localizedVideos: ["video_lid": Self.videoUrls("localized")]
+        )
+
+        XCTAssertEqual(style.url, Self.videoURL("default"))
+    }
+
+    func testThrowsWhenLocalizedVideoIsMissing() {
+        let component = PaywallComponent.VideoComponent(
+            source: Self.videoUrls("default"),
+            overrideVideoLid: "missing_lid"
+        )
+
+        XCTAssertThrowsError(try Self.style(for: component, localizedVideos: [:]))
+    }
+
+    func testResolvesLocalizedVideoForOverrideLid() throws {
+        let component = PaywallComponent.VideoComponent(
+            source: Self.videoUrls("default"),
+            overrides: [
+                .init(
+                    conditions: [.compact],
+                    properties: .init(source: Self.videoUrls("override"), overrideVideoLid: "override_lid")
+                )
+            ],
+            overrideVideoLid: "video_lid"
+        )
+
+        let style = try Self.style(
+            for: component,
+            localizedVideos: [
+                "video_lid": Self.videoUrls("localized"),
+                "override_lid": Self.videoUrls("override-localized")
+            ]
+        )
+
+        XCTAssertEqual(style.url, Self.videoURL("override-localized"))
+    }
+
+    func testOverrideWithoutLidUsesOverrideSource() throws {
+        let component = PaywallComponent.VideoComponent(
+            source: Self.videoUrls("default"),
+            overrides: [
+                .init(conditions: [.compact], properties: .init(source: Self.videoUrls("override")))
+            ],
+            overrideVideoLid: "video_lid"
+        )
+
+        let style = try Self.style(
+            for: component,
+            localizedVideos: ["video_lid": Self.videoUrls("localized")]
+        )
+
+        XCTAssertEqual(style.url, Self.videoURL("override"))
+    }
+
+    func testThrowsWhenOverrideLocalizedVideoIsMissing() {
+        let component = PaywallComponent.VideoComponent(
+            source: Self.videoUrls("default"),
+            overrides: [
+                .init(
+                    conditions: [.compact],
+                    properties: .init(source: Self.videoUrls("override"), overrideVideoLid: "missing_lid")
+                )
+            ]
+        )
+
+        XCTAssertThrowsError(try Self.style(for: component, localizedVideos: [:]))
+    }
+
+    func testOverrideWithoutVideoUsesComponentLocalizedVideo() throws {
+        let component = PaywallComponent.VideoComponent(
+            source: Self.videoUrls("default"),
+            overrides: [
+                .init(conditions: [.compact], properties: .init(visible: true))
+            ],
+            overrideVideoLid: "video_lid"
+        )
+
+        let style = try Self.style(
+            for: component,
+            localizedVideos: ["video_lid": Self.videoUrls("localized")]
+        )
+
+        XCTAssertEqual(style.url, Self.videoURL("localized"))
+    }
+
+    func testChooseLocalizationResolvesVideosForSelectedLocale() throws {
+        let provider = PaywallsV2View.chooseLocalization(
+            componentsLocalizations: ["en_US": [:], "es_ES": [:]],
+            componentsVideoLocalizations: Self.videoLocalizations,
+            preferredLocales: [Locale(identifier: "es_ES")],
+            defaultLocale: "en_US"
+        )
+
+        let style = try Self.style(for: Self.localizedComponent, localizationProvider: provider)
+
+        XCTAssertEqual(style.url, Self.videoURL("es"))
+    }
+
+    func testChooseLocalizationFallsBackToDefaultLocaleVideos() throws {
+        let provider = PaywallsV2View.chooseLocalization(
+            componentsLocalizations: ["en_US": [:], "es_ES": [:]],
+            componentsVideoLocalizations: Self.videoLocalizations,
+            preferredLocales: [Locale(identifier: "fr_FR")],
+            defaultLocale: "en_US"
+        )
+
+        let style = try Self.style(for: Self.localizedComponent, localizationProvider: provider)
+
+        XCTAssertEqual(style.url, Self.videoURL("en"))
+    }
+
+    func testChooseLocalizationDoesNotFallBackToDefaultLocaleForMissingVideo() throws {
+        let provider = PaywallsV2View.chooseLocalization(
+            componentsLocalizations: ["en_US": [:], "es_ES": [:]],
+            componentsVideoLocalizations: [
+                "en_US": ["video_lid": Self.videoUrls("en")],
+                "es_ES": ["other_lid": Self.videoUrls("es")]
+            ],
+            preferredLocales: [Locale(identifier: "es_ES")],
+            defaultLocale: "en_US"
+        )
+
+        XCTAssertThrowsError(try Self.style(for: Self.localizedComponent, localizationProvider: provider))
+    }
+
+    func testChooseLocalizationWithoutVideoLocalizationsThrows() throws {
+        let provider = PaywallsV2View.chooseLocalization(
+            componentsLocalizations: ["en_US": [:], "es_ES": [:]],
+            preferredLocales: [Locale(identifier: "es_ES")],
+            defaultLocale: "en_US"
+        )
+
+        XCTAssertThrowsError(try Self.style(for: Self.localizedComponent, localizationProvider: provider))
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension VideoComponentViewTests {
+
+    final class Box<T> {
+        var value: T
+        init(_ value: T) { self.value = value }
+    }
+
+    static func capture<T>(_ value: T, into box: Box<T?>) -> EmptyView {
+        box.value = value
+        return EmptyView()
+    }
+
+    static var localizedComponent: PaywallComponent.VideoComponent {
+        return .init(source: Self.videoUrls("default"), overrideVideoLid: "video_lid")
+    }
+
+    static var videoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary] {
+        return [
+            "en_US": ["video_lid": Self.videoUrls("en")],
+            "es_ES": ["video_lid": Self.videoUrls("es")]
+        ]
+    }
+
+    static func style(
+        for component: PaywallComponent.VideoComponent,
+        localizedVideos: PaywallComponent.VideoLocalizationDictionary
+    ) throws -> VideoComponentStyle {
+        return try Self.style(
+            for: component,
+            localizationProvider: .init(
+                locale: Locale(identifier: "es_ES"),
+                localizedStrings: [:],
+                localizedVideos: localizedVideos
+            )
+        )
+    }
+
+    static func style(
+        for component: PaywallComponent.VideoComponent,
+        localizationProvider: LocalizationProvider
+    ) throws -> VideoComponentStyle {
+        let viewModel = try VideoComponentViewModel(
+            localizationProvider: localizationProvider,
+            uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()),
+            component: component
+        )
+
+        let captured = Box<VideoComponentStyle?>(nil)
+        _ = viewModel.styles(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            selectedPackageId: nil,
+            customVariables: [:],
+            colorScheme: .light
+        ) { style in
+            Self.capture(style, into: captured)
+        }
+
+        return try XCTUnwrap(captured.value)
+    }
+
+    static func videoURL(_ name: String) -> URL {
+        return URL(string: "https://assets.revenuecat.com/\(name).mp4")!
+    }
+
+    static func videoUrls(_ name: String) -> PaywallComponent.ThemeVideoUrls {
+        return .init(
+            light: .init(
+                width: 1080,
+                height: 1920,
+                url: Self.videoURL(name),
+                checksum: nil,
+                urlLowRes: nil,
+                checksumLowRes: nil
+            )
+        )
+    }
 
 #if os(iOS)
     static func makeVideoComponentView(size: CGSize) throws -> some View {
@@ -119,7 +352,7 @@ private extension VideoComponentViewTests {
             size: .init(width: .fill, height: .fit(nil)),
             fitMode: .fill
         )
-        let viewModel = VideoComponentViewModel(
+        let viewModel = try VideoComponentViewModel(
             localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [:]),
             uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()),
             component: component
