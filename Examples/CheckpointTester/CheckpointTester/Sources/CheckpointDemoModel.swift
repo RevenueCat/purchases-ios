@@ -44,6 +44,21 @@ enum PaywallPresenterMode: String, CaseIterable, Identifiable {
     }
 }
 
+extension FlowPresentationMode {
+
+    static var testerCases: [Self] { [.default, .modalFullScreen, .modalSheet] }
+
+    var title: String {
+        switch self {
+        case .default: return "Default"
+        case .modalFullScreen: return "Full screen"
+        case .modalSheet: return "Sheet"
+        default: return self.description
+        }
+    }
+
+}
+
 final class CheckpointDemoModel: ObservableObject {
 
     struct OutcomeAlert: Identifiable {

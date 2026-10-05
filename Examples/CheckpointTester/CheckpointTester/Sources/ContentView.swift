@@ -117,16 +117,16 @@ struct ContentView: View {
                 }
 
                 Section("Offering-step presenter") {
+                    Text(self.model.paywallPresenterMode.description)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+
                     Picker("Presentation mode", selection: self.$model.paywallPresenterMode) {
                         ForEach(PaywallPresenterMode.allCases) { mode in
                             Text(mode.title).tag(mode)
                         }
                     }
                     .pickerStyle(.segmented)
-
-                    Text(self.model.paywallPresenterMode.description)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
                 }
 
             }
