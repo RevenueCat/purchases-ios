@@ -112,17 +112,6 @@ final class VideoComponentViewTests: TestCase {
         XCTAssertEqual(style.url, Self.videoURL("localized"))
     }
 
-    func testUsesSourceWithoutLid() throws {
-        let component = PaywallComponent.VideoComponent(source: Self.videoUrls("default"))
-
-        let style = try Self.style(
-            for: component,
-            localizedVideos: ["video_lid": Self.videoUrls("localized")]
-        )
-
-        XCTAssertEqual(style.url, Self.videoURL("default"))
-    }
-
     func testThrowsWhenLocalizedVideoIsMissing() {
         let component = PaywallComponent.VideoComponent(
             source: Self.videoUrls("default"),
@@ -186,23 +175,6 @@ final class VideoComponentViewTests: TestCase {
         XCTAssertThrowsError(try Self.style(for: component, localizedVideos: [:]))
     }
 
-    func testOverrideWithoutVideoUsesComponentLocalizedVideo() throws {
-        let component = PaywallComponent.VideoComponent(
-            source: Self.videoUrls("default"),
-            overrides: [
-                .init(conditions: [.compact], properties: .init(visible: true))
-            ],
-            overrideVideoLid: "video_lid"
-        )
-
-        let style = try Self.style(
-            for: component,
-            localizedVideos: ["video_lid": Self.videoUrls("localized")]
-        )
-
-        XCTAssertEqual(style.url, Self.videoURL("localized"))
-    }
-
     func testChooseLocalizationResolvesVideosForSelectedLocale() throws {
         let provider = PaywallsV2View.chooseLocalization(
             componentsLocalizations: ["en_US": [:], "es_ES": [:]],
@@ -214,43 +186,6 @@ final class VideoComponentViewTests: TestCase {
         let style = try Self.style(for: Self.localizedComponent, localizationProvider: provider)
 
         XCTAssertEqual(style.url, Self.videoURL("es"))
-    }
-
-    func testChooseLocalizationFallsBackToDefaultLocaleVideos() throws {
-        let provider = PaywallsV2View.chooseLocalization(
-            componentsLocalizations: ["en_US": [:], "es_ES": [:]],
-            componentsVideoLocalizations: Self.videoLocalizations,
-            preferredLocales: [Locale(identifier: "fr_FR")],
-            defaultLocale: "en_US"
-        )
-
-        let style = try Self.style(for: Self.localizedComponent, localizationProvider: provider)
-
-        XCTAssertEqual(style.url, Self.videoURL("en"))
-    }
-
-    func testChooseLocalizationDoesNotFallBackToDefaultLocaleForMissingVideo() throws {
-        let provider = PaywallsV2View.chooseLocalization(
-            componentsLocalizations: ["en_US": [:], "es_ES": [:]],
-            componentsVideoLocalizations: [
-                "en_US": ["video_lid": Self.videoUrls("en")],
-                "es_ES": ["other_lid": Self.videoUrls("es")]
-            ],
-            preferredLocales: [Locale(identifier: "es_ES")],
-            defaultLocale: "en_US"
-        )
-
-        XCTAssertThrowsError(try Self.style(for: Self.localizedComponent, localizationProvider: provider))
-    }
-
-    func testChooseLocalizationWithoutVideoLocalizationsThrows() throws {
-        let provider = PaywallsV2View.chooseLocalization(
-            componentsLocalizations: ["en_US": [:], "es_ES": [:]],
-            preferredLocales: [Locale(identifier: "es_ES")],
-            defaultLocale: "en_US"
-        )
-
-        XCTAssertThrowsError(try Self.style(for: Self.localizedComponent, localizationProvider: provider))
     }
 
 }

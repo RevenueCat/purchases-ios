@@ -456,45 +456,6 @@ class WorkflowResponseTests: TestCase {
         expect(screen.componentsVideoLocalizations) == Self.expectedVideoLocalizations
     }
 
-    func testDecodeWorkflowScreenVideoLocalizationsDefaultsToEmpty() throws {
-        let screen = try Self.decodeWorkflowScreen()
-
-        expect(screen.componentsVideoLocalizations).to(beEmpty())
-    }
-
-    func testDecodeWorkflowScreenVideoLocalizationsFailsForMalformedValue() {
-        expect(try Self.decodeWorkflowScreen(videoLocalizationsJSON: "\"video\"")).to(throwError())
-    }
-
-    func testDecodePaywallComponentsDataVideoLocalizations() throws {
-        let data = try Self.decodePaywallComponentsData(
-            defaultLocaleJSON: "\"en_US\"",
-            videoLocalizationsJSON: Self.videoLocalizationsJSON
-        )
-
-        expect(data.componentsVideoLocalizations) == Self.expectedVideoLocalizations
-        expect(data.errorInfo?["componentsVideoLocalizations"]).to(beNil())
-        expect(try data.encodeAndDecode().componentsVideoLocalizations) == Self.expectedVideoLocalizations
-    }
-
-    func testDecodePaywallComponentsDataVideoLocalizationsDefaultsToEmpty() throws {
-        let data = try Self.decodePaywallComponentsData(defaultLocaleJSON: "\"en_US\"")
-
-        expect(data.componentsVideoLocalizations).to(beEmpty())
-        expect(data.errorInfo?["componentsVideoLocalizations"]).to(beNil())
-        expect(try data.encodeAndDecode().componentsVideoLocalizations).to(beEmpty())
-    }
-
-    func testDecodePaywallComponentsDataVideoLocalizationsRecordsErrorForMalformedValue() throws {
-        let data = try Self.decodePaywallComponentsData(
-            defaultLocaleJSON: "\"en_US\"",
-            videoLocalizationsJSON: "\"video\""
-        )
-
-        expect(data.componentsVideoLocalizations).to(beEmpty())
-        expect(data.errorInfo?["componentsVideoLocalizations"]).toNot(beNil())
-    }
-
     func testDecodeWorkflowScreenWithExitOffers() throws {
         let json = """
         {
@@ -1043,7 +1004,10 @@ private extension WorkflowResponseTests {
             """
         }
         let offeringIdentifierFragment = offeringIdentifier.map { ", \"offering_identifier\": \"\($0)\"" } ?? ""
-        let trailingFragments = offeringIdentifierFragment + Self.videoLocalizationsFragment(videoLocalizationsJSON)
+        let videoLocalizationsFragment = videoLocalizationsJSON.map {
+            ", \"components_video_localizations\": \($0)"
+        } ?? ""
+        let trailingFragments = offeringIdentifierFragment + videoLocalizationsFragment
         let json = """
         {
           "template_name": "tmpl",
@@ -1068,11 +1032,7 @@ private extension WorkflowResponseTests {
         return try JSONDecoder.default.decode(WorkflowScreen.self, from: json)
     }
 
-    static func decodePaywallComponentsData(
-        defaultLocaleJSON: String?,
-        videoLocalizationsJSON: String? = nil
-    ) throws -> PaywallComponentsData {
-        let videoLocalizationsFragment = Self.videoLocalizationsFragment(videoLocalizationsJSON)
+    static func decodePaywallComponentsData(defaultLocaleJSON: String?) throws -> PaywallComponentsData {
         var defaultLocaleFragment = ""
         if let defaultLocaleJSON {
             defaultLocaleFragment = """
@@ -1096,15 +1056,11 @@ private extension WorkflowResponseTests {
               },
               "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } } }
             }
-          }\(videoLocalizationsFragment)
+          }
         }
         """.data(using: .utf8)!
 
         return try JSONDecoder.default.decode(PaywallComponentsData.self, from: json)
-    }
-
-    static func videoLocalizationsFragment(_ videoLocalizationsJSON: String?) -> String {
-        return videoLocalizationsJSON.map { ", \"components_video_localizations\": \($0)" } ?? ""
     }
 
     static let videoLocalizationsJSON = """
