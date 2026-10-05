@@ -274,6 +274,36 @@ final class PaywallCacheWarmingTests: TestCase {
         )
     }
 
+    func testResolvesLocalizedVideosForDisplayedLocale() {
+        let data = Self.data(
+            components: [.video(Self.localizedVideoComponent)],
+            localizations: Self.stringLocalizations,
+            videoLocalizations: Self.videoLocalizations
+        )
+
+        let assets = data.cacheAssets(preferredLocales: [Locale(identifier: "es_ES")])
+
+        XCTAssertEqual(
+            Set(assets.videos),
+            Set(Self.videoMedia("video-es") + Self.videoMedia("video-override-es"))
+        )
+    }
+
+    func testResolvesLocalizedVideosForDefaultLocaleWhenNoPreferredLocaleMatches() {
+        let data = Self.data(
+            components: [.video(Self.localizedVideoComponent)],
+            localizations: Self.stringLocalizations,
+            videoLocalizations: Self.videoLocalizations
+        )
+
+        let assets = data.cacheAssets(preferredLocales: [Locale(identifier: "fr_FR")])
+
+        XCTAssertEqual(
+            Set(assets.videos),
+            Set(Self.videoMedia("video-en") + Self.videoMedia("video-override-en"))
+        )
+    }
+
     func testTraversesContainersAndMarksSheetAssetsForSynchronousRendering() {
         let sheetImage = Self.imageComponent("sheet")
         let sheetVideo = PaywallComponent.VideoComponent(source: Self.video("sheet-video"))
@@ -453,6 +483,44 @@ final class PaywallCacheWarmingTests: TestCase {
             .init(
                 url: Self.cacheWarmingURL("video-low.mp4"),
                 checksum: .init(algorithm: .sha256, value: "video-low")
+            )
+        ])
+    }
+
+    func testWorkflowAssetPrewarmingDownloadsLocalizedVideoForPreferredLocaleOnly() async {
+        let fileRepository = MockCacheWarmingFileRepository()
+        let cache = PaywallCacheWarming(
+            introEligibiltyChecker: self.eligibilityChecker,
+            fileRepository: fileRepository,
+            webBundleURLBatcher: self.mockWebBundleURLBatcher,
+            preferredLocalesProvider: { ["es_ES"] }
+        )
+        let screen = Self.workflowScreen(
+            components: [
+                .video(.init(source: Self.cacheWarmingVideo("video"), overrideVideoLid: "video-lid"))
+            ],
+            localizations: ["en_US": [:], "es_ES": [:]],
+            videoLocalizations: [
+                "en_US": ["video-lid": Self.cacheWarmingVideo("video-en")],
+                "es_ES": ["video-lid": Self.cacheWarmingVideo("video-es")]
+            ]
+        )
+        let workflow = PublishedWorkflow(
+            id: "workflow",
+            displayName: "Test",
+            initialStepId: "step",
+            singleStepFallbackId: nil,
+            steps: [:],
+            screens: ["screen": screen]
+        )
+
+        await cache.prewarmWorkflowAssets(workflow: workflow, uiConfig: Self.emptyUIConfig)
+
+        let requests = await fileRepository.requests
+        XCTAssertEqual(Set(requests), [
+            .init(
+                url: Self.cacheWarmingURL("video-es-low.mp4"),
+                checksum: .init(algorithm: .sha256, value: "video-es-low")
             )
         ])
     }
@@ -908,7 +976,8 @@ private extension PaywallCacheWarmingTests {
 #if !os(tvOS)
     static func data(
         components: [PaywallComponent],
-        localizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary] = [:]
+        localizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary] = [:],
+        videoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary] = [:]
     ) -> PaywallComponentsData {
         return .init(
             templateName: "test",
@@ -920,8 +989,39 @@ private extension PaywallCacheWarmingTests {
             )),
             componentsLocalizations: localizations,
             revision: 1,
-            defaultLocaleIdentifier: "en_US"
+            defaultLocaleIdentifier: "en_US",
+            componentsVideoLocalizations: videoLocalizations
         )
+    }
+
+    static var localizedVideoComponent: PaywallComponent.VideoComponent {
+        return .init(
+            source: Self.video("video"),
+            overrides: [
+                .init(
+                    conditions: [.compact],
+                    properties: .init(source: Self.video("video-override"), overrideVideoLid: "video-override-lid")
+                )
+            ],
+            overrideVideoLid: "video-lid"
+        )
+    }
+
+    static var stringLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary] {
+        return ["en_US": [:], "es_ES": [:]]
+    }
+
+    static var videoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary] {
+        return [
+            "en_US": [
+                "video-lid": Self.video("video-en"),
+                "video-override-lid": Self.video("video-override-en")
+            ],
+            "es_ES": [
+                "video-lid": Self.video("video-es"),
+                "video-override-lid": Self.video("video-override-es")
+            ]
+        ]
     }
 
     static func imageComponent(_ name: String) -> PaywallComponent.ImageComponent {
@@ -1052,8 +1152,12 @@ private extension PaywallCacheWarmingTests {
         )
     }
 
-    static func workflowScreen(components: [PaywallComponent]) -> WorkflowScreen {
-        let data = Self.paywallComponentsData(components: components)
+    static func workflowScreen(
+        components: [PaywallComponent],
+        localizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary] = [:],
+        videoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary] = [:]
+    ) -> WorkflowScreen {
+        let data = Self.paywallComponentsData(components: components, localizations: localizations)
         return .init(
             name: "Test",
             templateName: data.templateName,
@@ -1061,11 +1165,15 @@ private extension PaywallCacheWarmingTests {
             componentsConfig: data.componentsConfig,
             componentsLocalizations: data.componentsLocalizations,
             defaultLocale: data.defaultLocale,
-            offeringIdentifier: nil
+            offeringIdentifier: nil,
+            componentsVideoLocalizations: videoLocalizations
         )
     }
 
-    static func paywallComponentsData(components: [PaywallComponent]) -> PaywallComponentsData {
+    static func paywallComponentsData(
+        components: [PaywallComponent],
+        localizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary] = [:]
+    ) -> PaywallComponentsData {
         return .init(
             templateName: "test",
             assetBaseURL: Self.cacheWarmingURL(""),
@@ -1074,7 +1182,7 @@ private extension PaywallCacheWarmingTests {
                 stickyFooter: nil,
                 background: .color(.init(light: .hex("#ffffff")))
             )),
-            componentsLocalizations: [:],
+            componentsLocalizations: localizations,
             revision: 1,
             defaultLocaleIdentifier: "en_US"
         )

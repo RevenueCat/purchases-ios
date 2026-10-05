@@ -61,6 +61,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     private let fontsManager: PaywallFontManagerType
     private let fileRepository: FileRepositoryType
     private let webBundleURLBatcher: WebBundleURLBatcherType
+    private let preferredLocalesProvider: @Sendable () -> [String]
 
     private var warmedEligibilityProductIdentifiers: Set<String> = []
     private var hasLoadedPaywallAssets = false
@@ -72,12 +73,14 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType,
         fontsManager: PaywallFontManagerType = DefaultPaywallFontsManager(session: PaywallCacheWarming.downloadSession),
         fileRepository: FileRepositoryType = FileRepository.shared,
-        webBundleURLBatcher: WebBundleURLBatcherType = WebBundleURLBatcher.shared
+        webBundleURLBatcher: WebBundleURLBatcherType = WebBundleURLBatcher.shared,
+        preferredLocalesProvider: @escaping @Sendable () -> [String] = { Locale.preferredLanguages }
     ) {
         self.introEligibiltyChecker = introEligibiltyChecker
         self.fontsManager = fontsManager
         self.fileRepository = fileRepository
         self.webBundleURLBatcher = webBundleURLBatcher
+        self.preferredLocalesProvider = preferredLocalesProvider
     }
 
     /// Warms up the intro eligibility cache for products across all offerings.
@@ -192,7 +195,8 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
         Logger.verbose(Strings.paywalls.warming_up_workflow(screenCount: screens.count))
 
-        let screenAssets = screens.map(\.allCacheAssets)
+        let preferredLocales = self.preferredLocalesProvider().map(Locale.init(identifier:))
+        let screenAssets = screens.map { $0.cacheAssets(preferredLocales: preferredLocales) }
         let imageURLs = Set(screenAssets.flatMap(\.imageSourcesToDownload))
         let videoURLs = Set(screenAssets.flatMap(\.videoSourcesToDownload))
         #if !os(tvOS)
