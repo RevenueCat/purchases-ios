@@ -17,16 +17,9 @@ import Foundation
 extension PaywallComponentsData {
 
     var allCacheAssets: CacheAssetCollection {
-        return self.cacheAssets(preferredLocales: [])
-    }
-
-    func cacheAssets(preferredLocales: [Locale]) -> CacheAssetCollection {
-        return collectCacheAssets(
+        return cacheAssets(
             from: self.componentsConfig,
-            localizations: self.componentsLocalizations,
-            videoLocalizations: self.componentsVideoLocalizations,
-            preferredLocales: preferredLocales,
-            defaultLocale: self.defaultLocale
+            localizations: self.componentsLocalizations
         )
     }
 
@@ -44,16 +37,23 @@ extension PaywallComponentsData {
 extension WorkflowScreen {
 
     var allCacheAssets: CacheAssetCollection {
-        return self.cacheAssets(preferredLocales: [])
+        return cacheAssets(
+            from: self.componentsConfig,
+            localizations: self.componentsLocalizations
+        )
     }
 
-    func cacheAssets(preferredLocales: [Locale]) -> CacheAssetCollection {
-        return collectCacheAssets(
-            from: self.componentsConfig,
-            localizations: self.componentsLocalizations,
-            videoLocalizations: self.componentsVideoLocalizations,
+    /// Like ``allCacheAssets``, but resolves localized videos for the locale that will be displayed only,
+    /// since they are costly to download.
+    func localizedCacheAssets(preferredLocales: [Locale]) -> CacheAssetCollection {
+        let displayedLocale = self.componentsLocalizations.displayedLocale(
             preferredLocales: preferredLocales,
             defaultLocale: self.defaultLocale
+        )
+        return cacheAssets(
+            from: self.componentsConfig,
+            localizations: self.componentsLocalizations,
+            localizedVideos: self.componentsVideoLocalizations.findLocale(displayedLocale) ?? [:]
         )
     }
 
@@ -68,19 +68,11 @@ extension WorkflowScreen {
 }
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-private func collectCacheAssets(
+private func cacheAssets(
     from componentsConfig: PaywallComponentsData.ComponentsConfig,
     localizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
-    videoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary],
-    preferredLocales: [Locale],
-    defaultLocale: PaywallComponent.LocaleID
+    localizedVideos: PaywallComponent.VideoLocalizationDictionary? = nil
 ) -> CacheAssetCollection {
-    // Localized videos are only prewarmed for the locale that will be displayed, since they are costly to download.
-    let displayedLocale = localizations.displayedLocale(
-        preferredLocales: preferredLocales,
-        defaultLocale: defaultLocale
-    )
-    let localizedVideos = videoLocalizations.findLocale(displayedLocale) ?? [:]
     let componentAssets = componentsConfig.base.cacheAssets(localizedVideos: localizedVideos)
     let localizedImages = localizations.values.flatMap { localeValues in
         localeValues.values.flatMap { value -> [CacheAssetCollection.Media] in
@@ -104,11 +96,12 @@ private func collectCacheAssets(
 extension PaywallComponentsData.PaywallComponentsConfig {
 
     var allCacheAssets: CacheAssetCollection {
-        return self.cacheAssets(localizedVideos: [:])
+        return self.cacheAssets(localizedVideos: nil)
     }
 
     /// - Parameter localizedVideos: used to resolve localized videos referenced by `overrideVideoLid`.
-    func cacheAssets(localizedVideos: PaywallComponent.VideoLocalizationDictionary) -> CacheAssetCollection {
+    /// If `nil`, `overrideVideoLid` is ignored and `source` is used.
+    func cacheAssets(localizedVideos: PaywallComponent.VideoLocalizationDictionary?) -> CacheAssetCollection {
         var collector = AssetCollector(localizedVideos: localizedVideos)
 
         self.collectAssets(in: self.stack, rendersSynchronously: false, into: &collector)
@@ -280,7 +273,7 @@ extension PaywallComponentsData.PaywallComponentsConfig {
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 private struct AssetCollector {
 
-    let localizedVideos: PaywallComponent.VideoLocalizationDictionary
+    let localizedVideos: PaywallComponent.VideoLocalizationDictionary?
     var imageURLs: [CacheAssetCollection.Media] = []
     var videoURLs: [CacheAssetCollection.Media] = []
     var webViewURLs: [URLWithValidation] = []
@@ -297,9 +290,9 @@ private struct AssetCollector {
         _ source: PaywallComponent.ThemeVideoUrls?,
         overrideVideoLid: PaywallComponent.LocalizationKey?
     ) -> PaywallComponent.ThemeVideoUrls? {
-        guard let overrideVideoLid else { return source }
+        guard let overrideVideoLid, let localizedVideos = self.localizedVideos else { return source }
         // Like rendering, a lid never falls back to `source`: without its localized video the paywall fails.
-        return self.localizedVideos[overrideVideoLid]
+        return localizedVideos[overrideVideoLid]
     }
 
     mutating func collect(

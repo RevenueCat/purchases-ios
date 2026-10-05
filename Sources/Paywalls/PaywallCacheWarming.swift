@@ -196,7 +196,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         Logger.verbose(Strings.paywalls.warming_up_workflow(screenCount: screens.count))
 
         let preferredLocales = self.preferredLocalesProvider().map(Locale.init(identifier:))
-        let screenAssets = screens.map { $0.cacheAssets(preferredLocales: preferredLocales) }
+        let screenAssets = screens.map { $0.localizedCacheAssets(preferredLocales: preferredLocales) }
         let imageURLs = Set(screenAssets.flatMap(\.imageSourcesToDownload))
         let videoURLs = Set(screenAssets.flatMap(\.videoSourcesToDownload))
         #if !os(tvOS)
