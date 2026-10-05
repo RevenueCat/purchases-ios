@@ -628,7 +628,7 @@ jobs:
       name: macos-executor
       xcode_version: "27.0.0"
     environment:
-      TUIST_SWIFT_CONDITIONS: ENABLE_CHECKPOINTS_OBJC
+      TUIST_SWIFT_CONDITIONS: ENABLE_CHECKPOINTS_OBJC ENABLE_CONFIGURED_AD_REWARDS
       TUIST_RC_XCODE_PROJECT: "true"
     steps:
       - checkout
