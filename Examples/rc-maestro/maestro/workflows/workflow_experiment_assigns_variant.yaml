@@ -1,16 +1,21 @@
-# Opens a workflow whose third step is a started experiment and asserts the SDK
-# lands on one of the variant paywalls. The experiment step has no screen of its
-# own: the backend resolves enrollment and serves a pre-pruned blob, so the SDK
-# should never see it.
+# Opens a workflow whose third step is a started experiment and asserts each
+# pinned user lands on their own variant paywall.
+# The experiment step has no screen of its own: the backend resolves enrollment
+# and serves a pre-pruned blob, so the SDK should never see it.
 #
-# `app_user_id` is pinned because the backend resolves the combo from it, so the
-# same id resolves the same variant on every run.
+# `app_user_id` is pinned because the backend resolves the variant from it, so
+# the same id resolves the same variant on every run. maestro-experiment-user-1
+# resolves to variant A and maestro-experiment-user-2 to variant B.
+#
+# The offering identifier is wrapped in an extra pair of quotes because launch
+# arguments are parsed as property lists. Without them a value starting with `[`
+# never reaches the app, which then silently opens the default workflow.
 #
 # Run locally against the test store:
 #   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/workflow_experiment_assigns_variant.yaml
 
 appId: com.revenuecat.maestro.ios
-name: A started experiment assigns a variant paywall
+name: A started experiment assigns each user their variant paywall
 env:
   MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
 
@@ -21,7 +26,7 @@ env:
 - launchApp:
     arguments:
         e2e_test_flow: open_workflow
-        workflow_offering_identifier: "[facu] branching1"
+        workflow_offering_identifier: '"[facu] branching1"'
         app_user_id: "maestro-experiment-user-1"
 - extendedWaitUntil:
     visible: "Present Paywall"
@@ -43,21 +48,39 @@ env:
 - tapOn:
     text: "Continue 2/3"
 
-# Either variant is a valid outcome, so match on both titles. Asserting a
-# variant-specific string is what makes this fail if the SDK dead-ends on the
-# screenless experiment step, or falls back to the default paywall.
+# Asserting a variant-specific string is what makes this fail if the SDK
+# dead-ends on the screenless experiment step, or falls back to the default
+# paywall. Asserting the other variant is absent catches a wrong assignment.
 - extendedWaitUntil:
-    visible: "People Who Meditate Daily Sleep 40% Better|Get started with our Standard plan"
+    visible: "People Who Meditate Daily Sleep 40% Better"
     timeout: 15000
+- assertNotVisible: "Unlock the universe with our Premium plan"
+- takeScreenshot: "workflow_experiment_assigns_variant - user 1 variant A"
 
-# Record which variant this user resolved to.
-- runFlow:
-    when:
-      visible: "People Who Meditate Daily Sleep 40% Better"
-    commands:
-      - takeScreenshot: "workflow_experiment_assigns_variant - variant A (control)"
-- runFlow:
-    when:
-      visible: "Get started with our Standard plan"
-    commands:
-      - takeScreenshot: "workflow_experiment_assigns_variant - variant B"
+# A second user, so both variants are served.
+- clearState
+- launchApp:
+    arguments:
+        e2e_test_flow: open_workflow
+        workflow_offering_identifier: '"[facu] branching1"'
+        app_user_id: "maestro-experiment-user-2"
+- extendedWaitUntil:
+    visible: "Present Paywall"
+    timeout: 15000
+- tapOn:
+    text: "Present Paywall"
+- extendedWaitUntil:
+    visible: "Start Your Free Week And Reclaim 30+ Minutes Daily"
+    timeout: 15000
+- tapOn:
+    text: "Continue 1/3"
+- extendedWaitUntil:
+    visible: "Most People Feel Calmer After Just 3 Sessions"
+    timeout: 15000
+- tapOn:
+    text: "Continue 2/3"
+- extendedWaitUntil:
+    visible: "Unlock the universe with our Premium plan"
+    timeout: 15000
+- assertNotVisible: "People Who Meditate Daily Sleep 40% Better"
+- takeScreenshot: "workflow_experiment_assigns_variant - user 2 variant B"
