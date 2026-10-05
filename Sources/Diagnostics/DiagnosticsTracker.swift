@@ -19,6 +19,9 @@ import Foundation
 protocol DiagnosticsTrackerType: Sendable {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func setCollectionDecision(_ decision: DiagnosticsCollectionDecision)
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func track(_ event: DiagnosticsEvent)
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -180,27 +183,67 @@ protocol DiagnosticsTrackerType: Sendable {
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+/// Persists diagnostics events until collection is disabled. The synchronizer only uploads persisted events after
+/// collection is enabled. Disabling collection deletes all persisted diagnostics events.
 final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
 
     private let diagnosticsFileHandler: DiagnosticsFileHandlerType
+    private let collectionDecision: Atomic<DiagnosticsCollectionDecision>
     private let diagnosticsDispatcher: OperationDispatcher
     private let dateProvider: DateProvider
     private let appSessionID: UUID
 
     init(diagnosticsFileHandler: DiagnosticsFileHandlerType,
+         collectionDecision: DiagnosticsCollectionDecision,
          diagnosticsDispatcher: OperationDispatcher = .default,
          dateProvider: DateProvider = DateProvider(),
          appSessionID: UUID = SystemInfo.appSessionID) {
         self.diagnosticsFileHandler = diagnosticsFileHandler
+        self.collectionDecision = .init(collectionDecision)
         self.diagnosticsDispatcher = diagnosticsDispatcher
         self.dateProvider = dateProvider
         self.appSessionID = appSessionID
+
+        if collectionDecision == .disabled {
+            self.discardPersistedEvents()
+        }
     }
 
+    /// Persists events until collection is disabled. Events persisted while the decision is undetermined are only
+    /// uploaded if collection is later enabled.
     func track(_ event: DiagnosticsEvent) {
+        switch self.collectionDecision.value {
+        case .enabled, .undetermined:
+            self.persist(event)
+        case .disabled:
+            break
+        }
+    }
+
+    /// Updates the collection decision. Disabling collection discards every persisted diagnostics event.
+    func setCollectionDecision(_ decision: DiagnosticsCollectionDecision) {
+        self.collectionDecision.value = decision
+        if decision == .disabled {
+            self.discardPersistedEvents()
+        }
+    }
+
+    private func persist(_ event: DiagnosticsEvent) {
         self.diagnosticsDispatcher.dispatchOnWorkerThread {
+            guard self.collectionDecision.value != .disabled else { return }
             await self.clearDiagnosticsFileIfTooBig()
+            guard self.collectionDecision.value != .disabled else { return }
             await self.diagnosticsFileHandler.appendEvent(diagnosticsEvent: event)
+        }
+    }
+
+    private func discardPersistedEvents() {
+        self.diagnosticsDispatcher.dispatchOnWorkerThread {
+            let eventCount = await self.diagnosticsFileHandler.getEntries().count
+            if eventCount > 0 {
+                Logger.debug(Strings.diagnostics.discarding_persisted_diagnostic_events(count: eventCount))
+            }
+            await self.diagnosticsFileHandler.emptyDiagnosticsFile()
         }
     }
 
@@ -530,6 +573,29 @@ final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                             errorCode: errorCode,
                             skErrorDescription: storeKitErrorDescription
                         ))
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+extension DiagnosticsTrackerType {
+
+    func setCollectionDecision(_: DiagnosticsCollectionDecision) {}
+
+    func setCollectionEnabled(_ enabled: Bool) {
+        self.setCollectionDecision(.init(enabled: enabled))
+    }
+
+}
+
+enum DiagnosticsCollectionDecision: Equatable, Sendable {
+
+    case undetermined
+    case enabled
+    case disabled
+
+    init(enabled: Bool) {
+        self = enabled ? .enabled : .disabled
     }
 
 }

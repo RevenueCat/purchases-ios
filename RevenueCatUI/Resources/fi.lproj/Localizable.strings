@@ -22,8 +22,10 @@
 "Continue" = "Jatkaa";
 "Default_offer_details_with_intro_offer" = "Aloita {{ sub_offer_duration }} -kokeilu ja sitten {{ total_price_and_per_month }}.";
 "Something went wrong" = "Jotain meni pieleen";
+"Payment failed." = "Maksu epäonnistui.";
+"Your purchase is still processing." = "Ostostasi käsitellään vielä.";
 "Purchase" = "Osta";
-"You are currently subscribed to this" = "Olet jo tilannut tämän";
 "You've already purchased this" = "Olet jo ostanut tämän";
+"Your purchase was successful." = "Ostoksesi onnistui.";
 "Purchase unavailable" = "Osto ei ole saatavilla";
 "This purchase isn't available in your region." = "Tämä osto ei ole saatavilla alueellasi.";

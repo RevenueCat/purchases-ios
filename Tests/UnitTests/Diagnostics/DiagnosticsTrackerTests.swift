@@ -35,6 +35,7 @@ class DiagnosticsTrackerTests: TestCase {
         self.diagnosticsDispatcher = MockOperationDispatcher()
         self.dateProvider = .init(stubbedNow: Self.eventTimestamp1, subsequentNows: Self.eventTimestamp2)
         self.tracker = .init(diagnosticsFileHandler: self.handler,
+                             collectionDecision: .enabled,
                              diagnosticsDispatcher: self.diagnosticsDispatcher,
                              dateProvider: self.dateProvider)
     }
@@ -64,6 +65,114 @@ class DiagnosticsTrackerTests: TestCase {
                   timestamp: Self.eventTimestamp1,
                   appSessionId: appSessionId)
         ]
+    }
+
+    func testDoesNotTrackEventsWhenDiagnosticsAreDisabled() async {
+        self.tracker = .init(
+            diagnosticsFileHandler: self.handler,
+            collectionDecision: .disabled,
+            diagnosticsDispatcher: self.diagnosticsDispatcher,
+            dateProvider: self.dateProvider
+        )
+        let event = DiagnosticsEvent(name: .httpRequestPerformed,
+                                     properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
+                                     timestamp: Self.eventTimestamp1,
+                                     appSessionId: SystemInfo.appSessionID)
+
+        self.tracker.track(event)
+
+        let entries = await self.handler.getEntries()
+        expect(entries).to(beEmpty())
+    }
+
+    func testPersistsEventsWhileDiagnosticsCollectionIsUndetermined() async {
+        self.tracker = .init(
+            diagnosticsFileHandler: self.handler,
+            collectionDecision: .undetermined,
+            diagnosticsDispatcher: self.diagnosticsDispatcher,
+            dateProvider: self.dateProvider
+        )
+        let event = DiagnosticsEvent(name: .httpRequestPerformed,
+                                     properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
+                                     timestamp: Self.eventTimestamp1,
+                                     appSessionId: SystemInfo.appSessionID)
+
+        self.tracker.track(event)
+        let entriesBeforeDecision = await self.handler.getEntries()
+        expect(entriesBeforeDecision) == [
+            .init(id: event.id,
+                  name: .httpRequestPerformed,
+                  properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ]
+
+        self.tracker.setCollectionDecision(.enabled)
+
+        let entriesAfterDecision = await self.handler.getEntries()
+        expect(entriesAfterDecision) == [
+            .init(id: event.id,
+                  name: .httpRequestPerformed,
+                  properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        ]
+    }
+
+    func testDiscardsPersistedEventsWhenDiagnosticsCollectionIsDisabled() async {
+        self.tracker = .init(
+            diagnosticsFileHandler: self.handler,
+            collectionDecision: .undetermined,
+            diagnosticsDispatcher: self.diagnosticsDispatcher,
+            dateProvider: self.dateProvider
+        )
+
+        self.tracker.track(
+            .init(name: .httpRequestPerformed,
+                  properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        )
+        self.tracker.setCollectionDecision(.disabled)
+
+        let entriesAfterDisabling = await self.handler.getEntries()
+        expect(entriesAfterDisabling).to(beEmpty())
+
+        self.tracker.track(
+            .init(name: .httpRequestPerformed,
+                  properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
+                  timestamp: Self.eventTimestamp1,
+                  appSessionId: SystemInfo.appSessionID)
+        )
+        self.tracker.setCollectionDecision(.enabled)
+
+        let entries = await self.handler.getEntries()
+        expect(entries).to(beEmpty())
+    }
+
+    func testDisablingDiagnosticsPreventsPreviouslyQueuedEventsFromPersisting() async {
+        self.diagnosticsDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = false
+        self.tracker = .init(
+            diagnosticsFileHandler: self.handler,
+            collectionDecision: .undetermined,
+            diagnosticsDispatcher: self.diagnosticsDispatcher,
+            dateProvider: self.dateProvider
+        )
+        let event = DiagnosticsEvent(
+            name: .httpRequestPerformed,
+            properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
+            timestamp: Self.eventTimestamp1,
+            appSessionId: SystemInfo.appSessionID
+        )
+
+        self.tracker.track(event)
+        self.tracker.setCollectionDecision(.disabled)
+
+        await self.diagnosticsDispatcher.invokeDispatchedAsyncWorkerThreadBlock(at: 1)
+        await self.diagnosticsDispatcher.invokeDispatchedAsyncWorkerThreadBlock(at: 0)
+
+        let entries = await self.handler.getEntries()
+        expect(entries).to(beEmpty())
     }
 
     func testTrackMultipleEvents() async {

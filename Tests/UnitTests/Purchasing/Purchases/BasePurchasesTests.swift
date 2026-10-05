@@ -282,7 +282,8 @@ class BasePurchasesTests: TestCase {
         checkpointResolver: CheckpointWorkflowResolver = DisabledCheckpointWorkflowResolver(),
         dateProvider: DateProvider = DateProvider(),
         webBundleEventBus: WebBundleEventBus = .shared,
-        paywallCache: PaywallCacheWarmingType? = nil
+        paywallCache: PaywallCacheWarmingType? = nil,
+        sdkSettingsConfigProvider: SDKSettingsConfigProviderType? = nil
     ) {
         self.purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
@@ -366,7 +367,7 @@ class BasePurchasesTests: TestCase {
                                     operationDispatcher: self.mockOperationDispatcher
                                    ),
                                    remoteConfigManager: self.mockRemoteConfigManager,
-                                   sdkSettingsConfigProvider: SDKSettingsConfigProvider(
+                                   sdkSettingsConfigProvider: sdkSettingsConfigProvider ?? SDKSettingsConfigProvider(
                                     manager: self.mockRemoteConfigManager
                                    ),
                                    offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
@@ -513,7 +514,7 @@ extension BasePurchasesTests {
             let identity = IdentityAPI(backendConfig: backendConfig)
             let token = TokenAPI(backendConfig: backendConfig)
             let offerings = OfferingsAPI(backendConfig: backendConfig)
-            let webBilling = WebBillingAPI(lanes: BackendLanes(configuration: backendConfig))
+            let webBilling = MockWebBillingAPI(lanes: BackendLanes(configuration: backendConfig))
             let offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
             let internalAPI = InternalAPI(backendConfig: backendConfig)
             let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
@@ -742,6 +743,8 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
     func hasCommittedConfig() async -> Bool {
         return self.stubbedHasCommittedConfig
     }
+
+    func addConfigLifecycleObserver(_ observer: RemoteConfigLifecycleObserver) {}
 
     var stubbedTopics: [RemoteConfigTopic: RemoteConfiguration.ConfigTopic] = [:]
     var stubbedBlobData: [RemoteConfigTopic: [String: Data]] = [:]

@@ -22,8 +22,10 @@
 "Continue" = "Continua";
 "Default_offer_details_with_intro_offer" = "Începeți perioada de încercare de {{ sub_offer_duration }}, apoi {{ total_price_and_per_month }}.";
 "Something went wrong" = "Ceva n-a mers bine";
+"Payment failed." = "Plata a eșuat.";
+"Your purchase is still processing." = "Achiziția este încă în curs de procesare.";
 "Purchase" = "Cumpără";
-"You are currently subscribed to this" = "Aveți deja un abonament la acest articol";
 "You've already purchased this" = "Ați cumpărat deja acest articol";
+"Your purchase was successful." = "Achiziția a fost efectuată cu succes.";
 "Purchase unavailable" = "Achiziție indisponibilă";
 "This purchase isn't available in your region." = "Această achiziție nu este disponibilă în regiunea dvs.";

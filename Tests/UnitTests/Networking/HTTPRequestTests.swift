@@ -37,7 +37,7 @@ class HTTPRequestTests: TestCase {
         .postRedeemWebPurchase,
         .health,
         .getProductEntitlementMapping,
-        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID),
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil),
         .remoteConfig(domain: "app"),
         .postExternalPurchaseToken
     ]
@@ -57,7 +57,7 @@ class HTTPRequestTests: TestCase {
         .health,
         .getOfferings(appUserID: userID),
         .getProductEntitlementMapping,
-        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID),
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil),
         .remoteConfig(domain: "app")
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path> = [
@@ -67,7 +67,7 @@ class HTTPRequestTests: TestCase {
         .postRedeemWebPurchase,
         .health,
         .remoteConfig(domain: "app"),
-        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID)
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil)
     ]
     private static let pathsWithUserID: [HTTPRequest.Path] = [
         .getCustomerInfo(appUserID: anonymousUser),
@@ -299,7 +299,9 @@ class HTTPRequestTests: TestCase {
         let paths: [any HTTPRequestPath] = [
             HTTPRequest.WebBillingPath.getWebOfferingProducts(appUserID: Self.userID),
             HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"]),
-            HTTPRequest.WebBillingPath.postHostedCheckout
+            HTTPRequest.WebBillingPath.postHostedCheckout,
+            HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
+                                                               appUserID: Self.userID)
         ]
         for path in paths {
             expect(path.usesAPISources).to(beTrue(), description: "Path '\(path)' should use API sources")
@@ -396,6 +398,40 @@ class HTTPRequestTests: TestCase {
             == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout"
         expect(path.url(preferIAMPath: true)?.absoluteString)
             == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout"
+    }
+
+    func testHostedCheckoutStatusRelativePathNamesTheSessionAndTheCustomer() {
+        let path = HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
+                                                                      appUserID: Self.userID)
+
+        expect(path.relativePath) == "/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=\(Self.userID)"
+    }
+
+    /// The backend reads `app_user_id` from the query string, where a literal `+` arrives as a space.
+    func testHostedCheckoutStatusEscapesAnAppUserIDThatLooksLikeAnEmail() {
+        let path = HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
+                                                                      appUserID: "user+plus@example.com")
+
+        expect(path.relativePath) ==
+            "/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=user%2Bplus@example.com"
+    }
+
+    func testHostedCheckoutStatusIsAuthenticatedAndSendsNoEtag() {
+        let path = HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
+                                                                      appUserID: Self.userID)
+
+        expect(path.authenticated).to(beTrue())
+        expect(path.shouldSendEtag).to(beFalse())
+    }
+
+    func testHostedCheckoutStatusURL() {
+        let path = HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
+                                                                      appUserID: Self.userID)
+
+        expect(path.url(preferIAMPath: false)?.absoluteString)
+            == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=\(Self.userID)"
+        expect(path.url(preferIAMPath: true)?.absoluteString)
+            == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=\(Self.userID)"
     }
 
     func testWebBillingPathsURLPreferringIAMPathUsesIAMRelativePath() {
@@ -554,10 +590,49 @@ class HTTPRequestTests: TestCase {
         .postRedeemWebPurchase: "subscribers/redeem_purchase",
         .postCreateTicket: "customercenter/support/create-ticket",
         .isPurchaseAllowedByRestoreBehavior(appUserID: userID): "customer/restore/eligibility",
-        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID):
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil):
             "subscribers/\(userID)/ads/reward_verifications/\(clientTransactionID)",
         .remoteConfig(domain: "app"): "config/app"
     ]
+
+    func testRewardVerificationStatusPathIncludesAdUnitIDQueryParameter() {
+        let path: HTTPRequest.Path = .rewardVerificationStatus(
+            appUserID: Self.userID,
+            clientTransactionID: Self.clientTransactionID,
+            adUnitID: "ad_unit"
+        )
+        let expected = "/v1/subscribers/\(Self.userID)/ads/reward_verifications/\(Self.clientTransactionID)"
+            + "?ad_unit_id=ad_unit"
+
+        expect(path.relativePath) == expected
+        expect(path.relativeIAMPath) == expected
+    }
+
+    func testRewardVerificationStatusPathKeepsAdUnitIDSlashAndPercentEncodesUnsafeCharacters() {
+        let path: HTTPRequest.Path = .rewardVerificationStatus(
+            appUserID: Self.userID,
+            clientTransactionID: Self.clientTransactionID,
+            adUnitID: "ca-app-pub-123/456 é"
+        )
+
+        expect(path.relativePath) == "/v1/subscribers/\(Self.userID)/ads/reward_verifications/"
+            + "\(Self.clientTransactionID)?ad_unit_id=ca-app-pub-123/456%20%C3%A9"
+    }
+
+    func testRewardVerificationStatusPathOmitsAdUnitIDWhenMissingOrEmpty() {
+        let expected = "/v1/subscribers/\(Self.userID)/ads/reward_verifications/\(Self.clientTransactionID)"
+
+        for adUnitID in [nil, "", "  "] {
+            let path: HTTPRequest.Path = .rewardVerificationStatus(
+                appUserID: Self.userID,
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: adUnitID
+            )
+
+            expect(path.relativePath) == expected
+            expect(path.relativeIAMPath) == expected
+        }
+    }
 
     func testRelativeIAMPathMatchesExpectedComponentPerPath() {
         for (path, expectedComponent) in Self.iamPathComponentsByPath {

@@ -407,15 +407,19 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let deviceCache = DeviceCache(systemInfo: systemInfo, userDefaults: userDefaults)
 
         let diagnosticsFileHandler: DiagnosticsFileHandlerType? = {
-            guard diagnosticsEnabled,
-                  dangerousSettings?.uiPreviewMode != true,
+            guard dangerousSettings?.uiPreviewMode != true,
                   #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return nil }
             return DiagnosticsFileHandler()
         }()
 
         let diagnosticsTracker: DiagnosticsTrackerType? = {
             if let handler = diagnosticsFileHandler, #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-                return DiagnosticsTracker(diagnosticsFileHandler: handler)
+                return DiagnosticsTracker(
+                    diagnosticsFileHandler: handler,
+                    collectionDecision: initialDiagnosticsCollectionDecision(
+                        remoteConfigEnabled: systemInfo.remoteConfigEnabled
+                    )
+                )
             } else {
                 if diagnosticsEnabled {
                     Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
@@ -679,13 +683,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let checkpointResolver: CheckpointWorkflowResolver
         let branchResolver: BranchResolver
         if systemInfo.remoteConfigEnabled {
-            let remoteConfigStateObservers: [any RemoteConfigStateObserver] = [
+            remoteConfigManager.addConfigLifecycleObservers([
                 checkpointsConfigProvider,
-                audiencesConfigProvider
-            ]
-            for observer in remoteConfigStateObservers {
-                remoteConfigManager.addRemoteConfigStateObserver(observer)
-            }
+                audiencesConfigProvider,
+                sdkSettingsConfigProvider
+            ])
             RulesEngine.setLogger(RulesEngineLoggerBridge())
             let localRulesEvaluator = LocalRulesEvaluator(
                 dimensionProviders: [
@@ -743,21 +745,24 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 let diagnosticsSynchronizer: DiagnosticsSynchronizer?
-                if diagnosticsEnabled {
-                    if let diagnosticsFileHandler = diagnosticsFileHandler {
-                        let synchronizedUserDefaults = SynchronizedUserDefaults(userDefaults: userDefaults)
-                        diagnosticsSynchronizer = DiagnosticsSynchronizer(internalAPI: backend.internalAPI,
-                                                                          handler: diagnosticsFileHandler,
-                                                                          tracker: diagnosticsTracker,
-                                                                          userDefaults: synchronizedUserDefaults)
-                        Task {
-                            await diagnosticsFileHandler.updateDelegate(diagnosticsSynchronizer)
-                        }
-                    } else {
-                        Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
-                        diagnosticsSynchronizer = nil
+                if let diagnosticsFileHandler = diagnosticsFileHandler {
+                    let synchronizedUserDefaults = SynchronizedUserDefaults(userDefaults: userDefaults)
+                    diagnosticsSynchronizer = DiagnosticsSynchronizer(
+                        internalAPI: backend.internalAPI,
+                        handler: diagnosticsFileHandler,
+                        tracker: diagnosticsTracker,
+                        userDefaults: synchronizedUserDefaults,
+                        collectionDecision: initialDiagnosticsCollectionDecision(
+                            remoteConfigEnabled: systemInfo.remoteConfigEnabled
+                        )
+                    )
+                    Task {
+                        await diagnosticsFileHandler.updateDelegate(diagnosticsSynchronizer)
                     }
                 } else {
+                    if diagnosticsEnabled {
+                        Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
+                    }
                     diagnosticsSynchronizer = nil
                 }
                 let storeKit2ObserverModePurchaseDetector = StoreKit2ObserverModePurchaseDetector(
@@ -888,6 +893,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   currentConfiguration: currentConfiguration,
                   webBundleEventBus: webBundleEventBus
         )
+
     }
 
     // swiftlint:disable:next function_body_length
@@ -1006,7 +1012,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.hostedCheckoutManager = HostedCheckoutManager(
             externalPurchaseManager: externalPurchaseManager,
             webBillingAPI: backend.webBilling,
-            currentUserProvider: identityManager
+            currentUserProvider: identityManager,
+            poller: HostedCheckoutPoller.makeDefault(webBillingAPI: backend.webBilling)
         )
 
         super.init()
@@ -1024,7 +1031,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         self.purchasesOrchestrator.delegate = self
         self.sdkSettingsConfigProvider.delegate = self
-        self.remoteConfigManager.addRemoteConfigStateObserver(self.sdkSettingsConfigProvider)
+        if !self.systemInfo.remoteConfigEnabled {
+            self.setDiagnosticsCollectionDecision(remoteDiagnosticsEnabled: nil)
+        }
         #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.attribution.syncAttributesAndOfferingsIfNeededHandler = { completion in
             completion(nil, NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError)
@@ -1953,6 +1962,45 @@ public extension Purchases {
         return await self.hostedCheckoutManager.startCheckout(package: package, paywall: paywallEvent?.data)
     }
 
+    /// Used by `RevenueCatUI` to determine the final outcome of a checkout the customer completed in the app,
+    /// before settling the paywall on it.
+    ///
+    /// When the backend says the customer owns the product, having just bought it or not, fetches the customer's
+    /// `CustomerInfo` and returns it, so the paywall reports the purchase with it, and callers that read it next
+    /// find the entitlement instead of a cached state from before. A fetch that fails returns no `CustomerInfo`,
+    /// and clears that cached state, so the next read fetches instead of serving it. Both are for the customer the
+    /// session was created for, even if another one has logged in since.
+    ///
+    /// Paywalls, the only caller, do not run with custom entitlement computation. This still compiles in that
+    /// mode, but without the `CustomerInfo` refresh, which the mode does not offer, so it never returns one.
+    @_spi(Internal) func pollHostedCheckout(
+        session: HostedCheckoutSession
+    ) async -> (result: HostedCheckoutPollResult, customerInfo: CustomerInfo?) {
+        let operationSessionID = session.operationSessionID
+        let appUserID = session.appUserID
+        let result = await self.hostedCheckoutManager.pollCheckout(operationSessionID: operationSessionID,
+                                                                   appUserID: appUserID)
+
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        switch result {
+        case .succeeded, .alreadyPurchased:
+            Logger.verbose(Strings.hostedCheckout.poll_fetching_customer_info(operationSessionID))
+
+            let customerInfo = await self.fetchCustomerInfoRetryingTransientErrors(appUserID: appUserID)
+            if customerInfo == nil {
+                Logger.warn(Strings.hostedCheckout.poll_customer_info_refresh_failed(operationSessionID))
+                self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
+            }
+
+            return (result, customerInfo)
+        case .failed, .undetermined:
+            return (result, nil)
+        }
+        #else
+        return (result, nil)
+        #endif
+    }
+
     /// Used by `RevenueCatUI` to create a support ticket
     @_spi(Internal) func createTicket(customerEmail: String, ticketDescription: String) async throws -> Bool {
         let response = try await Async.call { completion in
@@ -2055,7 +2103,7 @@ extension Purchases {
             clientTransactionID: clientTransactionID,
             trackingMetadata: trackingMetadata,
             captureMethod: .manual,
-            poller: RewardVerification.Poller.makeDefault()
+            poller: RewardVerification.Poller.makeDefault(adUnitID: trackingMetadata?.adUnitId)
         )
     }
 
@@ -2070,7 +2118,7 @@ extension Purchases {
             clientTransactionID: clientTransactionID,
             trackingMetadata: trackingMetadata,
             captureMethod: captureMethod,
-            poller: RewardVerification.Poller.makeDefault()
+            poller: RewardVerification.Poller.makeDefault(adUnitID: trackingMetadata?.adUnitId)
         )
     }
 
@@ -2203,18 +2251,7 @@ extension Purchases {
         Logger.debug(AdsStrings.reward_verification_entitlement_fetching_customer_info(
             transactionID: clientTransactionID
         ))
-        let refreshed: CustomerInfo? = await Async.retry(maximumRetries: 3) {
-            do {
-                let info = try await self.customerInfoManager.customerInfo(
-                    appUserID: self.appUserID,
-                    fetchPolicy: .fetchCurrent
-                )
-                return (shouldRetry: false, info)
-            } catch {
-                let isTransient = (error as? BackendError)?.isTransient ?? false
-                return (shouldRetry: isTransient, nil)
-            }
-        }
+        let refreshed = await self.fetchCustomerInfoRetryingTransientErrors(appUserID: self.appUserID)
         if refreshed == nil {
             Logger.warn(AdsStrings.reward_verification_entitlement_customer_info_refresh_failed(
                 transactionID: clientTransactionID
@@ -2237,12 +2274,14 @@ extension Purchases {
     ///
     /// - Throws: `BackendError`
     internal func fetchRewardVerificationStatus(
-        clientTransactionID: String
+        clientTransactionID: String,
+        adUnitID: String?
     ) async throws -> RewardVerificationPollStatus {
         let response = try await Async.call { completion in
             self.backend.adsAPI.getRewardVerificationStatus(
                 appUserID: self.appUserID,
                 clientTransactionID: clientTransactionID,
+                adUnitID: adUnitID,
                 completion: completion
             )
         }
@@ -2765,6 +2804,32 @@ public extension Purchases {
 
 }
 
+extension Purchases: SDKSettingsConfigProviderDelegate {
+
+    func sdkSettingsConfigProviderDidUpdate(_ settings: SDKSettings) {
+        self.setDiagnosticsCollectionDecision(remoteDiagnosticsEnabled: settings.diagnostics?.enabled)
+    }
+
+    private func setDiagnosticsCollectionDecision(remoteDiagnosticsEnabled: Bool?) {
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            let isEnabledBySDKConfiguration = self.currentConfiguration?.diagnosticsEnabled ?? false
+            let decision = resolvedDiagnosticsCollectionDecision(
+                remoteDiagnosticsEnabled: remoteDiagnosticsEnabled,
+                diagnosticsEnabled: isEnabledBySDKConfiguration
+            )
+            Logger.debug(Strings.diagnostics.diagnostics_collection_decision(
+                isEnabled: decision == .enabled,
+                isEnabledBySDKConfiguration: remoteDiagnosticsEnabled == nil
+            ))
+            self.diagnosticsTracker?.setCollectionDecision(decision)
+            Task { [weak self] in
+                await self?.purchasesOrchestrator.diagnosticsSynchronizer?.setCollectionDecision(decision)
+            }
+        }
+    }
+
+}
+
 // @unchecked because:
 // - It contains `NotificationCenter`, which isn't thread-safe as of Swift 5.7.
 // - It has a mutable `privateDelegate` (this isn't actually thread-safe!)
@@ -2775,10 +2840,19 @@ public extension Purchases {
 // "Capture of 'self' with non-sendable type 'Purchases' in a `@Sendable` closure"
 extension Purchases: @unchecked Sendable {}
 
-extension Purchases: SDKSettingsConfigProviderDelegate {
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+func initialDiagnosticsCollectionDecision(
+    remoteConfigEnabled: Bool
+) -> DiagnosticsCollectionDecision {
+    return remoteConfigEnabled ? .undetermined : .disabled
+}
 
-    func sdkSettingsConfigProviderDidUpdate(_: SDKSettings) {}
-
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+func resolvedDiagnosticsCollectionDecision(
+    remoteDiagnosticsEnabled: Bool?,
+    diagnosticsEnabled: Bool
+) -> DiagnosticsCollectionDecision {
+    return .init(enabled: remoteDiagnosticsEnabled ?? diagnosticsEnabled)
 }
 
 // MARK: Internal
@@ -3066,6 +3140,22 @@ internal extension Purchases {
 // MARK: Private
 
 private extension Purchases {
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    /// For a backend change made outside StoreKit, which no receipt post brings back. `nil` if no fetch lands.
+    func fetchCustomerInfoRetryingTransientErrors(appUserID: String) async -> CustomerInfo? {
+        return await Async.retry(maximumRetries: 3) {
+            do {
+                let info = try await self.customerInfoManager.customerInfo(appUserID: appUserID,
+                                                                           fetchPolicy: .fetchCurrent)
+                return (shouldRetry: false, info)
+            } catch {
+                let isTransient = (error as? BackendError)?.isTransient ?? false
+                return (shouldRetry: isTransient, nil)
+            }
+        }
+    }
+    #endif
 
     func handleCustomerInfoChanged(from old: CustomerInfo?, to new: CustomerInfo) {
         if old != nil {

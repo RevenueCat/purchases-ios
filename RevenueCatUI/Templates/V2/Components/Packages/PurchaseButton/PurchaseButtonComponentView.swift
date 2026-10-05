@@ -45,7 +45,14 @@ struct PurchaseButtonComponentView: View {
     #if os(iOS) && canImport(WebKit)
     @State private var hostedCheckoutViewModel: WebCheckoutViewModel?
 
-    @State private var alreadyOwnedCategory: StoreProduct.ProductCategory?
+    /// The session the sheet was presented for, which is asked about once the sheet has gone.
+    @State private var presentedHostedCheckoutSession: HostedCheckoutSession?
+
+    @State private var showingAlreadyOwnedAlert = false
+
+    @State private var hostedCheckoutPurchaseCustomerInfo: CustomerInfo?
+
+    @State private var hostedCheckoutError: HostedCheckoutError?
     #endif
 
     private let viewModel: PurchaseButtonComponentViewModel
@@ -97,17 +104,47 @@ struct PurchaseButtonComponentView: View {
         #endif
         #if os(iOS) && canImport(WebKit)
         .webCheckoutSheet(viewModel: self.$hostedCheckoutViewModel) { outcome in
-            self.handleHostedCheckoutOutcome(outcome)
+            guard let session = self.presentedHostedCheckoutSession else { return }
+            self.presentedHostedCheckoutSession = nil
+
+            self.handleHostedCheckoutOutcome(outcome, session: session)
         }
         .alert(
-            self.alreadyOwnedTitle,
-            isPresented: .isNotNil(self.$alreadyOwnedCategory)
-        ) {
+            Text(verbatim: ""),
+            isPresented: .isNotNil(self.$hostedCheckoutError),
+            presenting: self.hostedCheckoutError
+        ) { _ in
             Button {
-                self.alreadyOwnedCategory = nil
+                self.hostedCheckoutError = nil
             } label: {
                 Text("OK", bundle: self.viewModel.localizedBundle)
             }
+        } message: { error in
+            error.message(bundle: self.viewModel.localizedBundle)
+        }
+        // The checkout does not say whether the product is a subscription, so the title has to fit either.
+        .alert(
+            Text("You've already purchased this", bundle: self.viewModel.localizedBundle),
+            isPresented: self.$showingAlreadyOwnedAlert
+        ) {
+            Button {
+                self.showingAlreadyOwnedAlert = false
+            } label: {
+                Text("OK", bundle: self.viewModel.localizedBundle)
+            }
+        }
+        .alert(
+            Text(verbatim: ""),
+            isPresented: .isNotNil(self.$hostedCheckoutPurchaseCustomerInfo),
+            presenting: self.hostedCheckoutPurchaseCustomerInfo
+        ) { customerInfo in
+            Button {
+                self.purchaseHandler.handleHostedCheckoutPurchase(customerInfo: customerInfo)
+            } label: {
+                Text("OK", bundle: self.viewModel.localizedBundle)
+            }
+        } message: { _ in
+            Text("Your purchase was successful.", bundle: self.viewModel.localizedBundle)
         }
         #endif
     }
@@ -184,9 +221,11 @@ struct PurchaseButtonComponentView: View {
         case let .present(session):
             self.presentHostedCheckout(session)
         case .tellCustomerTheyAlreadyOwnIt:
-            self.showAlreadyOwnedAlert(for: selectedPackage)
+            self.showingAlreadyOwnedAlert = true
         case .tellCustomerThePurchaseIsUnavailable:
             self.showingPurchaseUnavailableAlert = true
+        case let .failed(error):
+            self.hostedCheckoutError = error
         case .nothing:
             break
         }
@@ -198,40 +237,41 @@ struct PurchaseButtonComponentView: View {
     }
 
     #if os(iOS) && canImport(WebKit)
-    private var alreadyOwnedTitle: Text {
-        switch self.alreadyOwnedCategory {
-        case .subscription:
-            return Text("You are currently subscribed to this", bundle: self.viewModel.localizedBundle)
-        case .nonSubscription, .none:
-            return Text("You've already purchased this", bundle: self.viewModel.localizedBundle)
-        }
-    }
-
-    @MainActor
-    private func showAlreadyOwnedAlert(for package: Package) {
-        self.alreadyOwnedCategory = package.storeProduct.productCategory
-    }
-
     @MainActor
     private func presentHostedCheckout(_ session: HostedCheckoutSession) {
+        self.presentedHostedCheckoutSession = session
         self.hostedCheckoutViewModel = WebCheckoutViewModel(
             checkoutURL: session.checkoutURL,
             successURL: session.successURL,
-            cancelURL: session.cancelURL,
             dataStoreIdentifierStore: .init()
         )
     }
 
-    private func handleHostedCheckoutOutcome(_ outcome: WebCheckoutSheetOutcome) {
+    private func handleHostedCheckoutOutcome(_ outcome: WebCheckoutSheetOutcome, session: HostedCheckoutSession) {
         switch outcome {
         case .returned(.success):
-            Task { await self.purchaseHandler.handleHostedCheckoutPurchase() }
-        case .returned(.cancel):
-            Task { await self.purchaseHandler.handleHostedCheckoutCancellation(package: self.packageContext.package) }
+            self.resolveHostedCheckout(session)
         case .dismissed:
             // A payment may have gone through moments before the customer closed the sheet. Settling that
             // means asking the backend what became of the session, which is not wired up yet.
             Logger.debug(Strings.hosted_checkout_dismissed_without_returning)
+        }
+    }
+
+    private func resolveHostedCheckout(_ session: HostedCheckoutSession) {
+        let package = self.packageContext.package
+
+        Task { @MainActor in
+            switch await HostedCheckout.resolve(session,
+                                                package: package,
+                                                purchaseHandler: self.purchaseHandler) {
+            case .tellCustomerTheyAlreadyOwnIt:
+                self.showingAlreadyOwnedAlert = true
+            case let .failed(error):
+                self.hostedCheckoutError = error
+            case let .purchased(customerInfo):
+                self.hostedCheckoutPurchaseCustomerInfo = customerInfo
+            }
         }
     }
     #endif
