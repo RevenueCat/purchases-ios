@@ -107,6 +107,22 @@ final class WorkflowStepEventTrackerTests: TestCase {
         expect(completed.isLastStep) == true
     }
 
+    /// `initialStepId` is only the fallback once an `initialTrigger` routes the first screen, so the
+    /// step the workflow actually opened on is the first one, and the fallback is not.
+    func testIsFirstStepFollowsTheStepTheWorkflowOpenedOn() throws {
+        let workflow = try Self.makeWorkflow()
+        let tracker = self.makeTracker(workflow: workflow)
+        let routed = try XCTUnwrap(workflow.steps["step_2"])
+        let fallback = try XCTUnwrap(workflow.steps["step_1"])
+
+        tracker.trackInitialStep(routed)
+        tracker.trackStepCompleted(fallback, toStepId: nil)
+
+        expect(self.recorded).to(haveCount(2))
+        expect(try XCTUnwrap(Self.startedData(self.recorded[0])).isFirstStep) == true
+        expect(try XCTUnwrap(Self.completedData(self.recorded[1])).isFirstStep) == false
+    }
+
     // MARK: - Trace id continuity
 
     func testTraceIdIsStableAcrossSequence() throws {
@@ -274,7 +290,7 @@ private extension WorkflowStepEventTrackerTests {
               "trigger_actions": {
                 "btn": {
                   "type": "branch",
-                  "branches": [{"audience_id": "aud_a", "step_id": "step_3"}],
+                  "routes": [{"audience_id": "aud_a", "step_id": "step_3"}],
                   "fallback_step_id": "step_2"
                 }
               }
