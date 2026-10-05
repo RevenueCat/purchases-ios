@@ -14,14 +14,13 @@
 import RevenueCat
 import SwiftUI
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 
 // swiftlint:disable file_length
 
 // MARK: - CustomerCenterView Extension
 
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension CustomerCenterView {
@@ -201,8 +200,7 @@ extension CustomerCenterView {
 
 // MARK: - View Extensions
 
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension View {

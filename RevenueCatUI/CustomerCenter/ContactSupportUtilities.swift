@@ -17,8 +17,7 @@ import Foundation
 import UIKit
 #endif
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension CustomerCenterConfigData.Support {
@@ -52,6 +51,10 @@ extension CustomerCenterConfigData.Support {
         #if canImport(UIKit) && !os(watchOS)
         osVersion = UIDevice.current.systemVersion
         deviceModel = UIDevice.current.model
+        #elseif os(macOS)
+        let version = ProcessInfo.processInfo.operatingSystemVersion
+        osVersion = "\(version.majorVersion).\(version.minorVersion).\(version.patchVersion)"
+        deviceModel = Self.macHardwareModel ?? unknown
         #endif
         let userID = Purchases.isConfigured ? purchasesProvider.appUserID : unknown
         let storeFrontCountryCode = purchasesProvider.isConfigured ?
@@ -65,4 +68,16 @@ extension CustomerCenterConfigData.Support {
             ("StoreFront Country Code", storeFrontCountryCode)
         ]
     }
+
+    #if os(macOS)
+    /// The Mac's hardware model identifier (for example `Mac15,6`), read once from `hw.model`:
+    /// the support URL is rebuilt whenever the screen offering it redraws.
+    private static let macHardwareModel: String? = {
+        var size = 0
+        guard sysctlbyname("hw.model", nil, &size, nil, 0) == 0, size > 0 else { return nil }
+        var buffer = [CChar](repeating: 0, count: size)
+        guard sysctlbyname("hw.model", &buffer, &size, nil, 0) == 0 else { return nil }
+        return String(cString: buffer)
+    }()
+    #endif
 }

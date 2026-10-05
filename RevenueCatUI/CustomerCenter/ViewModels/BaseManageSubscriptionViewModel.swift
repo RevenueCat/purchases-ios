@@ -15,10 +15,9 @@ import Foundation
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
@@ -103,7 +102,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
             self.restoreAlertType = .loading
         }
 
-#if os(iOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || os(macOS)
     func handleHelpPath(_ path: CustomerCenterConfigData.HelpPath, withActiveProductId: String? = nil) async {
         if let action = path.asAction() {
             self.actionWrapper.handleAction(.buttonTapped(action: action))
@@ -176,20 +175,21 @@ class BaseManageSubscriptionViewModel: ObservableObject {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 private extension BaseManageSubscriptionViewModel {
 
-#if os(iOS) || targetEnvironment(macCatalyst)
+#if os(iOS) || os(macOS)
     private func onPathSelected(path: CustomerCenterConfigData.HelpPath, withActiveProductId: String?) async {
         switch path.type {
         case .missingPurchase:
             self.showRestoreAlert = true
 
+        #if os(iOS) || os(visionOS)
         case .refundRequest:
             await handleRefundRequest()
+        #endif
 
         case .cancel where purchaseInformation?.store != .appStore:
             handleNonAppStoreCancel()
@@ -221,6 +221,7 @@ private extension BaseManageSubscriptionViewModel {
         }
     }
 
+    #if os(iOS) || os(visionOS)
     private func handleRefundRequest() async {
         guard let purchaseInformation = self.purchaseInformation else { return }
         let productId = purchaseInformation.productIdentifier
@@ -235,10 +236,21 @@ private extension BaseManageSubscriptionViewModel {
             self.actionWrapper.handleAction(.refundRequestCompleted(productId, .error))
         }
     }
+    #endif
+
+    /// Shows `url` in the in-app browser, or, on macOS, where `SafariView` does not exist, hands
+    /// it to the default browser.
+    private func openInAppBrowser(_ url: URL) {
+        #if os(macOS)
+        URLUtilities.openURLIfNotAppExtension(url)
+        #else
+        self.inAppBrowserURL = IdentifiableURL(url: url)
+        #endif
+    }
 
     private func handleNonAppStoreCancel() {
         if let url = purchaseInformation?.managementURL {
-            self.inAppBrowserURL = IdentifiableURL(url: url)
+            self.openInAppBrowser(url)
         }
     }
 
@@ -253,7 +265,7 @@ private extension BaseManageSubscriptionViewModel {
             _ where !url.isWebLink:
             URLUtilities.openURLIfNotAppExtension(url)
         case .inApp:
-            self.inAppBrowserURL = .init(url: url)
+            self.openInAppBrowser(url)
         @unknown default:
             Logger.warning(Strings.could_not_determine_type_of_custom_url)
             URLUtilities.openURLIfNotAppExtension(url)
@@ -264,8 +276,7 @@ private extension BaseManageSubscriptionViewModel {
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension BaseManageSubscriptionViewModel {
@@ -285,7 +296,7 @@ private extension CustomerCenterConfigData.Screen {
 
     var supportedPaths: [CustomerCenterConfigData.HelpPath] {
         return self.paths.filter { path in
-            return path.type != .unknown
+            return path.type != .unknown && path.type.isSupportedOnCurrentPlatform
         }
     }
 

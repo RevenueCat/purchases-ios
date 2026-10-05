@@ -14,10 +14,9 @@
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct PurchaseInformationCardView: View {
@@ -85,6 +84,9 @@ struct PurchaseInformationCardView: View {
     }
 
     var body: some View {
+        #if os(macOS)
+        macRow
+        #else
         VStack(alignment: .leading, spacing: 0) {
             CompatibilityLabeledContent {
                 VStack(alignment: .leading, spacing: 0) {
@@ -157,7 +159,52 @@ struct PurchaseInformationCardView: View {
                           : UIColor.tertiarySystemBackground),
                     in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
         #endif
+        #endif
     }
+
+    #if os(macOS)
+    /// The purchase as a row of the grouped form the Mac lays the Customer Center out in: the same
+    /// title, badge, subtitle, store and refund status as the iOS card, with the card's own
+    /// background and padding left to the form.
+    private var macRow: some View {
+        HStack(alignment: .center, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(alignment: .center, spacing: 8) {
+                    Text(title)
+                        .font(.headline)
+                    if let badge {
+                        badge
+                    }
+                }
+                if let subtitle {
+                    Text(subtitle)
+                        .foregroundStyle(.secondary)
+                }
+                Text(storeTitle)
+                    .foregroundStyle(.secondary)
+                if let additionalInfo, let additionalIcon {
+                    Label {
+                        Text(additionalInfo)
+                    } icon: {
+                        additionalIcon
+                            .renderingMode(.template)
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                }
+            }
+            .multilineTextAlignment(.leading)
+            Spacer(minLength: 0)
+            if showChevron {
+                Image(systemName: "chevron.forward")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+                    .accessibilityHidden(true)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+    #endif
 }
 
 private extension PurchaseInformation {
@@ -197,8 +244,7 @@ private extension RefundRequestStatus {
     }
 }
 
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 extension PurchaseInformationCardView {
@@ -214,7 +260,7 @@ extension PurchaseInformationCardView {
         var accessibilityIdentifier: String = "PurchaseInformationCardView.Badge"
 
         var body: some View {
-            if #available(iOS 26.0, *) {
+            if #available(iOS 26.0, macOS 26.0, *) {
                 Text(title)
                     .font(.caption2)
                     .bold()
@@ -223,8 +269,8 @@ extension PurchaseInformationCardView {
                     #if compiler(>=5.9)
                     .background(backgroundColor ?? Color(
                         colorScheme == .light
-                        ? UIColor.systemBackground
-                        : UIColor.secondarySystemBackground
+                        ? PlatformColor.systemBackground
+                        : PlatformColor.secondarySystemBackground
                     ), in: .capsule)
                     #endif
                     .overlay(
@@ -241,8 +287,8 @@ extension PurchaseInformationCardView {
                     #if compiler(>=5.9)
                     .background(backgroundColor ?? Color(
                         colorScheme == .light
-                        ? UIColor.systemBackground
-                        : UIColor.secondarySystemBackground
+                        ? PlatformColor.systemBackground
+                        : PlatformColor.secondarySystemBackground
                     ), in: .rect(cornerRadius: 4))
                     #endif
                     .overlay(
@@ -340,8 +386,7 @@ extension PurchaseInformationCardView {
 }
 
 #if DEBUG
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct PurchaseInformationCardView_Previews: PreviewProvider {

@@ -22,10 +22,9 @@ import Nimble
 import StoreKit
 import XCTest
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
@@ -98,6 +97,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.count) == 0
     }
 
+    #if !os(macOS) // Refunds are unavailable on macOS
     func testLifetimeSubscriptionPaths() {
         let purchase = PurchaseInformation.lifetime
 
@@ -111,6 +111,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.count) == 1
         expect(viewModel.relevantPathsForPurchase.first(where: { $0.type == .refundRequest })).toNot(beNil())
     }
+    #endif
 
     func testCancelledShowsResubscribeInsteadOfCancel() throws {
         let purchase = PurchaseInformation.mock(
@@ -224,6 +225,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(cancelPath.detail).toNot(beNil())
     }
 
+    #if !os(macOS) // Refunds are unavailable on macOS
     func testShowsRefundIfRefundWindowIsForever() {
         let purchase = PurchaseInformation.mock(
             isSubscription: true,
@@ -348,6 +350,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).toNot(beNil())
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).toNot(beNil())
     }
+    #endif
 
     func testLoadsPromotionalOffer() async throws {
         let offerIdentifierInJSON = "rc_refund_offer"
@@ -878,8 +881,11 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             purchasesProvider: MockCustomerCenterPurchases()
         )
 
+        expect(viewModel.relevantPathsForPurchase.map(\.type)).toNot(contain(.cancel))
+        #if !os(macOS) // Refunds are unavailable on macOS
         expect(viewModel.relevantPathsForPurchase.count) == 1
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
+        #endif
     }
 
     func testAutoRenewableSubscriptionShowsCancelPath() {
@@ -1035,6 +1041,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beTrue())
     }
 
+    #if !os(macOS) // Refunds are unavailable on macOS
     func testPurchasedSubscriptionShowsRefundRequestAndChangePlans() {
         let viewModel = BaseManageSubscriptionViewModel(
             screen: BaseManageSubscriptionViewModelTests.default,
@@ -1046,7 +1053,9 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).to(beTrue())
     }
+    #endif
 
+    #if !os(macOS) // Refunds are unavailable on macOS
     func testUnknownOwnershipSubscriptionShowsRefundRequestAndChangePlans() {
         let viewModel = BaseManageSubscriptionViewModel(
             screen: BaseManageSubscriptionViewModelTests.default,
@@ -1059,10 +1068,11 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).to(beTrue())
     }
+    #endif
 
 }
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 13.0, tvOS 15.0, watchOS 8.0, *)
 private extension BaseManageSubscriptionViewModelTests {
 
     static let `default`: CustomerCenterConfigData.Screen =

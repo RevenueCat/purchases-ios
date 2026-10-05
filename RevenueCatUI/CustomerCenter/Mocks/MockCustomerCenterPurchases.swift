@@ -14,8 +14,7 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurchasesType {
@@ -137,7 +136,9 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
         return try virtualCurrenciesResult?.get() ?? VirtualCurrenciesFixtures.noVirtualCurrencies
     }
 
+    var showManageSubscriptionsCallCount = 0
     func showManageSubscriptions() async throws {
+        showManageSubscriptionsCallCount += 1
         if let showManageSubscriptionsError {
             throw showManageSubscriptionsError
         }

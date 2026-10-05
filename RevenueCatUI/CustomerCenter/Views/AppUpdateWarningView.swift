@@ -14,10 +14,9 @@
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct AppUpdateWarningView: View {
@@ -40,6 +39,9 @@ struct AppUpdateWarningView: View {
     }
 
     var body: some View {
+        #if os(macOS)
+        macForm
+        #else
         Color(colorScheme == .light ? UIColor.secondarySystemBackground : UIColor.systemBackground)
             .ignoresSafeArea()
             .overlay {
@@ -80,8 +82,53 @@ struct AppUpdateWarningView: View {
                 })
                 .scrollableIfNecessaryWhenAvailableForV1(.vertical)
             }
+        #endif
     }
+
+    #if os(macOS)
+    /// The Mac's layout of this screen: a grouped form like the rest of the Customer Center, with
+    /// the warning in the first section and the two choices as rows.
+    private var macForm: some View {
+        Form {
+            Section {
+                HStack(alignment: .top, spacing: 12) {
+                    Image(systemName: "arrow.up.circle.fill")
+                        .font(.largeTitle)
+                        .foregroundStyle(.tint)
+                        .accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(localization[.updateWarningTitle])
+                            .font(.headline)
+                        Text(localization[.updateWarningDescription])
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .padding(.vertical, 4)
+            }
+
+            Section {
+                Button {
+                    onUpdateAppClick()
+                } label: {
+                    CustomerCenterMacRowLabel(title: localization[.updateWarningUpdate])
+                        .foregroundStyle(.tint)
+                }
+                .customerCenterMacRow()
+
+                Button {
+                    onContinueAnywayClick()
+                } label: {
+                    CustomerCenterMacRowLabel(title: localization[.updateWarningIgnore])
+                }
+                .customerCenterMacRow()
+            }
+        }
+        .formStyle(.grouped)
+    }
+    #endif
 }
+
+#if !os(macOS)
 
 /// This is a workaround to be able to have 2 buttons in a single Section. Buttons without ButtonStyles make the entire
 /// section clickable.
@@ -99,10 +146,11 @@ private struct TextButtonStyle: PrimitiveButtonStyle {
 
 }
 
+#endif
+
 #if DEBUG
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct AppUpdateWarningView_Previews: PreviewProvider {

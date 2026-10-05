@@ -11,7 +11,7 @@
 //
 //  Created by Will Taylor on 4/22/25.
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 
 import Foundation
 @_spi(Internal) import RevenueCat
@@ -51,8 +51,7 @@ import SwiftUI
 ///     }
 /// )
 /// ```
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 // swiftlint:disable:next type_name
@@ -107,6 +106,28 @@ struct VirtualCurrenciesScrollViewWithOSBackgroundSection: View {
     }
 
     var body: some View {
+        #if os(macOS)
+        if !virtualCurrencies.isEmpty {
+            // A section of the grouped form the Mac lays the Customer Center out in.
+            ScrollViewSection(title: localization[.virtualCurrencyBalancesScreenHeader]) {
+                ForEach(virtualCurrencies, id: \.id) { virtualCurrencyRowData in
+                    VirtualCurrencyBalanceListRow(rowData: virtualCurrencyRowData)
+                }
+
+                if displayShowAllButton {
+                    Button {
+                        self.onSeeAllInAppCurrenciesButtonTapped()
+                    } label: {
+                        CustomerCenterMacRowLabel(
+                            title: localization[.seeAllVirtualCurrencies].localizedCapitalized,
+                            showsChevron: true
+                        )
+                    }
+                    .customerCenterMacRow()
+                }
+            }
+        }
+        #else
         if !virtualCurrencies.isEmpty {
             VStack(alignment: .leading, spacing: 0) {
                 ScrollViewSection(title: localization[.virtualCurrencyBalancesScreenHeader]) {
@@ -150,13 +171,13 @@ struct VirtualCurrenciesScrollViewWithOSBackgroundSection: View {
                 }
             }
         }
+        #endif
     }
 }
 
 #if DEBUG
 // MARK: - Previews
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 // swiftlint:disable:next type_name

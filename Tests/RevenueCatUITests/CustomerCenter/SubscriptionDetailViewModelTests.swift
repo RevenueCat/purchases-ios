@@ -17,10 +17,13 @@ import Nimble
 import StoreKit
 import XCTest
 
-#if os(iOS)
+#if os(macOS)
+import AppKit
+#endif
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@available(macOS, unavailable)
+#if os(iOS) || os(macOS)
+
+@available(iOS 15.0, macOS 13.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
@@ -338,6 +341,187 @@ final class SubscriptionDetailViewModelTests: TestCase {
         )
 
         expect(viewModel.shouldShowCreateTicketButton(supportTickets: nil)).to(beFalse())
+    }
+
+    func testShowingManageSubscriptionsRaisesTheManageSubscriptionsFlag() throws {
+        let (viewModel, customerInfoViewModel, actionWrapper, _) = try Self.makeManagementViewModel(
+            purchaseInformation: .mock(store: .appStore, isExpired: false)
+        )
+        viewModel.didAppear()
+
+        actionWrapper.handleAction(.showingManageSubscriptions)
+
+        // Presents StoreKit's sheet on iOS; on macOS it is what the refresh on return keys off.
+        expect(customerInfoViewModel.manageSubscriptionsSheet) == true
+    }
+
+    #if os(macOS)
+    // StoreKit's manage-subscriptions sheet is unavailable on macOS: showing it opens the App
+    // Store's subscriptions page through `CustomerCenterPurchasesType.showManageSubscriptions()`,
+    // and the flag comes back down when the app becomes active again, which refreshes the screen.
+    func testShowingManageSubscriptionsOpensTheAppStoreAndLowersTheFlagOnReturnOnMacOS() async throws {
+        let (viewModel, customerInfoViewModel, actionWrapper, mockPurchases) = try Self.makeManagementViewModel(
+            purchaseInformation: .mock(store: .appStore, isExpired: false)
+        )
+        viewModel.didAppear()
+
+        expect(mockPurchases.showManageSubscriptionsCallCount) == 0
+
+        actionWrapper.handleAction(.showingManageSubscriptions)
+
+        await expect(mockPurchases.showManageSubscriptionsCallCount).toEventually(equal(1))
+        expect(customerInfoViewModel.manageSubscriptionsSheet) == true
+
+        NotificationCenter.default.post(name: NSApplication.didBecomeActiveNotification, object: nil)
+
+        expect(customerInfoViewModel.manageSubscriptionsSheet) == false
+    }
+
+    // The customer can come back before finishing on the App Store page (it signs them in on the
+    // web first), so the first return cannot be the only one that refreshes.
+    func testEveryLaterReturnRefreshesTheScreenOnMacOS() async throws {
+        let (viewModel, customerInfoViewModel, actionWrapper, mockPurchases) = try Self.makeManagementViewModel(
+            purchaseInformation: .mock(store: .appStore, isExpired: false)
+        )
+        viewModel.didAppear()
+
+        actionWrapper.handleAction(.showingManageSubscriptions)
+        await expect(mockPurchases.showManageSubscriptionsCallCount).toEventually(equal(1))
+
+        // The first return lowers the flag, and the view's reaction to that runs the refresh.
+        NotificationCenter.default.post(name: NSApplication.didBecomeActiveNotification, object: nil)
+        expect(customerInfoViewModel.manageSubscriptionsSheet) == false
+        expect(mockPurchases.syncPurchasesCount) == 0
+
+        NotificationCenter.default.post(name: NSApplication.didBecomeActiveNotification, object: nil)
+        await expect(mockPurchases.syncPurchasesCount).toEventually(equal(1))
+    }
+
+    func testReturningWithoutHavingOpenedTheAppStoreDoesNotRefreshOnMacOS() async throws {
+        let (viewModel, _, _, mockPurchases) = try Self.makeManagementViewModel(
+            purchaseInformation: .mock(store: .appStore, isExpired: false)
+        )
+        viewModel.didAppear()
+
+        NotificationCenter.default.post(name: NSApplication.didBecomeActiveNotification, object: nil)
+
+        await expect(mockPurchases.syncPurchasesCount).toNever(beGreaterThan(0), until: .milliseconds(300))
+    }
+
+    // A second click while the browser comes up must not open the page again.
+    func testASecondClickBeforeReturningDoesNotOpenTheAppStoreAgainOnMacOS() async throws {
+        let (viewModel, _, actionWrapper, mockPurchases) = try Self.makeManagementViewModel(
+            purchaseInformation: .mock(store: .appStore, isExpired: false)
+        )
+        viewModel.didAppear()
+
+        actionWrapper.handleAction(.showingManageSubscriptions)
+        actionWrapper.handleAction(.showingManageSubscriptions)
+
+        await expect(mockPurchases.showManageSubscriptionsCallCount).toEventually(equal(1))
+        await expect(mockPurchases.showManageSubscriptionsCallCount)
+            .toNever(beGreaterThan(1), until: .milliseconds(300))
+    }
+
+    func testAClickAfterReturningOpensTheAppStoreAgainOnMacOS() async throws {
+        let (viewModel, _, actionWrapper, mockPurchases) = try Self.makeManagementViewModel(
+            purchaseInformation: .mock(store: .appStore, isExpired: false)
+        )
+        viewModel.didAppear()
+
+        actionWrapper.handleAction(.showingManageSubscriptions)
+        await expect(mockPurchases.showManageSubscriptionsCallCount).toEventually(equal(1))
+
+        NotificationCenter.default.post(name: NSApplication.didBecomeActiveNotification, object: nil)
+        actionWrapper.handleAction(.showingManageSubscriptions)
+
+        await expect(mockPurchases.showManageSubscriptionsCallCount).toEventually(equal(2))
+    }
+
+    func testAFailedOpenLowersTheFlagSoTheRowWorksAgainOnMacOS() async throws {
+        let mockPurchases = MockCustomerCenterPurchases(
+            showManageSubscriptionsError: NSError(domain: "test", code: 1)
+        )
+        let (viewModel, customerInfoViewModel, actionWrapper, _) = try Self.makeManagementViewModel(
+            purchaseInformation: .mock(store: .appStore, isExpired: false),
+            mockPurchases: mockPurchases
+        )
+        viewModel.didAppear()
+
+        actionWrapper.handleAction(.showingManageSubscriptions)
+
+        await expect(customerInfoViewModel.manageSubscriptionsSheet).toEventually(beFalse())
+
+        actionWrapper.handleAction(.showingManageSubscriptions)
+        await expect(mockPurchases.showManageSubscriptionsCallCount).toEventually(equal(2))
+    }
+
+    func testReturningAfterAFailedOpenDoesNotRefreshOnMacOS() async throws {
+        let mockPurchases = MockCustomerCenterPurchases(
+            showManageSubscriptionsError: NSError(domain: "test", code: 1)
+        )
+        let (viewModel, customerInfoViewModel, actionWrapper, _) = try Self.makeManagementViewModel(
+            purchaseInformation: .mock(store: .appStore, isExpired: false),
+            mockPurchases: mockPurchases
+        )
+        viewModel.didAppear()
+
+        actionWrapper.handleAction(.showingManageSubscriptions)
+        await expect(customerInfoViewModel.manageSubscriptionsSheet).toEventually(beFalse())
+
+        NotificationCenter.default.post(name: NSApplication.didBecomeActiveNotification, object: nil)
+
+        await expect(mockPurchases.syncPurchasesCount).toNever(beGreaterThan(0), until: .milliseconds(300))
+    }
+
+    // Without a subscription group or two products `SubscriptionStoreView` has nothing to show,
+    // and macOS has no manage-subscriptions sheet to fall back to as iOS does.
+    func testChangePlansWithoutAStoreViewOpensTheAppStoreOnMacOS() async throws {
+        let (viewModel, customerInfoViewModel, actionWrapper, mockPurchases) = try Self.makeManagementViewModel(
+            purchaseInformation: .mock(store: .appStore, isExpired: false, subscriptionGroupID: nil)
+        )
+        viewModel.didAppear()
+
+        actionWrapper.handleAction(.showingChangePlans(nil))
+
+        await expect(mockPurchases.showManageSubscriptionsCallCount).toEventually(equal(1))
+        expect(customerInfoViewModel.changePlansSheet) == false
+        expect(customerInfoViewModel.manageSubscriptionsSheet) == true
+    }
+    #endif
+
+    func testChangePlansWithASubscriptionGroupRaisesTheChangePlansFlag() throws {
+        let (viewModel, customerInfoViewModel, actionWrapper, mockPurchases) = try Self.makeManagementViewModel(
+            purchaseInformation: .mock(store: .appStore, isExpired: false, subscriptionGroupID: "group")
+        )
+        viewModel.didAppear()
+
+        actionWrapper.handleAction(.showingChangePlans("group"))
+
+        expect(customerInfoViewModel.changePlansSheet) == true
+        expect(mockPurchases.showManageSubscriptionsCallCount) == 0
+    }
+
+    private static func makeManagementViewModel(
+        purchaseInformation: PurchaseInformation,
+        mockPurchases: MockCustomerCenterPurchases = MockCustomerCenterPurchases()
+    ) throws -> (SubscriptionDetailViewModel, CustomerCenterViewModel, CustomerCenterActionWrapper,
+                 MockCustomerCenterPurchases) {
+        let actionWrapper = CustomerCenterActionWrapper()
+        let customerInfoViewModel = CustomerCenterViewModel(uiPreviewPurchaseProvider: mockPurchases)
+        let screen = try XCTUnwrap(CustomerCenterConfigData.default.screens[.management])
+
+        let viewModel = SubscriptionDetailViewModel(
+            customerInfoViewModel: customerInfoViewModel,
+            screen: screen,
+            showPurchaseHistory: false,
+            showVirtualCurrencies: false,
+            allowsMissingPurchaseAction: false,
+            actionWrapper: actionWrapper,
+            purchaseInformation: purchaseInformation,
+            purchasesProvider: mockPurchases
+        )
+        return (viewModel, customerInfoViewModel, actionWrapper, mockPurchases)
     }
 }
 

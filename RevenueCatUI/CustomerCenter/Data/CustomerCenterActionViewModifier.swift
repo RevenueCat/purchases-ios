@@ -15,12 +15,11 @@ import Combine
 import RevenueCat
 import SwiftUI
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 
 /// A view modifier that subscribes to internal Customer Center actions and forwards them to environment-provided
 /// callbacks.
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct CustomerCenterActionViewModifier: ViewModifier {

@@ -11,7 +11,7 @@
 //
 //  Created by Will Taylor on 4/21/25.
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 
 import Foundation
 @_spi(Internal) import RevenueCat
@@ -19,8 +19,7 @@ import Foundation
 /// A view model that manages the state and data for the virtual currencies screen.
 ///
 /// This view model is responsible for loading and managing virtual currency balance data.
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor

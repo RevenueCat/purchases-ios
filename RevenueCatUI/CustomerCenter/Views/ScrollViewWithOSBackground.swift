@@ -13,10 +13,9 @@
 
 import SwiftUI
 
-#if os(iOS)
+#if os(iOS) || os(macOS)
 
-@available(iOS 15.0, *)
-@available(macOS, unavailable)
+@available(iOS 15.0, macOS 13.0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 struct ScrollViewWithOSBackground<Content: View>: View {
@@ -27,7 +26,7 @@ struct ScrollViewWithOSBackground<Content: View>: View {
 
     var body: some View {
         ZStack {
-            Color(colorScheme == .light ? UIColor.secondarySystemBackground : UIColor.systemBackground)
+            Color(colorScheme == .light ? PlatformColor.secondarySystemBackground : PlatformColor.systemBackground)
                 .ignoresSafeArea()
 
             ScrollView {
