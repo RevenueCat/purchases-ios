@@ -227,11 +227,12 @@ enum HostedCheckout {
         }
     }
 
-    /// Leaves alone a checkout that has since replaced the one being resolved.
+    /// Leaves alone a checkout that has since replaced the one being resolved. The kept checkout may have been
+    /// created for a customer other than the one it is being confirmed for.
     @MainActor
     private static func releaseKeptCheckout(for sessionID: HostedCheckoutSessionID,
                                             purchaseHandler: PurchaseHandler) {
-        if purchaseHandler.keptHostedCheckout?.session.id == sessionID {
+        if purchaseHandler.keptHostedCheckout?.session.id.operationSessionID == sessionID.operationSessionID {
             purchaseHandler.keptHostedCheckout = nil
         }
     }

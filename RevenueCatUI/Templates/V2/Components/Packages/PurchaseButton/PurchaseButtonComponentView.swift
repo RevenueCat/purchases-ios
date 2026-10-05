@@ -223,7 +223,8 @@ struct PurchaseButtonComponentView: View {
         case let .present(session):
             self.presentHostedCheckout(session, package: selectedPackage)
         case let .confirm(sessionID):
-            let package = keptCheckout?.session.id == sessionID ? keptCheckout?.package : nil
+            let isKept = keptCheckout?.session.id.operationSessionID == sessionID.operationSessionID
+            let package = isKept ? keptCheckout?.package : nil
             self.resolveHostedCheckout(sessionID, package: package ?? selectedPackage)
         case .tellCustomerTheyAlreadyOwnIt:
             self.showingAlreadyOwnedAlert = true

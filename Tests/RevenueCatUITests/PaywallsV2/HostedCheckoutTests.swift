@@ -239,6 +239,21 @@ final class HostedCheckoutTests: TestCase {
         expect(handler.keptHostedCheckout).to(beNil())
     }
 
+    /// Otherwise every tap on buy would hand the backend the same paid-for session and confirm it again.
+    @MainActor
+    func testReleasesTheKeptCheckoutConfirmedForAnotherCustomer() async {
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollBlock = { _ in .succeeded }
+        let handler = Self.makeHandler(purchases: purchases)
+        handler.keptHostedCheckout = Self.makeKeptCheckout(for: Self.session)
+        let sessionID = HostedCheckoutSessionID(operationSessionID: Self.session.id.operationSessionID,
+                                                appUserID: "app_user_2")
+
+        _ = await HostedCheckout.resolve(sessionID, package: TestData.annualPackage, purchaseHandler: handler)
+
+        expect(handler.keptHostedCheckout).to(beNil())
+    }
+
     @MainActor
     func testReleasesTheKeptCheckoutForAProductTheCustomerAlreadyOwned() async {
         let purchases = Self.makePurchases()

@@ -119,11 +119,11 @@ extension PurchasesHostedCheckoutTests {
         try self.stubStatus(.succeeded)
         self.backend.overrideCustomerInfoResult = .failure(.networkError(.offlineConnection()))
         let session = self.startedSession()
-        self.deviceCache.cache(customerInfo: Data(), appUserID: session.appUserID)
+        self.deviceCache.cache(customerInfo: Data(), appUserID: session.id.appUserID)
 
         _ = await self.purchases.pollHostedCheckout(sessionID: session.id)
 
-        expect(self.deviceCache.cachedCustomerInfoData(appUserID: session.appUserID)).to(beNil())
+        expect(self.deviceCache.cachedCustomerInfoData(appUserID: session.id.appUserID)).to(beNil())
     }
 
     /// The purchase is on the account of the customer who made it, not on the one who logged in meanwhile.
@@ -135,8 +135,8 @@ extension PurchasesHostedCheckoutTests {
 
         _ = await self.purchases.pollHostedCheckout(sessionID: session.id)
 
-        expect(try self.mockWebBillingAPI.invokedGetHostedCheckoutStatusParameters?.appUserID) == session.appUserID
-        expect(self.backend.userID) == session.appUserID
+        expect(try self.mockWebBillingAPI.invokedGetHostedCheckoutStatusParameters?.appUserID) == session.id.appUserID
+        expect(self.backend.userID) == session.id.appUserID
     }
 
     func testFetchesTheBuyersCustomerInfoWhenAnotherCustomerLogsInDuringThePoll() async throws {
@@ -147,7 +147,7 @@ extension PurchasesHostedCheckoutTests {
 
         _ = await self.purchases.pollHostedCheckout(sessionID: session.id)
 
-        expect(self.backend.userID) == session.appUserID
+        expect(self.backend.userID) == session.id.appUserID
     }
 
     /// The paywall reports the purchase with it, so it has to be the buyer's, not that of whoever is logged in.
@@ -161,7 +161,7 @@ extension PurchasesHostedCheckoutTests {
 
         let (_, customerInfo) = await self.purchases.pollHostedCheckout(sessionID: session.id)
 
-        expect(self.backend.userID) == session.appUserID
+        expect(self.backend.userID) == session.id.appUserID
         expect(customerInfo) == purchased
     }
 
@@ -170,13 +170,13 @@ extension PurchasesHostedCheckoutTests {
         try self.stubStatus(.succeeded)
         self.backend.overrideCustomerInfoResult = .failure(.networkError(.offlineConnection()))
         let session = self.startedSession()
-        self.deviceCache.cache(customerInfo: Data(), appUserID: session.appUserID)
+        self.deviceCache.cache(customerInfo: Data(), appUserID: session.id.appUserID)
         self.deviceCache.cache(customerInfo: Data(), appUserID: Self.otherAppUserID)
         try self.logInWhileThePollRuns(Self.otherAppUserID)
 
         _ = await self.purchases.pollHostedCheckout(sessionID: session.id)
 
-        expect(self.deviceCache.cachedCustomerInfoData(appUserID: session.appUserID)).to(beNil())
+        expect(self.deviceCache.cachedCustomerInfoData(appUserID: session.id.appUserID)).to(beNil())
         expect(self.deviceCache.cachedCustomerInfoData(appUserID: Self.otherAppUserID)).toNot(beNil())
     }
 
@@ -204,7 +204,7 @@ extension PurchasesHostedCheckoutTests {
 
         _ = await self.purchases.pollHostedCheckout(sessionID: session.id)
 
-        expect(self.backend.userID) == session.appUserID
+        expect(self.backend.userID) == session.id.appUserID
         expect(self.customerInfoManager.lastSentCustomerInfo) != purchased
     }
 

@@ -129,7 +129,7 @@ private extension HostedCheckoutManager {
                 presentedOfferingContext: package.presentedOfferingContext,
                 paywall: paywall.map { .init(paywallEventData: $0) },
                 externalPurchaseTokenID: externalPurchaseTokenID,
-                previousOperationSessionID: previousSession?.operationSessionID,
+                previousOperationSessionID: previousSession?.id.operationSessionID,
                 completion: completion
             )
         }
