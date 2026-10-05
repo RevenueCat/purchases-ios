@@ -22,7 +22,7 @@ import SwiftUI
 enum HostedCheckout {
 
     /// What the paywall does with the tap that asked for a checkout.
-    enum Action: Equatable {
+    enum Action {
 
         /// Present this checkout to the customer.
         case present(HostedCheckoutSession)
@@ -241,15 +241,6 @@ enum HostedCheckout {
         if let checkout, purchaseHandler.keptHostedCheckout === checkout {
             purchaseHandler.keptHostedCheckout = nil
         }
-    }
-
-}
-
-@available(iOS 15.0, *)
-extension HostedCheckout.KeptCheckout: Equatable {
-
-    nonisolated static func == (lhs: HostedCheckout.KeptCheckout, rhs: HostedCheckout.KeptCheckout) -> Bool {
-        return lhs === rhs
     }
 
 }

@@ -38,7 +38,8 @@ final class HostedCheckoutTests: TestCase {
                                                 purchaseHandler: Self.makeHandler(purchases: purchases),
                                                 purchaseInitiatedAction: nil)
 
-        expect(action) == .present(Self.session)
+        guard case let .present(session) = action else { return fail("Unexpected \(action)") }
+        expect(session) == Self.session
     }
 
     /// The same event is tracked and sent with the checkout, so the purchase made on the page is attributed
@@ -88,7 +89,7 @@ final class HostedCheckoutTests: TestCase {
                                                                                           recordingInto: .init()))
 
         let packagesCheckedOut = await checkoutsStarted.values
-        expect(action) == .nothing
+        guard case .nothing = action else { return fail("Unexpected \(action)") }
         expect(packagesCheckedOut).to(beEmpty())
     }
 
@@ -104,16 +105,23 @@ final class HostedCheckoutTests: TestCase {
         )
 
         let packagesAskedAbout = await packagesIntercepted.values
-        expect(action) == .present(Self.session)
+        guard case let .present(session) = action else { return fail("Unexpected \(action)") }
+        expect(session) == Self.session
         expect(packagesAskedAbout) == [TestData.annualPackage.identifier]
     }
 
     func testPresentsTheCheckoutThatWasCreated() {
-        expect(HostedCheckout.Action(.started(Self.session), keptCheckout: nil)) == .present(Self.session)
+        let action = HostedCheckout.Action(.started(Self.session), keptCheckout: nil)
+
+        guard case let .present(session) = action else { return fail("Unexpected \(action)") }
+        expect(session) == Self.session
     }
 
     func testPresentsTheCheckoutThatWasResumed() {
-        expect(HostedCheckout.Action(.resumed(Self.session), keptCheckout: nil)) == .present(Self.session)
+        let action = HostedCheckout.Action(.resumed(Self.session), keptCheckout: nil)
+
+        guard case let .present(session) = action else { return fail("Unexpected \(action)") }
+        expect(session) == Self.session
     }
 
     /// There is nothing left to pay for, but the purchase still has to be confirmed and reported.
@@ -121,42 +129,58 @@ final class HostedCheckoutTests: TestCase {
     func testConfirmsACheckoutTheCustomerAlreadyPaidFor() {
         let kept = Self.makeKeptCheckout(for: Self.session)
 
-        expect(HostedCheckout.Action(.completed(Self.session.id), keptCheckout: kept))
-            == .confirm(Self.session.id, settling: kept)
+        let action = HostedCheckout.Action(.completed(Self.session.id), keptCheckout: kept)
+
+        guard case let .confirm(sessionID, settling) = action else { return fail("Unexpected \(action)") }
+        expect(sessionID) == Self.session.id
+        expect(settling) === kept
     }
 
     /// There is no checkout to open for something the customer already has, and they are told so rather than
     /// left with a button that appears to do nothing.
     func testTellsTheCustomerWhenTheyAlreadyOwnTheProduct() {
-        expect(HostedCheckout.Action(.alreadyPurchased, keptCheckout: nil)) == .tellCustomerTheyAlreadyOwnIt
+        let action = HostedCheckout.Action(.alreadyPurchased, keptCheckout: nil)
+
+        guard case .tellCustomerTheyAlreadyOwnIt = action else { return fail("Unexpected \(action)") }
     }
 
     /// A customer who said no to Apple's notice said no to the purchase.
     func testOffersNothingWhenTheCustomerDeclinedTheNotice() {
-        expect(HostedCheckout.Action(.declinedByCustomer, keptCheckout: nil)) == .nothing
+        let action = HostedCheckout.Action(.declinedByCustomer, keptCheckout: nil)
+
+        guard case .nothing = action else { return fail("Unexpected \(action)") }
     }
 
     /// Apple asks that a device that does not authorize payments be offered no purchase at all, not even
     /// through StoreKit.
     func testOffersNothingWhenTheDeviceDoesNotAuthorizePayments() {
-        expect(HostedCheckout.Action(.paymentsNotAuthorized, keptCheckout: nil)) == .nothing
+        let action = HostedCheckout.Action(.paymentsNotAuthorized, keptCheckout: nil)
+
+        guard case .nothing = action else { return fail("Unexpected \(action)") }
     }
 
     /// A customer who is not eligible to buy outside the App Store is told the purchase is unavailable rather
     /// than left with a button that appears to do nothing.
     func testTellsAnIneligibleCustomerThePurchaseIsUnavailable() {
-        expect(HostedCheckout.Action(.notEligible, keptCheckout: nil)) == .tellCustomerThePurchaseIsUnavailable
+        let action = HostedCheckout.Action(.notEligible, keptCheckout: nil)
+
+        guard case .tellCustomerThePurchaseIsUnavailable = action else { return fail("Unexpected \(action)") }
     }
 
     /// The checkout already under way carries the purchase.
     func testOffersNothingWhileAnotherCheckoutIsStarting() {
-        expect(HostedCheckout.Action(.alreadyStarting, keptCheckout: nil)) == .nothing
+        let action = HostedCheckout.Action(.alreadyStarting, keptCheckout: nil)
+
+        guard case .nothing = action else { return fail("Unexpected \(action)") }
     }
 
     /// Falling back to StoreKit here would charge a customer who is midway through a checkout that may yet
     /// be resolved, so a failure offers nothing but telling them.
     func testTellsTheCustomerWhenTheCheckoutCouldNotBeCreated() {
-        expect(HostedCheckout.Action(.failed, keptCheckout: nil)) == .failed(.notStarted)
+        let action = HostedCheckout.Action(.failed, keptCheckout: nil)
+
+        guard case let .failed(error) = action else { return fail("Unexpected \(action)") }
+        expect(error) == .notStarted
     }
 
     @MainActor
@@ -227,7 +251,9 @@ final class HostedCheckoutTests: TestCase {
                                                 purchaseHandler: handler,
                                                 purchaseInitiatedAction: nil)
 
-        expect(action) == .confirm(Self.session.id, settling: kept)
+        guard case let .confirm(sessionID, settling) = action else { return fail("Unexpected \(action)") }
+        expect(sessionID) == Self.session.id
+        expect(settling) === kept
         expect(handler.keptHostedCheckout) === kept
     }
 
@@ -244,7 +270,9 @@ final class HostedCheckoutTests: TestCase {
                                                 purchaseHandler: handler,
                                                 purchaseInitiatedAction: nil)
 
-        expect(action) == .confirm(Self.otherSession.id, settling: kept)
+        guard case let .confirm(sessionID, settling) = action else { return fail("Unexpected \(action)") }
+        expect(sessionID) == Self.otherSession.id
+        expect(settling) === kept
     }
 
     @MainActor
