@@ -1209,8 +1209,13 @@ public extension Purchases {
     }
 
     @_spi(Internal)
-    func resolveBranches(in step: WorkflowStep) async -> [WorkflowActionID: WorkflowStepID] {
-        return await self.branchResolver.resolveBranches(in: step)
+    func resolveBranch(_ branch: WorkflowBranch) async -> WorkflowStepID {
+        return await self.branchResolver.resolve(branch)
+    }
+
+    @_spi(Internal)
+    var branchingEnabled: Bool {
+        return self.systemInfo.branchingEnabled
     }
 
     @_spi(Internal)

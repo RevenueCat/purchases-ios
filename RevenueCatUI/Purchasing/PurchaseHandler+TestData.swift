@@ -35,6 +35,8 @@ extension PurchaseHandler {
         performRestore: PerformRestore? = nil,
         preferredLocaleOverride: String? = nil,
         remoteConfigEnabled: Bool = false,
+        resolveBranch: (@Sendable (WorkflowBranch) async -> WorkflowStepID)? = nil,
+        trackEvent: ((PaywallEvent) -> Void)? = nil,
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = Just(
             (
                 transaction: nil,
@@ -58,6 +60,7 @@ extension PurchaseHandler {
             } restorePurchases: {
                 return customerInfo
             } trackEvent: { event in
+                trackEvent?(event)
                 Logger.debug("Tracking event: \(event)")
             } customerInfo: {
                 return customerInfo
@@ -65,6 +68,7 @@ extension PurchaseHandler {
         purchases.remoteConfigEnabled = remoteConfigEnabled
         return self.init(
             purchases: purchases,
+            resolveBranch: resolveBranch,
             performPurchase: performPurchase,
             performRestore: performRestore,
             purchaseResultPublisher: purchaseResultPublisher,

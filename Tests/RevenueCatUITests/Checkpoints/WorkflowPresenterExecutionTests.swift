@@ -126,7 +126,8 @@ final class WorkflowPresenterExecutionTests: TestCase {
     ) -> WorkflowPresentationRequest {
         return WorkflowPresentationRequest(
             workflow: self.workflow(),
-            customVariables: customVariables
+            customVariables: customVariables,
+            presentationMode: .modalSheet
         )
     }
 
