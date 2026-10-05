@@ -21,13 +21,13 @@ struct WorkflowPresentationRequest {
 
     let workflow: ResolvedCheckpointWorkflow
     let customVariables: [String: CustomVariableValue]
-    let presentationMode: CheckpointPresentationMode
+    let presentationMode: FlowPresentationMode
     let initialActiveEntitlementIdentifiers: Set<String>?
 
     init(
         workflow: ResolvedCheckpointWorkflow,
         customVariables: [String: CustomVariableValue],
-        presentationMode: CheckpointPresentationMode = .sheet,
+        presentationMode: FlowPresentationMode,
         initialActiveEntitlementIdentifiers: Set<String>? = nil
     ) {
         self.workflow = workflow

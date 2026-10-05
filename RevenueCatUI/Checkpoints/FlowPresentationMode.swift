@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  CheckpointPresentationMode.swift
+//  FlowPresentationMode.swift
 //
 //  Created by Rick van der Linden.
 //
@@ -22,7 +22,7 @@ import UIKit
 /// are responsible for applying it to their own UI.
 @_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public struct CheckpointPresentationMode: Hashable, CustomStringConvertible, Sendable {
+public struct FlowPresentationMode: Hashable, CustomStringConvertible, Sendable {
 
     private let name: String
 
@@ -34,10 +34,10 @@ public struct CheckpointPresentationMode: Hashable, CustomStringConvertible, Sen
     public static let `default` = Self(name: "default")
 
     /// The flow covers the whole screen.
-    public static let fullScreen = Self(name: "fullScreen")
+    public static let modalFullScreen = Self(name: "modalFullScreen")
 
     /// The flow is a modal sheet over the app's content.
-    public static let sheet = Self(name: "sheet")
+    public static let modalSheet = Self(name: "modalSheet")
 
     /// A textual representation of this presentation mode.
     public var description: String {
@@ -48,12 +48,12 @@ public struct CheckpointPresentationMode: Hashable, CustomStringConvertible, Sen
 
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension CheckpointPresentationMode {
+extension FlowPresentationMode {
 
     var modalPresentationStyle: UIModalPresentationStyle {
         switch self {
-        case .fullScreen: return .fullScreen
-        case .default, .sheet: return .pageSheet
+        case .modalFullScreen: return .fullScreen
+        case .default, .modalSheet: return .pageSheet
         default: return .pageSheet
         }
     }
@@ -62,10 +62,10 @@ extension CheckpointPresentationMode {
 #endif
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension CheckpointPresentationMode {
+extension FlowPresentationMode {
 
     var resolved: Self {
-        return self == .default ? .sheet : self
+        return self == .default ? .modalSheet : self
     }
 
 }

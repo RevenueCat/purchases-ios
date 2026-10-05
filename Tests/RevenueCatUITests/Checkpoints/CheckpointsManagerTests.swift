@@ -62,9 +62,9 @@ final class CheckpointsManagerTests: TestCase {
     }
 
     func testCheckpointCallParamsResolveDefaultPresentationModeToSheet() {
-        XCTAssertEqual(CheckpointCallParams().presentationMode, .sheet)
-        XCTAssertEqual(CheckpointCallParams(presentationMode: .default).presentationMode, .sheet)
-        XCTAssertEqual(CheckpointCallParams(presentationMode: .fullScreen).presentationMode, .fullScreen)
+        XCTAssertEqual(CheckpointCallParams().presentationMode, .modalSheet)
+        XCTAssertEqual(CheckpointCallParams(presentationMode: .default).presentationMode, .modalSheet)
+        XCTAssertEqual(CheckpointCallParams(presentationMode: .modalFullScreen).presentationMode, .modalFullScreen)
     }
 
     func testNoActionDoesNotPresentAnything() async throws {
@@ -126,7 +126,7 @@ final class CheckpointsManagerTests: TestCase {
             "attempt": 2,
             "enabled": true
         ])
-        XCTAssertEqual(executor.presentations.first?.presentationMode, .sheet)
+        XCTAssertEqual(executor.presentations.first?.presentationMode, .modalSheet)
     }
 
     func testResolvedWorkflowReceivesRequestedPresentationMode() async throws {
@@ -139,10 +139,10 @@ final class CheckpointsManagerTests: TestCase {
 
         _ = try await manager.executeCheckpoint(
             identifier: "soft_paywall",
-            params: .init(presentationMode: .fullScreen)
+            params: .init(presentationMode: .modalFullScreen)
         )
 
-        XCTAssertEqual(executor.presentations.first?.presentationMode, .fullScreen)
+        XCTAssertEqual(executor.presentations.first?.presentationMode, .modalFullScreen)
     }
 
     func testResolvedWorkflowReceivesInitialActiveEntitlements() async throws {
@@ -423,7 +423,7 @@ final class CheckpointsManagerTests: TestCase {
             identifier: "onboarding",
             params: .init(
                 customVariables: ["source": "test"],
-                presentationMode: .fullScreen,
+                presentationMode: .modalFullScreen,
                 paywallPresenter: { params, completion in
                     receivedParams = params
                     completion(.continued)
@@ -436,7 +436,7 @@ final class CheckpointsManagerTests: TestCase {
         }
         XCTAssertEqual(receivedParams?.checkpointIdentifier, "onboarding")
         XCTAssertEqual(receivedParams?.customVariables, ["source": "test"])
-        XCTAssertEqual(receivedParams?.presentationMode, .fullScreen)
+        XCTAssertEqual(receivedParams?.presentationMode, .modalFullScreen)
         XCTAssertEqual(receivedParams?.offering.identifier, "offering-id")
         XCTAssertTrue(executor.presentations.isEmpty)
     }

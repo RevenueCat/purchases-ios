@@ -48,7 +48,7 @@ public extension Purchases {
     func checkpoint(
         _ identifier: String,
         customVariables: [String: CustomVariableValue] = [:],
-        presentationMode: CheckpointPresentationMode = .default,
+        presentationMode: FlowPresentationMode = .default,
         paywallPresenter: PaywallPresentationHandler? = nil,
         _ onPassed: @escaping (FlowResult?) -> Void
     ) {
@@ -69,7 +69,7 @@ private extension Purchases {
     func performCheckpoint(
         _ identifier: String,
         customVariables: [String: CustomVariableValue],
-        presentationMode: CheckpointPresentationMode,
+        presentationMode: FlowPresentationMode,
         paywallPresenter: PaywallPresentationHandler?,
         onPassed: @escaping (FlowResult?) -> Void
     ) {

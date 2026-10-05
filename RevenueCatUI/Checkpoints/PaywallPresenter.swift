@@ -72,9 +72,9 @@ public struct PaywallPresentationParams {
 
     /// How the checkpoint requested that its UI be presented.
     ///
-    /// This is always either ``CheckpointPresentationMode/fullScreen`` or ``CheckpointPresentationMode/sheet``;
-    /// ``CheckpointPresentationMode/default`` is resolved by the SDK before the custom presenter is called.
-    public let presentationMode: CheckpointPresentationMode
+    /// This is always either ``FlowPresentationMode/modalFullScreen`` or ``FlowPresentationMode/modalSheet``;
+    /// ``FlowPresentationMode/default`` is resolved by the SDK before the custom presenter is called.
+    public let presentationMode: FlowPresentationMode
 
     /// The offering for which to present the paywall.
     public let offering: Offering
@@ -88,7 +88,7 @@ public struct PaywallPresentationParams {
     init(
         checkpointIdentifier: String,
         customVariables: [String: CustomVariableValue] = [:],
-        presentationMode: CheckpointPresentationMode = .sheet,
+        presentationMode: FlowPresentationMode = .modalSheet,
         offering: Offering
     ) {
         self.checkpointIdentifier = checkpointIdentifier

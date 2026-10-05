@@ -389,6 +389,7 @@ final class WorkflowPresenterTests: TestCase {
         return WorkflowPresentationRequest(
             workflow: self.workflow(),
             customVariables: customVariables,
+            presentationMode: .modalSheet,
             initialActiveEntitlementIdentifiers: initialActiveEntitlementIdentifiers
         )
     }
@@ -420,7 +421,8 @@ final class WorkflowPresenterTests: TestCase {
                 uiConfig: resolvedWorkflow.uiConfig,
                 offerings: resolvedWorkflow.offerings
             ),
-            customVariables: customVariables
+            customVariables: customVariables,
+            presentationMode: .modalSheet
         )
     }
 
