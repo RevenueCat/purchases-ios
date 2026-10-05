@@ -118,7 +118,7 @@ final class HostedCheckoutTests: TestCase {
 
     /// There is nothing left to pay for, but the purchase still has to be confirmed and reported.
     func testConfirmsACheckoutTheCustomerAlreadyPaidFor() {
-        expect(HostedCheckout.Action(.completed(Self.session))) == .confirm(Self.session)
+        expect(HostedCheckout.Action(.completed(Self.session.id))) == .confirm(Self.session.id)
     }
 
     /// There is no checkout to open for something the customer already has, and they are told so rather than
@@ -214,7 +214,7 @@ final class HostedCheckoutTests: TestCase {
     @MainActor
     func testKeepsACheckoutThatWasAlreadyPaidForUntilItIsConfirmed() async {
         let purchases = Self.makePurchases()
-        purchases.hostedCheckoutBlock = { _, _, _ in .completed(Self.session) }
+        purchases.hostedCheckoutBlock = { _, _, _ in .completed(Self.session.id) }
         let handler = Self.makeHandler(purchases: purchases)
         let kept = Self.makeKeptCheckout(for: Self.session)
         handler.keptHostedCheckout = kept
@@ -223,7 +223,7 @@ final class HostedCheckoutTests: TestCase {
                                                 purchaseHandler: handler,
                                                 purchaseInitiatedAction: nil)
 
-        expect(action) == .confirm(Self.session)
+        expect(action) == .confirm(Self.session.id)
         expect(handler.keptHostedCheckout) === kept
     }
 
@@ -234,7 +234,7 @@ final class HostedCheckoutTests: TestCase {
         let handler = Self.makeHandler(purchases: purchases)
         handler.keptHostedCheckout = Self.makeKeptCheckout(for: Self.session)
 
-        _ = await HostedCheckout.resolve(Self.session, package: TestData.annualPackage, purchaseHandler: handler)
+        _ = await HostedCheckout.resolve(Self.session.id, package: TestData.annualPackage, purchaseHandler: handler)
 
         expect(handler.keptHostedCheckout).to(beNil())
     }
@@ -246,7 +246,7 @@ final class HostedCheckoutTests: TestCase {
         let handler = Self.makeHandler(purchases: purchases)
         handler.keptHostedCheckout = Self.makeKeptCheckout(for: Self.session)
 
-        _ = await HostedCheckout.resolve(Self.session, package: TestData.annualPackage, purchaseHandler: handler)
+        _ = await HostedCheckout.resolve(Self.session.id, package: TestData.annualPackage, purchaseHandler: handler)
 
         expect(handler.keptHostedCheckout).to(beNil())
     }
@@ -260,7 +260,7 @@ final class HostedCheckoutTests: TestCase {
         let kept = Self.makeKeptCheckout(for: Self.session)
         handler.keptHostedCheckout = kept
 
-        _ = await HostedCheckout.resolve(Self.session, package: TestData.annualPackage, purchaseHandler: handler)
+        _ = await HostedCheckout.resolve(Self.session.id, package: TestData.annualPackage, purchaseHandler: handler)
 
         expect(handler.keptHostedCheckout) === kept
     }
@@ -273,7 +273,7 @@ final class HostedCheckoutTests: TestCase {
         let other = Self.makeKeptCheckout(for: Self.otherSession)
         handler.keptHostedCheckout = other
 
-        _ = await HostedCheckout.resolve(Self.session, package: TestData.annualPackage, purchaseHandler: handler)
+        _ = await HostedCheckout.resolve(Self.session.id, package: TestData.annualPackage, purchaseHandler: handler)
 
         expect(handler.keptHostedCheckout) === other
     }
@@ -393,7 +393,7 @@ final class HostedCheckoutTests: TestCase {
         }
         handler.actionTypeInProgress = .restore
 
-        let resolution = await HostedCheckout.resolve(Self.session,
+        let resolution = await HostedCheckout.resolve(Self.session.id,
                                                       package: TestData.annualPackage,
                                                       purchaseHandler: handler)
 
@@ -426,19 +426,19 @@ final class HostedCheckoutTests: TestCase {
     }
 
     func testAsksAboutTheSessionThatWasPresented() async {
-        let sessionsAskedAbout = Recorder<HostedCheckoutSession>()
+        let sessionsAskedAbout = Recorder<HostedCheckoutSessionID>()
         let purchases = Self.makePurchases()
-        purchases.hostedCheckoutPollBlock = { session in
-            await sessionsAskedAbout.record(session)
+        purchases.hostedCheckoutPollBlock = { sessionID in
+            await sessionsAskedAbout.record(sessionID)
             return .succeeded
         }
 
-        _ = await HostedCheckout.resolve(Self.session,
+        _ = await HostedCheckout.resolve(Self.session.id,
                                          package: TestData.annualPackage,
                                          purchaseHandler: Self.makeHandler(purchases: purchases))
 
         let asked = await sessionsAskedAbout.values
-        expect(asked) == [Self.session]
+        expect(asked) == [Self.session.id]
     }
 
     @MainActor
@@ -451,7 +451,7 @@ final class HostedCheckoutTests: TestCase {
             return .succeeded
         }
 
-        _ = await HostedCheckout.resolve(Self.session,
+        _ = await HostedCheckout.resolve(Self.session.id,
                                          package: TestData.annualPackage,
                                          purchaseHandler: handler)
 
@@ -467,7 +467,7 @@ final class HostedCheckoutTests: TestCase {
         purchases.hostedCheckoutPollBlock = { _ in .succeeded }
         let handler = Self.makeHandler(purchases: purchases)
 
-        let resolution = await HostedCheckout.resolve(Self.session,
+        let resolution = await HostedCheckout.resolve(Self.session.id,
                                                       package: TestData.annualPackage,
                                                       purchaseHandler: handler)
 
@@ -512,7 +512,7 @@ final class HostedCheckoutTests: TestCase {
         purchases.hostedCheckoutPollBlock = { _ in .succeeded }
         let handler = Self.makeHandler(purchases: purchases)
 
-        let resolution = await HostedCheckout.resolve(Self.session,
+        let resolution = await HostedCheckout.resolve(Self.session.id,
                                                       package: TestData.annualPackage,
                                                       purchaseHandler: handler)
 
@@ -528,7 +528,7 @@ final class HostedCheckoutTests: TestCase {
         purchases.hostedCheckoutPollBlock = { _ in .undetermined }
         let handler = Self.makeHandler(purchases: purchases)
 
-        let resolution = await HostedCheckout.resolve(Self.session,
+        let resolution = await HostedCheckout.resolve(Self.session.id,
                                                       package: TestData.annualPackage,
                                                       purchaseHandler: handler)
 
@@ -545,7 +545,7 @@ final class HostedCheckoutTests: TestCase {
         let handler = Self.makeHandler(purchases: purchases)
         handler.trackPaywallImpression(Self.impressionData)
 
-        _ = await HostedCheckout.resolve(Self.session,
+        _ = await HostedCheckout.resolve(Self.session.id,
                                          package: TestData.annualPackage,
                                          purchaseHandler: handler)
 
@@ -565,7 +565,7 @@ final class HostedCheckoutTests: TestCase {
         let handler = Self.makeHandler(purchases: purchases)
         handler.trackPaywallImpression(Self.impressionData)
 
-        _ = await HostedCheckout.resolve(Self.session,
+        _ = await HostedCheckout.resolve(Self.session.id,
                                          package: TestData.annualPackage,
                                          purchaseHandler: handler)
 

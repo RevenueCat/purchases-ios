@@ -28,7 +28,7 @@ enum HostedCheckout {
         case present(HostedCheckoutSession)
 
         /// Confirm this checkout, which the customer already paid for, without presenting anything.
-        case confirm(HostedCheckoutSession)
+        case confirm(HostedCheckoutSessionID)
 
         /// Tell the customer they already own what they tried to buy, which is why no checkout opens.
         case tellCustomerTheyAlreadyOwnIt
@@ -46,8 +46,8 @@ enum HostedCheckout {
             switch result {
             case let .started(session), let .resumed(session):
                 self = .present(session)
-            case let .completed(session):
-                self = .confirm(session)
+            case let .completed(sessionID):
+                self = .confirm(sessionID)
             case .alreadyPurchased:
                 self = .tellCustomerTheyAlreadyOwnIt
             case .notEligible:
@@ -203,16 +203,16 @@ enum HostedCheckout {
     ///
     /// - Parameter package: The package the checkout was started for, when it is still known.
     @MainActor
-    static func resolve(_ session: HostedCheckoutSession,
+    static func resolve(_ sessionID: HostedCheckoutSessionID,
                         package: Package?,
                         purchaseHandler: PurchaseHandler) async -> Resolution {
         return await purchaseHandler.whileConfirmingHostedCheckout {
-            let (result, customerInfo) = await purchaseHandler.pollHostedCheckout(session: session)
+            let (result, customerInfo) = await purchaseHandler.pollHostedCheckout(sessionID: sessionID)
             let resolution = Resolution(result, customerInfo: customerInfo)
 
             switch resolution {
             case .purchased:
-                Self.releaseKeptCheckout(for: session, purchaseHandler: purchaseHandler)
+                Self.releaseKeptCheckout(for: sessionID, purchaseHandler: purchaseHandler)
             case let .failed(error):
                 // The checkout stays kept, so that tapping buy again confirms this payment rather than starting a
                 // second checkout the customer could pay for too.
@@ -220,7 +220,7 @@ enum HostedCheckout {
             case .tellCustomerTheyAlreadyOwnIt:
                 // Neither a purchase nor a cancellation, just as when the checkout never opened for this reason:
                 // the paywall only tells the customer.
-                Self.releaseKeptCheckout(for: session, purchaseHandler: purchaseHandler)
+                Self.releaseKeptCheckout(for: sessionID, purchaseHandler: purchaseHandler)
             }
 
             return resolution
@@ -229,8 +229,9 @@ enum HostedCheckout {
 
     /// Leaves alone a checkout that has since replaced the one being resolved.
     @MainActor
-    private static func releaseKeptCheckout(for session: HostedCheckoutSession, purchaseHandler: PurchaseHandler) {
-        if purchaseHandler.keptHostedCheckout?.session == session {
+    private static func releaseKeptCheckout(for sessionID: HostedCheckoutSessionID,
+                                            purchaseHandler: PurchaseHandler) {
+        if purchaseHandler.keptHostedCheckout?.session.id == sessionID {
             purchaseHandler.keptHostedCheckout = nil
         }
     }

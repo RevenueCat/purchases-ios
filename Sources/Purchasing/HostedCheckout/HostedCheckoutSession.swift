@@ -43,7 +43,28 @@ import Foundation
 
 extension HostedCheckoutSession: Equatable, Sendable {}
 
+/// What the backend needs to say how a checkout session ended, which is less than presenting it takes.
+@_spi(Internal) public struct HostedCheckoutSessionID {
+
+    @_spi(Internal) public let operationSessionID: String
+
+    /// The customer the session was created for, who need not be the one logged in by the time it is settled.
+    @_spi(Internal) public let appUserID: String
+
+    @_spi(Internal) public init(operationSessionID: String, appUserID: String) {
+        self.operationSessionID = operationSessionID
+        self.appUserID = appUserID
+    }
+
+}
+
+extension HostedCheckoutSessionID: Equatable, Sendable {}
+
 extension HostedCheckoutSession {
+
+    @_spi(Internal) public var id: HostedCheckoutSessionID {
+        return .init(operationSessionID: self.operationSessionID, appUserID: self.appUserID)
+    }
 
     init(operationSessionID: String, page: HostedCheckoutResponse.Page, appUserID: String) {
         self.init(operationSessionID: operationSessionID,
