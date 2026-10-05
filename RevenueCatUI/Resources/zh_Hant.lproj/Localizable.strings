@@ -22,8 +22,10 @@
 "Continue" = "繼續";
 "Default_offer_details_with_intro_offer" = "試用期{{ sub_offer_duration }}，屆滿後{{ total_price_and_per_month }}。";
 "Something went wrong" = "發生錯誤";
+"Payment failed." = "付款失敗。";
+"Your purchase is still processing." = "購買仍在處理中。";
 "Purchase" = "購買";
-"You are currently subscribed to this" = "您目前已訂閱此項目";
 "You've already purchased this" = "您已購買此項目";
+"Your purchase was successful." = "購買成功。";
 "Purchase unavailable" = "無法購買";
 "This purchase isn't available in your region." = "您所在的地區不提供此項購買。";

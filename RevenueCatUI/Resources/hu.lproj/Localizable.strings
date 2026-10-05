@@ -22,8 +22,10 @@
 "Continue" = "Folytatni";
 "Default_offer_details_with_intro_offer" = "Indítsa el a {{ sub_offer_duration }} próbaidőszakot, majd {{ total_price_and_per_month }}.";
 "Something went wrong" = "Valami elromlott";
+"Payment failed." = "A fizetés nem sikerült.";
+"Your purchase is still processing." = "A vásárlás feldolgozása még folyamatban van.";
 "Purchase" = "Vásárlás";
-"You are currently subscribed to this" = "Erre már előfizetett";
 "You've already purchased this" = "Ezt már megvásárolta";
+"Your purchase was successful." = "A vásárlás sikeresen megtörtént.";
 "Purchase unavailable" = "A vásárlás nem érhető el";
 "This purchase isn't available in your region." = "Ez a vásárlás nem érhető el az Ön régiójában.";

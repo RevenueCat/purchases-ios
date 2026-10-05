@@ -120,6 +120,16 @@ class CheckpointsConfigProviderTests: TestCase {
         expect(self.blobFetcher.ensureDownloadedCallCount) == 0
     }
 
+    func testLifecycleCommitWarmsCommittedCheckpointRules() async throws {
+        self.commit(rules: ["onboarding": ["wf-a"]])
+
+        self.provider.remoteConfigEventReceived(.committed(generation: self.manager.configGeneration))
+
+        await expect(self.blobStore.readCount(for: "onboarding-wf-a-ref")).toEventually(equal(1))
+        _ = try await self.ruleSet("onboarding")
+        expect(self.blobStore.readCount(for: "onboarding-wf-a-ref")) == 1
+    }
+
     func testWarmSkipsCheckpointRulesWithoutPrefetch() async throws {
         self.commit(
             checkpoints: ["onboarding": .init(blobRef: "onboarding-ref", prefetch: false)],
