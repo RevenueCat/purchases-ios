@@ -20,6 +20,9 @@ enum RemoteConfigTopic: String {
     case audiences
     case sdkSettings = "sdk_settings"
     case subscriberDimensions = "subscriber_dimensions"
+    #if ENABLE_CONFIGURED_AD_REWARDS
+    case adRewards = "ad_rewards"
+    #endif
 
     var wireName: String {
         return self.rawValue
