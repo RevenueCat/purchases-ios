@@ -23,7 +23,7 @@ struct CustomCheckpointUseCaseView: View {
 
     @State private var identifier = ""
     @State private var status: String?
-    @State private var presentationMode: CheckpointPresentationMode = .default
+    @State private var presentationMode: FlowPresentationMode = .default
 
     private var trimmedIdentifier: String {
         return self.identifier.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -37,7 +37,7 @@ struct CustomCheckpointUseCaseView: View {
                     .autocorrectionDisabled()
 
                 Picker("Presentation mode", selection: self.$presentationMode) {
-                    ForEach(CheckpointPresentationMode.testerCases, id: \.self) { mode in
+                    ForEach(FlowPresentationMode.testerCases, id: \.self) { mode in
                         Text(mode.title).tag(mode)
                     }
                 }

@@ -44,15 +44,15 @@ enum PaywallPresenterMode: String, CaseIterable, Identifiable {
     }
 }
 
-extension CheckpointPresentationMode {
+extension FlowPresentationMode {
 
-    static var testerCases: [Self] { [.default, .fullScreen, .sheet] }
+    static var testerCases: [Self] { [.default, .modalFullScreen, .modalSheet] }
 
     var title: String {
         switch self {
         case .default: return "Default"
-        case .fullScreen: return "Full screen"
-        case .sheet: return "Sheet"
+        case .modalFullScreen: return "Full screen"
+        case .modalSheet: return "Sheet"
         default: return self.description
         }
     }

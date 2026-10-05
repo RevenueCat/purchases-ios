@@ -163,12 +163,12 @@ private enum PaywallPresenterDemo {
 
 }
 
-private extension CheckpointPresentationMode {
+private extension FlowPresentationMode {
 
     var testerModalPresentationStyle: UIModalPresentationStyle {
         switch self {
-        case .fullScreen: return .fullScreen
-        case .default, .sheet: return .pageSheet
+        case .modalFullScreen: return .fullScreen
+        case .default, .modalSheet: return .pageSheet
         default: return .pageSheet
         }
     }
