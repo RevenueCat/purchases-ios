@@ -554,8 +554,8 @@ private struct OnPurchaseCompletedModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .onPreferenceChange(PurchasedResultPreferenceKey.self) { result in
-                if let result, !result.userCancelled {
-                    self.handler(result.transaction, result.customerInfo)
+                if case let .purchased(transaction, customerInfo)? = result?.result {
+                    self.handler(transaction, customerInfo)
                 }
             }
     }
@@ -574,7 +574,7 @@ private struct OnPurchaseCancelledModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .onPreferenceChange(PurchasedResultPreferenceKey.self) { result in
-                if let result, result.userCancelled {
+                if result?.result == .cancelled {
                     self.handler()
                 }
             }
