@@ -1,6 +1,6 @@
 orbs:
   macos: circleci/macos@2.5.1
-  revenuecat: revenuecat/sdks-common-config@4.6.1
+  revenuecat: revenuecat/sdks-common-config@4.6.2
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -996,6 +996,33 @@ jobs:
           path: fastlane/test_output
           destination: scan-test-output
 
+  spm-revenuecat-ui-macos:
+    executor:
+      name: macos-executor
+      xcode_version: "27.0.0"
+    steps:
+      - checkout
+      # xcbeautify not needed: test_revenuecatui uses xcodebuild directly
+      # which uses xcpretty
+      - install-dependencies:
+          install_xcbeautify: false
+      - update-spm-installation-commit
+      - run:
+          name: SPM RevenueCatUI Tests
+          command: bundle exec fastlane test_revenuecatui
+          no_output_timeout: 15m
+          environment:
+            PLATFORM: macOS
+            BUILD_SDK: macosx
+      - compress_result_bundle:
+          directory: fastlane/test_output
+          bundle_name: revenuecatui
+      - store_test_results:
+          path: fastlane/test_output/revenuecatui/tests.xml
+      - store_artifacts:
+          path: fastlane/test_output
+          destination: scan-test-output
+
   run-test-tvos-and-macos:
     executor:
       name: macos-executor
@@ -1649,7 +1676,8 @@ jobs:
               bundle exec fastlane run slack_backend_integration_test_results \
                 environment:"maestro_e2e (all environments)" \
                 success:true \
-                message_binary_solo_on_failure:false
+                message_binary_solo_on_failure:false \
+                notify_success_only_on_recovery:true
             fi
           when: always
       # Check if any tests failed and fail the job if so
@@ -2537,6 +2565,11 @@ workflows:
             - approve-full-tests
           context:
             - slack-secrets
+      - spm-revenuecat-ui-macos:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
       # Needs no context: the paywall under test is a local sample, so no API key is involved.
       - run-paywall-accessibility-ui-tests:
           requires:
@@ -2638,6 +2671,7 @@ workflows:
             - spm-revenuecat-ui-ios-16
             - run-revenuecat-ui-ios-18-and-17
             - spm-revenuecat-ui-watchos
+            - spm-revenuecat-ui-macos
             - run-paywall-accessibility-ui-tests
             - record-and-upload-paywalls-v1-snapshots
             - record-and-upload-paywalls-v2-snapshots
@@ -2783,6 +2817,10 @@ workflows:
           context:
             - e2e-tests
             - slack-secrets
+      - run-workflow-maestro-tests:
+          context:
+            - e2e-tests
+            - slack-secrets
 
   daily-cocoapods-token-keepalive:
     when:
@@ -2878,6 +2916,10 @@ workflows:
           context:
             - e2e-tests
             - slack-secrets
+      - run-workflow-maestro-tests:
+          context:
+            - e2e-tests
+            - slack-secrets
       - backend-integration-tests-SK1:
           context:
             - slack-secrets
@@ -2930,6 +2972,9 @@ workflows:
           context:
             - slack-secrets
       - spm-revenuecat-ui-watchos:
+          context:
+            - slack-secrets
+      - spm-revenuecat-ui-macos:
           context:
             - slack-secrets
       - record-and-upload-paywalls-v1-snapshots:
@@ -2992,6 +3037,7 @@ workflows:
           requires:
             - check-api-changes
             - run-all-maestro-e2e-tests
+            - run-workflow-maestro-tests
             - lint
             - run-test-ios-26
             - run-test-ios-27
@@ -3017,6 +3063,7 @@ workflows:
             - spm-revenuecat-ui-ios-16
             - run-revenuecat-ui-ios-18-and-17
             - spm-revenuecat-ui-watchos
+            - spm-revenuecat-ui-macos
             - record-and-upload-paywalls-v1-snapshots
             - installation-tests-all-but-carthage
             - installation-tests-carthage

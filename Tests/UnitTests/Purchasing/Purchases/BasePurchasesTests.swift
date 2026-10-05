@@ -81,7 +81,7 @@ class BasePurchasesTests: TestCase {
                                         diagnosticsTracker: self.diagnosticsTracker)
         let config = BackendConfiguration(httpClient: httpClient,
                                           operationDispatcher: self.mockOperationDispatcher,
-                                          operationQueue: MockBackend.QueueProvider.createBackendQueue(),
+                                          operationQueue: MockBackend.QueueProvider.createQueue(for: .default),
                                           diagnosticsQueue: MockBackend.QueueProvider.createDiagnosticsQueue(),
                                           systemInfo: self.systemInfo,
                                           offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
@@ -282,7 +282,8 @@ class BasePurchasesTests: TestCase {
         checkpointResolver: CheckpointWorkflowResolver = DisabledCheckpointWorkflowResolver(),
         dateProvider: DateProvider = DateProvider(),
         webBundleEventBus: WebBundleEventBus = .shared,
-        paywallCache: PaywallCacheWarmingType? = nil
+        paywallCache: PaywallCacheWarmingType? = nil,
+        sdkSettingsConfigProvider: SDKSettingsConfigProviderType? = nil
     ) {
         self.purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
@@ -366,6 +367,9 @@ class BasePurchasesTests: TestCase {
                                     operationDispatcher: self.mockOperationDispatcher
                                    ),
                                    remoteConfigManager: self.mockRemoteConfigManager,
+                                   sdkSettingsConfigProvider: sdkSettingsConfigProvider ?? SDKSettingsConfigProvider(
+                                    manager: self.mockRemoteConfigManager
+                                   ),
                                    offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
                                    purchasesOrchestrator: self.purchasesOrchestrator,
                                    purchasedProductsFetcher: self.mockPurchasedProductsFetcher,
@@ -510,7 +514,7 @@ extension BasePurchasesTests {
             let identity = IdentityAPI(backendConfig: backendConfig)
             let token = TokenAPI(backendConfig: backendConfig)
             let offerings = OfferingsAPI(backendConfig: backendConfig)
-            let webBilling = WebBillingAPI(backendConfig: backendConfig)
+            let webBilling = MockWebBillingAPI(lanes: BackendLanes(configuration: backendConfig))
             let offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
             let internalAPI = InternalAPI(backendConfig: backendConfig)
             let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
@@ -519,7 +523,7 @@ extension BasePurchasesTests {
             let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
             let remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
 
-            self.init(backendConfig: backendConfig,
+            self.init(lanes: BackendLanes(configuration: backendConfig),
                       customerAPI: customer,
                       identityAPI: identity,
                       tokenAPI: token,
@@ -740,8 +744,19 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
         return self.stubbedHasCommittedConfig
     }
 
+    func addConfigLifecycleObserver(_ observer: RemoteConfigLifecycleObserver) {}
+
     var stubbedTopics: [RemoteConfigTopic: RemoteConfiguration.ConfigTopic] = [:]
     var stubbedBlobData: [RemoteConfigTopic: [String: Data]] = [:]
+    private let _invokedCachedBlobDataParameters: Atomic<[(topic: RemoteConfigTopic, itemKey: String)]> = .init([])
+    var invokedCachedBlobDataParameters: [(topic: RemoteConfigTopic, itemKey: String)] {
+        return self._invokedCachedBlobDataParameters.value
+    }
+    /// When `true`, cache-only `blobData(for:itemKey:policy:)` suspends until `completeStoredCachedBlobReads()` is
+    /// called, allowing tests to advance the config generation while a prewarm is in flight.
+    var shouldStoreCachedBlobDataCompletion = false
+    private typealias StoredCachedBlobRead = (data: Data?, continuation: CheckedContinuation<Data?, Never>)
+    private let _storedCachedBlobReads: Atomic<[StoredCachedBlobRead]> = .init([])
     // Atomic because UiConfigProvider now fetches its parts concurrently, so this can be appended to
     // from multiple tasks at once.
     private let _invokedBlobDataParameters: Atomic<[(topic: RemoteConfigTopic, itemKey: String)]> = .init([])
@@ -765,7 +780,10 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
     private let _storedTopicContinuations: Atomic<[CheckedContinuation<RemoteConfiguration.ConfigTopic?, Never>]> =
         .init([])
 
-    func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
+    func topic(_ topic: RemoteConfigTopic, policy: RemoteConfigReadPolicy) async -> RemoteConfiguration.ConfigTopic? {
+        guard policy == .fetchIfNeeded else {
+            return self.stubbedTopics[topic]
+        }
         guard self.shouldStoreTopicCompletion,
               self.storedTopicCompletionTopics?.contains(topic) ?? true else {
             self._invokedTopicCount.modify { $0 += 1 }
@@ -776,6 +794,28 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
             // observe readiness before `completeStoredTopic()` has something to resume.
             self._storedTopicContinuations.modify { $0.append(continuation) }
             self._invokedTopicCount.modify { $0 += 1 }
+        }
+    }
+
+    func blobData(for topic: RemoteConfigTopic, itemKey: String, policy: RemoteConfigReadPolicy) async -> Data? {
+        guard policy == .cachedOnly else { return await self.blobData(for: topic, itemKey: itemKey) }
+        self._invokedCachedBlobDataParameters.modify { $0.append((topic, itemKey)) }
+        guard self.shouldStoreCachedBlobDataCompletion else {
+            return self.stubbedBlobData[topic]?[itemKey]
+        }
+        let data = self.stubbedBlobData[topic]?[itemKey]
+        return await withCheckedContinuation { continuation in
+            self._storedCachedBlobReads.modify { $0.append((data, continuation)) }
+            // Capture the data before suspension so a test can replace the config and still resume
+            // this older local read.
+        }
+    }
+
+    /// Resumes every held cached-blob read with the bytes that were available when that read started.
+    func completeStoredCachedBlobReads() {
+        self.shouldStoreCachedBlobDataCompletion = false
+        for read in self._storedCachedBlobReads.getAndSet([]) {
+            read.continuation.resume(returning: read.data)
         }
     }
 

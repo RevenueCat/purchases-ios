@@ -169,6 +169,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         }
         let viewController = try self.makePaywallViewController(for: presentation)
         viewController.delegate = self
+        viewController.modalPresentationStyle = presentation.presentationMode.modalPresentationStyle
         presentationContext.present(viewController, animated: true)
         guard viewController.presentingViewController != nil else {
             throw CheckpointError.presentationFailed
@@ -182,7 +183,8 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
             workflow: presentation.workflow.workflow,
             offerings: presentation.workflow.offerings,
             uiConfig: presentation.workflow.uiConfig,
-            workflowBlobRef: presentation.workflow.workflowBlobRef
+            workflowBlobRef: presentation.workflow.workflowBlobRef,
+            traceId: presentation.workflow.traceId
         )
         let viewController = PaywallViewController(
             workflowContext: workflowContext,

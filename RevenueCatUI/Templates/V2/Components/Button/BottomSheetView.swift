@@ -137,21 +137,20 @@ struct BottomSheetOverlayModifier: ViewModifier {
         }
     }
 
-    var sheetHeight: CGFloat? {
-        guard let size = self.sheetViewModel?.sheet.size else {
-            return nil
-        }
-
-        switch size.height {
+    static func resolvedHeight(
+        for constraint: PaywallComponent.SizeConstraint,
+        parentHeight: CGFloat?
+    ) -> CGFloat? {
+        switch constraint {
         case .fit, .fill:
             return nil
         case .fixed(let height):
             return CGFloat(height)
-        case .relative(let percent, _):
-            guard let parentHeight = self.parentHeight else {
+        case let .relative(percent, minMax):
+            guard let parentHeight else {
                 return nil
             }
-            return parentHeight * percent
+            return minMax.clamped(parentHeight * percent)
         }
     }
 
@@ -197,13 +196,11 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         \.workflowRenderingContext,
                         self.workflowRenderingContext.withoutBackNavigation()
                     )
+                    .applySheetSize(sheetViewModel.sheet.size, parentHeight: self.parentHeight)
                     .environment(
                         \.workflowNavigateBackHandler,
                         nil
                     )
-                    .applyIfLet(self.sheetHeight, apply: { view, height in
-                        view.frame(height: height)
-                    })
                     // Hidden until the first layout pass has settled, then animated in.
                     .offset(y: self.presentationPlan(for: sheetViewModel).isPresented ? 0 : (self.parentHeight ?? 2000))
                     .opacity(self.presentationPlan(for: sheetViewModel).isPresented ? 1 : 0)
@@ -241,6 +238,10 @@ struct BottomSheetOverlayModifier: ViewModifier {
                     .id(sheetViewModel.sheet.id)
                 }
             }
+            // Hiding the paywall doesn't reach into its ScrollView, so VoiceOver still walked it.
+            // Only checkable with Accessibility Inspector or VoiceOver: XCUITest lists hidden elements.
+            .accessibilityElement(children: .contain)
+            .accessibilityAddTraits(self.sheetViewModel != nil ? .isModal : [])
             .background(
                 GeometryReader { proxy in
                     Color.clear
@@ -269,6 +270,38 @@ struct BottomSheetOverlayModifier: ViewModifier {
             }
         }
     }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension View {
+
+    @ViewBuilder
+    func applySheetSize(_ size: PaywallComponent.Size?, parentHeight: CGFloat?) -> some View {
+        if let size {
+            self
+                .applyWidth(size.width, alignment: .center)
+                .applySheetHeight(size.height, parentHeight: parentHeight)
+        } else {
+            self
+        }
+    }
+
+    @ViewBuilder
+    func applySheetHeight(_ constraint: PaywallComponent.SizeConstraint, parentHeight: CGFloat?) -> some View {
+        switch constraint {
+        case .fit:
+            self
+        case let .fill(minMax):
+            self.applyHeightLimits(minMax, alignment: .center)
+        case .fixed, .relative:
+            self.applyIfLet(
+                BottomSheetOverlayModifier.resolvedHeight(for: constraint, parentHeight: parentHeight)
+            ) { view, height in
+                view.frame(height: height)
+            }
+        }
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

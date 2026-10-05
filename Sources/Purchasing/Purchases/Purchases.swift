@@ -293,11 +293,13 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let offeringsFactory: OfferingsFactory
     private let offeringsManager: OfferingsManager
     private let workflowManager: WorkflowManager
+    private let branchResolver: BranchResolver
     private let offlineEntitlementsManager: OfflineEntitlementsManager
     private let productsManager: ProductsManagerType
     private let customerInfoManager: CustomerInfoManager
     private let eventsManager: EventsManagerType?
     private let remoteConfigManager: RemoteConfigManagerType
+    private let sdkSettingsConfigProvider: SDKSettingsConfigProviderType
 
     private var _adTracker: Any?
 
@@ -357,6 +359,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      storeKitTimeout: TimeInterval = Configuration.storeKitRequestTimeoutDefault,
                      networkTimeout: NetworkTimeout = .default,
                      dangerousSettings: DangerousSettings? = nil,
+                     useExternalPurchaseCustomLinks: Bool = false,
+                     enableExternalPurchasesInSimulator: Bool = true,
                      showStoreMessagesAutomatically: Bool,
                      diagnosticsEnabled: Bool = false,
                      preferredLocale: String?,
@@ -386,6 +390,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             apiKeyValidationResult: apiKeyValidationResult,
             responseVerificationMode: responseVerificationMode,
             dangerousSettings: dangerousSettings,
+            useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks,
+            enableExternalPurchasesInSimulator: enableExternalPurchasesInSimulator,
             preferredLocalesProvider: PreferredLocalesProvider(preferredLocaleOverride: preferredLocale)
         )
 
@@ -401,15 +407,19 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let deviceCache = DeviceCache(systemInfo: systemInfo, userDefaults: userDefaults)
 
         let diagnosticsFileHandler: DiagnosticsFileHandlerType? = {
-            guard diagnosticsEnabled,
-                  dangerousSettings?.uiPreviewMode != true,
+            guard dangerousSettings?.uiPreviewMode != true,
                   #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return nil }
             return DiagnosticsFileHandler()
         }()
 
         let diagnosticsTracker: DiagnosticsTrackerType? = {
             if let handler = diagnosticsFileHandler, #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-                return DiagnosticsTracker(diagnosticsFileHandler: handler)
+                return DiagnosticsTracker(
+                    diagnosticsFileHandler: handler,
+                    collectionDecision: initialDiagnosticsCollectionDecision(
+                        remoteConfigEnabled: systemInfo.remoteConfigEnabled
+                    )
+                )
             } else {
                 if diagnosticsEnabled {
                     Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
@@ -615,6 +625,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             uiConfigProvider: uiConfigProvider
         )
         let checkpointsConfigProvider = CheckpointsConfigProvider(manager: remoteConfigManager)
+        let audiencesConfigProvider = AudiencesConfigProvider(manager: remoteConfigManager)
+        let sdkSettingsConfigProvider = SDKSettingsConfigProvider(manager: remoteConfigManager)
 
         let workflowManager = WorkflowManager(
             workflowsConfigProvider: workflowsConfigProvider,
@@ -669,7 +681,13 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         let notificationCenter: NotificationCenter = .default
         let checkpointResolver: CheckpointWorkflowResolver
+        let branchResolver: BranchResolver
         if systemInfo.remoteConfigEnabled {
+            remoteConfigManager.addConfigLifecycleObservers([
+                checkpointsConfigProvider,
+                audiencesConfigProvider,
+                sdkSettingsConfigProvider
+            ])
             RulesEngine.setLogger(RulesEngineLoggerBridge())
             let localRulesEvaluator = LocalRulesEvaluator(
                 dimensionProviders: [
@@ -701,7 +719,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             )
             checkpointResolver = DefaultCheckpointWorkflowResolver(
                 checkpointsConfigProvider: checkpointsConfigProvider,
-                audiencesConfigProvider: AudiencesConfigProvider(manager: remoteConfigManager),
+                audiencesConfigProvider: audiencesConfigProvider,
                 localRulesEvaluator: localRulesEvaluator,
                 workflowManager: workflowManager,
                 offeringsProvider: {
@@ -714,27 +732,37 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     }
                 }
             )
+            branchResolver = systemInfo.branchingEnabled
+                ? DefaultBranchResolver(
+                    audiencesConfigProvider: audiencesConfigProvider,
+                    localRulesEvaluator: localRulesEvaluator
+                )
+                : DisabledBranchResolver()
         } else {
             checkpointResolver = DisabledCheckpointWorkflowResolver()
+            branchResolver = DisabledBranchResolver()
         }
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 let diagnosticsSynchronizer: DiagnosticsSynchronizer?
-                if diagnosticsEnabled {
-                    if let diagnosticsFileHandler = diagnosticsFileHandler {
-                        let synchronizedUserDefaults = SynchronizedUserDefaults(userDefaults: userDefaults)
-                        diagnosticsSynchronizer = DiagnosticsSynchronizer(internalAPI: backend.internalAPI,
-                                                                          handler: diagnosticsFileHandler,
-                                                                          tracker: diagnosticsTracker,
-                                                                          userDefaults: synchronizedUserDefaults)
-                        Task {
-                            await diagnosticsFileHandler.updateDelegate(diagnosticsSynchronizer)
-                        }
-                    } else {
-                        Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
-                        diagnosticsSynchronizer = nil
+                if let diagnosticsFileHandler = diagnosticsFileHandler {
+                    let synchronizedUserDefaults = SynchronizedUserDefaults(userDefaults: userDefaults)
+                    diagnosticsSynchronizer = DiagnosticsSynchronizer(
+                        internalAPI: backend.internalAPI,
+                        handler: diagnosticsFileHandler,
+                        tracker: diagnosticsTracker,
+                        userDefaults: synchronizedUserDefaults,
+                        collectionDecision: initialDiagnosticsCollectionDecision(
+                            remoteConfigEnabled: systemInfo.remoteConfigEnabled
+                        )
+                    )
+                    Task {
+                        await diagnosticsFileHandler.updateDelegate(diagnosticsSynchronizer)
                     }
                 } else {
+                    if diagnosticsEnabled {
+                        Logger.error(Strings.diagnostics.could_not_create_diagnostics_tracker)
+                    }
                     diagnosticsSynchronizer = nil
                 }
                 let storeKit2ObserverModePurchaseDetector = StoreKit2ObserverModePurchaseDetector(
@@ -850,7 +878,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   productsManager: productsManager,
                   offeringsManager: offeringsManager,
                   workflowManager: workflowManager,
+                  branchResolver: branchResolver,
                   remoteConfigManager: remoteConfigManager,
+                  sdkSettingsConfigProvider: sdkSettingsConfigProvider,
                   offlineEntitlementsManager: offlineEntitlementsManager,
                   purchasesOrchestrator: purchasesOrchestrator,
                   purchasedProductsFetcher: purchasedProductsFetcher,
@@ -863,6 +893,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   currentConfiguration: currentConfiguration,
                   webBundleEventBus: webBundleEventBus
         )
+
     }
 
     // swiftlint:disable:next function_body_length
@@ -888,7 +919,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          productsManager: ProductsManagerType,
          offeringsManager: OfferingsManager,
          workflowManager: WorkflowManager,
+         branchResolver: BranchResolver = DisabledBranchResolver(),
          remoteConfigManager: RemoteConfigManagerType,
+         sdkSettingsConfigProvider: SDKSettingsConfigProviderType,
          offlineEntitlementsManager: OfflineEntitlementsManager,
          purchasesOrchestrator: PurchasesOrchestrator,
          purchasedProductsFetcher: PurchasedProductsFetcherType?,
@@ -948,7 +981,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.productsManager = productsManager
         self.offeringsManager = offeringsManager
         self.workflowManager = workflowManager
-        self.remoteConfigManager = systemInfo.remoteConfigEnabled ? remoteConfigManager : NoOpRemoteConfigManager()
+        self.branchResolver = branchResolver
+        self.remoteConfigManager = systemInfo.remoteConfigEnabled
+            ? remoteConfigManager
+            : NoOpRemoteConfigManager()
+        self.sdkSettingsConfigProvider = sdkSettingsConfigProvider
         self.offlineEntitlementsManager = offlineEntitlementsManager
         self.purchasesOrchestrator = purchasesOrchestrator
         self.purchasedProductsFetcher = purchasedProductsFetcher
@@ -968,13 +1005,15 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             customLink: StoreKitExternalPurchaseCustomLink(),
             externalPurchaseTokenAPI: backend.externalPurchaseTokenAPI,
             currentUserProvider: identityManager,
+            settingsProvider: self.sdkSettingsConfigProvider,
             systemInfo: systemInfo
         )
         self.externalPurchaseManager = externalPurchaseManager
         self.hostedCheckoutManager = HostedCheckoutManager(
             externalPurchaseManager: externalPurchaseManager,
             webBillingAPI: backend.webBilling,
-            currentUserProvider: identityManager
+            currentUserProvider: identityManager,
+            poller: HostedCheckoutPoller.makeDefault(webBillingAPI: backend.webBilling)
         )
 
         super.init()
@@ -991,6 +1030,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         #endif
 
         self.purchasesOrchestrator.delegate = self
+        self.sdkSettingsConfigProvider.delegate = self
+        if !self.systemInfo.remoteConfigEnabled {
+            self.setDiagnosticsCollectionDecision(remoteDiagnosticsEnabled: nil)
+        }
         #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.attribution.syncAttributesAndOfferingsIfNeededHandler = { completion in
             completion(nil, NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError)
@@ -1163,6 +1206,16 @@ public extension Purchases {
     @_spi(Internal)
     func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
         return self.workflowManager.cachedWorkflow(forOfferingId: offeringID)
+    }
+
+    @_spi(Internal)
+    func resolveBranch(_ branch: WorkflowBranch) async -> WorkflowStepID {
+        return await self.branchResolver.resolve(branch)
+    }
+
+    @_spi(Internal)
+    var branchingEnabled: Bool {
+        return self.systemInfo.branchingEnabled
     }
 
     @_spi(Internal)
@@ -1909,6 +1962,45 @@ public extension Purchases {
         return await self.hostedCheckoutManager.startCheckout(package: package, paywall: paywallEvent?.data)
     }
 
+    /// Used by `RevenueCatUI` to determine the final outcome of a checkout the customer completed in the app,
+    /// before settling the paywall on it.
+    ///
+    /// When the backend says the customer owns the product, having just bought it or not, fetches the customer's
+    /// `CustomerInfo` and returns it, so the paywall reports the purchase with it, and callers that read it next
+    /// find the entitlement instead of a cached state from before. A fetch that fails returns no `CustomerInfo`,
+    /// and clears that cached state, so the next read fetches instead of serving it. Both are for the customer the
+    /// session was created for, even if another one has logged in since.
+    ///
+    /// Paywalls, the only caller, do not run with custom entitlement computation. This still compiles in that
+    /// mode, but without the `CustomerInfo` refresh, which the mode does not offer, so it never returns one.
+    @_spi(Internal) func pollHostedCheckout(
+        session: HostedCheckoutSession
+    ) async -> (result: HostedCheckoutPollResult, customerInfo: CustomerInfo?) {
+        let operationSessionID = session.operationSessionID
+        let appUserID = session.appUserID
+        let result = await self.hostedCheckoutManager.pollCheckout(operationSessionID: operationSessionID,
+                                                                   appUserID: appUserID)
+
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        switch result {
+        case .succeeded, .alreadyPurchased:
+            Logger.verbose(Strings.hostedCheckout.poll_fetching_customer_info(operationSessionID))
+
+            let customerInfo = await self.fetchCustomerInfoRetryingTransientErrors(appUserID: appUserID)
+            if customerInfo == nil {
+                Logger.warn(Strings.hostedCheckout.poll_customer_info_refresh_failed(operationSessionID))
+                self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
+            }
+
+            return (result, customerInfo)
+        case .failed, .undetermined:
+            return (result, nil)
+        }
+        #else
+        return (result, nil)
+        #endif
+    }
+
     /// Used by `RevenueCatUI` to create a support ticket
     @_spi(Internal) func createTicket(customerEmail: String, ticketDescription: String) async throws -> Bool {
         let response = try await Async.call { completion in
@@ -1939,16 +2031,18 @@ public extension Purchases {
     /// Only to be called when the customer has deliberately asked to buy: it shows Apple's disclosure notice,
     /// and every token minted is one Apple expects a report for.
     ///
-    /// Does nothing while ``DangerousSettings/useExternalPurchaseCustomLinks`` is disabled: the caller is told to
-    /// proceed with no token id to hand over, so the link keeps opening as it did before.
+    /// Does nothing while `useExternalPurchaseCustomLinks` is disabled, see
+    /// ``Configuration/Builder/with(useExternalPurchaseCustomLinks:enableExternalPurchasesInSimulator:)``: the
+    /// caller is told to proceed with no token id to hand over, so the link keeps opening as it did before.
     @_spi(Internal) func prepareExternalPurchaseLink() async -> ExternalPurchaseLinkResult {
         return .init(preparationResult: await self.externalPurchaseManager.prepareExternalPurchase(flow: .linkOut))
     }
 
-    /// ``DangerousSettings/useExternalPurchaseCustomLinks``, so that `RevenueCatUI` only tells the customer
-    /// something is under way when ``prepareExternalPurchaseLink()`` has work to do.
+    /// ``Configuration/Builder/with(useExternalPurchaseCustomLinks:enableExternalPurchasesInSimulator:)``, so that
+    /// `RevenueCatUI` only tells the customer something is under way when ``prepareExternalPurchaseLink()`` has
+    /// work to do.
     @_spi(Internal) var useExternalPurchaseCustomLinks: Bool {
-        return self.systemInfo.dangerousSettings.useExternalPurchaseCustomLinks
+        return self.systemInfo.useExternalPurchaseCustomLinks
     }
 
     /// Used by `RevenueCatUI` to download and cache paywall images.
@@ -2009,12 +2103,12 @@ extension Purchases {
             clientTransactionID: clientTransactionID,
             trackingMetadata: trackingMetadata,
             captureMethod: .manual,
-            poller: RewardVerification.Poller.makeDefault()
+            poller: RewardVerification.Poller.makeDefault(adUnitID: trackingMetadata?.adUnitId)
         )
     }
 
     /// Adapter entry point: identical to the public overload, but lets an official RevenueCat
-    /// ad-network adapter stamp `captureMethod: .adapter` on the tracked events instead of `.manual`.
+    /// ad-network adapter stamp `captureMethod: .iosAdMobAdapter` on the tracked events instead of `.manual`.
     @_spi(Internal) public func pollRewardVerification(
         clientTransactionID: String,
         trackingMetadata: RewardedAdTrackingMetadata?,
@@ -2024,7 +2118,7 @@ extension Purchases {
             clientTransactionID: clientTransactionID,
             trackingMetadata: trackingMetadata,
             captureMethod: captureMethod,
-            poller: RewardVerification.Poller.makeDefault()
+            poller: RewardVerification.Poller.makeDefault(adUnitID: trackingMetadata?.adUnitId)
         )
     }
 
@@ -2157,18 +2251,7 @@ extension Purchases {
         Logger.debug(AdsStrings.reward_verification_entitlement_fetching_customer_info(
             transactionID: clientTransactionID
         ))
-        let refreshed: CustomerInfo? = await Async.retry(maximumRetries: 3) {
-            do {
-                let info = try await self.customerInfoManager.customerInfo(
-                    appUserID: self.appUserID,
-                    fetchPolicy: .fetchCurrent
-                )
-                return (shouldRetry: false, info)
-            } catch {
-                let isTransient = (error as? BackendError)?.isTransient ?? false
-                return (shouldRetry: isTransient, nil)
-            }
-        }
+        let refreshed = await self.fetchCustomerInfoRetryingTransientErrors(appUserID: self.appUserID)
         if refreshed == nil {
             Logger.warn(AdsStrings.reward_verification_entitlement_customer_info_refresh_failed(
                 transactionID: clientTransactionID
@@ -2191,12 +2274,14 @@ extension Purchases {
     ///
     /// - Throws: `BackendError`
     internal func fetchRewardVerificationStatus(
-        clientTransactionID: String
+        clientTransactionID: String,
+        adUnitID: String?
     ) async throws -> RewardVerificationPollStatus {
         let response = try await Async.call { completion in
             self.backend.adsAPI.getRewardVerificationStatus(
                 appUserID: self.appUserID,
                 clientTransactionID: clientTransactionID,
+                adUnitID: adUnitID,
                 completion: completion
             )
         }
@@ -2288,6 +2373,8 @@ public extension Purchases {
                 storeKitTimeout: configuration.storeKit1Timeout,
                 networkTimeout: configuration.networkTimeout,
                 dangerousSettings: configuration.dangerousSettings,
+                useExternalPurchaseCustomLinks: configuration.useExternalPurchaseCustomLinks,
+                enableExternalPurchasesInSimulator: configuration.enableExternalPurchasesInSimulator,
                 showStoreMessagesAutomatically: configuration.showStoreMessagesAutomatically,
                 diagnosticsEnabled: configuration.diagnosticsEnabled,
                 preferredLocale: configuration.preferredLocale,
@@ -2717,6 +2804,32 @@ public extension Purchases {
 
 }
 
+extension Purchases: SDKSettingsConfigProviderDelegate {
+
+    func sdkSettingsConfigProviderDidUpdate(_ settings: SDKSettings) {
+        self.setDiagnosticsCollectionDecision(remoteDiagnosticsEnabled: settings.diagnostics?.enabled)
+    }
+
+    private func setDiagnosticsCollectionDecision(remoteDiagnosticsEnabled: Bool?) {
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+            let isEnabledBySDKConfiguration = self.currentConfiguration?.diagnosticsEnabled ?? false
+            let decision = resolvedDiagnosticsCollectionDecision(
+                remoteDiagnosticsEnabled: remoteDiagnosticsEnabled,
+                diagnosticsEnabled: isEnabledBySDKConfiguration
+            )
+            Logger.debug(Strings.diagnostics.diagnostics_collection_decision(
+                isEnabled: decision == .enabled,
+                isEnabledBySDKConfiguration: remoteDiagnosticsEnabled == nil
+            ))
+            self.diagnosticsTracker?.setCollectionDecision(decision)
+            Task { [weak self] in
+                await self?.purchasesOrchestrator.diagnosticsSynchronizer?.setCollectionDecision(decision)
+            }
+        }
+    }
+
+}
+
 // @unchecked because:
 // - It contains `NotificationCenter`, which isn't thread-safe as of Swift 5.7.
 // - It has a mutable `privateDelegate` (this isn't actually thread-safe!)
@@ -2726,6 +2839,21 @@ public extension Purchases {
 // async contexts in a much more simple way without errors like:
 // "Capture of 'self' with non-sendable type 'Purchases' in a `@Sendable` closure"
 extension Purchases: @unchecked Sendable {}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+func initialDiagnosticsCollectionDecision(
+    remoteConfigEnabled: Bool
+) -> DiagnosticsCollectionDecision {
+    return remoteConfigEnabled ? .undetermined : .disabled
+}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+func resolvedDiagnosticsCollectionDecision(
+    remoteDiagnosticsEnabled: Bool?,
+    diagnosticsEnabled: Bool
+) -> DiagnosticsCollectionDecision {
+    return .init(enabled: remoteDiagnosticsEnabled ?? diagnosticsEnabled)
+}
 
 // MARK: Internal
 
@@ -3013,6 +3141,22 @@ internal extension Purchases {
 
 private extension Purchases {
 
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    /// For a backend change made outside StoreKit, which no receipt post brings back. `nil` if no fetch lands.
+    func fetchCustomerInfoRetryingTransientErrors(appUserID: String) async -> CustomerInfo? {
+        return await Async.retry(maximumRetries: 3) {
+            do {
+                let info = try await self.customerInfoManager.customerInfo(appUserID: appUserID,
+                                                                           fetchPolicy: .fetchCurrent)
+                return (shouldRetry: false, info)
+            } catch {
+                let isTransient = (error as? BackendError)?.isTransient ?? false
+                return (shouldRetry: isTransient, nil)
+            }
+        }
+    }
+    #endif
+
     func handleCustomerInfoChanged(from old: CustomerInfo?, to new: CustomerInfo) {
         if old != nil {
             self.trialOrIntroPriceEligibilityChecker.clearCache()
@@ -3046,8 +3190,15 @@ private extension Purchases {
         // Note: it's important that we observe "will enter foreground" instead of
         // "did become active" so that we don't trigger cache updates in the middle
         // of purchases due to pop-ups stealing focus from the app.
-        self.updateAllCachesIfNeeded(isAppBackgrounded: false, fetchContext: .foreground)
-        self.dispatchSyncSubscriberAttributes()
+        let appUserID = self.appUserID
+        self.updateAllCachesIfNeeded(
+            isAppBackgrounded: false,
+            fetchContext: .foreground,
+            customerInfoCompletion: { [weak self] result in
+                guard case .success = result, self?.appUserID == appUserID else { return }
+                self?.dispatchSyncSubscriberAttributes()
+            }
+        )
         self.transactionMetadataSyncHelper.syncIfNeeded(
             allowSharingAppStoreAccount: self.purchasesOrchestrator.allowSharingAppStoreAccount
         )
@@ -3070,7 +3221,8 @@ private extension Purchases {
     }
 
     @objc func applicationWillResignActive() {
-        self.dispatchSyncSubscriberAttributes()
+        self.dispatchSyncSubscriberAttributesIfCustomerInfoAvailable()
+
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
         self.purchasesOrchestrator.postEventsIfNeeded()
         #endif
@@ -3104,6 +3256,18 @@ private extension Purchases {
             self.syncSubscriberAttributes()
         }
         #endif
+    }
+
+    private func dispatchSyncSubscriberAttributesIfCustomerInfoAvailable() {
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        // Ensure the customer is created server-side before syncing attributes.
+        guard self.hasCachedCustomerInfo(for: self.appUserID) else { return }
+        self.dispatchSyncSubscriberAttributes()
+        #endif
+    }
+
+    private func hasCachedCustomerInfo(for appUserID: String) -> Bool {
+        return (try? self.customerInfoManager.cachedCustomerInfo(appUserID: appUserID)) != nil
     }
 
     private func performInitialForegroundSetup() {
@@ -3153,7 +3317,11 @@ private extension Purchases {
     }
     #endif
 
-    func updateAllCachesIfNeeded(isAppBackgrounded: Bool, fetchContext: RemoteConfigFetchContext) {
+    func updateAllCachesIfNeeded(
+        isAppBackgrounded: Bool,
+        fetchContext: RemoteConfigFetchContext,
+        customerInfoCompletion: CustomerInfoManager.CustomerInfoCompletion? = nil
+    ) {
         guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
             // No need to update caches every time when in UI preview mode.
             // Only needed at configuration time
@@ -3163,7 +3331,7 @@ private extension Purchases {
         if !self.systemInfo.dangerousSettings.customEntitlementComputation {
             self.customerInfoManager.fetchAndCacheCustomerInfoIfStale(appUserID: self.appUserID,
                                                                       isAppBackgrounded: isAppBackgrounded,
-                                                                      completion: nil)
+                                                                      completion: customerInfoCompletion)
             self.offlineEntitlementsManager.updateProductsEntitlementsCacheIfStale(
                 isAppBackgrounded: isAppBackgrounded,
                 completion: nil

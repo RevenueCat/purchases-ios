@@ -22,4 +22,10 @@
 "Continue" = "Continuar";
 "Default_offer_details_with_intro_offer" = "Comece sua avaliação de {{ sub_offer_duration }} e depois {{ total_price_and_per_month }}.";
 "Something went wrong" = "Algo deu errado";
+"Payment failed." = "O pagamento não foi concluído.";
+"Your purchase is still processing." = "Sua compra ainda está sendo processada.";
 "Purchase" = "Comprar";
+"You've already purchased this" = "Você já comprou este item";
+"Your purchase was successful." = "Sua compra foi concluída com sucesso.";
+"Purchase unavailable" = "Compra indisponível";
+"This purchase isn't available in your region." = "Esta compra não está disponível na sua região.";

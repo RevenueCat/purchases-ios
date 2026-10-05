@@ -22,4 +22,10 @@
 "Continue" = "продължи";
 "Default_offer_details_with_intro_offer" = "Започнете своя пробен период от {{ sub_offer_duration }}, след което {{ total_price_and_per_month }}.";
 "Something went wrong" = "Нещо се обърка";
+"Payment failed." = "Плащането не беше успешно.";
+"Your purchase is still processing." = "Покупката ви все още се обработва.";
 "Purchase" = "Купи";
+"You've already purchased this" = "Вече сте закупили това";
+"Your purchase was successful." = "Покупката ви е извършена успешно.";
+"Purchase unavailable" = "Покупката не е налична";
+"This purchase isn't available in your region." = "Тази покупка не е налична във вашия регион.";

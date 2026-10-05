@@ -51,6 +51,7 @@ const JOBS = {
   "spm-receipt-parser": ["slack-secrets"],
   "spm-revenuecat-ui-ios-15": ["slack-secrets"],
   "spm-revenuecat-ui-ios-16": ["slack-secrets"],
+  "spm-revenuecat-ui-macos": ["slack-secrets"],
   "spm-revenuecat-ui-watchos": ["slack-secrets"],
 };
 

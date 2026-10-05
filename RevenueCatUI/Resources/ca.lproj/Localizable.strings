@@ -22,4 +22,10 @@
 "Continue" = "Continua";
 "Default_offer_details_with_intro_offer" = "Inicieu la vostra prova de {{ sub_offer_duration }} i després {{ total_price_and_per_month }}.";
 "Something went wrong" = "Alguna cosa ha anat malament";
+"Payment failed." = "El pagament ha fallat.";
+"Your purchase is still processing." = "La teva compra encara s'està processant.";
 "Purchase" = "Comprar";
+"You've already purchased this" = "Ja has comprat això";
+"Your purchase was successful." = "La teva compra s'ha realitzat correctament.";
+"Purchase unavailable" = "Compra no disponible";
+"This purchase isn't available in your region." = "Aquesta compra no està disponible a la teva regió.";

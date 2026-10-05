@@ -36,6 +36,43 @@ class CheckpointEventDataTests: TestCase {
         expect(data.offeringID).to(beNil())
     }
 
+    /// The workflow's step events and receipt carry its trace id, so the hit has to report the same one.
+    func testMatchedWorkflowReportsTheWorkflowTraceId() throws {
+        let matched = ResolvedCheckpointWorkflow(workflow: Self.workflow(id: "wf_123"),
+                                                 uiConfig: .empty,
+                                                 offerings: Self.offerings)
+
+        let data = CheckpointEvent.Data(identifier: "onboarding_complete",
+                                        date: self.date,
+                                        resolved: .init(.matchedWorkflow(matched)))
+
+        expect(data.traceID) == matched.traceId
+    }
+
+    func testEveryResultReportsATraceId() throws {
+        let resolutions: [CheckpointResolution] = [
+            .matchedOffering(Self.offering),
+            .noAction(.noMatch),
+            .noAction(.configurationUnavailable),
+            .noAction(.unknownCheckpoint)
+        ]
+
+        for resolution in resolutions {
+            let data = CheckpointEvent.Data(identifier: "onboarding_complete",
+                                            date: self.date,
+                                            resolved: .init(resolution))
+
+            expect(data.traceID).toNot(beNil())
+        }
+    }
+
+    func testEachEvaluationGetsItsOwnTraceId() throws {
+        let first = ResolvedCheckpoint(.noAction(.noMatch))
+        let second = ResolvedCheckpoint(.noAction(.noMatch))
+
+        expect(first.traceID) != second.traceID
+    }
+
     func testMatchedOfferingReportsReturnDataWithTheOffering() throws {
         let resolved = ResolvedCheckpoint(.matchedOffering(Self.offering), checkpointRuleID: "rule_123")
 

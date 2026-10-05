@@ -15,7 +15,7 @@
 import Combine
 import Foundation
 import RevenueCat
-@_spi(CheckpointsInternal) import RevenueCatUI
+@_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
 
 enum PaywallPresenterMode: String, CaseIterable, Identifiable {
     case `default`
@@ -42,6 +42,21 @@ enum PaywallPresenterMode: String, CaseIterable, Identifiable {
             return "For an offering step, each checkpoint call uses the purple local override."
         }
     }
+}
+
+extension FlowPresentationMode {
+
+    static var testerCases: [Self] { [.default, .modalFullScreen, .modalSheet] }
+
+    var title: String {
+        switch self {
+        case .default: return "Default"
+        case .modalFullScreen: return "Full screen"
+        case .modalSheet: return "Sheet"
+        default: return self.description
+        }
+    }
+
 }
 
 final class CheckpointDemoModel: ObservableObject {

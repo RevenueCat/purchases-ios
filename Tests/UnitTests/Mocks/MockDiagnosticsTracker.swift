@@ -19,6 +19,11 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
 
     let trackedEvents: Atomic<[DiagnosticsEvent]> = .init([])
     let trackedCustomerInfo: Atomic<[CustomerInfo]> = .init([])
+    let collectionDecisions: Atomic<[DiagnosticsCollectionDecision]> = .init([])
+
+    func setCollectionDecision(_ decision: DiagnosticsCollectionDecision) {
+        self.collectionDecisions.modify { $0.append(decision) }
+    }
 
     func track(_ event: DiagnosticsEvent) {
         self.trackedEvents.modify { $0.append(event) }
@@ -33,7 +38,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
     // swiftlint:disable large_tuple
     // swiftlint:disable line_length
     let trackedHttpRequestPerformedParams: Atomic<[
-        (String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, VerificationResult, Bool, ConnectionErrorReason?)
+        (String, String?, TimeInterval, Bool, Int, Int?, HTTPResponseOrigin?, SignatureVerificationResult, Date?, Bool, ConnectionErrorReason?)
     ]> = .init([])
     // swiftlint:enable large_tuple
     // swiftlint:enable line_length
@@ -46,7 +51,8 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                                    responseCode: Int,
                                    backendErrorCode: Int?,
                                    resultOrigin: HTTPResponseOrigin?,
-                                   verificationResult: VerificationResult,
+                                   verificationResult: SignatureVerificationResult,
+                                   responseRequestDate: Date?,
                                    isRetry: Bool,
                                    connectionErrorReason: ConnectionErrorReason? = nil) {
         self.trackedHttpRequestPerformedParams.modify {
@@ -59,6 +65,7 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
                  backendErrorCode,
                  resultOrigin,
                  verificationResult,
+                 responseRequestDate,
                  isRetry,
                  connectionErrorReason)
             )

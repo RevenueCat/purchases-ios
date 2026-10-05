@@ -22,4 +22,10 @@
 "Continue" = "Tiếp tục";
 "Default_offer_details_with_intro_offer" = "Bắt đầu dùng thử {{ sub_offer_duration }}, sau đó là {{ Total_price_and_per_month }}.";
 "Something went wrong" = "Đã xảy ra lỗi";
+"Payment failed." = "Thanh toán không thành công.";
+"Your purchase is still processing." = "Giao dịch mua của bạn vẫn đang được xử lý.";
 "Purchase" = "Mua";
+"You've already purchased this" = "Bạn đã mua mục này";
+"Your purchase was successful." = "Bạn đã mua hàng thành công.";
+"Purchase unavailable" = "Không thể mua";
+"This purchase isn't available in your region." = "Giao dịch mua này không khả dụng ở khu vực của bạn.";

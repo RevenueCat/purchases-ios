@@ -13,7 +13,7 @@
 //
 
 @_spi(Internal) @testable import RevenueCat
-@_spi(CheckpointsInternal) @_spi(Internal) @testable import RevenueCatUI
+@_spi(InviteOnlyCheckpointsApi) @_spi(Internal) @testable import RevenueCatUI
 import XCTest
 
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
@@ -359,6 +359,15 @@ final class WorkflowPresenterTests: TestCase {
         XCTAssertEqual(viewController.customVariables, expected)
     }
 
+    func testCheckpointTraceIdReachesTheWorkflowContext() throws {
+        let presentation = try Self.renderablePresentation(customVariables: [:])
+        let presenter = WorkflowPresenter { _ in true }
+
+        let viewController = try presenter.makePaywallViewController(for: presentation)
+
+        XCTAssertEqual(viewController.workflowContextForTesting?.traceId, presentation.workflow.traceId)
+    }
+
     func testCheckpointWorkflowPaywallDoesNotAcceptExitOffers() throws {
         let presentation = try Self.renderablePresentation(customVariables: [:])
         let presenter = WorkflowPresenter { _ in true }
@@ -380,6 +389,7 @@ final class WorkflowPresenterTests: TestCase {
         return WorkflowPresentationRequest(
             workflow: self.workflow(),
             customVariables: customVariables,
+            presentationMode: .modalSheet,
             initialActiveEntitlementIdentifiers: initialActiveEntitlementIdentifiers
         )
     }
@@ -411,7 +421,8 @@ final class WorkflowPresenterTests: TestCase {
                 uiConfig: resolvedWorkflow.uiConfig,
                 offerings: resolvedWorkflow.offerings
             ),
-            customVariables: customVariables
+            customVariables: customVariables,
+            presentationMode: .modalSheet
         )
     }
 

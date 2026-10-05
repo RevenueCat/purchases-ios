@@ -1601,7 +1601,8 @@ private extension TransactionPosterTests {
         return CustomerInfo(response: response,
                             entitlementVerification: .notRequested,
                             sandboxEnvironmentDetector: self.systemInfo,
-                            httpResponseOriginalSource: .mainServer)
+                            httpResponseOriginalSource: .mainServer,
+                            unsyncedProductIdentifiers: [])
     }
 
 }

@@ -210,6 +210,7 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         self.prepareForPresentation()
         let controller = makeDefaultCheckpointPaywallViewController(params: params)
         controller.delegate = self
+        controller.modalPresentationStyle = params.presentationMode.modalPresentationStyle
         self.completion = completion
         presentationContext.present(controller, animated: true)
         if controller.presentingViewController == nil {

@@ -20,6 +20,7 @@ final class GetRewardVerificationStatusOperation: CacheableNetworkOperation {
         let httpClient: HTTPClient
         let appUserID: String
         let clientTransactionID: String
+        let adUnitID: String?
 
     }
 
@@ -94,7 +95,8 @@ private extension GetRewardVerificationStatusOperation {
             method: .get,
             path: .rewardVerificationStatus(
                 appUserID: appUserID,
-                clientTransactionID: clientTransactionID
+                clientTransactionID: clientTransactionID,
+                adUnitID: self.configuration.adUnitID
             )
         )
 

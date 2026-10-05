@@ -16,9 +16,9 @@ import Foundation
 
 /// Owns the per-impression workflow step event state machine and drives ``WorkflowStepEventTracker``
 /// at the four emission points (initial step, forward, back, terminal). It exists so the emission
-/// *sequence* and its gating (the "fire once", "only if a page rendered" rules that on Android live in
-/// `PaywallViewModelImpl`) can be unit tested without rendering a live SwiftUI view: ``WorkflowPaywallView``
-/// holds it as `@State` and delegates its lifecycle/navigation hooks to it.
+/// *sequence* and its gating (the "fire once", "only if a page rendered" rules) can be unit tested without
+/// rendering a live SwiftUI view: ``WorkflowPaywallView`` holds it as `@State` and delegates its
+/// lifecycle/navigation hooks to it.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class WorkflowStepEventCoordinator {
 
@@ -43,9 +43,7 @@ final class WorkflowStepEventCoordinator {
         )
     }
 
-    /// Production entry point: each impression gets a fresh `traceId`, matching Android's per-impression
-    /// `workflowTraceId`. Because the view creates the coordinator in `init`, a new presentation (new view
-    /// identity) yields a new coordinator and therefore a new `traceId`.
+    /// Mints a fresh `traceId` for the impression.
     convenience init(
         workflow: PublishedWorkflow,
         workflowBlobRef: String? = nil,
@@ -54,8 +52,7 @@ final class WorkflowStepEventCoordinator {
         self.init(workflow: workflow, traceId: UUID().uuidString, workflowBlobRef: workflowBlobRef, sink: sink)
     }
 
-    /// Emits the initial `stepStarted` once, and only if the initial step actually rendered. Mirrors
-    /// Android firing the START event only when the initial workflow state is non-nil.
+    /// Emits the initial `stepStarted` once, and only if the initial step actually rendered.
     func trackInitialStep(_ step: WorkflowStep?, hasRenderedPage: Bool) {
         guard !self.hasTrackedInitialStep, hasRenderedPage, let step else {
             return
@@ -65,7 +62,7 @@ final class WorkflowStepEventCoordinator {
     }
 
     /// Tracks a forward/back transition. When the destination failed to render (`renderedPageIsNil`), the
-    /// step being left completes with no destination and no `stepStarted` is emitted (Android parity).
+    /// step being left completes with no destination and no `stepStarted` is emitted.
     func trackTransition(
         from fromStep: WorkflowStep?,
         to toStep: WorkflowStep,
@@ -85,8 +82,7 @@ final class WorkflowStepEventCoordinator {
     /// Emits a terminal `stepCompleted` (no destination) once, and only if a page is currently rendered.
     /// A step that never rendered (initial build failure) or a forward/back destination that failed to
     /// render clears the rendered page, so this must not emit a `stepCompleted` with no preceding
-    /// `stepStarted`. Mirrors Android keying terminal completion off `_workflowState.value?.currentStepId`,
-    /// which is null when a step fails to render.
+    /// `stepStarted`.
     func trackTerminalCompletion(currentStep: WorkflowStep?, hasRenderedPage: Bool) {
         guard !self.hasTrackedTerminalCompletion, hasRenderedPage, let currentStep else {
             return

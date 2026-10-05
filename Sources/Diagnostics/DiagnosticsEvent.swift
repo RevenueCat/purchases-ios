@@ -80,6 +80,8 @@ struct DiagnosticsEvent: Codable, Equatable {
 
     struct Properties: Codable, Equatable {
         let verificationResult: String?
+        let verificationFailureReason: String?
+        let verificationDeviceClockOffsetMinutes: Int?
         let endpointName: String?
         let host: String?
         let responseTimeMillis: Int?
@@ -120,6 +122,8 @@ struct DiagnosticsEvent: Codable, Equatable {
         let connectionErrorReason: ConnectionErrorReason?
 
         init(verificationResult: String? = nil,
+             verificationFailureReason: String? = nil,
+             verificationDeviceClockOffsetMinutes: Int? = nil,
              endpointName: String? = nil,
              host: String? = nil,
              responseTime: TimeInterval? = nil,
@@ -159,6 +163,8 @@ struct DiagnosticsEvent: Codable, Equatable {
              reason: String? = nil,
              connectionErrorReason: ConnectionErrorReason? = nil) {
             self.verificationResult = verificationResult
+            self.verificationFailureReason = verificationFailureReason
+            self.verificationDeviceClockOffsetMinutes = verificationDeviceClockOffsetMinutes
             self.endpointName = endpointName
             self.host = host
             self.responseTimeMillis = responseTime.map { Int($0 * 1000) }

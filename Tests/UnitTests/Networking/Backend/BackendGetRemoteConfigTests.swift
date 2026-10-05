@@ -522,7 +522,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
     }
 
     func testGetRemoteConfigReturnsFailedVerificationResultFromHTTPClient() throws {
-        self.mockSuccessfulResponse(verificationResult: .failed)
+        self.mockSuccessfulResponse(verificationResult: .failed(.unknown))
 
         let result: Result<RemoteConfigFetchResult, BackendError>? = waitUntilValue { completed in
             self.remoteConfigAPI.getRemoteConfig(
@@ -535,7 +535,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         let fetchResult = try XCTUnwrap(result?.value)
 
         expect(fetchResult.container).toNot(beNil())
-        expect(fetchResult.verificationResult) == .failed
+        expect(fetchResult.verificationResult) == .failed(.unknown)
     }
 
     func testGetRemoteConfigNoContentResponseSucceedsWithNoContainer() throws {
@@ -764,7 +764,7 @@ private extension BackendGetRemoteConfigTests {
 
     func mockSuccessfulResponse(
         domain: String = "app",
-        verificationResult: VerificationResult = .defaultValue,
+        verificationResult: SignatureVerificationResult = .notRequested,
         delay: DispatchTimeInterval = .never
     ) {
         self.httpClient.mock(
@@ -780,7 +780,7 @@ private extension BackendGetRemoteConfigTests {
 
     func mockSuccessfulFallbackResponse(
         domain: String = "app",
-        verificationResult: VerificationResult = .defaultValue
+        verificationResult: SignatureVerificationResult = .notRequested
     ) {
         self.httpClient.mock(
             requestPath: HTTPRequest.FallbackPath.remoteConfig(domain: domain),

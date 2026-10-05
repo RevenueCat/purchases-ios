@@ -22,4 +22,10 @@
 "Continue" = "Weiter";
 "Default_offer_details_with_intro_offer" = "Starten Sie Ihre Testversion für {{ sub_offer_duration }} und dann für {{ total_price_and_per_month }}.";
 "Something went wrong" = "Etwas ist schief gelaufen";
+"Payment failed." = "Die Zahlung ist fehlgeschlagen.";
+"Your purchase is still processing." = "Ihr Kauf wird noch verarbeitet.";
 "Purchase" = "Kaufen";
+"You've already purchased this" = "Sie haben dies bereits gekauft";
+"Your purchase was successful." = "Ihr Kauf wurde erfolgreich abgeschlossen.";
+"Purchase unavailable" = "Kauf nicht verfügbar";
+"This purchase isn't available in your region." = "Dieser Kauf ist in Ihrer Region nicht verfügbar.";

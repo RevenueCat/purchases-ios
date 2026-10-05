@@ -33,11 +33,16 @@ internal protocol AdImpressionEventData: AdEventData {
     var impressionId: String { get }
 }
 
-/// Identifies the mechanism that emitted an ad event. The SDK only ever emits these two values;
-/// pre-feature versions send nothing, which the backend treats as `unknown`.
+/// Identifies the mechanism that emitted an ad event.
+/// Pre-feature versions send nothing, which the backend treats as `unknown`.
 @_spi(Internal) public enum AdEventCaptureMethod: String, Codable, Sendable {
 
+    /// Auto-captured by the official RevenueCat Google AdMob adapter for iOS.
+    case iosAdMobAdapter = "ios_admob_adapter"
+
     /// Auto-captured by an official RevenueCat ad-network adapter.
+    /// Retained so events stored by older adapter versions can still be decoded and sent.
+    @available(*, deprecated, message: "Use iosAdMobAdapter instead.")
     case adapter
 
     /// Reported via the public `trackAd*` tracking API.
@@ -192,6 +197,132 @@ public final class AdFailedToLoad: NSObject,
         case placement
         case adUnitId
         case mediatorErrorCode
+    }
+
+}
+
+/// Data for rewarded ad prompt shown events.
+///
+/// Report this event when the app prompts the user to watch a rewarded ad,
+/// for example a "Watch an ad to earn coins" button. This event is rewarded-only and manual-only:
+/// adapters never emit it, because only the app knows when the prompt is presented.
+public final class AdRewardPromptShown: NSObject,
+                                         AdEventData,
+                                         Codable,
+                                         @unchecked Sendable {
+
+    /// The mediation network that will serve the rewarded ad.
+    public let mediatorName: MediatorName
+
+    /// The format of the ad prompted. Always ``AdFormat/rewarded``.
+    public let adFormat: AdFormat
+
+    /// The developer-defined placement where the prompt was shown, if provided.
+    public let placement: String?
+
+    /// The ad unit identifier of the rewarded ad prompted.
+    public let adUnitId: String
+
+    // swiftlint:disable:next missing_docs
+    public init(
+        mediatorName: MediatorName,
+        placement: String? = nil,
+        adUnitId: String
+    ) {
+        self.mediatorName = mediatorName
+        self.adFormat = .rewarded
+        self.placement = placement
+        self.adUnitId = adUnitId
+        super.init()
+    }
+
+    // MARK: - NSObject overrides for equality
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? AdRewardPromptShown else { return false }
+        return self.mediatorName == other.mediatorName &&
+               self.adFormat == other.adFormat &&
+               self.placement == other.placement &&
+               self.adUnitId == other.adUnitId
+    }
+
+    public override var hash: Int {
+        var hasher = Hasher()
+        hasher.combine(mediatorName)
+        hasher.combine(adFormat)
+        hasher.combine(placement)
+        hasher.combine(adUnitId)
+        return hasher.finalize()
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case mediatorName
+        case adFormat
+        case placement
+        case adUnitId
+    }
+
+}
+
+/// Data for rewarded ad prompt accepted events.
+///
+/// Report this event when the user accepts a rewarded ad prompt,
+/// for example by tapping a "Watch an ad to earn coins" button. This event is rewarded-only and manual-only:
+/// adapters never emit it, because only the app knows when the prompt is accepted.
+public final class AdRewardPromptAccepted: NSObject,
+                                            AdEventData,
+                                            Codable,
+                                            @unchecked Sendable {
+
+    /// The mediation network that will serve the rewarded ad.
+    public let mediatorName: MediatorName
+
+    /// The format of the ad prompted. Always ``AdFormat/rewarded``.
+    public let adFormat: AdFormat
+
+    /// The developer-defined placement where the prompt was accepted, if provided.
+    public let placement: String?
+
+    /// The ad unit identifier of the rewarded ad prompted.
+    public let adUnitId: String
+
+    // swiftlint:disable:next missing_docs
+    public init(
+        mediatorName: MediatorName,
+        placement: String? = nil,
+        adUnitId: String
+    ) {
+        self.mediatorName = mediatorName
+        self.adFormat = .rewarded
+        self.placement = placement
+        self.adUnitId = adUnitId
+        super.init()
+    }
+
+    // MARK: - NSObject overrides for equality
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? AdRewardPromptAccepted else { return false }
+        return self.mediatorName == other.mediatorName &&
+               self.adFormat == other.adFormat &&
+               self.placement == other.placement &&
+               self.adUnitId == other.adUnitId
+    }
+
+    public override var hash: Int {
+        var hasher = Hasher()
+        hasher.combine(mediatorName)
+        hasher.combine(adFormat)
+        hasher.combine(placement)
+        hasher.combine(adUnitId)
+        return hasher.finalize()
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case mediatorName
+        case adFormat
+        case placement
+        case adUnitId
     }
 
 }
@@ -643,6 +774,12 @@ internal enum AdEvent: Equatable, Codable, Sendable {
     /// A single reward was granted following successful verification.
     case rewardGranted(CreationData, AdRewardGranted)
 
+    /// The app prompted the user to watch a rewarded ad.
+    case rewardedAdPromptShown(CreationData, AdRewardPromptShown)
+
+    /// The user accepted a rewarded ad prompt.
+    case rewardedAdPromptAccepted(CreationData, AdRewardPromptAccepted)
+
 }
 
 extension AdEvent {
@@ -682,6 +819,8 @@ extension AdEvent {
         case let .rewardVerified(creationData, _): return creationData
         case let .rewardFailedToVerify(creationData, _): return creationData
         case let .rewardGranted(creationData, _): return creationData
+        case let .rewardedAdPromptShown(creationData, _): return creationData
+        case let .rewardedAdPromptAccepted(creationData, _): return creationData
         }
     }
 
@@ -706,6 +845,10 @@ extension AdEvent {
             return failedToVerify
         case let .rewardGranted(_, granted):
             return granted
+        case let .rewardedAdPromptShown(_, promptShown):
+            return promptShown
+        case let .rewardedAdPromptAccepted(_, promptAccepted):
+            return promptAccepted
         }
     }
 
@@ -713,7 +856,9 @@ extension AdEvent {
     internal var revenueData: AdRevenue? {
         switch self {
         case .failedToLoad, .loaded, .displayed, .opened,
-             .rewardEarnedUnverified, .rewardVerified, .rewardFailedToVerify, .rewardGranted:
+             .rewardEarnedUnverified, .rewardVerified, .rewardFailedToVerify, .rewardGranted,
+             .rewardedAdPromptShown,
+             .rewardedAdPromptAccepted:
             return nil
         case let .revenue(_, revenueData):
             return revenueData
@@ -724,7 +869,8 @@ extension AdEvent {
     internal var rewardEarnedUnverifiedData: AdRewardEarnedUnverified? {
         switch self {
         case .failedToLoad, .loaded, .displayed, .opened, .revenue,
-             .rewardVerified, .rewardFailedToVerify, .rewardGranted:
+             .rewardVerified, .rewardFailedToVerify, .rewardGranted, .rewardedAdPromptShown,
+             .rewardedAdPromptAccepted:
             return nil
         case let .rewardEarnedUnverified(_, data):
             return data
@@ -735,7 +881,8 @@ extension AdEvent {
     internal var rewardVerifiedData: AdRewardVerified? {
         switch self {
         case .failedToLoad, .loaded, .displayed, .opened, .revenue,
-             .rewardEarnedUnverified, .rewardFailedToVerify, .rewardGranted:
+             .rewardEarnedUnverified, .rewardFailedToVerify, .rewardGranted, .rewardedAdPromptShown,
+             .rewardedAdPromptAccepted:
             return nil
         case let .rewardVerified(_, data):
             return data
@@ -746,7 +893,8 @@ extension AdEvent {
     internal var rewardFailedToVerifyData: AdRewardFailedToVerify? {
         switch self {
         case .failedToLoad, .loaded, .displayed, .opened, .revenue,
-             .rewardEarnedUnverified, .rewardVerified, .rewardGranted:
+             .rewardEarnedUnverified, .rewardVerified, .rewardGranted, .rewardedAdPromptShown,
+             .rewardedAdPromptAccepted:
             return nil
         case let .rewardFailedToVerify(_, data):
             return data
@@ -756,7 +904,8 @@ extension AdEvent {
     internal var rewardGrantedData: AdRewardGranted? {
         switch self {
         case .failedToLoad, .loaded, .displayed, .opened, .revenue,
-             .rewardEarnedUnverified, .rewardVerified, .rewardFailedToVerify:
+             .rewardEarnedUnverified, .rewardVerified, .rewardFailedToVerify, .rewardedAdPromptShown,
+             .rewardedAdPromptAccepted:
             return nil
         case let .rewardGranted(_, data):
             return data
@@ -779,7 +928,9 @@ extension AdEvent {
         case let .failedToLoad(_, data):
             return data.mediatorErrorCode
         case .loaded, .displayed, .opened, .revenue,
-             .rewardEarnedUnverified, .rewardVerified, .rewardFailedToVerify, .rewardGranted:
+             .rewardEarnedUnverified, .rewardVerified, .rewardFailedToVerify, .rewardGranted,
+             .rewardedAdPromptShown,
+             .rewardedAdPromptAccepted:
             return nil
         }
     }

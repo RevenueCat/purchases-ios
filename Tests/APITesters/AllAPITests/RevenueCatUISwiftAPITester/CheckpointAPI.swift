@@ -13,7 +13,7 @@
 //
 
 import RevenueCat
-@_spi(CheckpointsInternal) import RevenueCatUI
+@_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
 
 func checkCheckpointAPI(_ purchases: Purchases) {
     let literalCustomVariables: [String: CustomVariableValue] = [
@@ -36,6 +36,11 @@ func checkCheckpointAPI(_ purchases: Purchases) {
 
     purchases.checkpoint("test_checkpoint") { (_: FlowResult?) in }
     purchases.checkpoint("test_checkpoint", customVariables: explicitCustomVariables) { _ in }
+    purchases.checkpoint("test_checkpoint", presentationMode: .modalFullScreen) { _ in }
+
+    let _: FlowPresentationMode = .default
+    let _: FlowPresentationMode = .modalFullScreen
+    let _: FlowPresentationMode = .modalSheet
 
     let entitlement: ObtainedEntitlement? = nil
     let _: EntitlementInfo? = entitlement?.entitlementInfo
@@ -54,6 +59,7 @@ private func checkPaywallPresentationAPI(
     let presenter: PaywallPresentationHandler = { params, completion in
         let _: String = params.checkpointIdentifier
         let _: [String: CustomVariableValue] = params.customVariables
+        let _: FlowPresentationMode = params.presentationMode
         let _: Offering = params.offering
         completion(.continued)
     }

@@ -45,10 +45,17 @@ struct ResolvedCheckpoint {
 
     let resolution: CheckpointResolution
     let checkpointRuleID: String?
+    /// The matched workflow's trace id, so the hit and the workflow run join on it. Fresh otherwise.
+    let traceID: String
 
     init(_ resolution: CheckpointResolution, checkpointRuleID: String? = nil) {
         self.resolution = resolution
         self.checkpointRuleID = checkpointRuleID
+        if case let .matchedWorkflow(workflow) = resolution {
+            self.traceID = workflow.traceId
+        } else {
+            self.traceID = UUID().uuidString
+        }
     }
 
     /// Reports `rule` only when it was actually served.

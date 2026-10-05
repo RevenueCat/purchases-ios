@@ -40,6 +40,21 @@ struct PurchaseButtonComponentView: View {
 
     @State private var inAppBrowserURL: URL?
 
+    @State private var showingPurchaseUnavailableAlert = false
+
+    #if os(iOS) && canImport(WebKit)
+    @State private var hostedCheckoutViewModel: WebCheckoutViewModel?
+
+    /// The session the sheet was presented for, which is asked about once the sheet has gone.
+    @State private var presentedHostedCheckoutSession: HostedCheckoutSession?
+
+    @State private var showingAlreadyOwnedAlert = false
+
+    @State private var hostedCheckoutPurchaseCustomerInfo: CustomerInfo?
+
+    @State private var hostedCheckoutError: HostedCheckoutError?
+    #endif
+
     private let viewModel: PurchaseButtonComponentViewModel
     private let onDismiss: () -> Void
 
@@ -80,9 +95,56 @@ struct PurchaseButtonComponentView: View {
         }
         .disabled(self.shouldBeDisabled)
         .opacity(self.shouldBeDisabled ? 0.35 : 1.0)
+        .purchaseUnavailableAlert(isPresented: self.$showingPurchaseUnavailableAlert,
+                                  localizedBundle: self.viewModel.localizedBundle)
         #if canImport(SafariServices) && canImport(UIKit)
         .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
             SafariView(url: self.inAppBrowserURL!)
+        }
+        #endif
+        #if os(iOS) && canImport(WebKit)
+        .webCheckoutSheet(viewModel: self.$hostedCheckoutViewModel) { outcome in
+            guard let session = self.presentedHostedCheckoutSession else { return }
+            self.presentedHostedCheckoutSession = nil
+
+            self.handleHostedCheckoutOutcome(outcome, session: session)
+        }
+        .alert(
+            Text(verbatim: ""),
+            isPresented: .isNotNil(self.$hostedCheckoutError),
+            presenting: self.hostedCheckoutError
+        ) { _ in
+            Button {
+                self.hostedCheckoutError = nil
+            } label: {
+                Text("OK", bundle: self.viewModel.localizedBundle)
+            }
+        } message: { error in
+            error.message(bundle: self.viewModel.localizedBundle)
+        }
+        // The checkout does not say whether the product is a subscription, so the title has to fit either.
+        .alert(
+            Text("You've already purchased this", bundle: self.viewModel.localizedBundle),
+            isPresented: self.$showingAlreadyOwnedAlert
+        ) {
+            Button {
+                self.showingAlreadyOwnedAlert = false
+            } label: {
+                Text("OK", bundle: self.viewModel.localizedBundle)
+            }
+        }
+        .alert(
+            Text(verbatim: ""),
+            isPresented: .isNotNil(self.$hostedCheckoutPurchaseCustomerInfo),
+            presenting: self.hostedCheckoutPurchaseCustomerInfo
+        ) { customerInfo in
+            Button {
+                self.purchaseHandler.handleHostedCheckoutPurchase(customerInfo: customerInfo)
+            } label: {
+                Text("OK", bundle: self.viewModel.localizedBundle)
+            }
+        } message: { _ in
+            Text("Your purchase was successful.", bundle: self.viewModel.localizedBundle)
         }
         #endif
     }
@@ -94,39 +156,45 @@ struct PurchaseButtonComponentView: View {
         }
 
         switch method {
-        // Hosted checkout needs a URL minted on tap, which is wired up in a follow-up. Until then it
-        // behaves like an SDK that does not know the method, which is what `action` falls back to.
-        case .inAppCheckout, .hostedWebCheckout, .unknown:
+        case .inAppCheckout, .unknown:
             try await self.purchaseInApp()
+        case .hostedWebCheckout:
+            try await self.purchaseInHostedCheckout()
         case .webCheckout, .webProductSelection, .customWebCheckout:
             try await self.purchaseInWeb()
         }
     }
 
     private func purchaseInApp() async throws {
+        guard let selectedPackage = self.packageForPurchaseTap() else {
+            return
+        }
+
+        try await self.performInAppPurchase(selectedPackage: selectedPackage)
+    }
+
+    /// The package this tap is for, or `nil` when it should do nothing.
+    private func packageForPurchaseTap() -> Package? {
         self.logIfInPreview(package: self.packageContext.package)
 
         guard !self.purchaseHandler.actionInProgress else {
-            return
+            return nil
         }
 
         guard let selectedPackage = self.packageContext.package else {
             Logger.error(Strings.no_selected_package_found)
-            return
+            return nil
         }
 
         self.logPurchaseButtonInteractionForInApp(selectedPackage: selectedPackage)
 
-        // Check if there's a purchase interceptor
-        if let interceptor = self.purchaseInitiatedAction {
-            let result = await self.purchaseHandler.withPendingPurchaseContinuation {
-                await withCheckedContinuation { continuation in
-                    interceptor(selectedPackage, resume: ResumeAction { shouldProceed in
-                        continuation.resume(returning: shouldProceed)
-                    })
-                }
-            }
-            guard result else { return }
+        return selectedPackage
+    }
+
+    private func performInAppPurchase(selectedPackage: Package) async throws {
+        guard await self.purchaseHandler.shouldProceed(withPurchaseOf: selectedPackage,
+                                                       interceptor: self.purchaseInitiatedAction) else {
+            return
         }
 
         let promoOffer = self.paywallPromoOfferCache.purchasableOffer(for: selectedPackage)
@@ -134,6 +202,81 @@ struct PurchaseButtonComponentView: View {
         _ = try await self.purchaseHandler.purchase(package: selectedPackage, promotionalOffer: promoOffer)
     }
 
+    // Isolation is stated rather than inferred: the compilers this builds with disagree about whether a
+    // `View`'s own methods are already on the main actor, and presenting the sheet from here needs it.
+    @MainActor
+    private func purchaseInHostedCheckout() async throws {
+        #if os(iOS) && canImport(WebKit)
+        guard let selectedPackage = self.packageForPurchaseTap() else {
+            return
+        }
+
+        guard !self.isInPreview else {
+            return
+        }
+
+        switch await HostedCheckout.start(for: selectedPackage,
+                                          purchaseHandler: self.purchaseHandler,
+                                          purchaseInitiatedAction: self.purchaseInitiatedAction) {
+        case let .present(session):
+            self.presentHostedCheckout(session)
+        case .tellCustomerTheyAlreadyOwnIt:
+            self.showingAlreadyOwnedAlert = true
+        case .tellCustomerThePurchaseIsUnavailable:
+            self.showingPurchaseUnavailableAlert = true
+        case let .failed(error):
+            self.hostedCheckoutError = error
+        case .nothing:
+            break
+        }
+        #else
+        // The sheet the checkout is presented in is iOS only, so everywhere else this behaves like an SDK
+        // that does not know the method.
+        try await self.purchaseInApp()
+        #endif
+    }
+
+    #if os(iOS) && canImport(WebKit)
+    @MainActor
+    private func presentHostedCheckout(_ session: HostedCheckoutSession) {
+        self.presentedHostedCheckoutSession = session
+        self.hostedCheckoutViewModel = WebCheckoutViewModel(
+            checkoutURL: session.checkoutURL,
+            successURL: session.successURL,
+            dataStoreIdentifierStore: .init()
+        )
+    }
+
+    private func handleHostedCheckoutOutcome(_ outcome: WebCheckoutSheetOutcome, session: HostedCheckoutSession) {
+        switch outcome {
+        case .returned(.success):
+            self.resolveHostedCheckout(session)
+        case .dismissed:
+            // A payment may have gone through moments before the customer closed the sheet. Settling that
+            // means asking the backend what became of the session, which is not wired up yet.
+            Logger.debug(Strings.hosted_checkout_dismissed_without_returning)
+        }
+    }
+
+    private func resolveHostedCheckout(_ session: HostedCheckoutSession) {
+        let package = self.packageContext.package
+
+        Task { @MainActor in
+            switch await HostedCheckout.resolve(session,
+                                                package: package,
+                                                purchaseHandler: self.purchaseHandler) {
+            case .tellCustomerTheyAlreadyOwnIt:
+                self.showingAlreadyOwnedAlert = true
+            case let .failed(error):
+                self.hostedCheckoutError = error
+            case let .purchased(customerInfo):
+                self.hostedCheckoutPurchaseCustomerInfo = customerInfo
+            }
+        }
+    }
+    #endif
+
+    @MainActor
     private func purchaseInWeb() async throws {
         self.logIfInPreview(package: self.packageContext.package)
 
@@ -158,15 +301,18 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
-        guard let url = await ExternalPurchaseLink.urlToOpen(
-            launchWebCheckout.url,
+        switch await ExternalPurchaseLink.action(
+            for: launchWebCheckout.url,
             method: launchWebCheckout.method,
             purchaseHandler: self.purchaseHandler
-        ) else {
-            return
+        ) {
+        case let .open(url):
+            self.openWebPaywallLink(url: url, launchWebCheckout: launchWebCheckout)
+        case .tellCustomerThePurchaseIsUnavailable:
+            self.showingPurchaseUnavailableAlert = true
+        case .nothing:
+            break
         }
-
-        self.openWebPaywallLink(url: url, launchWebCheckout: launchWebCheckout)
     }
 
     private func logPurchaseButtonInteractionForInApp(selectedPackage: Package) {

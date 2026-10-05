@@ -22,9 +22,10 @@ extension View {
     @ViewBuilder
     func applyMediaWidth(size: PaywallComponent.Size) -> some View {
         switch size.width {
-        case let .fit(_, minMax):
-            self.applyWidthLimits(minMax, alignment: .center)
+        case .fit:
+            self
         case let .fill(minMax):
+            // See `applyWidth`: `minWidth: 0` keeps an oversized child from widening its ancestors.
             self
                 .frame(minWidth: 0, maxWidth: .infinity)
                 .applyWidthLimits(minMax, alignment: .center)
@@ -38,21 +39,17 @@ extension View {
     @ViewBuilder
     func applyMediaHeight(size: PaywallComponent.Size, aspectRatio: Double) -> some View {
         switch size.height {
-        case let .fit(_, minMax):
+        case .fit:
             switch size.width {
-            case .fit:
-                self.applyHeightLimits(minMax, alignment: .center)
-            case .fill:
-                self.applyHeightLimits(minMax, alignment: .center)
+            case .fit, .fill, .relative:
+                self
             case .fixed(let value):
                 // This is the only change versus the regular .size() modifier.
                 // When the image or videoa has height=fit and fixed width, we manually set a
                 // fixed height according to the aspect ratio.
                 // Otherwise the view would grow vertically to occupy available space.
                 // See "Image streching vertically" preview
-                self.frame(height: minMax.clamped(Double(value) / aspectRatio))
-            case .relative:
-                self.applyHeightLimits(minMax, alignment: .center)
+                self.frame(height: Double(value) / aspectRatio)
             }
         case let .fill(minMax):
             self

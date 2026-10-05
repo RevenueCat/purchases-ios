@@ -13,7 +13,7 @@
 //
 
 import RevenueCat
-@_spi(CheckpointsInternal) import RevenueCatUI
+@_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
 import SwiftUI
 
 struct CustomCheckpointUseCaseView: View {
@@ -23,6 +23,7 @@ struct CustomCheckpointUseCaseView: View {
 
     @State private var identifier = ""
     @State private var status: String?
+    @State private var presentationMode: FlowPresentationMode = .default
 
     private var trimmedIdentifier: String {
         return self.identifier.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -35,6 +36,12 @@ struct CustomCheckpointUseCaseView: View {
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
 
+                Picker("Presentation mode", selection: self.$presentationMode) {
+                    ForEach(FlowPresentationMode.testerCases, id: \.self) { mode in
+                        Text(mode.title).tag(mode)
+                    }
+                }
+
                 Button("Hit") {
                     self.hitCheckpoint()
                 }
@@ -43,7 +50,7 @@ struct CustomCheckpointUseCaseView: View {
                 if let status {
                     Text(status)
                 } else {
-                    Text("The callback reports new entitlements after a presented flow completes.")
+                    Text("This presentation mode applies only to this checkpoint invocation.")
                 }
             }
         }
@@ -60,6 +67,7 @@ struct CustomCheckpointUseCaseView: View {
         Purchases.shared.checkpoint(
             identifier,
             customVariables: self.customVariables.checkpointCustomVariables,
+            presentationMode: self.presentationMode,
             paywallPresenter: paywallPresenter
         ) { result in
             Task { @MainActor in

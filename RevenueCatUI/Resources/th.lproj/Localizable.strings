@@ -22,4 +22,10 @@
 "Continue" = "ดำเนินการต่อ";
 "Default_offer_details_with_intro_offer" = "เริ่มทดลองใช้ {{ sub_offer_duration }} จากนั้นจ่ายเป็น {{ Total_price_and_per_month }}";
 "Something went wrong" = "มีบางอย่างผิดพลาด";
+"Payment failed." = "การชำระเงินไม่สำเร็จ";
+"Your purchase is still processing." = "การซื้อของคุณยังอยู่ระหว่างดำเนินการ";
 "Purchase" = "ซื้อ";
+"You've already purchased this" = "คุณซื้อรายการนี้แล้ว";
+"Your purchase was successful." = "การซื้อของคุณสำเร็จแล้ว";
+"Purchase unavailable" = "ไม่สามารถซื้อได้";
+"This purchase isn't available in your region." = "การซื้อนี้ไม่มีให้บริการในภูมิภาคของคุณ";
