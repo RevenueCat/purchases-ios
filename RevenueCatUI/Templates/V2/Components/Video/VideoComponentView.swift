@@ -131,7 +131,6 @@ struct VideoComponentView: View {
                                 size: size,
                                 with: style
                             )
-                            .transition(.opacity.animation(.easeIn(duration: 0.3)))
                         }
                     }
                     .allowsHitTesting(style.showControls)
