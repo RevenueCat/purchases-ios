@@ -3,6 +3,6 @@
 # Ensure this file is checked in to source control!
 
 gem 'fastlane-plugin-create_xcframework', git: "https://github.com/RevenueCat/fastlane-plugin-create_xcframework"
-gem "fastlane-plugin-revenuecat_internal", git: "https://github.com/RevenueCat/fastlane-plugin-revenuecat_internal", ref: "0dd949b39979eb7d8d473ae19eb461949864c1bf"
+gem "fastlane-plugin-revenuecat_internal", git: "https://github.com/RevenueCat/fastlane-plugin-revenuecat_internal"
 gem 'fastlane-plugin-emerge'
 gem 'fastlane-plugin-sentry'
