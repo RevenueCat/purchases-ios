@@ -28,7 +28,10 @@ enum HostedCheckout {
         case present(HostedCheckoutSession)
 
         /// Confirm this checkout, which the customer already paid for, without presenting anything.
-        case confirm(HostedCheckoutSessionID)
+        ///
+        /// Confirming it settles the checkout the paywall kept, if any, even when the backend says another session
+        /// was the one paid for.
+        case confirm(HostedCheckoutSessionID, settling: KeptCheckout?)
 
         /// Tell the customer they already own what they tried to buy, which is why no checkout opens.
         case tellCustomerTheyAlreadyOwnIt
@@ -42,12 +45,13 @@ enum HostedCheckout {
         /// Nothing to present, and nothing to offer instead.
         case nothing
 
-        init(_ result: HostedCheckoutStartResult) {
+        /// - Parameter keptCheckout: The checkout the backend was asked to carry on with.
+        init(_ result: HostedCheckoutStartResult, keptCheckout: KeptCheckout?) {
             switch result {
             case let .started(session), let .resumed(session):
                 self = .present(session)
             case let .completed(sessionID):
-                self = .confirm(sessionID)
+                self = .confirm(sessionID, settling: keptCheckout)
             case .alreadyPurchased:
                 self = .tellCustomerTheyAlreadyOwnIt
             case .notEligible:
@@ -74,9 +78,10 @@ enum HostedCheckout {
             return .nothing
         }
 
-        let previousSession = purchaseHandler.keptHostedCheckout?.session
-        let action = Action(await purchaseHandler.startHostedCheckout(package: package,
-                                                                      previousSession: previousSession))
+        let keptCheckout = purchaseHandler.keptHostedCheckout
+        let result = await purchaseHandler.startHostedCheckout(package: package,
+                                                               previousSession: keptCheckout?.session)
+        let action = Action(result, keptCheckout: keptCheckout)
 
         if case let .failed(error) = action {
             purchaseHandler.handleHostedCheckoutFailure(error, package: package)
@@ -201,9 +206,12 @@ enum HostedCheckout {
     /// ``PurchaseHandler/handleHostedCheckoutPurchase(customerInfo:)`` once the customer has been told about it,
     /// since reporting it can close the paywall.
     ///
+    /// - Parameter checkout: The kept checkout this settles, if any, which the backend may have confirmed under
+    /// another session.
     /// - Parameter package: The package the checkout was started for, when it is still known.
     @MainActor
     static func resolve(_ sessionID: HostedCheckoutSessionID,
+                        settling checkout: KeptCheckout?,
                         package: Package?,
                         purchaseHandler: PurchaseHandler) async -> Resolution {
         return await purchaseHandler.whileConfirmingHostedCheckout {
@@ -212,7 +220,7 @@ enum HostedCheckout {
 
             switch resolution {
             case .purchased:
-                Self.releaseKeptCheckout(for: sessionID, purchaseHandler: purchaseHandler)
+                Self.releaseKeptCheckout(checkout, purchaseHandler: purchaseHandler)
             case let .failed(error):
                 // The checkout stays kept, so that tapping buy again confirms this payment rather than starting a
                 // second checkout the customer could pay for too.
@@ -220,21 +228,28 @@ enum HostedCheckout {
             case .tellCustomerTheyAlreadyOwnIt:
                 // Neither a purchase nor a cancellation, just as when the checkout never opened for this reason:
                 // the paywall only tells the customer.
-                Self.releaseKeptCheckout(for: sessionID, purchaseHandler: purchaseHandler)
+                Self.releaseKeptCheckout(checkout, purchaseHandler: purchaseHandler)
             }
 
             return resolution
         }
     }
 
-    /// Leaves alone a checkout that has since replaced the one being resolved. The kept checkout may have been
-    /// created for a customer other than the one it is being confirmed for.
+    /// Leaves alone a checkout that has since replaced the one being settled.
     @MainActor
-    private static func releaseKeptCheckout(for sessionID: HostedCheckoutSessionID,
-                                            purchaseHandler: PurchaseHandler) {
-        if purchaseHandler.keptHostedCheckout?.session.id.operationSessionID == sessionID.operationSessionID {
+    private static func releaseKeptCheckout(_ checkout: KeptCheckout?, purchaseHandler: PurchaseHandler) {
+        if let checkout, purchaseHandler.keptHostedCheckout === checkout {
             purchaseHandler.keptHostedCheckout = nil
         }
+    }
+
+}
+
+@available(iOS 15.0, *)
+extension HostedCheckout.KeptCheckout: Equatable {
+
+    nonisolated static func == (lhs: HostedCheckout.KeptCheckout, rhs: HostedCheckout.KeptCheckout) -> Bool {
+        return lhs === rhs
     }
 
 }
