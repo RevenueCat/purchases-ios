@@ -21,6 +21,9 @@ enum AdsStrings {
     case invalid_virtual_currency_payload(code: String?, amount: Int?)
     case invalid_entitlement_payload(identifier: String?)
     case reward_verification_token_encoding_failed(error: Error)
+    case configured_ad_rewards_empty_ad_unit_id
+    case configured_ad_rewards_unavailable(adUnitID: String)
+    case configured_ad_rewards_invalid_payload(adUnitID: String)
 
     case poll_start(transactionID: String, maxAttempts: Int)
     case poll_attempt(attempt: Int, maxAttempts: Int, transactionID: String)
@@ -56,6 +59,12 @@ extension AdsStrings: LogMessage {
                 "(identifier: \(identifier ?? "nil")); falling back to unsupportedReward."
         case let .reward_verification_token_encoding_failed(error):
             return "Reward verification token customData encoding failed: \(error)"
+        case .configured_ad_rewards_empty_ad_unit_id:
+            return "Configured ad rewards require a non-empty ad unit identifier."
+        case let .configured_ad_rewards_unavailable(adUnitID):
+            return "Configured ad rewards are unavailable for ad unit '\(adUnitID)'."
+        case let .configured_ad_rewards_invalid_payload(adUnitID):
+            return "Received an invalid configured ad rewards payload for ad unit '\(adUnitID)'."
 
         case let .poll_start(transactionID, maxAttempts):
             return "Reward verification poll start transactionID=\(transactionID) maxAttempts=\(maxAttempts)"
