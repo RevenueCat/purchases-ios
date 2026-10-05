@@ -73,7 +73,7 @@ protocol PaywallPurchasesType: Sendable {
 
     @Sendable
     func pollHostedCheckout(sessionID: HostedCheckoutSessionID) async -> (result: HostedCheckoutPollResult,
-                                                                           customerInfo: CustomerInfo?)
+                                                                          customerInfo: CustomerInfo?)
 
     @Sendable
     func restorePurchases() async throws -> CustomerInfo

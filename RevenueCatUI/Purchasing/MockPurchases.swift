@@ -123,7 +123,7 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
     /// Like the SDK, returns the `CustomerInfo` only for a product the customer owns, and none when it cannot be
     /// fetched.
     func pollHostedCheckout(sessionID: HostedCheckoutSessionID) async -> (result: HostedCheckoutPollResult,
-                                                                           customerInfo: CustomerInfo?) {
+                                                                          customerInfo: CustomerInfo?) {
         guard let block = self.hostedCheckoutPollBlock else { return (.undetermined, nil) }
 
         let result = await block(sessionID)

@@ -400,7 +400,7 @@ extension PurchaseHandler {
     }
 
     func pollHostedCheckout(sessionID: HostedCheckoutSessionID) async -> (result: HostedCheckoutPollResult,
-                                                                           customerInfo: CustomerInfo?) {
+                                                                          customerInfo: CustomerInfo?) {
         return await self.purchases.pollHostedCheckout(sessionID: sessionID)
     }
 
@@ -1308,7 +1308,7 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
     }
 
     func pollHostedCheckout(sessionID: HostedCheckoutSessionID) async -> (result: HostedCheckoutPollResult,
-                                                                           customerInfo: CustomerInfo?) {
+                                                                          customerInfo: CustomerInfo?) {
         return (.undetermined, nil)
     }
 
