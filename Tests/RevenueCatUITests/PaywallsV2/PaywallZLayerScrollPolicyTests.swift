@@ -19,54 +19,53 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class PaywallZLayerScrollPolicyTests: TestCase {
 
-    func testScrollWhenPaywallRootStackIsZLayer() {
-        expect(
-            PaywallZLayerScrollPolicy.shouldApplyScroll(
-                stackScrollPreference: nil,
-                paywallRootStackIsZLayer: true,
-                ancestorScrollsVertically: false
-            )
-        ) == true
+    func testRootZLayerScrollsWhenOverflowIsUnset() {
+        expect(Self.shouldScroll(preference: nil, isRoot: true)) == true
     }
 
-    func testScrollWhenStackScrollingEnabled() {
-        expect(
-            PaywallZLayerScrollPolicy.shouldApplyScroll(
-                stackScrollPreference: true,
-                paywallRootStackIsZLayer: false,
-                ancestorScrollsVertically: false
-            )
-        ) == true
+    func testRootZLayerScrollsWhenOverflowIsScroll() {
+        expect(Self.shouldScroll(preference: true, isRoot: true)) == true
     }
 
-    func testNoScrollWhenRootExplicitlyDisablesScrolling() {
-        expect(
-            PaywallZLayerScrollPolicy.shouldApplyScroll(
-                stackScrollPreference: false,
-                paywallRootStackIsZLayer: true,
-                ancestorScrollsVertically: false
-            )
-        ) == false
+    func testRootZLayerDoesNotScrollWhenOverflowIsDefault() {
+        expect(Self.shouldScroll(preference: false, isRoot: true)) == false
     }
 
-    func testNoScrollWhenAncestorScrollsVertically() {
-        expect(
-            PaywallZLayerScrollPolicy.shouldApplyScroll(
-                stackScrollPreference: true,
-                paywallRootStackIsZLayer: true,
-                ancestorScrollsVertically: true
-            )
-        ) == false
+    func testNonRootZLayerNeverScrollsForAnyOverflowOrAncestor() {
+        let preferences: [Bool?] = [nil, true, false]
+        for preference in preferences {
+            for ancestorScrolls in [false, true] {
+                XCTAssertFalse(Self.shouldScroll(
+                    preference: preference,
+                    isRoot: false,
+                    ancestorScrolls: ancestorScrolls
+                ), "Non-root z-layer scrolled: overflow \(String(describing: preference)), ancestor \(ancestorScrolls)")
+            }
+        }
     }
 
-    func testNoScrollWhenNotEnabledAndRootIsNotZLayer() {
-        expect(
-            PaywallZLayerScrollPolicy.shouldApplyScroll(
-                stackScrollPreference: nil,
-                paywallRootStackIsZLayer: false,
-                ancestorScrollsVertically: false
-            )
-        ) == false
+    func testNestedZLayerDoesNotScrollWhenRootZLayerDisablesScrolling() {
+        let rootScrolls = Self.shouldScroll(preference: false, isRoot: true)
+        expect(rootScrolls) == false
+        expect(Self.shouldScroll(preference: nil, isRoot: false, ancestorScrolls: rootScrolls)) == false
+    }
+
+    func testRootZLayerDoesNotAddScrollingInsideScrollingAncestor() {
+        for preference: Bool? in [nil, true, false] {
+            expect(Self.shouldScroll(preference: preference, isRoot: true, ancestorScrolls: true)) == false
+        }
+    }
+
+    private static func shouldScroll(
+        preference: Bool?,
+        isRoot: Bool,
+        ancestorScrolls: Bool = false
+    ) -> Bool {
+        PaywallZLayerScrollPolicy.shouldApplyScroll(
+            stackScrollPreference: preference,
+            isRootStack: isRoot,
+            ancestorScrollsVertically: ancestorScrolls
+        )
     }
 
 }

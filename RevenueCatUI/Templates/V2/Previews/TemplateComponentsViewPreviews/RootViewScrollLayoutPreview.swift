@@ -120,7 +120,7 @@ private enum RootViewScrollLayoutPreview {
         )
     }
 
-    /// The root does not scroll, but its bounded child must still expose the bottom of its content.
+    /// Non-root z-layers ignore overflow even when the root does not scroll.
     static func makeNonScrollingRootWithZLayerChildViewModel(
         childOverflow: PaywallComponent.StackComponent.Overflow? = .scroll
     ) throws -> RootViewModel {
@@ -334,9 +334,9 @@ struct RootViewScrollLayoutPreview_Previews: PreviewProvider {
             RootViewScrollLayoutPreview.preview(overflow: .default)
                 .previewDisplayName("Root z-layer: explicit no scroll")
             RootViewScrollLayoutPreview.preview(includesChild: true)
-                .previewDisplayName("Root no scroll: child explicit scroll")
+                .previewDisplayName("Root no scroll: child z-layer ignores explicit scroll")
             RootViewScrollLayoutPreview.preview(childOverflow: nil, includesChild: true)
-                .previewDisplayName("Root no scroll: child default does not scroll")
+                .previewDisplayName("Root no scroll: child z-layer does not inherit scroll")
             RootViewScrollLayoutPreview.preview(rootChangesToZLayerByWidthRule: true)
                 .previewDisplayName("Width rule: z-layer root retains default scroll")
         }

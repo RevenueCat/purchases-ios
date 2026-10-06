@@ -64,13 +64,6 @@ struct RootView: View {
         Color.clear.frame(width: 1)
     }
 
-    private var paywallRootStackIsZLayer: Bool {
-        if case .zlayer = self.viewModel.stackViewModel.component.dimension {
-            return true
-        }
-        return false
-    }
-
     /// A sheet or window reports no bottom safe area, so the footer needs a minimum of its own.
     static func stickyFooterBottomPadding(safeAreaBottom: CGFloat, idiom: UserInterfaceIdiom) -> CGFloat {
         switch idiom {
@@ -99,6 +92,7 @@ struct RootView: View {
 
                 StackComponentView(
                     viewModel: viewModel.stackViewModel,
+                    isRootStack: true,
                     isScrollableByDefault: true,
                     onDismiss: onDismiss,
                     additionalPadding: EdgeInsets(top: 0, leading: 0, bottom: overlaidFooterHeight, trailing: 0)
@@ -145,7 +139,6 @@ struct RootView: View {
                 }
             }
         }
-        .environment(\.paywallRootStackIsZLayer, self.paywallRootStackIsZLayer)
         .environment(\.openSheet, { sheet in
             self.sheetViewModel = sheet
         })
