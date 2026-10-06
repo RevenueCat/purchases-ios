@@ -14,7 +14,7 @@ import Foundation
 @_spi(Internal) import RevenueCat
 
 /// Reports the terminal outcome of a custom ad presentation.
-@_spi(CheckpointsInternal)
+@_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public typealias AdPresentationCompletion = @MainActor (AdPresentationResult) -> Void
 
@@ -23,7 +23,7 @@ public typealias AdPresentationCompletion = @MainActor (AdPresentationResult) ->
 /// Set an instance on ``Purchases/adPresenter`` to use it for all checkpoint-selected ad steps.
 /// This is a separate presenter from ``PaywallPresenter``: an ad step never selects an offering, and
 /// presenting one does not necessarily involve any RevenueCat-managed UI.
-@_spi(CheckpointsInternal)
+@_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 public protocol AdPresenter: AnyObject {
@@ -42,7 +42,7 @@ public protocol AdPresenter: AnyObject {
 /// Context for a custom checkpoint ad presentation.
 ///
 /// This separate type keeps the presenter's method signature extensible as presentation context grows.
-@_spi(CheckpointsInternal)
+@_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 public struct AdPresentationParams {
@@ -82,7 +82,7 @@ public struct AdPresentationParams {
 }
 
 /// A terminal result reported by a custom checkpoint ad presenter.
-@_spi(CheckpointsInternal)
+@_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 public struct AdPresentationResult: Equatable {
