@@ -399,6 +399,9 @@ private func checkAsyncMethods(purchases: Purchases) async {
         )
 
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            #if ENABLE_CONFIGURED_AD_REWARDS
+            let _: ConfiguredAdRewards? = await purchases.adRewards(forAdUnitId: "")
+            #endif
             let _: RewardVerificationResult = await purchases.pollRewardVerification(clientTransactionID: "")
             let _: RewardVerificationResult = await purchases.pollRewardVerification(
                 clientTransactionID: "",
