@@ -33,7 +33,7 @@ final class SubscriberDimensionsStoreTests: TestCase {
 
         expect(self.store.dimensions(appUserID: "user")) == .init(
             values: ["country": .string("NL"), "active": .bool(true)],
-            asOf: Date(millisecondsSince1970: 1_000)
+            asOf: 1_000
         )
     }
 
@@ -68,10 +68,10 @@ final class SubscriberDimensionsStoreTests: TestCase {
             appUserID: "user"
         )
 
-        self.store.discard(appUserID: "user", ifNotNewerThan: Date(millisecondsSince1970: 1_000))
+        self.store.discard(appUserID: "user", ifNotNewerThan: 1_000)
         expect(self.store.dimensions(appUserID: "user")).toNot(beNil())
 
-        self.store.discard(appUserID: "user", ifNotNewerThan: Date(millisecondsSince1970: 2_000))
+        self.store.discard(appUserID: "user", ifNotNewerThan: 2_000)
         expect(self.store.dimensions(appUserID: "user")).to(beNil())
     }
 

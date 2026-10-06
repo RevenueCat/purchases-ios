@@ -193,7 +193,7 @@ class DeviceCache {
         }
     }
 
-    func cache(subscriberDimensions: Data, asOf: Date, appUserID: String) {
+    func cache(subscriberDimensions: Data, asOf: UInt64, appUserID: String) {
         guard let data = try? JSONEncoder.default.encode(
             value: CachedSubscriberDimensions(data: subscriberDimensions, asOf: asOf)
         ) else { return }
@@ -203,7 +203,7 @@ class DeviceCache {
         }
     }
 
-    func clearSubscriberDimensions(appUserID: String, ifNotNewerThan supersededAt: Date) {
+    func clearSubscriberDimensions(appUserID: String, ifNotNewerThan supersededAt: UInt64) {
         self.userDefaults.write { defaults in
             guard let data = defaults.data(forKey: CacheKey.subscriberDimensions(appUserID)),
                   let cached = try? JSONDecoder.default.decode(CachedSubscriberDimensions.self, jsonData: data),
@@ -627,7 +627,7 @@ class DeviceCache {
 struct CachedSubscriberDimensions: Codable, Equatable, Sendable {
 
     let data: Data
-    let asOf: Date
+    let asOf: UInt64
 
 }
 

@@ -19,6 +19,7 @@ enum LocalRulesStrings {
     case ruleUnresolvedVariable(logPrefix: String, ruleIndex: Int, path: String)
     case ruleEvaluationFailed(logPrefix: String, ruleIndex: Int, error: Error)
     case subscriberAttributesUnavailable(Error)
+    case subscriberDimensionsConfigurationUnavailable
     case subscriberDimensionsUnavailable(Error)
 
 }
@@ -49,6 +50,9 @@ extension LocalRulesStrings: LogMessage {
             return "\(logPrefix)Rule \(ruleIndex) could not be evaluated (\(error))."
         case let .subscriberAttributesUnavailable(error):
             return "The subscriber attributes are unavailable, so they cannot be evaluated: \(error)."
+        case .subscriberDimensionsConfigurationUnavailable:
+            return "The configured subscriber dimensions are unavailable. " +
+                "Using receipt dimensions when available."
         case let .subscriberDimensionsUnavailable(error):
             return "The subscriber dimensions are unavailable, so they cannot be evaluated: \(error)."
         }

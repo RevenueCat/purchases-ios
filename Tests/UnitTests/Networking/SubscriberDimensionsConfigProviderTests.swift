@@ -170,7 +170,7 @@ final class SubscriberDimensionsConfigProviderTests: TestCase {
 
     private static let spain = SubscriberDimensions(
         values: ["country": .string("ES")],
-        asOf: Date(millisecondsSince1970: 100)
+        asOf: 100
     )
 
     private static func item(_ json: String) throws -> RemoteConfiguration.ConfigItem {

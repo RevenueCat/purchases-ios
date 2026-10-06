@@ -18,7 +18,7 @@ import Foundation
 final class MockSubscriberDimensionsStore: SubscriberDimensionsStoreType, @unchecked Sendable {
 
     let invokedStoreParameters: Atomic<(customerInfo: CustomerInfo, appUserID: String)?> = nil
-    let invokedDiscardParameters: Atomic<(appUserID: String, supersededAt: Date)?> = nil
+    let invokedDiscardParameters: Atomic<(appUserID: String, supersededAt: UInt64)?> = nil
     let stubbedDimensions: Atomic<[String: SubscriberDimensions]> = .init([:])
 
     func store(_ customerInfo: CustomerInfo, appUserID: String) {
@@ -29,7 +29,7 @@ final class MockSubscriberDimensionsStore: SubscriberDimensionsStoreType, @unche
         return self.stubbedDimensions.value[appUserID]
     }
 
-    func discard(appUserID: String, ifNotNewerThan supersededAt: Date) {
+    func discard(appUserID: String, ifNotNewerThan supersededAt: UInt64) {
         self.invokedDiscardParameters.value = (appUserID, supersededAt)
     }
 

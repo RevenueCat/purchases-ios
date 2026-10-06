@@ -82,7 +82,7 @@ private extension DimensionScopeTests {
         let deviceCache = MockDeviceCache()
         deviceCache.cache(
             subscriberDimensions: Data(json.utf8),
-            asOf: Date(timeIntervalSince1970: 100),
+            asOf: 100,
             appUserID: "current_user"
         )
         return deviceCache

@@ -12,7 +12,7 @@ protocol SubscriberDimensionsStoreType: Sendable {
 
     func store(_ customerInfo: CustomerInfo, appUserID: String)
     func dimensions(appUserID: String) -> SubscriberDimensions?
-    func discard(appUserID: String, ifNotNewerThan supersededAt: Date)
+    func discard(appUserID: String, ifNotNewerThan supersededAt: UInt64)
 
 }
 
@@ -61,7 +61,7 @@ final class SubscriberDimensionsStore: SubscriberDimensionsStoreType, @unchecked
         }
     }
 
-    func discard(appUserID: String, ifNotNewerThan supersededAt: Date) {
+    func discard(appUserID: String, ifNotNewerThan supersededAt: UInt64) {
         self.deviceCache.clearSubscriberDimensions(appUserID: appUserID, ifNotNewerThan: supersededAt)
     }
 

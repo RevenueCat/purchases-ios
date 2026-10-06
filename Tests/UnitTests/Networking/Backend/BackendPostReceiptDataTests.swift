@@ -62,7 +62,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         expect(self.httpClient.calls).to(haveCount(1))
         expect(self.subscriberDimensionsStore.dimensions(appUserID: Self.userID)) == .init(
             values: ["country": .string("NL")],
-            asOf: Date(millisecondsSince1970: 1_000)
+            asOf: 1_000
         )
     }
 

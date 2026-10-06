@@ -14,12 +14,6 @@
 
 import Foundation
 
-enum SubscriberDimensionsProviderError: Error, Equatable, Sendable {
-
-    case configurationUnavailable
-
-}
-
 /// Supplies the fresher config or purchase-response subscriber dimensions as root-level rule values.
 struct SubscriberDimensionsProvider: DimensionProvider {
 
@@ -41,8 +35,8 @@ struct SubscriberDimensionsProvider: DimensionProvider {
 
     func dimensions(at _: Date) async throws -> [String: DimensionValue] {
         let appUserID = self.currentUserProvider.currentAppUserID
-        let stored = self.store.dimensions(appUserID: appUserID)
         let configResolution = try await self.configProvider.dimensions()
+        let stored = self.store.dimensions(appUserID: appUserID)
 
         switch configResolution {
         case .resolved(let configured):
@@ -54,7 +48,8 @@ struct SubscriberDimensionsProvider: DimensionProvider {
         case .notConfigured:
             return stored?.values ?? [:]
         case .unavailable:
-            throw SubscriberDimensionsProviderError.configurationUnavailable
+            Logger.warn(Strings.localRules.subscriberDimensionsConfigurationUnavailable)
+            return stored?.values ?? [:]
         }
     }
 

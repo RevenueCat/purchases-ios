@@ -36,13 +36,13 @@ final class SubscriberDimensionsTests: TestCase {
             "first_purchase_at": .int(1790858464004),
             "latest_auto_renew_intent": .bool(false)
         ]
-        expect(dimensions.asOf) == Date(millisecondsSince1970: 1790858464258)
+        expect(dimensions.asOf) == 1790858464258
     }
 
     func testKeepsAnEmptyDimensionsObjectWithItsTimestamp() throws {
         expect(try Self.dimensions(#"{"dimensions": {}, "as_of": 1}"#)) == SubscriberDimensions(
             values: [:],
-            asOf: Date(millisecondsSince1970: 1)
+            asOf: 1
         )
     }
 

@@ -237,9 +237,9 @@ class DeviceCacheTests: TestCase {
         expect(self.deviceCache.isCustomerInfoCacheStale(appUserID: "cesar", isAppBackgrounded: false)) == false
     }
 
-    func testSubscriberDimensionsAreCachedPerAppUserID() {
+    func testSubscriberDimensionsPreserveEpochMillisecondsAndAreCachedPerAppUserID() {
         let data = Data(#"{"plan":"annual"}"#.utf8)
-        let asOf = Date(timeIntervalSince1970: 123)
+        let asOf: UInt64 = 1_790_858_464_258
 
         self.deviceCache.cache(subscriberDimensions: data, asOf: asOf, appUserID: "cesar")
 
@@ -251,7 +251,7 @@ class DeviceCacheTests: TestCase {
         let appUserID = "cesar"
         self.deviceCache.cache(
             subscriberDimensions: Data(#"{"plan":"annual"}"#.utf8),
-            asOf: Date(timeIntervalSince1970: 123),
+            asOf: 123_456,
             appUserID: appUserID
         )
 

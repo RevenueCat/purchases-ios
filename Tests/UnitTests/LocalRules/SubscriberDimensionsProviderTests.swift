@@ -101,7 +101,7 @@ struct SubscriberDimensionsProviderTests {
         )
         deviceCache.cache(
             subscriberDimensions: Data(#"{"plan":"annual"}"#.utf8),
-            asOf: Date(timeIntervalSince1970: 100),
+            asOf: 100,
             appUserID: "test"
         )
 
@@ -109,7 +109,7 @@ struct SubscriberDimensionsProviderTests {
 
         deviceCache.cache(
             subscriberDimensions: Data(#"{"plan":"monthly"}"#.utf8),
-            asOf: Date(timeIntervalSince1970: 200),
+            asOf: 200,
             appUserID: "test"
         )
 
@@ -122,12 +122,12 @@ struct SubscriberDimensionsProviderTests {
         let currentUserProvider = MockCurrentUserProvider(mockAppUserID: "user-a")
         deviceCache.cache(
             subscriberDimensions: Data(#"{"plan":"annual"}"#.utf8),
-            asOf: Date(timeIntervalSince1970: 100),
+            asOf: 100,
             appUserID: "user-a"
         )
         deviceCache.cache(
             subscriberDimensions: Data(#"{"plan":"monthly"}"#.utf8),
-            asOf: Date(timeIntervalSince1970: 100),
+            asOf: 100,
             appUserID: "user-b"
         )
         let provider = SubscriberDimensionsProvider(
@@ -146,10 +146,10 @@ struct SubscriberDimensionsProviderTests {
     @Test
     func configuredDimensionsWinWhenTheyAreNewer() async throws {
         let deviceCache = MockDeviceCache()
-        let cachedAsOf = Date(timeIntervalSince1970: 100)
+        let cachedAsOf: UInt64 = 100
         let configured = SubscriberDimensions(
             values: ["country": .string("NL")],
-            asOf: Date(timeIntervalSince1970: 200)
+            asOf: 200
         )
         let provider = Self.provider(
             #"{"country":"US"}"#,
@@ -166,14 +166,46 @@ struct SubscriberDimensionsProviderTests {
     func purchaseDimensionsWinWhenTheyAreNewer() async throws {
         let provider = Self.provider(
             #"{"country":"NL"}"#,
-            asOf: Date(timeIntervalSince1970: 200),
+            asOf: 200,
             configResolution: .resolved(.init(
                 values: ["country": .string("US")],
-                asOf: Date(timeIntervalSince1970: 100)
+                asOf: 100
             ))
         )
 
         #expect(try await provider.dimensions(at: Date()) == ["country": .string("NL")])
+    }
+
+    @Test
+    func receiptDimensionsStoredWhileConfigLoadsParticipateInTheCurrentResolution() async throws {
+        let deviceCache = MockDeviceCache()
+        let configProvider = SuspendingConfigProvider(.resolved(.init(
+            values: ["country": .string("US")],
+            asOf: 200
+        )))
+        let provider = SubscriberDimensionsProvider(
+            store: SubscriberDimensionsStore(deviceCache: deviceCache),
+            currentUserProvider: MockCurrentUserProvider(mockAppUserID: "test"),
+            configProvider: configProvider
+        )
+        deviceCache.cache(
+            subscriberDimensions: Data(#"{"country":"old"}"#.utf8),
+            asOf: 100,
+            appUserID: "test"
+        )
+
+        let resolution = Task { try await provider.dimensions(at: Date()) }
+        while !configProvider.invoked.value {
+            await Task.yield()
+        }
+        deviceCache.cache(
+            subscriberDimensions: Data(#"{"country":"NL"}"#.utf8),
+            asOf: 300,
+            appUserID: "test"
+        )
+        configProvider.resume()
+
+        #expect(try await resolution.value == ["country": .string("NL")])
     }
 
     @Test
@@ -184,7 +216,7 @@ struct SubscriberDimensionsProviderTests {
         let initialDeviceCache = DeviceCache(systemInfo: systemInfo, userDefaults: userDefaults)
         initialDeviceCache.cache(
             subscriberDimensions: Data(#"{"country":"NL"}"#.utf8),
-            asOf: Date(timeIntervalSince1970: 200),
+            asOf: 200,
             appUserID: appUserID
         )
 
@@ -194,7 +226,7 @@ struct SubscriberDimensionsProviderTests {
             currentUserProvider: MockCurrentUserProvider(mockAppUserID: appUserID),
             configProvider: TestSubscriberDimensionsConfigProvider(.resolved(.init(
                 values: ["country": .string("US")],
-                asOf: Date(timeIntervalSince1970: 100)
+                asOf: 100
             )))
         )
 
@@ -203,7 +235,7 @@ struct SubscriberDimensionsProviderTests {
 
     @Test
     func purchaseDimensionsWinWhenTimestampsAreEqual() async throws {
-        let asOf = Date(timeIntervalSince1970: 100)
+        let asOf: UInt64 = 100
         let provider = Self.provider(
             #"{"country":"US"}"#,
             asOf: asOf,
@@ -217,7 +249,7 @@ struct SubscriberDimensionsProviderTests {
     func notConfiguredUsesPurchaseSubscriberDimensions() async throws {
         let provider = Self.provider(
             #"{"country":"NL"}"#,
-            asOf: Date(timeIntervalSince1970: 100),
+            asOf: 100,
             configResolution: .notConfigured
         )
 
@@ -225,16 +257,25 @@ struct SubscriberDimensionsProviderTests {
     }
 
     @Test
-    func unavailableConfigurationFailsDimensionResolution() async {
+    func unavailableConfigurationUsesPurchaseSubscriberDimensions() async throws {
         let provider = Self.provider(
             #"{"country":"NL"}"#,
-            asOf: Date(timeIntervalSince1970: 100),
+            asOf: 100,
             configResolution: .unavailable
         )
 
-        await #expect(throws: SubscriberDimensionsProviderError.configurationUnavailable) {
-            try await provider.dimensions(at: Date())
-        }
+        #expect(try await provider.dimensions(at: Date()) == ["country": .string("NL")])
+    }
+
+    @Test
+    func unavailableConfigurationWithoutPurchaseDimensionsContributesNothing() async throws {
+        let provider = SubscriberDimensionsProvider(
+            store: SubscriberDimensionsStore(deviceCache: MockDeviceCache()),
+            currentUserProvider: MockCurrentUserProvider(mockAppUserID: "test"),
+            configProvider: TestSubscriberDimensionsConfigProvider(.unavailable)
+        )
+
+        #expect(try await provider.dimensions(at: Date()).isEmpty)
     }
 
     @Test
@@ -293,7 +334,7 @@ struct SubscriberDimensionsProviderTests {
 
     private static func provider(
         _ json: String,
-        asOf: Date = Date(timeIntervalSince1970: 100),
+        asOf: UInt64 = 100,
         configResolution: SubscriberDimensionsResolution = .notConfigured,
         deviceCache: MockDeviceCache = MockDeviceCache()
     ) -> SubscriberDimensionsProvider {
@@ -352,6 +393,32 @@ private final class ThrowingConfigProvider: SubscriberDimensionsConfigProviderTy
     func dimensions() async throws -> SubscriberDimensionsResolution { throw TestConfigError.failure }
     func cachedDimensions() -> SubscriberDimensionsResolution? { return nil }
     func remoteConfigEventReceived(_ event: RemoteConfigLifecycleEvent) {}
+
+}
+
+private final class SuspendingConfigProvider: SubscriberDimensionsConfigProviderType, @unchecked Sendable {
+
+    let invoked: Atomic<Bool> = false
+
+    private let resolution: SubscriberDimensionsResolution
+    private let gate = MockAsyncGate()
+
+    init(_ resolution: SubscriberDimensionsResolution) {
+        self.resolution = resolution
+    }
+
+    func dimensions() async throws -> SubscriberDimensionsResolution {
+        self.invoked.value = true
+        await self.gate.wait()
+        return self.resolution
+    }
+
+    func cachedDimensions() -> SubscriberDimensionsResolution? { return nil }
+    func remoteConfigEventReceived(_ event: RemoteConfigLifecycleEvent) {}
+
+    func resume() {
+        self.gate.open()
+    }
 
 }
 
