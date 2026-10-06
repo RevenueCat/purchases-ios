@@ -78,11 +78,9 @@ struct CompatibilityLabeledContent<Label: View, Content: View>: View {
             }
         } else {
             HStack {
-                label()
-
-                Spacer()
-
-                content()
+                // Keep the explicit TupleView. Without it, Xcode 27 can make this block a TupleContent (iOS 26+),
+                // and the app crashes on older iOS.
+                TupleView((label(), Spacer(), content()))
             }
         }
     }

@@ -244,6 +244,12 @@ struct WebViewRepresentable: PlatformViewRepresentable {
                 instance?.reconcile(host: host)
             }
         }
+        // The first layout pass proves the host is really on screen; re-evaluate so the web view moves off
+        // a host that entered the window earlier but is never laid out.
+        host.onFirstLayout = { [weak instance] host in
+            guard host.window != nil else { return }
+            instance?.reconcile(host: host)
+        }
 
         return host
     }

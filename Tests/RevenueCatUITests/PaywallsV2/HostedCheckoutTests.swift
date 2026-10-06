@@ -253,8 +253,7 @@ final class HostedCheckoutTests: TestCase {
 
         handler.handleHostedCheckoutPurchase(customerInfo: TestData.customerInfo)
 
-        expect(handler.sessionPurchaseResult?.userCancelled) == false
-        expect(handler.sessionPurchaseResult?.customerInfo) == TestData.customerInfo
+        expect(handler.sessionPurchaseResult) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
         expect(handler.purchaseError).to(beNil())
     }
 
