@@ -1953,7 +1953,8 @@ public extension Purchases {
     ///
     /// - Parameter previousSession: A session given before that has not been settled, even if it was created for
     /// someone other than whoever is logged in now. The backend decides whether the customer carries on with it,
-    /// so that they cannot pay for it twice.
+    /// so that they cannot pay for it twice. `nil` when there is none: no session was given yet, or the last one
+    /// was settled.
     @_spi(Internal) func startHostedCheckout(
         package: Package,
         paywallEvent: PaywallEvent?,

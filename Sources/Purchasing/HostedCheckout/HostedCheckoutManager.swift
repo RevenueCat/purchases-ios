@@ -39,6 +39,7 @@ final class HostedCheckoutManager {
     ///
     /// - Parameter previousSession: A session given before that has not been settled, even if it was created for
     /// someone other than whoever is logged in now. The backend decides whether the customer carries on with it.
+    /// `nil` when there is none: no session was given yet, or the last one was settled.
     func startCheckout(package: Package,
                        paywall: PaywallEvent.Data?,
                        previousSession: HostedCheckoutSession?) async -> HostedCheckoutStartResult {
