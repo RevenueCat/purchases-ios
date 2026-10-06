@@ -28,6 +28,10 @@ class ImageComponentViewModel {
     private let imageInfo: PaywallComponent.ThemeImageUrls
     private let presentedOverrides: PresentedOverrides<LocalizedImagePartial>?
 
+    lazy var visibilityResolver = PaywallComponentVisibilityResolver(
+        self.component.visible, self.uiConfigProvider, self.presentedOverrides, visible: { $0.partial.visible }
+    )
+
     init(
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,

@@ -20,14 +20,14 @@ struct FlexVStack: View {
     let alignment: HorizontalAlignment
     let justifyContent: JustifyContent
     let spacing: CGFloat?
-    let componentViewModels: [PaywallComponentViewModel]
+    let componentViewModels: [IdentifiedPaywallComponentViewModel]
     let onDismiss: () -> Void
 
     init(
         alignment: HorizontalAlignment,
         spacing: CGFloat?,
         justifyContent: JustifyContent,
-        componentViewModels: [PaywallComponentViewModel],
+        componentViewModels: [IdentifiedPaywallComponentViewModel],
         onDismiss: @escaping () -> Void
     ) {
         self.alignment = alignment
@@ -41,9 +41,9 @@ struct FlexVStack: View {
         VStack(alignment: self.alignment, spacing: 0) {
             switch justifyContent {
             case .start:
-                ForEach(0..<componentViewModels.count, id: \.self) { index in
+                ForEach(Array(componentViewModels.enumerated()), id: \.element.id) { index, child in
                     ComponentsView(
-                        componentViewModels: [self.componentViewModels[index]],
+                        componentViewModels: [child.viewModel],
                         onDismiss: self.onDismiss
                     )
                     if index < self.componentViewModels.count - 1 {
@@ -56,9 +56,9 @@ struct FlexVStack: View {
 
             case .center:
                 Spacer(minLength: 0)
-                ForEach(0..<componentViewModels.count, id: \.self) { index in
+                ForEach(Array(componentViewModels.enumerated()), id: \.element.id) { index, child in
                     ComponentsView(
-                        componentViewModels: [self.componentViewModels[index]],
+                        componentViewModels: [child.viewModel],
                         onDismiss: self.onDismiss
                     )
                     if index < self.componentViewModels.count - 1 {
@@ -71,9 +71,9 @@ struct FlexVStack: View {
 
             case .end:
                 Spacer(minLength: 0)
-                ForEach(0..<componentViewModels.count, id: \.self) { index in
+                ForEach(Array(componentViewModels.enumerated()), id: \.element.id) { index, child in
                     ComponentsView(
-                        componentViewModels: [self.componentViewModels[index]],
+                        componentViewModels: [child.viewModel],
                         onDismiss: self.onDismiss
                     )
                     if index < self.componentViewModels.count - 1 {
@@ -84,9 +84,9 @@ struct FlexVStack: View {
                 }
 
             case .spaceBetween:
-                ForEach(0..<componentViewModels.count, id: \.self) { index in
+                ForEach(Array(componentViewModels.enumerated()), id: \.element.id) { index, child in
                     ComponentsView(
-                        componentViewModels: [self.componentViewModels[index]],
+                        componentViewModels: [child.viewModel],
                         onDismiss: self.onDismiss
                     )
                     if index < self.componentViewModels.count - 1 {
@@ -98,12 +98,12 @@ struct FlexVStack: View {
                 }
 
             case .spaceAround:
-                ForEach(0..<componentViewModels.count, id: \.self) { index in
+                ForEach(Array(componentViewModels.enumerated()), id: \.element.id) { index, child in
                     if index == 0 {
                         FlexSpacer(weight: 1)
                     }
                     ComponentsView(
-                        componentViewModels: [self.componentViewModels[index]],
+                        componentViewModels: [child.viewModel],
                         onDismiss: self.onDismiss
                     )
                     if index < self.componentViewModels.count - 1 {
@@ -117,10 +117,10 @@ struct FlexVStack: View {
                 }
 
             case .spaceEvenly:
-                ForEach(0..<componentViewModels.count, id: \.self) { index in
+                ForEach(Array(componentViewModels.enumerated()), id: \.element.id) { index, child in
                     FlexSpacer(weight: 1)
                     ComponentsView(
-                        componentViewModels: [self.componentViewModels[index]],
+                        componentViewModels: [child.viewModel],
                         onDismiss: self.onDismiss
                     )
                     if index < self.componentViewModels.count - 1 {

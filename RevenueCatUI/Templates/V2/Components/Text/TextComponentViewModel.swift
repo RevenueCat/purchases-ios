@@ -64,6 +64,16 @@ class TextComponentViewModel {
 
     }
 
+    lazy var visibilityResolver = PaywallComponentVisibilityResolver(
+        self.component.visible,
+        self.uiConfigProvider,
+        self.presentedOverrides,
+        promoOfferEligibility: { context, package in
+            context.paywallPromoOfferCache.get(for: package) != nil
+        },
+        visible: { $0.partial.visible }
+    )
+
     @ViewBuilder
     @MainActor
     // swiftlint:disable:next function_parameter_count
