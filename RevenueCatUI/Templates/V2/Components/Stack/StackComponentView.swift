@@ -216,7 +216,7 @@ fileprivate extension View {
             if enabled {
                 self.scrollableIfNecessaryWhenAvailable(
                     .horizontal,
-                    fillContent: size.width.isFill,
+                    size: size.width,
                     alignment: Alignment(
                         horizontal: distribution.horizontalFrameAlignment.horizontal,
                         vertical: verticalAlignment.frameAlignment.vertical
@@ -230,7 +230,7 @@ fileprivate extension View {
             if enabled {
                 self.scrollableIfNecessaryWhenAvailable(
                     .vertical,
-                    fillContent: size.height.isFill,
+                    size: size.height,
                     alignment: Alignment(
                         horizontal: horizontalAlignment.frameAlignment.horizontal,
                         vertical: distribution.verticalFrameAlignment.vertical
@@ -244,7 +244,7 @@ fileprivate extension View {
             if zLayerShouldScroll {
                 self.scrollableIfNecessaryWhenAvailable(
                     .vertical,
-                    fillContent: true,
+                    size: .fill,
                     alignment: alignment.stackAlignment
                 )
                 .preservingFixedSize(along: .vertical, size: size)

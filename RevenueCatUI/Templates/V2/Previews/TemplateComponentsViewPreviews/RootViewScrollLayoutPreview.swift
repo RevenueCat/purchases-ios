@@ -161,6 +161,60 @@ private enum RootViewScrollLayoutPreview {
         )
     }
 
+    /// Matches scroll_test_1's unfolded window rule and both columns' scrolling overrides.
+    static func makeCenteredColumnsViewModel(tallFitOffer: Bool = false) throws -> RootViewModel {
+        let conditions: [PaywallComponent.ExtendedCondition] = [
+            .windowHeight(operator: .greaterThanOrEqual, value: 600),
+            .windowHeight(operator: .lessThan, value: 700),
+            .windowAspectRatio(operator: .greaterThanOrEqual, value: 1)
+        ]
+        let scrollOverride = PaywallComponent.ComponentOverride(
+            extendedConditions: conditions,
+            properties: PaywallComponent.PartialStackComponent(overflow: .scroll)
+        )
+        let story = PaywallComponent.StackComponent(
+            components: [.stack(.init(
+                components: [],
+                size: .init(width: .fill, height: .fixed(1000)),
+                backgroundColor: .init(light: .hex("#E3F2FD"))
+            ))],
+            dimension: .vertical(.center, .start),
+            size: .init(width: .fill, height: .fill),
+            overrides: [scrollOverride]
+        )
+        let offerBody: [PaywallComponent] = tallFitOffer ? [.stack(.init(
+            components: [],
+            size: .init(width: .fill, height: .fixed(900)),
+            backgroundColor: .init(light: .hex("#FFE0B2"))
+        ))] : []
+        let offer = PaywallComponent.StackComponent(
+            components: offerBody + [.text(.init(
+                text: "small_body_title",
+                color: .init(light: .hex("#272727")),
+                backgroundColor: .init(light: .hex("#FFE082")),
+                size: .init(width: .fill, height: .fixed(100)),
+                fontSize: 22
+            ))],
+            dimension: .vertical(.center, .center),
+            size: .init(width: .fill, height: .fit(nil)),
+            overrides: [scrollOverride]
+        )
+        let root = PaywallComponent.StackComponent(
+            components: [.stack(story), .stack(offer)],
+            dimension: .vertical(.center, .start),
+            size: .init(width: .fill, height: .fill),
+            spacing: 32,
+            padding: .init(top: 16, bottom: 24, leading: 0, trailing: 0),
+            overrides: [.init(
+                extendedConditions: conditions,
+                properties: .init(dimension: .horizontal(.center, .start), overflow: .default)
+            )]
+        )
+        return try makeRootViewModel(
+            componentsConfig: .init(stack: root, stickyFooter: nil, background: fixtureBackground)
+        )
+    }
+
     private static func footerCTAText() -> PaywallComponent {
         .text(.init(
             text: "footer_cta",
@@ -222,17 +276,24 @@ private enum RootViewScrollLayoutPreview {
         rootChangesToZLayerByWidthRule: Bool = false,
         childOverflow: PaywallComponent.StackComponent.Overflow? = .scroll,
         includesChild: Bool = false,
-        scrollToBottom: Bool = true
+        scrollToBottom: Bool = true,
+        includesCenteredColumns: Bool = false,
+        tallFitOffer: Bool = false
     ) -> some View {
+        let size = includesCenteredColumns ? CGSize(width: 800, height: 650) : Self.size
         let viewModel: RootViewModel
         do {
-            viewModel = try includesChild
-                ? makeNonScrollingRootWithZLayerChildViewModel(childOverflow: childOverflow)
-                : makeStickyFooterRootZLayerViewModel(
-                    overflow: overflow,
-                    footerIsZLayer: footerIsZLayer,
-                    rootChangesToZLayerByWidthRule: rootChangesToZLayerByWidthRule
-                )
+            if includesCenteredColumns {
+                viewModel = try makeCenteredColumnsViewModel(tallFitOffer: tallFitOffer)
+            } else {
+                viewModel = try includesChild
+                    ? makeNonScrollingRootWithZLayerChildViewModel(childOverflow: childOverflow)
+                    : makeStickyFooterRootZLayerViewModel(
+                        overflow: overflow,
+                        footerIsZLayer: footerIsZLayer,
+                        rootChangesToZLayerByWidthRule: rootChangesToZLayerByWidthRule
+                    )
+            }
         } catch {
             fatalError("Invalid root scroll preview configuration: \(error)")
         }
@@ -248,11 +309,13 @@ private enum RootViewScrollLayoutPreview {
             .environment(\.safeAreaInsets, EdgeInsets(top: 47, leading: 0, bottom: 34, trailing: 0))
             .environment(\.isRunningSnapshots, true)
             .environment(\.colorScheme, .light)
-            .applyIf(rootChangesToZLayerByWidthRule) { $0.environment(\.paywallWindowSize, Self.size) }
-            .frame(width: Self.size.width, height: Self.size.height)
+            .applyIf(rootChangesToZLayerByWidthRule || includesCenteredColumns) {
+                $0.environment(\.paywallWindowSize, size)
+            }
+            .frame(width: size.width, height: size.height)
             .applyIf(scrollToBottom) { $0.defaultScrollAnchor(.bottom) }
             .emergeExpansion(false)
-            .previewLayout(.fixed(width: Self.size.width, height: Self.size.height))
+            .previewLayout(.fixed(width: size.width, height: size.height))
     }
 
 }
@@ -262,6 +325,10 @@ struct RootViewScrollLayoutPreview_Previews: PreviewProvider {
 
     static var previews: some View {
         Group {
+            RootViewScrollLayoutPreview.preview(scrollToBottom: false, includesCenteredColumns: true)
+                .previewDisplayName("Unfolded window: FIT offer centers beside scrolling story")
+            RootViewScrollLayoutPreview.preview(includesCenteredColumns: true, tallFitOffer: true)
+                .previewDisplayName("Unfolded window: tall FIT offer scrolls to bottom marker")
             RootViewScrollLayoutPreview.preview(footerIsZLayer: true, scrollToBottom: false)
                 .previewDisplayName("Root z-layer: legacy z-layer footer")
             RootViewScrollLayoutPreview.preview(overflow: .default)
