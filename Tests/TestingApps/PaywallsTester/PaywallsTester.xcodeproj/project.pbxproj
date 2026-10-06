@@ -30,6 +30,7 @@
 		88BEB9282BF537F200A3D05F /* SamplePaywalls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88BEB9242BF537F200A3D05F /* SamplePaywalls.swift */; };
 		88DFC18D2BCF3AD100273B6D /* AsyncButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC18A2BCF3ACA00273B6D /* AsyncButton.swift */; };
 		88DFC18E2BCF3AD100273B6D /* ErrorDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88DFC18B2BCF3ACA00273B6D /* ErrorDisplay.swift */; };
+		A91C0E712F6B4D3A8E5C1021 /* CheckpointsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A91C0E702F6B4D3A8E5C1021 /* CheckpointsView.swift */; };
 		A8F100013C8D4A0100000001 /* MacOSPurchaseFocusRegressionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8F100013C8D4A0100000002 /* MacOSPurchaseFocusRegressionView.swift */; };
 		A8F100013C8D4A0100000003 /* PurchaseFocusRegressionUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8F100013C8D4A0100000004 /* PurchaseFocusRegressionUITests.swift */; };
 		DF1A26D5115387F97D465BF3 /* CustomVariablesEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17CBE9A504CBA10F6A8A57C /* CustomVariablesEditorView.swift */; };
@@ -102,6 +103,7 @@
 		88BEB9242BF537F200A3D05F /* SamplePaywalls.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SamplePaywalls.swift; path = Config/SamplePaywalls.swift; sourceTree = "<group>"; };
 		88DFC18A2BCF3ACA00273B6D /* AsyncButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncButton.swift; sourceTree = "<group>"; };
 		88DFC18B2BCF3ACA00273B6D /* ErrorDisplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorDisplay.swift; sourceTree = "<group>"; };
+		A91C0E702F6B4D3A8E5C1021 /* CheckpointsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointsView.swift; sourceTree = "<group>"; };
 		A8F100013C8D4A0100000002 /* MacOSPurchaseFocusRegressionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacOSPurchaseFocusRegressionView.swift; sourceTree = "<group>"; };
 		A8F100013C8D4A0100000004 /* PurchaseFocusRegressionUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseFocusRegressionUITests.swift; sourceTree = "<group>"; };
 		A8F100013C8D4A0100000006 /* PaywallsTesterMacOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PaywallsTesterMacOSUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -243,6 +245,7 @@
 		88DFC12C2BC7306100273B6D /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				A91C0E702F6B4D3A8E5C1021 /* CheckpointsView.swift */,
 				FD33CD612D0351BE000D13A4 /* CustomerCenterUIKitView.swift */,
 				4F34FF622A60AD9A00AADF11 /* AppContentView.swift */,
 				A8F100013C8D4A0100000002 /* MacOSPurchaseFocusRegressionView.swift */,
@@ -437,6 +440,7 @@
 				4FDF11202A7270F3004F3680 /* SamplePaywallsList.swift in Sources */,
 				FD33CD622D0351BE000D13A4 /* CustomerCenterUIKitView.swift in Sources */,
 				4F34FF632A60AD9A00AADF11 /* AppContentView.swift in Sources */,
+				A91C0E712F6B4D3A8E5C1021 /* CheckpointsView.swift in Sources */,
 				A8F100013C8D4A0100000001 /* MacOSPurchaseFocusRegressionView.swift in Sources */,
 				DF1A26D5115387F97D465BF3 /* CustomVariablesEditorView.swift in Sources */,
 			);

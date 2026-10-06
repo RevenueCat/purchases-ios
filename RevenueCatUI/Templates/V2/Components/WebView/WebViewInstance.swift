@@ -156,22 +156,28 @@ final class WebViewInstance: ObservableObject {
         self.attachWebView(to: preferredHost)
     }
 
-    /// The candidate closest to its carousel's active page. Ties go to the host already showing the web
-    /// view, then to the host that entered the window first, so a replacement host mounted during a
-    /// redraw only takes over once the current host leaves.
+    /// The candidate closest to its carousel's active page. Among those, hosts that have been laid out
+    /// win over hosts that never have: `ViewThatFits` (see `scrollableIfNecessaryWhenAvailable`)
+    /// instantiates every branch, so the losing branch's host sits in the window without ever receiving
+    /// `layoutSubviews`; a web view parented there stays 0×0. Remaining ties go to the host already
+    /// showing the web view, then to the host that entered the window first, so a replacement host
+    /// mounted during a redraw only takes over once the current host leaves.
     private func preferredHost() -> WebViewHostView? {
         let candidates = self.candidateHosts.compactMap(\.host)
         guard let closestDistance = candidates.map(\.carouselDistance).min() else {
             return nil
         }
 
+        let closest = candidates.filter { $0.carouselDistance == closestDistance }
+        let laidOut = closest.filter(\.hasLaidOut)
+        let eligible = laidOut.isEmpty ? closest : laidOut
+
         if let attachedHost = self.attachedHost,
-           attachedHost.carouselDistance == closestDistance,
-           candidates.contains(where: { $0 === attachedHost }) {
+           eligible.contains(where: { $0 === attachedHost }) {
             return attachedHost
         }
 
-        return candidates.first { $0.carouselDistance == closestDistance }
+        return eligible.first
     }
 
     private func attachWebView(to host: WebViewHostView) {
@@ -273,13 +279,28 @@ final class WebViewInstance: ObservableObject {
 final class WebViewHostView: NSView {
 
     var onMoveToWindow: ((WebViewHostView) -> Void)?
+    /// Called the first time the host is laid out after entering a window, so the instance can prefer it
+    /// over hosts that never are.
+    var onFirstLayout: ((WebViewHostView) -> Void)?
 
     /// Distance from the active carousel page; `0` when active or not in a carousel. Closest host wins.
     var carouselDistance: Int = 0
 
+    /// Whether the host has gone through a layout pass since entering its current window. A host that
+    /// never does is not actually being displayed (for example the losing branch of a `ViewThatFits`).
+    private(set) var hasLaidOut = false
+
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
+        self.hasLaidOut = false
         self.onMoveToWindow?(self)
+    }
+
+    override func layout() {
+        super.layout()
+        guard !self.hasLaidOut else { return }
+        self.hasLaidOut = true
+        self.onFirstLayout?(self)
     }
 
 }
@@ -288,13 +309,28 @@ final class WebViewHostView: NSView {
 final class WebViewHostView: UIView {
 
     var onMoveToWindow: ((WebViewHostView) -> Void)?
+    /// Called the first time the host is laid out after entering a window, so the instance can prefer it
+    /// over hosts that never are.
+    var onFirstLayout: ((WebViewHostView) -> Void)?
 
     /// Distance from the active carousel page; `0` when active or not in a carousel. Closest host wins.
     var carouselDistance: Int = 0
 
+    /// Whether the host has gone through a layout pass since entering its current window. A host that
+    /// never does is not actually being displayed (for example the losing branch of a `ViewThatFits`).
+    private(set) var hasLaidOut = false
+
     override func didMoveToWindow() {
         super.didMoveToWindow()
+        self.hasLaidOut = false
         self.onMoveToWindow?(self)
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        guard !self.hasLaidOut else { return }
+        self.hasLaidOut = true
+        self.onFirstLayout?(self)
     }
 
 }

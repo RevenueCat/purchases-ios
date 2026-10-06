@@ -54,7 +54,11 @@ public struct PaywallView: View {
 
     private var promoOfferCache: PaywallPromoOfferCache?
 
+    private var displaysPurchaseAndRestoreErrors: Bool
+
     private var workflowPresentationErrorHandler: ((NSError) -> Void)?
+
+    private var workflowBackNavigationBridge: WorkflowBackNavigationBridge
 
     private var initializationError: NSError?
 
@@ -216,7 +220,9 @@ public struct PaywallView: View {
         self.fonts = configuration.fonts
         self.displayCloseButton = configuration.displayCloseButton
         self.promoOfferCache = configuration.promoOfferCache
+        self.displaysPurchaseAndRestoreErrors = configuration.displaysPurchaseAndRestoreErrors
         self.workflowPresentationErrorHandler = configuration.workflowPresentationErrorHandler
+        self.workflowBackNavigationBridge = configuration.workflowBackNavigationBridge
 
         self.initializationError = Self.checkForConfigurationConsistency(purchaseHandler: configuration.purchaseHandler)
     }
@@ -253,6 +259,7 @@ public struct PaywallView: View {
     // swiftlint:disable:next missing_docs
     public var body: some View {
         self.content
+            .environment(\.asyncButtonDisplaysErrors, self.displaysPurchaseAndRestoreErrors)
             .displayError(self.$error) {
                 guard let onRequestedDismissal = self.onRequestedDismissal else {
                     self.dismiss()
@@ -378,6 +385,7 @@ public struct PaywallView: View {
                         displayCloseButton: self.displayCloseButton,
                         promoOfferCache: self.promoOfferCache,
                         onDismiss: self.dismissRequested,
+                        backNavigationBridge: self.workflowBackNavigationBridge,
                         onPresentationError: self.workflowPresentationErrorHandler
                     )
                 } else {
@@ -526,7 +534,7 @@ struct LoadedOfferingPaywallView: View {
             .preference(key: PurchasedResultPreferenceKey.self,
                         value: .init(
                             data: self.purchaseHandler.sessionPurchaseResult,
-                            diffKey: (self.purchaseHandler.sessionPurchaseResult?.userCancelled == true) ?
+                            diffKey: self.purchaseHandler.sessionPurchaseResult == .cancelled ?
                             self.purchaseHandler.consecutiveCancellationRequestID : nil
                         ))
             .preference(key: RestoredCustomerInfoPreferenceKey.self,

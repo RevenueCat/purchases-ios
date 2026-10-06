@@ -222,6 +222,41 @@ final class RemoteConfigurationDecodingTests: TestCase {
         ]
     }
 
+    func testDeserializesSubscriberDimensionsAsInlineContent() throws {
+        let payload = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000600.subscriber_dimensions:etag1",
+          "active_topics": ["subscriber_dimensions"],
+          "topics": {
+            "subscriber_dimensions": {
+              "default": {
+                "dimensions": {
+                  "country": "ES",
+                  "subscription_status": null,
+                  "total_renewals": 0
+                },
+                "as_of": 1790858464258
+              }
+            }
+          }
+        }
+        """.asData
+
+        let response = try JSONDecoder.default.decode(RemoteConfiguration.self, from: payload)
+        let item = try XCTUnwrap(
+            response.topics.entries[RemoteConfigTopic.subscriberDimensions.wireName]?["default"]
+        )
+
+        expect(item.blobRef).to(beNil())
+        expect(item.content["dimensions"]) == [
+            "country": "ES",
+            "subscription_status": nil,
+            "total_renewals": 0
+        ]
+        expect(item.content["as_of"]) == 1790858464258
+    }
+
     func testBlobRefItemWithPrefetch() throws {
         let item = try JSONDecoder.default.decode(
             RemoteConfiguration.ConfigItem.self,
