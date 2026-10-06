@@ -948,12 +948,16 @@ extension PurchaseHandler {
         self.purchaseError = error
     }
 
-    /// Reports a checkout the customer abandoned on a page presented inside the app.
+    /// Reports a checkout the customer closed, on a page presented inside the app, before the page returned.
+    ///
+    /// Closing the checkout does not mean the customer cancelled it: they may have paid moments before. The paywall
+    /// still reports a cancelled purchase, as it has no other way to say that no purchase is known. A payment that
+    /// did go through is confirmed and reported as a purchase once the customer taps buy again.
     ///
     /// - Parameter package: The package the checkout was started for, when it is still known. Only used to
     /// track the cancellation.
     @MainActor
-    func handleHostedCheckoutCancellation(package: Package?) {
+    func handleHostedCheckoutDismissal(package: Package?) {
         if let package {
             self.trackCancelledPurchase(package: package)
         }

@@ -261,7 +261,7 @@ struct PurchaseButtonComponentView: View {
             // The checkout stays kept: a customer who paid moments before closing the sheet has that purchase
             // confirmed when they tap buy again.
             Logger.debug(Strings.hosted_checkout_dismissed_without_returning)
-            Task { await self.purchaseHandler.handleHostedCheckoutCancellation(package: checkout.package) }
+            self.purchaseHandler.handleHostedCheckoutDismissal(package: checkout.package)
         }
     }
 
