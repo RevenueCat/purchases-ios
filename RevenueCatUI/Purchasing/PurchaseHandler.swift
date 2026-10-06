@@ -39,7 +39,8 @@ final class PurchaseHandler: ObservableObject {
     private var cancellables: Set<AnyCancellable> = Set()
 
     private let purchases: PaywallPurchasesType
-    let resolveBranches: @Sendable (WorkflowStep) async -> [WorkflowActionID: WorkflowStepID]
+    /// `nil` while branch routing is unreleased. Stops being optional once branching ships.
+    let resolveBranch: (@Sendable (WorkflowBranch) async -> WorkflowStepID)?
     private let paywallEventTracker: PaywallEventTracker
     private let keyWindowFocusResigner: KeyWindowFocusResigning
 
@@ -106,7 +107,7 @@ final class PurchaseHandler: ObservableObject {
     /// More extensible than a boolean - gives access to full result data for
     /// potential future exit offer triggers (e.g., based on specific products).
     @Published
-    fileprivate(set) var sessionPurchaseResult: PurchaseResultData? {
+    fileprivate(set) var sessionPurchaseResult: PaywallPurchaseResult? {
         willSet {
             if haveBothBeenCanceled(lhs: newValue, rhs: sessionPurchaseResult) {
                 self.consecutiveCancellationRequestID = UUID()
@@ -114,13 +115,8 @@ final class PurchaseHandler: ObservableObject {
         }
     }
 
-    private func haveBothBeenCanceled(lhs: PurchaseResultData?, rhs: PurchaseResultData?) -> Bool {
-        switch (lhs, rhs) {
-        case (nil, nil):
-            return false
-        case let (left, right):
-            return left?.userCancelled == true && right?.userCancelled == true
-        }
+    private func haveBothBeenCanceled(lhs: PaywallPurchaseResult?, rhs: PaywallPurchaseResult?) -> Bool {
+        return lhs == .cancelled && rhs == .cancelled
     }
 
     /// Unique identifier for the latest `consecutiveCancellationRequestID`.
@@ -143,14 +139,14 @@ final class PurchaseHandler: ObservableObject {
     /// Whether a purchase was successfully completed in the current session.
     /// Convenience property for checking if we should skip exit offers.
     var hasPurchasedInSession: Bool {
-        guard let result = sessionPurchaseResult else { return false }
-        return !result.userCancelled
+        guard case .purchased = sessionPurchaseResult else { return false }
+        return true
     }
 
     /// When a purchase completes, this will include the `CustomerInfo`
     /// associated to it IF RevenueCat is making the purchase.
     @Published
-    fileprivate(set) var purchaseResult: PurchaseResultData?
+    fileprivate(set) var purchaseResult: PaywallPurchaseResult?
 
     /// When `purchasesAreCompletedBy` is `.myApp`, this is the app-defined
     /// callback method that performs the purchase
@@ -187,9 +183,13 @@ final class PurchaseHandler: ObservableObject {
                      eventTracker: PaywallEventTracker = .shared,
                      keyWindowFocusResigner: KeyWindowFocusResigning = KeyWindowFocusResigner()
     ) {
+        var resolveBranch: (@Sendable (WorkflowBranch) async -> WorkflowStepID)?
+        if purchases.branchingEnabled {
+            resolveBranch = { [purchases] branch in await purchases.resolveBranch(branch) }
+        }
         self.init(isConfigured: true,
                   purchases: purchases,
-                  resolveBranches: { [purchases] in await purchases.resolveBranches(in: $0) },
+                  resolveBranch: resolveBranch,
                   performPurchase: performPurchase,
                   performRestore: performRestore,
                   purchaseResultPublisher: purchaseResultPublisher,
@@ -201,8 +201,7 @@ final class PurchaseHandler: ObservableObject {
     init(
         isConfigured: Bool = true,
         purchases: PaywallPurchasesType,
-        resolveBranches: @escaping @Sendable (WorkflowStep) async -> [WorkflowActionID: WorkflowStepID]
-            = { _ in [:] },
+        resolveBranch: (@Sendable (WorkflowBranch) async -> WorkflowStepID)? = nil,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
@@ -213,14 +212,15 @@ final class PurchaseHandler: ObservableObject {
     ) {
         self.isConfigured = isConfigured
         self.purchases = purchases
-        self.resolveBranches = resolveBranches
+        self.resolveBranch = resolveBranch
         self.paywallEventTracker = eventTracker
         self.keyWindowFocusResigner = keyWindowFocusResigner
         self.performPurchase = performPurchase
         self.performRestore = performRestore
 
         purchaseResultPublisher
-            .removeDuplicates(by: PurchaseResultComparator.compare)
+            .map(PaywallPurchaseResult.init)
+            .removeDuplicates()
             .receive(on: RunLoop.main)
             .sink { [weak self] result in
                 self?.setResult(result)
@@ -268,8 +268,8 @@ final class PurchaseHandler: ObservableObject {
         )
     }
 
-    private func setResult(_ result: PurchaseResultData) {
-        guard !PurchaseResultComparator.compare(purchaseResult, result) else {
+    private func setResult(_ result: PaywallPurchaseResult) {
+        guard result != self.purchaseResult else {
             return
         }
         self.purchaseResult = result
@@ -844,13 +844,11 @@ extension PurchaseHandler {
         if let paywallEvent { self.track(paywallEvent) }
 
         do {
-            let result: PurchaseResultData
+            let result = PaywallPurchaseResult(try await self.purchases.purchase(package: package,
+                                                                                 promotionalOffer: promotionalOffer,
+                                                                                 paywallEvent: paywallEvent))
 
-            result = try await self.purchases.purchase(package: package,
-                                                       promotionalOffer: promotionalOffer,
-                                                       paywallEvent: paywallEvent)
-
-            if result.userCancelled {
+            if result == .cancelled {
                 self.trackCancelledPurchase(package: package)
             }
 
@@ -913,9 +911,12 @@ extension PurchaseHandler {
             throw error
         }
 
-        let resultInfo: PurchaseResultData = (transaction: nil,
-                                             customerInfo: try await self.purchases.customerInfo(),
-                                            userCancelled: result.userCancelled)
+        let resultInfo: PaywallPurchaseResult
+        if result.userCancelled {
+            resultInfo = .cancelled
+        } else {
+            resultInfo = .purchased(transaction: nil, customerInfo: try await self.purchases.customerInfo())
+        }
 
         // Set sessionPurchaseResult BEFORE setResult so that handleMainPaywallDismiss
         // sees the correct state when the sheet dismisses.
@@ -938,7 +939,7 @@ extension PurchaseHandler {
     /// the `CustomerInfo` fetched when confirming it.
     @MainActor
     func handleHostedCheckoutPurchase(customerInfo: CustomerInfo) {
-        self.reportHostedCheckoutOutcome(customerInfo: customerInfo, userCancelled: false)
+        self.reportHostedCheckoutOutcome(.purchased(transaction: nil, customerInfo: customerInfo))
     }
 
     /// Reports a checkout that failed, as opposed to one the customer walked away from.
@@ -954,45 +955,32 @@ extension PurchaseHandler {
         self.purchaseError = error
     }
 
-    /// Reports a checkout the customer abandoned on a page presented inside the app.
+    /// Reports a checkout the customer closed, on a page presented inside the app, before the page returned.
+    ///
+    /// Closing the checkout does not mean the customer cancelled it: they may have paid moments before. The paywall
+    /// still reports a cancelled purchase, as it has no other way to say that no purchase is known. A payment that
+    /// did go through is confirmed and reported as a purchase once the customer taps buy again.
     ///
     /// - Parameter package: The package the checkout was started for, when it is still known. Only used to
     /// track the cancellation.
     @MainActor
-    func handleHostedCheckoutCancellation(package: Package?) async {
+    func handleHostedCheckoutDismissal(package: Package?) {
         if let package {
             self.trackCancelledPurchase(package: package)
         }
 
-        await self.reportHostedCheckoutOutcome(userCancelled: true)
+        self.reportHostedCheckoutOutcome(.cancelled)
     }
 
     @MainActor
-    private func reportHostedCheckoutOutcome(userCancelled: Bool) async {
-        let customerInfo: CustomerInfo
-        do {
-            customerInfo = try await self.purchases.customerInfo()
-        } catch {
-            self.purchaseError = error
-            return
-        }
-
-        self.reportHostedCheckoutOutcome(customerInfo: customerInfo, userCancelled: userCancelled)
-    }
-
-    @MainActor
-    private func reportHostedCheckoutOutcome(customerInfo: CustomerInfo, userCancelled: Bool) {
-        let resultInfo: PurchaseResultData = (transaction: nil,
-                                              customerInfo: customerInfo,
-                                              userCancelled: userCancelled)
-
+    private func reportHostedCheckoutOutcome(_ result: PaywallPurchaseResult) {
         // Set sessionPurchaseResult BEFORE setResult so that handleMainPaywallDismiss
         // sees the correct state when the sheet dismisses.
         withAnimation(Constants.defaultAnimation) {
-            self.sessionPurchaseResult = resultInfo
+            self.sessionPurchaseResult = result
         }
 
-        self.setResult(resultInfo)
+        self.setResult(result)
     }
 
     // MARK: - Restore
@@ -1368,23 +1356,40 @@ struct RestoreInProgressPreferenceKey: PreferenceKey {
 
 }
 
+/// What a purchase started from the paywall ended in, as reported to the app.
+///
+/// A cancellation carries no `CustomerInfo`, so reporting one never has to fetch it.
+enum PaywallPurchaseResult: Equatable {
+
+    case purchased(transaction: StoreTransaction?, customerInfo: CustomerInfo)
+    case cancelled
+
+    init(_ data: PurchaseResultData) {
+        self = data.userCancelled
+            ? .cancelled
+            : .purchased(transaction: data.transaction, customerInfo: data.customerInfo)
+    }
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PurchasedResultPreferenceKey: PreferenceKey {
 
     struct PurchaseResult: Equatable {
         private var diffKey: String?
-        var transaction: StoreTransaction?
-        var customerInfo: CustomerInfo
-        var userCancelled: Bool
+        var result: PaywallPurchaseResult
 
-        init(data: PurchaseResultData, diffKey: UUID? = nil) {
-            self.diffKey = diffKey?.uuidString ?? data.transaction?.id
-            self.transaction = data.transaction
-            self.customerInfo = data.customerInfo
-            self.userCancelled = data.userCancelled
+        init(data: PaywallPurchaseResult, diffKey: UUID? = nil) {
+            switch data {
+            case let .purchased(transaction, _):
+                self.diffKey = diffKey?.uuidString ?? transaction?.id
+            case .cancelled:
+                self.diffKey = diffKey?.uuidString
+            }
+            self.result = data
         }
 
-        init?(data: PurchaseResultData?, diffKey: UUID? = nil) {
+        init?(data: PaywallPurchaseResult?, diffKey: UUID? = nil) {
             guard let data else { return nil }
             self.init(data: data, diffKey: diffKey)
         }

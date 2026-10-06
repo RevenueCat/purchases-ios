@@ -274,7 +274,7 @@ struct PurchaseButtonComponentView: View {
                                            purchaseHandler: purchaseHandler,
                                            alerts: alerts)
             }
-            Task { await self.purchaseHandler.handleHostedCheckoutCancellation(package: checkout.package) }
+            self.purchaseHandler.handleHostedCheckoutDismissal(package: checkout.package)
         }
     }
 
