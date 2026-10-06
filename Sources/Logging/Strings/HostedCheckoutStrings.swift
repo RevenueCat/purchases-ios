@@ -21,9 +21,7 @@ enum HostedCheckoutStrings {
     case no_registered_token
     case session_created(_ operationSessionID: String)
     case session_resumed(_ operationSessionID: String)
-    case previous_session_paid(_ operationSessionID: String)
-    case succeeded_without_previous_session(_ operationSessionID: String)
-    case not_resuming_session_for_another_user(_ operationSessionID: String)
+    case session_paid(_ operationSessionID: String)
     case unrecognized_outcome(_ outcome: String)
     case product_already_purchased(_ packageID: String)
     case error_creating_session(_ error: BackendError)
@@ -53,14 +51,9 @@ extension HostedCheckoutStrings: LogMessage {
             return "Created checkout session \(operationSessionID)."
         case let .session_resumed(operationSessionID):
             return "Resuming checkout session \(operationSessionID)."
-        case let .previous_session_paid(operationSessionID):
+        case let .session_paid(operationSessionID):
             return "Checkout session \(operationSessionID) was already paid for. Confirming it instead of " +
             "starting another checkout."
-        case let .succeeded_without_previous_session(operationSessionID):
-            return "Not starting a checkout: the backend says checkout session \(operationSessionID) already " +
-            "succeeded, but it was not asked about a previous session."
-        case let .not_resuming_session_for_another_user(operationSessionID):
-            return "Not resuming checkout session \(operationSessionID): it was created for another customer."
         case let .unrecognized_outcome(outcome):
             return "Unrecognized checkout session outcome '\(outcome)'. Treating the session as a new one."
         case let .product_already_purchased(packageID):

@@ -326,14 +326,15 @@ class HostedCheckoutManagerTests: TestCase {
         expect(parameters?.externalPurchaseTokenID) == Self.tokenID
     }
 
-    /// Resuming another customer's session would put their purchase on whoever is logged in now.
-    func testDoesNotResumeASessionCreatedForAnotherCustomer() async {
-        let previousSession = Self.makeSession(operationSessionID: Self.operationSessionID, appUserID: "someone-else")
+    /// The backend decides what a session created for another customer means for whoever is logged in now.
+    func testAsksTheBackendAboutASessionCreatedForAnotherCustomer() async {
+        let previousSession = Self.makeSession(operationSessionID: "previous-session", appUserID: "someone-else")
 
         let result = await self.startCheckout(previousSession: previousSession)
 
         expect(result) == .started(Self.session)
-        expect(self.webBillingAPI.invokedPostHostedCheckoutParameters?.previousOperationSessionID).to(beNil())
+        expect(self.webBillingAPI.invokedPostHostedCheckoutParameters?.previousOperationSessionID)
+            == "previous-session"
     }
 
     func testResumesThePreviousSessionWhenTheBackendHandsItBack() async {
@@ -354,8 +355,7 @@ class HostedCheckoutManagerTests: TestCase {
         expect(result) == .started(Self.session)
     }
 
-    /// Only the session the caller asked about is theirs to carry on with.
-    func testStartsASessionTheBackendCallsResumedWhenItIsNotThePreviousOne() async {
+    func testResumesTheSessionTheBackendHandsBackEvenWhenItIsNotThePreviousOne() async {
         self.webBillingAPI.stubbedPostHostedCheckoutCompletionResult = .success(
             .init(operationSessionID: Self.operationSessionID, outcome: .resumed(Self.page))
         )
@@ -363,7 +363,7 @@ class HostedCheckoutManagerTests: TestCase {
 
         let result = await self.startCheckout(previousSession: previousSession)
 
-        expect(result) == .started(Self.session)
+        expect(result) == .resumed(Self.session)
     }
 
     func testConfirmsThePreviousSessionWhenItAlreadySucceeded() async {
@@ -373,18 +373,28 @@ class HostedCheckoutManagerTests: TestCase {
 
         let result = await self.startCheckout(previousSession: Self.session)
 
-        expect(result) == .completed(Self.session)
+        expect(result) == .completed(Self.session.id)
     }
 
-    /// There is no session to confirm, and no page to present either.
-    func testFailsWhenTheBackendSaysASessionItWasNotAskedAboutSucceeded() async {
+    func testConfirmsTheSessionTheBackendSaysSucceededForTheCustomerItWasAskedFor() async {
+        self.webBillingAPI.stubbedPostHostedCheckoutCompletionResult = .success(
+            .init(operationSessionID: Self.operationSessionID, outcome: .succeeded)
+        )
+        let previousSession = Self.makeSession(operationSessionID: "previous-session", appUserID: "someone-else")
+
+        let result = await self.startCheckout(previousSession: previousSession)
+
+        expect(result) == .completed(Self.session.id)
+    }
+
+    func testConfirmsTheSessionTheBackendSaysSucceededWithoutAPreviousOne() async {
         self.webBillingAPI.stubbedPostHostedCheckoutCompletionResult = .success(
             .init(operationSessionID: Self.operationSessionID, outcome: .succeeded)
         )
 
         let result = await self.startCheckout(previousSession: nil)
 
-        expect(result) == .failed
+        expect(result) == .completed(Self.session.id)
     }
 
     // MARK: - Settling

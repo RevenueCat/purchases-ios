@@ -1965,8 +1965,10 @@ public extension Purchases {
     /// Only to be called when the customer has deliberately asked to buy: it shows Apple's disclosure notice
     /// and mints an external purchase token, which Apple expects a report for.
     ///
-    /// - Parameter previousSession: A session this customer was given before that has not been settled, which
-    /// the backend hands back where they can still carry on with it, so that they cannot pay for it twice.
+    /// - Parameter previousSession: A session given before that has not been settled, even if it was created for
+    /// someone other than whoever is logged in now. The backend decides whether the customer carries on with it,
+    /// so that they cannot pay for it twice. `nil` when there is none: no session was given yet, or the last one
+    /// was settled.
     @_spi(Internal) func startHostedCheckout(
         package: Package,
         paywallEvent: PaywallEvent?,
@@ -1989,10 +1991,10 @@ public extension Purchases {
     /// Paywalls, the only caller, do not run with custom entitlement computation. This still compiles in that
     /// mode, but without the `CustomerInfo` refresh, which the mode does not offer, so it never returns one.
     @_spi(Internal) func pollHostedCheckout(
-        session: HostedCheckoutSession
+        sessionID: HostedCheckoutSessionID
     ) async -> (result: HostedCheckoutPollResult, customerInfo: CustomerInfo?) {
-        let operationSessionID = session.operationSessionID
-        let appUserID = session.appUserID
+        let operationSessionID = sessionID.operationSessionID
+        let appUserID = sessionID.appUserID
         let result = await self.hostedCheckoutManager.pollCheckout(operationSessionID: operationSessionID,
                                                                    appUserID: appUserID)
 
