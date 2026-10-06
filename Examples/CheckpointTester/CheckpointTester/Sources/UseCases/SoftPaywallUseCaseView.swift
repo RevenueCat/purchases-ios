@@ -67,7 +67,8 @@ struct SoftPaywallUseCaseView: View {
         Purchases.shared.checkpoint(
             "soft_paywall",
             customVariables: self.customVariables.checkpointCustomVariables,
-            paywallPresenter: self.model.localPaywallPresenter
+            paywallPresenter: self.model.localPaywallPresenter,
+            errorPresenter: self.model.localErrorPresenter
         ) { result in
             guard let result else {
                 self.status = "No completed flow. Content remains available."

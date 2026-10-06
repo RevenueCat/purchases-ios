@@ -76,7 +76,8 @@ struct HardPaywallUseCaseView: View {
         Purchases.shared.checkpoint(
             "hard_paywall",
             customVariables: self.customVariablesForNextAttempt(),
-            paywallPresenter: self.model.localPaywallPresenter
+            paywallPresenter: self.model.localPaywallPresenter,
+            errorPresenter: self.model.localErrorPresenter
         ) { result in
             let obtained = result?.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted() ?? []
             guard !obtained.isEmpty else {

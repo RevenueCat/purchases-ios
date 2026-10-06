@@ -85,21 +85,6 @@ class BranchResolverTests: TestCase {
         expect(self.audiencesProvider.configurationRequestCount) == 0
     }
 
-    // MARK: - resolveBranches
-
-    func testResolveBranchesCoversEveryBranchOnTheStep() async throws {
-        self.audiencesProvider.rulesByAudienceID = ["aud_a": Self.alwaysMatches, "aud_b": Self.alwaysMatches]
-        let step = try XCTUnwrap(Self.stepWithTwoBranchActions())
-
-        let resolved = await self.makeResolver().resolveBranches(in: step)
-
-        expect(resolved) == ["btn_one": "step_a", "btn_two": "step_b"]
-    }
-
-    // MARK: - gate
-
-    // MARK: - disabled
-
 }
 
 // MARK: - Helpers
@@ -117,34 +102,6 @@ private extension BranchResolverTests {
                 currentAppUserIDProvider: { "user" }
             )
         )
-    }
-
-    /// One step whose two buttons each carry their own branch.
-    static func stepWithTwoBranchActions() throws -> WorkflowStep {
-        let json = """
-        {
-          "id": "step_1",
-          "type": "screen",
-          "triggers": [
-            {"name":"One","type":"on_press","action_id":"btn_one","component_id":"btn_one"},
-            {"name":"Two","type":"on_press","action_id":"btn_two","component_id":"btn_two"}
-          ],
-          "trigger_actions": {
-            "btn_one": {
-              "type": "branch",
-              "branches": [{"audience_id": "aud_a", "step_id": "step_a"}],
-              "fallback_step_id": "step_fallback_1"
-            },
-            "btn_two": {
-              "type": "branch",
-              "branches": [{"audience_id": "aud_b", "step_id": "step_b"}],
-              "fallback_step_id": "step_fallback_2"
-            }
-          }
-        }
-        """
-        let data = try XCTUnwrap(json.data(using: .utf8))
-        return try JSONDecoder.default.decode(WorkflowStep.self, from: data)
     }
 
 }

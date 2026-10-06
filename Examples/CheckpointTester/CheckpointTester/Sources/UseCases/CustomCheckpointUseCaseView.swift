@@ -23,6 +23,7 @@ struct CustomCheckpointUseCaseView: View {
 
     @State private var identifier = ""
     @State private var status: String?
+    @State private var presentationMode: FlowPresentationMode = .default
 
     private var trimmedIdentifier: String {
         return self.identifier.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -35,6 +36,12 @@ struct CustomCheckpointUseCaseView: View {
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
 
+                Picker("Presentation mode", selection: self.$presentationMode) {
+                    ForEach(FlowPresentationMode.testerCases, id: \.self) { mode in
+                        Text(mode.title).tag(mode)
+                    }
+                }
+
                 Button("Hit") {
                     self.hitCheckpoint()
                 }
@@ -43,7 +50,7 @@ struct CustomCheckpointUseCaseView: View {
                 if let status {
                     Text(status)
                 } else {
-                    Text("The callback reports new entitlements after a presented flow completes.")
+                    Text("This presentation mode applies only to this checkpoint invocation.")
                 }
             }
         }
@@ -60,7 +67,9 @@ struct CustomCheckpointUseCaseView: View {
         Purchases.shared.checkpoint(
             identifier,
             customVariables: self.customVariables.checkpointCustomVariables,
-            paywallPresenter: paywallPresenter
+            presentationMode: self.presentationMode,
+            paywallPresenter: paywallPresenter,
+            errorPresenter: self.model.localErrorPresenter
         ) { result in
             Task { @MainActor in
                 self.status = Self.describe(result)
