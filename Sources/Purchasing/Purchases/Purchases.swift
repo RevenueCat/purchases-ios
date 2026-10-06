@@ -300,6 +300,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let eventsManager: EventsManagerType?
     private let remoteConfigManager: RemoteConfigManagerType
     private let sdkSettingsConfigProvider: SDKSettingsConfigProviderType
+    private let subscriberDimensionsConfigProvider: SubscriberDimensionsConfigProviderType
 
     private var _adTracker: Any?
 
@@ -405,6 +406,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let attributionFetcher = AttributionFetcher(attributionFactory: attributionTypeFactory, systemInfo: systemInfo)
         let userDefaults = userDefaults ?? UserDefaults.computeDefault()
         let deviceCache = DeviceCache(systemInfo: systemInfo, userDefaults: userDefaults)
+        let subscriberDimensionsStore = SubscriberDimensionsStore(deviceCache: deviceCache)
 
         let diagnosticsFileHandler: DiagnosticsFileHandlerType? = {
             guard dangerousSettings?.uiPreviewMode != true,
@@ -458,7 +460,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             ),
             diagnosticsTracker: diagnosticsTracker,
             apiSourceProvider: apiSourceProvider,
-            timeoutManager: requestTimeoutManager
+            timeoutManager: requestTimeoutManager,
+            subscriberDimensionsStore: subscriberDimensionsStore
         )
 
         let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable
@@ -627,6 +630,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let checkpointsConfigProvider = CheckpointsConfigProvider(manager: remoteConfigManager)
         let audiencesConfigProvider = AudiencesConfigProvider(manager: remoteConfigManager)
         let sdkSettingsConfigProvider = SDKSettingsConfigProvider(manager: remoteConfigManager)
+        let subscriberDimensionsConfigProvider = SubscriberDimensionsConfigProvider(manager: remoteConfigManager)
 
         let workflowManager = WorkflowManager(
             workflowsConfigProvider: workflowsConfigProvider,
@@ -686,7 +690,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             remoteConfigManager.addConfigLifecycleObservers([
                 checkpointsConfigProvider,
                 audiencesConfigProvider,
-                sdkSettingsConfigProvider
+                sdkSettingsConfigProvider,
+                subscriberDimensionsConfigProvider
             ])
             RulesEngine.setLogger(RulesEngineLoggerBridge())
             let localRulesEvaluator = LocalRulesEvaluator(
@@ -711,8 +716,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                         currentUserProvider: identityManager
                     ),
                     SubscriberDimensionsProvider(
-                        deviceCache: deviceCache,
-                        currentUserProvider: identityManager
+                        store: subscriberDimensionsStore,
+                        currentUserProvider: identityManager,
+                        configProvider: subscriberDimensionsConfigProvider
                     )
                 ],
                 currentAppUserIDProvider: { identityManager.currentAppUserID }
@@ -881,6 +887,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   branchResolver: branchResolver,
                   remoteConfigManager: remoteConfigManager,
                   sdkSettingsConfigProvider: sdkSettingsConfigProvider,
+                  subscriberDimensionsConfigProvider: subscriberDimensionsConfigProvider,
                   offlineEntitlementsManager: offlineEntitlementsManager,
                   purchasesOrchestrator: purchasesOrchestrator,
                   purchasedProductsFetcher: purchasedProductsFetcher,
@@ -922,6 +929,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          branchResolver: BranchResolver = DisabledBranchResolver(),
          remoteConfigManager: RemoteConfigManagerType,
          sdkSettingsConfigProvider: SDKSettingsConfigProviderType,
+         subscriberDimensionsConfigProvider: SubscriberDimensionsConfigProviderType,
          offlineEntitlementsManager: OfflineEntitlementsManager,
          purchasesOrchestrator: PurchasesOrchestrator,
          purchasedProductsFetcher: PurchasedProductsFetcherType?,
@@ -986,6 +994,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             ? remoteConfigManager
             : NoOpRemoteConfigManager()
         self.sdkSettingsConfigProvider = sdkSettingsConfigProvider
+        self.subscriberDimensionsConfigProvider = subscriberDimensionsConfigProvider
         self.offlineEntitlementsManager = offlineEntitlementsManager
         self.purchasesOrchestrator = purchasesOrchestrator
         self.purchasedProductsFetcher = purchasedProductsFetcher
