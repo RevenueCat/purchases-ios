@@ -102,7 +102,7 @@ final class ConfiguredAdRewardsProvider {
 
     private static func decodeDuration(_ rawValue: String) -> AdRewardDuration? {
         guard rawValue.range(
-            of: #"^P(?:[1-9]\d*Y|[1-9]\d*M|[1-9]\d*W|[1-9]\d*D|T(?:[1-9]\d*H|[1-9]\d*M))$"#,
+            of: #"^P(?:[1-9]\d*Y|[1-9]\d*M|[1-9]\d*W|[1-9]\d*D|T(?:[1-9]\d*H|[1-9]\d*M|[1-9]\d*S))$"#,
             options: [.regularExpression, .caseInsensitive]
         ) != nil,
               let duration = ISODurationFormatter.parse(from: rawValue) else {
@@ -115,7 +115,8 @@ final class ConfiguredAdRewardsProvider {
             (duration.weeks, .week),
             (duration.days, .day),
             (duration.hours, .hour),
-            (duration.minutes, .minute)
+            (duration.minutes, .minute),
+            (duration.seconds, .second)
         ]
         guard let component = components.first(where: { $0.0 > 0 }) else { return nil }
         return AdRewardDuration(value: component.0, unit: component.1)
