@@ -117,13 +117,13 @@ enum HostedCheckout {
     /// the customer paid, whatever the backend has seen so far, and another page would let them pay again.
     @MainActor
     private static func confirmingAPageThatSucceeded(_ action: Action, keptCheckout: KeptCheckout?) -> Action {
-        guard case .present = action,
-              let keptCheckout,
-              keptCheckout.viewModel.returnStatus == .success else {
-            return action
+        if case .present = action,
+           let keptCheckout,
+           keptCheckout.viewModel.returnStatus == .success {
+            return .confirm(keptCheckout.session.id, settling: keptCheckout)
         }
 
-        return .confirm(keptCheckout.session.id, settling: keptCheckout)
+        return action
     }
 
     /// A checkout the customer was given on this paywall, kept until it settles or the paywall goes, so that
