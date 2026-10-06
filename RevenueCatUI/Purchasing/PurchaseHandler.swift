@@ -959,7 +959,8 @@ extension PurchaseHandler {
     ///
     /// Closing the checkout does not mean the customer cancelled it: they may have paid moments before. The paywall
     /// still reports a cancelled purchase, as it has no other way to say that no purchase is known. A payment that
-    /// did go through is confirmed and reported as a purchase once the customer taps buy again.
+    /// did go through is confirmed and reported as a purchase once the page reaches its success URL, or the customer
+    /// taps buy again.
     ///
     /// - Parameter package: The package the checkout was started for, when it is still known. Only used to
     /// track the cancellation.
