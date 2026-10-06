@@ -151,6 +151,28 @@ final class WorkflowPresenterTests: TestCase {
         XCTAssertEqual(receivedParams?.flowCanContinue, true)
     }
 
+    func testPurchaseErrorIsRoutedAfterRestoreWithoutNewEntitlements() throws {
+        var receivedParams: ErrorPresentationParams?
+        let customerInfo = try Self.customerInfo(activeEntitlements: ["pro"])
+        let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.purchaseInvalidError.rawValue)
+        let presentation = Self.presentation(
+            initialActiveEntitlementIdentifiers: ["pro"],
+            errorPresentationHandler: { params, _ in receivedParams = params }
+        )
+        let presenter = WorkflowPresenter { _ in true }
+        let controller = PaywallViewController(offering: nil)
+
+        try presenter.startPresentation(presentation)
+        presenter.paywallViewController(controller, didFinishRestoringWith: customerInfo)
+        presenter.paywallViewController(controller, didFailPurchasingWith: error)
+
+        XCTAssertEqual(receivedParams?.error as NSError?, error)
+        XCTAssertEqual(receivedParams?.flowCanContinue, true)
+        guard case .failed? = presenter.presentationDidDismiss() else {
+            return XCTFail("Expected the purchase failure outcome")
+        }
+    }
+
     func testPurchaseCancellationIsNotRoutedToErrorPresenter() throws {
         var presentationCount = 0
         let presentation = Self.presentation(
