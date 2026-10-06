@@ -230,6 +230,12 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         expect(receivedOfferings.all).toNot(beEmpty())
         assertSnapshot(of: receivedOfferings.response, as: .formattedJson)
 
+        let storeProducts = receivedOfferings.all.values.flatMap(\.availablePackages).map(\.storeProduct)
+        expect(storeProducts).toNot(beEmpty())
+        for storeProduct in storeProducts {
+            expect(storeProduct.id) == storeProduct.productIdentifier
+        }
+
         self.logger.verifyMessageWasLogged(Strings.offering.vending_offerings_cache_from_memory,
                                            level: .debug)
         // Verify that offerings from main server have originalSource set to .main
