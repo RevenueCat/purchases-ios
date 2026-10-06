@@ -19,18 +19,27 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct WorkflowPresentationRequest {
 
+    let checkpointIdentifier: String
     let workflow: ResolvedCheckpointWorkflow
     let customVariables: [String: CustomVariableValue]
+    let presentationMode: FlowPresentationMode
     let initialActiveEntitlementIdentifiers: Set<String>?
+    let errorPresentationHandler: ErrorPresentationHandler
 
     init(
+        checkpointIdentifier: String,
         workflow: ResolvedCheckpointWorkflow,
         customVariables: [String: CustomVariableValue],
-        initialActiveEntitlementIdentifiers: Set<String>? = nil
+        presentationMode: FlowPresentationMode,
+        initialActiveEntitlementIdentifiers: Set<String>? = nil,
+        errorPresentationHandler: @escaping ErrorPresentationHandler
     ) {
+        self.checkpointIdentifier = checkpointIdentifier
         self.workflow = workflow
         self.customVariables = customVariables
+        self.presentationMode = presentationMode
         self.initialActiveEntitlementIdentifiers = initialActiveEntitlementIdentifiers
+        self.errorPresentationHandler = errorPresentationHandler
     }
 
 }

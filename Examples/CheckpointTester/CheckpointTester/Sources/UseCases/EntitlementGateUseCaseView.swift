@@ -86,7 +86,8 @@ struct EntitlementGateUseCaseView: View {
             Purchases.shared.checkpoint(
                 "entitlement_gate",
                 customVariables: self.entitlementCheckpointCustomVariables,
-                paywallPresenter: self.model.localPaywallPresenter
+                paywallPresenter: self.model.localPaywallPresenter,
+                errorPresenter: self.model.localErrorPresenter
             ) { result in
                 self.handle(result)
             }

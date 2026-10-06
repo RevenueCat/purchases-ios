@@ -67,6 +67,15 @@ final class WorkflowStepEventTrackerTests: TestCase {
         expect(started.isLastStep) == true
     }
 
+    func testAStepWhoseOnlyExitIsABranchIsNotTerminal() throws {
+        let workflow = try Self.makeBranchExitWorkflow()
+        let step1 = try XCTUnwrap(workflow.steps["step_1"])
+        let step2 = try XCTUnwrap(workflow.steps["step_2"])
+
+        expect(WorkflowStepEventTracker.isTerminalStep(step1)) == false
+        expect(WorkflowStepEventTracker.isTerminalStep(step2)) == true
+    }
+
     func testTrackBackNavigationUsesBackEntryReason() throws {
         let workflow = try Self.makeWorkflow()
         let tracker = self.makeTracker(workflow: workflow)
@@ -96,6 +105,22 @@ final class WorkflowStepEventTrackerTests: TestCase {
         expect(completed.stepId) == "step_2"
         expect(completed.toStepId).to(beNil())
         expect(completed.isLastStep) == true
+    }
+
+    /// `initialStepId` is only the fallback once an `initialTrigger` routes the first screen, so the
+    /// step the workflow actually opened on is the first one, and the fallback is not.
+    func testIsFirstStepFollowsTheStepTheWorkflowOpenedOn() throws {
+        let workflow = try Self.makeWorkflow()
+        let tracker = self.makeTracker(workflow: workflow)
+        let routed = try XCTUnwrap(workflow.steps["step_2"])
+        let fallback = try XCTUnwrap(workflow.steps["step_1"])
+
+        tracker.trackInitialStep(routed)
+        tracker.trackStepCompleted(fallback, toStepId: nil)
+
+        expect(self.recorded).to(haveCount(2))
+        expect(try XCTUnwrap(Self.startedData(self.recorded[0])).isFirstStep) == true
+        expect(try XCTUnwrap(Self.completedData(self.recorded[1])).isFirstStep) == false
     }
 
     // MARK: - Trace id continuity
@@ -282,6 +307,40 @@ private extension WorkflowStepEventTrackerTests {
                 {"name":"Button","type":"on_press","action_id":"btn","component_id":"btn"}
               ],
               "trigger_actions": { "btn": {"type":"step","step_id":"step_2"} }
+            },
+            "step_2": { "id": "step_2", "type": "screen", "triggers": [], "trigger_actions": {} }
+          },
+          "screens": {},
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {}
+          }
+        }
+        """
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        return try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
+    }
+
+    static func makeBranchExitWorkflow() throws -> PublishedWorkflow {
+        let json = """
+        {
+          "id": "wf_test",
+          "display_name": "Test Workflow",
+          "initial_step_id": "step_1",
+          "steps": {
+            "step_1": {
+              "id": "step_1",
+              "type": "screen",
+              "triggers": [
+                {"name":"Button","type":"on_press","action_id":"btn","component_id":"btn"}
+              ],
+              "trigger_actions": {
+                "btn": {
+                  "type": "branch",
+                  "routes": [{"audience_id": "aud_a", "step_id": "step_3"}],
+                  "fallback_step_id": "step_2"
+                }
+              }
             },
             "step_2": { "id": "step_2", "type": "screen", "triggers": [], "trigger_actions": {} }
           },

@@ -111,7 +111,7 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    public func trackRewardedAdPromptShown(_ data: RewardedAdPromptShown) {
+    public func trackRewardedAdPromptShown(_ data: AdRewardPromptShown) {
         Task {
             let event = AdEvent.rewardedAdPromptShown(.init(captureMethod: .manual), data)
             await self.eventsManager?.track(adEvent: event)
@@ -136,7 +136,7 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    public func trackRewardedAdPromptAccepted(_ data: RewardedAdPromptAccepted) {
+    public func trackRewardedAdPromptAccepted(_ data: AdRewardPromptAccepted) {
         Task {
             let event = AdEvent.rewardedAdPromptAccepted(.init(captureMethod: .manual), data)
             await self.eventsManager?.track(adEvent: event)

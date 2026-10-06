@@ -36,6 +36,11 @@ func checkCheckpointAPI(_ purchases: Purchases) {
 
     purchases.checkpoint("test_checkpoint") { (_: FlowResult?) in }
     purchases.checkpoint("test_checkpoint", customVariables: explicitCustomVariables) { _ in }
+    purchases.checkpoint("test_checkpoint", presentationMode: .modalFullScreen) { _ in }
+
+    let _: FlowPresentationMode = .default
+    let _: FlowPresentationMode = .modalFullScreen
+    let _: FlowPresentationMode = .modalSheet
 
     let entitlement: ObtainedEntitlement? = nil
     let _: EntitlementInfo? = entitlement?.entitlementInfo
@@ -54,6 +59,7 @@ private func checkPaywallPresentationAPI(
     let presenter: PaywallPresentationHandler = { params, completion in
         let _: String = params.checkpointIdentifier
         let _: [String: CustomVariableValue] = params.customVariables
+        let _: FlowPresentationMode = params.presentationMode
         let _: Offering = params.offering
         completion(.continued)
     }
@@ -66,6 +72,26 @@ private func checkPaywallPresentationAPI(
 }
 
 @MainActor
+private func checkErrorPresentationAPI(_ purchases: Purchases) {
+    let globalPresenter = CheckpointAPIErrorPresenter()
+    purchases.errorPresenter = globalPresenter
+    let _: ErrorPresenter? = purchases.errorPresenter
+
+    let presenter: ErrorPresentationHandler = { params, completion in
+        let _: String = params.checkpointIdentifier
+        let _: any Error = params.error
+        let _: [String: CustomVariableValue] = params.customVariables
+        let _: Bool = params.flowCanContinue
+        completion.complete(.retry)
+        completion.complete(.continue)
+        completion.complete(.navigateBack)
+    }
+
+    let _: ErrorPresentationHandler = presenter
+    purchases.checkpoint("test_checkpoint", errorPresenter: presenter) { _ in }
+}
+
+@MainActor
 private final class CheckpointAPIPaywallPresenter: PaywallPresenter {
 
     func present(
@@ -73,6 +99,15 @@ private final class CheckpointAPIPaywallPresenter: PaywallPresenter {
         completion: @escaping PaywallPresentationCompletion
     ) {
         completion(.continued)
+    }
+
+}
+
+@MainActor
+private final class CheckpointAPIErrorPresenter: ErrorPresenter {
+
+    func present(params: ErrorPresentationParams, completion: ErrorPresentationCompletion) {
+        completion.complete(.continue)
     }
 
 }

@@ -56,7 +56,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
     }
 
     func testTrackRewardedAdPromptShownStoresEvent() async throws {
-        let promptShownData = RewardedAdPromptShown(
+        let promptShownData = AdRewardPromptShown(
             mediatorName: .appLovin,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123"
@@ -80,7 +80,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
     }
 
     func testTrackRewardedAdPromptAcceptedStoresEvent() async throws {
-        let promptAcceptedData = RewardedAdPromptAccepted(
+        let promptAcceptedData = AdRewardPromptAccepted(
             mediatorName: .appLovin,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123"
@@ -360,11 +360,11 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             impressionId: "impression-123"
         )
 
-        let promptShownData = RewardedAdPromptShown(
+        let promptShownData = AdRewardPromptShown(
             mediatorName: .appLovin,
             adUnitId: "ca-app-pub-123"
         )
-        let promptAcceptedData = RewardedAdPromptAccepted(
+        let promptAcceptedData = AdRewardPromptAccepted(
             mediatorName: .appLovin,
             adUnitId: "ca-app-pub-123"
         )

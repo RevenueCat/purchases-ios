@@ -19,6 +19,11 @@ final class MockDiagnosticsTracker: DiagnosticsTrackerType, Sendable {
 
     let trackedEvents: Atomic<[DiagnosticsEvent]> = .init([])
     let trackedCustomerInfo: Atomic<[CustomerInfo]> = .init([])
+    let collectionDecisions: Atomic<[DiagnosticsCollectionDecision]> = .init([])
+
+    func setCollectionDecision(_ decision: DiagnosticsCollectionDecision) {
+        self.collectionDecisions.modify { $0.append(decision) }
+    }
 
     func track(_ event: DiagnosticsEvent) {
         self.trackedEvents.modify { $0.append(event) }

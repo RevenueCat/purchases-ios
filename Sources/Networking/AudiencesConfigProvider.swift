@@ -25,7 +25,7 @@ struct AudienceConfigurationSnapshot: Equatable, Sendable {
 /// The topic-specific front door for canonical audience configuration.
 ///
 /// All published audience rules live in the immutable `default` blob.
-final class AudiencesConfigProvider: AudiencesConfigProviderType, RemoteConfigStateObserver {
+final class AudiencesConfigProvider: AudiencesConfigProviderType, RemoteConfigLifecycleObserver {
 
     private let manager: RemoteConfigManagerType
     private let cachedConfiguration = GenerationGuardedCache<
@@ -37,9 +37,14 @@ final class AudiencesConfigProvider: AudiencesConfigProviderType, RemoteConfigSt
         self.manager = manager
     }
 
-    func remoteConfigStateDidChange(generation _: Int) {
-        Task { [weak self] in
-            await self?.warm()
+    func remoteConfigEventReceived(_ event: RemoteConfigLifecycleEvent) {
+        switch event {
+        case .observerRegistered, .committed:
+            Task { [weak self] in
+                await self?.warm()
+            }
+        case .refreshFinished:
+            break
         }
     }
 

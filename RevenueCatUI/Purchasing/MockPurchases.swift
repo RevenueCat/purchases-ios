@@ -114,6 +114,23 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
         return await block(package, paywallEvent)
     }
 
+    var hostedCheckoutPollBlock: (@Sendable (HostedCheckoutSession) async -> HostedCheckoutPollResult)?
+
+    /// Like the SDK, returns the `CustomerInfo` only for a product the customer owns, and none when it cannot be
+    /// fetched.
+    func pollHostedCheckout(session: HostedCheckoutSession) async -> (result: HostedCheckoutPollResult,
+                                                                      customerInfo: CustomerInfo?) {
+        guard let block = self.hostedCheckoutPollBlock else { return (.undetermined, nil) }
+
+        let result = await block(session)
+        switch result {
+        case .succeeded, .alreadyPurchased:
+            return (result, try? await self.customerInfo())
+        case .failed, .undetermined:
+            return (result, nil)
+        }
+    }
+
     var useExternalPurchaseCustomLinks = false
     var externalPurchaseLinkBlock: (@Sendable () async -> ExternalPurchaseLinkResult)?
 
@@ -206,6 +223,7 @@ extension PaywallPurchasesType {
         mapped.isUIPreviewMode = self.isUIPreviewMode
         mapped.remoteConfigEnabled = self.remoteConfigEnabled
         mapped.hostedCheckoutBlock = { await self.startHostedCheckout(package: $0, paywallEvent: $1) }
+        mapped.hostedCheckoutPollBlock = { await self.pollHostedCheckout(session: $0).result }
         mapped.useExternalPurchaseCustomLinks = self.useExternalPurchaseCustomLinks
         mapped.externalPurchaseLinkBlock = { await self.prepareExternalPurchaseLink() }
         #if !os(tvOS)
@@ -240,6 +258,7 @@ extension PaywallPurchasesType {
         mapped.isUIPreviewMode = self.isUIPreviewMode
         mapped.remoteConfigEnabled = self.remoteConfigEnabled
         mapped.hostedCheckoutBlock = { await self.startHostedCheckout(package: $0, paywallEvent: $1) }
+        mapped.hostedCheckoutPollBlock = { await self.pollHostedCheckout(session: $0).result }
         mapped.useExternalPurchaseCustomLinks = self.useExternalPurchaseCustomLinks
         mapped.externalPurchaseLinkBlock = { await self.prepareExternalPurchaseLink() }
         #if !os(tvOS)
