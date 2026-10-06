@@ -103,11 +103,11 @@ import Foundation
     public var fallbackOriginalStepId: String? { Self.string(self.metadata?[Self.fallbackOriginalStepIdKey]) }
 
     /// `metadata` first, `param_values` for blobs published before khepri moves them to `metadata`.
-    public var experimentId: String? { self.experimentParam(Self.experimentIdParam) }
+    public var experimentId: String? { self.experimentValueFromMetadataOrParams(Self.experimentIdParam) }
 
-    public var experimentVariant: String? { self.experimentParam(Self.experimentVariantParam) }
+    public var experimentVariant: String? { self.experimentValueFromMetadataOrParams(Self.experimentVariantParam) }
 
-    private func experimentParam(_ key: String) -> String? {
+    private func experimentValueFromMetadataOrParams(_ key: String) -> String? {
         return Self.string(self.metadata?[key]) ?? Self.string(self.paramValues[key])
     }
 
