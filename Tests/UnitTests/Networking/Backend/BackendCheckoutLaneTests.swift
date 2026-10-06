@@ -299,7 +299,8 @@ final class BackendCheckoutLaneParallelTests: TestCase {
             offlineCustomerInfoCreator: nil,
             diagnosticsTracker: nil,
             apiSourceProvider: nil,
-            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .custom(30))
+            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .custom(30)),
+            subscriberDimensionsStore: MockSubscriberDimensionsStore()
         )
 
         let hostedCheckoutPath = HTTPRequest.WebBillingPath.postHostedCheckout.relativePath
@@ -370,7 +371,8 @@ final class BackendCheckoutLaneParallelTests: TestCase {
             offlineCustomerInfoCreator: nil,
             diagnosticsTracker: nil,
             apiSourceProvider: nil,
-            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .custom(30))
+            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .custom(30)),
+            subscriberDimensionsStore: MockSubscriberDimensionsStore()
         )
 
         let offeringsHits: Atomic<Int> = .init(0)

@@ -14,33 +14,47 @@
 
 import Foundation
 
-/// Supplies the latest dimensions delivered alongside the subscriber as root-level rule values.
+enum SubscriberDimensionsProviderError: Error, Equatable, Sendable {
+
+    case configurationUnavailable
+
+}
+
+/// Supplies the fresher config or purchase-response subscriber dimensions as root-level rule values.
 struct SubscriberDimensionsProvider: DimensionProvider {
 
     let name = "subscriber_dimensions"
 
-    private let deviceCache: DeviceCache
+    private let store: any SubscriberDimensionsStoreType
     private let currentUserProvider: any CurrentUserProvider
+    private let configProvider: any SubscriberDimensionsConfigProviderType
 
     init(
-        deviceCache: DeviceCache,
-        currentUserProvider: CurrentUserProvider
+        store: any SubscriberDimensionsStoreType,
+        currentUserProvider: CurrentUserProvider,
+        configProvider: any SubscriberDimensionsConfigProviderType
     ) {
-        self.deviceCache = deviceCache
+        self.store = store
         self.currentUserProvider = currentUserProvider
+        self.configProvider = configProvider
     }
 
-    func dimensions(at _: Date) -> [String: DimensionValue] {
-        do {
-            guard let data = self.deviceCache.cachedSubscriberDimensionsData(
-                appUserID: self.currentUserProvider.currentAppUserID
-            ) else { return [:] }
-            let values = try JSONDecoder.default.decode([String: AnyDecodable].self, from: data)
+    func dimensions(at _: Date) async throws -> [String: DimensionValue] {
+        let appUserID = self.currentUserProvider.currentAppUserID
+        let stored = self.store.dimensions(appUserID: appUserID)
+        let configResolution = try await self.configProvider.dimensions()
 
-            return values.compactMapValues(\AnyDecodable.dimensionValue)
-        } catch {
-            Logger.warn(Strings.localRules.subscriberDimensionsUnavailable(error))
-            return [:]
+        switch configResolution {
+        case .resolved(let configured):
+            guard let stored, configured.asOf > stored.asOf else {
+                return stored?.values ?? configured.values
+            }
+            self.store.discard(appUserID: appUserID, ifNotNewerThan: stored.asOf)
+            return configured.values
+        case .notConfigured:
+            return stored?.values ?? [:]
+        case .unavailable:
+            throw SubscriberDimensionsProviderError.configurationUnavailable
         }
     }
 

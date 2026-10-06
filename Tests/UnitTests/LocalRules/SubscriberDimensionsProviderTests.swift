@@ -25,8 +25,8 @@ import Testing
 struct SubscriberDimensionsProviderTests {
 
     @Test
-    func everySupportedValueShapeIsKept() {
-        let dimensions = Self.provider(#"""
+    func everySupportedValueShapeIsKept() async throws {
+        let dimensions = try await Self.provider(#"""
             {
                 "plan": "annual",
                 "beta": true,
@@ -54,8 +54,8 @@ struct SubscriberDimensionsProviderTests {
     }
 
     @Test
-    func explicitNullValuesAreKeptWithoutDroppingOthers() {
-        let dimensions = Self.provider(
+    func explicitNullValuesAreKeptWithoutDroppingOthers() async throws {
+        let dimensions = try await Self.provider(
             #"{"gone":null,"codes":[1,2],"plan":"annual"}"#
         ).dimensions(at: Date())
 
@@ -64,8 +64,8 @@ struct SubscriberDimensionsProviderTests {
     }
 
     @Test
-    func explicitNullValuesAreKeptInsideObjects() {
-        let dimensions = Self.provider(
+    func explicitNullValuesAreKeptInsideObjects() async throws {
+        let dimensions = try await Self.provider(
             #"{"profile":{"nickname":null,"tier":"gold"},"plan":"annual"}"#
         ).dimensions(at: Date())
 
@@ -79,62 +79,175 @@ struct SubscriberDimensionsProviderTests {
     }
 
     @Test(arguments: ["not json", #"["an","array"]"#, #""a string""#, "42"])
-    func nonObjectCacheContributesNothing(_ json: String) {
-        #expect(Self.provider(json).dimensions(at: Date()).isEmpty)
+    func nonObjectCacheContributesNothing(_ json: String) async throws {
+        #expect(try await Self.provider(json).dimensions(at: Date()).isEmpty)
     }
 
     @Test
-    func missingCacheContributesNothing() {
+    func missingCacheContributesNothing() async throws {
         let provider = Self.providerWithoutCache()
 
-        #expect(provider.dimensions(at: Date()).isEmpty)
+        #expect(try await provider.dimensions(at: Date()).isEmpty)
     }
 
     @Test
-    func cacheIsReadForEveryEvaluation() {
+    func cacheIsReadForEveryEvaluation() async throws {
         let deviceCache = MockDeviceCache()
         let currentUserProvider = MockCurrentUserProvider(mockAppUserID: "test")
         let provider = SubscriberDimensionsProvider(
-            deviceCache: deviceCache,
-            currentUserProvider: currentUserProvider
+            store: SubscriberDimensionsStore(deviceCache: deviceCache),
+            currentUserProvider: currentUserProvider,
+            configProvider: TestSubscriberDimensionsConfigProvider(.notConfigured)
         )
         deviceCache.cache(
             subscriberDimensions: Data(#"{"plan":"annual"}"#.utf8),
+            asOf: Date(timeIntervalSince1970: 100),
             appUserID: "test"
         )
 
-        #expect(provider.dimensions(at: Date())["plan"] == .string("annual"))
+        #expect(try await provider.dimensions(at: Date())["plan"] == .string("annual"))
 
         deviceCache.cache(
             subscriberDimensions: Data(#"{"plan":"monthly"}"#.utf8),
+            asOf: Date(timeIntervalSince1970: 200),
             appUserID: "test"
         )
 
-        #expect(provider.dimensions(at: Date())["plan"] == .string("monthly"))
+        #expect(try await provider.dimensions(at: Date())["plan"] == .string("monthly"))
     }
 
     @Test
-    func productionProviderReadsDimensionsForCurrentIdentityOnEveryEvaluation() {
+    func productionProviderReadsDimensionsForCurrentIdentityOnEveryEvaluation() async throws {
         let deviceCache = MockDeviceCache()
         let currentUserProvider = MockCurrentUserProvider(mockAppUserID: "user-a")
         deviceCache.cache(
             subscriberDimensions: Data(#"{"plan":"annual"}"#.utf8),
+            asOf: Date(timeIntervalSince1970: 100),
             appUserID: "user-a"
         )
         deviceCache.cache(
             subscriberDimensions: Data(#"{"plan":"monthly"}"#.utf8),
+            asOf: Date(timeIntervalSince1970: 100),
             appUserID: "user-b"
         )
         let provider = SubscriberDimensionsProvider(
-            deviceCache: deviceCache,
-            currentUserProvider: currentUserProvider
+            store: SubscriberDimensionsStore(deviceCache: deviceCache),
+            currentUserProvider: currentUserProvider,
+            configProvider: TestSubscriberDimensionsConfigProvider(.notConfigured)
         )
 
-        #expect(provider.dimensions(at: Date())["plan"] == .string("annual"))
+        #expect(try await provider.dimensions(at: Date())["plan"] == .string("annual"))
 
         currentUserProvider.mockAppUserID = "user-b"
 
-        #expect(provider.dimensions(at: Date())["plan"] == .string("monthly"))
+        #expect(try await provider.dimensions(at: Date())["plan"] == .string("monthly"))
+    }
+
+    @Test
+    func configuredDimensionsWinWhenTheyAreNewer() async throws {
+        let deviceCache = MockDeviceCache()
+        let cachedAsOf = Date(timeIntervalSince1970: 100)
+        let configured = SubscriberDimensions(
+            values: ["country": .string("NL")],
+            asOf: Date(timeIntervalSince1970: 200)
+        )
+        let provider = Self.provider(
+            #"{"country":"US"}"#,
+            asOf: cachedAsOf,
+            configResolution: .resolved(configured),
+            deviceCache: deviceCache
+        )
+
+        #expect(try await provider.dimensions(at: Date()) == configured.values)
+        #expect(deviceCache.cachedSubscriberDimensions(appUserID: "test") == nil)
+    }
+
+    @Test
+    func purchaseDimensionsWinWhenTheyAreNewer() async throws {
+        let provider = Self.provider(
+            #"{"country":"NL"}"#,
+            asOf: Date(timeIntervalSince1970: 200),
+            configResolution: .resolved(.init(
+                values: ["country": .string("US")],
+                asOf: Date(timeIntervalSince1970: 100)
+            ))
+        )
+
+        #expect(try await provider.dimensions(at: Date()) == ["country": .string("NL")])
+    }
+
+    @Test
+    func persistedPurchaseDimensionsBeatOlderConfigAfterRelaunch() async throws {
+        let userDefaults = MockUserDefaults()
+        let systemInfo = MockSystemInfo(finishTransactions: false)
+        let appUserID = "test"
+        let initialDeviceCache = DeviceCache(systemInfo: systemInfo, userDefaults: userDefaults)
+        initialDeviceCache.cache(
+            subscriberDimensions: Data(#"{"country":"NL"}"#.utf8),
+            asOf: Date(timeIntervalSince1970: 200),
+            appUserID: appUserID
+        )
+
+        let relaunchedDeviceCache = DeviceCache(systemInfo: systemInfo, userDefaults: userDefaults)
+        let provider = SubscriberDimensionsProvider(
+            store: SubscriberDimensionsStore(deviceCache: relaunchedDeviceCache),
+            currentUserProvider: MockCurrentUserProvider(mockAppUserID: appUserID),
+            configProvider: TestSubscriberDimensionsConfigProvider(.resolved(.init(
+                values: ["country": .string("US")],
+                asOf: Date(timeIntervalSince1970: 100)
+            )))
+        )
+
+        #expect(try await provider.dimensions(at: Date()) == ["country": .string("NL")])
+    }
+
+    @Test
+    func purchaseDimensionsWinWhenTimestampsAreEqual() async throws {
+        let asOf = Date(timeIntervalSince1970: 100)
+        let provider = Self.provider(
+            #"{"country":"US"}"#,
+            asOf: asOf,
+            configResolution: .resolved(.init(values: ["country": .string("NL")], asOf: asOf))
+        )
+
+        #expect(try await provider.dimensions(at: Date()) == ["country": .string("US")])
+    }
+
+    @Test
+    func notConfiguredUsesPurchaseSubscriberDimensions() async throws {
+        let provider = Self.provider(
+            #"{"country":"NL"}"#,
+            asOf: Date(timeIntervalSince1970: 100),
+            configResolution: .notConfigured
+        )
+
+        #expect(try await provider.dimensions(at: Date()) == ["country": .string("NL")])
+    }
+
+    @Test
+    func unavailableConfigurationFailsDimensionResolution() async {
+        let provider = Self.provider(
+            #"{"country":"NL"}"#,
+            asOf: Date(timeIntervalSince1970: 100),
+            configResolution: .unavailable
+        )
+
+        await #expect(throws: SubscriberDimensionsProviderError.configurationUnavailable) {
+            try await provider.dimensions(at: Date())
+        }
+    }
+
+    @Test
+    func configurationErrorsArePropagated() async {
+        let provider = SubscriberDimensionsProvider(
+            store: SubscriberDimensionsStore(deviceCache: MockDeviceCache()),
+            currentUserProvider: MockCurrentUserProvider(mockAppUserID: "test"),
+            configProvider: ThrowingConfigProvider()
+        )
+
+        await #expect(throws: TestConfigError.failure) {
+            try await provider.dimensions(at: Date())
+        }
     }
 
     @Test
@@ -178,25 +291,67 @@ struct SubscriberDimensionsProviderTests {
         }
     }
 
-    private static func provider(_ json: String) -> SubscriberDimensionsProvider {
-        let deviceCache = MockDeviceCache()
+    private static func provider(
+        _ json: String,
+        asOf: Date = Date(timeIntervalSince1970: 100),
+        configResolution: SubscriberDimensionsResolution = .notConfigured,
+        deviceCache: MockDeviceCache = MockDeviceCache()
+    ) -> SubscriberDimensionsProvider {
         let currentUserProvider = MockCurrentUserProvider(mockAppUserID: "test")
         deviceCache.cache(
             subscriberDimensions: Data(json.utf8),
+            asOf: asOf,
             appUserID: "test"
         )
         return SubscriberDimensionsProvider(
-            deviceCache: deviceCache,
-            currentUserProvider: currentUserProvider
+            store: SubscriberDimensionsStore(deviceCache: deviceCache),
+            currentUserProvider: currentUserProvider,
+            configProvider: TestSubscriberDimensionsConfigProvider(configResolution)
         )
     }
 
     private static func providerWithoutCache() -> SubscriberDimensionsProvider {
         return SubscriberDimensionsProvider(
-            deviceCache: MockDeviceCache(),
-            currentUserProvider: MockCurrentUserProvider(mockAppUserID: "test")
+            store: SubscriberDimensionsStore(deviceCache: MockDeviceCache()),
+            currentUserProvider: MockCurrentUserProvider(mockAppUserID: "test"),
+            configProvider: TestSubscriberDimensionsConfigProvider(.notConfigured)
         )
     }
+
+}
+
+private final class TestSubscriberDimensionsConfigProvider: SubscriberDimensionsConfigProviderType,
+                                                              @unchecked Sendable {
+
+    private let resolution: SubscriberDimensionsResolution
+
+    init(_ resolution: SubscriberDimensionsResolution) {
+        self.resolution = resolution
+    }
+
+    func dimensions() async throws -> SubscriberDimensionsResolution {
+        return self.resolution
+    }
+
+    func cachedDimensions() -> SubscriberDimensionsResolution? {
+        return self.resolution
+    }
+
+    func remoteConfigEventReceived(_ event: RemoteConfigLifecycleEvent) {}
+
+}
+
+private enum TestConfigError: Error {
+
+    case failure
+
+}
+
+private final class ThrowingConfigProvider: SubscriberDimensionsConfigProviderType, @unchecked Sendable {
+
+    func dimensions() async throws -> SubscriberDimensionsResolution { throw TestConfigError.failure }
+    func cachedDimensions() -> SubscriberDimensionsResolution? { return nil }
+    func remoteConfigEventReceived(_ event: RemoteConfigLifecycleEvent) {}
 
 }
 

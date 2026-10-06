@@ -239,23 +239,25 @@ class DeviceCacheTests: TestCase {
 
     func testSubscriberDimensionsAreCachedPerAppUserID() {
         let data = Data(#"{"plan":"annual"}"#.utf8)
+        let asOf = Date(timeIntervalSince1970: 123)
 
-        self.deviceCache.cache(subscriberDimensions: data, appUserID: "cesar")
+        self.deviceCache.cache(subscriberDimensions: data, asOf: asOf, appUserID: "cesar")
 
-        expect(self.deviceCache.cachedSubscriberDimensionsData(appUserID: "cesar")) == data
-        expect(self.deviceCache.cachedSubscriberDimensionsData(appUserID: "other")).to(beNil())
+        expect(self.deviceCache.cachedSubscriberDimensions(appUserID: "cesar")) == .init(data: data, asOf: asOf)
+        expect(self.deviceCache.cachedSubscriberDimensions(appUserID: "other")).to(beNil())
     }
 
     func testClearCachesRemovesSubscriberDimensionsForOldAppUserID() {
         let appUserID = "cesar"
         self.deviceCache.cache(
             subscriberDimensions: Data(#"{"plan":"annual"}"#.utf8),
+            asOf: Date(timeIntervalSince1970: 123),
             appUserID: appUserID
         )
 
         self.deviceCache.clearCaches(oldAppUserID: appUserID, andSaveWithNewUserID: "newUser")
 
-        expect(self.deviceCache.cachedSubscriberDimensionsData(appUserID: appUserID)).to(beNil())
+        expect(self.deviceCache.cachedSubscriberDimensions(appUserID: appUserID)).to(beNil())
     }
 
     func testOfferingsAreProperlyCached() throws {

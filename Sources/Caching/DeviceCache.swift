@@ -185,15 +185,31 @@ class DeviceCache {
 
     // MARK: - Subscriber dimensions
 
-    func cachedSubscriberDimensionsData(appUserID: String) -> Data? {
-        return self.userDefaults.read {
-            $0.data(forKey: CacheKey.subscriberDimensions(appUserID))
+    func cachedSubscriberDimensions(appUserID: String) -> CachedSubscriberDimensions? {
+        return self.userDefaults.read { defaults -> CachedSubscriberDimensions? in
+            guard let data = defaults.data(forKey: CacheKey.subscriberDimensions(appUserID)) else { return nil }
+
+            return try? JSONDecoder.default.decode(CachedSubscriberDimensions.self, jsonData: data)
         }
     }
 
-    func cache(subscriberDimensions: Data, appUserID: String) {
+    func cache(subscriberDimensions: Data, asOf: Date, appUserID: String) {
+        guard let data = try? JSONEncoder.default.encode(
+            value: CachedSubscriberDimensions(data: subscriberDimensions, asOf: asOf)
+        ) else { return }
+
         self.userDefaults.write {
-            $0.set(subscriberDimensions, forKey: CacheKey.subscriberDimensions(appUserID))
+            $0.set(data, forKey: CacheKey.subscriberDimensions(appUserID))
+        }
+    }
+
+    func clearSubscriberDimensions(appUserID: String, ifNotNewerThan supersededAt: Date) {
+        self.userDefaults.write { defaults in
+            guard let data = defaults.data(forKey: CacheKey.subscriberDimensions(appUserID)),
+                  let cached = try? JSONDecoder.default.decode(CachedSubscriberDimensions.self, jsonData: data),
+                  cached.asOf <= supersededAt else { return }
+
+            defaults.removeObject(forKey: CacheKey.subscriberDimensions(appUserID))
         }
     }
 
@@ -605,6 +621,13 @@ class DeviceCache {
         }
 
     }
+
+}
+
+struct CachedSubscriberDimensions: Codable, Equatable, Sendable {
+
+    let data: Data
+    let asOf: Date
 
 }
 
