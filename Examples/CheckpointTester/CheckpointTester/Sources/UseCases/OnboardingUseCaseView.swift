@@ -116,9 +116,9 @@ struct OnboardingUseCaseView: View {
         self.step = .done
     }
 
-    private var personalizationCheckpointCustomVariables: [String: CustomVariableValue] {
+    private var personalizationCheckpointCustomVariables: [String: Any?] {
         var customVariables = self.customVariables.checkpointCustomVariables
-        customVariables["step"] = .string("personalize")
+        customVariables["step"] = "personalize"
         return customVariables
     }
 

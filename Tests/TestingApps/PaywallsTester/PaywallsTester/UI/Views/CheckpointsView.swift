@@ -36,12 +36,12 @@ struct CheckpointsView: View {
         return self.identifier.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    private var customVariables: [String: CustomVariableValue] {
-        var result: [String: CustomVariableValue] = [:]
+    private var customVariables: [String: Any?] {
+        var result: [String: Any?] = [:]
         for variable in self.variables {
             let key = variable.name.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !key.isEmpty else { continue }
-            result[key] = .string(variable.value)
+            result[key] = variable.value
         }
         return result
     }

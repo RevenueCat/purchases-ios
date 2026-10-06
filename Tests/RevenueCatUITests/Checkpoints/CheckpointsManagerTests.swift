@@ -23,11 +23,15 @@ import XCTest
 final class CheckpointsManagerTests: TestCase {
 
     func testCheckpointCallParamsConvertCustomVariableValuesForCoreResolution() {
+        let string = "value"
+        let integer = 42
+        let double = 4.5
+        let boolean = true
         let params = CheckpointCallParams(customVariables: [
-            "string": "value",
-            "integer": 42,
-            "double": 4.5,
-            "boolean": true
+            "string": string,
+            "integer": integer,
+            "double": double,
+            "boolean": boolean
         ])
 
         let expected: [String: RevenueCat.CheckpointValue] = [
@@ -38,6 +42,64 @@ final class CheckpointsManagerTests: TestCase {
         ]
 
         XCTAssertEqual(params.coreParams.customVariables, expected)
+    }
+
+    func testCheckpointCallParamsConvertSupportedNumericTypes() {
+        let params = CheckpointCallParams(customVariables: [
+            "int": Int(8),
+            "int64": Int64(9),
+            "float": Float(1.5),
+            "double": Double(2.5)
+        ])
+
+        XCTAssertEqual(params.customVariables, [
+            "int": .number(8),
+            "int64": .number(9),
+            "float": .number(1.5),
+            "double": .number(2.5)
+        ])
+    }
+
+    func testCheckpointCallParamsPreserveCustomVariableValues() {
+        let customVariables: [String: CustomVariableValue] = [
+            "string": .string("value"),
+            "number": .number(4.5),
+            "boolean": .bool(true)
+        ]
+
+        XCTAssertEqual(
+            CheckpointCallParams(customVariables: customVariables).customVariables,
+            customVariables
+        )
+    }
+
+    func testCheckpointCallParamsDropAndLogUnsupportedCustomVariableValues() {
+        let date = Date(timeIntervalSince1970: 0)
+        let params = CheckpointCallParams(customVariables: [
+            "valid": "value",
+            "date": date,
+            "int8": Int8(8),
+            "uint": UInt(9),
+            "null": nil
+        ])
+
+        XCTAssertEqual(params.customVariables, ["valid": "value"])
+        self.logger.verifyMessageWasLogged(
+            CheckpointCustomVariableParser.invalidValueLogMessage(key: "date", value: date),
+            level: .warn
+        )
+        self.logger.verifyMessageWasLogged(
+            CheckpointCustomVariableParser.invalidValueLogMessage(key: "null", value: nil),
+            level: .warn
+        )
+        self.logger.verifyMessageWasLogged(
+            CheckpointCustomVariableParser.invalidValueLogMessage(key: "int8", value: Int8(8)),
+            level: .warn
+        )
+        self.logger.verifyMessageWasLogged(
+            CheckpointCustomVariableParser.invalidValueLogMessage(key: "uint", value: UInt(9)),
+            level: .warn
+        )
     }
 
     func testCheckpointCallParamsDropInvalidCustomVariableKeys() {

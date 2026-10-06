@@ -22,13 +22,13 @@ final class CustomVariables: ObservableObject {
         CustomVariable(name: "source", value: "CheckpointTester"),
     ]
 
-    var checkpointCustomVariables: [String: CustomVariableValue] {
-        var customVariables: [String: CustomVariableValue] = [:]
+    var checkpointCustomVariables: [String: Any?] {
+        var customVariables: [String: Any?] = [:]
 
         for variable in self.variables {
             let name = variable.name.trimmingCharacters(in: .whitespacesAndNewlines)
             if !name.isEmpty {
-                customVariables[name] = .string(variable.value)
+                customVariables[name] = variable.value
             }
         }
 

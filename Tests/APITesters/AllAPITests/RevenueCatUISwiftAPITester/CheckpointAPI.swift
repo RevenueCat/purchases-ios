@@ -28,6 +28,15 @@ func checkCheckpointAPI(_ purchases: Purchases) {
         "score": .number(4.5),
         "subscriber": .bool(true)
     ]
+    let name = "Rick"
+    let points = 120
+    let variableCustomVariables: [String: Any?] = [
+        "name": name,
+        "points": points,
+        "score": 4.5,
+        "subscriber": true,
+        "missing": nil
+    ]
 
     purchases.checkpoint(
         "test_checkpoint",
@@ -36,6 +45,11 @@ func checkCheckpointAPI(_ purchases: Purchases) {
 
     purchases.checkpoint("test_checkpoint") { (_: FlowResult?) in }
     purchases.checkpoint("test_checkpoint", customVariables: explicitCustomVariables) { _ in }
+    purchases.checkpoint("test_checkpoint", customVariables: variableCustomVariables) { _ in }
+    purchases.checkpoint(
+        "test_checkpoint",
+        customVariables: ["name": name, "points": points]
+    ) { _ in }
     purchases.checkpoint("test_checkpoint", presentationMode: .modalFullScreen) { _ in }
 
     let _: FlowPresentationMode = .default

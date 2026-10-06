@@ -110,9 +110,9 @@ struct EntitlementGateUseCaseView: View {
             : "Obtained: \(obtained.joined(separator: ", "))."
     }
 
-    private var entitlementCheckpointCustomVariables: [String: CustomVariableValue] {
+    private var entitlementCheckpointCustomVariables: [String: Any?] {
         var customVariables = self.customVariables.checkpointCustomVariables
-        customVariables["gate"] = .string("entitlement")
+        customVariables["gate"] = "entitlement"
         return customVariables
     }
 

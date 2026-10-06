@@ -93,11 +93,11 @@ struct HardPaywallUseCaseView: View {
     }
 
     @MainActor
-    private func customVariablesForNextAttempt() -> [String: CustomVariableValue] {
+    private func customVariablesForNextAttempt() -> [String: Any?] {
         self.attempts += 1
         var customVariables = self.customVariables.checkpointCustomVariables
-        customVariables["gate"] = .string("hard")
-        customVariables["attempt"] = .number(Double(self.attempts))
+        customVariables["gate"] = "hard"
+        customVariables["attempt"] = self.attempts
         return customVariables
     }
 
