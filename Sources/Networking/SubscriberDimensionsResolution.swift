@@ -13,7 +13,7 @@ import Foundation
 /// dimensions from the configuration it received.
 enum SubscriberDimensionsResolution: Equatable, Sendable {
 
-    case found(SubscriberDimensions)
+    case resolved(SubscriberDimensions)
     case notConfigured
     case unavailable
 

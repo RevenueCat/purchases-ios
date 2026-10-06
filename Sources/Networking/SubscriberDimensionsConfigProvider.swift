@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol SubscriberDimensionsConfigProviderType: AnyObject, RemoteConfigLifecycleObserver {
+protocol SubscriberDimensionsConfigProviderType: AnyObject, RemoteConfigLifecycleObserver, Sendable {
 
     func dimensions() async throws -> SubscriberDimensionsResolution
     func cachedDimensions() -> SubscriberDimensionsResolution?
@@ -79,7 +79,7 @@ final class SubscriberDimensionsConfigProvider: SubscriberDimensionsConfigProvid
         do {
             let data = try JSONEncoder.default.encode(item.content)
             let dimensions = try JSONDecoder.default.decode(SubscriberDimensions.self, from: data)
-            return .found(dimensions)
+            return .resolved(dimensions)
         } catch {
             Logger.warn(Strings.localRules.subscriberDimensionsUnavailable(error))
             return .unavailable

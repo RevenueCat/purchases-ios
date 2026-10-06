@@ -406,6 +406,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let attributionFetcher = AttributionFetcher(attributionFactory: attributionTypeFactory, systemInfo: systemInfo)
         let userDefaults = userDefaults ?? UserDefaults.computeDefault()
         let deviceCache = DeviceCache(systemInfo: systemInfo, userDefaults: userDefaults)
+        let subscriberDimensionsStore = SubscriberDimensionsStore(deviceCache: deviceCache)
 
         let diagnosticsFileHandler: DiagnosticsFileHandlerType? = {
             guard dangerousSettings?.uiPreviewMode != true,
@@ -459,7 +460,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             ),
             diagnosticsTracker: diagnosticsTracker,
             apiSourceProvider: apiSourceProvider,
-            timeoutManager: requestTimeoutManager
+            timeoutManager: requestTimeoutManager,
+            subscriberDimensionsStore: subscriberDimensionsStore
         )
 
         let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable
@@ -714,8 +716,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                         currentUserProvider: identityManager
                     ),
                     SubscriberDimensionsProvider(
-                        deviceCache: deviceCache,
-                        currentUserProvider: identityManager
+                        store: subscriberDimensionsStore,
+                        currentUserProvider: identityManager,
+                        configProvider: subscriberDimensionsConfigProvider
                     )
                 ],
                 currentAppUserIDProvider: { identityManager.currentAppUserID }

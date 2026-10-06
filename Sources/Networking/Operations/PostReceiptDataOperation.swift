@@ -21,12 +21,14 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
     private let configuration: AppUserConfiguration
     private let customerInfoResponseHandler: CustomerInfoResponseHandler
     private let customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>
+    private let subscriberDimensionsStore: SubscriberDimensionsStoreType
 
     static func createFactory(
         configuration: UserSpecificConfiguration,
         postData: PostData,
         customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>,
-        offlineCustomerInfoCreator: OfflineCustomerInfoCreator?
+        offlineCustomerInfoCreator: OfflineCustomerInfoCreator?,
+        subscriberDimensionsStore: SubscriberDimensionsStoreType
     ) -> CacheableNetworkOperationFactory<PostReceiptDataOperation> {
         return Self.createFactory(
             configuration: configuration,
@@ -36,7 +38,8 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
                 userID: configuration.appUserID,
                 failIfInvalidSubscriptionKeyDetectedInDebug: true
             ),
-            customerInfoCallbackCache: customerInfoCallbackCache
+            customerInfoCallbackCache: customerInfoCallbackCache,
+            subscriberDimensionsStore: subscriberDimensionsStore
         )
     }
 
@@ -44,7 +47,8 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         configuration: UserSpecificConfiguration,
         postData: PostData,
         customerInfoResponseHandler: CustomerInfoResponseHandler,
-        customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>
+        customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>,
+        subscriberDimensionsStore: SubscriberDimensionsStoreType
     ) -> CacheableNetworkOperationFactory<PostReceiptDataOperation> {
         /// Cache key comprises of the following:
         /// - `appUserID`
@@ -72,6 +76,7 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
                         postData: postData,
                         customerInfoResponseHandler: customerInfoResponseHandler,
                         customerInfoCallbackCache: customerInfoCallbackCache,
+                        subscriberDimensionsStore: subscriberDimensionsStore,
                         cacheKey: cacheKey
                     )
             },
@@ -84,12 +89,14 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         postData: PostData,
         customerInfoResponseHandler: CustomerInfoResponseHandler,
         customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>,
+        subscriberDimensionsStore: SubscriberDimensionsStoreType,
         cacheKey: String
     ) {
         self.customerInfoResponseHandler = customerInfoResponseHandler
         self.customerInfoCallbackCache = customerInfoCallbackCache
         self.postData = postData
         self.configuration = configuration
+        self.subscriberDimensionsStore = subscriberDimensionsStore
 
         super.init(configuration: configuration, cacheKey: cacheKey)
     }
@@ -108,6 +115,12 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         self.httpClient.perform(
             request
         ) { (response: VerifiedHTTPResponse<CustomerInfoResponseHandler.Response>.Result) in
+            if case let .success(response) = response {
+                self.subscriberDimensionsStore.store(
+                    response.body.customerInfo,
+                    appUserID: self.configuration.appUserID
+                )
+            }
             self.customerInfoResponseHandler.handle(customerInfoResponse: response) { result in
                 self.customerInfoCallbackCache.performOnAllItemsAndRemoveFromCache(
                     withCacheable: self

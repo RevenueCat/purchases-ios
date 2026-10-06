@@ -11,7 +11,7 @@ import Foundation
 struct SubscriberDimensions: Equatable, Sendable {
 
     let values: [String: DimensionValue]
-    let asOf: Date
+    let asOf: UInt64
 
 }
 
@@ -20,11 +20,9 @@ extension SubscriberDimensions: Decodable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let rawDimensions = try container.decode([String: AnyDecodable].self, forKey: .dimensions)
-        let milliseconds = try container.decode(UInt64.self, forKey: .asOf)
-
         self.init(
             values: rawDimensions.compactMapValues(\.dimensionValue),
-            asOf: Date(millisecondsSince1970: milliseconds)
+            asOf: try container.decode(UInt64.self, forKey: .asOf)
         )
     }
 

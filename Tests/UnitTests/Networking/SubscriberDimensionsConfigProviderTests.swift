@@ -52,7 +52,7 @@ final class SubscriberDimensionsConfigProviderTests: TestCase {
 
         await self.provider.warm()
 
-        expect(self.provider.cachedDimensions()) == .found(Self.spain)
+        expect(self.provider.cachedDimensions()) == .resolved(Self.spain)
     }
 
     func testWarmCachesUnavailableWhenTheDefaultItemIsMissing() async {
@@ -88,7 +88,7 @@ final class SubscriberDimensionsConfigProviderTests: TestCase {
 
         let dimensions = try await self.provider.dimensions()
 
-        expect(dimensions) == .found(Self.spain)
+        expect(dimensions) == .resolved(Self.spain)
         expect(self.manager.invokedTopicCount) == 0
     }
 
@@ -97,7 +97,7 @@ final class SubscriberDimensionsConfigProviderTests: TestCase {
 
         let dimensions = try await self.provider.dimensions()
 
-        expect(dimensions) == .found(Self.spain)
+        expect(dimensions) == .resolved(Self.spain)
         expect(self.manager.invokedTopicCount) == 1
     }
 
@@ -156,7 +156,7 @@ final class SubscriberDimensionsConfigProviderTests: TestCase {
 
         self.provider.remoteConfigEventReceived(.observerRegistered(generation: self.manager.configGeneration))
 
-        await expect(self.provider.cachedDimensions()).toEventually(equal(.found(Self.spain)))
+        await expect(self.provider.cachedDimensions()).toEventually(equal(.resolved(Self.spain)))
     }
 
     private static var spainTopic: RemoteConfiguration.ConfigTopic {
@@ -170,7 +170,7 @@ final class SubscriberDimensionsConfigProviderTests: TestCase {
 
     private static let spain = SubscriberDimensions(
         values: ["country": .string("ES")],
-        asOf: Date(millisecondsSince1970: 100)
+        asOf: 100
     )
 
     private static func item(_ json: String) throws -> RemoteConfiguration.ConfigItem {
