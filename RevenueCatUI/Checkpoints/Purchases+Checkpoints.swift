@@ -67,14 +67,13 @@ public extension Purchases {
         errorPresenter: ErrorPresentationHandler? = nil,
         _ onPassed: @escaping (FlowResult?) -> Void
     ) {
-        self.performCheckpoint(
-            identifier,
+        let params = CheckpointCallParams(
             customVariables: customVariables,
             presentationMode: presentationMode,
             paywallPresenter: paywallPresenter,
-            errorPresenter: errorPresenter,
-            onPassed: onPassed
+            errorPresenter: errorPresenter
         )
+        self.performCheckpoint(identifier, params: params, onPassed: onPassed)
     }
 
 }
@@ -84,21 +83,13 @@ private extension Purchases {
 
     func performCheckpoint(
         _ identifier: String,
-        customVariables: [String: CustomVariableValue],
-        presentationMode: FlowPresentationMode,
-        paywallPresenter: PaywallPresentationHandler?,
-        errorPresenter: ErrorPresentationHandler?,
+        params: CheckpointCallParams,
         onPassed: @escaping (FlowResult?) -> Void
     ) {
         Task { @MainActor in
             switch await self.checkpointsManager.checkpointForCallback(
                 identifier: identifier,
-                params: .init(
-                    customVariables: customVariables,
-                    presentationMode: presentationMode,
-                    paywallPresenter: paywallPresenter,
-                    errorPresenter: errorPresenter
-                )
+                params: params
             ) {
             case let .completed(result): onPassed(result)
             case .suppressed: break
