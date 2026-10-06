@@ -21,26 +21,19 @@ import SwiftUI
 
 struct CheckpointsView: View {
 
-    @AppStorage("PaywallsTester.recentCheckpointIdentifiers")
-    private var recentIdentifiersJSON = "[]"
-
     @FocusState private var isIdentifierFocused: Bool
     @State private var identifier = ""
+    @State private var recentIdentifiers: [String]
     @State private var variables = [CheckpointVariable()]
     @State private var result: CheckpointResult?
     @State private var isSubscriberAttributeEditorPresented = false
 
-    private var trimmedIdentifier: String {
-        return self.identifier.trimmingCharacters(in: .whitespacesAndNewlines)
+    init() {
+        self._recentIdentifiers = .init(initialValue: RecentCheckpointIdentifiers.load())
     }
 
-    private var recentIdentifiers: [String] {
-        guard let data = self.recentIdentifiersJSON.data(using: .utf8),
-              let identifiers = try? JSONDecoder().decode([String].self, from: data) else {
-            return []
-        }
-
-        return identifiers
+    private var trimmedIdentifier: String {
+        return self.identifier.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private var customVariables: [String: CustomVariableValue] {
@@ -175,13 +168,27 @@ struct CheckpointsView: View {
     }
 
     private func recordRecentIdentifier(_ identifier: String) {
-        let identifiers = [identifier] + self.recentIdentifiers.filter { $0 != identifier }
-        guard let data = try? JSONEncoder().encode(Array(identifiers.prefix(5))),
-              let json = String(data: data, encoding: .utf8) else {
-            return
-        }
+        self.recentIdentifiers = RecentCheckpointIdentifiers.record(
+            identifier,
+            currentIdentifiers: self.recentIdentifiers
+        )
+    }
 
-        self.recentIdentifiersJSON = json
+}
+
+private enum RecentCheckpointIdentifiers {
+
+    private static let userDefaultsKey = "PaywallsTester.recentCheckpointIdentifiers"
+
+    static func load() -> [String] {
+        return UserDefaults.standard.stringArray(forKey: Self.userDefaultsKey) ?? []
+    }
+
+    static func record(_ identifier: String, currentIdentifiers: [String]) -> [String] {
+        let identifiers = [identifier] + currentIdentifiers.filter { $0 != identifier }
+        let recentIdentifiers = Array(identifiers.prefix(5))
+        UserDefaults.standard.set(recentIdentifiers, forKey: Self.userDefaultsKey)
+        return recentIdentifiers
     }
 
 }
