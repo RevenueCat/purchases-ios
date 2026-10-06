@@ -583,6 +583,60 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 0
     }
 
+    #if ENABLE_CONFIGURED_AD_REWARDS
+
+    func testConfigItemReturnsCommittedItemWithoutRefreshing() async {
+        let item = RemoteConfiguration.ConfigItem(content: ["reward": ["type": "future_reward"]])
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.ad_rewards:etag1",
+            topics: .init(entries: ["ad_rewards": ["ad-unit": item]])
+        )
+
+        let result = await self.manager.configItem(for: .adRewards, itemKey: "ad-unit")
+
+        expect(result) == item
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 0
+    }
+
+    func testConfigItemMissTriggersOneForegroundRefresh() async throws {
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.ad_rewards:etag1",
+            topics: .init(entries: ["ad_rewards": ["another-unit": .init()]])
+        )
+        self.diskCache.writeHandler = { configuration in
+            self.diskCache.stubbedRead = configuration
+            return true
+        }
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.ad_rewards:etag2",
+          "active_topics": ["ad_rewards"],
+          "topics": {
+            "ad_rewards": {
+              "ad-unit": {
+                "reward": { "type": "virtual_currency", "code": "coins", "amount": 10 }
+              }
+            }
+          }
+        }
+        """
+
+        let task = Task {
+            await self.manager.configItem(for: .adRewards, itemKey: "ad-unit")
+        }
+        await self.waitForRemoteConfigRequestCount(1)
+        self.remoteConfigAPI.complete(
+            with: .success(.test(container: try Self.container(config: response)))
+        )
+
+        let item = await task.value
+        expect(item?.content["reward"]).toNot(beNil())
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+    }
+
+    #endif
+
     func testCommittedTopicAfterInFlightRefreshReturnsLatestTopic() async throws {
         self.diskCache.stubbedRead = Self.persisted(
             manifest: "v1.1710000100.sources:etag1",

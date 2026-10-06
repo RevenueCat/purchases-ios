@@ -19,6 +19,9 @@ enum RemoteConfigTopic: String {
     case checkpointRules = "checkpoint_rules"
     case audiences
     case sdkSettings = "sdk_settings"
+    #if ENABLE_CONFIGURED_AD_REWARDS
+    case adRewards = "ad_rewards"
+    #endif
 
     var wireName: String {
         return self.rawValue

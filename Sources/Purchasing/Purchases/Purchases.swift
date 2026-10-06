@@ -2060,14 +2060,16 @@ extension Purchases {
     /// Returns the rewards currently configured for a rewarded ad unit.
     ///
     /// The result contains the primary configured reward and any additional rewards that are configured
-    /// to be granted alongside it. Returns `nil` if the ad unit has no configured rewards.
+    /// to be granted alongside it. Returns `nil` if the ad unit has no configured rewards or its current
+    /// configuration cannot be loaded.
     ///
     /// - Parameter adUnitId: The ad network's rewarded ad unit identifier.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     public func adRewards(
         forAdUnitId adUnitId: String
     ) async -> ConfiguredAdRewards? {
-        return nil
+        return await ConfiguredAdRewardsProvider(manager: self.remoteConfigManager)
+            .rewards(forAdUnitId: adUnitId)
     }
 
     #endif
