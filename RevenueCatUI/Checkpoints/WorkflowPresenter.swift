@@ -12,6 +12,8 @@
 //  Created by Rick van der Linden.
 //
 
+// swiftlint:disable file_length
+
 import Foundation
 @_spi(Internal) import RevenueCat
 
@@ -31,36 +33,52 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
 
     enum PresentationUpdate {
         case outcome(CheckpointPresentationOutcome)
+        case recoverableErrorHandled
         case workflowPresentationError(NSError)
         case dismissalReason(WorkflowDismissalReason)
     }
 
     private struct PresentationState {
+        let checkpointIdentifier: String
+        let customVariables: [String: CustomVariableValue]
+        let errorPresentationHandler: ErrorPresentationHandler
         let initialActiveEntitlementIdentifiers: Set<String>?
         var outcome: CheckpointPresentationOutcome = .completed(customerInfo: nil)
         var hasReportedOutcome = false
         var dismissalReason: WorkflowDismissalReason = .close
 
-        mutating func record(_ update: PresentationUpdate) {
+        mutating func record(_ update: PresentationUpdate) -> Bool {
             switch update {
             case let .outcome(outcome):
-                guard !self.outcome.hasCustomerInfo || outcome.hasCustomerInfo else { return }
+                guard !self.outcome.hasCustomerInfo || outcome.hasCustomerInfo else { return false }
                 self.outcome = outcome
                 self.hasReportedOutcome = true
+            case .recoverableErrorHandled:
+                guard case .failed = self.outcome else { return false }
+                self.outcome = .completed(customerInfo: nil)
+                self.hasReportedOutcome = false
             case let .workflowPresentationError(error):
-                guard !self.hasReportedOutcome else { return }
+                guard !self.hasReportedOutcome else { return false }
                 Logger.error(error.localizedDescription)
                 self.outcome = .failed
                 self.hasReportedOutcome = true
             case let .dismissalReason(reason):
                 self.dismissalReason = reason
             }
+            return true
         }
+    }
+
+    private struct ActiveErrorPresentation {
+        let id: UUID
+        let flowCanContinue: Bool
     }
 
     private let presentationStarter: PresentationStarter?
     private var presentationState: PresentationState?
     private var pendingContinuation: Continuation?
+    private weak var presentedViewController: PaywallViewController?
+    private var activeErrorPresentation: ActiveErrorPresentation?
 
     init(presentationStarter: PresentationStarter? = nil) {
         self.presentationStarter = presentationStarter
@@ -88,6 +106,9 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
             throw CheckpointError.operationAlreadyInProgress
         }
         self.presentationState = PresentationState(
+            checkpointIdentifier: presentation.checkpointIdentifier,
+            customVariables: presentation.customVariables,
+            errorPresentationHandler: presentation.errorPresentationHandler,
             initialActiveEntitlementIdentifiers: presentation.initialActiveEntitlementIdentifiers
         )
 
@@ -101,12 +122,69 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
             }
         } catch {
             self.presentationState = nil
+            self.presentedViewController = nil
             throw error
         }
     }
 
-    func stage(_ update: PresentationUpdate) {
-        self.presentationState?.record(update)
+    @discardableResult
+    func stage(_ update: PresentationUpdate) -> Bool {
+        return self.presentationState?.record(update) == true
+    }
+
+    private func presentError(
+        _ error: any Error,
+        flowCanContinue: Bool,
+        controller: PaywallViewController? = nil
+    ) {
+        guard let state = self.presentationState else { return }
+        if flowCanContinue, self.activeErrorPresentation?.flowCanContinue == false {
+            return
+        }
+        let presentation = ActiveErrorPresentation(id: UUID(), flowCanContinue: flowCanContinue)
+        self.activeErrorPresentation = presentation
+        let controller = controller ?? self.presentedViewController
+        state.errorPresentationHandler(
+            .init(
+                checkpointIdentifier: state.checkpointIdentifier,
+                error: error,
+                customVariables: state.customVariables,
+                flowCanContinue: flowCanContinue
+            ),
+            .init { [weak self, weak controller] result in
+                self?.handleErrorPresentationResult(
+                    result,
+                    flowCanContinue: flowCanContinue,
+                    presentationID: presentation.id,
+                    controller: controller
+                )
+            }
+        )
+    }
+
+    private func handleErrorPresentationResult(
+        _ result: ErrorPresentationCompletion.Result,
+        flowCanContinue: Bool,
+        presentationID: UUID,
+        controller: PaywallViewController?
+    ) {
+        guard self.activeErrorPresentation?.id == presentationID,
+              self.presentationState != nil else { return }
+        self.activeErrorPresentation = nil
+
+        switch result.action {
+        case .retry where flowCanContinue:
+            self.stage(.recoverableErrorHandled)
+        case .retry, .continue:
+            self.stage(.outcome(.completed(customerInfo: nil)))
+            controller?.continueAfterCheckpointError()
+        case .navigateBack where flowCanContinue:
+            self.stage(.recoverableErrorHandled)
+            controller?.navigateBackAfterCheckpointError(flowCanContinue: true)
+        case .navigateBack:
+            self.stage(.outcome(.completed(customerInfo: nil)))
+            controller?.navigateBackAfterCheckpointError(flowCanContinue: flowCanContinue)
+        }
     }
 
     @discardableResult
@@ -142,6 +220,8 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
 
     private func takePresentationState() -> PresentationState? {
         defer { self.presentationState = nil }
+        self.activeErrorPresentation = nil
+        self.presentedViewController = nil
         return self.presentationState
     }
 
@@ -190,9 +270,11 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
             workflowContext: workflowContext,
             displayCloseButton: true,
             workflowPresentationErrorHandler: { [weak self] error in
-                self?.stage(.workflowPresentationError(error))
+                guard let self, self.stage(.workflowPresentationError(error)) else { return }
+                self.presentError(error, flowCanContinue: false)
             }
         )
+        self.presentedViewController = viewController
         viewController.disableExitOffers()
         viewController.customVariables = presentation.customVariables
         return viewController
@@ -212,6 +294,7 @@ extension WorkflowPresenter {
         transaction: StoreTransaction?
     ) {
         MainActor.assumeIsolated {
+            self.activeErrorPresentation = nil
             self.stage(.outcome(.completed(customerInfo: customerInfo)))
         }
     }
@@ -221,6 +304,7 @@ extension WorkflowPresenter {
         didFinishRestoringWith customerInfo: CustomerInfo
     ) {
         MainActor.assumeIsolated {
+            self.activeErrorPresentation = nil
             self.didCompleteRestore(customerInfo: customerInfo)
         }
     }
@@ -230,8 +314,10 @@ extension WorkflowPresenter {
         didFailPurchasingWith error: NSError
     ) {
         MainActor.assumeIsolated {
+            guard !error.isPurchaseCancellation else { return }
             Logger.error(error.localizedDescription)
-            self.stage(.outcome(.failed))
+            guard self.stage(.outcome(.failed)) else { return }
+            self.presentError(error, flowCanContinue: true, controller: controller)
         }
     }
 
@@ -241,12 +327,14 @@ extension WorkflowPresenter {
     ) {
         MainActor.assumeIsolated {
             Logger.error(error.localizedDescription)
-            self.stage(.outcome(.failed))
+            guard self.stage(.outcome(.failed)) else { return }
+            self.presentError(error, flowCanContinue: true, controller: controller)
         }
     }
 
     nonisolated func paywallViewControllerDidOpenWebCheckout(_ controller: PaywallViewController) {
         MainActor.assumeIsolated {
+            self.activeErrorPresentation = nil
             self.stage(.outcome(.completed(customerInfo: nil)))
         }
     }
@@ -263,6 +351,7 @@ extension WorkflowPresenter {
         didFinishPurchasingWith customerInfo: CustomerInfo,
         transaction: StoreTransaction?
     ) {
+        self.activeErrorPresentation = nil
         self.stage(.outcome(.completed(customerInfo: customerInfo)))
     }
 
@@ -270,6 +359,7 @@ extension WorkflowPresenter {
         _ controller: PaywallViewController,
         didFinishRestoringWith customerInfo: CustomerInfo
     ) {
+        self.activeErrorPresentation = nil
         self.didCompleteRestore(customerInfo: customerInfo)
     }
 
@@ -277,8 +367,10 @@ extension WorkflowPresenter {
         _ controller: PaywallViewController,
         didFailPurchasingWith error: NSError
     ) {
+        guard !error.isPurchaseCancellation else { return }
         Logger.error(error.localizedDescription)
-        self.stage(.outcome(.failed))
+        guard self.stage(.outcome(.failed)) else { return }
+        self.presentError(error, flowCanContinue: true, controller: controller)
     }
 
     func paywallViewController(
@@ -286,10 +378,12 @@ extension WorkflowPresenter {
         didFailRestoringWith error: NSError
     ) {
         Logger.error(error.localizedDescription)
-        self.stage(.outcome(.failed))
+        guard self.stage(.outcome(.failed)) else { return }
+        self.presentError(error, flowCanContinue: true, controller: controller)
     }
 
     func paywallViewControllerDidOpenWebCheckout(_ controller: PaywallViewController) {
+        self.activeErrorPresentation = nil
         self.stage(.outcome(.completed(customerInfo: nil)))
     }
 

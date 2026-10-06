@@ -32,6 +32,18 @@ public extension Purchases {
         set { self.checkpointsManager.setPaywallPresenter(newValue) }
     }
 
+    /// The custom presenter used for errors in RevenueCat-presented checkpoint flows.
+    ///
+    /// This presenter is used when the individual
+    /// ``checkpoint(_:customVariables:paywallPresenter:errorPresenter:_:)`` call does not provide an `errorPresenter`
+    /// closure. A closure passed to a checkpoint call overrides this presenter for that call. When neither is set,
+    /// the SDK handles error presentation by default.
+    @MainActor
+    var errorPresenter: ErrorPresenter? {
+        get { return self.checkpointsManager.errorPresenter }
+        set { self.checkpointsManager.setErrorPresenter(newValue) }
+    }
+
     /// Passes a checkpoint and calls `onPassed` after a matching flow finishes.
     ///
     /// The callback receives `nil` when the checkpoint has no matching flow or the flow cannot complete. If the user
@@ -44,21 +56,24 @@ public extension Purchases {
     ///   - presentationMode: How the SDK presents a matching workflow or its own paywall. Defaults to a sheet.
     ///   - paywallPresenter: A custom presenter used if this checkpoint selects an offering. This overrides the global
     ///     ``paywallPresenter`` for this call.
+    ///   - errorPresenter: A custom presenter used for errors in this checkpoint's RevenueCat-presented flow. This
+    ///     overrides the global ``errorPresenter`` for this call.
     ///   - onPassed: Called on the main actor when the checkpoint completes.
     func checkpoint(
         _ identifier: String,
         customVariables: [String: CustomVariableValue] = [:],
         presentationMode: FlowPresentationMode = .default,
         paywallPresenter: PaywallPresentationHandler? = nil,
+        errorPresenter: ErrorPresentationHandler? = nil,
         _ onPassed: @escaping (FlowResult?) -> Void
     ) {
-        self.performCheckpoint(
-            identifier,
+        let params = CheckpointCallParams(
             customVariables: customVariables,
             presentationMode: presentationMode,
             paywallPresenter: paywallPresenter,
-            onPassed: onPassed
+            errorPresenter: errorPresenter
         )
+        self.performCheckpoint(identifier, params: params, onPassed: onPassed)
     }
 
 }
@@ -68,19 +83,13 @@ private extension Purchases {
 
     func performCheckpoint(
         _ identifier: String,
-        customVariables: [String: CustomVariableValue],
-        presentationMode: FlowPresentationMode,
-        paywallPresenter: PaywallPresentationHandler?,
+        params: CheckpointCallParams,
         onPassed: @escaping (FlowResult?) -> Void
     ) {
         Task { @MainActor in
             switch await self.checkpointsManager.checkpointForCallback(
                 identifier: identifier,
-                params: .init(
-                    customVariables: customVariables,
-                    presentationMode: presentationMode,
-                    paywallPresenter: paywallPresenter
-                )
+                params: params
             ) {
             case let .completed(result): onPassed(result)
             case .suppressed: break

@@ -12,6 +12,8 @@
 //  Created by Rick van der Linden.
 //
 
+// swiftlint:disable file_length
+
 import Foundation
 @_spi(Internal) import RevenueCat
 
@@ -184,9 +186,7 @@ import UIKit
 final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewControllerDelegate {
 
     private let cachedCustomerInfoProvider: CheckpointsManager.CachedCustomerInfoProvider
-    private var completion: PaywallPresentationCompletion?
-    private var initialActiveEntitlementIdentifiers: Set<String>?
-    private var didPurchaseOrRestoreAccess = false
+    private var session: PresentationSession?
 
     init(
         cachedCustomerInfoProvider: @escaping CheckpointsManager.CachedCustomerInfoProvider = { nil }
@@ -202,16 +202,21 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
             completion(.closed)
             return
         }
-        guard self.completion == nil else {
+        guard self.session == nil else {
             completion(.closed)
             return
         }
 
-        self.prepareForPresentation()
-        let controller = makeDefaultCheckpointPaywallViewController(params: params)
+        self.prepareForPresentation(params: params, completion: completion)
+        let controller = makeDefaultCheckpointPaywallViewController(
+            params: params,
+            workflowPresentationErrorHandler: { [weak self] error in
+                self?.presentError(error, flowCanContinue: false)
+            }
+        )
+        self.session?.presentedViewController = controller
         controller.delegate = self
         controller.modalPresentationStyle = params.presentationMode.modalPresentationStyle
-        self.completion = completion
         presentationContext.present(controller, animated: true)
         if controller.presentingViewController == nil {
             self.completeAsClosed()
@@ -219,42 +224,112 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
     }
 
     private func finish(_ controller: PaywallViewController) {
-        guard let completion = self.takeCompletion() else { return }
-        completion(self.presentationResult(dismissalReason: controller.workflowDismissalReason))
+        guard let session = self.takeSession() else { return }
+        session.completion(Self.presentationResult(
+            didPurchaseOrRestoreAccess: session.didPurchaseOrRestoreAccess,
+            dismissalReason: controller.workflowDismissalReason
+        ))
     }
 
     func presentationResult(dismissalReason: WorkflowDismissalReason) -> PaywallPresentationResult {
-        guard !self.didPurchaseOrRestoreAccess else { return .continued }
-        return dismissalReason == .navigatedBack ? .navigatedBack : .closed
+        return Self.presentationResult(
+            didPurchaseOrRestoreAccess: self.session?.didPurchaseOrRestoreAccess == true,
+            dismissalReason: dismissalReason
+        )
     }
 
-    func prepareForPresentation() {
-        self.initialActiveEntitlementIdentifiers = self.cachedCustomerInfoProvider().map { customerInfo in
-            Set(customerInfo.entitlements.active.keys)
+    func prepareForPresentation(
+        params: PaywallPresentationParams,
+        completion: @escaping PaywallPresentationCompletion = { _ in }
+    ) {
+        self.session = PresentationSession(
+            params: params,
+            completion: completion,
+            initialActiveEntitlementIdentifiers: self.cachedCustomerInfoProvider().map { customerInfo in
+                Set(customerInfo.entitlements.active.keys)
+            }
+        )
+    }
+
+    private func presentError(
+        _ error: any Error,
+        flowCanContinue: Bool,
+        controller: PaywallViewController? = nil
+    ) {
+        guard let session = self.session,
+              let handler = session.params.errorPresentationHandler else { return }
+        let presentationID = UUID()
+        session.activeErrorPresentationID = presentationID
+        let controller = controller ?? session.presentedViewController
+
+        handler(
+            .init(
+                checkpointIdentifier: session.params.checkpointIdentifier,
+                error: error,
+                customVariables: session.params.customVariables,
+                flowCanContinue: flowCanContinue
+            ),
+            .init { [weak self, weak controller] result in
+                self?.handleErrorPresentationResult(
+                    result,
+                    flowCanContinue: flowCanContinue,
+                    presentationID: presentationID,
+                    controller: controller
+                )
+            }
+        )
+    }
+
+    private func handleErrorPresentationResult(
+        _ result: ErrorPresentationCompletion.Result,
+        flowCanContinue: Bool,
+        presentationID: UUID,
+        controller: PaywallViewController?
+    ) {
+        guard let session = self.session,
+              session.activeErrorPresentationID == presentationID else { return }
+        session.activeErrorPresentationID = nil
+
+        switch result.action {
+        case .retry where flowCanContinue:
+            break
+        case .retry, .continue:
+            controller?.continueAfterCheckpointError()
+        case .navigateBack:
+            controller?.navigateBackAfterCheckpointError(flowCanContinue: flowCanContinue)
         }
-        self.didPurchaseOrRestoreAccess = false
     }
 
     private func didCompleteRestore(
         controller: PaywallViewController,
         customerInfo: CustomerInfo
     ) {
+        guard let session = self.session else { return }
         guard customerInfo.grantsNewEntitlements(
-            comparedTo: self.initialActiveEntitlementIdentifiers
+            comparedTo: session.initialActiveEntitlementIdentifiers
         ) else { return }
 
-        self.didPurchaseOrRestoreAccess = true
+        session.activeErrorPresentationID = nil
+        session.didPurchaseOrRestoreAccess = true
         controller.dismiss(animated: true)
     }
 
     private func completeAsClosed() {
-        guard let completion = self.takeCompletion() else { return }
-        completion(.closed)
+        guard let session = self.takeSession() else { return }
+        session.completion(.closed)
     }
 
-    private func takeCompletion() -> PaywallPresentationCompletion? {
-        defer { self.completion = nil }
-        return self.completion
+    private func takeSession() -> PresentationSession? {
+        defer { self.session = nil }
+        return self.session
+    }
+
+    private static func presentationResult(
+        didPurchaseOrRestoreAccess: Bool,
+        dismissalReason: WorkflowDismissalReason
+    ) -> PaywallPresentationResult {
+        guard !didPurchaseOrRestoreAccess else { return .continued }
+        return dismissalReason == .navigatedBack ? .navigatedBack : .closed
     }
 
     #if compiler(>=5.9)
@@ -263,7 +338,10 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         didFinishPurchasingWith customerInfo: CustomerInfo,
         transaction: StoreTransaction?
     ) {
-        MainActor.assumeIsolated { self.didPurchaseOrRestoreAccess = true }
+        MainActor.assumeIsolated {
+            self.session?.activeErrorPresentationID = nil
+            self.session?.didPurchaseOrRestoreAccess = true
+        }
     }
 
     nonisolated func paywallViewController(
@@ -278,13 +356,33 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
     nonisolated func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {
         MainActor.assumeIsolated { self.finish(controller) }
     }
+
+    nonisolated func paywallViewController(
+        _ controller: PaywallViewController,
+        didFailPurchasingWith error: NSError
+    ) {
+        MainActor.assumeIsolated {
+            guard !error.isPurchaseCancellation else { return }
+            self.presentError(error, flowCanContinue: true, controller: controller)
+        }
+    }
+
+    nonisolated func paywallViewController(
+        _ controller: PaywallViewController,
+        didFailRestoringWith error: NSError
+    ) {
+        MainActor.assumeIsolated {
+            self.presentError(error, flowCanContinue: true, controller: controller)
+        }
+    }
     #else
     func paywallViewController(
         _ controller: PaywallViewController,
         didFinishPurchasingWith customerInfo: CustomerInfo,
         transaction: StoreTransaction?
     ) {
-        self.didPurchaseOrRestoreAccess = true
+        self.session?.activeErrorPresentationID = nil
+        self.session?.didPurchaseOrRestoreAccess = true
     }
 
     func paywallViewController(
@@ -297,14 +395,55 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
     func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {
         self.finish(controller)
     }
+
+    func paywallViewController(
+        _ controller: PaywallViewController,
+        didFailPurchasingWith error: NSError
+    ) {
+        guard !error.isPurchaseCancellation else { return }
+        self.presentError(error, flowCanContinue: true, controller: controller)
+    }
+
+    func paywallViewController(
+        _ controller: PaywallViewController,
+        didFailRestoringWith error: NSError
+    ) {
+        self.presentError(error, flowCanContinue: true, controller: controller)
+    }
     #endif
+
+    private final class PresentationSession {
+        let params: PaywallPresentationParams
+        let completion: PaywallPresentationCompletion
+        let initialActiveEntitlementIdentifiers: Set<String>?
+        weak var presentedViewController: PaywallViewController?
+        var activeErrorPresentationID: UUID?
+        var didPurchaseOrRestoreAccess = false
+
+        init(
+            params: PaywallPresentationParams,
+            completion: @escaping PaywallPresentationCompletion,
+            initialActiveEntitlementIdentifiers: Set<String>?
+        ) {
+            self.params = params
+            self.completion = completion
+            self.initialActiveEntitlementIdentifiers = initialActiveEntitlementIdentifiers
+        }
+    }
 
 }
 
 @MainActor
 @available(iOS 15.0, macOS 12.0, *)
-func makeDefaultCheckpointPaywallViewController(params: PaywallPresentationParams) -> PaywallViewController {
-    let controller = PaywallViewController(offering: params.offering, displayCloseButton: true)
+func makeDefaultCheckpointPaywallViewController(
+    params: PaywallPresentationParams,
+    workflowPresentationErrorHandler: ((NSError) -> Void)? = nil
+) -> PaywallViewController {
+    let controller = PaywallViewController(
+        checkpointOffering: params.offering,
+        displayCloseButton: true,
+        workflowPresentationErrorHandler: workflowPresentationErrorHandler
+    )
     controller.disableExitOffers()
     controller.customVariables = params.customVariables
     return controller

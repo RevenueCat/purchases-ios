@@ -79,6 +79,9 @@ public struct PaywallPresentationParams {
     /// The offering for which to present the paywall.
     public let offering: Offering
 
+    /// The handler used to present errors from this paywall's checkpoint flow.
+    let errorPresentationHandler: ErrorPresentationHandler?
+
     /// Creates presentation context for an offering selected by a checkpoint.
     ///
     /// - Parameters:
@@ -89,12 +92,14 @@ public struct PaywallPresentationParams {
         checkpointIdentifier: String,
         customVariables: [String: CustomVariableValue] = [:],
         presentationMode: FlowPresentationMode = .modalSheet,
-        offering: Offering
+        offering: Offering,
+        errorPresentationHandler: ErrorPresentationHandler? = nil
     ) {
         self.checkpointIdentifier = checkpointIdentifier
         self.customVariables = customVariables
         self.presentationMode = presentationMode
         self.offering = offering
+        self.errorPresentationHandler = errorPresentationHandler
     }
 
 }

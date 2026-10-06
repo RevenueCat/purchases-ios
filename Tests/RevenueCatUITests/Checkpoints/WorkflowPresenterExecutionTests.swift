@@ -125,9 +125,11 @@ final class WorkflowPresenterExecutionTests: TestCase {
         customVariables: [String: CustomVariableValue] = [:]
     ) -> WorkflowPresentationRequest {
         return WorkflowPresentationRequest(
+            checkpointIdentifier: "test_checkpoint",
             workflow: self.workflow(),
             customVariables: customVariables,
-            presentationMode: .modalSheet
+            presentationMode: .modalSheet,
+            errorPresentationHandler: { _, completion in completion.complete(.continue) }
         )
     }
 
