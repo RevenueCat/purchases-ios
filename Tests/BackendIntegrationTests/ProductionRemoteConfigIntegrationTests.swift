@@ -144,10 +144,7 @@ private extension BaseProductionRemoteConfigIntegrationTests {
             apiSourceProvider: nil,
             timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .default),
             subscriberDimensionsStore: SubscriberDimensionsStore(
-                deviceCache: DeviceCache(
-                    systemInfo: systemInfo,
-                    userDefaults: UserDefaults(suiteName: UUID().uuidString)!
-                )
+                deviceCache: DeviceCache(systemInfo: systemInfo, userDefaults: .standard)
             )
         )
 
