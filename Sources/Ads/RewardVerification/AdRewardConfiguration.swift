@@ -131,6 +131,9 @@ public struct AdRewardDuration: Sendable, Equatable {
         /// The raw string representation of this unit.
         public let rawValue: String
 
+        /// A duration expressed in seconds.
+        public static let second = Unit(rawValue: "second")
+
         /// A duration expressed in minutes.
         public static let minute = Unit(rawValue: "minute")
 
