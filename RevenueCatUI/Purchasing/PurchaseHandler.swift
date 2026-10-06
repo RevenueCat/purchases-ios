@@ -51,6 +51,13 @@ final class PurchaseHandler: ObservableObject {
     /// The checkout this paywall's customer was last given and has not settled. Released with the paywall
     /// session, so a customer who comes back later starts afresh.
     var keptHostedCheckout: HostedCheckout.KeptCheckout?
+
+    /// What the paywall is telling the customer about a hosted checkout, until they acknowledge it.
+    ///
+    /// Held here rather than by the button that started the checkout, which may be gone by the time a checkout
+    /// the customer closed is confirmed.
+    @Published
+    fileprivate(set) var hostedCheckoutResolutionToShow: HostedCheckout.Resolution?
     #endif
 
     /// Where responsibility for completing purchases lies
@@ -299,6 +306,7 @@ final class PurchaseHandler: ObservableObject {
         self.activePaywallSessionID = nil
         #if os(iOS) && canImport(WebKit)
         self.keptHostedCheckout = nil
+        self.hostedCheckoutResolutionToShow = nil
         #endif
     }
 
@@ -943,6 +951,26 @@ extension PurchaseHandler {
     }
 
     // MARK: - Hosted checkout
+
+    #if os(iOS) && canImport(WebKit)
+    /// Has the paywall tell the customer how a hosted checkout settled, or why it did not open.
+    @MainActor
+    func showHostedCheckoutResolution(_ resolution: HostedCheckout.Resolution) {
+        self.hostedCheckoutResolutionToShow = resolution
+    }
+
+    /// Called once the customer has acknowledged what the paywall told them about a hosted checkout. A purchase
+    /// is only reported now, since reporting it can close the paywall.
+    @MainActor
+    func acknowledgeHostedCheckoutResolution() {
+        let resolution = self.hostedCheckoutResolutionToShow
+        self.hostedCheckoutResolutionToShow = nil
+
+        if case let .purchased(customerInfo) = resolution {
+            self.handleHostedCheckoutPurchase(customerInfo: customerInfo)
+        }
+    }
+    #endif
 
     /// Reports a checkout the backend confirmed the customer completed on a page presented inside the app, once
     /// the customer has been told the purchase went through.

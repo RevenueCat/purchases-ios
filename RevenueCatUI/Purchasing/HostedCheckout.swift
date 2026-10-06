@@ -253,9 +253,8 @@ enum HostedCheckout {
     /// A purchase the backend confirms but the paywall cannot report, for lack of the `CustomerInfo` showing it,
     /// settles as unconfirmed: as far as the app can tell, it is still processing.
     ///
-    /// A purchase is left for the caller to report with
-    /// ``PurchaseHandler/handleHostedCheckoutPurchase(customerInfo:)`` once the customer has been told about it,
-    /// since reporting it can close the paywall.
+    /// The paywall tells the customer how the checkout settled. A purchase is reported once they acknowledge it,
+    /// with ``PurchaseHandler/acknowledgeHostedCheckoutResolution()``, since reporting it can close the paywall.
     ///
     /// A checkout already being confirmed, or already settled, is not confirmed again: the confirmation that settles
     /// it is the one that tells the customer.
@@ -291,6 +290,7 @@ enum HostedCheckout {
                     Self.settle(checkout, purchaseHandler: purchaseHandler)
                 }
 
+                purchaseHandler.showHostedCheckoutResolution(resolution)
                 return resolution
             }
         }
