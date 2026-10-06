@@ -48,6 +48,7 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
 
     func testSupportsEachDurationUnitWithoutNormalization() async throws {
         let cases: [(String, Int, AdRewardDuration.Unit)] = [
+            ("PT30S", 30, .second),
             ("PT60M", 60, .minute),
             ("PT2H", 2, .hour),
             ("P3D", 3, .day),
@@ -75,7 +76,7 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         self.stub(content: [
             "reward": ["type": "future_reward"],
             "more_rewards": [
-                ["type": "entitlement", "identifier": "premium", "duration": "PT30S"],
+                ["type": "entitlement", "identifier": "premium", "duration": "PT0S"],
                 ["type": "virtual_currency", "code": "coins", "amount": 0]
             ]
         ])
