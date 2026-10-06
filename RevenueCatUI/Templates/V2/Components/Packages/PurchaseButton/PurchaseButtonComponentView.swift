@@ -322,6 +322,8 @@ struct PurchaseButtonComponentView: View {
                 alerts.error.wrappedValue = error
             case let .purchased(customerInfo):
                 alerts.purchase.wrappedValue = customerInfo
+            case nil:
+                break
             }
         }
     }

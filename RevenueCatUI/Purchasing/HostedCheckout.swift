@@ -81,13 +81,49 @@ enum HostedCheckout {
         let keptCheckout = purchaseHandler.keptHostedCheckout
         let result = await purchaseHandler.startHostedCheckout(package: package,
                                                                previousSession: keptCheckout?.session)
-        let action = Action(result, keptCheckout: keptCheckout)
+
+        if let keptCheckout,
+           let action = await Self.waitForConfirmation(of: keptCheckout, purchaseHandler: purchaseHandler) {
+            return action
+        }
+
+        let action = Self.confirmingAPageThatSucceeded(Action(result, keptCheckout: keptCheckout),
+                                                       keptCheckout: keptCheckout)
 
         if case let .failed(error) = action {
             purchaseHandler.handleHostedCheckoutFailure(error, package: package)
         }
 
         return action
+    }
+
+    /// Waits, showing a purchase under way, for a confirmation of the kept checkout that began while the backend
+    /// answered, as when its page reached the success URL after the sheet was closed. That confirmation tells the
+    /// customer how the checkout settled, so the tap opens nothing.
+    ///
+    /// - Returns: `nil` when the kept checkout is neither being confirmed nor settled, for the tap to go ahead.
+    @MainActor
+    private static func waitForConfirmation(of keptCheckout: KeptCheckout,
+                                            purchaseHandler: PurchaseHandler) async -> Action? {
+        if let confirmation = keptCheckout.confirmation {
+            _ = await purchaseHandler.whileConfirmingHostedCheckout { await confirmation.value }
+            return .nothing
+        }
+
+        return keptCheckout.isSettled ? .nothing : nil
+    }
+
+    /// Confirms the kept checkout instead of presenting a page when its own page already reached the success URL:
+    /// the customer paid, whatever the backend has seen so far, and another page would let them pay again.
+    @MainActor
+    private static func confirmingAPageThatSucceeded(_ action: Action, keptCheckout: KeptCheckout?) -> Action {
+        guard case .present = action,
+              let keptCheckout,
+              keptCheckout.viewModel.returnStatus == .success else {
+            return action
+        }
+
+        return .confirm(keptCheckout.session.id, settling: keptCheckout)
     }
 
     /// A checkout the customer was given on this paywall, kept until it settles or the paywall goes, so that
@@ -101,6 +137,12 @@ enum HostedCheckout {
         let package: Package
 
         let viewModel: WebCheckoutViewModel
+
+        /// The confirmation under way for this checkout, if any.
+        fileprivate(set) var confirmation: Task<Resolution, Never>?
+
+        /// Whether a confirmation settled this checkout, as purchased or as a product the customer already owned.
+        fileprivate(set) var isSettled = false
 
         init(session: HostedCheckoutSession, package: Package, viewModel: WebCheckoutViewModel) {
             self.session = session
@@ -208,39 +250,56 @@ enum HostedCheckout {
     /// ``PurchaseHandler/handleHostedCheckoutPurchase(customerInfo:)`` once the customer has been told about it,
     /// since reporting it can close the paywall.
     ///
+    /// A checkout already being confirmed, or already settled, is not confirmed again: the confirmation that settles
+    /// it is the one that tells the customer.
+    ///
     /// - Parameter checkout: The kept checkout this settles, if any, which the backend may have confirmed under
     /// another session.
     /// - Parameter package: The package the checkout was started for, when it is still known.
+    /// - Returns: `nil` when `checkout` is already being confirmed or already settled.
     @MainActor
     static func resolve(_ sessionID: HostedCheckoutSessionID,
                         settling checkout: KeptCheckout?,
                         package: Package?,
-                        purchaseHandler: PurchaseHandler) async -> Resolution {
-        return await purchaseHandler.whileConfirmingHostedCheckout {
-            let (result, customerInfo) = await purchaseHandler.pollHostedCheckout(sessionID: sessionID)
-            let resolution = Resolution(result, customerInfo: customerInfo)
-
-            switch resolution {
-            case .purchased:
-                Self.releaseKeptCheckout(checkout, purchaseHandler: purchaseHandler)
-            case let .failed(error):
-                // The checkout stays kept, so that tapping buy again confirms this payment rather than starting a
-                // second checkout the customer could pay for too.
-                purchaseHandler.handleHostedCheckoutFailure(error, package: package)
-            case .tellCustomerTheyAlreadyOwnIt:
-                // Neither a purchase nor a cancellation, just as when the checkout never opened for this reason:
-                // the paywall only tells the customer.
-                Self.releaseKeptCheckout(checkout, purchaseHandler: purchaseHandler)
-            }
-
-            return resolution
+                        purchaseHandler: PurchaseHandler) async -> Resolution? {
+        guard checkout?.confirmation == nil, checkout?.isSettled != true else {
+            return nil
         }
+
+        let confirmation = Task { @MainActor in
+            await purchaseHandler.whileConfirmingHostedCheckout {
+                let (result, customerInfo) = await purchaseHandler.pollHostedCheckout(sessionID: sessionID)
+                let resolution = Resolution(result, customerInfo: customerInfo)
+
+                switch resolution {
+                case .purchased:
+                    Self.settle(checkout, purchaseHandler: purchaseHandler)
+                case let .failed(error):
+                    // The checkout stays kept, so that tapping buy again confirms this payment rather than starting
+                    // a second checkout the customer could pay for too.
+                    purchaseHandler.handleHostedCheckoutFailure(error, package: package)
+                case .tellCustomerTheyAlreadyOwnIt:
+                    // Neither a purchase nor a cancellation, just as when the checkout never opened for this reason:
+                    // the paywall only tells the customer.
+                    Self.settle(checkout, purchaseHandler: purchaseHandler)
+                }
+
+                return resolution
+            }
+        }
+        checkout?.confirmation = confirmation
+        defer { checkout?.confirmation = nil }
+
+        return await confirmation.value
     }
 
-    /// Leaves alone a checkout that has since replaced the one being settled.
+    /// Releases `checkout`, leaving alone a checkout that has since replaced it.
     @MainActor
-    private static func releaseKeptCheckout(_ checkout: KeptCheckout?, purchaseHandler: PurchaseHandler) {
-        if let checkout, purchaseHandler.keptHostedCheckout === checkout {
+    private static func settle(_ checkout: KeptCheckout?, purchaseHandler: PurchaseHandler) {
+        guard let checkout else { return }
+
+        checkout.isSettled = true
+        if purchaseHandler.keptHostedCheckout === checkout {
             purchaseHandler.keptHostedCheckout = nil
         }
     }
