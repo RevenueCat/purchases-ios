@@ -264,8 +264,8 @@ struct PurchaseButtonComponentView: View {
             // The handler keeps the checkout, and so this closure, alive: capturing the view, which holds the
             // handler, would keep both alive after the paywall goes.
             let alerts = self.hostedCheckoutAlerts
-            HostedCheckout.confirmOnSuccessWhileHidden(
-                checkout,
+            HostedCheckout.onSuccessAfterDismissal(
+                of: checkout,
                 purchaseHandler: self.purchaseHandler
             ) { [weak purchaseHandler = self.purchaseHandler] checkout in
                 guard let purchaseHandler else { return }
