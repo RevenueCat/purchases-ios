@@ -48,10 +48,11 @@ struct DimensionScopeTests {
             ),
             SubscriberAttributesDimensionProvider(attributesProvider: { ["goal": attribute] }),
             SubscriberDimensionsProvider(
-                deviceCache: Self.deviceCache(
+            store: SubscriberDimensionsStore(deviceCache: Self.deviceCache(
                     with: #"{"acquisition_channel":"paid_search","predicted_ltv_band":3}"#
-                ),
-                currentUserProvider: MockCurrentUserProvider(mockAppUserID: "current_user")
+                )),
+                currentUserProvider: MockCurrentUserProvider(mockAppUserID: "current_user"),
+                configProvider: DimensionScopeConfigProvider()
             )
         ]
 
@@ -67,12 +68,21 @@ struct DimensionScopeTests {
     }
 }
 
+private final class DimensionScopeConfigProvider: SubscriberDimensionsConfigProviderType, @unchecked Sendable {
+
+    func dimensions() async throws -> SubscriberDimensionsResolution { return .notConfigured }
+    func cachedDimensions() -> SubscriberDimensionsResolution? { return .notConfigured }
+    func remoteConfigEventReceived(_ event: RemoteConfigLifecycleEvent) {}
+
+}
+
 private extension DimensionScopeTests {
 
     static func deviceCache(with json: String) -> MockDeviceCache {
         let deviceCache = MockDeviceCache()
         deviceCache.cache(
             subscriberDimensions: Data(json.utf8),
+            asOf: 100,
             appUserID: "current_user"
         )
         return deviceCache

@@ -165,7 +165,6 @@
 		16E146AD2E99F3480089B609 /* TransactionNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E146AB2E99F1E20089B609 /* TransactionNotifications.swift */; };
 		16E147A22F3B4C010089B609 /* PurchasesConfiguredNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E147A12F3B4C010089B609 /* PurchasesConfiguredNotifier.swift */; };
 		16E147A42F3B4C010089B609 /* PurchasesUIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E147A32F3B4C010089B609 /* PurchasesUIService.swift */; };
-		16E146B22E99FC7E0089B609 /* PurchaseResultComparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E146B12E99FC7E0089B609 /* PurchaseResultComparator.swift */; };
 		16E2B7F12EA01DFA00F04A7A /* SynchronizedLargeItemCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E2B7F02EA01DFA00F04A7A /* SynchronizedLargeItemCacheTests.swift */; };
 		16E4A3C89791426AAD027A49 /* PlatformInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 043FB8686FEB4A31B9CF48C8 /* PlatformInfoTests.swift */; };
 		16F376262E93F1E300ADF649 /* LargeItemCacheTypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F376252E93F1E300ADF649 /* LargeItemCacheTypeTests.swift */; };
@@ -1062,6 +1061,8 @@
 		758593482E37F77700B8E6CE /* WebBillingProductsDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 758593472E37F77700B8E6CE /* WebBillingProductsDecodingTests.swift */; };
 		75902AFA2F156865005B712A /* MockLocalTransactionMetadataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75902AF92F156865005B712A /* MockLocalTransactionMetadataStore.swift */; };
 		75902AFB2F156865005B712A /* MockLocalTransactionMetadataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75902AF92F156865005B712A /* MockLocalTransactionMetadataStore.swift */; };
+		BEEF10013053100000000001 /* MockSubscriberDimensionsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEEF10003053100000000001 /* MockSubscriberDimensionsStore.swift */; };
+		BEEF10023053100000000001 /* MockSubscriberDimensionsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEEF10003053100000000001 /* MockSubscriberDimensionsStore.swift */; };
 		75978D092F277258008C916B /* CodableIdempotencyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75978D082F277258008C916B /* CodableIdempotencyTests.swift */; };
 		75A0E7902E3D1FCF00A60BD5 /* SimulatedStorePurchaseHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A0E78F2E3D1FCF00A60BD5 /* SimulatedStorePurchaseHandlerTests.swift */; };
 		75A0E7922E3D205C00A60BD5 /* MockTestStorePurchaseUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A0E7912E3D205C00A60BD5 /* MockTestStorePurchaseUI.swift */; };
@@ -1523,9 +1524,12 @@
 		73A670000000000000000001 /* CheckpointIdentifierValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A670000000000000000011 /* CheckpointIdentifierValidator.swift */; };
 		73A640000000000000000003 /* WorkflowPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000013 /* WorkflowPresenter.swift */; };
 		73A640000000000000000004 /* WorkflowPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000014 /* WorkflowPresentation.swift */; };
+		73A640000000000000000020 /* FlowPresentationMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000021 /* FlowPresentationMode.swift */; };
 		73A640000000000000000005 /* CheckpointsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000015 /* CheckpointsManager.swift */; };
 		73A680000000000000000001 /* CheckpointPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A680000000000000000011 /* CheckpointPresenter.swift */; };
 		73A680000000000000000003 /* PaywallPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A680000000000000000013 /* PaywallPresenter.swift */; };
+		73A690000000000000000001 /* ErrorPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A690000000000000000011 /* ErrorPresenter.swift */; };
+		73A6A0000000000000000001 /* DefaultErrorPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A6A0000000000000000011 /* DefaultErrorPresenter.swift */; };
 		73A620000000000000000001 /* CheckpointValueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A620000000000000000011 /* CheckpointValueTests.swift */; };
 		73A630000000000000000001 /* NSNumber+JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A630000000000000000011 /* NSNumber+JSON.swift */; };
 		FA4A2DF41FC434A9401F08CC /* PaywallWebViewValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D0C57ECDF0E7F1A5B4418FF /* PaywallWebViewValue.swift */; };
@@ -1644,6 +1648,13 @@
 		FEDA00000000000000000101 /* SDKSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA00000000000000000103 /* SDKSettings.swift */; };
 		FEDA00000000000000000102 /* SDKSettingsConfigProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA00000000000000000104 /* SDKSettingsConfigProvider.swift */; };
 		FEDA00000000000000000105 /* SDKSettingsConfigProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA00000000000000000106 /* SDKSettingsConfigProviderTests.swift */; };
+		5D1A00000000000000000002 /* SubscriberDimensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1A00000000000000000001 /* SubscriberDimensions.swift */; };
+		5D1A00000000000000000004 /* SubscriberDimensionsResolution.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1A00000000000000000003 /* SubscriberDimensionsResolution.swift */; };
+		5D1A00000000000000000006 /* SubscriberDimensionsConfigProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1A00000000000000000005 /* SubscriberDimensionsConfigProvider.swift */; };
+		5D1A00000000000000000008 /* SubscriberDimensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1A00000000000000000007 /* SubscriberDimensionsTests.swift */; };
+		5D1A0000000000000000000A /* SubscriberDimensionsConfigProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1A00000000000000000009 /* SubscriberDimensionsConfigProviderTests.swift */; };
+		5D1A0000000000000000000C /* SubscriberDimensionsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1A0000000000000000000B /* SubscriberDimensionsStore.swift */; };
+		5D1A0000000000000000000E /* SubscriberDimensionsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1A0000000000000000000D /* SubscriberDimensionsStoreTests.swift */; };
 		A7D100000000000000000002 /* AudiencesConfigProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D100000000000000000001 /* AudiencesConfigProvider.swift */; };
 		B8E400000000000000000002 /* AudiencesConfigProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8E400000000000000000001 /* AudiencesConfigProviderTests.swift */; };
 		A7D200000000000000000002 /* Audience.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D200000000000000000001 /* Audience.swift */; };
@@ -1918,7 +1929,6 @@
 		16E147A12F3B4C010089B609 /* PurchasesConfiguredNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesConfiguredNotifier.swift; sourceTree = "<group>"; };
 		16E147A32F3B4C010089B609 /* PurchasesUIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesUIService.swift; sourceTree = "<group>"; };
 		16E147A52F3B4C010089B609 /* PurchasesUIServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesUIServiceTests.swift; sourceTree = "<group>"; };
-		16E146B12E99FC7E0089B609 /* PurchaseResultComparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseResultComparator.swift; sourceTree = "<group>"; };
 		16E146B42E99FF640089B609 /* MockStoreTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreTransaction.swift; sourceTree = "<group>"; };
 		16E2B7F02EA01DFA00F04A7A /* SynchronizedLargeItemCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynchronizedLargeItemCacheTests.swift; sourceTree = "<group>"; };
 		16F376252E93F1E300ADF649 /* LargeItemCacheTypeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeItemCacheTypeTests.swift; sourceTree = "<group>"; };
@@ -2207,14 +2217,18 @@
 		73A670000000000000000011 /* CheckpointIdentifierValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointIdentifierValidator.swift; sourceTree = "<group>"; };
 		73A640000000000000000013 /* WorkflowPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowPresenter.swift; sourceTree = "<group>"; };
 		73A640000000000000000014 /* WorkflowPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowPresentation.swift; sourceTree = "<group>"; };
+		73A640000000000000000021 /* FlowPresentationMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowPresentationMode.swift; sourceTree = "<group>"; };
 		73A640000000000000000015 /* CheckpointsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointsManager.swift; sourceTree = "<group>"; };
 		73A680000000000000000011 /* CheckpointPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointPresenter.swift; sourceTree = "<group>"; };
 		73A680000000000000000013 /* PaywallPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallPresenter.swift; sourceTree = "<group>"; };
+		73A690000000000000000011 /* ErrorPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorPresenter.swift; sourceTree = "<group>"; };
+		73A6A0000000000000000011 /* DefaultErrorPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultErrorPresenter.swift; sourceTree = "<group>"; };
 		73A680000000000000000014 /* WorkflowPresenterExecutionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowPresenterExecutionTests.swift; sourceTree = "<group>"; };
 		73A650000000000000000011 /* WorkflowPresenterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowPresenterTests.swift; sourceTree = "<group>"; };
 		73A650000000000000000012 /* CheckpointsManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointsManagerTests.swift; sourceTree = "<group>"; };
 		73A650000000000000000013 /* CheckpointIdentifierValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointIdentifierValidatorTests.swift; sourceTree = "<group>"; };
 		73A650000000000000000014 /* CheckpointPresentationSlotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointPresentationSlotTests.swift; sourceTree = "<group>"; };
+		73A6B0000000000000000011 /* DefaultErrorPresenterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultErrorPresenterTests.swift; sourceTree = "<group>"; };
 		73A620000000000000000011 /* CheckpointValueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointValueTests.swift; sourceTree = "<group>"; };
 		73A630000000000000000011 /* NSNumber+JSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSNumber+JSON.swift"; sourceTree = "<group>"; };
 		350A1B84226E3E8700CCA10F /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -2888,6 +2902,7 @@
 		7581A92C2E2EB27100D0C3DE /* MockTestStorePurchaseHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockTestStorePurchaseHandler.swift; sourceTree = "<group>"; };
 		758593472E37F77700B8E6CE /* WebBillingProductsDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBillingProductsDecodingTests.swift; sourceTree = "<group>"; };
 		75902AF92F156865005B712A /* MockLocalTransactionMetadataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockLocalTransactionMetadataStore.swift; sourceTree = "<group>"; };
+		BEEF10003053100000000001 /* MockSubscriberDimensionsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSubscriberDimensionsStore.swift; sourceTree = "<group>"; };
 		75909EAA2E74286E009ABBA7 /* UIConfigProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIConfigProviderTests.swift; sourceTree = "<group>"; };
 		75978D082F277258008C916B /* CodableIdempotencyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodableIdempotencyTests.swift; sourceTree = "<group>"; };
 		75A0E78F2E3D1FCF00A60BD5 /* SimulatedStorePurchaseHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatedStorePurchaseHandlerTests.swift; sourceTree = "<group>"; };
@@ -3543,6 +3558,13 @@
 		FEDA00000000000000000103 /* SDKSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDKSettings.swift; sourceTree = "<group>"; };
 		FEDA00000000000000000104 /* SDKSettingsConfigProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDKSettingsConfigProvider.swift; sourceTree = "<group>"; };
 		FEDA00000000000000000106 /* SDKSettingsConfigProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDKSettingsConfigProviderTests.swift; sourceTree = "<group>"; };
+		5D1A00000000000000000001 /* SubscriberDimensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberDimensions.swift; sourceTree = "<group>"; };
+		5D1A00000000000000000003 /* SubscriberDimensionsResolution.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberDimensionsResolution.swift; sourceTree = "<group>"; };
+		5D1A00000000000000000005 /* SubscriberDimensionsConfigProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberDimensionsConfigProvider.swift; sourceTree = "<group>"; };
+		5D1A00000000000000000007 /* SubscriberDimensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberDimensionsTests.swift; sourceTree = "<group>"; };
+		5D1A00000000000000000009 /* SubscriberDimensionsConfigProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberDimensionsConfigProviderTests.swift; sourceTree = "<group>"; };
+		5D1A0000000000000000000B /* SubscriberDimensionsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberDimensionsStore.swift; sourceTree = "<group>"; };
+		5D1A0000000000000000000D /* SubscriberDimensionsStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberDimensionsStoreTests.swift; sourceTree = "<group>"; };
 		A7D100000000000000000001 /* AudiencesConfigProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiencesConfigProvider.swift; sourceTree = "<group>"; };
 		B8E400000000000000000001 /* AudiencesConfigProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiencesConfigProviderTests.swift; sourceTree = "<group>"; };
 		A7D200000000000000000001 /* Audience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Audience.swift; sourceTree = "<group>"; };
@@ -3918,9 +3940,12 @@
 				73A670000000000000000011 /* CheckpointIdentifierValidator.swift */,
 				73A680000000000000000011 /* CheckpointPresenter.swift */,
 				73A640000000000000000014 /* WorkflowPresentation.swift */,
+				73A640000000000000000021 /* FlowPresentationMode.swift */,
 				73A640000000000000000013 /* WorkflowPresenter.swift */,
 				73A640000000000000000015 /* CheckpointsManager.swift */,
 				73A680000000000000000013 /* PaywallPresenter.swift */,
+				73A690000000000000000011 /* ErrorPresenter.swift */,
+				73A6A0000000000000000011 /* DefaultErrorPresenter.swift */,
 				73A610000000000000000013 /* Purchases+Checkpoints.swift */,
 			);
 			path = Checkpoints;
@@ -3934,6 +3959,7 @@
 				73A650000000000000000011 /* WorkflowPresenterTests.swift */,
 				73A650000000000000000012 /* CheckpointsManagerTests.swift */,
 				73A650000000000000000013 /* CheckpointIdentifierValidatorTests.swift */,
+				73A6B0000000000000000011 /* DefaultErrorPresenterTests.swift */,
 			);
 			path = Checkpoints;
 			sourceTree = "<group>";
@@ -4915,6 +4941,7 @@
 				4FFFE6C92AA946A700B2955C /* MockInternalAPI.swift */,
 				351B515B26D44B7900BD2BD7 /* MockIntroEligibilityCalculator.swift */,
 				75902AF92F156865005B712A /* MockLocalTransactionMetadataStore.swift */,
+				BEEF10003053100000000001 /* MockSubscriberDimensionsStore.swift */,
 				35E840CD2710E2EB00899AE2 /* MockManageSubscriptionsHelper.swift */,
 				351B515526D44B2300BD2BD7 /* MockNotificationCenter.swift */,
 				B3CAFF0F285CE8E30048A994 /* MockOfferingsAPI.swift */,
@@ -5378,6 +5405,10 @@
 				FEDA000000000000000000C4 /* CheckpointsConfigProvider.swift */,
 				FEDA00000000000000000103 /* SDKSettings.swift */,
 				FEDA00000000000000000104 /* SDKSettingsConfigProvider.swift */,
+				5D1A00000000000000000001 /* SubscriberDimensions.swift */,
+				5D1A00000000000000000003 /* SubscriberDimensionsResolution.swift */,
+				5D1A00000000000000000005 /* SubscriberDimensionsConfigProvider.swift */,
+				5D1A0000000000000000000B /* SubscriberDimensionsStore.swift */,
 				A7D200000000000000000001 /* Audience.swift */,
 				A7D100000000000000000001 /* AudiencesConfigProvider.swift */,
 				A1B2C3D42FE7000000000001 /* RemoteConfigTopic.swift */,
@@ -5419,6 +5450,9 @@
 				FEDA000000000000000000C5 /* CheckpointRulesTests.swift */,
 				FEDA000000000000000000C6 /* CheckpointsConfigProviderTests.swift */,
 				FEDA00000000000000000106 /* SDKSettingsConfigProviderTests.swift */,
+				5D1A00000000000000000007 /* SubscriberDimensionsTests.swift */,
+				5D1A00000000000000000009 /* SubscriberDimensionsConfigProviderTests.swift */,
+				5D1A0000000000000000000D /* SubscriberDimensionsStoreTests.swift */,
 				B8E400000000000000000001 /* AudiencesConfigProviderTests.swift */,
 				5733B1A927FFBCF900EC2045 /* BaseErrorTests.swift */,
 				DB7EA7752F964CA200BCC082 /* Workflows */,
@@ -6416,7 +6450,6 @@
 				1699BC2C2EEB4DBC002001FB /* PaywallWarning.swift */,
 				0387D3C72EC51F09008E4A6B /* FileImageLoader.swift */,
 				16216FEE2EBB8641008ACFE9 /* ResumeAction.swift */,
-				16E146B12E99FC7E0089B609 /* PurchaseResultComparator.swift */,
 				57F7DAAA2D9E906100855622 /* RuntimeUtils.swift */,
 				358DECA22D9BEF85003B1CC0 /* EmergeRenderingMode.swift */,
 				353FDC102CA447270055F328 /* StoreProduct+Extensions.swift */,
@@ -7982,6 +8015,7 @@
 				2D90F8CA26FD257A009B9142 /* MockStoreKit2TransactionListener.swift in Sources */,
 				35B745A82711001A00458D46 /* MockManageSubscriptionsHelper.swift in Sources */,
 				75902AFB2F156865005B712A /* MockLocalTransactionMetadataStore.swift in Sources */,
+				BEEF10023053100000000001 /* MockSubscriberDimensionsStore.swift in Sources */,
 				2D90F8B126FD1E52009B9142 /* BasePurchasesOrchestratorTests.swift in Sources */,
 				A563F589271E1DAD00246E0C /* MockBeginRefundRequestHelper.swift in Sources */,
 				57F3C10C29B7EAE90004FD7E /* MockUserDefaults.swift in Sources */,
@@ -8125,6 +8159,10 @@
 				FEDA000000000000000000D4 /* CheckpointsConfigProvider.swift in Sources */,
 				FEDA00000000000000000101 /* SDKSettings.swift in Sources */,
 				FEDA00000000000000000102 /* SDKSettingsConfigProvider.swift in Sources */,
+				5D1A00000000000000000002 /* SubscriberDimensions.swift in Sources */,
+				5D1A00000000000000000004 /* SubscriberDimensionsResolution.swift in Sources */,
+				5D1A00000000000000000006 /* SubscriberDimensionsConfigProvider.swift in Sources */,
+				5D1A0000000000000000000C /* SubscriberDimensionsStore.swift in Sources */,
 				A7D200000000000000000002 /* Audience.swift in Sources */,
 				A7D300000000000000000002 /* WorkflowBranch.swift in Sources */,
 				A7D300000000000000000004 /* WorkflowTriggerAction.swift in Sources */,
@@ -8714,6 +8752,7 @@
 				5766AAC9283E88CF00FA6091 /* PurchasesGetCustomerInfoTests.swift in Sources */,
 				351B517426D44F4B00BD2BD7 /* MockPaymentDiscount.swift in Sources */,
 				75902AFA2F156865005B712A /* MockLocalTransactionMetadataStore.swift in Sources */,
+				BEEF10013053100000000001 /* MockSubscriberDimensionsStore.swift in Sources */,
 				57488B8B29CB756A0000EE7E /* ProductEntitlementMappingTests.swift in Sources */,
 				1D20E1D82EBCF82900ABE4CD /* HTTPRequestTimeoutManager.swift in Sources */,
 				FD4E63422F34E0B60040BA46 /* PurchasesIsPurchaseAllowedByRestoreBehaviorTests.swift in Sources */,
@@ -8871,6 +8910,9 @@
 				FEDA000000000000000000D5 /* CheckpointRulesTests.swift in Sources */,
 				FEDA000000000000000000D6 /* CheckpointsConfigProviderTests.swift in Sources */,
 				FEDA00000000000000000105 /* SDKSettingsConfigProviderTests.swift in Sources */,
+				5D1A00000000000000000008 /* SubscriberDimensionsTests.swift in Sources */,
+				5D1A0000000000000000000A /* SubscriberDimensionsConfigProviderTests.swift in Sources */,
+				5D1A0000000000000000000E /* SubscriberDimensionsStoreTests.swift in Sources */,
 				B8E400000000000000000002 /* AudiencesConfigProviderTests.swift in Sources */,
 				03A98D362D244329009BCA61 /* UIConfigDecodingTests.swift in Sources */,
 				7559DF072E38B05F0050C5B4 /* WebProductToStoreProductConversionTests.swift in Sources */,
@@ -9115,9 +9157,12 @@
 				73A670000000000000000001 /* CheckpointIdentifierValidator.swift in Sources */,
 				73A680000000000000000001 /* CheckpointPresenter.swift in Sources */,
 				73A640000000000000000004 /* WorkflowPresentation.swift in Sources */,
+				73A640000000000000000020 /* FlowPresentationMode.swift in Sources */,
 				73A640000000000000000003 /* WorkflowPresenter.swift in Sources */,
 				73A640000000000000000005 /* CheckpointsManager.swift in Sources */,
 				73A680000000000000000003 /* PaywallPresenter.swift in Sources */,
+				73A690000000000000000001 /* ErrorPresenter.swift in Sources */,
+				73A6A0000000000000000001 /* DefaultErrorPresenter.swift in Sources */,
 				73A610000000000000000003 /* Purchases+Checkpoints.swift in Sources */,
 				88B1BB132C81479F001B7EE5 /* PaywallComponentTypeTransformers.swift in Sources */,
 				88B1BB042C813A3C001B7EE5 /* StackComponentViewModel.swift in Sources */,
@@ -9173,7 +9218,6 @@
 				2C7457242CE713E5004ACE52 /* PreviewMock.swift in Sources */,
 				77AABEA32F02B3340018C1D3 /* CustomerCenterViewControllerDelegate.swift in Sources */,
 				887A60812C1D037000E1A461 /* PaywallData+Default.swift in Sources */,
-				16E146B22E99FC7E0089B609 /* PurchaseResultComparator.swift in Sources */,
 				887A606A2C1D037000E1A461 /* TrialOrIntroEligibilityChecker.swift in Sources */,
 				4A6F3C012F5F123400ABCDE1 /* MarkdownUnderlineFormatter.swift in Sources */,
 				88B1BAEE2C813A3C001B7EE5 /* TextComponentView.swift in Sources */,
