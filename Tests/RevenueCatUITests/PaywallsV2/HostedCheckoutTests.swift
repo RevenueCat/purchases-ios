@@ -340,7 +340,7 @@ final class HostedCheckoutTests: TestCase {
         handler.keptHostedCheckout = kept
         var confirmed: [HostedCheckout.KeptCheckout] = []
 
-        HostedCheckout.confirmOnSuccessWhileHidden(kept, purchaseHandler: handler) { confirmed.append($0) }
+        HostedCheckout.onSuccessAfterDismissal(of: kept, purchaseHandler: handler) { confirmed.append($0) }
         Self.navigate(kept.viewModel, to: Self.session.successURL)
 
         expect(confirmed).to(haveCount(1))
@@ -355,7 +355,7 @@ final class HostedCheckoutTests: TestCase {
         handler.keptHostedCheckout = kept
         var confirmed = 0
 
-        HostedCheckout.confirmOnSuccessWhileHidden(kept, purchaseHandler: handler) { _ in confirmed += 1 }
+        HostedCheckout.onSuccessAfterDismissal(of: kept, purchaseHandler: handler) { _ in confirmed += 1 }
         Self.navigate(kept.viewModel,
                       to: URL(string: "https://api.revenuecat.com/rcbilling/v1/hosted-checkout-return?status=cancel")!)
 
@@ -371,7 +371,7 @@ final class HostedCheckoutTests: TestCase {
         handler.keptHostedCheckout = kept
         var confirmed = 0
 
-        HostedCheckout.confirmOnSuccessWhileHidden(kept, purchaseHandler: handler) { _ in confirmed += 1 }
+        HostedCheckout.onSuccessAfterDismissal(of: kept, purchaseHandler: handler) { _ in confirmed += 1 }
         let replacement = HostedCheckout.checkoutToPresent(Self.otherSession,
                                                            package: TestData.monthlyPackage,
                                                            purchaseHandler: handler)
