@@ -52,7 +52,14 @@ final class DefaultErrorPresenter: ErrorPresenter {
         presentationContextProvider: @escaping PresentationContextProvider = {
             UIApplication.extensionSafeApplication?.currentPresentationViewController
         },
-        alertFactory: @escaping AlertFactory = DefaultErrorPresenter.makeAlert
+        alertFactory: @escaping AlertFactory = { host, title, message, acknowledged in
+            DefaultErrorPresenter.makeAlert(
+                host: host,
+                title: title,
+                message: message,
+                acknowledged: acknowledged
+            )
+        }
     ) {
         self.presentationContextProvider = presentationContextProvider
         self.alertFactory = alertFactory
