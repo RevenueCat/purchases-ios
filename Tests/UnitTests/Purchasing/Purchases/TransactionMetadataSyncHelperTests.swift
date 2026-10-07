@@ -100,6 +100,26 @@ class TransactionMetadataSyncHelperTests: TestCase {
         expect(self.operationDispatcher.invokedDispatchOnWorkerThread) == true
     }
 
+    func testSyncIfNeededSyncsWhenDispatchedBlockRuns() async {
+        self.operationDispatcher.shouldHoldDispatchOnWorkerThreadBlocks = true
+        self.helper.syncIfNeeded(allowSharingAppStoreAccount: false)
+
+        self.operationDispatcher.heldWorkerThreadBlocks.forEach { $0() }
+
+        await expect(self.transactionPoster.invokedPostRemainingCachedTransactionMetadata.value)
+            .toEventually(beTrue())
+    }
+
+    func testSyncIfNeededDoesNotRetainHelperUntilDispatchedBlockRuns() {
+        self.operationDispatcher.shouldHoldDispatchOnWorkerThreadBlocks = true
+        self.helper.syncIfNeeded(allowSharingAppStoreAccount: false)
+
+        weak var helper = self.helper
+        self.helper = nil
+
+        expect { helper == nil }.to(beTrue(), description: "TransactionMetadataSyncHelper has leaked")
+    }
+
     func testSyncIfNeededCallsTransactionPoster() async {
         await self.helper.performSync(allowSharingAppStoreAccount: false)
 
