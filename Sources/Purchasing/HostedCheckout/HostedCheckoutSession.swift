@@ -45,11 +45,11 @@ extension HostedCheckoutSession: Equatable, Sendable {}
 
 extension HostedCheckoutSession {
 
-    init(response: HostedCheckoutResponse, appUserID: String) {
-        self.init(operationSessionID: response.operationSessionID,
+    init(operationSessionID: String, page: HostedCheckoutResponse.Page, appUserID: String) {
+        self.init(operationSessionID: operationSessionID,
                   appUserID: appUserID,
-                  checkoutURL: response.checkoutURL,
-                  successURL: response.successURL)
+                  checkoutURL: page.checkoutURL,
+                  successURL: page.successURL)
     }
 
 }
