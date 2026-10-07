@@ -62,6 +62,7 @@ import Foundation
             uiConfig: uiConfig,
             allOfferings: offerings,
             presentedOfferingContext: presentedOfferingContext,
+            developerProvidedOffering: nil,
             workflowBlobRef: workflowBlobRef,
             traceId: traceId
         )
