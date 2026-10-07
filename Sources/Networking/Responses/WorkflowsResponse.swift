@@ -153,6 +153,12 @@ import Foundation
     public let assetBaseURL: URL
     public let componentsConfig: PaywallComponentsData.ComponentsConfig
     public let componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary]
+    @DefaultDecodable.EmptyDictionary
+    // swiftlint:disable:next identifier_name
+    var _componentsVideoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary]
+    public var componentsVideoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary] {
+        _componentsVideoLocalizations
+    }
     @DefaultValue<PaywallComponent.DefaultLocaleFallback>
     // swiftlint:disable:next identifier_name
     var _defaultLocale: PaywallComponent.LocaleID
@@ -192,7 +198,8 @@ import Foundation
         exitOffers: ExitOffers? = nil,
         automaticallyScaleFontSize: Bool = true,
         stateDeclarations: [String: PaywallComponent.StateDeclaration]? = nil,
-        zeroDecimalPlaceCountries: [String] = []
+        zeroDecimalPlaceCountries: [String] = [],
+        componentsVideoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary] = [:]
     ) {
         self.name = name
         self.templateName = templateName
@@ -200,6 +207,7 @@ import Foundation
         self.assetBaseURL = assetBaseURL
         self.componentsConfig = componentsConfig
         self.componentsLocalizations = componentsLocalizations
+        self._componentsVideoLocalizations = componentsVideoLocalizations
         self._defaultLocale = defaultLocale
         self.config = [:]
         self.offeringIdentifier = offeringIdentifier
@@ -309,6 +317,8 @@ extension WorkflowScreen: Decodable, Equatable, Sendable {
         case assetBaseURL = "assetBaseUrl"
         case componentsConfig
         case componentsLocalizations
+        // swiftlint:disable:next identifier_name
+        case _componentsVideoLocalizations = "componentsVideoLocalizations"
         // swiftlint:disable:next identifier_name
         case _defaultLocale = "defaultLocale"
         case config

@@ -46,6 +46,19 @@ import Foundation
 
 }
 
+@_spi(Internal) extension PaywallComponent.VideoLocalizationDictionary {
+
+    public func video(key: String) throws -> PaywallComponent.ThemeVideoUrls {
+        guard let value = self[key] else {
+            throw LocalizationValidationError.missingLocalization(
+                "Missing video localization for property with id: \"\(key)\""
+            )
+        }
+        return value
+    }
+
+}
+
 enum LocalizationValidationError: Error {
 
     case missingLocalization(String)

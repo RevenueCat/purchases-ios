@@ -67,6 +67,7 @@ import Foundation
     typealias LocaleID = String
     typealias LocalizationDictionary = [String: PaywallComponentsData.LocalizationData]
     typealias LocalizationKey = String
+    typealias VideoLocalizationDictionary = [LocalizationKey: ThemeVideoUrls]
     typealias ColorHex = String
 }
 

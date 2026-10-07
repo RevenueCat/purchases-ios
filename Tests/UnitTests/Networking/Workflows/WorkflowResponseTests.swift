@@ -450,6 +450,12 @@ class WorkflowResponseTests: TestCase {
         expect(screen.zeroDecimalPlaceCountries) == ["TWN"]
     }
 
+    func testDecodeWorkflowScreenVideoLocalizations() throws {
+        let screen = try Self.decodeWorkflowScreen(videoLocalizationsJSON: Self.videoLocalizationsJSON)
+
+        expect(screen.componentsVideoLocalizations) == Self.expectedVideoLocalizations
+    }
+
     func testDecodeWorkflowScreenWithExitOffers() throws {
         let json = """
         {
@@ -976,7 +982,8 @@ private extension WorkflowResponseTests {
         defaultLocaleJSON: String? = "\"en_US\"",
         automaticallyScaleFontSize: Bool? = nil,
         zeroDecimalPlaceCountriesJSON: String? = nil,
-        offeringIdentifier: String? = nil
+        offeringIdentifier: String? = nil,
+        videoLocalizationsJSON: String? = nil
     ) throws -> WorkflowScreen {
         var defaultLocaleFragment = ""
         if let defaultLocaleJSON {
@@ -997,6 +1004,10 @@ private extension WorkflowResponseTests {
             """
         }
         let offeringIdentifierFragment = offeringIdentifier.map { ", \"offering_identifier\": \"\($0)\"" } ?? ""
+        let videoLocalizationsFragment = videoLocalizationsJSON.map {
+            ", \"components_video_localizations\": \($0)"
+        } ?? ""
+        let trailingFragments = offeringIdentifierFragment + videoLocalizationsFragment
         let json = """
         {
           "template_name": "tmpl",
@@ -1014,7 +1025,7 @@ private extension WorkflowResponseTests {
               },
               "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } } }
             }
-          }\(automaticallyScaleFontSizeFragment)\(zeroDecimalFragment)\(offeringIdentifierFragment)
+          }\(automaticallyScaleFontSizeFragment)\(zeroDecimalFragment)\(trailingFragments)
         }
         """.data(using: .utf8)!
 
@@ -1051,5 +1062,36 @@ private extension WorkflowResponseTests {
 
         return try JSONDecoder.default.decode(PaywallComponentsData.self, from: json)
     }
+
+    static let videoLocalizationsJSON = """
+    {
+      "es_ES": {
+        "video_lid": {
+          "light": {
+            "width": 200,
+            "height": 400,
+            "url": "https://assets.revenuecat.com/video_es.mp4",
+            "url_low_res": "https://assets.revenuecat.com/video_es_low_res.mp4"
+          }
+        }
+      }
+    }
+    """
+
+    static let expectedVideoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary] = [
+        "es_ES": [
+            "video_lid": .init(
+                light: .init(
+                    width: 200,
+                    height: 400,
+                    url: URL(string: "https://assets.revenuecat.com/video_es.mp4")!,
+                    checksum: nil,
+                    urlLowRes: URL(string: "https://assets.revenuecat.com/video_es_low_res.mp4")!,
+                    checksumLowRes: nil
+                ),
+                dark: nil
+            )
+        ]
+    ]
 
 }
