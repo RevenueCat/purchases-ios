@@ -149,7 +149,7 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
     }
 
     @available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *)
-    func checkProductIds() async throws {
+    func testStoreProductIds() async throws {
         func checkIdForProductWithMonthlyBillingPlan() async throws {
             let id = "\(Self.productIDWithBillingPlans):monthly"
             let product = try await self.product(id)
@@ -1221,7 +1221,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     }
     #endif
 
-    func checkSK1ProductId() async throws {
+    func testSK1ProductId() async throws {
         let id = "\(Self.productIDWithBillingPlans)"
         let product = try await self.product(id)
         expect(product.productIdentifier).to(equal(id))
