@@ -161,7 +161,7 @@ internal typealias SK2BillingPlanType = StoreKit.Product.SubscriptionInfo.Billin
     /// A unique identifier for this product, including its billing plan.
     /// If the product has a billing plan associated with it, this will be "{productIdentifier}:{billingPlanType}".
     /// Otherwise, it will be "{productIdentifier}".
-    @_spi(Internal) @objc public var id: String { return product.id }
+    @_spi(Internal) public var id: String { return product.id }
 
     // switflint:enable missing_docs
 }
