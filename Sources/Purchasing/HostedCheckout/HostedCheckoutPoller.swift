@@ -16,8 +16,8 @@ import Foundation
 /// What became of a checkout session the customer was sent to.
 @_spi(Internal) public enum HostedCheckoutPollResult: Equatable, Sendable {
 
-    /// The purchase is on the customer's account.
-    case succeeded
+    /// The purchase is on the customer's account. `transaction` is absent where the backend gives no detail.
+    case succeeded(StoreTransaction?)
 
     /// The customer already owns what the checkout would have sold them.
     case alreadyPurchased
@@ -176,9 +176,9 @@ private extension HostedCheckoutPoller {
     func result(for status: HostedCheckoutStatusResponse.Status,
                 operationSessionID: String) -> PollAttemptResult {
         switch status {
-        case .succeeded:
+        case let .succeeded(purchase):
             Logger.debug(Strings.hostedCheckout.poll_succeeded(operationSessionID))
-            return .finished(.succeeded)
+            return .finished(.succeeded(purchase.map { StoreTransaction($0) }))
 
         case let .failed(failure):
             Logger.warn(Strings.hostedCheckout.poll_failed(operationSessionID,

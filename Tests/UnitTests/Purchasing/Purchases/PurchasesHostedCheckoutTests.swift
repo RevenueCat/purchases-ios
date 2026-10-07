@@ -56,7 +56,7 @@ extension PurchasesHostedCheckoutTests {
 
         let (result, _) = await self.purchases.pollHostedCheckout(sessionID: session.id)
 
-        expect(result) == .succeeded
+        expect(result) == .succeeded(nil)
         expect(self.backend.getCustomerInfoCallCount) == fetchesBefore + 1
     }
 
@@ -71,6 +71,23 @@ extension PurchasesHostedCheckoutTests {
         let (_, customerInfo) = await self.purchases.pollHostedCheckout(sessionID: session.id)
 
         expect(customerInfo) == purchased
+    }
+
+    func testReturnsTheTransactionTheCheckoutMade() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        try self.stubStatus(.succeeded(.init(storeTransactionIdentifier: "txn_123",
+                                             productIdentifier: "monthly",
+                                             purchaseDate: Date(timeIntervalSince1970: 1609459200),
+                                             isSandbox: false)))
+        let session = self.startedSession()
+
+        let (result, _) = await self.purchases.pollHostedCheckout(sessionID: session.id)
+
+        guard case let .succeeded(transaction?) = result else {
+            return XCTFail("Expected a transaction, got \(result)")
+        }
+        expect(transaction.transactionIdentifier) == "txn_123"
+        expect(transaction.productIdentifier) == "monthly"
     }
 
     /// The customer got the product some other way, which the cache may not show yet.
@@ -108,7 +125,7 @@ extension PurchasesHostedCheckoutTests {
 
         let (result, customerInfo) = await self.purchases.pollHostedCheckout(sessionID: session.id)
 
-        expect(result) == .succeeded
+        expect(result) == .succeeded(nil)
         expect(customerInfo).to(beNil())
     }
 

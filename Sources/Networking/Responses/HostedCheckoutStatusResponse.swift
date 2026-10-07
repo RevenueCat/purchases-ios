@@ -109,6 +109,28 @@ extension HostedCheckoutStatusResponse: Decodable {
 
 extension HostedCheckoutStatusResponse.Purchase: Decodable {}
 
+extension HostedCheckoutStatusResponse.Purchase: StoreTransactionType {
+
+    var transactionIdentifier: String { return self.storeTransactionIdentifier }
+
+    var hasKnownPurchaseDate: Bool { return true }
+    var hasKnownTransactionIdentifier: Bool { return true }
+    var quantity: Int { return 1 }
+
+    var storefront: Storefront? { return nil }
+    var jwsRepresentation: String? { return nil }
+    var environment: StoreEnvironment? { return self.isSandbox ? .sandbox : .production }
+    var reason: TransactionReason? { return .purchase }
+    var revocationDate: Date? { return nil }
+    var revocationReason: RevocationReason? { return nil }
+
+    /// The web purchase has nothing for StoreKit to finish.
+    func finish(_ wrapper: PaymentQueueWrapperType, completion: @escaping @Sendable () -> Void) {
+        completion()
+    }
+
+}
+
 extension HostedCheckoutStatusResponse.Failure: Decodable {}
 
 extension HostedCheckoutStatusResponse: HTTPResponseBody {}

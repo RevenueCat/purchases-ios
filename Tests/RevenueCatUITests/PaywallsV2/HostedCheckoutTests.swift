@@ -278,7 +278,7 @@ final class HostedCheckoutTests: TestCase {
     @MainActor
     func testReleasesTheKeptCheckoutOnceItsPurchaseIsConfirmed() async {
         let purchases = Self.makePurchases()
-        purchases.hostedCheckoutPollBlock = { _ in .succeeded }
+        purchases.hostedCheckoutPollBlock = { _ in .succeeded(nil) }
         let handler = Self.makeHandler(purchases: purchases)
         let kept = Self.makeKeptCheckout(for: Self.session)
         handler.keptHostedCheckout = kept
@@ -295,7 +295,7 @@ final class HostedCheckoutTests: TestCase {
     @MainActor
     func testReleasesTheKeptCheckoutWhenThePurchaseConfirmedForItIsUnderAnotherSession() async {
         let purchases = Self.makePurchases()
-        purchases.hostedCheckoutPollBlock = { _ in .succeeded }
+        purchases.hostedCheckoutPollBlock = { _ in .succeeded(nil) }
         let handler = Self.makeHandler(purchases: purchases)
         let kept = Self.makeKeptCheckout(for: Self.session)
         handler.keptHostedCheckout = kept
@@ -344,7 +344,7 @@ final class HostedCheckoutTests: TestCase {
     @MainActor
     func testLeavesACheckoutThatReplacedTheOneBeingConfirmed() async {
         let purchases = Self.makePurchases()
-        purchases.hostedCheckoutPollBlock = { _ in .succeeded }
+        purchases.hostedCheckoutPollBlock = { _ in .succeeded(nil) }
         let handler = Self.makeHandler(purchases: purchases)
         let replacement = Self.makeKeptCheckout(for: Self.otherSession)
         handler.keptHostedCheckout = replacement
@@ -470,7 +470,7 @@ final class HostedCheckoutTests: TestCase {
         let handler = Self.makeHandler(purchases: purchases)
         purchases.hostedCheckoutPollBlock = { _ in
             await actionsWhilePolling.record(await MainActor.run { handler.actionTypeInProgress })
-            return .succeeded
+            return .succeeded(nil)
         }
         handler.actionTypeInProgress = .restore
 
@@ -499,7 +499,7 @@ final class HostedCheckoutTests: TestCase {
             await sessionsAskedAbout.record(sessionID)
             await pollStarted.open()
             await pollAnswer.wait()
-            return .succeeded
+            return .succeeded(nil)
         }
         let handler = Self.makeHandler(purchases: purchases)
         let kept = Self.makeKeptCheckout(for: Self.session)
@@ -531,7 +531,7 @@ final class HostedCheckoutTests: TestCase {
         let purchases = Self.makePurchases()
         purchases.hostedCheckoutPollBlock = { sessionID in
             await sessionsAskedAbout.record(sessionID)
-            return .succeeded
+            return .succeeded(nil)
         }
         let handler = Self.makeHandler(purchases: purchases)
         let kept = Self.makeKeptCheckout(for: Self.session)
@@ -588,7 +588,7 @@ final class HostedCheckoutTests: TestCase {
         purchases.hostedCheckoutPollBlock = { _ in
             await pollStarted.open()
             await pollAnswer.wait()
-            return .succeeded
+            return .succeeded(nil)
         }
         let handler = Self.makeHandler(purchases: purchases)
         let kept = Self.makeKeptCheckout(for: Self.session)
@@ -629,7 +629,7 @@ final class HostedCheckoutTests: TestCase {
         let purchases = Self.makePurchases()
         purchases.hostedCheckoutPollBlock = { sessionID in
             await sessionsAskedAbout.record(sessionID)
-            return .succeeded
+            return .succeeded(nil)
         }
         let handler = Self.makeHandler(purchases: purchases)
         let kept = Self.makeKeptCheckout(for: Self.session)
@@ -657,7 +657,7 @@ final class HostedCheckoutTests: TestCase {
     func testOpensNothingForAKeptCheckoutThatSettledWhileTheInterceptorDecided() async {
         let checkoutsStarted = Recorder<String>()
         let purchases = Self.makePurchases()
-        purchases.hostedCheckoutPollBlock = { _ in .succeeded }
+        purchases.hostedCheckoutPollBlock = { _ in .succeeded(nil) }
         purchases.hostedCheckoutBlock = { package, _, _ in
             await checkoutsStarted.record(package.identifier)
             return .started(Self.otherSession)
@@ -695,7 +695,7 @@ final class HostedCheckoutTests: TestCase {
         purchases.hostedCheckoutPollBlock = { _ in
             await pollStarted.open()
             await pollAnswer.wait()
-            return .succeeded
+            return .succeeded(nil)
         }
         purchases.hostedCheckoutBlock = { package, _, _ in
             await checkoutsStarted.record(package.identifier)
@@ -758,12 +758,12 @@ final class HostedCheckoutTests: TestCase {
     // MARK: - Settling on what the backend says
 
     func testCountsAConfirmedPurchase() {
-        expect(HostedCheckout.Resolution(.succeeded, customerInfo: TestData.customerInfo))
+        expect(HostedCheckout.Resolution(.succeeded(nil), customerInfo: TestData.customerInfo))
             == .purchased(TestData.customerInfo)
     }
 
     func testTreatsAConfirmedPurchaseWithoutItsCustomerInfoAsUnconfirmed() {
-        expect(HostedCheckout.Resolution(.succeeded, customerInfo: nil)) == .failed(.unconfirmed)
+        expect(HostedCheckout.Resolution(.succeeded(nil), customerInfo: nil)) == .failed(.unconfirmed)
     }
 
     func testTellsTheCustomerTheyAlreadyOwnIt() {
@@ -782,7 +782,7 @@ final class HostedCheckoutTests: TestCase {
         let purchases = Self.makePurchases()
         purchases.hostedCheckoutPollBlock = { sessionID in
             await sessionsAskedAbout.record(sessionID)
-            return .succeeded
+            return .succeeded(nil)
         }
 
         _ = await HostedCheckout.resolve(Self.session.id,
@@ -801,7 +801,7 @@ final class HostedCheckoutTests: TestCase {
         let handler = Self.makeHandler(purchases: purchases)
         purchases.hostedCheckoutPollBlock = { _ in
             await actionsWhilePolling.record(await MainActor.run { handler.actionTypeInProgress == .purchase })
-            return .succeeded
+            return .succeeded(nil)
         }
 
         _ = await HostedCheckout.resolve(Self.session.id,
@@ -818,7 +818,7 @@ final class HostedCheckoutTests: TestCase {
     @MainActor
     func testLeavesAConfirmedPurchaseForThePaywallToReport() async {
         let purchases = Self.makePurchases()
-        purchases.hostedCheckoutPollBlock = { _ in .succeeded }
+        purchases.hostedCheckoutPollBlock = { _ in .succeeded(nil) }
         let handler = Self.makeHandler(purchases: purchases)
 
         let resolution = await HostedCheckout.resolve(Self.session.id,
@@ -891,7 +891,7 @@ final class HostedCheckoutTests: TestCase {
         } customerInfo: {
             throw ErrorCode.networkError
         }
-        purchases.hostedCheckoutPollBlock = { _ in .succeeded }
+        purchases.hostedCheckoutPollBlock = { _ in .succeeded(nil) }
         let handler = Self.makeHandler(purchases: purchases)
 
         let resolution = await HostedCheckout.resolve(Self.session.id,
