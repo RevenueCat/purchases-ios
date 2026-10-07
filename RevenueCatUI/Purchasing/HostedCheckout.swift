@@ -73,7 +73,6 @@ enum HostedCheckout {
             purchaseHandler.handleHostedCheckoutFailure(error, package: package)
         }
 
-        // The purchase was already tracked as initiated, so how it ended is tracked too, as StoreKit purchases do.
         switch result {
         case .declinedByCustomer:
             purchaseHandler.trackCancelledPurchase(package: package)
