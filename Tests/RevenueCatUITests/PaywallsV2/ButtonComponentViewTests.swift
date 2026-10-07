@@ -93,10 +93,71 @@ final class ButtonComponentViewTests: TestCase {
         )
     }
 
+    func testNativeCloseRunsExistingDismissalAndAnalytics() async throws {
+        let viewModel = try Self.makeViewModel(
+            component: PaywallComponent.ButtonComponent(
+                name: "close", action: .navigateBack,
+                stack: Self.makeButtonStack(label: "Configured Close"), useNativeIfPossible: true
+            )
+        )
+        let dismissed = expectation(description: "Existing close action")
+        var interactions: [PaywallEvent.ComponentInteractionData] = []
+        let view = Self.configuredView(viewModel: viewModel, onDismiss: { dismissed.fulfill() })
+            .environment(\.componentInteractionLogger, ComponentInteractionLogger { event in
+                interactions.append(event)
+                return true
+            })
+        let controller = UIHostingController(rootView: view)
+        let navigation = UINavigationController(rootViewController: controller)
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        window.rootViewController = navigation
+        window.makeKeyAndVisible()
+        controller.view.layoutIfNeeded()
+        defer {
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+        let installed = expectation(description: "Native close installed")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { installed.fulfill() }
+        await fulfillment(of: [installed], timeout: 2)
+        let items = (controller.navigationItem.leftBarButtonItems ?? [])
+            + (controller.navigationItem.rightBarButtonItems ?? [])
+        XCTAssertEqual(items.count, 1)
+        let item = try XCTUnwrap(items.first)
+        if let primaryAction = item.primaryAction {
+            UIButton(type: .system, primaryAction: primaryAction).sendActions(for: .primaryActionTriggered)
+        } else {
+            let selector = try XCTUnwrap(item.action)
+            let target = try XCTUnwrap(item.target as? NSObject)
+            target.perform(selector, with: item)
+        }
+        await fulfillment(of: [dismissed], timeout: 2)
+        XCTAssertEqual(interactions.count, 1)
+        XCTAssertEqual(interactions.first?.componentValue, "navigate_back")
+        XCTAssertEqual(interactions.first?.componentName, "close")
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension ButtonComponentViewTests {
+
+    static func configuredView(
+        viewModel: ButtonComponentViewModel, onDismiss: @escaping () -> Void
+    ) -> some View {
+        ButtonComponentView(viewModel: viewModel, onDismiss: onDismiss)
+            .environmentObject(PurchaseHandler.default())
+            .environmentObject(PackageContext(package: nil, variableContext: .init(packages: [])))
+            .environmentObject(
+                IntroOfferEligibilityContext(introEligibilityChecker: BaseSnapshotTest.eligibleChecker)
+            )
+            .environmentObject(
+                PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker())
+            )
+            .environment(\.componentViewState, .default)
+            .environment(\.screenCondition, .compact)
+            .environment(\.safeAreaInsets, EdgeInsets())
+    }
 
     static func makeViewModel(
         component: PaywallComponent.ButtonComponent

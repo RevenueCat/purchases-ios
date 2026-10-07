@@ -184,6 +184,15 @@ class ButtonComponentViewModel {
         }
     }
 
+    func shouldUseNativeClose(dismissesPaywall: Bool) -> Bool {
+        guard self.component.useNativeIfPossible else { return false }
+        switch self.action {
+        case .navigateBack: return dismissesPaywall
+        case .closeWorkflow: return true
+        default: return false
+        }
+    }
+
     var isRestoreAction: Bool {
         switch self.action {
         case .restorePurchases:

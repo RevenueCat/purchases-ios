@@ -1338,6 +1338,7 @@ private struct WorkflowHeaderOverlayPageView: View {
             .fixMacButtons()
             .frame(maxWidth: .infinity, alignment: .top)
             .opacity(self.headerOpacity)
+            .environment(\.nativePaywallCloseEnabled, self.headerOpacity > 0)
             .environment(\.locale, contentLocale)
             .environment(\.layoutDirection, contentLocale.swiftUILayoutDirection)
             .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))

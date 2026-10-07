@@ -157,6 +157,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
     func body(content: Content) -> some View {
         ZStack {
             content
+                .environment(\.nativePaywallCloseEnabled, self.sheetViewModel == nil)
                 .blur(radius: sheetViewModel?.sheet.backgroundBlur == true ? 10 : 0)
                 .animation(.easeInOut(duration: 0.25), value: sheetViewModel?.sheet.backgroundBlur)
                 // Blur is visual only: without this VoiceOver still walks what is behind.
@@ -189,6 +190,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
                             trailing: 0
                         )
                     )
+                    .environment(\.nativePaywallCloseEnabled, false)
                     // Dismissal in here closes the sheet, so a `navigate_back` button must not
                     // inherit the workflow's back stack or handler. Its label and tap both refer
                     // to the sheet's local dismissal.
