@@ -647,10 +647,9 @@ private extension WorkflowPaywallViewTests {
         return WorkflowContext(
             workflow: workflow,
             uiConfig: PreviewUIConfig.make(),
-            allOfferings: offerings,
+            offerings: WorkflowOfferings(offerings: offerings, developerProvidedOffering: nil),
             initialOffering: offering,
-            presentedOfferingContext: nil,
-            developerProvidedOffering: nil
+            presentedOfferingContext: nil
         )
     }
 
@@ -1776,10 +1775,9 @@ private extension WorkflowPaywallViewTests {
         return WorkflowContext(
             workflow: workflow,
             uiConfig: PreviewUIConfig.make(),
-            allOfferings: offerings,
+            offerings: WorkflowOfferings(offerings: offerings, developerProvidedOffering: nil),
             initialOffering: offering,
             presentedOfferingContext: nil,
-            developerProvidedOffering: nil,
             traceId: traceId
         )
     }
