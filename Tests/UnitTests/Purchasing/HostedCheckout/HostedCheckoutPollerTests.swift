@@ -39,7 +39,7 @@ class HostedCheckoutPollerTests: TestCase {
     }
 
     func testSucceedsWithTheTransactionTheSessionMade() async {
-        let fetcher = StubStatusFetcher(results: [.status(.succeeded(Self.purchase(isSandbox: true)))])
+        let fetcher = StubStatusFetcher(results: [.status(.succeeded(Self.transaction(isSandbox: true)))])
 
         let result = await self.makePoller(fetcher: fetcher, sleeper: RecordingHostedCheckoutSleeper()).poll(
             operationSessionID: Self.operationSessionID,
@@ -57,7 +57,7 @@ class HostedCheckoutPollerTests: TestCase {
     }
 
     func testReportsAPurchaseOutsideSandboxAsProduction() async {
-        let fetcher = StubStatusFetcher(results: [.status(.succeeded(Self.purchase(isSandbox: false)))])
+        let fetcher = StubStatusFetcher(results: [.status(.succeeded(Self.transaction(isSandbox: false)))])
 
         let result = await self.makePoller(fetcher: fetcher, sleeper: RecordingHostedCheckoutSleeper()).poll(
             operationSessionID: Self.operationSessionID,
@@ -289,7 +289,7 @@ private extension HostedCheckoutPollerTests {
                        .notFoundError)
     )
 
-    static func purchase(isSandbox: Bool) -> HostedCheckoutStatusResponse.Purchase {
+    static func transaction(isSandbox: Bool) -> HostedCheckoutStatusResponse.Transaction {
         return .init(storeTransactionIdentifier: "txn_123",
                      productIdentifier: "monthly",
                      purchaseDate: Date(timeIntervalSince1970: 1609459200),

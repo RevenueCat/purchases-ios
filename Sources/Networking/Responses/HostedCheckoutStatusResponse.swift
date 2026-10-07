@@ -25,16 +25,16 @@ struct HostedCheckoutStatusResponse: Equatable {
         /// Also stands for a status this version of the SDK does not know.
         case pending
 
-        /// The purchase is on the customer's account. `purchase` is absent where the backend sends no detail.
-        case succeeded(Purchase?)
+        /// The purchase is on the customer's account. `transaction` is absent where the backend sends no detail.
+        case succeeded(Transaction?)
 
         /// The session ended without a purchase. `failure` is absent where the backend sends no detail.
         case failed(Failure?)
 
     }
 
-    /// The purchase a session made, as it appears on the customer's account.
-    struct Purchase: Equatable {
+    /// The transaction a session made, as it appears on the customer's account.
+    struct Transaction: Equatable {
 
         let storeTransactionIdentifier: String
         let productIdentifier: String
@@ -95,8 +95,8 @@ extension HostedCheckoutStatusResponse: Decodable {
         case RawStatus.started, RawStatus.inProgress:
             return .pending
         case RawStatus.succeeded:
-            // The purchase's fields sit next to `status` rather than in an object of their own.
-            return .succeeded(try? Purchase(from: decoder))
+            // The transaction's fields sit next to `status` rather than in an object of their own.
+            return .succeeded(try? Transaction(from: decoder))
         case RawStatus.failed:
             return .failed(try? container.decodeIfPresent(Failure.self, forKey: .error))
         default:
@@ -107,9 +107,9 @@ extension HostedCheckoutStatusResponse: Decodable {
 
 }
 
-extension HostedCheckoutStatusResponse.Purchase: Decodable {}
+extension HostedCheckoutStatusResponse.Transaction: Decodable {}
 
-extension HostedCheckoutStatusResponse.Purchase: StoreTransactionType {
+extension HostedCheckoutStatusResponse.Transaction: StoreTransactionType {
 
     var transactionIdentifier: String { return self.storeTransactionIdentifier }
 

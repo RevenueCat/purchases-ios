@@ -176,9 +176,9 @@ private extension HostedCheckoutPoller {
     func result(for status: HostedCheckoutStatusResponse.Status,
                 operationSessionID: String) -> PollAttemptResult {
         switch status {
-        case let .succeeded(purchase):
+        case let .succeeded(transaction):
             Logger.debug(Strings.hostedCheckout.poll_succeeded(operationSessionID))
-            return .finished(.succeeded(purchase.map { StoreTransaction($0) }))
+            return .finished(.succeeded(transaction.map { StoreTransaction($0) }))
 
         case let .failed(failure):
             Logger.warn(Strings.hostedCheckout.poll_failed(operationSessionID,
