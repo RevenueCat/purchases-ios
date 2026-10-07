@@ -262,7 +262,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
                 if installmentsInfo.billingPlanType == .upFront {
                     expect(storeProduct.id) == storeProduct.productIdentifier
                 } else {
-                    expect(storeProduct.id) == "\(storeProduct.productIdentifier):\(installmentsInfo.billingPlanType.rawValue)"
+                    expect(storeProduct.id) == "\(storeProduct.productIdentifier):" +
+                    "\(installmentsInfo.billingPlanType.rawValue)"
                 }
             } else {
                 expect(storeProduct.id) == storeProduct.productIdentifier
