@@ -648,6 +648,90 @@ final class HostedCheckoutTests: TestCase {
         expect(asked) == [Self.session.id]
     }
 
+    /// The app's purchase interceptor can take its time, and the page the customer closed can reach the success URL
+    /// meanwhile. The confirmation released the kept checkout, and starting another would let them pay again.
+    @MainActor
+    func testOpensNothingForAKeptCheckoutThatSettledWhileTheInterceptorDecided() async {
+        let checkoutsStarted = Recorder<String>()
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollBlock = { _ in .succeeded }
+        purchases.hostedCheckoutBlock = { package, _, _ in
+            await checkoutsStarted.record(package.identifier)
+            return .started(Self.otherSession)
+        }
+        let handler = Self.makeHandler(purchases: purchases)
+        let kept = Self.makeKeptCheckout(for: Self.session)
+        handler.keptHostedCheckout = kept
+        let interceptor = PurchaseInitiatedAction { _, resume in
+            Task { @MainActor in
+                _ = await HostedCheckout.resolve(Self.session.id,
+                                                 settling: kept,
+                                                 package: TestData.annualPackage,
+                                                 purchaseHandler: handler)
+                resume(shouldProceed: true)
+            }
+        }
+
+        let action = await HostedCheckout.start(for: TestData.annualPackage,
+                                                purchaseHandler: handler,
+                                                purchaseInitiatedAction: interceptor)
+
+        let started = await checkoutsStarted.values
+        guard case .nothing = action else { return fail("Unexpected \(action)") }
+        expect(started).to(beEmpty())
+        expect(handler.keptHostedCheckout).to(beNil())
+    }
+
+    /// Starting the checkout would show Apple's notice to a customer who already paid.
+    @MainActor
+    func testWaitsForAConfirmationThatBeganWhileTheInterceptorDecidedWithoutStartingACheckout() async {
+        let pollStarted = Gate()
+        let pollAnswer = Gate()
+        let checkoutsStarted = Recorder<String>()
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollBlock = { _ in
+            await pollStarted.open()
+            await pollAnswer.wait()
+            return .succeeded
+        }
+        purchases.hostedCheckoutBlock = { package, _, _ in
+            await checkoutsStarted.record(package.identifier)
+            return .resumed(Self.session)
+        }
+        let handler = Self.makeHandler(purchases: purchases)
+        let kept = Self.makeKeptCheckout(for: Self.session)
+        handler.keptHostedCheckout = kept
+        let confirmation: Atomic<Task<HostedCheckout.Resolution?, Never>?> = .init(nil)
+        let interceptor = PurchaseInitiatedAction { _, resume in
+            Task { @MainActor in
+                confirmation.value = Task { @MainActor in
+                    await HostedCheckout.resolve(Self.session.id,
+                                                 settling: kept,
+                                                 package: TestData.annualPackage,
+                                                 purchaseHandler: handler)
+                }
+                await pollStarted.wait()
+                resume(shouldProceed: true)
+            }
+        }
+
+        let tap = Task { @MainActor in
+            await HostedCheckout.start(for: TestData.annualPackage,
+                                       purchaseHandler: handler,
+                                       purchaseInitiatedAction: interceptor)
+        }
+        await expect(handler.actionTypeInProgress).toEventually(equal(.purchase), timeout: .seconds(2))
+        await pollAnswer.open()
+        let action = await tap.value
+
+        let resolution = await confirmation.value?.value
+        let started = await checkoutsStarted.values
+        guard case .nothing = action else { return fail("Unexpected \(action)") }
+        expect(resolution) == .purchased(TestData.customerInfo)
+        expect(started).to(beEmpty())
+        expect(handler.actionInProgress) == false
+    }
+
     /// The page says the customer paid, whatever the backend has seen so far, and another page would let them pay
     /// again.
     @MainActor
