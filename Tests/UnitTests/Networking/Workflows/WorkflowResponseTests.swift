@@ -796,6 +796,85 @@ class WorkflowResponseTests: TestCase {
         expect(step.experimentVariant).to(beNil())
     }
 
+    func testDecodeWorkflowStepExperimentParamsFromMetadata() throws {
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "metadata": { "experiment_id": "exp_abc", "experiment_variant": "holdout" }
+        }
+        """.data(using: .utf8)!
+
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
+
+        expect(step.experimentId) == "exp_abc"
+        expect(step.experimentVariant) == "holdout"
+    }
+
+    func testDecodeWorkflowStepExperimentParamsPreferMetadataOverParamValues() throws {
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "param_values": { "experiment_id": "exp_old", "experiment_variant": "a" },
+          "metadata": { "experiment_id": "exp_new", "experiment_variant": "b" }
+        }
+        """.data(using: .utf8)!
+
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
+
+        expect(step.experimentId) == "exp_new"
+        expect(step.experimentVariant) == "b"
+    }
+
+    func testDecodeWorkflowWithFallbackCopyStep() throws {
+        let json = """
+        {
+          "id": "wf_test",
+          "display_name": "Test",
+          "initial_step_id": "entry",
+          "steps": {
+            "entry": {
+              "id": "entry",
+              "type": "screen",
+              "triggers": [
+                {"name":"Button","type":"on_press","action_id":"btn","component_id":"btn"}
+              ],
+              "trigger_actions": { "btn": {"type":"step","step_id":"paywall_a~f"} }
+            },
+            "paywall_a": {
+              "id": "paywall_a",
+              "type": "screen",
+              "screen_id": "pw_123",
+              "param_values": { "experiment_id": "exp_abc", "experiment_variant": "b" },
+              "metadata": { "screen_type": ["paywall"] }
+            },
+            "paywall_a~f": {
+              "id": "paywall_a~f",
+              "type": "screen",
+              "screen_id": "pw_123",
+              "param_values": {},
+              "metadata": { "screen_type": ["paywall"], "fallback_original_step_id": "paywall_a" }
+            }
+          },
+          "screens": {},
+          "ui_config": { "app": { "colors": {}, "fonts": {} }, "localizations": {} }
+        }
+        """.data(using: .utf8)!
+
+        let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: json)
+
+        let original = try XCTUnwrap(workflow.steps["paywall_a"])
+        let copy = try XCTUnwrap(workflow.steps["paywall_a~f"])
+        expect(workflow.steps["entry"]?.triggerActions["btn"]) == .step(stepId: "paywall_a~f")
+        expect(copy.id) == "paywall_a~f"
+        expect(copy.screenId) == original.screenId
+        expect(copy.fallbackOriginalStepId) == "paywall_a"
+        expect(copy.experimentId).to(beNil())
+        expect(copy.stepScreenType) == ["paywall"]
+        expect(original.fallbackOriginalStepId).to(beNil())
+    }
+
     func testDecodeWorkflowStepScreenTypeNilWhenMetadataNull() throws {
         let json = """
         {
