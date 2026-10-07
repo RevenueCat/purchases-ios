@@ -110,6 +110,14 @@ extension PaywallViewConfiguration {
         case offering(Offering)
         case offeringIdentifier(String, presentedOfferingContext: PresentedOfferingContext?)
 
+        /// The developer-supplied `Offering` instance, when the caller passed one directly.
+        var passedOffering: Offering? {
+            if case let .offering(offering) = self {
+                return offering
+            }
+            return nil
+        }
+
     }
 
 }

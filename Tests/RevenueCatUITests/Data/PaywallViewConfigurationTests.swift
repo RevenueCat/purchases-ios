@@ -270,6 +270,110 @@ final class PaywallViewConfigurationTests: TestCase {
         expect(result?.workflowContext?.presentedOfferingContext?.offeringIdentifier) == initialOffering.identifier
     }
 
+    func testResolvePaywallViewDataUsesPassedOfferingWhenWorkflowStepMatchesItsIdentifier() async throws {
+        // The developer passed a modified instance (fewer packages, custom metadata) of a fetched offering.
+        let passedOffering = Self.createModifiedOffering(identifier: "offering_a")
+            .withPresentedOfferingContext(Self.createPresentedOfferingContext(offeringIdentifier: "offering_a"))
+        let fetchedOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let otherOffering = Self.createOffering(identifier: "offering_b")
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+
+        purchases.offeringsBlock = {
+            Self.createOfferings([fetchedOffering, otherOffering])
+        }
+        purchases.workflowBlock = { _ in
+            try Self.createWorkflowDataResult(offeringIdentifier: passedOffering.identifier)
+        }
+
+        let result = try await handler.resolvePaywallViewData(
+            for: .offering(passedOffering),
+            remoteConfigEnabled: true
+        )
+
+        expect(result.offering.identifier) == passedOffering.identifier
+        expect(result.offering.internalPaywallComponents).toNot(beNil())
+        expect(result.offering.availablePackages.map(\.identifier))
+            == passedOffering.availablePackages.map(\.identifier)
+        expect(result.offering.metadata["custom_key"] as? String) == "custom_value"
+        expect(result.workflowContext?.initialOffering.availablePackages.count) == 1
+        expect(result.workflowContext?.offering(for: passedOffering.identifier)?.availablePackages.count) == 1
+
+        let packageContext = try XCTUnwrap(result.offering.availablePackages.first?.presentedOfferingContext)
+        expect(packageContext.placementIdentifier) == "placement_offering_a"
+    }
+
+    func testResolvePaywallViewDataUsesFetchedOfferingWhenWorkflowStepReferencesAnotherOffering() async throws {
+        let passedOffering = Self.createModifiedOffering(identifier: "offering_a")
+        let fetchedOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let otherOffering = Self.createOffering(identifier: "offering_b")
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+
+        purchases.offeringsBlock = {
+            Self.createOfferings([fetchedOffering, otherOffering])
+        }
+        purchases.workflowBlock = { _ in
+            try Self.createWorkflowDataResult(offeringIdentifier: otherOffering.identifier)
+        }
+
+        let result = try await handler.resolvePaywallViewData(
+            for: .offering(passedOffering),
+            remoteConfigEnabled: true
+        )
+
+        expect(result.offering.identifier) == otherOffering.identifier
+        expect(result.offering.availablePackages.count) == TestData.packages.count
+        expect(result.offering.metadata).to(beEmpty())
+    }
+
+    func testCachedInitialPaywallViewDataUsesPassedOfferingWhenWorkflowStepMatchesItsIdentifier() throws {
+        let passedOffering = Self.createModifiedOffering(identifier: "offering_a")
+            .withPresentedOfferingContext(Self.createPresentedOfferingContext(offeringIdentifier: "offering_a"))
+        let fetchedOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let otherOffering = Self.createOffering(identifier: "offering_b")
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+        let cachedWorkflow = try Self.createWorkflowDataResult(offeringIdentifier: passedOffering.identifier)
+
+        purchases.cachedOfferings = Self.createOfferings([fetchedOffering, otherOffering])
+        purchases.cachedWorkflowBlock = { _ in cachedWorkflow }
+        purchases.workflowBlock = { _ in
+            XCTFail("Cached initial data must not use the async workflow path")
+            throw ErrorCode.configurationError
+        }
+
+        let result = handler.cachedInitialPaywallViewData(
+            for: .offering(passedOffering),
+            remoteConfigEnabled: true
+        )
+
+        expect(result?.offering.identifier) == passedOffering.identifier
+        expect(result?.offering.internalPaywallComponents).toNot(beNil())
+        expect(result?.offering.availablePackages.count) == 1
+        expect(result?.offering.metadata["custom_key"] as? String) == "custom_value"
+        expect(result?.offering.availablePackages.first?.presentedOfferingContext.placementIdentifier)
+            == "placement_offering_a"
+    }
+
+    func testCachedInitialPaywallViewDataDoesNotUsePassedOfferingForOfferingIdentifierContent() throws {
+        let fetchedOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+        let cachedWorkflow = try Self.createWorkflowDataResult(offeringIdentifier: fetchedOffering.identifier)
+
+        purchases.cachedOfferings = Self.createOfferings([fetchedOffering])
+        purchases.cachedWorkflowBlock = { _ in cachedWorkflow }
+
+        let result = handler.cachedInitialPaywallViewData(
+            for: .offeringIdentifier(fetchedOffering.identifier, presentedOfferingContext: nil),
+            remoteConfigEnabled: true
+        )
+
+        expect(result?.offering.identifier) == fetchedOffering.identifier
+        expect(result?.offering.availablePackages.count) == TestData.packages.count
+    }
+
     func testResolvePaywallViewDataReturnsWorkflowContextForWorkflowDefaultOffering() async throws {
         let initialOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
             .withPresentedOfferingContext(.init(offeringIdentifier: "offering_a"))
@@ -775,6 +879,19 @@ private extension PaywallViewConfigurationTests {
             metadata: [:],
             paywall: paywall,
             availablePackages: TestData.packages,
+            webCheckoutUrl: nil
+        )
+    }
+
+    /// A developer-modified, workflow-eligible offering: a single package and custom metadata, so it is
+    /// distinguishable from the fetched `createOffering(identifier:paywall: nil)` instance with the same id.
+    static func createModifiedOffering(identifier: String) -> Offering {
+        return Offering(
+            identifier: identifier,
+            serverDescription: "Modified offering \(identifier)",
+            metadata: ["custom_key": "custom_value"],
+            paywall: nil,
+            availablePackages: [TestData.packages[0]],
             webCheckoutUrl: nil
         )
     }
