@@ -2184,7 +2184,9 @@ platform :ios do
     platform_args = ["--triple", triple, "--sdk", sdk_path]
 
     sh("swift", "build", "--target", "RevenueCat", *platform_args)
-    bin_path = sh("swift", "build", *platform_args, "--show-bin-path").strip
+    bin_path, status = Open3.capture2("swift", "build", *platform_args, "--show-bin-path")
+    UI.user_error!("Could not determine the SwiftPM bin path") unless status.success?
+    bin_path = bin_path.strip
 
     # Extracted symbol graphs include doc comments inherited from protocol requirements,
     # which symbol graphs emitted by the compiler (`-emit-symbol-graph`) don't.
@@ -2192,7 +2194,9 @@ platform :ios do
        "-module-name", "RevenueCat",
        "-target", triple,
        "-sdk", sdk_path,
+       # Newer SwiftPM versions put modules in `Modules/`, older ones directly in the bin path.
        "-I", File.join(bin_path, "Modules"),
+       "-I", bin_path,
        "-minimum-access-level", "public",
        "-emit-extension-block-symbols",
        # Must be inside `.build`: `--additional-symbol-graph-dir .build` replaces the DocC plugin's own
