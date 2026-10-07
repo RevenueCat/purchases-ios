@@ -1105,7 +1105,7 @@ extension PurchaseHandler {
 
     /// - Returns: whether the event was tracked
     @discardableResult
-    fileprivate func trackCancelledPurchase(package: Package) -> Bool {
+    func trackCancelledPurchase(package: Package) -> Bool {
         guard let sessionID = self.activePaywallSessionID else {
             return false
         }

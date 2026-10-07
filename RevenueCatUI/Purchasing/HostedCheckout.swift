@@ -66,10 +66,25 @@ enum HostedCheckout {
             return .nothing
         }
 
-        let action = Action(await purchaseHandler.startHostedCheckout(package: package))
+        let result = await purchaseHandler.startHostedCheckout(package: package)
+        let action = Action(result)
 
         if case let .failed(error) = action {
             purchaseHandler.handleHostedCheckoutFailure(error, package: package)
+        }
+
+        // The purchase was already tracked as initiated, so how it ended is tracked too, as StoreKit purchases do.
+        switch result {
+        case .declinedByCustomer:
+            purchaseHandler.trackCancelledPurchase(package: package)
+        case .notEligible:
+            purchaseHandler.trackPurchaseError(package: package, error: HostedCheckoutError.notEligible)
+        case .paymentsNotAuthorized:
+            purchaseHandler.trackPurchaseError(package: package, error: HostedCheckoutError.paymentsNotAuthorized)
+        case .started, .alreadyPurchased, .alreadyStarting, .failed:
+            // The checkout already under way carries the purchase, and owning the product is neither a
+            // purchase nor a cancellation.
+            break
         }
 
         return action
@@ -156,6 +171,12 @@ enum HostedCheckoutError: Error, Equatable {
     /// The checkout could not be started, so the customer never reached the page.
     case notStarted
 
+    /// The customer is not eligible to buy outside the App Store, so no checkout was started.
+    case notEligible
+
+    /// The device does not authorize payments, so no checkout was started.
+    case paymentsNotAuthorized
+
 }
 
 extension HostedCheckoutError: CustomNSError {
@@ -180,6 +201,8 @@ extension HostedCheckoutError: CustomNSError {
             return .storeProblemError
         case .notStarted:
             return .storeProblemError
+        case .notEligible, .paymentsNotAuthorized:
+            return .purchaseNotAllowedError
         case .failed, .unconfirmed:
             return .unknownError
         }
@@ -193,6 +216,10 @@ extension HostedCheckoutError: CustomNSError {
             return "The purchase could not be set up."
         case .notStarted:
             return "The purchase could not be set up."
+        case .notEligible:
+            return "The customer is not eligible to buy outside the App Store."
+        case .paymentsNotAuthorized:
+            return "The device does not authorize payments."
         case .failed:
             return "The purchase failed."
         case .unconfirmed:
@@ -214,7 +241,7 @@ extension HostedCheckoutError {
         switch self {
         case .failed(code: Self.paymentChargeFailedCode):
             return Text("Payment failed.", bundle: bundle)
-        case .failed, .notStarted:
+        case .failed, .notStarted, .notEligible, .paymentsNotAuthorized:
             return Text("Something went wrong", bundle: bundle)
         case .unconfirmed:
             return Text("Your purchase is still processing.", bundle: bundle)

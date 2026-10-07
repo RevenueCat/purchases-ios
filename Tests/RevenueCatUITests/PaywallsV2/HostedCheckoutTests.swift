@@ -163,6 +163,77 @@ final class HostedCheckoutTests: TestCase {
             .toEventually(beTrue(), timeout: .seconds(2))
     }
 
+    /// Saying no to Apple's notice is the hosted checkout's counterpart to dismissing StoreKit's sheet.
+    @MainActor
+    func testTracksADeclinedNoticeAsACancellation() async {
+        let trackedEvents: Atomic<[PaywallEvent]> = .init([])
+        let purchases = Self.makePurchases(trackingInto: trackedEvents)
+        purchases.hostedCheckoutBlock = { _, _ in .declinedByCustomer }
+        let handler = Self.makeHandler(purchases: purchases)
+        handler.trackPaywallImpression(Self.impressionData)
+
+        _ = await HostedCheckout.start(for: TestData.annualPackage,
+                                       purchaseHandler: handler,
+                                       purchaseInitiatedAction: nil)
+
+        await expect(trackedEvents.value.contains(where: Self.isCancel))
+            .toEventually(beTrue(), timeout: .seconds(2))
+        expect(trackedEvents.value.first(where: Self.isCancel)?.data.packageId) == TestData.annualPackage.identifier
+        expect(trackedEvents.value.contains(where: Self.isPurchaseError)) == false
+        expect(handler.purchaseError).to(beNil())
+        expect(handler.sessionPurchaseResult).to(beNil())
+    }
+
+    /// The customer is only told the purchase is unavailable, or nothing at all, but the initiated purchase
+    /// still ends in an error, as one StoreKit refuses does.
+    @MainActor
+    func testTracksAPurchaseTheCustomerCannotMakeAsAPurchaseError() async throws {
+        let cases: [(HostedCheckoutStartResult, HostedCheckoutError)] = [
+            (.notEligible, .notEligible),
+            (.paymentsNotAuthorized, .paymentsNotAuthorized)
+        ]
+
+        for (result, expectedError) in cases {
+            let trackedEvents: Atomic<[PaywallEvent]> = .init([])
+            let purchases = Self.makePurchases(trackingInto: trackedEvents)
+            purchases.hostedCheckoutBlock = { _, _ in result }
+            let handler = Self.makeHandler(purchases: purchases)
+            handler.trackPaywallImpression(Self.impressionData)
+
+            _ = await HostedCheckout.start(for: TestData.annualPackage,
+                                           purchaseHandler: handler,
+                                           purchaseInitiatedAction: nil)
+
+            await expect(trackedEvents.value.contains(where: Self.isPurchaseError))
+                .toEventually(beTrue(), timeout: .seconds(2))
+            let error = try XCTUnwrap(trackedEvents.value.first(where: Self.isPurchaseError))
+            expect(error.data.packageId) == TestData.annualPackage.identifier
+            expect(error.data.errorCode) == (expectedError as NSError).code
+            expect(error.data.errorMessage) == (expectedError as NSError).localizedDescription
+            expect(handler.purchaseError).to(beNil())
+        }
+    }
+
+    /// Owning the product is neither a purchase nor a cancellation, and the checkout already under way carries
+    /// the purchase and how it ends.
+    @MainActor
+    func testTracksNoOutcomeWhenNoCheckoutIsNeeded() async {
+        for result: HostedCheckoutStartResult in [.alreadyPurchased, .alreadyStarting] {
+            let trackedEvents: Atomic<[PaywallEvent]> = .init([])
+            let purchases = Self.makePurchases(trackingInto: trackedEvents)
+            purchases.hostedCheckoutBlock = { _, _ in result }
+            let handler = Self.makeHandler(purchases: purchases)
+            handler.trackPaywallImpression(Self.impressionData)
+
+            _ = await HostedCheckout.start(for: TestData.annualPackage,
+                                           purchaseHandler: handler,
+                                           purchaseInitiatedAction: nil)
+
+            await expect(trackedEvents.value.contains { Self.isCancel($0) || Self.isPurchaseError($0) })
+                .toNever(beTrue(), until: .milliseconds(300))
+        }
+    }
+
     // MARK: - Settling on what the backend says
 
     func testCountsAConfirmedPurchase() {
@@ -351,6 +422,12 @@ final class HostedCheckoutTests: TestCase {
 
     func testReportsACheckoutThatCouldNotBeStartedAsAStoreProblem() {
         expect((HostedCheckoutError.notStarted as NSError).code) == ErrorCode.storeProblemError.rawValue
+    }
+
+    func testReportsAPurchaseTheCustomerCannotMakeAsNotAllowed() {
+        expect((HostedCheckoutError.notEligible as NSError).code) == ErrorCode.purchaseNotAllowedError.rawValue
+        expect((HostedCheckoutError.paymentsNotAuthorized as NSError).code)
+            == ErrorCode.purchaseNotAllowedError.rawValue
     }
 
     func testReportsAnyOtherFailureAsUnknown() {
