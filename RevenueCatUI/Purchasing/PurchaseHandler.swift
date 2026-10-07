@@ -53,9 +53,6 @@ final class PurchaseHandler: ObservableObject {
     var keptHostedCheckout: HostedCheckout.KeptCheckout?
 
     /// What the paywall is telling the customer about a hosted checkout, until they acknowledge it.
-    ///
-    /// Held here rather than by the button that started the checkout, which may be gone by the time a checkout
-    /// the customer closed is confirmed.
     @Published
     fileprivate(set) var hostedCheckoutResolutionToShow: HostedCheckout.Resolution?
     #endif
