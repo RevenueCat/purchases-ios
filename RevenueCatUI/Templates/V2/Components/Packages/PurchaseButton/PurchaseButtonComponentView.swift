@@ -45,8 +45,8 @@ struct PurchaseButtonComponentView: View {
     #if os(iOS) && canImport(WebKit)
     @State private var hostedCheckoutViewModel: WebCheckoutViewModel?
 
-    /// The session the sheet was presented for, which is asked about once the sheet has gone.
-    @State private var presentedHostedCheckoutSession: HostedCheckoutSession?
+    /// The checkout the sheet was presented for, which is settled once the sheet has gone.
+    @State private var presentedHostedCheckout: HostedCheckout.KeptCheckout?
 
     @State private var showingAlreadyOwnedAlert = false
 
@@ -104,10 +104,10 @@ struct PurchaseButtonComponentView: View {
         #endif
         #if os(iOS) && canImport(WebKit)
         .webCheckoutSheet(viewModel: self.$hostedCheckoutViewModel) { outcome in
-            guard let session = self.presentedHostedCheckoutSession else { return }
-            self.presentedHostedCheckoutSession = nil
+            guard let checkout = self.presentedHostedCheckout else { return }
+            self.presentedHostedCheckout = nil
 
-            self.handleHostedCheckoutOutcome(outcome, session: session)
+            self.handleHostedCheckoutOutcome(outcome, checkout: checkout)
         }
         .alert(
             Text(verbatim: ""),
@@ -215,11 +215,15 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
+        let keptPackage = self.purchaseHandler.keptHostedCheckout?.package
+
         switch await HostedCheckout.start(for: selectedPackage,
                                           purchaseHandler: self.purchaseHandler,
                                           purchaseInitiatedAction: self.purchaseInitiatedAction) {
         case let .present(session):
-            self.presentHostedCheckout(session)
+            self.presentHostedCheckout(session, package: selectedPackage)
+        case let .confirm(session):
+            self.resolveHostedCheckout(session, package: keptPackage ?? selectedPackage)
         case .tellCustomerTheyAlreadyOwnIt:
             self.showingAlreadyOwnedAlert = true
         case .tellCustomerThePurchaseIsUnavailable:
@@ -238,29 +242,31 @@ struct PurchaseButtonComponentView: View {
 
     #if os(iOS) && canImport(WebKit)
     @MainActor
-    private func presentHostedCheckout(_ session: HostedCheckoutSession) {
-        self.presentedHostedCheckoutSession = session
-        self.hostedCheckoutViewModel = WebCheckoutViewModel(
-            checkoutURL: session.checkoutURL,
-            successURL: session.successURL,
-            dataStoreIdentifierStore: .init()
-        )
+    private func presentHostedCheckout(_ session: HostedCheckoutSession, package: Package) {
+        let checkout = HostedCheckout.checkoutToPresent(session,
+                                                        package: package,
+                                                        purchaseHandler: self.purchaseHandler)
+
+        self.presentedHostedCheckout = checkout
+        self.hostedCheckoutViewModel = checkout.viewModel
     }
 
-    private func handleHostedCheckoutOutcome(_ outcome: WebCheckoutSheetOutcome, session: HostedCheckoutSession) {
+    @MainActor
+    private func handleHostedCheckoutOutcome(_ outcome: WebCheckoutSheetOutcome,
+                                             checkout: HostedCheckout.KeptCheckout) {
         switch outcome {
         case .returned(.success):
-            self.resolveHostedCheckout(session)
+            self.resolveHostedCheckout(checkout.session, package: checkout.package)
         case .dismissed:
-            // A payment may have gone through moments before the customer closed the sheet. Settling that
-            // means asking the backend what became of the session, which is not wired up yet.
+            // The checkout stays kept: a customer who paid moments before closing the sheet has that purchase
+            // confirmed when they tap buy again.
             Logger.debug(Strings.hosted_checkout_dismissed_without_returning)
+            self.purchaseHandler.handleHostedCheckoutDismissal(package: checkout.package)
         }
     }
 
-    private func resolveHostedCheckout(_ session: HostedCheckoutSession) {
-        let package = self.packageContext.package
-
+    /// - Parameter package: The package the checkout was started for.
+    private func resolveHostedCheckout(_ session: HostedCheckoutSession, package: Package) {
         Task { @MainActor in
             switch await HostedCheckout.resolve(session,
                                                 package: package,
