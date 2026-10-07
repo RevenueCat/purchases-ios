@@ -1079,6 +1079,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             self.handleCustomerInfoChanged(from: old, to: new)
         }
 
+        customerInfoManager.entitlementExpirationHandler = { [weak self] identifiers, refresh in
+            guard let self = self else { return }
+            self.delegate?.purchases?(self, entitlementsDidExpire: identifiers, refresh: refresh)
+        }
+
         self.transactionMetadataSyncHelper.syncIfNeeded(
             allowSharingAppStoreAccount: purchasesOrchestrator.allowSharingAppStoreAccount
         )
@@ -3227,6 +3232,7 @@ private extension Purchases {
                 self?.dispatchSyncSubscriberAttributes()
             }
         )
+        self.customerInfoManager.rearmEntitlementExpiration()
         self.transactionMetadataSyncHelper.syncIfNeeded(
             allowSharingAppStoreAccount: self.purchasesOrchestrator.allowSharingAppStoreAccount
         )
@@ -3429,6 +3435,7 @@ private extension Purchases {
 
         self.delegate?.purchases?(self, receivedUpdated: info)
         self.customerInfoManager.setLastSentCustomerInfo(info)
+        self.customerInfoManager.armEntitlementExpiration(with: info, appUserID: self.appUserID)
     }
 
     private func updateOfferingsCache(isAppBackgrounded: Bool) {
