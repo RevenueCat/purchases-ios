@@ -53,7 +53,6 @@ private struct HostedCheckoutAlertsModifier: ViewModifier {
             } message: { error in
                 error.message(bundle: self.localizedBundle)
             }
-            // The checkout does not say whether the product is a subscription, so the title has to fit either.
             .alert(
                 Text("You've already purchased this", bundle: self.localizedBundle),
                 isPresented: self.isPresented(self.resolution == .tellCustomerTheyAlreadyOwnIt)
