@@ -88,19 +88,19 @@ final class WorkflowContextTests: TestCase {
         expect(packageContext.targetingContext?.ruleId) == presentedOfferingContext.targetingContext?.ruleId
     }
 
-    func testOfferingForStepUsesPreferredOfferingWhenInitialOfferingIsContentOnly() throws {
+    func testOfferingForStepUsesDeveloperProvidedOfferingWhenInitialOfferingIsContentOnly() throws {
         // A content-only initial step has no offering, so the developer-passed instance is not the
         // initial offering. A later step referencing its identifier must still render the passed instance.
         let presentedOfferingContext = Self.makePresentedOfferingContext()
         let contentOnlyOffering = Self.makeContentOnlyOffering()
         let fetchedOffering = Self.makeOffering(identifier: "offering_a")
-        let preferredOffering = Self.makeOffering(identifier: "offering_a", packages: [TestData.packages[0]])
+        let developerProvidedOffering = Self.makeOffering(identifier: "offering_a", packages: [TestData.packages[0]])
         let context = WorkflowContext(
             workflow: try Self.makeWorkflow(),
             allOfferings: Self.makeOfferings([fetchedOffering]),
             initialOffering: contentOnlyOffering,
             presentedOfferingContext: presentedOfferingContext,
-            preferredOffering: preferredOffering
+            developerProvidedOffering: developerProvidedOffering
         )
 
         let resolvedOffering = try XCTUnwrap(context.offering(for: "offering_a"))
@@ -110,16 +110,16 @@ final class WorkflowContextTests: TestCase {
         expect(packageContext.placementIdentifier) == presentedOfferingContext.placementIdentifier
     }
 
-    func testOfferingForStepIgnoresPreferredOfferingWithDifferentIdentifier() throws {
+    func testOfferingForStepIgnoresDeveloperProvidedOfferingWithDifferentIdentifier() throws {
         let contentOnlyOffering = Self.makeContentOnlyOffering()
         let fetchedOffering = Self.makeOffering(identifier: "offering_b")
-        let preferredOffering = Self.makeOffering(identifier: "offering_a", packages: [TestData.packages[0]])
+        let developerProvidedOffering = Self.makeOffering(identifier: "offering_a", packages: [TestData.packages[0]])
         let context = WorkflowContext(
             workflow: try Self.makeWorkflow(),
             allOfferings: Self.makeOfferings([fetchedOffering]),
             initialOffering: contentOnlyOffering,
             presentedOfferingContext: nil,
-            preferredOffering: preferredOffering
+            developerProvidedOffering: developerProvidedOffering
         )
 
         let resolvedOffering = try XCTUnwrap(context.offering(for: "offering_b"))
@@ -1310,7 +1310,7 @@ private extension WorkflowContext {
         allOfferings: Offerings,
         initialOffering: Offering,
         presentedOfferingContext: PresentedOfferingContext?,
-        preferredOffering: Offering? = nil
+        developerProvidedOffering: Offering? = nil
     ) {
         self.init(
             workflow: workflow,
@@ -1318,7 +1318,7 @@ private extension WorkflowContext {
             allOfferings: allOfferings,
             initialOffering: initialOffering,
             presentedOfferingContext: presentedOfferingContext,
-            preferredOffering: preferredOffering
+            developerProvidedOffering: developerProvidedOffering
         )
     }
 

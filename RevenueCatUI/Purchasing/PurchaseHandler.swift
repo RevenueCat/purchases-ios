@@ -486,7 +486,7 @@ extension PurchaseHandler {
                 uiConfig: fetchResult.uiConfig,
                 allOfferings: cachedOfferings,
                 presentedOfferingContext: offering.presentedOfferingContext,
-                preferredOffering: content.passedOffering,
+                developerProvidedOffering: content.passedOffering,
                 workflowBlobRef: fetchResult.workflowBlobRef
               ) else {
             return nil
@@ -607,7 +607,7 @@ extension PurchaseHandler {
                 for: offering,
                 offerings: nil,
                 remoteConfigEnabled: remoteConfigEnabled,
-                preferredOffering: offering
+                developerProvidedOffering: offering
             )
         case .defaultOffering:
             let offerings = try await self.purchases.offerings()
@@ -649,13 +649,13 @@ extension PurchaseHandler {
     /// Routes a resolved offering to its attached paywall or the workflows endpoint. Offerings
     /// decoded from the backend retain only `hasPaywallComponents`, so an actual components payload
     /// identifies a render-ready offering supplied by a preview client.
-    /// `preferredOffering` is the developer-supplied instance; it replaces the fetched offering
+    /// `developerProvidedOffering` is the developer-supplied instance; it replaces the fetched offering
     /// for workflow steps that reference the same identifier.
     private func resolvePaywallViewData(
         for offering: Offering,
         offerings: Offerings?,
         remoteConfigEnabled: Bool,
-        preferredOffering: Offering? = nil
+        developerProvidedOffering: Offering? = nil
     ) async throws -> ResolvedPaywallViewData {
         guard remoteConfigEnabled,
               offering.paywall == nil,
@@ -668,7 +668,7 @@ extension PurchaseHandler {
                 identifier: offering.identifier,
                 presentedOfferingContext: offering.presentedOfferingContext,
                 offerings: offerings,
-                preferredOffering: preferredOffering
+                developerProvidedOffering: developerProvidedOffering
             )
 
             return .init(offering: context.initialOffering, workflowContext: context)
@@ -698,7 +698,7 @@ extension PurchaseHandler {
         identifier: String,
         presentedOfferingContext: PresentedOfferingContext?,
         offerings: Offerings? = nil,
-        preferredOffering: Offering? = nil
+        developerProvidedOffering: Offering? = nil
     ) async throws -> WorkflowContext {
         do {
             async let fetchResultTask = self.purchases.workflow(forOfferingIdentifier: identifier)
@@ -713,7 +713,7 @@ extension PurchaseHandler {
                 uiConfig: fetchResult.uiConfig,
                 allOfferings: allOfferings,
                 presentedOfferingContext: presentedOfferingContext,
-                preferredOffering: preferredOffering,
+                developerProvidedOffering: developerProvidedOffering,
                 workflowBlobRef: fetchResult.workflowBlobRef
             )
         } catch WorkflowError.uiConfigUnavailable(let workflowId) {
@@ -729,14 +729,14 @@ extension PurchaseHandler {
     /// Throws a specific ``PaywallError`` when the initial step or its screen cannot be rendered. An absent
     /// offering, whether the initial screen declares one or not, is
     /// rendered as content-only so the workflow UI can surface its configuration error.
-    /// `preferredOffering` is the developer-supplied instance (e.g. `PaywallView(offering:)`); it is used
+    /// `developerProvidedOffering` is the developer-supplied instance (e.g. `PaywallView(offering:)`); it is used
     /// as the base offering instead of the `allOfferings` entry when the initial step references its identifier.
     static func makeWorkflowContext(
         workflow: PublishedWorkflow,
         uiConfig: UIConfig,
         allOfferings: Offerings,
         presentedOfferingContext: PresentedOfferingContext?,
-        preferredOffering: Offering? = nil,
+        developerProvidedOffering: Offering? = nil,
         workflowBlobRef: String? = nil,
         traceId: String? = nil
     ) throws -> WorkflowContext {
@@ -771,7 +771,7 @@ extension PurchaseHandler {
         let baseOffering = Self.baseOffering(
             for: workflow.offeringIdentifier(for: step),
             allOfferings: allOfferings,
-            preferredOffering: preferredOffering
+            developerProvidedOffering: developerProvidedOffering
         )
         let initialOffering = WorkflowContext.renderingOffering(
             baseOffering: baseOffering,
@@ -786,7 +786,7 @@ extension PurchaseHandler {
             allOfferings: allOfferings,
             initialOffering: offering,
             presentedOfferingContext: presentedOfferingContext,
-            preferredOffering: preferredOffering,
+            developerProvidedOffering: developerProvidedOffering,
             workflowBlobRef: workflowBlobRef,
             traceId: traceId
         )
@@ -795,13 +795,13 @@ extension PurchaseHandler {
     private static func baseOffering(
         for offeringIdentifier: String?,
         allOfferings: Offerings,
-        preferredOffering: Offering?
+        developerProvidedOffering: Offering?
     ) -> Offering? {
         guard let offeringIdentifier else {
             return nil
         }
-        if let preferredOffering, preferredOffering.identifier == offeringIdentifier {
-            return preferredOffering
+        if let developerProvidedOffering, developerProvidedOffering.identifier == offeringIdentifier {
+            return developerProvidedOffering
         }
         return allOfferings.offering(identifier: offeringIdentifier)
     }
