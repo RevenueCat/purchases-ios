@@ -778,12 +778,7 @@ extension PurchaseHandler {
             paywallComponents: paywallComponents
         )
 
-        let offering: Offering
-        if let presentedOfferingContext {
-            offering = initialOffering.withPresentedOfferingContext(presentedOfferingContext)
-        } else {
-            offering = initialOffering
-        }
+        let offering = presentedOfferingContext.map(initialOffering.withPresentedOfferingContext) ?? initialOffering
 
         return WorkflowContext(
             workflow: workflow,
@@ -791,6 +786,7 @@ extension PurchaseHandler {
             allOfferings: allOfferings,
             initialOffering: offering,
             presentedOfferingContext: presentedOfferingContext,
+            preferredOffering: preferredOffering,
             workflowBlobRef: workflowBlobRef,
             traceId: traceId
         )
