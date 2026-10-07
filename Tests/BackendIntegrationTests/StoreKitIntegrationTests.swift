@@ -1226,6 +1226,8 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let product = try await self.product(id)
         expect(product.productIdentifier).to(equal(id))
         expect(product.id).to(equal(id))
+
+        
     }
 }
 
