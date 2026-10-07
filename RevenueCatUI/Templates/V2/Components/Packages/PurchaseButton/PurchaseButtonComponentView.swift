@@ -259,24 +259,62 @@ struct PurchaseButtonComponentView: View {
             self.resolveHostedCheckout(checkout.session, package: checkout.package)
         case .dismissed:
             // The checkout stays kept: a customer who paid moments before closing the sheet has that purchase
-            // confirmed when they tap buy again.
+            // confirmed once the page reaches its success URL, or when they tap buy again.
             Logger.debug(Strings.hosted_checkout_dismissed_without_returning)
+            // The handler keeps the checkout, and so this closure, alive: capturing the view, which holds the
+            // handler, would keep both alive after the paywall goes.
+            let alerts = self.hostedCheckoutAlerts
+            HostedCheckout.onSuccessAfterDismissal(
+                of: checkout,
+                purchaseHandler: self.purchaseHandler
+            ) { [weak purchaseHandler = self.purchaseHandler] checkout in
+                guard let purchaseHandler else { return }
+                Self.resolveHostedCheckout(checkout.session,
+                                           package: checkout.package,
+                                           purchaseHandler: purchaseHandler,
+                                           alerts: alerts)
+            }
             self.purchaseHandler.handleHostedCheckoutDismissal(package: checkout.package)
         }
     }
 
+    /// The alerts that tell the customer how a hosted checkout settled.
+    private struct HostedCheckoutAlerts {
+
+        let alreadyOwned: Binding<Bool>
+        let error: Binding<HostedCheckoutError?>
+        let purchase: Binding<CustomerInfo?>
+
+    }
+
+    private var hostedCheckoutAlerts: HostedCheckoutAlerts {
+        return .init(alreadyOwned: self.$showingAlreadyOwnedAlert,
+                     error: self.$hostedCheckoutError,
+                     purchase: self.$hostedCheckoutPurchaseCustomerInfo)
+    }
+
     /// - Parameter package: The package the checkout was started for.
     private func resolveHostedCheckout(_ session: HostedCheckoutSession, package: Package) {
+        Self.resolveHostedCheckout(session,
+                                   package: package,
+                                   purchaseHandler: self.purchaseHandler,
+                                   alerts: self.hostedCheckoutAlerts)
+    }
+
+    private static func resolveHostedCheckout(_ session: HostedCheckoutSession,
+                                              package: Package,
+                                              purchaseHandler: PurchaseHandler,
+                                              alerts: HostedCheckoutAlerts) {
         Task { @MainActor in
             switch await HostedCheckout.resolve(session,
                                                 package: package,
-                                                purchaseHandler: self.purchaseHandler) {
+                                                purchaseHandler: purchaseHandler) {
             case .tellCustomerTheyAlreadyOwnIt:
-                self.showingAlreadyOwnedAlert = true
+                alerts.alreadyOwned.wrappedValue = true
             case let .failed(error):
-                self.hostedCheckoutError = error
+                alerts.error.wrappedValue = error
             case let .purchased(customerInfo):
-                self.hostedCheckoutPurchaseCustomerInfo = customerInfo
+                alerts.purchase.wrappedValue = customerInfo
             }
         }
     }

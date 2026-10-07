@@ -383,8 +383,15 @@ extension PurchaseHandler {
 
     /// Runs `confirmation` with the paywall showing a purchase under way, for a checkout the backend still has
     /// to confirm.
+    ///
+    /// A checkout confirmed while the customer is busy with something else, as when its page returned after they
+    /// closed it, is confirmed without showing it: that would end what they are doing.
     @MainActor
     func whileConfirmingHostedCheckout<T>(_ confirmation: () async -> T) async -> T {
+        guard !self.actionInProgress else {
+            return await confirmation()
+        }
+
         self.purchaseError = nil
         self.startAction(.purchase)
         defer { self.actionTypeInProgress = nil }
@@ -964,7 +971,8 @@ extension PurchaseHandler {
     ///
     /// Closing the checkout does not mean the customer cancelled it: they may have paid moments before. The paywall
     /// still reports a cancelled purchase, as it has no other way to say that no purchase is known. A payment that
-    /// did go through is confirmed and reported as a purchase once the customer taps buy again.
+    /// did go through is confirmed and reported as a purchase once the page reaches its success URL, or the customer
+    /// taps buy again.
     ///
     /// - Parameter package: The package the checkout was started for, when it is still known. Only used to
     /// track the cancellation.

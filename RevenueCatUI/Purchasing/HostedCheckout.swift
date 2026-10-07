@@ -116,6 +116,29 @@ enum HostedCheckout {
 
     }
 
+    /// Calls `perform` if the page of a checkout the customer closed reaches the success URL while the checkout is
+    /// still kept. That happens when the customer paid just before closing the sheet: the provider redirects the page
+    /// once the payment goes through.
+    ///
+    /// Presenting the checkout again replaces this, as the sheet takes over the page's `onFinished`.
+    ///
+    /// - Parameter perform: Called with the checkout whose purchase is to be confirmed.
+    @MainActor
+    static func onSuccessAfterDismissal(of checkout: KeptCheckout,
+                                        purchaseHandler: PurchaseHandler,
+                                        perform: @escaping @MainActor (KeptCheckout) -> Void) {
+        checkout.viewModel.onFinished = { [weak checkout, weak purchaseHandler] in
+            guard let checkout,
+                  let purchaseHandler,
+                  purchaseHandler.keptHostedCheckout === checkout,
+                  checkout.viewModel.returnStatus == .success else {
+                return
+            }
+
+            perform(checkout)
+        }
+    }
+
     /// The checkout to present for `session`: the kept one where it is the same session and its page is still
     /// usable, or a new one that replaces it.
     ///
