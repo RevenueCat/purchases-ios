@@ -465,7 +465,7 @@ struct ViewModelFactory {
             )
         case .video(let component):
             return .video(
-                VideoComponentViewModel(
+                try VideoComponentViewModel(
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     component: component,
