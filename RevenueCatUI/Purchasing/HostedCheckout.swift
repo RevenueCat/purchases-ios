@@ -73,12 +73,19 @@ enum HostedCheckout {
     static func start(for package: Package,
                       purchaseHandler: PurchaseHandler,
                       purchaseInitiatedAction: PurchaseInitiatedAction?) async -> Action {
+        // Read before the interceptor runs: a confirmation that settles the checkout meanwhile releases it.
+        let keptCheckout = purchaseHandler.keptHostedCheckout
+
         guard await purchaseHandler.shouldProceed(withPurchaseOf: package,
                                                   interceptor: purchaseInitiatedAction) else {
             return .nothing
         }
 
-        let keptCheckout = purchaseHandler.keptHostedCheckout
+        if let keptCheckout,
+           let action = await Self.waitForConfirmation(of: keptCheckout, purchaseHandler: purchaseHandler) {
+            return action
+        }
+
         let result = await purchaseHandler.startHostedCheckout(package: package,
                                                                previousSession: keptCheckout?.session)
 
@@ -97,9 +104,9 @@ enum HostedCheckout {
         return action
     }
 
-    /// Waits, showing a purchase under way, for a confirmation of the kept checkout that began while the backend
-    /// answered, as when its page reached the success URL after the sheet was closed. That confirmation tells the
-    /// customer how the checkout settled, so the tap opens nothing.
+    /// Waits, showing a purchase under way, for a confirmation of the kept checkout that began while the app's
+    /// purchase interceptor or the backend answered, as when its page reached the success URL after the sheet was
+    /// closed. That confirmation tells the customer how the checkout settled, so the tap opens nothing.
     ///
     /// - Returns: `nil` when the kept checkout is neither being confirmed nor settled, for the tap to go ahead.
     @MainActor
