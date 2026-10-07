@@ -376,32 +376,35 @@ public struct PaywallView: View {
             #endif
             // Show the actually V2 paywall for full screen
             case .fullScreen:
-                if let workflowContext {
-                    WorkflowPaywallView(
-                        context: workflowContext,
-                        purchaseHandler: purchaseHandler,
-                        introEligibilityChecker: checker,
-                        showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
-                        displayCloseButton: self.displayCloseButton,
-                        promoOfferCache: self.promoOfferCache,
-                        onDismiss: self.dismissRequested,
-                        backNavigationBridge: self.workflowBackNavigationBridge,
-                        onPresentationError: self.workflowPresentationErrorHandler
-                    )
-                } else {
-                    PaywallsV2View(
-                        paywallComponents: paywallComponents,
-                        offering: offering,
-                        purchaseHandler: purchaseHandler,
-                        introEligibilityChecker: checker,
-                        showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
-                        displayCloseButton: self.displayCloseButton,
-                        onDismiss: self.dismissRequested,
-                        failedToLoadFont: self.failedToLoadFont,
-                        colorScheme: colorScheme,
-                        promoOfferCache: self.promoOfferCache
-                    )
+                Group {
+                    if let workflowContext {
+                        WorkflowPaywallView(
+                            context: workflowContext,
+                            purchaseHandler: purchaseHandler,
+                            introEligibilityChecker: checker,
+                            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+                            displayCloseButton: self.displayCloseButton,
+                            promoOfferCache: self.promoOfferCache,
+                            onDismiss: self.dismissRequested,
+                            backNavigationBridge: self.workflowBackNavigationBridge,
+                            onPresentationError: self.workflowPresentationErrorHandler
+                        )
+                    } else {
+                        PaywallsV2View(
+                            paywallComponents: paywallComponents,
+                            offering: offering,
+                            purchaseHandler: purchaseHandler,
+                            introEligibilityChecker: checker,
+                            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+                            displayCloseButton: self.displayCloseButton,
+                            onDismiss: self.dismissRequested,
+                            failedToLoadFont: self.failedToLoadFont,
+                            colorScheme: colorScheme,
+                            promoOfferCache: self.promoOfferCache
+                        )
+                    }
                 }
+                .modifier(NativePaywallNavigationModifier())
             }
         } else {
             let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(

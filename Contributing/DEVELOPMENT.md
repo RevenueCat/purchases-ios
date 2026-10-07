@@ -46,6 +46,14 @@ tuist generate tag:RevenueCatTests
 tuist generate Maestro  # Generates the Maestro example app
 ```
 
+For RevenueCatUI tests that exercise actual sheet and full-screen presentations, enable the app host:
+
+```bash
+TUIST_UI_TESTS_HOST_APP=true tuist generate RevenueCatUITests
+```
+
+These presentation tests skip in the default hostless test runner, which cannot mount modal views.
+
 When you generate a specific target (for example, `tuist generate RevenueCat`), Tuist only includes the files necessary to work on that target locally. This keeps the workspace lightweight and focused on what you need.
 
 ## Using Remote RevenueCat / RevenueCatUI Checkouts

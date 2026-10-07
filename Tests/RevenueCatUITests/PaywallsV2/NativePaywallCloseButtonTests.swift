@@ -133,26 +133,144 @@ final class NativePaywallCloseButtonTests: TestCase {
         XCTAssertNil(inner.navigationItem.rightBarButtonItems)
     }
 
-    func testSwiftUINavigationContainersInstallNativeClose() {
+    func testSwiftUINavigationContainersInstallNativeClose() async {
         if #available(iOS 16.0, *) {
-            self.assertNativeClose { button in NavigationStack { button } }
-            self.assertNativeClose { button in
+            await self.assertNativeClose { button in NavigationStack { button } }
+            await self.assertNativeClose { button in
                 NavigationStack { NavigationView { button }.navigationViewStyle(.stack) }
             }
-            self.assertNativeClose { button in
+            await self.assertNativeClose { button in
                 NavigationView { NavigationStack { button } }.navigationViewStyle(.stack)
             }
         }
-        self.assertNativeClose { button in NavigationView { button }.navigationViewStyle(.stack) }
+        await self.assertNativeClose { button in NavigationView { button }.navigationViewStyle(.stack) }
     }
 
-    func testMissingOrExplicitlyHiddenSwiftUINavigationKeepsFallback() {
-        self.assertNativeClose(expected: false) { button in button }
+    func testMissingOrExplicitlyHiddenSwiftUINavigationKeepsFallback() async {
+        await self.assertNativeClose(expected: false) { button in button }
         if #available(iOS 16.0, *) {
-            self.assertNativeClose(expected: false) { button in
+            await self.assertNativeClose(expected: false) { button in
                 NavigationStack { button.toolbar(.hidden, for: .navigationBar) }
             }
         }
+    }
+
+    func testMissingNavigationWrapperInstallsNativeClose() async {
+        await self.assertNativeClose { button in button.modifier(NativePaywallNavigationModifier()) }
+    }
+
+    func testWrapperReusesSwiftUINavigation() async {
+        if #available(iOS 16.0, *) {
+            await self.assertNativeClose { button in
+                NavigationStack { button.modifier(NativePaywallNavigationModifier()) }
+            }
+        }
+        await self.assertNativeClose { button in
+            NavigationView { button.modifier(NativePaywallNavigationModifier()) }.navigationViewStyle(.stack)
+        }
+    }
+
+    func testFullScreenPresentationAddsMissingNavigation() async throws {
+        try self.requireAppHost()
+        await self.assertModalNativeClose(enabled: true, existingNavigation: false, style: .fullScreen)
+    }
+
+    func testSheetPresentationAddsMissingNavigation() async throws {
+        try self.requireAppHost()
+        await self.assertModalNativeClose(enabled: true, existingNavigation: false, style: .pageSheet)
+    }
+
+    func testFullScreenPresentationReusesExistingNavigation() async throws {
+        try self.requireAppHost()
+        await self.assertModalNativeClose(enabled: true, existingNavigation: true, style: .fullScreen)
+    }
+
+    func testNativeCloseDisabledDoesNotAddNavigation() async throws {
+        try self.requireAppHost()
+        await self.assertModalNativeClose(enabled: false, existingNavigation: false, style: .fullScreen)
+    }
+
+    func testSwiftUIFullScreenCoverAddsMissingNavigation() async throws {
+        try self.requireAppHost()
+        var available = false
+        let button = NativePaywallCloseButton(
+            enabled: true, accessibilityLabel: "Close", action: {},
+            content: { Button("Configured Close") {} }, availabilityChanged: { available = $0 }
+        )
+        let presenter = UIHostingController(rootView:
+            Color.clear.fullScreenCover(isPresented: .constant(true)) {
+                button.modifier(NativePaywallNavigationModifier())
+            }
+        )
+        let window = self.host(presenter)
+        defer { self.close(window) }
+        await self.waitForPresentation()
+        XCTAssertNotNil(presenter.presentedViewController)
+        XCTAssertTrue(available)
+        XCTAssertEqual(self.navigationCount(in: presenter.presentedViewController), 1)
+    }
+
+    private func assertModalNativeClose(
+        enabled: Bool,
+        existingNavigation: Bool,
+        style: UIModalPresentationStyle,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) async {
+        var available = false
+        var reportedInstalled = false
+        let installed = enabled ? expectation(description: "Native close visible") : nil
+        let button = NativePaywallCloseButton(
+            enabled: enabled, accessibilityLabel: "Close", action: {},
+            content: { Button("Configured Close") {} }, availabilityChanged: {
+                available = $0
+                if $0 && !reportedInstalled {
+                    reportedInstalled = true
+                    installed?.fulfill()
+                }
+            }
+        )
+        let host = UIHostingController(rootView:
+            VStack {
+                Text("Sample paywall")
+                button
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .modifier(NativePaywallNavigationModifier())
+        )
+        let modal: UIViewController = existingNavigation ? UINavigationController(rootViewController: host) : host
+        modal.modalPresentationStyle = style
+        // Navigation in the presenter must not be mistaken for navigation in its modal.
+        let presenter = UINavigationController(rootViewController: UIViewController())
+        let window = self.host(presenter)
+        defer { self.close(window) }
+        await self.waitForPresentation()
+        presenter.present(modal, animated: false)
+        if let installed { await fulfillment(of: [installed], timeout: 3) }
+        await self.waitForPresentation()
+        XCTAssertTrue(presenter.presentedViewController === modal, file: file, line: line)
+        XCTAssertEqual(available, enabled, file: file, line: line)
+        XCTAssertEqual(self.navigationCount(in: modal), enabled ? 1 : 0, file: file, line: line)
+        modal.dismiss(animated: false)
+        await self.waitForPresentation()
+        XCTAssertNil(presenter.presentedViewController, file: file, line: line)
+    }
+
+    private func requireAppHost() throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty,
+                      "Generate with TUIST_UI_TESTS_HOST_APP=true to test actual modal presentations.")
+    }
+
+    private func waitForPresentation() async {
+        let settled = expectation(description: "Presentation settled")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { settled.fulfill() }
+        await fulfillment(of: [settled], timeout: 2)
+    }
+
+    private func navigationCount(in controller: UIViewController?) -> Int {
+        guard let controller else { return 0 }
+        return (controller is UINavigationController ? 1 : 0)
+            + controller.children.reduce(0) { $0 + self.navigationCount(in: $1) }
     }
 
     private func assertNativeClose<Content: View>(
@@ -160,7 +278,7 @@ final class NativePaywallCloseButtonTests: TestCase {
         @ViewBuilder container: (NativePaywallCloseButton<Button<Text>>) -> Content,
         file: StaticString = #filePath,
         line: UInt = #line
-    ) {
+    ) async {
         var available = false
         let button = NativePaywallCloseButton(
             enabled: true, accessibilityLabel: "Close", action: {},
@@ -169,7 +287,7 @@ final class NativePaywallCloseButtonTests: TestCase {
         let host = UIHostingController(rootView: container(button))
         let window = self.host(host)
         defer { self.close(window) }
-        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
+        await self.waitForPresentation()
         XCTAssertEqual(available, expected, file: file, line: line)
         XCTAssertLessThanOrEqual(self.nativeItems(in: host).count, 1, file: file, line: line)
     }
@@ -190,9 +308,16 @@ final class NativePaywallCloseButtonTests: TestCase {
     }
 
     private func host(_ controller: UIViewController) -> UIWindow {
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        let window: UIWindow
+        if let scene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first {
+            window = UIWindow(windowScene: scene)
+            window.frame = CGRect(x: 0, y: 0, width: 390, height: 844)
+        } else {
+            window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        }
         window.rootViewController = controller
         window.makeKeyAndVisible()
+        window.layoutIfNeeded()
         controller.view.layoutIfNeeded()
         RunLoop.main.run(until: Date().addingTimeInterval(0.1))
         return window
@@ -201,6 +326,7 @@ final class NativePaywallCloseButtonTests: TestCase {
     private func close(_ window: UIWindow) {
         window.isHidden = true
         window.rootViewController = nil
+        window.windowScene?.windows.first(where: { !$0.isHidden })?.makeKeyAndVisible()
     }
 }
 #endif

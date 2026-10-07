@@ -94,6 +94,16 @@ final class ButtonComponentViewTests: TestCase {
     }
 
     func testNativeCloseRunsExistingDismissalAndAnalytics() async throws {
+        try await self.assertNativeCloseRunsExistingDismissalAndAnalytics(fullScreen: false)
+    }
+
+    func testFullScreenNativeCloseDismissesAndTracksAnalytics() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty,
+                      "Generate with TUIST_UI_TESTS_HOST_APP=true to test actual modal presentations.")
+        try await self.assertNativeCloseRunsExistingDismissalAndAnalytics(fullScreen: true)
+    }
+
+    private func assertNativeCloseRunsExistingDismissalAndAnalytics(fullScreen: Bool) async throws {
         let viewModel = try Self.makeViewModel(
             component: PaywallComponent.ButtonComponent(
                 name: "close", action: .navigateBack,
@@ -102,26 +112,45 @@ final class ButtonComponentViewTests: TestCase {
         )
         let dismissed = expectation(description: "Existing close action")
         var interactions: [PaywallEvent.ComponentInteractionData] = []
-        let view = Self.configuredView(viewModel: viewModel, onDismiss: { dismissed.fulfill() })
+        weak var presentedController: UIViewController?
+        let view = Self.configuredView(viewModel: viewModel, onDismiss: {
+            if fullScreen { presentedController?.dismiss(animated: false) }
+            dismissed.fulfill()
+        })
+            .modifier(NativePaywallNavigationModifier())
             .environment(\.componentInteractionLogger, ComponentInteractionLogger { event in
                 interactions.append(event)
                 return true
             })
         let controller = UIHostingController(rootView: view)
-        let navigation = UINavigationController(rootViewController: controller)
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        let navigation = UINavigationController(rootViewController: fullScreen ? UIViewController() : controller)
+        let window: UIWindow
+        if let scene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first {
+            window = UIWindow(windowScene: scene)
+            window.frame = CGRect(x: 0, y: 0, width: 390, height: 844)
+        } else {
+            window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        }
         window.rootViewController = navigation
         window.makeKeyAndVisible()
         controller.view.layoutIfNeeded()
         defer {
             window.isHidden = true
             window.rootViewController = nil
+            window.windowScene?.windows.first(where: { !$0.isHidden })?.makeKeyAndVisible()
+        }
+        if fullScreen {
+            let ready = expectation(description: "Presenter ready")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { ready.fulfill() }
+            await fulfillment(of: [ready], timeout: 2)
+            controller.modalPresentationStyle = .fullScreen
+            presentedController = controller
+            navigation.present(controller, animated: false)
         }
         let installed = expectation(description: "Native close installed")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { installed.fulfill() }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { installed.fulfill() }
         await fulfillment(of: [installed], timeout: 2)
-        let items = (controller.navigationItem.leftBarButtonItems ?? [])
-            + (controller.navigationItem.rightBarButtonItems ?? [])
+        let items = self.closeItems(in: controller)
         XCTAssertEqual(items.count, 1)
         let item = try XCTUnwrap(items.first)
         if let primaryAction = item.primaryAction {
@@ -135,6 +164,18 @@ final class ButtonComponentViewTests: TestCase {
         XCTAssertEqual(interactions.count, 1)
         XCTAssertEqual(interactions.first?.componentValue, "navigate_back")
         XCTAssertEqual(interactions.first?.componentName, "close")
+        if fullScreen {
+            let closed = expectation(description: "Modal dismissed")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { closed.fulfill() }
+            await fulfillment(of: [closed], timeout: 2)
+            XCTAssertNil(navigation.presentedViewController)
+        }
+    }
+
+    private func closeItems(in controller: UIViewController) -> [UIBarButtonItem] {
+        let items = (controller.navigationItem.leftBarButtonItems ?? [])
+            + (controller.navigationItem.rightBarButtonItems ?? [])
+        return items + controller.children.flatMap { self.closeItems(in: $0) }
     }
 
 }

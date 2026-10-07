@@ -64,8 +64,8 @@ struct NativePaywallCloseBridge: UIViewControllerRepresentable {
         var navigationChanged: (Bool) -> Void = { _ in }
 
         func update(from controller: UIViewController) {
-            guard controller.viewIfLoaded?.window != nil,
-                  let navigation = controller.navigationController,
+            guard let navigation = controller.navigationController,
+                  navigation.viewIfLoaded?.window != nil,
                   let top = navigation.topViewController,
                   Self.isAncestor(top, of: controller) else {
                 self.reportNavigation(false)
@@ -160,12 +160,28 @@ struct NativePaywallCloseBridge: UIViewControllerRepresentable {
         }
     }
 
+    private final class ObservationView: UIView {
+        var changed: (() -> Void)?
+
+        override func didMoveToWindow() {
+            super.didMoveToWindow()
+            self.changed?()
+        }
+
+        override func layoutSubviews() {
+            super.layoutSubviews()
+            self.changed?()
+        }
+    }
+
     final class NavigationObserver: UIViewController {
         var changed: (() -> Void)?
         private var updateScheduled = false
 
         override func loadView() {
-            self.view = UIView()
+            let view = ObservationView()
+            view.changed = { [weak self] in self?.scheduleUpdate() }
+            self.view = view
             self.view.isUserInteractionEnabled = false
         }
 
