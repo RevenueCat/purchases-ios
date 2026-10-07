@@ -4,7 +4,7 @@ import XCTest
 import GoogleMobileAds
 @_spi(Internal) import RevenueCat
 @_spi(CheckpointsInternal) @testable import RevenueCatAdMob
-@_spi(CheckpointsInternal) import RevenueCatUI
+@_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
 
 @available(iOS 15.0, *)
 @MainActor
