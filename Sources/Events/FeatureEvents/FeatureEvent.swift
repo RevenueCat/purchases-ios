@@ -240,18 +240,18 @@ private extension CustomPaywallEvent {
 
 private extension WorkflowEvent {
 
-    func workflowEventMap() -> [String: Any] {
-        let typeName: String = {
-            switch self {
-            case .stepStarted: return "workflow_step_started"
-            case .stepCompleted: return "workflow_step_completed"
-            case .close: return "workflow_close"
-            }
-        }()
+    var typeName: String {
+        switch self {
+        case .stepStarted: return "workflow_step_started"
+        case .stepCompleted: return "workflow_step_completed"
+        case .close: return "workflow_close"
+        }
+    }
 
+    func workflowEventMap() -> [String: Any] {
         var result: [String: Any] = [
             "discriminator": "workflows",
-            "type": typeName,
+            "type": self.typeName,
             "id": self.creationData.id.uuidString,
             "timestamp": self.creationData.date.millisecondsSince1970,
             "workflow_id": self.data.workflowId,
@@ -265,10 +265,13 @@ private extension WorkflowEvent {
         if let entryReason = self.data.entryReason { result["entry_reason"] = entryReason }
         if let isFirstStep = self.data.isFirstStep { result["is_first_step"] = isFirstStep }
         if let isLastStep = self.data.isLastStep { result["is_last_step"] = isLastStep }
+        if let workflowBlobRef = self.data.workflowBlobRef { result["blob_ref"] = workflowBlobRef }
+        if let fallbackOriginalStepId = self.data.fallbackOriginalStepId {
+            result["fallback_original_step_id"] = fallbackOriginalStepId
+        }
         if let experiment = self.data.experiment {
             result["experiment_id"] = experiment.experimentId
             result["experiment_variant"] = experiment.experimentVariant
-            result["blob_ref"] = experiment.workflowBlobRef
         }
 
         return result
