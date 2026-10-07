@@ -450,7 +450,7 @@ struct WorkflowPaywallView: View {
             await self.animateTransition(id: activeTransitionID)
         }
         // Re-emitted on every step change because navigator is @StateObject with @Published
-        // currentStepId. The exit offer is resolved synchronously from allOfferings on the
+        // currentStepId. The exit offer is resolved synchronously from the context's offerings on the
         // triggering step; when the user navigates away the value becomes nil, clearing
         // exitOfferOffering.
         .preference(
