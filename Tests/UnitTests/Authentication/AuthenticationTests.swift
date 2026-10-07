@@ -74,7 +74,7 @@ class AuthenticationTests: TestCase {
     func testIdentifyCurrentUserWithStringSucceedsAndNotifiesInternalDelegate() throws {
         let authentication = self.makeAuthentication()
         let expectedInfo = try CustomerInfo(data: Self.customerInfoData(originalAppUserId: "logged-in-user"))
-        self.identityManager.mockLogInResult = .success((expectedInfo, true))
+        self.identityManager.mockLogInResult = .success((expectedInfo, true, nil))
 
         var receivedInfo: CustomerInfo?
         var receivedCreated: Bool?
@@ -118,7 +118,7 @@ class AuthenticationTests: TestCase {
     func testIdentifyCurrentUserWithStringTrimsWhitespaceBeforeLoggingIn() throws {
         let authentication = self.makeAuthentication()
         let info = try XCTUnwrap(CustomerInfo(data: Self.customerInfoData(originalAppUserId: "logged-in-user")))
-        self.identityManager.mockLogInResult = .success((info, true))
+        self.identityManager.mockLogInResult = .success((info, true, nil))
         let untrimmedAppUserID = "  \(Self.appUserID)  "
 
         authentication.identifyCurrentUser(as: untrimmedAppUserID) { _, _, _ in }
@@ -146,7 +146,7 @@ class AuthenticationTests: TestCase {
         try AvailabilityChecks.skipIfCompiler63OrLater() // contains explanatory comment
         let authentication = self.makeAuthentication()
         let info = try XCTUnwrap(CustomerInfo(data: Self.customerInfoData(originalAppUserId: "logged-in-user")))
-        self.identityManager.mockLogInResult = .success((info, true))
+        self.identityManager.mockLogInResult = .success((info, true, nil))
 
         authentication.identifyCurrentUser(as: "static-user-id") { _, _, _ in }
 
@@ -159,7 +159,7 @@ class AuthenticationTests: TestCase {
     func testIdentifyCurrentUserAsyncReturnsCustomerInfoAndCreated() async throws {
         let authentication = self.makeAuthentication()
         let expectedInfo = try CustomerInfo(data: Self.customerInfoData(originalAppUserId: "logged-in-user"))
-        self.identityManager.mockLogInResult = .success((expectedInfo, true))
+        self.identityManager.mockLogInResult = .success((expectedInfo, true, nil))
         let appUserID = Self.appUserID
 
         let result = try await authentication.identifyCurrentUser(as: appUserID)
@@ -187,7 +187,7 @@ class AuthenticationTests: TestCase {
         try AvailabilityChecks.skipIfCompiler63OrLater() // contains explanatory comment
         let authentication = self.makeAuthentication()
         self.identityManager.mockLogInResult = .success(
-            (try CustomerInfo(data: Self.customerInfoData(originalAppUserId: "logged-in-user")), true)
+            (try CustomerInfo(data: Self.customerInfoData(originalAppUserId: "logged-in-user")), true, nil)
         )
 
         _ = try await authentication.identifyCurrentUser(as: "static-user-id")
@@ -216,7 +216,7 @@ class AuthenticationTests: TestCase {
     func testLogInUsingIdentitySucceedsAndNotifiesInternalDelegate() throws {
         let authentication = self.makeAuthentication(tokenManagerEnabled: true)
         let expectedInfo = try CustomerInfo(data: Self.customerInfoData(originalAppUserId: "logged-in-user"))
-        self.identityManager.mockLogInWithIdentityResult = .success((expectedInfo, false))
+        self.identityManager.mockLogInWithIdentityResult = .success((expectedInfo, false, nil))
 
         var receivedInfo: CustomerInfo?
         var receivedError: PublicError?
@@ -457,7 +457,7 @@ class AuthenticationTests: TestCase {
         let authentication = self.makeAuthentication(tokenManagerEnabled: true)
         self.identityManager.mockNeedsIAMLogin = true
         let expectedInfo = try CustomerInfo(data: Self.customerInfoData(originalAppUserId: "logged-in-user"))
-        self.identityManager.mockLogInWithIdentityResult = .success((expectedInfo, false))
+        self.identityManager.mockLogInWithIdentityResult = .success((expectedInfo, false, nil))
 
         authentication.logInIfNeeded()
 
