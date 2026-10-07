@@ -95,6 +95,7 @@
 		116EA498A344F7446083E8C5 /* EqualityOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41EEB3B4E7701F8CC8B811A9 /* EqualityOperators.swift */; };
 		11CC2EA83C56933E40D8E5D8 /* WebViewEnvelope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89DD761C9E00E61032AAEB44 /* WebViewEnvelope.swift */; };
 		150BEBF14F59182317CDA8DA /* WorkflowContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = F598F832810DB534092FBED3 /* WorkflowContext.swift */; };
+		EFDB1FD33EE04B5FA09BB3F2 /* WorkflowOfferings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C71A53917DB49089A8ADE1E /* WorkflowOfferings.swift */; };
 		161627FE2F50987800DEEDEB /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 161627FD2F50987800DEEDEB /* Media.xcassets */; };
 		16216FEF2EBB8641008ACFE9 /* ResumeAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16216FEE2EBB8641008ACFE9 /* ResumeAction.swift */; };
 		162170152EBE50F0008ACFE9 /* LocaleComparisonTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 162170142EBE50F0008ACFE9 /* LocaleComparisonTests.swift */; };
@@ -3440,6 +3441,7 @@
 		F591492526B994B400D32E58 /* SKPaymentTransactionExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKPaymentTransactionExtensionsTests.swift; sourceTree = "<group>"; };
 		F591492726B9956C00D32E58 /* MockTransaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockTransaction.swift; sourceTree = "<group>"; };
 		F598F832810DB534092FBED3 /* WorkflowContext.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowContext.swift; sourceTree = "<group>"; };
+		5C71A53917DB49089A8ADE1E /* WorkflowOfferings.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowOfferings.swift; sourceTree = "<group>"; };
 		F5BE423F26962ACF00254A30 /* ReceiptRefreshPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptRefreshPolicy.swift; sourceTree = "<group>"; };
 		F5BE424126965F9F00254A30 /* ProductRequestData+Initialization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProductRequestData+Initialization.swift"; sourceTree = "<group>"; };
 		F5BE4244269676E200254A30 /* StoreKitRequestFetcherTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StoreKitRequestFetcherTests.swift; sourceTree = "<group>"; };
@@ -6500,6 +6502,7 @@
 				16E147A32F3B4C010089B609 /* PurchasesUIService.swift */,
 				887A5FF02C1D037000E1A461 /* PurchaseHandler+TestData.swift */,
 				F598F832810DB534092FBED3 /* WorkflowContext.swift */,
+				5C71A53917DB49089A8ADE1E /* WorkflowOfferings.swift */,
 				9FA3AA2BC4C1B8CE7E9A3B59 /* WorkflowPreview.swift */,
 			);
 			path = Purchasing;
@@ -9493,6 +9496,7 @@
 				E1D360B3B7EA478080262A84 /* WorkflowStepEventCoordinator.swift in Sources */,
 				97B9F00926E0977B0DAAD7D7 /* EnvironmentValues+Workflow.swift in Sources */,
 				150BEBF14F59182317CDA8DA /* WorkflowContext.swift in Sources */,
+				EFDB1FD33EE04B5FA09BB3F2 /* WorkflowOfferings.swift in Sources */,
 				C53CDAA4FC3E6B51CC70D724 /* WorkflowPaywallView.swift in Sources */,
 				8218F275D8114FE8A8A5C481 /* WorkflowSkeleton.swift in Sources */,
 				8218F275D8114FE8A8A5C482 /* WorkflowSkeletonShimmer.swift in Sources */,
