@@ -404,7 +404,11 @@ public struct PaywallView: View {
                         )
                     }
                 }
-                .modifier(NativePaywallNavigationModifier())
+                .modifier(NativePaywallNavigationModifier(
+                    paywallComponents: paywallComponents,
+                    workflowContext: workflowContext,
+                    preferredLocale: purchaseHandler.preferredLocaleOverride ?? .current
+                ))
             }
         } else {
             let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(

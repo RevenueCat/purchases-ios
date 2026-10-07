@@ -18,9 +18,7 @@ import UIKit
 @available(iOS 15.0, *)
 struct NativePaywallCloseBridge: UIViewControllerRepresentable {
     let accessibilityLabel: String
-    let installUIKitClose: Bool
     let action: () -> Void
-    let navigationChanged: (Bool) -> Void
     let availabilityChanged: (Bool) -> Void
 
     func makeUIViewController(context: Context) -> NavigationObserver {
@@ -33,8 +31,6 @@ struct NativePaywallCloseBridge: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ controller: NavigationObserver, context: Context) {
-        context.coordinator.installUIKitClose = self.installUIKitClose
-        context.coordinator.navigationChanged = self.navigationChanged
         context.coordinator.action = self.action
         context.coordinator.closeLabel = self.accessibilityLabel
         context.coordinator.availabilityChanged = self.availabilityChanged
@@ -59,16 +55,12 @@ struct NativePaywallCloseBridge: UIViewControllerRepresentable {
         private weak var owner: UIViewController?
         private var item: UIBarButtonItem?
         private var available: Bool?
-        private var hasNavigation: Bool?
-        var installUIKitClose = true
-        var navigationChanged: (Bool) -> Void = { _ in }
 
         func update(from controller: UIViewController) {
             guard let navigation = controller.navigationController,
                   navigation.viewIfLoaded?.window != nil,
                   let top = navigation.topViewController,
                   Self.isAncestor(top, of: controller) else {
-                self.reportNavigation(false)
                 self.releaseOwnership()
                 self.report(false)
                 return
@@ -86,14 +78,12 @@ struct NativePaywallCloseBridge: UIViewControllerRepresentable {
                 )
             }
             guard ownership.coordinator == nil || ownership.coordinator === self else {
-                self.reportNavigation(false)
                 self.report(false)
                 return
             }
             ownership.coordinator = self
             self.navigationOwner = top
-            self.reportNavigation(true)
-            guard !navigation.isNavigationBarHidden, self.installUIKitClose else {
+            guard !navigation.isNavigationBarHidden else {
                 self.removeItem()
                 self.report(false)
                 return
@@ -136,12 +126,6 @@ struct NativePaywallCloseBridge: UIViewControllerRepresentable {
             }
             self.item = nil
             self.owner = nil
-        }
-
-        private func reportNavigation(_ hasNavigation: Bool) {
-            guard self.hasNavigation != hasNavigation else { return }
-            self.hasNavigation = hasNavigation
-            self.navigationChanged(hasNavigation)
         }
 
         private func report(_ available: Bool) {
@@ -215,65 +199,6 @@ struct NativePaywallCloseBridge: UIViewControllerRepresentable {
 @MainActor
 private final class NativePaywallCloseOwnership: NSObject {
     weak var coordinator: NativePaywallCloseBridge.Coordinator?
-}
-
-/// SwiftUI can evaluate toolbar content without displaying it. Observe the backing view's
-/// actual window and ancestor visibility before removing the configured paywall button.
-@available(iOS 15.0, *)
-struct NativeToolbarVisibilityObserver: UIViewRepresentable {
-    let changed: (Bool) -> Void
-
-    func makeUIView(context: Context) -> VisibilityView { VisibilityView() }
-
-    func updateUIView(_ view: VisibilityView, context: Context) {
-        view.changed = self.changed
-        view.scheduleUpdate()
-    }
-
-    static func dismantleUIView(_ view: VisibilityView, coordinator: ()) {
-        let changed = view.changed
-        view.changed = nil
-        DispatchQueue.main.async { changed?(false) }
-    }
-
-    final class VisibilityView: UIView {
-        var changed: ((Bool) -> Void)?
-        private var reported: Bool?
-        private var updateScheduled = false
-
-        override func didMoveToWindow() {
-            super.didMoveToWindow()
-            self.scheduleUpdate()
-        }
-
-        override func layoutSubviews() {
-            super.layoutSubviews()
-            self.scheduleUpdate()
-        }
-
-        func scheduleUpdate() {
-            guard !self.updateScheduled else { return }
-            self.updateScheduled = true
-            DispatchQueue.main.async { [weak self] in
-                guard let self else { return }
-                self.updateScheduled = false
-                let visible = self.isActuallyVisible
-                guard self.reported != visible else { return }
-                self.reported = visible
-                self.changed?(visible)
-            }
-        }
-
-        private var isActuallyVisible: Bool {
-            guard self.window != nil else { return false }
-            var current: UIView? = self
-            while let view = current {
-                if view.isHidden || view.alpha == 0 { return false }
-                current = view.superview
-            }
-            return true
-        }
-    }
 }
 
 #endif

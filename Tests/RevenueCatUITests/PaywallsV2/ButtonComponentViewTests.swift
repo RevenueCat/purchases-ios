@@ -117,7 +117,7 @@ final class ButtonComponentViewTests: TestCase {
             if fullScreen { presentedController?.dismiss(animated: false) }
             dismissed.fulfill()
         })
-            .modifier(NativePaywallNavigationModifier())
+            .modifier(NativePaywallNavigationModifier(requested: true))
             .environment(\.componentInteractionLogger, ComponentInteractionLogger { event in
                 interactions.append(event)
                 return true
