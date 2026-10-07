@@ -73,6 +73,43 @@
     ],
     "_timeRate" : 0
   },
+  "subscriptionBundleGroups" : [
+    {
+      "id" : "3516D035",
+      "localizations" : [
+
+      ],
+      "name" : "bundle subscription group",
+      "subscriptions" : [
+        {
+          "displayPrice" : "0.99",
+          "duration" : "P1Y",
+          "groupNumber" : 1,
+          "internalID" : "7A660136",
+          "introductoryOffers" : [
+
+          ],
+          "isFamilyShareable" : false,
+          "linkedSubscriptions" : [
+            {
+              "internal" : "F04B58DC"
+            }
+          ],
+          "localizations" : [
+            {
+              "description" : "This is a subscription bundle.",
+              "displayName" : "Subscription Bundle",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.rc.subscription.bundle",
+          "referenceName" : "Subscription Bundle",
+          "subscriptionGroupID" : "3516D035",
+          "type" : "SubscriptionBundle"
+        }
+      ]
+    }
+  ],
   "subscriptionGroups" : [
     {
       "id" : "7096FF06",
@@ -338,8 +375,48 @@
       ]
     }
   ],
+  "subscriptionSuiteGroups" : [
+    {
+      "id" : "D2E21E3F",
+      "localizations" : [
+
+      ],
+      "name" : "subscription suite group",
+      "subscriptions" : [
+        {
+          "displayPrice" : "0.99",
+          "duration" : "P1Y",
+          "groupNumber" : 1,
+          "internalID" : "F5E096A9",
+          "introductoryOffers" : [
+
+          ],
+          "isFamilyShareable" : false,
+          "localizations" : [
+            {
+              "description" : "This is a subscription suite.",
+              "displayName" : "Subscription Suite",
+              "locale" : "en_US"
+            }
+          ],
+          "members" : [
+            {
+              "groupID" : "187DA8D4",
+              "internalID" : "2796933A",
+              "productID" : "com.revenuecat.subscription.suite.member.1",
+              "referenceName" : "Member Sub 1"
+            }
+          ],
+          "productID" : "com.rc.subscription.suite",
+          "referenceName" : "Subscription Suite",
+          "subscriptionGroupID" : "D2E21E3F",
+          "type" : "SubscriptionSuite"
+        }
+      ]
+    }
+  ],
   "version" : {
-    "major" : 5,
-    "minor" : 0
+    "major" : 6,
+    "minor" : 3
   }
 }

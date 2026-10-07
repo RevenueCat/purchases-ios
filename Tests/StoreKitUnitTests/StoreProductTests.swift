@@ -770,6 +770,34 @@ extension StoreProductTests {
     }
 }
 
+// MARK: - Subscription Bundles & Suites Tests
+@available(iOS 27.0, tvOS 27.0, macOS 27.0, watchOS 27.0, visionOS 27.0, *)
+extension StoreProductTests {
+    func testLoadsSubscriptionBundle() async throws {
+        try AvailabilityChecks.iOS27APIAvailableOrSkipTest()
+
+        let product = try await ProductsFetcherSK2().product(withIdentifier: Self.subscriptionBundleProductId)
+
+        expect(product.productType) == .subscriptionBundle
+        expect(product.productCategory) == .subscription
+        expect(product.subscriptionPeriod) == SubscriptionPeriod(value: 1, unit: .year)
+        expect(product.price.description) == "0.99"
+        expect(product.localizedPriceString) == "$0.99"
+    }
+
+    func testLoadsSubscriptionSuite() async throws {
+        try AvailabilityChecks.iOS27APIAvailableOrSkipTest()
+
+        let product = try await ProductsFetcherSK2().product(withIdentifier: Self.subscriptionSuiteProductId)
+
+        expect(product.productType) == .subscriptionSuite
+        expect(product.productCategory) == .subscription
+        expect(product.subscriptionPeriod) == SubscriptionPeriod(value: 1, unit: .year)
+        expect(product.price.description) == "0.99"
+        expect(product.localizedPriceString) == "$0.99"
+    }
+}
+
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
 private extension StoreProductTests {
 
