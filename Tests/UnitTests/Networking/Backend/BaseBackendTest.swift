@@ -40,6 +40,7 @@ class BaseBackendTests: TestCase {
     private(set) var virtualCurrenciesAPI: VirtualCurrenciesAPI!
     private(set) var adsAPI: AdsAPI!
     private(set) var remoteConfigAPI: RemoteConfigAPI!
+    private(set) var subscriberDimensionsStore: SubscriberDimensionsStore!
 
     static let apiKey = "asharedsecret"
     static let userID = "user"
@@ -75,24 +76,31 @@ class BaseBackendTests: TestCase {
         self.mockProductEntitlementMappingFetcher = MockProductEntitlementMappingFetcher()
         self.mockOfflineCustomerInfoCreator = MockOfflineCustomerInfoCreator()
         self.mockPurchasedProductsFetcher = MockPurchasedProductsFetcher()
+        self.subscriberDimensionsStore = SubscriberDimensionsStore(
+            deviceCache: MockDeviceCache(systemInfo: self.systemInfo)
+        )
 
         let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: self.systemInfo)
         let backendConfig = BackendConfiguration(
             httpClient: self.httpClient,
             operationDispatcher: self.operationDispatcher,
-            operationQueue: MockBackend.QueueProvider.createBackendQueue(),
+            operationQueue: MockBackend.QueueProvider.createQueue(for: .default),
             diagnosticsQueue: MockBackend.QueueProvider.createDiagnosticsQueue(),
             systemInfo: self.systemInfo,
             offlineCustomerInfoCreator: self.mockOfflineCustomerInfoCreator,
             dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate)
         )
 
-        let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
+        let customer = CustomerAPI(
+            backendConfig: backendConfig,
+            attributionFetcher: attributionFetcher,
+            subscriberDimensionsStore: self.subscriberDimensionsStore
+        )
         self.identity = IdentityAPI(backendConfig: backendConfig)
         self.token = TokenAPI(backendConfig: backendConfig)
         self.offerings = OfferingsAPI(backendConfig: backendConfig)
-        self.webBilling = WebBillingAPI(backendConfig: backendConfig)
+        self.webBilling = WebBillingAPI(lanes: BackendLanes(configuration: backendConfig))
         self.offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
         self.internalAPI = InternalAPI(backendConfig: backendConfig)
         self.customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
@@ -102,7 +110,7 @@ class BaseBackendTests: TestCase {
         self.adsAPI = AdsAPI(backendConfig: backendConfig)
         self.remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
 
-        self.backend = Backend(backendConfig: backendConfig,
+        self.backend = Backend(lanes: BackendLanes(configuration: backendConfig),
                                customerAPI: customer,
                                identityAPI: self.identity,
                                tokenAPI: self.token,

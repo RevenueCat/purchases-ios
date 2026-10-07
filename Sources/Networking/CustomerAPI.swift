@@ -27,10 +27,16 @@ final class CustomerAPI {
     private let isPurchaseAllowedByRestoreBehaviorCallbacksCache:
     CallbackCache<IsPurchaseAllowedByRestoreBehaviorCallback>
     private let attributionFetcher: AttributionFetcher
+    private let subscriberDimensionsStore: SubscriberDimensionsStoreType
 
-    init(backendConfig: BackendConfiguration, attributionFetcher: AttributionFetcher) {
+    init(
+        backendConfig: BackendConfiguration,
+        attributionFetcher: AttributionFetcher,
+        subscriberDimensionsStore: SubscriberDimensionsStoreType
+    ) {
         self.backendConfig = backendConfig
         self.attributionFetcher = attributionFetcher
+        self.subscriberDimensionsStore = subscriberDimensionsStore
         self.customerInfoCallbackCache = CallbackCache<CustomerInfoCallback>()
         self.isPurchaseAllowedByRestoreBehaviorCallbacksCache =
         CallbackCache<IsPurchaseAllowedByRestoreBehaviorCallback>()
@@ -173,7 +179,8 @@ final class CustomerAPI {
             configuration: config,
             postData: postData,
             customerInfoCallbackCache: self.customerInfoCallbackCache,
-            offlineCustomerInfoCreator: offlineCustomerInfoCreator
+            offlineCustomerInfoCreator: offlineCustomerInfoCreator,
+            subscriberDimensionsStore: self.subscriberDimensionsStore
         )
 
         let callbackObject = CustomerInfoCallback(cacheKey: factory.cacheKey,

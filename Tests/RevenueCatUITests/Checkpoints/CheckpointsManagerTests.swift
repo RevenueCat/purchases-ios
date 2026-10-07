@@ -13,7 +13,7 @@
 //
 
 @_spi(Internal) @testable import RevenueCat
-@_spi(CheckpointsInternal) @_spi(Internal) @testable import RevenueCatUI
+@_spi(InviteOnlyCheckpointsApi) @_spi(Internal) @testable import RevenueCatUI
 import XCTest
 
 // swiftlint:disable file_length type_body_length
@@ -59,6 +59,67 @@ final class CheckpointsManagerTests: TestCase {
             "1valid": .string("value"),
             "_valid": .string("value")
         ])
+    }
+
+    func testCheckpointCallParamsResolveDefaultPresentationModeToSheet() {
+        XCTAssertEqual(CheckpointCallParams().presentationMode, .modalSheet)
+        XCTAssertEqual(CheckpointCallParams(presentationMode: .default).presentationMode, .modalSheet)
+        XCTAssertEqual(CheckpointCallParams(presentationMode: .modalFullScreen).presentationMode, .modalFullScreen)
+    }
+
+    func testErrorPresentationHandlerPrefersLocalPresenter() {
+        let globalPresenter = MockErrorPresenter()
+        let manager = CheckpointsManager { _, _ in .noAction(.unknownCheckpoint) }
+        manager.errorPresenter = globalPresenter
+        var localCallCount = 0
+        var defaultCallCount = 0
+
+        let handler = manager.errorPresentationHandler(
+            for: .init(errorPresenter: { _, _ in localCallCount += 1 }),
+            defaultHandler: {
+                defaultCallCount += 1
+                return { _, _ in }
+            }
+        )
+        handler(Self.errorPresentationParams, Self.errorPresentationCompletion)
+
+        XCTAssertEqual(localCallCount, 1)
+        XCTAssertEqual(globalPresenter.callCount, 0)
+        XCTAssertEqual(defaultCallCount, 0)
+    }
+
+    func testErrorPresentationHandlerUsesGlobalPresenterWithoutLocalPresenter() {
+        let globalPresenter = MockErrorPresenter()
+        let manager = CheckpointsManager { _, _ in .noAction(.unknownCheckpoint) }
+        manager.errorPresenter = globalPresenter
+        var defaultCallCount = 0
+
+        let handler = manager.errorPresentationHandler(
+            for: .init(),
+            defaultHandler: {
+                defaultCallCount += 1
+                return { _, _ in }
+            }
+        )
+        handler(Self.errorPresentationParams, Self.errorPresentationCompletion)
+
+        XCTAssertEqual(globalPresenter.callCount, 1)
+        XCTAssertEqual(defaultCallCount, 0)
+    }
+
+    func testErrorPresentationHandlerUsesDefaultWithoutCustomPresenter() {
+        let manager = CheckpointsManager { _, _ in .noAction(.unknownCheckpoint) }
+        var defaultCallCount = 0
+
+        let handler = manager.errorPresentationHandler(
+            for: .init(),
+            defaultHandler: {
+                return { _, _ in defaultCallCount += 1 }
+            }
+        )
+        handler(Self.errorPresentationParams, Self.errorPresentationCompletion)
+
+        XCTAssertEqual(defaultCallCount, 1)
     }
 
     func testNoActionDoesNotPresentAnything() async throws {
@@ -120,6 +181,23 @@ final class CheckpointsManagerTests: TestCase {
             "attempt": 2,
             "enabled": true
         ])
+        XCTAssertEqual(executor.presentations.first?.presentationMode, .modalSheet)
+    }
+
+    func testResolvedWorkflowReceivesRequestedPresentationMode() async throws {
+        let executor = MockWorkflowPresenter()
+        executor.execution = .completed(customerInfo: nil)
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
+            workflowPresenter: executor
+        )
+
+        _ = try await manager.executeCheckpoint(
+            identifier: "soft_paywall",
+            params: .init(presentationMode: .modalFullScreen)
+        )
+
+        XCTAssertEqual(executor.presentations.first?.presentationMode, .modalFullScreen)
     }
 
     func testResolvedWorkflowReceivesInitialActiveEntitlements() async throws {
@@ -398,10 +476,14 @@ final class CheckpointsManagerTests: TestCase {
         var receivedParams: PaywallPresentationParams?
         let execution = try await manager.executeCheckpoint(
             identifier: "onboarding",
-            params: .init(customVariables: ["source": "test"], paywallPresenter: { params, completion in
-                receivedParams = params
-                completion(.continued)
-            })
+            params: .init(
+                customVariables: ["source": "test"],
+                presentationMode: .modalFullScreen,
+                paywallPresenter: { params, completion in
+                    receivedParams = params
+                    completion(.continued)
+                }
+            )
         )
 
         guard case .completed = execution else {
@@ -409,6 +491,7 @@ final class CheckpointsManagerTests: TestCase {
         }
         XCTAssertEqual(receivedParams?.checkpointIdentifier, "onboarding")
         XCTAssertEqual(receivedParams?.customVariables, ["source": "test"])
+        XCTAssertEqual(receivedParams?.presentationMode, .modalFullScreen)
         XCTAssertEqual(receivedParams?.offering.identifier, "offering-id")
         XCTAssertTrue(executor.presentations.isEmpty)
     }
@@ -867,6 +950,24 @@ final class CheckpointsManagerTests: TestCase {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension CheckpointsManagerTests {
+
+    static var errorPresentationParams: ErrorPresentationParams {
+        return .init(
+            checkpointIdentifier: "test_checkpoint",
+            error: NSError(domain: "test", code: 1),
+            customVariables: [:],
+            flowCanContinue: true
+        )
+    }
+
+    static var errorPresentationCompletion: ErrorPresentationCompletion {
+        return .init { _ in }
+    }
+
+}
+
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension CheckpointsManager {
@@ -935,6 +1036,18 @@ private final class MockPaywallPresenter: PaywallPresenter {
         self.callCount += 1
         self.receivedParams = params
         completion(.continued)
+    }
+
+}
+
+@MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class MockErrorPresenter: ErrorPresenter {
+
+    private(set) var callCount = 0
+
+    func present(params: ErrorPresentationParams, completion: ErrorPresentationCompletion) {
+        self.callCount += 1
     }
 
 }

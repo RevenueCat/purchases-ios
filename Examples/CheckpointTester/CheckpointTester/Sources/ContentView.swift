@@ -14,7 +14,7 @@
 
 import Foundation
 import RevenueCat
-@_spi(CheckpointsInternal) import RevenueCatUI
+@_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
 import SwiftUI
 
 struct ContentView: View {
@@ -117,14 +117,27 @@ struct ContentView: View {
                 }
 
                 Section("Offering-step presenter") {
+                    Text(self.model.paywallPresenterMode.description)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+
                     Picker("Presentation mode", selection: self.$model.paywallPresenterMode) {
                         ForEach(PaywallPresenterMode.allCases) { mode in
                             Text(mode.title).tag(mode)
                         }
                     }
                     .pickerStyle(.segmented)
+                }
 
-                    Text(self.model.paywallPresenterMode.description)
+                Section("Error presenter") {
+                    Picker("Presentation mode", selection: self.$model.errorPresenterMode) {
+                        ForEach(ErrorPresenterMode.allCases) { mode in
+                            Text(mode.title).tag(mode)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+
+                    Text(self.model.errorPresenterMode.description)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -134,6 +147,9 @@ struct ContentView: View {
             .subscriberAttributeToolbar(isPresented: self.$isSubscriberAttributeEditorPresented)
             .onChange(of: self.model.paywallPresenterMode) { _ in
                 self.model.configurePaywallPresenter()
+            }
+            .onChange(of: self.model.errorPresenterMode) { _ in
+                self.model.configureErrorPresenter()
             }
         }
     }

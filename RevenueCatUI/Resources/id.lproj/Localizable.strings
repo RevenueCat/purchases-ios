@@ -22,6 +22,10 @@
 "Continue" = "Melanjutkan";
 "Default_offer_details_with_intro_offer" = "Mulai uji coba {{ sub_offer_duration }} Anda, lalu {{ total_price_and_per_month }}.";
 "Something went wrong" = "Ada yang salah";
+"Payment failed." = "Pembayaran gagal.";
+"Your purchase is still processing." = "Pembelian Anda masih diproses.";
 "Purchase" = "Beli";
-"You are currently subscribed to this" = "Anda sudah berlangganan ini";
 "You've already purchased this" = "Anda sudah membeli ini";
+"Your purchase was successful." = "Pembelian Anda berhasil.";
+"Purchase unavailable" = "Pembelian tidak tersedia";
+"This purchase isn't available in your region." = "Pembelian ini tidak tersedia di wilayah Anda.";

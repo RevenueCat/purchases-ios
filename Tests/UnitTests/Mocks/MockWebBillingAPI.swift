@@ -48,6 +48,7 @@ class MockWebBillingAPI: WebBillingAPI {
         let presentedOfferingContext: PresentedOfferingContext
         let paywall: PostHostedCheckoutOperation.Paywall?
         let externalPurchaseTokenID: String?
+        let previousOperationSessionID: String?
 
     }
 
@@ -62,6 +63,7 @@ class MockWebBillingAPI: WebBillingAPI {
         presentedOfferingContext: PresentedOfferingContext,
         paywall: PostHostedCheckoutOperation.Paywall?,
         externalPurchaseTokenID: String?,
+        previousOperationSessionID: String?,
         completion: @escaping HostedCheckoutResponseHandler
     ) {
         self.invokedPostHostedCheckout = true
@@ -70,9 +72,40 @@ class MockWebBillingAPI: WebBillingAPI {
                                                          packageID: packageID,
                                                          presentedOfferingContext: presentedOfferingContext,
                                                          paywall: paywall,
-                                                         externalPurchaseTokenID: externalPurchaseTokenID)
+                                                         externalPurchaseTokenID: externalPurchaseTokenID,
+                                                         previousOperationSessionID: previousOperationSessionID)
 
         if let result = self.stubbedPostHostedCheckoutCompletionResult {
+            completion(result)
+        }
+    }
+
+    struct GetHostedCheckoutStatusParameters {
+
+        let appUserID: String
+        let operationSessionID: String
+
+    }
+
+    var invokedGetHostedCheckoutStatus = false
+    var invokedGetHostedCheckoutStatusCount = 0
+    var invokedGetHostedCheckoutStatusParameters: GetHostedCheckoutStatusParameters?
+    var stubbedGetHostedCheckoutStatusCompletionResult: Result<HostedCheckoutStatusResponse, BackendError>?
+    /// Runs while the request is out, before it answers.
+    var whileGettingHostedCheckoutStatus: () -> Void = {}
+
+    override func getHostedCheckoutStatus(
+        appUserID: String,
+        operationSessionID: String,
+        completion: @escaping HostedCheckoutStatusResponseHandler
+    ) {
+        self.invokedGetHostedCheckoutStatus = true
+        self.invokedGetHostedCheckoutStatusCount += 1
+        self.invokedGetHostedCheckoutStatusParameters = .init(appUserID: appUserID,
+                                                              operationSessionID: operationSessionID)
+        self.whileGettingHostedCheckoutStatus()
+
+        if let result = self.stubbedGetHostedCheckoutStatusCompletionResult {
             completion(result)
         }
     }

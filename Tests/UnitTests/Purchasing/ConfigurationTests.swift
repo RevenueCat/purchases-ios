@@ -15,7 +15,7 @@ import Foundation
 import Nimble
 import XCTest
 
-@testable @_spi(Internal) import RevenueCat
+@testable @_spi(Experimental) @_spi(Internal) import RevenueCat
 
 class ConfigurationTests: TestCase {
 
@@ -220,6 +220,29 @@ class ConfigurationTests: TestCase {
         expect(configuration.automaticDeviceIdentifierCollectionEnabled) == false
     }
 
+    func testUseExternalPurchaseCustomLinksIsDisabledByDefault() {
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .build()
+        expect(configuration.useExternalPurchaseCustomLinks) == false
+        expect(configuration.enableExternalPurchasesInSimulator) == true
+    }
+
+    func testUseExternalPurchaseCustomLinksCanBeSet() {
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .with(useExternalPurchaseCustomLinks: true)
+            .build()
+        expect(configuration.useExternalPurchaseCustomLinks) == true
+        expect(configuration.enableExternalPurchasesInSimulator) == true
+    }
+
+    func testEnableExternalPurchasesInSimulatorCanBeDisabled() {
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .with(useExternalPurchaseCustomLinks: true, enableExternalPurchasesInSimulator: false)
+            .build()
+        expect(configuration.useExternalPurchaseCustomLinks) == true
+        expect(configuration.enableExternalPurchasesInSimulator) == false
+    }
+
     // MARK: - Equality
 
     func testTwoConfigurationsWithIdenticalFieldsAreEqualAndHaveSameHash() {
@@ -268,6 +291,24 @@ class ConfigurationTests: TestCase {
             .build()
         let rhs = Configuration.Builder(withAPIKey: "test")
             .with(dangerousSettings: DangerousSettings(autoSyncPurchases: false))
+            .build()
+
+        expect(lhs) != rhs
+    }
+
+    func testDifferentUseExternalPurchaseCustomLinksIsNotEqual() {
+        let lhs = Configuration.Builder(withAPIKey: "test").with(useExternalPurchaseCustomLinks: true).build()
+        let rhs = Configuration.Builder(withAPIKey: "test").with(useExternalPurchaseCustomLinks: false).build()
+
+        expect(lhs) != rhs
+    }
+
+    func testDifferentEnableExternalPurchasesInSimulatorIsNotEqual() {
+        let lhs = Configuration.Builder(withAPIKey: "test")
+            .with(useExternalPurchaseCustomLinks: true, enableExternalPurchasesInSimulator: true)
+            .build()
+        let rhs = Configuration.Builder(withAPIKey: "test")
+            .with(useExternalPurchaseCustomLinks: true, enableExternalPurchasesInSimulator: false)
             .build()
 
         expect(lhs) != rhs
@@ -410,6 +451,7 @@ class ConfigurationTests: TestCase {
             .with(preferredUILocaleOverride: "en-US")
             .with(automaticDeviceIdentifierCollectionEnabled: true)
             .with(iamEnabled: false)
+            .with(useExternalPurchaseCustomLinks: false, enableExternalPurchasesInSimulator: true)
     }
 
 }

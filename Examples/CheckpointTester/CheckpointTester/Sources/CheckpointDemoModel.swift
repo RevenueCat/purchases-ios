@@ -15,7 +15,7 @@
 import Combine
 import Foundation
 import RevenueCat
-@_spi(CheckpointsInternal) import RevenueCatUI
+@_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
 
 enum PaywallPresenterMode: String, CaseIterable, Identifiable {
     case `default`
@@ -44,6 +44,48 @@ enum PaywallPresenterMode: String, CaseIterable, Identifiable {
     }
 }
 
+extension FlowPresentationMode {
+
+    static var testerCases: [Self] { [.default, .modalFullScreen, .modalSheet] }
+
+    var title: String {
+        switch self {
+        case .default: return "Default"
+        case .modalFullScreen: return "Full screen"
+        case .modalSheet: return "Sheet"
+        default: return self.description
+        }
+    }
+
+}
+
+enum ErrorPresenterMode: String, CaseIterable, Identifiable {
+    case `default`
+    case global
+    case localOverride
+
+    var id: Self { self }
+
+    var title: String {
+        switch self {
+        case .default: return "Default"
+        case .global: return "Global"
+        case .localOverride: return "Local"
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .default:
+            return "No custom presenter is configured."
+        case .global:
+            return "Purchases.shared uses the app's global error alert."
+        case .localOverride:
+            return "Each checkpoint call uses its own error alert ahead of the registered global presenter."
+        }
+    }
+}
+
 final class CheckpointDemoModel: ObservableObject {
 
     struct OutcomeAlert: Identifiable {
@@ -54,6 +96,7 @@ final class CheckpointDemoModel: ObservableObject {
 
     @Published private(set) var outcomeAlert: OutcomeAlert?
     @Published var paywallPresenterMode: PaywallPresenterMode = .default
+    @Published var errorPresenterMode: ErrorPresenterMode = .default
 
     private var pendingOutcomeAlerts: [OutcomeAlert] = []
 
@@ -95,6 +138,20 @@ final class CheckpointDemoModel: ObservableObject {
     var localPaywallPresenter: PaywallPresentationHandler? {
         guard self.paywallPresenterMode == .localOverride else { return nil }
         return LocalPaywallPresenter.shared
+    }
+
+    @MainActor
+    func configureErrorPresenter() {
+        Purchases.shared.errorPresenter = switch self.errorPresenterMode {
+        case .default: nil
+        case .global, .localOverride: GlobalErrorPresenter.shared
+        }
+    }
+
+    @MainActor
+    var localErrorPresenter: ErrorPresentationHandler? {
+        guard self.errorPresenterMode == .localOverride else { return nil }
+        return LocalErrorPresenter.shared
     }
 
     // MARK: - Demo-only result presentation

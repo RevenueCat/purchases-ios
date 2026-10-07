@@ -22,6 +22,10 @@
 "Continue" = "Jarraitu";
 "Default_offer_details_with_intro_offer" = "Hasi zure {{ sub_offer_duration }} probako aldia, gero {{ total_price_and_per_month }}.";
 "Something went wrong" = "Zerbait gaizki joan da";
+"Payment failed." = "Ordainketak huts egin du.";
+"Your purchase is still processing." = "Zure erosketa oraindik prozesatzen ari da.";
 "Purchase" = "Erosi";
-"You are currently subscribed to this" = "Dagoeneko harpidetuta zaude honetara";
 "You've already purchased this" = "Dagoeneko erosi duzu hau";
+"Your purchase was successful." = "Zure erosketa behar bezala egin da.";
+"Purchase unavailable" = "Erosketa ez dago erabilgarri";
+"This purchase isn't available in your region." = "Erosketa hau ez dago erabilgarri zure eskualdean.";

@@ -14,7 +14,7 @@
 
 import Foundation
 import RevenueCat
-@_spi(CheckpointsInternal) import RevenueCatUI
+@_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
 import SwiftUI
 
 struct EntitlementGateUseCaseView: View {
@@ -86,7 +86,8 @@ struct EntitlementGateUseCaseView: View {
             Purchases.shared.checkpoint(
                 "entitlement_gate",
                 customVariables: self.entitlementCheckpointCustomVariables,
-                paywallPresenter: self.model.localPaywallPresenter
+                paywallPresenter: self.model.localPaywallPresenter,
+                errorPresenter: self.model.localErrorPresenter
             ) { result in
                 self.handle(result)
             }

@@ -272,7 +272,6 @@ class CustomerInfoManager {
 
         if customerInfo.shouldCache {
             do {
-                self.cacheSubscriberDimensionsIfPresent(from: customerInfo, appUserID: appUserID)
                 let jsonData = try JSONEncoder.default.encode(customerInfo)
                 self.deviceCache.cache(customerInfo: jsonData, appUserID: appUserID)
             } catch {
@@ -284,24 +283,6 @@ class CustomerInfoManager {
         }
 
         self.sendUpdateIfChanged(customerInfo: customerInfo, appUserID: appUserID)
-    }
-
-    private func cacheSubscriberDimensionsIfPresent(
-        from customerInfo: CustomerInfo,
-        appUserID: String
-    ) {
-        guard !customerInfo.isLoadedFromCache,
-              let dimensions = customerInfo.rawData["dimensions"] as? [String: Any],
-              !dimensions.isEmpty else {
-            return
-        }
-
-        do {
-            let data = try JSONSerialization.data(withJSONObject: dimensions)
-            self.deviceCache.cache(subscriberDimensions: data, appUserID: appUserID)
-        } catch {
-            Logger.warn(Strings.localRules.subscriberDimensionsUnavailable(error))
-        }
     }
 
     func clearCustomerInfoCache(forAppUserID appUserID: String) {
@@ -379,14 +360,24 @@ class CustomerInfoManager {
                 return
             }
 
-            guard !$0.customerInfoObserversByIdentifier.isEmpty, lastSentCustomerInfo != customerInfo else {
+            guard !$0.customerInfoObserversByIdentifier.isEmpty else {
                 return
             }
 
-            if $0.lastSentCustomerInfo != nil {
-                Logger.debug(Strings.customerInfo.sending_updated_customerinfo_to_delegate)
-            } else {
+            let activeEntitlementsChanged = lastSentCustomerInfo.map {
+                Set($0.entitlements.active.keys) != Set(customerInfo.entitlements.active.keys)
+            } ?? false
+
+            guard lastSentCustomerInfo != customerInfo || activeEntitlementsChanged else {
+                return
+            }
+
+            if lastSentCustomerInfo == nil {
                 Logger.debug(Strings.customerInfo.sending_latest_customerinfo_to_delegate)
+            } else if lastSentCustomerInfo == customerInfo {
+                Logger.debug(Strings.customerInfo.sending_customerinfo_with_changed_active_entitlements_to_delegate)
+            } else {
+                Logger.debug(Strings.customerInfo.sending_updated_customerinfo_to_delegate)
             }
 
             $0.lastSentCustomerInfo = customerInfo
@@ -646,7 +637,8 @@ extension CustomerInfoManager {
         let previewCustomerInfo = CustomerInfo(response: previewCustomerInfoResponse,
                                                entitlementVerification: .verified,
                                                sandboxEnvironmentDetector: BundleSandboxEnvironmentDetector.default,
-                                               httpResponseOriginalSource: .mainServer)
+                                               httpResponseOriginalSource: .mainServer,
+                                               unsyncedProductIdentifiers: [])
         return previewCustomerInfo
     }
 

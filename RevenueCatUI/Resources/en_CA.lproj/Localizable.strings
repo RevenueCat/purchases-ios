@@ -22,6 +22,10 @@
 "Continue" = "Continue";
 "Default_offer_details_with_intro_offer" = "Start your {{ sub_offer_duration }} trial, then {{ total_price_and_per_month }}.";
 "Something went wrong" = "Something went wrong";
+"Payment failed." = "Payment failed.";
+"Your purchase is still processing." = "Your purchase is still processing.";
 "Purchase" = "Purchase";
-"You are currently subscribed to this" = "You are currently subscribed to this";
 "You've already purchased this" = "You've already purchased this";
+"Your purchase was successful." = "Your purchase was successful.";
+"Purchase unavailable" = "Purchase unavailable";
+"This purchase isn't available in your region." = "This purchase isn't available in your region.";

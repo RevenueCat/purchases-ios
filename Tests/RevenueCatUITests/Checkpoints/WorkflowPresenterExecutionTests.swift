@@ -13,7 +13,7 @@
 //
 
 @_spi(Internal) @testable import RevenueCat
-@_spi(CheckpointsInternal) @_spi(Internal) @testable import RevenueCatUI
+@_spi(InviteOnlyCheckpointsApi) @_spi(Internal) @testable import RevenueCatUI
 import XCTest
 
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
@@ -125,8 +125,11 @@ final class WorkflowPresenterExecutionTests: TestCase {
         customVariables: [String: CustomVariableValue] = [:]
     ) -> WorkflowPresentationRequest {
         return WorkflowPresentationRequest(
+            checkpointIdentifier: "test_checkpoint",
             workflow: self.workflow(),
-            customVariables: customVariables
+            customVariables: customVariables,
+            presentationMode: .modalSheet,
+            errorPresentationHandler: { _, completion in completion.complete(.continue) }
         )
     }
 
