@@ -1,0 +1,20 @@
+# `donottouch_sdk_everyone` has one "all customers" rule to the `default` offering, so a fresh
+# user gets `default` handed to the app-owned presenter exactly once.
+#
+# Fixtures live in the Automated SDK Tests project (6627e5bc). Do not edit them.
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/checkpoint_everyone.yaml
+
+appId: com.revenuecat.maestro.ios
+name: A checkpoint for everyone presents its offering
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- runFlow: ../utils/checkpoint_launch.yaml
+- runFlow:
+    file: ../utils/checkpoint_hit.yaml
+    env:
+      CHECKPOINT_ID: donottouch_sdk_everyone
+      ATTEMPT: 1
+      EXPECTED_OFFERING: default

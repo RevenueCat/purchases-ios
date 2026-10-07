@@ -1,0 +1,76 @@
+# `donottouch_sdk_no_match` has only `should_use_custom_ui is "true"` to `no_paywall` and no
+# fallback rule. Without a match nothing is presented and the callback reports nil.
+#
+# The public callback cannot tell a no match from other reasons for nil, so each negative hit is
+# paired with zero presenter invocations and a positive baseline in the same process. The exact
+# reason is covered by CheckpointWorkflowResolverTests.
+#
+# Fixtures live in the Automated SDK Tests project (6627e5bc). Do not edit them.
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/checkpoint_no_match.yaml
+
+appId: com.revenuecat.maestro.ios
+name: A checkpoint without a matching rule presents nothing
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- runFlow: ../utils/checkpoint_launch.yaml
+# Baseline: resolution and presentation work in this process.
+- runFlow:
+    file: ../utils/checkpoint_hit.yaml
+    env:
+      CHECKPOINT_ID: donottouch_sdk_everyone
+      ATTEMPT: 1
+      EXPECTED_OFFERING: default
+
+- runFlow:
+    file: ../utils/checkpoint_hit.yaml
+    env:
+      CHECKPOINT_ID: donottouch_sdk_no_match
+      ATTEMPT: 2
+      EXPECTED_OFFERING: none
+
+- runFlow:
+    file: ../utils/checkpoint_set_attribute.yaml
+    env:
+      VALUE: "true"
+- runFlow:
+    file: ../utils/checkpoint_hit.yaml
+    env:
+      CHECKPOINT_ID: donottouch_sdk_no_match
+      ATTEMPT: 3
+      EXPECTED_OFFERING: no_paywall
+
+- runFlow:
+    file: ../utils/checkpoint_set_attribute.yaml
+    env:
+      VALUE: "false"
+- runFlow:
+    file: ../utils/checkpoint_hit.yaml
+    env:
+      CHECKPOINT_ID: donottouch_sdk_no_match
+      ATTEMPT: 4
+      EXPECTED_OFFERING: none
+
+- runFlow:
+    file: ../utils/checkpoint_set_attribute.yaml
+    env:
+      VALUE: delete
+- runFlow:
+    file: ../utils/checkpoint_hit.yaml
+    env:
+      CHECKPOINT_ID: donottouch_sdk_no_match
+      ATTEMPT: 5
+      EXPECTED_OFFERING: none
+
+- runFlow:
+    file: ../utils/checkpoint_set_attribute.yaml
+    env:
+      VALUE: "true"
+- runFlow:
+    file: ../utils/checkpoint_hit.yaml
+    env:
+      CHECKPOINT_ID: donottouch_sdk_no_match
+      ATTEMPT: 6
+      EXPECTED_OFFERING: no_paywall

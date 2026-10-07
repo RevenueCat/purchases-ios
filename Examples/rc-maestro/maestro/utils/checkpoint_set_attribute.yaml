@@ -1,0 +1,19 @@
+# Sets `should_use_custom_ui` through the SDK. VALUE is `true`, `false` or `delete`.
+
+appId: com.revenuecat.maestro.ios
+name: Set the should_use_custom_ui attribute
+---
+- runFlow:
+    when:
+      true: ${VALUE == 'delete'}
+    commands:
+      - tapOn:
+          id: attribute_delete
+      - assertVisible: "should_use_custom_ui: absent"
+- runFlow:
+    when:
+      true: ${VALUE != 'delete'}
+    commands:
+      - tapOn:
+          id: attribute_set_${VALUE}
+      - assertVisible: "should_use_custom_ui: ${VALUE}"

@@ -1,0 +1,45 @@
+# Hits CHECKPOINT_ID as attempt ATTEMPT and asserts what the SDK handed the app-owned presenter.
+#  EXPECTED_OFFERING: the offering identifier the presenter must receive, or `none` when nothing
+#  may be presented. A positive hit is closed through the presenter's normal completion.
+
+appId: com.revenuecat.maestro.ios
+name: Hit a checkpoint and assert the presented offering
+---
+- tapOn:
+    id: checkpoint_identifier_clear
+- tapOn:
+    id: checkpoint_identifier
+- inputText: ${CHECKPOINT_ID}
+- assertVisible:
+    id: checkpoint_identifier
+    text: ${CHECKPOINT_ID}
+- tapOn:
+    id: checkpoint_hit
+
+- runFlow:
+    when:
+      true: ${EXPECTED_OFFERING != 'none'}
+    commands:
+      - extendedWaitUntil:
+          visible: "presented offering: ${EXPECTED_OFFERING}"
+          timeout: 20000
+      - assertVisible: "presented checkpoint: ${CHECKPOINT_ID}"
+      - takeScreenshot: "${CHECKPOINT_ID} - attempt ${ATTEMPT} presented"
+      - tapOn:
+          id: checkpoint_close
+      - extendedWaitUntil:
+          visible: "attempt ${ATTEMPT} callback: obtained.*"
+          timeout: 20000
+      - assertVisible: "attempt ${ATTEMPT} offering: ${EXPECTED_OFFERING}"
+      - assertVisible: "attempt ${ATTEMPT} presenter invocations: 1"
+
+- runFlow:
+    when:
+      true: ${EXPECTED_OFFERING == 'none'}
+    commands:
+      - extendedWaitUntil:
+          visible: "attempt ${ATTEMPT} callback: nil"
+          timeout: 20000
+      - assertVisible: "attempt ${ATTEMPT} presenter invocations: 0"
+      - assertVisible: "attempt ${ATTEMPT} offering: none"
+      - takeScreenshot: "${CHECKPOINT_ID} - attempt ${ATTEMPT} nothing presented"

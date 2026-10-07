@@ -1,0 +1,55 @@
+# `donottouch_sdk_attribute`: `should_use_custom_ui is "true"` goes to `no_paywall`, everyone else
+# to `default`. One user and one process walk the attribute through absent, "true", "false" and
+# deleted. The SDK reads stored attributes on each evaluation, so no restart is needed.
+#
+# Fixtures live in the Automated SDK Tests project (6627e5bc). Do not edit them.
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/checkpoint_attribute.yaml
+
+appId: com.revenuecat.maestro.ios
+name: A subscriber attribute rule follows local attribute changes
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- runFlow: ../utils/checkpoint_launch.yaml
+- assertVisible: "should_use_custom_ui: absent"
+- runFlow:
+    file: ../utils/checkpoint_hit.yaml
+    env:
+      CHECKPOINT_ID: donottouch_sdk_attribute
+      ATTEMPT: 1
+      EXPECTED_OFFERING: default
+
+- runFlow:
+    file: ../utils/checkpoint_set_attribute.yaml
+    env:
+      VALUE: "true"
+- runFlow:
+    file: ../utils/checkpoint_hit.yaml
+    env:
+      CHECKPOINT_ID: donottouch_sdk_attribute
+      ATTEMPT: 2
+      EXPECTED_OFFERING: no_paywall
+
+- runFlow:
+    file: ../utils/checkpoint_set_attribute.yaml
+    env:
+      VALUE: "false"
+- runFlow:
+    file: ../utils/checkpoint_hit.yaml
+    env:
+      CHECKPOINT_ID: donottouch_sdk_attribute
+      ATTEMPT: 3
+      EXPECTED_OFFERING: default
+
+- runFlow:
+    file: ../utils/checkpoint_set_attribute.yaml
+    env:
+      VALUE: delete
+- runFlow:
+    file: ../utils/checkpoint_hit.yaml
+    env:
+      CHECKPOINT_ID: donottouch_sdk_attribute
+      ATTEMPT: 4
+      EXPECTED_OFFERING: default

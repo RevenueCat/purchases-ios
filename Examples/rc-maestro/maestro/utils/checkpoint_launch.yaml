@@ -1,0 +1,14 @@
+# Starts a checkpoint scenario with a fresh app user and waits until the app finished its setup.
+
+appId: com.revenuecat.maestro.ios
+name: Launch the checkpoint resolution screen
+---
+- clearState
+# Dismiss any leftover system alerts from previous test runs.
+- pressKey: home
+- launchApp:
+    arguments:
+        e2e_test_flow: checkpoint_resolution
+- extendedWaitUntil:
+    visible: "status: ready"
+    timeout: 20000

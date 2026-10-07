@@ -1,0 +1,22 @@
+# `donottouch_sdk_priority` has two "all customers" rules, `default` then `no_paywall`. The first
+# rule wins, so the presenter gets `default` once and never `no_paywall`.
+#
+# Fixtures live in the Automated SDK Tests project (6627e5bc). Do not edit them.
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/checkpoint_priority.yaml
+
+appId: com.revenuecat.maestro.ios
+name: The first matching checkpoint rule wins
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- runFlow: ../utils/checkpoint_launch.yaml
+- runFlow:
+    file: ../utils/checkpoint_hit.yaml
+    env:
+      CHECKPOINT_ID: donottouch_sdk_priority
+      ATTEMPT: 1
+      EXPECTED_OFFERING: default
+# One invocation with `default` already rules out a second presentation of `no_paywall`.
+- assertNotVisible: "attempt 1 offering: no_paywall"
