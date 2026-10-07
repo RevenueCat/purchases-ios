@@ -616,7 +616,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) {
             paywallCache = PaywallCacheWarming(
-                introEligibiltyChecker: trialOrIntroPriceChecker
+                introEligibiltyChecker: trialOrIntroPriceChecker,
+                preferredLocalesProvider: { systemInfo.preferredLocales }
             )
         } else {
             paywallCache = nil
