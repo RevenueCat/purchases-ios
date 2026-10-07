@@ -113,17 +113,20 @@ final class ButtonComponentViewTests: TestCase {
         let dismissed = expectation(description: "Existing close action")
         var interactions: [PaywallEvent.ComponentInteractionData] = []
         weak var presentedController: UIViewController?
+        let owner = NativePaywallUIKitOwner()
         let view = Self.configuredView(viewModel: viewModel, onDismiss: {
             if fullScreen { presentedController?.dismiss(animated: false) }
             dismissed.fulfill()
         })
             .modifier(NativePaywallNavigationModifier(requested: true))
+            .environment(\.nativePaywallNavigationContext, fullScreen ? .standalone : .uiKit(owner))
             .environment(\.componentInteractionLogger, ComponentInteractionLogger { event in
                 interactions.append(event)
                 return true
             })
         let controller = UIHostingController(rootView: view)
         let navigation = UINavigationController(rootViewController: fullScreen ? UIViewController() : controller)
+        owner.prepare(controller: controller)
         let window: UIWindow
         if let scene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first {
             window = UIWindow(windowScene: scene)
@@ -150,12 +153,22 @@ final class ButtonComponentViewTests: TestCase {
         let installed = expectation(description: "Native close installed")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { installed.fulfill() }
         await fulfillment(of: [installed], timeout: 2)
-        let items = self.closeItems(in: controller)
-        XCTAssertEqual(items.count, 1)
-        let item = try XCTUnwrap(items.first)
-        if let primaryAction = item.primaryAction {
-            UIButton(type: .system, primaryAction: primaryAction).sendActions(for: .primaryActionTriggered)
+        if fullScreen {
+            // Commit the rendered frame before invoking UIKit's SwiftUI toolbar control.
+            let renderer = UIGraphicsImageRenderer(bounds: window.bounds)
+            let image = renderer.image { _ in window.drawHierarchy(in: window.bounds, afterScreenUpdates: true) }
+            let attachment = XCTAttachment(image: image)
+            attachment.name = "Full-screen native Close"
+            attachment.lifetime = .keepAlways
+            self.add(attachment)
+            let buttons = self.toolbarActions(in: controller.view)
+            XCTAssertEqual(buttons.count, 1)
+            let button = try XCTUnwrap(buttons.first)
+            button.sendActions(for: .primaryActionTriggered)
         } else {
+            let items = self.closeItems(in: controller)
+            XCTAssertEqual(items.count, 1)
+            let item = try XCTUnwrap(items.first)
             let selector = try XCTUnwrap(item.action)
             let target = try XCTUnwrap(item.target as? NSObject)
             target.perform(selector, with: item)
@@ -172,10 +185,19 @@ final class ButtonComponentViewTests: TestCase {
         }
     }
 
+    private func toolbarActions(in view: UIView) -> [UIControl] {
+        NativePaywallTestSupport.toolbarViews(of: UIControl.self, in: view)
+            .filter { $0.allControlEvents.contains(.primaryActionTriggered) }
+    }
+
     private func closeItems(in controller: UIViewController) -> [UIBarButtonItem] {
-        let items = (controller.navigationItem.leftBarButtonItems ?? [])
-            + (controller.navigationItem.rightBarButtonItems ?? [])
-        return items + controller.children.flatMap { self.closeItems(in: $0) }
+        let navigationItems = [controller.navigationItem]
+            + ((controller as? UINavigationController)?.navigationBar.items ?? [])
+        let items = navigationItems.flatMap {
+            ($0.leftBarButtonItems ?? []) + ($0.rightBarButtonItems ?? [])
+        } + controller.children.flatMap { self.closeItems(in: $0) }
+        var seen = Set<ObjectIdentifier>()
+        return items.filter { seen.insert(ObjectIdentifier($0)).inserted }
     }
 
 }

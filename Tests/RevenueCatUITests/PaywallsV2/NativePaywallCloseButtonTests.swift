@@ -20,163 +20,124 @@ import UIKit
 @MainActor
 final class NativePaywallCloseButtonTests: TestCase {
 
-    func testMissingNavigationKeepsFallback() {
-        let observer = NativePaywallCloseBridge.NavigationObserver()
-        let window = self.host(observer)
-        defer { self.close(window) }
-        let coordinator = NativePaywallCloseBridge.Coordinator()
-        var available = false
-        coordinator.availabilityChanged = { available = $0 }
-        coordinator.update(from: observer)
-        XCTAssertFalse(available)
-        XCTAssertNil(observer.navigationItem.rightBarButtonItems)
-        XCTAssertNil(observer.navigationController)
-    }
-
-    func testUIKitNavigationInstallsOneCloseAndPreservesCallerButtons() throws {
-        let owner = UIViewController()
-        let callerItem = UIBarButtonItem(title: "Help", primaryAction: UIAction { _ in })
-        owner.navigationItem.rightBarButtonItems = [callerItem]
-        let observer = self.attachObserver(to: owner)
-        let navigation = UINavigationController(rootViewController: owner)
-        let window = self.host(navigation)
-        defer { self.close(window) }
-        let coordinator = NativePaywallCloseBridge.Coordinator()
-        var available = false
-        coordinator.availabilityChanged = { available = $0 }
-        coordinator.closeLabel = "Close"
-        var closeCount = 0
-        coordinator.action = { closeCount += 1 }
-        coordinator.update(from: observer)
-        coordinator.update(from: observer)
-        XCTAssertTrue(available)
-        let items = try XCTUnwrap(owner.navigationItem.rightBarButtonItems)
+    func testKnownUIKitOwnerPreservesCallerButtonsAndRunsClose() async throws {
+        let controller = UIViewController()
+        let help = UIBarButtonItem(title: "Help", primaryAction: UIAction { _ in })
+        controller.navigationItem.rightBarButtonItems = [help]
+        let owner = NativePaywallUIKitOwner()
+        let navigation = UINavigationController(rootViewController: controller)
+        owner.prepare(controller: controller)
+        XCTAssertNotNil(owner.context)
+        var count = 0
+        owner.install(.init(id: UUID(), label: "Close", perform: { count += 1 }))
+        let items = try XCTUnwrap(controller.navigationItem.rightBarButtonItems)
         XCTAssertEqual(items.count, 2)
-        XCTAssertTrue(items[0] === callerItem)
-        XCTAssertEqual(items[1].accessibilityLabel, "Close")
+        XCTAssertTrue(items[0] === help)
         let selector = try XCTUnwrap(items[1].action)
         let target = try XCTUnwrap(items[1].target as? NSObject)
         target.perform(selector, with: items[1])
-        XCTAssertEqual(closeCount, 1)
-        coordinator.removeItem()
-        XCTAssertEqual(owner.navigationItem.rightBarButtonItems?.count, 1)
-        XCTAssertTrue(owner.navigationItem.rightBarButtonItem === callerItem)
+        await self.waitForPresentation()
+        XCTAssertEqual(count, 1)
+        owner.removeClose()
+        XCTAssertEqual(controller.navigationItem.rightBarButtonItems?.count, 1)
+        XCTAssertTrue(controller.navigationItem.rightBarButtonItem === help)
+        XCTAssertTrue(controller.navigationController === navigation)
     }
 
-    func testMultipleCloseButtonsDoNotShareActionsOrInstallDuplicates() {
-        let owner = UIViewController()
-        let firstObserver = self.attachObserver(to: owner)
-        let secondObserver = self.attachObserver(to: owner)
-        let navigation = UINavigationController(rootViewController: owner)
-        let window = self.host(navigation)
-        defer { self.close(window) }
-        let first = NativePaywallCloseBridge.Coordinator()
-        let second = NativePaywallCloseBridge.Coordinator()
-        var secondAvailable = false
-        second.availabilityChanged = { secondAvailable = $0 }
-        first.update(from: firstObserver)
-        second.update(from: secondObserver)
-        XCTAssertFalse(secondAvailable)
-        XCTAssertEqual(owner.navigationItem.rightBarButtonItems?.count, 1)
-        first.releaseOwnership()
-        second.update(from: secondObserver)
-        XCTAssertTrue(secondAvailable)
-        XCTAssertEqual(owner.navigationItem.rightBarButtonItems?.count, 1)
-        second.releaseOwnership()
-    }
-
-    func testHiddenNavigationBarKeepsFallback() {
-        let owner = UIViewController()
-        let observer = self.attachObserver(to: owner)
-        let navigation = UINavigationController(rootViewController: owner)
-        let window = self.host(navigation)
-        defer { self.close(window) }
-        let coordinator = NativePaywallCloseBridge.Coordinator()
-        var availability: [Bool] = []
-        coordinator.availabilityChanged = { availability.append($0) }
-        coordinator.update(from: observer)
-        navigation.setNavigationBarHidden(true, animated: false)
-        coordinator.update(from: observer)
-        XCTAssertEqual(availability, [true, false])
-        XCTAssertTrue(owner.navigationItem.rightBarButtonItems?.isEmpty ?? true)
-    }
-
-    func testOffscreenControllerCannotInstallCloseOnAnotherScreen() {
-        let account = UIViewController()
-        let paywall = UIViewController()
-        let observer = self.attachObserver(to: paywall)
-        let navigation = UINavigationController(rootViewController: account)
-        navigation.pushViewController(paywall, animated: false)
-        let window = self.host(navigation)
-        defer { self.close(window) }
-        let coordinator = NativePaywallCloseBridge.Coordinator()
-        coordinator.update(from: observer)
-        navigation.popViewController(animated: false)
-        coordinator.update(from: observer)
-        XCTAssertNil(account.navigationItem.rightBarButtonItems)
-        XCTAssertTrue(paywall.navigationItem.rightBarButtonItems?.isEmpty ?? true)
-    }
-
-    func testNestedNavigationUsesNearestOwner() {
-        let innerOwner = UIViewController()
-        let observer = self.attachObserver(to: innerOwner)
-        let inner = UINavigationController(rootViewController: innerOwner)
-        let outerOwner = UIViewController()
-        outerOwner.addChild(inner)
-        outerOwner.view.addSubview(inner.view)
-        inner.didMove(toParent: outerOwner)
-        let outer = UINavigationController(rootViewController: outerOwner)
-        let window = self.host(outer)
-        defer { self.close(window) }
-        let coordinator = NativePaywallCloseBridge.Coordinator()
-        coordinator.update(from: observer)
-        XCTAssertEqual(innerOwner.navigationItem.rightBarButtonItems?.count, 1)
-        XCTAssertNil(inner.navigationItem.rightBarButtonItems)
+    func testOneNativeActionOwnerHandlesRegistrationAndRemoval() {
+        let coordinator = NativePaywallCloseCoordinator()
+        let first = UUID()
+        let second = UUID()
+        coordinator.register(id: first, label: "First", action: {})
+        coordinator.register(id: first, label: "First", action: {})
+        coordinator.register(id: second, label: "Second", action: {})
+        XCTAssertEqual(coordinator.actions.count, 2)
+        XCTAssertEqual(coordinator.actions.first?.id, first)
+        coordinator.unregister(id: first)
+        XCTAssertEqual(coordinator.actions.first?.id, second)
+        coordinator.unregister(id: second)
+        XCTAssertTrue(coordinator.actions.isEmpty)
     }
 
     func testSwiftUINavigationContainersInstallNativeClose() async {
         if #available(iOS 16.0, *) {
-            await self.assertNativeClose { button in NavigationStack { button.navigationTitle("Paywall") } }
             await self.assertNativeClose { button in
-                NavigationStack { NavigationView { button.navigationTitle("Paywall") }.navigationViewStyle(.stack) }
+                NavigationStack { button.modifier(NativePaywallCloseHost()).navigationTitle("Paywall") }
+            }
+            await self.assertNativeClose { button in
+                NavigationStack {
+                    NavigationView { button.modifier(NativePaywallCloseHost()).navigationTitle("Paywall") }
+                        .navigationViewStyle(.stack)
+                }
             }
             await self.assertNativeClose { button in
                 NavigationView {
-                    NavigationStack { button.navigationTitle("Paywall") }
+                    NavigationStack { button.modifier(NativePaywallCloseHost()).navigationTitle("Paywall") }
                 }.navigationViewStyle(.stack)
             }
         }
         await self.assertNativeClose { button in
-            NavigationView { button.navigationTitle("Paywall") }.navigationViewStyle(.stack)
+            NavigationView { button.modifier(NativePaywallCloseHost()).navigationTitle("Paywall") }
+                .navigationViewStyle(.stack)
         }
     }
 
-    func testMissingOrExplicitlyHiddenSwiftUINavigationKeepsFallback() async {
+    func testWithoutNativeCloseHostKeepsFallback() async {
         await self.assertNativeClose(expected: false) { button in button }
-        if #available(iOS 16.0, *) {
-            await self.assertNativeClose(expected: false) { button in
-                NavigationStack { button.toolbar(.hidden, for: .navigationBar) }
-            }
-        }
     }
 
     func testMissingNavigationWrapperInstallsNativeClose() async {
         await self.assertNativeClose { button in button.modifier(NativePaywallNavigationModifier(requested: true)) }
     }
 
-    func testWrapperReusesSwiftUINavigation() async {
+    func testBlogDetectionReusesNavigationStack() async {
         if #available(iOS 16.0, *) {
-            await self.assertNativeClose { button in
+            await self.assertNativeClose(expectedNavigationCount: 1) { button in
                 NavigationStack {
                     button.modifier(NativePaywallNavigationModifier(requested: true)).navigationTitle("Paywall")
                 }
             }
         }
-        await self.assertNativeClose { button in
+    }
+
+    func testBlogFallbackInLegacyNavigationStillShowsOnlyOneClose() async {
+        // The blog detector can miss NavigationView on iOS 26. Its fallback must still mount
+        // the paywall once and render one Close, even when a nested stack is added.
+        var appearances = 0
+        var disappearances = 0
+        let host = UIHostingController(rootView:
             NavigationView {
-                button.modifier(NativePaywallNavigationModifier(requested: true)).navigationTitle("Paywall")
+                NativePaywallCloseButton(
+                    enabled: true, accessibilityLabel: "Close", action: {},
+                    content: { Button("Configured Close") {} }
+                )
+                .onAppear { appearances += 1 }
+                .onDisappear { disappearances += 1 }
+                .modifier(NativePaywallNavigationModifier(requested: true))
+                .navigationTitle("Paywall")
             }.navigationViewStyle(.stack)
+        )
+        let window = self.host(host)
+        defer { self.close(window) }
+        await self.waitForPresentation()
+        XCTAssertEqual(appearances, 1)
+        XCTAssertEqual(disappearances, 0)
+        XCTAssertEqual(self.toolbarButtons(in: host.view).count, 1)
+    }
+
+    func testKnownOwnerUpdatesWhenControllerMovesIntoNavigation() {
+        let controller = UIViewController()
+        let owner = NativePaywallUIKitOwner()
+        owner.prepare(controller: controller)
+        guard case .standalone? = owner.context else {
+            return XCTFail("Standalone controller should request its own navigation")
         }
+        let navigation = UINavigationController(rootViewController: controller)
+        owner.prepare(controller: controller)
+        guard case .uiKit? = owner.context else {
+            return XCTFail("Existing UIKit navigation should be reused")
+        }
+        XCTAssertTrue(controller.navigationController === navigation)
     }
 
     func testFullScreenPresentationAddsMissingNavigation() async throws {
@@ -241,7 +202,41 @@ final class NativePaywallCloseButtonTests: TestCase {
         XCTAssertEqual(appearCount, 1)
         XCTAssertEqual(disappearCount, 0)
         XCTAssertEqual(self.navigationCount(in: host), 1)
-        XCTAssertEqual(self.allBarItems(in: host).count, 1)
+        XCTAssertEqual(self.toolbarButtons(in: host.view).count, 1)
+    }
+
+    func testNoEligibleCloseDoesNotCreateEmptyToolbarButton() async {
+        let host = UIHostingController(rootView:
+            Text("Paywall without a close button")
+                .modifier(NativePaywallNavigationModifier(requested: true))
+                .environment(\.nativePaywallNavigationContext, .standalone)
+        )
+        let window = self.host(host)
+        defer { self.close(window) }
+        await self.waitForPresentation()
+        XCTAssertEqual(self.toolbarButtons(in: host.view).count, 0)
+    }
+
+    func testMultipleEligibleCloseComponentsCreateOnlyOneNativeButton() async {
+        var configuredAppearances = 0
+        let host = UIHostingController(rootView:
+            VStack {
+                ForEach(0..<2) { index in
+                    NativePaywallCloseButton(
+                        enabled: true, accessibilityLabel: "Close \(index)", action: {},
+                        content: { Button("Configured Close") {}.onAppear { configuredAppearances += 1 } }
+                    )
+                }
+            }
+            .modifier(NativePaywallNavigationModifier(requested: true))
+            .environment(\.nativePaywallNavigationContext, .standalone)
+        )
+        let window = self.host(host)
+        defer { self.close(window) }
+        await self.waitForPresentation()
+        XCTAssertEqual(self.toolbarButtons(in: host.view).count, 1)
+        XCTAssertEqual(configuredAppearances, 0)
+        XCTAssertEqual(self.navigationCount(in: host), 1)
     }
 
     func testConfigurationRequestsPreflightOnlyForNativeCloseActions() {
@@ -268,10 +263,8 @@ final class NativePaywallCloseButtonTests: TestCase {
         XCTAssertFalse(requested(native: true, action: .restorePurchases))
     }
 
-    private func allBarItems(in controller: UIViewController) -> [UIBarButtonItem] {
-        (controller.navigationItem.leftBarButtonItems ?? [])
-            + (controller.navigationItem.rightBarButtonItems ?? [])
-            + controller.children.flatMap { self.allBarItems(in: $0) }
+    private func toolbarButtons(in view: UIView) -> [UIButton] {
+        NativePaywallTestSupport.toolbarViews(of: UIButton.self, in: view)
     }
 
     private func assertModalNativeClose(
@@ -294,6 +287,7 @@ final class NativePaywallCloseButtonTests: TestCase {
                 }
             }
         )
+        let owner = NativePaywallUIKitOwner()
         let host = UIHostingController(rootView:
             VStack {
                 Text("Sample paywall")
@@ -301,8 +295,10 @@ final class NativePaywallCloseButtonTests: TestCase {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .modifier(NativePaywallNavigationModifier(requested: enabled))
+            .environment(\.nativePaywallNavigationContext, existingNavigation ? .uiKit(owner) : .standalone)
         )
         let modal: UIViewController = existingNavigation ? UINavigationController(rootViewController: host) : host
+        owner.prepare(controller: host)
         modal.modalPresentationStyle = style
         // Navigation in the presenter must not be mistaken for navigation in its modal.
         let presenter = UINavigationController(rootViewController: UIViewController())
@@ -315,7 +311,7 @@ final class NativePaywallCloseButtonTests: TestCase {
         XCTAssertTrue(presenter.presentedViewController === modal, file: file, line: line)
         XCTAssertEqual(available, enabled, file: file, line: line)
         XCTAssertEqual(self.navigationCount(in: modal), enabled ? 1 : 0, file: file, line: line)
-        XCTAssertEqual(self.allBarItems(in: modal).count, enabled ? 1 : 0, file: file, line: line)
+        XCTAssertEqual(self.toolbarButtons(in: modal.view).count, enabled ? 1 : 0, file: file, line: line)
         modal.dismiss(animated: false)
         await self.waitForPresentation()
         XCTAssertNil(presenter.presentedViewController, file: file, line: line)
@@ -340,6 +336,7 @@ final class NativePaywallCloseButtonTests: TestCase {
 
     private func assertNativeClose<Content: View>(
         expected: Bool = true,
+        expectedNavigationCount: Int? = nil,
         @ViewBuilder container: (NativePaywallCloseButton<Button<Text>>) -> Content,
         file: StaticString = #filePath,
         line: UInt = #line
@@ -354,22 +351,10 @@ final class NativePaywallCloseButtonTests: TestCase {
         defer { self.close(window) }
         await self.waitForPresentation()
         XCTAssertEqual(available, expected, file: file, line: line)
-        XCTAssertLessThanOrEqual(self.nativeItems(in: host).count, 1, file: file, line: line)
-    }
-
-    private func nativeItems(in controller: UIViewController) -> [UIBarButtonItem] {
-        let own = (controller.navigationItem.rightBarButtonItems ?? []).filter {
-            $0.accessibilityIdentifier == NativePaywallCloseBridge.Coordinator.identifier
+        if let expectedNavigationCount {
+            XCTAssertEqual(self.navigationCount(in: host), expectedNavigationCount, file: file, line: line)
         }
-        return own + controller.children.flatMap { self.nativeItems(in: $0) }
-    }
-
-    private func attachObserver(to owner: UIViewController) -> NativePaywallCloseBridge.NavigationObserver {
-        let observer = NativePaywallCloseBridge.NavigationObserver()
-        owner.addChild(observer)
-        owner.view.addSubview(observer.view)
-        observer.didMove(toParent: owner)
-        return observer
+        XCTAssertEqual(self.toolbarButtons(in: host.view).count, expected ? 1 : 0, file: file, line: line)
     }
 
     private func host(_ controller: UIViewController) -> UIWindow {
@@ -392,6 +377,19 @@ final class NativePaywallCloseButtonTests: TestCase {
         window.isHidden = true
         window.rootViewController = nil
         window.windowScene?.windows.first(where: { !$0.isHidden })?.makeKeyAndVisible()
+    }
+}
+// SwiftUI navigation on iOS 26 owns toolbar controls separately from controller.navigationItem.
+@available(iOS 15.0, *)
+@MainActor
+enum NativePaywallTestSupport {
+    static func toolbarViews<T: UIView>(of type: T.Type, in view: UIView) -> [T] {
+        func descendants(in view: UIView) -> [T] {
+            if let result = view as? T { return [result] }
+            return view.subviews.flatMap { descendants(in: $0) }
+        }
+        if view is UINavigationBar { return descendants(in: view) }
+        return view.subviews.flatMap { self.toolbarViews(of: type, in: $0) }
     }
 }
 #endif

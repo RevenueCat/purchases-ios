@@ -432,7 +432,14 @@ public class PaywallViewController: UIViewController {
         }
     }
 
+    #if os(iOS)
+    private let nativeCloseOwner = NativePaywallUIKitOwner()
+    #endif
+
     public override func viewWillAppear(_ animated: Bool) {
+        #if os(iOS)
+        self.nativeCloseOwner.prepare(controller: self)
+        #endif
         super.viewWillAppear(animated)
 
         guard self.shouldDisplayExitOffers else { return }
@@ -919,7 +926,7 @@ private extension PaywallViewController {
             set: { [weak self] offering in self?.updateWorkflowExitOffer(offering) }
         )
 
-        let container = PaywallContainerView(
+        var container = PaywallContainerView(
             configuration: self.configuration,
             customVariables: self.customVariables,
             purchaseStarted: { [weak self] package in
@@ -977,6 +984,9 @@ private extension PaywallViewController {
             workflowExitOfferBinding: workflowExitOfferBinding
         )
 
+        #if os(iOS)
+        container.nativeCloseOwner = self.nativeCloseOwner
+        #endif
         let controller = UIHostingController(rootView: container)
 
         // make the background of the container clear so that if there are cutouts, they don't get
@@ -1110,7 +1120,21 @@ private struct PaywallContainerView: View {
     /// Receives the workflow exit offer from the embedded paywall (binding + preference below).
     let workflowExitOfferBinding: Binding<Offering?>
 
-    var body: some View {
+    #if os(iOS)
+    @ObservedObject var nativeCloseOwner = NativePaywallUIKitOwner()
+    #endif
+
+    @ViewBuilder var body: some View {
+        #if os(iOS)
+        self.paywall.environment(
+            \.nativePaywallNavigationContext, self.nativeCloseOwner.context ?? .uiKit(self.nativeCloseOwner)
+        )
+        #else
+        self.paywall
+        #endif
+    }
+
+    private var paywall: some View {
         PaywallView(configuration: self.configuration)
             .customPaywallVariables(self.customVariables)
             .onPurchaseStarted(self.purchaseStarted)
