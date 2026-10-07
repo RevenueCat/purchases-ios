@@ -47,6 +47,12 @@ final class PurchaseHandler: ObservableObject {
     /// Side-by-side paywalls should use separate `PurchaseHandler` instances so each keeps its own session.
     private var activePaywallSessionID: PaywallEvent.SessionID?
 
+    #if os(iOS) && canImport(WebKit)
+    /// The checkout this paywall's customer was last given and has not settled. Released with the paywall
+    /// session, so a customer who comes back later starts afresh.
+    var keptHostedCheckout: HostedCheckout.KeptCheckout?
+    #endif
+
     /// Where responsibility for completing purchases lies
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         purchases.purchasesAreCompletedBy
@@ -291,6 +297,9 @@ final class PurchaseHandler: ObservableObject {
         self.purchaseResult = nil
         self.restoredCustomerInfo = nil
         self.activePaywallSessionID = nil
+        #if os(iOS) && canImport(WebKit)
+        self.keptHostedCheckout = nil
+        #endif
     }
 
 }
@@ -355,21 +364,34 @@ extension PurchaseHandler {
 
     /// Asks for a checkout the customer completes without leaving the app, with the paywall marked as busy
     /// throughout so the button they tapped cannot start a second one.
-    func startHostedCheckout(package: Package) async -> HostedCheckoutStartResult {
+    ///
+    /// - Parameter previousSession: The checkout this paywall gave the customer before, for the backend to
+    /// hand back if they can still carry on with it.
+    func startHostedCheckout(package: Package,
+                             previousSession: HostedCheckoutSession?) async -> HostedCheckoutStartResult {
         // Carried so that the purchase the customer makes on the page is attributed to the paywall that sent
         // them there.
         let paywallEvent = self.createPurchaseInitiatedEvent(package: package)
         if let paywallEvent { self.track(paywallEvent) }
 
         return await self.withExternalPurchasePreparation {
-            await self.purchases.startHostedCheckout(package: package, paywallEvent: paywallEvent)
+            await self.purchases.startHostedCheckout(package: package,
+                                                     paywallEvent: paywallEvent,
+                                                     previousSession: previousSession)
         }
     }
 
     /// Runs `confirmation` with the paywall showing a purchase under way, for a checkout the backend still has
     /// to confirm.
+    ///
+    /// A checkout confirmed while the customer is busy with something else, as when its page returned after they
+    /// closed it, is confirmed without showing it: that would end what they are doing.
     @MainActor
     func whileConfirmingHostedCheckout<T>(_ confirmation: () async -> T) async -> T {
+        guard !self.actionInProgress else {
+            return await confirmation()
+        }
+
         self.purchaseError = nil
         self.startAction(.purchase)
         defer { self.actionTypeInProgress = nil }
@@ -377,9 +399,9 @@ extension PurchaseHandler {
         return await confirmation()
     }
 
-    func pollHostedCheckout(session: HostedCheckoutSession) async -> (result: HostedCheckoutPollResult,
-                                                                      customerInfo: CustomerInfo?) {
-        return await self.purchases.pollHostedCheckout(session: session)
+    func pollHostedCheckout(sessionID: HostedCheckoutSessionID) async -> (result: HostedCheckoutPollResult,
+                                                                          customerInfo: CustomerInfo?) {
+        return await self.purchases.pollHostedCheckout(sessionID: sessionID)
     }
 
     /// Whether web purchase links opened in the browser go through Apple's external purchase flow first.
@@ -486,6 +508,7 @@ extension PurchaseHandler {
                 uiConfig: fetchResult.uiConfig,
                 allOfferings: cachedOfferings,
                 presentedOfferingContext: offering.presentedOfferingContext,
+                developerProvidedOffering: content.passedOffering,
                 workflowBlobRef: fetchResult.workflowBlobRef
               ) else {
             return nil
@@ -605,7 +628,8 @@ extension PurchaseHandler {
             return try await self.resolvePaywallViewData(
                 for: offering,
                 offerings: nil,
-                remoteConfigEnabled: remoteConfigEnabled
+                remoteConfigEnabled: remoteConfigEnabled,
+                developerProvidedOffering: offering
             )
         case .defaultOffering:
             let offerings = try await self.purchases.offerings()
@@ -613,7 +637,8 @@ extension PurchaseHandler {
             return try await self.resolvePaywallViewData(
                 for: offering,
                 offerings: offerings,
-                remoteConfigEnabled: remoteConfigEnabled
+                remoteConfigEnabled: remoteConfigEnabled,
+                developerProvidedOffering: nil
             )
         case let .offeringIdentifier(identifier, presentedOfferingContext):
             let offerings = try await self.purchases.offerings()
@@ -631,7 +656,8 @@ extension PurchaseHandler {
             return try await self.resolvePaywallViewData(
                 for: resolvedOffering,
                 offerings: offerings,
-                remoteConfigEnabled: remoteConfigEnabled
+                remoteConfigEnabled: remoteConfigEnabled,
+                developerProvidedOffering: nil
             )
         }
     }
@@ -647,10 +673,13 @@ extension PurchaseHandler {
     /// Routes a resolved offering to its attached paywall or the workflows endpoint. Offerings
     /// decoded from the backend retain only `hasPaywallComponents`, so an actual components payload
     /// identifies a render-ready offering supplied by a preview client.
+    /// `developerProvidedOffering` is the developer-supplied instance; it replaces the fetched offering
+    /// for workflow steps that reference the same identifier.
     private func resolvePaywallViewData(
         for offering: Offering,
         offerings: Offerings?,
-        remoteConfigEnabled: Bool
+        remoteConfigEnabled: Bool,
+        developerProvidedOffering: Offering?
     ) async throws -> ResolvedPaywallViewData {
         guard remoteConfigEnabled,
               offering.paywall == nil,
@@ -662,7 +691,8 @@ extension PurchaseHandler {
             let context = try await self.resolveWorkflowContext(
                 identifier: offering.identifier,
                 presentedOfferingContext: offering.presentedOfferingContext,
-                offerings: offerings
+                offerings: offerings,
+                developerProvidedOffering: developerProvidedOffering
             )
 
             return .init(offering: context.initialOffering, workflowContext: context)
@@ -691,7 +721,8 @@ extension PurchaseHandler {
     func resolveWorkflowContext(
         identifier: String,
         presentedOfferingContext: PresentedOfferingContext?,
-        offerings: Offerings? = nil
+        offerings: Offerings?,
+        developerProvidedOffering: Offering?
     ) async throws -> WorkflowContext {
         do {
             async let fetchResultTask = self.purchases.workflow(forOfferingIdentifier: identifier)
@@ -706,6 +737,7 @@ extension PurchaseHandler {
                 uiConfig: fetchResult.uiConfig,
                 allOfferings: allOfferings,
                 presentedOfferingContext: presentedOfferingContext,
+                developerProvidedOffering: developerProvidedOffering,
                 workflowBlobRef: fetchResult.workflowBlobRef
             )
         } catch WorkflowError.uiConfigUnavailable(let workflowId) {
@@ -721,11 +753,14 @@ extension PurchaseHandler {
     /// Throws a specific ``PaywallError`` when the initial step or its screen cannot be rendered. An absent
     /// offering, whether the initial screen declares one or not, is
     /// rendered as content-only so the workflow UI can surface its configuration error.
+    /// `developerProvidedOffering` is the developer-supplied instance (e.g. `PaywallView(offering:)`); it is used
+    /// as the base offering instead of the `allOfferings` entry when the initial step references its identifier.
     static func makeWorkflowContext(
         workflow: PublishedWorkflow,
         uiConfig: UIConfig,
         allOfferings: Offerings,
         presentedOfferingContext: PresentedOfferingContext?,
+        developerProvidedOffering: Offering?,
         workflowBlobRef: String? = nil,
         traceId: String? = nil
     ) throws -> WorkflowContext {
@@ -757,30 +792,29 @@ extension PurchaseHandler {
             paywallId: screenID
         )
 
-        let offeringIdentifier = workflow.offeringIdentifier(for: step)
-        let baseOffering = offeringIdentifier.flatMap { allOfferings.offering(identifier: $0) }
+        let offerings = WorkflowOfferings(
+            offerings: allOfferings,
+            developerProvidedOffering: developerProvidedOffering
+        )
+        let baseOffering = workflow.offeringIdentifier(for: step).flatMap(offerings.offering(identifier:))
         let initialOffering = WorkflowContext.renderingOffering(
             baseOffering: baseOffering,
             paywallComponents: paywallComponents
         )
 
-        let offering: Offering
-        if let presentedOfferingContext {
-            offering = initialOffering.withPresentedOfferingContext(presentedOfferingContext)
-        } else {
-            offering = initialOffering
-        }
+        let offering = presentedOfferingContext.map(initialOffering.withPresentedOfferingContext) ?? initialOffering
 
         return WorkflowContext(
             workflow: workflow,
             uiConfig: uiConfig,
-            allOfferings: allOfferings,
+            offerings: offerings,
             initialOffering: offering,
             presentedOfferingContext: presentedOfferingContext,
             workflowBlobRef: workflowBlobRef,
             traceId: traceId
         )
     }
+
     #endif
 
 }
@@ -933,12 +967,17 @@ extension PurchaseHandler {
         self.purchaseError = error
     }
 
-    /// Reports a checkout the customer abandoned on a page presented inside the app.
+    /// Reports a checkout the customer closed, on a page presented inside the app, before the page returned.
+    ///
+    /// Closing the checkout does not mean the customer cancelled it: they may have paid moments before. The paywall
+    /// still reports a cancelled purchase, as it has no other way to say that no purchase is known. A payment that
+    /// did go through is confirmed and reported as a purchase once the page reaches its success URL, or the customer
+    /// taps buy again.
     ///
     /// - Parameter package: The package the checkout was started for, when it is still known. Only used to
     /// track the cancellation.
     @MainActor
-    func handleHostedCheckoutCancellation(package: Package?) {
+    func handleHostedCheckoutDismissal(package: Package?) {
         if let package {
             self.trackCancelledPurchase(package: package)
         }
@@ -1263,12 +1302,14 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
         throw ErrorCode.configurationError
     }
 
-    func startHostedCheckout(package: Package, paywallEvent: PaywallEvent?) async -> HostedCheckoutStartResult {
+    func startHostedCheckout(package: Package,
+                             paywallEvent: PaywallEvent?,
+                             previousSession: HostedCheckoutSession?) async -> HostedCheckoutStartResult {
         return .failed
     }
 
-    func pollHostedCheckout(session: HostedCheckoutSession) async -> (result: HostedCheckoutPollResult,
-                                                                      customerInfo: CustomerInfo?) {
+    func pollHostedCheckout(sessionID: HostedCheckoutSessionID) async -> (result: HostedCheckoutPollResult,
+                                                                          customerInfo: CustomerInfo?) {
         return (.undetermined, nil)
     }
 

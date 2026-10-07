@@ -190,7 +190,7 @@ private extension WebCheckoutViewModelTests {
 }
 
 /// A navigation to `url` in the main frame, which `WebKit` offers no way to build.
-private final class MainFrameNavigationAction: WKNavigationAction {
+final class MainFrameNavigationAction: WKNavigationAction {
 
     private let url: URL
 

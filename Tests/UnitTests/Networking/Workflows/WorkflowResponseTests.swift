@@ -450,6 +450,12 @@ class WorkflowResponseTests: TestCase {
         expect(screen.zeroDecimalPlaceCountries) == ["TWN"]
     }
 
+    func testDecodeWorkflowScreenVideoLocalizations() throws {
+        let screen = try Self.decodeWorkflowScreen(videoLocalizationsJSON: Self.videoLocalizationsJSON)
+
+        expect(screen.componentsVideoLocalizations) == Self.expectedVideoLocalizations
+    }
+
     func testDecodeWorkflowScreenWithExitOffers() throws {
         let json = """
         {
@@ -796,6 +802,85 @@ class WorkflowResponseTests: TestCase {
         expect(step.experimentVariant).to(beNil())
     }
 
+    func testDecodeWorkflowStepExperimentParamsFromMetadata() throws {
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "metadata": { "experiment_id": "exp_abc", "experiment_variant": "holdout" }
+        }
+        """.data(using: .utf8)!
+
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
+
+        expect(step.experimentId) == "exp_abc"
+        expect(step.experimentVariant) == "holdout"
+    }
+
+    func testDecodeWorkflowStepExperimentParamsPreferMetadataOverParamValues() throws {
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "param_values": { "experiment_id": "exp_old", "experiment_variant": "a" },
+          "metadata": { "experiment_id": "exp_new", "experiment_variant": "b" }
+        }
+        """.data(using: .utf8)!
+
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
+
+        expect(step.experimentId) == "exp_new"
+        expect(step.experimentVariant) == "b"
+    }
+
+    func testDecodeWorkflowWithFallbackCopyStep() throws {
+        let json = """
+        {
+          "id": "wf_test",
+          "display_name": "Test",
+          "initial_step_id": "entry",
+          "steps": {
+            "entry": {
+              "id": "entry",
+              "type": "screen",
+              "triggers": [
+                {"name":"Button","type":"on_press","action_id":"btn","component_id":"btn"}
+              ],
+              "trigger_actions": { "btn": {"type":"step","step_id":"paywall_a~f"} }
+            },
+            "paywall_a": {
+              "id": "paywall_a",
+              "type": "screen",
+              "screen_id": "pw_123",
+              "param_values": { "experiment_id": "exp_abc", "experiment_variant": "b" },
+              "metadata": { "screen_type": ["paywall"] }
+            },
+            "paywall_a~f": {
+              "id": "paywall_a~f",
+              "type": "screen",
+              "screen_id": "pw_123",
+              "param_values": {},
+              "metadata": { "screen_type": ["paywall"], "fallback_original_step_id": "paywall_a" }
+            }
+          },
+          "screens": {},
+          "ui_config": { "app": { "colors": {}, "fonts": {} }, "localizations": {} }
+        }
+        """.data(using: .utf8)!
+
+        let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: json)
+
+        let original = try XCTUnwrap(workflow.steps["paywall_a"])
+        let copy = try XCTUnwrap(workflow.steps["paywall_a~f"])
+        expect(workflow.steps["entry"]?.triggerActions["btn"]) == .step(stepId: "paywall_a~f")
+        expect(copy.id) == "paywall_a~f"
+        expect(copy.screenId) == original.screenId
+        expect(copy.fallbackOriginalStepId) == "paywall_a"
+        expect(copy.experimentId).to(beNil())
+        expect(copy.stepScreenType) == ["paywall"]
+        expect(original.fallbackOriginalStepId).to(beNil())
+    }
+
     func testDecodeWorkflowStepScreenTypeNilWhenMetadataNull() throws {
         let json = """
         {
@@ -897,7 +982,8 @@ private extension WorkflowResponseTests {
         defaultLocaleJSON: String? = "\"en_US\"",
         automaticallyScaleFontSize: Bool? = nil,
         zeroDecimalPlaceCountriesJSON: String? = nil,
-        offeringIdentifier: String? = nil
+        offeringIdentifier: String? = nil,
+        videoLocalizationsJSON: String? = nil
     ) throws -> WorkflowScreen {
         var defaultLocaleFragment = ""
         if let defaultLocaleJSON {
@@ -918,6 +1004,10 @@ private extension WorkflowResponseTests {
             """
         }
         let offeringIdentifierFragment = offeringIdentifier.map { ", \"offering_identifier\": \"\($0)\"" } ?? ""
+        let videoLocalizationsFragment = videoLocalizationsJSON.map {
+            ", \"components_video_localizations\": \($0)"
+        } ?? ""
+        let trailingFragments = offeringIdentifierFragment + videoLocalizationsFragment
         let json = """
         {
           "template_name": "tmpl",
@@ -935,7 +1025,7 @@ private extension WorkflowResponseTests {
               },
               "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } } }
             }
-          }\(automaticallyScaleFontSizeFragment)\(zeroDecimalFragment)\(offeringIdentifierFragment)
+          }\(automaticallyScaleFontSizeFragment)\(zeroDecimalFragment)\(trailingFragments)
         }
         """.data(using: .utf8)!
 
@@ -972,5 +1062,36 @@ private extension WorkflowResponseTests {
 
         return try JSONDecoder.default.decode(PaywallComponentsData.self, from: json)
     }
+
+    static let videoLocalizationsJSON = """
+    {
+      "es_ES": {
+        "video_lid": {
+          "light": {
+            "width": 200,
+            "height": 400,
+            "url": "https://assets.revenuecat.com/video_es.mp4",
+            "url_low_res": "https://assets.revenuecat.com/video_es_low_res.mp4"
+          }
+        }
+      }
+    }
+    """
+
+    static let expectedVideoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary] = [
+        "es_ES": [
+            "video_lid": .init(
+                light: .init(
+                    width: 200,
+                    height: 400,
+                    url: URL(string: "https://assets.revenuecat.com/video_es.mp4")!,
+                    checksum: nil,
+                    urlLowRes: URL(string: "https://assets.revenuecat.com/video_es_low_res.mp4")!,
+                    checksumLowRes: nil
+                ),
+                dark: nil
+            )
+        ]
+    ]
 
 }
