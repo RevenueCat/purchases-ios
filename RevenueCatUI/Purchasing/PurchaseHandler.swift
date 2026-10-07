@@ -770,11 +770,11 @@ extension PurchaseHandler {
             paywallId: screenID
         )
 
-        let baseOffering = WorkflowContext.baseOffering(
-            for: workflow.offeringIdentifier(for: step),
-            allOfferings: allOfferings,
+        let offerings = WorkflowOfferings(
+            offerings: allOfferings,
             developerProvidedOffering: developerProvidedOffering
         )
+        let baseOffering = workflow.offeringIdentifier(for: step).flatMap(offerings.offering(identifier:))
         let initialOffering = WorkflowContext.renderingOffering(
             baseOffering: baseOffering,
             paywallComponents: paywallComponents
@@ -785,10 +785,9 @@ extension PurchaseHandler {
         return WorkflowContext(
             workflow: workflow,
             uiConfig: uiConfig,
-            allOfferings: allOfferings,
+            offerings: offerings,
             initialOffering: offering,
             presentedOfferingContext: presentedOfferingContext,
-            developerProvidedOffering: developerProvidedOffering,
             workflowBlobRef: workflowBlobRef,
             traceId: traceId
         )

@@ -21,12 +21,11 @@ import Foundation
 @_spi(Internal) public struct WorkflowContext {
     let workflow: PublishedWorkflow
     let uiConfig: UIConfig
-    let allOfferings: Offerings
+    /// Every step and exit offer lookup goes through this, so the developer-supplied offering is never bypassed.
+    let offerings: WorkflowOfferings
     let initialOffering: Offering
     /// Preserved so every subsequent step's offering can carry the same placement/targeting metadata.
     let presentedOfferingContext: PresentedOfferingContext?
-    /// The developer-supplied offering, used instead of `allOfferings` for any step that references its identifier.
-    let developerProvidedOffering: Offering?
     /// Package context from `singleStepFallbackId`, precomputed because it is stable for a workflow.
     let workflowPackageContext: WorkflowPackageContext?
     let workflowBlobRef: String?
@@ -36,10 +35,9 @@ import Foundation
     init(
         workflow: PublishedWorkflow,
         uiConfig: UIConfig,
-        allOfferings: Offerings,
+        offerings: WorkflowOfferings,
         initialOffering: Offering,
         presentedOfferingContext: PresentedOfferingContext?,
-        developerProvidedOffering: Offering?,
         workflowBlobRef: String? = nil,
         traceId: String? = nil
     ) {
@@ -47,17 +45,15 @@ import Foundation
         self.traceId = traceId
         self.workflow = workflow
         self.uiConfig = uiConfig
-        self.allOfferings = allOfferings
+        self.offerings = offerings
         self.initialOffering = initialOffering
         self.presentedOfferingContext = presentedOfferingContext
-        self.developerProvidedOffering = developerProvidedOffering
 
         let workflowPackageContext = Self.workflowPackageContext(
             workflow: workflow,
-            allOfferings: allOfferings,
+            offerings: offerings,
             initialOffering: initialOffering,
-            presentedOfferingContext: presentedOfferingContext,
-            developerProvidedOffering: developerProvidedOffering
+            presentedOfferingContext: presentedOfferingContext
         )
         if let singleWorkflowStepFallbackId = workflow.singleStepFallbackId, workflowPackageContext == nil {
             Logger.warning(Strings.workflow_package_context_unresolvable(stepId: singleWorkflowStepFallbackId))
@@ -68,10 +64,9 @@ import Foundation
     func offering(for offeringIdentifier: String?) -> Offering? {
         return Self.offering(
             for: offeringIdentifier,
-            allOfferings: self.allOfferings,
+            offerings: self.offerings,
             initialOffering: self.initialOffering,
-            presentedOfferingContext: self.presentedOfferingContext,
-            developerProvidedOffering: self.developerProvidedOffering
+            presentedOfferingContext: self.presentedOfferingContext
         )
     }
 
@@ -79,14 +74,14 @@ import Foundation
     /// Used to guard against showing the exit offer when dismissing from a different step.
     var exitOfferTriggeringStepId: String? { exitOfferEntry?.triggeringStepId }
 
-    /// The exit offer resolved synchronously from `allOfferings`.
+    /// The exit offer resolved synchronously from `offerings`.
     /// Non-nil only when an exit offer is configured and its offering is present in the loaded offerings bundle.
     var exitOfferOffering: Offering? {
         guard let entry = exitOfferEntry else { return nil }
         return ExitOfferHelper.validExitOffer(
             offeringId: entry.offeringId,
             currentOfferingId: initialOffering.identifier,
-            from: allOfferings
+            from: offerings
         )
     }
 
@@ -100,7 +95,7 @@ import Foundation
               let offering = ExitOfferHelper.validExitOffer(
                   offeringId: entry.offeringId,
                   currentOfferingId: initialOffering.identifier,
-                  from: allOfferings
+                  from: offerings
               ) else { return nil }
         return WorkflowExitOfferContext(exitOfferOffering: offering)
     }
@@ -176,10 +171,9 @@ import Foundation
 
     private static func workflowPackageContext(
         workflow: PublishedWorkflow,
-        allOfferings: Offerings,
+        offerings: WorkflowOfferings,
         initialOffering: Offering,
-        presentedOfferingContext: PresentedOfferingContext?,
-        developerProvidedOffering: Offering?
+        presentedOfferingContext: PresentedOfferingContext?
     ) -> WorkflowPackageContext? {
         guard let singleWorkflowStepFallbackId = workflow.singleStepFallbackId,
               let step = workflow.steps[singleWorkflowStepFallbackId],
@@ -188,10 +182,9 @@ import Foundation
               let offeringIdentifier = workflow.offeringIdentifier(for: step),
               let offering = Self.offering(
                   for: offeringIdentifier,
-                  allOfferings: allOfferings,
+                  offerings: offerings,
                   initialOffering: initialOffering,
-                  presentedOfferingContext: presentedOfferingContext,
-                  developerProvidedOffering: developerProvidedOffering
+                  presentedOfferingContext: presentedOfferingContext
               ) else {
             return nil
         }
@@ -230,10 +223,9 @@ import Foundation
 
     private static func offering(
         for offeringIdentifier: String?,
-        allOfferings: Offerings,
+        offerings: WorkflowOfferings,
         initialOffering: Offering,
-        presentedOfferingContext: PresentedOfferingContext?,
-        developerProvidedOffering: Offering?
+        presentedOfferingContext: PresentedOfferingContext?
     ) -> Offering? {
         guard let offeringIdentifier else {
             return nil
@@ -243,11 +235,7 @@ import Foundation
             return initialOffering
         }
 
-        guard let offering = Self.baseOffering(
-            for: offeringIdentifier,
-            allOfferings: allOfferings,
-            developerProvidedOffering: developerProvidedOffering
-        ) else {
+        guard let offering = offerings.offering(identifier: offeringIdentifier) else {
             return nil
         }
 
@@ -330,26 +318,6 @@ import Foundation
             }
         }
     }
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension WorkflowContext {
-
-    /// The developer-supplied offering when it matches `offeringIdentifier`, otherwise the `allOfferings` entry.
-    static func baseOffering(
-        for offeringIdentifier: String?,
-        allOfferings: Offerings,
-        developerProvidedOffering: Offering?
-    ) -> Offering? {
-        guard let offeringIdentifier else {
-            return nil
-        }
-        if let developerProvidedOffering, developerProvidedOffering.identifier == offeringIdentifier {
-            return developerProvidedOffering
-        }
-        return allOfferings.offering(identifier: offeringIdentifier)
-    }
-
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
