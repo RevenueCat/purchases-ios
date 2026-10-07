@@ -233,7 +233,16 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         let storeProducts = receivedOfferings.all.values.flatMap(\.availablePackages).map(\.storeProduct)
         expect(storeProducts).toNot(beEmpty())
         for storeProduct in storeProducts {
-            expect(storeProduct.id) == storeProduct.productIdentifier
+            if #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *),
+                let installmentsInfo = storeProduct.installmentsInfo {
+                if installmentsInfo.billingPlanType == .upFront {
+                    expect(storeProduct.id) == storeProduct.productIdentifier
+                } else {
+                    expect(storeProduct.id) == "\(storeProduct.productIdentifier):\(installmentsInfo.billingPlanType.rawValue)"
+                }
+            } else {
+                expect(storeProduct.id) == storeProduct.productIdentifier
+            }
         }
 
         self.logger.verifyMessageWasLogged(Strings.offering.vending_offerings_cache_from_memory,
