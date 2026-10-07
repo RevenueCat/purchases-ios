@@ -159,7 +159,8 @@ internal typealias SK2BillingPlanType = StoreKit.Product.SubscriptionInfo.Billin
     @objc public var installmentsInfo: InstallmentsInfo? { self.product.installmentsInfo }
 
     /// A unique identifier for this product, including its billing plan.
-    /// If the product has a billing plan associated with it, this will be "{productIdentifier}:{billingPlanType}".
+    /// If the product has a billing plan associated with it, this will be "{productIdentifier}:{billingPlanType}",
+    /// except for the up-front billing plan, which uses "{productIdentifier}".
     /// Otherwise, it will be "{productIdentifier}".
     @_spi(Internal) public var id: String { return product.id }
 
