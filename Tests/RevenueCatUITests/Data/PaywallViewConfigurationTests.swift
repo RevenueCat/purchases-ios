@@ -124,10 +124,10 @@ final class PaywallViewConfigurationTests: TestCase {
         let workflowContext = WorkflowContext(
             workflow: try Self.createWorkflow(offeringIdentifier: initialOffering.identifier),
             uiConfig: PreviewUIConfig.make(),
-            allOfferings: Self.createOfferings([initialOffering]),
+            offerings: WorkflowOfferings(offerings: Self.createOfferings([initialOffering]),
+                                         developerProvidedOffering: nil),
             initialOffering: initialOffering,
-            presentedOfferingContext: initialOffering.presentedOfferingContext,
-            developerProvidedOffering: nil
+            presentedOfferingContext: initialOffering.presentedOfferingContext
         )
         let purchases = Self.createMockPurchases()
         let handler = Self.createPurchaseHandler(purchases: purchases)

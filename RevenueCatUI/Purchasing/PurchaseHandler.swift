@@ -51,6 +51,10 @@ final class PurchaseHandler: ObservableObject {
     /// The checkout this paywall's customer was last given and has not settled. Released with the paywall
     /// session, so a customer who comes back later starts afresh.
     var keptHostedCheckout: HostedCheckout.KeptCheckout?
+
+    /// What the paywall is telling the customer about a hosted checkout, until they acknowledge it.
+    @Published
+    fileprivate(set) var hostedCheckoutResolutionToShow: HostedCheckout.Resolution?
     #endif
 
     /// Where responsibility for completing purchases lies
@@ -299,6 +303,7 @@ final class PurchaseHandler: ObservableObject {
         self.activePaywallSessionID = nil
         #if os(iOS) && canImport(WebKit)
         self.keptHostedCheckout = nil
+        self.hostedCheckoutResolutionToShow = nil
         #endif
     }
 
@@ -792,11 +797,11 @@ extension PurchaseHandler {
             paywallId: screenID
         )
 
-        let baseOffering = WorkflowContext.baseOffering(
-            for: workflow.offeringIdentifier(for: step),
-            allOfferings: allOfferings,
+        let offerings = WorkflowOfferings(
+            offerings: allOfferings,
             developerProvidedOffering: developerProvidedOffering
         )
+        let baseOffering = workflow.offeringIdentifier(for: step).flatMap(offerings.offering(identifier:))
         let initialOffering = WorkflowContext.renderingOffering(
             baseOffering: baseOffering,
             paywallComponents: paywallComponents
@@ -807,10 +812,9 @@ extension PurchaseHandler {
         return WorkflowContext(
             workflow: workflow,
             uiConfig: uiConfig,
-            allOfferings: allOfferings,
+            offerings: offerings,
             initialOffering: offering,
             presentedOfferingContext: presentedOfferingContext,
-            developerProvidedOffering: developerProvidedOffering,
             workflowBlobRef: workflowBlobRef,
             traceId: traceId
         )
@@ -944,6 +948,26 @@ extension PurchaseHandler {
     }
 
     // MARK: - Hosted checkout
+
+    #if os(iOS) && canImport(WebKit)
+    /// Has the paywall tell the customer how a hosted checkout settled, or why it did not open.
+    @MainActor
+    func showHostedCheckoutResolution(_ resolution: HostedCheckout.Resolution) {
+        self.hostedCheckoutResolutionToShow = resolution
+    }
+
+    /// Called once the customer has acknowledged what the paywall told them about a hosted checkout. A purchase
+    /// is only reported now, since reporting it can close the paywall.
+    @MainActor
+    func acknowledgeHostedCheckoutResolution() {
+        let resolution = self.hostedCheckoutResolutionToShow
+        self.hostedCheckoutResolutionToShow = nil
+
+        if case let .purchased(customerInfo) = resolution {
+            self.handleHostedCheckoutPurchase(customerInfo: customerInfo)
+        }
+    }
+    #endif
 
     /// Reports a checkout the backend confirmed the customer completed on a page presented inside the app, once
     /// the customer has been told the purchase went through.

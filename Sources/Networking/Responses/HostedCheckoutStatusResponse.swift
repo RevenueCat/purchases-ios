@@ -25,11 +25,21 @@ struct HostedCheckoutStatusResponse: Equatable {
         /// Also stands for a status this version of the SDK does not know.
         case pending
 
-        /// The purchase is on the customer's account.
-        case succeeded
+        /// The purchase is on the customer's account. `purchase` is absent where the backend sends no detail.
+        case succeeded(Purchase?)
 
         /// The session ended without a purchase. `failure` is absent where the backend sends no detail.
         case failed(Failure?)
+
+    }
+
+    /// The purchase a session made, as it appears on the customer's account.
+    struct Purchase: Equatable {
+
+        let storeTransactionIdentifier: String
+        let productIdentifier: String
+        let purchaseDate: Date
+        let isSandbox: Bool
 
     }
 
@@ -71,24 +81,52 @@ extension HostedCheckoutStatusResponse: Decodable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        self.status = Self.decodeStatus(try container.decode(String.self, forKey: .status), from: container)
+        self.status = Self.decodeStatus(try container.decode(String.self, forKey: .status),
+                                        from: container,
+                                        decoder: decoder)
     }
 
     private static func decodeStatus(
         _ rawStatus: String,
-        from container: KeyedDecodingContainer<CodingKeys>
+        from container: KeyedDecodingContainer<CodingKeys>,
+        decoder: Decoder
     ) -> Status {
         switch rawStatus {
         case RawStatus.started, RawStatus.inProgress:
             return .pending
         case RawStatus.succeeded:
-            return .succeeded
+            // The purchase's fields sit next to `status` rather than in an object of their own.
+            return .succeeded(try? Purchase(from: decoder))
         case RawStatus.failed:
             return .failed(try? container.decodeIfPresent(Failure.self, forKey: .error))
         default:
             Logger.warn(Strings.hostedCheckout.unrecognized_status(rawStatus))
             return .pending
         }
+    }
+
+}
+
+extension HostedCheckoutStatusResponse.Purchase: Decodable {}
+
+extension HostedCheckoutStatusResponse.Purchase: StoreTransactionType {
+
+    var transactionIdentifier: String { return self.storeTransactionIdentifier }
+
+    var hasKnownPurchaseDate: Bool { return true }
+    var hasKnownTransactionIdentifier: Bool { return true }
+    var quantity: Int { return 1 }
+
+    var storefront: Storefront? { return nil }
+    var jwsRepresentation: String? { return nil }
+    var environment: StoreEnvironment? { return self.isSandbox ? .sandbox : .production }
+    var reason: TransactionReason? { return .purchase }
+    var revocationDate: Date? { return nil }
+    var revocationReason: RevocationReason? { return nil }
+
+    /// The web purchase has nothing for StoreKit to finish.
+    func finish(_ wrapper: PaymentQueueWrapperType, completion: @escaping @Sendable () -> Void) {
+        completion()
     }
 
 }
