@@ -2610,11 +2610,6 @@ workflows:
           context:
             - e2e-tests
             - slack-secrets
-      - run-sdk-update-test:
-          requires:
-            - approve-full-tests
-          context:
-            - e2e-tests
       - docs-build:
           requires:
             - approve-full-tests
@@ -2666,7 +2661,6 @@ workflows:
             - deploy-purchase-tester
             - run-workflow-maestro-tests
             - run-all-maestro-e2e-tests
-            - run-sdk-update-test
             - docs-build
 
   deploy-tag:
@@ -2904,6 +2898,7 @@ workflows:
             - e2e-tests
             - slack-secrets
       - run-sdk-update-test:
+          <<: *release-branches
           context:
             - e2e-tests
       - backend-integration-tests-SK1:
