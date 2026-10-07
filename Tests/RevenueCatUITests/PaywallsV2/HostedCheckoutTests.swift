@@ -483,6 +483,275 @@ final class HostedCheckoutTests: TestCase {
         expect(handler.actionTypeInProgress) == .restore
     }
 
+    // MARK: - Confirming once
+
+    /// The page can reach the success URL after the sheet was closed while tapping buy again confirms the same
+    /// checkout, and the customer should be told about their purchase once.
+    @MainActor
+    func testDoesNotConfirmACheckoutAlreadyBeingConfirmed() async {
+        let pollStarted = Gate()
+        let pollAnswer = Gate()
+        let sessionsAskedAbout = Recorder<HostedCheckoutSessionID>()
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollBlock = { sessionID in
+            await sessionsAskedAbout.record(sessionID)
+            await pollStarted.open()
+            await pollAnswer.wait()
+            return .succeeded
+        }
+        let handler = Self.makeHandler(purchases: purchases)
+        let kept = Self.makeKeptCheckout(for: Self.session)
+        handler.keptHostedCheckout = kept
+
+        let first = Task { @MainActor in
+            await HostedCheckout.resolve(Self.session.id,
+                                         settling: kept,
+                                         package: TestData.annualPackage,
+                                         purchaseHandler: handler)
+        }
+        await pollStarted.wait()
+        let second = await HostedCheckout.resolve(Self.session.id,
+                                                  settling: kept,
+                                                  package: TestData.annualPackage,
+                                                  purchaseHandler: handler)
+        await pollAnswer.open()
+
+        let firstResolution = await first.value
+        let asked = await sessionsAskedAbout.values
+        expect(second).to(beNil())
+        expect(firstResolution) == .purchased(TestData.customerInfo)
+        expect(asked) == [Self.session.id]
+    }
+
+    @MainActor
+    func testDoesNotConfirmACheckoutThatAlreadySettled() async {
+        let sessionsAskedAbout = Recorder<HostedCheckoutSessionID>()
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollBlock = { sessionID in
+            await sessionsAskedAbout.record(sessionID)
+            return .succeeded
+        }
+        let handler = Self.makeHandler(purchases: purchases)
+        let kept = Self.makeKeptCheckout(for: Self.session)
+        handler.keptHostedCheckout = kept
+
+        _ = await HostedCheckout.resolve(Self.session.id,
+                                         settling: kept,
+                                         package: TestData.annualPackage,
+                                         purchaseHandler: handler)
+        let again = await HostedCheckout.resolve(Self.session.id,
+                                                 settling: kept,
+                                                 package: TestData.annualPackage,
+                                                 purchaseHandler: handler)
+
+        let asked = await sessionsAskedAbout.values
+        expect(again).to(beNil())
+        expect(asked) == [Self.session.id]
+    }
+
+    /// Tapping buy again retries it.
+    @MainActor
+    func testConfirmsAgainACheckoutWhoseConfirmationFailed() async {
+        let sessionsAskedAbout = Recorder<HostedCheckoutSessionID>()
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollBlock = { sessionID in
+            await sessionsAskedAbout.record(sessionID)
+            return .undetermined
+        }
+        let handler = Self.makeHandler(purchases: purchases)
+        let kept = Self.makeKeptCheckout(for: Self.session)
+        handler.keptHostedCheckout = kept
+
+        _ = await HostedCheckout.resolve(Self.session.id,
+                                         settling: kept,
+                                         package: TestData.annualPackage,
+                                         purchaseHandler: handler)
+        let again = await HostedCheckout.resolve(Self.session.id,
+                                                 settling: kept,
+                                                 package: TestData.annualPackage,
+                                                 purchaseHandler: handler)
+
+        let asked = await sessionsAskedAbout.values
+        expect(again) == .failed(.unconfirmed)
+        expect(asked) == [Self.session.id, Self.session.id]
+    }
+
+    /// The page reached the success URL after the sheet was closed while the backend answered the customer's tap on
+    /// buy. That confirmation tells the customer, and the paywall shows it under way until it does.
+    @MainActor
+    func testWaitsForAConfirmationThatBeganWhileTheCheckoutStarted() async {
+        let pollStarted = Gate()
+        let pollAnswer = Gate()
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollBlock = { _ in
+            await pollStarted.open()
+            await pollAnswer.wait()
+            return .succeeded
+        }
+        let handler = Self.makeHandler(purchases: purchases)
+        let kept = Self.makeKeptCheckout(for: Self.session)
+        handler.keptHostedCheckout = kept
+        let confirmation: Atomic<Task<HostedCheckout.Resolution?, Never>?> = .init(nil)
+        purchases.hostedCheckoutBlock = { _, _, _ in
+            confirmation.value = Task { @MainActor in
+                await HostedCheckout.resolve(Self.session.id,
+                                             settling: kept,
+                                             package: TestData.annualPackage,
+                                             purchaseHandler: handler)
+            }
+            await pollStarted.wait()
+            return .resumed(Self.session)
+        }
+
+        let tap = Task { @MainActor in
+            await HostedCheckout.start(for: TestData.annualPackage,
+                                       purchaseHandler: handler,
+                                       purchaseInitiatedAction: nil)
+        }
+        await expect(handler.actionTypeInProgress).toEventually(equal(.purchase), timeout: .seconds(2))
+        await pollAnswer.open()
+        let action = await tap.value
+
+        let resolution = await confirmation.value?.value
+        guard case .nothing = action else { return fail("Unexpected \(action)") }
+        expect(resolution) == .purchased(TestData.customerInfo)
+        expect(handler.keptHostedCheckout).to(beNil())
+        expect(handler.actionInProgress) == false
+    }
+
+    /// The confirmation already told the customer how the checkout settled.
+    @MainActor
+    func testOpensNothingForAKeptCheckoutThatSettledWhileTheCheckoutStarted() async {
+        let sessionsAskedAbout = Recorder<HostedCheckoutSessionID>()
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollBlock = { sessionID in
+            await sessionsAskedAbout.record(sessionID)
+            return .succeeded
+        }
+        let handler = Self.makeHandler(purchases: purchases)
+        let kept = Self.makeKeptCheckout(for: Self.session)
+        handler.keptHostedCheckout = kept
+        purchases.hostedCheckoutBlock = { _, _, _ in
+            _ = await HostedCheckout.resolve(Self.session.id,
+                                             settling: kept,
+                                             package: TestData.annualPackage,
+                                             purchaseHandler: handler)
+            return .completed(Self.session.id)
+        }
+
+        let action = await HostedCheckout.start(for: TestData.annualPackage,
+                                                purchaseHandler: handler,
+                                                purchaseInitiatedAction: nil)
+
+        let asked = await sessionsAskedAbout.values
+        guard case .nothing = action else { return fail("Unexpected \(action)") }
+        expect(asked) == [Self.session.id]
+    }
+
+    /// The app's purchase interceptor can take its time, and the page the customer closed can reach the success URL
+    /// meanwhile. The confirmation released the kept checkout, and starting another would let them pay again.
+    @MainActor
+    func testOpensNothingForAKeptCheckoutThatSettledWhileTheInterceptorDecided() async {
+        let checkoutsStarted = Recorder<String>()
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollBlock = { _ in .succeeded }
+        purchases.hostedCheckoutBlock = { package, _, _ in
+            await checkoutsStarted.record(package.identifier)
+            return .started(Self.otherSession)
+        }
+        let handler = Self.makeHandler(purchases: purchases)
+        let kept = Self.makeKeptCheckout(for: Self.session)
+        handler.keptHostedCheckout = kept
+        let interceptor = PurchaseInitiatedAction { _, resume in
+            Task { @MainActor in
+                _ = await HostedCheckout.resolve(Self.session.id,
+                                                 settling: kept,
+                                                 package: TestData.annualPackage,
+                                                 purchaseHandler: handler)
+                resume(shouldProceed: true)
+            }
+        }
+
+        let action = await HostedCheckout.start(for: TestData.annualPackage,
+                                                purchaseHandler: handler,
+                                                purchaseInitiatedAction: interceptor)
+
+        let started = await checkoutsStarted.values
+        guard case .nothing = action else { return fail("Unexpected \(action)") }
+        expect(started).to(beEmpty())
+        expect(handler.keptHostedCheckout).to(beNil())
+    }
+
+    /// Starting the checkout would show Apple's notice to a customer who already paid.
+    @MainActor
+    func testWaitsForAConfirmationThatBeganWhileTheInterceptorDecidedWithoutStartingACheckout() async {
+        let pollStarted = Gate()
+        let pollAnswer = Gate()
+        let checkoutsStarted = Recorder<String>()
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollBlock = { _ in
+            await pollStarted.open()
+            await pollAnswer.wait()
+            return .succeeded
+        }
+        purchases.hostedCheckoutBlock = { package, _, _ in
+            await checkoutsStarted.record(package.identifier)
+            return .resumed(Self.session)
+        }
+        let handler = Self.makeHandler(purchases: purchases)
+        let kept = Self.makeKeptCheckout(for: Self.session)
+        handler.keptHostedCheckout = kept
+        let confirmation: Atomic<Task<HostedCheckout.Resolution?, Never>?> = .init(nil)
+        let interceptor = PurchaseInitiatedAction { _, resume in
+            Task { @MainActor in
+                confirmation.value = Task { @MainActor in
+                    await HostedCheckout.resolve(Self.session.id,
+                                                 settling: kept,
+                                                 package: TestData.annualPackage,
+                                                 purchaseHandler: handler)
+                }
+                await pollStarted.wait()
+                resume(shouldProceed: true)
+            }
+        }
+
+        let tap = Task { @MainActor in
+            await HostedCheckout.start(for: TestData.annualPackage,
+                                       purchaseHandler: handler,
+                                       purchaseInitiatedAction: interceptor)
+        }
+        await expect(handler.actionTypeInProgress).toEventually(equal(.purchase), timeout: .seconds(2))
+        await pollAnswer.open()
+        let action = await tap.value
+
+        let resolution = await confirmation.value?.value
+        let started = await checkoutsStarted.values
+        guard case .nothing = action else { return fail("Unexpected \(action)") }
+        expect(resolution) == .purchased(TestData.customerInfo)
+        expect(started).to(beEmpty())
+        expect(handler.actionInProgress) == false
+    }
+
+    /// The page says the customer paid, whatever the backend has seen so far, and another page would let them pay
+    /// again.
+    @MainActor
+    func testConfirmsAKeptCheckoutWhosePageSucceededInsteadOfPresentingAnother() async {
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutBlock = { _, _, _ in .started(Self.otherSession) }
+        let handler = Self.makeHandler(purchases: purchases)
+        let kept = Self.makeKeptCheckout(for: Self.session)
+        handler.keptHostedCheckout = kept
+        Self.navigate(kept.viewModel, to: Self.session.successURL)
+
+        let action = await HostedCheckout.start(for: TestData.monthlyPackage,
+                                                purchaseHandler: handler,
+                                                purchaseInitiatedAction: nil)
+
+        guard case let .confirm(sessionID, settling) = action else { return fail("Unexpected \(action)") }
+        expect(sessionID) == Self.session.id
+        expect(settling) === kept
+    }
+
     // MARK: - Settling on what the backend says
 
     func testCountsAConfirmedPurchase() {
@@ -806,6 +1075,29 @@ private actor Recorder<Value: Sendable> {
 
     func record(_ value: Value) {
         self.values.append(value)
+    }
+
+}
+
+/// Holds whoever waits on it until it is opened.
+private actor Gate {
+
+    private var isOpen = false
+    private var continuations: [CheckedContinuation<Void, Never>] = []
+
+    func wait() async {
+        guard !self.isOpen else { return }
+
+        await withCheckedContinuation { continuation in
+            self.continuations.append(continuation)
+        }
+    }
+
+    func open() {
+        self.isOpen = true
+        let continuations = self.continuations
+        self.continuations = []
+        continuations.forEach { $0.resume() }
     }
 
 }
