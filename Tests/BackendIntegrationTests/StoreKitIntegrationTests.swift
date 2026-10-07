@@ -148,6 +148,30 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
         expect(originalApplicationVersion).toNot(beNil())
     }
 
+    @available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *)
+    func checkProductIds() async throws {
+        func checkIdForProductWithMonthlyBillingPlan() async throws {
+            let id = "\(Self.productIDWithBillingPlans):monthly"
+            let product = try await self.product(id)
+            expect(product.productIdentifier).to(equal(Self.productIDWithBillingPlans))
+            expect(product.id).to(equal(id))
+        }
+
+        func checkIdForProductWithUpfrontBillingPlan() async throws {
+            let id = "\(Self.productIDWithBillingPlans)"
+            let product = try await self.product(id)
+            expect(product.productIdentifier).to(equal(id))
+            expect(product.id).to(equal(id))
+        }
+
+        if #available(iOS 27.0, tvOS 27.0, macOS 27.0, watchOS 27.0, visionOS 27.0, *) {
+            try await checkIdForProductWithMonthlyBillingPlan()
+            try await checkIdForProductWithUpfrontBillingPlan()
+        } else {
+            try await checkIdForProductWithUpfrontBillingPlan()
+        }
+    }
+
     private func signInAsNewAppUserID() async throws {
         _ = try await Purchases.shared.logIn("integration-test-user-\(UUID().uuidString)")
     }
@@ -1195,6 +1219,13 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         self.verifySpecificTransactionWasFinished(transaction)
     }
     #endif
+
+    func checkSK1ProductId() async throws {
+        let id = "\(Self.productIDWithBillingPlans)"
+        let product = try await self.product(id)
+        expect(product.productIdentifier).to(equal(id))
+        expect(product.id).to(equal(id))
+    }
 }
 
 private extension BaseStoreKitIntegrationTests {
