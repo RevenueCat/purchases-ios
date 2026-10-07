@@ -761,7 +761,7 @@ private extension WorkflowContextTests {
         uiConfig.localizations = ["en_US": ["percent": "%d%%"]]
         return WorkflowContext(
             workflow: workflow, uiConfig: uiConfig, allOfferings: Self.makeOfferings(offering),
-            initialOffering: offering, presentedOfferingContext: nil
+            initialOffering: offering, presentedOfferingContext: nil, developerProvidedOffering: nil
         )
     }
 

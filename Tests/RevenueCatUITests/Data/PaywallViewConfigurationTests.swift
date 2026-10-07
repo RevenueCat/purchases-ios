@@ -126,7 +126,8 @@ final class PaywallViewConfigurationTests: TestCase {
             uiConfig: PreviewUIConfig.make(),
             allOfferings: Self.createOfferings([initialOffering]),
             initialOffering: initialOffering,
-            presentedOfferingContext: initialOffering.presentedOfferingContext
+            presentedOfferingContext: initialOffering.presentedOfferingContext,
+            developerProvidedOffering: nil
         )
         let purchases = Self.createMockPurchases()
         let handler = Self.createPurchaseHandler(purchases: purchases)

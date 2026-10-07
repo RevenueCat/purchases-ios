@@ -39,7 +39,7 @@ import Foundation
         allOfferings: Offerings,
         initialOffering: Offering,
         presentedOfferingContext: PresentedOfferingContext?,
-        developerProvidedOffering: Offering? = nil,
+        developerProvidedOffering: Offering?,
         workflowBlobRef: String? = nil,
         traceId: String? = nil
     ) {
@@ -243,10 +243,11 @@ import Foundation
             return initialOffering
         }
 
-        let developerProvidedMatch = developerProvidedOffering?.identifier == offeringIdentifier
-            ? developerProvidedOffering
-            : nil
-        guard let offering = developerProvidedMatch ?? allOfferings.offering(identifier: offeringIdentifier) else {
+        guard let offering = Self.baseOffering(
+            for: offeringIdentifier,
+            allOfferings: allOfferings,
+            developerProvidedOffering: developerProvidedOffering
+        ) else {
             return nil
         }
 
@@ -329,6 +330,26 @@ import Foundation
             }
         }
     }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension WorkflowContext {
+
+    /// The developer-supplied offering when it matches `offeringIdentifier`, otherwise the `allOfferings` entry.
+    static func baseOffering(
+        for offeringIdentifier: String?,
+        allOfferings: Offerings,
+        developerProvidedOffering: Offering?
+    ) -> Offering? {
+        guard let offeringIdentifier else {
+            return nil
+        }
+        if let developerProvidedOffering, developerProvidedOffering.identifier == offeringIdentifier {
+            return developerProvidedOffering
+        }
+        return allOfferings.offering(identifier: offeringIdentifier)
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

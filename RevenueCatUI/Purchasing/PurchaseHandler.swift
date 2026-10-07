@@ -615,7 +615,8 @@ extension PurchaseHandler {
             return try await self.resolvePaywallViewData(
                 for: offering,
                 offerings: offerings,
-                remoteConfigEnabled: remoteConfigEnabled
+                remoteConfigEnabled: remoteConfigEnabled,
+                developerProvidedOffering: nil
             )
         case let .offeringIdentifier(identifier, presentedOfferingContext):
             let offerings = try await self.purchases.offerings()
@@ -633,7 +634,8 @@ extension PurchaseHandler {
             return try await self.resolvePaywallViewData(
                 for: resolvedOffering,
                 offerings: offerings,
-                remoteConfigEnabled: remoteConfigEnabled
+                remoteConfigEnabled: remoteConfigEnabled,
+                developerProvidedOffering: nil
             )
         }
     }
@@ -655,7 +657,7 @@ extension PurchaseHandler {
         for offering: Offering,
         offerings: Offerings?,
         remoteConfigEnabled: Bool,
-        developerProvidedOffering: Offering? = nil
+        developerProvidedOffering: Offering?
     ) async throws -> ResolvedPaywallViewData {
         guard remoteConfigEnabled,
               offering.paywall == nil,
@@ -697,8 +699,8 @@ extension PurchaseHandler {
     func resolveWorkflowContext(
         identifier: String,
         presentedOfferingContext: PresentedOfferingContext?,
-        offerings: Offerings? = nil,
-        developerProvidedOffering: Offering? = nil
+        offerings: Offerings?,
+        developerProvidedOffering: Offering?
     ) async throws -> WorkflowContext {
         do {
             async let fetchResultTask = self.purchases.workflow(forOfferingIdentifier: identifier)
@@ -736,7 +738,7 @@ extension PurchaseHandler {
         uiConfig: UIConfig,
         allOfferings: Offerings,
         presentedOfferingContext: PresentedOfferingContext?,
-        developerProvidedOffering: Offering? = nil,
+        developerProvidedOffering: Offering?,
         workflowBlobRef: String? = nil,
         traceId: String? = nil
     ) throws -> WorkflowContext {
@@ -768,7 +770,7 @@ extension PurchaseHandler {
             paywallId: screenID
         )
 
-        let baseOffering = Self.baseOffering(
+        let baseOffering = WorkflowContext.baseOffering(
             for: workflow.offeringIdentifier(for: step),
             allOfferings: allOfferings,
             developerProvidedOffering: developerProvidedOffering
@@ -792,19 +794,6 @@ extension PurchaseHandler {
         )
     }
 
-    private static func baseOffering(
-        for offeringIdentifier: String?,
-        allOfferings: Offerings,
-        developerProvidedOffering: Offering?
-    ) -> Offering? {
-        guard let offeringIdentifier else {
-            return nil
-        }
-        if let developerProvidedOffering, developerProvidedOffering.identifier == offeringIdentifier {
-            return developerProvidedOffering
-        }
-        return allOfferings.offering(identifier: offeringIdentifier)
-    }
     #endif
 
 }
