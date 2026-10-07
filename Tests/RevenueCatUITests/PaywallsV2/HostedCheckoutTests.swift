@@ -38,7 +38,8 @@ final class HostedCheckoutTests: TestCase {
                                                 purchaseHandler: Self.makeHandler(purchases: purchases),
                                                 purchaseInitiatedAction: nil)
 
-        expect(action) == .present(Self.session)
+        guard case let .present(session) = action else { return fail("Unexpected \(action)") }
+        expect(session) == Self.session
     }
 
     /// The same event is tracked and sent with the checkout, so the purchase made on the page is attributed
@@ -88,7 +89,7 @@ final class HostedCheckoutTests: TestCase {
                                                                                           recordingInto: .init()))
 
         let packagesCheckedOut = await checkoutsStarted.values
-        expect(action) == .nothing
+        guard case .nothing = action else { return fail("Unexpected \(action)") }
         expect(packagesCheckedOut).to(beEmpty())
     }
 
@@ -104,55 +105,82 @@ final class HostedCheckoutTests: TestCase {
         )
 
         let packagesAskedAbout = await packagesIntercepted.values
-        expect(action) == .present(Self.session)
+        guard case let .present(session) = action else { return fail("Unexpected \(action)") }
+        expect(session) == Self.session
         expect(packagesAskedAbout) == [TestData.annualPackage.identifier]
     }
 
     func testPresentsTheCheckoutThatWasCreated() {
-        expect(HostedCheckout.Action(.started(Self.session))) == .present(Self.session)
+        let action = HostedCheckout.Action(.started(Self.session), keptCheckout: nil)
+
+        guard case let .present(session) = action else { return fail("Unexpected \(action)") }
+        expect(session) == Self.session
     }
 
     func testPresentsTheCheckoutThatWasResumed() {
-        expect(HostedCheckout.Action(.resumed(Self.session))) == .present(Self.session)
+        let action = HostedCheckout.Action(.resumed(Self.session), keptCheckout: nil)
+
+        guard case let .present(session) = action else { return fail("Unexpected \(action)") }
+        expect(session) == Self.session
     }
 
     /// There is nothing left to pay for, but the purchase still has to be confirmed and reported.
+    @MainActor
     func testConfirmsACheckoutTheCustomerAlreadyPaidFor() {
-        expect(HostedCheckout.Action(.completed(Self.session))) == .confirm(Self.session)
+        let kept = Self.makeKeptCheckout(for: Self.session)
+
+        let action = HostedCheckout.Action(.completed(Self.session.id), keptCheckout: kept)
+
+        guard case let .confirm(sessionID, settling) = action else { return fail("Unexpected \(action)") }
+        expect(sessionID) == Self.session.id
+        expect(settling) === kept
     }
 
     /// There is no checkout to open for something the customer already has, and they are told so rather than
     /// left with a button that appears to do nothing.
     func testTellsTheCustomerWhenTheyAlreadyOwnTheProduct() {
-        expect(HostedCheckout.Action(.alreadyPurchased)) == .tellCustomerTheyAlreadyOwnIt
+        let action = HostedCheckout.Action(.alreadyPurchased, keptCheckout: nil)
+
+        guard case .tellCustomerTheyAlreadyOwnIt = action else { return fail("Unexpected \(action)") }
     }
 
     /// A customer who said no to Apple's notice said no to the purchase.
     func testOffersNothingWhenTheCustomerDeclinedTheNotice() {
-        expect(HostedCheckout.Action(.declinedByCustomer)) == .nothing
+        let action = HostedCheckout.Action(.declinedByCustomer, keptCheckout: nil)
+
+        guard case .nothing = action else { return fail("Unexpected \(action)") }
     }
 
     /// Apple asks that a device that does not authorize payments be offered no purchase at all, not even
     /// through StoreKit.
     func testOffersNothingWhenTheDeviceDoesNotAuthorizePayments() {
-        expect(HostedCheckout.Action(.paymentsNotAuthorized)) == .nothing
+        let action = HostedCheckout.Action(.paymentsNotAuthorized, keptCheckout: nil)
+
+        guard case .nothing = action else { return fail("Unexpected \(action)") }
     }
 
     /// A customer who is not eligible to buy outside the App Store is told the purchase is unavailable rather
     /// than left with a button that appears to do nothing.
     func testTellsAnIneligibleCustomerThePurchaseIsUnavailable() {
-        expect(HostedCheckout.Action(.notEligible)) == .tellCustomerThePurchaseIsUnavailable
+        let action = HostedCheckout.Action(.notEligible, keptCheckout: nil)
+
+        guard case .tellCustomerThePurchaseIsUnavailable = action else { return fail("Unexpected \(action)") }
     }
 
     /// The checkout already under way carries the purchase.
     func testOffersNothingWhileAnotherCheckoutIsStarting() {
-        expect(HostedCheckout.Action(.alreadyStarting)) == .nothing
+        let action = HostedCheckout.Action(.alreadyStarting, keptCheckout: nil)
+
+        guard case .nothing = action else { return fail("Unexpected \(action)") }
     }
 
     /// Falling back to StoreKit here would charge a customer who is midway through a checkout that may yet
     /// be resolved, so a failure offers nothing but telling them.
     func testTellsTheCustomerWhenTheCheckoutCouldNotBeCreated() {
-        expect(HostedCheckout.Action(.failed)) == .failed(.notStarted)
+        let action = HostedCheckout.Action(.failed, keptCheckout: nil)
+
+        guard case let .failed(error) = action else { return fail("Unexpected \(action)") }
+        expect(error) == .notStarted
     }
 
     @MainActor
@@ -214,7 +242,7 @@ final class HostedCheckoutTests: TestCase {
     @MainActor
     func testKeepsACheckoutThatWasAlreadyPaidForUntilItIsConfirmed() async {
         let purchases = Self.makePurchases()
-        purchases.hostedCheckoutBlock = { _, _, _ in .completed(Self.session) }
+        purchases.hostedCheckoutBlock = { _, _, _ in .completed(Self.session.id) }
         let handler = Self.makeHandler(purchases: purchases)
         let kept = Self.makeKeptCheckout(for: Self.session)
         handler.keptHostedCheckout = kept
@@ -223,8 +251,28 @@ final class HostedCheckoutTests: TestCase {
                                                 purchaseHandler: handler,
                                                 purchaseInitiatedAction: nil)
 
-        expect(action) == .confirm(Self.session)
+        guard case let .confirm(sessionID, settling) = action else { return fail("Unexpected \(action)") }
+        expect(sessionID) == Self.session.id
+        expect(settling) === kept
         expect(handler.keptHostedCheckout) === kept
+    }
+
+    /// The backend may say another session was the one paid for, and confirming that still settles the kept one.
+    @MainActor
+    func testConfirmsTheSessionTheBackendSaysWasPaidForInsteadOfTheKeptOne() async {
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutBlock = { _, _, _ in .completed(Self.otherSession.id) }
+        let handler = Self.makeHandler(purchases: purchases)
+        let kept = Self.makeKeptCheckout(for: Self.session)
+        handler.keptHostedCheckout = kept
+
+        let action = await HostedCheckout.start(for: TestData.annualPackage,
+                                                purchaseHandler: handler,
+                                                purchaseInitiatedAction: nil)
+
+        guard case let .confirm(sessionID, settling) = action else { return fail("Unexpected \(action)") }
+        expect(sessionID) == Self.otherSession.id
+        expect(settling) === kept
     }
 
     @MainActor
@@ -232,9 +280,30 @@ final class HostedCheckoutTests: TestCase {
         let purchases = Self.makePurchases()
         purchases.hostedCheckoutPollBlock = { _ in .succeeded }
         let handler = Self.makeHandler(purchases: purchases)
-        handler.keptHostedCheckout = Self.makeKeptCheckout(for: Self.session)
+        let kept = Self.makeKeptCheckout(for: Self.session)
+        handler.keptHostedCheckout = kept
 
-        _ = await HostedCheckout.resolve(Self.session, package: TestData.annualPackage, purchaseHandler: handler)
+        _ = await HostedCheckout.resolve(Self.session.id,
+                                         settling: kept,
+                                         package: TestData.annualPackage,
+                                         purchaseHandler: handler)
+
+        expect(handler.keptHostedCheckout).to(beNil())
+    }
+
+    /// Otherwise every tap on buy would hand the backend the same settled checkout and confirm it again.
+    @MainActor
+    func testReleasesTheKeptCheckoutWhenThePurchaseConfirmedForItIsUnderAnotherSession() async {
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutPollBlock = { _ in .succeeded }
+        let handler = Self.makeHandler(purchases: purchases)
+        let kept = Self.makeKeptCheckout(for: Self.session)
+        handler.keptHostedCheckout = kept
+
+        _ = await HostedCheckout.resolve(Self.otherSession.id,
+                                         settling: kept,
+                                         package: TestData.annualPackage,
+                                         purchaseHandler: handler)
 
         expect(handler.keptHostedCheckout).to(beNil())
     }
@@ -244,9 +313,13 @@ final class HostedCheckoutTests: TestCase {
         let purchases = Self.makePurchases()
         purchases.hostedCheckoutPollBlock = { _ in .alreadyPurchased }
         let handler = Self.makeHandler(purchases: purchases)
-        handler.keptHostedCheckout = Self.makeKeptCheckout(for: Self.session)
+        let kept = Self.makeKeptCheckout(for: Self.session)
+        handler.keptHostedCheckout = kept
 
-        _ = await HostedCheckout.resolve(Self.session, package: TestData.annualPackage, purchaseHandler: handler)
+        _ = await HostedCheckout.resolve(Self.otherSession.id,
+                                         settling: kept,
+                                         package: TestData.annualPackage,
+                                         purchaseHandler: handler)
 
         expect(handler.keptHostedCheckout).to(beNil())
     }
@@ -260,22 +333,28 @@ final class HostedCheckoutTests: TestCase {
         let kept = Self.makeKeptCheckout(for: Self.session)
         handler.keptHostedCheckout = kept
 
-        _ = await HostedCheckout.resolve(Self.session, package: TestData.annualPackage, purchaseHandler: handler)
+        _ = await HostedCheckout.resolve(Self.otherSession.id,
+                                         settling: kept,
+                                         package: TestData.annualPackage,
+                                         purchaseHandler: handler)
 
         expect(handler.keptHostedCheckout) === kept
     }
 
     @MainActor
-    func testLeavesAKeptCheckoutForAnotherSessionWhenConfirmingAPurchase() async {
+    func testLeavesACheckoutThatReplacedTheOneBeingConfirmed() async {
         let purchases = Self.makePurchases()
         purchases.hostedCheckoutPollBlock = { _ in .succeeded }
         let handler = Self.makeHandler(purchases: purchases)
-        let other = Self.makeKeptCheckout(for: Self.otherSession)
-        handler.keptHostedCheckout = other
+        let replacement = Self.makeKeptCheckout(for: Self.otherSession)
+        handler.keptHostedCheckout = replacement
 
-        _ = await HostedCheckout.resolve(Self.session, package: TestData.annualPackage, purchaseHandler: handler)
+        _ = await HostedCheckout.resolve(Self.session.id,
+                                         settling: Self.makeKeptCheckout(for: Self.session),
+                                         package: TestData.annualPackage,
+                                         purchaseHandler: handler)
 
-        expect(handler.keptHostedCheckout) === other
+        expect(handler.keptHostedCheckout) === replacement
     }
 
     /// The customer comes back to the page as they left it, rather than to one loading afresh.
@@ -393,7 +472,8 @@ final class HostedCheckoutTests: TestCase {
         }
         handler.actionTypeInProgress = .restore
 
-        let resolution = await HostedCheckout.resolve(Self.session,
+        let resolution = await HostedCheckout.resolve(Self.session.id,
+                                                      settling: nil,
                                                       package: TestData.annualPackage,
                                                       purchaseHandler: handler)
 
@@ -426,19 +506,20 @@ final class HostedCheckoutTests: TestCase {
     }
 
     func testAsksAboutTheSessionThatWasPresented() async {
-        let sessionsAskedAbout = Recorder<HostedCheckoutSession>()
+        let sessionsAskedAbout = Recorder<HostedCheckoutSessionID>()
         let purchases = Self.makePurchases()
-        purchases.hostedCheckoutPollBlock = { session in
-            await sessionsAskedAbout.record(session)
+        purchases.hostedCheckoutPollBlock = { sessionID in
+            await sessionsAskedAbout.record(sessionID)
             return .succeeded
         }
 
-        _ = await HostedCheckout.resolve(Self.session,
+        _ = await HostedCheckout.resolve(Self.session.id,
+                                         settling: nil,
                                          package: TestData.annualPackage,
                                          purchaseHandler: Self.makeHandler(purchases: purchases))
 
         let asked = await sessionsAskedAbout.values
-        expect(asked) == [Self.session]
+        expect(asked) == [Self.session.id]
     }
 
     @MainActor
@@ -451,7 +532,8 @@ final class HostedCheckoutTests: TestCase {
             return .succeeded
         }
 
-        _ = await HostedCheckout.resolve(Self.session,
+        _ = await HostedCheckout.resolve(Self.session.id,
+                                         settling: nil,
                                          package: TestData.annualPackage,
                                          purchaseHandler: handler)
 
@@ -467,7 +549,8 @@ final class HostedCheckoutTests: TestCase {
         purchases.hostedCheckoutPollBlock = { _ in .succeeded }
         let handler = Self.makeHandler(purchases: purchases)
 
-        let resolution = await HostedCheckout.resolve(Self.session,
+        let resolution = await HostedCheckout.resolve(Self.session.id,
+                                                      settling: nil,
                                                       package: TestData.annualPackage,
                                                       purchaseHandler: handler)
 
@@ -511,7 +594,8 @@ final class HostedCheckoutTests: TestCase {
         purchases.hostedCheckoutPollBlock = { _ in .succeeded }
         let handler = Self.makeHandler(purchases: purchases)
 
-        let resolution = await HostedCheckout.resolve(Self.session,
+        let resolution = await HostedCheckout.resolve(Self.session.id,
+                                                      settling: nil,
                                                       package: TestData.annualPackage,
                                                       purchaseHandler: handler)
 
@@ -527,7 +611,8 @@ final class HostedCheckoutTests: TestCase {
         purchases.hostedCheckoutPollBlock = { _ in .undetermined }
         let handler = Self.makeHandler(purchases: purchases)
 
-        let resolution = await HostedCheckout.resolve(Self.session,
+        let resolution = await HostedCheckout.resolve(Self.session.id,
+                                                      settling: nil,
                                                       package: TestData.annualPackage,
                                                       purchaseHandler: handler)
 
@@ -544,7 +629,8 @@ final class HostedCheckoutTests: TestCase {
         let handler = Self.makeHandler(purchases: purchases)
         handler.trackPaywallImpression(Self.impressionData)
 
-        _ = await HostedCheckout.resolve(Self.session,
+        _ = await HostedCheckout.resolve(Self.session.id,
+                                         settling: nil,
                                          package: TestData.annualPackage,
                                          purchaseHandler: handler)
 
@@ -564,7 +650,8 @@ final class HostedCheckoutTests: TestCase {
         let handler = Self.makeHandler(purchases: purchases)
         handler.trackPaywallImpression(Self.impressionData)
 
-        _ = await HostedCheckout.resolve(Self.session,
+        _ = await HostedCheckout.resolve(Self.session.id,
+                                         settling: nil,
                                          package: TestData.annualPackage,
                                          purchaseHandler: handler)
 

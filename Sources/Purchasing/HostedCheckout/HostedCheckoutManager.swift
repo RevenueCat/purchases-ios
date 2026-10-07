@@ -37,9 +37,9 @@ final class HostedCheckoutManager {
     /// Must not be called before then: this may mint an external purchase token, and every token minted is
     /// one Apple expects a report for.
     ///
-    /// - Parameter previousSession: A session this customer was given before that has not been settled, which the
-    /// backend hands back where they can still carry on with it. Ignored when it was created for someone other than
-    /// whoever is logged in now.
+    /// - Parameter previousSession: A session given before that has not been settled, even if it was created for
+    /// someone other than whoever is logged in now. The backend decides whether the customer carries on with it.
+    /// `nil` when there is none: no session was given yet, or the last one was settled.
     func startCheckout(package: Package,
                        paywall: PaywallEvent.Data?,
                        previousSession: HostedCheckoutSession?) async -> HostedCheckoutStartResult {
@@ -84,13 +84,12 @@ final class HostedCheckoutManager {
     /// Present this checkout to the customer.
     case started(HostedCheckoutSession)
 
-    /// Present this checkout to the customer again: it is the one they were given before, and they can carry on
-    /// with it.
+    /// Present this checkout to the customer, who can carry on where they left off with it.
     case resumed(HostedCheckoutSession)
 
-    /// The checkout the customer was given before has already been paid for, so there is nothing to present.
-    /// Confirm it the same way as a checkout that reached its success page.
-    case completed(HostedCheckoutSession)
+    /// This checkout has already been paid for, so there is nothing to present. Confirm it the same way as a
+    /// checkout that reached its success page.
+    case completed(HostedCheckoutSessionID)
 
     /// The customer declined Apple's disclosure notice.
     case declinedByCustomer
@@ -123,13 +122,6 @@ private extension HostedCheckoutManager {
                        externalPurchaseTokenID: String?,
                        previousSession: HostedCheckoutSession?) async -> HostedCheckoutStartResult {
         let appUserID = self.currentUserProvider.currentAppUserID
-        let previousSession = previousSession.flatMap { session -> HostedCheckoutSession? in
-            guard session.appUserID == appUserID else {
-                Logger.debug(Strings.hostedCheckout.not_resuming_session_for_another_user(session.operationSessionID))
-                return nil
-            }
-            return session
-        }
 
         let result: Result<HostedCheckoutResponse, BackendError> = await Async.call { completion in
             self.webBillingAPI.postHostedCheckout(
@@ -138,14 +130,14 @@ private extension HostedCheckoutManager {
                 presentedOfferingContext: package.presentedOfferingContext,
                 paywall: paywall.map { .init(paywallEventData: $0) },
                 externalPurchaseTokenID: externalPurchaseTokenID,
-                previousOperationSessionID: previousSession?.operationSessionID,
+                previousOperationSessionID: previousSession?.id.operationSessionID,
                 completion: completion
             )
         }
 
         switch result {
         case let .success(response):
-            return Self.startResult(for: response, previousSession: previousSession, appUserID: appUserID)
+            return Self.startResult(for: response, appUserID: appUserID)
         case let .failure(error):
             guard !error.isProductAlreadyPurchased else {
                 Logger.warn(Strings.hostedCheckout.product_already_purchased(package.identifier))
@@ -161,8 +153,8 @@ private extension HostedCheckoutManager {
 
 private extension HostedCheckoutManager {
 
+    /// The session returned is the one the customer now has, created for the customer the request was made for.
     static func startResult(for response: HostedCheckoutResponse,
-                            previousSession: HostedCheckoutSession?,
                             appUserID: String) -> HostedCheckoutStartResult {
         let operationSessionID = response.operationSessionID
 
@@ -172,27 +164,12 @@ private extension HostedCheckoutManager {
             return .started(.init(operationSessionID: operationSessionID, page: page, appUserID: appUserID))
 
         case let .resumed(page):
-            let session = HostedCheckoutSession(operationSessionID: operationSessionID,
-                                                page: page,
-                                                appUserID: appUserID)
-
-            // Whatever the backend calls it, a session other than the one asked about is new to the caller.
-            guard operationSessionID == previousSession?.operationSessionID else {
-                Logger.debug(Strings.hostedCheckout.session_created(operationSessionID))
-                return .started(session)
-            }
-
             Logger.debug(Strings.hostedCheckout.session_resumed(operationSessionID))
-            return .resumed(session)
+            return .resumed(.init(operationSessionID: operationSessionID, page: page, appUserID: appUserID))
 
         case .succeeded:
-            guard let previousSession else {
-                Logger.error(Strings.hostedCheckout.succeeded_without_previous_session(operationSessionID))
-                return .failed
-            }
-
-            Logger.debug(Strings.hostedCheckout.previous_session_paid(previousSession.operationSessionID))
-            return .completed(previousSession)
+            Logger.debug(Strings.hostedCheckout.session_paid(operationSessionID))
+            return .completed(.init(operationSessionID: operationSessionID, appUserID: appUserID))
         }
     }
 

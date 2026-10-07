@@ -18,10 +18,7 @@ import Foundation
 /// when the customer has come back from it.
 @_spi(Internal) public struct HostedCheckoutSession {
 
-    @_spi(Internal) public let operationSessionID: String
-
-    /// The customer the session was created for, who need not be the one logged in by the time it is settled.
-    @_spi(Internal) public let appUserID: String
+    @_spi(Internal) public let id: HostedCheckoutSessionID
 
     /// The provider-hosted page to present.
     @_spi(Internal) public let checkoutURL: URL
@@ -33,8 +30,7 @@ import Foundation
                                 appUserID: String,
                                 checkoutURL: URL,
                                 successURL: URL) {
-        self.operationSessionID = operationSessionID
-        self.appUserID = appUserID
+        self.id = .init(operationSessionID: operationSessionID, appUserID: appUserID)
         self.checkoutURL = checkoutURL
         self.successURL = successURL
     }
@@ -42,6 +38,24 @@ import Foundation
 }
 
 extension HostedCheckoutSession: Equatable, Sendable {}
+
+/// What the backend needs to say how a checkout session ended, which is less than presenting it takes.
+@_spi(Internal) public struct HostedCheckoutSessionID {
+
+    @_spi(Internal) public let operationSessionID: String
+
+    /// The customer the session was handed out for, who need not be the one it was created for, nor the one logged
+    /// in by the time it is settled.
+    @_spi(Internal) public let appUserID: String
+
+    @_spi(Internal) public init(operationSessionID: String, appUserID: String) {
+        self.operationSessionID = operationSessionID
+        self.appUserID = appUserID
+    }
+
+}
+
+extension HostedCheckoutSessionID: Equatable, Sendable {}
 
 extension HostedCheckoutSession {
 

@@ -215,15 +215,15 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
-        let keptPackage = self.purchaseHandler.keptHostedCheckout?.package
-
         switch await HostedCheckout.start(for: selectedPackage,
                                           purchaseHandler: self.purchaseHandler,
                                           purchaseInitiatedAction: self.purchaseInitiatedAction) {
         case let .present(session):
             self.presentHostedCheckout(session, package: selectedPackage)
-        case let .confirm(session):
-            self.resolveHostedCheckout(session, package: keptPackage ?? selectedPackage)
+        case let .confirm(sessionID, keptCheckout):
+            let isKeptSession = keptCheckout?.session.id.operationSessionID == sessionID.operationSessionID
+            let package = isKeptSession ? keptCheckout?.package : nil
+            self.resolveHostedCheckout(sessionID, settling: keptCheckout, package: package ?? selectedPackage)
         case .tellCustomerTheyAlreadyOwnIt:
             self.showingAlreadyOwnedAlert = true
         case .tellCustomerThePurchaseIsUnavailable:
@@ -256,7 +256,7 @@ struct PurchaseButtonComponentView: View {
                                              checkout: HostedCheckout.KeptCheckout) {
         switch outcome {
         case .returned(.success):
-            self.resolveHostedCheckout(checkout.session, package: checkout.package)
+            self.resolveHostedCheckout(checkout.session.id, settling: checkout, package: checkout.package)
         case .dismissed:
             // The checkout stays kept: a customer who paid moments before closing the sheet has that purchase
             // confirmed once the page reaches its success URL, or when they tap buy again.
@@ -269,7 +269,8 @@ struct PurchaseButtonComponentView: View {
                 purchaseHandler: self.purchaseHandler
             ) { [weak purchaseHandler = self.purchaseHandler] checkout in
                 guard let purchaseHandler else { return }
-                Self.resolveHostedCheckout(checkout.session,
+                Self.resolveHostedCheckout(checkout.session.id,
+                                           settling: checkout,
                                            package: checkout.package,
                                            purchaseHandler: purchaseHandler,
                                            alerts: alerts)
@@ -293,20 +294,26 @@ struct PurchaseButtonComponentView: View {
                      purchase: self.$hostedCheckoutPurchaseCustomerInfo)
     }
 
+    /// - Parameter checkout: The kept checkout this settles, if any.
     /// - Parameter package: The package the checkout was started for.
-    private func resolveHostedCheckout(_ session: HostedCheckoutSession, package: Package) {
-        Self.resolveHostedCheckout(session,
+    private func resolveHostedCheckout(_ sessionID: HostedCheckoutSessionID,
+                                       settling checkout: HostedCheckout.KeptCheckout?,
+                                       package: Package) {
+        Self.resolveHostedCheckout(sessionID,
+                                   settling: checkout,
                                    package: package,
                                    purchaseHandler: self.purchaseHandler,
                                    alerts: self.hostedCheckoutAlerts)
     }
 
-    private static func resolveHostedCheckout(_ session: HostedCheckoutSession,
+    private static func resolveHostedCheckout(_ sessionID: HostedCheckoutSessionID,
+                                              settling checkout: HostedCheckout.KeptCheckout?,
                                               package: Package,
                                               purchaseHandler: PurchaseHandler,
                                               alerts: HostedCheckoutAlerts) {
         Task { @MainActor in
-            switch await HostedCheckout.resolve(session,
+            switch await HostedCheckout.resolve(sessionID,
+                                                settling: checkout,
                                                 package: package,
                                                 purchaseHandler: purchaseHandler) {
             case .tellCustomerTheyAlreadyOwnIt:
