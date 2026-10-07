@@ -9,7 +9,7 @@ import Foundation
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
 @_spi(Internal) import RevenueCat
-@_spi(CheckpointsInternal) import RevenueCatUI
+@_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
 import UIKit
 
 /// The subset of `GoogleMobileAds.RewardedAd` / `RewardedInterstitialAd` the presentation needs, so tests
