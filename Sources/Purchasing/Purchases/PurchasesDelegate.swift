@@ -45,6 +45,26 @@ import Foundation
     optional func purchases(_ purchases: Purchases, receivedUpdated customerInfo: CustomerInfo)
 
     /**
+     * Called when the `expirationDate` of one or more active entitlements passes while the app is running,
+     * or is found to have passed when the app returns to the foreground.
+     *
+     * This is determined from the device clock and the most recent ``CustomerInfo`` known to the SDK; no
+     * network request is made. The entitlement may have been extended or renewed in the meantime.
+     * Call `refresh` to fetch the current ``CustomerInfo`` from RevenueCat: the result is delivered through
+     * ``purchases(_:receivedUpdated:)``, which is guaranteed to fire if the set of active entitlements changed.
+     *
+     * `refresh` performs at most one request; further calls are ignored.
+     *
+     * - Parameter purchases: Related ``Purchases`` object
+     * - Parameter identifiers: Identifiers of the entitlements whose `expirationDate` has passed
+     * - Parameter refresh: Call to fetch the current ``CustomerInfo`` for this expiration
+     */
+    @objc(purchases:entitlementsDidExpire:refreshCustomerInfo:)
+    optional func purchases(_ purchases: Purchases,
+                            entitlementsDidExpire identifiers: [String],
+                            refresh: @escaping () -> Void)
+
+    /**
      * Called when a user initiates a promotional in-app purchase from the App Store.
      * If your app is able to handle a purchase at the current time, run the deferment block in this method.
      * If the app is not in a state to make a purchase: cache the `startPurchase` block,
