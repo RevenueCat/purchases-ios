@@ -43,6 +43,9 @@ final class VideoComponentViewTests: TestCase {
     func testFitWidthVideoMatchesThumbnailToVideoSize() throws {
         let containerWidth: CGFloat = 300
         let renderedSize = Box<CGSize?>(nil)
+        // A local file loads synchronously. A remote URL would fail to download at an unpredictable
+        // point, and the failed image's placeholder fills all the height it's offered.
+        let thumbnailURL = try Self.writeThumbnailImage()
         let view = try Self.makeVideoComponentView(
             size: .zero,
             width: .fit(nil),
@@ -50,9 +53,9 @@ final class VideoComponentViewTests: TestCase {
             fallbackSource: .init(light: .init(
                 width: 1080,
                 height: 2400,
-                original: URL(string: "https://assets.revenuecat.com/thumbnail.jpg")!,
-                heic: URL(string: "https://assets.revenuecat.com/thumbnail.heic")!,
-                heicLowRes: URL(string: "https://assets.revenuecat.com/thumbnail_low.heic")!
+                original: thumbnailURL,
+                heic: thumbnailURL,
+                heicLowRes: thumbnailURL
             ))
         )
             .onSizeChange { renderedSize.value = $0 }
@@ -330,6 +333,18 @@ private extension VideoComponentViewTests {
     }
 
 #if os(iOS)
+    /// Writes a portrait PNG (taller than the test video) to a temporary file and returns its URL.
+    static func writeThumbnailImage() throws -> URL {
+        let image = UIGraphicsImageRenderer(size: CGSize(width: 9, height: 20)).image { context in
+            UIColor.red.setFill()
+            context.fill(CGRect(x: 0, y: 0, width: 9, height: 20))
+        }
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("video-thumbnail-\(UUID().uuidString).png")
+        try XCTUnwrap(image.pngData()).write(to: url)
+        return url
+    }
+
     static func makeVideoComponentView(
         size: CGSize,
         width: PaywallComponent.SizeConstraint = .fill,
