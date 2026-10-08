@@ -41,40 +41,15 @@ final class VideoComponentViewTests: TestCase {
     /// A `fit`-width video takes its width from the thumbnail, and the thumbnail must take the video's
     /// size: a thumbnail taller than the video must not make the component taller than the video.
     func testFitWidthVideoMatchesThumbnailToVideoSize() throws {
-        let containerWidth: CGFloat = 300
-        let renderedSize = Box<CGSize?>(nil)
-        // A local file loads synchronously. A remote URL would fail to download at an unpredictable
-        // point, and the failed image's placeholder fills all the height it's offered.
-        let thumbnailURL = Self.localThumbnailURL()
-        let view = try Self.makeVideoComponentView(
-            size: .zero,
-            width: .fit(nil),
-            fitMode: .fit,
-            fallbackSource: .init(light: .init(
-                width: 1080,
-                height: 2400,
-                original: thumbnailURL,
-                heic: thumbnailURL,
-                heicLowRes: thumbnailURL
-            ))
+        // A local file loads synchronously. A remote URL would fail to download at an unpredictable point.
+        try Self.assertFitWidthVideoMatchesVideoSize(thumbnailURL: Self.localThumbnailURL())
+    }
+
+    /// A thumbnail that fails to load must keep the video's size, not fill all the height it's offered.
+    func testFitWidthVideoWithFailedThumbnailMatchesVideoSize() throws {
+        try Self.assertFitWidthVideoMatchesVideoSize(
+            thumbnailURL: URL(fileURLWithPath: "/nonexistent/video-thumbnail.heic")
         )
-            .onSizeChange { renderedSize.value = $0 }
-            .frame(width: containerWidth, height: 800, alignment: .top)
-        let controller = UIHostingController(rootView: view)
-        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: containerWidth, height: 800))
-        window.rootViewController = controller
-        window.makeKeyAndVisible()
-
-        // Let the measurement pass write the size into @State and re-render.
-        for _ in 0..<5 {
-            RunLoop.main.run(until: Date().addingTimeInterval(0.05))
-            controller.view.layoutIfNeeded()
-        }
-
-        let size = try XCTUnwrap(renderedSize.value)
-        XCTAssertEqual(size.width, containerWidth, accuracy: 1)
-        // The 1080x1920 video at the container's width.
-        XCTAssertEqual(size.height, containerWidth * 1920 / 1080, accuracy: 1)
     }
 #endif
 
@@ -333,6 +308,40 @@ private extension VideoComponentViewTests {
     }
 
 #if os(iOS)
+    static func assertFitWidthVideoMatchesVideoSize(thumbnailURL: URL) throws {
+        let containerWidth: CGFloat = 300
+        let renderedSize = Box<CGSize?>(nil)
+        let view = try Self.makeVideoComponentView(
+            size: .zero,
+            width: .fit(nil),
+            fitMode: .fit,
+            fallbackSource: .init(light: .init(
+                width: 1080,
+                height: 2400,
+                original: thumbnailURL,
+                heic: thumbnailURL,
+                heicLowRes: thumbnailURL
+            ))
+        )
+            .onSizeChange { renderedSize.value = $0 }
+            .frame(width: containerWidth, height: 800, alignment: .top)
+        let controller = UIHostingController(rootView: view)
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: containerWidth, height: 800))
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+
+        // Let the measurement pass write the size into @State and re-render.
+        for _ in 0..<5 {
+            RunLoop.main.run(until: Date().addingTimeInterval(0.05))
+            controller.view.layoutIfNeeded()
+        }
+
+        let size = try XCTUnwrap(renderedSize.value)
+        XCTAssertEqual(size.width, containerWidth, accuracy: 1)
+        // The 1080x1920 video at the container's width.
+        XCTAssertEqual(size.height, containerWidth * 1920 / 1080, accuracy: 1)
+    }
+
     /// A bundled test image, resolved the same way as `PaywallData.withLocalImages`.
     /// Only the dimensions in the thumbnail source affect layout, so any image works.
     static func localThumbnailURL() -> URL {

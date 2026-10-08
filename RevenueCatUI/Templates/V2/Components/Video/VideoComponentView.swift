@@ -108,6 +108,9 @@ struct VideoComponentView: View {
                             )
                         ) {
                             ImageComponentView(viewModel: imageViewModel)
+                                // Keeps the video's shape even if the image fails to load, whose
+                                // placeholder would otherwise take all the height it's offered.
+                                .aspectRatio(self.aspectRatio(style: style), contentMode: .fit)
                         }
 
                         // Only create VideoPlayerView when on active carousel page (or not in carousel)
