@@ -456,8 +456,7 @@ struct APIKeyDashboardList: View {
             } header: {
                 SectionHeader(
                     title: "Flows",
-                    caption: "Every flow the SDK synced, opened by id. \"Offering\" is the one it's attached to in "
-                        + "the dashboard. Without one, apps only reach the flow through a checkpoint."
+                    caption: "Opened by id. Shows the offering each flow is attached to."
                 )
             }
         }
@@ -672,8 +671,8 @@ extension APIKeyDashboardList.PaywallSection: CustomStringConvertible {
 
     var caption: String {
         return self == .noPaywall
-            ? "No paywall or flow attached. Opens what an app gets, usually the fallback paywall."
-            : "Offerings with a paywall attached directly and no flow. Opened by offering."
+            ? "No paywall or flow attached. Opens the fallback."
+            : "Paywalls attached directly to an offering."
     }
 
 }

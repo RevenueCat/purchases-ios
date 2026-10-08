@@ -25,7 +25,10 @@ struct WorkflowRow: Identifiable {
 
     var subtitle: String {
         if let error { return error }
-        return self.listing.offeringIdentifier.map { "Offering: \($0)" } ?? "No claimed offering"
+        if let claimed = self.listing.offeringIdentifier { return "Offering: \(claimed)" }
+        // Not attached to an offering, so show what its screens use instead.
+        guard !self.offeringIdentifiers.isEmpty else { return "No offering" }
+        return "Uses: \(self.offeringIdentifiers.sorted().joined(separator: ", "))"
     }
 
     var claimedOfferingIdentifier: String? { self.listing.offeringIdentifier }
