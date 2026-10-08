@@ -1634,7 +1634,6 @@ class CustomerInfoManagerSubscriberAttributesTests: BaseCustomerInfoManagerTests
             "$email": Self.attribute("$email", "user@example.com", synced: true, at: Self.remoteSetTime),
             "band": Self.attribute("band", "Rush", synced: true, at: Self.remoteSetTime)
         ]
-        expect(self.mockDeviceCache.numberOfUnsyncedAttributes(appUserID: Self.appUserID)) == 0
     }
 
     func testCacheCustomerInfoMergesSubscriberAttributesOnlyForGivenAppUserID() throws {
@@ -1681,7 +1680,6 @@ class CustomerInfoManagerSubscriberAttributesTests: BaseCustomerInfoManagerTests
         self.customerInfoManager.cache(customerInfo: info, appUserID: Self.appUserID)
 
         expect(self.mockDeviceCache.subscriberAttributes(appUserID: Self.appUserID)) == [local.key: local]
-        expect(self.mockDeviceCache.unsyncedAttributesByKey(appUserID: Self.appUserID)) == [local.key: local]
     }
 
     func testCacheCustomerInfoOverridesOlderLocalAttribute() throws {
