@@ -1668,6 +1668,7 @@
 		C397C3C5317A4429B70F1EE6 /* CustomerCenterPreviewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 358DA9A9744C4E23807FB703 /* CustomerCenterPreviewData.swift */; };
 		EFDC3DBC876C458C9435D533 /* CustomerCenterPreviewProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 249C5B768BBA48C3A6CF407F /* CustomerCenterPreviewProvider.swift */; };
 		9BD19F3BF8BA425DA12CA19D /* CustomerCenterInjectedPaywall.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0C5D92DA02C4041B4420237 /* CustomerCenterInjectedPaywall.swift */; };
+		235961F19A854734ABCDB686 /* CustomerCenterSubscriptionSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7D2BD594A80418386F359FC /* CustomerCenterSubscriptionSheets.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -3583,6 +3584,7 @@
 		358DA9A9744C4E23807FB703 /* CustomerCenterPreviewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterPreviewData.swift; sourceTree = "<group>"; };
 		249C5B768BBA48C3A6CF407F /* CustomerCenterPreviewProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterPreviewProvider.swift; sourceTree = "<group>"; };
 		E0C5D92DA02C4041B4420237 /* CustomerCenterInjectedPaywall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterInjectedPaywall.swift; sourceTree = "<group>"; };
+		F7D2BD594A80418386F359FC /* CustomerCenterSubscriptionSheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterSubscriptionSheets.swift; sourceTree = "<group>"; };
 		AE841F7F44424C93CF2B7314 /* CustomerCenterDataStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterDataStateTests.swift; sourceTree = "<group>"; };
 		5CFC0D5799A0F95C634C8B5E /* CustomerCenterPreviewProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterPreviewProviderTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -6117,6 +6119,7 @@
 			isa = PBXGroup;
 			children = (
 				E0C5D92DA02C4041B4420237 /* CustomerCenterInjectedPaywall.swift */,
+				F7D2BD594A80418386F359FC /* CustomerCenterSubscriptionSheets.swift */,
 				5798C9172DF1985700F44400 /* PurchaseHistory */,
 				5798C9192DF1985700F44400 /* UIKit Compatibility */,
 				FD15AF5A2DF9A8F30062467E /* Virtual Currencies */,
@@ -9168,6 +9171,7 @@
 			files = (
 				EFDC3DBC876C458C9435D533 /* CustomerCenterPreviewProvider.swift in Sources */,
 				9BD19F3BF8BA425DA12CA19D /* CustomerCenterInjectedPaywall.swift in Sources */,
+				235961F19A854734ABCDB686 /* CustomerCenterSubscriptionSheets.swift in Sources */,
 				16A5DD10302E609A00E04386 /* WebBundleCacheCoordinator.swift in Sources */,
 				16B7EE02302F210200E04386 /* WebBundlePrewarmer.swift in Sources */,
 				16A5DD14302E611700E04386 /* WebViewWebsiteDataStoreSweeper.swift in Sources */,

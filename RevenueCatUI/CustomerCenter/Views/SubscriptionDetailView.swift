@@ -88,29 +88,14 @@ struct SubscriptionDetailView: View {
 
     var body: some View {
         content
-        // This is needed because `CustomerCenterViewModel` is isolated to @MainActor
-        // A bigger refactor is needed, but its already throwing a warning.
-            .modifier(self.customerInfoViewModel.purchasesProvider
-                .manageSubscriptionsSheetViewModifier(isPresented: .init(
-                    get: { customerInfoViewModel.manageSubscriptionsSheet },
-                    set: { manage in DispatchQueue.main.async {
-                        customerInfoViewModel.manageSubscriptionsSheet = manage
-                    }}
-                ), subscriptionGroupID: viewModel.purchaseInformation?.subscriptionGroupID
-                )
-            )
-            .modifier(self.customerInfoViewModel.purchasesProvider
-                .changePlansSheetViewModifier(
-                    isPresented: .init(
-                        get: { customerInfoViewModel.changePlansSheet },
-                        set: { manage in DispatchQueue.main.async {
-                            customerInfoViewModel.changePlansSheet = manage
-                        }}
-                    ),
-                    subscriptionGroupID: viewModel.purchaseSubscriptionGroupID,
-                    productIDs: viewModel.changePlanProductIDs
-                )
-            )
+            .modifier(CustomerCenterSubscriptionSheets(
+                provider: customerInfoViewModel.purchasesProvider,
+                manage: $customerInfoViewModel.manageSubscriptionsSheet,
+                plans: $customerInfoViewModel.changePlansSheet,
+                currentProductID: viewModel.purchaseInformation?.productIdentifier,
+                groupID: viewModel.purchaseSubscriptionGroupID,
+                productIDs: viewModel.changePlanProductIDs
+            ))
             .onAppear { viewModel.didAppear() }
             .onChangeOf(customerInfoViewModel.manageSubscriptionsSheet) { manageSubscriptionsSheet in
                 if !manageSubscriptionsSheet {
@@ -305,7 +290,9 @@ private extension SubscriptionDetailView {
     @ViewBuilder
     func contactSupportView(_ url: URL) -> some View {
         AsyncButton {
-            if RuntimeUtils.isSimulator {
+            if let preview = customerInfoViewModel.purchasesProvider as? CustomerCenterPreviewProvider {
+                try? await preview.handlePreviewAction(.openURL(url))
+            } else if RuntimeUtils.isSimulator {
                 self.showSimulatorAlert = true
             } else {
                 openURL(url)
