@@ -463,9 +463,7 @@ struct APIKeyDashboardList: View {
     }
 
     private func openWorkflow(_ workflowId: String, fullScreen: Bool) {
-        self.isLoadingPaywall = true
         Task {
-            defer { self.isLoadingPaywall = false }
             do {
                 let workflow = try await PresentedWorkflow.load(workflowId: workflowId)
                 if fullScreen {
