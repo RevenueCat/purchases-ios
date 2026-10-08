@@ -835,10 +835,19 @@ final class HostedCheckoutTests: TestCase {
 
     // MARK: - Telling the customer
 
-    /// The button that started the checkout may be gone by the time the customer acknowledges it.
+    /// The purchase is reported only after the customer acknowledges it. It uses the `CustomerInfo` fetched while
+    /// confirming, rather than fetching it again.
     @MainActor
     func testReportsAPurchaseOnceTheCustomerAcknowledgesIt() {
-        let handler = Self.makeHandler(purchases: Self.makePurchases())
+        let purchases = MockPurchases { _, _, _ in
+            return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { _ in
+        } customerInfo: {
+            throw ErrorCode.networkError
+        }
+        let handler = Self.makeHandler(purchases: purchases)
         handler.showHostedCheckoutResolution(.purchased(TestData.customerInfo))
 
         expect(handler.sessionPurchaseResult).to(beNil())
@@ -847,6 +856,7 @@ final class HostedCheckoutTests: TestCase {
 
         expect(handler.hostedCheckoutResolutionToShow).to(beNil())
         expect(handler.sessionPurchaseResult) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
+        expect(handler.purchaseError).to(beNil())
     }
 
     @MainActor
@@ -858,26 +868,6 @@ final class HostedCheckoutTests: TestCase {
 
         expect(handler.hostedCheckoutResolutionToShow).to(beNil())
         expect(handler.sessionPurchaseResult).to(beNil())
-    }
-
-    /// Reporting happens as the customer dismisses the alert, so it uses the `CustomerInfo` fetched while the
-    /// paywall still showed the purchase under way rather than fetching it again.
-    @MainActor
-    func testReportsAConfirmedPurchaseAsCompletedWithoutFetchingItsCustomerInfoAgain() {
-        let purchases = MockPurchases { _, _, _ in
-            return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
-        } restorePurchases: {
-            return TestData.customerInfo
-        } trackEvent: { _ in
-        } customerInfo: {
-            throw ErrorCode.networkError
-        }
-        let handler = Self.makeHandler(purchases: purchases)
-
-        handler.handleHostedCheckoutPurchase(customerInfo: TestData.customerInfo)
-
-        expect(handler.sessionPurchaseResult) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
-        expect(handler.purchaseError).to(beNil())
     }
 
     /// The SDK fetches the `CustomerInfo` showing the purchase while confirming it, but that fetch can fail.

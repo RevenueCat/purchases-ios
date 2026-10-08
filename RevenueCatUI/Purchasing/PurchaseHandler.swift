@@ -975,7 +975,7 @@ extension PurchaseHandler {
     /// There is no transaction to hand over: what was bought is known to the backend, so the paywall follows
     /// the `CustomerInfo` fetched when confirming it.
     @MainActor
-    func handleHostedCheckoutPurchase(customerInfo: CustomerInfo) {
+    private func handleHostedCheckoutPurchase(customerInfo: CustomerInfo) {
         self.reportHostedCheckoutOutcome(.purchased(transaction: nil, customerInfo: customerInfo))
     }
 
