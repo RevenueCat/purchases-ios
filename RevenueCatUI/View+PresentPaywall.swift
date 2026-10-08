@@ -763,9 +763,8 @@ private struct PresentingPaywallModifier: ViewModifier {
         }
 
         // Check shouldDisplay with the purchase result if available
-        if let purchaseResult = self.purchaseHandler.sessionPurchaseResult,
-           !purchaseResult.userCancelled,
-           !self.shouldDisplay(purchaseResult.customerInfo) {
+        if case let .purchased(_, customerInfo)? = self.purchaseHandler.sessionPurchaseResult,
+           !self.shouldDisplay(customerInfo) {
             self.purchaseHandler.trackPaywallClose()
             self.purchaseHandler.resetForNewSession()
             self.onDismiss?()

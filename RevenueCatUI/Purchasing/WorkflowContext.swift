@@ -21,7 +21,8 @@ import Foundation
 @_spi(Internal) public struct WorkflowContext {
     let workflow: PublishedWorkflow
     let uiConfig: UIConfig
-    let allOfferings: Offerings
+    /// Every step and exit offer lookup goes through this, so the developer-supplied offering is never bypassed.
+    let offerings: WorkflowOfferings
     let initialOffering: Offering
     /// Preserved so every subsequent step's offering can carry the same placement/targeting metadata.
     let presentedOfferingContext: PresentedOfferingContext?
@@ -34,7 +35,7 @@ import Foundation
     init(
         workflow: PublishedWorkflow,
         uiConfig: UIConfig,
-        allOfferings: Offerings,
+        offerings: WorkflowOfferings,
         initialOffering: Offering,
         presentedOfferingContext: PresentedOfferingContext?,
         workflowBlobRef: String? = nil,
@@ -44,13 +45,13 @@ import Foundation
         self.traceId = traceId
         self.workflow = workflow
         self.uiConfig = uiConfig
-        self.allOfferings = allOfferings
+        self.offerings = offerings
         self.initialOffering = initialOffering
         self.presentedOfferingContext = presentedOfferingContext
 
         let workflowPackageContext = Self.workflowPackageContext(
             workflow: workflow,
-            allOfferings: allOfferings,
+            offerings: offerings,
             initialOffering: initialOffering,
             presentedOfferingContext: presentedOfferingContext
         )
@@ -63,7 +64,7 @@ import Foundation
     func offering(for offeringIdentifier: String?) -> Offering? {
         return Self.offering(
             for: offeringIdentifier,
-            allOfferings: self.allOfferings,
+            offerings: self.offerings,
             initialOffering: self.initialOffering,
             presentedOfferingContext: self.presentedOfferingContext
         )
@@ -73,14 +74,14 @@ import Foundation
     /// Used to guard against showing the exit offer when dismissing from a different step.
     var exitOfferTriggeringStepId: String? { exitOfferEntry?.triggeringStepId }
 
-    /// The exit offer resolved synchronously from `allOfferings`.
+    /// The exit offer resolved synchronously from `offerings`.
     /// Non-nil only when an exit offer is configured and its offering is present in the loaded offerings bundle.
     var exitOfferOffering: Offering? {
         guard let entry = exitOfferEntry else { return nil }
         return ExitOfferHelper.validExitOffer(
             offeringId: entry.offeringId,
             currentOfferingId: initialOffering.identifier,
-            from: allOfferings
+            from: offerings
         )
     }
 
@@ -94,7 +95,7 @@ import Foundation
               let offering = ExitOfferHelper.validExitOffer(
                   offeringId: entry.offeringId,
                   currentOfferingId: initialOffering.identifier,
-                  from: allOfferings
+                  from: offerings
               ) else { return nil }
         return WorkflowExitOfferContext(exitOfferOffering: offering)
     }
@@ -170,7 +171,7 @@ import Foundation
 
     private static func workflowPackageContext(
         workflow: PublishedWorkflow,
-        allOfferings: Offerings,
+        offerings: WorkflowOfferings,
         initialOffering: Offering,
         presentedOfferingContext: PresentedOfferingContext?
     ) -> WorkflowPackageContext? {
@@ -181,7 +182,7 @@ import Foundation
               let offeringIdentifier = workflow.offeringIdentifier(for: step),
               let offering = Self.offering(
                   for: offeringIdentifier,
-                  allOfferings: allOfferings,
+                  offerings: offerings,
                   initialOffering: initialOffering,
                   presentedOfferingContext: presentedOfferingContext
               ) else {
@@ -222,7 +223,7 @@ import Foundation
 
     private static func offering(
         for offeringIdentifier: String?,
-        allOfferings: Offerings,
+        offerings: WorkflowOfferings,
         initialOffering: Offering,
         presentedOfferingContext: PresentedOfferingContext?
     ) -> Offering? {
@@ -234,7 +235,7 @@ import Foundation
             return initialOffering
         }
 
-        guard let offering = allOfferings.offering(identifier: offeringIdentifier) else {
+        guard let offering = offerings.offering(identifier: offeringIdentifier) else {
             return nil
         }
 

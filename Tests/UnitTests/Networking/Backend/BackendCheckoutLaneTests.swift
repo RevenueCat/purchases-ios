@@ -26,6 +26,7 @@ final class BackendCheckoutLaneTests: BaseBackendTests {
     private static let packageID = "$rc_monthly"
     private static let offeringID = "default"
     private static let tokenID = "ept13dcbc01adaa44db9b1691a6be2f9929"
+    private static let operationSessionID = "op_session_id"
     private static let productIds: Set<String> = ["test_monthly"]
 
     override func createClient() -> MockHTTPClient {
@@ -51,6 +52,7 @@ final class BackendCheckoutLaneTests: BaseBackendTests {
                 presentedOfferingContext: .init(offeringIdentifier: Self.offeringID),
                 paywall: nil,
                 externalPurchaseTokenID: nil,
+                previousOperationSessionID: nil,
                 completion: { _ in completed() }
             )
         }
@@ -76,6 +78,34 @@ final class BackendCheckoutLaneTests: BaseBackendTests {
                 appUserID: Self.userID,
                 purchaseType: .linkOut,
                 token: "storekit-token",
+                completion: { _ in completed() }
+            )
+        }
+
+        expect(laneClient.calls).to(haveCount(1))
+        expect(self.httpClient.calls).to(beEmpty())
+    }
+
+    func testGetHostedCheckoutStatusRunsOnDedicatedLaneNotSharedClient() {
+        let laneClient = self.createClient(#file)
+        laneClient.disableSnapshotTesting()
+        self.httpClient.disableSnapshotTesting()
+
+        let backend = self.makeBackend(checkoutClient: laneClient)
+        let statusPath = HTTPRequest.WebBillingPath.getHostedCheckoutStatus(
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.userID
+        )
+
+        laneClient.mock(
+            requestPath: statusPath,
+            response: .init(statusCode: .success, response: Self.hostedCheckoutStatusResponse)
+        )
+
+        waitUntil { completed in
+            backend.webBilling.getHostedCheckoutStatus(
+                appUserID: Self.userID,
+                operationSessionID: Self.operationSessionID,
                 completion: { _ in completed() }
             )
         }
@@ -133,6 +163,7 @@ final class BackendCheckoutLaneTests: BaseBackendTests {
                 presentedOfferingContext: .init(offeringIdentifier: Self.offeringID),
                 paywall: nil,
                 externalPurchaseTokenID: nil,
+                previousOperationSessionID: nil,
                 completion: { _ in completed() }
             )
         }
@@ -192,7 +223,8 @@ final class BackendCheckoutLaneTests: BaseBackendTests {
             packageID: Self.packageID,
             presentedOfferingContext: .init(offeringIdentifier: Self.offeringID),
             paywall: nil,
-            externalPurchaseTokenID: Self.tokenID
+            externalPurchaseTokenID: Self.tokenID,
+            previousOperationSessionID: nil
         ) { checkoutResult.value = $0 }
 
         expect(tokenResult.value).toEventuallyNot(beNil(), timeout: .seconds(5))
@@ -216,8 +248,12 @@ private extension BackendCheckoutLaneTests {
     static let hostedCheckoutResponse: [String: Any] = [
         "operation_session_id": "op_session_id",
         "checkout_url": "https://checkout.stripe.com/c/pay/cs_test_123",
-        "success_url": "https://api.revenuecat.com/rcbilling/v1/hosted-checkout-return?status=success",
-        "cancel_url": "https://api.revenuecat.com/rcbilling/v1/hosted-checkout-return?status=cancel"
+        "success_url": "https://api.revenuecat.com/rcbilling/v1/hosted-checkout-return?status=success"
+    ]
+
+    static let hostedCheckoutStatusResponse: [String: Any] = [
+        "status": "started",
+        "is_expired": false
     ]
 
     static let externalPurchaseTokenResponse: [String: Any] = [
@@ -299,7 +335,8 @@ final class BackendCheckoutLaneParallelTests: TestCase {
             offlineCustomerInfoCreator: nil,
             diagnosticsTracker: nil,
             apiSourceProvider: nil,
-            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .custom(30))
+            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .custom(30)),
+            subscriberDimensionsStore: MockSubscriberDimensionsStore()
         )
 
         let hostedCheckoutPath = HTTPRequest.WebBillingPath.postHostedCheckout.relativePath
@@ -343,6 +380,7 @@ final class BackendCheckoutLaneParallelTests: TestCase {
                 presentedOfferingContext: .init(offeringIdentifier: "default"),
                 paywall: nil,
                 externalPurchaseTokenID: nil,
+                previousOperationSessionID: nil,
                 completion: completed
             )
         }
@@ -370,7 +408,8 @@ final class BackendCheckoutLaneParallelTests: TestCase {
             offlineCustomerInfoCreator: nil,
             diagnosticsTracker: nil,
             apiSourceProvider: nil,
-            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .custom(30))
+            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .custom(30)),
+            subscriberDimensionsStore: MockSubscriberDimensionsStore()
         )
 
         let offeringsHits: Atomic<Int> = .init(0)
@@ -409,7 +448,8 @@ final class BackendCheckoutLaneParallelTests: TestCase {
             packageID: Self.packageID,
             presentedOfferingContext: .init(offeringIdentifier: "default"),
             paywall: nil,
-            externalPurchaseTokenID: nil
+            externalPurchaseTokenID: nil,
+            previousOperationSessionID: nil
         ) { result in
             checkoutResult.value = result
         }
@@ -439,8 +479,7 @@ private extension BackendCheckoutLaneParallelTests {
     static let hostedCheckoutResponseData = Data("""
     {"operation_session_id":"op_session_id",\
     "checkout_url":"https://checkout.stripe.com/c/pay/cs_test_123",\
-    "success_url":"https://example.com/success",\
-    "cancel_url":"https://example.com/cancel"}
+    "success_url":"https://example.com/success"}
     """.utf8)
 
     static let tokenRefreshResponseData = Data("""

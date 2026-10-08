@@ -115,6 +115,34 @@ class AdFeatureEventsRequestTests: TestCase {
         assertSnapshot(of: requestEvent, as: .formattedJson)
     }
 
+    func testRewardedAdPromptShownEvent() throws {
+        let event = AdEvent.rewardedAdPromptShown(Self.eventCreationData, Self.rewardedAdPromptShownData)
+        let storedEvent = try Self.createStoredAdEvent(from: event)
+        let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        expect(requestEvent.type) == .rewardedAdPromptShown
+        expect(requestEvent.adFormat) == "rewarded"
+        expect(requestEvent.captureMethod) == "manual"
+        expect(requestEvent.impressionId).to(beNil())
+        expect(requestEvent.networkName).to(beNil())
+
+        assertSnapshot(of: requestEvent, as: .formattedJson)
+    }
+
+    func testRewardedAdPromptAcceptedEvent() throws {
+        let event = AdEvent.rewardedAdPromptAccepted(Self.eventCreationData, Self.rewardedAdPromptAcceptedData)
+        let storedEvent = try Self.createStoredAdEvent(from: event)
+        let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        expect(requestEvent.type) == .rewardedAdPromptAccepted
+        expect(requestEvent.adFormat) == "rewarded"
+        expect(requestEvent.captureMethod) == "manual"
+        expect(requestEvent.impressionId).to(beNil())
+        expect(requestEvent.networkName).to(beNil())
+
+        assertSnapshot(of: requestEvent, as: .formattedJson)
+    }
+
     func testCanInitFromDeserializedEvent() throws {
         let expectedUserID = "test-user"
         let adEventCreationData: AdEvent.CreationData = .init(
@@ -291,17 +319,24 @@ class AdFeatureEventsRequestTests: TestCase {
 
     // MARK: - Capture method
 
-    func testAdapterCaptureMethodIsSerialized() throws {
+    func testIOSAdMobAdapterCaptureMethodIsSerialized() throws {
         let creationData = AdEvent.CreationData(
             id: .init(uuidString: "72164C05-2BDC-4807-8918-A4105F727DEB")!,
             date: .init(timeIntervalSince1970: 1694029328),
-            captureMethod: .adapter
+            captureMethod: .iosAdMobAdapter
         )
         let event = AdEvent.displayed(creationData, Self.eventData)
         let storedEvent = try Self.createStoredAdEvent(from: event)
         let requestEvent = try XCTUnwrap(AdEventsRequest.AdEventRequest(storedEvent: storedEvent))
 
-        expect(requestEvent.captureMethod) == "adapter"
+        expect(requestEvent.captureMethod) == "ios_admob_adapter"
+    }
+
+    func testLegacyAdapterCaptureMethodCanStillBeDeserialized() throws {
+        let data = try XCTUnwrap("\"adapter\"".data(using: .utf8))
+        let captureMethod = try JSONDecoder.default.decode(AdEventCaptureMethod.self, from: data)
+
+        expect(captureMethod.rawValue) == "adapter"
     }
 
     func testCaptureMethodIsOmittedForLegacyStoredEvent() throws {
@@ -400,6 +435,18 @@ private extension AdFeatureEventsRequestTests {
         revenueMicros: 1500000,
         currency: "USD",
         precision: .exact
+    )
+
+    static let rewardedAdPromptShownData: AdRewardPromptShown = .init(
+        mediatorName: .appLovin,
+        placement: "home_screen",
+        adUnitId: "ca-app-pub-123456789"
+    )
+
+    static let rewardedAdPromptAcceptedData: AdRewardPromptAccepted = .init(
+        mediatorName: .appLovin,
+        placement: "home_screen",
+        adUnitId: "ca-app-pub-123456789"
     )
 
     static let rewardEarnedUnverifiedData: AdRewardEarnedUnverified = .init(

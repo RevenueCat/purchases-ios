@@ -77,6 +77,12 @@ struct ImageComponentView: View {
     @Environment(\.requestSizeCalculation)
     private var requestSizeCalculation
 
+    @Environment(\.redactionReasons) private var redactionReasons
+
+    private var isSkeletonPlaceholder: Bool {
+        return self.redactionReasons.contains(.placeholder)
+    }
+
     let viewModel: ImageComponentViewModel
 
     var renderForPreview: Bool {
@@ -138,49 +144,56 @@ struct ImageComponentView: View {
                             self.decorate(Color.clear, with: style)
                         }
 
-                        switch plan.content {
-                        case .none:
-                            EmptyView()
-                        case .preview:
-                            #if DEBUG
+                        if self.isSkeletonPlaceholder {
                             self.decorate(
-                                self.renderImage(
-                                    DualColorImageGenerator.purpleOrangeWide.image.resizable(),
-                                    effectiveSize ?? .zero,
-                                    maxWidth: Self.calculateMaxWidth(
-                                        parentWidth: effectiveSize?.width ?? 0,
-                                        style: style
-                                    ),
-                                    with: style
-                                ),
+                                Color.clear.aspectRatio(self.aspectRatio(style: style), contentMode: .fit),
                                 with: style
                             )
-                            #else
-                            EmptyView()
-                            #endif
-                        case .image:
-                            self.decorate(
-                                RemoteImage(
-                                    url: style.url,
-                                    lowResUrl: style.lowResUrl,
-                                    darkUrl: style.darkUrl,
-                                    darkLowResUrl: style.darkLowResUrl,
-                                    // The expectedSize is important
-                                    // It renders a clear image if actual image is being fetched
-                                    expectedSize: expectedSize
-                                ) { (image, size) in
+                        } else {
+                            switch plan.content {
+                            case .none:
+                                EmptyView()
+                            case .preview:
+                                #if DEBUG
+                                self.decorate(
                                     self.renderImage(
-                                        image,
-                                        size,
+                                        DualColorImageGenerator.purpleOrangeWide.image.resizable(),
+                                        effectiveSize ?? .zero,
                                         maxWidth: Self.calculateMaxWidth(
                                             parentWidth: effectiveSize?.width ?? 0,
                                             style: style
                                         ),
                                         with: style
-                                    )
-                                },
-                                with: style
-                            )
+                                    ),
+                                    with: style
+                                )
+                                #else
+                                EmptyView()
+                                #endif
+                            case .image:
+                                self.decorate(
+                                    RemoteImage(
+                                        url: style.url,
+                                        lowResUrl: style.lowResUrl,
+                                        darkUrl: style.darkUrl,
+                                        darkLowResUrl: style.darkLowResUrl,
+                                        // The expectedSize is important
+                                        // It renders a clear image if actual image is being fetched
+                                        expectedSize: expectedSize
+                                    ) { (image, size) in
+                                        self.renderImage(
+                                            image,
+                                            size,
+                                            maxWidth: Self.calculateMaxWidth(
+                                                parentWidth: effectiveSize?.width ?? 0,
+                                                style: style
+                                            ),
+                                            with: style
+                                        )
+                                    },
+                                    with: style
+                                )
+                            }
                         }
                     }
                     .onSizeChange { newSize in

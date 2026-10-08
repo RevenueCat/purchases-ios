@@ -60,6 +60,8 @@ struct TextComponentView: View {
     @Environment(\.dynamicTypeSize)
     private var dynamicTypeSize
 
+    @Environment(\.redactionReasons) private var redactionReasons
+
     @Environment(\.isPaywallLoading)
     private var isPaywallLoading
 
@@ -116,7 +118,7 @@ struct TextComponentView: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .multilineTextAlignment(style.textAlignment)
                     .foregroundColorScheme(style.color)
-                    .redacted(reason: isPaywallLoading ? .placeholder : [])
+                    .redacted(reason: isPaywallLoading ? .placeholder : self.redactionReasons)
                     .padding(style.padding)
                     .size(style.size,
                           horizontalAlignment: style.horizontalAlignment)
