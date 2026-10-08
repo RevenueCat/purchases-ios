@@ -35,6 +35,9 @@ struct SubscriptionDetailView: View {
     @Environment(\.navigationOptions)
     var navigationOptions
 
+    @Environment(\.dismiss)
+    private var dismiss
+
     @Environment(\.supportInformation)
     private var support
 
@@ -109,6 +112,9 @@ struct SubscriptionDetailView: View {
                 )
             )
             .onAppear { viewModel.didAppear() }
+            .task(id: viewModel.shouldDismissDetail) {
+                if viewModel.shouldDismissDetail { dismiss() }
+            }
             .onChangeOf(customerInfoViewModel.manageSubscriptionsSheet) { manageSubscriptionsSheet in
                 if !manageSubscriptionsSheet {
                     viewModel.refreshPurchase()
