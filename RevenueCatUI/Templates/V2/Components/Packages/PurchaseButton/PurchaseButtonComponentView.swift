@@ -253,8 +253,7 @@ struct PurchaseButtonComponentView: View {
             self.resolveHostedCheckout(session)
         case .dismissed:
             // A payment may have gone through moments before the customer closed the sheet, so closing it is
-            // not a cancellation. Settling that means asking the backend what became of the session, which is
-            // not wired up yet. Until it is, the purchase tracked as initiated has no cancel or error to end it.
+            // not a cancellation.
             Logger.debug(Strings.hosted_checkout_dismissed_without_returning)
         }
     }

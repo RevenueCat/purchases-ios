@@ -75,7 +75,7 @@ enum HostedCheckout {
         case .failed:
             purchaseHandler.handleHostedCheckoutFailure(HostedCheckoutError.notStarted, package: package)
         case .declinedByCustomer:
-            purchaseHandler.trackCancelledPurchase(package: package)
+            purchaseHandler.handleHostedCheckoutCancellation(package: package)
         case .alreadyPurchased:
             purchaseHandler.trackPurchaseError(package: package, error: Refusal.alreadyPurchased)
         case .notEligible:
@@ -89,10 +89,7 @@ enum HostedCheckout {
         return Action(result)
     }
 
-    /// Why the purchase the customer asked for was refused before they paid, mapped onto the public code StoreKit
-    /// refuses its counterpart with.
-    ///
-    /// Only tracked: the paywall tells the customer through its own alerts, or not at all.
+    /// Why the purchase the customer asked for was refused before they paid.
     enum Refusal: Error, Equatable {
 
         /// The customer already owns what they tried to buy.
