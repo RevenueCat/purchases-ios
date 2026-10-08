@@ -321,6 +321,12 @@ struct PaywallsV2View: View {
         .environmentObject(self.purchaseHandler)
         .environmentObject(self.introOfferEligibilityContext)
         .environmentObject(self.paywallPromoOfferCache)
+        #if os(iOS) && canImport(WebKit)
+        // Workflow pages share the handler and stay mounted, so only the page in front tells the customer.
+        .hostedCheckoutAlerts(purchaseHandler: self.purchaseHandler,
+                              localizedBundle: Localization.localizedBundle(contentLocale),
+                              isEnabled: self.isActiveWorkflowPage != false)
+        #endif
     }
 
     @ViewBuilder
