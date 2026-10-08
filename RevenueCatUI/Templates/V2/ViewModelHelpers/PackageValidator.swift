@@ -65,24 +65,43 @@ class PackageValidator {
         promotionalOfferProductCode: String?
     )
 
+    var hasDeclaredPackages = false
+
+    func addIndependentScope(_ validator: PackageValidator) {
+        self.scopedPackageInfos.append(contentsOf: validator.scopedPackageInfos.map { ($0.info, .independent) })
+    }
+
+    func addNestedScopes(from validator: PackageValidator) {
+        self.scopedPackageInfos.append(contentsOf: validator.scopedPackageInfos.filter { $0.scope == .independent })
+    }
+
     /// Where a package was declared: a page-level resolution must never return a tab-only package.
     private enum Scope {
         case page
         case tab
+        case independent
     }
 
     private var scopedPackageInfos: [(info: PackageInfo, scope: Scope)] = []
 
     var packageInfos: [PackageInfo] {
+        self.scopedPackageInfos.filter { $0.scope != .independent }.map(\.info)
+    }
+
+    var allPackageInfos: [PackageInfo] {
         self.scopedPackageInfos.map(\.info)
     }
 
-    private var hasPageScopedPackages: Bool {
+    var hasPageScopedPackages: Bool {
         self.scopedPackageInfos.contains { $0.scope == .page }
     }
 
     private var pageScopedPackageInfos: [PackageInfo] {
         self.scopedPackageInfos.filter { $0.scope == .page }.map(\.info)
+    }
+
+    var pagePackages: [Package] {
+        self.pageScopedPackageInfos.map(\.package)
     }
 
     /// Resolution runs on every render, so each distinct warning is logged once.
@@ -158,9 +177,10 @@ class PackageValidator {
     ///
     /// Blind to which tab is showing: counting a tab copy protects the showing tab's selection, at the
     /// cost of the limitation pinned by `testDuplicateInAnotherTabMasksAHiddenPageDefault`.
-    private func isRendering(_ package: Package, in context: PackageSelectionContext) -> Bool {
+    func isRendering(_ package: Package, in context: PackageSelectionContext) -> Bool {
         return self.scopedPackageInfos.contains { scoped in
-            scoped.info.package.identifier == package.identifier && self.isVisible(scoped.info, in: context)
+            guard scoped.scope != .independent else { return false }
+            return scoped.info.package.identifier == package.identifier && self.isVisible(scoped.info, in: context)
         }
     }
 

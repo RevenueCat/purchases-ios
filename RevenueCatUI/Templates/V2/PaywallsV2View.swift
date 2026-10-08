@@ -34,6 +34,10 @@ struct PaywallState {
     var packages: [Package] {
         self.packageInfos.map(\.package)
     }
+
+    var sharedSelectionPackages: [Package] {
+        self.viewModelFactory.packageValidator.packageInfos.map(\.package)
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -694,7 +698,7 @@ struct LoadedPaywallsV2View: View {
         self.selectedPackageContext.update(
             package: resolved,
             variableContext: .init(
-                packages: self.workflowPackages ?? self.paywallState.packages,
+                packages: self.workflowPackages ?? self.paywallState.sharedSelectionPackages,
                 showZeroDecimalPlacePrices: self.selectedPackageContext.variableContext
                     .showZeroDecimalPlacePrices
             ),
@@ -816,7 +820,7 @@ extension PaywallsV2View {
 //                throw PackageGroupValidationError.noAvailablePackages("No available packages found")
 //            }
 
-            let packageInfos = factory.packageValidator.packageInfos.map { info in
+            let packageInfos = factory.packageValidator.allPackageInfos.map { info in
                 return (package: info.package, promotionalOfferProductCode: info.promotionalOfferProductCode)
             }
 
@@ -847,7 +851,7 @@ extension PaywallsV2View {
         return .init(
             package: defaultPackage,
             variableContext: .init(
-                packages: workflowPackages ?? paywallState.packages,
+                packages: workflowPackages ?? paywallState.sharedSelectionPackages,
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
             )
         )
