@@ -41,7 +41,6 @@ enum CustomerInfoStrings {
     case error_encoding_customerinfo(Error)
     case entitlement_expiration_scheduled(date: Date)
     case entitlements_reached_expiration(identifiers: [String])
-    case entitlement_expiration_refresh_already_requested
 
 }
 
@@ -107,8 +106,6 @@ extension CustomerInfoStrings: LogMessage {
             return "Next entitlement expiration check scheduled for \(date)."
         case let .entitlements_reached_expiration(identifiers):
             return "Entitlements reached their expiration date: \(identifiers)."
-        case .entitlement_expiration_refresh_already_requested:
-            return "CustomerInfo refresh for this entitlement expiration was already requested. Ignoring."
         }
 
     }
