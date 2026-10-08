@@ -300,6 +300,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let eventsManager: EventsManagerType?
     private let remoteConfigManager: RemoteConfigManagerType
     private let sdkSettingsConfigProvider: SDKSettingsConfigProviderType
+    private let subscriberDimensionsConfigProvider: SubscriberDimensionsConfigProviderType
 
     private var _adTracker: Any?
 
@@ -405,6 +406,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let attributionFetcher = AttributionFetcher(attributionFactory: attributionTypeFactory, systemInfo: systemInfo)
         let userDefaults = userDefaults ?? UserDefaults.computeDefault()
         let deviceCache = DeviceCache(systemInfo: systemInfo, userDefaults: userDefaults)
+        let subscriberDimensionsStore = SubscriberDimensionsStore(deviceCache: deviceCache)
 
         let diagnosticsFileHandler: DiagnosticsFileHandlerType? = {
             guard dangerousSettings?.uiPreviewMode != true,
@@ -458,7 +460,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             ),
             diagnosticsTracker: diagnosticsTracker,
             apiSourceProvider: apiSourceProvider,
-            timeoutManager: requestTimeoutManager
+            timeoutManager: requestTimeoutManager,
+            subscriberDimensionsStore: subscriberDimensionsStore
         )
 
         let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable
@@ -613,7 +616,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) {
             paywallCache = PaywallCacheWarming(
-                introEligibiltyChecker: trialOrIntroPriceChecker
+                introEligibiltyChecker: trialOrIntroPriceChecker,
+                preferredLocalesProvider: { systemInfo.preferredLocales }
             )
         } else {
             paywallCache = nil
@@ -627,6 +631,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let checkpointsConfigProvider = CheckpointsConfigProvider(manager: remoteConfigManager)
         let audiencesConfigProvider = AudiencesConfigProvider(manager: remoteConfigManager)
         let sdkSettingsConfigProvider = SDKSettingsConfigProvider(manager: remoteConfigManager)
+        let subscriberDimensionsConfigProvider = SubscriberDimensionsConfigProvider(manager: remoteConfigManager)
 
         let workflowManager = WorkflowManager(
             workflowsConfigProvider: workflowsConfigProvider,
@@ -686,7 +691,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             remoteConfigManager.addConfigLifecycleObservers([
                 checkpointsConfigProvider,
                 audiencesConfigProvider,
-                sdkSettingsConfigProvider
+                sdkSettingsConfigProvider,
+                subscriberDimensionsConfigProvider
             ])
             RulesEngine.setLogger(RulesEngineLoggerBridge())
             let localRulesEvaluator = LocalRulesEvaluator(
@@ -711,8 +717,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                         currentUserProvider: identityManager
                     ),
                     SubscriberDimensionsProvider(
-                        deviceCache: deviceCache,
-                        currentUserProvider: identityManager
+                        store: subscriberDimensionsStore,
+                        currentUserProvider: identityManager,
+                        configProvider: subscriberDimensionsConfigProvider
                     )
                 ],
                 currentAppUserIDProvider: { identityManager.currentAppUserID }
@@ -732,12 +739,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     }
                 }
             )
-            branchResolver = systemInfo.branchingEnabled
-                ? DefaultBranchResolver(
-                    audiencesConfigProvider: audiencesConfigProvider,
-                    localRulesEvaluator: localRulesEvaluator
-                )
-                : DisabledBranchResolver()
+            branchResolver = DefaultBranchResolver(
+                audiencesConfigProvider: audiencesConfigProvider,
+                localRulesEvaluator: localRulesEvaluator
+            )
         } else {
             checkpointResolver = DisabledCheckpointWorkflowResolver()
             branchResolver = DisabledBranchResolver()
@@ -881,6 +886,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   branchResolver: branchResolver,
                   remoteConfigManager: remoteConfigManager,
                   sdkSettingsConfigProvider: sdkSettingsConfigProvider,
+                  subscriberDimensionsConfigProvider: subscriberDimensionsConfigProvider,
                   offlineEntitlementsManager: offlineEntitlementsManager,
                   purchasesOrchestrator: purchasesOrchestrator,
                   purchasedProductsFetcher: purchasedProductsFetcher,
@@ -922,6 +928,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          branchResolver: BranchResolver = DisabledBranchResolver(),
          remoteConfigManager: RemoteConfigManagerType,
          sdkSettingsConfigProvider: SDKSettingsConfigProviderType,
+         subscriberDimensionsConfigProvider: SubscriberDimensionsConfigProviderType,
          offlineEntitlementsManager: OfflineEntitlementsManager,
          purchasesOrchestrator: PurchasesOrchestrator,
          purchasedProductsFetcher: PurchasedProductsFetcherType?,
@@ -986,6 +993,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             ? remoteConfigManager
             : NoOpRemoteConfigManager()
         self.sdkSettingsConfigProvider = sdkSettingsConfigProvider
+        self.subscriberDimensionsConfigProvider = subscriberDimensionsConfigProvider
         self.offlineEntitlementsManager = offlineEntitlementsManager
         self.purchasesOrchestrator = purchasesOrchestrator
         self.purchasedProductsFetcher = purchasedProductsFetcher
@@ -1012,7 +1020,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.hostedCheckoutManager = HostedCheckoutManager(
             externalPurchaseManager: externalPurchaseManager,
             webBillingAPI: backend.webBilling,
-            currentUserProvider: identityManager
+            currentUserProvider: identityManager,
+            poller: HostedCheckoutPoller.makeDefault(webBillingAPI: backend.webBilling)
         )
 
         super.init()
@@ -1202,14 +1211,20 @@ public extension Purchases {
         return try await self.workflowManager.getWorkflow(forOfferingId: offeringID)
     }
 
+    /// Bypasses the offering to workflow map, so a test can open one workflow by id.
+    @_spi(Internal)
+    func workflow(forWorkflowIdentifier workflowID: String) async throws -> WorkflowDataResult {
+        return try await self.workflowManager.getWorkflow(workflowId: workflowID)
+    }
+
     @_spi(Internal)
     func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
         return self.workflowManager.cachedWorkflow(forOfferingId: offeringID)
     }
 
     @_spi(Internal)
-    func resolveBranches(in step: WorkflowStep) async -> [WorkflowActionID: WorkflowStepID] {
-        return await self.branchResolver.resolveBranches(in: step)
+    func resolveBranch(_ branch: WorkflowBranch) async -> WorkflowStepID {
+        return await self.branchResolver.resolve(branch)
     }
 
     @_spi(Internal)
@@ -1949,11 +1964,58 @@ public extension Purchases {
     ///
     /// Only to be called when the customer has deliberately asked to buy: it shows Apple's disclosure notice
     /// and mints an external purchase token, which Apple expects a report for.
+    ///
+    /// - Parameter previousSession: A session given before that has not been settled, even if it was created for
+    /// someone other than whoever is logged in now. The backend decides whether the customer carries on with it,
+    /// so that they cannot pay for it twice. `nil` when there is none: no session was given yet, or the last one
+    /// was settled.
     @_spi(Internal) func startHostedCheckout(
         package: Package,
-        paywallEvent: PaywallEvent?
+        paywallEvent: PaywallEvent?,
+        previousSession: HostedCheckoutSession?
     ) async -> HostedCheckoutStartResult {
-        return await self.hostedCheckoutManager.startCheckout(package: package, paywall: paywallEvent?.data)
+        return await self.hostedCheckoutManager.startCheckout(package: package,
+                                                              paywall: paywallEvent?.data,
+                                                              previousSession: previousSession)
+    }
+
+    /// Used by `RevenueCatUI` to determine the final outcome of a checkout the customer completed in the app,
+    /// before settling the paywall on it.
+    ///
+    /// When the backend says the customer owns the product, having just bought it or not, fetches the customer's
+    /// `CustomerInfo` and returns it, so the paywall reports the purchase with it, and callers that read it next
+    /// find the entitlement instead of a cached state from before. A fetch that fails returns no `CustomerInfo`,
+    /// and clears that cached state, so the next read fetches instead of serving it. Both are for the customer the
+    /// session was created for, even if another one has logged in since.
+    ///
+    /// Paywalls, the only caller, do not run with custom entitlement computation. This still compiles in that
+    /// mode, but without the `CustomerInfo` refresh, which the mode does not offer, so it never returns one.
+    @_spi(Internal) func pollHostedCheckout(
+        sessionID: HostedCheckoutSessionID
+    ) async -> (result: HostedCheckoutPollResult, customerInfo: CustomerInfo?) {
+        let operationSessionID = sessionID.operationSessionID
+        let appUserID = sessionID.appUserID
+        let result = await self.hostedCheckoutManager.pollCheckout(operationSessionID: operationSessionID,
+                                                                   appUserID: appUserID)
+
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        switch result {
+        case .succeeded, .alreadyPurchased:
+            Logger.verbose(Strings.hostedCheckout.poll_fetching_customer_info(operationSessionID))
+
+            let customerInfo = await self.fetchCustomerInfoRetryingTransientErrors(appUserID: appUserID)
+            if customerInfo == nil {
+                Logger.warn(Strings.hostedCheckout.poll_customer_info_refresh_failed(operationSessionID))
+                self.customerInfoManager.clearCustomerInfoCache(forAppUserID: appUserID)
+            }
+
+            return (result, customerInfo)
+        case .failed, .undetermined:
+            return (result, nil)
+        }
+        #else
+        return (result, nil)
+        #endif
     }
 
     /// Used by `RevenueCatUI` to create a support ticket
@@ -2206,18 +2268,7 @@ extension Purchases {
         Logger.debug(AdsStrings.reward_verification_entitlement_fetching_customer_info(
             transactionID: clientTransactionID
         ))
-        let refreshed: CustomerInfo? = await Async.retry(maximumRetries: 3) {
-            do {
-                let info = try await self.customerInfoManager.customerInfo(
-                    appUserID: self.appUserID,
-                    fetchPolicy: .fetchCurrent
-                )
-                return (shouldRetry: false, info)
-            } catch {
-                let isTransient = (error as? BackendError)?.isTransient ?? false
-                return (shouldRetry: isTransient, nil)
-            }
-        }
+        let refreshed = await self.fetchCustomerInfoRetryingTransientErrors(appUserID: self.appUserID)
         if refreshed == nil {
             Logger.warn(AdsStrings.reward_verification_entitlement_customer_info_refresh_failed(
                 transactionID: clientTransactionID
@@ -3114,6 +3165,22 @@ internal extension Purchases {
 // MARK: Private
 
 private extension Purchases {
+
+    #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    /// For a backend change made outside StoreKit, which no receipt post brings back. `nil` if no fetch lands.
+    func fetchCustomerInfoRetryingTransientErrors(appUserID: String) async -> CustomerInfo? {
+        return await Async.retry(maximumRetries: 3) {
+            do {
+                let info = try await self.customerInfoManager.customerInfo(appUserID: appUserID,
+                                                                           fetchPolicy: .fetchCurrent)
+                return (shouldRetry: false, info)
+            } catch {
+                let isTransient = (error as? BackendError)?.isTransient ?? false
+                return (shouldRetry: isTransient, nil)
+            }
+        }
+    }
+    #endif
 
     func handleCustomerInfoChanged(from old: CustomerInfo?, to new: CustomerInfo) {
         if old != nil {

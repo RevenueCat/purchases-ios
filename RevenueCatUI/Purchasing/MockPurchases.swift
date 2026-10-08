@@ -103,15 +103,36 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
         return try await self.purchaseBlock(package, promotionalOffer, paywallEvent)
     }
 
-    var hostedCheckoutBlock: (@Sendable (Package, PaywallEvent?) async -> HostedCheckoutStartResult)?
+    var hostedCheckoutBlock: (
+        @Sendable (Package, PaywallEvent?, HostedCheckoutSession?) async -> HostedCheckoutStartResult
+    )?
     private(set) var lastHostedCheckoutPaywallEvent: PaywallEvent?
 
-    func startHostedCheckout(package: Package, paywallEvent: PaywallEvent?) async -> HostedCheckoutStartResult {
+    func startHostedCheckout(package: Package,
+                             paywallEvent: PaywallEvent?,
+                             previousSession: HostedCheckoutSession?) async -> HostedCheckoutStartResult {
         self.lastHostedCheckoutPaywallEvent = paywallEvent
 
         guard let block = self.hostedCheckoutBlock else { return .failed }
 
-        return await block(package, paywallEvent)
+        return await block(package, paywallEvent, previousSession)
+    }
+
+    var hostedCheckoutPollBlock: (@Sendable (HostedCheckoutSessionID) async -> HostedCheckoutPollResult)?
+
+    /// Like the SDK, returns the `CustomerInfo` only for a product the customer owns, and none when it cannot be
+    /// fetched.
+    func pollHostedCheckout(sessionID: HostedCheckoutSessionID) async -> (result: HostedCheckoutPollResult,
+                                                                          customerInfo: CustomerInfo?) {
+        guard let block = self.hostedCheckoutPollBlock else { return (.undetermined, nil) }
+
+        let result = await block(sessionID)
+        switch result {
+        case .succeeded, .alreadyPurchased:
+            return (result, try? await self.customerInfo())
+        case .failed, .undetermined:
+            return (result, nil)
+        }
     }
 
     var useExternalPurchaseCustomLinks = false
@@ -205,7 +226,10 @@ extension PaywallPurchasesType {
         mapped.offeringsBlock = { try await self.offerings() }
         mapped.isUIPreviewMode = self.isUIPreviewMode
         mapped.remoteConfigEnabled = self.remoteConfigEnabled
-        mapped.hostedCheckoutBlock = { await self.startHostedCheckout(package: $0, paywallEvent: $1) }
+        mapped.hostedCheckoutBlock = {
+            await self.startHostedCheckout(package: $0, paywallEvent: $1, previousSession: $2)
+        }
+        mapped.hostedCheckoutPollBlock = { await self.pollHostedCheckout(sessionID: $0).result }
         mapped.useExternalPurchaseCustomLinks = self.useExternalPurchaseCustomLinks
         mapped.externalPurchaseLinkBlock = { await self.prepareExternalPurchaseLink() }
         #if !os(tvOS)
@@ -239,7 +263,10 @@ extension PaywallPurchasesType {
         mapped.offeringsBlock = { try await self.offerings() }
         mapped.isUIPreviewMode = self.isUIPreviewMode
         mapped.remoteConfigEnabled = self.remoteConfigEnabled
-        mapped.hostedCheckoutBlock = { await self.startHostedCheckout(package: $0, paywallEvent: $1) }
+        mapped.hostedCheckoutBlock = {
+            await self.startHostedCheckout(package: $0, paywallEvent: $1, previousSession: $2)
+        }
+        mapped.hostedCheckoutPollBlock = { await self.pollHostedCheckout(sessionID: $0).result }
         mapped.useExternalPurchaseCustomLinks = self.useExternalPurchaseCustomLinks
         mapped.externalPurchaseLinkBlock = { await self.prepareExternalPurchaseLink() }
         #if !os(tvOS)

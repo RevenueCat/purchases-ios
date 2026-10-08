@@ -158,7 +158,11 @@ internal typealias SK2BillingPlanType = StoreKit.Product.SubscriptionInfo.Billin
     @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
     @objc public var installmentsInfo: InstallmentsInfo? { self.product.installmentsInfo }
 
-    @objc internal var id: String { return product.id }
+    /// A unique identifier for this product, including its billing plan.
+    /// If the product has a billing plan associated with it, this will be "{productIdentifier}:{billingPlanType}",
+    /// except for the up-front billing plan, which uses "{productIdentifier}".
+    /// Otherwise, it will be "{productIdentifier}".
+    @_spi(Internal) public var id: String { return product.id }
 
     // switflint:enable missing_docs
 }

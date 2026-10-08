@@ -17,15 +17,18 @@ class WebBillingAPI {
 
     typealias WebBillingProductsResponseHandler = Backend.ResponseHandler<WebBillingProductsResponse>
     typealias HostedCheckoutResponseHandler = Backend.ResponseHandler<HostedCheckoutResponse>
+    typealias HostedCheckoutStatusResponseHandler = Backend.ResponseHandler<HostedCheckoutStatusResponse>
 
     private let webBillingProductsCallbackCache: CallbackCache<WebBillingProductsCallback>
     private let hostedCheckoutCallbackCache: CallbackCache<HostedCheckoutCallback>
+    private let hostedCheckoutStatusCallbackCache: CallbackCache<HostedCheckoutStatusCallback>
     private let backendLanes: BackendLanes
 
     init(lanes: BackendLanes) {
         self.backendLanes = lanes
         self.webBillingProductsCallbackCache = .init()
         self.hostedCheckoutCallbackCache = .init()
+        self.hostedCheckoutStatusCallbackCache = .init()
     }
 
     func getWebBillingProducts(
@@ -55,6 +58,8 @@ class WebBillingAPI {
     /// - Parameter paywall: The paywall the checkout was started from, where it was started from one.
     /// - Parameter externalPurchaseTokenID: Identifies the Apple external purchase token registered for
     /// this purchase. Pass `nil` where no token applies.
+    /// - Parameter previousOperationSessionID: The session this customer was given before, for the backend to
+    /// resume instead of creating a new one where it can.
     // swiftlint:disable:next function_parameter_count
     func postHostedCheckout(
         appUserID: String,
@@ -62,6 +67,7 @@ class WebBillingAPI {
         presentedOfferingContext: PresentedOfferingContext,
         paywall: PostHostedCheckoutOperation.Paywall?,
         externalPurchaseTokenID: String?,
+        previousOperationSessionID: String?,
         completion: @escaping HostedCheckoutResponseHandler
     ) {
         // Runs on the checkout lane so hosted checkout is not delayed by unrelated backend work.
@@ -78,7 +84,8 @@ class WebBillingAPI {
                                 .init(revision: $0.revision, ruleID: $0.ruleId)
                             },
                             paywall: paywall,
-                            externalPurchaseTokenID: externalPurchaseTokenID),
+                            externalPurchaseTokenID: externalPurchaseTokenID,
+                            previousOperationSessionID: previousOperationSessionID),
             hostedCheckoutCallbackCache: self.hostedCheckoutCallbackCache
         )
 
@@ -86,6 +93,34 @@ class WebBillingAPI {
         let cacheStatus = self.hostedCheckoutCallbackCache.add(callback)
 
         // The customer is waiting on this request before checkout can open, so it is never delayed.
+        backendConfig.addCacheableOperation(
+            with: factory,
+            delay: .none,
+            cacheStatus: cacheStatus
+        )
+    }
+
+    /// Asks for the outcome of a checkout session.
+    ///
+    /// - Parameter operationSessionID: The session to ask about, as returned by ``postHostedCheckout``.
+    /// Answered with a 404 where this customer does not own it.
+    func getHostedCheckoutStatus(
+        appUserID: String,
+        operationSessionID: String,
+        completion: @escaping HostedCheckoutStatusResponseHandler
+    ) {
+        let backendConfig = self.backendLanes[.checkout]
+        let config = NetworkOperation.UserSpecificConfiguration(httpClient: backendConfig.httpClient,
+                                                                appUserID: appUserID)
+        let factory = GetHostedCheckoutStatusOperation.createFactory(
+            configuration: config,
+            operationSessionID: operationSessionID,
+            callbackCache: self.hostedCheckoutStatusCallbackCache
+        )
+
+        let callback = HostedCheckoutStatusCallback(cacheKey: factory.cacheKey, completion: completion)
+        let cacheStatus = self.hostedCheckoutStatusCallbackCache.add(callback)
+
         backendConfig.addCacheableOperation(
             with: factory,
             delay: .none,

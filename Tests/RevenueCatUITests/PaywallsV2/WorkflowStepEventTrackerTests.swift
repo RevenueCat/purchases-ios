@@ -107,6 +107,22 @@ final class WorkflowStepEventTrackerTests: TestCase {
         expect(completed.isLastStep) == true
     }
 
+    /// `initialStepId` is only the fallback once an `initialTrigger` routes the first screen, so the
+    /// step the workflow actually opened on is the first one, and the fallback is not.
+    func testIsFirstStepFollowsTheStepTheWorkflowOpenedOn() throws {
+        let workflow = try Self.makeWorkflow()
+        let tracker = self.makeTracker(workflow: workflow)
+        let routed = try XCTUnwrap(workflow.steps["step_2"])
+        let fallback = try XCTUnwrap(workflow.steps["step_1"])
+
+        tracker.trackInitialStep(routed)
+        tracker.trackStepCompleted(fallback, toStepId: nil)
+
+        expect(self.recorded).to(haveCount(2))
+        expect(try XCTUnwrap(Self.startedData(self.recorded[0])).isFirstStep) == true
+        expect(try XCTUnwrap(Self.completedData(self.recorded[1])).isFirstStep) == false
+    }
+
     // MARK: - Trace id continuity
 
     func testTraceIdIsStableAcrossSequence() throws {
@@ -179,9 +195,56 @@ final class WorkflowStepEventTrackerTests: TestCase {
         tracker.trackInitialStep(step2)
 
         expect(self.recorded).to(haveCount(3))
-        expect(self.recorded[0].data.experiment?.workflowBlobRef) == "blob-ref-1"
-        expect(self.recorded[1].data.experiment?.workflowBlobRef) == "blob-ref-1"
+        expect(self.recorded[0].data.workflowBlobRef) == "blob-ref-1"
+        expect(self.recorded[1].data.workflowBlobRef) == "blob-ref-1"
         expect(self.recorded[2].data.experiment).to(beNil())
+    }
+
+    func testStepEventsCarryTheWorkflowBlobRefOutsideAnExperiment() throws {
+        let workflow = try Self.makeWorkflow()
+        let tracker = self.makeTracker(workflow: workflow, workflowBlobRef: "blob-ref-1")
+        let step1 = try XCTUnwrap(workflow.steps["step_1"])
+        let step2 = try XCTUnwrap(workflow.steps["step_2"])
+
+        tracker.trackInitialStep(step1)
+        tracker.trackNavigation(from: step1, to: step2, entryReason: .forward)
+        tracker.trackClose(step2)
+
+        expect(self.recorded).to(haveCount(4))
+        expect(self.recorded.map(\.data.workflowBlobRef)) == Array(repeating: "blob-ref-1", count: 4)
+        expect(self.recorded.allSatisfy { $0.data.experiment == nil }) == true
+    }
+
+    // MARK: - Fallback copies
+
+    func testFallbackCopyEventsReportTheRawIdAndTheOriginalStepId() throws {
+        let workflow = try Self.makeFallbackCopyWorkflow()
+        let tracker = self.makeTracker(workflow: workflow, workflowBlobRef: "blob-ref-1")
+        let entry = try XCTUnwrap(workflow.steps["entry"])
+        let copy = try XCTUnwrap(workflow.steps["paywall_a~f"])
+
+        tracker.trackInitialStep(entry)
+        tracker.trackNavigation(from: entry, to: copy, entryReason: .forward)
+        tracker.trackClose(copy)
+
+        expect(self.recorded).to(haveCount(4))
+        let startedEntry = try XCTUnwrap(Self.startedData(self.recorded[0]))
+        expect(startedEntry.fallbackOriginalStepId).to(beNil())
+
+        let completedEntry = try XCTUnwrap(Self.completedData(self.recorded[1]))
+        expect(completedEntry.toStepId) == "paywall_a~f"
+        expect(completedEntry.fallbackOriginalStepId).to(beNil())
+
+        let startedCopy = try XCTUnwrap(Self.startedData(self.recorded[2]))
+        expect(startedCopy.stepId) == "paywall_a~f"
+        expect(startedCopy.fromStepId) == "entry"
+        expect(startedCopy.fallbackOriginalStepId) == "paywall_a"
+        expect(startedCopy.experiment).to(beNil())
+        expect(startedCopy.workflowBlobRef) == "blob-ref-1"
+
+        let closedCopy = self.recorded[3].data
+        expect(closedCopy.stepId) == "paywall_a~f"
+        expect(closedCopy.fallbackOriginalStepId) == "paywall_a"
     }
 
     func testExperimentIsNotReportedWithoutTheWorkflowBlobRef() throws {
@@ -274,12 +337,52 @@ private extension WorkflowStepEventTrackerTests {
               "trigger_actions": {
                 "btn": {
                   "type": "branch",
-                  "branches": [{"audience_id": "aud_a", "step_id": "step_3"}],
+                  "routes": [{"audience_id": "aud_a", "step_id": "step_3"}],
                   "fallback_step_id": "step_2"
                 }
               }
             },
             "step_2": { "id": "step_2", "type": "screen", "triggers": [], "trigger_actions": {} }
+          },
+          "screens": {},
+          "ui_config": {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {}
+          }
+        }
+        """
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        return try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
+    }
+
+    /// `entry` navigates to `paywall_a~f`, the fallback copy of `paywall_a`.
+    static func makeFallbackCopyWorkflow() throws -> PublishedWorkflow {
+        let json = """
+        {
+          "id": "wf_test",
+          "display_name": "Test Workflow",
+          "initial_step_id": "entry",
+          "steps": {
+            "entry": {
+              "id": "entry",
+              "type": "screen",
+              "triggers": [
+                {"name":"Button","type":"on_press","action_id":"btn","component_id":"btn"}
+              ],
+              "trigger_actions": { "btn": {"type":"step","step_id":"paywall_a~f"} }
+            },
+            "paywall_a": {
+              "id": "paywall_a",
+              "type": "screen",
+              "screen_id": "pw_123",
+              "param_values": { "experiment_id": "exp_abc", "experiment_variant": "b" }
+            },
+            "paywall_a~f": {
+              "id": "paywall_a~f",
+              "type": "screen",
+              "screen_id": "pw_123",
+              "metadata": { "fallback_original_step_id": "paywall_a" }
+            }
           },
           "screens": {},
           "ui_config": {

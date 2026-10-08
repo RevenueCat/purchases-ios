@@ -106,7 +106,8 @@ struct OnboardingUseCaseView: View {
         Purchases.shared.checkpoint(
             "onboarding_complete",
             customVariables: self.personalizationCheckpointCustomVariables,
-            paywallPresenter: self.model.localPaywallPresenter
+            paywallPresenter: self.model.localPaywallPresenter,
+            errorPresenter: self.model.localErrorPresenter
         ) { result in
             self.checkpointResult = result == nil
                 ? "No completed flow."

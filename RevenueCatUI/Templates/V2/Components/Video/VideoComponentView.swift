@@ -96,19 +96,22 @@ struct VideoComponentView: View {
 
                         // Always render spacer for sizing (needed for fixed-size videos)
                         render(Color.clear, size: size, with: style)
-
-                        // Always show thumbnail as base layer while video loads/prepares
-                        if let thumbnailSource = imageSource ?? viewModel.imageSource,
-                           let imageViewModel = try? ImageComponentViewModel(
-                            localizationProvider: viewModel.localizationProvider,
-                            uiConfigProvider: viewModel.uiConfigProvider,
-                            component: .init(
-                                source: thumbnailSource,
-                                fitMode: style.contentMode == .fill ? .fill : .fit
-                            )
-                        ) {
-                            ImageComponentView(viewModel: imageViewModel)
-                        }
+                            // Always show thumbnail as base layer while video loads/prepares
+                            .overlay {
+                                if let thumbnailSource = imageSource ?? viewModel.imageSource,
+                                   let imageViewModel = try? ImageComponentViewModel(
+                                    localizationProvider: viewModel.localizationProvider,
+                                    uiConfigProvider: viewModel.uiConfigProvider,
+                                    component: .init(
+                                        source: thumbnailSource,
+                                        size: .init(width: .fill, height: .fill),
+                                        fitMode: style.contentMode == .fill ? .fill : .fit
+                                    )
+                                ) {
+                                    ImageComponentView(viewModel: imageViewModel)
+                                }
+                            }
+                            .clipped()
 
                         // Only create VideoPlayerView when on active carousel page (or not in carousel)
                         // This prevents multiple AVPlayer instances from competing for resources
@@ -131,7 +134,6 @@ struct VideoComponentView: View {
                                 size: size,
                                 with: style
                             )
-                            .transition(.opacity.animation(.easeIn(duration: 0.3)))
                         }
                     }
                     .allowsHitTesting(style.showControls)

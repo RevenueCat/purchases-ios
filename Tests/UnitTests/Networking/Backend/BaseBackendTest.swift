@@ -40,6 +40,7 @@ class BaseBackendTests: TestCase {
     private(set) var virtualCurrenciesAPI: VirtualCurrenciesAPI!
     private(set) var adsAPI: AdsAPI!
     private(set) var remoteConfigAPI: RemoteConfigAPI!
+    private(set) var subscriberDimensionsStore: SubscriberDimensionsStore!
 
     static let apiKey = "asharedsecret"
     static let userID = "user"
@@ -75,6 +76,9 @@ class BaseBackendTests: TestCase {
         self.mockProductEntitlementMappingFetcher = MockProductEntitlementMappingFetcher()
         self.mockOfflineCustomerInfoCreator = MockOfflineCustomerInfoCreator()
         self.mockPurchasedProductsFetcher = MockPurchasedProductsFetcher()
+        self.subscriberDimensionsStore = SubscriberDimensionsStore(
+            deviceCache: MockDeviceCache(systemInfo: self.systemInfo)
+        )
 
         let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: self.systemInfo)
@@ -88,7 +92,11 @@ class BaseBackendTests: TestCase {
             dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate)
         )
 
-        let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
+        let customer = CustomerAPI(
+            backendConfig: backendConfig,
+            attributionFetcher: attributionFetcher,
+            subscriberDimensionsStore: self.subscriberDimensionsStore
+        )
         self.identity = IdentityAPI(backendConfig: backendConfig)
         self.token = TokenAPI(backendConfig: backendConfig)
         self.offerings = OfferingsAPI(backendConfig: backendConfig)

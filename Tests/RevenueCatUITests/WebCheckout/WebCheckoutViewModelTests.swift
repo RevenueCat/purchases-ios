@@ -103,10 +103,24 @@ final class WebCheckoutViewModelTests: TestCase {
         viewModel.onFinished = { finished += 1 }
 
         _ = try Self.navigate(viewModel, to: "\(Self.endpoint)?status=success")
-        _ = try Self.navigate(viewModel, to: "\(Self.endpoint)?status=cancel")
+        _ = try Self.navigate(viewModel, to: "\(Self.endpoint)?status=maybe")
 
         XCTAssertEqual(finished, 1)
         XCTAssertEqual(viewModel.returnStatus, .success)
+    }
+
+    /// The checkout still ends, but as if the customer had closed it, for the backend to settle.
+    func testFinishesWithoutAStatusWhenTheReturnCannotBeRead() throws {
+        let viewModel = Self.makeViewModel()
+        var finished = 0
+        viewModel.onFinished = { finished += 1 }
+
+        let policy = try Self.navigate(viewModel, to: "\(Self.endpoint)?status=cancel")
+
+        XCTAssertEqual(policy, .cancel)
+        XCTAssertEqual(finished, 1)
+        XCTAssertEqual(viewModel.loadState, .finished)
+        XCTAssertNil(viewModel.returnStatus)
     }
 
     /// Loading can begin before the sheet is presented, and with it the handler assigned.
@@ -152,7 +166,6 @@ private extension WebCheckoutViewModelTests {
         return WebCheckoutViewModel(
             checkoutURL: URL(string: "about:blank")!,
             successURL: URL(string: "\(Self.endpoint)?status=success")!,
-            cancelURL: URL(string: "\(Self.endpoint)?status=cancel")!,
             dataStoreIdentifierStore: WebViewDataStoreIdentifierStore(
                 userDefaults: UserDefaults(suiteName: "com.revenuecat.tests.webCheckoutViewModel")!
             )
@@ -177,7 +190,7 @@ private extension WebCheckoutViewModelTests {
 }
 
 /// A navigation to `url` in the main frame, which `WebKit` offers no way to build.
-private final class MainFrameNavigationAction: WKNavigationAction {
+final class MainFrameNavigationAction: WKNavigationAction {
 
     private let url: URL
 
