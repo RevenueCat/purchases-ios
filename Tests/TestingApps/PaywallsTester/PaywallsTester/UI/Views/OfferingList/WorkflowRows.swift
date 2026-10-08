@@ -9,7 +9,7 @@
 #if DEBUG && !os(tvOS)
 
 @_spi(Internal) @testable import RevenueCat
-@_spi(Internal) import RevenueCatUI
+@_spi(Internal) @_spi(InviteOnlyCheckpointsApi) @testable import RevenueCatUI
 import SwiftUI
 
 /// A workflow synced through remote config, listed by id so workflows that claim no offering can be opened too.
@@ -109,5 +109,20 @@ struct PresentedWorkflow: Identifiable {
     }
 
 }
+
+#if canImport(UIKit) && !os(watchOS)
+/// Shows a UI-less flow's offering with the presenter the SDK uses when a checkpoint returns an offering:
+/// the offering's paywall, or the fallback paywall.
+@MainActor
+enum UILessFlowPresenter {
+
+    private static let presenter = DefaultPaywallPresenter()
+
+    static func present(_ offering: Offering) {
+        self.presenter.present(params: .init(checkpointIdentifier: "paywalls_tester", offering: offering)) { _ in }
+    }
+
+}
+#endif
 
 #endif

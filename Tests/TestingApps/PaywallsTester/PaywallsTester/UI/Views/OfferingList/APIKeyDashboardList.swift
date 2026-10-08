@@ -504,8 +504,12 @@ struct APIKeyDashboardList: View {
             self.workflowLoadError = "Offering '\(identifier)' is not in the offerings."
             return
         }
+        #if canImport(UIKit) && !os(watchOS)
+        UILessFlowPresenter.present(offering)
+        #else
         self.isLoadingPaywall = true
         self.presentedPaywall = .init(offering: offering, mode: .workflow)
+        #endif
     }
 
     private func openWorkflow(_ workflowId: String, fullScreen: Bool) {
