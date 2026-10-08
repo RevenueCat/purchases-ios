@@ -69,24 +69,45 @@ enum HostedCheckout {
         let result = await purchaseHandler.startHostedCheckout(package: package)
         let action = Action(result)
 
-        if case let .failed(error) = action {
-            purchaseHandler.handleHostedCheckoutFailure(error, package: package)
-        }
-
         switch result {
+        case .started:
+            // The checkout presented ends the purchase.
+            break
+        case .failed:
+            purchaseHandler.handleHostedCheckoutFailure(HostedCheckoutError.notStarted, package: package)
         case .declinedByCustomer:
             purchaseHandler.trackCancelledPurchase(package: package)
+        case .alreadyPurchased:
+            purchaseHandler.trackPurchaseError(package: package, error: Refusal.alreadyPurchased)
         case .notEligible:
-            purchaseHandler.trackPurchaseError(package: package, error: HostedCheckoutError.notEligible)
+            purchaseHandler.trackPurchaseError(package: package, error: Refusal.notEligible)
         case .paymentsNotAuthorized:
-            purchaseHandler.trackPurchaseError(package: package, error: HostedCheckoutError.paymentsNotAuthorized)
-        case .started, .alreadyPurchased, .alreadyStarting, .failed:
-            // The checkout already under way carries the purchase, and owning the product is neither a
-            // purchase nor a cancellation.
-            break
+            purchaseHandler.trackPurchaseError(package: package, error: Refusal.paymentsNotAuthorized)
+        case .alreadyStarting:
+            purchaseHandler.trackPurchaseError(package: package, error: Refusal.alreadyStarting)
         }
 
         return action
+    }
+
+    /// Why the purchase the customer asked for was refused before they paid, mapped onto the public code StoreKit
+    /// refuses its counterpart with.
+    ///
+    /// Only tracked: the paywall tells the customer through its own alerts, or not at all.
+    enum Refusal: Error, Equatable {
+
+        /// The customer already owns what they tried to buy.
+        case alreadyPurchased
+
+        /// The customer is not eligible to buy outside the App Store.
+        case notEligible
+
+        /// The device does not authorize payments.
+        case paymentsNotAuthorized
+
+        /// Another checkout was already starting, so this tap started none.
+        case alreadyStarting
+
     }
 
     /// How the paywall settles on the outcome the backend gives for a checkout that ended on its success page.
@@ -142,9 +163,9 @@ enum HostedCheckout {
             case let .failed(error):
                 purchaseHandler.handleHostedCheckoutFailure(error, package: package)
             case .tellCustomerTheyAlreadyOwnIt:
-                // Neither a purchase nor a cancellation, just as when the checkout never opened for this reason:
-                // the paywall only tells the customer.
-                break
+                if let package {
+                    purchaseHandler.trackPurchaseError(package: package, error: Refusal.alreadyPurchased)
+                }
             }
 
             return resolution
@@ -170,12 +191,6 @@ enum HostedCheckoutError: Error, Equatable {
     /// The checkout could not be started, so the customer never reached the page.
     case notStarted
 
-    /// The customer is not eligible to buy outside the App Store, so no checkout was started.
-    case notEligible
-
-    /// The device does not authorize payments, so no checkout was started.
-    case paymentsNotAuthorized
-
 }
 
 extension HostedCheckoutError: CustomNSError {
@@ -200,8 +215,6 @@ extension HostedCheckoutError: CustomNSError {
             return .storeProblemError
         case .notStarted:
             return .storeProblemError
-        case .notEligible, .paymentsNotAuthorized:
-            return .purchaseNotAllowedError
         case .failed, .unconfirmed:
             return .unknownError
         }
@@ -215,10 +228,6 @@ extension HostedCheckoutError: CustomNSError {
             return "The purchase could not be set up."
         case .notStarted:
             return "The purchase could not be set up."
-        case .notEligible:
-            return "The customer is not eligible to buy outside the App Store."
-        case .paymentsNotAuthorized:
-            return "The device does not authorize payments."
         case .failed:
             return "The purchase failed."
         case .unconfirmed:
@@ -240,10 +249,53 @@ extension HostedCheckoutError {
         switch self {
         case .failed(code: Self.paymentChargeFailedCode):
             return Text("Payment failed.", bundle: bundle)
-        case .failed, .notStarted, .notEligible, .paymentsNotAuthorized:
+        case .failed, .notStarted:
             return Text("Something went wrong", bundle: bundle)
         case .unconfirmed:
             return Text("Your purchase is still processing.", bundle: bundle)
+        }
+    }
+
+}
+
+@available(iOS 15.0, *)
+extension HostedCheckout.Refusal: CustomNSError {
+
+    static var errorDomain: String {
+        return ErrorCode.errorDomain
+    }
+
+    var errorCode: Int {
+        return self.publicCode.rawValue
+    }
+
+    var errorUserInfo: [String: Any] {
+        return [NSLocalizedDescriptionKey: self.errorDescription]
+    }
+
+    private var publicCode: ErrorCode {
+        switch self {
+        case .alreadyPurchased:
+            return .productAlreadyPurchasedError
+        case .notEligible:
+            return .productNotAvailableForPurchaseError
+        case .paymentsNotAuthorized:
+            return .purchaseNotAllowedError
+        case .alreadyStarting:
+            return .operationAlreadyInProgressForProductError
+        }
+    }
+
+    private var errorDescription: String {
+        switch self {
+        case .alreadyPurchased:
+            return "The customer already owns this product."
+        case .notEligible:
+            return "The customer is not eligible to buy outside the App Store."
+        case .paymentsNotAuthorized:
+            return "The device does not authorize payments."
+        case .alreadyStarting:
+            return "Another checkout was already starting."
         }
     }
 
