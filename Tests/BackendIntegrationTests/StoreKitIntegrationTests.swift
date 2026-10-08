@@ -148,6 +148,30 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
         expect(originalApplicationVersion).toNot(beNil())
     }
 
+    @available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *)
+    func testStoreProductIds() async throws {
+        func checkIdForProductWithMonthlyBillingPlan() async throws {
+            let id = "\(Self.productIDWithBillingPlans):monthly"
+            let product = try await self.product(id)
+            expect(product.productIdentifier).to(equal(Self.productIDWithBillingPlans))
+            expect(product.id).to(equal(id))
+        }
+
+        func checkIdForProductWithUpfrontBillingPlan() async throws {
+            let id = "\(Self.productIDWithBillingPlans)"
+            let product = try await self.product(id)
+            expect(product.productIdentifier).to(equal(id))
+            expect(product.id).to(equal(id))
+        }
+
+        if #available(iOS 27.0, tvOS 27.0, macOS 27.0, watchOS 27.0, visionOS 27.0, *) {
+            try await checkIdForProductWithMonthlyBillingPlan()
+            try await checkIdForProductWithUpfrontBillingPlan()
+        } else {
+            try await checkIdForProductWithUpfrontBillingPlan()
+        }
+    }
+
     private func signInAsNewAppUserID() async throws {
         _ = try await Purchases.shared.logIn("integration-test-user-\(UUID().uuidString)")
     }
@@ -229,6 +253,22 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         expect(receivedOfferings.all).toNot(beEmpty())
         assertSnapshot(of: receivedOfferings.response, as: .formattedJson)
+
+        let storeProducts = receivedOfferings.all.values.flatMap(\.availablePackages).map(\.storeProduct)
+        expect(storeProducts).toNot(beEmpty())
+        for storeProduct in storeProducts {
+            if #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *),
+                let installmentsInfo = storeProduct.installmentsInfo {
+                if installmentsInfo.billingPlanType == .upFront {
+                    expect(storeProduct.id) == storeProduct.productIdentifier
+                } else {
+                    expect(storeProduct.id) == "\(storeProduct.productIdentifier):" +
+                    "\(installmentsInfo.billingPlanType.rawValue)"
+                }
+            } else {
+                expect(storeProduct.id) == storeProduct.productIdentifier
+            }
+        }
 
         self.logger.verifyMessageWasLogged(Strings.offering.vending_offerings_cache_from_memory,
                                            level: .debug)
@@ -1180,6 +1220,13 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         self.verifySpecificTransactionWasFinished(transaction)
     }
     #endif
+
+    func testSK1ProductId() async throws {
+        let id = "\(Self.productIDWithBillingPlans)"
+        let product = try await self.product(id)
+        expect(product.productIdentifier).to(equal(id))
+        expect(product.id).to(equal(id))
+    }
 }
 
 private extension BaseStoreKitIntegrationTests {

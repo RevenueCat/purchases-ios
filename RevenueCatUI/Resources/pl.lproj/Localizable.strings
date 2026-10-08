@@ -22,7 +22,10 @@
 "Continue" = "Kontynuuj";
 "Default_offer_details_with_intro_offer" = "Rozpocznij okres próbny {{ sub_offer_duration }}, a następnie {{ total_price_and_per_month }}.";
 "Something went wrong" = "Coś poszło nie tak";
+"Payment failed." = "Płatność nie powiodła się.";
+"Your purchase is still processing." = "Zakup jest nadal przetwarzany.";
 "Purchase" = "Kup";
 "You've already purchased this" = "Masz już wykupioną tę pozycję";
+"Your purchase was successful." = "Zakup zakończył się pomyślnie.";
 "Purchase unavailable" = "Zakup niedostępny";
 "This purchase isn't available in your region." = "Ten zakup jest niedostępny w Twoim regionie.";

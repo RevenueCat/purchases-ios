@@ -23,21 +23,7 @@ import Foundation
 
 }
 
-extension BranchResolver {
-
-    func resolveBranches(in step: WorkflowStep) async -> [WorkflowActionID: WorkflowStepID] {
-        var resolved: [WorkflowActionID: WorkflowStepID] = [:]
-        for (actionId, action) in step.stepTriggerActions {
-            guard !Task.isCancelled else { return resolved }
-            guard case .branch(let branch) = action else { continue }
-            resolved[actionId] = await self.resolve(branch)
-        }
-        return resolved
-    }
-
-}
-
-/// Every branch takes its fallback. Goes away with `branchingEnabled` once branching ships.
+/// Every branch takes its fallback. Used when remote config is off, so no audience can be read.
 @_spi(Internal) public final class DisabledBranchResolver: BranchResolver {
 
     /// Creates the resolver used while branching is unreleased.

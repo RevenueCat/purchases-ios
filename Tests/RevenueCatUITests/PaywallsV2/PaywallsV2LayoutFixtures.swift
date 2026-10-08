@@ -60,7 +60,11 @@ enum PaywallsV2LayoutFixtures {
     }
 
     /// Root stack is a z-layer (not a vertical stack wrapping a z-layer) with tall hero + sticky footer.
-    static func makeStickyFooterRootZLayerViewModel() throws -> RootViewModel {
+    static func makeStickyFooterRootZLayerViewModel(
+        overflow: PaywallComponent.StackComponent.Overflow? = nil,
+        footerIsZLayer: Bool = false,
+        rootChangesToZLayerByWidthRule: Bool = false
+    ) throws -> RootViewModel {
         let rootZLayer = PaywallComponent.StackComponent(
             components: [
                 .image(.init(
@@ -92,18 +96,68 @@ enum PaywallsV2LayoutFixtures {
                     horizontalAlignment: .center
                 ))
             ],
-            dimension: .zlayer(.top),
+            dimension: rootChangesToZLayerByWidthRule ? .vertical(.center, .start) : .zlayer(.top),
             size: .init(width: .fill, height: .fit(nil)),
             spacing: 0,
-            backgroundColor: .init(light: .hex("#FFFFFF"))
+            backgroundColor: .init(light: .hex("#FFFFFF")),
+            overflow: overflow,
+            overrides: rootChangesToZLayerByWidthRule ? [.init(
+                extendedConditions: [.windowWidth(operator: .greaterThanOrEqual, value: 500)],
+                properties: .init(dimension: .zlayer(.top))
+            )] : nil
         )
 
         return try makeRootViewModel(
             componentsConfig: .init(
                 stack: rootZLayer,
-                stickyFooter: .init(stack: standardOpaqueFooterStack()),
+                stickyFooter: .init(stack: footerIsZLayer ? .init(
+                    components: [.stack(standardOpaqueFooterStack())],
+                    dimension: .zlayer(.center),
+                    size: .init(width: .fill, height: .fit(nil))
+                ) : standardOpaqueFooterStack()),
                 background: .color(.init(light: .hex("#FFFFFF")))
             )
+        )
+    }
+
+    /// The root does not scroll, but its bounded child must still expose the bottom of its content.
+    static func makeNonScrollingRootWithZLayerChildViewModel(
+        childOverflow: PaywallComponent.StackComponent.Overflow? = .scroll
+    ) throws -> RootViewModel {
+        let content = PaywallComponent.StackComponent(
+            components: [
+                .stack(.init(
+                    components: [],
+                    size: .init(width: .fill, height: .fixed(600)),
+                    backgroundColor: .init(light: .hex("#E3F2FD"))
+                )),
+                .text(.init(
+                    text: "small_body_title",
+                    color: .init(light: .hex("#272727")),
+                    backgroundColor: .init(light: .hex("#FFE082")),
+                    size: .init(width: .fill, height: .fixed(60)),
+                    fontSize: 22
+                ))
+            ],
+            dimension: .vertical(.center, .start),
+            size: .init(width: .fill, height: .fit(nil)),
+            overflow: .default
+        )
+        let child = PaywallComponent.StackComponent(
+            components: [.stack(content)],
+            dimension: .zlayer(.top),
+            size: .init(width: .fill, height: .fill),
+            overflow: childOverflow
+        )
+        let root = PaywallComponent.StackComponent(
+            components: [.stack(child)],
+            dimension: .zlayer(.top),
+            size: .init(width: .fill, height: .fixed(300)),
+            overflow: .default
+        )
+
+        return try makeRootViewModel(
+            componentsConfig: .init(stack: root, stickyFooter: nil, background: fixtureBackground)
         )
     }
 

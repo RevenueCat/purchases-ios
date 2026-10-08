@@ -20,21 +20,29 @@ final class HostedCheckoutManager {
     private let externalPurchaseManager: ExternalPurchaseManager
     private let webBillingAPI: WebBillingAPI
     private let currentUserProvider: CurrentUserProvider
+    private let poller: HostedCheckoutPolling
 
     init(externalPurchaseManager: ExternalPurchaseManager,
          webBillingAPI: WebBillingAPI,
-         currentUserProvider: CurrentUserProvider) {
+         currentUserProvider: CurrentUserProvider,
+         poller: HostedCheckoutPolling) {
         self.externalPurchaseManager = externalPurchaseManager
         self.webBillingAPI = webBillingAPI
         self.currentUserProvider = currentUserProvider
+        self.poller = poller
     }
 
     /// Starts a checkout for `package`, in response to the customer deliberately asking to buy.
     ///
     /// Must not be called before then: this may mint an external purchase token, and every token minted is
     /// one Apple expects a report for.
+    ///
+    /// - Parameter previousSession: A session given before that has not been settled, even if it was created for
+    /// someone other than whoever is logged in now. The backend decides whether the customer carries on with it.
+    /// `nil` when there is none: no session was given yet, or the last one was settled.
     func startCheckout(package: Package,
-                       paywall: PaywallEvent.Data?) async -> HostedCheckoutStartResult {
+                       paywall: PaywallEvent.Data?,
+                       previousSession: HostedCheckoutSession?) async -> HostedCheckoutStartResult {
         Logger.debug(Strings.hostedCheckout.starting_checkout(package.identifier))
 
         let externalPurchaseTokenID: String?
@@ -53,7 +61,19 @@ final class HostedCheckoutManager {
 
         return await self.createSession(package: package,
                                         paywall: paywall,
-                                        externalPurchaseTokenID: externalPurchaseTokenID)
+                                        externalPurchaseTokenID: externalPurchaseTokenID,
+                                        previousSession: previousSession)
+    }
+
+    /// Waits for a checkout session to reach an outcome the caller can settle on.
+    ///
+    /// The checkout page returning to its success URL does not mean the purchase has landed yet, so the
+    /// backend is asked until it says one way or the other.
+    ///
+    /// - Parameter appUserID: The customer the session was created for. Whoever is logged in by now may not
+    /// own the session.
+    func pollCheckout(operationSessionID: String, appUserID: String) async -> HostedCheckoutPollResult {
+        return await self.poller.poll(operationSessionID: operationSessionID, appUserID: appUserID)
     }
 
 }
@@ -63,6 +83,13 @@ final class HostedCheckoutManager {
 
     /// Present this checkout to the customer.
     case started(HostedCheckoutSession)
+
+    /// Present this checkout to the customer, who can carry on where they left off with it.
+    case resumed(HostedCheckoutSession)
+
+    /// This checkout has already been paid for, so there is nothing to present. Confirm it the same way as a
+    /// checkout that reached its success page.
+    case completed(HostedCheckoutSessionID)
 
     /// The customer declined Apple's disclosure notice.
     case declinedByCustomer
@@ -92,22 +119,25 @@ private extension HostedCheckoutManager {
 
     func createSession(package: Package,
                        paywall: PaywallEvent.Data?,
-                       externalPurchaseTokenID: String?) async -> HostedCheckoutStartResult {
+                       externalPurchaseTokenID: String?,
+                       previousSession: HostedCheckoutSession?) async -> HostedCheckoutStartResult {
+        let appUserID = self.currentUserProvider.currentAppUserID
+
         let result: Result<HostedCheckoutResponse, BackendError> = await Async.call { completion in
             self.webBillingAPI.postHostedCheckout(
-                appUserID: self.currentUserProvider.currentAppUserID,
+                appUserID: appUserID,
                 packageID: package.identifier,
                 presentedOfferingContext: package.presentedOfferingContext,
                 paywall: paywall.map { .init(paywallEventData: $0) },
                 externalPurchaseTokenID: externalPurchaseTokenID,
+                previousOperationSessionID: previousSession?.id.operationSessionID,
                 completion: completion
             )
         }
 
         switch result {
         case let .success(response):
-            Logger.debug(Strings.hostedCheckout.session_created(response.operationSessionID))
-            return .started(.init(response: response))
+            return Self.startResult(for: response, appUserID: appUserID)
         case let .failure(error):
             guard !error.isProductAlreadyPurchased else {
                 Logger.warn(Strings.hostedCheckout.product_already_purchased(package.identifier))
@@ -116,6 +146,30 @@ private extension HostedCheckoutManager {
 
             Logger.error(Strings.hostedCheckout.error_creating_session(error))
             return .failed
+        }
+    }
+
+}
+
+private extension HostedCheckoutManager {
+
+    /// The session returned is the one the customer now has, created for the customer the request was made for.
+    static func startResult(for response: HostedCheckoutResponse,
+                            appUserID: String) -> HostedCheckoutStartResult {
+        let operationSessionID = response.operationSessionID
+
+        switch response.outcome {
+        case let .created(page):
+            Logger.debug(Strings.hostedCheckout.session_created(operationSessionID))
+            return .started(.init(operationSessionID: operationSessionID, page: page, appUserID: appUserID))
+
+        case let .resumed(page):
+            Logger.debug(Strings.hostedCheckout.session_resumed(operationSessionID))
+            return .resumed(.init(operationSessionID: operationSessionID, page: page, appUserID: appUserID))
+
+        case .succeeded:
+            Logger.debug(Strings.hostedCheckout.session_paid(operationSessionID))
+            return .completed(.init(operationSessionID: operationSessionID, appUserID: appUserID))
         }
     }
 

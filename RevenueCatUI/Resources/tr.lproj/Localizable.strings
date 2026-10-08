@@ -22,7 +22,10 @@
 "Continue" = "Devam et";
 "Default_offer_details_with_intro_offer" = "{{ sub_offer_duration }} denemenizi başlatın, ardından {{ total_price_and_per_month }}.";
 "Something went wrong" = "Bir şeyler yanlış gitti";
+"Payment failed." = "Ödeme gerçekleştirilemedi.";
+"Your purchase is still processing." = "Satın alma işleminiz hâlâ işleniyor.";
 "Purchase" = "Satın Al";
 "You've already purchased this" = "Bunu zaten satın aldınız";
+"Your purchase was successful." = "Satın alma işleminiz başarıyla tamamlandı.";
 "Purchase unavailable" = "Satın alma kullanılamıyor";
 "This purchase isn't available in your region." = "Bu satın alma işlemi bölgenizde kullanılamıyor.";

@@ -45,7 +45,14 @@ struct PurchaseButtonComponentView: View {
     #if os(iOS) && canImport(WebKit)
     @State private var hostedCheckoutViewModel: WebCheckoutViewModel?
 
+    /// The checkout the sheet was presented for, which is settled once the sheet has gone.
+    @State private var presentedHostedCheckout: HostedCheckout.KeptCheckout?
+
     @State private var showingAlreadyOwnedAlert = false
+
+    @State private var hostedCheckoutPurchaseCustomerInfo: CustomerInfo?
+
+    @State private var hostedCheckoutError: HostedCheckoutError?
     #endif
 
     private let viewModel: PurchaseButtonComponentViewModel
@@ -97,7 +104,23 @@ struct PurchaseButtonComponentView: View {
         #endif
         #if os(iOS) && canImport(WebKit)
         .webCheckoutSheet(viewModel: self.$hostedCheckoutViewModel) { outcome in
-            self.handleHostedCheckoutOutcome(outcome)
+            guard let checkout = self.presentedHostedCheckout else { return }
+            self.presentedHostedCheckout = nil
+
+            self.handleHostedCheckoutOutcome(outcome, checkout: checkout)
+        }
+        .alert(
+            Text(verbatim: ""),
+            isPresented: .isNotNil(self.$hostedCheckoutError),
+            presenting: self.hostedCheckoutError
+        ) { _ in
+            Button {
+                self.hostedCheckoutError = nil
+            } label: {
+                Text("OK", bundle: self.viewModel.localizedBundle)
+            }
+        } message: { error in
+            error.message(bundle: self.viewModel.localizedBundle)
         }
         // The checkout does not say whether the product is a subscription, so the title has to fit either.
         .alert(
@@ -109,6 +132,19 @@ struct PurchaseButtonComponentView: View {
             } label: {
                 Text("OK", bundle: self.viewModel.localizedBundle)
             }
+        }
+        .alert(
+            Text(verbatim: ""),
+            isPresented: .isNotNil(self.$hostedCheckoutPurchaseCustomerInfo),
+            presenting: self.hostedCheckoutPurchaseCustomerInfo
+        ) { customerInfo in
+            Button {
+                self.purchaseHandler.handleHostedCheckoutPurchase(customerInfo: customerInfo)
+            } label: {
+                Text("OK", bundle: self.viewModel.localizedBundle)
+            }
+        } message: { _ in
+            Text("Your purchase was successful.", bundle: self.viewModel.localizedBundle)
         }
         #endif
     }
@@ -183,11 +219,17 @@ struct PurchaseButtonComponentView: View {
                                           purchaseHandler: self.purchaseHandler,
                                           purchaseInitiatedAction: self.purchaseInitiatedAction) {
         case let .present(session):
-            self.presentHostedCheckout(session)
+            self.presentHostedCheckout(session, package: selectedPackage)
+        case let .confirm(sessionID, keptCheckout):
+            let isKeptSession = keptCheckout?.session.id.operationSessionID == sessionID.operationSessionID
+            let package = isKeptSession ? keptCheckout?.package : nil
+            self.resolveHostedCheckout(sessionID, settling: keptCheckout, package: package ?? selectedPackage)
         case .tellCustomerTheyAlreadyOwnIt:
             self.showingAlreadyOwnedAlert = true
         case .tellCustomerThePurchaseIsUnavailable:
             self.showingPurchaseUnavailableAlert = true
+        case let .failed(error):
+            self.hostedCheckoutError = error
         case .nothing:
             break
         }
@@ -200,25 +242,89 @@ struct PurchaseButtonComponentView: View {
 
     #if os(iOS) && canImport(WebKit)
     @MainActor
-    private func presentHostedCheckout(_ session: HostedCheckoutSession) {
-        self.hostedCheckoutViewModel = WebCheckoutViewModel(
-            checkoutURL: session.checkoutURL,
-            successURL: session.successURL,
-            cancelURL: session.cancelURL,
-            dataStoreIdentifierStore: .init()
-        )
+    private func presentHostedCheckout(_ session: HostedCheckoutSession, package: Package) {
+        let checkout = HostedCheckout.checkoutToPresent(session,
+                                                        package: package,
+                                                        purchaseHandler: self.purchaseHandler)
+
+        self.presentedHostedCheckout = checkout
+        self.hostedCheckoutViewModel = checkout.viewModel
     }
 
-    private func handleHostedCheckoutOutcome(_ outcome: WebCheckoutSheetOutcome) {
+    @MainActor
+    private func handleHostedCheckoutOutcome(_ outcome: WebCheckoutSheetOutcome,
+                                             checkout: HostedCheckout.KeptCheckout) {
         switch outcome {
         case .returned(.success):
-            Task { await self.purchaseHandler.handleHostedCheckoutPurchase() }
-        case .returned(.cancel):
-            Task { await self.purchaseHandler.handleHostedCheckoutCancellation(package: self.packageContext.package) }
+            self.resolveHostedCheckout(checkout.session.id, settling: checkout, package: checkout.package)
         case .dismissed:
-            // A payment may have gone through moments before the customer closed the sheet. Settling that
-            // means asking the backend what became of the session, which is not wired up yet.
+            // The checkout stays kept: a customer who paid moments before closing the sheet has that purchase
+            // confirmed once the page reaches its success URL, or when they tap buy again.
             Logger.debug(Strings.hosted_checkout_dismissed_without_returning)
+            // The handler keeps the checkout, and so this closure, alive: capturing the view, which holds the
+            // handler, would keep both alive after the paywall goes.
+            let alerts = self.hostedCheckoutAlerts
+            HostedCheckout.onSuccessAfterDismissal(
+                of: checkout,
+                purchaseHandler: self.purchaseHandler
+            ) { [weak purchaseHandler = self.purchaseHandler] checkout in
+                guard let purchaseHandler else { return }
+                Self.resolveHostedCheckout(checkout.session.id,
+                                           settling: checkout,
+                                           package: checkout.package,
+                                           purchaseHandler: purchaseHandler,
+                                           alerts: alerts)
+            }
+            self.purchaseHandler.handleHostedCheckoutDismissal(package: checkout.package)
+        }
+    }
+
+    /// The alerts that tell the customer how a hosted checkout settled.
+    private struct HostedCheckoutAlerts {
+
+        let alreadyOwned: Binding<Bool>
+        let error: Binding<HostedCheckoutError?>
+        let purchase: Binding<CustomerInfo?>
+
+    }
+
+    private var hostedCheckoutAlerts: HostedCheckoutAlerts {
+        return .init(alreadyOwned: self.$showingAlreadyOwnedAlert,
+                     error: self.$hostedCheckoutError,
+                     purchase: self.$hostedCheckoutPurchaseCustomerInfo)
+    }
+
+    /// - Parameter checkout: The kept checkout this settles, if any.
+    /// - Parameter package: The package the checkout was started for.
+    private func resolveHostedCheckout(_ sessionID: HostedCheckoutSessionID,
+                                       settling checkout: HostedCheckout.KeptCheckout?,
+                                       package: Package) {
+        Self.resolveHostedCheckout(sessionID,
+                                   settling: checkout,
+                                   package: package,
+                                   purchaseHandler: self.purchaseHandler,
+                                   alerts: self.hostedCheckoutAlerts)
+    }
+
+    private static func resolveHostedCheckout(_ sessionID: HostedCheckoutSessionID,
+                                              settling checkout: HostedCheckout.KeptCheckout?,
+                                              package: Package,
+                                              purchaseHandler: PurchaseHandler,
+                                              alerts: HostedCheckoutAlerts) {
+        Task { @MainActor in
+            switch await HostedCheckout.resolve(sessionID,
+                                                settling: checkout,
+                                                package: package,
+                                                purchaseHandler: purchaseHandler) {
+            case .tellCustomerTheyAlreadyOwnIt:
+                alerts.alreadyOwned.wrappedValue = true
+            case let .failed(error):
+                alerts.error.wrappedValue = error
+            case let .purchased(customerInfo):
+                alerts.purchase.wrappedValue = customerInfo
+            case nil:
+                break
+            }
         }
     }
     #endif
