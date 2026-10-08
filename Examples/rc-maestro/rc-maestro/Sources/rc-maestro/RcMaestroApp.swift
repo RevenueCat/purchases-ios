@@ -43,7 +43,7 @@ struct RcMaestroApp: App {
         let forceServerErrorStrategy = Constants.forceServerErrorStrategy
         Purchases.configure(
             with: .builder(withAPIKey: Constants.apiKey)
-                .with(appUserID: Constants.appUserID)
+                .with(appUserID: Self.appUserID)
                 .with(dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(
@@ -91,7 +91,7 @@ struct RcMaestroApp: App {
 
     @ViewBuilder
     private var appContent: some View {
-        switch e2eTestFlow {
+        switch Self.e2eTestFlow {
         case .some(let flow):
             flow.view
         case nil:
@@ -109,12 +109,19 @@ struct RcMaestroApp: App {
     /*
      Parses the launch argument with the e2e test flow to run
      */
-    fileprivate var e2eTestFlow: E2ETestFlow? {
+    fileprivate static var e2eTestFlow: E2ETestFlow? {
         guard let string = UserDefaults.standard.dictionaryRepresentation()["e2e_test_flow"] as? String else {
             return nil
         }
         
         return E2ETestFlow(rawValue: string)
+    }
+
+    // Checkpoint scenarios get a fresh user unless the flow passes one, so no state leaks between runs.
+    private static var appUserID: String? {
+        if let appUserID = Constants.appUserID { return appUserID }
+        guard Self.e2eTestFlow == .checkpointResolution else { return nil }
+        return "maestro_checkpoint_ios_\(UUID().uuidString)"
     }
 }
 
@@ -147,6 +154,7 @@ enum E2ETestFlow: String {
     case openWorkflowUIKit = "open_workflow_uikit"
     case openDefaultPackageVisibility = "open_default_package_visibility"
     case openDeveloperProvidedOffering = "open_developer_provided_offering"
+    case checkpointResolution = "checkpoint_resolution"
 
     @ViewBuilder
     var view: some View {
@@ -167,6 +175,8 @@ enum E2ETestFlow: String {
             E2ETestFlowView.OpenDefaultPackageVisibility()
         case .openDeveloperProvidedOffering:
             E2ETestFlowView.OpenDeveloperProvidedOffering()
+        case .checkpointResolution:
+            E2ETestFlowView.CheckpointResolution()
         }
     }
 }
