@@ -454,14 +454,6 @@ private extension Transaction {
         return .nonFree(formattedPrice)
     }
 
-    var unableToInferRenewalPrice: Bool {
-        if case let .subscription(_, willRenew, _, isTrial, _) = self.type {
-            return !willRenew || isTrial
-        }
-
-        // For non-subscriptions, always return true
-        return true
-    }
 }
 
 private extension EntitlementInfo {
