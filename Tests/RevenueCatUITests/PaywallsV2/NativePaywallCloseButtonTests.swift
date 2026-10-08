@@ -294,8 +294,29 @@ final class NativePaywallCloseButtonTests: TestCase {
         defer { self.close(window) }
         await self.waitForPresentation()
         XCTAssertEqual(self.toolbarButtons(in: host.view).count, 1)
-        XCTAssertEqual(configuredAppearances, 1)
+        XCTAssertEqual(configuredAppearances, 0)
         XCTAssertEqual(self.navigationCount(in: host), 1)
+    }
+
+    func testThirdPageHeaderAndBodyButtonsShareNativeSlotsWithoutDesignedDuplicates() async {
+        let state = NativeThreePageTestState()
+        let coordinator = NativePaywallCloseCoordinator()
+        var configuredAppearances = 0
+        let host = UIHostingController(rootView:
+            NativeThreePageTestView(state: state, configuredAppeared: { configuredAppearances += 1 })
+                .environment(\.nativePaywallCloseCoordinator, coordinator)
+        )
+        let window = self.host(host)
+        defer { self.close(window) }
+
+        for page in [0, 1, 2, 1, 2, 0] {
+            state.page = page
+            await self.waitForPresentation()
+            XCTAssertEqual(coordinator.actions.count, page == 2 ? 4 : 2)
+            XCTAssertEqual(coordinator.action(for: .back) != nil, page > 0)
+            XCTAssertTrue(coordinator.action(for: .close)?.isWorkflowClose == true)
+            XCTAssertEqual(configuredAppearances, 0, "Active pages must not show opted-in header or body buttons")
+        }
     }
 
     func testReturningToRootDoesNotRestoreDesignedBackOrRegisterTransitionCopies() async {
@@ -590,6 +611,53 @@ private struct NativeWorkflowHeaderTestView: View {
                 enabled: true, accessibilityLabel: "Close", isWorkflowClose: true, action: {},
                 content: { Text("Designed Close").onAppear(perform: self.configuredAppeared) }
             )
+        }
+    }
+}
+
+@available(iOS 15.0, *)
+@MainActor
+private final class NativeThreePageTestState: ObservableObject {
+    @Published var page = 0
+}
+
+@available(iOS 15.0, *)
+private struct NativeThreePageTestView: View {
+    @ObservedObject var state: NativeThreePageTestState
+    let configuredAppeared: () -> Void
+
+    var body: some View {
+        ZStack {
+            ForEach(0..<3) { page in
+                VStack {
+                    self.buttons(page: page)
+                    if page == 2 {
+                        self.buttons(page: page)
+                    }
+                }
+                .environment(\.nativePaywallCloseEnabled, self.state.page == page)
+                .opacity(self.state.page == page ? 1 : 0)
+            }
+        }
+    }
+
+    private func buttons(page: Int) -> some View {
+        HStack {
+            NativePaywallCloseButton(
+                enabled: self.state.page == page, accessibilityLabel: "Back",
+                role: self.state.page > 0 ? .back : .close, action: {},
+                content: { self.designedButton(page: page) }
+            )
+            NativePaywallCloseButton(
+                enabled: self.state.page == page, accessibilityLabel: "Close", isWorkflowClose: true, action: {},
+                content: { self.designedButton(page: page) }
+            )
+        }
+    }
+
+    private func designedButton(page: Int) -> some View {
+        Text("Designed button").onAppear {
+            if self.state.page == page { self.configuredAppeared() }
         }
     }
 }

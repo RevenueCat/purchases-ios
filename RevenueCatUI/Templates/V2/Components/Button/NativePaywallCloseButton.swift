@@ -35,7 +35,7 @@ struct NativePaywallCloseButton<Content: View>: View {
                 accessibilityLabel: self.accessibilityLabel, role: self.role,
                 isWorkflowClose: self.isWorkflowClose, registrationEnabled: self.registrationEnabled,
                 componentIdentifier: self.componentIdentifier, action: self.action,
-                content: self.content, availabilityChanged: self.availabilityChanged
+                availabilityChanged: self.availabilityChanged
             )
         } else {
             self.content()
@@ -44,7 +44,7 @@ struct NativePaywallCloseButton<Content: View>: View {
 }
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, *)
-private struct RegisteredNativePaywallButton<Content: View>: View {
+private struct RegisteredNativePaywallButton: View {
     @ObservedObject var coordinator: NativePaywallCloseCoordinator
     let identifier: UUID
     let accessibilityLabel: String
@@ -53,7 +53,6 @@ private struct RegisteredNativePaywallButton<Content: View>: View {
     let registrationEnabled: Bool
     let componentIdentifier: ObjectIdentifier?
     let action: () async throws -> Void
-    @ViewBuilder var content: () -> Content
     let availabilityChanged: ((Bool) -> Void)?
 
     private struct Registration: Equatable {
@@ -68,25 +67,13 @@ private struct RegisteredNativePaywallButton<Content: View>: View {
               role: self.role, isWorkflowClose: self.isWorkflowClose)
     }
 
-    private var showsConfiguredButton: Bool {
-        self.registrationEnabled
-            && self.coordinator.actions.contains(where: { $0.id == self.identifier && $0.role == self.role })
-            && self.coordinator.action(for: self.role)?.id != self.identifier
-            && !(self.role == .close && !self.isWorkflowClose
-                 && self.coordinator.action(for: .close)?.isWorkflowClose == true)
-    }
-
     var body: some View {
-        VStack(spacing: 0) {
-            if self.showsConfiguredButton {
-                self.content()
-            } else {
-                Color.clear.frame(width: 0, height: 0).accessibilityHidden(true)
-            }
-        }
+        // Every opted-in component delegates its role to the shared toolbar. Only the
+        // coordinator selects which callback owns that slot; duplicates stay out of content.
+        Color.clear.frame(width: 0, height: 0).accessibilityHidden(true)
         .preference(
             key: NativePaywallHiddenButtonsKey.self,
-            value: self.showsConfiguredButton ? [] : Set([self.componentIdentifier].compactMap { $0 })
+            value: Set([self.componentIdentifier].compactMap { $0 })
         )
         .onAppear {
             self.updateRegistration(self.registration)
