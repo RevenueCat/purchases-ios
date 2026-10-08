@@ -44,6 +44,65 @@ final class NativePaywallCloseButtonTests: TestCase {
         XCTAssertTrue(controller.navigationController === navigation)
     }
 
+    func testUIKitWorkflowBackAndCloseRunSeparateActions() async throws {
+        let controller = UIViewController()
+        let help = UIBarButtonItem(title: "Help", primaryAction: UIAction { _ in })
+        controller.navigationItem.rightBarButtonItems = [help]
+        let navigation = UINavigationController(rootViewController: controller)
+        let owner = NativePaywallUIKitOwner()
+        owner.prepare(controller: controller)
+        var backs = 0
+        var closes = 0
+        owner.install([
+            .init(id: UUID(), label: "Back", perform: { backs += 1 }, role: .back),
+            .init(id: UUID(), label: "Close", perform: { closes += 1 })
+        ])
+        let back = try XCTUnwrap(controller.navigationItem.leftBarButtonItem)
+        let close = try XCTUnwrap(controller.navigationItem.rightBarButtonItems?.last)
+        XCTAssertEqual(back.accessibilityIdentifier, NativePaywallUIKitOwner.backIdentifier)
+        XCTAssertEqual(close.accessibilityIdentifier, NativePaywallUIKitOwner.closeIdentifier)
+        XCTAssertEqual(controller.navigationItem.rightBarButtonItems?.count, 2)
+        XCTAssertTrue(controller.navigationItem.rightBarButtonItems?.first === help)
+        for item in [back, close] {
+            let target = try XCTUnwrap(item.target as? NSObject)
+            target.perform(try XCTUnwrap(item.action), with: item)
+        }
+        await self.waitForPresentation()
+        XCTAssertEqual(backs, 1)
+        XCTAssertEqual(closes, 1)
+        owner.removeClose()
+        XCTAssertTrue(controller.navigationItem.leftBarButtonItems?.isEmpty == true)
+        XCTAssertTrue(controller.navigationItem.rightBarButtonItem === help)
+        XCTAssertTrue(controller.navigationController === navigation)
+    }
+
+    func testCoordinatorUpdatesBackToCloseWithoutDuplicateRegistration() {
+        let coordinator = NativePaywallCloseCoordinator()
+        let backID = UUID()
+        let closeID = UUID()
+        coordinator.register(id: backID, label: "Back", role: .back, action: {})
+        coordinator.register(id: closeID, label: "Close", action: {})
+        XCTAssertEqual(coordinator.action(for: .back)?.id, backID)
+        XCTAssertEqual(coordinator.action(for: .close)?.id, closeID)
+        coordinator.register(id: backID, label: "Close", role: .close, action: {})
+        XCTAssertNil(coordinator.action(for: .back))
+        XCTAssertEqual(coordinator.actions.count, 2)
+        XCTAssertEqual(coordinator.action(for: .close)?.id, backID)
+        coordinator.unregister(id: backID)
+        XCTAssertEqual(coordinator.action(for: .close)?.id, closeID)
+    }
+
+    func testExplicitWorkflowCloseTakesDismissalSlotAtRoot() {
+        let coordinator = NativePaywallCloseCoordinator()
+        let backID = UUID()
+        let closeID = UUID()
+        coordinator.register(id: backID, label: "Back at root", action: {})
+        coordinator.register(id: closeID, label: "Close workflow", isWorkflowClose: true, action: {})
+        XCTAssertEqual(coordinator.action(for: .close)?.id, closeID)
+        coordinator.unregister(id: closeID)
+        XCTAssertEqual(coordinator.action(for: .close)?.id, backID)
+    }
+
     func testOneNativeActionOwnerHandlesRegistrationAndRemoval() {
         let coordinator = NativePaywallCloseCoordinator()
         let first = UUID()
@@ -235,8 +294,75 @@ final class NativePaywallCloseButtonTests: TestCase {
         defer { self.close(window) }
         await self.waitForPresentation()
         XCTAssertEqual(self.toolbarButtons(in: host.view).count, 1)
-        XCTAssertEqual(configuredAppearances, 0)
+        XCTAssertEqual(configuredAppearances, 1)
         XCTAssertEqual(self.navigationCount(in: host), 1)
+    }
+
+    func testSwiftUIHeaderShowsSeparateNativeBackAndClose() async {
+        var backRegistered = false
+        var closeRegistered = false
+        let host = UIHostingController(rootView:
+            VStack {
+                NativePaywallCloseButton(
+                    enabled: true, accessibilityLabel: "Back", role: .back, action: {},
+                    content: { Button("Designed Back") {} },
+                    availabilityChanged: { backRegistered = $0 }
+                )
+                NativePaywallCloseButton(
+                    enabled: true, accessibilityLabel: "Close", isWorkflowClose: true, action: {},
+                    content: { Button("Designed Close") {} },
+                    availabilityChanged: { closeRegistered = $0 }
+                )
+            }
+            .modifier(NativePaywallNavigationModifier(requested: true))
+            .environment(\.nativePaywallNavigationContext, .standalone)
+        )
+        let window = self.host(host)
+        defer { self.close(window) }
+        await self.waitForPresentation()
+        self.commitFrame(window)
+        XCTAssertTrue(backRegistered)
+        XCTAssertTrue(closeRegistered)
+        // SwiftUI's Back is hosted content, not a UIButton. Close and any automatic host Back
+        // are UIKit buttons. There should only be the single native Close here.
+        XCTAssertEqual(self.toolbarButtons(in: host.view).count, 1)
+        XCTAssertEqual(self.navigationCount(in: host), 1)
+    }
+
+    func testPushedWorkflowBackDoesNotDuplicateHostBack() async throws {
+        guard #available(iOS 16.0, *) else { throw XCTSkip("NavigationStack requires iOS 16") }
+        var backRegistered = false
+        var closeRegistered = false
+        let host = UIHostingController(rootView:
+            NavigationStack(path: .constant([1])) {
+                Text("Account")
+                    .navigationDestination(for: Int.self) { _ in
+                        VStack {
+                            NativePaywallCloseButton(
+                                enabled: true, accessibilityLabel: "Back", role: .back, action: {},
+                                content: { Button("Designed Back") {} },
+                                availabilityChanged: { backRegistered = $0 }
+                            )
+                            NativePaywallCloseButton(
+                                enabled: true, accessibilityLabel: "Close", isWorkflowClose: true, action: {},
+                                content: { Button("Designed Close") {} },
+                                availabilityChanged: { closeRegistered = $0 }
+                            )
+                        }
+                        .modifier(NativePaywallCloseHost())
+                        .navigationTitle("Upgrade")
+                    }
+            }
+        )
+        let window = self.host(host)
+        defer { self.close(window) }
+        await self.waitForPresentation()
+        self.commitFrame(window)
+        XCTAssertTrue(backRegistered)
+        XCTAssertTrue(closeRegistered)
+        // SwiftUI's Back is hosted content, not a UIButton. Close and any automatic host Back
+        // are UIKit buttons. There should only be the single native Close here.
+        XCTAssertEqual(self.toolbarButtons(in: host.view).count, 1)
     }
 
     func testConfigurationRequestsPreflightOnlyForNativeCloseActions() {
@@ -315,6 +441,16 @@ final class NativePaywallCloseButtonTests: TestCase {
         modal.dismiss(animated: false)
         await self.waitForPresentation()
         XCTAssertNil(presenter.presentedViewController, file: file, line: line)
+    }
+
+    private func commitFrame(_ window: UIWindow) {
+        let image = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in
+            window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
+        }
+        let attachment = XCTAttachment(image: image)
+        attachment.name = "Workflow native navigation"
+        attachment.lifetime = .keepAlways
+        self.add(attachment)
     }
 
     private func requireAppHost() throws {

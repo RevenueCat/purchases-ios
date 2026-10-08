@@ -104,20 +104,21 @@ final class ButtonComponentViewModelMappingTests: TestCase {
         XCTAssertEqual(viewModel.action.paywallComponentInteractionValue, "navigate_back")
     }
 
-    func testNativeCloseOnlyReplacesDismissalActions() throws {
-        for (action, enabled, dismisses, expected) in [
-            (PaywallComponent.ButtonComponent.Action.navigateBack, true, true, true),
-            (.navigateBack, false, true, false),
-            (.navigateBack, true, false, false),
-            (.restorePurchases, true, true, false),
-            (.workflowTrigger, true, true, false),
-            (.unknown, true, true, false)
-        ] {
+    func testNativeNavigationRoleMatchesWorkflowAction() throws {
+        let cases: [(PaywallComponent.ButtonComponent.Action, Bool, Bool, NativePaywallCloseCoordinator.Role?)] = [
+            (.navigateBack, true, true, .close),
+            (.navigateBack, false, true, nil),
+            (.navigateBack, true, false, .back),
+            (.restorePurchases, true, true, nil),
+            (.workflowTrigger, true, true, nil),
+            (.unknown, true, true, nil)
+        ]
+        for (action, enabled, dismisses, expected) in cases {
             let component = PaywallComponent.ButtonComponent(
                 action: action, stack: .init(components: []), useNativeIfPossible: enabled
             )
             let viewModel = try self.makeViewModel(for: component)
-            XCTAssertEqual(viewModel.shouldUseNativeClose(dismissesPaywall: dismisses), expected)
+            XCTAssertEqual(viewModel.nativeNavigationRole(dismissesPaywall: dismisses), expected)
         }
     }
 
@@ -132,7 +133,7 @@ final class ButtonComponentViewModelMappingTests: TestCase {
             PaywallComponent.ButtonComponent.self, from: JSONSerialization.data(withJSONObject: json)
         )
         let viewModel = try self.makeViewModel(for: native)
-        XCTAssertTrue(viewModel.shouldUseNativeClose(dismissesPaywall: false))
+        XCTAssertTrue(viewModel.nativeNavigationRole(dismissesPaywall: false) == .close)
     }
 
     // MARK: - Helpers

@@ -112,15 +112,21 @@ struct ButtonComponentView: View {
            ) {
             NativePaywallCloseButton(
                 enabled: self.nativeCloseEnabled
-                    && self.viewModel.shouldUseNativeClose(dismissesPaywall: self.dismissesPaywall)
+                    && self.viewModel.nativeNavigationRole(dismissesPaywall: self.dismissesPaywall) != nil
                     && !(self.workflowRenderingContext.isHeader && self.workflowRenderingContext.pageHeaderSuppressed),
                 accessibilityLabel: self.viewModel.localizedBundle.localizedString(
-                    forKey: "Close", value: nil, table: nil
+                    forKey: self.nativeNavigationRole == .back ? "Go back" : "Close", value: nil, table: nil
                 ),
+                role: self.nativeNavigationRole,
+                isWorkflowClose: self.viewModel.component.isCloseWorkflowAction,
                 action: { try await self.performAction() },
                 content: { self.configuredButton }
             )
         }
+    }
+
+    private var nativeNavigationRole: NativePaywallCloseCoordinator.Role {
+        self.viewModel.nativeNavigationRole(dismissesPaywall: self.dismissesPaywall) ?? .close
     }
 
     private var configuredButton: some View {
