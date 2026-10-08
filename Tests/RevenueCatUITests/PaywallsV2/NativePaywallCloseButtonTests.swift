@@ -103,6 +103,32 @@ final class NativePaywallCloseButtonTests: TestCase {
         XCTAssertEqual(coordinator.action(for: .close)?.id, backID)
     }
 
+    func testOnlyCurrentPageCanSupplyActionsEvenAfterLateRegistration() {
+        let coordinator = NativePaywallCloseCoordinator()
+        let blankPage = UUID()
+        let backOnlyPage = UUID()
+        let closePage = UUID()
+        let backID = UUID()
+        let closeID = UUID()
+        coordinator.activatePage(closePage)
+        coordinator.register(id: closeID, label: "Close", isWorkflowClose: true, pageID: closePage, action: {})
+        XCTAssertEqual(coordinator.action(for: .close)?.id, closeID)
+
+        coordinator.activatePage(backOnlyPage)
+        coordinator.register(id: backID, label: "Back", role: .back, pageID: backOnlyPage, action: {})
+        XCTAssertEqual(coordinator.action(for: .back)?.id, backID)
+        XCTAssertNil(coordinator.action(for: .close))
+        // An outgoing subtree may finish registering after the incoming page becomes active.
+        coordinator.register(id: UUID(), label: "Late Close", pageID: closePage, action: {})
+        XCTAssertNil(coordinator.action(for: .close))
+
+        coordinator.activatePage(blankPage)
+        XCTAssertTrue(coordinator.actions.isEmpty)
+        coordinator.activatePage(closePage)
+        XCTAssertEqual(coordinator.action(for: .close)?.id, closeID)
+        XCTAssertNil(coordinator.action(for: .back))
+    }
+
     func testOneNativeActionOwnerHandlesRegistrationAndRemoval() {
         let coordinator = NativePaywallCloseCoordinator()
         let first = UUID()
@@ -296,6 +322,24 @@ final class NativePaywallCloseButtonTests: TestCase {
         XCTAssertEqual(self.toolbarButtons(in: host.view).count, 1)
         XCTAssertEqual(configuredAppearances, 0)
         XCTAssertEqual(self.navigationCount(in: host), 1)
+    }
+
+    func testReturningToBackOnlyOrButtonlessPageRemovesNativeCloseFromToolbar() async {
+        let state = NativeScopedWorkflowTestState()
+        let host = UIHostingController(rootView:
+            NativeScopedWorkflowTestView(state: state)
+                .modifier(NativePaywallNavigationModifier(requested: true))
+                .environment(\.nativePaywallNavigationContext, .standalone)
+        )
+        let window = self.host(host)
+        defer { self.close(window) }
+
+        for page in [0, 2, 1, 0, 2, 1] {
+            state.page = page
+            await self.waitForPresentation()
+            XCTAssertEqual(self.toolbarButtons(in: host.view).count, page == 2 ? 1 : 0,
+                           "Close must belong only to the page that actually configures it")
+        }
     }
 
     func testThirdPageHeaderAndBodyButtonsShareNativeSlotsWithoutDesignedDuplicates() async {
@@ -659,6 +703,45 @@ private struct NativeThreePageTestView: View {
         Text("Designed button").onAppear {
             if self.state.page == page { self.configuredAppeared() }
         }
+    }
+}
+
+@available(iOS 15.0, *)
+@MainActor
+private final class NativeScopedWorkflowTestState: ObservableObject {
+    let pageIDs = [UUID(), UUID(), UUID()]
+    @Published var page = 0
+}
+
+@available(iOS 15.0, *)
+private struct NativeScopedWorkflowTestView: View {
+    @ObservedObject var state: NativeScopedWorkflowTestState
+    @Environment(\.nativePaywallCloseCoordinator) private var coordinator
+
+    var body: some View {
+        ZStack {
+            ForEach(0..<3) { page in
+                VStack {
+                    Text("Page \(page)")
+                    if page > 0 {
+                        NativePaywallCloseButton(
+                            enabled: true, accessibilityLabel: "Back", role: .back, action: {},
+                            content: { Text("Designed Back") }
+                        )
+                    }
+                    if page == 2 {
+                        NativePaywallCloseButton(
+                            enabled: true, accessibilityLabel: "Close", isWorkflowClose: true, action: {},
+                            content: { Text("Designed Close") }
+                        )
+                    }
+                }
+                .environment(\.nativePaywallPageID, self.state.pageIDs[page])
+                .opacity(self.state.page == page ? 1 : 0)
+            }
+        }
+        .onAppear { self.coordinator?.activatePage(self.state.pageIDs[self.state.page]) }
+        .onChange(of: self.state.page) { page in self.coordinator?.activatePage(self.state.pageIDs[page]) }
     }
 }
 

@@ -23,25 +23,43 @@ final class NativePaywallCloseCoordinator: ObservableObject {
         let perform: () async throws -> Void
         var role: Role = .close
         var isWorkflowClose = false
+        var pageID: UUID?
     }
 
     @Published private(set) var actions: [CloseAction] = []
+    private var registrations: [CloseAction] = []
+    private var activePageID: UUID?
+
+    func activatePage(_ pageID: UUID?) {
+        guard self.activePageID != pageID else { return }
+        self.activePageID = pageID
+        self.updateActions()
+    }
+
+    private func updateActions() {
+        self.actions = self.registrations.filter { $0.pageID == self.activePageID }
+    }
 
     func register(
         id: UUID,
         label: String,
         role: Role = .close,
         isWorkflowClose: Bool = false,
+        pageID: UUID? = nil,
         action: @escaping () async throws -> Void
     ) {
-        let value = CloseAction(id: id, label: label, perform: action, role: role, isWorkflowClose: isWorkflowClose)
-        if let index = self.actions.firstIndex(where: { $0.id == id }) {
-            guard self.actions[index].role != role || self.actions[index].label != label
-                || self.actions[index].isWorkflowClose != isWorkflowClose else { return }
-            self.actions[index] = value
+        let value = CloseAction(
+            id: id, label: label, perform: action, role: role, isWorkflowClose: isWorkflowClose, pageID: pageID
+        )
+        if let index = self.registrations.firstIndex(where: { $0.id == id }) {
+            guard self.registrations[index].role != role || self.registrations[index].label != label
+                || self.registrations[index].isWorkflowClose != isWorkflowClose
+                || self.registrations[index].pageID != pageID else { return }
+            self.registrations[index] = value
         } else {
-            self.actions.append(value)
+            self.registrations.append(value)
         }
+        self.updateActions()
     }
 
     func action(for role: Role) -> CloseAction? {
@@ -52,7 +70,8 @@ final class NativePaywallCloseCoordinator: ObservableObject {
     }
 
     func unregister(id: UUID) {
-        self.actions.removeAll { $0.id == id }
+        self.registrations.removeAll { $0.id == id }
+        self.updateActions()
     }
 }
 

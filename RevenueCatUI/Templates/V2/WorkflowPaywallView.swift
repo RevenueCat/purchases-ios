@@ -272,6 +272,8 @@ struct WorkflowPaywallView: View {
 
     @ObservedObject private var backNavigationBridge: WorkflowBackNavigationBridge
 
+    @Environment(\.nativePaywallCloseCoordinator) private var nativeButtonCoordinator
+
     @StateObject private var navigator: WorkflowNavigator
     /// One paywall state store per workflow presentation: all screens read and write the same
     /// store, so values survive screen navigation and reset only when the presentation ends
@@ -463,6 +465,7 @@ struct WorkflowPaywallView: View {
         // Must use exitOfferContext(for:currentStepId:), not context.exitOfferOffering, because
         // exitOfferOffering is not step-aware — it is non-nil for any step whenever configured.
         .onAppear {
+            self.nativeButtonCoordinator?.activatePage(self.transitionState.currentPage?.id)
             self.backNavigationBridge.workflowDidAppear()
             switch self.presentationState {
             case .failing:
@@ -485,7 +488,11 @@ struct WorkflowPaywallView: View {
         // post-purchase auto-dismiss, swipe-to-dismiss on a sheet, and programmatic parent dismiss.
         // A late configuration failure tracks the same lifecycle immediately before showing its error;
         // the coordinator's fire-once guards prevent this hook from duplicating those events later.
+        .onChange(of: self.transitionState.currentPage?.id) { pageID in
+            self.nativeButtonCoordinator?.activatePage(pageID)
+        }
         .onDisappear {
+            self.nativeButtonCoordinator?.activatePage(nil)
             self.backNavigationBridge.workflowDidDisappear()
             self.trackCurrentWorkflowLeft()
         }
@@ -573,6 +580,7 @@ struct WorkflowPaywallView: View {
         )
 
         self.pageView(for: page, isActive: isCurrent)
+            .environment(\.nativePaywallPageID, page.id)
             .environment(
                 \.workflowRenderingContext,
                 WorkflowRenderingContext(

@@ -26,6 +26,7 @@ struct NativePaywallCloseButton<Content: View>: View {
     var availabilityChanged: ((Bool) -> Void)?
     @Environment(\.nativePaywallCloseCoordinator) private var coordinator
     @Environment(\.nativePaywallButtonRegistrationEnabled) private var registrationEnabled
+    @Environment(\.nativePaywallPageID) private var pageID
     @State private var identifier = UUID()
 
     var body: some View {
@@ -34,7 +35,7 @@ struct NativePaywallCloseButton<Content: View>: View {
                 coordinator: coordinator, identifier: self.identifier,
                 accessibilityLabel: self.accessibilityLabel, role: self.role,
                 isWorkflowClose: self.isWorkflowClose, registrationEnabled: self.registrationEnabled,
-                componentIdentifier: self.componentIdentifier, action: self.action,
+                componentIdentifier: self.componentIdentifier, pageID: self.pageID, action: self.action,
                 availabilityChanged: self.availabilityChanged
             )
         } else {
@@ -52,6 +53,7 @@ private struct RegisteredNativePaywallButton: View {
     let isWorkflowClose: Bool
     let registrationEnabled: Bool
     let componentIdentifier: ObjectIdentifier?
+    let pageID: UUID?
     let action: () async throws -> Void
     let availabilityChanged: ((Bool) -> Void)?
 
@@ -60,11 +62,12 @@ private struct RegisteredNativePaywallButton: View {
         let label: String
         let role: NativePaywallCloseCoordinator.Role
         let isWorkflowClose: Bool
+        let pageID: UUID?
     }
 
     private var registration: Registration {
         .init(enabled: self.registrationEnabled, label: self.accessibilityLabel,
-              role: self.role, isWorkflowClose: self.isWorkflowClose)
+              role: self.role, isWorkflowClose: self.isWorkflowClose, pageID: self.pageID)
     }
 
     var body: some View {
@@ -93,7 +96,7 @@ private struct RegisteredNativePaywallButton: View {
         }
         self.coordinator.register(
             id: self.identifier, label: registration.label, role: registration.role,
-            isWorkflowClose: registration.isWorkflowClose, action: self.action
+            isWorkflowClose: registration.isWorkflowClose, pageID: registration.pageID, action: self.action
         )
     }
 }
@@ -104,6 +107,10 @@ struct NativePaywallHiddenButtonsKey: PreferenceKey {
     static func reduce(value: inout Set<ObjectIdentifier>, nextValue: () -> Set<ObjectIdentifier>) {
         value.formUnion(nextValue())
     }
+}
+
+private struct NativePaywallPageIDKey: EnvironmentKey {
+    static let defaultValue: UUID? = nil
 }
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -118,6 +125,11 @@ private struct NativePaywallCloseEnabledKey: EnvironmentKey {
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension EnvironmentValues {
+    var nativePaywallPageID: UUID? {
+        get { self[NativePaywallPageIDKey.self] }
+        set { self[NativePaywallPageIDKey.self] = newValue }
+    }
+
     /// Transition header copies render native placeholders without owning toolbar actions.
     var nativePaywallButtonRegistrationEnabled: Bool {
         get { self[NativePaywallButtonRegistrationKey.self] }
