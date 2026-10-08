@@ -80,7 +80,7 @@ private struct HostedCheckoutAlertsModifier: ViewModifier {
     }
 
     private var purchaseCustomerInfo: CustomerInfo? {
-        guard case let .purchased(customerInfo) = self.resolution else { return nil }
+        guard case let .purchased(_, customerInfo) = self.resolution else { return nil }
         return customerInfo
     }
 

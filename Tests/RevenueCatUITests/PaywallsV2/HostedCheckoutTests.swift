@@ -480,7 +480,7 @@ final class HostedCheckoutTests: TestCase {
                                                       purchaseHandler: handler)
 
         let actions = await actionsWhilePolling.values
-        expect(resolution) == .purchased(TestData.customerInfo)
+        expect(resolution) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
         expect(actions) == [.restore]
         expect(handler.actionTypeInProgress) == .restore
     }
@@ -521,7 +521,7 @@ final class HostedCheckoutTests: TestCase {
         let firstResolution = await first.value
         let asked = await sessionsAskedAbout.values
         expect(second).to(beNil())
-        expect(firstResolution) == .purchased(TestData.customerInfo)
+        expect(firstResolution) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
         expect(asked) == [Self.session.id]
     }
 
@@ -616,8 +616,9 @@ final class HostedCheckoutTests: TestCase {
 
         let resolution = await confirmation.value?.value
         guard case .nothing = action else { return fail("Unexpected \(action)") }
-        expect(resolution) == .purchased(TestData.customerInfo)
-        expect(handler.hostedCheckoutResolutionToShow) == .purchased(TestData.customerInfo)
+        expect(resolution) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
+        expect(handler.hostedCheckoutResolutionToShow)
+            == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
         expect(handler.keptHostedCheckout).to(beNil())
         expect(handler.actionInProgress) == false
     }
@@ -730,7 +731,7 @@ final class HostedCheckoutTests: TestCase {
         let resolution = await confirmation.value?.value
         let started = await checkoutsStarted.values
         guard case .nothing = action else { return fail("Unexpected \(action)") }
-        expect(resolution) == .purchased(TestData.customerInfo)
+        expect(resolution) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
         expect(started).to(beEmpty())
         expect(handler.actionInProgress) == false
     }
@@ -759,7 +760,14 @@ final class HostedCheckoutTests: TestCase {
 
     func testCountsAConfirmedPurchase() {
         expect(HostedCheckout.Resolution(.succeeded(nil), customerInfo: TestData.customerInfo))
-            == .purchased(TestData.customerInfo)
+            == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
+    }
+
+    func testCountsAConfirmedPurchaseWithTheTransactionItMade() {
+        let transaction = StoreTransaction(MockStoreTransaction())
+
+        expect(HostedCheckout.Resolution(.succeeded(transaction), customerInfo: TestData.customerInfo))
+            == .purchased(transaction: transaction, customerInfo: TestData.customerInfo)
     }
 
     func testTreatsAConfirmedPurchaseWithoutItsCustomerInfoAsUnconfirmed() {
@@ -826,8 +834,9 @@ final class HostedCheckoutTests: TestCase {
                                                       package: TestData.annualPackage,
                                                       purchaseHandler: handler)
 
-        expect(resolution) == .purchased(TestData.customerInfo)
-        expect(handler.hostedCheckoutResolutionToShow) == .purchased(TestData.customerInfo)
+        expect(resolution) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
+        expect(handler.hostedCheckoutResolutionToShow)
+            == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
         expect(handler.sessionPurchaseResult).to(beNil())
         expect(handler.purchaseError).to(beNil())
         expect(handler.actionInProgress) == false
@@ -848,7 +857,7 @@ final class HostedCheckoutTests: TestCase {
             throw ErrorCode.networkError
         }
         let handler = Self.makeHandler(purchases: purchases)
-        handler.showHostedCheckoutResolution(.purchased(TestData.customerInfo))
+        handler.showHostedCheckoutResolution(.purchased(transaction: nil, customerInfo: TestData.customerInfo))
 
         expect(handler.sessionPurchaseResult).to(beNil())
 
@@ -857,6 +866,18 @@ final class HostedCheckoutTests: TestCase {
         expect(handler.hostedCheckoutResolutionToShow).to(beNil())
         expect(handler.sessionPurchaseResult) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
         expect(handler.purchaseError).to(beNil())
+    }
+
+    @MainActor
+    func testReportsThePurchaseWithTheTransactionTheCheckoutMade() {
+        let handler = Self.makeHandler(purchases: Self.makePurchases())
+        let transaction = StoreTransaction(MockStoreTransaction())
+        handler.showHostedCheckoutResolution(.purchased(transaction: transaction, customerInfo: TestData.customerInfo))
+
+        handler.acknowledgeHostedCheckoutResolution()
+
+        expect(handler.sessionPurchaseResult) == .purchased(transaction: transaction,
+                                                            customerInfo: TestData.customerInfo)
     }
 
     @MainActor
