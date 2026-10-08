@@ -697,7 +697,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             RulesEngine.setLogger(RulesEngineLoggerBridge())
             let localRulesEvaluator = LocalRulesEvaluator(
                 dimensionProviders: [
-                    DeviceDimensionProvider(),
+                    DeviceDimensionProvider(preferredLocalesProvider: { systemInfo.preferredLocales }),
                     StoreDimensionProvider(),
                     CustomerInfoDimensionProvider(
                         currentAppUserIDProvider: { identityManager.currentAppUserID },

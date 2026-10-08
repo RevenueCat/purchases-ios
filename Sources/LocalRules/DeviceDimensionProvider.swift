@@ -20,20 +20,20 @@ struct DeviceDimensionProvider: DimensionProvider {
     let name = "device"
 
     private let appVersion: String
-    private let localeProvider: @Sendable () -> String?
+    private let preferredLocalesProvider: @Sendable () -> [String]
     private let platform: String
     private let platformVersion: OperatingSystemVersion
     private let sdkVersion: String
 
     init(
         appVersion: String = SystemInfo.appVersion,
-        localeProvider: @escaping @Sendable () -> String? = { Locale.preferredLanguages.first },
+        preferredLocalesProvider: @escaping @Sendable () -> [String] = { Locale.preferredLanguages },
         platform: String = SystemInfo.platformHeaderConstant,
         platformVersion: OperatingSystemVersion = ProcessInfo.processInfo.operatingSystemVersion,
         sdkVersion: String = SystemInfo.frameworkVersion
     ) {
         self.appVersion = appVersion
-        self.localeProvider = localeProvider
+        self.preferredLocalesProvider = preferredLocalesProvider
         self.platform = platform
         self.platformVersion = platformVersion
         self.sdkVersion = sdkVersion
@@ -46,7 +46,7 @@ struct DeviceDimensionProvider: DimensionProvider {
             variables["app_version"] = .string(self.appVersion)
         }
 
-        if let locale = self.localeProvider(), !locale.isEmpty {
+        if let locale = self.preferredLocalesProvider().first, !locale.isEmpty {
             variables["locale"] = .string(locale.lowercased().replacingOccurrences(of: "-", with: "_"))
         }
 
