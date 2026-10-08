@@ -946,7 +946,8 @@ extension PurchaseHandler {
         self.purchaseError = error
     }
 
-    /// Reports a checkout the customer abandoned on a page presented inside the app.
+    /// Reports a checkout the customer walked away from, whether at Apple's notice or on the page presented inside
+    /// the app.
     ///
     /// - Parameter package: The package the checkout was started for, when it is still known. Only used to
     /// track the cancellation.
@@ -1105,7 +1106,7 @@ extension PurchaseHandler {
 
     /// - Returns: whether the event was tracked
     @discardableResult
-    func trackCancelledPurchase(package: Package) -> Bool {
+    fileprivate func trackCancelledPurchase(package: Package) -> Bool {
         guard let sessionID = self.activePaywallSessionID else {
             return false
         }
