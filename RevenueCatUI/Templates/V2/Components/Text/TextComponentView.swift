@@ -60,9 +60,7 @@ struct TextComponentView: View {
     @Environment(\.dynamicTypeSize)
     private var dynamicTypeSize
 
-    #if ENABLE_WORKFLOW_BRANCH_LOADING
     @Environment(\.redactionReasons) private var redactionReasons
-    #endif
 
     @Environment(\.isPaywallLoading)
     private var isPaywallLoading
@@ -120,11 +118,7 @@ struct TextComponentView: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .multilineTextAlignment(style.textAlignment)
                     .foregroundColorScheme(style.color)
-                    #if ENABLE_WORKFLOW_BRANCH_LOADING
                     .redacted(reason: isPaywallLoading ? .placeholder : self.redactionReasons)
-                    #else
-                    .redacted(reason: isPaywallLoading ? .placeholder : [])
-                    #endif
                     .padding(style.padding)
                     .size(style.size,
                           horizontalAlignment: style.horizontalAlignment)

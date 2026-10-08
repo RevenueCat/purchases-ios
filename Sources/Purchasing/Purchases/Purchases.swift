@@ -616,7 +616,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) {
             paywallCache = PaywallCacheWarming(
-                introEligibiltyChecker: trialOrIntroPriceChecker
+                introEligibiltyChecker: trialOrIntroPriceChecker,
+                preferredLocalesProvider: { systemInfo.preferredLocales }
             )
         } else {
             paywallCache = nil
@@ -738,12 +739,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     }
                 }
             )
-            branchResolver = systemInfo.branchingEnabled
-                ? DefaultBranchResolver(
-                    audiencesConfigProvider: audiencesConfigProvider,
-                    localRulesEvaluator: localRulesEvaluator
-                )
-                : DisabledBranchResolver()
+            branchResolver = DefaultBranchResolver(
+                audiencesConfigProvider: audiencesConfigProvider,
+                localRulesEvaluator: localRulesEvaluator
+            )
         } else {
             checkpointResolver = DisabledCheckpointWorkflowResolver()
             branchResolver = DisabledBranchResolver()
@@ -1212,6 +1211,12 @@ public extension Purchases {
         return try await self.workflowManager.getWorkflow(forOfferingId: offeringID)
     }
 
+    /// Bypasses the offering to workflow map, so a test can open one workflow by id.
+    @_spi(Internal)
+    func workflow(forWorkflowIdentifier workflowID: String) async throws -> WorkflowDataResult {
+        return try await self.workflowManager.getWorkflow(workflowId: workflowID)
+    }
+
     @_spi(Internal)
     func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
         return self.workflowManager.cachedWorkflow(forOfferingId: offeringID)
@@ -1220,11 +1225,6 @@ public extension Purchases {
     @_spi(Internal)
     func resolveBranch(_ branch: WorkflowBranch) async -> WorkflowStepID {
         return await self.branchResolver.resolve(branch)
-    }
-
-    @_spi(Internal)
-    var branchingEnabled: Bool {
-        return self.systemInfo.branchingEnabled
     }
 
     @_spi(Internal)

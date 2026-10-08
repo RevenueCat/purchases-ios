@@ -197,6 +197,7 @@ struct PaywallsV2View: View {
         let initialState = Self.createPaywallState(
             componentsConfig: componentsConfig,
             componentsLocalizations: paywallComponents.data.componentsLocalizations,
+            componentsVideoLocalizations: paywallComponents.data.componentsVideoLocalizations,
             preferredLocales: purchaseHandler.preferredLocales,
             defaultLocale: paywallComponents.data.defaultLocale,
             uiConfigProvider: uiConfigProvider,
@@ -784,6 +785,7 @@ extension PaywallsV2View {
     static func createPaywallState(
         componentsConfig: PaywallComponentsData.PaywallComponentsConfig,
         componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
+        componentsVideoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary] = [:],
         preferredLocales: [Locale],
         defaultLocale: String,
         uiConfigProvider: UIConfigProvider,
@@ -795,6 +797,7 @@ extension PaywallsV2View {
         // Step 1: Get localization
         let localizationProvider = Self.chooseLocalization(
             componentsLocalizations: componentsLocalizations,
+            componentsVideoLocalizations: componentsVideoLocalizations,
             preferredLocales: preferredLocales,
             defaultLocale: defaultLocale
         )
@@ -911,6 +914,24 @@ extension PaywallsV2View {
     }
 
     static func chooseLocalization(
+        componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
+        componentsVideoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary] = [:],
+        preferredLocales: [Locale],
+        defaultLocale: String
+    ) -> LocalizationProvider {
+        let provider = Self.chooseStringLocalization(
+            componentsLocalizations: componentsLocalizations,
+            preferredLocales: preferredLocales,
+            defaultLocale: defaultLocale
+        )
+        return .init(
+            locale: provider.locale,
+            localizedStrings: provider.localizedStrings,
+            localizedVideos: componentsVideoLocalizations.findLocale(provider.locale) ?? [:]
+        )
+    }
+
+    private static func chooseStringLocalization(
         componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
         preferredLocales: [Locale],
         defaultLocale: String
