@@ -353,7 +353,7 @@ struct WorkflowPaywallView: View {
             )
         }
 
-        if purchaseHandler.resolveBranch != nil && context.workflow.initialBranch != nil {
+        if context.workflow.initialBranch != nil {
             // The placeholder is not interactive, so a close button on it would not respond.
             skeletonPage = Self.skeletonEnabled ? page(showCloseButton: false, skeleton: true) : nil
         } else {
@@ -382,7 +382,7 @@ struct WorkflowPaywallView: View {
 
     /// Whether the first step is audience-routed, so nothing can be rendered until `initialTrigger` lands.
     private var resolvesInitialStep: Bool {
-        return self.purchaseHandler.resolveBranch != nil && self.context.workflow.initialBranch != nil
+        return self.context.workflow.initialBranch != nil
     }
 
     static var skeletonEnabled: Bool {
