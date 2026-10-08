@@ -1,0 +1,19 @@
+# Run with the app built against the latest released SDK, before updating it.
+# Requires the following environment variables:
+#   SCREENSHOTS_DIR: absolute path of the directory where the reference screenshots are stored.
+#   EXPECTED_SDK_VERSION: version of the SDK the installed app was built against.
+
+appId: com.revenuecat.SDKUpdateTester
+name: Anonymous user - before SDK update
+---
+- clearState
+- launchApp
+- runFlow: ../utils/assert_sdk_version.yaml
+- assertVisible:
+    id: app_user_id
+    text: "\\$RCAnonymousID:.+"
+- takeScreenshot:
+    path: ${SCREENSHOTS_DIR}/app_user_id
+    cropOn:
+      id: app_user_id
+- runFlow: ../utils/purchase_subscription.yaml

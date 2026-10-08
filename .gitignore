@@ -91,6 +91,7 @@ CI.xcconfig
 # Tuist workspaces
 RevenueCat-Tuist.xcworkspace/
 Projects/**/*.xcodeproj
+Projects/SDKUpdateTester/*.xcworkspace
 Examples/**/*.xcodeproj
 
 Projects/**/xcshareddata/
