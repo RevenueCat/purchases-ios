@@ -70,15 +70,13 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
         self.loadState == .loaded || self.loadState == .navigating
     }
 
-    private static let schemesLoadedInPlace: Set<String> = ["http", "https", "about", "data", "blob"]
-
     /// Whether `url` links to an app, e.g. a payment method's, which the web view can only fail to load.
     private static func opensAnApp(_ url: URL) -> Bool {
-        guard let scheme = url.scheme?.lowercased() else {
+        guard let scheme = url.scheme else {
             return false
         }
 
-        return !Self.schemesLoadedInPlace.contains(scheme)
+        return !WKWebView.handlesURLScheme(scheme.lowercased())
     }
 
     /// - Parameter checkoutURL: The provider-hosted page to present.

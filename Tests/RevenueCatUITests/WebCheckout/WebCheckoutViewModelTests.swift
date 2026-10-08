@@ -148,7 +148,8 @@ final class WebCheckoutViewModelTests: TestCase {
         var openedURLs: [URL] = []
         viewModel.onOpenExternalURL = { openedURLs.append($0) }
 
-        for url in ["https://checkout.stripe.com/c/pay/session_1", "about:blank"] {
+        for url in ["https://checkout.stripe.com/c/pay/session_1", "HTTPS://checkout.paddle.com", "about:blank",
+                    "javascript:void(0)"] {
             XCTAssertEqual(try Self.navigate(viewModel, to: url), .allow, url)
         }
         XCTAssertEqual(openedURLs, [])
