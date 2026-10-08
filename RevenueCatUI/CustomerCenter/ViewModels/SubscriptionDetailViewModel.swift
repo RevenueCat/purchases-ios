@@ -72,10 +72,6 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
         case selectedPurchase
     }
 
-    var shouldDismissDetail: Bool {
-        purchaseObservationMode == .selectedPurchase && purchaseInformation == nil
-    }
-
     private let purchaseObservationMode: PurchaseObservationMode
     private var allowsMissingPurchaseAction: Bool = true
 

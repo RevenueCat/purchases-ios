@@ -184,15 +184,21 @@ import Foundation
             guard let self else { return nil }
             let purchases = self.subscriptionsSection + self.nonSubscriptionsSection
             guard let purchase else { return purchases.first }
-            return purchases.first { $0.productIdentifier == purchase.productIdentifier }
-                ?? purchases.first {
-                    purchase.subscriptionGroupID != nil
-                        && $0.subscriptionGroupID == purchase.subscriptionGroupID
-                        && $0.store == purchase.store
-                }
+            return self.purchase(matching: purchase)
         }
         .eraseToAnyPublisher()
     }
+    
+    func purchase(matching purchase: PurchaseInformation) -> PurchaseInformation? {
+        let purchases = subscriptionsSection + nonSubscriptionsSection
+        return purchases.first { $0.productIdentifier == purchase.productIdentifier }
+            ?? purchases.first {
+                purchase.subscriptionGroupID != nil
+                    && $0.subscriptionGroupID == purchase.subscriptionGroupID
+                    && $0.store == purchase.store
+            }
+    }
+
     func loadScreen(shouldSync: Bool = false) async {
         do {
             let customerInfo = shouldSync ?
