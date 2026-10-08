@@ -188,7 +188,7 @@ import Foundation
         }
         .eraseToAnyPublisher()
     }
-    
+
     func purchase(matching purchase: PurchaseInformation) -> PurchaseInformation? {
         let purchases = subscriptionsSection + nonSubscriptionsSection
         return purchases.first { $0.productIdentifier == purchase.productIdentifier }
