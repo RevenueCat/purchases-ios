@@ -17,9 +17,7 @@
 import SwiftUI
 import WebKit
 
-/// Shows a checkout page, with a spinner until it first paints.
-///
-/// Hides the page when loading fails, without showing an error or offering a retry.
+/// Shows a checkout page, with a spinner until it first paints, and an error in its place if it never does.
 @available(iOS 15.0, *)
 struct WebCheckoutView: View {
 
@@ -31,7 +29,10 @@ struct WebCheckoutView: View {
 
     var body: some View {
         ZStack {
-            if self.viewModel.loadState != .failed {
+            if self.viewModel.loadState == .failed {
+                ErrorView()
+                    .padding()
+            } else {
                 // The page paints to the bottom edge rather than stopping above the home indicator, which
                 // would leave a strip of the host's background under a checkout that fills its sheet. What
                 // the page puts there stays reachable: the web view insets its own content by the safe area.
