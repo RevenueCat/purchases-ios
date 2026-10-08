@@ -252,6 +252,7 @@ struct APIKeyDashboardList: View {
         List {
             #if DEBUG && !os(tvOS)
             self.workflowsSection
+            self.uiLessWorkflowsSection(data: data)
             #endif
             ForEach(data.sections, id: \.self) { section in
                 let offerings = filteredOfferings(for: section, in: data)
@@ -416,9 +417,7 @@ struct APIKeyDashboardList: View {
     #if DEBUG && !os(tvOS)
     @ViewBuilder
     private var workflowsSection: some View {
-        let rows = self.searchText.isEmpty
-            ? self.workflowRows
-            : self.workflowRows.filter { $0.matches(self.searchText) }
+        let rows = self.filteredWorkflowRows.filter { $0.uiLessOfferingIdentifier == nil }
 
         if !rows.isEmpty {
             Section {
@@ -460,6 +459,53 @@ struct APIKeyDashboardList: View {
                 )
             }
         }
+    }
+
+    private var filteredWorkflowRows: [WorkflowRow] {
+        return self.searchText.isEmpty
+            ? self.workflowRows
+            : self.workflowRows.filter { $0.matches(self.searchText) }
+    }
+
+    @ViewBuilder
+    private func uiLessWorkflowsSection(data: Data) -> some View {
+        let rows = self.filteredWorkflowRows.filter { $0.uiLessOfferingIdentifier != nil }
+
+        if !rows.isEmpty {
+            Section {
+                ForEach(rows) { row in
+                    let offeringIdentifier = row.uiLessOfferingIdentifier ?? ""
+                    Button {
+                        self.openOffering(offeringIdentifier, in: data)
+                    } label: {
+                        VStack(alignment: .leading) {
+                            Text(row.name ?? row.id)
+                            Text("Offering: \(offeringIdentifier)")
+                                .font(.caption)
+                                .foregroundStyle(Color.secondary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
+            } header: {
+                SectionHeader(
+                    title: "UI-less flows",
+                    caption: "Return only an offering. Opens that offering, like an app."
+                )
+            }
+        }
+    }
+
+    private func openOffering(_ identifier: String, in data: Data) {
+        guard let offering = data.offeringsBySection.values.joined().first(where: { $0.identifier == identifier })
+        else {
+            self.workflowLoadError = "Offering '\(identifier)' is not in the offerings."
+            return
+        }
+        self.isLoadingPaywall = true
+        self.presentedPaywall = .init(offering: offering, mode: .workflow)
     }
 
     private func openWorkflow(_ workflowId: String, fullScreen: Bool) {

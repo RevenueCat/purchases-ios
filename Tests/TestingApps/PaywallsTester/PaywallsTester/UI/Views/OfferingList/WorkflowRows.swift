@@ -20,6 +20,8 @@ struct WorkflowRow: Identifiable {
     let error: String?
     /// Offerings this flow's screens use, claimed or not.
     let offeringIdentifiers: Set<String>
+    /// Set when the first step is an offering step: the flow shows no UI and only returns this offering.
+    let uiLessOfferingIdentifier: String?
 
     var id: String { self.listing.workflowId }
 
@@ -52,18 +54,23 @@ struct WorkflowRow: Identifiable {
                 group.addTask {
                     do {
                         let result = try await Purchases.shared.workflow(withIdentifier: listing.workflowId)
+                        let initialStep = result.workflow.steps[result.workflow.initialStepId]
                         return .init(
                             listing: listing,
                             name: result.workflow.displayName,
                             error: nil,
-                            offeringIdentifiers: Set(result.workflow.screens.values.compactMap(\.offeringIdentifier))
+                            offeringIdentifiers: Set(result.workflow.screens.values.compactMap(\.offeringIdentifier)),
+                            uiLessOfferingIdentifier: initialStep?.isOfferingStep == true
+                                ? initialStep?.offeringIdentifier ?? listing.offeringIdentifier
+                                : nil
                         )
                     } catch {
                         return .init(
                             listing: listing,
                             name: nil,
                             error: error.localizedDescription,
-                            offeringIdentifiers: []
+                            offeringIdentifiers: [],
+                            uiLessOfferingIdentifier: nil
                         )
                     }
                 }
