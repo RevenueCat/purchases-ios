@@ -28,7 +28,7 @@ struct DeviceDimensionProviderTests {
     func providesCanonicalDeviceDimensionsAtTheRoot() async throws {
         let provider = DeviceDimensionProvider(
             appVersion: "1.2.3",
-            localeProvider: { "NL-nl" },
+            preferredLocalesProvider: { ["NL-nl"] },
             platform: "iOS",
             platformVersion: Self.platformVersion,
             sdkVersion: "5.84.0-SNAPSHOT"
@@ -48,7 +48,7 @@ struct DeviceDimensionProviderTests {
     func omitsUnavailableOptionalValues() async throws {
         let provider = DeviceDimensionProvider(
             appVersion: "",
-            localeProvider: { "" },
+            preferredLocalesProvider: { [] },
             platform: "",
             platformVersion: Self.platformVersion,
             sdkVersion: "invalid"
@@ -61,20 +61,38 @@ struct DeviceDimensionProviderTests {
 
     @Test
     func collectsLocaleForEverySnapshot() async throws {
-        let locale = Atomic<String?>("en_US")
+        let locale = Atomic(["en_US"])
         let provider = DeviceDimensionProvider(
             appVersion: "1.2.3",
-            localeProvider: { locale.value },
+            preferredLocalesProvider: { locale.value },
             platform: "iOS",
             platformVersion: Self.platformVersion
         )
 
         let first = try await provider.dimensions(at: Date())
-        locale.value = "nl_NL"
+        locale.value = ["nl_NL"]
         let second = try await provider.dimensions(at: Date())
 
         #expect(first["locale"] == .string("en_us"))
         #expect(second["locale"] == .string("nl_nl"))
+    }
+
+    @Test
+    func usesPreferredLocaleOverrideForEverySnapshot() async throws {
+        let preferredLocales = Atomic(["es-ES"])
+        let provider = DeviceDimensionProvider(
+            appVersion: "1.2.3",
+            preferredLocalesProvider: { preferredLocales.value },
+            platform: "iOS",
+            platformVersion: Self.platformVersion
+        )
+
+        let beforeOverride = try await provider.dimensions(at: Date())
+        preferredLocales.value = ["fr-FR", "es-ES"]
+        let afterOverride = try await provider.dimensions(at: Date())
+
+        #expect(beforeOverride["locale"] == .string("es_es"))
+        #expect(afterOverride["locale"] == .string("fr_fr"))
     }
 
     @Test
@@ -83,7 +101,7 @@ struct DeviceDimensionProviderTests {
             dimensionProviders: [
                 DeviceDimensionProvider(
                     appVersion: "1.2.3",
-                    localeProvider: { "en_US" },
+                    preferredLocalesProvider: { ["en_US"] },
                     platform: "iOS",
                     platformVersion: Self.platformVersion
                 )
@@ -107,7 +125,7 @@ struct DeviceDimensionProviderTests {
             dimensionProviders: [
                 DeviceDimensionProvider(
                     appVersion: "1.2.3",
-                    localeProvider: { "nl-NL" },
+                    preferredLocalesProvider: { ["nl-NL"] },
                     platform: "iOS",
                     platformVersion: Self.platformVersion
                 )
@@ -131,7 +149,7 @@ struct DeviceDimensionProviderTests {
             dimensionProviders: [
                 DeviceDimensionProvider(
                     appVersion: "1.2.3",
-                    localeProvider: { "en-US" },
+                    preferredLocalesProvider: { ["en-US"] },
                     platform: "iOS",
                     platformVersion: Self.platformVersion
                 )
@@ -166,7 +184,7 @@ struct DeviceDimensionProviderTests {
             dimensionProviders: [
                 DeviceDimensionProvider(
                     appVersion: "1.2.3",
-                    localeProvider: { "en-US" },
+                    preferredLocalesProvider: { ["en-US"] },
                     platform: "iOS",
                     platformVersion: Self.platformVersion
                 )
@@ -190,7 +208,7 @@ struct DeviceDimensionProviderTests {
             dimensionProviders: [
                 DeviceDimensionProvider(
                     appVersion: "1.2.3",
-                    localeProvider: { "en-US" },
+                    preferredLocalesProvider: { ["en-US"] },
                     platform: "iOS",
                     platformVersion: Self.platformVersion,
                     sdkVersion: "5.84.0-SNAPSHOT"
