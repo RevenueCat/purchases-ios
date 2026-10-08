@@ -86,6 +86,75 @@ final class WebCheckoutViewModelTests: TestCase {
         XCTAssertEqual(viewModel.loadState, .loading)
     }
 
+    func testKeepsThePaintedPageOnScreenWhenALaterStepFailsToLoad() {
+        let viewModel = Self.makeViewModel()
+
+        viewModel.webView(viewModel.webView, didFinish: nil)
+        viewModel.webView(viewModel.webView, didStartProvisionalNavigation: nil)
+        viewModel.webView(viewModel.webView, didFailProvisionalNavigation: nil, withError: Self.failure)
+
+        XCTAssertEqual(viewModel.loadState, .loaded)
+    }
+
+    // MARK: - Process termination
+
+    func testReloadsThePageWhenItsProcessEnds() {
+        let viewModel = Self.makeViewModel()
+
+        viewModel.webView(viewModel.webView, didFinish: nil)
+        viewModel.webViewWebContentProcessDidTerminate(viewModel.webView)
+
+        XCTAssertEqual(viewModel.loadState, .loading)
+    }
+
+    func testFailsWhenTheProcessEndsAgainBeforeTheReloadPaints() {
+        let viewModel = Self.makeViewModel()
+
+        viewModel.webView(viewModel.webView, didFinish: nil)
+        viewModel.webViewWebContentProcessDidTerminate(viewModel.webView)
+        viewModel.webViewWebContentProcessDidTerminate(viewModel.webView)
+
+        XCTAssertEqual(viewModel.loadState, .failed)
+    }
+
+    func testReloadsAgainWhenTheProcessEndsAfterTheReloadPainted() {
+        let viewModel = Self.makeViewModel()
+
+        viewModel.webView(viewModel.webView, didFinish: nil)
+        viewModel.webViewWebContentProcessDidTerminate(viewModel.webView)
+        viewModel.webView(viewModel.webView, didFinish: nil)
+        viewModel.webViewWebContentProcessDidTerminate(viewModel.webView)
+
+        XCTAssertEqual(viewModel.loadState, .loading)
+    }
+
+    // MARK: - Links to apps
+
+    func testHandsALinkToAnAppToTheHost() throws {
+        let viewModel = Self.makeViewModel()
+        var openedURLs: [URL] = []
+        viewModel.onOpenExternalURL = { openedURLs.append($0) }
+        viewModel.webView(viewModel.webView, didFinish: nil)
+
+        let policy = try Self.navigate(viewModel, to: "klarna://pay?session=1")
+
+        XCTAssertEqual(policy, .cancel)
+        XCTAssertEqual(openedURLs, [URL(string: "klarna://pay?session=1")!])
+        XCTAssertEqual(viewModel.loadState, .loaded)
+    }
+
+    func testLoadsWebPagesInPlace() throws {
+        let viewModel = Self.makeViewModel()
+        var openedURLs: [URL] = []
+        viewModel.onOpenExternalURL = { openedURLs.append($0) }
+
+        for url in ["https://checkout.stripe.com/c/pay/session_1", "HTTPS://checkout.paddle.com", "about:blank",
+                    "javascript:void(0)"] {
+            XCTAssertEqual(try Self.navigate(viewModel, to: url), .allow, url)
+        }
+        XCTAssertEqual(openedURLs, [])
+    }
+
     // MARK: - Returning
 
     func testCancelsTheReturnNavigationRatherThanLoadingIt() throws {
