@@ -74,6 +74,24 @@ final class HostedCheckoutTests: TestCase {
         expect(eventsSentWithTheCheckout.value) == [initiated]
     }
 
+    /// As for an in-app purchase, this is what reports the purchase as started.
+    @MainActor
+    func testReportsThePackageAsBeingPurchasedWhileTheCheckoutStarts() async {
+        let purchases = Self.makePurchases()
+        let handler = Self.makeHandler(purchases: purchases)
+        let packagesBeingPurchased: Atomic<[String?]> = .init([])
+        purchases.hostedCheckoutBlock = { _, _, _ in
+            let package = await MainActor.run { handler.packageBeingPurchased }
+            packagesBeingPurchased.modify { $0.append(package?.identifier) }
+            return .started(Self.session)
+        }
+
+        _ = await handler.startHostedCheckout(package: TestData.annualPackage, previousSession: nil)
+
+        expect(packagesBeingPurchased.value) == [TestData.annualPackage.identifier]
+        expect(handler.packageBeingPurchased).to(beNil())
+    }
+
     /// An app that gates purchases, e.g. behind sign in, gets to stop this one before Apple's flow runs.
     func testStartsNoCheckoutWhenTheAppStopsThePurchase() async {
         let checkoutsStarted = Recorder<String>()
