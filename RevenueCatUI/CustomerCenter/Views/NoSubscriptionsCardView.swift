@@ -107,24 +107,26 @@ struct NoSubscriptionsCardView: View {
         #endif
         .animation(.easeInOut(duration: 0.3), value: viewModel.isLoadingOffering)
         .sheet(isPresented: $viewModel.showOffering, content: {
-            PaywallView(
-                configuration: .init(
-                    offering: viewModel.offering,
-                    displayCloseButton: false,
-                    purchaseHandler: .default(performPurchase: viewModel.performPurchase(packageToPurchase:),
-                                              performRestore: viewModel.performRestore)
+            CustomerCenterInjectedPaywall(viewModel: viewModel) {
+                PaywallView(
+                    configuration: .init(
+                        offering: viewModel.offering,
+                        displayCloseButton: false,
+                        purchaseHandler: .default(performPurchase: viewModel.performPurchase(packageToPurchase:),
+                                                  performRestore: viewModel.performRestore)
+                    )
                 )
-            )
-            .onRestoreInitiated { resume in
-                Task(priority: .userInitiated) { @MainActor in
-                    if let restoreInitiated = self.externalActions.restoreInitiated {
-                        restoreInitiated(resume)
-                    } else {
-                        resume()
+                .onRestoreInitiated { resume in
+                    Task(priority: .userInitiated) { @MainActor in
+                        if let restoreInitiated = self.externalActions.restoreInitiated {
+                            restoreInitiated(resume)
+                        } else {
+                            resume()
+                        }
                     }
                 }
+                .paywallSource(.customerCenter)
             }
-            .paywallSource(.customerCenter)
         })
         .onAppear {
             viewModel.refreshOffering()

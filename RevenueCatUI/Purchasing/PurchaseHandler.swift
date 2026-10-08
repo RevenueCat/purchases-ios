@@ -267,6 +267,28 @@ final class PurchaseHandler: ObservableObject {
         )
     }
 
+#if os(iOS)
+    /// Keeps Customer Center previews independent of the configured Purchases instance and its events.
+    static func customerCenterPreview(
+        provider: CustomerCenterPreviewProvider,
+        performPurchase: @escaping PerformPurchase,
+        performRestore: @escaping PerformRestore
+    ) -> PurchaseHandler {
+        let purchases = NotConfiguredPurchases(
+            purchasesAreCompletedBy: .myApp,
+            customerInfoProvider: { try await provider.customerInfo() },
+            isUIPreviewMode: true
+        )
+        return .init(
+            purchases: purchases,
+            performPurchase: performPurchase,
+            performRestore: performRestore,
+            purchaseResultPublisher: Empty().eraseToAnyPublisher(),
+            eventTracker: .init(purchases: purchases)
+        )
+    }
+#endif
+
     private func setResult(_ result: PaywallPurchaseResult) {
         guard result != self.purchaseResult else {
             return
@@ -1284,7 +1306,8 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 
     var preferredLocaleOverride: String? { nil }
 
-    var isUIPreviewMode: Bool { false }
+    let isUIPreviewMode: Bool
+    private let customerInfoProvider: (@Sendable () async throws -> CustomerInfo)?
 
     var remoteConfigEnabled: Bool { false }
 
@@ -1292,9 +1315,16 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
         SubscriptionHistoryTracker()
     }
 
-    init(customerInfo: CustomerInfo? = nil, purchasesAreCompletedBy: PurchasesAreCompletedBy) {
+    init(
+        customerInfo: CustomerInfo? = nil,
+        purchasesAreCompletedBy: PurchasesAreCompletedBy,
+        customerInfoProvider: (@Sendable () async throws -> CustomerInfo)? = nil,
+        isUIPreviewMode: Bool = false
+    ) {
         self.customerInfo = customerInfo
         self.purchasesAreCompletedBy = purchasesAreCompletedBy
+        self.customerInfoProvider = customerInfoProvider
+        self.isUIPreviewMode = isUIPreviewMode
     }
 
     func offerings() async throws -> Offerings { throw ErrorCode.configurationError }
@@ -1317,6 +1347,7 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 #endif
 
     func customerInfo() async throws -> RevenueCat.CustomerInfo {
+        if let customerInfoProvider { return try await customerInfoProvider() }
         guard let info = customerInfo else { throw ErrorCode.configurationError }
         return info
     }

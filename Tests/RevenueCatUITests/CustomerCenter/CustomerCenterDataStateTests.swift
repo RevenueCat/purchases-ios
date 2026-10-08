@@ -101,6 +101,48 @@ final class CustomerCenterDataStateTests: TestCase {
         XCTAssertFalse(history.isEmpty)
     }
 
+    func testCapturedOfferingsIncludeV2ComponentsWithoutAnotherFetch() throws {
+        let product = TestStoreProduct(
+            localizedTitle: "Lifetime", price: 199,
+            localizedPriceString: "$199",
+            productIdentifier: "test_non_consumable",
+            productType: .nonConsumable,
+            localizedDescription: "Lifetime"
+        ).toStoreProduct()
+        let components = PaywallComponentsData(
+            templateName: "preview", assetBaseURL: URL(string: "https://example.com")!,
+            componentsConfig: .init(base: .init(stack: .init(components: []), stickyFooter: nil,
+                                                background: .color(.init(light: .hex("#ffffff"))))),
+            componentsLocalizations: ["en_US": [:]], revision: 1, defaultLocaleIdentifier: "en_US"
+        )
+        let encoder = JSONEncoder()
+        encoder.keyEncodingStrategy = .convertToSnakeCase
+        var selected: [String: Any] = [
+            "identifier": "template_001", "description": "Preview",
+            "paywall_components": try JSONSerialization.jsonObject(with: encoder.encode(components))
+        ]
+        var response: [String: Any] = [
+            "ui_config": try JSONSerialization.jsonObject(with: encoder.encode(PreviewUIConfig.make()))
+        ]
+        selected["packages"] = [["identifier": "$rc_lifetime", "platform_product_identifier": "test_non_consumable"]]
+        response["offerings"] = [selected]
+        response["current_offering_id"] = "template_001"
+        let offerings = try Offerings.preview(
+            responseData: JSONSerialization.data(withJSONObject: response), products: [product]
+        )
+        XCTAssertNotNil(offerings.current)
+        XCTAssertNotNil(offerings.current?.internalPaywallComponents)
+        XCTAssertEqual(offerings.current?.lifetime?.storeProduct.productIdentifier, "test_non_consumable")
+        selected["paywall_components"] = ["template_name": "unsupported"]
+        response["offerings"] = [selected]
+        let fallback = try Offerings.preview(
+            responseData: JSONSerialization.data(withJSONObject: response), products: [product]
+        )
+        XCTAssertNotNil(fallback.current?.lifetime)
+        XCTAssertNil(fallback.current?.internalPaywallComponents)
+        XCTAssertFalse(fallback.current?.hasPaywallComponents ?? true)
+    }
+
 }
 
 @available(iOS 15.0, *)
