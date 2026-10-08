@@ -216,7 +216,6 @@ NSURL *url;
                                        completion:^(RCCustomerInfo * _Nullable ci, NSError * _Nullable e) { }];
 
     [p.delegate purchases:p receivedUpdatedCustomerInfo:pi];
-    [p.delegate purchases:p entitlementsDidExpire:@[@""] refreshCustomerInfo:^{}];
     [p.delegate purchases:p
   readyForPromotedProduct:storeProduct
                  purchase:^(void (^ _Nonnull completion)(RCStoreTransaction * _Nullable transaction,

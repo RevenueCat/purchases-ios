@@ -224,7 +224,6 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     // PurchasesDelegate
     let customerInfo: CustomerInfo? = nil
     purchases.delegate?.purchases?(purchases, receivedUpdated: customerInfo!)
-    purchases.delegate?.purchases?(purchases, entitlementsDidExpire: [""], refresh: {})
 
     let purchaseBlock = { (_: @MainActor @Sendable (StoreTransaction?, CustomerInfo?, PublicError?, Bool) -> Void) in }
     purchases.delegate?.purchases?(purchases, readyForPromotedProduct: storeProduct, purchase: purchaseBlock)

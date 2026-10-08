@@ -61,8 +61,8 @@ class CustomerInfoManager {
 
         self.data = .init(.init())
 
-        self.entitlementExpirationScheduler.handler = { [weak self] appUserID, identifiers in
-            self?.handleEntitlementsExpired(identifiers, appUserID: appUserID)
+        self.entitlementExpirationScheduler.handler = { [weak self] appUserID, _ in
+            self?.handleEntitlementsExpired(appUserID: appUserID)
         }
     }
 
@@ -407,16 +407,6 @@ class CustomerInfoManager {
 
 extension CustomerInfoManager {
 
-    /// Receives the identifiers of entitlements whose `expirationDate` has passed on the device clock,
-    /// plus a single-use closure that fetches the current `CustomerInfo` from the backend.
-    /// Invoked on the main thread.
-    typealias EntitlementExpirationHandler = (_ identifiers: [String], _ refresh: @escaping () -> Void) -> Void
-
-    var entitlementExpirationHandler: EntitlementExpirationHandler? {
-        get { self.withData { $0.entitlementExpirationHandler } }
-        set { self.modifyData { $0.entitlementExpirationHandler = newValue } }
-    }
-
     /// Starts (or restarts) tracking expirations of `customerInfo`'s active entitlements.
     /// `cache(customerInfo:appUserID:)` does this automatically; this exists for `CustomerInfo`
     /// that was read from cache without going through it.
@@ -436,19 +426,17 @@ extension CustomerInfoManager {
         self.entitlementExpirationScheduler.rearm()
     }
 
-    private func handleEntitlementsExpired(_ identifiers: [String], appUserID: String) {
-        let refreshRequested: Atomic<Bool> = false
-        let refresh: () -> Void = { [weak self] in
-            guard !refreshRequested.getAndSet(true) else {
-                Logger.debug(Strings.customerInfo.entitlement_expiration_refresh_already_requested)
-                return
-            }
-            self?.customerInfo(appUserID: appUserID, fetchPolicy: .fetchCurrent, completion: nil)
-        }
+    /// Re-evaluates the last sent `CustomerInfo` against the device clock so observers see the expired
+    /// entitlements as inactive, exactly as they would after a network refresh.
+    ///
+    /// The copy is intentionally not written to `DeviceCache`: persisting a device-generated `requestDate`
+    /// would extend the offline grace period (see `CustomerInfo.requestDateGracePeriod`) past what the
+    /// backend last attested.
+    private func handleEntitlementsExpired(appUserID: String) {
+        guard let lastSentCustomerInfo = self.lastSentCustomerInfo else { return }
 
-        self.operationDispatcher.dispatchAsyncOnMainThread { [weak self] in
-            self?.entitlementExpirationHandler?(identifiers, refresh)
-        }
+        self.sendUpdateIfChanged(customerInfo: lastSentCustomerInfo.copy(with: self.dateProvider.now()),
+                                 appUserID: appUserID)
     }
 
 }
@@ -779,12 +767,10 @@ private extension CustomerInfoManager {
         /// These observers are used both for ``Purchases/customerInfoStream`` and
         /// `PurchasesDelegate/purchases(_:receivedUpdated:)``.
         var customerInfoObserversByIdentifier: [Int: CustomerInfoManager.CustomerInfoChangeClosure]
-        var entitlementExpirationHandler: CustomerInfoManager.EntitlementExpirationHandler?
 
         init() {
             self.lastSentCustomerInfo = nil
             self.customerInfoObserversByIdentifier = [:]
-            self.entitlementExpirationHandler = nil
         }
 
     }
