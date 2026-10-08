@@ -52,9 +52,9 @@ final class TransactionMetadataSyncHelper {
         #else
         let delay: JitterableDelay = .default
         #endif
-        self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
+        self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) { [weak self] in
             Task {
-                await self.performSync(allowSharingAppStoreAccount: allowSharingAppStoreAccount)
+                await self?.performSync(allowSharingAppStoreAccount: allowSharingAppStoreAccount)
             }
         }
     }

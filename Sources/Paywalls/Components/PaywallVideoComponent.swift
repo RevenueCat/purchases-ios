@@ -22,6 +22,7 @@ import Foundation
         let type: ComponentType
         public let source: ThemeVideoUrls
         public let fallbackSource: ThemeImageUrls?
+        public let overrideVideoLid: LocalizationKey?
         public let visible: Bool?
         public let showControls: Bool
         public let autoPlay: Bool
@@ -54,11 +55,13 @@ import Foundation
             margin: Padding? = nil,
             border: Border? = nil,
             shadow: Shadow? = nil,
-            overrides: ComponentOverrides<PartialVideoComponent>? = nil
+            overrides: ComponentOverrides<PartialVideoComponent>? = nil,
+            overrideVideoLid: LocalizationKey? = nil
         ) {
             self.type = .video
             self.source = source
             self.fallbackSource = fallbackSource
+            self.overrideVideoLid = overrideVideoLid
             self.visible = visible
             self.showControls = showControls
             self.autoPlay = autoPlay
@@ -93,6 +96,7 @@ import Foundation
             hasher.combine(overrides)
             hasher.combine(source)
             hasher.combine(fallbackSource)
+            hasher.combine(overrideVideoLid)
         }
 
         public static func == (lhs: VideoComponent, rhs: VideoComponent) -> Bool {
@@ -112,6 +116,7 @@ import Foundation
             lhs.shadow == rhs.shadow &&
             lhs.overrides == rhs.overrides &&
             lhs.fallbackSource == rhs.fallbackSource &&
+            lhs.overrideVideoLid == rhs.overrideVideoLid &&
             lhs.source == rhs.source
         }
     }
@@ -120,6 +125,7 @@ import Foundation
 
         public let source: ThemeVideoUrls?
         public let fallbackSource: ThemeImageUrls?
+        public let overrideVideoLid: LocalizationKey?
         public let visible: Bool?
         public let showControls: Bool?
         public let autoPlay: Bool?
@@ -149,10 +155,12 @@ import Foundation
             padding: Padding? = nil,
             margin: Padding? = nil,
             border: Border? = nil,
-            shadow: Shadow? = nil
+            shadow: Shadow? = nil,
+            overrideVideoLid: LocalizationKey? = nil
         ) {
             self.source = source
             self.fallbackSource = fallbackSource
+            self.overrideVideoLid = overrideVideoLid
             self.visible = visible
             self.showControls = showControls
             self.autoPlay = autoPlay
@@ -185,6 +193,7 @@ import Foundation
             hasher.combine(border)
             hasher.combine(shadow)
             hasher.combine(fallbackSource)
+            hasher.combine(overrideVideoLid)
         }
 
         public static func == (lhs: PartialVideoComponent, rhs: PartialVideoComponent) -> Bool {
@@ -202,6 +211,7 @@ import Foundation
             lhs.border == rhs.border &&
             lhs.shadow == rhs.shadow &&
             lhs.fallbackSource == rhs.fallbackSource &&
+            lhs.overrideVideoLid == rhs.overrideVideoLid &&
             lhs.source == rhs.source
         }
     }
