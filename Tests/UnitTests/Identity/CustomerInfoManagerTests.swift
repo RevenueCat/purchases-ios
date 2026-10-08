@@ -1617,6 +1617,7 @@ private extension GetCustomerInfoTrackingTests {
 
 }
 
+// swiftlint:disable:next type_name
 class CustomerInfoManagerSubscriberAttributesTests: BaseCustomerInfoManagerTests {
 
     private static let remoteSetTime = Date(timeIntervalSince1970: 1_600_000_000)
