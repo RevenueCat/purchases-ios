@@ -67,7 +67,6 @@ enum HostedCheckout {
         }
 
         let result = await purchaseHandler.startHostedCheckout(package: package)
-        let action = Action(result)
 
         switch result {
         case .started:
@@ -87,7 +86,7 @@ enum HostedCheckout {
             purchaseHandler.trackPurchaseError(package: package, error: Refusal.alreadyStarting)
         }
 
-        return action
+        return Action(result)
     }
 
     /// Why the purchase the customer asked for was refused before they paid, mapped onto the public code StoreKit
