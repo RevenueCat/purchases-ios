@@ -45,7 +45,7 @@ final class VideoComponentViewTests: TestCase {
         let renderedSize = Box<CGSize?>(nil)
         // A local file loads synchronously. A remote URL would fail to download at an unpredictable
         // point, and the failed image's placeholder fills all the height it's offered.
-        let thumbnailURL = try Self.writeThumbnailImage()
+        let thumbnailURL = Self.localThumbnailURL()
         let view = try Self.makeVideoComponentView(
             size: .zero,
             width: .fit(nil),
@@ -333,16 +333,15 @@ private extension VideoComponentViewTests {
     }
 
 #if os(iOS)
-    /// Writes a portrait PNG (taller than the test video) to a temporary file and returns its URL.
-    static func writeThumbnailImage() throws -> URL {
-        let image = UIGraphicsImageRenderer(size: CGSize(width: 9, height: 20)).image { context in
-            UIColor.red.setFill()
-            context.fill(CGRect(x: 0, y: 0, width: 9, height: 20))
-        }
-        let url = FileManager.default.temporaryDirectory
-            .appendingPathComponent("video-thumbnail-\(UUID().uuidString).png")
-        try XCTUnwrap(image.pngData()).write(to: url)
-        return url
+    /// A bundled test image, resolved the same way as `PaywallData.withLocalImages`.
+    /// Only the dimensions in the thumbnail source affect layout, so any image works.
+    static func localThumbnailURL() -> URL {
+        #if SWIFT_PACKAGE
+        let resourcePath = Bundle.module.resourcePath ?? Bundle.module.bundlePath
+        #else
+        let resourcePath = Bundle.revenueCatUI.resourcePath ?? Bundle.revenueCatUI.bundlePath
+        #endif
+        return URL(fileURLWithPath: resourcePath).appendingPathComponent("header.heic")
     }
 
     static func makeVideoComponentView(
