@@ -17,6 +17,8 @@ import SwiftUI
 import XCTest
 
 #if os(iOS)
+import UIKit
+
 @available(iOS 15.0, *)
 @MainActor
 final class CustomerCenterDataStateTests: TestCase {
@@ -50,6 +52,7 @@ final class CustomerCenterDataStateTests: TestCase {
         await root.loadScreen()
         XCTAssertTrue(try XCTUnwrap(detail.purchaseInformation).isExpired)
         XCTAssertTrue(try XCTUnwrap(selectedDetail.purchaseInformation).isExpired)
+        XCTAssertFalse(selectedDetail.shouldDismissDetail)
         XCTAssertFalse(detail.relevantPathsForPurchase.contains { $0.type == .cancel || $0.type == .changePlans })
         provider.customerInfo = CustomerInfoFixtures.customerInfoWithLifetimePromotional
         await root.loadScreen()
@@ -58,9 +61,64 @@ final class CustomerCenterDataStateTests: TestCase {
             "rc_promo_pro_cat_lifetime"
         )
         XCTAssertNil(selectedDetail.purchaseInformation)
+        XCTAssertTrue(root.hasAnyPurchases)
+        XCTAssertTrue(selectedDetail.shouldDismissDetail)
+        XCTAssertFalse(detail.shouldDismissDetail)
         provider.customerInfo = CustomerInfoFixtures.customerInfo(subscriptions: [], entitlements: [])
         await root.loadScreen()
         XCTAssertNil(detail.purchaseInformation)
+        XCTAssertFalse(detail.shouldDismissDetail)
+    }
+
+    func testMissingSelectedPurchaseReturnsToThePurchasesList() async throws {
+        for usesNavigationStack in [false, true] {
+            try await assertMissingPurchaseDismissesDetail(usesNavigationStack: usesNavigationStack)
+        }
+    }
+
+    private func assertMissingPurchaseDismissesDetail(usesNavigationStack: Bool) async throws {
+        let provider = MockCustomerCenterPurchases()
+        let root = CustomerCenterViewModel(uiPreviewPurchaseProvider: provider)
+        await root.loadScreen()
+        let selected = try XCTUnwrap(root.subscriptionsSection.first)
+        let screen = try XCTUnwrap(root.configuration?.screens[.management])
+        var isPresented = true
+        let popped = expectation(description: "Unavailable purchase detail dismissed")
+        let appeared = expectation(description: "Purchase detail appeared")
+        let content = Text("Purchases")
+            .compatibleNavigation(isPresented: Binding(get: { isPresented }, set: {
+                let wasPresented = isPresented
+                isPresented = $0
+                if wasPresented && !$0 { popped.fulfill() }
+            }), usesNavigationStack: usesNavigationStack) {
+                SubscriptionDetailView(
+                    customerInfoViewModel: root, screen: screen, purchaseInformation: selected,
+                    showPurchaseHistory: false, showVirtualCurrencies: false,
+                    allowsMissingPurchaseAction: false, purchasesProvider: provider,
+                    actionWrapper: root.actionWrapper
+                )
+                .onAppear { appeared.fulfill() }
+            }
+            .environment(\.navigationOptions, .init(usesNavigationStack: usesNavigationStack))
+        let view = Group {
+            if usesNavigationStack {
+                CompatibilityNavigationStack { content }
+            } else {
+                NavigationView { content }.navigationViewStyle(.stack)
+            }
+        }
+        let controller = UIHostingController(rootView: view)
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 400, height: 600))
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+        defer { window.isHidden = true; window.rootViewController = nil }
+        controller.view.layoutIfNeeded()
+        await fulfillment(of: [appeared], timeout: 3)
+        provider.customerInfo = CustomerInfoFixtures.customerInfoWithLifetimePromotional
+        await root.loadScreen()
+        await fulfillment(of: [popped], timeout: 3)
+        XCTAssertFalse(isPresented)
+        XCTAssertTrue(root.hasAnyPurchases)
     }
 
     func testHistoryRecoversAfterFetchFailure() async {
