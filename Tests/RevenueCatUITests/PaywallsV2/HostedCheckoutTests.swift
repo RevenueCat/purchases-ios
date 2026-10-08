@@ -201,9 +201,10 @@ final class HostedCheckoutTests: TestCase {
         expect(trackedEvents.value.contains(where: Self.isCancel)) == false
     }
 
-    /// Saying no to Apple's notice is the hosted checkout's counterpart to dismissing StoreKit's sheet.
+    /// Saying no to Apple's notice is the hosted checkout's counterpart to dismissing StoreKit's sheet, so the app
+    /// hears of it as a cancellation too.
     @MainActor
-    func testTracksADeclinedNoticeAsACancellation() async {
+    func testReportsADeclinedNoticeAsACancellation() async {
         let trackedEvents: Atomic<[PaywallEvent]> = .init([])
         let purchases = Self.makePurchases(trackingInto: trackedEvents)
         purchases.hostedCheckoutBlock = { _, _, _ in .declinedByCustomer }
@@ -220,7 +221,8 @@ final class HostedCheckoutTests: TestCase {
         expect(cancellations.first?.data.packageId) == TestData.annualPackage.identifier
         expect(trackedEvents.value.contains(where: Self.isPurchaseError)) == false
         expect(handler.purchaseError).to(beNil())
-        expect(handler.sessionPurchaseResult).to(beNil())
+        expect(handler.sessionPurchaseResult) == .cancelled
+        expect(handler.purchaseResult) == .cancelled
     }
 
     /// The customer is told they already own it or that it is unavailable, or nothing at all, but the initiated

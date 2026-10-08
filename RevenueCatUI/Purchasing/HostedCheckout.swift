@@ -103,7 +103,7 @@ enum HostedCheckout {
         case .failed:
             purchaseHandler.handleHostedCheckoutFailure(HostedCheckoutError.notStarted, package: package)
         case .declinedByCustomer:
-            purchaseHandler.trackCancelledPurchase(package: package)
+            purchaseHandler.handleHostedCheckoutDismissal(package: package)
         case .alreadyPurchased:
             purchaseHandler.trackPurchaseError(package: package, error: Refusal.alreadyPurchased)
         case .notEligible:
