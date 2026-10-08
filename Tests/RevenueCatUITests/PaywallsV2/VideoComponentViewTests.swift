@@ -37,6 +37,42 @@ final class VideoComponentViewTests: TestCase {
 
         XCTAssertLessThanOrEqual(fittingSize.width, fullScreenSize.width)
     }
+
+    /// A `fit`-width video takes its width from the thumbnail, and the thumbnail must take the video's
+    /// size: a thumbnail taller than the video must not make the component taller than the video.
+    func testFitWidthVideoMatchesThumbnailToVideoSize() throws {
+        let containerWidth: CGFloat = 300
+        let renderedSize = Box<CGSize?>(nil)
+        let view = try Self.makeVideoComponentView(
+            size: .zero,
+            width: .fit(nil),
+            fitMode: .fit,
+            fallbackSource: .init(light: .init(
+                width: 1080,
+                height: 2400,
+                original: URL(string: "https://assets.revenuecat.com/thumbnail.jpg")!,
+                heic: URL(string: "https://assets.revenuecat.com/thumbnail.heic")!,
+                heicLowRes: URL(string: "https://assets.revenuecat.com/thumbnail_low.heic")!
+            ))
+        )
+            .onSizeChange { renderedSize.value = $0 }
+            .frame(width: containerWidth, height: 800, alignment: .top)
+        let controller = UIHostingController(rootView: view)
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: containerWidth, height: 800))
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+
+        // Let the measurement pass write the size into @State and re-render.
+        for _ in 0..<5 {
+            RunLoop.main.run(until: Date().addingTimeInterval(0.05))
+            controller.view.layoutIfNeeded()
+        }
+
+        let size = try XCTUnwrap(renderedSize.value)
+        XCTAssertEqual(size.width, containerWidth, accuracy: 1)
+        // The 1080x1920 video at the container's width.
+        XCTAssertEqual(size.height, containerWidth * 1920 / 1080, accuracy: 1)
+    }
 #endif
 
     /// The view re-resolves when the asset it observes changes, so that value has to differ
@@ -96,6 +132,28 @@ final class VideoComponentViewTests: TestCase {
         let maxWidth = VideoComponentView.calculateMaxWidth(parentWidth: 200, style: style)
 
         XCTAssertEqual(maxWidth, 146)
+    }
+
+    /// A portrait thumbnail on a landscape video must lay out at the video's size, not its own.
+    func testThumbnailSourceUsesVideoDimensions() {
+        let thumbnail = PaywallComponent.ImageUrls(
+            width: 1080,
+            height: 1920,
+            original: URL(string: "https://assets.revenuecat.com/thumbnail.jpg")!,
+            heic: URL(string: "https://assets.revenuecat.com/thumbnail.heic")!,
+            heicLowRes: URL(string: "https://assets.revenuecat.com/thumbnail_low.heic")!
+        )
+
+        let source = VideoComponentView.thumbnailSource(.init(light: thumbnail), sizedLike: Self.makeStyle())
+
+        XCTAssertEqual(source.light, .init(
+            width: 1920,
+            height: 1080,
+            original: thumbnail.original,
+            heic: thumbnail.heic,
+            heicLowRes: thumbnail.heicLowRes
+        ))
+        XCTAssertEqual(source.dark, source.light)
     }
 
     func testResolvesLocalizedVideoForComponentLid() throws {
@@ -272,7 +330,12 @@ private extension VideoComponentViewTests {
     }
 
 #if os(iOS)
-    static func makeVideoComponentView(size: CGSize) throws -> some View {
+    static func makeVideoComponentView(
+        size: CGSize,
+        width: PaywallComponent.SizeConstraint = .fill,
+        fitMode: PaywallComponent.FitMode = .fill,
+        fallbackSource: PaywallComponent.ThemeImageUrls? = nil
+    ) throws -> some View {
         let component = PaywallComponent.VideoComponent(
             source: .init(
                 light: .init(
@@ -284,8 +347,9 @@ private extension VideoComponentViewTests {
                     checksumLowRes: nil
                 )
             ),
-            size: .init(width: .fill, height: .fit(nil)),
-            fitMode: .fill
+            fallbackSource: fallbackSource,
+            size: .init(width: width, height: .fit(nil)),
+            fitMode: fitMode
         )
         let viewModel = try VideoComponentViewModel(
             localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [:]),
