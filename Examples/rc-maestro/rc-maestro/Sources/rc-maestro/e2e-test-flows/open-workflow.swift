@@ -7,7 +7,7 @@
 
 import SwiftUI
 @_spi(Internal) import RevenueCat
-import RevenueCatUI
+@_spi(Internal) import RevenueCatUI
 
 extension E2ETestFlowView {
     struct OpenWorkflow: View {
@@ -28,9 +28,16 @@ extension E2ETestFlowView {
             return ["users_count": .number(value)]
         }
 
+        /// Opens one workflow by id, bypassing the offering to workflow map. Lets a test target a
+        /// workflow whose offering mapping is not what it needs.
+        static var workflowIdentifier: String? {
+            return UserDefaults.standard.string(forKey: "workflow_id")
+        }
+
         enum GetOfferingsState {
             case loading
             case loaded(Offering)
+            case loadedWorkflow(WorkflowContext)
             case failed(Error)
         }
 
@@ -54,6 +61,15 @@ extension E2ETestFlowView {
                         PaywallView(offering: offering)
                             .customPaywallVariables(Self.customVariableOverrides)
                     }
+                case .loadedWorkflow(let context):
+                    Button("Present Paywall") {
+                        presentPaywall = true
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .sheet(isPresented: $presentPaywall) {
+                        PaywallView(workflowContext: context)
+                            .customPaywallVariables(Self.customVariableOverrides)
+                    }
                 case .failed(let error):
                     Text("Error: \(error.localizedDescription)")
                         .foregroundColor(.red)
@@ -65,7 +81,17 @@ extension E2ETestFlowView {
             .task {
                 do {
                     let offerings = try await Purchases.shared.offerings()
-                    if let offering = offerings.offering(identifier: Self.offeringIdentifier) {
+                    if let workflowId = Self.workflowIdentifier {
+                        let result = try await Purchases.shared.workflow(forWorkflowIdentifier: workflowId)
+                        offeringsState = .loadedWorkflow(
+                            try WorkflowPreview.makeContext(
+                                workflow: result.workflow,
+                                offerings: offerings,
+                                uiConfig: result.uiConfig,
+                                workflowBlobRef: result.workflowBlobRef
+                            )
+                        )
+                    } else if let offering = offerings.offering(identifier: Self.offeringIdentifier) {
                         offeringsState = .loaded(offering)
                     } else {
                         offeringsState = .failed(OfferingError.notFound)

@@ -457,6 +457,24 @@ final class PaywallCacheWarmingTests: TestCase {
         ])
     }
 
+    func testWorkflowAssetPrewarmingDownloadsLocalizedVideosForPreferredLocaleOnly() async {
+        let requests = await self.localizedVideoPrewarmingRequests(preferredLocale: "es_ES")
+
+        XCTAssertEqual(requests, [
+            Self.lowResVideoRequest("video-es"),
+            Self.lowResVideoRequest("video-override-es")
+        ])
+    }
+
+    func testWorkflowAssetPrewarmingDownloadsLocalizedVideosForDefaultLocaleWhenNoPreferredLocaleMatches() async {
+        let requests = await self.localizedVideoPrewarmingRequests(preferredLocale: "fr_FR")
+
+        XCTAssertEqual(requests, [
+            Self.lowResVideoRequest("video-en"),
+            Self.lowResVideoRequest("video-override-en")
+        ])
+    }
+
     func testOfferingsAssetPrewarmingPublishesEveryTimeButDownloadsImagesOnlyOnce() async throws {
         let fileRepository = MockCacheWarmingFileRepository()
         let cache = PaywallCacheWarming(
@@ -1052,8 +1070,12 @@ private extension PaywallCacheWarmingTests {
         )
     }
 
-    static func workflowScreen(components: [PaywallComponent]) -> WorkflowScreen {
-        let data = Self.paywallComponentsData(components: components)
+    static func workflowScreen(
+        components: [PaywallComponent],
+        localizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary] = [:],
+        videoLocalizations: [PaywallComponent.LocaleID: PaywallComponent.VideoLocalizationDictionary] = [:]
+    ) -> WorkflowScreen {
+        let data = Self.paywallComponentsData(components: components, localizations: localizations)
         return .init(
             name: "Test",
             templateName: data.templateName,
@@ -1061,11 +1083,15 @@ private extension PaywallCacheWarmingTests {
             componentsConfig: data.componentsConfig,
             componentsLocalizations: data.componentsLocalizations,
             defaultLocale: data.defaultLocale,
-            offeringIdentifier: nil
+            offeringIdentifier: nil,
+            componentsVideoLocalizations: videoLocalizations
         )
     }
 
-    static func paywallComponentsData(components: [PaywallComponent]) -> PaywallComponentsData {
+    static func paywallComponentsData(
+        components: [PaywallComponent],
+        localizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary] = [:]
+    ) -> PaywallComponentsData {
         return .init(
             templateName: "test",
             assetBaseURL: Self.cacheWarmingURL(""),
@@ -1074,7 +1100,7 @@ private extension PaywallCacheWarmingTests {
                 stickyFooter: nil,
                 background: .color(.init(light: .hex("#ffffff")))
             )),
-            componentsLocalizations: [:],
+            componentsLocalizations: localizations,
             revision: 1,
             defaultLocaleIdentifier: "en_US"
         )
@@ -1107,6 +1133,63 @@ private extension PaywallCacheWarmingTests {
     static func cacheWarmingURL(_ path: String) -> URL {
         // swiftlint:disable:next force_unwrapping
         return URL(string: "https://assets.example.com/\(path)")!
+    }
+
+    /// Prewarms a workflow whose video and video override both use localized videos, for `en_US` (default) and `es_ES`.
+    func localizedVideoPrewarmingRequests(preferredLocale: String) async -> Set<URLWithValidation> {
+        let fileRepository = MockCacheWarmingFileRepository()
+        let cache = PaywallCacheWarming(
+            introEligibiltyChecker: self.eligibilityChecker,
+            fileRepository: fileRepository,
+            webBundleURLBatcher: self.mockWebBundleURLBatcher,
+            preferredLocalesProvider: { [preferredLocale] }
+        )
+        let video = PaywallComponent.VideoComponent(
+            source: Self.cacheWarmingVideo("video"),
+            overrides: [
+                .init(
+                    conditions: [.compact],
+                    properties: .init(
+                        source: Self.cacheWarmingVideo("video-override"),
+                        overrideVideoLid: "video-override-lid"
+                    )
+                )
+            ],
+            overrideVideoLid: "video-lid"
+        )
+        let screen = Self.workflowScreen(
+            components: [.video(video)],
+            localizations: ["en_US": [:], "es_ES": [:]],
+            videoLocalizations: [
+                "en_US": [
+                    "video-lid": Self.cacheWarmingVideo("video-en"),
+                    "video-override-lid": Self.cacheWarmingVideo("video-override-en")
+                ],
+                "es_ES": [
+                    "video-lid": Self.cacheWarmingVideo("video-es"),
+                    "video-override-lid": Self.cacheWarmingVideo("video-override-es")
+                ]
+            ]
+        )
+        let workflow = PublishedWorkflow(
+            id: "workflow",
+            displayName: "Test",
+            initialStepId: "step",
+            singleStepFallbackId: nil,
+            steps: [:],
+            screens: ["screen": screen]
+        )
+
+        await cache.prewarmWorkflowAssets(workflow: workflow, uiConfig: Self.emptyUIConfig)
+
+        return Set(await fileRepository.requests)
+    }
+
+    static func lowResVideoRequest(_ name: String) -> URLWithValidation {
+        return .init(
+            url: Self.cacheWarmingURL("\(name)-low.mp4"),
+            checksum: .init(algorithm: .sha256, value: "\(name)-low")
+        )
     }
 
     func workflowFontInstallCallCount(
