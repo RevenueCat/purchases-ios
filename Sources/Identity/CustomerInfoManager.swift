@@ -347,11 +347,18 @@ class CustomerInfoManager {
     }
 
     private func sendUpdateIfChanged(customerInfo: CustomerInfo, appUserID: String) {
+        self.sendUpdateIfChanged(appUserID: appUserID) { _ in customerInfo }
+    }
+
+    /// `makeCustomerInfo` runs inside the lock against the current `lastSentCustomerInfo`; return `nil` to skip.
+    private func sendUpdateIfChanged(appUserID: String,
+                                     makeCustomerInfo: (CustomerInfo?) -> CustomerInfo?) {
         // Read outside of the lock: `IdentityManager` reads `DeviceCache`, which must not happen while holding `data`.
         let currentAppUserID = self.currentUserProvider?.currentAppUserID
 
         return self.modifyData {
             let lastSentCustomerInfo = $0.lastSentCustomerInfo
+            guard let customerInfo = makeCustomerInfo(lastSentCustomerInfo) else { return }
 
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 if let tracker = self.diagnosticsTracker, lastSentCustomerInfo != customerInfo {
@@ -433,10 +440,9 @@ extension CustomerInfoManager {
     /// would extend the offline grace period (see `CustomerInfo.requestDateGracePeriod`) past what the
     /// backend last attested.
     private func handleEntitlementsExpired(appUserID: String) {
-        guard let lastSentCustomerInfo = self.lastSentCustomerInfo else { return }
+        let now = self.dateProvider.now()
 
-        self.sendUpdateIfChanged(customerInfo: lastSentCustomerInfo.copy(with: self.dateProvider.now()),
-                                 appUserID: appUserID)
+        self.sendUpdateIfChanged(appUserID: appUserID) { $0?.copy(with: now) }
     }
 
 }

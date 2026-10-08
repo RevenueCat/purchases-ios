@@ -113,10 +113,10 @@ private extension EntitlementExpirationScheduler {
             })
             state.notified.formIntersection(keys)
 
-            let due = keys.filter { $0.expirationDate <= now && !state.notified.contains($0) }
+            let due = keys.filter { $0.expirationDate < now && !state.notified.contains($0) }
             state.notified.formUnion(due)
 
-            if let next = keys.lazy.map(\.expirationDate).filter({ $0 > now }).min() {
+            if let next = keys.lazy.map(\.expirationDate).filter({ $0 >= now }).min() {
                 Logger.verbose(Strings.customerInfo.entitlement_expiration_scheduled(date: next))
                 state.task = self.makeTask(firingAt: next, from: now)
             }
