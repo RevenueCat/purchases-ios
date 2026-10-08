@@ -79,17 +79,8 @@ jobs:
       - unless:
           condition: << pipeline.parameters.requested_jobs >>
           steps:
-            - run:
-                name: "TEMPORARY: generate run-test-ios-16 stress test config"
-                command: |
-                  sed '/^workflows:$/q' .circleci/default_config.yml > /tmp/stress-config.yml
-                  printf '  stress-run-test-ios-16:\n    jobs:\n' >> /tmp/stress-config.yml
-                  for i in $(seq 1 10); do
-                    printf '      - run-test-ios-16:\n          name: run-test-ios-16-%s\n          context:\n            - slack-secrets\n' "$i" >> /tmp/stress-config.yml
-                  done
-                  sed -n '/^  stress-run-test-ios-16:$/,$p' /tmp/stress-config.yml
             - continuation/continue:
-                configuration_path: /tmp/stress-config.yml
+                configuration_path: .circleci/default_config.yml
                 parameters: /tmp/continuation-parameters.json
 
 workflows:
