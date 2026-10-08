@@ -482,15 +482,17 @@ final class WorkflowPresenterTests: TestCase {
 
     func testNavigatingBackAfterRestoreWithoutNewEntitlementsBacksOut() throws {
         let presenter = WorkflowPresenter { _ in true }
+        let controller = self.makePaywallViewControllerForDismissalRecording()
         let customerInfo = try Self.customerInfo(activeEntitlements: ["pro"])
 
         try presenter.startPresentation(Self.presentation(initialActiveEntitlementIdentifiers: ["pro"]))
         presenter.paywallViewController(
-            PaywallViewController(offering: nil),
+            controller,
             didFinishRestoringWith: customerInfo
         )
         let execution = presenter.presentationDidDismiss(reason: .navigatedBack)
 
+        XCTAssertEqual(controller.dismissCallCount, 0)
         guard case .backedOut? = execution else {
             return XCTFail("Expected an unchanged restore not to override back navigation")
         }
@@ -498,15 +500,17 @@ final class WorkflowPresenterTests: TestCase {
 
     func testNavigatingBackAfterRestoreWithNewEntitlementCompletes() throws {
         let presenter = WorkflowPresenter { _ in true }
+        let controller = self.makePaywallViewControllerForDismissalRecording()
         let customerInfo = try Self.customerInfo(activeEntitlements: ["premium", "pro"])
 
         try presenter.startPresentation(Self.presentation(initialActiveEntitlementIdentifiers: ["pro"]))
         presenter.paywallViewController(
-            PaywallViewController(offering: nil),
+            controller,
             didFinishRestoringWith: customerInfo
         )
         let execution = presenter.presentationDidDismiss(reason: .navigatedBack)
 
+        XCTAssertEqual(controller.dismissCallCount, 1)
         guard case let .completed(reportedCustomerInfo)? = execution else {
             return XCTFail("Expected a restore that grants a new entitlement to complete")
         }
