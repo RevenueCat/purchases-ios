@@ -353,9 +353,9 @@ struct WorkflowPaywallView: View {
             )
         }
 
-        if purchaseHandler.resolveBranch != nil && context.workflow.initialBranch != nil {
+        if context.workflow.initialBranch != nil {
             // The placeholder is not interactive, so a close button on it would not respond.
-            skeletonPage = Self.skeletonEnabled ? page(showCloseButton: false, skeleton: true) : nil
+            skeletonPage = page(showCloseButton: false, skeleton: true)
         } else {
             initialPresentationError = Self.presentationError(for: initialStepId, in: context)
             initialPage = initialPresentationError == nil
@@ -382,15 +382,7 @@ struct WorkflowPaywallView: View {
 
     /// Whether the first step is audience-routed, so nothing can be rendered until `initialTrigger` lands.
     private var resolvesInitialStep: Bool {
-        return self.purchaseHandler.resolveBranch != nil && self.context.workflow.initialBranch != nil
-    }
-
-    static var skeletonEnabled: Bool {
-        #if ENABLE_WORKFLOW_BRANCH_LOADING
-        return true
-        #else
-        return false
-        #endif
+        return self.context.workflow.initialBranch != nil
     }
 
     /// Merged across all screens so a key declared on a screen the user has not reached yet is
@@ -541,7 +533,7 @@ struct WorkflowPaywallView: View {
         for page: RenderedPage,
         geometry: WorkflowTransitionGeometry
     ) -> some View {
-        #if ENABLE_WORKFLOW_BRANCH_LOADING
+        #if !os(tvOS)
         self.pageView(for: page, isActive: false)
             .frame(width: geometry.size.width, height: geometry.size.height)
             .transitionClipMask(geometry: geometry)
@@ -949,7 +941,7 @@ struct WorkflowPaywallView: View {
             uiConfig: context.uiConfig,
             paywallId: screenId
         )
-        #if ENABLE_WORKFLOW_BRANCH_LOADING
+        #if !os(tvOS)
         if skeleton {
             paywallComponents = .init(
                 uiConfig: paywallComponents.uiConfig,
