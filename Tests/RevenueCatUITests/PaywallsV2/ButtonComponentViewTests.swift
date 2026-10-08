@@ -171,6 +171,50 @@ final class ButtonComponentViewTests: TestCase {
         XCTAssertEqual(interactions.map(\.componentName), ["workflow-back", "workflow-close"])
     }
 
+    func testNativeOnlyHeaderCollapsesButDesignedHeaderRemains() async throws {
+        for (native, hasOtherContent) in [(true, false), (false, false), (true, true)] {
+            let button = PaywallComponent.ButtonComponent(
+                action: .navigateBack, stack: Self.makeButtonStack(label: "Close"), useNativeIfPossible: native
+            )
+            let buttonModel = try Self.makeViewModel(component: button)
+            let stack = PaywallComponent.StackComponent(
+                components: [.button(button)], size: .init(width: .fill, height: .fixed(100))
+            )
+            let children: [PaywallComponentViewModel] = [.button(buttonModel)]
+                + (hasOtherContent ? buttonModel.stackViewModel.viewModels : [])
+            let stackModel = StackComponentViewModel(
+                component: stack, viewModels: children, badgeViewModels: [],
+                uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make())
+            )
+            let header = HeaderComponentViewModel(
+                component: .init(stack: stack), stackViewModel: stackModel, firstItemIgnoresSafeArea: false
+            )
+            var height: CGFloat = -1
+            let view = HeaderComponentView(viewModel: header, onDismiss: {})
+                .fixedSize(horizontal: false, vertical: true)
+                .overlay(GeometryReader { geometry in
+                    Color.clear.preference(key: NativeHeaderHeightTestKey.self, value: geometry.size.height)
+                })
+                .onPreferenceChange(NativeHeaderHeightTestKey.self) { height = $0 }
+                .environment(\.nativePaywallCloseCoordinator, NativePaywallCloseCoordinator())
+                .environmentObject(PurchaseHandler.default())
+                .environmentObject(PackageContext(package: nil, variableContext: .init(packages: [])))
+                .environmentObject(
+                    IntroOfferEligibilityContext(introEligibilityChecker: BaseSnapshotTest.eligibleChecker)
+                )
+                .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
+                .environment(\.screenCondition, .compact)
+                .environment(\.safeAreaInsets, EdgeInsets())
+            let (window, _) = Self.host(view)
+            let settled = expectation(description: "Header layout settled")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { settled.fulfill() }
+            await fulfillment(of: [settled], timeout: 2)
+            XCTAssertEqual(height, native && !hasOtherContent ? 0 : 100, accuracy: 0.5)
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+    }
+
     private func assertNativeCloseRunsExistingDismissalAndAnalytics(fullScreen: Bool) async throws {
         let viewModel = try Self.makeViewModel(
             component: PaywallComponent.ButtonComponent(
@@ -367,6 +411,11 @@ private extension UIView {
         return self.subviews.contains { $0.containsText(text) }
     }
 
+}
+
+private struct NativeHeaderHeightTestKey: PreferenceKey {
+    static let defaultValue: CGFloat = -1
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
 }
 
 #endif

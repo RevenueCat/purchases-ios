@@ -24,6 +24,8 @@ struct HeaderComponentView: View {
     @Environment(\.workflowRenderingContext)
     private var workflowRenderingContext
 
+    @State private var hiddenNativeButtons: Set<ObjectIdentifier> = []
+
     private let viewModel: HeaderComponentViewModel
     private let onDismiss: () -> Void
 
@@ -47,6 +49,14 @@ struct HeaderComponentView: View {
             )
         )
         .environment(\.workflowRenderingContext, self.workflowRenderingContext.markingHeader())
+        .onPreferenceChange(NativePaywallHiddenButtonsKey.self) { self.hiddenNativeButtons = $0 }
+        .frame(height: self.collapsesNativeOnlyHeader ? 0 : nil)
+        .opacity(self.collapsesNativeOnlyHeader ? 0 : 1)
+    }
+
+    private var collapsesNativeOnlyHeader: Bool {
+        guard let buttons = self.viewModel.buttonOnlyContentIdentifiers, !buttons.isEmpty else { return false }
+        return buttons.isSubset(of: self.hiddenNativeButtons)
     }
 
 }

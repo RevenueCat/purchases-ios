@@ -298,6 +298,36 @@ final class NativePaywallCloseButtonTests: TestCase {
         XCTAssertEqual(self.navigationCount(in: host), 1)
     }
 
+    func testReturningToRootDoesNotRestoreDesignedBackOrRegisterTransitionCopies() async {
+        let state = NativeWorkflowHeaderTestState()
+        let coordinator = NativePaywallCloseCoordinator()
+        var configuredAppearances = 0
+        let host = UIHostingController(rootView:
+            NativeWorkflowHeaderTestView(state: state, configuredAppeared: { configuredAppearances += 1 })
+                .environment(\.nativePaywallCloseCoordinator, coordinator)
+        )
+        let window = self.host(host)
+        defer { self.close(window) }
+        await self.waitForPresentation()
+        XCTAssertEqual(coordinator.actions.count, 2)
+        XCTAssertNil(coordinator.action(for: .back))
+        XCTAssertTrue(coordinator.action(for: .close)?.isWorkflowClose == true)
+        XCTAssertEqual(configuredAppearances, 0)
+
+        for canNavigateBack in [true, false, true, false] {
+            state.canNavigateBack = canNavigateBack
+            state.showsTransitionCopy = true
+            await self.waitForPresentation()
+            XCTAssertEqual(coordinator.actions.count, 2, "The animated header must not register copies")
+            XCTAssertEqual(coordinator.action(for: .back) != nil, canNavigateBack)
+            XCTAssertEqual(configuredAppearances, 0)
+            state.showsTransitionCopy = false
+            await self.waitForPresentation()
+            XCTAssertEqual(coordinator.actions.count, 2)
+            XCTAssertEqual(configuredAppearances, 0, "Returning to root must not restore the redundant Back")
+        }
+    }
+
     func testSwiftUIHeaderShowsSeparateNativeBackAndClose() async {
         var backRegistered = false
         var closeRegistered = false
@@ -528,4 +558,40 @@ enum NativePaywallTestSupport {
         return view.subviews.flatMap { self.toolbarViews(of: type, in: $0) }
     }
 }
+@available(iOS 15.0, *)
+@MainActor
+private final class NativeWorkflowHeaderTestState: ObservableObject {
+    @Published var canNavigateBack = false
+    @Published var showsTransitionCopy = false
+}
+
+@available(iOS 15.0, *)
+private struct NativeWorkflowHeaderTestView: View {
+    @ObservedObject var state: NativeWorkflowHeaderTestState
+    let configuredAppeared: () -> Void
+
+    var body: some View {
+        VStack {
+            self.header
+            if self.state.showsTransitionCopy {
+                self.header.environment(\.nativePaywallButtonRegistrationEnabled, false)
+            }
+        }
+    }
+
+    private var header: some View {
+        HStack {
+            NativePaywallCloseButton(
+                enabled: true, accessibilityLabel: "Back",
+                role: self.state.canNavigateBack ? .back : .close, action: {},
+                content: { Text("Designed Back").onAppear(perform: self.configuredAppeared) }
+            )
+            NativePaywallCloseButton(
+                enabled: true, accessibilityLabel: "Close", isWorkflowClose: true, action: {},
+                content: { Text("Designed Close").onAppear(perform: self.configuredAppeared) }
+            )
+        }
+    }
+}
+
 #endif
