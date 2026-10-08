@@ -57,6 +57,7 @@ struct SubscriptionDetailView: View {
         showPurchaseHistory: Bool,
         showVirtualCurrencies: Bool,
         allowsMissingPurchaseAction: Bool,
+        purchaseObservationMode: SubscriptionDetailViewModel.PurchaseObservationMode = .selectedPurchase,
         purchasesProvider: CustomerCenterPurchasesType,
         actionWrapper: CustomerCenterActionWrapper) {
             let viewModel = SubscriptionDetailViewModel(
@@ -65,6 +66,7 @@ struct SubscriptionDetailView: View {
                 showPurchaseHistory: showPurchaseHistory,
                 showVirtualCurrencies: showVirtualCurrencies,
                 allowsMissingPurchaseAction: allowsMissingPurchaseAction,
+                purchaseObservationMode: purchaseObservationMode,
                 actionWrapper: actionWrapper,
                 purchaseInformation: purchaseInformation,
                 purchasesProvider: purchasesProvider,

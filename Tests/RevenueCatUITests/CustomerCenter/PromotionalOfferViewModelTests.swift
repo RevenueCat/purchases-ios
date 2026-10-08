@@ -89,6 +89,21 @@ final class PromotionalOfferViewModelTests: TestCase {
     // MARK: - Tests
 
     @MainActor
+    func testThrownCancellationDeclinesOfferWithoutShowingError() async {
+        let purchases = MockCustomerCenterPurchases()
+        purchases.purchaseResult = .failure(NSError(
+            domain: ErrorCode.errorDomain, code: ErrorCode.purchaseCancelledError.rawValue
+        ))
+        var declined = false
+        let model = makeViewModel(mockPurchases: purchases, actionWrapper: CustomerCenterActionWrapper()) { action in
+            if case .declinePromotionalOffer = action { declined = true }
+        }
+        await model.purchasePromo()
+        XCTAssertTrue(declined)
+        XCTAssertNil(model.error)
+    }
+
+    @MainActor
     func testActionWrapperTriggersActionOnPurchaseSuccess() async {
         let mockPurchases = MockCustomerCenterPurchases()
         let actionWrapper = CustomerCenterActionWrapper()

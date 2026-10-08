@@ -242,14 +242,15 @@ private extension CustomerCenterView {
     }
 
     func singlePurchaseView(_ screen: CustomerCenterConfigData.Screen) -> some View {
-        SubscriptionDetailView(
+        let purchase = viewModel.subscriptionsSection.first ?? viewModel.nonSubscriptionsSection.first
+        return SubscriptionDetailView(
             customerInfoViewModel: viewModel,
             screen: screen,
-            purchaseInformation: viewModel.subscriptionsSection.first
-                ?? viewModel.nonSubscriptionsSection.first,
+            purchaseInformation: purchase,
             showPurchaseHistory: viewModel.shouldShowSeeAllPurchases,
             showVirtualCurrencies: viewModel.shouldShowVirtualCurrencies,
             allowsMissingPurchaseAction: true,
+            purchaseObservationMode: .currentPurchase,
             purchasesProvider: self.viewModel.purchasesProvider,
             actionWrapper: self.viewModel.actionWrapper
         )
