@@ -225,37 +225,31 @@ final class HostedCheckoutTests: TestCase {
         expect(handler.purchaseResult) == .cancelled
     }
 
-    /// The customer is told they already own it or that it is unavailable, or nothing at all, but the initiated
-    /// purchase still ends in an error, as one StoreKit refuses does.
+    /// The customer is told they already own it or that it is unavailable, or nothing at all, but the purchase still
+    /// fails, as one StoreKit refuses does.
     @MainActor
-    func testTracksARefusedPurchaseAsAPurchaseError() async throws {
+    func testReportsARefusedPurchaseAsAPurchaseError() async {
         let cases: [(HostedCheckoutStartResult, HostedCheckout.Refusal)] = [
             (.alreadyPurchased, .alreadyPurchased),
             (.notEligible, .notEligible),
-            (.paymentsNotAuthorized, .paymentsNotAuthorized),
-            (.alreadyStarting, .alreadyStarting)
+            (.paymentsNotAuthorized, .paymentsNotAuthorized)
         ]
 
         for (result, expectedError) in cases {
-            let trackedEvents: Atomic<[PaywallEvent]> = .init([])
-            let purchases = Self.makePurchases(trackingInto: trackedEvents)
-            purchases.hostedCheckoutBlock = { _, _, _ in result }
-            let handler = Self.makeHandler(purchases: purchases)
-            handler.trackPaywallImpression(Self.impressionData)
+            let (handler, trackedEvents) = await Self.startCheckout(endingIn: result)
 
-            _ = await HostedCheckout.start(for: TestData.annualPackage,
-                                           purchaseHandler: handler,
-                                           purchaseInitiatedAction: nil)
-            await Self.waitForEventsTrackedSoFar(by: handler, into: trackedEvents)
-
-            let errors = trackedEvents.value.filter(Self.isPurchaseError)
-            expect(errors).to(haveCount(1), description: "\(result)")
-            expect(errors.first?.data.packageId) == TestData.annualPackage.identifier
-            expect(errors.first?.data.errorCode).to(equal((expectedError as NSError).code), description: "\(result)")
-            expect(errors.first?.data.errorMessage) == (expectedError as NSError).localizedDescription
-            expect(trackedEvents.value.contains(where: Self.isCancel)).to(beFalse(), description: "\(result)")
-            expect(handler.purchaseError).to(beNil(), description: "\(result)")
+            Self.expectASinglePurchaseError(expectedError, in: trackedEvents)
+            expect(handler.purchaseError as? HostedCheckout.Refusal).to(equal(expectedError), description: "\(result)")
         }
+    }
+
+    /// The checkout already starting reports how the purchase ends, which may yet be a purchase.
+    @MainActor
+    func testOnlyTracksATapWhileAnotherCheckoutIsStarting() async {
+        let (handler, trackedEvents) = await Self.startCheckout(endingIn: .alreadyStarting)
+
+        Self.expectASinglePurchaseError(HostedCheckout.Refusal.alreadyStarting, in: trackedEvents)
+        expect(handler.purchaseError).to(beNil())
     }
 
     // MARK: - Keeping the checkout
@@ -967,10 +961,10 @@ final class HostedCheckoutTests: TestCase {
             == TestData.annualPackage.identifier
     }
 
-    /// Settles as when the checkout never opened for this reason: the paywall only tells the customer, and the
-    /// initiated purchase ends in the error StoreKit refuses it with.
+    /// Settles as when the checkout never opened for this reason: the paywall tells the customer, and the purchase
+    /// fails with the error StoreKit refuses it with.
     @MainActor
-    func testTracksAProductTheCustomerAlreadyOwnedAsAPurchaseError() async {
+    func testReportsAProductTheCustomerAlreadyOwnedAsAPurchaseError() async {
         let trackedEvents: Atomic<[PaywallEvent]> = .init([])
         let purchases = Self.makePurchases(trackingInto: trackedEvents)
         purchases.hostedCheckoutPollBlock = { _ in .alreadyPurchased }
@@ -984,12 +978,9 @@ final class HostedCheckoutTests: TestCase {
         await Self.waitForEventsTrackedSoFar(by: handler, into: trackedEvents)
 
         expect(handler.sessionPurchaseResult).to(beNil())
-        expect(handler.purchaseError).to(beNil())
+        expect(handler.purchaseError as? HostedCheckout.Refusal) == .alreadyPurchased
         expect(handler.actionInProgress) == false
-        let errors = trackedEvents.value.filter(Self.isPurchaseError)
-        expect(errors).to(haveCount(1))
-        expect(errors.first?.data.errorCode) == ErrorCode.productAlreadyPurchasedError.rawValue
-        expect(trackedEvents.value.contains(where: Self.isCancel)) == false
+        Self.expectASinglePurchaseError(HostedCheckout.Refusal.alreadyPurchased, in: trackedEvents)
     }
 
     // MARK: - Errors
@@ -1136,6 +1127,36 @@ private extension HostedCheckoutTests {
     static func isClose(_ event: PaywallEvent) -> Bool {
         if case .close = event { return true }
         return false
+    }
+
+    /// Starts a checkout that ends in `result`, once every event it tracked has been tracked.
+    @MainActor
+    static func startCheckout(
+        endingIn result: HostedCheckoutStartResult
+    ) async -> (handler: PurchaseHandler, trackedEvents: Atomic<[PaywallEvent]>) {
+        let trackedEvents: Atomic<[PaywallEvent]> = .init([])
+        let purchases = Self.makePurchases(trackingInto: trackedEvents)
+        purchases.hostedCheckoutBlock = { _, _, _ in result }
+        let handler = Self.makeHandler(purchases: purchases)
+        handler.trackPaywallImpression(Self.impressionData)
+
+        _ = await HostedCheckout.start(for: TestData.annualPackage,
+                                       purchaseHandler: handler,
+                                       purchaseInitiatedAction: nil)
+        await Self.waitForEventsTrackedSoFar(by: handler, into: trackedEvents)
+
+        return (handler, trackedEvents)
+    }
+
+    static func expectASinglePurchaseError(_ refusal: HostedCheckout.Refusal,
+                                           in trackedEvents: Atomic<[PaywallEvent]>) {
+        let errors = trackedEvents.value.filter(Self.isPurchaseError)
+        expect(errors).to(haveCount(1), description: "\(refusal)")
+        expect(errors.first?.data.packageId).to(equal(TestData.annualPackage.identifier), description: "\(refusal)")
+        expect(errors.first?.data.errorCode).to(equal((refusal as NSError).code), description: "\(refusal)")
+        expect(errors.first?.data.errorMessage)
+            .to(equal((refusal as NSError).localizedDescription), description: "\(refusal)")
+        expect(trackedEvents.value.contains(where: Self.isCancel)).to(beFalse(), description: "\(refusal)")
     }
 
     /// Events are tracked in the order they are submitted, so once a close submitted now is tracked, so is every

@@ -105,12 +105,13 @@ enum HostedCheckout {
         case .declinedByCustomer:
             purchaseHandler.handleHostedCheckoutDismissal(package: package)
         case .alreadyPurchased:
-            purchaseHandler.trackPurchaseError(package: package, error: Refusal.alreadyPurchased)
+            purchaseHandler.handleHostedCheckoutFailure(Refusal.alreadyPurchased, package: package)
         case .notEligible:
-            purchaseHandler.trackPurchaseError(package: package, error: Refusal.notEligible)
+            purchaseHandler.handleHostedCheckoutFailure(Refusal.notEligible, package: package)
         case .paymentsNotAuthorized:
-            purchaseHandler.trackPurchaseError(package: package, error: Refusal.paymentsNotAuthorized)
+            purchaseHandler.handleHostedCheckoutFailure(Refusal.paymentsNotAuthorized, package: package)
         case .alreadyStarting:
+            // Only tracked: the checkout already starting reports how the purchase ends, which may yet be a purchase.
             purchaseHandler.trackPurchaseError(package: package, error: Refusal.alreadyStarting)
         }
 
@@ -317,9 +318,7 @@ enum HostedCheckout {
                     // a second checkout the customer could pay for too.
                     purchaseHandler.handleHostedCheckoutFailure(error, package: package)
                 case .tellCustomerTheyAlreadyOwnIt:
-                    if let package {
-                        purchaseHandler.trackPurchaseError(package: package, error: Refusal.alreadyPurchased)
-                    }
+                    purchaseHandler.handleHostedCheckoutFailure(Refusal.alreadyPurchased, package: package)
                     Self.settle(checkout, purchaseHandler: purchaseHandler)
                 }
 
