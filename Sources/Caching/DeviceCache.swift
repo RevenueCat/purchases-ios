@@ -379,7 +379,9 @@ class DeviceCache {
             }
 
             if merged != localAttributes {
-                Self.store($0, subscriberAttributesByKey: merged, appUserID: appUserID)
+                // use "set" instead of "store", because the latter does its own naive merging
+                // that would preserve a deleted-from-the-server attribute in the local cache
+                Self.set($0, subscriberAttributesByKey: merged, appUserID: appUserID)
             }
         }
     }
@@ -747,6 +749,20 @@ private extension DeviceCache {
             subscriberAttributesForAppUserID[key] = attributes.asDictionary()
         }
         groupedSubscriberAttributes[appUserID] = subscriberAttributesForAppUserID
+        userDefaults.set(groupedSubscriberAttributes, forKey: CacheKeys.subscriberAttributes)
+    }
+
+    static func set(
+        _ userDefaults: UserDefaults,
+        subscriberAttributesByKey: [String: SubscriberAttribute],
+        appUserID: String
+    ) {
+        var groupedSubscriberAttributes = Self.storedAttributesForAllUsers(userDefaults)
+        if subscriberAttributesByKey.isEmpty {
+            groupedSubscriberAttributes.removeValue(forKey: appUserID)
+        } else {
+            groupedSubscriberAttributes[appUserID] = subscriberAttributesByKey.mapValues { $0.asDictionary() }
+        }
         userDefaults.set(groupedSubscriberAttributes, forKey: CacheKeys.subscriberAttributes)
     }
 

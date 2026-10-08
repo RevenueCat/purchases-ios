@@ -1616,3 +1616,130 @@ private extension GetCustomerInfoTrackingTests {
     }
 
 }
+
+class CustomerInfoManagerSubscriberAttributesTests: BaseCustomerInfoManagerTests {
+
+    private static let remoteSetTime = Date(timeIntervalSince1970: 1_600_000_000)
+
+    func testCacheCustomerInfoMergesSubscriberAttributesAsSynced() throws {
+        let info = try Self.customerInfo(subscriberAttributes: [
+            "$email": ["value": "user@example.com", "updated_at_ms": 1_600_000_000_000],
+            "band": ["value": "Rush", "updated_at_ms": 1_600_000_000_000]
+        ])
+
+        self.customerInfoManager.cache(customerInfo: info, appUserID: Self.appUserID)
+
+        expect(self.mockDeviceCache.subscriberAttributes(appUserID: Self.appUserID)) == [
+            "$email": Self.attribute("$email", "user@example.com", synced: true, at: Self.remoteSetTime),
+            "band": Self.attribute("band", "Rush", synced: true, at: Self.remoteSetTime)
+        ]
+        expect(self.mockDeviceCache.numberOfUnsyncedAttributes(appUserID: Self.appUserID)) == 0
+    }
+
+    func testCacheCustomerInfoMergesSubscriberAttributesOnlyForGivenAppUserID() throws {
+        let info = try Self.customerInfo(subscriberAttributes: [
+            "band": ["value": "Rush", "updated_at_ms": 1_600_000_000_000]
+        ])
+
+        self.customerInfoManager.cache(customerInfo: info, appUserID: Self.appUserID)
+
+        expect(self.mockDeviceCache.subscriberAttributes(appUserID: "another_user")).to(beEmpty())
+    }
+
+    func testCacheCustomerInfoWithoutSubscriberAttributesDoesNotModifyStoredAttributes() throws {
+        let synced = Self.attribute("band", "Rush", synced: true, at: Self.remoteSetTime)
+        let unsynced = Self.attribute("song", "YYZ", synced: false, at: Self.remoteSetTime)
+        self.mockDeviceCache.merge(subscriberAttributes: [synced.key: synced, unsynced.key: unsynced],
+                                   appUserID: Self.appUserID)
+
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
+
+        expect(self.mockDeviceCache.subscriberAttributes(appUserID: Self.appUserID)) == [
+            synced.key: synced,
+            unsynced.key: unsynced
+        ]
+    }
+
+    func testCacheCustomerInfoWithEmptySubscriberAttributesKeepsUnsyncedLocalAttributes() throws {
+        let unsynced = Self.attribute("song", "YYZ", synced: false, at: Self.remoteSetTime)
+        self.mockDeviceCache.merge(subscriberAttributes: [unsynced.key: unsynced], appUserID: Self.appUserID)
+        let info = try Self.customerInfo(subscriberAttributes: [:])
+
+        self.customerInfoManager.cache(customerInfo: info, appUserID: Self.appUserID)
+
+        expect(self.mockDeviceCache.subscriberAttributes(appUserID: Self.appUserID)) == [unsynced.key: unsynced]
+    }
+
+    func testCacheCustomerInfoKeepsNewerUnsyncedLocalAttribute() throws {
+        let local = Self.attribute("band", "Yes", synced: false, at: Self.remoteSetTime.addingTimeInterval(60))
+        self.mockDeviceCache.merge(subscriberAttributes: [local.key: local], appUserID: Self.appUserID)
+        let info = try Self.customerInfo(subscriberAttributes: [
+            "band": ["value": "Rush", "updated_at_ms": 1_600_000_000_000]
+        ])
+
+        self.customerInfoManager.cache(customerInfo: info, appUserID: Self.appUserID)
+
+        expect(self.mockDeviceCache.subscriberAttributes(appUserID: Self.appUserID)) == [local.key: local]
+        expect(self.mockDeviceCache.unsyncedAttributesByKey(appUserID: Self.appUserID)) == [local.key: local]
+    }
+
+    func testCacheCustomerInfoOverridesOlderLocalAttribute() throws {
+        let local = Self.attribute("band", "Yes", synced: false, at: Self.remoteSetTime.addingTimeInterval(-60))
+        self.mockDeviceCache.merge(subscriberAttributes: [local.key: local], appUserID: Self.appUserID)
+        let info = try Self.customerInfo(subscriberAttributes: [
+            "band": ["value": "Rush", "updated_at_ms": 1_600_000_000_000]
+        ])
+
+        self.customerInfoManager.cache(customerInfo: info, appUserID: Self.appUserID)
+
+        expect(self.mockDeviceCache.subscriberAttributes(appUserID: Self.appUserID)) == [
+            "band": Self.attribute("band", "Rush", synced: true, at: Self.remoteSetTime)
+        ]
+    }
+
+    func testCacheCustomerInfoDoesNotMergeSubscriberAttributesForOfflineCustomerInfo() throws {
+        let info = try Self.customerInfo(subscriberAttributes: [
+            "band": ["value": "Rush", "updated_at_ms": 1_600_000_000_000]
+        ]).copy(with: .verifiedOnDevice, httpResponseOriginalSource: nil)
+
+        self.customerInfoManager.cache(customerInfo: info, appUserID: Self.appUserID)
+
+        expect(self.mockDeviceCache.subscriberAttributes(appUserID: Self.appUserID)).to(beEmpty())
+    }
+
+    func testFetchAndCacheCustomerInfoMergesSubscriberAttributes() throws {
+        let info = try Self.customerInfo(subscriberAttributes: [
+            "band": ["value": "Rush", "updated_at_ms": 1_600_000_000_000]
+        ])
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(info)
+
+        try self.fetchAndCacheCustomerInfo(isAppBackground: false)
+
+        expect(self.mockDeviceCache.subscriberAttributes(appUserID: Self.appUserID)) == [
+            "band": Self.attribute("band", "Rush", synced: true, at: Self.remoteSetTime)
+        ]
+    }
+
+}
+
+private extension CustomerInfoManagerSubscriberAttributesTests {
+
+    static func customerInfo(subscriberAttributes: [String: Any]) throws -> CustomerInfo {
+        return try CustomerInfo(data: [
+            "request_date": "2018-12-21T02:40:36Z",
+            "subscriber": [
+                "original_app_user_id": Self.appUserID,
+                "first_seen": "2019-06-17T16:05:33Z",
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any],
+                "original_application_version": NSNull(),
+                "subscriber_attributes": subscriberAttributes
+            ] as [String: Any]
+        ])
+    }
+
+    static func attribute(_ key: String, _ value: String, synced: Bool, at setTime: Date) -> SubscriberAttribute {
+        return SubscriberAttribute(withKey: key, value: value, isSynced: synced, setTime: setTime)
+    }
+
+}

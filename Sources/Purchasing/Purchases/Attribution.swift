@@ -88,6 +88,7 @@ public extension Attribution {
 
 extension CustomerInfo {
 
+    @_spi(Internal)
     @objc(RCCustomerAttribute) public final class Attribute: NSObject {
 
         private let attribute: SubscriberAttribute
@@ -107,6 +108,7 @@ extension CustomerInfo {
 
 public extension Attribution {
 
+    @_spi(Internal)
     @objc var attributesForCurrentUser: [CustomerInfo.Attribute] {
         let attributes = self.subscriberAttributesManager.localStoredAttributes(for: appUserID)
         return attributes.values.map { CustomerInfo.Attribute(attribute: $0) }
