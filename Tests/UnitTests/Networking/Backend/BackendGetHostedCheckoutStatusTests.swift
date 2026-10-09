@@ -48,6 +48,8 @@ class BackendGetHostedCheckoutStatusTests: BaseBackendTests {
     }
 
     func testIsRetriedWhenRateLimited() {
+        // The request's snapshot is recorded by the other tests.
+        self.httpClient.disableSnapshotTesting()
         self.mockStatus(Self.response(status: "started"))
 
         let result = waitUntilValue { completed in
