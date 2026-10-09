@@ -18,7 +18,7 @@ import XCTest
 import UIKit
 #endif
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 class PurchaseParamsTests: TestCase {
@@ -212,8 +212,8 @@ class PurchaseParamsTests: TestCase {
             .with(confirmInScene: uiScene)
             .build()
 
-        expect(purchaseParams.storeKit2ConfirmInOptions).toNot(beNil())
-        expect(purchaseParams.storeKit2ConfirmInOptions?.confirmInScene).to(equal(uiScene))
+        expect(purchaseParams.presentationContext).toNot(beNil())
+        expect(purchaseParams.presentationContext?.scene).to(equal(uiScene))
     }
     #endif
 
@@ -232,8 +232,8 @@ class PurchaseParamsTests: TestCase {
             .with(confirmInWindow: nsWindow)
             .build()
 
-        expect(purchaseParams.storeKit2ConfirmInOptions).toNot(beNil())
-        expect(purchaseParams.storeKit2ConfirmInOptions?.confirmInWindow).to(equal(nsWindow))
+        expect(purchaseParams.presentationContext).toNot(beNil())
+        expect(purchaseParams.presentationContext?.window).to(equal(nsWindow))
     }
     #endif
 }

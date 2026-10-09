@@ -56,8 +56,8 @@ import AppKit
 
     #endif
 
-    /// Options for the confirmIn: parameter of the `purchase(confirmIn:options:)` SK2 APIs.
-    let storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions?
+    /// The platform UI context where purchase-related UI should be presented.
+    let presentationContext: PresentationContext?
 
     private init(with builder: Builder) {
         self.promotionalOffer = builder.promotionalOffer
@@ -77,7 +77,7 @@ import AppKit
         self.promotionalOfferOptions = builder.promotionalOfferOptions
         #endif
 
-        self.storeKit2ConfirmInOptions = builder.storeKit2ConfirmInOptions
+        self.presentationContext = builder.presentationContext
     }
 
     /// The Builder for ```PurchaseParams```.
@@ -101,7 +101,7 @@ import AppKit
 
         #endif
 
-        private(set) var storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions?
+        private(set) var presentationContext: PresentationContext?
 
         /**
          * Create a new builder with a ``Package``.
@@ -167,13 +167,13 @@ import AppKit
          * Set `confirmInScene`.
          *
          * - Parameter confirmInScene: The scene the system uses to show the purchase confirmation UI.
-         * - Note: This value is only used when StoreKit 2 is in use.
+         * - Note: This value anchors purchase UI that supports scene-aware presentation.
          *
          * Availability: iOS 17.0+, macCatalyst 17.0+, tvOS 17.0+, visionOS 1.0+
          */
         @available(iOS 17.0, macCatalyst 17.0, tvOS 17.0, visionOS 1.0, *)
         public func with(confirmInScene: UIScene) -> Self {
-            self.storeKit2ConfirmInOptions = StoreKit2ConfirmInOptions(confirmInScene: confirmInScene)
+            self.presentationContext = PresentationContext(scene: confirmInScene)
             return self
         }
         #endif
@@ -188,13 +188,13 @@ import AppKit
          * Set `confirmInWindow`.
          *
          * - Parameter confirmInWindow: The window to show the purchase confirmation UI in proximity to.
-         * - Note: This value is only used when StoreKit 2 is in use.
+         * - Note: This value anchors purchase UI that supports window-aware presentation.
          *
          * Availability: macOS 15.2+
          */
         @available(macOS 15.2, *)
         public func with(confirmInWindow: NSWindow) -> Self {
-            self.storeKit2ConfirmInOptions = StoreKit2ConfirmInOptions(confirmInWindow: confirmInWindow)
+            self.presentationContext = PresentationContext(window: confirmInWindow)
             return self
         }
         #endif
