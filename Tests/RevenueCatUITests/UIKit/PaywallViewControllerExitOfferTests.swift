@@ -157,6 +157,21 @@ final class PaywallViewControllerExitOfferTests: TestCase {
         expect(exitOffer.dismissCallCount).to(equal(1))
     }
 
+    // MARK: - Swipe to dismiss
+
+    func testCannotBeSwipedAwayWhileAPurchaseIsInProgress() {
+        let controller = PaywallViewController(offering: Self.makeOffering(identifier: "main"))
+        controller.purchaseHandlerForTesting.actionTypeInProgress = .purchase
+
+        expect(controller.presentationControllerShouldDismiss(Self.presentationController(for: controller))) == false
+    }
+
+    func testCanBeSwipedAwayWhenNoPurchaseIsInProgress() {
+        let controller = PaywallViewController(offering: Self.makeOffering(identifier: "main"))
+
+        expect(controller.presentationControllerShouldDismiss(Self.presentationController(for: controller))) == true
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
@@ -199,6 +214,10 @@ private extension PaywallViewControllerExitOfferTests {
             availablePackages: [],
             webCheckoutUrl: nil
         )
+    }
+
+    static func presentationController(for controller: UIViewController) -> UIPresentationController {
+        return UIPresentationController(presentedViewController: controller, presenting: nil)
     }
 
 }

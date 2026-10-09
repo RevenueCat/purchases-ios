@@ -134,6 +134,8 @@ public class PaywallViewController: UIViewController {
 
     var exitOfferOfferingForTesting: Offering? { self.exitOfferOffering }
 
+    var purchaseHandlerForTesting: PurchaseHandler { self.purchaseHandler }
+
     var workflowContextForTesting: WorkflowContext? { self.configuration.injectedWorkflowContext }
 
     var workflowBackNavigationBridgeForTesting: WorkflowBackNavigationBridge {
@@ -730,6 +732,8 @@ public class PaywallViewController: UIViewController {
 // and calls are forwarded to it when we're not handling exit offers.
 //
 // Note on `presentationControllerShouldDismiss`:
+// - A purchase or restore in progress blocks the swipe, as the SwiftUI presentation does, so that its outcome
+//   still reaches the paywall's callbacks.
 // - Exit offers have priority. If an exit offer is available (and no purchase happened), we
 //   return `false` to block the swipe dismiss. This triggers `presentationControllerDidAttemptToDismiss`,
 //   where we present the exit offer paywall.
@@ -740,6 +744,10 @@ extension PaywallViewController: UIAdaptivePresentationControllerDelegate {
 
     // swiftlint:disable:next missing_docs
     public func presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Bool {
+        if self.purchaseHandler.actionInProgress {
+            return false
+        }
+
         // Exit offer has priority - block dismiss to show exit offer if available and no purchase happened.
         // This will trigger `presentationControllerDidAttemptToDismiss` where we present the exit offer.
         if self.exitOfferOffering != nil && !self.purchaseHandler.hasPurchasedInSession {
@@ -759,6 +767,10 @@ extension PaywallViewController: UIAdaptivePresentationControllerDelegate {
 
     // swiftlint:disable:next missing_docs
     public func presentationControllerDidAttemptToDismiss(_ presentationController: UIPresentationController) {
+        if self.purchaseHandler.actionInProgress {
+            return
+        }
+
         // Exit offer has priority - if we blocked for exit offer, handle it ourselves
         if self.exitOfferOffering != nil && !self.purchaseHandler.hasPurchasedInSession {
             self.handleDismissalRequest()
