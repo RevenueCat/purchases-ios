@@ -57,7 +57,7 @@ import AppKit
     #endif
 
     /// The platform UI context where purchase-related UI should be presented.
-    let presentationContext: PurchasePresentationContext?
+    let presentationContext: PresentationContext?
 
     private init(with builder: Builder) {
         self.promotionalOffer = builder.promotionalOffer
@@ -101,7 +101,7 @@ import AppKit
 
         #endif
 
-        private(set) var presentationContext: PurchasePresentationContext?
+        private(set) var presentationContext: PresentationContext?
 
         /**
          * Create a new builder with a ``Package``.
@@ -173,7 +173,7 @@ import AppKit
          */
         @available(iOS 17.0, macCatalyst 17.0, tvOS 17.0, visionOS 1.0, *)
         public func with(confirmInScene: UIScene) -> Self {
-            self.presentationContext = PurchasePresentationContext(scene: confirmInScene)
+            self.presentationContext = PresentationContext(scene: confirmInScene)
             return self
         }
         #endif
@@ -194,7 +194,7 @@ import AppKit
          */
         @available(macOS 15.2, *)
         public func with(confirmInWindow: NSWindow) -> Self {
-            self.presentationContext = PurchasePresentationContext(window: confirmInWindow)
+            self.presentationContext = PresentationContext(window: confirmInWindow)
             return self
         }
         #endif

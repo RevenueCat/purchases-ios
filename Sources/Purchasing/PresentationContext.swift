@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PurchasePresentationContext.swift
+//  PresentationContext.swift
 //
 //  Created by Rick van der Linden on 7/10/26.
 
@@ -21,8 +21,8 @@ import UIKit
 import AppKit
 #endif
 
-/// The platform UI context for presenting purchase-related UI.
-@_spi(Internal) public struct PurchasePresentationContext: @unchecked Sendable {
+/// The platform UI context for presenting SDK-owned UI.
+@_spi(Internal) public struct PresentationContext: @unchecked Sendable {
 
     #if canImport(UIKit) && !os(watchOS)
 

@@ -380,7 +380,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         }
 
         expect(self.mockStoreKit2ProductPurchaser.invokedPurchaseCount) == 1
-        expect(self.mockStoreKit2ProductPurchaser.receivedPurchasePresentationContext?.scene).to(equal(scene))
+        expect(self.mockStoreKit2ProductPurchaser.receivedPresentationContext?.scene).to(equal(scene))
     }
     #endif
 
@@ -414,7 +414,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         }
 
         expect(self.mockStoreKit2ProductPurchaser.invokedPurchaseCount) == 1
-        expect(self.mockStoreKit2ProductPurchaser.receivedPurchasePresentationContext?.window).to(equal(window))
+        expect(self.mockStoreKit2ProductPurchaser.receivedPresentationContext?.window).to(equal(window))
     }
     #endif
 

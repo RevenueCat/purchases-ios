@@ -543,7 +543,7 @@ final class PurchasesOrchestrator {
                   winBackOffer: WinBackOffer? = nil,
                   introductoryOfferEligibilityJWS: String? = nil,
                   promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions? = nil,
-                  presentationContext: PurchasePresentationContext? = nil,
+                  presentationContext: PresentationContext? = nil,
                   metadata: [String: String]? = nil,
                   paywallEvent: PaywallEvent? = nil,
                   quantity: Int? = nil,
@@ -722,7 +722,7 @@ final class PurchasesOrchestrator {
                   introductoryOfferEligibilityJWS: String?,
                   billingPlanType: BillingPlanType?,
                   promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?,
-                  presentationContext: PurchasePresentationContext?,
+                  presentationContext: PresentationContext?,
                   metadata: [String: String]? = nil,
                   paywallEvent: PaywallEvent? = nil,
                   quantity: Int? = nil,
@@ -782,7 +782,7 @@ final class PurchasesOrchestrator {
                   metadata: [String: String]? = nil,
                   paywallEvent: PaywallEvent? = nil,
                   quantity: Int? = nil,
-                  presentationContext: PurchasePresentationContext? = nil) async throws -> PurchaseResultData {
+                  presentationContext: PresentationContext? = nil) async throws -> PurchaseResultData {
         // Run the purchase + receipt post as a task that a concurrent queue-initiated receipt post for
         // the same product can await, so the attributed purchase post reaches the backend first. The
         // task only starts once registered, so a transaction reaching `Transaction.updates`
@@ -836,7 +836,7 @@ final class PurchasesOrchestrator {
         metadata: [String: String]? = nil,
         paywallEvent: PaywallEvent? = nil,
         quantity: Int? = nil,
-        presentationContext: PurchasePresentationContext? = nil
+        presentationContext: PresentationContext? = nil
     ) async throws -> PurchaseResultData {
         let result: Product.PurchaseResult
         var options: Set<Product.PurchaseOption> = [.simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)]
