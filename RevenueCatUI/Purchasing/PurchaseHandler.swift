@@ -560,7 +560,7 @@ extension PurchaseHandler {
         case .defaultOffering:
             return cachedOfferings?.current
         case let .offeringIdentifier(identifier, presentedOfferingContext):
-            let offering = cachedOfferings?.offering(identifier: identifier)
+            let offering = cachedOfferings?.offering(identifier: identifier.value)
             if let presentedOfferingContext {
                 return offering?.withPresentedOfferingContext(presentedOfferingContext)
             }
@@ -592,7 +592,7 @@ extension PurchaseHandler {
             return try await self.purchases.offerings().current.orThrow(PaywallError.noCurrentOffering)
         case let .offeringIdentifier(identifier, presentedOfferingContext):
             return try await self.resolveOfferingIdentifier(
-                identifier: identifier,
+                identifier: identifier.value,
                 presentedOfferingContext: presentedOfferingContext
             )
         }
@@ -649,8 +649,8 @@ extension PurchaseHandler {
         case let .offeringIdentifier(identifier, presentedOfferingContext):
             let offerings = try await self.purchases.offerings()
             let offering = try offerings
-                .offering(identifier: identifier)
-                .orThrow(PaywallError.offeringNotFound(identifier: identifier))
+                .offering(identifier: identifier.value)
+                .orThrow(PaywallError.offeringNotFound(identifier: identifier.value))
 
             let resolvedOffering: Offering
             if let presentedOfferingContext {

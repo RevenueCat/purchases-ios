@@ -108,7 +108,7 @@ extension PaywallViewConfiguration {
 
         case defaultOffering
         case offering(Offering)
-        case offeringIdentifier(String, presentedOfferingContext: PresentedOfferingContext?)
+        case offeringIdentifier(OwnedOfferingIdentifier, presentedOfferingContext: PresentedOfferingContext?)
 
         /// The developer-supplied `Offering` instance, when the caller passed one directly.
         var passedOffering: Offering? {
@@ -116,6 +116,26 @@ extension PaywallViewConfiguration {
                 return offering
             }
             return nil
+        }
+
+    }
+
+    /// An offering identifier whose storage RevenueCatUI owns.
+    ///
+    /// Hybrid SDKs pass identifiers as `NSString`s. Bridging an immutable `NSString` doesn't copy it: the
+    /// resulting `String` messages the caller's object every time it's hashed or compared, and the paywall does
+    /// that after `await purchases.offerings()`, often on a background thread. By then the caller may have
+    /// released the string, which crashes in `Offerings.offering(identifier:)`.
+    /// Copying the bytes while the caller still holds the object detaches the paywall from its lifetime.
+    /// See https://github.com/RevenueCat/react-native-purchases/issues/2018.
+    struct OwnedOfferingIdentifier: Sendable {
+
+        let value: String
+
+        init(_ identifier: String) {
+            // The bytes come from a `String`, so they're valid UTF-8 and this decode is lossless.
+            // swiftlint:disable:next optional_data_string_conversion
+            self.value = String(decoding: Array(identifier.utf8), as: UTF8.self)
         }
 
     }
