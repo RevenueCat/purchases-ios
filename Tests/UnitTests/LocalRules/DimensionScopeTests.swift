@@ -36,7 +36,7 @@ struct DimensionScopeTests {
         let providers: [any DimensionProvider] = [
             DeviceDimensionProvider(
                 appVersion: "1.2.3",
-                preferredLocalesProvider: { ["en-GB"] },
+                localeProvider: { "en-GB" },
                 platform: "iOS",
                 platformVersion: OperatingSystemVersion(majorVersion: 18, minorVersion: 5, patchVersion: 0),
                 sdkVersion: "10.1.1"
