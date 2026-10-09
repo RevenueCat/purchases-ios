@@ -133,8 +133,7 @@ class PurchasesFallbackURLBackendStoreKit2IntegrationTests: BaseStoreKitIntegrat
         let onlineCustomerInfo = try await self.purchases.customerInfo()
 
         try await self.verifySpecificTransactionIsEventuallyFinished(
-            transactionId: transaction.transactionIdentifier,
-            productId: transaction.productIdentifier,
+            transaction,
             count: nil
         )
 
