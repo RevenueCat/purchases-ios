@@ -600,11 +600,14 @@ final class PurchasesOrchestrator {
                           quantity: quantity,
                           completion: completionWithTracking)
         } else if let simulatedStoreProduct = product.testStoreProduct {
-            self.handlePurchase(simulatedStoreProduct: simulatedStoreProduct,
-                                presentedOfferingContext: package?.presentedOfferingContext,
-                                paywallEvent: paywallEvent,
-                                metadata: metadata,
-                                completion: completionWithTracking)
+            self.handlePurchase(
+                simulatedStoreProduct: simulatedStoreProduct,
+                presentedOfferingContext: package?.presentedOfferingContext,
+                paywallEvent: paywallEvent,
+                metadata: metadata,
+                presentationContext: presentationContext,
+                completion: completionWithTracking
+            )
         } else {
             fatalError("Unrecognized product: \(product)")
         }
@@ -2271,29 +2274,41 @@ private extension PurchasesOrchestrator {
 
 private extension PurchasesOrchestrator {
 
-    func handlePurchase(simulatedStoreProduct: SimulatedStoreProduct,
-                        presentedOfferingContext: PresentedOfferingContext?,
-                        paywallEvent: PaywallEvent?,
-                        metadata: [String: String]?,
-                        completion: @escaping PurchaseCompletedBlock) {
+    func handlePurchase(
+        simulatedStoreProduct: SimulatedStoreProduct,
+        presentedOfferingContext: PresentedOfferingContext?,
+        paywallEvent: PaywallEvent?,
+        metadata: [String: String]?,
+        presentationContext: PurchasePresentationContext?,
+        completion: @escaping PurchaseCompletedBlock
+    ) {
         if self.systemInfo.isSimulatedStoreAPIKey {
-            self.purchase(simulatedStoreProduct: simulatedStoreProduct,
-                          presentedOfferingContext: presentedOfferingContext,
-                          paywallEvent: paywallEvent,
-                          metadata: metadata,
-                          completion: completion)
+            self.purchase(
+                simulatedStoreProduct: simulatedStoreProduct,
+                presentedOfferingContext: presentedOfferingContext,
+                paywallEvent: paywallEvent,
+                metadata: metadata,
+                presentationContext: presentationContext,
+                completion: completion
+            )
         } else {
             self.handleTestProductNotAvailableForPurchase(completion)
         }
     }
 
-    private func purchase(simulatedStoreProduct: SimulatedStoreProduct,
-                          presentedOfferingContext: PresentedOfferingContext?,
-                          paywallEvent: PaywallEvent?,
-                          metadata: [String: String]?,
-                          completion: @escaping PurchaseCompletedBlock) {
+    private func purchase(
+        simulatedStoreProduct: SimulatedStoreProduct,
+        presentedOfferingContext: PresentedOfferingContext?,
+        paywallEvent: PaywallEvent?,
+        metadata: [String: String]?,
+        presentationContext: PurchasePresentationContext?,
+        completion: @escaping PurchaseCompletedBlock
+    ) {
         Task {
-            let result = await self.simulatedStorePurchaseHandler.purchase(product: simulatedStoreProduct)
+            let result = await self.simulatedStorePurchaseHandler.purchase(
+                product: simulatedStoreProduct,
+                presentationContext: presentationContext
+            )
             switch result {
             case .cancel:
                 let customerInfo = try? await self.customerInfoManager.customerInfo(appUserID: self.appUserID,
