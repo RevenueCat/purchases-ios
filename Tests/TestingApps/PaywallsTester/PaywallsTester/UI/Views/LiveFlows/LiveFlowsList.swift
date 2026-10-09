@@ -1,5 +1,5 @@
 //
-//  APIKeyDashboardList.swift
+//  LiveFlowsList.swift
 //  SimpleApp
 //
 //  Created by Nacho Soto on 7/27/23.
@@ -16,7 +16,7 @@ import SwiftUI
 import UIKit
 #endif
 
-struct APIKeyDashboardList: View {
+struct LiveFlowsList: View {
 
     fileprivate enum PaywallSection: Hashable, Comparable {
         case legacy(templateName: String)
@@ -692,7 +692,7 @@ struct APIKeyDashboardList: View {
 
 }
 
-extension APIKeyDashboardList.PaywallSection: CustomStringConvertible {
+extension LiveFlowsList.PaywallSection: CustomStringConvertible {
 
     var description: String {
         switch self {
@@ -725,7 +725,7 @@ extension APIKeyDashboardList.PaywallSection: CustomStringConvertible {
 
 }
 
-extension APIKeyDashboardList.PresentedPaywall: Identifiable {
+extension LiveFlowsList.PresentedPaywall: Identifiable {
 
     var id: String {
         return "\(self.offering.id)-\(self.mode.name)"

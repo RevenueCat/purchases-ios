@@ -41,9 +41,9 @@ struct AppContentView: View {
         TabView(selection: $selectedTab) {
 
             if Purchases.isConfigured {
-                APIKeyDashboardList()
+                LiveFlowsList()
                     .tabItem {
-                        Label(APIKeyDashboardList.title, systemImage: "testtube.2")
+                        Label(LiveFlowsList.title, systemImage: "testtube.2")
                     }
                     .tag(Tab.livePaywalls)
             }

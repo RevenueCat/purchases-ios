@@ -2106,7 +2106,7 @@
 		2DD5005B2C519EB4009C19B7 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		2DD500632C519EB4009C19B7 /* AsyncButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncButton.swift; sourceTree = "<group>"; };
 		2DD500642C519EB4009C19B7 /* ErrorDisplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorDisplay.swift; sourceTree = "<group>"; };
-		2DD500692C519EB4009C19B7 /* APIKeyDashboardList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKeyDashboardList.swift; sourceTree = "<group>"; };
+		2DD500692C519EB4009C19B7 /* LiveFlowsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveFlowsList.swift; sourceTree = "<group>"; };
 		2DD5006E2C519EB4009C19B7 /* AppContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppContentView.swift; sourceTree = "<group>"; };
 		2DD500702C519EB4009C19B7 /* CustomPaywall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomPaywall.swift; sourceTree = "<group>"; };
 		2DD500712C519EB4009C19B7 /* CustomPaywallContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomPaywallContent.swift; sourceTree = "<group>"; };
@@ -4567,18 +4567,18 @@
 			path = "Utility Views";
 			sourceTree = "<group>";
 		};
-		2DD5006D2C519EB4009C19B7 /* OfferingList */ = {
+		2DD5006D2C519EB4009C19B7 /* LiveFlows */ = {
 			isa = PBXGroup;
 			children = (
-				2DD500692C519EB4009C19B7 /* APIKeyDashboardList.swift */,
+				2DD500692C519EB4009C19B7 /* LiveFlowsList.swift */,
 			);
-			path = OfferingList;
+			path = LiveFlows;
 			sourceTree = "<group>";
 		};
 		2DD500772C519EB4009C19B7 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				2DD5006D2C519EB4009C19B7 /* OfferingList */,
+				2DD5006D2C519EB4009C19B7 /* LiveFlows */,
 				2DD5006E2C519EB4009C19B7 /* AppContentView.swift */,
 				2DD500702C519EB4009C19B7 /* CustomPaywall.swift */,
 				2DD500712C519EB4009C19B7 /* CustomPaywallContent.swift */,
