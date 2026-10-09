@@ -96,10 +96,10 @@ struct APIKeyDashboardList: View {
 
     @State
     private var presentedWorkflowFull: PresentedWorkflow?
-    #endif
 
     @State
     private var workflowLoadError: String?
+    #endif
 
     @State
     private var isLoadingPaywall: Bool = false
@@ -402,7 +402,6 @@ struct APIKeyDashboardList: View {
                     self.workflowPaywallView(for: workflow)
                 }
                 #endif
-                #endif
                 .alert(
                     "Couldn't open flow",
                     isPresented: .init(
@@ -412,6 +411,7 @@ struct APIKeyDashboardList: View {
                     actions: {},
                     message: { Text(self.workflowLoadError ?? "") }
                 )
+                #endif
     }
 
     #if DEBUG && !os(tvOS)
