@@ -185,6 +185,9 @@ public class PaywallViewController: UIViewController {
 
     private var actionInProgressObservation: AnyCancellable?
 
+    /// Whether `isModalInPresentation` was set by us for the action in progress, rather than by the host.
+    private var isBlockingSwipeForAction = false
+
     private var purchaseHandler: PurchaseHandler {
         return configuration.purchaseHandler
     }
@@ -435,12 +438,22 @@ public class PaywallViewController: UIViewController {
         // so that its outcome still reaches the paywall's callbacks.
         self.actionInProgressObservation = self.purchaseHandler.$actionTypeInProgress
             .sink { [weak self] action in
-                self?.isModalInPresentation = action != nil
+                self?.updateSwipeBlocking(actionInProgress: action != nil)
             }
 
         // Prefetch exit offer
         Task { @MainActor in
             await self.prefetchExitOffer()
+        }
+    }
+
+    private func updateSwipeBlocking(actionInProgress: Bool) {
+        if actionInProgress, !self.isModalInPresentation {
+            self.isModalInPresentation = true
+            self.isBlockingSwipeForAction = true
+        } else if !actionInProgress, self.isBlockingSwipeForAction {
+            self.isModalInPresentation = false
+            self.isBlockingSwipeForAction = false
         }
     }
 

@@ -188,6 +188,17 @@ final class PaywallViewControllerExitOfferTests: TestCase {
         expect(controller.isModalInPresentation) == false
     }
 
+    func testKeepsTheHostsSwipeBlockingAfterThePurchaseEnds() {
+        let controller = PaywallViewController(offering: Self.makeOffering(identifier: "main"))
+        controller.isModalInPresentation = true
+        controller.loadViewIfNeeded()
+        controller.purchaseHandlerForTesting.actionTypeInProgress = .purchase
+
+        controller.purchaseHandlerForTesting.actionTypeInProgress = nil
+
+        expect(controller.isModalInPresentation) == true
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
