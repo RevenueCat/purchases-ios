@@ -35,7 +35,7 @@ extension PurchaseHandler {
         performRestore: PerformRestore? = nil,
         preferredLocaleOverride: String? = nil,
         remoteConfigEnabled: Bool = false,
-        resolveBranch: (@Sendable (WorkflowBranch) async -> WorkflowStepID)? = nil,
+        resolveBranch: @escaping @Sendable (WorkflowBranch) async -> WorkflowStepID = { $0.fallbackStepId },
         trackEvent: ((PaywallEvent) -> Void)? = nil,
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = Just(
             (

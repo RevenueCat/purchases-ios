@@ -353,9 +353,9 @@ struct WorkflowPaywallView: View {
             )
         }
 
-        if purchaseHandler.resolveBranch != nil && context.workflow.initialBranch != nil {
+        if context.workflow.initialBranch != nil {
             // The placeholder is not interactive, so a close button on it would not respond.
-            skeletonPage = Self.skeletonEnabled ? page(showCloseButton: false, skeleton: true) : nil
+            skeletonPage = page(showCloseButton: false, skeleton: true)
         } else {
             initialPresentationError = Self.presentationError(for: initialStepId, in: context)
             initialPage = initialPresentationError == nil
@@ -382,15 +382,7 @@ struct WorkflowPaywallView: View {
 
     /// Whether the first step is audience-routed, so nothing can be rendered until `initialTrigger` lands.
     private var resolvesInitialStep: Bool {
-        return self.purchaseHandler.resolveBranch != nil && self.context.workflow.initialBranch != nil
-    }
-
-    static var skeletonEnabled: Bool {
-        #if ENABLE_WORKFLOW_BRANCH_LOADING
-        return true
-        #else
-        return false
-        #endif
+        return self.context.workflow.initialBranch != nil
     }
 
     /// Merged across all screens so a key declared on a screen the user has not reached yet is
@@ -450,7 +442,7 @@ struct WorkflowPaywallView: View {
             await self.animateTransition(id: activeTransitionID)
         }
         // Re-emitted on every step change because navigator is @StateObject with @Published
-        // currentStepId. The exit offer is resolved synchronously from allOfferings on the
+        // currentStepId. The exit offer is resolved synchronously from the context's offerings on the
         // triggering step; when the user navigates away the value becomes nil, clearing
         // exitOfferOffering.
         .preference(
@@ -511,7 +503,11 @@ struct WorkflowPaywallView: View {
         // values every page reads when re-resolving `state` conditions.
         .environment(\.paywallStateValues, self.stateStore.values)
         .environment(\.paywallStateDefaults, self.stateStore.defaults)
-        .displayError(self.workflowPresentationError, onDismiss: self.onDismiss)
+        // The external presenter owns the error, so don't show the built-in alert too.
+        .displayError(
+            self.onPresentationError == nil ? self.workflowPresentationError : .constant(nil),
+            onDismiss: self.onDismiss
+        )
         .modifier(PaywallURLEventsModifier(purchaseHandler: self.purchaseHandler))
     }
 
@@ -541,7 +537,7 @@ struct WorkflowPaywallView: View {
         for page: RenderedPage,
         geometry: WorkflowTransitionGeometry
     ) -> some View {
-        #if ENABLE_WORKFLOW_BRANCH_LOADING
+        #if !os(tvOS)
         self.pageView(for: page, isActive: false)
             .frame(width: geometry.size.width, height: geometry.size.height)
             .transitionClipMask(geometry: geometry)
@@ -949,7 +945,7 @@ struct WorkflowPaywallView: View {
             uiConfig: context.uiConfig,
             paywallId: screenId
         )
-        #if ENABLE_WORKFLOW_BRANCH_LOADING
+        #if !os(tvOS)
         if skeleton {
             paywallComponents = .init(
                 uiConfig: paywallComponents.uiConfig,
@@ -1288,6 +1284,7 @@ private struct WorkflowHeaderOverlayPageView: View {
                 state: PaywallsV2View.createPaywallState(
                     componentsConfig: paywallComponents.data.componentsConfig.base,
                     componentsLocalizations: paywallComponents.data.componentsLocalizations,
+                    componentsVideoLocalizations: paywallComponents.data.componentsVideoLocalizations,
                     preferredLocales: purchaseHandler.preferredLocales,
                     defaultLocale: paywallComponents.data.defaultLocale,
                     uiConfigProvider: uiConfigProvider,

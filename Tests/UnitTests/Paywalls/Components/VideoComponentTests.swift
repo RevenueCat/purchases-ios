@@ -42,6 +42,7 @@ class VideoComponentTests: TestCase {
         XCTAssertNotNil(video.shadow)
         XCTAssertFalse(video.showControls)
         XCTAssertNotNil(video.size)
+        XCTAssertEqual(video.overrideVideoLid, "abc123")
         XCTAssertEqual(video, video2)
 
     }

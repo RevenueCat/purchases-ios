@@ -43,6 +43,20 @@ extension WorkflowScreen {
         )
     }
 
+    /// Like ``allCacheAssets``, but resolves localized videos for the locale that will be displayed only,
+    /// since they are costly to download.
+    func localizedCacheAssets(preferredLocales: [Locale]) -> CacheAssetCollection {
+        let displayedLocale = self.componentsLocalizations.displayedLocale(
+            preferredLocales: preferredLocales,
+            defaultLocale: self.defaultLocale
+        )
+        return cacheAssets(
+            from: self.componentsConfig,
+            localizations: self.componentsLocalizations,
+            localizedVideos: self.componentsVideoLocalizations.findLocale(displayedLocale) ?? [:]
+        )
+    }
+
     var allImageURLs: [URL] {
         return self.allCacheAssets.imageSourcesToDownload.map(\.url)
     }
@@ -56,9 +70,10 @@ extension WorkflowScreen {
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 private func cacheAssets(
     from componentsConfig: PaywallComponentsData.ComponentsConfig,
-    localizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary]
+    localizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
+    localizedVideos: PaywallComponent.VideoLocalizationDictionary? = nil
 ) -> CacheAssetCollection {
-    let componentAssets = componentsConfig.base.allCacheAssets
+    let componentAssets = componentsConfig.base.cacheAssets(localizedVideos: localizedVideos)
     let localizedImages = localizations.values.flatMap { localeValues in
         localeValues.values.flatMap { value -> [CacheAssetCollection.Media] in
             switch value {
@@ -81,7 +96,13 @@ private func cacheAssets(
 extension PaywallComponentsData.PaywallComponentsConfig {
 
     var allCacheAssets: CacheAssetCollection {
-        var collector = AssetCollector()
+        return self.cacheAssets(localizedVideos: nil)
+    }
+
+    /// - Parameter localizedVideos: used to resolve localized videos referenced by `overrideVideoLid`.
+    /// If `nil`, `overrideVideoLid` is ignored and `source` is used.
+    func cacheAssets(localizedVideos: PaywallComponent.VideoLocalizationDictionary?) -> CacheAssetCollection {
+        var collector = AssetCollector(localizedVideos: localizedVideos)
 
         self.collectAssets(in: self.stack, rendersSynchronously: false, into: &collector)
         if let header = self.header {
@@ -206,9 +227,15 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                     )
                 }
             case .video(let video):
-                collector.videoURLs += video.source.cacheMedia(rendersSynchronously: rendersSynchronously)
+                collector.videoURLs += collector.videoSource(
+                    video.source,
+                    overrideVideoLid: video.overrideVideoLid
+                )?.cacheMedia(rendersSynchronously: rendersSynchronously) ?? []
                 collector.videoURLs += video.overrides?.flatMap {
-                    $0.properties.source?.cacheMedia(rendersSynchronously: rendersSynchronously) ?? []
+                    collector.videoSource(
+                        $0.properties.source,
+                        overrideVideoLid: $0.properties.overrideVideoLid
+                    )?.cacheMedia(rendersSynchronously: rendersSynchronously) ?? []
                 } ?? []
                 collector.imageURLs += video.fallbackSource?.cacheMedia(
                     rendersSynchronously: rendersSynchronously
@@ -246,6 +273,7 @@ extension PaywallComponentsData.PaywallComponentsConfig {
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 private struct AssetCollector {
 
+    let localizedVideos: PaywallComponent.VideoLocalizationDictionary?
     var imageURLs: [CacheAssetCollection.Media] = []
     var videoURLs: [CacheAssetCollection.Media] = []
     var webViewURLs: [URLWithValidation] = []
@@ -256,6 +284,15 @@ private struct AssetCollector {
             videos: self.videoURLs,
             webBundles: self.webViewURLs
         )
+    }
+
+    func videoSource(
+        _ source: PaywallComponent.ThemeVideoUrls?,
+        overrideVideoLid: PaywallComponent.LocalizationKey?
+    ) -> PaywallComponent.ThemeVideoUrls? {
+        guard let overrideVideoLid, let localizedVideos = self.localizedVideos else { return source }
+        // Like rendering, a lid never falls back to `source`: without its localized video the paywall fails.
+        return localizedVideos[overrideVideoLid]
     }
 
     mutating func collect(

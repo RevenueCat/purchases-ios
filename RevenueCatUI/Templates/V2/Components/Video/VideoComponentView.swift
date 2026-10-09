@@ -103,11 +103,14 @@ struct VideoComponentView: View {
                             localizationProvider: viewModel.localizationProvider,
                             uiConfigProvider: viewModel.uiConfigProvider,
                             component: .init(
-                                source: thumbnailSource,
+                                source: Self.thumbnailSource(thumbnailSource, sizedLike: style),
                                 fitMode: style.contentMode == .fill ? .fill : .fit
                             )
                         ) {
                             ImageComponentView(viewModel: imageViewModel)
+                                // Keeps the video's shape even if the image fails to load, whose
+                                // placeholder would otherwise take all the height it's offered.
+                                .aspectRatio(self.aspectRatio(style: style), contentMode: .fit)
                         }
 
                         // Only create VideoPlayerView when on active carousel page (or not in carousel)
@@ -211,6 +214,33 @@ struct VideoComponentView: View {
                 checksum: viewData.lowResChecksum
             )
         }
+    }
+
+    /// Gives the thumbnail the video's dimensions, so it lays out at the video's size rather than its own
+    /// and can't render beyond the video when the two have different aspect ratios.
+    static func thumbnailSource(
+        _ source: PaywallComponent.ThemeImageUrls,
+        sizedLike style: VideoComponentStyle
+    ) -> PaywallComponent.ThemeImageUrls {
+        func resized(_ urls: PaywallComponent.ImageUrls, width: Int, height: Int) -> PaywallComponent.ImageUrls {
+            return .init(
+                width: width,
+                height: height,
+                original: urls.original,
+                heic: urls.heic,
+                heicLowRes: urls.heicLowRes
+            )
+        }
+
+        return .init(
+            light: resized(source.light, width: style.widthLight, height: style.heightLight),
+            // Always set so the thumbnail follows the video's dark dimensions, even without a dark thumbnail.
+            dark: resized(
+                source.dark ?? source.light,
+                width: style.widthDark ?? style.widthLight,
+                height: style.heightDark ?? style.heightLight
+            )
+        )
     }
 
     private func aspectRatio(style: VideoComponentStyle) -> Double {
