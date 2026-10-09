@@ -55,10 +55,6 @@ Tests/RevenueCatUITests/Templates/__Snapshots__
 # SwiftPM/Xcode-generated workspace metadata (machine-specific, avoid noisy diffs and CI variance)
 AdapterSDKs/RevenueCatAdMob/.swiftpm/
 
-# This is the "SPM" scheme, which is duplicated with the scheme in the project
-# and that breaks Carthage because it appears twice in `xcodebuild -list`
-.swiftpm/xcode/xcshareddata/xcschemes/RevenueCat.xcscheme
-
 Examples/**/Package.resolved
 Tuist/Package.resolved
 .package.resolved
@@ -100,11 +96,12 @@ Examples/**/.xcworkspacedata
 Examples/**/*.xcscheme
 Examples/**/xcshareddata/**
 
-# Avoid xcscheme pollution when integrating SDK with SPM
-# We can't avoid the whole folder yet because RC and RCUI need to be tested through the package, rather than the workspace
-.swiftpm/xcode/xcshareddata/xcschemes/ReceiptParser.xcscheme
-.swiftpm/xcode/xcshareddata/xcschemes/RevenueCat_CustomEntitlementComputation.xcscheme
-.swiftpm/xcode/xcshareddata/xcschemes/RevenueCatAdMob.xcscheme
+# Package-level shared schemes are imported by SwiftPM consumers even when automatic
+# scheme creation is disabled. RevenueCatUI development schemes live in
+# RevenueCatUI-SPM.xcworkspace. The generated RevenueCat scheme is included here too:
+# it duplicates the project scheme and breaks Carthage because it appears twice in
+# `xcodebuild -list`.
+.swiftpm/xcode/xcshareddata/xcschemes/*.xcscheme
 Tests/TestingApps/PaywallsTester/PaywallsTester/PaywallsTester.storekit
 
 # Claude Code
