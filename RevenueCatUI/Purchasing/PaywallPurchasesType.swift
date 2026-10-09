@@ -53,7 +53,8 @@ protocol PaywallPurchasesType: Sendable {
     func purchase(
         package: Package,
         promotionalOffer: PromotionalOffer?,
-        paywallEvent: PaywallEvent?
+        paywallEvent: PaywallEvent?,
+        presentationContext: PresentationContext?
     ) async throws -> PurchaseResultData
 
     /// Only to be called when the customer has deliberately asked to buy: Apple's disclosure notice is shown

@@ -2906,11 +2906,27 @@ extension Purchases {
         promotionalOffer: PromotionalOffer?,
         paywallEvent: PaywallEvent?
     ) async throws -> PurchaseResultData {
+        return try await self.purchase(
+            package: package,
+            promotionalOffer: promotionalOffer,
+            paywallEvent: paywallEvent,
+            presentationContext: nil
+        )
+    }
+
+    /// Purchases a package while anchoring purchase-related UI to a platform presentation context.
+    @_spi(Internal) public func purchase(
+        package: Package,
+        promotionalOffer: PromotionalOffer?,
+        paywallEvent: PaywallEvent?,
+        presentationContext: PresentationContext?
+    ) async throws -> PurchaseResultData {
         return try await withUnsafeThrowingContinuation { continuation in
             self.purchasesOrchestrator.purchase(
                 product: package.storeProduct,
                 package: package,
                 promotionalOffer: promotionalOffer?.signedData,
+                presentationContext: presentationContext,
                 metadata: nil,
                 paywallEvent: paywallEvent,
                 trackDiagnostics: true
