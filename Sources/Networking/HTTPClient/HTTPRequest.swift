@@ -89,7 +89,7 @@ struct HTTPRequest {
         self.init(method: method, requestPath: path, nonce: nonce, isRetryable: isRetryable)
     }
 
-    internal init(
+    init(
         method: Method,
         requestPath: HTTPRequestPath,
         additionalHeaders: Headers = [:],
