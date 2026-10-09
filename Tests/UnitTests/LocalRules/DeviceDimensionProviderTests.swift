@@ -28,7 +28,7 @@ struct DeviceDimensionProviderTests {
     func providesCanonicalDeviceDimensionsAtTheRoot() async throws {
         let provider = DeviceDimensionProvider(
             appVersion: "1.2.3",
-            preferredLocalesProvider: { ["NL-nl"] },
+            localeProvider: { "NL-nl" },
             platform: "iOS",
             platformVersion: Self.platformVersion,
             sdkVersion: "5.84.0-SNAPSHOT"
@@ -48,7 +48,7 @@ struct DeviceDimensionProviderTests {
     func omitsUnavailableOptionalValues() async throws {
         let provider = DeviceDimensionProvider(
             appVersion: "",
-            preferredLocalesProvider: { [] },
+            localeProvider: { nil },
             platform: "",
             platformVersion: Self.platformVersion,
             sdkVersion: "invalid"
@@ -61,16 +61,16 @@ struct DeviceDimensionProviderTests {
 
     @Test
     func collectsLocaleForEverySnapshot() async throws {
-        let locale = Atomic(["en_US"])
+        let locale = Atomic<String?>("en_US")
         let provider = DeviceDimensionProvider(
             appVersion: "1.2.3",
-            preferredLocalesProvider: { locale.value },
+            localeProvider: { locale.value },
             platform: "iOS",
             platformVersion: Self.platformVersion
         )
 
         let first = try await provider.dimensions(at: Date())
-        locale.value = ["nl_NL"]
+        locale.value = "nl_NL"
         let second = try await provider.dimensions(at: Date())
 
         #expect(first["locale"] == .string("en_us"))
@@ -79,16 +79,18 @@ struct DeviceDimensionProviderTests {
 
     @Test
     func usesPreferredLocaleOverrideForEverySnapshot() async throws {
-        let preferredLocales = Atomic(["es-ES"])
-        let provider = DeviceDimensionProvider(
-            appVersion: "1.2.3",
-            preferredLocalesProvider: { preferredLocales.value },
-            platform: "iOS",
-            platformVersion: Self.platformVersion
+        let preferredLocalesProvider = PreferredLocalesProvider(
+            preferredLocaleOverride: nil,
+            systemPreferredLocalesGetter: { ["es-ES"] }
         )
+        let systemInfo = MockSystemInfo(
+            finishTransactions: true,
+            preferredLocalesProvider: preferredLocalesProvider
+        )
+        let provider = DeviceDimensionProvider(systemInfo: systemInfo)
 
         let beforeOverride = try await provider.dimensions(at: Date())
-        preferredLocales.value = ["fr-FR", "es-ES"]
+        systemInfo.overridePreferredLocale("fr-FR")
         let afterOverride = try await provider.dimensions(at: Date())
 
         #expect(beforeOverride["locale"] == .string("es_es"))
@@ -101,7 +103,7 @@ struct DeviceDimensionProviderTests {
             dimensionProviders: [
                 DeviceDimensionProvider(
                     appVersion: "1.2.3",
-                    preferredLocalesProvider: { ["en_US"] },
+                    localeProvider: { "en_US" },
                     platform: "iOS",
                     platformVersion: Self.platformVersion
                 )
@@ -125,7 +127,7 @@ struct DeviceDimensionProviderTests {
             dimensionProviders: [
                 DeviceDimensionProvider(
                     appVersion: "1.2.3",
-                    preferredLocalesProvider: { ["nl-NL"] },
+                    localeProvider: { "nl-NL" },
                     platform: "iOS",
                     platformVersion: Self.platformVersion
                 )
@@ -149,7 +151,7 @@ struct DeviceDimensionProviderTests {
             dimensionProviders: [
                 DeviceDimensionProvider(
                     appVersion: "1.2.3",
-                    preferredLocalesProvider: { ["en-US"] },
+                    localeProvider: { "en-US" },
                     platform: "iOS",
                     platformVersion: Self.platformVersion
                 )
@@ -173,7 +175,7 @@ struct DeviceDimensionProviderTests {
         defer { SystemInfo.forceUniversalAppStore = previousValue }
         SystemInfo.forceUniversalAppStore = true
 
-        let dimensions = try await DeviceDimensionProvider().dimensions(at: Date())
+        let dimensions = try await DeviceDimensionProvider(localeProvider: { nil }).dimensions(at: Date())
 
         #expect(dimensions["platform"] == .string(SystemInfo.platformHeaderConstant.lowercased()))
     }
@@ -184,7 +186,7 @@ struct DeviceDimensionProviderTests {
             dimensionProviders: [
                 DeviceDimensionProvider(
                     appVersion: "1.2.3",
-                    preferredLocalesProvider: { ["en-US"] },
+                    localeProvider: { "en-US" },
                     platform: "iOS",
                     platformVersion: Self.platformVersion
                 )
@@ -208,7 +210,7 @@ struct DeviceDimensionProviderTests {
             dimensionProviders: [
                 DeviceDimensionProvider(
                     appVersion: "1.2.3",
-                    preferredLocalesProvider: { ["en-US"] },
+                    localeProvider: { "en-US" },
                     platform: "iOS",
                     platformVersion: Self.platformVersion,
                     sdkVersion: "5.84.0-SNAPSHOT"
