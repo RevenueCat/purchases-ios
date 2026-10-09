@@ -117,6 +117,19 @@ final class WebCheckoutViewModelTests: TestCase {
         XCTAssertEqual(viewModel.loadState, .failed)
     }
 
+    func testKeepsReloadingWhenTheNavigationTheProcessTookDownFails() {
+        let viewModel = Self.makeViewModel()
+        let processTerminated = NSError(domain: WKError.errorDomain,
+                                        code: WKError.Code.webContentProcessTerminated.rawValue)
+
+        viewModel.webView(viewModel.webView, didFinish: nil)
+        viewModel.webViewWebContentProcessDidTerminate(viewModel.webView)
+        viewModel.webView(viewModel.webView, didFailProvisionalNavigation: nil, withError: processTerminated)
+        viewModel.webView(viewModel.webView, didFail: nil, withError: processTerminated)
+
+        XCTAssertEqual(viewModel.loadState, .loading)
+    }
+
     func testReloadsAgainWhenTheProcessEndsAfterTheReloadPainted() {
         let viewModel = Self.makeViewModel()
 
