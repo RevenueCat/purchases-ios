@@ -47,6 +47,17 @@ class BackendGetHostedCheckoutStatusTests: BaseBackendTests {
         expect(self.operationDispatcher.invokedDispatchOnWorkerThreadDelayParam) == JitterableDelay.none
     }
 
+    func testIsRetriedWhenRateLimited() {
+        self.mockStatus(Self.response(status: "started"))
+
+        let result = waitUntilValue { completed in
+            self.getStatus(completion: completed)
+        }
+
+        expect(result).to(beSuccess())
+        expect(self.httpClient.calls.first?.request.isRetryable) == true
+    }
+
     // MARK: - Decoding
 
     /// The session is still under way, which is the answer that keeps the caller asking.
