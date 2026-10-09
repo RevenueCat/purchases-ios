@@ -134,7 +134,9 @@ public class PaywallViewController: UIViewController {
 
     var exitOfferOfferingForTesting: Offering? { self.exitOfferOffering }
 
+    #if DEBUG
     var contentForTesting: PaywallViewConfiguration.Content { self.configuration.content }
+    #endif
 
     var workflowContextForTesting: WorkflowContext? { self.configuration.injectedWorkflowContext }
 
