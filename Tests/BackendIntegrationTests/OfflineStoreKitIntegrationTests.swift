@@ -408,6 +408,9 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         self.enableReceiptFetchRetry = false
         self.setLongestTestSessionTimeRate(self.testSession)
 
+        // Match the restore flag used by CustomerInfoManager when posting unfinished transactions.
+        _ = try await self.purchases.logIn("integration-test-user-\(UUID().uuidString)")
+
         // 1. Make a successful purchase while the server is up
         let result = try await self.purchaseMonthlyProduct()
 
