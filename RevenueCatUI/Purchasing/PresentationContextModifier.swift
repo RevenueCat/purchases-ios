@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  PurchasePresentationContextModifier.swift
+//  PresentationContextModifier.swift
 //
 //  Created by Rick van der Linden on 10/9/26.
 
@@ -20,22 +20,22 @@ import AppKit
 #endif
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct PurchasePresentationContextModifier: ViewModifier {
+struct PresentationContextModifier: ViewModifier {
 
     let purchaseHandler: PurchaseHandler
 
     func body(content: Content) -> some View {
         #if canImport(UIKit) && !os(watchOS)
         content.background {
-            PurchasePresentationContextReader { scene in
-                self.purchaseHandler.purchasePresentationScene = scene
+            PresentationContextReader { scene in
+                self.purchaseHandler.presentationScene = scene
             }
             .frame(width: 0, height: 0)
         }
         #elseif canImport(AppKit)
         content.background {
-            PurchasePresentationContextReader { window in
-                self.purchaseHandler.purchasePresentationWindow = window
+            PresentationContextReader { window in
+                self.purchaseHandler.presentationWindow = window
             }
             .frame(width: 0, height: 0)
         }
@@ -48,7 +48,7 @@ struct PurchasePresentationContextModifier: ViewModifier {
 
 #if canImport(UIKit) && !os(watchOS)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct PurchasePresentationContextReader: UIViewRepresentable {
+private struct PresentationContextReader: UIViewRepresentable {
 
     let onSceneChange: @MainActor (UIWindowScene?) -> Void
 
@@ -82,7 +82,7 @@ private struct PurchasePresentationContextReader: UIViewRepresentable {
 }
 #elseif canImport(AppKit)
 @available(macOS 12.0, *)
-private struct PurchasePresentationContextReader: NSViewRepresentable {
+private struct PresentationContextReader: NSViewRepresentable {
 
     let onWindowChange: @MainActor (NSWindow?) -> Void
 
