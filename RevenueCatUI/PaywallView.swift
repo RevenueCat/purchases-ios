@@ -288,6 +288,7 @@ public struct PaywallView: View {
                         value: self.purchaseHandler.purchaseError as NSError?)
             .preference(key: RestoreErrorPreferenceKey.self,
                         value: self.purchaseHandler.restoreError as NSError?)
+            .modifier(PurchasePresentationContextModifier(purchaseHandler: self.purchaseHandler))
     }
 
     @MainActor
