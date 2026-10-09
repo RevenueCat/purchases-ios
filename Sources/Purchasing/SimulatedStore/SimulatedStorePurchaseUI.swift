@@ -38,7 +38,7 @@ protocol SimulatedStorePurchaseUI: Sendable {
     /// - Returns: A result indicating the selected outcome of the purchase UI interaction.
     func presentPurchaseUI(
         for product: SimulatedStoreProduct,
-        presentationContext: PurchasePresentationContext?
+        presentationContext: PresentationContext?
     ) async -> SimulatedStorePurchaseUIResult
 
 }
@@ -46,25 +46,25 @@ protocol SimulatedStorePurchaseUI: Sendable {
 /// Contains the logic to present a system alert for the confirmation of Simulated Store products purchases.
 struct DefaultSimulatedStorePurchaseUI: SimulatedStorePurchaseUI {
     #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
-    private let defaultPresentationContextProvider: @MainActor @Sendable () -> PurchasePresentationContext?
+    private let defaultPresentationContextProvider: @MainActor @Sendable () -> PresentationContext?
     #endif
     init(systemInfo: SystemInfo) {
         #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
         self.defaultPresentationContextProvider = {
-            return PurchasePresentationContext.defaultPresentationContext(systemInfo: systemInfo)
+            return PresentationContext.defaultPresentationContext(systemInfo: systemInfo)
         }
         #endif
     }
     #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
     init(
-        defaultPresentationContextProvider: @escaping @MainActor @Sendable () -> PurchasePresentationContext?
+        defaultPresentationContextProvider: @escaping @MainActor @Sendable () -> PresentationContext?
     ) {
         self.defaultPresentationContextProvider = defaultPresentationContextProvider
     }
     #endif
     #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
     @MainActor
-    func resolvedPresentationContext(_ context: PurchasePresentationContext?) -> PurchasePresentationContext? {
+    func resolvedPresentationContext(_ context: PresentationContext?) -> PresentationContext? {
         guard let context, context.isValidForPresentation else {
             return self.defaultPresentationContextProvider()
         }
@@ -74,7 +74,7 @@ struct DefaultSimulatedStorePurchaseUI: SimulatedStorePurchaseUI {
     #endif
     func presentPurchaseUI(
         for product: SimulatedStoreProduct,
-        presentationContext: PurchasePresentationContext? = nil
+        presentationContext: PresentationContext? = nil
     ) async -> SimulatedStorePurchaseUIResult {
         await Task { @MainActor in
             return await withUnsafeContinuation { continuation in
@@ -252,7 +252,7 @@ private extension DefaultSimulatedStorePurchaseUI {
     @MainActor
     func showAlert(
         _ alert: Alert,
-        presentationContext: PurchasePresentationContext?,
+        presentationContext: PresentationContext?,
         onError: (PurchasesError) -> Void
     ) {
 
@@ -306,7 +306,7 @@ private extension DefaultSimulatedStorePurchaseUI {
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
 extension DefaultSimulatedStorePurchaseUI {
     @MainActor
-    fileprivate func showAlertOnMacOS(_ alert: Alert, presentationContext: PurchasePresentationContext?) {
+    fileprivate func showAlertOnMacOS(_ alert: Alert, presentationContext: PresentationContext?) {
         let nsAlert = NSAlert()
         nsAlert.messageText = alert.title
         nsAlert.informativeText = alert.message
@@ -337,7 +337,7 @@ extension DefaultSimulatedStorePurchaseUI {
         }
     }
     @MainActor
-    func findPresentationWindow(presentationContext: PurchasePresentationContext?) -> NSWindow? {
+    func findPresentationWindow(presentationContext: PresentationContext?) -> NSWindow? {
         return self.resolvedPresentationContext(presentationContext)?.window
     }
 }
@@ -382,7 +382,7 @@ extension DefaultSimulatedStorePurchaseUI {
 
     @MainActor
     func findTopViewController(
-        presentationContext: PurchasePresentationContext?
+        presentationContext: PresentationContext?
     ) -> UIViewController? {
         return self.resolvedPresentationContext(presentationContext)?.presentationViewController
     }
