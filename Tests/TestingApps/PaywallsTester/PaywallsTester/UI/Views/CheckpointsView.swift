@@ -148,7 +148,7 @@ struct CheckpointsView: View {
 
         self.isIdentifierFocused = false
         self.recordRecentIdentifier(identifier)
-        self.result = .inProgress(identifier: identifier)
+        self.result = .callbackNotInvoked(identifier: identifier)
 
         Purchases.shared.checkpoint(
             identifier,
@@ -161,7 +161,6 @@ struct CheckpointsView: View {
                 completion.complete()
             },
             { flowResult in
-                guard self.result?.isFailure != true else { return }
                 self.result = .completed(identifier: identifier, flowResult: flowResult)
             }
         )
@@ -223,14 +222,12 @@ private struct CheckpointResult {
     let identifier: String
     let outcome: String
     let details: String?
-    let isFailure: Bool
 
-    static func inProgress(identifier: String) -> Self {
+    static func callbackNotInvoked(identifier: String) -> Self {
         return Self(
             identifier: identifier,
-            outcome: "Running",
-            details: "Waiting for checkpoint presentation to finish.",
-            isFailure: false
+            outcome: "Callback not called",
+            details: nil
         )
     }
 
@@ -239,8 +236,7 @@ private struct CheckpointResult {
             return Self(
                 identifier: identifier,
                 outcome: "No action",
-                details: "No matching flow was presented, or the flow could not complete.",
-                isFailure: false
+                details: "No matching flow was presented."
             )
         }
 
@@ -250,17 +246,7 @@ private struct CheckpointResult {
             outcome: "Flow completed",
             details: identifiers.isEmpty
                 ? "No new entitlements were granted."
-                : "Granted entitlements: \(identifiers.joined(separator: ", ")).",
-            isFailure: false
-        )
-    }
-
-    static func failed(identifier: String, error: Error) -> Self {
-        return Self(
-            identifier: identifier,
-            outcome: "Error",
-            details: error.localizedDescription,
-            isFailure: true
+                : "Granted entitlements: \(identifiers.joined(separator: ", "))."
         )
     }
 
