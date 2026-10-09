@@ -37,7 +37,7 @@ class StoreKit2ProductPurchaserTests: StoreKitConfigTestCase {
             fail("Failed to create UIScene mock")
             return
         }
-        let presentationContext = PurchasePresentationContext(scene: scene)
+        let presentationContext = PresentationContext(scene: scene)
         let options: Set<Product.PurchaseOption> = []
 
         _ = try await storeKit2ProductPurchaser.purchase(
@@ -77,7 +77,7 @@ class StoreKit2ProductPurchaserTests: StoreKitConfigTestCase {
             fail("Failed to create UIScene mock")
             return
         }
-        let presentationContext = PurchasePresentationContext(window: window)
+        let presentationContext = PresentationContext(window: window)
         let options: Set<Product.PurchaseOption> = []
 
         _ = try await storeKit2ProductPurchaser.purchase(
