@@ -35,6 +35,22 @@ class BaseManageSubscriptionViewModel: ObservableObject {
         )
     }
 
+    private func publishPreviewDiagnostics() {
+        guard let preview = purchasesProvider as? CustomerCenterPreviewProvider else { return }
+        preview.onPreviewDiagnostics(paths.map { path in
+            let reason = path.hiddenReason(for: purchaseInformation, allowMissingPurchase: allowMissingPurchase)
+            let title = purchaseInformation.map {
+                path.resubscribeVariantIfNeeded(for: $0, localization: localization).title
+            } ?? path.title
+            return CustomerCenterPreviewDiagnostic(
+                pathID: path.id, title: title,
+                productID: purchaseInformation?.productIdentifier,
+                visible: reason == nil,
+                reason: reason ?? "Available for this customer"
+            )
+        })
+    }
+
     /// Used to exclude .missingPurchase path
     ///
     /// If the detail screen is the root of the stack, then we should show it. Otherwise, it should be excluded
@@ -63,7 +79,9 @@ class BaseManageSubscriptionViewModel: ObservableObject {
     let actionWrapper: CustomerCenterActionWrapper
 
     @Published
-    var purchaseInformation: PurchaseInformation?
+    var purchaseInformation: PurchaseInformation? {
+        didSet { publishPreviewDiagnostics() }
+    }
 
     @Published
     var showAllInAppCurrenciesScreen: Bool = false
@@ -96,6 +114,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
             self.actionWrapper = actionWrapper
             self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase
             ?? LoadPromotionalOfferUseCase(purchasesProvider: purchasesProvider)
+            publishPreviewDiagnostics()
         }
 
 #if os(iOS) || targetEnvironment(macCatalyst)
@@ -178,7 +197,23 @@ class BaseManageSubscriptionViewModel: ObservableObject {
 private extension BaseManageSubscriptionViewModel {
 
 #if os(iOS) || targetEnvironment(macCatalyst)
+    private func handlePreviewPath(_ path: CustomerCenterConfigData.HelpPath) async -> Bool {
+        guard let preview = purchasesProvider as? CustomerCenterPreviewProvider else { return false }
+        let action: CustomerCenterPreviewAction?
+        switch path.type {
+        case .customUrl: action = path.url.map(CustomerCenterPreviewAction.openURL)
+        case .customAction: action = path.customActionIdentifier.map(CustomerCenterPreviewAction.customAction)
+        case .cancel where purchaseInformation?.store != .appStore:
+            action = purchaseInformation?.managementURL.map(CustomerCenterPreviewAction.openURL)
+        default: action = nil
+        }
+        guard let action else { return false }
+        try? await preview.handlePreviewAction(action)
+        return true
+    }
+
     private func onPathSelected(path: CustomerCenterConfigData.HelpPath, withActiveProductId: String?) async {
+        if await handlePreviewPath(path) { return }
         switch path.type {
         case .missingPurchase:
             self.showRestoreAlert = true

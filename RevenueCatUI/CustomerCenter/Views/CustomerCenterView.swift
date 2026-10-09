@@ -120,8 +120,10 @@ public struct CustomerCenterView: View {
     // swiftlint:disable:next missing_docs
     public var body: some View {
         navigationContent
+            .modifier(CustomerCenterPreviewURLModifier(provider: viewModel.purchasesProvider))
             .task {
                 await loadInformationIfNeeded()
+                await viewModel.observePreviewUpdates()
             }
             .onAppear {
 #if DEBUG
