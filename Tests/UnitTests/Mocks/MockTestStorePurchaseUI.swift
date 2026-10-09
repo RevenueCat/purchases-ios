@@ -21,11 +21,11 @@ final class MockSimulatedStorePurchaseUI: SimulatedStorePurchaseUI {
     let invokedPresentPurchaseUI: Atomic<Bool> = .init(false)
     let invokedPresentPurchaseUICount: Atomic<Int> = .init(0)
     let invokedPresentPurchaseUIProduct: Atomic<TestStoreProduct?> = .init(nil)
-    let invokedPresentationContext: Atomic<PurchasePresentationContext?> = .init(nil)
+    let invokedPresentationContext: Atomic<PresentationContext?> = .init(nil)
 
     func presentPurchaseUI(
         for product: SimulatedStoreProduct,
-        presentationContext: PurchasePresentationContext?
+        presentationContext: PresentationContext?
     ) async -> SimulatedStorePurchaseUIResult {
         self.invokedPresentPurchaseUI.value = true
         self.invokedPresentPurchaseUICount.value += 1
