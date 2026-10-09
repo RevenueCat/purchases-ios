@@ -18,7 +18,7 @@ struct WorkflowRow: Identifiable {
     let listing: WorkflowListing
     let name: String?
     let error: String?
-    /// Offerings this flow's screens use, claimed or not.
+    /// Offerings this flow's steps use, claimed or not.
     let offeringIdentifiers: Set<String>
     /// Set when the first step is an offering step: the flow shows no UI and only returns this offering.
     let uiLessOfferingIdentifier: String?
@@ -59,7 +59,9 @@ struct WorkflowRow: Identifiable {
                             listing: listing,
                             name: result.workflow.displayName,
                             error: nil,
-                            offeringIdentifiers: Set(result.workflow.screens.values.compactMap(\.offeringIdentifier)),
+                            offeringIdentifiers: Set(
+                                result.workflow.steps.values.compactMap { result.workflow.offeringIdentifier(for: $0) }
+                            ),
                             uiLessOfferingIdentifier: initialStep?.isOfferingStep == true
                                 ? initialStep?.offeringIdentifier ?? listing.offeringIdentifier
                                 : nil
