@@ -50,7 +50,7 @@ class SimulatedStorePurchaseHandlerTests: TestCase {
         let handler = SimulatedStorePurchaseHandler(purchaseUI: mockSimulatedStorePurchaseUI,
                                                     dateProvider: self.mockDateProvider)
         let scene = try XCTUnwrap(UIScene.mock())
-        let context = PurchasePresentationContext(scene: scene)
+        let context = PresentationContext(scene: scene)
 
         _ = await handler.purchase(product: Self.testStoreProduct, presentationContext: context)
 
@@ -62,9 +62,9 @@ class SimulatedStorePurchaseHandlerTests: TestCase {
         let scene = try XCTUnwrap(UIWindowScene.mockWindowScene())
         let fallbackScene = try XCTUnwrap(UIWindowScene.mockWindowScene())
         let purchaseUI = DefaultSimulatedStorePurchaseUI(
-            defaultPresentationContextProvider: { PurchasePresentationContext(scene: fallbackScene) }
+            defaultPresentationContextProvider: { PresentationContext(scene: fallbackScene) }
         )
-        let context = PurchasePresentationContext(scene: scene)
+        let context = PresentationContext(scene: scene)
 
         let resolvedContext = purchaseUI.resolvedPresentationContext(context)
 
@@ -76,9 +76,9 @@ class SimulatedStorePurchaseHandlerTests: TestCase {
         let scene = try XCTUnwrap(UIWindowScene.mockWindowScene())
         let fallbackScene = try XCTUnwrap(UIWindowScene.mockWindowScene())
         let purchaseUI = DefaultSimulatedStorePurchaseUI(
-            defaultPresentationContextProvider: { PurchasePresentationContext(scene: fallbackScene) }
+            defaultPresentationContextProvider: { PresentationContext(scene: fallbackScene) }
         )
-        let context = PurchasePresentationContext(scene: scene)
+        let context = PresentationContext(scene: scene)
 
         let viewController = purchaseUI.findTopViewController(presentationContext: context)
 
@@ -89,7 +89,7 @@ class SimulatedStorePurchaseHandlerTests: TestCase {
     func testPurchaseUIFallsBackToApplicationWithoutPresentationScene() throws {
         let fallbackScene = try XCTUnwrap(UIWindowScene.mockWindowScene())
         let purchaseUI = DefaultSimulatedStorePurchaseUI(
-            defaultPresentationContextProvider: { PurchasePresentationContext(scene: fallbackScene) }
+            defaultPresentationContextProvider: { PresentationContext(scene: fallbackScene) }
         )
 
         let resolvedContext = purchaseUI.resolvedPresentationContext(nil)
@@ -102,9 +102,9 @@ class SimulatedStorePurchaseHandlerTests: TestCase {
         let scene = try XCTUnwrap(UIScene.mock())
         let fallbackScene = try XCTUnwrap(UIWindowScene.mockWindowScene())
         let purchaseUI = DefaultSimulatedStorePurchaseUI(
-            defaultPresentationContextProvider: { PurchasePresentationContext(scene: fallbackScene) }
+            defaultPresentationContextProvider: { PresentationContext(scene: fallbackScene) }
         )
-        let context = PurchasePresentationContext(scene: scene)
+        let context = PresentationContext(scene: scene)
 
         let resolvedContext = purchaseUI.resolvedPresentationContext(context)
 
@@ -117,9 +117,9 @@ class SimulatedStorePurchaseHandlerTests: TestCase {
     func testPurchaseUIPrefersProvidedPresentationWindow() {
         let window = NSWindow()
         let fallbackWindow = NSWindow()
-        let context = PurchasePresentationContext(window: window)
+        let context = PresentationContext(window: window)
         let purchaseUI = DefaultSimulatedStorePurchaseUI(
-            defaultPresentationContextProvider: { PurchasePresentationContext(window: fallbackWindow) }
+            defaultPresentationContextProvider: { PresentationContext(window: fallbackWindow) }
         )
 
         let presentationWindow = purchaseUI.findPresentationWindow(presentationContext: context)
@@ -131,7 +131,7 @@ class SimulatedStorePurchaseHandlerTests: TestCase {
     func testPurchaseUIFallsBackToDefaultPresentationWindow() {
         let fallbackWindow = NSWindow()
         let purchaseUI = DefaultSimulatedStorePurchaseUI(
-            defaultPresentationContextProvider: { PurchasePresentationContext(window: fallbackWindow) }
+            defaultPresentationContextProvider: { PresentationContext(window: fallbackWindow) }
         )
 
         let presentationWindow = purchaseUI.findPresentationWindow(presentationContext: nil)

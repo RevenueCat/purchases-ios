@@ -19,7 +19,7 @@ protocol SimulatedStorePurchaseHandlerType: AnyObject, Sendable {
     @MainActor
     func purchase(
         product: TestStoreProduct,
-        presentationContext: PurchasePresentationContext?
+        presentationContext: PresentationContext?
     ) async -> TestPurchaseResult
 
 }
@@ -50,7 +50,7 @@ actor SimulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType {
 
     func purchase(
         product: TestStoreProduct,
-        presentationContext: PurchasePresentationContext? = nil
+        presentationContext: PresentationContext? = nil
     ) async -> TestPurchaseResult {
         guard !self.purchaseInProgress else {
             return .failure(ErrorUtils.operationAlreadyInProgressError())

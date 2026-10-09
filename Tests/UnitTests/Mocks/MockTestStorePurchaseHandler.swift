@@ -19,16 +19,16 @@ actor MockSimulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType {
     let stubbedPurchaseResult: Atomic<TestPurchaseResult> = .init(.cancel)
     let invokedPurchase: Atomic<Bool> = .init(false)
     let invokedPurchaseProduct: Atomic<TestStoreProduct?> = .init(nil)
-    let invokedPurchasePresentationContext: Atomic<PurchasePresentationContext?> = .init(nil)
+    let invokedPresentationContext: Atomic<PresentationContext?> = .init(nil)
 
     @MainActor
     func purchase(
         product: TestStoreProduct,
-        presentationContext: PurchasePresentationContext?
+        presentationContext: PresentationContext?
     ) async -> TestPurchaseResult {
         self.invokedPurchase.value = true
         self.invokedPurchaseProduct.value = product
-        self.invokedPurchasePresentationContext.value = presentationContext
+        self.invokedPresentationContext.value = presentationContext
         return self.stubbedPurchaseResult.value
     }
 

@@ -191,7 +191,7 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
         XCTAssertTrue(self.simulatedStorePurchaseHandler.invokedPurchase.value)
         XCTAssertEqual(self.simulatedStorePurchaseHandler.invokedPurchaseProduct.value?.productIdentifier,
                        "test.product")
-        XCTAssertNil(self.simulatedStorePurchaseHandler.invokedPurchasePresentationContext.value)
+        XCTAssertNil(self.simulatedStorePurchaseHandler.invokedPresentationContext.value)
     }
 
     #if canImport(UIKit) && !os(watchOS)
@@ -200,7 +200,7 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
         let orchestrator = self.createOrchestrator()
         let testProduct = self.createTestStoreProduct()
         let scene = try XCTUnwrap(UIScene.mock())
-        let context = PurchasePresentationContext(scene: scene)
+        let context = PresentationContext(scene: scene)
 
         await waitUntil { completion in
             orchestrator.purchase(
@@ -213,7 +213,7 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
             }
         }
 
-        XCTAssertTrue(self.simulatedStorePurchaseHandler.invokedPurchasePresentationContext.value?.scene === scene)
+        XCTAssertTrue(self.simulatedStorePurchaseHandler.invokedPresentationContext.value?.scene === scene)
     }
     #endif
 

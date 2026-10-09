@@ -2279,7 +2279,7 @@ private extension PurchasesOrchestrator {
         presentedOfferingContext: PresentedOfferingContext?,
         paywallEvent: PaywallEvent?,
         metadata: [String: String]?,
-        presentationContext: PurchasePresentationContext?,
+        presentationContext: PresentationContext?,
         completion: @escaping PurchaseCompletedBlock
     ) {
         if self.systemInfo.isSimulatedStoreAPIKey {
@@ -2301,7 +2301,7 @@ private extension PurchasesOrchestrator {
         presentedOfferingContext: PresentedOfferingContext?,
         paywallEvent: PaywallEvent?,
         metadata: [String: String]?,
-        presentationContext: PurchasePresentationContext?,
+        presentationContext: PresentationContext?,
         completion: @escaping PurchaseCompletedBlock
     ) {
         Task {
