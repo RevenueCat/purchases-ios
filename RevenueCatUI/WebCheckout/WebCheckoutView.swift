@@ -14,6 +14,7 @@
 
 #if os(iOS) && canImport(WebKit)
 
+import Combine
 import SwiftUI
 import WebKit
 
@@ -33,9 +34,8 @@ struct WebCheckoutView: View {
                 ErrorView()
                     .padding()
             } else {
-                // The page paints to the bottom edge rather than stopping above the home indicator, which
-                // would leave a strip of the host's background under a checkout that fills its sheet. What
-                // the page puts there stays reachable: the web view insets its own content by the safe area.
+                // The page's background reaches the bottom edge rather than stopping above the home indicator,
+                // which would leave a strip of the host's background under a checkout that fills its sheet.
                 WebCheckoutWebView(webView: self.viewModel.webView)
                     .ignoresSafeArea(.container, edges: .bottom)
             }
@@ -65,18 +65,32 @@ private struct WebCheckoutWebView: UIViewRepresentable {
 
     func makeUIView(context: Context) -> UIView {
         let container = UIView()
-        self.attach(to: container)
+        self.attach(to: container, coordinator: context.coordinator)
         return container
     }
 
     func updateUIView(_ container: UIView, context: Context) {
-        self.attach(to: container)
+        self.attach(to: container, coordinator: context.coordinator)
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    final class Coordinator {
+
+        var pageBackgroundObservation: AnyCancellable?
+
     }
 
     /// The web view outlives any one container, since it is owned by the view model so that loading can
     /// start before presentation. Re-parenting on every update covers SwiftUI re-making the
     /// representable, which would otherwise leave a container empty and the checkout blank.
-    private func attach(to container: UIView) {
+    ///
+    /// The web view stops at the safe area while the container fills the strip below it with the page's
+    /// background. A web view that reached under the home indicator would give the page two viewport heights,
+    /// one with the strip and one without, and pages sized to both switch between them on every frame.
+    private func attach(to container: UIView, coordinator: Coordinator) {
         guard self.webView.superview !== container else {
             return
         }
@@ -88,8 +102,15 @@ private struct WebCheckoutWebView: UIViewRepresentable {
             self.webView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
             self.webView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             self.webView.topAnchor.constraint(equalTo: container.topAnchor),
-            self.webView.bottomAnchor.constraint(equalTo: container.bottomAnchor)
+            self.webView.bottomAnchor.constraint(equalTo: container.safeAreaLayoutGuide.bottomAnchor)
         ])
+
+        coordinator.pageBackgroundObservation = self.webView
+            .publisher(for: \.underPageBackgroundColor)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak container] color in
+                container?.backgroundColor = color
+            }
     }
 
 }
