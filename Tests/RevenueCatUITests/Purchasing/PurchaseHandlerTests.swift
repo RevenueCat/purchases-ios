@@ -17,6 +17,10 @@ import Nimble
 @testable import RevenueCatUI
 import XCTest
 
+#if canImport(AppKit)
+import AppKit
+#endif
+
 #if !os(macOS)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -54,6 +58,53 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.restoreInProgress) == false
         expect(handler.actionInProgress) == false
     }
+
+    #if canImport(UIKit) && !os(watchOS)
+    func testPurchasePassesPresentationContext() async throws {
+        let sceneClass = try XCTUnwrap(NSClassFromString("UIWindowScene") as? NSObject.Type)
+        let scene = try XCTUnwrap(sceneClass.init() as? UIWindowScene)
+        let purchases = MockPurchases { _, _, _ in
+            return (nil, TestData.customerInfo, false)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { _ in
+        } customerInfo: {
+            return TestData.customerInfo
+        }
+        let handler = PurchaseHandler(
+            purchases: purchases,
+            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
+        )
+        handler.purchasePresentationScene = scene
+
+        try await handler.purchase(package: TestData.packageWithIntroOffer)
+
+        XCTAssertTrue(purchases.lastPurchasePresentationContext?.scene === scene)
+    }
+
+    func testMappedPurchasesPreservePresentationContext() async throws {
+        let sceneClass = try XCTUnwrap(NSClassFromString("UIWindowScene") as? NSObject.Type)
+        let scene = try XCTUnwrap(sceneClass.init() as? UIWindowScene)
+        let purchases = MockPurchases { _, _, _ in
+            return (nil, TestData.customerInfo, false)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { _ in
+        } customerInfo: {
+            return TestData.customerInfo
+        }
+        let mappedPurchases = purchases.map(purchase: { $0 }, restore: { $0 })
+
+        _ = try await mappedPurchases.purchase(
+            package: TestData.packageWithIntroOffer,
+            promotionalOffer: nil,
+            paywallEvent: nil,
+            presentationContext: PurchasePresentationContext(scene: scene)
+        )
+
+        XCTAssertTrue(purchases.lastPurchasePresentationContext?.scene === scene)
+    }
+    #endif
 
     func testCancellingPurchase() async throws {
         let handler: PurchaseHandler = .cancelling()
@@ -969,6 +1020,49 @@ private extension PurchaseHandlerTests {
 @available(macOS 12.0, *)
 @MainActor
 final class PurchaseHandlerMacOSTests: TestCase {
+
+    func testPurchasePassesPresentationContext() async throws {
+        let window = NSWindow()
+        let purchases = MockPurchases { _, _, _ in
+            return (nil, TestData.customerInfo, false)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { _ in
+        } customerInfo: {
+            return TestData.customerInfo
+        }
+        let handler = PurchaseHandler(
+            purchases: purchases,
+            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
+        )
+        handler.purchasePresentationWindow = window
+
+        try await handler.purchase(package: TestData.packageWithIntroOffer)
+
+        XCTAssertTrue(purchases.lastPurchasePresentationContext?.window === window)
+    }
+
+    func testMappedPurchasesPreservePresentationContext() async throws {
+        let window = NSWindow()
+        let purchases = MockPurchases { _, _, _ in
+            return (nil, TestData.customerInfo, false)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { _ in
+        } customerInfo: {
+            return TestData.customerInfo
+        }
+        let mappedPurchases = purchases.map(purchase: { $0 }, restore: { $0 })
+
+        _ = try await mappedPurchases.purchase(
+            package: TestData.packageWithIntroOffer,
+            promotionalOffer: nil,
+            paywallEvent: nil,
+            presentationContext: PurchasePresentationContext(window: window)
+        )
+
+        XCTAssertTrue(purchases.lastPurchasePresentationContext?.window === window)
+    }
 
     func testResignsFirstResponderBeforePublishingActionInProgress() async throws {
         var events: [String] = []
