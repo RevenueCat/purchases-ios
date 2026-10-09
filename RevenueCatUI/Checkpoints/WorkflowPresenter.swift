@@ -230,12 +230,16 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         _ = self.presentationDidDismiss()
     }
 
-    private func didCompleteRestore(customerInfo: CustomerInfo) {
+    private func didCompleteRestore(
+        controller: PaywallViewController,
+        customerInfo: CustomerInfo
+    ) {
         guard customerInfo.grantsNewEntitlements(
             comparedTo: self.presentationState?.initialActiveEntitlementIdentifiers
         ) else { return }
 
         self.stage(.outcome(.completed(customerInfo: customerInfo)))
+        controller.dismiss(animated: true)
     }
 
     private func stageDismissalReasonIfNeeded(_ reason: WorkflowDismissalReason) {
@@ -305,7 +309,7 @@ extension WorkflowPresenter {
     ) {
         MainActor.assumeIsolated {
             self.activeErrorPresentation = nil
-            self.didCompleteRestore(customerInfo: customerInfo)
+            self.didCompleteRestore(controller: controller, customerInfo: customerInfo)
         }
     }
 
@@ -360,7 +364,7 @@ extension WorkflowPresenter {
         didFinishRestoringWith customerInfo: CustomerInfo
     ) {
         self.activeErrorPresentation = nil
-        self.didCompleteRestore(customerInfo: customerInfo)
+        self.didCompleteRestore(controller: controller, customerInfo: customerInfo)
     }
 
     func paywallViewController(
