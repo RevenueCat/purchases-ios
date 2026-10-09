@@ -51,13 +51,12 @@ import AppKit
 extension UIApplication {
 
     /// The default context for presenting purchase-related UI.
-    @_spi(Internal)
     @available(macCatalyst 13.1, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     @available(watchOSApplicationExtension, unavailable)
     @MainActor
-    public var defaultPurchasePresentationContext: PurchasePresentationContext? {
+    var defaultPurchasePresentationContext: PurchasePresentationContext? {
         return self.currentWindowScene.map(PurchasePresentationContext.init(scene:))
     }
 
@@ -94,9 +93,8 @@ extension PurchasePresentationContext {
 extension NSApplication {
 
     /// The default context for presenting purchase-related UI.
-    @_spi(Internal)
     @MainActor
-    public var defaultPurchasePresentationContext: PurchasePresentationContext? {
+    var defaultPurchasePresentationContext: PurchasePresentationContext? {
         return (self.keyWindow ?? self.mainWindow).map(PurchasePresentationContext.init(window:))
     }
 
