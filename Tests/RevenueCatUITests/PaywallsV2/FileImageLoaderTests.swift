@@ -189,14 +189,83 @@ final class FileImageLoaderTests: TestCase {
         await self.fulfillment(of: [completion], timeout: 5)
     }
 
+    func testDownloadFinishingAfterURLChangeDoesNotReplaceCurrentImage() async throws {
+        guard #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) else {
+            throw XCTSkip("API only available on iOS 16")
+        }
+
+        let previousURL = Self.makeRemoteURL(filename: "previous.png")
+        let currentURL = Self.makeRemoteURL(filename: "current.png")
+        let currentData = try Self.makeImageData(variant: .blue)
+
+        let networkService = SuspendedDownloadNetworkService(
+            suspendedURL: previousURL,
+            responses: [previousURL: try Self.makeImageData(variant: .red), currentURL: currentData]
+        )
+        let fileRepository = self.makeFileRepository(networkService: networkService)
+        let cachedCurrentURL = try XCTUnwrap(
+            fileRepository.generateLocalFilesystemURL(forRemoteURL: currentURL, withChecksum: nil)
+        )
+        try Self.writeImageData(currentData, to: cachedCurrentURL)
+
+        let loader = FileImageLoader(fileRepository: fileRepository, url: previousURL)
+        let previousDownload = Task { await loader.load() }
+        try await networkService.waitUntilSuspended()
+
+        // The URL changes while the previous image is still downloading (e.g. the view is reused for another tab).
+        loader.updateURL(currentURL)
+        let currentImageData = try XCTUnwrap(loader.result?.image.platformPNGData())
+
+        networkService.resume()
+        await previousDownload.value
+
+        expect(loader.url) == currentURL
+        expect(loader.result?.image.platformPNGData()) == currentImageData
+    }
+
+    func testDownloadFinishingAfterURLChangeDoesNotPreventLoadingCurrentImage() async throws {
+        let previousURL = Self.makeRemoteURL(filename: "previous.png")
+        let currentURL = Self.makeRemoteURL(filename: "current.png")
+
+        let networkService = SuspendedDownloadNetworkService(
+            suspendedURL: previousURL,
+            responses: [
+                previousURL: try Self.makeImageData(variant: .red),
+                currentURL: try Self.makeImageData(variant: .blue)
+            ]
+        )
+        let loader = FileImageLoader(
+            fileRepository: self.makeFileRepository(networkService: networkService),
+            url: previousURL
+        )
+        let previousDownload = Task { await loader.load() }
+        try await networkService.waitUntilSuspended()
+
+        loader.updateURL(currentURL)
+
+        networkService.resume()
+        await previousDownload.value
+
+        await loader.load()
+
+        expect(networkService.requestedURLs) == [previousURL, currentURL]
+        expect(loader.result).toNot(beNil())
+    }
+
     // MARK: - Helpers
 
-    private func makeFileRepository() -> FileRepository {
+    private func makeFileRepository(
+        networkService: SimpleNetworkServiceType = URLSession.shared
+    ) -> FileRepository {
         return FileRepository(
-            networkService: URLSession.shared,
+            networkService: networkService,
             fileManager: FileManager.default,
             basePath: "FileImageLoaderTests-\(UUID().uuidString)"
         )
+    }
+
+    private static func makeRemoteURL(filename: String) -> URL {
+        return URL(string: "https://assets.revenuecat.test/\(UUID().uuidString)-\(filename)")!
     }
 
     private static func writeImageData(_ data: Data, to url: URL) throws {
@@ -236,6 +305,56 @@ private enum TestImageVariant: String {
                 "wMDAAAAKAgEBrGv0XwAAAABJRU5ErkJggg=="
         }
     }
+}
+
+/// Answers every URL right away, except `suspendedURL`, which waits until `resume()` is called.
+@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+private final class SuspendedDownloadNetworkService: SimpleNetworkServiceType, @unchecked Sendable {
+
+    private struct WaitTimeout: Error {}
+
+    private let suspendedURL: URL
+    private let responses: [URL: Data]
+    private let suspendedDownload: Atomic<CheckedContinuation<Void, Never>?> = nil
+    private let requests: Atomic<[URL]> = .init([])
+
+    init(suspendedURL: URL, responses: [URL: Data]) {
+        self.suspendedURL = suspendedURL
+        self.responses = responses
+    }
+
+    var requestedURLs: [URL] {
+        return self.requests.value
+    }
+
+    func bytes(from url: URL) async throws -> AsyncThrowingStream<UInt8, Error> {
+        self.requests.modify { $0.append(url) }
+
+        if url == self.suspendedURL {
+            await withCheckedContinuation { continuation in
+                self.suspendedDownload.modify { $0 = continuation }
+            }
+        }
+
+        let data = self.responses[url] ?? Data()
+        return AsyncThrowingStream { continuation in
+            data.forEach { continuation.yield($0) }
+            continuation.finish()
+        }
+    }
+
+    func waitUntilSuspended(timeout: TimeInterval = 5) async throws {
+        let deadline = Date().addingTimeInterval(timeout)
+        while self.suspendedDownload.value == nil {
+            guard Date() < deadline else { throw WaitTimeout() }
+            try await Task.sleep(nanoseconds: 10_000_000)
+        }
+    }
+
+    func resume() {
+        self.suspendedDownload.getAndSet(nil)?.resume()
+    }
+
 }
 
 // MARK: - Private

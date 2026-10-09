@@ -84,6 +84,8 @@ final class FileImageLoader: ObservableObject {
             }
 
             await MainActor.run {
+                // The URL can change while the download runs (e.g. when a tab switch reuses this loader).
+                guard self.url == url else { return }
                 self.result = imageInfo
             }
         } catch {
