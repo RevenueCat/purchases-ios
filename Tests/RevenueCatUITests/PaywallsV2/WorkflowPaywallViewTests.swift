@@ -922,6 +922,36 @@ extension WorkflowPaywallViewTests {
 
     #if !os(watchOS) && !os(macOS)
     @MainActor
+    func testExternallyHandledPresentationErrorDoesNotAlsoPresentWorkflowAlert() async throws {
+        let context = try Self.makeContext(
+            singleStepFallbackId: nil,
+            initialScreenJSON: Self.makeScreenJSON(offeringId: "missing_offering")
+        )
+        var reportedError: NSError?
+        let view = WorkflowPaywallView(
+            context: context,
+            purchaseHandler: .mock(),
+            introEligibilityChecker: .producing(eligibility: .eligible),
+            showZeroDecimalPlacePrices: false,
+            displayCloseButton: false,
+            promoOfferCache: nil,
+            onDismiss: {},
+            onPresentationError: { reportedError = $0 }
+        )
+        let controller = UIHostingController(rootView: view)
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+        defer {
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+
+        await expect(reportedError?.code).toEventually(equal(ErrorCode.configurationError.rawValue))
+        await expect(controller.presentedViewController).toEventually(beNil())
+    }
+
+    @MainActor
     func testInitialPresentationErrorClearsConfiguredExitOffer() async throws {
         let exitOffering = Offering(
             identifier: "exit_offering_a",
