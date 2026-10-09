@@ -37,7 +37,7 @@ extension PurchasesHostedCheckoutTests {
 
     func testAsksAboutTheSessionForTheCustomerItWasCreatedFor() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-        try self.stubStatus(.succeeded)
+        try self.stubStatus(.succeeded(nil))
 
         _ = await self.purchases.pollHostedCheckout(sessionID: Self.session(for: Self.otherAppUserID).id)
 
@@ -50,7 +50,7 @@ extension PurchasesHostedCheckoutTests {
     /// to read, so it is fetched before the outcome is reported.
     func testFetchesCustomerInfoOnceTheCheckoutLands() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-        try self.stubStatus(.succeeded)
+        try self.stubStatus(.succeeded(nil))
         let session = self.startedSession()
         let fetchesBefore = self.backend.getCustomerInfoCallCount
 
@@ -63,7 +63,7 @@ extension PurchasesHostedCheckoutTests {
     /// The paywall reports the purchase with it, rather than fetching it again.
     func testReturnsTheFetchedCustomerInfoOnceTheCheckoutLands() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-        try self.stubStatus(.succeeded)
+        try self.stubStatus(.succeeded(nil))
         let purchased = try Self.customerInfoWithActiveEntitlement()
         self.backend.overrideCustomerInfoResult = .success(purchased)
         let session = self.startedSession()
@@ -102,7 +102,7 @@ extension PurchasesHostedCheckoutTests {
     /// A fetch that does not land does not take the purchase away from the customer.
     func testStillReportsThePurchaseWhenCustomerInfoCannotBeFetched() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-        try self.stubStatus(.succeeded)
+        try self.stubStatus(.succeeded(nil))
         self.backend.overrideCustomerInfoResult = .failure(.networkError(.offlineConnection()))
         let session = self.startedSession()
 
@@ -116,7 +116,7 @@ extension PurchasesHostedCheckoutTests {
     /// still served, so it must be gone once the fetch meant to replace it fails.
     func testClearsTheCachedCustomerInfoWhenItCannotBeFetched() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-        try self.stubStatus(.succeeded)
+        try self.stubStatus(.succeeded(nil))
         self.backend.overrideCustomerInfoResult = .failure(.networkError(.offlineConnection()))
         let session = self.startedSession()
         self.deviceCache.cache(customerInfo: Data(), appUserID: session.id.appUserID)
@@ -129,7 +129,7 @@ extension PurchasesHostedCheckoutTests {
     /// The purchase is on the account of the customer who made it, not on the one who logged in meanwhile.
     func testFetchesTheBuyersCustomerInfoWhenAnotherCustomerLogsInBeforeThePoll() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-        try self.stubStatus(.succeeded)
+        try self.stubStatus(.succeeded(nil))
         let session = self.startedSession()
         self.identityManager.mockAppUserID = Self.otherAppUserID
 
@@ -141,7 +141,7 @@ extension PurchasesHostedCheckoutTests {
 
     func testFetchesTheBuyersCustomerInfoWhenAnotherCustomerLogsInDuringThePoll() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-        try self.stubStatus(.succeeded)
+        try self.stubStatus(.succeeded(nil))
         let session = self.startedSession()
         try self.logInWhileThePollRuns(Self.otherAppUserID)
 
@@ -153,7 +153,7 @@ extension PurchasesHostedCheckoutTests {
     /// The paywall reports the purchase with it, so it has to be the buyer's, not that of whoever is logged in.
     func testReturnsTheBuyersCustomerInfoWhenAnotherCustomerLogsInDuringThePoll() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-        try self.stubStatus(.succeeded)
+        try self.stubStatus(.succeeded(nil))
         let purchased = try Self.customerInfoWithActiveEntitlement()
         self.backend.overrideCustomerInfoResult = .success(purchased)
         let session = self.startedSession()
@@ -167,7 +167,7 @@ extension PurchasesHostedCheckoutTests {
 
     func testClearsOnlyTheBuyersCachedCustomerInfoWhenAnotherCustomerLogsInDuringThePoll() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-        try self.stubStatus(.succeeded)
+        try self.stubStatus(.succeeded(nil))
         self.backend.overrideCustomerInfoResult = .failure(.networkError(.offlineConnection()))
         let session = self.startedSession()
         self.deviceCache.cache(customerInfo: Data(), appUserID: session.id.appUserID)
@@ -182,7 +182,7 @@ extension PurchasesHostedCheckoutTests {
 
     func testSendsTheLandedPurchaseToTheListeners() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-        try self.stubStatus(.succeeded)
+        try self.stubStatus(.succeeded(nil))
         let purchased = try Self.customerInfoWithActiveEntitlement()
         self.backend.overrideCustomerInfoResult = .success(purchased)
         let session = self.startedSession()
@@ -196,7 +196,7 @@ extension PurchasesHostedCheckoutTests {
     /// The listeners follow whoever is logged in, so the buyer's `CustomerInfo` would pass for theirs.
     func testDoesNotSendTheBuyersCustomerInfoToTheListenersWhenAnotherCustomerLogsInDuringThePoll() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-        try self.stubStatus(.succeeded)
+        try self.stubStatus(.succeeded(nil))
         let purchased = try Self.customerInfoWithActiveEntitlement()
         self.backend.overrideCustomerInfoResult = .success(purchased)
         let session = self.startedSession()
@@ -210,7 +210,7 @@ extension PurchasesHostedCheckoutTests {
 
     func testKeepsTheFetchedCustomerInfo() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-        try self.stubStatus(.succeeded)
+        try self.stubStatus(.succeeded(nil))
         let session = self.startedSession()
         let clearsBefore = self.deviceCache.invokedClearCustomerInfoCacheCount
 

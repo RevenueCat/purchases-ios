@@ -71,13 +71,36 @@ class BackendGetHostedCheckoutStatusTests: BaseBackendTests {
     }
 
     func testReadsASucceededSession() throws {
+        self.mockStatus([
+            "status": "succeeded",
+            "is_expired": false,
+            "store_transaction_identifier": "txn_123",
+            "product_identifier": "monthly",
+            "purchase_date": "2021-01-01T00:00:00Z",
+            "is_sandbox": true
+        ])
+
+        let response = try XCTUnwrap(waitUntilValue { completed in
+            self.getStatus(completion: completed)
+        }?.value)
+
+        let purchase = HostedCheckoutStatusResponse.Purchase(storeTransactionIdentifier: "txn_123",
+                                                             productIdentifier: "monthly",
+                                                             purchaseDate: Date(timeIntervalSince1970: 1609459200),
+                                                             isSandbox: true)
+        expect(response.status) == .succeeded(purchase)
+    }
+
+    /// A backend that does not report the purchase still tells the caller the session succeeded.
+    func testReadsASucceededSessionWithoutItsPurchase() throws {
+        self.httpClient.disableSnapshotTesting()
         self.mockStatus(Self.response(status: "succeeded"))
 
         let response = try XCTUnwrap(waitUntilValue { completed in
             self.getStatus(completion: completed)
         }?.value)
 
-        expect(response.status) == .succeeded
+        expect(response.status) == .succeeded(nil)
     }
 
     func testReadsAFailedSessionWithItsError() throws {
@@ -133,7 +156,7 @@ class BackendGetHostedCheckoutStatusTests: BaseBackendTests {
             self.getStatus(completion: completed)
         }?.value)
 
-        expect(response.status) == .succeeded
+        expect(response.status) == .succeeded(nil)
     }
 
     // MARK: - Failures

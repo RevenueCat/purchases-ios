@@ -25,7 +25,7 @@ class HostedCheckoutPollerTests: TestCase {
     // MARK: - Terminal answers
 
     func testSucceedsOnTheFirstAttemptWithoutWaiting() async {
-        let fetcher = StubStatusFetcher(results: [.status(.succeeded)])
+        let fetcher = StubStatusFetcher(results: [.status(.succeeded(nil))])
         let sleeper = RecordingHostedCheckoutSleeper()
 
         let result = await self.makePoller(fetcher: fetcher, sleeper: sleeper).poll(
@@ -39,7 +39,7 @@ class HostedCheckoutPollerTests: TestCase {
     }
 
     func testKeepsAskingWhileTheSessionIsUnderWay() async {
-        let fetcher = StubStatusFetcher(results: [.status(.pending), .status(.pending), .status(.succeeded)])
+        let fetcher = StubStatusFetcher(results: [.status(.pending), .status(.pending), .status(.succeeded(nil))])
         let sleeper = RecordingHostedCheckoutSleeper()
 
         let result = await self.makePoller(fetcher: fetcher, sleeper: sleeper).poll(
@@ -55,7 +55,7 @@ class HostedCheckoutPollerTests: TestCase {
     /// Every attempt asks about the customer the session belongs to. The backend answers for no one else,
     /// so a poll that followed a customer who changed would stop answering.
     func testAsksAboutTheSameCustomerOnEveryAttempt() async {
-        let fetcher = StubStatusFetcher(results: [.status(.pending), .status(.pending), .status(.succeeded)])
+        let fetcher = StubStatusFetcher(results: [.status(.pending), .status(.pending), .status(.succeeded(nil))])
 
         _ = await self.makePoller(fetcher: fetcher, sleeper: RecordingHostedCheckoutSleeper()).poll(
             operationSessionID: Self.operationSessionID,
@@ -155,7 +155,7 @@ class HostedCheckoutPollerTests: TestCase {
     }
 
     func testKeepsAskingThroughAnErrorThatTendsToPass() async {
-        let fetcher = StubStatusFetcher(results: [.failure(.networkError(.serverDown())), .status(.succeeded)])
+        let fetcher = StubStatusFetcher(results: [.failure(.networkError(.serverDown())), .status(.succeeded(nil))])
 
         let result = await self.makePoller(fetcher: fetcher, sleeper: RecordingHostedCheckoutSleeper()).poll(
             operationSessionID: Self.operationSessionID,
@@ -168,7 +168,7 @@ class HostedCheckoutPollerTests: TestCase {
 
     /// The session cannot be asked about at all, which says nothing about whether the customer paid.
     func testGivesNoAnswerWhenTheSessionIsNotFoundForThisCustomer() async {
-        let fetcher = StubStatusFetcher(results: [.failure(Self.sessionNotFoundError), .status(.succeeded)])
+        let fetcher = StubStatusFetcher(results: [.failure(Self.sessionNotFoundError), .status(.succeeded(nil))])
 
         let result = await self.makePoller(fetcher: fetcher, sleeper: RecordingHostedCheckoutSleeper()).poll(
             operationSessionID: Self.operationSessionID,
@@ -343,7 +343,7 @@ private final class UnansweredStatusFetcher: HostedCheckoutStatusFetching {
                      appUserID: String) async -> Result<HostedCheckoutStatusResponse, BackendError> {
         self.callCount.modify { $0 += 1 }
         try? await Task.sleep(nanoseconds: 10_000_000_000)
-        return .success(.init(status: .succeeded))
+        return .success(.init(status: .succeeded(nil)))
     }
 
 }
