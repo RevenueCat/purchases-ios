@@ -132,7 +132,6 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
         webView.allowsBackForwardNavigationGestures = false
         // Insetting the page by the safe area makes `window.innerHeight` follow the page's own height when the
         // page is shorter than the web view, and pages sized from it switch between two layouts on every frame.
-        // https://bugs.webkit.org/show_bug.cgi?id=210009
         webView.scrollView.contentInsetAdjustmentBehavior = .never
 
         return webView
