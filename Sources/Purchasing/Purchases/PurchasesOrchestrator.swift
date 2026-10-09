@@ -2275,7 +2275,7 @@ private extension PurchasesOrchestrator {
     func handlePurchase(
         simulatedStoreProduct: SimulatedStoreProduct,
         metadata: [String: String]?,
-        presentationContext: PurchasePresentationContext?,
+        presentationContext: PresentationContext?,
         completion: @escaping PurchaseCompletedBlock
     ) {
         if self.systemInfo.isSimulatedStoreAPIKey {
@@ -2293,7 +2293,7 @@ private extension PurchasesOrchestrator {
     private func purchase(
         simulatedStoreProduct: SimulatedStoreProduct,
         metadata: [String: String]?,
-        presentationContext: PurchasePresentationContext?,
+        presentationContext: PresentationContext?,
         completion: @escaping PurchaseCompletedBlock
     ) {
         Task {

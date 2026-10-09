@@ -56,18 +56,18 @@ extension UIApplication {
     @available(watchOS, unavailable)
     @available(watchOSApplicationExtension, unavailable)
     @MainActor
-    var defaultPurchasePresentationContext: PurchasePresentationContext? {
-        return self.currentWindowScene.map(PurchasePresentationContext.init(scene:))
+    var defaultPresentationContext: PresentationContext? {
+        return self.currentWindowScene.map(PresentationContext.init(scene:))
     }
 
 }
 
-extension PurchasePresentationContext {
+extension PresentationContext {
 
     @MainActor
     static func defaultPresentationContext(systemInfo: SystemInfo) -> Self? {
         if #available(macCatalyst 13.1, *) {
-            return systemInfo.sharedUIApplication?.defaultPurchasePresentationContext
+            return systemInfo.sharedUIApplication?.defaultPresentationContext
         }
 
         return nil
@@ -94,17 +94,17 @@ extension NSApplication {
 
     /// The default context for presenting purchase-related UI.
     @MainActor
-    var defaultPurchasePresentationContext: PurchasePresentationContext? {
-        return (self.keyWindow ?? self.mainWindow).map(PurchasePresentationContext.init(window:))
+    var defaultPresentationContext: PresentationContext? {
+        return (self.keyWindow ?? self.mainWindow).map(PresentationContext.init(window:))
     }
 
 }
 
-extension PurchasePresentationContext {
+extension PresentationContext {
 
     @MainActor
     static func defaultPresentationContext(systemInfo: SystemInfo) -> Self? {
-        return NSApplication.shared.defaultPurchasePresentationContext
+        return NSApplication.shared.defaultPresentationContext
     }
 
     var isValidForPresentation: Bool {
