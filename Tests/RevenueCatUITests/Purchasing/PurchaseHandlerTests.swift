@@ -15,6 +15,7 @@ import Combine
 import Nimble
 @_spi(Internal) @testable import RevenueCat
 @testable import RevenueCatUI
+import SwiftUI
 import XCTest
 
 #if canImport(AppKit)
@@ -60,6 +61,37 @@ class PurchaseHandlerTests: TestCase {
     }
 
     #if canImport(UIKit) && !os(watchOS)
+    func testPresentationContextModifierCapturesHostingScene() throws {
+        let handler: PurchaseHandler = .mock()
+        let sceneClass = try XCTUnwrap(NSClassFromString("UIWindowScene") as? NSObject.Type)
+        let scene = try XCTUnwrap(sceneClass.init() as? UIWindowScene)
+        let controller = UIHostingController(
+            rootView: Color.clear
+                .modifier(PurchasePresentationContextModifier(purchaseHandler: handler))
+                .id(UUID())
+        )
+        let window = MockPresentationWindow(frame: CGRect(x: 0, y: 0, width: 320, height: 480))
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+        controller.view.frame = window.bounds
+        controller.view.layoutIfNeeded()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+        window.presentationScene = scene
+        controller.rootView = Color.clear
+            .modifier(PurchasePresentationContextModifier(purchaseHandler: handler))
+            .id(UUID())
+        controller.view.layoutIfNeeded()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+        defer {
+            window.presentationScene = nil
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+
+        XCTAssertTrue(controller.view.window === window)
+        XCTAssertTrue(handler.purchasePresentationScene === scene)
+    }
+
     func testPurchasePassesPresentationContext() async throws {
         let sceneClass = try XCTUnwrap(NSClassFromString("UIWindowScene") as? NSObject.Type)
         let scene = try XCTUnwrap(sceneClass.init() as? UIWindowScene)
@@ -94,6 +126,29 @@ class PurchaseHandlerTests: TestCase {
             return TestData.customerInfo
         }
         let mappedPurchases = purchases.map(purchase: { $0 }, restore: { $0 })
+
+        _ = try await mappedPurchases.purchase(
+            package: TestData.packageWithIntroOffer,
+            promotionalOffer: nil,
+            paywallEvent: nil,
+            presentationContext: PurchasePresentationContext(scene: scene)
+        )
+
+        XCTAssertTrue(purchases.lastPurchasePresentationContext?.scene === scene)
+    }
+
+    func testTrackEventMappedPurchasesPreservePresentationContext() async throws {
+        let sceneClass = try XCTUnwrap(NSClassFromString("UIWindowScene") as? NSObject.Type)
+        let scene = try XCTUnwrap(sceneClass.init() as? UIWindowScene)
+        let purchases = MockPurchases { _, _, _ in
+            return (nil, TestData.customerInfo, false)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { _ in
+        } customerInfo: {
+            return TestData.customerInfo
+        }
+        let mappedPurchases = purchases.map(trackEvent: { $0 })
 
         _ = try await mappedPurchases.purchase(
             package: TestData.packageWithIntroOffer,
@@ -1015,11 +1070,41 @@ private extension PurchaseHandlerTests {
 
 #endif
 
+#if canImport(UIKit) && !os(watchOS) && !os(macOS)
+
+@MainActor
+private final class MockPresentationWindow: UIWindow {
+
+    var presentationScene: UIWindowScene?
+
+    override var windowScene: UIWindowScene? {
+        get { self.presentationScene }
+        set { self.presentationScene = newValue }
+    }
+
+}
+
+#endif
+
 #if os(macOS)
 
 @available(macOS 12.0, *)
 @MainActor
 final class PurchaseHandlerMacOSTests: TestCase {
+
+    func testPresentationContextModifierCapturesHostingWindow() {
+        let handler: PurchaseHandler = .mock()
+        let controller = NSHostingController(
+            rootView: Color.clear.modifier(PurchasePresentationContextModifier(purchaseHandler: handler))
+        )
+        let window = NSWindow(contentViewController: controller)
+        window.makeKeyAndOrderFront(nil)
+        controller.view.layoutSubtreeIfNeeded()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+        defer { window.close() }
+
+        XCTAssertTrue(handler.purchasePresentationWindow === window)
+    }
 
     func testPurchasePassesPresentationContext() async throws {
         let window = NSWindow()
