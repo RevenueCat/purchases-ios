@@ -3002,40 +3002,4 @@ private extension SubscriberAttributesManagerTests {
         expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$deviceVersion" }))
     }
 
-    // MARK: - local stored attributes
-
-    func testLocalStoredAttributesIsEmptyWhenNothingIsStored() {
-        expect(self.subscriberAttributesManager.localStoredAttributes(for: "waldo")).to(beEmpty())
-    }
-
-    func testLocalStoredAttributesIncludesSyncedAndUnsyncedAttributes() {
-        let synced = SubscriberAttribute(withKey: "band", value: "Rush", isSynced: true, setTime: Date())
-        let unsynced = SubscriberAttribute(withKey: "song", value: "YYZ", isSynced: false, setTime: Date())
-        self.subscriberAttributesManager.merge(subscriberAttributes: [synced.key: synced, unsynced.key: unsynced],
-                                               appUserID: "waldo")
-
-        expect(self.subscriberAttributesManager.localStoredAttributes(for: "waldo")) == [
-            synced.key: synced,
-            unsynced.key: unsynced
-        ]
-    }
-
-    func testLocalStoredAttributesOnlyIncludesAttributesForRequestedUser() {
-        let waldos = SubscriberAttribute(withKey: "band", value: "Rush", isSynced: true, setTime: Date())
-        let carmens = SubscriberAttribute(withKey: "band", value: "Yes", isSynced: true, setTime: Date())
-        self.subscriberAttributesManager.merge(subscriberAttributes: [waldos.key: waldos], appUserID: "waldo")
-        self.subscriberAttributesManager.merge(subscriberAttributes: [carmens.key: carmens], appUserID: "carmen")
-
-        expect(self.subscriberAttributesManager.localStoredAttributes(for: "waldo")) == [waldos.key: waldos]
-        expect(self.subscriberAttributesManager.localStoredAttributes(for: "carmen")) == [carmens.key: carmens]
-    }
-
-    func testMergeForwardsToDeviceCache() {
-        let attribute = SubscriberAttribute(withKey: "band", value: "Rush", isSynced: true, setTime: Date())
-
-        self.subscriberAttributesManager.merge(subscriberAttributes: [attribute.key: attribute], appUserID: "waldo")
-
-        expect(self.mockDeviceCache.subscriberAttributes(appUserID: "waldo")) == [attribute.key: attribute]
-    }
-
 }

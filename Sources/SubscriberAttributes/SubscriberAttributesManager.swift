@@ -310,10 +310,6 @@ class SubscriberAttributesManager {
         deviceCache.subscriberAttributes(appUserID: appUserID)
     }
 
-    func merge(subscriberAttributes: SubscriberAttribute.Dictionary, appUserID: String) {
-        deviceCache.merge(subscriberAttributes: subscriberAttributes, appUserID: appUserID)
-    }
-
     func markAttributesAsSynced(_ attributesToSync: SubscriberAttribute.Dictionary?, appUserID: String) {
         guard let attributesToSync = attributesToSync,
               !attributesToSync.isEmpty else {
