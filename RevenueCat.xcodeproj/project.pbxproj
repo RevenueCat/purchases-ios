@@ -1600,7 +1600,7 @@
 		FD6D87632FAE79E700CAF0F2 /* InstallmentsInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD6D87622FAE79E700CAF0F2 /* InstallmentsInfo.swift */; };
 		FD8C00472DE7A04200224B78 /* VirtualCurrencyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD8C00462DE7A04200224B78 /* VirtualCurrencyManager.swift */; };
 		FD9BCEBC2DC946C400408A5D /* BottomSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD9BCEBB2DC946C400408A5D /* BottomSheetView.swift */; };
-		FD54F4C42D5A664700C848A2 /* StoreKit2ConfirmInOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD54F4C32D5A664700C848A2 /* StoreKit2ConfirmInOptions.swift */; };
+		FD54F4C42D5A664700C848A2 /* PurchasePresentationContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD54F4C32D5A664700C848A2 /* PurchasePresentationContext.swift */; };
 		FD6186542D1393FA007843DA /* MockCustomerCenterStoreKitUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD6186532D1393FA007843DA /* MockCustomerCenterStoreKitUtilities.swift */; };
 		FD9F982D2BE28A7F0091A5BF /* MockNotificationCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B515526D44B2300BD2BD7 /* MockNotificationCenter.swift */; };
 		FDA6F96F2E035544008BF232 /* VirtualCurrencyStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDA6F96E2E035544008BF232 /* VirtualCurrencyStrings.swift */; };
@@ -3518,7 +3518,7 @@
 		FD8C00462DE7A04200224B78 /* VirtualCurrencyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyManager.swift; sourceTree = "<group>"; };
 		FD9BCEBB2DC946C400408A5D /* BottomSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomSheetView.swift; sourceTree = "<group>"; };
 		FDA6F96E2E035544008BF232 /* VirtualCurrencyStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualCurrencyStrings.swift; sourceTree = "<group>"; };
-		FD54F4C32D5A664700C848A2 /* StoreKit2ConfirmInOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2ConfirmInOptions.swift; sourceTree = "<group>"; };
+		FD54F4C32D5A664700C848A2 /* PurchasePresentationContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasePresentationContext.swift; sourceTree = "<group>"; };
 		FD6186532D1393FA007843DA /* MockCustomerCenterStoreKitUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockCustomerCenterStoreKitUtilities.swift; sourceTree = "<group>"; };
 		FDAADFCA2BE2A5BF00BD1659 /* MockAllTransactionsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAllTransactionsProvider.swift; sourceTree = "<group>"; };
 		FDAADFCE2BE2B84500BD1659 /* StoreKit2ObserverModePurchaseDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2ObserverModePurchaseDetector.swift; sourceTree = "<group>"; };
@@ -3692,7 +3692,6 @@
 				2D294E5B26DECFD500B8FE4F /* StoreKit2TransactionListener.swift */,
 				4F7DBFBC2A1E986C00A2F511 /* StoreKit2TransactionFetcher.swift */,
 				FD20467E2CB82F1700166727 /* StoreKit2PurchaseIntentListener.swift */,
-				FD54F4C32D5A664700C848A2 /* StoreKit2ConfirmInOptions.swift */,
 				FD1197092D6E48A5002718E3 /* StoreKit2ProductPurchaser.swift */,
 			);
 			path = StoreKit2;
@@ -5158,6 +5157,7 @@
 				75BB99002E3381BF0001DD1A /* SimulatedStore */,
 				EF0100000000000000000041 /* ExternalPurchase */,
 				AAAA44760000000000000041 /* HostedCheckout */,
+				FD54F4C32D5A664700C848A2 /* PurchasePresentationContext.swift */,
 				B325543B2825C81800DA62EA /* Configuration.swift */,
 				B32B750026868C1D005647BF /* EntitlementInfo.swift */,
 				B3AA6235268A81C700894871 /* EntitlementInfos.swift */,
@@ -8129,7 +8129,7 @@
 				1EDB6AAA2DC95AB400C771A4 /* WebBillingHTTPRequestPath.swift in Sources */,
 				B34605CA279A6E380031CA74 /* GetCustomerInfoOperation.swift in Sources */,
 				5751379527F4C4D80064AB2C /* Optional+Extensions.swift in Sources */,
-				FD54F4C42D5A664700C848A2 /* StoreKit2ConfirmInOptions.swift in Sources */,
+				FD54F4C42D5A664700C848A2 /* PurchasePresentationContext.swift in Sources */,
 				B3852FA026C1ED1F005384F8 /* IdentityManager.swift in Sources */,
 				9A65E03625918B0500DE00B0 /* ConfigureStrings.swift in Sources */,
 				4FF6E4B92B069B8C000141ED /* HTTPRequest+Signing.swift in Sources */,
