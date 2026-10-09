@@ -1,5 +1,5 @@
 //
-//  WorkflowRows.swift
+//  FlowRows.swift
 //  PaywallsTester
 //
 //  Created by RevenueCat.
