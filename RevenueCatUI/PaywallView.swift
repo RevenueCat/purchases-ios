@@ -271,6 +271,7 @@ public struct PaywallView: View {
             // and pulling down in the paywall would execute the parent's refreshable action
             .refreshableDisabled()
             .modifier(PaywallURLEventsModifier(purchaseHandler: self.purchaseHandler))
+            .modifier(PurchasePresentationContextModifier(purchaseHandler: self.purchaseHandler))
     }
 
     @MainActor

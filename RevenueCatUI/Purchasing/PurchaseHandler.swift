@@ -17,6 +17,12 @@ import Foundation
 import StoreKit
 import SwiftUI
 
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
+
 // swiftlint:disable file_length
 
 private struct TerminalOfferingWorkflowError: Error {}
@@ -42,6 +48,25 @@ final class PurchaseHandler: ObservableObject {
     let resolveBranch: @Sendable (WorkflowBranch) async -> WorkflowStepID
     private let paywallEventTracker: PaywallEventTracker
     private let keyWindowFocusResigner: KeyWindowFocusResigning
+
+    // Keep the host weak because its view hierarchy owns this handler. A strong
+    // PurchasePresentationContext here would retain that hierarchy through its scene or window.
+    #if canImport(UIKit) && !os(watchOS)
+    weak var purchasePresentationScene: UIWindowScene?
+    #elseif canImport(AppKit)
+    weak var purchasePresentationWindow: NSWindow?
+    #endif
+
+    @MainActor
+    private var purchasePresentationContext: PurchasePresentationContext? {
+        #if canImport(UIKit) && !os(watchOS)
+        return self.purchasePresentationScene.map(PurchasePresentationContext.init(scene:))
+        #elseif canImport(AppKit)
+        return self.purchasePresentationWindow.map(PurchasePresentationContext.init(window:))
+        #else
+        return nil
+        #endif
+    }
 
     /// Side-by-side paywalls should use separate `PurchaseHandler` instances so each keeps its own session.
     private var activePaywallSessionID: PaywallEvent.SessionID?
@@ -862,9 +887,14 @@ extension PurchaseHandler {
         if let paywallEvent { self.track(paywallEvent) }
 
         do {
-            let result = PaywallPurchaseResult(try await self.purchases.purchase(package: package,
-                                                                                 promotionalOffer: promotionalOffer,
-                                                                                 paywallEvent: paywallEvent))
+            let purchaseResult = try await self.purchases.purchase(
+                package: package,
+                promotionalOffer: promotionalOffer,
+                paywallEvent: paywallEvent,
+                presentationContext: self.purchasePresentationContext
+            )
+
+            let result = PaywallPurchaseResult(purchaseResult)
 
             if result == .cancelled {
                 self.trackCancelledPurchase(package: package)
@@ -1324,7 +1354,8 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
     func purchase(
         package: Package,
         promotionalOffer: PromotionalOffer?,
-        paywallEvent: PaywallEvent?
+        paywallEvent: PaywallEvent?,
+        presentationContext: PurchasePresentationContext?
     ) async throws -> PurchaseResultData {
         throw ErrorCode.configurationError
     }
