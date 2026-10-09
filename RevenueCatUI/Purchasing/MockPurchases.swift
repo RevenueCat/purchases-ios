@@ -26,7 +26,7 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
         Package,
         PromotionalOffer?,
         PaywallEvent?,
-        PurchasePresentationContext?
+        PresentationContext?
     ) async throws -> PurchaseResultData
     typealias RestoreBlock = @Sendable () async throws -> CustomerInfo
     typealias TrackEventBlock = @Sendable (PaywallEvent) async -> Void
@@ -121,16 +121,16 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
     }
 
     private(set) var lastPurchasePaywallEvent: PaywallEvent?
-    private(set) var lastPurchasePresentationContext: PurchasePresentationContext?
+    private(set) var lastPresentationContext: PresentationContext?
 
     func purchase(
         package: Package,
         promotionalOffer: PromotionalOffer?,
         paywallEvent: PaywallEvent?,
-        presentationContext: PurchasePresentationContext?
+        presentationContext: PresentationContext?
     ) async throws -> PurchaseResultData {
         self.lastPurchasePaywallEvent = paywallEvent
-        self.lastPurchasePresentationContext = presentationContext
+        self.lastPresentationContext = presentationContext
         return try await self.purchaseBlock(package, promotionalOffer, paywallEvent, presentationContext)
     }
 

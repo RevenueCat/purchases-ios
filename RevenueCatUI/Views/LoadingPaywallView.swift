@@ -184,7 +184,7 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
         package: Package,
         promotionalOffer: PromotionalOffer?,
         paywallEvent: PaywallEvent?,
-        presentationContext: PurchasePresentationContext?
+        presentationContext: PresentationContext?
     ) async throws -> PurchaseResultData {
         fatalError("Should not be able to purchase")
     }
