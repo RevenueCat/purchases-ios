@@ -50,8 +50,12 @@ extension HTTPRequest {
         /// The name of the endpoint.
         var name: String
 
+        var pathComponent: String
+
         /// The full relative path for this endpoint.
         var relativePath: String
+
+        var iamPathComponent: String
 
         /// The full relative path for this endpoint when using IAM tokens.
         var relativeIAMPath: String
@@ -85,8 +89,8 @@ extension HTTPRequest {
              etagBehavior: ETagBehavior,
              supportsSignatureVerification: Bool,
              needsNonceForSigning: Bool,
-             relativePath: String,
-             relativeIAMPath: String,
+             pathComponent: String,
+             iamPathComponent: String,
              fallbackRelativePath: String? = nil,
              usesAPISources: Bool,
              isFallbackHostPath: Bool,
@@ -100,8 +104,8 @@ extension HTTPRequest {
             self.supportsSignatureVerification = supportsSignatureVerification
             self.needsNonceForSigning = needsNonceForSigning
             self.name = name
-            self.relativePath = relativePath
-            self.relativeIAMPath = relativeIAMPath
+            self.pathComponent = pathComponent
+            self.iamPathComponent = iamPathComponent
             self.fallbackRelativePath = fallbackRelativePath
             self.usesAPISources = usesAPISources
             self.isFallbackHostPath = isFallbackHostPath
@@ -109,6 +113,8 @@ extension HTTPRequest {
             self.responseSignatureContextProvider = responseSignatureContextProvider
             self.isIAMPath = isIAMPath
 
+            self.relativePath = pathComponent.hasPrefix("/") ? pathComponent : "/v1/\(pathComponent)"
+            self.relativeIAMPath = iamPathComponent.hasPrefix("/") ? iamPathComponent : "/v1/\(iamPathComponent)"
 
             if let fallbackRelativePath {
                 self.fallbackUrls = Self.fallbackServerHostURLs.compactMap { baseURL in
@@ -130,7 +136,7 @@ extension HTTPRequest {
 
         func hash(into hasher: inout Hasher) {
             hasher.combine(name)
-            hasher.combine(relativePath)
+            hasher.combine(pathComponent)
         }
 
     }
@@ -145,14 +151,14 @@ extension HTTPRequest.Path2: HTTPRequestPath {
 
 extension HTTPRequest.Path2 {
 
-    static func getCustomerInfo(_ appUserID: String) ->Self {
+    static func getCustomerInfo(appUserID: String) ->Self {
         HTTPRequest.Path2(name: "get_customer",
                           authenticated: true,
                           etagBehavior: .send,
                           supportsSignatureVerification: true,
                           needsNonceForSigning: true,
-                          relativePath: "/v1/subscribers/\(appUserID.trimmedAndEscaped)",
-                          relativeIAMPath: "/v1/customer",
+                          pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)",
+                          iamPathComponent: "customer",
                           fallbackRelativePath: nil,
                           usesAPISources: true,
                           isFallbackHostPath: false,

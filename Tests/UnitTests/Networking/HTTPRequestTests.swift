@@ -26,7 +26,6 @@ class HTTPRequestTests: TestCase {
     private static let clientTransactionID = "AABBCCDD-1111-2222-3333-444455556666"
 
     private static let paths: [HTTPRequest.Path] = [
-        .getCustomerInfo(appUserID: userID),
         .getOfferings(appUserID: userID),
         .getIntroEligibility(appUserID: userID),
         .logIn,
@@ -50,7 +49,6 @@ class HTTPRequestTests: TestCase {
         .postExternalPurchaseToken
     ]
     private static let pathsWithSignatureVerification: Set<HTTPRequest.Path> = [
-        .getCustomerInfo(appUserID: userID),
         .logIn,
         .postReceiptData,
         .postRedeemWebPurchase,
@@ -61,7 +59,6 @@ class HTTPRequestTests: TestCase {
         .remoteConfig(domain: "app")
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path> = [
-        .getCustomerInfo(appUserID: userID),
         .logIn,
         .postReceiptData,
         .postRedeemWebPurchase,
@@ -70,7 +67,6 @@ class HTTPRequestTests: TestCase {
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil)
     ]
     private static let pathsWithUserID: [HTTPRequest.Path] = [
-        .getCustomerInfo(appUserID: anonymousUser),
         .getOfferings(appUserID: anonymousUser),
         .getIntroEligibility(appUserID: anonymousUser),
         .postAttributionData(appUserID: anonymousUser),
@@ -243,14 +239,14 @@ class HTTPRequestTests: TestCase {
         let encodedUserID = "userid%20with%20spaces"
         let expectedPath = "subscribers/\(encodedUserID)"
 
-        expect(HTTPRequest.Path.getCustomerInfo(appUserID: encodeableUserID).pathComponent) == expectedPath
+        expect(HTTPRequest.Path2.getCustomerInfo(appUserID: encodeableUserID).pathComponent) == expectedPath
     }
 
     func testUserIDEscapingOnURL() {
         let encodeableUserID = "userid with spaces"
         let encodedUserID = "userid%20with%20spaces"
         let expectedURL = "https://api.revenuecat.com/v1/subscribers/\(encodedUserID)"
-        let result = HTTPRequest.Path.getCustomerInfo(appUserID: encodeableUserID).url(preferIAMPath: false)
+        let result = HTTPRequest.Path2.getCustomerInfo(appUserID: encodeableUserID).url(preferIAMPath: false)
 
         expect(result?.absoluteString) == expectedURL
     }
@@ -489,26 +485,26 @@ class HTTPRequestTests: TestCase {
     }
 
     func testAddNonceIfRequiredForPathWithSignatureVerificationWhenEnforced() throws {
-        let request: HTTPRequest = .init(method: .get, path: .getCustomerInfo(appUserID: "user"))
+        let request: HTTPRequest = .init(method: .get, requestPath: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"))
         let mode = Signing.enforcedVerificationMode()
 
         expect(request.requestAddingNonceIfRequired(with: mode).nonce).toNot(beNil())
     }
 
     func testAddNonceIfRequiredForPathWithSignatureVerificationWhenModeInformational() throws {
-        let request: HTTPRequest = .init(method: .get, path: .getCustomerInfo(appUserID: "user"))
+        let request: HTTPRequest = .init(method: .get, requestPath: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"))
         let mode = Signing.verificationMode(with: .informational)
 
         expect(request.requestAddingNonceIfRequired(with: mode).nonce).toNot(beNil())
     }
 
     func testRequestIsNotRetryableByDefault() {
-        let request: HTTPRequest = .init(method: .get, path: .getCustomerInfo(appUserID: "user"))
+        let request: HTTPRequest = .init(method: .get, requestPath: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"))
         expect(request.isRetryable).to(beFalse())
     }
 
     func testRequestIsRetryableIfSet() {
-        let request: HTTPRequest = .init(method: .get, path: .getCustomerInfo(appUserID: "user"), isRetryable: true)
+        let request: HTTPRequest = .init(method: .get, requestPath: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"), isRetryable: true)
         expect(request.isRetryable).to(beTrue())
     }
 
@@ -551,7 +547,7 @@ class HTTPRequestTests: TestCase {
         let sandboxHeader = HTTPClient.RequestHeader.sandbox.rawValue
         let request = HTTPRequest(
             method: .get,
-            path: .getCustomerInfo(appUserID: "user"),
+            requestPath: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"),
             additionalHeaders: [sandboxHeader: "false"]
         )
 
@@ -573,7 +569,6 @@ class HTTPRequestTests: TestCase {
     /// Maps each `HTTPRequest.Path` case (other than `.logIn`, which is disallowed under IAM) to the
     /// relative path it should resolve to when IAM access-token authorization is preferred.
     private static let iamPathComponentsByPath: [HTTPRequest.Path: String] = [
-        .getCustomerInfo(appUserID: userID): "customer",
         .getOfferings(appUserID: userID): "customer/offerings",
         .getIntroEligibility(appUserID: userID): "customer/intro_eligibility",
         .postAttributionData(appUserID: userID): "customer/attribution",
@@ -654,7 +649,7 @@ class HTTPRequestTests: TestCase {
     #endif
 
     func testUrlPreferringIAMPathUsesIAMRelativePath() {
-        let path: HTTPRequest.Path = .getCustomerInfo(appUserID: Self.userID)
+        let path: HTTPRequest.Path2 = .getCustomerInfo(appUserID: Self.userID)
 
         let regularURL = path.url(preferIAMPath: false)
         let iamURL = path.url(preferIAMPath: true)
@@ -872,3 +867,479 @@ class HTTPRequestTests: TestCase {
         expect(headers.bearerAuthorizationValue) == "round-trip-token"
     }
 }
+
+class HTTPRequestTests2: TestCase {
+
+    // MARK: - Paths
+
+    private static let userID = "the_user"
+    private static let anonymousUser = "$RCAnonymousID:8252eb283bbc4453a3f81c978f1a6ee1"
+    private static let clientTransactionID = "AABBCCDD-1111-2222-3333-444455556666"
+
+    private static let paths: [HTTPRequest.Path2] = [
+        .getCustomerInfo(appUserID: userID),
+    ]
+    private static let unauthenticatedPaths: Set<HTTPRequest.Path2> = []
+    private static let pathsWithoutETags: Set<HTTPRequest.Path2> = []
+    private static let pathsWithSignatureVerification: Set<HTTPRequest.Path2> = [
+        .getCustomerInfo(appUserID: userID),
+    ]
+    private static let pathsThatRequireNonce: Set<HTTPRequest.Path2> = [
+        .getCustomerInfo(appUserID: userID),
+    ]
+    private static let pathsWithUserID: [HTTPRequest.Path2] = [
+        .getCustomerInfo(appUserID: anonymousUser),
+    ]
+
+    func testPathsDontHaveLeadingSlash() {
+        for path in Self.paths {
+            expect(path.pathComponent).toNot(beginWith("/"))
+        }
+    }
+
+    func testPathsHaveValidURLs() {
+        for path in Self.paths {
+            expect(path.url(preferIAMPath: false)).toNot(beNil())
+        }
+    }
+
+    func testPathIsAuthenticated() {
+        for path in Self.paths where !Self.unauthenticatedPaths.contains(path) {
+            expect(path.authenticated).to(
+                beTrue(),
+                description: "Path '\(path)' should be authenticated"
+            )
+        }
+    }
+
+    func testPathIsNotAuthenticated() {
+        for path in Self.unauthenticatedPaths {
+            expect(path.authenticated).to(
+                beFalse(),
+                description: "Path '\(path)' should not be authenticated"
+            )
+        }
+    }
+
+    func testPathsSendETag() {
+        for path in Self.paths where !Self.pathsWithoutETags.contains(path) {
+            expect(path.shouldSendEtag).to(
+                beTrue(),
+                description: "Path '\(path)' should send etag"
+            )
+        }
+    }
+
+    func testPathsDontSendEtag() {
+        for path in Self.pathsWithoutETags {
+            expect(path.shouldSendEtag).to(
+                beFalse(),
+                description: "Path '\(path)' should not send etag"
+            )
+        }
+    }
+
+    func testPathsSupportingSignatureSignatureVerification() {
+        for path in Self.pathsWithSignatureVerification {
+            expect(path.supportsSignatureVerification).to(
+                beTrue(),
+                description: "Path '\(path)' should have signature verification"
+            )
+        }
+    }
+
+    func testPathsNotSupportingSignatureVerification() {
+        for path in Self.paths where !Self.pathsWithSignatureVerification.contains(path) {
+            expect(path.supportsSignatureVerification).to(
+                beFalse(),
+                description: "Path '\(path)' should not have signature verification"
+            )
+        }
+    }
+
+    func testPathsRequiringNonceForSignature() {
+        for path in Self.pathsThatRequireNonce {
+            expect(path.needsNonceForSigning).to(
+                beTrue(),
+                description: "Path '\(path)' requires nonce for signing"
+            )
+        }
+    }
+
+    func testPathsNotRequiringNonceForSignature() {
+        for path in Self.paths where !Self.pathsThatRequireNonce.contains(path) {
+            expect(path.needsNonceForSigning).to(
+                beFalse(),
+                description: "Path '\(path)' does not require nonce for signing"
+            )
+        }
+    }
+
+    func testPathsThatRequireANonceSupportSignatureVerification() {
+        for path in Self.paths where path.needsNonceForSigning {
+            expect(path.supportsSignatureVerification).to(
+                beTrue(),
+                description: "Path '\(path)' should support signature verification"
+            )
+        }
+    }
+
+    func testStaticEndpoints() {
+        let staticEndpoints = Self.paths
+            .filter { $0.supportsSignatureVerification }
+            .filter { !$0.needsNonceForSigning }
+
+        expect(staticEndpoints) == []
+    }
+
+    func testPathsEscapeUserID() {
+        for path in Self.pathsWithUserID {
+            expect(path.relativePath).toNot(
+                contain(Self.anonymousUser),
+                description: "Path '\(path)' should escape user ID"
+            )
+            expect(path.relativePath).to(
+                contain(Self.anonymousUser.trimmedAndEscaped),
+                description: "Path '\(path)' should escape user ID"
+            )
+        }
+    }
+
+    func testPathsWithFallbackUrls() {
+        for path in Self.paths {
+            let fallbackUrlsPaths = path.fallbackUrls
+            XCTAssertTrue(fallbackUrlsPaths.isEmpty)
+        }
+    }
+
+    func testUserIDEscaping() {
+        let encodeableUserID = "userid with spaces"
+        let encodedUserID = "userid%20with%20spaces"
+        let expectedPath = "subscribers/\(encodedUserID)"
+
+        expect(HTTPRequest.Path2.getCustomerInfo(appUserID: encodeableUserID).pathComponent) == expectedPath
+    }
+
+    func testUserIDEscapingOnURL() {
+        let encodeableUserID = "userid with spaces"
+        let encodedUserID = "userid%20with%20spaces"
+        let expectedURL = "https://api.revenuecat.com/v1/subscribers/\(encodedUserID)"
+        let result = HTTPRequest.Path2.getCustomerInfo(appUserID: encodeableUserID).url(preferIAMPath: false)
+
+        expect(result?.absoluteString) == expectedURL
+    }
+
+    func testURLWithNoProxy() {
+        let path: HTTPRequest.Path = .health
+        expect(path.url(preferIAMPath: false)?.absoluteString) == "https://api.revenuecat.com/v1/health"
+        expect(path.url(proxyURL: nil, preferIAMPath: false)?.absoluteString) == "https://api.revenuecat.com/v1/health"
+    }
+
+    func testURLWithProxy() {
+        let path: HTTPRequest.Path = .health
+        let url = path.url(proxyURL: URL(string: "https://test_url"), preferIAMPath: false)
+        expect(url?.absoluteString) == "https://test_url/v1/health"
+    }
+
+    func testURLWithAPISource() {
+        let path: HTTPRequest.Path = .health
+        expect(path.url(apiSourceURL: URL(string: "https://api.rc-backup.com/"), preferIAMPath: false)?.absoluteString)
+            == "https://api.rc-backup.com/v1/health"
+    }
+
+    func testURLProxyTakesPrecedenceOverAPISource() {
+        // A proxy pins every request to itself; passing an api source alongside it is a caller error
+        // and must not silently route around the proxy.
+        let path: HTTPRequest.Path = .health
+        expect(path.url(proxyURL: URL(string: "https://test_url"),
+                        apiSourceURL: URL(string: "https://api.rc-backup.com/"), preferIAMPath: false)).to(beNil())
+    }
+
+    func testURLFallbackIndexTakesPrecedenceOverAPISource() {
+        let path: HTTPRequest.Path = .getOfferings(appUserID: Self.userID)
+        expect(path.url(apiSourceURL: URL(string: "https://api.rc-backup.com/"),
+                        fallbackUrlIndex: 0,
+                        preferIAMPath: false)?.absoluteString)
+            == path.fallbackUrls.first?.absoluteString
+    }
+
+    func testMainPathsUseAPISources() {
+        for path in Self.paths {
+            expect(path.usesAPISources).to(beTrue(), description: "Path '\(path)' should use API sources")
+        }
+    }
+
+    func testWebBillingPathsUseAPISources() {
+        let paths: [any HTTPRequestPath] = [
+            HTTPRequest.WebBillingPath.getWebOfferingProducts(appUserID: Self.userID),
+            HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"]),
+            HTTPRequest.WebBillingPath.postHostedCheckout,
+            HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
+                                                               appUserID: Self.userID)
+        ]
+        for path in paths {
+            expect(path.usesAPISources).to(beTrue(), description: "Path '\(path)' should use API sources")
+        }
+    }
+
+    func testWebBillingOfferingProductsRelativePathIncludesAppUserID() {
+        let path = HTTPRequest.WebBillingPath.getWebOfferingProducts(appUserID: Self.userID)
+
+        expect(path.relativePath) == "/rcbilling/v1/subscribers/\(Self.userID)/offering_products"
+    }
+
+    func testWebBillingOfferingProductsRelativeIAMPathOmitsAppUserID() {
+        let path = HTTPRequest.WebBillingPath.getWebOfferingProducts(appUserID: Self.userID)
+
+        expect(path.relativeIAMPath) == "/rcbilling/v1/customer/offering_products"
+        expect(path.relativeIAMPath).toNot(contain(Self.userID))
+        expect(path.relativeIAMPath) != path.relativePath
+    }
+
+    func testWebBillingProductsRelativePathIncludesUserIDAndProductIDs() {
+        let path = HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"])
+
+        expect(path.relativePath) == "/rcbilling/v1/subscribers/\(Self.userID)/products?id=product_1"
+    }
+
+    func testWebBillingProductsRelativeIAMPathOmitsUserID() {
+        let path = HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"])
+
+        expect(path.relativeIAMPath) == "/rcbilling/v1/customer/products?id=product_1"
+        expect(path.relativeIAMPath).toNot(contain(Self.userID))
+        expect(path.relativeIAMPath) != path.relativePath
+    }
+
+    func testWebBillingProductsRelativeIAMPathJoinsMultipleProductIDs() {
+        // `productIds` is a `Set`, so its iteration order isn't guaranteed: compare the
+        // resulting query items as an unordered set of `id=` tokens instead of an exact string.
+        let productIds: Set<String> = ["product_1", "product_2", "product_3"]
+        let path = HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: productIds)
+
+        expect(path.relativeIAMPath).to(beginWith("/rcbilling/v1/customer/products?"))
+
+        let query = path.relativeIAMPath.replacingOccurrences(
+            of: "/rcbilling/v1/customer/products?",
+            with: ""
+        )
+        let actualTokens = Set(query.components(separatedBy: "&"))
+        let expectedTokens = Set(productIds.map { "id=\($0)" })
+
+        expect(actualTokens) == expectedTokens
+    }
+
+    func testWebBillingProductsRelativeIAMPathPercentEncodesProductIDs() {
+        let productIdWithSpace = "product with space"
+        let path = HTTPRequest.WebBillingPath.getWebBillingProducts(
+            userId: Self.userID,
+            productIds: [productIdWithSpace]
+        )
+
+        expect(path.relativeIAMPath) == "/rcbilling/v1/customer/products?id=product%20with%20space"
+        expect(path.relativeIAMPath).toNot(contain(" "))
+    }
+
+    func testWebBillingProductsRelativeIAMPathWithNoProductIDsHasEmptyQuery() {
+        let path = HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: [])
+
+        expect(path.relativeIAMPath) == "/rcbilling/v1/customer/products?"
+    }
+
+    func testHostedCheckoutRelativePathNamesTheEndpoint() {
+        let path = HTTPRequest.WebBillingPath.postHostedCheckout
+
+        expect(path.relativePath) == "/rcbilling/v1/hosted-checkout"
+    }
+
+    /// The customer is named in the body, so there is nothing for the IAM path to leave out.
+    func testHostedCheckoutRelativeIAMPathIsTheSameAsTheRelativePath() {
+        let path = HTTPRequest.WebBillingPath.postHostedCheckout
+
+        expect(path.relativeIAMPath) == path.relativePath
+    }
+
+    func testHostedCheckoutIsAuthenticatedAndSendsNoEtag() {
+        let path = HTTPRequest.WebBillingPath.postHostedCheckout
+
+        expect(path.authenticated).to(beTrue())
+        expect(path.shouldSendEtag).to(beFalse())
+    }
+
+    func testHostedCheckoutURL() {
+        let path = HTTPRequest.WebBillingPath.postHostedCheckout
+
+        expect(path.url(preferIAMPath: false)?.absoluteString)
+            == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout"
+        expect(path.url(preferIAMPath: true)?.absoluteString)
+            == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout"
+    }
+
+    func testHostedCheckoutStatusRelativePathNamesTheSessionAndTheCustomer() {
+        let path = HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
+                                                                      appUserID: Self.userID)
+
+        expect(path.relativePath) == "/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=\(Self.userID)"
+    }
+
+    /// The backend reads `app_user_id` from the query string, where a literal `+` arrives as a space.
+    func testHostedCheckoutStatusEscapesAnAppUserIDThatLooksLikeAnEmail() {
+        let path = HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
+                                                                      appUserID: "user+plus@example.com")
+
+        expect(path.relativePath) ==
+            "/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=user%2Bplus@example.com"
+    }
+
+    func testHostedCheckoutStatusIsAuthenticatedAndSendsNoEtag() {
+        let path = HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
+                                                                      appUserID: Self.userID)
+
+        expect(path.authenticated).to(beTrue())
+        expect(path.shouldSendEtag).to(beFalse())
+    }
+
+    func testHostedCheckoutStatusURL() {
+        let path = HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
+                                                                      appUserID: Self.userID)
+
+        expect(path.url(preferIAMPath: false)?.absoluteString)
+            == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=\(Self.userID)"
+        expect(path.url(preferIAMPath: true)?.absoluteString)
+            == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=\(Self.userID)"
+    }
+
+    func testWebBillingPathsURLPreferringIAMPathUsesIAMRelativePath() {
+        let offeringProductsPath = HTTPRequest.WebBillingPath.getWebOfferingProducts(appUserID: Self.userID)
+        let productsPath = HTTPRequest.WebBillingPath.getWebBillingProducts(
+            userId: Self.userID,
+            productIds: ["product_1"]
+        )
+
+        expect(offeringProductsPath.url(preferIAMPath: true)?.absoluteString)
+            == "https://api.revenuecat.com/rcbilling/v1/customer/offering_products"
+        expect(offeringProductsPath.url(preferIAMPath: false)?.absoluteString)
+            == "https://api.revenuecat.com/rcbilling/v1/subscribers/\(Self.userID)/offering_products"
+
+        expect(productsPath.url(preferIAMPath: true)?.absoluteString)
+            == "https://api.revenuecat.com/rcbilling/v1/customer/products?id=product_1"
+        expect(productsPath.url(preferIAMPath: false)?.absoluteString)
+            == "https://api.revenuecat.com/rcbilling/v1/subscribers/\(Self.userID)/products?id=product_1"
+    }
+
+    func testNonMainPathsDoNotUseAPISources() {
+        let paths: [any HTTPRequestPath] = [
+            HTTPRequest.DiagnosticsPath.postDiagnostics
+        ]
+        for path in paths {
+            expect(path.usesAPISources).to(beFalse(), description: "Path '\(path)' should not use API sources")
+        }
+    }
+
+    func testAddNonceIfRequiredWithExistingNonceDoesNotReplaceNonce() throws {
+        let existingNonce = Data.randomNonce()
+        let request: HTTPRequest = .init(method: .get, path: .health, nonce: existingNonce)
+        let mode = Signing.enforcedVerificationMode()
+
+        expect(request.requestAddingNonceIfRequired(with: mode).nonce) == existingNonce
+    }
+
+    func testAddNonceIfRequiredWithDisabledVerification() throws {
+        let request: HTTPRequest = .init(method: .get, path: .mockPath)
+        expect(request.requestAddingNonceIfRequired(with: .disabled).nonce).to(beNil())
+    }
+
+    func testAddNonceIfRequiredWithPathWithNoSignatureVerification() throws {
+        let request: HTTPRequest = .init(method: .get, path: .postOfferForSigning)
+        let mode = Signing.enforcedVerificationMode()
+
+        expect(request.requestAddingNonceIfRequired(with: mode).nonce).to(beNil())
+    }
+
+    func testAddNonceIfRequiredWithPathNotRequiringNonce() throws {
+        let request: HTTPRequest = .init(method: .get, path: .getOfferings(appUserID: Self.userID))
+        let mode = Signing.enforcedVerificationMode()
+
+        expect(request.requestAddingNonceIfRequired(with: mode).nonce).to(beNil())
+    }
+
+    func testAddNonceIfRequiredForPathWithSignatureVerificationWhenEnforced() throws {
+        let request: HTTPRequest = .init(method: .get, requestPath: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"))
+        let mode = Signing.enforcedVerificationMode()
+
+        expect(request.requestAddingNonceIfRequired(with: mode).nonce).toNot(beNil())
+    }
+
+    func testAddNonceIfRequiredForPathWithSignatureVerificationWhenModeInformational() throws {
+        let request: HTTPRequest = .init(method: .get, requestPath: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"))
+        let mode = Signing.verificationMode(with: .informational)
+
+        expect(request.requestAddingNonceIfRequired(with: mode).nonce).toNot(beNil())
+    }
+
+    func testRequestIsNotRetryableByDefault() {
+        let request: HTTPRequest = .init(method: .get, requestPath: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"))
+        expect(request.isRetryable).to(beFalse())
+    }
+
+    func testRequestIsRetryableIfSet() {
+        let request: HTTPRequest = .init(method: .get, requestPath: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"), isRetryable: true)
+        expect(request.isRetryable).to(beTrue())
+    }
+
+    func testRemoteConfigUsesRCContainerAcceptHeaders() {
+        let request: HTTPRequest = .init(
+            method: .post(RemoteConfigRequest(fetchContext: .appStart, appUserID: "app-user-id")),
+            path: HTTPRequest.Path.remoteConfig(domain: "app")
+        )
+        let headers = request.headers(
+            with: [:],
+            defaultHeaders: [:],
+            verificationMode: .disabled,
+            internalSettings: DangerousSettings.Internal.default
+        )
+
+        expect(headers[HTTPClient.RequestHeader.accept.rawValue]) == HTTPClient.rcContainerFormatAcceptHeaderValue
+        expect(headers[HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue])
+            == HTTPClient.rcContainerFormatElementEncodingHeaderValue
+        expect(headers["Accept-Encoding"]).to(beNil())
+    }
+
+    func testFallbackConfigDoesNotRequestRCContainerFormat() {
+        let request: HTTPRequest = .init(
+            method: .get,
+            path: HTTPRequest.FallbackPath.remoteConfig(domain: "app")
+        )
+        let headers = request.headers(
+            with: [:],
+            defaultHeaders: [:],
+            verificationMode: .disabled,
+            internalSettings: DangerousSettings.Internal.default
+        )
+
+        expect(headers[HTTPClient.RequestHeader.accept.rawValue]).to(beNil())
+        expect(headers[HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue]).to(beNil())
+        expect(headers["Accept-Encoding"]).to(beNil())
+    }
+
+    func testHeaderSignatureUsesAdditionalHeaderOverride() {
+        let sandboxHeader = HTTPClient.RequestHeader.sandbox.rawValue
+        let request = HTTPRequest(
+            method: .get,
+            requestPath: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"),
+            additionalHeaders: [sandboxHeader: "false"]
+        )
+
+        let headers = request.headers(
+            with: [:],
+            defaultHeaders: [sandboxHeader: "true"],
+            verificationMode: Signing.verificationMode(with: .informational),
+            internalSettings: DangerousSettings.Internal.default
+        )
+
+        let expectedHash = HTTPRequest.signingParameterHash(["false"])
+        expect(headers[sandboxHeader]) == "false"
+        expect(headers[HTTPClient.RequestHeader.headerParametersForSignature.rawValue])
+            == HTTPRequest.signatureHashHeader(keys: [sandboxHeader], hash: expectedHash)
+    }
+}
+

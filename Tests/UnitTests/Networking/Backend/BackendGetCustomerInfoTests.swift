@@ -92,12 +92,12 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         expect(result).to(beSuccess())
         expect(result?.value?.originalAppUserId) == otherUserID
         expect(self.httpClient.calls).to(haveCount(2))
-        expect(self.httpClient.calls.last?.request.path as? HTTPRequest.Path)
+        expect(self.httpClient.calls.last?.request.path as? HTTPRequest.Path2)
             == .getCustomerInfo(appUserID: otherUserID)
     }
 
     func testGetCustomerCallsBackendProperly() throws {
-        let path: HTTPRequest.Path = .getCustomerInfo(appUserID: Self.userID)
+        let path: HTTPRequest.Path2 = .getCustomerInfo(appUserID: Self.userID)
         let response = MockHTTPClient.Response(statusCode: .success, response: Self.validCustomerResponse)
 
         self.httpClient.mock(requestPath: path, response: response)
@@ -197,7 +197,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
                 "subscriptions": [:] as [String: Any]
             ] as [String: Any]
         ]
-        let path: HTTPRequest.Path = .getCustomerInfo(appUserID: Self.userID)
+        let path: HTTPRequest.Path2 = .getCustomerInfo(appUserID: Self.userID)
         let customerInfoResponse = MockHTTPClient.Response(statusCode: .success, response: customerResponse)
         httpClient.mock(requestPath: path, response: customerInfoResponse)
 
@@ -216,7 +216,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         expect(firstResult.value).to(beSuccess())
         expect(secondResult.value?.value) == firstResult.value?.value
 
-        expect(self.httpClient.calls.map { $0.request.path as? HTTPRequest.Path }) == [path]
+        expect(self.httpClient.calls.map { $0.request.path as? HTTPRequest.Path2 }) == [path]
     }
 
     func testGetCustomerInfoWithVerifiedResponse() throws {
