@@ -34,7 +34,6 @@ final class PromotionalOfferViewModel: ObservableObject {
     private(set) var error: Error?
 
     private var purchasesProvider: CustomerCenterPurchasesType
-    private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCase
     private let actionWrapper: CustomerCenterActionWrapper
 
     /// Callback to be called when the promotional offer is  purchased
@@ -49,7 +48,6 @@ final class PromotionalOfferViewModel: ObservableObject {
         self.promotionalOfferData = promotionalOfferData
         self.purchasesProvider = purchasesProvider
         self.actionWrapper = actionWrapper
-        self.loadPromotionalOfferUseCase = LoadPromotionalOfferUseCase(purchasesProvider: purchasesProvider)
         self.onPromotionalOfferPurchaseFlowComplete = onPromotionalOfferPurchaseFlowComplete
     }
 
@@ -95,6 +93,11 @@ final class PromotionalOfferViewModel: ObservableObject {
                 self.onPromotionalOfferPurchaseFlowComplete?(.successfullyRedeemedPromotionalOffer(result))
             }
         } catch {
+            if (error as NSError).domain == ErrorCode.errorDomain,
+               (error as NSError).code == ErrorCode.purchaseCancelledError.rawValue {
+                self.onPromotionalOfferPurchaseFlowComplete?(.declinePromotionalOffer)
+                return
+            }
             Logger.error(Strings.promo_offer_purchase_failed(productId, offerId, error))
             self.error = error
             self.onPromotionalOfferPurchaseFlowComplete?(.promotionalCodeRedemptionFailed(error))

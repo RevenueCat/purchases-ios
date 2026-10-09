@@ -26,6 +26,36 @@ import XCTest
 @MainActor
 final class SubscriptionDetailViewModelTests: TestCase {
 
+    func testMissingPurchaseIsAvailableForBothStoresAndOpensRestoreAlert() async throws {
+        let restorePath = CustomerCenterConfigData.HelpPath(
+            id: "restore", title: "Restore past purchases", type: .missingPurchase, detail: nil
+        )
+        let screen = CustomerCenterConfigData.Screen(
+            type: .management, title: "Manage", subtitle: nil, paths: [restorePath], offering: nil
+        )
+
+        for store in [Store.appStore, .playStore] {
+            let viewModel = SubscriptionDetailViewModel(
+                customerInfoViewModel: CustomerCenterViewModel(
+                    uiPreviewPurchaseProvider: MockCustomerCenterPurchases()
+                ),
+                screen: screen,
+                showPurchaseHistory: false,
+                showVirtualCurrencies: false,
+                allowsMissingPurchaseAction: true,
+                purchaseInformation: .mock(store: store, isExpired: false, managementURL: nil)
+            )
+
+            XCTAssertEqual(viewModel.relevantPathsForPurchase.map(\.id), [restorePath.id])
+            XCTAssertNil(restorePath.hiddenReason(for: viewModel.purchaseInformation, allowMissingPurchase: true))
+            await viewModel.handleHelpPath(restorePath)
+            XCTAssertTrue(viewModel.showRestoreAlert)
+            XCTAssertTrue([restorePath].relevantPaths(
+                for: viewModel.purchaseInformation, allowMissingPurchase: false
+            ).isEmpty)
+        }
+    }
+
     func testShouldShowContactSupport() {
         let viewModelAppStore = SubscriptionDetailViewModel(
             customerInfoViewModel: CustomerCenterViewModel(

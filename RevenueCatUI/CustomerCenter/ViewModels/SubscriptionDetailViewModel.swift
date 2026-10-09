@@ -65,9 +65,16 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
         allowsMissingPurchaseAction
     }
 
+    enum PurchaseObservationMode {
+        /// Follows the purchase displayed on the root Customer Center screen.
+        case currentPurchase
+        /// Follows the selected product, including replacements within its subscription group.
+        case selectedPurchase
+    }
+
+    private let purchaseObservationMode: PurchaseObservationMode
     private var allowsMissingPurchaseAction: Bool = true
 
-    private var refreshingCancellable: AnyCancellable?
     private var cancellables: Set<AnyCancellable> = []
     private let customerInfoViewModel: CustomerCenterViewModel
 
@@ -77,6 +84,7 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
         showPurchaseHistory: Bool,
         showVirtualCurrencies: Bool,
         allowsMissingPurchaseAction: Bool,
+        purchaseObservationMode: PurchaseObservationMode = .selectedPurchase,
         actionWrapper: CustomerCenterActionWrapper,
         purchaseInformation: PurchaseInformation? = nil,
         refundRequestStatus: RefundRequestStatus? = nil,
@@ -86,6 +94,7 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
             self.showVirtualCurrencies = showVirtualCurrencies
             self.showPurchaseHistory = showPurchaseHistory
             self.allowsMissingPurchaseAction = allowsMissingPurchaseAction
+            self.purchaseObservationMode = purchaseObservationMode
             self.customerInfoViewModel = customerInfoViewModel
 
         super.init(
@@ -101,6 +110,12 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
 
     func didAppear() {
         cancellables.removeAll()
+
+        customerInfoViewModel.publisher(for: purchaseObservationMode == .currentPurchase ? nil : purchaseInformation)
+            .sink { [weak self] purchase in
+                self?.purchaseInformation = purchase
+            }
+            .store(in: &cancellables)
 
         // promotionalOfferSuccessPublisher fires in both paths: with-transaction
         // (via handleAction side effect) and nil-transaction (direct send).
@@ -118,13 +133,6 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
     }
 
     func refreshPurchase() {
-        refreshingCancellable = customerInfoViewModel.publisher(for: purchaseInformation)?
-            .dropFirst() // skip current value
-            .sink(receiveValue: { @MainActor [weak self] in
-                self?.purchaseInformation = $0
-                self?.isRefreshing = false
-            })
-
         isRefreshing = true
 
         Task {

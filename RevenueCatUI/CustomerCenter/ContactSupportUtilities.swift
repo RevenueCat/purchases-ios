@@ -53,7 +53,7 @@ extension CustomerCenterConfigData.Support {
         osVersion = UIDevice.current.systemVersion
         deviceModel = UIDevice.current.model
         #endif
-        let userID = Purchases.isConfigured ? purchasesProvider.appUserID : unknown
+        let userID = purchasesProvider.isConfigured ? purchasesProvider.appUserID : unknown
         let storeFrontCountryCode = purchasesProvider.isConfigured ?
         purchasesProvider.storeFrontCountryCode ?? unknown : unknown
 

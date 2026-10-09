@@ -49,9 +49,6 @@ class BaseManageSubscriptionViewModel: ObservableObject {
     var showRestoreAlert: Bool = false
 
     @Published
-    var restoreAlertType: RestorePurchasesAlertViewModel.AlertType
-
-    @Published
     var feedbackSurveyData: FeedbackSurveyData?
 
     @Published
@@ -77,7 +74,6 @@ class BaseManageSubscriptionViewModel: ObservableObject {
     @Published
     private(set) var refundRequestStatus: RefundRequestStatus?
 
-    private var error: Error?
     private var loadingActiveProductId: String?
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
     let paths: [CustomerCenterConfigData.HelpPath]
@@ -100,7 +96,6 @@ class BaseManageSubscriptionViewModel: ObservableObject {
             self.actionWrapper = actionWrapper
             self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase
             ?? LoadPromotionalOfferUseCase(purchasesProvider: purchasesProvider)
-            self.restoreAlertType = .loading
         }
 
 #if os(iOS) || targetEnvironment(macCatalyst)
