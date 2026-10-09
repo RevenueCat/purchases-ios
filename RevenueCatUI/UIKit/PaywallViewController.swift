@@ -771,7 +771,7 @@ extension PaywallViewController: UIAdaptivePresentationControllerDelegate {
 
     // swiftlint:disable:next missing_docs
     public func presentationControllerDidAttemptToDismiss(_ presentationController: UIPresentationController) {
-        // A swipe refused mid-purchase or restore lands here too, and mustn't open the exit offer.
+        // Avoids opening the exit offer when a swipe to dismiss was refused mid-purchase or restore.
         if self.purchaseHandler.actionInProgress {
             return
         }
