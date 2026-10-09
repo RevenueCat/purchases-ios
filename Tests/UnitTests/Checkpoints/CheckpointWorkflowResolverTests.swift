@@ -80,11 +80,19 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
     }
 
-    func testUnconfiguredCheckpointResolvesUnknownCheckpoint() async throws {
+    func testUnconfiguredCheckpointResolvesUnknownCheckpointAndLogsAtInfo() async throws {
+        let previousLogLevel = Purchases.logLevel
+        Purchases.logLevel = .info
+        defer { Purchases.logLevel = previousLogLevel }
+
         self.checkpointsProvider.result = .success(nil)
 
         let resolution = try await self.resolve()
         XCTAssertEqual(Self.noActionReason(resolution), .unknownCheckpoint)
+        self.logger.verifyMessageWasLogged(
+            "Checkpoint '\(self.checkpointIdentifier)' is not configured in the dashboard.",
+            level: .info
+        )
     }
 
     func testStaleRulesReadRetriesBeforeReportingUnknownCheckpoint() async throws {

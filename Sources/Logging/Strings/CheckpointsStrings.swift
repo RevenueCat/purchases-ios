@@ -13,6 +13,7 @@ enum CheckpointsStrings {
     case resolutionRepeatedlyStale(identifier: String)
     case resolutionRetry(identifier: String)
     case ruleSkipped(reason: String)
+    case unknownCheckpoint(identifier: String)
     case workflowRuleSkipped(workflowID: String, reason: String)
 
 }
@@ -29,6 +30,8 @@ extension CheckpointsStrings: LogMessage {
             return "Remote configuration changed while resolving checkpoint '\(identifier)'; resolving it again."
         case let .ruleSkipped(reason):
             return "Skipping malformed checkpoint rule: \(reason)."
+        case let .unknownCheckpoint(identifier):
+            return "Checkpoint '\(identifier)' is not configured in the dashboard."
         case let .workflowRuleSkipped(workflowID, reason):
             return "Skipping checkpoint rule for workflow '\(workflowID)': \(reason)."
         }

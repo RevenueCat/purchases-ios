@@ -152,6 +152,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         let rulesSnapshot: CheckpointRulesSnapshot
         do {
             guard let snapshot = try await self.checkpointsConfigProvider.rules(for: identifier) else {
+                Logger.info(Strings.checkpoints.unknownCheckpoint(identifier: identifier))
                 return .init(.noAction(.unknownCheckpoint))
             }
             rulesSnapshot = snapshot
