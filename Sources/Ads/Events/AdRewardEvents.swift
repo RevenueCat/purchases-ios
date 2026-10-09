@@ -63,7 +63,7 @@ import Foundation
 }
 
 /// Data for the moment the ad SDK reports a user-earned reward, prior to backend verification.
-@_spi(Internal) public struct AdRewardEarnedUnverified: AdImpressionEventData, Codable, Equatable, Sendable {
+public struct AdRewardEarnedUnverified: AdImpressionEventData, Codable, Equatable, Sendable {
 
     // swiftlint:disable missing_docs
     public let networkName: String?
@@ -81,7 +81,7 @@ import Foundation
         placement: String?,
         adUnitId: String,
         impressionId: String,
-        rewardVerificationEnabled: Bool
+        rewardVerificationEnabled: Bool = false
     ) {
         self.networkName = networkName
         self.mediatorName = mediatorName
@@ -90,6 +90,25 @@ import Foundation
         self.adUnitId = adUnitId
         self.impressionId = impressionId
         self.rewardVerificationEnabled = rewardVerificationEnabled
+    }
+
+    public init(
+        networkName: String?,
+        mediatorName: MediatorName,
+        adFormat: AdFormat,
+        adUnitId: String,
+        impressionId: String,
+        rewardVerificationEnabled: Bool = false
+    ) {
+        self.init(
+            networkName: networkName,
+            mediatorName: mediatorName,
+            adFormat: adFormat,
+            placement: nil,
+            adUnitId: adUnitId,
+            impressionId: impressionId,
+            rewardVerificationEnabled: rewardVerificationEnabled
+        )
     }
     // swiftlint:enable missing_docs
 

@@ -50,6 +50,10 @@ final class PurchaseHandler: ObservableObject {
     /// The checkout this paywall's customer was last given and has not settled. Released with the paywall
     /// session, so a customer who comes back later starts afresh.
     var keptHostedCheckout: HostedCheckout.KeptCheckout?
+
+    /// What the paywall is telling the customer about a hosted checkout, until they acknowledge it.
+    @Published
+    fileprivate(set) var hostedCheckoutResolutionToShow: HostedCheckout.Resolution?
     #endif
 
     /// Where responsibility for completing purchases lies
@@ -294,6 +298,7 @@ final class PurchaseHandler: ObservableObject {
         self.activePaywallSessionID = nil
         #if os(iOS) && canImport(WebKit)
         self.keptHostedCheckout = nil
+        self.hostedCheckoutResolutionToShow = nil
         #endif
     }
 
@@ -939,14 +944,34 @@ extension PurchaseHandler {
 
     // MARK: - Hosted checkout
 
+    #if os(iOS) && canImport(WebKit)
+    /// Has the paywall tell the customer how a hosted checkout settled, or why it did not open.
+    @MainActor
+    func showHostedCheckoutResolution(_ resolution: HostedCheckout.Resolution) {
+        self.hostedCheckoutResolutionToShow = resolution
+    }
+
+    /// Called once the customer has acknowledged what the paywall told them about a hosted checkout. A purchase
+    /// is only reported now, since reporting it can close the paywall.
+    @MainActor
+    func acknowledgeHostedCheckoutResolution() {
+        let resolution = self.hostedCheckoutResolutionToShow
+        self.hostedCheckoutResolutionToShow = nil
+
+        if case let .purchased(transaction, customerInfo) = resolution {
+            self.handleHostedCheckoutPurchase(transaction: transaction, customerInfo: customerInfo)
+        }
+    }
+    #endif
+
     /// Reports a checkout the backend confirmed the customer completed on a page presented inside the app, once
     /// the customer has been told the purchase went through.
     ///
-    /// There is no transaction to hand over: what was bought is known to the backend, so the paywall follows
-    /// the `CustomerInfo` fetched when confirming it.
+    /// - Parameter transaction: The transaction the checkout made, absent where the backend gave no detail of it.
+    /// - Parameter customerInfo: The `CustomerInfo` fetched when confirming the purchase.
     @MainActor
-    func handleHostedCheckoutPurchase(customerInfo: CustomerInfo) {
-        self.reportHostedCheckoutOutcome(.purchased(transaction: nil, customerInfo: customerInfo))
+    private func handleHostedCheckoutPurchase(transaction: StoreTransaction?, customerInfo: CustomerInfo) {
+        self.reportHostedCheckoutOutcome(.purchased(transaction: transaction, customerInfo: customerInfo))
     }
 
     /// Reports a checkout that failed, as opposed to one the customer walked away from.

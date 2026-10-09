@@ -257,7 +257,8 @@ enum HostedCheckout {
     /// always tells the customer the purchase went through.
     enum Resolution: Equatable {
 
-        case purchased(CustomerInfo)
+        /// `transaction` is absent where the backend gave no detail of the purchase.
+        case purchased(transaction: StoreTransaction?, customerInfo: CustomerInfo)
         case tellCustomerTheyAlreadyOwnIt
         case failed(HostedCheckoutError)
 
@@ -266,8 +267,9 @@ enum HostedCheckout {
         /// reported, so as far as the app can tell it is still processing.
         init(_ result: HostedCheckoutPollResult, customerInfo: CustomerInfo?) {
             switch result {
-            case .succeeded:
-                self = customerInfo.map(Self.purchased) ?? .failed(.unconfirmed)
+            case let .succeeded(transaction):
+                self = customerInfo.map { .purchased(transaction: transaction, customerInfo: $0) }
+                    ?? .failed(.unconfirmed)
             case .alreadyPurchased:
                 self = .tellCustomerTheyAlreadyOwnIt
             case let .failed(code, _):
@@ -282,15 +284,8 @@ enum HostedCheckout {
     /// Asks the backend for the final outcome of a checkout that ended on its success page, then settles the
     /// paywall on it.
     ///
-    /// A purchase the backend confirms but the paywall cannot report, for lack of the `CustomerInfo` showing it,
-    /// settles as unconfirmed: as far as the app can tell, it is still processing.
-    ///
-    /// A purchase is left for the caller to report with
-    /// ``PurchaseHandler/handleHostedCheckoutPurchase(customerInfo:)`` once the customer has been told about it,
-    /// since reporting it can close the paywall.
-    ///
-    /// A checkout already being confirmed, or already settled, is not confirmed again: the confirmation that settles
-    /// it is the one that tells the customer.
+    /// The paywall reports a purchase only after the customer acknowledges it, with
+    /// ``PurchaseHandler/acknowledgeHostedCheckoutResolution()``, because a report can close the paywall.
     ///
     /// - Parameter checkout: The kept checkout this settles, if any, which the backend may have confirmed under
     /// another session.
@@ -322,6 +317,7 @@ enum HostedCheckout {
                     Self.settle(checkout, purchaseHandler: purchaseHandler)
                 }
 
+                purchaseHandler.showHostedCheckoutResolution(resolution)
                 return resolution
             }
         }

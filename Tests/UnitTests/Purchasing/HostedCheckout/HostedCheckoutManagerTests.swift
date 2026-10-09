@@ -43,7 +43,7 @@ class HostedCheckoutManagerTests: TestCase {
         self.webBillingAPI = MockWebBillingAPI(lanes: BackendLanes(configuration: MockBackendConfiguration()))
         self.webBillingAPI.stubbedPostHostedCheckoutCompletionResult = .success(Self.response)
 
-        self.poller = StubHostedCheckoutPoller(result: .succeeded)
+        self.poller = StubHostedCheckoutPoller(result: .succeeded(nil))
 
         self.settingsProvider = MockSDKSettingsConfigProvider()
         self.settingsProvider.stubbedSettings = .allowingExternalPurchases(in: [Self.storefront])
