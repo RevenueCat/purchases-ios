@@ -13,6 +13,7 @@
 
 // swiftlint:disable file_length
 
+import Combine
 import SwiftUI
 
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
@@ -181,6 +182,8 @@ public class PaywallViewController: UIViewController {
     /// The original presentation controller delegate, if one was set before we took over.
     /// We forward all delegate calls to this after handling our exit offer logic.
     private weak var originalPresentationControllerDelegate: UIAdaptivePresentationControllerDelegate?
+
+    private var actionInProgressObservation: AnyCancellable?
 
     private var purchaseHandler: PurchaseHandler {
         return configuration.purchaseHandler
@@ -427,6 +430,13 @@ public class PaywallViewController: UIViewController {
         if self.hostingController == nil {
             self.hostingController = self.createHostingController()
         }
+
+        // A purchase or restore in progress can't be swiped away, as in the SwiftUI presentation,
+        // so that its outcome still reaches the paywall's callbacks.
+        self.actionInProgressObservation = self.purchaseHandler.$actionTypeInProgress
+            .sink { [weak self] action in
+                self?.isModalInPresentation = action != nil
+            }
 
         // Prefetch exit offer
         Task { @MainActor in
@@ -732,8 +742,6 @@ public class PaywallViewController: UIViewController {
 // and calls are forwarded to it when we're not handling exit offers.
 //
 // Note on `presentationControllerShouldDismiss`:
-// - A purchase or restore in progress blocks the swipe, as the SwiftUI presentation does, so that its outcome
-//   still reaches the paywall's callbacks.
 // - Exit offers have priority. If an exit offer is available (and no purchase happened), we
 //   return `false` to block the swipe dismiss. This triggers `presentationControllerDidAttemptToDismiss`,
 //   where we present the exit offer paywall.
@@ -744,10 +752,6 @@ extension PaywallViewController: UIAdaptivePresentationControllerDelegate {
 
     // swiftlint:disable:next missing_docs
     public func presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Bool {
-        if self.purchaseHandler.actionInProgress {
-            return false
-        }
-
         // Exit offer has priority - block dismiss to show exit offer if available and no purchase happened.
         // This will trigger `presentationControllerDidAttemptToDismiss` where we present the exit offer.
         if self.exitOfferOffering != nil && !self.purchaseHandler.hasPurchasedInSession {
@@ -767,6 +771,7 @@ extension PaywallViewController: UIAdaptivePresentationControllerDelegate {
 
     // swiftlint:disable:next missing_docs
     public func presentationControllerDidAttemptToDismiss(_ presentationController: UIPresentationController) {
+        // Also called for a swipe blocked by `isModalInPresentation` while a purchase or restore is in progress.
         if self.purchaseHandler.actionInProgress {
             return
         }

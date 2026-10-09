@@ -161,15 +161,31 @@ final class PaywallViewControllerExitOfferTests: TestCase {
 
     func testCannotBeSwipedAwayWhileAPurchaseIsInProgress() {
         let controller = PaywallViewController(offering: Self.makeOffering(identifier: "main"))
+        controller.loadViewIfNeeded()
+
         controller.purchaseHandlerForTesting.actionTypeInProgress = .purchase
 
-        expect(controller.presentationControllerShouldDismiss(Self.presentationController(for: controller))) == false
+        expect(controller.isModalInPresentation) == true
     }
 
-    func testCanBeSwipedAwayWhenNoPurchaseIsInProgress() {
+    func testCannotBeSwipedAwayWhileAPurchaseIsInProgressWithoutExitOffers() {
         let controller = PaywallViewController(offering: Self.makeOffering(identifier: "main"))
+        controller.disableExitOffers()
+        controller.loadViewIfNeeded()
 
-        expect(controller.presentationControllerShouldDismiss(Self.presentationController(for: controller))) == true
+        controller.purchaseHandlerForTesting.actionTypeInProgress = .purchase
+
+        expect(controller.isModalInPresentation) == true
+    }
+
+    func testCanBeSwipedAwayOnceThePurchaseEnds() {
+        let controller = PaywallViewController(offering: Self.makeOffering(identifier: "main"))
+        controller.loadViewIfNeeded()
+        controller.purchaseHandlerForTesting.actionTypeInProgress = .purchase
+
+        controller.purchaseHandlerForTesting.actionTypeInProgress = nil
+
+        expect(controller.isModalInPresentation) == false
     }
 
 }
@@ -214,10 +230,6 @@ private extension PaywallViewControllerExitOfferTests {
             availablePackages: [],
             webCheckoutUrl: nil
         )
-    }
-
-    static func presentationController(for controller: UIViewController) -> UIPresentationController {
-        return UIPresentationController(presentedViewController: controller, presenting: nil)
     }
 
 }
