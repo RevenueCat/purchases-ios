@@ -157,7 +157,7 @@ class StackComponentViewModel {
             visible: partial?.visible ?? self.component.visible ?? true,
             dimension: partial?.dimension ?? self.component.dimension,
             size: partial?.size ?? self.component.size,
-            spacing: partial?.spacing ?? self.component.spacing,
+            spacing: partial?.spacing ?? self.component.spacing ?? 0,
             backgroundColor: partial?.backgroundColor ?? self.component.backgroundColor,
             background: partial?.background ?? self.component.background,
             padding: partial?.padding ?? self.component.padding,
