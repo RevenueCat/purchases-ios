@@ -2919,7 +2919,7 @@ extension Purchases {
         package: Package,
         promotionalOffer: PromotionalOffer?,
         paywallEvent: PaywallEvent?,
-        presentationContext: PurchasePresentationContext?
+        presentationContext: PresentationContext?
     ) async throws -> PurchaseResultData {
         return try await withUnsafeThrowingContinuation { continuation in
             self.purchasesOrchestrator.purchase(

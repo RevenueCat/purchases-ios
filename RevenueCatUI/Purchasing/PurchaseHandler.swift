@@ -50,19 +50,19 @@ final class PurchaseHandler: ObservableObject {
     private let keyWindowFocusResigner: KeyWindowFocusResigning
 
     // Keep the host weak because its view hierarchy owns this handler. A strong
-    // PurchasePresentationContext here would retain that hierarchy through its scene or window.
+    // PresentationContext here would retain that hierarchy through its scene or window.
     #if canImport(UIKit) && !os(watchOS)
-    weak var purchasePresentationScene: UIWindowScene?
+    weak var presentationScene: UIWindowScene?
     #elseif canImport(AppKit)
-    weak var purchasePresentationWindow: NSWindow?
+    weak var presentationWindow: NSWindow?
     #endif
 
     @MainActor
-    private var purchasePresentationContext: PurchasePresentationContext? {
+    private var presentationContext: PresentationContext? {
         #if canImport(UIKit) && !os(watchOS)
-        return self.purchasePresentationScene.map(PurchasePresentationContext.init(scene:))
+        return self.presentationScene.map(PresentationContext.init(scene:))
         #elseif canImport(AppKit)
-        return self.purchasePresentationWindow.map(PurchasePresentationContext.init(window:))
+        return self.presentationWindow.map(PresentationContext.init(window:))
         #else
         return nil
         #endif
@@ -891,7 +891,7 @@ extension PurchaseHandler {
                 package: package,
                 promotionalOffer: promotionalOffer,
                 paywallEvent: paywallEvent,
-                presentationContext: self.purchasePresentationContext
+                presentationContext: self.presentationContext
             )
 
             let result = PaywallPurchaseResult(purchaseResult)
@@ -1355,7 +1355,7 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
         package: Package,
         promotionalOffer: PromotionalOffer?,
         paywallEvent: PaywallEvent?,
-        presentationContext: PurchasePresentationContext?
+        presentationContext: PresentationContext?
     ) async throws -> PurchaseResultData {
         throw ErrorCode.configurationError
     }
