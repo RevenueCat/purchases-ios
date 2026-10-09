@@ -140,6 +140,12 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
             return
         }
 
+        // The navigation the page's process took down with it, which `webViewWebContentProcessDidTerminate`
+        // recovers from. It can arrive after that has started reloading.
+        guard (error as? WKError)?.code != .webContentProcessTerminated else {
+            return
+        }
+
         Logger.error(Strings.web_checkout_load_failed((error as NSError).localizedDescription))
         self.fail()
     }
