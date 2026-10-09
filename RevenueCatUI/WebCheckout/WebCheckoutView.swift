@@ -45,7 +45,13 @@ struct WebCheckoutView: View {
             }
         }
         .onAppear {
-            self.viewModel.onOpenExternalURL = { self.openURL($0) }
+            self.viewModel.onOpenExternalURL = { url in
+                self.openURL(url) { accepted in
+                    if !accepted {
+                        Logger.warning(Strings.web_checkout_external_url_not_opened(scheme: url.scheme ?? ""))
+                    }
+                }
+            }
             self.viewModel.loadIfNeeded()
         }
     }
