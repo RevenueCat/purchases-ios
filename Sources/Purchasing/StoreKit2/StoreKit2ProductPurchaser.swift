@@ -20,7 +20,7 @@ internal protocol StoreKit2ProductPurchaserType {
     func purchase(
         product: PurchasableSK2Product,
         options: Set<StoreKit.Product.PurchaseOption>,
-        presentationContext: PurchasePresentationContext?
+        presentationContext: PresentationContext?
     ) async throws -> StoreKit.Product.PurchaseResult
 }
 
@@ -38,7 +38,7 @@ internal class StoreKit2ProductPurchaser: StoreKit2ProductPurchaserType {
     func purchase(
         product: PurchasableSK2Product,
         options: Set<StoreKit.Product.PurchaseOption>,
-        presentationContext: PurchasePresentationContext?
+        presentationContext: PresentationContext?
     ) async throws -> StoreKit.Product.PurchaseResult {
 #if VISION_OS
         let scene: UIScene
