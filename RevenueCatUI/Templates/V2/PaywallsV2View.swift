@@ -183,9 +183,8 @@ struct PaywallsV2View: View {
         self._introOfferEligibilityContext = .init(
             wrappedValue: introEligibilityContext ?? .init(introEligibilityChecker: introEligibilityChecker)
         )
-        self._ownStateStore = .init(
-            wrappedValue: PaywallStateStore(declarations: paywallComponents.data.stateDeclarations ?? [:])
-        )
+        let stateDeclarations = paywallComponents.data.stateDeclarations ?? [:]
+        self._ownStateStore = .init(wrappedValue: PaywallStateStore(declarations: stateDeclarations))
 
         // Step 0: Decide which ComponentsConfig to use (base is default)
         let componentsConfig = paywallComponentsData.componentsConfig.base
@@ -220,7 +219,9 @@ struct PaywallsV2View: View {
                     // Provisional: `init` has no environment, so variable/eligibility rules can't be
                     // evaluated. `LoadedPaywallsV2View` reconciles once the body resolves the real context.
                     pageDefaultPackage: paywallState.viewModelFactory.packageValidator
-                        .defaultSelectedPackage(in: .provisional),
+                        .defaultSelectedPackage(
+                            in: .provisional(stateDefaults: stateDeclarations.mapValues(\.normalizedDefaultValue))
+                        ),
                     workflowDefaultPackage: workflowDefaultPackage
                 ),
                 workflowPackages: workflowPackages,
@@ -631,6 +632,12 @@ struct LoadedPaywallsV2View: View {
     @Environment(\.paywallWindowSize)
     private var paywallWindowSize
 
+    @Environment(\.paywallStateValues)
+    private var paywallStateValues
+
+    @Environment(\.paywallStateDefaults)
+    private var paywallStateDefaults
+
     @Environment(\.customPaywallVariables)
     private var customVariables
 
@@ -665,6 +672,8 @@ struct LoadedPaywallsV2View: View {
             condition: self.screenCondition,
             customVariables: self.customVariables,
             windowSize: self.paywallWindowSize,
+            stateValues: self.paywallStateValues,
+            stateDefaults: self.paywallStateDefaults,
             isEligibleForIntroOffer: { [introOfferEligibilityContext] in
                 introOfferEligibilityContext.isEligible(package: $0)
             },
@@ -759,6 +768,10 @@ struct LoadedPaywallsV2View: View {
             // A window resize (rotation, Split View, Stage Manager) can hide the
             // selected package via a window size condition.
             .onChangeOf(self.paywallWindowSize) { _ in
+                self.reconcileSelection()
+            }
+            // A state update, such as switching tabs, can hide the selected package's container.
+            .onChangeOf(self.paywallStateValues) { _ in
                 self.reconcileSelection()
             }
         }
