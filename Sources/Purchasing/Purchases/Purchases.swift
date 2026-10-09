@@ -2072,6 +2072,23 @@ public extension Purchases {
 
 extension Purchases {
 
+    #if ENABLE_CONFIGURED_AD_REWARDS
+
+    /// Returns the rewards currently configured for a rewarded ad unit.
+    ///
+    /// The result contains the primary configured reward and any additional rewards that are configured
+    /// to be granted alongside it. Returns `nil` if the ad unit has no configured rewards.
+    ///
+    /// - Parameter adUnitId: The ad network's rewarded ad unit identifier.
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    public func adRewards(
+        forAdUnitId adUnitId: String
+    ) async -> ConfiguredAdRewards? {
+        return nil
+    }
+
+    #endif
+
     /// Generates a reward verification token for a loaded rewarded ad.
     ///
     /// Call after the ad has loaded. Pass `customData` and `appUserID` to your ad network's
