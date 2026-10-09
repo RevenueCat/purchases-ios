@@ -99,6 +99,7 @@ final class CheckpointPresenter: CheckpointPresenterType {
         private let customerInfoSynchronizer: CheckpointsManager.CustomerInfoSynchronizer
         private var pendingContinuation: CheckedContinuation<CheckpointPresentationOutcome, Never>?
         private var hasReportedCompletion = false
+        private var endedWithError = false
 
         init(
             slot: CheckpointPresentationSlot,
@@ -116,10 +117,35 @@ final class CheckpointPresenter: CheckpointPresenterType {
         ) async -> CheckpointPresentationOutcome {
             return await withCheckedContinuation { continuation in
                 self.pendingContinuation = continuation
-                presentationHandler(params) { [weak self] result in
+                presentationHandler(self.trackingTerminalErrors(in: params)) { [weak self] result in
                     self?.completed(result)
                 }
             }
+        }
+
+        private func trackingTerminalErrors(in params: PaywallPresentationParams) -> PaywallPresentationParams {
+            let errorPresentationHandler = params.errorPresentationHandler.map { handler in
+                let trackingHandler: ErrorPresentationHandler = { [weak self] errorParams, completion in
+                    handler(errorParams, .init { result in
+                        switch (result.action, errorParams.flowCanContinue) {
+                        case (.continue, _), (.retry, false):
+                            self?.endedWithError = true
+                        case (.retry, true), (.navigateBack, _):
+                            break
+                        }
+                        completion.complete(result)
+                    })
+                }
+                return trackingHandler
+            }
+
+            return .init(
+                checkpointIdentifier: params.checkpointIdentifier,
+                customVariables: params.customVariables,
+                presentationMode: params.presentationMode,
+                offering: params.offering,
+                errorPresentationHandler: errorPresentationHandler
+            )
         }
 
         fileprivate func completed(_ result: PaywallPresentationResult) {
@@ -129,7 +155,9 @@ final class CheckpointPresenter: CheckpointPresenterType {
             self.hasReportedCompletion = true
             self.slot.release(self.token)
 
-            if result == .navigatedBack {
+            if self.endedWithError {
+                self.complete(execution: .failed)
+            } else if result == .navigatedBack {
                 self.complete(execution: .backedOut)
             } else {
                 self.synchronizeCustomerInfo()

@@ -62,7 +62,7 @@ final class WorkflowPresenterTests: TestCase {
         XCTAssertEqual(receivedParams?.flowCanContinue, false)
     }
 
-    func testRetryAfterWorkflowPresentationErrorContinuesBecauseFlowCannotRecover() throws {
+    func testRetryAfterWorkflowPresentationErrorFailsBecauseFlowCannotRecover() throws {
         var completion: ErrorPresentationCompletion?
         let presentation = try Self.renderablePresentation(
             customVariables: [:],
@@ -76,8 +76,27 @@ final class WorkflowPresenterTests: TestCase {
         viewController.simulateWorkflowPresentationError(error)
         completion?.complete(.retry)
 
-        guard case .completed(nil)? = presenter.presentationDidDismiss() else {
-            return XCTFail("Expected retrying a terminal error to continue out of the workflow")
+        guard case .failed? = presenter.presentationDidDismiss() else {
+            return XCTFail("Expected retrying a terminal error to fail the workflow")
+        }
+    }
+
+    func testContinueAfterWorkflowPresentationErrorFailsWorkflow() throws {
+        var completion: ErrorPresentationCompletion?
+        let presentation = try Self.renderablePresentation(
+            customVariables: [:],
+            errorPresentationHandler: { _, value in completion = value }
+        )
+        let presenter = WorkflowPresenter { _ in true }
+        let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
+
+        try presenter.startPresentation(presentation)
+        let viewController = try presenter.makePaywallViewController(for: presentation)
+        viewController.simulateWorkflowPresentationError(error)
+        completion?.complete(.continue)
+
+        guard case .failed? = presenter.presentationDidDismiss() else {
+            return XCTFail("Expected continuing after an error to fail the workflow")
         }
     }
 
@@ -125,7 +144,7 @@ final class WorkflowPresenterTests: TestCase {
 
         XCTAssertEqual(presentedErrors.map(\.flowCanContinue), [false])
         try XCTUnwrap(completions.first).complete(.retry)
-        guard case .completed(nil)? = presenter.presentationDidDismiss() else {
+        guard case .failed? = presenter.presentationDidDismiss() else {
             return XCTFail("Expected the terminal error completion to remain active")
         }
     }
@@ -247,8 +266,8 @@ final class WorkflowPresenterTests: TestCase {
         XCTAssertEqual(completions.count, 2)
         try XCTUnwrap(completions.last).complete(.continue)
 
-        guard case .completed(nil)? = presenter.presentationDidDismiss() else {
-            return XCTFail("Expected the handled terminal error to complete the workflow")
+        guard case .failed? = presenter.presentationDidDismiss() else {
+            return XCTFail("Expected the handled terminal error to fail the workflow")
         }
     }
 
@@ -268,8 +287,8 @@ final class WorkflowPresenterTests: TestCase {
         completion?.complete(.continue)
 
         XCTAssertEqual(controller.dismissCallCount, 1)
-        guard case .completed(nil)? = presenter.presentationDidDismiss() else {
-            return XCTFail("Expected the handled error to complete the workflow")
+        guard case .failed? = presenter.presentationDidDismiss() else {
+            return XCTFail("Expected continuing after an error to fail the workflow")
         }
     }
 
