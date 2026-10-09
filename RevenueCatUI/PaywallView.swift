@@ -132,7 +132,7 @@ public struct PaywallView: View {
     ) {
         self.init(
             configuration: .init(
-                content: .offeringIdentifier(offeringIdentifier, presentedOfferingContext: nil),
+                content: .offeringIdentifier(.init(offeringIdentifier), presentedOfferingContext: nil),
                 displayCloseButton: displayCloseButton,
                 purchaseHandler: .default()
             )
