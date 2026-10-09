@@ -189,6 +189,47 @@ final class FileImageLoaderTests: TestCase {
         await self.fulfillment(of: [completion], timeout: 5)
     }
 
+    #if os(iOS)
+    // A tab switch reuses the image view at the same position with a new URL.
+    // No render for the new URL may show the previous URL's image.
+    func testRemoteImageNeverRendersPreviousURLsImageAfterURLChange() throws {
+        guard #available(iOS 16.0, *) else {
+            throw XCTSkip("API only available on iOS 16")
+        }
+
+        let urlA = try XCTUnwrap(URL(string: "https://assets.example.com/\(UUID().uuidString)-a.png"))
+        let urlB = try XCTUnwrap(URL(string: "https://assets.example.com/\(UUID().uuidString)-b.png"))
+        let dataA = try Self.makeImageData(variant: .red)
+        let dataB = try Self.makeImageData(variant: .blue)
+        try Self.writeImageData(dataA, to: try XCTUnwrap(
+            FileRepository.shared.generateLocalFilesystemURL(forRemoteURL: urlA, withChecksum: nil)
+        ))
+        try Self.writeImageData(dataB, to: try XCTUnwrap(
+            FileRepository.shared.generateLocalFilesystemURL(forRemoteURL: urlB, withChecksum: nil)
+        ))
+
+        let model = RemoteImageURLModel(url: urlA)
+        let recorder = RemoteImageRenderRecorder()
+        let controller = UIHostingController(rootView: RemoteImageURLHost(model: model, recorder: recorder))
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+        defer { window.isHidden = true }
+
+        controller.view.layoutIfNeeded()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+
+        model.url = urlB
+        controller.view.layoutIfNeeded()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.2))
+
+        let rendersForB = recorder.renders.filter { $0.url == urlB }
+        expect(rendersForB).toNot(beEmpty())
+        // A is red, B is blue.
+        expect(rendersForB.map { $0.image.isMostlyRed() }).toNot(contain(true))
+    }
+    #endif
+
     // MARK: - Helpers
 
     private func makeFileRepository() -> FileRepository {
@@ -238,10 +279,54 @@ private enum TestImageVariant: String {
     }
 }
 
+#if os(iOS)
+private final class RemoteImageURLModel: ObservableObject {
+    @Published var url: URL
+    init(url: URL) { self.url = url }
+}
+
+private final class RemoteImageRenderRecorder {
+    var renders: [(url: URL, image: Image)] = []
+
+    func record(_ image: Image, for url: URL) -> Image {
+        self.renders.append((url: url, image: image))
+        return image
+    }
+}
+
+@available(iOS 15.0, *)
+private struct RemoteImageURLHost: View {
+    @ObservedObject var model: RemoteImageURLModel
+    let recorder: RemoteImageRenderRecorder
+
+    var body: some View {
+        let url = self.model.url
+        RemoteImage(url: url) { image, _ in
+            self.recorder.record(image, for: url).resizable()
+        }
+    }
+}
+#endif
+
 // MARK: - Private
 
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
 private extension Image {
+
+    #if os(iOS)
+    @MainActor
+    func isMostlyRed() -> Bool {
+        guard let cgImage = ImageRenderer(content: self.resizable().frame(width: 2, height: 2)).cgImage,
+              let data = cgImage.dataProvider?.data,
+              let bytes = CFDataGetBytePtr(data) else {
+            return false
+        }
+        let isBGR = cgImage.bitmapInfo.contains(.byteOrder32Little)
+        let red = isBGR ? bytes[2] : bytes[0]
+        let blue = isBGR ? bytes[0] : bytes[2]
+        return red > blue
+    }
+    #endif
 
     @MainActor
     func platformPNGData() -> Data? {
