@@ -268,6 +268,7 @@ private enum VariableLocalizationKey: String {
     case annual = "annual"
     case annually = "annually"
     case annualShort = "annual_short"
+    case lifetime = "lifetime"
     case freePrice = "free_price"
     case percent = "percent"
     case numDayZero = "num_day_zero"
@@ -791,7 +792,18 @@ extension VariablesV2 {
         return "\(price) \(periodly)"
     }
 
+    /// Lifetime is a package-level concept, not a product one: the developer declares it by putting the
+    /// product in the `$rc_lifetime` package. A non-subscription product in any other package has no
+    /// period to describe, so the period variables stay empty for it.
+    private func isLifetime(package: Package) -> Bool {
+        return package.packageType == .lifetime
+    }
+
     func productPeriodly(package: Package, localizations: [String: String]) -> String {
+        if self.isLifetime(package: package) {
+            return localizations[VariableLocalizationKey.lifetime.rawValue] ?? ""
+        }
+
         guard let period = package.storeProduct.subscriptionPeriod else {
             return ""
         }
@@ -833,6 +845,10 @@ extension VariablesV2 {
     }
 
     func productPeriod(package: Package, localizations: [String: String]) -> String {
+        if self.isLifetime(package: package) {
+            return localizations[VariableLocalizationKey.lifetime.rawValue] ?? ""
+        }
+
         guard let period = package.storeProduct.subscriptionPeriod else {
             return ""
         }
@@ -845,6 +861,10 @@ extension VariablesV2 {
     }
 
     func productPeriodAbbreviated(package: Package, localizations: [String: String]) -> String {
+        if self.isLifetime(package: package) {
+            return localizations[VariableLocalizationKey.lifetime.rawValue] ?? ""
+        }
+
         guard let period = package.storeProduct.subscriptionPeriod else {
             return ""
         }
@@ -909,6 +929,10 @@ extension VariablesV2 {
     }
 
     func productPeriodWithUnit(package: Package, localizations: [String: String]) -> String {
+        if self.isLifetime(package: package) {
+            return localizations[VariableLocalizationKey.lifetime.rawValue] ?? ""
+        }
+
         guard let period = package.storeProduct.subscriptionPeriod else {
             return ""
         }
