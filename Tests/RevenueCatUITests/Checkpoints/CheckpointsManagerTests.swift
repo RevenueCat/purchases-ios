@@ -621,6 +621,60 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(customerInfoSynchronizerCallCount, 0)
     }
 
+    func testDefaultPaywallContinueAfterTerminalErrorInvokesCheckpointCallbackWithNil() async {
+        var customerInfoSynchronizerCallCount = 0
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            workflowPresenter: MockWorkflowPresenter(),
+            defaultPaywallPresenter: MockDefaultPaywallPresenter(result: .closed, reportsTerminalError: true),
+            customerInfoSynchronizer: {
+                customerInfoSynchronizerCallCount += 1
+                return try Self.customerInfo(activeEntitlements: [])
+            }
+        )
+
+        let result = await manager.checkpointForCallback(
+            identifier: "onboarding",
+            params: .init(errorPresenter: { params, completion in
+                XCTAssertFalse(params.flowCanContinue)
+                completion.complete(.continue)
+            })
+        )
+
+        guard case let .completed(flowResult) = result else {
+            return XCTFail("Expected the callback to be invoked")
+        }
+        XCTAssertNil(flowResult)
+        XCTAssertEqual(customerInfoSynchronizerCallCount, 0)
+    }
+
+    func testDefaultPaywallRetryAfterTerminalErrorInvokesCheckpointCallbackWithNil() async {
+        var customerInfoSynchronizerCallCount = 0
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            workflowPresenter: MockWorkflowPresenter(),
+            defaultPaywallPresenter: MockDefaultPaywallPresenter(result: .closed, reportsTerminalError: true),
+            customerInfoSynchronizer: {
+                customerInfoSynchronizerCallCount += 1
+                return try Self.customerInfo(activeEntitlements: [])
+            }
+        )
+
+        let result = await manager.checkpointForCallback(
+            identifier: "onboarding",
+            params: .init(errorPresenter: { params, completion in
+                XCTAssertFalse(params.flowCanContinue)
+                completion.complete(.retry)
+            })
+        )
+
+        guard case let .completed(flowResult) = result else {
+            return XCTFail("Expected the callback to be invoked")
+        }
+        XCTAssertNil(flowResult)
+        XCTAssertEqual(customerInfoSynchronizerCallCount, 0)
+    }
+
     func testNavigatedBackSuppressesCheckpointCallback() async {
         var customerInfoSynchronizerCallCount = 0
         let manager = CheckpointsManager(
@@ -1057,11 +1111,13 @@ private final class MockErrorPresenter: ErrorPresenter {
 private final class MockDefaultPaywallPresenter: PaywallPresenter {
 
     let result: PaywallPresentationResult?
+    let reportsTerminalError: Bool
     var onPresent: (() -> Void)?
     private(set) var receivedParams: PaywallPresentationParams?
 
-    init(result: PaywallPresentationResult?) {
+    init(result: PaywallPresentationResult?, reportsTerminalError: Bool = false) {
         self.result = result
+        self.reportsTerminalError = reportsTerminalError
     }
 
     func present(
@@ -1070,6 +1126,17 @@ private final class MockDefaultPaywallPresenter: PaywallPresenter {
     ) {
         self.receivedParams = params
         self.onPresent?()
+        if self.reportsTerminalError {
+            params.errorPresentationHandler?(
+                .init(
+                    checkpointIdentifier: params.checkpointIdentifier,
+                    error: NSError(domain: "test", code: 1),
+                    customVariables: params.customVariables,
+                    flowCanContinue: false
+                ),
+                .init { _ in }
+            )
+        }
         if let result {
             completion(result)
         }

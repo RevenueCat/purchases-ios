@@ -116,10 +116,12 @@ public final class ErrorPresentationCompletion {
 
         /// Resumes the flow at the current paywall so the user can try again.
         ///
-        /// When ``ErrorPresentationParams/flowCanContinue`` is `false`, the flow ends as with ``continue``.
+        /// When ``ErrorPresentationParams/flowCanContinue`` is `false`, the flow ends as with ``continue`` and the
+        /// checkpoint callback receives `nil`.
         public static let retry = Self(.retry)
 
         /// Ends the flow as if the user had closed it and lets the checkpoint continue.
+        /// The checkpoint callback receives `nil`.
         public static let `continue` = Self(.continue)
 
         /// Acts as system back by navigating to the previous workflow step.

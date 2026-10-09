@@ -176,7 +176,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         case .retry where flowCanContinue:
             self.stage(.recoverableErrorHandled)
         case .retry, .continue:
-            self.stage(.outcome(.completed(customerInfo: nil)))
+            self.stage(.outcome(.failed))
             controller?.continueAfterCheckpointError()
         case .navigateBack where flowCanContinue:
             self.stage(.recoverableErrorHandled)
