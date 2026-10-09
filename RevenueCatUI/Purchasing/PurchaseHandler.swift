@@ -365,10 +365,16 @@ extension PurchaseHandler {
     /// Asks for a checkout the customer completes without leaving the app, with the paywall marked as busy
     /// throughout so the button they tapped cannot start a second one.
     ///
+    /// `package` is the package being purchased meanwhile, which is what reports the purchase as started.
+    ///
     /// - Parameter previousSession: The checkout this paywall gave the customer before, for the backend to
     /// hand back if they can still carry on with it.
+    @MainActor
     func startHostedCheckout(package: Package,
                              previousSession: HostedCheckoutSession?) async -> HostedCheckoutStartResult {
+        self.packageBeingPurchased = package
+        defer { self.packageBeingPurchased = nil }
+
         // Carried so that the purchase the customer makes on the page is attributed to the paywall that sent
         // them there.
         let paywallEvent = self.createPurchaseInitiatedEvent(package: package)

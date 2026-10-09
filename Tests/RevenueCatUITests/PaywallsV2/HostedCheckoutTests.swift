@@ -13,7 +13,7 @@
 
 import Nimble
 @_spi(Internal) @testable import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 import SwiftUI
 import XCTest
 
@@ -72,6 +72,24 @@ final class HostedCheckoutTests: TestCase {
         let initiated = try XCTUnwrap(trackedEvents.value.first(where: Self.isPurchaseInitiated))
         expect(initiated.data.packageId) == TestData.annualPackage.identifier
         expect(eventsSentWithTheCheckout.value) == [initiated]
+    }
+
+    /// As for an in-app purchase, this is what reports the purchase as started.
+    @MainActor
+    func testReportsThePackageAsBeingPurchasedWhileTheCheckoutStarts() async {
+        let purchases = Self.makePurchases()
+        let handler = Self.makeHandler(purchases: purchases)
+        let packagesBeingPurchased: Atomic<[String?]> = .init([])
+        purchases.hostedCheckoutBlock = { _, _, _ in
+            let package = await MainActor.run { handler.packageBeingPurchased }
+            packagesBeingPurchased.modify { $0.append(package?.identifier) }
+            return .started(Self.session)
+        }
+
+        _ = await handler.startHostedCheckout(package: TestData.annualPackage, previousSession: nil)
+
+        expect(packagesBeingPurchased.value) == [TestData.annualPackage.identifier]
+        expect(handler.packageBeingPurchased).to(beNil())
     }
 
     /// An app that gates purchases, e.g. behind sign in, gets to stop this one before Apple's flow runs.
@@ -250,6 +268,25 @@ final class HostedCheckoutTests: TestCase {
 
         Self.expectASinglePurchaseError(HostedCheckout.Refusal.alreadyStarting, in: trackedEvents)
         expect(handler.purchaseError).to(beNil())
+    }
+
+    /// An app that pairs the purchase started with how it ended is not left showing a purchase under way.
+    @MainActor
+    func testReportsADeclinedNoticeAsTheEndOfThePurchaseItStarted() async throws {
+        let callbacks = try await Self.paywallCallbacks(forACheckoutEndingIn: .declinedByCustomer)
+
+        expect(callbacks) == ["onPurchaseStarted", "onPurchaseCancelled"]
+    }
+
+    @MainActor
+    func testReportsACheckoutThatNeverOpensAsTheFailureOfThePurchaseItStarted() async throws {
+        let results: [HostedCheckoutStartResult] = [.failed, .alreadyPurchased, .notEligible, .paymentsNotAuthorized]
+
+        for result in results {
+            let callbacks = try await Self.paywallCallbacks(forACheckoutEndingIn: result)
+
+            expect(callbacks).to(equal(["onPurchaseStarted", "onPurchaseFailure"]), description: "\(result)")
+        }
     }
 
     // MARK: - Keeping the checkout
@@ -1188,6 +1225,36 @@ private extension HostedCheckoutTests {
         await Self.waitForEventsTrackedSoFar(by: handler, into: trackedEvents)
 
         return (handler, trackedEvents)
+    }
+
+    /// The purchase callbacks a paywall fires for a checkout that ends in `result`, in the order it fires them.
+    @MainActor
+    static func paywallCallbacks(forACheckoutEndingIn result: HostedCheckoutStartResult) async throws -> [String] {
+        let callbacks: Atomic<[String]> = .init([])
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutBlock = { _, _, _ in
+            // Apple's notice keeps the checkout starting for as long as the paywall takes to report it.
+            await expect(callbacks.value).toEventually(contain("onPurchaseStarted"))
+            return result
+        }
+        let handler = Self.makeHandler(purchases: purchases)
+
+        let configuration = PaywallViewConfiguration(offering: TestData.offeringWithNoIntroOffer.withLocalImages,
+                                                     introEligibility: .producing(eligibility: .eligible),
+                                                     purchaseHandler: handler)
+        let dispose = try PaywallView(configuration: configuration)
+            .onPurchaseStarted { _ in callbacks.modify { $0.append("onPurchaseStarted") } }
+            .onPurchaseCancelled { callbacks.modify { $0.append("onPurchaseCancelled") } }
+            .onPurchaseFailure { _ in callbacks.modify { $0.append("onPurchaseFailure") } }
+            .addToHierarchy()
+        defer { dispose() }
+
+        _ = await HostedCheckout.start(for: TestData.annualPackage,
+                                       purchaseHandler: handler,
+                                       purchaseInitiatedAction: nil)
+        await expect(callbacks.value).toEventually(haveCount(2))
+
+        return callbacks.value
     }
 
     static func expectASinglePurchaseError(_ refusal: HostedCheckout.Refusal,
