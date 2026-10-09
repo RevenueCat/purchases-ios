@@ -1416,6 +1416,7 @@
 		B39E811A268E849900D31189 /* AttributionNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = B39E8119268E849900D31189 /* AttributionNetwork.swift */; };
 		B39E811D268E887500D31189 /* SubscriberAttribute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B39E811C268E887500D31189 /* SubscriberAttribute.swift */; };
 		B3A36AAE26BC76340059EDEA /* CustomerInfoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A36AAD26BC76340059EDEA /* CustomerInfoManager.swift */; };
+		F21AB7BFC022393774D16020 /* EntitlementExpirationScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70D203618E5E73CA0C46E13F /* EntitlementExpirationScheduler.swift */; };
 		B3A55B7D26C452A7007EFC56 /* AttributionPoster.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A55B7C26C452A7007EFC56 /* AttributionPoster.swift */; };
 		B3AA6236268A81C700894871 /* EntitlementInfos.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AA6235268A81C700894871 /* EntitlementInfos.swift */; };
 		B3AA6238268B926F00894871 /* SystemInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AA6237268B926F00894871 /* SystemInfo.swift */; };
@@ -3328,6 +3329,7 @@
 		B39E8119268E849900D31189 /* AttributionNetwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionNetwork.swift; sourceTree = "<group>"; };
 		B39E811C268E887500D31189 /* SubscriberAttribute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberAttribute.swift; sourceTree = "<group>"; };
 		B3A36AAD26BC76340059EDEA /* CustomerInfoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoManager.swift; sourceTree = "<group>"; };
+		70D203618E5E73CA0C46E13F /* EntitlementExpirationScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementExpirationScheduler.swift; sourceTree = "<group>"; };
 		B3A55B7C26C452A7007EFC56 /* AttributionPoster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionPoster.swift; sourceTree = "<group>"; };
 		B3AA6235268A81C700894871 /* EntitlementInfos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementInfos.swift; sourceTree = "<group>"; };
 		B3AA6237268B926F00894871 /* SystemInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemInfo.swift; sourceTree = "<group>"; };
@@ -7246,6 +7248,7 @@
 				5736267A2D3E76C1003C9665 /* ProductPaidPrice.swift */,
 				4F15B4A02A6774C9005BEFE8 /* CustomerInfo+NonSubscriptions.swift */,
 				B3A36AAD26BC76340059EDEA /* CustomerInfoManager.swift */,
+				70D203618E5E73CA0C46E13F /* EntitlementExpirationScheduler.swift */,
 				B3852F9F26C1ED1F005384F8 /* IdentityManager.swift */,
 				55DACDEE302BC2DF005EE017 /* Identity.swift */,
 			);
@@ -8044,6 +8047,7 @@
 				2C9107E02CE2E33400189565 /* StoredFeatureEvent.swift in Sources */,
 				751192E02E39149200E583CC /* WebBillingAPI.swift in Sources */,
 				B3A36AAE26BC76340059EDEA /* CustomerInfoManager.swift in Sources */,
+				F21AB7BFC022393774D16020 /* EntitlementExpirationScheduler.swift in Sources */,
 				F5FCD3EA27DA0D0B003BDC04 /* PriceFormatterProvider.swift in Sources */,
 				B3083A132699334C007B5503 /* Offering.swift in Sources */,
 				4D6ABB0E2AF13FB100BB2A08 /* StoreEnvironment.swift in Sources */,

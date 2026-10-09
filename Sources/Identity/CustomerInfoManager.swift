@@ -37,6 +37,8 @@ class CustomerInfoManager {
     /// Underlying synchronized data for in-memory-only mutable state.
     private let data: Atomic<Data>
 
+    private let entitlementExpirationScheduler: EntitlementExpirationScheduler
+
     init(offlineEntitlementsManager: OfflineEntitlementsManager,
          operationDispatcher: OperationDispatcher,
          deviceCache: DeviceCache,
@@ -44,7 +46,8 @@ class CustomerInfoManager {
          transactionFetcher: StoreKit2TransactionFetcherType,
          transactionPoster: TransactionPosterType,
          systemInfo: SystemInfo,
-         dateProvider: DateProvider = DateProvider()
+         dateProvider: DateProvider = DateProvider(),
+         entitlementExpirationScheduler: EntitlementExpirationScheduler = .init()
     ) {
         self.offlineEntitlementsManager = offlineEntitlementsManager
         self.operationDispatcher = operationDispatcher
@@ -54,8 +57,13 @@ class CustomerInfoManager {
         self.systemInfo = systemInfo
         self.dateProvider = dateProvider
         self.deviceCache = deviceCache
+        self.entitlementExpirationScheduler = entitlementExpirationScheduler
 
         self.data = .init(.init())
+
+        self.entitlementExpirationScheduler.handler = { [weak self] appUserID, _ in
+            self?.handleEntitlementsExpired(appUserID: appUserID)
+        }
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -283,6 +291,7 @@ class CustomerInfoManager {
         }
 
         self.sendUpdateIfChanged(customerInfo: customerInfo, appUserID: appUserID)
+        self.armEntitlementExpiration(with: customerInfo, appUserID: appUserID)
     }
 
     func clearCustomerInfoCache(forAppUserID appUserID: String) {
@@ -338,11 +347,18 @@ class CustomerInfoManager {
     }
 
     private func sendUpdateIfChanged(customerInfo: CustomerInfo, appUserID: String) {
+        self.sendUpdateIfChanged(appUserID: appUserID) { _ in customerInfo }
+    }
+
+    /// `makeCustomerInfo` runs inside the lock against the current `lastSentCustomerInfo`; return `nil` to skip.
+    private func sendUpdateIfChanged(appUserID: String,
+                                     makeCustomerInfo: (CustomerInfo?) -> CustomerInfo?) {
         // Read outside of the lock: `IdentityManager` reads `DeviceCache`, which must not happen while holding `data`.
         let currentAppUserID = self.currentUserProvider?.currentAppUserID
 
         return self.modifyData {
             let lastSentCustomerInfo = $0.lastSentCustomerInfo
+            guard let customerInfo = makeCustomerInfo(lastSentCustomerInfo) else { return }
 
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 if let tracker = self.diagnosticsTracker, lastSentCustomerInfo != customerInfo {
@@ -390,6 +406,43 @@ class CustomerInfoManager {
                 }
             }
         }
+    }
+
+}
+
+// MARK: - Entitlement expiration
+
+extension CustomerInfoManager {
+
+    /// Starts (or restarts) tracking expirations of `customerInfo`'s active entitlements.
+    /// `cache(customerInfo:appUserID:)` does this automatically; this exists for `CustomerInfo`
+    /// that was read from cache without going through it.
+    func armEntitlementExpiration(with customerInfo: CustomerInfo, appUserID: String) {
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        guard !self.systemInfo.dangerousSettings.customEntitlementComputation,
+              !self.systemInfo.dangerousSettings.uiPreviewMode else {
+            return
+        }
+        self.entitlementExpirationScheduler.arm(with: customerInfo, appUserID: appUserID)
+        #endif
+    }
+
+    /// Re-checks the last tracked `CustomerInfo` against the wall clock. Call on foreground: the
+    /// sleeping task does not advance while the process is suspended.
+    func rearmEntitlementExpiration() {
+        self.entitlementExpirationScheduler.rearm()
+    }
+
+    /// Re-evaluates the last sent `CustomerInfo` against the device clock so observers see the expired
+    /// entitlements as inactive, exactly as they would after a network refresh.
+    ///
+    /// The copy is intentionally not written to `DeviceCache`: persisting a device-generated `requestDate`
+    /// would extend the offline grace period (see `CustomerInfo.requestDateGracePeriod`) past what the
+    /// backend last attested.
+    private func handleEntitlementsExpired(appUserID: String) {
+        let now = self.dateProvider.now()
+
+        self.sendUpdateIfChanged(appUserID: appUserID) { $0?.copy(with: now) }
     }
 
 }
