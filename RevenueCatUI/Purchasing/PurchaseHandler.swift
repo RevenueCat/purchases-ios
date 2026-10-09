@@ -958,8 +958,8 @@ extension PurchaseHandler {
         let resolution = self.hostedCheckoutResolutionToShow
         self.hostedCheckoutResolutionToShow = nil
 
-        if case let .purchased(customerInfo) = resolution {
-            self.handleHostedCheckoutPurchase(customerInfo: customerInfo)
+        if case let .purchased(transaction, customerInfo) = resolution {
+            self.handleHostedCheckoutPurchase(transaction: transaction, customerInfo: customerInfo)
         }
     }
     #endif
@@ -967,11 +967,11 @@ extension PurchaseHandler {
     /// Reports a checkout the backend confirmed the customer completed on a page presented inside the app, once
     /// the customer has been told the purchase went through.
     ///
-    /// There is no transaction to hand over: what was bought is known to the backend, so the paywall follows
-    /// the `CustomerInfo` fetched when confirming it.
+    /// - Parameter transaction: The transaction the checkout made, absent where the backend gave no detail of it.
+    /// - Parameter customerInfo: The `CustomerInfo` fetched when confirming the purchase.
     @MainActor
-    private func handleHostedCheckoutPurchase(customerInfo: CustomerInfo) {
-        self.reportHostedCheckoutOutcome(.purchased(transaction: nil, customerInfo: customerInfo))
+    private func handleHostedCheckoutPurchase(transaction: StoreTransaction?, customerInfo: CustomerInfo) {
+        self.reportHostedCheckoutOutcome(.purchased(transaction: transaction, customerInfo: customerInfo))
     }
 
     /// Reports a checkout that failed, as opposed to one the customer walked away from.

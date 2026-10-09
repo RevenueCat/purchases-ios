@@ -84,11 +84,13 @@ class BackendGetHostedCheckoutStatusTests: BaseBackendTests {
             self.getStatus(completion: completed)
         }?.value)
 
-        let purchase = HostedCheckoutStatusResponse.Purchase(storeTransactionIdentifier: "txn_123",
-                                                             productIdentifier: "monthly",
-                                                             purchaseDate: Date(timeIntervalSince1970: 1609459200),
-                                                             isSandbox: true)
-        expect(response.status) == .succeeded(purchase)
+        let transaction = HostedCheckoutStatusResponse.Transaction(
+            storeTransactionIdentifier: "txn_123",
+            productIdentifier: "monthly",
+            purchaseDate: Date(timeIntervalSince1970: 1609459200),
+            isSandbox: true
+        )
+        expect(response.status) == .succeeded(transaction)
     }
 
     /// A backend that does not report the purchase still tells the caller the session succeeded.

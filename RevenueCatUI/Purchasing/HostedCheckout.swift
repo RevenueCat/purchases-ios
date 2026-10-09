@@ -225,7 +225,8 @@ enum HostedCheckout {
     /// always tells the customer the purchase went through.
     enum Resolution: Equatable {
 
-        case purchased(CustomerInfo)
+        /// `transaction` is absent where the backend gave no detail of the purchase.
+        case purchased(transaction: StoreTransaction?, customerInfo: CustomerInfo)
         case tellCustomerTheyAlreadyOwnIt
         case failed(HostedCheckoutError)
 
@@ -234,8 +235,9 @@ enum HostedCheckout {
         /// reported, so as far as the app can tell it is still processing.
         init(_ result: HostedCheckoutPollResult, customerInfo: CustomerInfo?) {
             switch result {
-            case .succeeded:
-                self = customerInfo.map(Self.purchased) ?? .failed(.unconfirmed)
+            case let .succeeded(transaction):
+                self = customerInfo.map { .purchased(transaction: transaction, customerInfo: $0) }
+                    ?? .failed(.unconfirmed)
             case .alreadyPurchased:
                 self = .tellCustomerTheyAlreadyOwnIt
             case let .failed(code, _):

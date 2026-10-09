@@ -33,9 +33,41 @@ class HostedCheckoutPollerTests: TestCase {
             appUserID: Self.appUserID
         )
 
-        expect(result) == .succeeded
+        expect(result) == .succeeded(nil)
         expect(fetcher.receivedIDs) == [Self.operationSessionID]
         expect(sleeper.delays).to(beEmpty())
+    }
+
+    func testSucceedsWithTheTransactionTheSessionMade() async {
+        let fetcher = StubStatusFetcher(results: [.status(.succeeded(Self.transaction(isSandbox: true)))])
+
+        let result = await self.makePoller(fetcher: fetcher, sleeper: RecordingHostedCheckoutSleeper()).poll(
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.appUserID
+        )
+
+        guard case let .succeeded(transaction?) = result else {
+            return XCTFail("Expected a transaction, got \(result)")
+        }
+        expect(transaction.transactionIdentifier) == "txn_123"
+        expect(transaction.productIdentifier) == "monthly"
+        expect(transaction.purchaseDate) == Date(timeIntervalSince1970: 1609459200)
+        expect(transaction.quantity) == 1
+        expect(transaction.environment) == .sandbox
+    }
+
+    func testReportsAPurchaseOutsideSandboxAsProduction() async {
+        let fetcher = StubStatusFetcher(results: [.status(.succeeded(Self.transaction(isSandbox: false)))])
+
+        let result = await self.makePoller(fetcher: fetcher, sleeper: RecordingHostedCheckoutSleeper()).poll(
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.appUserID
+        )
+
+        guard case let .succeeded(transaction?) = result else {
+            return XCTFail("Expected a transaction, got \(result)")
+        }
+        expect(transaction.environment) == .production
     }
 
     func testKeepsAskingWhileTheSessionIsUnderWay() async {
@@ -47,7 +79,7 @@ class HostedCheckoutPollerTests: TestCase {
             appUserID: Self.appUserID
         )
 
-        expect(result) == .succeeded
+        expect(result) == .succeeded(nil)
         expect(fetcher.callCount) == 3
         expect(sleeper.delays) == [1, 1]
     }
@@ -162,7 +194,7 @@ class HostedCheckoutPollerTests: TestCase {
             appUserID: Self.appUserID
         )
 
-        expect(result) == .succeeded
+        expect(result) == .succeeded(nil)
         expect(fetcher.callCount) == 2
     }
 
@@ -256,6 +288,13 @@ private extension HostedCheckoutPollerTests {
                              message: "The operation session is invalid."),
                        .notFoundError)
     )
+
+    static func transaction(isSandbox: Bool) -> HostedCheckoutStatusResponse.Transaction {
+        return .init(storeTransactionIdentifier: "txn_123",
+                     productIdentifier: "monthly",
+                     purchaseDate: Date(timeIntervalSince1970: 1609459200),
+                     isSandbox: isSandbox)
+    }
 
     func makePoller(fetcher: HostedCheckoutStatusFetching,
                     sleeper: AsyncSleeper) -> HostedCheckoutPoller {
