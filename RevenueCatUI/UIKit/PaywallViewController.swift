@@ -13,6 +13,7 @@
 
 // swiftlint:disable file_length
 
+import Combine
 import SwiftUI
 
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
@@ -134,6 +135,8 @@ public class PaywallViewController: UIViewController {
 
     var exitOfferOfferingForTesting: Offering? { self.exitOfferOffering }
 
+    var purchaseHandlerForTesting: PurchaseHandler { self.purchaseHandler }
+
     var workflowContextForTesting: WorkflowContext? { self.configuration.injectedWorkflowContext }
 
     var workflowBackNavigationBridgeForTesting: WorkflowBackNavigationBridge {
@@ -179,6 +182,11 @@ public class PaywallViewController: UIViewController {
     /// The original presentation controller delegate, if one was set before we took over.
     /// We forward all delegate calls to this after handling our exit offer logic.
     private weak var originalPresentationControllerDelegate: UIAdaptivePresentationControllerDelegate?
+
+    private var actionInProgressObservation: AnyCancellable?
+
+    /// Whether `isModalInPresentation` was set by us for the action in progress, rather than by the host.
+    private var isBlockingSwipeForAction = false
 
     private var purchaseHandler: PurchaseHandler {
         return configuration.purchaseHandler
@@ -426,9 +434,26 @@ public class PaywallViewController: UIViewController {
             self.hostingController = self.createHostingController()
         }
 
+        // A purchase or restore in progress can't be swiped away, as in the SwiftUI presentation,
+        // so that its outcome still reaches the paywall's callbacks.
+        self.actionInProgressObservation = self.purchaseHandler.$actionTypeInProgress
+            .sink { [weak self] action in
+                self?.updateSwipeBlocking(actionInProgress: action != nil)
+            }
+
         // Prefetch exit offer
         Task { @MainActor in
             await self.prefetchExitOffer()
+        }
+    }
+
+    private func updateSwipeBlocking(actionInProgress: Bool) {
+        if actionInProgress, !self.isModalInPresentation {
+            self.isModalInPresentation = true
+            self.isBlockingSwipeForAction = true
+        } else if !actionInProgress, self.isBlockingSwipeForAction {
+            self.isModalInPresentation = false
+            self.isBlockingSwipeForAction = false
         }
     }
 
@@ -759,6 +784,11 @@ extension PaywallViewController: UIAdaptivePresentationControllerDelegate {
 
     // swiftlint:disable:next missing_docs
     public func presentationControllerDidAttemptToDismiss(_ presentationController: UIPresentationController) {
+        // Avoids opening the exit offer when a swipe to dismiss was refused mid-purchase or restore.
+        if self.purchaseHandler.actionInProgress {
+            return
+        }
+
         // Exit offer has priority - if we blocked for exit offer, handle it ourselves
         if self.exitOfferOffering != nil && !self.purchaseHandler.hasPurchasedInSession {
             self.handleDismissalRequest()
