@@ -282,6 +282,14 @@ import Foundation
 
 }
 
+/// A workflow in the synced `workflows` topic, with the offering it claims, if any.
+struct WorkflowListing: Equatable {
+
+    let workflowId: String
+    let offeringIdentifier: String?
+
+}
+
 @_spi(Internal) public struct WorkflowDataResult {
 
     public let workflow: PublishedWorkflow
