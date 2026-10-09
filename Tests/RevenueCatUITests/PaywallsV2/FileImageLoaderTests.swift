@@ -192,7 +192,7 @@ final class FileImageLoaderTests: TestCase {
     #if os(iOS)
     // A tab switch reuses the image view at the same position with a new URL.
     // No render for the new URL may show the previous URL's image.
-    func testRemoteImageNeverRendersPreviousURLsImageAfterURLChange() throws {
+    func testRemoteImageDoesNotRenderPreviousImageAfterURLChange() throws {
         guard #available(iOS 16.0, *) else {
             throw XCTSkip("API only available on iOS 16")
         }
@@ -201,12 +201,18 @@ final class FileImageLoaderTests: TestCase {
         let urlB = try XCTUnwrap(URL(string: "https://assets.example.com/\(UUID().uuidString)-b.png"))
         let dataA = try Self.makeImageData(variant: .red)
         let dataB = try Self.makeImageData(variant: .blue)
-        try Self.writeImageData(dataA, to: try XCTUnwrap(
+        let cachedURLA = try XCTUnwrap(
             FileRepository.shared.generateLocalFilesystemURL(forRemoteURL: urlA, withChecksum: nil)
-        ))
-        try Self.writeImageData(dataB, to: try XCTUnwrap(
+        )
+        let cachedURLB = try XCTUnwrap(
             FileRepository.shared.generateLocalFilesystemURL(forRemoteURL: urlB, withChecksum: nil)
-        ))
+        )
+        try Self.writeImageData(dataA, to: cachedURLA)
+        try Self.writeImageData(dataB, to: cachedURLB)
+        defer {
+            try? FileManager.default.removeItem(at: cachedURLA)
+            try? FileManager.default.removeItem(at: cachedURLB)
+        }
 
         let model = RemoteImageURLModel(url: urlA)
         let recorder = RemoteImageRenderRecorder()
@@ -225,8 +231,8 @@ final class FileImageLoaderTests: TestCase {
 
         let rendersForB = recorder.renders.filter { $0.url == urlB }
         expect(rendersForB).toNot(beEmpty())
-        // A is red, B is blue.
-        expect(rendersForB.map { $0.image.isMostlyRed() }).toNot(contain(true))
+        // A is red, B is blue. A failed pixel read is nil, so it fails too.
+        expect(rendersForB.map { $0.image.dominantColor() }).to(allPass(equal(.blue)))
     }
     #endif
 
@@ -315,16 +321,21 @@ private extension Image {
 
     #if os(iOS)
     @MainActor
-    func isMostlyRed() -> Bool {
+    func dominantColor() -> TestImageVariant? {
         guard let cgImage = ImageRenderer(content: self.resizable().frame(width: 2, height: 2)).cgImage,
               let data = cgImage.dataProvider?.data,
               let bytes = CFDataGetBytePtr(data) else {
-            return false
+            return nil
         }
         let isBGR = cgImage.bitmapInfo.contains(.byteOrder32Little)
         let red = isBGR ? bytes[2] : bytes[0]
+        let green = bytes[1]
         let blue = isBGR ? bytes[0] : bytes[2]
-        return red > blue
+        switch max(red, green, blue) {
+        case red: return .red
+        case blue: return .blue
+        default: return .green
+        }
     }
     #endif
 
