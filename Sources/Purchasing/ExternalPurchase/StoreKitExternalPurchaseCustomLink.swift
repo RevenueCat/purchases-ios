@@ -61,6 +61,13 @@ internal struct StoreKitExternalPurchaseCustomLink: ExternalPurchaseCustomLinkTy
             throw ExternalPurchaseError.apiUnavailable
         }
 
+        // Swift 6.4 also ships with older StoreKit SDKs that do not contain the 27.2 APIs.
+        #if compiler(>=6.4) && canImport(StoreKit, _version: 816.1.12)
+        if #available(anyAppleOS 27.2, *) {
+            return try await ExternalPurchaseCustomLink.token(for: tokenType.storeKitTokenType)?.value
+        }
+        #endif
+
         return try await ExternalPurchaseCustomLink.token(for: tokenType.rawValue)?.value
         #else
         throw ExternalPurchaseError.apiUnavailable
@@ -73,6 +80,13 @@ internal struct StoreKitExternalPurchaseCustomLink: ExternalPurchaseCustomLinkTy
             throw ExternalPurchaseError.apiUnavailable
         }
 
+        #if compiler(>=6.4) && canImport(StoreKit, _version: 816.1.12)
+        if #available(anyAppleOS 27.2, *) {
+            let result = try await ExternalPurchaseCustomLink.showNotice(for: type.storeKitExternalPurchaseType)
+            return ExternalPurchaseNoticeResult(result)
+        }
+        #endif
+
         let result = try await ExternalPurchaseCustomLink.showNotice(type: type.storeKitNoticeType)
         return ExternalPurchaseNoticeResult(result)
         #else
@@ -81,6 +95,35 @@ internal struct StoreKitExternalPurchaseCustomLink: ExternalPurchaseCustomLinkTy
     }
 
 }
+
+#if compiler(>=6.4) && canImport(StoreKit, _version: 816.1.12)
+
+@available(anyAppleOS 27.2, *)
+internal extension ExternalPurchaseNoticeType {
+
+    var storeKitExternalPurchaseType: StoreKit.ExternalPurchaseCustomLink.ExternalPurchaseType {
+        switch self {
+        case let .browser(destinationURL): return .outOfApp(destinationURL: destinationURL)
+        case .withinApp: return .withinApp
+        }
+    }
+
+}
+
+@available(anyAppleOS 27.2, *)
+internal extension ExternalPurchaseTokenType {
+
+    var storeKitTokenType: StoreKit.ExternalPurchaseCustomLink.TokenType {
+        switch self {
+        case .inApp: return .withinApp
+        case .linkOut: return .outOfApp
+        default: return .init(rawValue: self.rawValue)
+        }
+    }
+
+}
+
+#endif
 
 #if compiler(>=6.0.2)
 

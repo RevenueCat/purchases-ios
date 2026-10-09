@@ -37,6 +37,8 @@ extension ExternalPurchaseFlow {
     static let inApp: Self = .init(tokenType: .inApp, noticeType: .withinApp)
 
     /// The customer leaves the app to complete the transaction on the developer's website.
-    static let linkOut: Self = .init(tokenType: .linkOut, noticeType: .browser)
+    static func linkOut(destinationURL: URL) -> Self {
+        return .init(tokenType: .linkOut, noticeType: .browser(destinationURL: destinationURL))
+    }
 
 }

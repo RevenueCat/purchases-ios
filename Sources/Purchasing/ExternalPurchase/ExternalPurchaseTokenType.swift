@@ -15,9 +15,9 @@ import Foundation
 
 /// The type of external purchase token to request from StoreKit.
 ///
-/// StoreKit takes this as a plain `String`, and which values apply depends on the storefront and on the flow the
-/// customer is about to enter. Modelled as a `RawRepresentable` struct rather than an enum so that a value the SDK
-/// does not know about can still be forwarded to StoreKit.
+/// StoreKit takes this as a `TokenType` on 27.2 and later, or a plain `String` on older OS versions. Modelled as a
+/// `RawRepresentable` struct rather than an enum so that a value the SDK does not know about can still be
+/// forwarded to StoreKit. The raw value also identifies the purchase type when registering with the backend.
 internal struct ExternalPurchaseTokenType: RawRepresentable, Hashable, Sendable, Encodable {
 
     let rawValue: String
