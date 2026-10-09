@@ -13,7 +13,7 @@
 
 import Nimble
 @_spi(Internal) @testable import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 import SwiftUI
 import XCTest
 
@@ -72,6 +72,24 @@ final class HostedCheckoutTests: TestCase {
         let initiated = try XCTUnwrap(trackedEvents.value.first(where: Self.isPurchaseInitiated))
         expect(initiated.data.packageId) == TestData.annualPackage.identifier
         expect(eventsSentWithTheCheckout.value) == [initiated]
+    }
+
+    /// As for an in-app purchase, this is what reports the purchase as started.
+    @MainActor
+    func testReportsThePackageAsBeingPurchasedWhileTheCheckoutStarts() async {
+        let purchases = Self.makePurchases()
+        let handler = Self.makeHandler(purchases: purchases)
+        let packagesBeingPurchased: Atomic<[String?]> = .init([])
+        purchases.hostedCheckoutBlock = { _, _, _ in
+            let package = await MainActor.run { handler.packageBeingPurchased }
+            packagesBeingPurchased.modify { $0.append(package?.identifier) }
+            return .started(Self.session)
+        }
+
+        _ = await handler.startHostedCheckout(package: TestData.annualPackage, previousSession: nil)
+
+        expect(packagesBeingPurchased.value) == [TestData.annualPackage.identifier]
+        expect(handler.packageBeingPurchased).to(beNil())
     }
 
     /// An app that gates purchases, e.g. behind sign in, gets to stop this one before Apple's flow runs.
@@ -194,10 +212,81 @@ final class HostedCheckoutTests: TestCase {
         _ = await HostedCheckout.start(for: TestData.annualPackage,
                                        purchaseHandler: handler,
                                        purchaseInitiatedAction: nil)
+        await Self.waitForEventsTrackedSoFar(by: handler, into: trackedEvents)
 
         expect(handler.purchaseError as? HostedCheckoutError) == .notStarted
-        await expect(trackedEvents.value.contains(where: Self.isPurchaseError))
-            .toEventually(beTrue(), timeout: .seconds(2))
+        expect(trackedEvents.value.filter(Self.isPurchaseError)).to(haveCount(1))
+        expect(trackedEvents.value.contains(where: Self.isCancel)) == false
+    }
+
+    /// Saying no to Apple's notice is the hosted checkout's counterpart to dismissing StoreKit's sheet, so the app
+    /// hears of it as a cancellation too.
+    @MainActor
+    func testReportsADeclinedNoticeAsACancellation() async {
+        let trackedEvents: Atomic<[PaywallEvent]> = .init([])
+        let purchases = Self.makePurchases(trackingInto: trackedEvents)
+        purchases.hostedCheckoutBlock = { _, _, _ in .declinedByCustomer }
+        let handler = Self.makeHandler(purchases: purchases)
+        handler.trackPaywallImpression(Self.impressionData)
+
+        _ = await HostedCheckout.start(for: TestData.annualPackage,
+                                       purchaseHandler: handler,
+                                       purchaseInitiatedAction: nil)
+        await Self.waitForEventsTrackedSoFar(by: handler, into: trackedEvents)
+
+        let cancellations = trackedEvents.value.filter(Self.isCancel)
+        expect(cancellations).to(haveCount(1))
+        expect(cancellations.first?.data.packageId) == TestData.annualPackage.identifier
+        expect(trackedEvents.value.contains(where: Self.isPurchaseError)) == false
+        expect(handler.purchaseError).to(beNil())
+        expect(handler.sessionPurchaseResult) == .cancelled
+        expect(handler.purchaseResult) == .cancelled
+    }
+
+    /// The customer is told they already own it or that it is unavailable, or nothing at all, but the purchase still
+    /// fails, as one StoreKit refuses does.
+    @MainActor
+    func testReportsARefusedPurchaseAsAPurchaseError() async {
+        let cases: [(HostedCheckoutStartResult, HostedCheckout.Refusal)] = [
+            (.alreadyPurchased, .alreadyPurchased),
+            (.notEligible, .notEligible),
+            (.paymentsNotAuthorized, .paymentsNotAuthorized)
+        ]
+
+        for (result, expectedError) in cases {
+            let (handler, trackedEvents) = await Self.startCheckout(endingIn: result)
+
+            Self.expectASinglePurchaseError(expectedError, in: trackedEvents)
+            expect(handler.purchaseError as? HostedCheckout.Refusal).to(equal(expectedError), description: "\(result)")
+        }
+    }
+
+    /// The checkout already starting reports how the purchase ends, which may yet be a purchase.
+    @MainActor
+    func testOnlyTracksATapWhileAnotherCheckoutIsStarting() async {
+        let (handler, trackedEvents) = await Self.startCheckout(endingIn: .alreadyStarting)
+
+        Self.expectASinglePurchaseError(HostedCheckout.Refusal.alreadyStarting, in: trackedEvents)
+        expect(handler.purchaseError).to(beNil())
+    }
+
+    /// An app that pairs the purchase started with how it ended is not left showing a purchase under way.
+    @MainActor
+    func testReportsADeclinedNoticeAsTheEndOfThePurchaseItStarted() async throws {
+        let callbacks = try await Self.paywallCallbacks(forACheckoutEndingIn: .declinedByCustomer)
+
+        expect(callbacks) == ["onPurchaseStarted", "onPurchaseCancelled"]
+    }
+
+    @MainActor
+    func testReportsACheckoutThatNeverOpensAsTheFailureOfThePurchaseItStarted() async throws {
+        let results: [HostedCheckoutStartResult] = [.failed, .alreadyPurchased, .notEligible, .paymentsNotAuthorized]
+
+        for result in results {
+            let callbacks = try await Self.paywallCallbacks(forACheckoutEndingIn: result)
+
+            expect(callbacks).to(equal(["onPurchaseStarted", "onPurchaseFailure"]), description: "\(result)")
+        }
     }
 
     // MARK: - Keeping the checkout
@@ -278,7 +367,7 @@ final class HostedCheckoutTests: TestCase {
     @MainActor
     func testReleasesTheKeptCheckoutOnceItsPurchaseIsConfirmed() async {
         let purchases = Self.makePurchases()
-        purchases.hostedCheckoutPollBlock = { _ in .succeeded }
+        purchases.hostedCheckoutPollBlock = { _ in .succeeded(nil) }
         let handler = Self.makeHandler(purchases: purchases)
         let kept = Self.makeKeptCheckout(for: Self.session)
         handler.keptHostedCheckout = kept
@@ -295,7 +384,7 @@ final class HostedCheckoutTests: TestCase {
     @MainActor
     func testReleasesTheKeptCheckoutWhenThePurchaseConfirmedForItIsUnderAnotherSession() async {
         let purchases = Self.makePurchases()
-        purchases.hostedCheckoutPollBlock = { _ in .succeeded }
+        purchases.hostedCheckoutPollBlock = { _ in .succeeded(nil) }
         let handler = Self.makeHandler(purchases: purchases)
         let kept = Self.makeKeptCheckout(for: Self.session)
         handler.keptHostedCheckout = kept
@@ -344,7 +433,7 @@ final class HostedCheckoutTests: TestCase {
     @MainActor
     func testLeavesACheckoutThatReplacedTheOneBeingConfirmed() async {
         let purchases = Self.makePurchases()
-        purchases.hostedCheckoutPollBlock = { _ in .succeeded }
+        purchases.hostedCheckoutPollBlock = { _ in .succeeded(nil) }
         let handler = Self.makeHandler(purchases: purchases)
         let replacement = Self.makeKeptCheckout(for: Self.otherSession)
         handler.keptHostedCheckout = replacement
@@ -403,10 +492,12 @@ final class HostedCheckoutTests: TestCase {
     func testReleasesTheKeptCheckoutWithThePaywallSession() {
         let handler = Self.makeHandler(purchases: Self.makePurchases())
         handler.keptHostedCheckout = Self.makeKeptCheckout(for: Self.session)
+        handler.showHostedCheckoutResolution(.tellCustomerTheyAlreadyOwnIt)
 
         handler.resetForNewSession()
 
         expect(handler.keptHostedCheckout).to(beNil())
+        expect(handler.hostedCheckoutResolutionToShow).to(beNil())
     }
 
     // MARK: - Returning while hidden
@@ -468,7 +559,7 @@ final class HostedCheckoutTests: TestCase {
         let handler = Self.makeHandler(purchases: purchases)
         purchases.hostedCheckoutPollBlock = { _ in
             await actionsWhilePolling.record(await MainActor.run { handler.actionTypeInProgress })
-            return .succeeded
+            return .succeeded(nil)
         }
         handler.actionTypeInProgress = .restore
 
@@ -478,7 +569,7 @@ final class HostedCheckoutTests: TestCase {
                                                       purchaseHandler: handler)
 
         let actions = await actionsWhilePolling.values
-        expect(resolution) == .purchased(TestData.customerInfo)
+        expect(resolution) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
         expect(actions) == [.restore]
         expect(handler.actionTypeInProgress) == .restore
     }
@@ -497,7 +588,7 @@ final class HostedCheckoutTests: TestCase {
             await sessionsAskedAbout.record(sessionID)
             await pollStarted.open()
             await pollAnswer.wait()
-            return .succeeded
+            return .succeeded(nil)
         }
         let handler = Self.makeHandler(purchases: purchases)
         let kept = Self.makeKeptCheckout(for: Self.session)
@@ -519,7 +610,7 @@ final class HostedCheckoutTests: TestCase {
         let firstResolution = await first.value
         let asked = await sessionsAskedAbout.values
         expect(second).to(beNil())
-        expect(firstResolution) == .purchased(TestData.customerInfo)
+        expect(firstResolution) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
         expect(asked) == [Self.session.id]
     }
 
@@ -529,7 +620,7 @@ final class HostedCheckoutTests: TestCase {
         let purchases = Self.makePurchases()
         purchases.hostedCheckoutPollBlock = { sessionID in
             await sessionsAskedAbout.record(sessionID)
-            return .succeeded
+            return .succeeded(nil)
         }
         let handler = Self.makeHandler(purchases: purchases)
         let kept = Self.makeKeptCheckout(for: Self.session)
@@ -586,7 +677,7 @@ final class HostedCheckoutTests: TestCase {
         purchases.hostedCheckoutPollBlock = { _ in
             await pollStarted.open()
             await pollAnswer.wait()
-            return .succeeded
+            return .succeeded(nil)
         }
         let handler = Self.makeHandler(purchases: purchases)
         let kept = Self.makeKeptCheckout(for: Self.session)
@@ -614,7 +705,9 @@ final class HostedCheckoutTests: TestCase {
 
         let resolution = await confirmation.value?.value
         guard case .nothing = action else { return fail("Unexpected \(action)") }
-        expect(resolution) == .purchased(TestData.customerInfo)
+        expect(resolution) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
+        expect(handler.hostedCheckoutResolutionToShow)
+            == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
         expect(handler.keptHostedCheckout).to(beNil())
         expect(handler.actionInProgress) == false
     }
@@ -626,7 +719,7 @@ final class HostedCheckoutTests: TestCase {
         let purchases = Self.makePurchases()
         purchases.hostedCheckoutPollBlock = { sessionID in
             await sessionsAskedAbout.record(sessionID)
-            return .succeeded
+            return .succeeded(nil)
         }
         let handler = Self.makeHandler(purchases: purchases)
         let kept = Self.makeKeptCheckout(for: Self.session)
@@ -654,7 +747,7 @@ final class HostedCheckoutTests: TestCase {
     func testOpensNothingForAKeptCheckoutThatSettledWhileTheInterceptorDecided() async {
         let checkoutsStarted = Recorder<String>()
         let purchases = Self.makePurchases()
-        purchases.hostedCheckoutPollBlock = { _ in .succeeded }
+        purchases.hostedCheckoutPollBlock = { _ in .succeeded(nil) }
         purchases.hostedCheckoutBlock = { package, _, _ in
             await checkoutsStarted.record(package.identifier)
             return .started(Self.otherSession)
@@ -692,7 +785,7 @@ final class HostedCheckoutTests: TestCase {
         purchases.hostedCheckoutPollBlock = { _ in
             await pollStarted.open()
             await pollAnswer.wait()
-            return .succeeded
+            return .succeeded(nil)
         }
         purchases.hostedCheckoutBlock = { package, _, _ in
             await checkoutsStarted.record(package.identifier)
@@ -727,7 +820,7 @@ final class HostedCheckoutTests: TestCase {
         let resolution = await confirmation.value?.value
         let started = await checkoutsStarted.values
         guard case .nothing = action else { return fail("Unexpected \(action)") }
-        expect(resolution) == .purchased(TestData.customerInfo)
+        expect(resolution) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
         expect(started).to(beEmpty())
         expect(handler.actionInProgress) == false
     }
@@ -755,12 +848,19 @@ final class HostedCheckoutTests: TestCase {
     // MARK: - Settling on what the backend says
 
     func testCountsAConfirmedPurchase() {
-        expect(HostedCheckout.Resolution(.succeeded, customerInfo: TestData.customerInfo))
-            == .purchased(TestData.customerInfo)
+        expect(HostedCheckout.Resolution(.succeeded(nil), customerInfo: TestData.customerInfo))
+            == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
+    }
+
+    func testCountsAConfirmedPurchaseWithTheTransactionItMade() {
+        let transaction = StoreTransaction(MockStoreTransaction())
+
+        expect(HostedCheckout.Resolution(.succeeded(transaction), customerInfo: TestData.customerInfo))
+            == .purchased(transaction: transaction, customerInfo: TestData.customerInfo)
     }
 
     func testTreatsAConfirmedPurchaseWithoutItsCustomerInfoAsUnconfirmed() {
-        expect(HostedCheckout.Resolution(.succeeded, customerInfo: nil)) == .failed(.unconfirmed)
+        expect(HostedCheckout.Resolution(.succeeded(nil), customerInfo: nil)) == .failed(.unconfirmed)
     }
 
     func testTellsTheCustomerTheyAlreadyOwnIt() {
@@ -779,7 +879,7 @@ final class HostedCheckoutTests: TestCase {
         let purchases = Self.makePurchases()
         purchases.hostedCheckoutPollBlock = { sessionID in
             await sessionsAskedAbout.record(sessionID)
-            return .succeeded
+            return .succeeded(nil)
         }
 
         _ = await HostedCheckout.resolve(Self.session.id,
@@ -798,7 +898,7 @@ final class HostedCheckoutTests: TestCase {
         let handler = Self.makeHandler(purchases: purchases)
         purchases.hostedCheckoutPollBlock = { _ in
             await actionsWhilePolling.record(await MainActor.run { handler.actionTypeInProgress == .purchase })
-            return .succeeded
+            return .succeeded(nil)
         }
 
         _ = await HostedCheckout.resolve(Self.session.id,
@@ -815,7 +915,7 @@ final class HostedCheckoutTests: TestCase {
     @MainActor
     func testLeavesAConfirmedPurchaseForThePaywallToReport() async {
         let purchases = Self.makePurchases()
-        purchases.hostedCheckoutPollBlock = { _ in .succeeded }
+        purchases.hostedCheckoutPollBlock = { _ in .succeeded(nil) }
         let handler = Self.makeHandler(purchases: purchases)
 
         let resolution = await HostedCheckout.resolve(Self.session.id,
@@ -823,16 +923,20 @@ final class HostedCheckoutTests: TestCase {
                                                       package: TestData.annualPackage,
                                                       purchaseHandler: handler)
 
-        expect(resolution) == .purchased(TestData.customerInfo)
+        expect(resolution) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
+        expect(handler.hostedCheckoutResolutionToShow)
+            == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
         expect(handler.sessionPurchaseResult).to(beNil())
         expect(handler.purchaseError).to(beNil())
         expect(handler.actionInProgress) == false
     }
 
-    /// Reporting happens as the customer dismisses the alert, so it uses the `CustomerInfo` fetched while the
-    /// paywall still showed the purchase under way rather than fetching it again.
+    // MARK: - Telling the customer
+
+    /// The purchase is reported only after the customer acknowledges it. It uses the `CustomerInfo` fetched while
+    /// confirming, rather than fetching it again.
     @MainActor
-    func testReportsAConfirmedPurchaseAsCompletedWithoutFetchingItsCustomerInfoAgain() {
+    func testReportsAPurchaseOnceTheCustomerAcknowledgesIt() {
         let purchases = MockPurchases { _, _, _ in
             return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
         } restorePurchases: {
@@ -842,11 +946,38 @@ final class HostedCheckoutTests: TestCase {
             throw ErrorCode.networkError
         }
         let handler = Self.makeHandler(purchases: purchases)
+        handler.showHostedCheckoutResolution(.purchased(transaction: nil, customerInfo: TestData.customerInfo))
 
-        handler.handleHostedCheckoutPurchase(customerInfo: TestData.customerInfo)
+        expect(handler.sessionPurchaseResult).to(beNil())
 
+        handler.acknowledgeHostedCheckoutResolution()
+
+        expect(handler.hostedCheckoutResolutionToShow).to(beNil())
         expect(handler.sessionPurchaseResult) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
         expect(handler.purchaseError).to(beNil())
+    }
+
+    @MainActor
+    func testReportsThePurchaseWithTheTransactionTheCheckoutMade() {
+        let handler = Self.makeHandler(purchases: Self.makePurchases())
+        let transaction = StoreTransaction(MockStoreTransaction())
+        handler.showHostedCheckoutResolution(.purchased(transaction: transaction, customerInfo: TestData.customerInfo))
+
+        handler.acknowledgeHostedCheckoutResolution()
+
+        expect(handler.sessionPurchaseResult) == .purchased(transaction: transaction,
+                                                            customerInfo: TestData.customerInfo)
+    }
+
+    @MainActor
+    func testReportsNothingWhenTheCustomerAcknowledgesAFailure() {
+        let handler = Self.makeHandler(purchases: Self.makePurchases())
+        handler.showHostedCheckoutResolution(.failed(.unconfirmed))
+
+        handler.acknowledgeHostedCheckoutResolution()
+
+        expect(handler.hostedCheckoutResolutionToShow).to(beNil())
+        expect(handler.sessionPurchaseResult).to(beNil())
     }
 
     /// The SDK fetches the `CustomerInfo` showing the purchase while confirming it, but that fetch can fail.
@@ -860,7 +991,7 @@ final class HostedCheckoutTests: TestCase {
         } customerInfo: {
             throw ErrorCode.networkError
         }
-        purchases.hostedCheckoutPollBlock = { _ in .succeeded }
+        purchases.hostedCheckoutPollBlock = { _ in .succeeded(nil) }
         let handler = Self.makeHandler(purchases: purchases)
 
         let resolution = await HostedCheckout.resolve(Self.session.id,
@@ -909,10 +1040,10 @@ final class HostedCheckoutTests: TestCase {
             == TestData.annualPackage.identifier
     }
 
-    /// Settles as when the checkout never opened for this reason: the paywall tells the customer, and reports
-    /// neither a purchase nor a cancellation.
+    /// Settles as when the checkout never opened for this reason: the paywall tells the customer, and the purchase
+    /// fails with the error StoreKit refuses it with.
     @MainActor
-    func testReportsNothingForAProductTheCustomerAlreadyOwned() async {
+    func testReportsAProductTheCustomerAlreadyOwnedAsAPurchaseError() async {
         let trackedEvents: Atomic<[PaywallEvent]> = .init([])
         let purchases = Self.makePurchases(trackingInto: trackedEvents)
         purchases.hostedCheckoutPollBlock = { _ in .alreadyPurchased }
@@ -923,12 +1054,12 @@ final class HostedCheckoutTests: TestCase {
                                          settling: nil,
                                          package: TestData.annualPackage,
                                          purchaseHandler: handler)
+        await Self.waitForEventsTrackedSoFar(by: handler, into: trackedEvents)
 
         expect(handler.sessionPurchaseResult).to(beNil())
-        expect(handler.purchaseError).to(beNil())
+        expect(handler.purchaseError as? HostedCheckout.Refusal) == .alreadyPurchased
         expect(handler.actionInProgress) == false
-        await expect(trackedEvents.value.contains(where: Self.isCancel))
-            .toNever(beTrue(), until: .milliseconds(300))
+        Self.expectASinglePurchaseError(HostedCheckout.Refusal.alreadyPurchased, in: trackedEvents)
     }
 
     // MARK: - Errors
@@ -947,6 +1078,21 @@ final class HostedCheckoutTests: TestCase {
 
     func testReportsACheckoutThatCouldNotBeStartedAsAStoreProblem() {
         expect((HostedCheckoutError.notStarted as NSError).code) == ErrorCode.storeProblemError.rawValue
+    }
+
+    /// The codes StoreKit refuses the same purchases with, so these end like their StoreKit counterparts.
+    func testReportsARefusedPurchaseWithStoreKitsCode() {
+        let expectedCodes: [(HostedCheckout.Refusal, ErrorCode)] = [
+            (.alreadyPurchased, .productAlreadyPurchasedError),
+            (.notEligible, .productNotAvailableForPurchaseError),
+            (.paymentsNotAuthorized, .purchaseNotAllowedError),
+            (.alreadyStarting, .operationAlreadyInProgressForProductError)
+        ]
+
+        for (refusal, code) in expectedCodes {
+            expect((refusal as NSError).code).to(equal(code.rawValue), description: "\(refusal)")
+            expect((refusal as NSError).domain) == ErrorCode.errorDomain
+        }
     }
 
     func testReportsAnyOtherFailureAsUnknown() {
@@ -1055,6 +1201,81 @@ private extension HostedCheckoutTests {
     static func isCancel(_ event: PaywallEvent) -> Bool {
         if case .cancel = event { return true }
         return false
+    }
+
+    static func isClose(_ event: PaywallEvent) -> Bool {
+        if case .close = event { return true }
+        return false
+    }
+
+    /// Starts a checkout that ends in `result`, once every event it tracked has been tracked.
+    @MainActor
+    static func startCheckout(
+        endingIn result: HostedCheckoutStartResult
+    ) async -> (handler: PurchaseHandler, trackedEvents: Atomic<[PaywallEvent]>) {
+        let trackedEvents: Atomic<[PaywallEvent]> = .init([])
+        let purchases = Self.makePurchases(trackingInto: trackedEvents)
+        purchases.hostedCheckoutBlock = { _, _, _ in result }
+        let handler = Self.makeHandler(purchases: purchases)
+        handler.trackPaywallImpression(Self.impressionData)
+
+        _ = await HostedCheckout.start(for: TestData.annualPackage,
+                                       purchaseHandler: handler,
+                                       purchaseInitiatedAction: nil)
+        await Self.waitForEventsTrackedSoFar(by: handler, into: trackedEvents)
+
+        return (handler, trackedEvents)
+    }
+
+    /// The purchase callbacks a paywall fires for a checkout that ends in `result`, in the order it fires them.
+    @MainActor
+    static func paywallCallbacks(forACheckoutEndingIn result: HostedCheckoutStartResult) async throws -> [String] {
+        let callbacks: Atomic<[String]> = .init([])
+        let purchases = Self.makePurchases()
+        purchases.hostedCheckoutBlock = { _, _, _ in
+            // Apple's notice keeps the checkout starting for as long as the paywall takes to report it.
+            await expect(callbacks.value).toEventually(contain("onPurchaseStarted"))
+            return result
+        }
+        let handler = Self.makeHandler(purchases: purchases)
+
+        let configuration = PaywallViewConfiguration(offering: TestData.offeringWithNoIntroOffer.withLocalImages,
+                                                     introEligibility: .producing(eligibility: .eligible),
+                                                     purchaseHandler: handler)
+        let dispose = try PaywallView(configuration: configuration)
+            .onPurchaseStarted { _ in callbacks.modify { $0.append("onPurchaseStarted") } }
+            .onPurchaseCancelled { callbacks.modify { $0.append("onPurchaseCancelled") } }
+            .onPurchaseFailure { _ in callbacks.modify { $0.append("onPurchaseFailure") } }
+            .addToHierarchy()
+        defer { dispose() }
+
+        _ = await HostedCheckout.start(for: TestData.annualPackage,
+                                       purchaseHandler: handler,
+                                       purchaseInitiatedAction: nil)
+        await expect(callbacks.value).toEventually(haveCount(2))
+
+        return callbacks.value
+    }
+
+    static func expectASinglePurchaseError(_ refusal: HostedCheckout.Refusal,
+                                           in trackedEvents: Atomic<[PaywallEvent]>) {
+        let errors = trackedEvents.value.filter(Self.isPurchaseError)
+        expect(errors).to(haveCount(1), description: "\(refusal)")
+        expect(errors.first?.data.packageId).to(equal(TestData.annualPackage.identifier), description: "\(refusal)")
+        expect(errors.first?.data.errorCode).to(equal((refusal as NSError).code), description: "\(refusal)")
+        expect(errors.first?.data.errorMessage)
+            .to(equal((refusal as NSError).localizedDescription), description: "\(refusal)")
+        expect(trackedEvents.value.contains(where: Self.isCancel)).to(beFalse(), description: "\(refusal)")
+    }
+
+    /// Events are tracked in the order they are submitted, so once a close submitted now is tracked, so is every
+    /// event submitted before it.
+    @MainActor
+    static func waitForEventsTrackedSoFar(by handler: PurchaseHandler,
+                                          into trackedEvents: Atomic<[PaywallEvent]>) async {
+        handler.trackPaywallClose()
+        await expect(trackedEvents.value.contains(where: Self.isClose))
+            .toEventually(beTrue(), timeout: .seconds(2))
     }
 
     static func interceptor(proceeding: Bool,

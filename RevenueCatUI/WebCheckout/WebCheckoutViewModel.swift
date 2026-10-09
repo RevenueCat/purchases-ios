@@ -55,7 +55,8 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
     /// the page returned with is `returnStatus`, which outlives the call.
     var onFinished: (() -> Void)?
 
-    /// Called for links the page opens outside the checkout, for the host to hand to the browser.
+    /// Called for links the page opens outside the checkout, for the host to hand to the browser or the app they
+    /// belong to.
     var onOpenExternalURL: ((URL) -> Void)?
 
     let webView: WKWebView
@@ -63,8 +64,19 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
     private let checkoutURL: URL
     private let returnURL: WebCheckoutReturnURL?
 
+    private var isReloadingAfterTermination = false
+
     private var hasPainted: Bool {
         self.loadState == .loaded || self.loadState == .navigating
+    }
+
+    /// Whether `url` links to an app, e.g. a payment method's, which the web view can only fail to load.
+    private static func opensAnApp(_ url: URL) -> Bool {
+        guard let scheme = url.scheme else {
+            return false
+        }
+
+        return !WKWebView.handlesURLScheme(scheme.lowercased())
     }
 
     /// - Parameter checkoutURL: The provider-hosted page to present.
@@ -128,8 +140,20 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
             return
         }
 
+        // The navigation the page's process took down with it, which `webViewWebContentProcessDidTerminate`
+        // recovers from. It can arrive after that has started reloading.
+        guard (error as? WKError)?.code != .webContentProcessTerminated else {
+            return
+        }
+
         Logger.error(Strings.web_checkout_load_failed((error as NSError).localizedDescription))
-        self.transition(to: .failed)
+        self.fail()
+    }
+
+    /// A page that has painted stays on screen when a later step fails to load, as it would in a browser: the
+    /// customer can carry on from it, where hiding it would leave them nothing to look at.
+    private func fail() {
+        self.transition(to: self.hasPainted ? .loaded : .failed)
     }
 
     private func finish(returnedFrom url: URL?) {
@@ -169,6 +193,12 @@ extension WebCheckoutViewModel: WKNavigationDelegate {
             return
         }
 
+        if isMainFrame, let url, Self.opensAnApp(url) {
+            decisionHandler(.cancel)
+            self.onOpenExternalURL?(url)
+            return
+        }
+
         decisionHandler(.allow)
     }
 
@@ -185,7 +215,7 @@ extension WebCheckoutViewModel: WKNavigationDelegate {
             isMainFrame: navigationResponse.isForMainFrame
            ) {
             Logger.error(Strings.web_checkout_http_error(statusCode: response.statusCode))
-            self.transition(to: .failed)
+            self.fail()
             decisionHandler(.cancel)
             return
         }
@@ -199,6 +229,7 @@ extension WebCheckoutViewModel: WKNavigationDelegate {
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        self.isReloadingAfterTermination = false
         self.transition(to: .loaded)
     }
 
@@ -214,9 +245,26 @@ extension WebCheckoutViewModel: WKNavigationDelegate {
         self.handleFailure(error)
     }
 
+    /// The system can end the page's process while the app is in the background, which leaves the web view blank.
+    /// The page is reloaded, as the provider's checkout carries on from its URL, unless it ended again before
+    /// painting since the last reload, which would only repeat.
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
         Logger.error(Strings.web_checkout_content_process_terminated)
-        self.transition(to: .failed)
+
+        guard self.loadState != .finished else {
+            return
+        }
+
+        guard !self.isReloadingAfterTermination else {
+            self.transition(to: .failed)
+            return
+        }
+
+        self.isReloadingAfterTermination = true
+        self.transition(to: .loading)
+        if webView.reload() == nil {
+            webView.load(URLRequest(url: self.checkoutURL))
+        }
     }
 
 }

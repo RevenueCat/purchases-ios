@@ -50,6 +50,10 @@ final class PurchaseHandler: ObservableObject {
     /// The checkout this paywall's customer was last given and has not settled. Released with the paywall
     /// session, so a customer who comes back later starts afresh.
     var keptHostedCheckout: HostedCheckout.KeptCheckout?
+
+    /// What the paywall is telling the customer about a hosted checkout, until they acknowledge it.
+    @Published
+    fileprivate(set) var hostedCheckoutResolutionToShow: HostedCheckout.Resolution?
     #endif
 
     /// Where responsibility for completing purchases lies
@@ -294,6 +298,7 @@ final class PurchaseHandler: ObservableObject {
         self.activePaywallSessionID = nil
         #if os(iOS) && canImport(WebKit)
         self.keptHostedCheckout = nil
+        self.hostedCheckoutResolutionToShow = nil
         #endif
     }
 
@@ -360,10 +365,16 @@ extension PurchaseHandler {
     /// Asks for a checkout the customer completes without leaving the app, with the paywall marked as busy
     /// throughout so the button they tapped cannot start a second one.
     ///
+    /// `package` is the package being purchased meanwhile, which is what reports the purchase as started.
+    ///
     /// - Parameter previousSession: The checkout this paywall gave the customer before, for the backend to
     /// hand back if they can still carry on with it.
+    @MainActor
     func startHostedCheckout(package: Package,
                              previousSession: HostedCheckoutSession?) async -> HostedCheckoutStartResult {
+        self.packageBeingPurchased = package
+        defer { self.packageBeingPurchased = nil }
+
         // Carried so that the purchase the customer makes on the page is attributed to the paywall that sent
         // them there.
         let paywallEvent = self.createPurchaseInitiatedEvent(package: package)
@@ -939,14 +950,34 @@ extension PurchaseHandler {
 
     // MARK: - Hosted checkout
 
+    #if os(iOS) && canImport(WebKit)
+    /// Has the paywall tell the customer how a hosted checkout settled, or why it did not open.
+    @MainActor
+    func showHostedCheckoutResolution(_ resolution: HostedCheckout.Resolution) {
+        self.hostedCheckoutResolutionToShow = resolution
+    }
+
+    /// Called once the customer has acknowledged what the paywall told them about a hosted checkout. A purchase
+    /// is only reported now, since reporting it can close the paywall.
+    @MainActor
+    func acknowledgeHostedCheckoutResolution() {
+        let resolution = self.hostedCheckoutResolutionToShow
+        self.hostedCheckoutResolutionToShow = nil
+
+        if case let .purchased(transaction, customerInfo) = resolution {
+            self.handleHostedCheckoutPurchase(transaction: transaction, customerInfo: customerInfo)
+        }
+    }
+    #endif
+
     /// Reports a checkout the backend confirmed the customer completed on a page presented inside the app, once
     /// the customer has been told the purchase went through.
     ///
-    /// There is no transaction to hand over: what was bought is known to the backend, so the paywall follows
-    /// the `CustomerInfo` fetched when confirming it.
+    /// - Parameter transaction: The transaction the checkout made, absent where the backend gave no detail of it.
+    /// - Parameter customerInfo: The `CustomerInfo` fetched when confirming the purchase.
     @MainActor
-    func handleHostedCheckoutPurchase(customerInfo: CustomerInfo) {
-        self.reportHostedCheckoutOutcome(.purchased(transaction: nil, customerInfo: customerInfo))
+    private func handleHostedCheckoutPurchase(transaction: StoreTransaction?, customerInfo: CustomerInfo) {
+        self.reportHostedCheckoutOutcome(.purchased(transaction: transaction, customerInfo: customerInfo))
     }
 
     /// Reports a checkout that failed, as opposed to one the customer walked away from.
@@ -962,12 +993,13 @@ extension PurchaseHandler {
         self.purchaseError = error
     }
 
-    /// Reports a checkout the customer closed, on a page presented inside the app, before the page returned.
+    /// Reports a checkout the customer walked away from, by declining Apple's notice or by closing the page presented
+    /// inside the app before it returned.
     ///
-    /// Closing the checkout does not mean the customer cancelled it: they may have paid moments before. The paywall
-    /// still reports a cancelled purchase, as it has no other way to say that no purchase is known. A payment that
-    /// did go through is confirmed and reported as a purchase once the page reaches its success URL, or the customer
-    /// taps buy again.
+    /// Closing the page does not mean the customer cancelled the checkout: they may have paid moments before. The
+    /// paywall still reports a cancelled purchase, as it has no other way to say that no purchase is known. A payment
+    /// that did go through is confirmed and reported as a purchase once the page reaches its success URL, or the
+    /// customer taps buy again.
     ///
     /// - Parameter package: The package the checkout was started for, when it is still known. Only used to
     /// track the cancellation.
