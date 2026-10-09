@@ -124,7 +124,10 @@ public extension Attribution {
     @_spi(Internal)
     @objc var attributesForCurrentUser: [CustomerInfo.Attribute] {
         let attributes = self.subscriberAttributesManager.localStoredAttributes(for: appUserID)
-        return attributes.values.map { CustomerInfo.Attribute(attribute: $0) }
+        return attributes.values.compactMap { attr in
+            if attr.value.isEmpty { return nil }
+            return CustomerInfo.Attribute(attribute: attr)
+        }
     }
 
     /**
