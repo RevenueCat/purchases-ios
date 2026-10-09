@@ -24,18 +24,22 @@ extension UIApplication {
     var currentWindowScene: UIWindowScene? {
         var scenes = self
             .connectedScenes
-            .compactMap { $0 as? UIWindowScene }
             .filter { $0.activationState == .foregroundActive }
 
         #if DEBUG && targetEnvironment(simulator)
         // Running StoreKitUnitTests might not always have an active scene
         // Sporadically, the only scene will be `foregroundInactive` or `background`
         if scenes.isEmpty, ProcessInfo.isRunningUnitTests {
-            scenes = self.connectedScenes.compactMap { $0 as? UIWindowScene }
+            scenes = self.connectedScenes
         }
         #endif
 
-        return scenes.first
+        return Self.firstWindowScene(in: scenes)
+    }
+
+    @MainActor
+    static func firstWindowScene<S: Sequence>(in scenes: S) -> UIWindowScene? where S.Element == UIScene {
+        return scenes.lazy.compactMap { $0 as? UIWindowScene }.first
     }
 
     /// The topmost view controller in the current foreground window scene.
