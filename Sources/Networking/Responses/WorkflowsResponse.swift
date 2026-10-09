@@ -26,6 +26,9 @@ import Foundation
         switch value {
         case "on_press":
             self = .onPress
+        case "on_purchase_press":
+            // Used for web funnel navigation; native purchase buttons handle purchases directly.
+            self = .unknown
         default:
             Logger.warn(Strings.backendError.unknown_workflow_trigger_type(type: value))
             self = .unknown
