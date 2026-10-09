@@ -52,11 +52,26 @@ extension UIApplication {
     public var currentPresentationViewController: UIViewController? {
         guard let windowScene = self.currentWindowScene else { return nil }
 
+        return windowScene.currentPresentationViewController
+    }
+
+}
+
+extension UIWindowScene {
+
+    /// The topmost view controller in this window scene.
+    @available(macCatalyst 13.1, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(watchOSApplicationExtension, unavailable)
+    @MainActor
+    var currentPresentationViewController: UIViewController? {
+
         let window: UIWindow?
         if #available(iOS 15.0, macCatalyst 15.0, tvOS 15.0, *) {
-            window = windowScene.keyWindow
+            window = self.keyWindow
         } else {
-            window = windowScene.windows.first { $0.isKeyWindow }
+            window = self.windows.first { $0.isKeyWindow }
         }
 
         return window?.rootViewController?.topMostViewController
