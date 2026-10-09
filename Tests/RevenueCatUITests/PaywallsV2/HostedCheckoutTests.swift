@@ -403,10 +403,12 @@ final class HostedCheckoutTests: TestCase {
     func testReleasesTheKeptCheckoutWithThePaywallSession() {
         let handler = Self.makeHandler(purchases: Self.makePurchases())
         handler.keptHostedCheckout = Self.makeKeptCheckout(for: Self.session)
+        handler.showHostedCheckoutResolution(.tellCustomerTheyAlreadyOwnIt)
 
         handler.resetForNewSession()
 
         expect(handler.keptHostedCheckout).to(beNil())
+        expect(handler.hostedCheckoutResolutionToShow).to(beNil())
     }
 
     // MARK: - Returning while hidden
@@ -615,6 +617,7 @@ final class HostedCheckoutTests: TestCase {
         let resolution = await confirmation.value?.value
         guard case .nothing = action else { return fail("Unexpected \(action)") }
         expect(resolution) == .purchased(TestData.customerInfo)
+        expect(handler.hostedCheckoutResolutionToShow) == .purchased(TestData.customerInfo)
         expect(handler.keptHostedCheckout).to(beNil())
         expect(handler.actionInProgress) == false
     }
@@ -824,15 +827,18 @@ final class HostedCheckoutTests: TestCase {
                                                       purchaseHandler: handler)
 
         expect(resolution) == .purchased(TestData.customerInfo)
+        expect(handler.hostedCheckoutResolutionToShow) == .purchased(TestData.customerInfo)
         expect(handler.sessionPurchaseResult).to(beNil())
         expect(handler.purchaseError).to(beNil())
         expect(handler.actionInProgress) == false
     }
 
-    /// Reporting happens as the customer dismisses the alert, so it uses the `CustomerInfo` fetched while the
-    /// paywall still showed the purchase under way rather than fetching it again.
+    // MARK: - Telling the customer
+
+    /// The purchase is reported only after the customer acknowledges it. It uses the `CustomerInfo` fetched while
+    /// confirming, rather than fetching it again.
     @MainActor
-    func testReportsAConfirmedPurchaseAsCompletedWithoutFetchingItsCustomerInfoAgain() {
+    func testReportsAPurchaseOnceTheCustomerAcknowledgesIt() {
         let purchases = MockPurchases { _, _, _ in
             return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
         } restorePurchases: {
@@ -842,11 +848,26 @@ final class HostedCheckoutTests: TestCase {
             throw ErrorCode.networkError
         }
         let handler = Self.makeHandler(purchases: purchases)
+        handler.showHostedCheckoutResolution(.purchased(TestData.customerInfo))
 
-        handler.handleHostedCheckoutPurchase(customerInfo: TestData.customerInfo)
+        expect(handler.sessionPurchaseResult).to(beNil())
 
+        handler.acknowledgeHostedCheckoutResolution()
+
+        expect(handler.hostedCheckoutResolutionToShow).to(beNil())
         expect(handler.sessionPurchaseResult) == .purchased(transaction: nil, customerInfo: TestData.customerInfo)
         expect(handler.purchaseError).to(beNil())
+    }
+
+    @MainActor
+    func testReportsNothingWhenTheCustomerAcknowledgesAFailure() {
+        let handler = Self.makeHandler(purchases: Self.makePurchases())
+        handler.showHostedCheckoutResolution(.failed(.unconfirmed))
+
+        handler.acknowledgeHostedCheckoutResolution()
+
+        expect(handler.hostedCheckoutResolutionToShow).to(beNil())
+        expect(handler.sessionPurchaseResult).to(beNil())
     }
 
     /// The SDK fetches the `CustomerInfo` showing the purchase while confirming it, but that fetch can fail.
