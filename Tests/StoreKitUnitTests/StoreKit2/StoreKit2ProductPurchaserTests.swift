@@ -13,7 +13,7 @@
 
 import Foundation
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import StoreKit
 import XCTest
 
@@ -37,13 +37,13 @@ class StoreKit2ProductPurchaserTests: StoreKitConfigTestCase {
             fail("Failed to create UIScene mock")
             return
         }
-        let sk2ConfirmInOptions = StoreKit2ConfirmInOptions(confirmInScene: scene)
+        let presentationContext = PurchasePresentationContext(scene: scene)
         let options: Set<Product.PurchaseOption> = []
 
         _ = try await storeKit2ProductPurchaser.purchase(
             product: mockProduct,
             options: options,
-            storeKit2ConfirmInOptions: sk2ConfirmInOptions
+            presentationContext: presentationContext
         )
 
         #if compiler(>=5.9.0)
@@ -77,13 +77,13 @@ class StoreKit2ProductPurchaserTests: StoreKitConfigTestCase {
             fail("Failed to create UIScene mock")
             return
         }
-        let sk2ConfirmInOptions = StoreKit2ConfirmInOptions(confirmInWindow: window)
+        let presentationContext = PurchasePresentationContext(window: window)
         let options: Set<Product.PurchaseOption> = []
 
         _ = try await storeKit2ProductPurchaser.purchase(
             product: mockProduct,
             options: options,
-            storeKit2ConfirmInOptions: sk2ConfirmInOptions
+            presentationContext: presentationContext
         )
 
         // product.purchase(confirmIn:options:) was introduced in macOS 15.2/Swift 6.0.2
@@ -116,7 +116,7 @@ class StoreKit2ProductPurchaserTests: StoreKitConfigTestCase {
         _ = try await storeKit2ProductPurchaser.purchase(
             product: mockProduct,
             options: options,
-            storeKit2ConfirmInOptions: nil
+            presentationContext: nil
         )
 
         confirmPurchaseWithOptionsExpectations(on: mockProduct, options: options)
