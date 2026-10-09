@@ -69,8 +69,6 @@ private extension GetHostedCheckoutStatusOperation {
             return
         }
 
-        // The status is asked for every second while a purchase is confirmed, so a rate limit is waited out
-        // rather than ending the confirmation.
         let request = HTTPRequest(method: .get,
                                   path: .getHostedCheckoutStatus(operationSessionID: self.operationSessionID,
                                                                  appUserID: appUserID),
