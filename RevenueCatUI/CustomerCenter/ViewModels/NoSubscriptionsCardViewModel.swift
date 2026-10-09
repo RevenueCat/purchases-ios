@@ -22,7 +22,7 @@ final class NoSubscriptionsCardViewModel: ObservableObject {
     @Published var showOffering = false
 
     private let screenOffering: CustomerCenterConfigData.ScreenOffering?
-    private let purchasesProvider: CustomerCenterPurchasesType
+    let purchasesProvider: CustomerCenterPurchasesType
 
     init(
         screenOffering: CustomerCenterConfigData.ScreenOffering?,
@@ -78,6 +78,11 @@ final class NoSubscriptionsCardViewModel: ObservableObject {
             let result = try await purchasesProvider.purchase(package: packageToPurchase)
             return (result.userCancelled, nil)
         } catch {
+            if purchasesProvider is CustomerCenterPreviewProvider,
+               (error as NSError).domain == ErrorCode.errorDomain,
+               (error as NSError).code == ErrorCode.purchaseCancelledError.rawValue {
+                return (true, nil)
+            }
             return (false, error)
         }
     }

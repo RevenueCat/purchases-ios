@@ -319,6 +319,7 @@ public struct PaywallView: View {
     }
 
     func showZeroDecimalPlacePrices(countries: [String]?) -> Bool {
+        guard !purchaseHandler.isUIPreviewMode else { return false }
         if Purchases.isConfigured, let countries, let currentCountry = Purchases.shared.storeFrontCountryCode {
             return countries.contains(currentCountry)
         } else {
@@ -451,6 +452,7 @@ private extension PaywallView {
     }
 
     func failedToLoadFont(_ fontConfig: UIConfig.FontsConfig) {
+        guard !purchaseHandler.isUIPreviewMode else { return }
         if Purchases.isConfigured {
             Purchases.shared.failedToLoadFontWithConfig(fontConfig)
         }
