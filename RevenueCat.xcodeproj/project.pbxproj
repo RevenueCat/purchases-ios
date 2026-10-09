@@ -1161,7 +1161,7 @@
 		887A60882C1D037000E1A461 /* MockPurchases.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FED2C1D037000E1A461 /* MockPurchases.swift */; };
 		887A60892C1D037000E1A461 /* PaywallPurchasesType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FEE2C1D037000E1A461 /* PaywallPurchasesType.swift */; };
 		887A608A2C1D037000E1A461 /* PurchaseHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FEF2C1D037000E1A461 /* PurchaseHandler.swift */; };
-		A81009A13D10000000000001 /* PurchasePresentationContextModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A81009A13D10000000000002 /* PurchasePresentationContextModifier.swift */; };
+		A81009A13D10000000000001 /* PresentationContextModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A81009A13D10000000000002 /* PresentationContextModifier.swift */; };
 		A82500013C8D000000000001 /* KeyWindowFocusResigner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A82500013C8D000000000002 /* KeyWindowFocusResigner.swift */; };
 		887A608B2C1D037000E1A461 /* PurchaseHandler+TestData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A5FF02C1D037000E1A461 /* PurchaseHandler+TestData.swift */; };
 		887A608D2C1D037000E1A461 /* icons.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 887A5FF32C1D037000E1A461 /* icons.xcassets */; };
@@ -3019,7 +3019,7 @@
 		887A5FED2C1D037000E1A461 /* MockPurchases.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockPurchases.swift; sourceTree = "<group>"; };
 		887A5FEE2C1D037000E1A461 /* PaywallPurchasesType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallPurchasesType.swift; sourceTree = "<group>"; };
 		887A5FEF2C1D037000E1A461 /* PurchaseHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchaseHandler.swift; sourceTree = "<group>"; };
-		A81009A13D10000000000002 /* PurchasePresentationContextModifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchasePresentationContextModifier.swift; sourceTree = "<group>"; };
+		A81009A13D10000000000002 /* PresentationContextModifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PresentationContextModifier.swift; sourceTree = "<group>"; };
 		887A5FF02C1D037000E1A461 /* PurchaseHandler+TestData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "PurchaseHandler+TestData.swift"; sourceTree = "<group>"; };
 		887A5FF32C1D037000E1A461 /* icons.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = icons.xcassets; sourceTree = "<group>"; };
 		887A5FF42C1D037000E1A461 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -6503,7 +6503,7 @@
 				AAAA44750000000000000021 /* ExternalPurchaseLink.swift */,
 				AAAA44830000000000000011 /* HostedCheckout.swift */,
 				887A5FEF2C1D037000E1A461 /* PurchaseHandler.swift */,
-				A81009A13D10000000000002 /* PurchasePresentationContextModifier.swift */,
+				A81009A13D10000000000002 /* PresentationContextModifier.swift */,
 				16E147A32F3B4C010089B609 /* PurchasesUIService.swift */,
 				887A5FF02C1D037000E1A461 /* PurchaseHandler+TestData.swift */,
 				F598F832810DB534092FBED3 /* WorkflowContext.swift */,
@@ -9223,7 +9223,7 @@
 				AAAA44750000000000000022 /* ExternalPurchaseLink.swift in Sources */,
 				AAAA44830000000000000012 /* HostedCheckout.swift in Sources */,
 				887A608A2C1D037000E1A461 /* PurchaseHandler.swift in Sources */,
-				A81009A13D10000000000001 /* PurchasePresentationContextModifier.swift in Sources */,
+				A81009A13D10000000000001 /* PresentationContextModifier.swift in Sources */,
 				A82500013C8D000000000001 /* KeyWindowFocusResigner.swift in Sources */,
 				16E147A42F3B4C010089B609 /* PurchasesUIService.swift in Sources */,
 				2D2AFE8D2C6A834D00D1B0B4 /* TestData.swift in Sources */,

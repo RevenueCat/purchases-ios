@@ -67,7 +67,7 @@ class PurchaseHandlerTests: TestCase {
         let scene = try XCTUnwrap(sceneClass.init() as? UIWindowScene)
         let controller = UIHostingController(
             rootView: Color.clear
-                .modifier(PurchasePresentationContextModifier(purchaseHandler: handler))
+                .modifier(PresentationContextModifier(purchaseHandler: handler))
                 .id(UUID())
         )
         let window = MockPresentationWindow(frame: CGRect(x: 0, y: 0, width: 320, height: 480))
@@ -78,7 +78,7 @@ class PurchaseHandlerTests: TestCase {
         RunLoop.main.run(until: Date().addingTimeInterval(0.1))
         window.presentationScene = scene
         controller.rootView = Color.clear
-            .modifier(PurchasePresentationContextModifier(purchaseHandler: handler))
+            .modifier(PresentationContextModifier(purchaseHandler: handler))
             .id(UUID())
         controller.view.layoutIfNeeded()
         RunLoop.main.run(until: Date().addingTimeInterval(0.1))
@@ -89,7 +89,7 @@ class PurchaseHandlerTests: TestCase {
         }
 
         XCTAssertTrue(controller.view.window === window)
-        XCTAssertTrue(handler.purchasePresentationScene === scene)
+        XCTAssertTrue(handler.presentationScene === scene)
     }
 
     func testPurchasePassesPresentationContext() async throws {
@@ -107,11 +107,11 @@ class PurchaseHandlerTests: TestCase {
             purchases: purchases,
             eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
         )
-        handler.purchasePresentationScene = scene
+        handler.presentationScene = scene
 
         try await handler.purchase(package: TestData.packageWithIntroOffer)
 
-        XCTAssertTrue(purchases.lastPurchasePresentationContext?.scene === scene)
+        XCTAssertTrue(purchases.lastPresentationContext?.scene === scene)
     }
 
     func testMappedPurchasesPreservePresentationContext() async throws {
@@ -131,10 +131,10 @@ class PurchaseHandlerTests: TestCase {
             package: TestData.packageWithIntroOffer,
             promotionalOffer: nil,
             paywallEvent: nil,
-            presentationContext: PurchasePresentationContext(scene: scene)
+            presentationContext: PresentationContext(scene: scene)
         )
 
-        XCTAssertTrue(purchases.lastPurchasePresentationContext?.scene === scene)
+        XCTAssertTrue(purchases.lastPresentationContext?.scene === scene)
     }
 
     func testTrackEventMappedPurchasesPreservePresentationContext() async throws {
@@ -154,10 +154,10 @@ class PurchaseHandlerTests: TestCase {
             package: TestData.packageWithIntroOffer,
             promotionalOffer: nil,
             paywallEvent: nil,
-            presentationContext: PurchasePresentationContext(scene: scene)
+            presentationContext: PresentationContext(scene: scene)
         )
 
-        XCTAssertTrue(purchases.lastPurchasePresentationContext?.scene === scene)
+        XCTAssertTrue(purchases.lastPresentationContext?.scene === scene)
     }
     #endif
 
@@ -1095,7 +1095,7 @@ final class PurchaseHandlerMacOSTests: TestCase {
     func testPresentationContextModifierCapturesHostingWindow() {
         let handler: PurchaseHandler = .mock()
         let controller = NSHostingController(
-            rootView: Color.clear.modifier(PurchasePresentationContextModifier(purchaseHandler: handler))
+            rootView: Color.clear.modifier(PresentationContextModifier(purchaseHandler: handler))
         )
         let window = NSWindow(contentViewController: controller)
         window.makeKeyAndOrderFront(nil)
@@ -1103,7 +1103,7 @@ final class PurchaseHandlerMacOSTests: TestCase {
         RunLoop.main.run(until: Date().addingTimeInterval(0.1))
         defer { window.close() }
 
-        XCTAssertTrue(handler.purchasePresentationWindow === window)
+        XCTAssertTrue(handler.presentationWindow === window)
     }
 
     func testPurchasePassesPresentationContext() async throws {
@@ -1120,11 +1120,11 @@ final class PurchaseHandlerMacOSTests: TestCase {
             purchases: purchases,
             eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
         )
-        handler.purchasePresentationWindow = window
+        handler.presentationWindow = window
 
         try await handler.purchase(package: TestData.packageWithIntroOffer)
 
-        XCTAssertTrue(purchases.lastPurchasePresentationContext?.window === window)
+        XCTAssertTrue(purchases.lastPresentationContext?.window === window)
     }
 
     func testMappedPurchasesPreservePresentationContext() async throws {
@@ -1143,10 +1143,10 @@ final class PurchaseHandlerMacOSTests: TestCase {
             package: TestData.packageWithIntroOffer,
             promotionalOffer: nil,
             paywallEvent: nil,
-            presentationContext: PurchasePresentationContext(window: window)
+            presentationContext: PresentationContext(window: window)
         )
 
-        XCTAssertTrue(purchases.lastPurchasePresentationContext?.window === window)
+        XCTAssertTrue(purchases.lastPresentationContext?.window === window)
     }
 
     func testResignsFirstResponderBeforePublishingActionInProgress() async throws {
