@@ -45,3 +45,72 @@ import AppKit
     #endif
 
 }
+
+#if canImport(UIKit) && !os(watchOS)
+
+extension UIApplication {
+
+    /// The default context for presenting purchase-related UI.
+    @available(macCatalyst 13.1, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(watchOSApplicationExtension, unavailable)
+    @MainActor
+    var defaultPresentationContext: PresentationContext? {
+        return self.currentWindowScene.map(PresentationContext.init(scene:))
+    }
+
+}
+
+extension PresentationContext {
+
+    @MainActor
+    static func defaultPresentationContext(systemInfo: SystemInfo) -> Self? {
+        if #available(macCatalyst 13.1, *) {
+            return systemInfo.sharedUIApplication?.defaultPresentationContext
+        }
+
+        return nil
+    }
+
+    var isValidForPresentation: Bool {
+        return self.scene is UIWindowScene
+    }
+
+    @available(macCatalyst 13.1, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(watchOSApplicationExtension, unavailable)
+    @MainActor
+    var presentationViewController: UIViewController? {
+        return (self.scene as? UIWindowScene)?.currentPresentationViewController
+    }
+
+}
+
+#elseif canImport(AppKit) && !targetEnvironment(macCatalyst)
+
+extension NSApplication {
+
+    /// The default context for presenting purchase-related UI.
+    @MainActor
+    var defaultPresentationContext: PresentationContext? {
+        return (self.keyWindow ?? self.mainWindow).map(PresentationContext.init(window:))
+    }
+
+}
+
+extension PresentationContext {
+
+    @MainActor
+    static func defaultPresentationContext(systemInfo: SystemInfo) -> Self? {
+        return NSApplication.shared.defaultPresentationContext
+    }
+
+    var isValidForPresentation: Bool {
+        return true
+    }
+
+}
+
+#endif

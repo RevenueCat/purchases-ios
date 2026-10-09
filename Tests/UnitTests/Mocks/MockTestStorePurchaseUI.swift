@@ -12,7 +12,7 @@
 //  Created by Antonio Pallares on 1/8/25.
 
 import Foundation
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 final class MockSimulatedStorePurchaseUI: SimulatedStorePurchaseUI {
 
@@ -21,11 +21,16 @@ final class MockSimulatedStorePurchaseUI: SimulatedStorePurchaseUI {
     let invokedPresentPurchaseUI: Atomic<Bool> = .init(false)
     let invokedPresentPurchaseUICount: Atomic<Int> = .init(0)
     let invokedPresentPurchaseUIProduct: Atomic<TestStoreProduct?> = .init(nil)
+    let invokedPresentationContext: Atomic<PresentationContext?> = .init(nil)
 
-    func presentPurchaseUI(for product: SimulatedStoreProduct) async -> SimulatedStorePurchaseUIResult {
+    func presentPurchaseUI(
+        for product: SimulatedStoreProduct,
+        presentationContext: PresentationContext?
+    ) async -> SimulatedStorePurchaseUIResult {
         self.invokedPresentPurchaseUI.value = true
         self.invokedPresentPurchaseUICount.value += 1
         self.invokedPresentPurchaseUIProduct.value = product
+        self.invokedPresentationContext.value = presentationContext
         return await self.stubbedPurchaseResult.value()
     }
 

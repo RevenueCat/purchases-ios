@@ -12,18 +12,23 @@
 //  Created by Antonio Pallares on 21/7/25.
 
 import Foundation
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 actor MockSimulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType {
 
     let stubbedPurchaseResult: Atomic<TestPurchaseResult> = .init(.cancel)
     let invokedPurchase: Atomic<Bool> = .init(false)
     let invokedPurchaseProduct: Atomic<TestStoreProduct?> = .init(nil)
+    let invokedPresentationContext: Atomic<PresentationContext?> = .init(nil)
 
     @MainActor
-    func purchase(product: TestStoreProduct) async -> TestPurchaseResult {
+    func purchase(
+        product: TestStoreProduct,
+        presentationContext: PresentationContext?
+    ) async -> TestPurchaseResult {
         self.invokedPurchase.value = true
         self.invokedPurchaseProduct.value = product
+        self.invokedPresentationContext.value = presentationContext
         return self.stubbedPurchaseResult.value
     }
 

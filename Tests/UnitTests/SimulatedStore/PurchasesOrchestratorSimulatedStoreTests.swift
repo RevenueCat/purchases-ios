@@ -13,7 +13,7 @@
 
 import Foundation
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import XCTest
 
 class PurchasesOrchestratorSimulatedStoreTests: TestCase {
@@ -191,7 +191,31 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
         XCTAssertTrue(self.simulatedStorePurchaseHandler.invokedPurchase.value)
         XCTAssertEqual(self.simulatedStorePurchaseHandler.invokedPurchaseProduct.value?.productIdentifier,
                        "test.product")
+        XCTAssertNil(self.simulatedStorePurchaseHandler.invokedPresentationContext.value)
     }
+
+    #if canImport(UIKit) && !os(watchOS)
+    @MainActor
+    func testPurchasePassesPresentationSceneToSimulatedStorePurchaseHandler() async throws {
+        let orchestrator = self.createOrchestrator()
+        let testProduct = self.createTestStoreProduct()
+        let scene = try XCTUnwrap(UIScene.mock())
+        let context = PresentationContext(scene: scene)
+
+        await waitUntil { completion in
+            orchestrator.purchase(
+                product: testProduct,
+                package: nil,
+                presentationContext: context,
+                trackDiagnostics: false
+            ) { _, _, _, _ in
+                completion()
+            }
+        }
+
+        XCTAssertTrue(self.simulatedStorePurchaseHandler.invokedPresentationContext.value?.scene === scene)
+    }
+    #endif
 
     func testPurchaseWithSimulatedStoreProductAndNonTestAPIKeyReturnsError() async {
         self.systemInfo = MockSystemInfo(platformInfo: Purchases.PlatformInfo(flavor: "xyz", version: "1.2.3"),

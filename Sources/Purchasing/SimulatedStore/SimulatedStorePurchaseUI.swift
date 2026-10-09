@@ -12,12 +12,12 @@
 //  Created by Antonio Pallares on 1/8/25.
 
 import Foundation
-#if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
+#if canImport(UIKit)
 import UIKit
-#elseif os(watchOS)
-import UIKit
+#if os(watchOS)
 import WatchKit
-#elseif os(macOS)
+#endif
+#elseif canImport(AppKit)
 import AppKit
 #endif
 
@@ -34,21 +34,48 @@ protocol SimulatedStorePurchaseUI: Sendable {
     ///
     /// - Parameters:
     ///   - product: The product to be purchased.
+    ///   - presentationContext: The platform UI context where the purchase UI should be presented.
     /// - Returns: A result indicating the selected outcome of the purchase UI interaction.
-    func presentPurchaseUI(for product: SimulatedStoreProduct) async -> SimulatedStorePurchaseUIResult
+    func presentPurchaseUI(
+        for product: SimulatedStoreProduct,
+        presentationContext: PresentationContext?
+    ) async -> SimulatedStorePurchaseUIResult
 
 }
 
 /// Contains the logic to present a system alert for the confirmation of Simulated Store products purchases.
 struct DefaultSimulatedStorePurchaseUI: SimulatedStorePurchaseUI {
-
-    private let systemInfo: SystemInfo
-
+    #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
+    private let defaultPresentationContextProvider: @MainActor @Sendable () -> PresentationContext?
+    #endif
     init(systemInfo: SystemInfo) {
-        self.systemInfo = systemInfo
+        #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
+        self.defaultPresentationContextProvider = {
+            return PresentationContext.defaultPresentationContext(systemInfo: systemInfo)
+        }
+        #endif
     }
+    #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
+    init(
+        defaultPresentationContextProvider: @escaping @MainActor @Sendable () -> PresentationContext?
+    ) {
+        self.defaultPresentationContextProvider = defaultPresentationContextProvider
+    }
+    #endif
+    #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
+    @MainActor
+    func resolvedPresentationContext(_ context: PresentationContext?) -> PresentationContext? {
+        guard let context, context.isValidForPresentation else {
+            return self.defaultPresentationContextProvider()
+        }
 
-    func presentPurchaseUI(for product: SimulatedStoreProduct) async -> SimulatedStorePurchaseUIResult {
+        return context
+    }
+    #endif
+    func presentPurchaseUI(
+        for product: SimulatedStoreProduct,
+        presentationContext: PresentationContext? = nil
+    ) async -> SimulatedStorePurchaseUIResult {
         await Task { @MainActor in
             return await withUnsafeContinuation { continuation in
 
@@ -74,7 +101,7 @@ struct DefaultSimulatedStorePurchaseUI: SimulatedStorePurchaseUI {
                     }
                 )
 
-                self.showAlert(alert) { (error: PurchasesError) in
+                self.showAlert(alert, presentationContext: presentationContext) { (error: PurchasesError) in
                     completion(.error(error))
                 }
             }
@@ -103,7 +130,7 @@ struct DefaultSimulatedStorePurchaseUI: SimulatedStorePurchaseUI {
                     }
                 )
 
-                self.showAlert(alert) { _ in
+                self.showAlert(alert, presentationContext: nil) { _ in
                     completion()
                 }
             }
@@ -223,10 +250,14 @@ private extension DefaultSimulatedStorePurchaseUI {
 private extension DefaultSimulatedStorePurchaseUI {
 
     @MainActor
-    func showAlert(_ alert: Alert, onError: (PurchasesError) -> Void) {
+    func showAlert(
+        _ alert: Alert,
+        presentationContext: PresentationContext?,
+        onError: (PurchasesError) -> Void
+    ) {
 
-        #if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
-        guard let viewController = self.findTopViewController() else {
+        #if canImport(UIKit) && !os(watchOS)
+        guard let viewController = self.findTopViewController(presentationContext: presentationContext) else {
             Logger.warn(Strings.purchase.unable_to_find_root_view_controller_for_simulated_purchase)
             onError(ErrorUtils.unknownError(
                 message: Strings.purchase.unable_to_find_root_view_controller_for_simulated_purchase.description
@@ -264,8 +295,18 @@ private extension DefaultSimulatedStorePurchaseUI {
                                  preferredStyle: .alert,
                                  actions: actions)
 
-        #elseif os(macOS)
+        #elseif canImport(AppKit)
+        self.showAlertOnMacOS(alert, presentationContext: presentationContext)
 
+        #endif
+
+    }
+}
+
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
+extension DefaultSimulatedStorePurchaseUI {
+    @MainActor
+    fileprivate func showAlertOnMacOS(_ alert: Alert, presentationContext: PresentationContext?) {
         let nsAlert = NSAlert()
         nsAlert.messageText = alert.title
         nsAlert.informativeText = alert.message
@@ -277,26 +318,34 @@ private extension DefaultSimulatedStorePurchaseUI {
             nsAlert.addButton(withTitle: action.title)
         }
 
-        let response = nsAlert.runModal()
-
         // Map the modal response to the button index (0-based).
         let indexMap: [NSApplication.ModalResponse: Int] = [
             .alertFirstButtonReturn: 0,
             .alertSecondButtonReturn: 1,
             .alertThirdButtonReturn: 2
         ]
-        let selectedIndex = indexMap[response] ?? 0
-        let selectedAction = displayedActions[safe: selectedIndex]
-        selectedAction?.callback(selectedAction?.title ?? "")
+        let handleResponse: @MainActor (NSApplication.ModalResponse) -> Void = { response in
+            let selectedIndex = indexMap[response] ?? 0
+            let selectedAction = displayedActions[safe: selectedIndex]
+            selectedAction?.callback(selectedAction?.title ?? "")
+        }
 
-        #endif
-
+        if let window = self.findPresentationWindow(presentationContext: presentationContext) {
+            nsAlert.beginSheetModal(for: window, completionHandler: handleResponse)
+        } else {
+            handleResponse(nsAlert.runModal())
+        }
+    }
+    @MainActor
+    func findPresentationWindow(presentationContext: PresentationContext?) -> NSWindow? {
+        return self.resolvedPresentationContext(presentationContext)?.window
     }
 }
+#endif
 
 extension DefaultSimulatedStorePurchaseUI.Action.Style {
 
-    #if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
+    #if canImport(UIKit) && !os(watchOS)
 
     var alertActionStyle: UIAlertAction.Style {
         switch self {
@@ -327,21 +376,15 @@ extension DefaultSimulatedStorePurchaseUI.Action.Style {
 
 // MARK: - Helper
 
-#if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
+#if canImport(UIKit) && !os(watchOS)
 
-fileprivate extension DefaultSimulatedStorePurchaseUI {
+extension DefaultSimulatedStorePurchaseUI {
 
     @MainActor
-    func findTopViewController() -> UIViewController? {
-        guard let application = self.systemInfo.sharedUIApplication else {
-            return nil
-        }
-
-        if #available(macCatalyst 13.1, *) {
-            return application.currentPresentationViewController
-        }
-
-        return nil
+    func findTopViewController(
+        presentationContext: PresentationContext?
+    ) -> UIViewController? {
+        return self.resolvedPresentationContext(presentationContext)?.presentationViewController
     }
 
 }
