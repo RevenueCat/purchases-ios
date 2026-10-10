@@ -573,12 +573,13 @@ class SigningTests: TestCase {
         let nonce = try XCTUnwrap(Data(base64Encoded: "MTIzNDU2Nzg5MGFi"))
         let requestDate: UInt64 = 1688671515638
         let etag = "a896a69e4b31304d"
+        let path = HTTPRequest.Path2.getCustomerInfo(appUserID: "$RCAnonymousID:1af512a3b9c848899fe427f39dd69f2b")
 
         expect(
             self.signing.verificationResult(
                 for: expectedSignature,
                 with: .init(
-                    path: HTTPRequest.Path2.getCustomerInfo(appUserID: "$RCAnonymousID:1af512a3b9c848899fe427f39dd69f2b"),
+                    path: path,
                     iamEnabled: false,
                     message: response.asData,
                     requestHeaders: [:],
@@ -655,12 +656,12 @@ class SigningTests: TestCase {
 
         let nonce = try XCTUnwrap(Data(base64Encoded: "MTIzNDU2Nzg5MGFi"))
         let requestDate: UInt64 = 1702063024732
-
+        let path = HTTPRequest.Path2.getCustomerInfo(appUserID: "$RCAnonymousID:6ca4535c42714f88abc99c563703f113")
         expect(
             self.signing.verificationResult(
                 for: expectedSignature,
                 with: .init(
-                    path: HTTPRequest.Path2.getCustomerInfo(appUserID: "$RCAnonymousID:6ca4535c42714f88abc99c563703f113"),
+                    path: path,
                     iamEnabled: false,
                     message: response.asData,
                     requestHeaders: [

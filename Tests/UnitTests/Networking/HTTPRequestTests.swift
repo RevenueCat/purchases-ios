@@ -485,26 +485,30 @@ class HTTPRequestTests: TestCase {
     }
 
     func testAddNonceIfRequiredForPathWithSignatureVerificationWhenEnforced() throws {
-        let request: HTTPRequest = .init(method: .get, requestPath: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"))
+        let path = HTTPRequest.Path2.getCustomerInfo(appUserID: "user")
+        let request: HTTPRequest = .init(method: .get, requestPath: path)
         let mode = Signing.enforcedVerificationMode()
 
         expect(request.requestAddingNonceIfRequired(with: mode).nonce).toNot(beNil())
     }
 
     func testAddNonceIfRequiredForPathWithSignatureVerificationWhenModeInformational() throws {
-        let request: HTTPRequest = .init(method: .get, requestPath: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"))
+        let path = HTTPRequest.Path2.getCustomerInfo(appUserID: "user")
+        let request: HTTPRequest = .init(method: .get, requestPath: path)
         let mode = Signing.verificationMode(with: .informational)
 
         expect(request.requestAddingNonceIfRequired(with: mode).nonce).toNot(beNil())
     }
 
     func testRequestIsNotRetryableByDefault() {
-        let request: HTTPRequest = .init(method: .get, requestPath: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"))
+        let path = HTTPRequest.Path2.getCustomerInfo(appUserID: "user")
+        let request: HTTPRequest = .init(method: .get, requestPath: path)
         expect(request.isRetryable).to(beFalse())
     }
 
     func testRequestIsRetryableIfSet() {
-        let request: HTTPRequest = .init(method: .get, requestPath: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"), isRetryable: true)
+        let path = HTTPRequest.Path2.getCustomerInfo(appUserID: "user")
+        let request: HTTPRequest = .init(method: .get, requestPath: path, isRetryable: true)
         expect(request.isRetryable).to(beTrue())
     }
 
@@ -877,18 +881,18 @@ class HTTPRequestTests2: TestCase {
     private static let clientTransactionID = "AABBCCDD-1111-2222-3333-444455556666"
 
     private static let paths: [HTTPRequest.Path2] = [
-        .getCustomerInfo(appUserID: userID),
+        .getCustomerInfo(appUserID: userID)
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path2> = []
     private static let pathsWithoutETags: Set<HTTPRequest.Path2> = []
     private static let pathsWithSignatureVerification: Set<HTTPRequest.Path2> = [
-        .getCustomerInfo(appUserID: userID),
+        .getCustomerInfo(appUserID: userID)
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path2> = [
-        .getCustomerInfo(appUserID: userID),
+        .getCustomerInfo(appUserID: userID)
     ]
     private static let pathsWithUserID: [HTTPRequest.Path2] = [
-        .getCustomerInfo(appUserID: anonymousUser),
+        .getCustomerInfo(appUserID: anonymousUser)
     ]
 
     func testPathsDontHaveLeadingSlash() {
@@ -1263,26 +1267,30 @@ class HTTPRequestTests2: TestCase {
     }
 
     func testAddNonceIfRequiredForPathWithSignatureVerificationWhenEnforced() throws {
-        let request: HTTPRequest = .init(method: .get, requestPath: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"))
+        let path = HTTPRequest.Path2.getCustomerInfo(appUserID: "user")
+        let request: HTTPRequest = .init(method: .get, requestPath: path)
         let mode = Signing.enforcedVerificationMode()
 
         expect(request.requestAddingNonceIfRequired(with: mode).nonce).toNot(beNil())
     }
 
     func testAddNonceIfRequiredForPathWithSignatureVerificationWhenModeInformational() throws {
-        let request: HTTPRequest = .init(method: .get, requestPath: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"))
+        let path = HTTPRequest.Path2.getCustomerInfo(appUserID: "user")
+        let request: HTTPRequest = .init(method: .get, requestPath: path)
         let mode = Signing.verificationMode(with: .informational)
 
         expect(request.requestAddingNonceIfRequired(with: mode).nonce).toNot(beNil())
     }
 
     func testRequestIsNotRetryableByDefault() {
-        let request: HTTPRequest = .init(method: .get, requestPath: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"))
+        let path = HTTPRequest.Path2.getCustomerInfo(appUserID: "user")
+        let request: HTTPRequest = .init(method: .get, requestPath: path)
         expect(request.isRetryable).to(beFalse())
     }
 
     func testRequestIsRetryableIfSet() {
-        let request: HTTPRequest = .init(method: .get, requestPath: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"), isRetryable: true)
+        let path = HTTPRequest.Path2.getCustomerInfo(appUserID: "user")
+        let request: HTTPRequest = .init(method: .get, requestPath: path, isRetryable: true)
         expect(request.isRetryable).to(beTrue())
     }
 
@@ -1342,4 +1350,3 @@ class HTTPRequestTests2: TestCase {
             == HTTPRequest.signatureHashHeader(keys: [sandboxHeader], hash: expectedHash)
     }
 }
-

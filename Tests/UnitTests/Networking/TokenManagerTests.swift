@@ -722,7 +722,7 @@ private extension TokenManagerTests {
 
     /// Builds a minimal `HTTPClient.Request` for exercising `TokenManager` methods that take one,
     /// without needing to spin up a full `HTTPClient`.
-    static func makeRequest(path: any HTTPRequestPath = HTTPRequest.Path2.getCustomerInfo(appUserID: "user")) -> HTTPClient.Request {
+    static func makeRequest(path: any HTTPRequestPath) -> HTTPClient.Request {
         let httpRequest = HTTPRequest(method: .get, requestPath: path)
         return HTTPClient.Request(httpRequest: httpRequest,
                                   authHeaders: [:],
@@ -735,6 +735,10 @@ private extension TokenManagerTests {
 
     static func makeRequest(path: HTTPRequest.Path) -> HTTPClient.Request {
         self.makeRequest(path: path as any HTTPRequestPath)
+    }
+
+    static func makeRequest() -> HTTPClient.Request {
+        self.makeRequest(path: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"))
     }
 
     static func makeTokenResponse(

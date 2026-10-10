@@ -12,6 +12,7 @@ extension HTTPRequest {
 
     struct Path2: Hashable {
 
+        // swiftlint:disable:next nesting
         enum ETagBehavior {
             case send
             case ignore
@@ -21,7 +22,7 @@ extension HTTPRequest {
             URL(string: "https://api-production.8-lives-cat.io")
         ]
 
-        static func ==(lhs: Self, rhs: Self) -> Bool {
+        static func == (lhs: Self, rhs: Self) -> Bool {
             return lhs.name == rhs.name &&
                    lhs.serverHostURL == rhs.serverHostURL &&
                    lhs.relativePath == rhs.relativePath
@@ -148,10 +149,9 @@ extension HTTPRequest.Path2: HTTPRequestPath {
     var shouldSendEtag: Bool { etagBehavior == .send }
 }
 
-
 extension HTTPRequest.Path2 {
 
-    static func getCustomerInfo(appUserID: String) ->Self {
+    static func getCustomerInfo(appUserID: String) -> Self {
         HTTPRequest.Path2(name: "get_customer",
                           authenticated: true,
                           etagBehavior: .send,
