@@ -130,6 +130,9 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.allowsBackForwardNavigationGestures = false
+        // Insetting the page by the safe area makes `window.innerHeight` follow the page's own height when the
+        // page is shorter than the web view, and pages sized from it switch between two layouts on every frame.
+        webView.scrollView.contentInsetAdjustmentBehavior = .never
 
         return webView
     }

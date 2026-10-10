@@ -86,7 +86,49 @@ public extension Attribution {
 
 #if !CUSTOM_ENTITLEMENTS_COMPUTATION
 
+extension CustomerInfo {
+
+    /// A subscriber attribute value
+    ///
+    /// For more information, refer [to our guide](https://docs.revenuecat.com/docs/subscriber-attributes).
+    @_spi(Internal)
+    @objc(RCCustomerAttribute) public final class Attribute: NSObject {
+
+        private let attribute: SubscriberAttribute
+
+        /// The key for this attribute.
+        ///
+        /// Attribute keys that begin with `$` indicate reserved names used by RevenueCat
+        @objc public var key: String { attribute.key }
+
+        /// The value for this attribute.
+        @objc public var value: String { attribute.value }
+
+        /// The last time this value was modified
+        @objc public var lastUpdatedDate: Date { attribute.setTime }
+
+        fileprivate init(attribute: SubscriberAttribute) {
+            self.attribute = attribute
+        }
+
+    }
+}
+
 public extension Attribution {
+
+    /// Retrieve all subscriber attributes for the current user.
+    ///
+    /// Typically, this only returns attributes that have been modified locally on the device.
+    /// If the current has been authenticated using IAM, then this returns all readable attributes
+    /// specified on the user's customer profile.
+    @_spi(Internal)
+    @objc var attributesForCurrentUser: [CustomerInfo.Attribute] {
+        let attributes = self.subscriberAttributesManager.localStoredAttributes(for: appUserID)
+        return attributes.values.compactMap { attr in
+            if attr.value.isEmpty { return nil }
+            return CustomerInfo.Attribute(attribute: attr)
+        }
+    }
 
     /**
      * Automatically collect subscriber attributes associated with the device identifiers
