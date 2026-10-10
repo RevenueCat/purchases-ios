@@ -93,10 +93,246 @@ final class ButtonComponentViewTests: TestCase {
         )
     }
 
+    func testNativeCloseRunsExistingDismissalAndAnalytics() async throws {
+        try await self.assertNativeCloseRunsExistingDismissalAndAnalytics(fullScreen: false)
+    }
+
+    func testFullScreenNativeCloseDismissesAndTracksAnalytics() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty,
+                      "Generate with TUIST_UI_TESTS_HOST_APP=true to test actual modal presentations.")
+        try await self.assertNativeCloseRunsExistingDismissalAndAnalytics(fullScreen: true)
+    }
+
+    func testWorkflowHeaderBackAndClosePreserveActionsAndAnalytics() async throws {
+        let back = PaywallComponent.ButtonComponent(
+            name: "workflow-back", action: .navigateBack,
+            stack: Self.makeButtonStack(label: "Back"), useNativeIfPossible: true
+        )
+        let encoder = JSONEncoder()
+        encoder.keyEncodingStrategy = .convertToSnakeCase
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        var json = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: encoder.encode(back)) as? [String: Any]
+        )
+        json["name"] = "workflow-close"
+        json["action"] = ["type": "close_workflow", "use_native_if_possible": true]
+        let close = try decoder.decode(
+            PaywallComponent.ButtonComponent.self, from: JSONSerialization.data(withJSONObject: json)
+        )
+        let backModel = try Self.makeViewModel(component: back)
+        let closeModel = try Self.makeViewModel(component: close)
+        let wentBack = expectation(description: "Workflow navigated back")
+        let closed = expectation(description: "Entire workflow closed")
+        var interactions: [PaywallEvent.ComponentInteractionData] = []
+        let owner = NativePaywallUIKitOwner()
+        let view = VStack {
+            Self.configuredView(viewModel: backModel, onDismiss: { XCTFail("Back must use workflow handler") })
+            Self.configuredView(viewModel: closeModel, onDismiss: { XCTFail("Close must use workflow handler") })
+        }
+        .environment(\.workflowRenderingContext, .init(isHeader: true, canNavigateBack: true))
+        .environment(\.workflowNavigateBackHandler, { wentBack.fulfill() })
+        .environment(\.closeWorkflowAction, { closed.fulfill() })
+        .environment(\.componentInteractionLogger, ComponentInteractionLogger { event in
+            interactions.append(event)
+            return true
+        })
+        .modifier(NativePaywallNavigationModifier(requested: true))
+        .environment(\.nativePaywallNavigationContext, .uiKit(owner))
+        let controller = UIHostingController(rootView: view)
+        let navigation = UINavigationController(rootViewController: controller)
+        owner.prepare(controller: controller)
+        let window: UIWindow
+        if let scene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first {
+            window = UIWindow(windowScene: scene)
+            window.frame = CGRect(x: 0, y: 0, width: 390, height: 844)
+        } else {
+            window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        }
+        window.rootViewController = navigation
+        window.makeKeyAndVisible()
+        controller.view.layoutIfNeeded()
+        defer {
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+        let installed = expectation(description: "Both native header actions installed")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { installed.fulfill() }
+        await fulfillment(of: [installed], timeout: 2)
+        let items = self.closeItems(in: controller)
+        XCTAssertEqual(items.count, 2)
+        for identifier in [NativePaywallUIKitOwner.backIdentifier, NativePaywallUIKitOwner.closeIdentifier] {
+            let item = try XCTUnwrap(items.first { $0.accessibilityIdentifier == identifier })
+            let target = try XCTUnwrap(item.target as? NSObject)
+            target.perform(try XCTUnwrap(item.action), with: item)
+        }
+        await fulfillment(of: [wentBack, closed], timeout: 2)
+        XCTAssertEqual(interactions.map(\.componentValue), ["navigate_back", "close_workflow"])
+        XCTAssertEqual(interactions.map(\.componentName), ["workflow-back", "workflow-close"])
+    }
+
+    func testNativeOnlyHeaderCollapsesButDesignedHeaderRemains() async throws {
+        for (native, hasOtherContent) in [(true, false), (false, false), (true, true)] {
+            let button = PaywallComponent.ButtonComponent(
+                action: .navigateBack, stack: Self.makeButtonStack(label: "Close"), useNativeIfPossible: native
+            )
+            let buttonModel = try Self.makeViewModel(component: button)
+            let stack = PaywallComponent.StackComponent(
+                components: [.button(button)], size: .init(width: .fill, height: .fixed(100))
+            )
+            let children: [PaywallComponentViewModel] = [.button(buttonModel)]
+                + (hasOtherContent ? buttonModel.stackViewModel.viewModels : [])
+            let stackModel = StackComponentViewModel(
+                component: stack, viewModels: children, badgeViewModels: [],
+                uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make())
+            )
+            let header = HeaderComponentViewModel(
+                component: .init(stack: stack), stackViewModel: stackModel, firstItemIgnoresSafeArea: false
+            )
+            var height: CGFloat = -1
+            let view = HeaderComponentView(viewModel: header, onDismiss: {})
+                .fixedSize(horizontal: false, vertical: true)
+                .overlay(GeometryReader { geometry in
+                    Color.clear.preference(key: NativeHeaderHeightTestKey.self, value: geometry.size.height)
+                })
+                .onPreferenceChange(NativeHeaderHeightTestKey.self) { height = $0 }
+                .environment(\.nativePaywallCloseCoordinator, NativePaywallCloseCoordinator())
+                .environmentObject(PurchaseHandler.default())
+                .environmentObject(PackageContext(package: nil, variableContext: .init(packages: [])))
+                .environmentObject(
+                    IntroOfferEligibilityContext(introEligibilityChecker: BaseSnapshotTest.eligibleChecker)
+                )
+                .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
+                .environment(\.screenCondition, .compact)
+                .environment(\.safeAreaInsets, EdgeInsets())
+            let (window, _) = Self.host(view)
+            let settled = expectation(description: "Header layout settled")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { settled.fulfill() }
+            await fulfillment(of: [settled], timeout: 2)
+            XCTAssertEqual(height, native && !hasOtherContent ? 0 : 100, accuracy: 0.5)
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+    }
+
+    private func assertNativeCloseRunsExistingDismissalAndAnalytics(fullScreen: Bool) async throws {
+        let viewModel = try Self.makeViewModel(
+            component: PaywallComponent.ButtonComponent(
+                name: "close", action: .navigateBack,
+                stack: Self.makeButtonStack(label: "Configured Close"), useNativeIfPossible: true
+            )
+        )
+        let dismissed = expectation(description: "Existing close action")
+        var interactions: [PaywallEvent.ComponentInteractionData] = []
+        weak var presentedController: UIViewController?
+        let owner = NativePaywallUIKitOwner()
+        let view = Self.configuredView(viewModel: viewModel, onDismiss: {
+            if fullScreen { presentedController?.dismiss(animated: false) }
+            dismissed.fulfill()
+        })
+            .modifier(NativePaywallNavigationModifier(requested: true))
+            .environment(\.nativePaywallNavigationContext, fullScreen ? .standalone : .uiKit(owner))
+            .environment(\.componentInteractionLogger, ComponentInteractionLogger { event in
+                interactions.append(event)
+                return true
+            })
+        let controller = UIHostingController(rootView: view)
+        let navigation = UINavigationController(rootViewController: fullScreen ? UIViewController() : controller)
+        owner.prepare(controller: controller)
+        let window: UIWindow
+        if let scene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first {
+            window = UIWindow(windowScene: scene)
+            window.frame = CGRect(x: 0, y: 0, width: 390, height: 844)
+        } else {
+            window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        }
+        window.rootViewController = navigation
+        window.makeKeyAndVisible()
+        controller.view.layoutIfNeeded()
+        defer {
+            window.isHidden = true
+            window.rootViewController = nil
+            window.windowScene?.windows.first(where: { !$0.isHidden })?.makeKeyAndVisible()
+        }
+        if fullScreen {
+            let ready = expectation(description: "Presenter ready")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { ready.fulfill() }
+            await fulfillment(of: [ready], timeout: 2)
+            controller.modalPresentationStyle = .fullScreen
+            presentedController = controller
+            navigation.present(controller, animated: false)
+        }
+        let installed = expectation(description: "Native close installed")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { installed.fulfill() }
+        await fulfillment(of: [installed], timeout: 2)
+        if fullScreen {
+            // Commit the rendered frame before invoking UIKit's SwiftUI toolbar control.
+            let renderer = UIGraphicsImageRenderer(bounds: window.bounds)
+            let image = renderer.image { _ in window.drawHierarchy(in: window.bounds, afterScreenUpdates: true) }
+            let attachment = XCTAttachment(image: image)
+            attachment.name = "Full-screen native Close"
+            attachment.lifetime = .keepAlways
+            self.add(attachment)
+            let buttons = self.toolbarActions(in: controller.view)
+            XCTAssertEqual(buttons.count, 1)
+            let button = try XCTUnwrap(buttons.first)
+            button.sendActions(for: .primaryActionTriggered)
+        } else {
+            let items = self.closeItems(in: controller)
+            XCTAssertEqual(items.count, 1)
+            let item = try XCTUnwrap(items.first)
+            let selector = try XCTUnwrap(item.action)
+            let target = try XCTUnwrap(item.target as? NSObject)
+            target.perform(selector, with: item)
+        }
+        await fulfillment(of: [dismissed], timeout: 2)
+        XCTAssertEqual(interactions.count, 1)
+        XCTAssertEqual(interactions.first?.componentValue, "navigate_back")
+        XCTAssertEqual(interactions.first?.componentName, "close")
+        if fullScreen {
+            let closed = expectation(description: "Modal dismissed")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { closed.fulfill() }
+            await fulfillment(of: [closed], timeout: 2)
+            XCTAssertNil(navigation.presentedViewController)
+        }
+    }
+
+    private func toolbarActions(in view: UIView) -> [UIControl] {
+        NativePaywallTestSupport.toolbarViews(of: UIControl.self, in: view)
+            .filter { $0.allControlEvents.contains(.primaryActionTriggered) }
+    }
+
+    private func closeItems(in controller: UIViewController) -> [UIBarButtonItem] {
+        let navigationItems = [controller.navigationItem]
+            + ((controller as? UINavigationController)?.navigationBar.items ?? [])
+        let items = navigationItems.flatMap {
+            ($0.leftBarButtonItems ?? []) + ($0.rightBarButtonItems ?? [])
+        } + controller.children.flatMap { self.closeItems(in: $0) }
+        var seen = Set<ObjectIdentifier>()
+        return items.filter { seen.insert(ObjectIdentifier($0)).inserted }
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension ButtonComponentViewTests {
+
+    static func configuredView(
+        viewModel: ButtonComponentViewModel, onDismiss: @escaping () -> Void
+    ) -> some View {
+        ButtonComponentView(viewModel: viewModel, onDismiss: onDismiss)
+            .environmentObject(PurchaseHandler.default())
+            .environmentObject(PackageContext(package: nil, variableContext: .init(packages: [])))
+            .environmentObject(
+                IntroOfferEligibilityContext(introEligibilityChecker: BaseSnapshotTest.eligibleChecker)
+            )
+            .environmentObject(
+                PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker())
+            )
+            .environment(\.componentViewState, .default)
+            .environment(\.screenCondition, .compact)
+            .environment(\.safeAreaInsets, EdgeInsets())
+    }
 
     static func makeViewModel(
         component: PaywallComponent.ButtonComponent
@@ -175,6 +411,11 @@ private extension UIView {
         return self.subviews.contains { $0.containsText(text) }
     }
 
+}
+
+private struct NativeHeaderHeightTestKey: PreferenceKey {
+    static let defaultValue: CGFloat = -1
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
 }
 
 #endif

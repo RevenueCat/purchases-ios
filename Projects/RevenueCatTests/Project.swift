@@ -292,7 +292,8 @@ let project = Project(
                 .nimble,
                 .snapshotTesting,
                 .ohHTTPStubsSwift
-            ],
+            ] + (Environment.uiTestsHostApp.getBoolean(default: false)
+                ? [.target(name: "UnitTestsHostApp")] : []),
             metadata: .metadata(tags: ["RevenueCatTests"])
         )
 

@@ -24,6 +24,8 @@ import Foundation
         public let id: String?
         public let visible: Bool?
         public let action: Action
+        /// Prefer a native navigation close control, retaining this button as a fallback.
+        public let useNativeIfPossible: Bool
         public let stack: PaywallComponent.StackComponent
         public let transition: PaywallComponent.Transition?
         public let overrides: ComponentOverrides<PartialButtonComponent>?
@@ -40,13 +42,15 @@ import Foundation
             stack: PaywallComponent.StackComponent,
             transition: PaywallComponent.Transition? = nil,
             overrides: ComponentOverrides<PartialButtonComponent>? = nil,
-            stateUpdates: [StateUpdate]? = nil
+            stateUpdates: [StateUpdate]? = nil,
+            useNativeIfPossible: Bool = false
         ) {
             self.type = .button
             self.name = name
             self.id = id
             self.visible = visible
             self.action = action
+            self.useNativeIfPossible = useNativeIfPossible
             self.stack = stack
             self.transition = transition
             self.overrides = overrides
@@ -68,6 +72,7 @@ import Foundation
 
         private enum ActionCodingKeys: String, CodingKey {
             case type
+            case useNativeIfPossible
         }
 
         required public init(from decoder: Decoder) throws {
@@ -78,6 +83,9 @@ import Foundation
             self.visible = try container.decodeIfPresent(Bool.self, forKey: .visible)
             let actionContainer = try container.nestedContainer(keyedBy: ActionCodingKeys.self, forKey: .action)
             let rawActionType = try actionContainer.decode(String.self, forKey: .type)
+            self.useNativeIfPossible = try actionContainer.decodeIfPresent(
+                Bool.self, forKey: .useNativeIfPossible
+            ) ?? false
             if rawActionType == "close_workflow" {
                 self.isCloseWorkflowAction = true
                 self.action = .navigateBack
@@ -100,11 +108,16 @@ import Foundation
             try container.encodeIfPresent(name, forKey: .name)
             try container.encodeIfPresent(id, forKey: .id)
             try container.encodeIfPresent(visible, forKey: .visible)
+            let actionEncoder = container.superEncoder(forKey: .action)
             if self.isCloseWorkflowAction {
-                var actionContainer = container.nestedContainer(keyedBy: ActionCodingKeys.self, forKey: .action)
+                var actionContainer = actionEncoder.container(keyedBy: ActionCodingKeys.self)
                 try actionContainer.encode("close_workflow", forKey: .type)
             } else {
-                try container.encode(action, forKey: .action)
+                try action.encode(to: actionEncoder)
+            }
+            if self.useNativeIfPossible {
+                var actionContainer = actionEncoder.container(keyedBy: ActionCodingKeys.self)
+                try actionContainer.encode(true, forKey: .useNativeIfPossible)
             }
             try container.encode(stack, forKey: .stack)
             try container.encodeIfPresent(transition, forKey: .transition)
@@ -118,6 +131,7 @@ import Foundation
             hasher.combine(id)
             hasher.combine(visible)
             hasher.combine(action)
+            hasher.combine(useNativeIfPossible)
             hasher.combine(isCloseWorkflowAction)
             hasher.combine(stack)
             hasher.combine(transition)
@@ -131,6 +145,7 @@ import Foundation
                    lhs.id == rhs.id &&
                    lhs.visible == rhs.visible &&
                    lhs.action == rhs.action &&
+                   lhs.useNativeIfPossible == rhs.useNativeIfPossible &&
                    lhs.isCloseWorkflowAction == rhs.isCloseWorkflowAction &&
                    lhs.stack == rhs.stack &&
                    lhs.transition == rhs.transition &&

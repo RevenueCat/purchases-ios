@@ -104,6 +104,38 @@ final class ButtonComponentViewModelMappingTests: TestCase {
         XCTAssertEqual(viewModel.action.paywallComponentInteractionValue, "navigate_back")
     }
 
+    func testNativeNavigationRoleMatchesWorkflowAction() throws {
+        let cases: [(PaywallComponent.ButtonComponent.Action, Bool, Bool, NativePaywallCloseCoordinator.Role?)] = [
+            (.navigateBack, true, true, .close),
+            (.navigateBack, false, true, nil),
+            (.navigateBack, true, false, .back),
+            (.restorePurchases, true, true, nil),
+            (.workflowTrigger, true, true, nil),
+            (.unknown, true, true, nil)
+        ]
+        for (action, enabled, dismisses, expected) in cases {
+            let component = PaywallComponent.ButtonComponent(
+                action: action, stack: .init(components: []), useNativeIfPossible: enabled
+            )
+            let viewModel = try self.makeViewModel(for: component)
+            XCTAssertEqual(viewModel.nativeNavigationRole(dismissesPaywall: dismisses), expected)
+        }
+    }
+
+    func testNativeCloseWorkflowStillClosesWhenBackIsAvailable() throws {
+        let component = try self.decodeButton(actionType: "close_workflow")
+        let encoded = try JSONEncoder.default.encode(component)
+        var json = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+        var action = try XCTUnwrap(json["action"] as? [String: Any])
+        action["use_native_if_possible"] = true
+        json["action"] = action
+        let native = try JSONDecoder.default.decode(
+            PaywallComponent.ButtonComponent.self, from: JSONSerialization.data(withJSONObject: json)
+        )
+        let viewModel = try self.makeViewModel(for: native)
+        XCTAssertTrue(viewModel.nativeNavigationRole(dismissesPaywall: false) == .close)
+    }
+
     // MARK: - Helpers
 
     private func decodeButton(
