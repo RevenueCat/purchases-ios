@@ -59,7 +59,8 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
     func testAutomaticallyAddsNonceIfRequired() {
         self.changeClient(.informational)
 
-        let request = HTTPRequest(method: .get, path: .getCustomerInfo(appUserID: "user"))
+        let request = HTTPRequest(method: .get,
+                                  requestPath: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"))
 
         let headers: [String: String]? = waitUntilValue { completion in
             stub(condition: isPath(request.path)) { request in
@@ -1188,12 +1189,12 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     }
 
     func testNoCachedResponseAndNotVerifiedResponse() throws {
-        let path: HTTPRequest.Path = .getCustomerInfo(appUserID: "user")
+        let path: HTTPRequest.Path2 = .getCustomerInfo(appUserID: "user")
 
         self.mockPath(path, statusCode: .success, requestDate: Self.date2, signature: nil)
 
         let response: DataResponse? = waitUntilValue { completion in
-            self.client.perform(.init(method: .get, path: path),
+            self.client.perform(.init(method: .get, requestPath: path),
                                 completionHandler: completion)
         }
 

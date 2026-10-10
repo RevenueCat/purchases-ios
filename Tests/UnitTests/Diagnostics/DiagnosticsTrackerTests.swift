@@ -464,7 +464,7 @@ class DiagnosticsTrackerTests: TestCase {
     }
 
     func testConnectionErrorReasonFromUnableToCreateRequest() {
-        let path: HTTPRequest.Path = .getCustomerInfo(appUserID: "user_id")
+        let path: HTTPRequest.Path2 = .getCustomerInfo(appUserID: "user_id")
         let unableToCreateRequestError = NetworkError.unableToCreateRequest(path)
         let connectionErrorReason = ConnectionErrorReason(from: unableToCreateRequestError)
 

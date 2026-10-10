@@ -732,7 +732,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         let futureDateString = ISO8601DateFormatter()
             .string(from: Calendar.current.date(byAdding: dateComponent, to: today)!)
 
-        let getCustomerInfoPath: HTTPRequest.Path = .getCustomerInfo(appUserID: Self.userID)
+        let getCustomerInfoPath: HTTPRequest.Path2 = .getCustomerInfo(appUserID: Self.userID)
 
         let validCustomerResponse: [String: Any] = [
             "request_date": "2019-08-16T10:30:42Z",
@@ -817,10 +817,9 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         expect(updatedSubscriberInfo.value) == postSubscriberInfo.value
         expect(updatedSubscriberInfo.value) != originalSubscriberInfo.value
 
-        expect(self.httpClient.calls.map { $0.request.path as? HTTPRequest.Path }) == [
-            getCustomerInfoPath,
-            .postReceiptData
-        ]
+        expect(self.httpClient.calls.count) == 2
+        expect(self.httpClient.calls.first?.request.path as? HTTPRequest.Path2) == getCustomerInfoPath
+        expect(self.httpClient.calls.last?.request.path as? HTTPRequest.Path) == .postReceiptData
     }
 
     func testPostingReceiptCreatesACustomerInfoObject() {

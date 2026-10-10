@@ -549,7 +549,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         }
 
         let firstRequestPath = HTTPRequest.Path.mockPath.relativePath
-        let queuedRequestPath = HTTPRequest.Path.getCustomerInfo(appUserID: "queued-user").relativePath
+        let queuedRequestPath = HTTPRequest.Path2.getCustomerInfo(appUserID: "queued-user").relativePath
 
         let firstRequestCompleted: Atomic<Bool> = false
         client.perform(.init(method: .get, path: .mockPath)) { (_: EmptyResponse) in
@@ -557,7 +557,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         }
         // Enqueued while the first request's attempt/probe is in flight.
         let queuedResult: EmptyResponse? = waitUntilValue(timeout: .seconds(5)) { completion in
-            client.perform(.init(method: .get, path: .getCustomerInfo(appUserID: "queued-user"))) {
+            let path = HTTPRequest.Path2.getCustomerInfo(appUserID: "queued-user")
+            client.perform(.init(method: .get, requestPath: path)) {
                 completion($0)
             }
         }
@@ -3576,19 +3577,19 @@ extension HTTPClientTests {
     ) -> HTTPClient.Request {
         let completionHandler: HTTPClient.Completion<CustomerInfo> = { _ in return }
 
-        let path: HTTPRequest.Path
+        let path: any HTTPRequestPath
         if hasFallbackUrls {
-            path = .getOfferings(appUserID: "abc123")
+            path = HTTPRequest.Path.getOfferings(appUserID: "abc123")
             expect(path.fallbackUrls).toNot(
                 beEmpty(),
                 description: "This test requires a path that has at least 1 fallback host"
             )
         } else {
-            path = .getCustomerInfo(appUserID: "abc123")
+            path = HTTPRequest.Path2.getCustomerInfo(appUserID: "abc123")
         }
 
         let request: HTTPClient.Request = .init(
-            httpRequest: .init(method: .get, path: path, isRetryable: isRetryable),
+            httpRequest: .init(method: .get, requestPath: path, isRetryable: isRetryable),
             authHeaders: .init(),
             defaultHeaders: .init(),
             verificationMode: .default,

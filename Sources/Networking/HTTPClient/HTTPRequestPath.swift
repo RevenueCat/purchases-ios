@@ -168,7 +168,6 @@ extension HTTPRequest {
 
     enum Path: Hashable {
 
-        case getCustomerInfo(appUserID: String)
         case getOfferings(appUserID: String)
         case getIntroEligibility(appUserID: String)
         case logIn
@@ -275,8 +274,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var authenticated: Bool {
         switch self {
-        case .getCustomerInfo,
-                .getOfferings,
+        case .getOfferings,
                 .getIntroEligibility,
                 .logIn,
                 .postAttributionData,
@@ -308,8 +306,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var shouldSendEtag: Bool {
         switch self {
-        case .getCustomerInfo,
-                .getOfferings,
+        case .getOfferings,
                 .getIntroEligibility,
                 .logIn,
                 .postAttributionData,
@@ -340,8 +337,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var supportsSignatureVerification: Bool {
         switch self {
-        case .getCustomerInfo,
-                .logIn,
+        case .logIn,
                 .postReceiptData,
                 .postRedeemWebPurchase,
                 .health,
@@ -372,8 +368,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var needsNonceForSigning: Bool {
         switch self {
-        case .getCustomerInfo,
-                .logIn,
+        case .logIn,
                 .postReceiptData,
                 .postRedeemWebPurchase,
                 .getVirtualCurrencies,
@@ -425,9 +420,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var pathComponent: String {
         switch self {
-        case let .getCustomerInfo(appUserID):
-            return "subscribers/\(Self.escape(appUserID))"
-
         case let .getOfferings(appUserID):
             return "subscribers/\(Self.escape(appUserID))/offerings"
 
@@ -513,8 +505,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         // that the corresponding server paths have not yet been migrated to
         // support access token authorization
         switch self {
-        case .getCustomerInfo:
-            return "customer"
         case .getOfferings:
             return "customer/offerings"
         case .getIntroEligibility:
@@ -570,9 +560,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var name: String {
         switch self {
-        case .getCustomerInfo:
-            return "get_customer"
-
         case .getOfferings:
             return "get_offerings"
 
