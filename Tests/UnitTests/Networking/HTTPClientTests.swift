@@ -557,7 +557,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         }
         // Enqueued while the first request's attempt/probe is in flight.
         let queuedResult: EmptyResponse? = waitUntilValue(timeout: .seconds(5)) { completion in
-            client.perform(.init(method: .get, requestPath: HTTPRequest.Path2.getCustomerInfo(appUserID: "queued-user"))) {
+            let path = HTTPRequest.Path2.getCustomerInfo(appUserID: "queued-user")
+            client.perform(.init(method: .get, requestPath: path)) {
                 completion($0)
             }
         }
