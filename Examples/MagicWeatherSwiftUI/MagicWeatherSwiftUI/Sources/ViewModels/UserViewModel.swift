@@ -8,6 +8,8 @@
 import Foundation
 import RevenueCat
 import SwiftUI
+// If Swift's strict concurrency checking is enabled you'll need to import Combine.
+//import Combine
 
 /* Static shared model for UserView */
 class UserViewModel: ObservableObject {
