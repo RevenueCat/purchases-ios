@@ -304,37 +304,18 @@ typedef unsigned int swift_uint4  __attribute__((__ext_vector_type__(4)));
 
 #if defined(__OBJC__)
 
-@class NSString;
-@class RCMediatorName;
-@class RCAdFormat;
 /// Data for ad displayed events.
-SWIFT_CLASS_NAMED("AdDisplayed")
-@interface RCAdDisplayed : NSObject
-@property (nonatomic, readonly, copy) NSString * _Nullable networkName;
-@property (nonatomic, readonly, strong) RCMediatorName * _Nonnull mediatorName;
-@property (nonatomic, readonly, strong) RCAdFormat * _Nonnull adFormat;
-@property (nonatomic, readonly, copy) NSString * _Nullable placement;
-@property (nonatomic, readonly, copy) NSString * _Nonnull adUnitId;
-@property (nonatomic, readonly, copy) NSString * _Nonnull impressionId;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nullable)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat placement:(NSString * _Nullable)placement adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId OBJC_DESIGNATED_INITIALIZER;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nullable)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId;
+SWIFT_CLASS("_TtC10RevenueCat11AdDisplayed")
+@interface AdDisplayed : NSObject
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
 
-@class NSNumber;
 /// Data for ad failed to load events.
-SWIFT_CLASS_NAMED("AdFailedToLoad")
-@interface RCAdFailedToLoad : NSObject
-@property (nonatomic, readonly, strong) RCMediatorName * _Nonnull mediatorName;
-@property (nonatomic, readonly, strong) RCAdFormat * _Nonnull adFormat;
-@property (nonatomic, readonly, copy) NSString * _Nullable placement;
-@property (nonatomic, readonly, copy) NSString * _Nonnull adUnitId;
-@property (nonatomic, readonly, strong) NSNumber * _Nullable mediatorErrorCode;
-- (nonnull instancetype)initWithMediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat placement:(NSString * _Nullable)placement adUnitId:(NSString * _Nonnull)adUnitId mediatorErrorCode:(NSNumber * _Nullable)mediatorErrorCode OBJC_DESIGNATED_INITIALIZER;
-- (nonnull instancetype)initWithMediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat adUnitId:(NSString * _Nonnull)adUnitId mediatorErrorCode:(NSNumber * _Nullable)mediatorErrorCode;
+SWIFT_CLASS("_TtC10RevenueCat14AdFailedToLoad")
+@interface AdFailedToLoad : NSObject
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -344,33 +325,8 @@ SWIFT_CLASS_NAMED("AdFailedToLoad")
 /// Type representing an ad format type.
 /// Use the predefined static properties for common ad formats, or create custom values
 /// for other ad format types.
-SWIFT_CLASS_NAMED("AdFormat")
-@interface RCAdFormat : NSObject
-/// The raw string value of the ad format
-@property (nonatomic, readonly, copy) NSString * _Nonnull rawValue;
-/// Creates an ad format with the specified raw value
-- (nonnull instancetype)initWithRawValue:(NSString * _Nonnull)rawValue OBJC_DESIGNATED_INITIALIZER;
-/// Ad format type not in our predefined list
-SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdFormat * _Nonnull other;)
-+ (RCAdFormat * _Nonnull)other SWIFT_WARN_UNUSED_RESULT;
-/// Standard banner ad format
-SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdFormat * _Nonnull banner;)
-+ (RCAdFormat * _Nonnull)banner SWIFT_WARN_UNUSED_RESULT;
-/// Full-screen interstitial ad format
-SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdFormat * _Nonnull interstitial;)
-+ (RCAdFormat * _Nonnull)interstitial SWIFT_WARN_UNUSED_RESULT;
-/// Rewarded video ad format
-SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdFormat * _Nonnull rewarded;)
-+ (RCAdFormat * _Nonnull)rewarded SWIFT_WARN_UNUSED_RESULT;
-/// Rewarded interstitial ad format
-SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdFormat * _Nonnull rewardedInterstitial;)
-+ (RCAdFormat * _Nonnull)rewardedInterstitial SWIFT_WARN_UNUSED_RESULT;
-/// Native ad format that matches app design
-SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdFormat * _Nonnull native;)
-+ (RCAdFormat * _Nonnull)native SWIFT_WARN_UNUSED_RESULT;
-/// App open ad format displayed at app launch
-SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdFormat * _Nonnull appOpen;)
-+ (RCAdFormat * _Nonnull)appOpen SWIFT_WARN_UNUSED_RESULT;
+SWIFT_CLASS("_TtC10RevenueCat8AdFormat")
+@interface AdFormat : NSObject
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -378,16 +334,8 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdFormat *
 @end
 
 /// Data for ad loaded events.
-SWIFT_CLASS_NAMED("AdLoaded")
-@interface RCAdLoaded : NSObject
-@property (nonatomic, readonly, copy) NSString * _Nullable networkName;
-@property (nonatomic, readonly, strong) RCMediatorName * _Nonnull mediatorName;
-@property (nonatomic, readonly, strong) RCAdFormat * _Nonnull adFormat;
-@property (nonatomic, readonly, copy) NSString * _Nullable placement;
-@property (nonatomic, readonly, copy) NSString * _Nonnull adUnitId;
-@property (nonatomic, readonly, copy) NSString * _Nonnull impressionId;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nullable)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat placement:(NSString * _Nullable)placement adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId OBJC_DESIGNATED_INITIALIZER;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nullable)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId;
+SWIFT_CLASS("_TtC10RevenueCat8AdLoaded")
+@interface AdLoaded : NSObject
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -395,65 +343,44 @@ SWIFT_CLASS_NAMED("AdLoaded")
 @end
 
 /// Data for ad opened/clicked events.
-SWIFT_CLASS_NAMED("AdOpened")
-@interface RCAdOpened : NSObject
-@property (nonatomic, readonly, copy) NSString * _Nullable networkName;
-@property (nonatomic, readonly, strong) RCMediatorName * _Nonnull mediatorName;
-@property (nonatomic, readonly, strong) RCAdFormat * _Nonnull adFormat;
-@property (nonatomic, readonly, copy) NSString * _Nullable placement;
-@property (nonatomic, readonly, copy) NSString * _Nonnull adUnitId;
-@property (nonatomic, readonly, copy) NSString * _Nonnull impressionId;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nullable)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat placement:(NSString * _Nullable)placement adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId OBJC_DESIGNATED_INITIALIZER;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nullable)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId;
+SWIFT_CLASS("_TtC10RevenueCat8AdOpened")
+@interface AdOpened : NSObject
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
 
-@class RCAdRevenuePrecision;
 /// Data for ad revenue events.
-SWIFT_CLASS_NAMED("AdRevenue")
-@interface RCAdRevenue : NSObject
-@property (nonatomic, readonly, copy) NSString * _Nullable networkName;
-@property (nonatomic, readonly, strong) RCMediatorName * _Nonnull mediatorName;
-@property (nonatomic, readonly, strong) RCAdFormat * _Nonnull adFormat;
-@property (nonatomic, readonly, copy) NSString * _Nullable placement;
-@property (nonatomic, readonly, copy) NSString * _Nonnull adUnitId;
-@property (nonatomic, readonly, copy) NSString * _Nonnull impressionId;
-@property (nonatomic, readonly) NSInteger revenueMicros;
-@property (nonatomic, readonly, copy) NSString * _Nonnull currency;
-@property (nonatomic, readonly, strong) RCAdRevenuePrecision * _Nonnull precision;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nullable)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat placement:(NSString * _Nullable)placement adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId revenueMicros:(NSInteger)revenueMicros currency:(NSString * _Nonnull)currency precision:(RCAdRevenuePrecision * _Nonnull)precision OBJC_DESIGNATED_INITIALIZER;
-- (nonnull instancetype)initWithNetworkName:(NSString * _Nullable)networkName mediatorName:(RCMediatorName * _Nonnull)mediatorName adFormat:(RCAdFormat * _Nonnull)adFormat adUnitId:(NSString * _Nonnull)adUnitId impressionId:(NSString * _Nonnull)impressionId revenueMicros:(NSInteger)revenueMicros currency:(NSString * _Nonnull)currency precision:(RCAdRevenuePrecision * _Nonnull)precision;
+SWIFT_CLASS("_TtC10RevenueCat9AdRevenue")
+@interface AdRevenue : NSObject
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
 
-@interface RCAdRevenue (SWIFT_EXTENSION(RevenueCat))
+@interface AdRevenue (SWIFT_EXTENSION(RevenueCat))
 @end
 
-/// Type representing the level of accuracy for reported revenue values.
-SWIFT_CLASS_NAMED("Precision")
-@interface RCAdRevenuePrecision : NSObject
-/// The raw string value of the precision type
-@property (nonatomic, readonly, copy) NSString * _Nonnull rawValue;
-/// Creates a precision value with the specified raw value
-- (nonnull instancetype)initWithRawValue:(NSString * _Nonnull)rawValue OBJC_DESIGNATED_INITIALIZER;
-/// Revenue value is exact and confirmed
-SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdRevenuePrecision * _Nonnull exact;)
-+ (RCAdRevenuePrecision * _Nonnull)exact SWIFT_WARN_UNUSED_RESULT;
-/// Revenue value is defined by the publisher
-SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdRevenuePrecision * _Nonnull publisherDefined;)
-+ (RCAdRevenuePrecision * _Nonnull)publisherDefined SWIFT_WARN_UNUSED_RESULT;
-/// Revenue value is an estimate
-SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdRevenuePrecision * _Nonnull estimated;)
-+ (RCAdRevenuePrecision * _Nonnull)estimated SWIFT_WARN_UNUSED_RESULT;
-/// Revenue value accuracy cannot be determined
-SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdRevenuePrecision * _Nonnull unknown;)
-+ (RCAdRevenuePrecision * _Nonnull)unknown SWIFT_WARN_UNUSED_RESULT;
+/// Data for rewarded ad prompt accepted events.
+/// Report this event when the user accepts a rewarded ad prompt,
+/// for example by tapping a “Watch an ad to earn coins” button. This event is rewarded-only and manual-only:
+/// adapters never emit it, because only the app knows when the prompt is accepted.
+SWIFT_CLASS("_TtC10RevenueCat22AdRewardPromptAccepted")
+@interface AdRewardPromptAccepted : NSObject
+- (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
+@property (nonatomic, readonly) NSUInteger hash;
+- (nonnull instancetype)init SWIFT_UNAVAILABLE;
++ (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
+@end
+
+/// Data for rewarded ad prompt shown events.
+/// Report this event when the app prompts the user to watch a rewarded ad,
+/// for example a “Watch an ad to earn coins” button. This event is rewarded-only and manual-only:
+/// adapters never emit it, because only the app knows when the prompt is presented.
+SWIFT_CLASS("_TtC10RevenueCat19AdRewardPromptShown")
+@interface AdRewardPromptShown : NSObject
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -492,90 +419,8 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCAdRevenueP
 /// ))
 ///
 /// \endcode
-SWIFT_CLASS_NAMED("AdTracker") SWIFT_AVAILABILITY(watchos,introduced=8.0) SWIFT_AVAILABILITY(macos,introduced=12.0) SWIFT_AVAILABILITY(tvos,introduced=15.0) SWIFT_AVAILABILITY(ios,introduced=15.0)
-@interface RCAdTracker : NSObject
-/// Tracks when an ad fails to load.
-/// Call this method from your ad SDK’s failure callback to report load failures to RevenueCat.
-/// Include the optional <code>mediatorErrorCode</code> if provided by the mediation SDK to aid debugging.
-/// <h2>Example:</h2>
-/// \code
-/// Purchases.shared.adTracker.trackAdFailedToLoad(.init(
-///     mediatorName: .appLovin,
-///     adFormat: .banner,
-///     placement: "home_screen",
-///     adUnitId: "ca-app-pub-123",
-///     mediatorErrorCode: 3
-/// ))
-///
-/// \endcode\param data The failed to load ad event data, including optional <code>mediatorErrorCode</code>
-///
-- (void)trackAdFailedToLoad:(RCAdFailedToLoad * _Nonnull)data;
-/// Tracks when an ad successfully loads.
-/// Call this method from your ad SDK’s load callback to report successful ad loads to RevenueCat.
-/// Tracking load events helps correlate mediation performance with revenue and impressions.
-/// <h2>Example:</h2>
-/// \code
-/// Purchases.shared.adTracker.trackAdLoaded(.init(
-///     networkName: "AdMob",
-///     mediatorName: .appLovin,
-///     placement: "home_screen",
-///     adUnitId: "ca-app-pub-123",
-///     impressionId: "impression-456"
-/// ))
-///
-/// \endcode\param data The loaded ad event data
-///
-- (void)trackAdLoaded:(RCAdLoaded * _Nonnull)data;
-/// Tracks when an ad impression is displayed.
-/// Call this method from your ad SDK’s impression callback to report ad displays to RevenueCat.
-/// This enables RevenueCat to track ad impressions alongside your subscription revenue.
-/// <h2>Example:</h2>
-/// \code
-/// Purchases.shared.adTracker.trackAdDisplayed(.init(
-///     networkName: "AdMob",
-///     mediatorName: .appLovin,
-///     placement: "home_screen",
-///     adUnitId: "ca-app-pub-123",
-///     impressionId: "impression-456"
-/// ))
-///
-/// \endcode\param data The displayed ad event data
-///
-- (void)trackAdDisplayed:(RCAdDisplayed * _Nonnull)data;
-/// Tracks when an ad is opened or clicked.
-/// Call this method from your ad SDK’s click callback to report ad interactions to RevenueCat.
-/// <h2>Example:</h2>
-/// \code
-/// Purchases.shared.adTracker.trackAdOpened(.init(
-///     networkName: "AdMob",
-///     mediatorName: .appLovin,
-///     placement: "home_screen",
-///     adUnitId: "ca-app-pub-123",
-///     impressionId: "impression-456"
-/// ))
-///
-/// \endcode\param data The opened/clicked ad event data
-///
-- (void)trackAdOpened:(RCAdOpened * _Nonnull)data;
-/// Tracks ad revenue from an impression.
-/// Call this method from your ad SDK’s revenue callback to report ad revenue to RevenueCat.
-/// This enables comprehensive LTV tracking across subscriptions and ad monetization.
-/// <h2>Example:</h2>
-/// \code
-/// Purchases.shared.adTracker.trackAdRevenue(.init(
-///     networkName: "AdMob",
-///     mediatorName: .appLovin,
-///     placement: "home_screen",
-///     adUnitId: "ca-app-pub-123",
-///     impressionId: "impression-456",
-///     revenueMicros: 1500000,  // $1.50
-///     currency: "USD",
-///     precision: .exact
-/// ))
-///
-/// \endcode\param data The ad revenue data including amount, currency, and precision
-///
-- (void)trackAdRevenue:(RCAdRevenue * _Nonnull)data;
+SWIFT_CLASS("_TtC10RevenueCat9AdTracker") SWIFT_AVAILABILITY(watchos,introduced=8.0) SWIFT_AVAILABILITY(macos,introduced=12.0) SWIFT_AVAILABILITY(tvos,introduced=15.0) SWIFT_AVAILABILITY(ios,introduced=15.0)
+@interface AdTracker : NSObject
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
@@ -597,10 +442,17 @@ SWIFT_AVAILABILITY(watchos,unavailable) SWIFT_AVAILABILITY(tvos,unavailable) SWI
 - (void)enableAdServicesAttributionTokenCollection;
 @end
 
+@class RCCustomerAttribute;
+@class NSString;
 @class NSData;
 @class RCOfferings;
 @class NSError;
 @interface RCAttribution (SWIFT_EXTENSION(RevenueCat))
+/// Retrieve all subscriber attributes for the current user.
+/// Typically, this only returns attributes that have been modified locally on the device.
+/// If the current has been authenticated using IAM, then this returns all readable attributes
+/// specified on the user’s customer profile.
+@property (nonatomic, readonly, copy) NSArray<RCCustomerAttribute *> * _Nonnull attributesForCurrentUser;
 /// Automatically collect subscriber attributes associated with the device identifiers
 /// <ul>
 ///   <li>
@@ -1016,6 +868,8 @@ SWIFT_CLASS_NAMED("Authentication")
 /// The delegate is not retained, so your app must retain a reference
 /// to the delegate to prevent it from being unintentionally deallocated.
 @property (nonatomic, weak) id <RCPurchasesAuthenticationDelegate> _Nullable delegate;
+/// The access token for the currently authenticated user, if one exists.
+@property (nonatomic, readonly, copy) NSString * _Nullable currentAccessToken;
 /// Provide an app-specific alias for the current user
 /// \param appUserID The user’s alias
 ///
@@ -1055,9 +909,17 @@ SWIFT_PROTOCOL_NAMED("AuthenticationDelegate")
 /// the tokens, and the overall call to <code>customerInfo()</code> reports that the overall operation failed.
 /// This method is <em>not</em> invoked when <code>Authentication.logIn(using:)</code> or
 /// <code>Authentication.logOut()</code> fail, as both of those methods report any failures directly.
+/// When this method is invoked, all access tokens previously sent to <code>authenticatorDidUpdateAccessToken(_:)</code>
+/// should be assumed to be invalid.
 /// \param error The <code>PublicError</code> indicating why authentication has failed
 ///
 - (void)authenticatorDidEncounterError:(NSError * _Nonnull)error;
+@optional
+/// The SDK has updated the current user’s access token
+/// This token can be used to communicate directly with the RevenueCat backend on behalf of the current user.
+/// \param newAccessToken The new access token, or <code>nil</code> if authentication failed.
+///
+- (void)authenticatorDidUpdateAccessToken:(NSString * _Nullable)newAccessToken;
 @end
 
 /// Defines different billing plan types that may be purchased on a product.
@@ -1215,11 +1077,11 @@ SWIFT_CLASS_NAMED("Builder")
 @end
 
 @interface RCConfigurationBuilder (SWIFT_EXTENSION(RevenueCat))
-- (RCConfigurationBuilder * _Nonnull)withUsesStoreKit2IfAvailable:(BOOL)usesStoreKit2IfAvailable SWIFT_WARN_UNUSED_RESULT SWIFT_DEPRECATED_MSG("Use .with(storeKitVersion:) to enable StoreKit 2");
+- (RCConfigurationBuilder * _Nonnull)withObserverMode:(BOOL)observerMode SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(macos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.");
 @end
 
 @interface RCConfigurationBuilder (SWIFT_EXTENSION(RevenueCat))
-- (RCConfigurationBuilder * _Nonnull)withObserverMode:(BOOL)observerMode SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(macos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.");
+- (RCConfigurationBuilder * _Nonnull)withUsesStoreKit2IfAvailable:(BOOL)usesStoreKit2IfAvailable SWIFT_WARN_UNUSED_RESULT SWIFT_DEPRECATED_MSG("Use .with(storeKitVersion:) to enable StoreKit 2");
 @end
 
 /// Specifies the behavior for a caching API.
@@ -1472,6 +1334,24 @@ SWIFT_CLASS_NAMED("CustomerInfo")
 @end
 
 @interface RCCustomerInfo (SWIFT_EXTENSION(RevenueCat))
+@end
+
+/// A subscriber attribute value
+/// For more information, refer <a href="https://docs.revenuecat.com/docs/subscriber-attributes">to our guide</a>.
+SWIFT_CLASS_NAMED("Attribute")
+@interface RCCustomerAttribute : NSObject
+/// The key for this attribute.
+/// Attribute keys that begin with <code>$</code> indicate reserved names used by RevenueCat
+@property (nonatomic, readonly, copy) NSString * _Nonnull key;
+/// The value for this attribute.
+@property (nonatomic, readonly, copy) NSString * _Nonnull value;
+/// The last time this value was modified
+@property (nonatomic, readonly, copy) NSDate * _Nonnull lastUpdatedDate;
+- (nonnull instancetype)init SWIFT_UNAVAILABLE;
++ (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
+@end
+
+@interface RCCustomerInfo (SWIFT_EXTENSION(RevenueCat))
 @property (nonatomic, readonly, copy) NSDictionary<NSString *, id> * _Nonnull rawData;
 @end
 
@@ -1515,6 +1395,13 @@ SWIFT_CLASS_NAMED("DangerousSettings")
 ///   </li>
 /// </ul>
 @property (nonatomic, readonly) BOOL customEntitlementComputation;
+/// Forces the SDK to allow using a Test Store API key in Release builds.
+/// By default, configuring the SDK with a Test Store API key in a Release build crashes the app to prevent
+/// uploading it to the App Store.
+/// important:
+/// Avoid enabling this except when necessary (e.g. internal builds compiled in Release that are
+/// never uploaded to the App Store), to make sure no builds using the Test Store reach the stores.
+@property (nonatomic, readonly) BOOL forceAllowTestStoreInReleaseBuilds;
 - (nonnull instancetype)init;
 /// Only use a Dangerous Setting if suggested by RevenueCat support team.
 /// \param autoSyncPurchases Disable or enable subscribing to the StoreKit queue.
@@ -1522,6 +1409,16 @@ SWIFT_CLASS_NAMED("DangerousSettings")
 /// automatically.
 ///
 - (nonnull instancetype)initWithAutoSyncPurchases:(BOOL)autoSyncPurchases;
+/// Only use a Dangerous Setting if suggested by RevenueCat support team.
+/// \param autoSyncPurchases Disable or enable subscribing to the StoreKit queue.
+/// If this is disabled, RevenueCat won’t observe the StoreKit queue, and it will not sync any purchase
+/// automatically.
+///
+/// \param forceAllowTestStoreInReleaseBuilds Forces the SDK to allow using a Test Store API key in
+/// Release builds. Avoid enabling this except when necessary, to make sure no builds using the Test Store
+/// reach the stores.
+///
+- (nonnull instancetype)initWithAutoSyncPurchases:(BOOL)autoSyncPurchases forceAllowTestStoreInReleaseBuilds:(BOOL)forceAllowTestStoreInReleaseBuilds;
 /// note:
 /// this is <code>internal</code> only so the only <code>public</code> way to enable <code>customEntitlementComputation</code>
 /// is through <code>Purchases/configureInCustomEntitlementsComputationMode(apiKey:appUserID:)</code>.
@@ -1769,6 +1666,10 @@ SWIFT_CLASS("_TtC10RevenueCat24GetCustomerInfoOperation")
 @interface GetCustomerInfoOperation : CacheableNetworkOperation
 @end
 
+SWIFT_CLASS("_TtC10RevenueCat32GetHostedCheckoutStatusOperation")
+@interface GetHostedCheckoutStatusOperation : CacheableNetworkOperation
+@end
+
 SWIFT_CLASS("_TtC10RevenueCat28GetIntroEligibilityOperation")
 @interface GetIntroEligibilityOperation : NetworkOperation
 @end
@@ -1820,6 +1721,10 @@ SWIFT_CLASS_NAMED("Identity")
 /// returns:
 /// An <code>Identity</code> that can be used to log in to the <code>Purchases</code> type
 + (RCIdentity * _Nonnull)identityWithSignInWithAppleToken:(NSData * _Nonnull)identityToken SWIFT_WARN_UNUSED_RESULT;
+/// An OIDC identity
++ (RCIdentity * _Nonnull)identityWithOIDCToken:(NSData * _Nonnull)identityToken SWIFT_WARN_UNUSED_RESULT;
+/// A Firebase identity
++ (RCIdentity * _Nonnull)identityWithFirebaseToken:(NSData * _Nonnull)identityToken SWIFT_WARN_UNUSED_RESULT;
 /// Retrieve the source service of this identity
 @property (nonatomic, readonly, strong) RCIdentitySource * _Nonnull identitySource;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -1961,18 +1866,8 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCLogLevel, "LogLevel", open) {
 /// Type representing an ad mediation network name.
 /// Use the predefined static properties for common mediators, or create custom values
 /// for other mediation networks.
-SWIFT_CLASS_NAMED("MediatorName")
-@interface RCMediatorName : NSObject
-/// The raw string value of the mediator name
-@property (nonatomic, readonly, copy) NSString * _Nonnull rawValue;
-/// Creates a mediator name with the specified raw value
-- (nonnull instancetype)initWithRawValue:(NSString * _Nonnull)rawValue OBJC_DESIGNATED_INITIALIZER;
-/// Google AdMob mediation network
-SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCMediatorName * _Nonnull adMob;)
-+ (RCMediatorName * _Nonnull)adMob SWIFT_WARN_UNUSED_RESULT;
-/// AppLovin MAX mediation network
-SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCMediatorName * _Nonnull appLovin;)
-+ (RCMediatorName * _Nonnull)appLovin SWIFT_WARN_UNUSED_RESULT;
+SWIFT_CLASS("_TtC10RevenueCat12MediatorName")
+@interface MediatorName : NSObject
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
@@ -2268,9 +2163,24 @@ SWIFT_CLASS("_TtC10RevenueCat28PostAttributionDataOperation")
 @interface PostAttributionDataOperation : NetworkOperation
 @end
 
+/// Registers a StoreKit external purchase token with RevenueCat, for a purchase made outside of
+/// Apple’s in-app purchase system.
+/// The response carries the identifier that the checkout is then started with.
+SWIFT_CLASS("_TtC10RevenueCat34PostExternalPurchaseTokenOperation")
+@interface PostExternalPurchaseTokenOperation : CacheableNetworkOperation
+@end
+
 /// A <code>NetworkOperation</code> for posting feature events to the feature events endpoint.
 SWIFT_CLASS("_TtC10RevenueCat26PostFeatureEventsOperation")
 @interface PostFeatureEventsOperation : NetworkOperation
+@end
+
+/// Creates a checkout session for in-app web checkout, where a payment provider’s page is presented
+/// inside the app instead of the purchase being handed off to the browser.
+/// The response carries the page to present and the success URL that marks the end of the checkout, or says the
+/// session the customer was given before already ended in a purchase.
+SWIFT_CLASS("_TtC10RevenueCat27PostHostedCheckoutOperation")
+@interface PostHostedCheckoutOperation : CacheableNetworkOperation
 @end
 
 SWIFT_CLASS("_TtC10RevenueCat47PostIsPurchaseAllowedByRestoreBehaviorOperation")
@@ -3278,6 +3188,18 @@ SWIFT_PROTOCOL_NAMED("PurchasesType")
 /// object containing the subscriber’s virtual currencies.
 ///
 - (void)getVirtualCurrenciesWithCompletion:(void (^ _Nonnull)(RCVirtualCurrencies * _Nullable, NSError * _Nullable))completion;
+/// Spends virtual currencies
+/// warning:
+/// Using this method requires enabling IAM.
+/// \param amounts A dictionary key by <code>VirtualCurrency</code> codes with values corresponding
+/// to the amount of that currency to spend. Values must be positive non-zero numbers. Negative values will
+/// be interpreted as positive. Zero values are ignored.
+///
+/// \param reference An app-specified string to refer to this transaction
+///
+/// \param completion The callback that is invoked with the request is complete
+///
+- (void)spendVirtualCurrenciesWithAmounts:(NSDictionary<NSString *, NSNumber *> * _Nonnull)amounts reference:(NSString * _Nullable)reference completion:(void (^ _Nonnull)(RCVirtualCurrencies * _Nullable, NSError * _Nullable))completion;
 /// The currently cached <code>VirtualCurrencies</code> if one is available.
 /// This is synchronous, and therefore useful for contexts where an app needs a <code>VirtualCurrencies</code>
 /// right away without waiting for a callback, like a SwiftUI view.
@@ -3451,8 +3373,6 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, copy) NSString * _No
 @property (nonatomic) enum RCPurchasesAreCompletedBy purchasesAreCompletedBy;
 @property (nonatomic, readonly, copy) NSString * _Nullable storeFrontCountryCode;
 @property (nonatomic, readonly, copy) NSLocale * _Nullable storeFrontLocale SWIFT_AVAILABILITY(watchos,introduced=9.0) SWIFT_AVAILABILITY(tvos,introduced=16.0) SWIFT_AVAILABILITY(macos,introduced=13.0) SWIFT_AVAILABILITY(ios,introduced=16.0);
-/// The ad tracker for reporting ad impressions, clicks, and revenue to RevenueCat.
-@property (nonatomic, readonly, strong) RCAdTracker * _Nonnull adTracker SWIFT_AVAILABILITY(watchos,introduced=8.0) SWIFT_AVAILABILITY(macos,introduced=12.0) SWIFT_AVAILABILITY(tvos,introduced=15.0) SWIFT_AVAILABILITY(ios,introduced=15.0);
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
@@ -3549,12 +3469,6 @@ SWIFT_AVAILABILITY(visionos,introduced=2.0) SWIFT_AVAILABILITY(watchos,introduce
 @end
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
-- (void)getVirtualCurrenciesWithCompletion:(void (^ _Nonnull)(RCVirtualCurrencies * _Nullable, NSError * _Nullable))completion;
-@property (nonatomic, readonly, strong) RCVirtualCurrencies * _Nullable cachedVirtualCurrencies;
-- (void)invalidateVirtualCurrenciesCache;
-@end
-
-@interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
 /// Enable debug logging. Useful for debugging issues with the lovely team @RevenueCat.
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DEPRECATED_MSG("use Purchases.logLevel instead");)
 + (BOOL)debugLogsEnabled SWIFT_WARN_UNUSED_RESULT;
@@ -3580,6 +3494,13 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// \param networkUserId User Id that should be sent to the network. Default is the current App User Id.
 ///
 + (void)addAttributionData:(NSDictionary<NSString *, id> * _Nonnull)data fromNetwork:(enum RCAttributionNetwork)network forNetworkUserId:(NSString * _Nullable)networkUserId SWIFT_DEPRECATED_MSG("Use the set<NetworkId> functions instead");
+@end
+
+@interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
+- (void)getVirtualCurrenciesWithCompletion:(void (^ _Nonnull)(RCVirtualCurrencies * _Nullable, NSError * _Nullable))completion;
+@property (nonatomic, readonly, strong) RCVirtualCurrencies * _Nullable cachedVirtualCurrencies;
+- (void)invalidateVirtualCurrenciesCache;
+- (void)spendVirtualCurrenciesWithAmounts:(NSDictionary<NSString *, NSNumber *> * _Nonnull)amounts reference:(NSString * _Nullable)reference completion:(void (^ _Nonnull)(RCVirtualCurrencies * _Nullable, NSError * _Nullable))completion;
 @end
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
@@ -4140,6 +4061,10 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCRevocation
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
 
+SWIFT_CLASS("_TtC10RevenueCat31SpendVirtualCurrenciesOperation")
+@interface SpendVirtualCurrenciesOperation : NetworkOperation
+@end
+
 /// Enum of supported stores
 typedef SWIFT_ENUM_NAMED(NSInteger, RCStore, "Store", open) {
 /// For entitlements granted via Apple App Store.
@@ -4270,7 +4195,6 @@ SWIFT_CLASS_NAMED("StoreProduct")
 @property (nonatomic, readonly, strong) RCStoreProductDiscount * _Nullable introductoryDiscount;
 @property (nonatomic, readonly, copy) NSArray<RCStoreProductDiscount *> * _Nonnull discounts;
 @property (nonatomic, readonly, strong) RCInstallmentsInfo * _Nullable installmentsInfo SWIFT_AVAILABILITY(visionos,introduced=26.4) SWIFT_AVAILABILITY(macos,introduced=26.4) SWIFT_AVAILABILITY(watchos,introduced=26.4) SWIFT_AVAILABILITY(tvos,introduced=26.4) SWIFT_AVAILABILITY(ios,introduced=26.4);
-@property (nonatomic, readonly, copy) NSString * _Nonnull id;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
@@ -4671,12 +4595,12 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCSubscriptionPeriodUnit, "Unit", open) {
 };
 
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
-/// The number of units per subscription period
-@property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
+@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
 @end
 
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
-@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
+/// The number of units per subscription period
+@property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
 @end
 
 SWIFT_CLASS("_TtC10RevenueCat19TokenLogInOperation")
