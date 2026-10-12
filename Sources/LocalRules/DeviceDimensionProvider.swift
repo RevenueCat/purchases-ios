@@ -27,7 +27,7 @@ struct DeviceDimensionProvider: DimensionProvider {
 
     init(
         appVersion: String = SystemInfo.appVersion,
-        localeProvider: @escaping @Sendable () -> String? = { Locale.preferredLanguages.first },
+        localeProvider: @escaping @Sendable () -> String?,
         platform: String = SystemInfo.platformHeaderConstant,
         platformVersion: OperatingSystemVersion = ProcessInfo.processInfo.operatingSystemVersion,
         sdkVersion: String = SystemInfo.frameworkVersion
@@ -37,6 +37,10 @@ struct DeviceDimensionProvider: DimensionProvider {
         self.platform = platform
         self.platformVersion = platformVersion
         self.sdkVersion = sdkVersion
+    }
+
+    init(systemInfo: SystemInfo) {
+        self.init(localeProvider: { systemInfo.preferredLocales.first })
     }
 
     func dimensions(at _: Date) async throws -> [String: DimensionValue] {
