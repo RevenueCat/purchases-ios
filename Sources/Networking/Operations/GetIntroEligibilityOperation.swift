@@ -77,7 +77,7 @@ private extension GetIntroEligibilityOperation {
 
         let request = HTTPRequest(method: .post(Body(productIdentifiers: self.productIdentifiers,
                                                      fetchToken: self.receiptData.asFetchToken)),
-                                  path: .getIntroEligibility(appUserID: appUserID))
+                                  requestPath: HTTPRequest.Path2.getIntroEligibility(appUserID: appUserID))
 
         httpClient.perform(
             request

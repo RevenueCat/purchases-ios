@@ -187,6 +187,16 @@ extension HTTPRequest.Path2 {
                           fallbackRelativePath: "/v1/offerings")
     }
 
+    static func getIntroEligibility(appUserID: String) -> Self {
+        HTTPRequest.Path2(name: "get_intro_eligibility",
+                          authenticated: true,
+                          etagBehavior: .send,
+                          supportsSignatureVerification: false,
+                          needsNonceForSigning: false,
+                          pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/intro_eligibility",
+                          iamPathComponent: "customer/intro_eligibility")
+    }
+
     static func remoteConfigFallback(domain: String) -> Self {
         HTTPRequest.Path2(name: "remote_config_fallback",
                           serverHostURL: remoteConfigFallbackHost,

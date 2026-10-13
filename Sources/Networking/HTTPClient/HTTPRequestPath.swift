@@ -175,7 +175,6 @@ extension HTTPRequest {
 
     enum Path: Hashable {
 
-        case getIntroEligibility(appUserID: String)
         case logIn
         case postAttributionData(appUserID: String)
         case postOfferForSigning
@@ -254,8 +253,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var authenticated: Bool {
         switch self {
-        case .getIntroEligibility,
-                .logIn,
+        case .logIn,
                 .postAttributionData,
                 .postOfferForSigning,
                 .postReceiptData,
@@ -285,8 +283,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var shouldSendEtag: Bool {
         switch self {
-        case .getIntroEligibility,
-                .logIn,
+        case .logIn,
                 .postAttributionData,
                 .postOfferForSigning,
                 .postReceiptData,
@@ -328,8 +325,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .remoteConfig,
                 .rewardVerificationStatus:
             return true
-        case .getIntroEligibility,
-                .postSubscriberAttributes,
+        case .postSubscriberAttributes,
                 .postAttributionData,
                 .postAdServicesToken,
                 .postOfferForSigning,
@@ -359,8 +355,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .tokenRefresh,
                 .tokenLogOut:
             return true
-        case .getIntroEligibility,
-                .postSubscriberAttributes,
+        case .postSubscriberAttributes,
                 .postAttributionData,
                 .postAdServicesToken,
                 .postOfferForSigning,
@@ -396,9 +391,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var pathComponent: String {
         switch self {
-        case let .getIntroEligibility(appUserID):
-            return "subscribers/\(Self.escape(appUserID))/intro_eligibility"
-
         case let .appHealthReport(appUserID):
             return "subscribers/\(Self.escape(appUserID))/health_report"
 
@@ -478,8 +470,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         // that the corresponding server paths have not yet been migrated to
         // support access token authorization
         switch self {
-        case .getIntroEligibility:
-            return "customer/intro_eligibility"
         case .logIn:
             assertionFailure("The .login endpoint is not allowed when IAM is enabled")
             Logger.error("The .login endpoint is not allowed when IAM is enabled")
@@ -531,9 +521,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var name: String {
         switch self {
-        case .getIntroEligibility:
-            return "get_intro_eligibility"
-
         case .logIn:
             return "log_in"
 
