@@ -97,6 +97,63 @@ final class ButtonComponentViewTests: TestCase {
         try await self.assertNativeCloseRunsExistingDismissalAndAnalytics(fullScreen: false)
     }
 
+    func testNativeCloseIsDisabledDuringPurchaseAndRestore() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty,
+                      "Generate with TUIST_UI_TESTS_HOST_APP=true to test native navigation controls.")
+        let handler = PurchaseHandler.default()
+        let viewModel = try Self.makeViewModel(component: .init(
+            name: "close", action: .navigateBack,
+            stack: Self.makeButtonStack(label: "Close"), useNativeIfPossible: true
+        ))
+        var dismissals = 0
+        var interactions = 0
+        let owner = NativePaywallUIKitOwner()
+        let view = Self.configuredView(viewModel: viewModel, purchaseHandler: handler,
+                                       onDismiss: { dismissals += 1 })
+            .environment(\.componentInteractionLogger, ComponentInteractionLogger { _ in
+                interactions += 1
+                return true
+            })
+            .modifier(NativePaywallNavigationModifier(requested: true))
+            .environment(\.nativePaywallNavigationContext, .uiKit(owner))
+        let controller = UIHostingController(rootView: view)
+        let navigation = UINavigationController(rootViewController: controller)
+        owner.prepare(controller: controller)
+        let window = UIWindow(windowScene: try XCTUnwrap(
+            UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first
+        ))
+        window.rootViewController = navigation
+        window.makeKeyAndVisible()
+        defer {
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+        for action in [PurchaseHandler.ActionType.purchase, .restore] {
+            handler.actionTypeInProgress = action
+            let settled = expectation(description: "Native disabled state updated")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { settled.fulfill() }
+            await fulfillment(of: [settled], timeout: 2)
+            let item = try XCTUnwrap(controller.navigationItem.rightBarButtonItem)
+            XCTAssertFalse(item.isEnabled)
+            let target = try XCTUnwrap(item.target as? NSObject)
+            target.perform(try XCTUnwrap(item.action), with: item)
+            await Task.yield()
+            XCTAssertEqual(dismissals, 0)
+            XCTAssertEqual(interactions, 0)
+        }
+        handler.actionTypeInProgress = nil
+        let settled = expectation(description: "Native close re-enabled")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { settled.fulfill() }
+        await fulfillment(of: [settled], timeout: 2)
+        let item = try XCTUnwrap(controller.navigationItem.rightBarButtonItem)
+        XCTAssertTrue(item.isEnabled)
+        let target = try XCTUnwrap(item.target as? NSObject)
+        target.perform(try XCTUnwrap(item.action), with: item)
+        await Task.yield()
+        XCTAssertEqual(dismissals, 1)
+        XCTAssertEqual(interactions, 1)
+    }
+
     func testFullScreenNativeCloseDismissesAndTracksAnalytics() async throws {
         try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty,
                       "Generate with TUIST_UI_TESTS_HOST_APP=true to test actual modal presentations.")
@@ -318,10 +375,12 @@ final class ButtonComponentViewTests: TestCase {
 private extension ButtonComponentViewTests {
 
     static func configuredView(
-        viewModel: ButtonComponentViewModel, onDismiss: @escaping () -> Void
+        viewModel: ButtonComponentViewModel,
+        purchaseHandler: PurchaseHandler = .default(),
+        onDismiss: @escaping () -> Void
     ) -> some View {
         ButtonComponentView(viewModel: viewModel, onDismiss: onDismiss)
-            .environmentObject(PurchaseHandler.default())
+            .environmentObject(purchaseHandler)
             .environmentObject(PackageContext(package: nil, variableContext: .init(packages: [])))
             .environmentObject(
                 IntroOfferEligibilityContext(introEligibilityChecker: BaseSnapshotTest.eligibleChecker)

@@ -439,6 +439,8 @@ struct WorkflowPaywallView: View {
             .transitionClipMask(geometry: geometry)
         }
         .allowsHitTesting(!self.transitionState.isTransitioning && !self.presentationState.hasFailed)
+        .environment(\.nativePaywallInteractionEnabled,
+                     !self.transitionState.isTransitioning && !self.presentationState.hasFailed)
         .workflowTransitionAnimationCompletion(
             progress: self.transitionState.progress,
             activeTransitionID: self.activeTransitionID,
@@ -621,7 +623,11 @@ struct WorkflowPaywallView: View {
             workflowPromoOfferProductCodes: page.effectiveWorkflowPackageContext?.promoOfferCodesByPackageId,
             displayCloseButton: page.showCloseButton,
             onDismiss: { self.handleDismiss() },
-            closeWorkflowAction: self.onDismiss,
+            closeWorkflowAction: {
+                guard !self.transitionState.isTransitioning, !self.presentationState.hasFailed,
+                      !self.purchaseHandler.actionInProgress else { return }
+                self.onDismiss()
+            },
             failedToLoadFont: self.failedToLoadFont,
             colorScheme: self.colorScheme,
             promoOfferCache: self.promoOfferCacheOwner.cache,

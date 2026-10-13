@@ -98,6 +98,83 @@ final class NativePaywallCloseButtonTests: TestCase {
         )
     }
 
+    func testCoordinatorRejectsDisabledAndInactiveActions() async throws {
+        let coordinator = NativePaywallCloseCoordinator()
+        let id = UUID()
+        var count = 0
+        coordinator.register(id: id, label: "Close", isEnabled: false, action: { count += 1 })
+        try await coordinator.performAction(id: id)
+        XCTAssertEqual(count, 0)
+        XCTAssertEqual(coordinator.actions.count, 1, "Disabled controls remain registered and visible")
+        coordinator.register(id: id, label: "Close", isEnabled: true, action: { count += 1 })
+        try await coordinator.performAction(id: id)
+        XCTAssertEqual(count, 1)
+        coordinator.activatePage(UUID())
+        try await coordinator.performAction(id: id)
+        XCTAssertEqual(count, 1, "A queued tap must not invoke an outgoing page's action")
+    }
+
+    func testUIKitOwnerDisablesActionsAndRejectsQueuedTaps() async throws {
+        let controller = UIViewController()
+        let owner = NativePaywallUIKitOwner()
+        owner.prepare(controller: controller)
+        var backCount = 0
+        var closeCount = 0
+        let actions: [NativePaywallCloseCoordinator.CloseAction] = [
+            .init(id: UUID(), label: "Back", perform: { backCount += 1 }, role: .back),
+            .init(id: UUID(), label: "Close", perform: { closeCount += 1 })
+        ]
+        owner.install(actions)
+        for item in [controller.navigationItem.leftBarButtonItem, controller.navigationItem.rightBarButtonItem] {
+            let item = try XCTUnwrap(item)
+            let target = try XCTUnwrap(item.target as? NSObject)
+            target.perform(try XCTUnwrap(item.action), with: item)
+        }
+        owner.install(actions.map { action in
+            var action = action
+            action.isEnabled = false
+            return action
+        })
+        XCTAssertFalse(try XCTUnwrap(controller.navigationItem.leftBarButtonItem).isEnabled)
+        XCTAssertFalse(try XCTUnwrap(controller.navigationItem.rightBarButtonItem).isEnabled)
+        await self.waitForPresentation()
+        XCTAssertEqual(backCount, 0)
+        XCTAssertEqual(closeCount, 0)
+        owner.install(actions)
+        for item in [controller.navigationItem.leftBarButtonItem, controller.navigationItem.rightBarButtonItem] {
+            let item = try XCTUnwrap(item)
+            XCTAssertTrue(item.isEnabled)
+            let target = try XCTUnwrap(item.target as? NSObject)
+            target.perform(try XCTUnwrap(item.action), with: item)
+        }
+        await self.waitForPresentation()
+        XCTAssertEqual(backCount, 1)
+        XCTAssertEqual(closeCount, 1)
+    }
+
+    func testSourceDisabledAndWorkflowStatesReachUIKitControls() async throws {
+        for workflowState in [false, true] {
+            let state = NativeInteractionTestState()
+            let owner = NativePaywallUIKitOwner()
+            let host = UIHostingController(rootView:
+                NativeInteractionTestView(state: state, workflowState: workflowState)
+                    .modifier(NativePaywallCloseHost(uiKitOwner: owner))
+            )
+            let navigation = UINavigationController(rootViewController: host)
+            owner.prepare(controller: host)
+            let window = self.host(navigation)
+            defer { self.close(window) }
+            await self.waitForPresentation()
+            XCTAssertTrue(try XCTUnwrap(host.navigationItem.rightBarButtonItem).isEnabled)
+            state.blocked = true
+            await self.waitForPresentation()
+            XCTAssertFalse(try XCTUnwrap(host.navigationItem.rightBarButtonItem).isEnabled)
+            state.blocked = false
+            await self.waitForPresentation()
+            XCTAssertTrue(try XCTUnwrap(host.navigationItem.rightBarButtonItem).isEnabled)
+        }
+    }
+
     func testCoordinatorUpdatesBackToCloseWithoutDuplicateRegistration() {
         let coordinator = NativePaywallCloseCoordinator()
         let backID = UUID()
@@ -647,6 +724,25 @@ enum NativePaywallTestSupport {
 private final class NativeWorkflowHeaderTestState: ObservableObject {
     @Published var canNavigateBack = false
     @Published var showsTransitionCopy = false
+}
+
+@available(iOS 15.0, *)
+@MainActor
+private final class NativeInteractionTestState: ObservableObject {
+    @Published var blocked = false
+}
+
+@available(iOS 15.0, *)
+private struct NativeInteractionTestView: View {
+    @ObservedObject var state: NativeInteractionTestState
+    let workflowState: Bool
+
+    var body: some View {
+        NativePaywallCloseButton(enabled: true, accessibilityLabel: "Close", action: {},
+                                 content: { Text("Configured Close") })
+            .disabled(!self.workflowState && self.state.blocked)
+            .environment(\.nativePaywallInteractionEnabled, !self.workflowState || !self.state.blocked)
+    }
 }
 
 @available(iOS 15.0, *)

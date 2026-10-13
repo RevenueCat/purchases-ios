@@ -21,6 +21,7 @@ struct NativePaywallCloseButton<Content: View>: View {
     var role: NativePaywallCloseCoordinator.Role = .close
     var isWorkflowClose = false
     var componentIdentifier: ObjectIdentifier?
+    var interactionEnabled = true
     let action: () async throws -> Void
     @ViewBuilder var content: () -> Content
     var availabilityChanged: ((Bool) -> Void)?
@@ -35,6 +36,7 @@ struct NativePaywallCloseButton<Content: View>: View {
                 coordinator: coordinator, identifier: self.identifier,
                 accessibilityLabel: self.accessibilityLabel, role: self.role,
                 isWorkflowClose: self.isWorkflowClose, registrationEnabled: self.registrationEnabled,
+                interactionEnabled: self.interactionEnabled,
                 componentIdentifier: self.componentIdentifier, pageID: self.pageID, action: self.action,
                 availabilityChanged: self.availabilityChanged
             )
@@ -52,6 +54,9 @@ private struct RegisteredNativePaywallButton: View {
     let role: NativePaywallCloseCoordinator.Role
     let isWorkflowClose: Bool
     let registrationEnabled: Bool
+    let interactionEnabled: Bool
+    @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.nativePaywallInteractionEnabled) private var workflowInteractionEnabled
     let componentIdentifier: ObjectIdentifier?
     let pageID: UUID?
     let action: () async throws -> Void
@@ -59,6 +64,7 @@ private struct RegisteredNativePaywallButton: View {
 
     private struct Registration: Equatable {
         let enabled: Bool
+        let isEnabled: Bool
         let label: String
         let role: NativePaywallCloseCoordinator.Role
         let isWorkflowClose: Bool
@@ -66,7 +72,9 @@ private struct RegisteredNativePaywallButton: View {
     }
 
     private var registration: Registration {
-        .init(enabled: self.registrationEnabled, label: self.accessibilityLabel,
+        .init(enabled: self.registrationEnabled,
+              isEnabled: self.isEnabled && self.interactionEnabled && self.workflowInteractionEnabled,
+              label: self.accessibilityLabel,
               role: self.role, isWorkflowClose: self.isWorkflowClose, pageID: self.pageID)
     }
 
@@ -96,7 +104,8 @@ private struct RegisteredNativePaywallButton: View {
         }
         self.coordinator.register(
             id: self.identifier, label: registration.label, role: registration.role,
-            isWorkflowClose: registration.isWorkflowClose, pageID: registration.pageID, action: self.action
+            isWorkflowClose: registration.isWorkflowClose, pageID: registration.pageID,
+            isEnabled: registration.isEnabled, action: self.action
         )
     }
 }
@@ -123,8 +132,17 @@ private struct NativePaywallCloseEnabledKey: EnvironmentKey {
     static let defaultValue = true
 }
 
+private struct NativePaywallInteractionEnabledKey: EnvironmentKey {
+    static let defaultValue = true
+}
+
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension EnvironmentValues {
+    var nativePaywallInteractionEnabled: Bool {
+        get { self[NativePaywallInteractionEnabledKey.self] }
+        set { self[NativePaywallInteractionEnabledKey.self] = newValue }
+    }
+
     var nativePaywallPageID: UUID? {
         get { self[NativePaywallPageIDKey.self] }
         set { self[NativePaywallPageIDKey.self] = newValue }

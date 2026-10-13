@@ -215,6 +215,8 @@ private extension PaywallComponent {
                 || countdown.fallback?.requestsNativeClose == true
         case .text, .image, .icon, .timeline, .tabControl, .tabControlToggle, .video, .webView, .fallbackHeader:
             return false
+        @unknown default:
+            return false
         }
     }
 }

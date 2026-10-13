@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C15EC8B0BDF4A27E27009450 /* NativePaywallNavigationPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = A698DA468C6D78FF32099CA4 /* NativePaywallNavigationPreview.swift */; };
 		D22A00000000000000000001 /* AnyDecodable+DimensionValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22A00000000000000000002 /* AnyDecodable+DimensionValue.swift */; };
 		D23A00000000000000000001 /* Dictionary+DimensionValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23A00000000000000000002 /* Dictionary+DimensionValue.swift */; };
 		D17A00000000000000000001 /* StoreDimensionProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D17A00000000000000000002 /* StoreDimensionProvider.swift */; };
@@ -1774,6 +1775,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A698DA468C6D78FF32099CA4 /* NativePaywallNavigationPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativePaywallNavigationPreview.swift; sourceTree = "<group>"; };
 		D22A00000000000000000002 /* AnyDecodable+DimensionValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AnyDecodable+DimensionValue.swift"; sourceTree = "<group>"; };
 		D23A00000000000000000002 /* Dictionary+DimensionValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Dictionary+DimensionValue.swift"; sourceTree = "<group>"; };
 		D17A00000000000000000002 /* StoreDimensionProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreDimensionProvider.swift; sourceTree = "<group>"; };
@@ -4087,6 +4089,7 @@
 			isa = PBXGroup;
 			children = (
 				038211952DCA730C003C02C3 /* ButtonWithFooterPreview.swift */,
+				A698DA468C6D78FF32099CA4 /* NativePaywallNavigationPreview.swift */,
 				038211962DCA730C003C02C3 /* PurchaseButtonInPackagePreview.swift */,
 				03A98CF02D222F53009BCA61 /* FallbackComponentPreview.swift */,
 				2C2AEB0E2CA64E0E00A50F38 /* Template1Preview.swift */,
@@ -9365,6 +9368,7 @@
 				451441F0014BC13272B179CC /* View+ExitOfferPresentation.swift in Sources */,
 				038211972DCA730C003C02C3 /* PurchaseButtonInPackagePreview.swift in Sources */,
 				038211982DCA730C003C02C3 /* ButtonWithFooterPreview.swift in Sources */,
+				C15EC8B0BDF4A27E27009450 /* NativePaywallNavigationPreview.swift in Sources */,
 				887A60832C1D037000E1A461 /* VersionDetector.swift in Sources */,
 				030F93B32D5ED90B0085103F /* ProgressViewModifier.swift in Sources */,
 				88B1BAFC2C813A3C001B7EE5 /* ImageComponentView.swift in Sources */,

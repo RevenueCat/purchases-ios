@@ -34,6 +34,7 @@ final class NativePaywallCloseCoordinator: ObservableObject {
         var role: Role = .close
         var isWorkflowClose = false
         var pageID: UUID?
+        var isEnabled = true
     }
 
     @Published private(set) var actions: [CloseAction] = []
@@ -56,15 +57,18 @@ final class NativePaywallCloseCoordinator: ObservableObject {
         role: Role = .close,
         isWorkflowClose: Bool = false,
         pageID: UUID? = nil,
+        isEnabled: Bool = true,
         action: @escaping () async throws -> Void
     ) {
         let value = CloseAction(
-            id: id, label: label, perform: action, role: role, isWorkflowClose: isWorkflowClose, pageID: pageID
+            id: id, label: label, perform: action, role: role, isWorkflowClose: isWorkflowClose,
+            pageID: pageID, isEnabled: isEnabled
         )
         if let index = self.registrations.firstIndex(where: { $0.id == id }) {
             guard self.registrations[index].role != role || self.registrations[index].label != label
                 || self.registrations[index].isWorkflowClose != isWorkflowClose
-                || self.registrations[index].pageID != pageID else { return }
+                || self.registrations[index].pageID != pageID
+                || self.registrations[index].isEnabled != isEnabled else { return }
             self.registrations[index] = value
         } else {
             self.registrations.append(value)
@@ -82,6 +86,11 @@ final class NativePaywallCloseCoordinator: ObservableObject {
     func unregister(id: UUID) {
         self.registrations.removeAll { $0.id == id }
         self.updateActions()
+    }
+
+    func performAction(id: UUID) async throws {
+        guard let action = self.actions.first(where: { $0.id == id }), action.isEnabled else { return }
+        try await action.perform()
     }
 }
 
@@ -132,21 +141,26 @@ private struct NativePaywallToolbarClose: View {
     @ViewBuilder var body: some View {
         if self.primary {
             if let back = self.coordinator.action(for: .back) {
-                Button { Task { await performNativePaywallAction(back.perform) } } label: {
+                Button {
+                    Task { await performNativePaywallAction { try await self.coordinator.performAction(id: back.id) } }
+                } label: {
                     Image(systemName: "chevron.backward")
                 }
                 .accessibilityLabel(back.label)
                 .accessibilityIdentifier(NativePaywallUIKitOwner.backIdentifier)
+                .disabled(!back.isEnabled)
             }
         } else if let close = self.coordinator.action(for: .close) {
-            self.closeButton(close)
+            self.closeButton(close).disabled(!close.isEnabled)
         }
     }
 
     @ViewBuilder private func closeButton(_ action: NativePaywallCloseCoordinator.CloseAction) -> some View {
         #if compiler(>=6.2)
         if #available(iOS 26.0, *) {
-            Button(role: .close) { Task { await performNativePaywallAction(action.perform) } }
+            Button(role: .close) {
+                Task { await performNativePaywallAction { try await self.coordinator.performAction(id: action.id) } }
+            }
                 .accessibilityLabel(action.label)
                 .accessibilityIdentifier(NativePaywallUIKitOwner.closeIdentifier)
         } else {
@@ -158,7 +172,9 @@ private struct NativePaywallToolbarClose: View {
     }
 
     private func legacyCloseButton(_ action: NativePaywallCloseCoordinator.CloseAction) -> some View {
-        Button { Task { await performNativePaywallAction(action.perform) } } label: { Image(systemName: "xmark") }
+        Button {
+            Task { await performNativePaywallAction { try await self.coordinator.performAction(id: action.id) } }
+        } label: { Image(systemName: "xmark") }
             .accessibilityLabel(action.label)
             .accessibilityIdentifier(NativePaywallUIKitOwner.closeIdentifier)
     }
@@ -178,8 +194,8 @@ final class NativePaywallUIKitOwner: NSObject, ObservableObject {
         self.hasNavigation.map { $0 ? .uiKit(self) : .standalone }
     }
     private var items: [UIBarButtonItem] = []
-    private var backAction: (() async throws -> Void)?
-    private var closeAction: (() async throws -> Void)?
+    private var backAction: NativePaywallCloseCoordinator.CloseAction?
+    private var closeAction: NativePaywallCloseCoordinator.CloseAction?
 
     func prepare(controller: UIViewController) {
         self.controller = controller
@@ -199,22 +215,24 @@ final class NativePaywallUIKitOwner: NSObject, ObservableObject {
         let close = actions.first { $0.role == .close && $0.isWorkflowClose }
             ?? actions.first { $0.role == .close }
         if let back {
-            self.backAction = back.perform
+            self.backAction = back
             let item = UIBarButtonItem(
                 image: UIImage(systemName: "chevron.backward"), style: .plain,
                 target: self, action: #selector(self.backTapped)
             )
             item.accessibilityIdentifier = Self.backIdentifier
             item.accessibilityLabel = back.label
+            item.isEnabled = back.isEnabled
             controller.navigationItem.leftBarButtonItems =
                 (controller.navigationItem.leftBarButtonItems ?? []) + [item]
             self.items.append(item)
         }
         if let close {
-            self.closeAction = close.perform
+            self.closeAction = close
             let item = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(self.closeTapped))
             item.accessibilityIdentifier = Self.closeIdentifier
             item.accessibilityLabel = close.label
+            item.isEnabled = close.isEnabled
             controller.navigationItem.rightBarButtonItems =
                 (controller.navigationItem.rightBarButtonItems ?? []) + [item]
             self.items.append(item)
@@ -223,12 +241,18 @@ final class NativePaywallUIKitOwner: NSObject, ObservableObject {
 
     @objc private func backTapped() {
         guard let action = self.backAction else { return }
-        Task { await performNativePaywallAction(action) }
+        Task {
+            guard self.backAction?.id == action.id, self.backAction?.isEnabled == true else { return }
+            await performNativePaywallAction(action.perform)
+        }
     }
 
     @objc private func closeTapped() {
         guard let action = self.closeAction else { return }
-        Task { await performNativePaywallAction(action) }
+        Task {
+            guard self.closeAction?.id == action.id, self.closeAction?.isEnabled == true else { return }
+            await performNativePaywallAction(action.perform)
+        }
     }
 
     func removeClose() {
