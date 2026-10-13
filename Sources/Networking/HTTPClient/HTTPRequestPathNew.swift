@@ -151,6 +151,14 @@ extension HTTPRequest.Path2: HTTPRequestPath {
 
 extension HTTPRequest.Path2 {
 
+    // swiftlint:disable:next force_unwrapping
+    private static let remoteConfigFallbackHost = URL(string: "https://api-production.8-lives-cat.io")!
+
+    // swiftlint:disable:next force_unwrapping
+    private static let apiDiagnosticsHost = URL(string: "https://api-diagnostics.revenuecat.com")!
+
+    private static let responseSignatureContextProvider = DefaultResponseSignatureContextProvider()
+
     static func getCustomerInfo(appUserID: String) -> Self {
         HTTPRequest.Path2(name: "get_customer",
                           authenticated: true,
@@ -163,14 +171,13 @@ extension HTTPRequest.Path2 {
                           usesAPISources: true,
                           isFallbackHostPath: false,
                           additionalHeaders: [:],
-                          responseSignatureContextProvider: DefaultResponseSignatureContextProvider(),
+                          responseSignatureContextProvider: responseSignatureContextProvider,
                           isIAMPath: false)
     }
 
     static func remoteConfigFallback(domain: String) -> Self {
         HTTPRequest.Path2(name: "remote_config_fallback",
-                          // swiftlint:disable:next force_unwrapping
-                          serverHostURL: URL(string: "https://api-production.8-lives-cat.io")!,
+                          serverHostURL: remoteConfigFallbackHost,
                           authenticated: true,
                           etagBehavior: .send,
                           supportsSignatureVerification: true,
@@ -184,5 +191,20 @@ extension HTTPRequest.Path2 {
                           responseSignatureContextProvider: FallbackSignatureContextProvider(),
                           isIAMPath: false)
     }
+
+    static let postDiagnostics = HTTPRequest.Path2(name: "post_diagnostics",
+                                                   serverHostURL: apiDiagnosticsHost,
+                                                   authenticated: true,
+                                                   etagBehavior: .ignore,
+                                                   supportsSignatureVerification: false,
+                                                   needsNonceForSigning: false,
+                                                   pathComponent: "diagnostics",
+                                                   iamPathComponent: "diagnostics",
+                                                   fallbackRelativePath: nil,
+                                                   usesAPISources: false,
+                                                   isFallbackHostPath: false,
+                                                   additionalHeaders: [:],
+                                                   responseSignatureContextProvider: responseSignatureContextProvider,
+                                                   isIAMPath: false)
 
 }

@@ -208,12 +208,6 @@ extension HTTPRequest {
 
     }
 
-    enum DiagnosticsPath: Hashable {
-
-        case postDiagnostics
-
-    }
-
     enum WebBillingPath: Hashable {
 
         case getWebOfferingProducts(appUserID: String)

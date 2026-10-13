@@ -450,7 +450,7 @@ class HTTPRequestTests: TestCase {
 
     func testNonMainPathsDoNotUseAPISources() {
         let paths: [any HTTPRequestPath] = [
-            HTTPRequest.DiagnosticsPath.postDiagnostics
+            HTTPRequest.Path2.postDiagnostics
         ]
         for path in paths {
             expect(path.usesAPISources).to(beFalse(), description: "Path '\(path)' should not use API sources")
@@ -1232,7 +1232,7 @@ class HTTPRequestTests2: TestCase {
 
     func testNonMainPathsDoNotUseAPISources() {
         let paths: [any HTTPRequestPath] = [
-            HTTPRequest.DiagnosticsPath.postDiagnostics
+            HTTPRequest.Path2.postDiagnostics
         ]
         for path in paths {
             expect(path.usesAPISources).to(beFalse(), description: "Path '\(path)' should not use API sources")

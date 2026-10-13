@@ -40,7 +40,7 @@ final class APISourceFailoverTests: TestCase {
 
     func testCurrentSourceIsNilForPathsThatDoNotUseAPISources() {
         let provider = RecordingSourceProvider(urls: ["https://a.revenuecat.com/"])
-        let path: HTTPRequestPath = HTTPRequest.DiagnosticsPath.postDiagnostics
+        let path: HTTPRequestPath = HTTPRequest.Path2.postDiagnostics
 
         expect(Self.failover(provider).currentSource(for: path, isFallbackAttempt: false)).to(beNil())
     }
