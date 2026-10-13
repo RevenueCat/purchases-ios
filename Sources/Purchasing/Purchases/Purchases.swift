@@ -2072,8 +2072,6 @@ public extension Purchases {
 
 extension Purchases {
 
-    #if ENABLE_CONFIGURED_AD_REWARDS
-
     /// Returns the rewards currently configured for a rewarded ad unit.
     ///
     /// The result contains the primary configured reward and any additional rewards that are configured
@@ -2086,8 +2084,6 @@ extension Purchases {
     ) async -> ConfiguredAdRewards? {
         return nil
     }
-
-    #endif
 
     /// Generates a reward verification token for a loaded rewarded ad.
     ///

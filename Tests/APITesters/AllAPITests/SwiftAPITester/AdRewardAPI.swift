@@ -11,13 +11,11 @@ var virtualCurrencyReward: VirtualCurrencyReward!
 var entitlementReward: EntitlementReward!
 var rewardVerificationResult: RewardVerificationResult!
 
-#if ENABLE_CONFIGURED_AD_REWARDS
 var configuredAdRewards: ConfiguredAdRewards!
 var adRewardConfiguration: AdRewardConfiguration!
 var virtualCurrencyRewardConfiguration: VirtualCurrencyRewardConfiguration!
 var entitlementRewardConfiguration: EntitlementRewardConfiguration!
 var adRewardDuration: AdRewardDuration!
-#endif
 
 func checkAdRewardAPI() {
     let _: VirtualCurrencyReward? = adReward.virtualCurrency
@@ -42,8 +40,6 @@ func checkRewardVerificationResultAPI() {
     let _: [AdReward] = rewardVerificationResult.moreRewards
     let _: RewardVerificationResult = .failed
 }
-
-#if ENABLE_CONFIGURED_AD_REWARDS
 
 func checkConfiguredAdRewardsAPI() {
     let _: AdRewardConfiguration = configuredAdRewards.configuredReward
@@ -78,5 +74,3 @@ func checkAdRewardDurationAPI() {
     let _: AdRewardDuration.Unit = .month
     let _: AdRewardDuration.Unit = .year
 }
-
-#endif

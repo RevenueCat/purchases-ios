@@ -12,8 +12,6 @@
 
 import Foundation
 
-#if ENABLE_CONFIGURED_AD_REWARDS
-
 /// Rewards currently configured for a rewarded ad unit.
 public struct ConfiguredAdRewards: Sendable, Equatable {
 
@@ -159,5 +157,3 @@ public struct AdRewardDuration: Sendable, Equatable {
     }
 
 }
-
-#endif

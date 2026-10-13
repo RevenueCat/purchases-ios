@@ -30,9 +30,6 @@ let project = Project(
                 .snapshotTesting,
                 .ohHTTPStubsSwift
             ],
-            settings: .settings(
-                base: ([:] as SettingsDictionary).appendingTuistSwiftConditions()
-            ),
             metadata: .metadata(tags: ["RevenueCatTests"])
         ),
 

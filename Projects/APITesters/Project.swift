@@ -69,9 +69,6 @@ let project = Project(
             dependencies: [
                 .revenueCat
             ],
-            settings: .settings(
-                base: ([:] as SettingsDictionary).appendingTuistSwiftConditions()
-            ),
             metadata: .metadata(tags: ["APITester"])
         ),
 
