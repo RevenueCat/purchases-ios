@@ -50,9 +50,7 @@ extension UIApplication {
     @available(watchOSApplicationExtension, unavailable)
     @MainActor
     public var currentPresentationViewController: UIViewController? {
-        guard let windowScene = self.currentWindowScene else { return nil }
-
-        return windowScene.currentPresentationViewController
+        return self.currentWindowScene?.currentPresentationViewController
     }
 
 }
