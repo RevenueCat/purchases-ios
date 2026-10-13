@@ -157,6 +157,9 @@ extension HTTPRequest.Path2 {
     // swiftlint:disable:next force_unwrapping
     private static let apiDiagnosticsHost = URL(string: "https://api-diagnostics.revenuecat.com")!
 
+    // swiftlint:disable:next force_unwrapping
+    private static let postFeatureEventsHost = URL(string: "https://api-paywalls.revenuecat.com")!
+
     private static let responseSignatureContextProvider = DefaultResponseSignatureContextProvider()
 
     static func getCustomerInfo(appUserID: String) -> Self {
@@ -206,5 +209,20 @@ extension HTTPRequest.Path2 {
                                                    additionalHeaders: [:],
                                                    responseSignatureContextProvider: responseSignatureContextProvider,
                                                    isIAMPath: false)
+
+    static let postFeatureEvents = HTTPRequest.Path2(name: "post_paywall_events",
+                                                     serverHostURL: postFeatureEventsHost,
+                                                     authenticated: true,
+                                                     etagBehavior: .ignore,
+                                                     supportsSignatureVerification: false,
+                                                     needsNonceForSigning: false,
+                                                     pathComponent: "events",
+                                                     iamPathComponent: "events",
+                                                     fallbackRelativePath: nil,
+                                                     usesAPISources: false,
+                                                     isFallbackHostPath: false,
+                                                     additionalHeaders: [:],
+                                                     responseSignatureContextProvider: responseSignatureContextProvider,
+                                                     isIAMPath: false)
 
 }

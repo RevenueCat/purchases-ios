@@ -202,12 +202,6 @@ extension HTTPRequest {
         case tokenLogOut
     }
 
-    enum FeatureEventsPath: Hashable {
-
-        case postEvents
-
-    }
-
     enum WebBillingPath: Hashable {
 
         case getWebOfferingProducts(appUserID: String)
