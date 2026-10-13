@@ -56,15 +56,17 @@ final class WorkflowPresenterExecutionTests: TestCase {
         }
     }
 
-    func testPresentationFailureResumesExecutionAndAllowsRetry() async throws {
+    func testPresentationFailureThrowsAndAllowsRetry() async throws {
         let presenter = WorkflowPresenterHarness()
         let expectedError = NSError(domain: "test", code: 42)
         presenter.presentationError = expectedError
         let workflowPresenter = presenter.workflowPresenter
 
-        let failure = try await workflowPresenter.present(Self.presentation())
-        guard case .failed = failure else {
-            return XCTFail("Expected presentation failure")
+        do {
+            _ = try await workflowPresenter.present(Self.presentation())
+            XCTFail("Expected presentation failure")
+        } catch {
+            XCTAssertEqual(error as NSError, expectedError)
         }
 
         presenter.presentationError = nil

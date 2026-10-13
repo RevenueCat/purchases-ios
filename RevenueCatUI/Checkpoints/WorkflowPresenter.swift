@@ -29,7 +29,7 @@ import UIKit
 final class WorkflowPresenter: NSObject, WorkflowPresenterType {
 
     typealias PresentationStarter = (WorkflowPresentationRequest) throws -> Bool
-    private typealias Continuation = CheckedContinuation<CheckpointPresentationOutcome, Never>
+    private typealias Continuation = CheckedContinuation<CheckpointPresentationOutcome, Error>
 
     enum PresentationUpdate {
         case outcome(CheckpointPresentationOutcome)
@@ -115,13 +115,13 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
             throw CheckpointError.operationAlreadyInProgress
         }
 
-        return await withCheckedContinuation { continuation in
+        return try await withCheckedThrowingContinuation { continuation in
             self.pendingContinuation = continuation
             do {
                 try self.startPresentation(presentation)
             } catch {
                 Logger.error(error.localizedDescription)
-                self.finish(.failed)
+                self.finish(throwing: error)
             }
         }
     }
@@ -215,6 +215,11 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
     private func finish(_ execution: CheckpointPresentationOutcome) {
         guard let continuation = self.takePendingContinuation() else { return }
         continuation.resume(returning: execution)
+    }
+
+    private func finish(throwing error: any Error) {
+        guard let continuation = self.takePendingContinuation() else { return }
+        continuation.resume(throwing: error)
     }
 
     private func takePendingContinuation() -> Continuation? {
