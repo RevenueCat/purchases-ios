@@ -54,12 +54,16 @@ extension HTTPRequest {
         var pathComponent: String
 
         /// The full relative path for this endpoint.
-        var relativePath: String
+        var relativePath: String {
+            pathComponent.hasPrefix("/") ? pathComponent : "/v1/\(pathComponent)"
+        }
 
         var iamPathComponent: String
 
         /// The full relative path for this endpoint when using IAM tokens.
-        var relativeIAMPath: String
+        var relativeIAMPath: String {
+            iamPathComponent.hasPrefix("/") ? iamPathComponent : "/v1/\(iamPathComponent)"
+        }
 
         /// The fallback relative path for this endpoint, if any.
         var fallbackRelativePath: String?
@@ -86,18 +90,18 @@ extension HTTPRequest {
 
         init(name: String,
              serverHostURL: URL? = nil,
-             authenticated: Bool,
+             authenticated: Bool = true,
              etagBehavior: ETagBehavior,
              supportsSignatureVerification: Bool,
              needsNonceForSigning: Bool,
              pathComponent: String,
-             iamPathComponent: String,
+             iamPathComponent: String? = nil,
              fallbackRelativePath: String? = nil,
-             usesAPISources: Bool,
-             isFallbackHostPath: Bool,
-             additionalHeaders: HTTPRequest.Headers,
-             responseSignatureContextProvider: ResponseSignatureContextProvider,
-             isIAMPath: Bool) {
+             usesAPISources: Bool = false,
+             isFallbackHostPath: Bool = false,
+             additionalHeaders: HTTPRequest.Headers = [:],
+             responseSignatureContextProvider: ResponseSignatureContextProvider? = nil,
+             isIAMPath: Bool = false) {
 
             self.serverHostURL = serverHostURL ?? Self.serverHostURL
             self.authenticated = authenticated
@@ -106,16 +110,16 @@ extension HTTPRequest {
             self.needsNonceForSigning = needsNonceForSigning
             self.name = name
             self.pathComponent = pathComponent
-            self.iamPathComponent = iamPathComponent
+            self.iamPathComponent = (iamPathComponent ?? pathComponent)
             self.fallbackRelativePath = fallbackRelativePath
             self.usesAPISources = usesAPISources
             self.isFallbackHostPath = isFallbackHostPath
             self.additionalHeaders = additionalHeaders
-            self.responseSignatureContextProvider = responseSignatureContextProvider
-            self.isIAMPath = isIAMPath
 
-            self.relativePath = pathComponent.hasPrefix("/") ? pathComponent : "/v1/\(pathComponent)"
-            self.relativeIAMPath = iamPathComponent.hasPrefix("/") ? iamPathComponent : "/v1/\(iamPathComponent)"
+            let signatureContextProvider = responseSignatureContextProvider ?? DefaultResponseSignatureContextProvider()
+            self.responseSignatureContextProvider = signatureContextProvider
+
+            self.isIAMPath = isIAMPath
 
             if let fallbackRelativePath {
                 self.fallbackUrls = Self.fallbackServerHostURLs.compactMap { baseURL in
@@ -163,84 +167,48 @@ extension HTTPRequest.Path2 {
     // swiftlint:disable:next force_unwrapping
     private static let postAdEventsHost = URL(string: "https://a.revenue.cat")!
 
-    private static let responseSignatureContextProvider = DefaultResponseSignatureContextProvider()
-
     static func getCustomerInfo(appUserID: String) -> Self {
         HTTPRequest.Path2(name: "get_customer",
-                          authenticated: true,
                           etagBehavior: .send,
                           supportsSignatureVerification: true,
                           needsNonceForSigning: true,
                           pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)",
                           iamPathComponent: "customer",
                           fallbackRelativePath: nil,
-                          usesAPISources: true,
-                          isFallbackHostPath: false,
-                          additionalHeaders: [:],
-                          responseSignatureContextProvider: responseSignatureContextProvider,
-                          isIAMPath: false)
+                          usesAPISources: true)
     }
 
     static func remoteConfigFallback(domain: String) -> Self {
         HTTPRequest.Path2(name: "remote_config_fallback",
                           serverHostURL: remoteConfigFallbackHost,
-                          authenticated: true,
                           etagBehavior: .send,
                           supportsSignatureVerification: true,
                           needsNonceForSigning: false,
                           pathComponent: "config/\(domain.trimmedAndEscaped)",
-                          iamPathComponent: "config/\(domain.trimmedAndEscaped)",
                           fallbackRelativePath: nil,
-                          usesAPISources: false,
                           isFallbackHostPath: true,
-                          additionalHeaders: [:],
-                          responseSignatureContextProvider: FallbackSignatureContextProvider(),
-                          isIAMPath: false)
+                          responseSignatureContextProvider: FallbackSignatureContextProvider())
     }
 
     static let postDiagnostics = HTTPRequest.Path2(name: "post_diagnostics",
                                                    serverHostURL: apiDiagnosticsHost,
-                                                   authenticated: true,
                                                    etagBehavior: .ignore,
                                                    supportsSignatureVerification: false,
                                                    needsNonceForSigning: false,
-                                                   pathComponent: "diagnostics",
-                                                   iamPathComponent: "diagnostics",
-                                                   fallbackRelativePath: nil,
-                                                   usesAPISources: false,
-                                                   isFallbackHostPath: false,
-                                                   additionalHeaders: [:],
-                                                   responseSignatureContextProvider: responseSignatureContextProvider,
-                                                   isIAMPath: false)
+                                                   pathComponent: "diagnostics")
 
     static let postFeatureEvents = HTTPRequest.Path2(name: "post_paywall_events",
                                                      serverHostURL: postFeatureEventsHost,
-                                                     authenticated: true,
                                                      etagBehavior: .ignore,
                                                      supportsSignatureVerification: false,
                                                      needsNonceForSigning: false,
-                                                     pathComponent: "events",
-                                                     iamPathComponent: "events",
-                                                     fallbackRelativePath: nil,
-                                                     usesAPISources: false,
-                                                     isFallbackHostPath: false,
-                                                     additionalHeaders: [:],
-                                                     responseSignatureContextProvider: responseSignatureContextProvider,
-                                                     isIAMPath: false)
+                                                     pathComponent: "events")
 
     static let postAdEvents = HTTPRequest.Path2(name: "post_ad_events",
                                                 serverHostURL: postAdEventsHost,
-                                                authenticated: true,
                                                 etagBehavior: .ignore,
                                                 supportsSignatureVerification: false,
                                                 needsNonceForSigning: false,
-                                                pathComponent: "events",
-                                                iamPathComponent: "events",
-                                                fallbackRelativePath: nil,
-                                                usesAPISources: false,
-                                                isFallbackHostPath: false,
-                                                additionalHeaders: [:],
-                                                responseSignatureContextProvider: responseSignatureContextProvider,
-                                                isIAMPath: false)
+                                                pathComponent: "events")
 
 }
