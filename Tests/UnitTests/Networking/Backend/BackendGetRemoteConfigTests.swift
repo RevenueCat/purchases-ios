@@ -134,8 +134,8 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(result).to(beSuccess())
         expect(self.httpClient.calls).to(haveCount(1))
         expect(self.httpClient.calls.first?.request.method.httpMethod) == "GET"
-        expect(self.httpClient.calls.first?.request.path as? HTTPRequest.FallbackPath)
-            == HTTPRequest.FallbackPath.remoteConfig(domain: "app")
+        expect(self.httpClient.calls.first?.request.path as? HTTPRequest.Path2)
+            == HTTPRequest.Path2.remoteConfigFallback(domain: "app")
         expect(self.httpClient.calls.first?.request.path.url(preferIAMPath: false)?.absoluteString)
             == "https://api-production.8-lives-cat.io/v1/config/app"
         expect(self.httpClient.calls.first?.request.requestBody).to(beNil())
@@ -707,7 +707,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
     func testGetRemoteConfigFallbackInvalidJSONSendsDecodingError() {
         self.httpClient.mock(
-            requestPath: HTTPRequest.FallbackPath.remoteConfig(domain: "app"),
+            requestPath: HTTPRequest.Path2.remoteConfigFallback(domain: "app"),
             response: .init(statusCode: .success, body: "not json".asData)
         )
 
@@ -783,7 +783,7 @@ private extension BackendGetRemoteConfigTests {
         verificationResult: SignatureVerificationResult = .notRequested
     ) {
         self.httpClient.mock(
-            requestPath: HTTPRequest.FallbackPath.remoteConfig(domain: domain),
+            requestPath: HTTPRequest.Path2.remoteConfigFallback(domain: domain),
             response: .init(
                 statusCode: .success,
                 body: Self.remoteConfigFallback,

@@ -99,7 +99,7 @@ extension HTTPRequest {
              responseSignatureContextProvider: ResponseSignatureContextProvider,
              isIAMPath: Bool) {
 
-            self.serverHostURL = serverHostURL ?? SystemInfo.defaultApiBaseURL
+            self.serverHostURL = serverHostURL ?? Self.serverHostURL
             self.authenticated = authenticated
             self.etagBehavior = etagBehavior
             self.supportsSignatureVerification = supportsSignatureVerification
@@ -164,6 +164,24 @@ extension HTTPRequest.Path2 {
                           isFallbackHostPath: false,
                           additionalHeaders: [:],
                           responseSignatureContextProvider: DefaultResponseSignatureContextProvider(),
+                          isIAMPath: false)
+    }
+
+    static func remoteConfigFallback(domain: String) -> Self {
+        HTTPRequest.Path2(name: "remote_config_fallback",
+                          // swiftlint:disable:next force_unwrapping
+                          serverHostURL: URL(string: "https://api-production.8-lives-cat.io")!,
+                          authenticated: true,
+                          etagBehavior: .send,
+                          supportsSignatureVerification: true,
+                          needsNonceForSigning: false,
+                          pathComponent: "config/\(domain.trimmedAndEscaped)",
+                          iamPathComponent: "config/\(domain.trimmedAndEscaped)",
+                          fallbackRelativePath: nil,
+                          usesAPISources: false,
+                          isFallbackHostPath: true,
+                          additionalHeaders: [:],
+                          responseSignatureContextProvider: FallbackSignatureContextProvider(),
                           isIAMPath: false)
     }
 

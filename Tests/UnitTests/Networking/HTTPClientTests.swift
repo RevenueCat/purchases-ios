@@ -1263,8 +1263,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testRemoteConfigFallbackSendsETagHeaders() {
-        let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app")
-        let request = HTTPRequest(method: .get, path: path)
+        let path = HTTPRequest.Path2.remoteConfigFallback(domain: "app")
+        let request = HTTPRequest(method: .get, requestPath: path)
         let responseData = "{\"domain\":\"app\",\"manifest\":\"test\",\"active_topics\":[],\"topics\":{}}".asData
         let eTag = "fallback-etag"
         let eTagValidationTime = Date(timeIntervalSince1970: 1234567)
@@ -1298,8 +1298,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testRemoteConfigFallbackGetsCachedResponseWhenStatusCodeIsNotModified() {
-        let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app")
-        let request = HTTPRequest(method: .get, path: path)
+        let path = HTTPRequest.Path2.remoteConfigFallback(domain: "app")
+        let request = HTTPRequest(method: .get, requestPath: path)
         let cachedResponseData = """
         {"domain":"app","manifest":"cached","active_topics":[],"topics":{}}
         """.asData
@@ -1970,8 +1970,9 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         // The domain layer aims this path at a fallback host, so even with API sources enabled it must
         // get the flat fallback tier rather than the aggressive main-source tiers.
         let client = self.createClient(self.systemInfoUsingAPISources())
-        let request = HTTPRequest(method: .get, path: HTTPRequest.FallbackPath.remoteConfig(domain: "app"))
-        let host = try XCTUnwrap(HTTPRequest.FallbackPath.serverHostURL.host)
+        let path = HTTPRequest.Path2.remoteConfigFallback(domain: "app")
+        let request = HTTPRequest(method: .get, requestPath: path)
+        let host = try XCTUnwrap(path.serverHostURL.host)
 
         let url = try XCTUnwrap(request.path.url(preferIAMPath: self.tokenManager.enabled)?.absoluteString)
         stub(condition: isAbsoluteURLString(url)) { request in
@@ -1999,8 +2000,9 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
     func testRemoteConfigFallbackSuccessDoesNotClearMainSourceMemory() throws {
         let client = self.createClient(self.systemInfoUsingAPISources())
-        let request = HTTPRequest(method: .get, path: HTTPRequest.FallbackPath.remoteConfig(domain: "app"))
-        let host = try XCTUnwrap(HTTPRequest.FallbackPath.serverHostURL.host)
+        let path = HTTPRequest.Path2.remoteConfigFallback(domain: "app")
+        let request = HTTPRequest(method: .get, requestPath: path)
+        let host = try XCTUnwrap(path.serverHostURL.host)
 
         timeoutManager.recordRequestResult(host: host, .mainSourceTimedOut)
 

@@ -214,7 +214,7 @@ class HTTPRequestTests: TestCase {
     }
 
     func testFallbackConfigPathUsesFallbackHostAndEscapesDomain() {
-        let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app workflows/project")
+        let path = HTTPRequest.Path2.remoteConfigFallback(domain: "app workflows/project")
 
         expect(path.relativePath) == "/v1/config/app%20workflows%2Fproject"
         expect(path.url(preferIAMPath: false)?.absoluteString)
@@ -533,7 +533,7 @@ class HTTPRequestTests: TestCase {
     func testFallbackConfigDoesNotRequestRCContainerFormat() {
         let request: HTTPRequest = .init(
             method: .get,
-            path: HTTPRequest.FallbackPath.remoteConfig(domain: "app")
+            requestPath: HTTPRequest.Path2.remoteConfigFallback(domain: "app")
         )
         let headers = request.headers(
             with: [:],
@@ -680,9 +680,9 @@ class HTTPRequestTests: TestCase {
     }
 
     func testDefaultRelativeIAMPathFallsBackToRelativePathForOtherPathTypes() {
-        // `HTTPRequest.FallbackPath` doesn't override `relativeIAMPath`, so it should fall back
+        // `HTTPRequest.Path2.remoteConfigFallback(...)` doesn't override `relativeIAMPath`, so it should fall back
         // to the default implementation, which just returns `relativePath`.
-        let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app")
+        let path = HTTPRequest.Path2.remoteConfigFallback(domain: "app")
 
         expect(path.relativeIAMPath) == path.relativePath
     }
@@ -1315,7 +1315,7 @@ class HTTPRequestTests2: TestCase {
     func testFallbackConfigDoesNotRequestRCContainerFormat() {
         let request: HTTPRequest = .init(
             method: .get,
-            path: HTTPRequest.FallbackPath.remoteConfig(domain: "app")
+            requestPath: HTTPRequest.Path2.remoteConfigFallback(domain: "app")
         )
         let headers = request.headers(
             with: [:],

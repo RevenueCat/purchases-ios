@@ -20,6 +20,11 @@ protocol HTTPRequestPath {
     /// The base URL for requests to this path.
     static var serverHostURL: URL { get }
 
+    /// The base URL for this request's path.
+    ///
+    /// Defaults to `Self.serverHostURL`.
+    var serverHostURL: URL { get }
+
     /// The fallback URLs to use when the main server is down.
     ///
     /// Not all endpoints have a fallback URL, but some do.
@@ -100,6 +105,8 @@ struct DefaultResponseSignatureContextProvider: ResponseSignatureContextProvider
 
 extension HTTPRequestPath {
 
+    var serverHostURL: URL { Self.serverHostURL }
+
     var fallbackUrls: [URL] {
         return []
     }
@@ -154,7 +161,7 @@ extension HTTPRequestPath {
         } else if let apiSourceURL {
             baseURL = apiSourceURL
         } else {
-            baseURL = Self.serverHostURL
+            baseURL = self.serverHostURL
         }
 
         let path = preferIAMPath ? self.relativeIAMPath : self.relativePath
@@ -193,12 +200,6 @@ extension HTTPRequest {
         case tokenLogin
         case tokenRefresh
         case tokenLogOut
-    }
-
-    enum FallbackPath: Hashable {
-
-        case remoteConfig(domain: String)
-
     }
 
     enum FeatureEventsPath: Hashable {
@@ -657,74 +658,4 @@ extension HTTPRequest.Path: HTTPRequestPath {
     private static func escape(_ appUserID: String) -> String {
         return appUserID.trimmedAndEscaped
     }
-}
-
-extension HTTPRequest.FallbackPath: HTTPRequestPath {
-
-    // swiftlint:disable:next force_unwrapping
-    static let serverHostURL = URL(string: "https://api-production.8-lives-cat.io")!
-
-    var isFallbackHostPath: Bool {
-        switch self {
-        case .remoteConfig:
-            return true
-        }
-    }
-
-    var authenticated: Bool {
-        switch self {
-        case .remoteConfig:
-            return true
-        }
-    }
-
-    var shouldSendEtag: Bool {
-        switch self {
-        case .remoteConfig:
-            return true
-        }
-    }
-
-    var supportsSignatureVerification: Bool {
-        switch self {
-        case .remoteConfig:
-            return true
-        }
-    }
-
-    var needsNonceForSigning: Bool {
-        switch self {
-        case .remoteConfig:
-            return false
-        }
-    }
-
-    var responseSignatureContextProvider: ResponseSignatureContextProvider {
-        switch self {
-        case .remoteConfig:
-            return FallbackSignatureContextProvider()
-        }
-    }
-
-    var relativePath: String {
-        switch self {
-        case let .remoteConfig(domain):
-            return "/v1/config/\(domain.trimmedAndEscaped)"
-        }
-    }
-
-    var name: String {
-        switch self {
-        case .remoteConfig:
-            return "remote_config_fallback"
-        }
-    }
-
-    var additionalHeaders: HTTPRequest.Headers {
-        switch self {
-        case .remoteConfig:
-            return [:]
-        }
-    }
-
 }
