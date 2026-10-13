@@ -276,6 +276,9 @@ let project = Project(
                 .googleMobileAds,
                 .nimble
             ],
+            settings: .settings(
+                base: ([:] as SettingsDictionary).appendingTuistSwiftConditions()
+            ),
             metadata: .metadata(tags: ["RevenueCatTests"])
         ),
 

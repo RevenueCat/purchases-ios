@@ -28,7 +28,10 @@ let project = Project(
             dependencies: [
                 .revenueCat,
                 .external(name: "GoogleMobileAds")
-            ]
+            ],
+            settings: .settings(
+                base: ([:] as SettingsDictionary).appendingTuistSwiftConditions()
+            )
         )
     ]
 )
