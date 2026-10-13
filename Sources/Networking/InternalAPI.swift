@@ -127,7 +127,7 @@ class InternalAPI {
         let operation = PostAdEventsOperation(
             configuration: .init(httpClient: self.backendConfig.httpClient),
             request: request,
-            path: HTTPRequest.AdPath.postEvents,
+            path: HTTPRequest.Path2.postAdEvents,
             responseHandler: completion
         )
 
