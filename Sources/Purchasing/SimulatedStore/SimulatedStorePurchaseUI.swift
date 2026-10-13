@@ -12,11 +12,11 @@
 //  Created by Antonio Pallares on 1/8/25.
 
 import Foundation
-#if canImport(UIKit)
-import UIKit
 #if os(watchOS)
+import UIKit
 import WatchKit
-#endif
+#elseif canImport(UIKit)
+import UIKit
 #elseif canImport(AppKit)
 import AppKit
 #endif
@@ -45,24 +45,27 @@ protocol SimulatedStorePurchaseUI: Sendable {
 
 /// Contains the logic to present a system alert for the confirmation of Simulated Store products purchases.
 struct DefaultSimulatedStorePurchaseUI: SimulatedStorePurchaseUI {
-    #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
+
+    #if os(watchOS)
+
+    init(systemInfo: SystemInfo) {}
+
+    #else
+
     private let defaultPresentationContextProvider: @MainActor @Sendable () -> PresentationContext?
-    #endif
+
     init(systemInfo: SystemInfo) {
-        #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
         self.defaultPresentationContextProvider = {
             return PresentationContext.defaultPresentationContext(systemInfo: systemInfo)
         }
-        #endif
     }
-    #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
+
     init(
         defaultPresentationContextProvider: @escaping @MainActor @Sendable () -> PresentationContext?
     ) {
         self.defaultPresentationContextProvider = defaultPresentationContextProvider
     }
-    #endif
-    #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
+
     @MainActor
     func resolvedPresentationContext(_ context: PresentationContext?) -> PresentationContext? {
         guard let context, context.isValidForPresentation else {
@@ -71,7 +74,9 @@ struct DefaultSimulatedStorePurchaseUI: SimulatedStorePurchaseUI {
 
         return context
     }
+
     #endif
+
     func presentPurchaseUI(
         for product: SimulatedStoreProduct,
         presentationContext: PresentationContext? = nil
@@ -247,16 +252,58 @@ private extension DefaultSimulatedStorePurchaseUI {
 
 }
 
-private extension DefaultSimulatedStorePurchaseUI {
+#if os(watchOS)
+
+extension DefaultSimulatedStorePurchaseUI {
 
     @MainActor
-    func showAlert(
+    private func showAlert(
         _ alert: Alert,
         presentationContext: PresentationContext?,
         onError: (PurchasesError) -> Void
     ) {
+        let actions: [WKAlertAction] = alert.actions.map { action in
+            WKAlertAction(title: action.title, style: action.style.alertActionStyle) {
+                action.callback(action.title)
+            }
+        }
 
-        #if canImport(UIKit) && !os(watchOS)
+        WKInterfaceDevice.current().play(.click)
+
+        let controller = WKExtension.shared().rootInterfaceController
+        controller?.presentAlert(withTitle: alert.title,
+                                 message: alert.message,
+                                 preferredStyle: .alert,
+                                 actions: actions)
+    }
+
+}
+
+extension DefaultSimulatedStorePurchaseUI.Action.Style {
+
+    var alertActionStyle: WKAlertActionStyle {
+        switch self {
+        case .destructive:
+            return .destructive
+        case .cancel:
+            return .cancel
+        case .default:
+            return .default
+        }
+    }
+
+}
+
+#elseif canImport(UIKit)
+
+extension DefaultSimulatedStorePurchaseUI {
+
+    @MainActor
+    private func showAlert(
+        _ alert: Alert,
+        presentationContext: PresentationContext?,
+        onError: (PurchasesError) -> Void
+    ) {
         guard let viewController = self.findTopViewController(presentationContext: presentationContext) else {
             Logger.warn(Strings.purchase.unable_to_find_root_view_controller_for_simulated_purchase)
             onError(ErrorUtils.unknownError(
@@ -277,36 +324,42 @@ private extension DefaultSimulatedStorePurchaseUI {
         }
 
         viewController.present(alertController, animated: true)
-
-        #elseif os(watchOS)
-
-        let actions: [WKAlertAction] = alert.actions.map { action in
-            WKAlertAction(title: action.title, style: action.style.alertActionStyle) {
-                action.callback(action.title)
-            }
-
-        }
-
-        WKInterfaceDevice.current().play(.click)
-
-        let controller = WKExtension.shared().rootInterfaceController
-        controller?.presentAlert(withTitle: alert.title,
-                                 message: alert.message,
-                                 preferredStyle: .alert,
-                                 actions: actions)
-
-        #elseif canImport(AppKit)
-        self.showAlertOnMacOS(alert, presentationContext: presentationContext)
-
-        #endif
-
     }
+
+    @MainActor
+    func findTopViewController(
+        presentationContext: PresentationContext?
+    ) -> UIViewController? {
+        return self.resolvedPresentationContext(presentationContext)?.presentationViewController
+    }
+
 }
 
-#if canImport(AppKit) && !targetEnvironment(macCatalyst)
+extension DefaultSimulatedStorePurchaseUI.Action.Style {
+
+    var alertActionStyle: UIAlertAction.Style {
+        switch self {
+        case .destructive:
+            return .destructive
+        case .cancel:
+            return .cancel
+        case .default:
+            return .default
+        }
+    }
+
+}
+
+#elseif canImport(AppKit)
+
 extension DefaultSimulatedStorePurchaseUI {
+
     @MainActor
-    fileprivate func showAlertOnMacOS(_ alert: Alert, presentationContext: PresentationContext?) {
+    private func showAlert(
+        _ alert: Alert,
+        presentationContext: PresentationContext?,
+        onError: (PurchasesError) -> Void
+    ) {
         let nsAlert = NSAlert()
         nsAlert.messageText = alert.title
         nsAlert.informativeText = alert.message
@@ -336,55 +389,10 @@ extension DefaultSimulatedStorePurchaseUI {
             handleResponse(nsAlert.runModal())
         }
     }
+
     @MainActor
     func findPresentationWindow(presentationContext: PresentationContext?) -> NSWindow? {
         return self.resolvedPresentationContext(presentationContext)?.window
-    }
-}
-#endif
-
-extension DefaultSimulatedStorePurchaseUI.Action.Style {
-
-    #if canImport(UIKit) && !os(watchOS)
-
-    var alertActionStyle: UIAlertAction.Style {
-        switch self {
-        case .destructive:
-            return .destructive
-        case .cancel:
-            return .cancel
-        case .default:
-            return .default
-        }
-    }
-
-    #elseif os(watchOS)
-
-    var alertActionStyle: WKAlertActionStyle {
-        switch self {
-        case .destructive:
-            return .destructive
-        case .cancel:
-            return .cancel
-        case .default:
-            return .default
-        }
-    }
-
-    #endif
-}
-
-// MARK: - Helper
-
-#if canImport(UIKit) && !os(watchOS)
-
-extension DefaultSimulatedStorePurchaseUI {
-
-    @MainActor
-    func findTopViewController(
-        presentationContext: PresentationContext?
-    ) -> UIViewController? {
-        return self.resolvedPresentationContext(presentationContext)?.presentationViewController
     }
 
 }
