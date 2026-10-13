@@ -12,8 +12,6 @@
 
 import Foundation
 
-#if ENABLE_CONFIGURED_AD_REWARDS
-
 final class ConfiguredAdRewardsProvider {
 
     private let manager: RemoteConfigManagerType
@@ -123,5 +121,3 @@ final class ConfiguredAdRewardsProvider {
     }
 
 }
-
-#endif
