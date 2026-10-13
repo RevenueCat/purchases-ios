@@ -184,8 +184,11 @@ class ButtonComponentViewModel {
         }
     }
 
-    func nativeNavigationRole(dismissesPaywall: Bool) -> NativePaywallCloseCoordinator.Role? {
-        guard self.component.useNativeIfPossible else { return nil }
+    func nativeNavigationRole(
+        dismissesPaywall: Bool,
+        useNativeIfPossible: Bool? = nil
+    ) -> NativePaywallCloseCoordinator.Role? {
+        guard useNativeIfPossible ?? self.component.useNativeIfPossible else { return nil }
         switch self.action {
         case .navigateBack: return dismissesPaywall ? .close : .back
         case .closeWorkflow: return .close
@@ -222,13 +225,47 @@ class ButtonComponentViewModel {
         customVariables: [String: CustomVariableValue],
         windowSize: CGSize? = nil
     ) -> Bool {
+        self.partial(
+            state: state, condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer, isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackageId: selectedPackageId, customVariables: customVariables, windowSize: windowSize
+        )?.visible ?? self.componentVisible ?? true
+    }
+
+    // swiftlint:disable:next function_parameter_count
+    func useNativeIfPossible(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
+        windowSize: CGSize? = nil
+    ) -> Bool {
+        self.partial(
+            state: state, condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer, isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackageId: selectedPackageId, customVariables: customVariables, windowSize: windowSize
+        )?.useNativeIfPossible ?? self.component.useNativeIfPossible
+    }
+
+    // swiftlint:disable:next function_parameter_count
+    private func partial(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
+        windowSize: CGSize?
+    ) -> PresentedButtonPartial? {
         let conditionContext = self.uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
             customVariables: customVariables,
             windowSize: windowSize
         )
 
-        let partial = PresentedButtonPartial.buildPartial(
+        return PresentedButtonPartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
@@ -236,8 +273,6 @@ class ButtonComponentViewModel {
             conditionContext: conditionContext,
             with: self.presentedOverrides
         )
-
-        return partial?.visible ?? self.componentVisible ?? true
     }
 
 }
@@ -248,7 +283,10 @@ extension PresentedButtonPartial: PresentedPartial {
         _ base: PaywallComponent.PartialButtonComponent?,
         with other: PaywallComponent.PartialButtonComponent?
     ) -> Self {
-        return .init(visible: other?.visible ?? base?.visible)
+        return .init(
+            visible: other?.visible ?? base?.visible,
+            useNativeIfPossible: other?.useNativeIfPossible ?? base?.useNativeIfPossible
+        )
     }
 
 }

@@ -19,24 +19,47 @@ struct NativeNavigationFixtureView: View {
     let workflow: Bool
     @State private var dismissed = false
     @State private var path: [Bool] = []
+    @State private var modalPresented = false
+
+    private var presentation: String {
+        ProcessInfo.processInfo.environment["PAYWALL_NATIVE_PRESENTATION"] ?? "push"
+    }
 
     var body: some View {
         NavigationStack(path: self.$path) {
             if self.dismissed {
                 Text("Paywall dismissed")
+            } else if self.presentation != "push" {
+                Button("Show native paywall") { self.modalPresented = true }
+                    .navigationTitle("Fixture host")
             } else {
                 NavigationLink("Show native paywall", value: true)
                 .navigationDestination(for: Bool.self) { _ in
-                    self.paywall
-                        .onRequestedDismissal {
-                            self.dismissed = true
-                            self.path = []
-                        }
-                        .navigationTitle("Native paywall")
+                    self.presentedPaywall
                 }
                 .navigationTitle("Fixture host")
             }
         }
+        .sheet(isPresented: Binding(
+            get: { self.presentation == "sheet" && self.modalPresented },
+            set: { self.modalPresented = $0 }
+        )) { self.presentedPaywall }
+        #if os(iOS)
+        .fullScreenCover(isPresented: Binding(
+            get: { self.presentation == "full_screen" && self.modalPresented },
+            set: { self.modalPresented = $0 }
+        )) { self.presentedPaywall }
+        #endif
+    }
+
+    private var presentedPaywall: some View {
+        self.paywall
+            .onRequestedDismissal {
+                self.dismissed = true
+                self.path = []
+                self.modalPresented = false
+            }
+            .navigationTitle("Native paywall")
     }
 
     @ViewBuilder private var paywall: some View {
@@ -60,12 +83,14 @@ private enum NativeNavigationFixture {
     static let context: WorkflowContext = {
         do {
             let root = Self.data(title: "Workflow root", buttons: [
-                Self.button("Continue", action: .workflowTrigger, id: "continue"),
-                try Self.closeWorkflow()
-            ])
+                Self.button("Continue", action: .workflowTrigger, id: "continue")
+            ], headerClose: try Self.closeWorkflow())
             let detail = Self.data(title: "Workflow detail", buttons: [
                 Self.button("Designed Back", action: .navigateBack, native: true),
-                try Self.closeWorkflow()
+                Self.button("Continue without Close", action: .workflowTrigger, id: "no_close")
+            ], headerClose: try Self.closeWorkflow())
+            let withoutClose = Self.data(title: "Workflow without Close", buttons: [
+                Self.button("Designed Back", action: .navigateBack, native: true)
             ])
             let workflow = PublishedWorkflow(
                 id: "native-navigation-fixture", displayName: "Native navigation", initialStepId: "root",
@@ -76,9 +101,15 @@ private enum NativeNavigationFixture {
                         triggers: [.init(name: nil, type: .onPress, actionId: "next", componentId: "continue")],
                         triggerActions: ["next": .step(stepId: "detail")]
                     ),
-                    "detail": WorkflowStep(id: "detail", type: "screen", screenId: "detail")
+                    "detail": WorkflowStep(
+                        id: "detail", type: "screen", screenId: "detail",
+                        triggers: [.init(name: nil, type: .onPress, actionId: "next", componentId: "no_close")],
+                        triggerActions: ["next": .step(stepId: "no_close")]
+                    ),
+                    "no_close": WorkflowStep(id: "no_close", type: "screen", screenId: "no_close")
                 ],
-                screens: ["root": Self.screen(root), "detail": Self.screen(detail)]
+                screens: ["root": Self.screen(root), "detail": Self.screen(detail),
+                          "no_close": Self.screen(withoutClose)]
             )
             let offering = Offering(identifier: Self.baseOffering.identifier, serverDescription: "Native navigation",
                                     availablePackages: Self.baseOffering.availablePackages, webCheckoutUrl: nil)
@@ -125,7 +156,9 @@ private enum NativeNavigationFixture {
               defaultLocale: "en_US", offeringIdentifier: Self.baseOffering.identifier)
     }
 
-    private static func data(title: String, buttons: [PaywallComponent]) -> PaywallComponentsData {
+    private static func data(
+        title: String, buttons: [PaywallComponent], headerClose: PaywallComponent? = nil
+    ) -> PaywallComponentsData {
         .init(
             templateName: "native-navigation-fixture", assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
             componentsConfig: .init(base: .init(
@@ -133,10 +166,15 @@ private enum NativeNavigationFixture {
                              dimension: .vertical(.center, .start),
                              size: .init(width: .fill, height: .fill), spacing: 24,
                              padding: .init(top: 32, bottom: 24, leading: 16, trailing: 16)),
+                header: headerClose.map { close in
+                    .init(stack: .init(components: [close], size: .init(width: .fill, height: .fixed(120)),
+                                       backgroundColor: .init(light: .hex("#ff00ff"))))
+                },
                 stickyFooter: nil, background: .color(.init(light: .hex("#ffffff")))
             )),
             componentsLocalizations: ["en_US": Dictionary(uniqueKeysWithValues: [
-                "Workflow root", "Workflow detail", "Continue", "Designed Back", "Designed Close",
+                "Workflow root", "Workflow detail", "Workflow without Close", "Continue", "Continue without Close",
+                "Designed Back", "Designed Close",
                 "Outer paywall", "Designed outer Close", "Open inline sheet", "Sheet content", "Designed sheet Close"
             ].map { ($0, .string($0)) })], revision: 1, defaultLocaleIdentifier: "en_US"
         )

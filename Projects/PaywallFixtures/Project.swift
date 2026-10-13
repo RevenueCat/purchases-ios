@@ -7,6 +7,7 @@ import ProjectDescriptionHelpers
 //
 // iPhone/iPad and iOS 17+ because the tests here drive the real accessibility tree, and
 // `performAccessibilityAudit` needs iOS 17 or later.
+// Desktop destinations let the same fixtures validate Catalyst navigation and macOS fallback controls.
 let project = Project(
     name: "PaywallFixtures",
     organizationName: .revenueCatOrgName,
@@ -15,10 +16,10 @@ let project = Project(
     targets: [
         .target(
             name: "PaywallFixtures",
-            destinations: [.iPhone, .iPad],
+            destinations: [.iPhone, .iPad, .macCatalyst, .mac],
             product: .app,
             bundleId: "com.revenuecat.PaywallFixtures",
-            deploymentTargets: .iOS("17.0"),
+            deploymentTargets: .multiplatform(iOS: "17.0", macOS: "14.0"),
             infoPlist: "../../Tests/TestingApps/PaywallFixtures/Info.plist",
             sources: [
                 "../../Tests/TestingApps/PaywallFixtures/**/*.swift"
@@ -34,7 +35,7 @@ let project = Project(
         ),
         .target(
             name: "PaywallFixturesUITests",
-            destinations: [.iPhone, .iPad],
+            destinations: [.iPhone, .iPad, .macCatalyst],
             product: .uiTests,
             bundleId: "com.revenuecat.PaywallFixturesUITests",
             deploymentTargets: .iOS("17.0"),

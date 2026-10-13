@@ -112,7 +112,7 @@ struct ButtonComponentView: View {
            ) {
             NativePaywallCloseButton(
                 enabled: self.nativeCloseEnabled
-                    && self.viewModel.nativeNavigationRole(dismissesPaywall: self.dismissesPaywall) != nil,
+                    && self.resolvedNativeNavigationRole != nil,
                 accessibilityLabel: self.viewModel.localizedBundle.localizedString(
                     forKey: self.nativeNavigationRole == .back ? "Go back" : "Close", value: nil, table: nil
                 ),
@@ -127,7 +127,26 @@ struct ButtonComponentView: View {
     }
 
     private var nativeNavigationRole: NativePaywallCloseCoordinator.Role {
-        self.viewModel.nativeNavigationRole(dismissesPaywall: self.dismissesPaywall) ?? .close
+        self.resolvedNativeNavigationRole ?? .close
+    }
+
+    private var resolvedNativeNavigationRole: NativePaywallCloseCoordinator.Role? {
+        self.viewModel.nativeNavigationRole(
+            dismissesPaywall: self.dismissesPaywall,
+            useNativeIfPossible: self.viewModel.useNativeIfPossible(
+                state: self.componentViewState,
+                condition: self.screenCondition,
+                isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
+                    package: self.packageContext.package
+                ),
+                isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                    for: self.packageContext.package
+                ),
+                selectedPackageId: self.selectedPackageId,
+                customVariables: self.customVariables,
+                windowSize: self.paywallWindowSize
+            )
+        )
     }
 
     private var configuredButton: some View {
@@ -203,7 +222,7 @@ struct ButtonComponentView: View {
     }
 
     private func performAction() async throws {
-        if self.viewModel.nativeNavigationRole(dismissesPaywall: self.dismissesPaywall) != nil,
+        if self.resolvedNativeNavigationRole != nil,
            self.purchaseHandler.actionInProgress {
             return
         }

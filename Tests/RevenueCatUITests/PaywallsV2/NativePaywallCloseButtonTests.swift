@@ -583,6 +583,97 @@ final class NativePaywallCloseButtonTests: TestCase {
         XCTAssertFalse(requested(native: true, action: .restorePurchases))
     }
 
+    func testDecodedNativePreferenceOverrideRequestsPreflightForBothActions() throws {
+        for actionType in ["navigate_back", "close_workflow"] {
+            let fixture = try self.nativeOverrideFixture(actionType: actionType, nativeOverride: true)
+            XCTAssertTrue(self.requestsNativeNavigation(fixture))
+        }
+    }
+
+    func testDecodedWindowRulesCanRevealNativeButtonAndItsAncestorForPreflight() throws {
+        for actionType in ["navigate_back", "close_workflow"] {
+            let fixture = try self.nativeOverrideFixture(
+                actionType: actionType, nativeBase: true, hiddenAncestor: true, hiddenButton: true,
+                revealAncestor: true, revealButton: true
+            )
+            XCTAssertTrue(self.requestsNativeNavigation(fixture))
+            let permanentlyHiddenAncestor = try self.nativeOverrideFixture(
+                actionType: actionType, nativeBase: true, hiddenAncestor: true
+            )
+            XCTAssertFalse(self.requestsNativeNavigation(permanentlyHiddenAncestor))
+            for revealAncestor in [false, true] {
+                let permanentlyHidden = try self.nativeOverrideFixture(
+                    actionType: actionType, nativeBase: true, hiddenAncestor: true, hiddenButton: true,
+                    revealAncestor: revealAncestor, revealButton: false
+                )
+                XCTAssertFalse(self.requestsNativeNavigation(permanentlyHidden))
+            }
+        }
+    }
+
+    func testPreflightDiscardsWindowNativeRulesWhenAnotherComponentHasUnsupportedCondition() throws {
+        let fixture = try self.nativeOverrideFixture(
+            actionType: "navigate_back", nativeOverride: true, unsupportedSibling: true
+        )
+        XCTAssertFalse(self.requestsNativeNavigation(fixture))
+        let hidden = try self.nativeOverrideFixture(
+            actionType: "close_workflow", nativeBase: true, hiddenAncestor: true, hiddenButton: true,
+            revealAncestor: true, revealButton: true, unsupportedSibling: true
+        )
+        XCTAssertFalse(self.requestsNativeNavigation(hidden))
+    }
+
+    private func requestsNativeNavigation(_ fixture: PaywallPreviewRenderer.Fixture) -> Bool {
+        NativePaywallNavigationModifier(
+            paywallComponents: fixture.paywallComponents, workflowContext: nil,
+            preferredLocale: Locale(identifier: "en_US")
+        ).requested
+    }
+
+    private func nativeOverrideFixture(
+        actionType: String,
+        nativeBase: Bool = false,
+        nativeOverride: Bool? = nil,
+        hiddenAncestor: Bool = false,
+        hiddenButton: Bool = false,
+        revealAncestor: Bool = false,
+        revealButton: Bool = false,
+        unsupportedSibling: Bool = false
+    ) throws -> PaywallPreviewRenderer.Fixture {
+        var payload = try XCTUnwrap(JSONSerialization.jsonObject(
+            with: Data(PaywallPreviewRenderer.sampleJSON.utf8)
+        ) as? [String: Any])
+        var configs = try XCTUnwrap(payload["components_config"] as? [String: Any])
+        var base = try XCTUnwrap(configs["base"] as? [String: Any])
+        var stack = try XCTUnwrap(base["stack"] as? [String: Any])
+        let labelStack = stack
+        let windowRule: [[String: Any]] = [["type": "window_width_condition", "operator": ">=", "value": 700]]
+        var button: [String: Any] = [
+            "type": "button", "visible": !hiddenButton,
+            "action": ["type": actionType, "use_native_if_possible": nativeBase], "stack": labelStack
+        ]
+        var buttonProperties: [String: Any] = [:]
+        if revealButton { buttonProperties["visible"] = true }
+        if let nativeOverride { buttonProperties["action"] = ["use_native_if_possible": nativeOverride] }
+        if !buttonProperties.isEmpty {
+            button["overrides"] = [["conditions": windowRule, "properties": buttonProperties]]
+        }
+        stack["visible"] = !hiddenAncestor
+        if revealAncestor { stack["overrides"] = [["conditions": windowRule, "properties": ["visible": true]]] }
+        var components = [button]
+        if unsupportedSibling {
+            var text = try XCTUnwrap((labelStack["components"] as? [[String: Any]])?.first)
+            text["overrides"] = [["conditions": [["type": "future_condition"]], "properties": ["text_lid": "title"]]]
+            components.append(text)
+        }
+        stack["components"] = components
+        base["stack"] = stack
+        configs["base"] = base
+        payload["components_config"] = configs
+        let data = try JSONSerialization.data(withJSONObject: payload)
+        return try PaywallPreviewRenderer.load(json: XCTUnwrap(String(data: data, encoding: .utf8)))
+    }
+
     private func toolbarButtons(in view: UIView) -> [UIButton] {
         NativePaywallTestSupport.controls(of: UIButton.self, in: view)
     }

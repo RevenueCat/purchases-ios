@@ -229,7 +229,10 @@ final class ButtonComponentViewTests: TestCase {
     }
 
     func testNativeOnlyHeaderCollapsesButDesignedHeaderRemains() async throws {
-        for (native, hasOtherContent) in [(true, false), (false, false), (true, true)] {
+        let cases: [(Bool, Bool, CGFloat, CGFloat)] = [
+            (true, false, 0, 0), (true, false, 88, 88), (false, false, 0, 100), (true, true, 0, 100)
+        ]
+        for (native, hasOtherContent, safeAreaTop, expectedHeight) in cases {
             let button = PaywallComponent.ButtonComponent(
                 action: .navigateBack, stack: Self.makeButtonStack(label: "Close"), useNativeIfPossible: native
             )
@@ -261,15 +264,200 @@ final class ButtonComponentViewTests: TestCase {
                 )
                 .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
                 .environment(\.screenCondition, .compact)
-                .environment(\.safeAreaInsets, EdgeInsets())
+                .environment(\.safeAreaInsets, EdgeInsets(top: safeAreaTop, leading: 0, bottom: 0, trailing: 0))
             let (window, _) = Self.host(view)
             let settled = expectation(description: "Header layout settled")
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { settled.fulfill() }
             await fulfillment(of: [settled], timeout: 2)
-            XCTAssertEqual(height, native && !hasOtherContent ? 0 : 100, accuracy: 0.5)
+            XCTAssertEqual(height, expectedHeight, accuracy: 0.5)
             window.isHidden = true
             window.rootViewController = nil
         }
+    }
+
+    func testDecodedNativePreferenceOverridesUpdateBodyAndHeaderWithoutDuplicates() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires the existing UnitTestsHostApp")
+        for action in ["navigate_back", "close_workflow"] {
+            for header in [false, true] {
+                for base in [nil, false, true] as [Bool?] {
+                    let fixture = try self.nativeOverrideFixture(
+                        action: action, header: header, baseNative: base,
+                        overrideProperties: ["action": ["use_native_if_possible": base != true]]
+                    )
+                    try await self.assertDecodedNativeTransitions(
+                        fixture: fixture, widths: [800, 390, 800],
+                        expectedNative: [base != true, base == true, base != true],
+                        expectedFallback: [base == true, base != true, base == true],
+                        invokeDismissal: false
+                    )
+                }
+            }
+        }
+    }
+
+    func testConfigurationPreflightInstallsHostForWindowRevealedButtonAndAncestor() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires the existing UnitTestsHostApp")
+        for hiddenAncestor in [false, true] {
+            let fixture = try self.nativeOverrideFixture(
+                action: "navigate_back", header: hiddenAncestor, baseNative: true,
+                overrideProperties: ["visible": true], hiddenButton: !hiddenAncestor,
+                hiddenAncestor: hiddenAncestor
+            )
+            try await self.assertDecodedNativeTransitions(
+                fixture: fixture, widths: [390, 800, 390, 800],
+                expectedNative: [false, true, false, true], expectedFallback: [false, false, false, false],
+                invokeDismissal: true
+            )
+        }
+    }
+
+    // The host request comes from the decoded configuration. The real PaywallsV2View measures
+    // its rendered width, so changing the constraint re-evaluates the authored window rule.
+    private func assertDecodedNativeTransitions(
+        fixture: PaywallPreviewRenderer.Fixture,
+        widths: [CGFloat],
+        expectedNative: [Bool],
+        expectedFallback: [Bool],
+        invokeDismissal: Bool
+    ) async throws {
+        var dismissals = 0
+        let width = NativePaywallWidthTestState(width: widths[0])
+        let owner = NativePaywallUIKitOwner()
+        let paywall = PaywallsV2View(
+            paywallComponents: fixture.paywallComponents, offering: fixture.offering,
+            purchaseHandler: .default(), introEligibilityChecker: BaseSnapshotTest.ineligibleChecker,
+            showZeroDecimalPlacePrices: true, onDismiss: { dismissals += 1 },
+            closeWorkflowAction: { dismissals += 1 },
+            failedToLoadFont: { _ in }, colorScheme: .light
+        )
+        .environment(\.workflowRenderingContext, .init(canNavigateBack: true))
+        .environment(\.paywallLoadingOverride, false)
+        .modifier(NativePaywallNavigationModifier(
+            paywallComponents: fixture.paywallComponents, workflowContext: nil,
+            preferredLocale: Locale(identifier: "en_US")
+        ))
+        .environment(\.nativePaywallNavigationContext, .uiKit(owner))
+        let controller = UIHostingController(rootView: NativePaywallWidthTestView(state: width, content: paywall))
+        let navigation = UINavigationController(rootViewController: controller)
+        owner.prepare(controller: controller)
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let window = UIWindow(windowScene: scene)
+        window.frame = scene.coordinateSpace.bounds
+        window.rootViewController = navigation
+        window.makeKeyAndVisible()
+        defer {
+            window.isHidden = true
+            window.rootViewController = nil
+            scene.windows.first(where: { !$0.isHidden })?.makeKeyAndVisible()
+        }
+        for (index, newWidth) in widths.enumerated() {
+            width.width = newWidth
+            controller.view.layoutIfNeeded()
+            // Flush mounting, geometry updates and native-source lifecycle work before counting controls.
+            let settled = expectation(description: "Decoded native state settled at \(newWidth)")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { settled.fulfill() }
+            await fulfillment(of: [settled], timeout: 2)
+            let (image, markerPixels) = try self.renderedFallbackMarker(in: window)
+            let fallbackMatches = expectedFallback[index] ? markerPixels > 100 : markerPixels == 0
+            XCTAssertEqual(self.closeItems(in: controller).count, expectedNative[index] ? 1 : 0)
+            if !fallbackMatches {
+                let attachment = XCTAttachment(image: image)
+                attachment.name = "Designed fallback at \(newWidth)"
+                attachment.lifetime = .keepAlways
+                self.add(attachment)
+            }
+            if expectedFallback[index] {
+                XCTAssertGreaterThan(markerPixels, 100, "Configured button must render at width \(newWidth)")
+            } else {
+                XCTAssertEqual(markerPixels, 0, "Configured button must be absent at width \(newWidth)")
+            }
+            XCTAssertEqual(navigation.viewControllers.count, 1, "Caller navigation remains intact")
+        }
+        if invokeDismissal {
+            let item = try XCTUnwrap(self.closeItems(in: controller).first)
+            let target = try XCTUnwrap(item.target as? NSObject)
+            target.perform(try XCTUnwrap(item.action), with: item)
+            let invoked = expectation(description: "Dismissal invoked")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { invoked.fulfill() }
+            await fulfillment(of: [invoked], timeout: 2)
+            XCTAssertEqual(dismissals, 1)
+        }
+    }
+
+    /// The authored marker exists only inside the configured button, so it proves that the
+    /// fallback is rendered even when SwiftUI does not expose its text as a UIKit subview.
+    private func renderedFallbackMarker(in window: UIWindow) throws -> (UIImage, Int) {
+        window.layoutIfNeeded()
+        let format = UIGraphicsImageRendererFormat.default()
+        format.scale = 1
+        // Flush SwiftUI's pending display update before inspecting Core Animation's backing pixels.
+        _ = UIGraphicsImageRenderer(bounds: window.bounds, format: format).image { _ in
+            window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
+        }
+        let image = UIGraphicsImageRenderer(bounds: window.bounds, format: format).image { context in
+            window.layer.render(in: context.cgContext)
+        }
+        let cgImage = try XCTUnwrap(image.cgImage)
+        var pixels = [UInt8](repeating: 0, count: cgImage.width * cgImage.height * 4)
+        let context = try XCTUnwrap(CGContext(
+            data: &pixels, width: cgImage.width, height: cgImage.height,
+            bitsPerComponent: 8, bytesPerRow: cgImage.width * 4,
+            space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ))
+        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height))
+        let markerPixels = stride(from: 0, to: pixels.count, by: 4).filter { offset in
+            pixels[offset] > 200 && pixels[offset + 1] < 60 && pixels[offset + 2] > 200
+        }.count
+        return (image, markerPixels)
+    }
+
+    private func nativeOverrideFixture(
+        action: String,
+        header: Bool,
+        baseNative: Bool?,
+        overrideProperties: [String: Any],
+        hiddenButton: Bool = false,
+        hiddenAncestor: Bool = false
+    ) throws -> PaywallPreviewRenderer.Fixture {
+        var payload = try XCTUnwrap(JSONSerialization.jsonObject(
+            with: Data(PaywallPreviewRenderer.sampleJSON.utf8)
+        ) as? [String: Any])
+        var configs = try XCTUnwrap(payload["components_config"] as? [String: Any])
+        var base = try XCTUnwrap(configs["base"] as? [String: Any])
+        let stack = try XCTUnwrap(base["stack"] as? [String: Any])
+        var label = try XCTUnwrap((stack["components"] as? [[String: Any]])?.first)
+        label["text_lid"] = "configured_navigation"
+        var buttonStack = stack
+        buttonStack["components"] = [label]
+        buttonStack["background_color"] = ["light": ["type": "hex", "value": "#FF00FF"]]
+        buttonStack["padding"] = ["top": 12, "bottom": 12, "leading": 12, "trailing": 12]
+        var actionJSON: [String: Any] = ["type": action]
+        if let baseNative { actionJSON["use_native_if_possible"] = baseNative }
+        let rule: [String: Any] = ["type": "window_width_condition", "operator": ">=", "value": 700]
+        var button: [String: Any] = ["type": "button", "action": actionJSON, "stack": buttonStack]
+        if hiddenButton { button["visible"] = false }
+        if !hiddenAncestor {
+            button["overrides"] = [["conditions": [rule], "properties": overrideProperties]]
+        }
+        var container = stack
+        container["components"] = [button]
+        if hiddenAncestor {
+            container["visible"] = false
+            container["overrides"] = [["conditions": [rule], "properties": overrideProperties]]
+        }
+        if header {
+            base["header"] = ["stack": container]
+            var body = stack
+            body["components"] = []
+            base["stack"] = body
+        } else {
+            base["stack"] = container
+        }
+        configs["base"] = base
+        payload["components_config"] = configs
+        payload["components_localizations"] = ["en_US": ["configured_navigation": "Configured navigation"]]
+        let json = try JSONSerialization.data(withJSONObject: payload)
+        return try PaywallPreviewRenderer.load(json: XCTUnwrap(String(data: json, encoding: .utf8)))
     }
 
     private func assertNativeCloseRunsExistingDismissalAndAnalytics(fullScreen: Bool) async throws {
@@ -470,6 +658,18 @@ private extension UIView {
         return self.subviews.contains { $0.containsText(text) }
     }
 
+}
+
+@MainActor
+private final class NativePaywallWidthTestState: ObservableObject {
+    @Published var width: CGFloat
+    init(width: CGFloat) { self.width = width }
+}
+
+private struct NativePaywallWidthTestView<Content: View>: View {
+    @ObservedObject var state: NativePaywallWidthTestState
+    let content: Content
+    var body: some View { self.content.frame(width: self.state.width, height: 300) }
 }
 
 private struct NativeHeaderHeightTestKey: PreferenceKey {

@@ -24,7 +24,7 @@ import Foundation
         public let id: String?
         public let visible: Bool?
         public let action: Action
-        /// Prefer a native navigation close control, retaining this button as a fallback.
+        /// Prefer a native Back or Close control, retaining this button as a fallback.
         public let useNativeIfPossible: Bool
         public let stack: PaywallComponent.StackComponent
         public let transition: PaywallComponent.Transition?
@@ -328,17 +328,49 @@ import Foundation
     final class PartialButtonComponent: PaywallPartialComponent {
 
         public let visible: Bool?
+        public let useNativeIfPossible: Bool?
 
-        public init(visible: Bool? = nil) {
+        public init(visible: Bool? = nil, useNativeIfPossible: Bool? = nil) {
             self.visible = visible
+            self.useNativeIfPossible = useNativeIfPossible
+        }
+
+        private enum CodingKeys: String, CodingKey {
+            case visible
+            case action
+        }
+
+        private enum ActionCodingKeys: String, CodingKey {
+            case useNativeIfPossible
+        }
+
+        required public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            self.visible = try container.decodeIfPresent(Bool.self, forKey: .visible)
+            if container.contains(.action), try !container.decodeNil(forKey: .action) {
+                let action = try container.nestedContainer(keyedBy: ActionCodingKeys.self, forKey: .action)
+                self.useNativeIfPossible = try action.decodeIfPresent(Bool.self, forKey: .useNativeIfPossible)
+            } else {
+                self.useNativeIfPossible = nil
+            }
+        }
+
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encodeIfPresent(self.visible, forKey: .visible)
+            if let useNativeIfPossible {
+                var action = container.nestedContainer(keyedBy: ActionCodingKeys.self, forKey: .action)
+                try action.encode(useNativeIfPossible, forKey: .useNativeIfPossible)
+            }
         }
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(visible)
+            hasher.combine(useNativeIfPossible)
         }
 
         public static func == (lhs: PartialButtonComponent, rhs: PartialButtonComponent) -> Bool {
-            return lhs.visible == rhs.visible
+            return lhs.visible == rhs.visible && lhs.useNativeIfPossible == rhs.useNativeIfPossible
         }
 
     }
