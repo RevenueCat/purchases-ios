@@ -26,7 +26,6 @@ class HTTPRequestTests: TestCase {
     private static let clientTransactionID = "AABBCCDD-1111-2222-3333-444455556666"
 
     private static let paths: [HTTPRequest.Path] = [
-        .getOfferings(appUserID: userID),
         .getIntroEligibility(appUserID: userID),
         .logIn,
         .postAttributionData(appUserID: userID),
@@ -53,7 +52,6 @@ class HTTPRequestTests: TestCase {
         .postReceiptData,
         .postRedeemWebPurchase,
         .health,
-        .getOfferings(appUserID: userID),
         .getProductEntitlementMapping,
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil),
         .remoteConfig(domain: "app")
@@ -67,7 +65,6 @@ class HTTPRequestTests: TestCase {
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil)
     ]
     private static let pathsWithUserID: [HTTPRequest.Path] = [
-        .getOfferings(appUserID: anonymousUser),
         .getIntroEligibility(appUserID: anonymousUser),
         .postAttributionData(appUserID: anonymousUser),
         .postSubscriberAttributes(appUserID: anonymousUser)
@@ -172,7 +169,6 @@ class HTTPRequestTests: TestCase {
             .filter { !$0.needsNonceForSigning }
 
         expect(staticEndpoints) == [
-            .getOfferings(appUserID: Self.userID),
             .getProductEntitlementMapping
         ]
     }
@@ -197,9 +193,6 @@ class HTTPRequestTests: TestCase {
             case .getProductEntitlementMapping:
                 XCTAssertEqual(fallbackUrlsPaths,
                                ["https://api-production.8-lives-cat.io/v1/product_entitlement_mapping"])
-            case .getOfferings:
-                XCTAssertEqual(fallbackUrlsPaths,
-                               ["https://api-production.8-lives-cat.io/v1/offerings"])
             default:
                 XCTAssertTrue(fallbackUrlsPaths.isEmpty)
             }
@@ -230,7 +223,7 @@ class HTTPRequestTests: TestCase {
 
     func testMainPathsAreNotFallbackHostPaths() {
         expect(HTTPRequest.Path.remoteConfig(domain: "app").isFallbackHostPath).to(beFalse())
-        expect(HTTPRequest.Path.getOfferings(appUserID: "user").isFallbackHostPath).to(beFalse())
+        expect(HTTPRequest.Path2.getOfferings(appUserID: "user").isFallbackHostPath).to(beFalse())
         expect(HTTPRequest.Path.logIn.isFallbackHostPath).to(beFalse())
     }
 
@@ -278,7 +271,7 @@ class HTTPRequestTests: TestCase {
     }
 
     func testURLFallbackIndexTakesPrecedenceOverAPISource() {
-        let path: HTTPRequest.Path = .getOfferings(appUserID: Self.userID)
+        let path: HTTPRequest.Path2 = .getOfferings(appUserID: Self.userID)
         expect(path.url(apiSourceURL: URL(string: "https://api.rc-backup.com/"),
                         fallbackUrlIndex: 0,
                         preferIAMPath: false)?.absoluteString)
@@ -478,7 +471,8 @@ class HTTPRequestTests: TestCase {
     }
 
     func testAddNonceIfRequiredWithPathNotRequiringNonce() throws {
-        let request: HTTPRequest = .init(method: .get, path: .getOfferings(appUserID: Self.userID))
+        let request: HTTPRequest = .init(method: .get,
+                                         requestPath: HTTPRequest.Path2.getOfferings(appUserID: Self.userID))
         let mode = Signing.enforcedVerificationMode()
 
         expect(request.requestAddingNonceIfRequired(with: mode).nonce).to(beNil())
@@ -573,7 +567,6 @@ class HTTPRequestTests: TestCase {
     /// Maps each `HTTPRequest.Path` case (other than `.logIn`, which is disallowed under IAM) to the
     /// relative path it should resolve to when IAM access-token authorization is preferred.
     private static let iamPathComponentsByPath: [HTTPRequest.Path: String] = [
-        .getOfferings(appUserID: userID): "customer/offerings",
         .getIntroEligibility(appUserID: userID): "customer/intro_eligibility",
         .postAttributionData(appUserID: userID): "customer/attribution",
         .postOfferForSigning: "offers",
@@ -881,18 +874,21 @@ class HTTPRequestTests2: TestCase {
     private static let clientTransactionID = "AABBCCDD-1111-2222-3333-444455556666"
 
     private static let paths: [HTTPRequest.Path2] = [
-        .getCustomerInfo(appUserID: userID)
+        .getCustomerInfo(appUserID: userID),
+        .getOfferings(appUserID: userID)
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path2> = []
     private static let pathsWithoutETags: Set<HTTPRequest.Path2> = []
     private static let pathsWithSignatureVerification: Set<HTTPRequest.Path2> = [
-        .getCustomerInfo(appUserID: userID)
+        .getCustomerInfo(appUserID: userID),
+        .getOfferings(appUserID: userID)
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path2> = [
         .getCustomerInfo(appUserID: userID)
     ]
     private static let pathsWithUserID: [HTTPRequest.Path2] = [
-        .getCustomerInfo(appUserID: anonymousUser)
+        .getCustomerInfo(appUserID: anonymousUser),
+        .getOfferings(appUserID: anonymousUser)
     ]
 
     func testPathsDontHaveLeadingSlash() {
@@ -993,7 +989,9 @@ class HTTPRequestTests2: TestCase {
             .filter { $0.supportsSignatureVerification }
             .filter { !$0.needsNonceForSigning }
 
-        expect(staticEndpoints) == []
+        expect(staticEndpoints) == [
+            .getOfferings(appUserID: Self.userID)
+        ]
     }
 
     func testPathsEscapeUserID() {
@@ -1011,8 +1009,14 @@ class HTTPRequestTests2: TestCase {
 
     func testPathsWithFallbackUrls() {
         for path in Self.paths {
-            let fallbackUrlsPaths = path.fallbackUrls
-            XCTAssertTrue(fallbackUrlsPaths.isEmpty)
+            let fallbackUrlsPaths = path.fallbackUrls.map { $0.absoluteString }
+            switch path.name {
+            case "get_offerings":
+                XCTAssertEqual(fallbackUrlsPaths,
+                               ["https://api-production.8-lives-cat.io/v1/offerings"])
+            default:
+                XCTAssertTrue(fallbackUrlsPaths.isEmpty)
+            }
         }
     }
 
@@ -1060,7 +1064,7 @@ class HTTPRequestTests2: TestCase {
     }
 
     func testURLFallbackIndexTakesPrecedenceOverAPISource() {
-        let path: HTTPRequest.Path = .getOfferings(appUserID: Self.userID)
+        let path: HTTPRequest.Path2 = .getOfferings(appUserID: Self.userID)
         expect(path.url(apiSourceURL: URL(string: "https://api.rc-backup.com/"),
                         fallbackUrlIndex: 0,
                         preferIAMPath: false)?.absoluteString)
@@ -1260,7 +1264,8 @@ class HTTPRequestTests2: TestCase {
     }
 
     func testAddNonceIfRequiredWithPathNotRequiringNonce() throws {
-        let request: HTTPRequest = .init(method: .get, path: .getOfferings(appUserID: Self.userID))
+        let request: HTTPRequest = .init(method: .get,
+                                         requestPath: HTTPRequest.Path2.getOfferings(appUserID: Self.userID))
         let mode = Signing.enforcedVerificationMode()
 
         expect(request.requestAddingNonceIfRequired(with: mode).nonce).to(beNil())
@@ -1348,5 +1353,290 @@ class HTTPRequestTests2: TestCase {
         expect(headers[sandboxHeader]) == "false"
         expect(headers[HTTPClient.RequestHeader.headerParametersForSignature.rawValue])
             == HTTPRequest.signatureHashHeader(keys: [sandboxHeader], hash: expectedHash)
+    }
+
+    // MARK: - IAM paths
+
+    /// Maps each `HTTPRequest.Path` case (other than `.logIn`, which is disallowed under IAM) to the
+    /// relative path it should resolve to when IAM access-token authorization is preferred.
+    private static let iamPathComponentsByPath: [HTTPRequest.Path2: String] = [
+        .getOfferings(appUserID: userID): "customer/offerings"
+    ]
+
+    func testRewardVerificationStatusPathIncludesAdUnitIDQueryParameter() {
+        let path: HTTPRequest.Path = .rewardVerificationStatus(
+            appUserID: Self.userID,
+            clientTransactionID: Self.clientTransactionID,
+            adUnitID: "ad_unit"
+        )
+        let expected = "/v1/subscribers/\(Self.userID)/ads/reward_verifications/\(Self.clientTransactionID)"
+            + "?ad_unit_id=ad_unit"
+
+        expect(path.relativePath) == expected
+        expect(path.relativeIAMPath) == expected
+    }
+
+    func testRewardVerificationStatusPathKeepsAdUnitIDSlashAndPercentEncodesUnsafeCharacters() {
+        let path: HTTPRequest.Path = .rewardVerificationStatus(
+            appUserID: Self.userID,
+            clientTransactionID: Self.clientTransactionID,
+            adUnitID: "ca-app-pub-123/456 é"
+        )
+
+        expect(path.relativePath) == "/v1/subscribers/\(Self.userID)/ads/reward_verifications/"
+            + "\(Self.clientTransactionID)?ad_unit_id=ca-app-pub-123/456%20%C3%A9"
+    }
+
+    func testRewardVerificationStatusPathOmitsAdUnitIDWhenMissingOrEmpty() {
+        let expected = "/v1/subscribers/\(Self.userID)/ads/reward_verifications/\(Self.clientTransactionID)"
+
+        for adUnitID in [nil, "", "  "] {
+            let path: HTTPRequest.Path = .rewardVerificationStatus(
+                appUserID: Self.userID,
+                clientTransactionID: Self.clientTransactionID,
+                adUnitID: adUnitID
+            )
+
+            expect(path.relativePath) == expected
+            expect(path.relativeIAMPath) == expected
+        }
+    }
+
+    func testRelativeIAMPathMatchesExpectedComponentPerPath() {
+        for (path, expectedComponent) in Self.iamPathComponentsByPath {
+            expect(path.relativeIAMPath).to(
+                equal("/v1/\(expectedComponent)"),
+                description: "Path '\(path)' has an unexpected IAM relative path"
+            )
+        }
+    }
+
+    #if !os(watchOS)
+    func testRelativeIAMPathForLoginEndpointCrashes() {
+        // The `.logIn` endpoint is not allowed once IAM access tokens are enabled: exchanging a
+        // static app-user-id-based endpoint for a token-authenticated one doesn't make sense.
+        expect {
+            _ = HTTPRequest.Path.logIn.relativeIAMPath
+        }.to(throwAssertion())
+    }
+    #endif
+
+    func testUrlPreferringIAMPathUsesIAMRelativePath() {
+        let path: HTTPRequest.Path2 = .getCustomerInfo(appUserID: Self.userID)
+
+        let regularURL = path.url(preferIAMPath: false)
+        let iamURL = path.url(preferIAMPath: true)
+
+        expect(regularURL?.absoluteString) == "https://api.revenuecat.com/v1/subscribers/\(Self.userID)"
+        expect(iamURL?.absoluteString) == "https://api.revenuecat.com/v1/customer"
+        expect(iamURL) != regularURL
+    }
+
+    func testUrlPreferringIAMPathForPathsWithSharedComponentMatchesRegularURL() {
+        // `.health` resolves to the same relative path regardless of IAM preference.
+        let path: HTTPRequest.Path = .health
+
+        expect(path.url(preferIAMPath: true)?.absoluteString) == path.url(preferIAMPath: false)?.absoluteString
+    }
+
+    func testDefaultHTTPRequestPathIsNotAnIAMPath() {
+        for path in Self.paths {
+            expect(path.isIAMPath).to(
+                beFalse(),
+                description: "Path '\(path)' should not be reported as an IAM path by default"
+            )
+        }
+    }
+
+    func testDefaultRelativeIAMPathFallsBackToRelativePathForOtherPathTypes() {
+        // `HTTPRequest.Path2.remoteConfigFallback(...)` doesn't override `relativeIAMPath`, so it should fall back
+        // to the default implementation, which just returns `relativePath`.
+        let path = HTTPRequest.Path2.remoteConfigFallback(domain: "app")
+
+        expect(path.relativeIAMPath) == path.relativePath
+    }
+
+    // MARK: - Token (IAM auth) paths
+
+    private static let tokenPaths: [HTTPRequest.Path] = [
+        .tokenLogin,
+        .tokenRefresh,
+        .tokenLogOut
+    ]
+
+    private static let expectedTokenPathComponents: [HTTPRequest.Path: String] = [
+        .tokenLogin: "/auth/login",
+        .tokenRefresh: "/auth/token",
+        .tokenLogOut: "/auth/revoke"
+    ]
+
+    private static let expectedTokenPathNames: [HTTPRequest.Path: String] = [
+        .tokenLogin: "token_login",
+        .tokenRefresh: "token_refresh",
+        .tokenLogOut: "token_logout"
+    ]
+
+    func testTokenPathsHaveALeadingSlashUnlikeOtherPaths() {
+        // Unlike the rest of `HTTPRequest.Path`, the token (IAM auth) endpoints live outside `/v1`,
+        // so their `pathComponent` includes its own leading slash.
+        for path in Self.tokenPaths {
+            expect(path.pathComponent).to(
+                beginWith("/"),
+                description: "Path '\(path)' should have a leading slash"
+            )
+        }
+    }
+
+    func testTokenPathComponentsMatchExpectedValues() {
+        for (path, expectedComponent) in Self.expectedTokenPathComponents {
+            expect(path.pathComponent) == expectedComponent
+        }
+    }
+
+    func testTokenPathsRelativePathIsNotPrefixedWithV1() {
+        // `relativePath` only prepends `/v1` when the `pathComponent` doesn't already have a
+        // leading slash, so the token endpoints' relative path is identical to their path component.
+        for (path, expectedComponent) in Self.expectedTokenPathComponents {
+            expect(path.relativePath) == expectedComponent
+        }
+    }
+
+    func testTokenPathsRelativeIAMPathMatchesRelativePath() {
+        for path in Self.tokenPaths {
+            expect(path.relativeIAMPath) == path.relativePath
+        }
+    }
+
+    func testTokenPathNamesMatchExpectedValues() {
+        for (path, expectedName) in Self.expectedTokenPathNames {
+            expect(path.name) == expectedName
+        }
+    }
+
+    func testTokenPathsAreAuthenticated() {
+        for path in Self.tokenPaths {
+            expect(path.authenticated).to(
+                beTrue(),
+                description: "Path '\(path)' should be authenticated"
+            )
+        }
+    }
+
+    func testTokenPathsSendETag() {
+        for path in Self.tokenPaths {
+            expect(path.shouldSendEtag).to(
+                beTrue(),
+                description: "Path '\(path)' should send etag"
+            )
+        }
+    }
+
+    func testTokenPathsDoNotSupportSignatureVerification() {
+        for path in Self.tokenPaths {
+            expect(path.supportsSignatureVerification).to(
+                beFalse(),
+                description: "Path '\(path)' should not support signature verification"
+            )
+        }
+    }
+
+    func testTokenPathsRequireNonceForSigning() {
+        for path in Self.tokenPaths {
+            expect(path.needsNonceForSigning).to(
+                beTrue(),
+                description: "Path '\(path)' should require a nonce for signing"
+            )
+        }
+    }
+
+    func testTokenPathsAreIAMPaths() {
+        for path in Self.tokenPaths {
+            expect(path.isIAMPath).to(
+                beTrue(),
+                description: "Path '\(path)' should be reported as an IAM path"
+            )
+        }
+    }
+
+    func testTokenPathsUseAPISources() {
+        for path in Self.tokenPaths {
+            expect(path.usesAPISources).to(beTrue(), description: "Path '\(path)' should use API sources")
+        }
+    }
+
+    func testTokenPathsHaveNoFallbackUrls() {
+        for path in Self.tokenPaths {
+            expect(path.fallbackUrls).to(beEmpty())
+        }
+    }
+
+    func testTokenLoginURLResolvesOutsideOfTheV1Namespace() {
+        let url = HTTPRequest.Path.tokenLogin.url(preferIAMPath: false)
+
+        expect(url?.absoluteString) == "https://api.revenuecat.com/auth/login"
+    }
+
+    func testTokenPathsURLIsTheSameRegardlessOfIAMPreference() {
+        for path in Self.tokenPaths {
+            expect(path.url(preferIAMPath: true)?.absoluteString) == path.url(preferIAMPath: false)?.absoluteString
+        }
+    }
+
+    // MARK: - Bearer authorization header
+
+    func testBearerAuthorizationValueIsNilWhenNoAuthorizationHeaderIsSet() {
+        let headers: HTTPRequest.Headers = [:]
+
+        expect(headers.bearerAuthorizationValue).to(beNil())
+    }
+
+    func testBearerAuthorizationValueParsesBearerToken() {
+        var headers: HTTPRequest.Headers = [:]
+        headers.authorizationValue = "Bearer abc123"
+
+        expect(headers.bearerAuthorizationValue) == "abc123"
+    }
+
+    func testBearerAuthorizationValueIsNilForNonBearerScheme() {
+        var headers: HTTPRequest.Headers = [:]
+        headers.authorizationValue = "Basic abc123"
+
+        expect(headers.bearerAuthorizationValue).to(beNil())
+    }
+
+    func testBearerAuthorizationValueIsNilWhenSchemeHasNoSeparatingSpace() {
+        var headers: HTTPRequest.Headers = [:]
+        headers.authorizationValue = "Bearer"
+
+        expect(headers.bearerAuthorizationValue).to(beNil())
+    }
+
+    func testBearerAuthorizationValueIsNilWhenPrefixIsSimilarButNotExactMatch() {
+        var headers: HTTPRequest.Headers = [:]
+        headers.authorizationValue = "Bearertoken abc123"
+
+        expect(headers.bearerAuthorizationValue).to(beNil())
+    }
+
+    func testSettingBearerAuthorizationValueUpdatesAuthorizationHeader() {
+        var headers: HTTPRequest.Headers = [:]
+        headers.bearerAuthorizationValue = "my-access-token"
+
+        expect(headers.authorizationValue) == "Bearer my-access-token"
+    }
+
+    func testSettingBearerAuthorizationValueToNilClearsAuthorizationHeader() {
+        var headers: HTTPRequest.Headers = [:]
+        headers.authorizationValue = "Bearer abc123"
+        headers.bearerAuthorizationValue = nil
+
+        expect(headers.authorizationValue).to(beNil())
+    }
+
+    func testBearerAuthorizationValueRoundTrips() {
+        var headers: HTTPRequest.Headers = [:]
+        headers.bearerAuthorizationValue = "round-trip-token"
+
+        expect(headers.bearerAuthorizationValue) == "round-trip-token"
     }
 }

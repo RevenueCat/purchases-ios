@@ -102,7 +102,7 @@ class BaseLoadShedderStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
 
         self.logger.verifyMessageWasLogged(
             Strings.network.request_handled_by_load_shedder(
-                HTTPRequest.Path.getOfferings(appUserID: try self.purchases.appUserID)
+                HTTPRequest.Path2.getOfferings(appUserID: try self.purchases.appUserID)
             ),
             level: .debug
         )

@@ -536,7 +536,7 @@ class TokenManagerTests: TestCase {
 
         var duplicateHandlerResult: Bool?
         let secondAction = manager.tokenRefreshRequest(
-            for: Self.makeRequest(path: .getOfferings(appUserID: "user")),
+            for: Self.makeRequest(path: HTTPRequest.Path2.getOfferings(appUserID: "user")),
             response: Self.unauthorizedResponse
         ) { wasSuccessful in
             duplicateHandlerResult = wasSuccessful
@@ -664,7 +664,7 @@ class TokenManagerTests: TestCase {
 
         _ = manager.tokenRefreshRequest(for: Self.makeRequest(), response: Self.unauthorizedResponse) { _ in }
         var duplicateResult: Bool?
-        _ = manager.tokenRefreshRequest(for: Self.makeRequest(path: .getOfferings(appUserID: "user")),
+        _ = manager.tokenRefreshRequest(for: Self.makeRequest(path: HTTPRequest.Path2.getOfferings(appUserID: "user")),
                                         response: Self.unauthorizedResponse) { wasSuccessful in
             duplicateResult = wasSuccessful
         }

@@ -175,7 +175,6 @@ extension HTTPRequest {
 
     enum Path: Hashable {
 
-        case getOfferings(appUserID: String)
         case getIntroEligibility(appUserID: String)
         case logIn
         case postAttributionData(appUserID: String)
@@ -229,8 +228,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var fallbackRelativePath: String? {
         switch self {
-        case .getOfferings:
-            return "/v1/offerings"
         case .getProductEntitlementMapping:
             return "/v1/product_entitlement_mapping"
         default:
@@ -257,8 +254,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var authenticated: Bool {
         switch self {
-        case .getOfferings,
-                .getIntroEligibility,
+        case .getIntroEligibility,
                 .logIn,
                 .postAttributionData,
                 .postOfferForSigning,
@@ -289,8 +285,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var shouldSendEtag: Bool {
         switch self {
-        case .getOfferings,
-                .getIntroEligibility,
+        case .getIntroEligibility,
                 .logIn,
                 .postAttributionData,
                 .postOfferForSigning,
@@ -324,7 +319,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postReceiptData,
                 .postRedeemWebPurchase,
                 .health,
-                .getOfferings,
                 .getProductEntitlementMapping,
                 .getVirtualCurrencies,
                 .spendVirtualCurrencies,
@@ -365,8 +359,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .tokenRefresh,
                 .tokenLogOut:
             return true
-        case .getOfferings,
-                .getIntroEligibility,
+        case .getIntroEligibility,
                 .postSubscriberAttributes,
                 .postAttributionData,
                 .postAdServicesToken,
@@ -403,9 +396,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var pathComponent: String {
         switch self {
-        case let .getOfferings(appUserID):
-            return "subscribers/\(Self.escape(appUserID))/offerings"
-
         case let .getIntroEligibility(appUserID):
             return "subscribers/\(Self.escape(appUserID))/intro_eligibility"
 
@@ -488,8 +478,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         // that the corresponding server paths have not yet been migrated to
         // support access token authorization
         switch self {
-        case .getOfferings:
-            return "customer/offerings"
         case .getIntroEligibility:
             return "customer/intro_eligibility"
         case .logIn:
@@ -543,9 +531,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var name: String {
         switch self {
-        case .getOfferings:
-            return "get_offerings"
-
         case .getIntroEligibility:
             return "get_intro_eligibility"
 

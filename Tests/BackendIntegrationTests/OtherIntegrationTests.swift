@@ -115,7 +115,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         self.logger.verifyMessageWasLogged(
             Strings.network.api_request_completed(
                 .init(method: .get,
-                      path: .getOfferings(appUserID: try self.purchases.appUserID)),
+                      requestPath: HTTPRequest.Path2.getOfferings(appUserID: try self.purchases.appUserID)),
                 httpCode: .notModified,
                 metadata: nil
             ),
@@ -147,7 +147,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
             Strings.network.api_request_started(
                 .init(
                     method: .get,
-                    path: .getOfferings(appUserID: self.purchases.appUserID)
+                    requestPath: HTTPRequest.Path2.getOfferings(appUserID: self.purchases.appUserID)
                 )
             ),
             level: .debug,
@@ -210,7 +210,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
 
         // 4. Block the head of the serial request pipeline with a slow, harmless request,
         // so the requests enqueued next run in a known order once it finishes.
-        let offeringsPath = HTTPRequest.Path.getOfferings(appUserID: anonymousUserID).relativePath
+        let offeringsPath = HTTPRequest.Path2.getOfferings(appUserID: anonymousUserID).relativePath
         stub(
             condition: { $0.url?.absoluteString.hasSuffix(offeringsPath) == true },
             response: { _ in HTTPStubsResponse(data: Data(), statusCode: 400, headers: nil).responseTime(5) }

@@ -254,7 +254,8 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
     func testEndpointsWithStaticSignatureDoNotIncludeHeaderParameterHash() throws {
         self.changeClient(.informational)
 
-        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test"))
+        let request = HTTPRequest(method: .get,
+                                  requestPath: HTTPRequest.Path2.getOfferings(appUserID: "test"))
 
         let result: [String: String]? = waitUntilValue { completion in
             stub(condition: isPath(request.path)) { request in

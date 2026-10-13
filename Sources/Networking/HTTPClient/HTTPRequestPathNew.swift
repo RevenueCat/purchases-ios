@@ -97,7 +97,7 @@ extension HTTPRequest {
              pathComponent: String,
              iamPathComponent: String? = nil,
              fallbackRelativePath: String? = nil,
-             usesAPISources: Bool = false,
+             usesAPISources: Bool = true,
              isFallbackHostPath: Bool = false,
              additionalHeaders: HTTPRequest.Headers = [:],
              responseSignatureContextProvider: ResponseSignatureContextProvider? = nil,
@@ -173,9 +173,18 @@ extension HTTPRequest.Path2 {
                           supportsSignatureVerification: true,
                           needsNonceForSigning: true,
                           pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)",
-                          iamPathComponent: "customer",
-                          fallbackRelativePath: nil,
-                          usesAPISources: true)
+                          iamPathComponent: "customer")
+    }
+
+    static func getOfferings(appUserID: String) -> Self {
+        HTTPRequest.Path2(name: "get_offerings",
+                          authenticated: true,
+                          etagBehavior: .send,
+                          supportsSignatureVerification: true,
+                          needsNonceForSigning: false,
+                          pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/offerings",
+                          iamPathComponent: "customer/offerings",
+                          fallbackRelativePath: "/v1/offerings")
     }
 
     static func remoteConfigFallback(domain: String) -> Self {
@@ -186,6 +195,7 @@ extension HTTPRequest.Path2 {
                           needsNonceForSigning: false,
                           pathComponent: "config/\(domain.trimmedAndEscaped)",
                           fallbackRelativePath: nil,
+                          usesAPISources: false,
                           isFallbackHostPath: true,
                           responseSignatureContextProvider: FallbackSignatureContextProvider())
     }
@@ -195,20 +205,23 @@ extension HTTPRequest.Path2 {
                                                    etagBehavior: .ignore,
                                                    supportsSignatureVerification: false,
                                                    needsNonceForSigning: false,
-                                                   pathComponent: "diagnostics")
+                                                   pathComponent: "diagnostics",
+                                                   usesAPISources: false)
 
     static let postFeatureEvents = HTTPRequest.Path2(name: "post_paywall_events",
                                                      serverHostURL: postFeatureEventsHost,
                                                      etagBehavior: .ignore,
                                                      supportsSignatureVerification: false,
                                                      needsNonceForSigning: false,
-                                                     pathComponent: "events")
+                                                     pathComponent: "events",
+                                                     usesAPISources: false)
 
     static let postAdEvents = HTTPRequest.Path2(name: "post_ad_events",
                                                 serverHostURL: postAdEventsHost,
                                                 etagBehavior: .ignore,
                                                 supportsSignatureVerification: false,
                                                 needsNonceForSigning: false,
-                                                pathComponent: "events")
+                                                pathComponent: "events",
+                                                usesAPISources: false)
 
 }
