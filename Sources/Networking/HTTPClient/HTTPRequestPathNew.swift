@@ -148,3 +148,23 @@ extension HTTPRequest.Path2: HTTPRequestPath {
     static var serverHostURL: URL { SystemInfo.apiBaseURL }
     var shouldSendEtag: Bool { etagBehavior == .send }
 }
+
+extension HTTPRequest.Path2 {
+
+    static func getCustomerInfo(appUserID: String) -> Self {
+        HTTPRequest.Path2(name: "get_customer",
+                          authenticated: true,
+                          etagBehavior: .send,
+                          supportsSignatureVerification: true,
+                          needsNonceForSigning: true,
+                          pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)",
+                          iamPathComponent: "customer",
+                          fallbackRelativePath: nil,
+                          usesAPISources: true,
+                          isFallbackHostPath: false,
+                          additionalHeaders: [:],
+                          responseSignatureContextProvider: DefaultResponseSignatureContextProvider(),
+                          isIAMPath: false)
+    }
+
+}

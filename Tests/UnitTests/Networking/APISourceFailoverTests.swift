@@ -12,7 +12,7 @@ import XCTest
 
 final class APISourceFailoverTests: TestCase {
 
-    private static let eligiblePath: HTTPRequestPath = HTTPRequest.Path.getCustomerInfo(appUserID: "test-user-id")
+    private static let eligiblePath: HTTPRequestPath = HTTPRequest.Path2.getCustomerInfo(appUserID: "test-user-id")
 
     // MARK: - currentSource eligibility
 
