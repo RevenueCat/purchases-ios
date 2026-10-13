@@ -33,7 +33,7 @@ public extension Purchases {
         set { self.checkpointsManager.setPaywallPresenter(newValue) }
     }
 
-    /// The custom presenter used for errors in RevenueCat-presented checkpoint flows.
+    /// The custom presenter used for checkpoint errors, including failures before a flow is presented.
     ///
     /// This presenter is used when the individual
     /// ``checkpoint(_:customVariables:presentationMode:paywallPresenter:errorPresenter:_:)`` call does not provide an
@@ -58,8 +58,8 @@ public extension Purchases {
     ///   - presentationMode: How the SDK presents a matching workflow or its own paywall. Defaults to a sheet.
     ///   - paywallPresenter: A custom presenter used if this checkpoint selects an offering. This overrides the global
     ///     ``paywallPresenter`` for this call.
-    ///   - errorPresenter: A custom presenter used for errors in this checkpoint's RevenueCat-presented flow. This
-    ///     overrides the global ``errorPresenter`` for this call.
+    ///   - errorPresenter: A custom presenter used for errors in this checkpoint, including failures before a flow is
+    ///     presented. This overrides the global ``errorPresenter`` for this call.
     ///   - onPassed: Called on the main actor when the checkpoint passes, with `nil` if no flow matched or a result if
     ///     a matching flow completed.
     func checkpoint(

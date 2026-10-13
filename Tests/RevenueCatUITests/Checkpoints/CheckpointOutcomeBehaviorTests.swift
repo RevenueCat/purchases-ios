@@ -30,9 +30,9 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
         await self.assertCompletedWithNil(.noAction(.noMatch))
     }
 
-    // Invalid checkpoint identifier: do not invoke the callback or the error presenter.
+    // Invalid checkpoint identifier: invoke the error presenter and do not invoke the callback.
     func testInvalidCheckpointIdentifier() async {
-        let errorPresenterCalls = CallCounter()
+        let errorPresenter = ErrorPresentationRecorder()
         let manager = CheckpointsManager { _, _ in
             XCTFail("Invalid identifiers must not reach resolution")
             return .noAction(.noMatch)
@@ -40,41 +40,55 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
 
         let result = await manager.checkpointForCallback(
             identifier: " checkout😀",
-            params: self.params(errorPresenterCalls: errorPresenterCalls)
+            params: self.params(errorPresenter: errorPresenter)
         )
 
         self.assertSuppressed(result)
-        XCTAssertEqual(errorPresenterCalls.count, 0)
+        self.assertTerminalErrorWasPresented(by: errorPresenter, checkpointIdentifier: " checkout😀")
+        XCTAssertEqual(
+            (errorPresenter.presentations.first?.error as NSError?)?.code,
+            ErrorCode.configurationError.rawValue
+        )
+        XCTAssertEqual(
+            errorPresenter.presentations.first?.error.localizedDescription,
+            CheckpointIdentifierValidator.invalidIdentifierLogMessage(" checkout😀")
+        )
     }
 
-    // Checkpoint resolution failure: do not invoke the callback or the error presenter.
+    // Checkpoint resolution failure: invoke the error presenter and do not invoke the callback.
     func testResolutionFailure() async {
-        let errorPresenterCalls = CallCounter()
+        let expectedError = NSError(domain: "CheckpointOutcomeBehaviorTests", code: 1)
+        let errorPresenter = ErrorPresentationRecorder()
         let manager = CheckpointsManager { _, _ in
-            throw NSError(domain: "CheckpointOutcomeBehaviorTests", code: 1)
+            throw expectedError
         }
 
         let result = await manager.checkpointForCallback(
             identifier: "soft_paywall",
-            params: self.params(errorPresenterCalls: errorPresenterCalls)
+            params: self.params(errorPresenter: errorPresenter)
         )
 
         self.assertSuppressed(result)
-        XCTAssertEqual(errorPresenterCalls.count, 0)
+        self.assertTerminalErrorWasPresented(by: errorPresenter, checkpointIdentifier: "soft_paywall")
+        XCTAssertEqual(errorPresenter.presentations.first?.error as NSError?, expectedError)
     }
 
-    // Configuration unavailable: do not invoke the callback or the error presenter.
+    // Configuration unavailable: invoke the error presenter and do not invoke the callback.
     func testConfigurationUnavailable() async {
-        let errorPresenterCalls = CallCounter()
+        let errorPresenter = ErrorPresentationRecorder()
         let manager = CheckpointsManager { _, _ in .noAction(.configurationUnavailable) }
 
         let result = await manager.checkpointForCallback(
             identifier: "soft_paywall",
-            params: self.params(errorPresenterCalls: errorPresenterCalls)
+            params: self.params(errorPresenter: errorPresenter)
         )
 
         self.assertSuppressed(result)
-        XCTAssertEqual(errorPresenterCalls.count, 0)
+        self.assertTerminalErrorWasPresented(by: errorPresenter, checkpointIdentifier: "soft_paywall")
+        XCTAssertEqual(
+            (errorPresenter.presentations.first?.error as NSError?)?.code,
+            ErrorCode.configurationError.rawValue
+        )
     }
 
     // Presentation startup failure: do not invoke the callback or the error presenter.
@@ -204,19 +218,19 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
         file: StaticString = #filePath,
         line: UInt = #line
     ) async {
-        let errorPresenterCalls = CallCounter()
+        let errorPresenter = ErrorPresentationRecorder()
         let manager = CheckpointsManager { _, _ in resolution }
 
         let result = await manager.checkpointForCallback(
             identifier: "soft_paywall",
-            params: self.params(errorPresenterCalls: errorPresenterCalls)
+            params: self.params(errorPresenter: errorPresenter)
         )
 
         guard case let .completed(flowResult) = result else {
             return XCTFail("Expected the callback to be invoked", file: file, line: line)
         }
         XCTAssertNil(flowResult, file: file, line: line)
-        XCTAssertEqual(errorPresenterCalls.count, 0, file: file, line: line)
+        XCTAssertTrue(errorPresenter.presentations.isEmpty, file: file, line: line)
     }
 
     private func assertSuppressed(
@@ -229,10 +243,36 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
         }
     }
 
-    private func params(errorPresenterCalls: CallCounter) -> CheckpointCallParams {
-        return .init(errorPresenter: { _, _ in
-            errorPresenterCalls.count += 1
-        })
+    private func assertTerminalErrorWasPresented(
+        by errorPresenter: ErrorPresentationRecorder,
+        checkpointIdentifier: String,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        XCTAssertEqual(errorPresenter.presentations.count, 1, file: file, line: line)
+        XCTAssertEqual(
+            errorPresenter.presentations.first?.checkpointIdentifier,
+            checkpointIdentifier,
+            file: file,
+            line: line
+        )
+        XCTAssertEqual(errorPresenter.presentations.first?.stage, .beforeFlowPresentation, file: file, line: line)
+        XCTAssertEqual(
+            errorPresenter.presentations.first?.customVariables,
+            ["source": "test"],
+            file: file,
+            line: line
+        )
+    }
+
+    private func params(errorPresenter: ErrorPresentationRecorder) -> CheckpointCallParams {
+        return .init(
+            customVariables: ["source": "test"],
+            errorPresenter: { params, completion in
+                errorPresenter.presentations.append(params)
+                completion.complete()
+            }
+        )
     }
 
     private static func workflow() -> ResolvedCheckpointWorkflow {
@@ -288,8 +328,8 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
 
 }
 
-private final class CallCounter: @unchecked Sendable {
-    var count = 0
+private final class ErrorPresentationRecorder: @unchecked Sendable {
+    var presentations: [ErrorPresentationParams] = []
 }
 
 @MainActor
