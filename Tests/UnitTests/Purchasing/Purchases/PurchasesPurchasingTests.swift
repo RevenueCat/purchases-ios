@@ -932,7 +932,7 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         }
     }
 
-    func testPurchasingProductLogUsesStoreProductID() {
+    func testPurchasingProductLogUsesStoreProductID() async {
         let productIdentifier = "com.revenuecat.product"
         let productWithoutBillingPlan = Self.testStoreProduct(productIdentifier: productIdentifier,
                                                               installmentsInfo: nil)
@@ -950,12 +950,12 @@ class PurchasesPurchasingTests: BasePurchasesTests {
             )
         )
 
-        self.purchases.purchase(product: productWithoutBillingPlan) { (_, _, _, _) in }
+        _ = try? await self.purchases.purchase(product: productWithoutBillingPlan)
         self.logger.verifyMessageWasLogged("Purchasing Product '\(productIdentifier)'")
 
         self.logger.clearMessages()
 
-        self.purchases.purchase(product: monthlyProduct) { (_, _, _, _) in }
+        _ = try? await self.purchases.purchase(product: monthlyProduct)
         self.logger.verifyMessageWasLogged("Purchasing Product '\(productIdentifier):monthly'")
     }
 
