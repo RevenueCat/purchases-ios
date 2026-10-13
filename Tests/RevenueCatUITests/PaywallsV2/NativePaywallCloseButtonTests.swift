@@ -76,6 +76,28 @@ final class NativePaywallCloseButtonTests: TestCase {
         XCTAssertTrue(controller.navigationController === navigation)
     }
 
+    func testUIKitNativeActionErrorsAreLogged() async throws {
+        let controller = UIViewController()
+        let owner = NativePaywallUIKitOwner()
+        owner.prepare(controller: controller)
+        let error = NSError(domain: "NativePaywallCloseButtonTests", code: 1,
+                            userInfo: [NSLocalizedDescriptionKey: "Navigation failed"])
+        owner.install([
+            .init(id: UUID(), label: "Back", perform: { throw error }, role: .back),
+            .init(id: UUID(), label: "Close", perform: { throw error })
+        ])
+        let back = try XCTUnwrap(controller.navigationItem.leftBarButtonItem)
+        let close = try XCTUnwrap(controller.navigationItem.rightBarButtonItem)
+        for item in [back, close] {
+            let target = try XCTUnwrap(item.target as? NSObject)
+            target.perform(try XCTUnwrap(item.action), with: item)
+        }
+        await self.waitForPresentation()
+        self.logger.verifyMessageWasLogged(
+            "Native paywall navigation action failed: Navigation failed", level: .error, expectedCount: 2
+        )
+    }
+
     func testCoordinatorUpdatesBackToCloseWithoutDuplicateRegistration() {
         let coordinator = NativePaywallCloseCoordinator()
         let backID = UUID()
@@ -485,7 +507,7 @@ final class NativePaywallCloseButtonTests: TestCase {
     }
 
     private func toolbarButtons(in view: UIView) -> [UIButton] {
-        NativePaywallTestSupport.toolbarViews(of: UIButton.self, in: view)
+        NativePaywallTestSupport.controls(of: UIButton.self, in: view)
     }
 
     private func assertModalNativeClose(
@@ -610,17 +632,14 @@ final class NativePaywallCloseButtonTests: TestCase {
         window.windowScene?.windows.first(where: { !$0.isHidden })?.makeKeyAndVisible()
     }
 }
-// SwiftUI navigation on iOS 26 owns toolbar controls separately from controller.navigationItem.
+// Inspect controls across the hosted navigation view: floating toolbars can render
+// outside UINavigationBar, and SwiftUI does not store them in controller.navigationItem.
 @available(iOS 15.0, *)
 @MainActor
 enum NativePaywallTestSupport {
-    static func toolbarViews<T: UIView>(of type: T.Type, in view: UIView) -> [T] {
-        func descendants(in view: UIView) -> [T] {
-            if let result = view as? T { return [result] }
-            return view.subviews.flatMap { descendants(in: $0) }
-        }
-        if view is UINavigationBar { return descendants(in: view) }
-        return view.subviews.flatMap { self.toolbarViews(of: type, in: $0) }
+    static func controls<T: UIControl>(of type: T.Type, in view: UIView) -> [T] {
+        if let control = view as? T { return [control] }
+        return view.subviews.flatMap { self.controls(of: type, in: $0) }
     }
 }
 @available(iOS 15.0, *)

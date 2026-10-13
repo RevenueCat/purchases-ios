@@ -298,7 +298,7 @@ final class ButtonComponentViewTests: TestCase {
     }
 
     private func toolbarActions(in view: UIView) -> [UIControl] {
-        NativePaywallTestSupport.toolbarViews(of: UIControl.self, in: view)
+        NativePaywallTestSupport.controls(of: UIControl.self, in: view)
             .filter { $0.allControlEvents.contains(.primaryActionTriggered) }
     }
 

@@ -8,9 +8,19 @@
 //      https://opensource.org/licenses/MIT
 //
 
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS)
+
+@MainActor
+private func performNativePaywallAction(_ action: () async throws -> Void) async {
+    do {
+        try await action()
+    } catch {
+        Logger.error(Strings.paywall_native_navigation_action_failed(error))
+    }
+}
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, *)
 @MainActor
@@ -122,7 +132,7 @@ private struct NativePaywallToolbarClose: View {
     @ViewBuilder var body: some View {
         if self.primary {
             if let back = self.coordinator.action(for: .back) {
-                Button { Task { try await back.perform() } } label: {
+                Button { Task { await performNativePaywallAction(back.perform) } } label: {
                     Image(systemName: "chevron.backward")
                 }
                 .accessibilityLabel(back.label)
@@ -136,7 +146,7 @@ private struct NativePaywallToolbarClose: View {
     @ViewBuilder private func closeButton(_ action: NativePaywallCloseCoordinator.CloseAction) -> some View {
         #if compiler(>=6.2)
         if #available(iOS 26.0, *) {
-            Button(role: .close) { Task { try await action.perform() } }
+            Button(role: .close) { Task { await performNativePaywallAction(action.perform) } }
                 .accessibilityLabel(action.label)
                 .accessibilityIdentifier(NativePaywallUIKitOwner.closeIdentifier)
         } else {
@@ -148,7 +158,7 @@ private struct NativePaywallToolbarClose: View {
     }
 
     private func legacyCloseButton(_ action: NativePaywallCloseCoordinator.CloseAction) -> some View {
-        Button { Task { try await action.perform() } } label: { Image(systemName: "xmark") }
+        Button { Task { await performNativePaywallAction(action.perform) } } label: { Image(systemName: "xmark") }
             .accessibilityLabel(action.label)
             .accessibilityIdentifier(NativePaywallUIKitOwner.closeIdentifier)
     }
@@ -213,12 +223,12 @@ final class NativePaywallUIKitOwner: NSObject, ObservableObject {
 
     @objc private func backTapped() {
         guard let action = self.backAction else { return }
-        Task { try await action() }
+        Task { await performNativePaywallAction(action) }
     }
 
     @objc private func closeTapped() {
         guard let action = self.closeAction else { return }
-        Task { try await action() }
+        Task { await performNativePaywallAction(action) }
     }
 
     func removeClose() {
