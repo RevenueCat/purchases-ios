@@ -583,8 +583,6 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 0
     }
 
-    #if ENABLE_CONFIGURED_AD_REWARDS
-
     func testConfigItemReturnsCommittedItemWithoutRefreshing() async {
         let item = RemoteConfiguration.ConfigItem(content: ["reward": ["type": "future_reward"]])
         self.diskCache.stubbedRead = Self.persisted(
@@ -634,8 +632,6 @@ final class RemoteConfigManagerTests: TestCase {
         expect(item?.content["reward"]).toNot(beNil())
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
     }
-
-    #endif
 
     func testCommittedTopicAfterInFlightRefreshReturnsLatestTopic() async throws {
         self.diskCache.stubbedRead = Self.persisted(

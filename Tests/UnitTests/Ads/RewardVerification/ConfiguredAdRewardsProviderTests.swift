@@ -14,8 +14,6 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-#if ENABLE_CONFIGURED_AD_REWARDS
-
 final class ConfiguredAdRewardsProviderTests: TestCase {
 
     private var manager: MockRemoteConfigManager!
@@ -123,5 +121,3 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
     }
 
 }
-
-#endif
