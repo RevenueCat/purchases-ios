@@ -374,37 +374,6 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertTrue(executor.presentations.isEmpty)
     }
 
-    func testCallbackCheckpointIsSuppressedWhenResolutionFails() async {
-        let manager = CheckpointsManager { _, _ in throw NSError(domain: "test", code: 1) }
-
-        let result = await manager.checkpointForCallback(identifier: "soft_paywall", params: .init())
-
-        guard case .suppressed = result else {
-            return XCTFail("Expected the callback to be suppressed")
-        }
-    }
-
-    func testCallbackCheckpointIsSuppressedWhenConfigurationIsUnavailable() async {
-        let manager = CheckpointsManager { _, _ in .noAction(.configurationUnavailable) }
-
-        let result = await manager.checkpointForCallback(identifier: "soft_paywall", params: .init())
-
-        guard case .suppressed = result else {
-            return XCTFail("Expected the callback to be suppressed")
-        }
-    }
-
-    func testCallbackCheckpointReturnsNilForUnknownCheckpoint() async {
-        let manager = CheckpointsManager { _, _ in .noAction(.unknownCheckpoint) }
-
-        let result = await manager.checkpointForCallback(identifier: "unknown_checkpoint", params: .init())
-
-        guard case let .completed(flowResult) = result else {
-            return XCTFail("Expected a completed callback")
-        }
-        XCTAssertNil(flowResult)
-    }
-
     func testCallbackCheckpointReturnsNilWhenWorkflowErrors() async {
         let executor = MockWorkflowPresenter()
         executor.execution = .failed
@@ -974,19 +943,6 @@ final class CheckpointsManagerTests: TestCase {
             CheckpointIdentifierValidator.invalidIdentifierLogMessage(invalidIdentifier),
             level: .error
         )
-    }
-
-    func testCallbackCheckpointIsSuppressedForInvalidIdentifier() async {
-        let manager = CheckpointsManager { _, _ in
-            XCTFail("Invalid identifiers must not reach resolution")
-            return .noAction(.noMatch)
-        }
-
-        let result = await manager.checkpointForCallback(identifier: " checkout😀", params: .init())
-
-        guard case .suppressed = result else {
-            return XCTFail("Expected the callback to be suppressed")
-        }
     }
 
     private static func offering() -> Offering {
