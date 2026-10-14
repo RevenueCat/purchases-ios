@@ -502,7 +502,7 @@ struct WorkflowPaywallView: View {
         // post-purchase auto-dismiss, swipe-to-dismiss on a sheet, and programmatic parent dismiss.
         // A late configuration failure tracks the same lifecycle immediately before showing its error;
         // the coordinator's fire-once guards prevent this hook from duplicating those events later.
-        .onChange(of: self.transitionState.currentPage?.id) { pageID in
+        .onChangeOf(self.transitionState.currentPage?.id) { pageID in
             self.nativeButtonCoordinator?.activatePage(pageID)
         }
         .task(id: self.nativeButtonCoordinator.map(ObjectIdentifier.init)) {

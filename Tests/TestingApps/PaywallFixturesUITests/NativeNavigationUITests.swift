@@ -95,6 +95,15 @@ final class NativeNavigationUITests: XCTestCase {
         XCTAssertGreaterThan(rootText.frame.height, 0, app.debugDescription)
         XCTAssertEqual(rootText.frame.minY, detailBodyTop, accuracy: 1, app.debugDescription)
         XCTAssertFalse(rootText.frame.intersects(app.buttons[self.closeIdentifier].frame), app.debugDescription)
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = "Workflow root after native Back"
+        screenshot.lifetime = .keepAlways
+        self.add(screenshot)
+        let frames = XCTAttachment(string: "Root: \(rootText.frame)\nContinue: \(app.buttons["Continue"].frame)"
+            + "\nClose: \(app.buttons[self.closeIdentifier].frame)\n\(app.debugDescription)")
+        frames.name = "Workflow root accessibility frames"
+        frames.lifetime = .keepAlways
+        self.add(frames)
         XCTAssertFalse(app.buttons["Continue"].frame.intersects(app.buttons[self.closeIdentifier].frame),
                        app.debugDescription)
         XCTAssertFalse(app.buttons[self.backIdentifier].exists, app.debugDescription)
