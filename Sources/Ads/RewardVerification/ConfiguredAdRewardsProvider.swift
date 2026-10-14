@@ -14,7 +14,21 @@ import Foundation
 
 final class ConfiguredAdRewardsProvider {
 
+    private typealias RewardsByAdUnitID = [String: ConfiguredAdRewards]
+
+    private enum Resolution {
+        case available(generation: Int, rewards: RewardsByAdUnitID)
+        case removed(generation: Int)
+        case unavailable
+    }
+
+    private struct CachedRewards {
+        let generation: Int
+        let rewards: RewardsByAdUnitID?
+    }
+
     private let manager: RemoteConfigManagerType
+    private let cachedRewards: Atomic<CachedRewards?> = .init(nil)
 
     init(manager: RemoteConfigManagerType) {
         self.manager = manager
@@ -26,49 +40,79 @@ final class ConfiguredAdRewardsProvider {
             return nil
         }
 
-        guard let item = await self.manager.configItem(for: .adRewards, itemKey: adUnitId) else {
+        let resolution: Resolution
+        do {
+            resolution = try await self.manager.readConsistent {
+                return await self.resolveConfiguration()
+            } ?? .unavailable
+        } catch {
+            resolution = .unavailable
+        }
+
+        self.updateCache(with: resolution)
+
+        guard let reward = self.cachedRewards.value?.rewards?[adUnitId] else {
             if !(await self.manager.hasCommittedConfig()) {
                 Logger.warn(AdsStrings.configured_ad_rewards_unavailable(adUnitID: adUnitId))
             }
             return nil
         }
 
-        return Self.decode(item.content, adUnitId: adUnitId)
+        return reward
     }
 
-    private static func decode(
-        _ content: [String: AnyDecodable],
-        adUnitId: String
-    ) -> ConfiguredAdRewards? {
-        guard let reward = content["reward"] else {
-            Logger.warn(AdsStrings.configured_ad_rewards_invalid_payload(adUnitID: adUnitId))
-            return nil
+    private func resolveConfiguration() async -> Resolution {
+        let generation = self.manager.configGeneration
+        guard let topic = await self.manager.awaitTopicAndPrefetchBlobsReady(.adRewards) else {
+            return .removed(generation: generation)
         }
 
-        let moreRewards: [AnyDecodable]
-        switch content["more_rewards"] {
-        case nil:
-            moreRewards = []
-        case let .array(rewards):
-            moreRewards = rewards
-        default:
-            Logger.warn(AdsStrings.configured_ad_rewards_invalid_payload(adUnitID: adUnitId))
-            return nil
+        guard topic[Self.blobItemKey]?.blobRef != nil,
+              let data = await self.manager.blobData(for: .adRewards, itemKey: Self.blobItemKey) else {
+            return .unavailable
         }
 
-        return ConfiguredAdRewards(
-            configuredReward: Self.decodeReward(reward, adUnitId: adUnitId),
-            moreRewards: moreRewards.map { Self.decodeReward($0, adUnitId: adUnitId) }
-        )
+        do {
+            return .available(
+                generation: generation,
+                rewards: try Self.decodeConfiguration(data)
+            )
+        } catch {
+            Logger.warn(AdsStrings.configured_ad_rewards_invalid_blob(error: error))
+            return .unavailable
+        }
     }
 
-    private static func decodeReward(
-        _ reward: AnyDecodable,
-        adUnitId: String
-    ) -> AdRewardConfiguration {
+    private func updateCache(with resolution: Resolution) {
+        switch resolution {
+        case let .available(generation, rewards):
+            self.cachedRewards.modify { cached in
+                guard generation >= (cached?.generation ?? Int.min) else { return }
+                cached = .init(generation: generation, rewards: rewards)
+            }
+        case let .removed(generation):
+            self.cachedRewards.modify { cached in
+                guard generation >= (cached?.generation ?? Int.min) else { return }
+                cached = .init(generation: generation, rewards: nil)
+            }
+        case .unavailable:
+            break
+        }
+    }
+
+    private static func decodeConfiguration(_ data: Data) throws -> RewardsByAdUnitID {
+        let payload = try JSONDecoder.default.decode([String: WireConfiguredAdRewards].self, from: data)
+        return payload.mapValues { rewards in
+            ConfiguredAdRewards(
+                configuredReward: Self.decodeReward(rewards.reward),
+                moreRewards: (rewards.moreRewards ?? []).map(Self.decodeReward)
+            )
+        }
+    }
+
+    private static func decodeReward(_ reward: AnyDecodable) -> AdRewardConfiguration {
         guard case let .object(payload) = reward,
               case let .string(type)? = payload["type"] else {
-            Logger.warn(AdsStrings.configured_ad_rewards_invalid_payload(adUnitID: adUnitId))
             return .unsupportedReward
         }
 
@@ -77,7 +121,6 @@ final class ConfiguredAdRewardsProvider {
             guard case let .string(code)? = payload["code"],
                   case let .int(amount)? = payload["amount"],
                   let reward = VirtualCurrencyRewardConfiguration(code: code, amount: amount) else {
-                Logger.warn(AdsStrings.configured_ad_rewards_invalid_payload(adUnitID: adUnitId))
                 return .unsupportedReward
             }
             return .virtualCurrency(reward)
@@ -87,7 +130,6 @@ final class ConfiguredAdRewardsProvider {
                   case let .string(rawDuration)? = payload["duration"],
                   let duration = Self.decodeDuration(rawDuration),
                   let reward = EntitlementRewardConfiguration(identifier: identifier, duration: duration) else {
-                Logger.warn(AdsStrings.configured_ad_rewards_invalid_payload(adUnitID: adUnitId))
                 return .unsupportedReward
             }
             return .entitlement(reward)
@@ -119,5 +161,14 @@ final class ConfiguredAdRewardsProvider {
         guard let component = components.first(where: { $0.0 > 0 }) else { return nil }
         return AdRewardDuration(value: component.0, unit: component.1)
     }
+
+    private static let blobItemKey = "default"
+
+}
+
+private struct WireConfiguredAdRewards: Decodable {
+
+    let reward: AnyDecodable
+    let moreRewards: [AnyDecodable]?
 
 }
