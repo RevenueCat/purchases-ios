@@ -39,26 +39,6 @@ class StackComponentViewModel {
 
     let badgeViewModels: [BadgeContents]
 
-    /// Whether the first child is a full-width image, video, or web view.
-    /// Used by ZStack rendering to push non-hero children below the safe area.
-    var firstChildIsFullWidthMedia: Bool {
-        guard case .zlayer = component.dimension else { return false }
-        guard let first = component.components.first(where: {
-            if case .fallbackHeader = $0 { return false }
-            return true
-        }) else { return false }
-        switch first {
-        case .image(let image):
-            return image.size.width.isFill
-        case .video(let video):
-            return video.size.width.isFill
-        case .webView(let webView):
-            return webView.size.width.isFill
-        default:
-            return false
-        }
-    }
-
     /// Whether this stack renders anything a screen reader can announce, at any depth.
     /// Anything uncertain counts as `true`, so a derived label never overrides wording that works.
     var containsAnnounceableContent: Bool {
@@ -90,6 +70,9 @@ class StackComponentViewModel {
         }
     }
 
+    let heroMediaNode: HeroMediaNode
+    private let offering: Offering?
+
     private let discardRules: Bool
 
     init(
@@ -97,13 +80,19 @@ class StackComponentViewModel {
         viewModels: [PaywallComponentViewModel],
         badgeViewModels: [BadgeContents],
         uiConfigProvider: UIConfigProvider,
-        discardRules: Bool = false
+        discardRules: Bool = false,
+        offering: Offering? = nil
     ) {
         self.component = component
         self.viewModels = viewModels
         self.uiConfigProvider = uiConfigProvider
         self.badgeViewModels = badgeViewModels
         self.discardRules = discardRules
+        self.offering = offering
+        self.heroMediaNode = HeroMediaNode(
+            component: .stack(component), discardRules: discardRules,
+            offering: offering, uiConfigProvider: uiConfigProvider
+        )
         self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
 
@@ -113,7 +102,8 @@ class StackComponentViewModel {
             viewModels: newViewModels,
             badgeViewModels: self.badgeViewModels,
             uiConfigProvider: self.uiConfigProvider,
-            discardRules: self.discardRules
+            discardRules: self.discardRules,
+            offering: self.offering
         )
     }
 

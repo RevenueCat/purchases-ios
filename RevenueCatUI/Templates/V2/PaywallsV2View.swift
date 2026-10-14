@@ -708,6 +708,28 @@ struct LoadedPaywallsV2View: View {
         )
     }
 
+    @Environment(\.componentViewState) private var componentViewState
+    @Environment(\.paywallStateValues) private var paywallStateValues
+    @Environment(\.paywallStateDefaults) private var paywallStateDefaults
+
+    private var heroMediaPresentation: HeroMediaPresentation {
+        paywallState.rootViewModel.heroMediaPresentation(context: HeroMediaContext(
+            state: componentViewState,
+            condition: screenCondition,
+            isEligibleForIntroOffer: introOfferEligibilityContext.isEligible(package: selectedPackageContext.package),
+            isEligibleForPromoOffer: paywallPromoOfferCache.isMostLikelyEligible(for: selectedPackageContext.package),
+            introEligibilityForPackage: { introOfferEligibilityContext.isEligible(package: $0) },
+            promoEligibilityForPackage: { paywallPromoOfferCache.isMostLikelyEligible(for: $0) },
+            conditionContext: uiConfigProvider.conditionContext(
+                selectedPackageId: selectedPackageContext.package?.identifier,
+                customVariables: customVariables,
+                stateValues: paywallStateValues,
+                stateDefaults: paywallStateDefaults,
+                windowSize: paywallWindowSize
+            )
+        ))
+    }
+
     var body: some View {
         GeometryReader { proxy in
             VStack(spacing: 0) {
@@ -719,11 +741,12 @@ struct LoadedPaywallsV2View: View {
                 .fixMacButtons()
                 .environment(\.closeWorkflowAction, self.closeWorkflowAction ?? self.onDismiss)
             }
+            .environment(\.heroMediaPresentation, heroMediaPresentation)
             // Used for header image and sticky footer
             .environment(\.safeAreaInsets, proxy.safeAreaInsets)
             .applyIf(
                 paywallState.rootViewModel.headerViewModel != nil
-                || paywallState.rootViewModel.firstItemIsFullWidthMedia,
+                || heroMediaPresentation.rootIsMedia,
                 apply: { view in
                 view
                     .edgesIgnoringSafeArea(.top)

@@ -1267,6 +1267,10 @@ private struct WorkflowHeaderOverlayPageView: View {
 
     @StateObject private var stateManager: WorkflowHeaderOverlayStateManager
 
+    @Environment(\.componentViewState) private var componentViewState
+    @Environment(\.paywallStateValues) private var paywallStateValues
+    @Environment(\.paywallStateDefaults) private var paywallStateDefaults
+
     @Environment(\.paywallWindowSize)
     private var paywallWindowSize
 
@@ -1364,10 +1368,25 @@ private struct WorkflowHeaderOverlayPageView: View {
                 workflowDefaultPackage: self.page.effectiveWorkflowPackageContext?.selectedPackage
             )
 
+            let heroMediaPresentation = paywallState.rootViewModel.heroMediaPresentation(context: HeroMediaContext(
+                state: componentViewState,
+                condition: ScreenCondition.from(horizontalSizeClass),
+                isEligibleForIntroOffer: introOfferEligibilityContext.isEligible(package: page.packageContext.package),
+                isEligibleForPromoOffer: paywallPromoOfferCache.isMostLikelyEligible(for: page.packageContext.package),
+                introEligibilityForPackage: { introOfferEligibilityContext.isEligible(package: $0) },
+                promoEligibilityForPackage: { paywallPromoOfferCache.isMostLikelyEligible(for: $0) },
+                conditionContext: uiConfigProvider.conditionContext(
+                    selectedPackageId: page.packageContext.package?.identifier,
+                    customVariables: customVariables, stateValues: paywallStateValues,
+                    stateDefaults: paywallStateDefaults, windowSize: paywallWindowSize
+                )
+            ))
+
             HeaderComponentView(
                 viewModel: headerViewModel,
                 onDismiss: self.onDismiss
             )
+            .environment(\.heroMediaPresentation, heroMediaPresentation)
             .fixedSize(horizontal: false, vertical: true)
             .fixMacButtons()
             .frame(maxWidth: .infinity, alignment: .top)

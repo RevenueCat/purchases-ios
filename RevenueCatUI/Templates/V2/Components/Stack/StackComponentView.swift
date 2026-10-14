@@ -102,14 +102,25 @@ struct StackComponentView: View {
             colorScheme: colorScheme
         ) { style in
             if style.visible {
-                self.make(style: style)
+                self.make(style: style, heroContext: HeroMediaContext(
+                    state: self.componentViewState, condition: self.screenCondition,
+                    isEligibleForIntroOffer: isEligibleForIntroOffer,
+                    isEligibleForPromoOffer: isEligibleForPromoOffer,
+                    introEligibilityForPackage: { self.introOfferEligibilityContext.isEligible(package: $0) },
+                    promoEligibilityForPackage: { self.paywallPromoOfferCache.isMostLikelyEligible(for: $0) },
+                    conditionContext: self.viewModel.uiConfigProvider.conditionContext(
+                        selectedPackageId: self.selectedPackageId, customVariables: self.customVariables,
+                        stateValues: self.paywallStateValues, stateDefaults: self.paywallStateDefaults,
+                        windowSize: self.paywallWindowSize
+                    )
+                ))
             }
         }
     }
 
     @ViewBuilder
     // swiftlint:disable:next function_body_length
-    private func make(style: StackComponentStyle) -> some View {
+    private func make(style: StackComponentStyle, heroContext: HeroMediaContext) -> some View {
         Group {
             switch style.dimension {
             case .vertical(let horizontalAlignment, let distribution):
@@ -141,8 +152,9 @@ struct StackComponentView: View {
                 ZStack(alignment: alignment.stackAlignment) {
                     ComponentsView(
                         componentViewModels: self.viewModel.viewModels,
-                        pushNonFirstChildrenBelowSafeArea: self.viewModel.firstChildIsFullWidthMedia,
-                        onDismiss: self.onDismiss
+                        onDismiss: self.onDismiss,
+                        safeAreaExemptChildIndex: self.viewModel.heroMediaNode
+                            .firstVisibleDirectMediaIndex(context: heroContext)
                     )
                 }
                 // These alignments define the position of inner components inside the ZStack

@@ -98,13 +98,24 @@ struct ViewModelFactory {
             )
         }
 
-        return RootViewModel(
+        let rootViewModel = RootViewModel(
             headerViewModel: headerViewModel,
             stackViewModel: rootStackViewModel,
             stickyFooterViewModel: stickyFooterViewModel,
             firstItemIsFullWidthMedia: rootFirstItemMedia != nil,
             localizationProvider: localizationProvider
         )
+        rootViewModel.heroMediaNode = HeroMediaNode(
+            component: .stack(componentsConfig.stack),
+            discardRules: self.discardRules, offering: offering, uiConfigProvider: uiConfigProvider
+        )
+        rootViewModel.headerHeroMediaNode = componentsConfig.header.map {
+            HeroMediaNode(
+                component: .stack($0.stack), discardRules: self.discardRules,
+                offering: offering, uiConfigProvider: uiConfigProvider
+            )
+        }
+        return rootViewModel
     }
 
     // swiftlint:disable:next function_body_length cyclomatic_complexity function_parameter_count
@@ -590,13 +601,14 @@ struct ViewModelFactory {
             viewModels: viewModels,
             badgeViewModels: badgeViewModels,
             uiConfigProvider: uiConfigProvider,
-            discardRules: discardRules
+            discardRules: discardRules,
+            offering: offering
         )
     }
 
     /// Matches the dashboard approach: drill through nested stacks only to find the first
     /// non-stack component, and check if it's a full-width image, video, or web view.
-    enum FirstMediaType {
+    enum FirstMediaType: Equatable {
         case image
         case video
         case webView
