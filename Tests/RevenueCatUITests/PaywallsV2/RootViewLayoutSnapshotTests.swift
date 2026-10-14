@@ -145,6 +145,51 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
         try assertPWENG317ResponsiveHero(zlayer: true)
     }
 
+    func testPWENG317EmergePreviewFixturesUseLoadedRenderer() throws {
+        for (name, width, zlayer) in [("narrow", 400, false), ("wide", 900, false), ("zlayer", 400, true)] {
+            let fixture = ResponsiveHeroSafeAreaPreview(width: CGFloat(width), zlayer: zlayer)
+            let controller = UIHostingController(rootView: fixture)
+            let window = UIWindow(frame: CGRect(x: 0, y: 0, width: width, height: 700))
+            window.backgroundColor = .white
+            window.rootViewController = controller
+            window.makeKeyAndVisible()
+            controller.view.frame = window.bounds
+            window.layoutIfNeeded()
+            controller.beginAppearanceTransition(true, animated: false)
+            controller.endAppearanceTransition()
+            let deadline = Date().addingTimeInterval(5)
+            var screenshot = Self.pweng317Capture(window)
+            while Date() < deadline {
+                RunLoop.main.run(until: Date().addingTimeInterval(0.05))
+                screenshot = Self.pweng317Capture(window)
+                if let redTop = Self.pweng317FirstColoredRow(screenshot, green: false) {
+                    if width == 900, Self.pweng317FirstColoredRow(screenshot, green: true) != nil { break }
+                    if width == 400, redTop <= 1 { break }
+                }
+            }
+            let attachment = XCTAttachment(image: screenshot)
+            attachment.name = "PWENG317-Emerge-\(name)"
+            attachment.lifetime = .keepAlways
+            add(attachment)
+            let redTop = try XCTUnwrap(Self.pweng317FirstColoredRow(screenshot, green: false))
+            if width == 900 {
+                let greenTop = try XCTUnwrap(Self.pweng317FirstColoredRow(screenshot, green: true))
+                XCTAssertGreaterThanOrEqual(greenTop, 60)
+                XCTAssertGreaterThan(redTop, greenTop)
+            } else {
+                XCTAssertLessThanOrEqual(redTop, 1)
+                XCTAssertNil(Self.pweng317FirstColoredRow(screenshot, green: true))
+            }
+            if zlayer {
+                let textTop = try XCTUnwrap(Self.pweng317FirstColoredRow(screenshot, green: false, blue: true))
+                XCTAssertGreaterThanOrEqual(textTop, 60)
+            }
+            window.isHidden = true
+            window.rootViewController = nil
+            window.resignKey()
+        }
+    }
+
     private func assertPWENG317ResponsiveHero(zlayer: Bool) throws {
         let redURL = try Self.pweng317ImageURL(color: .red, name: "hero")
         let greenURL = try Self.pweng317ImageURL(color: .green, name: "side")
