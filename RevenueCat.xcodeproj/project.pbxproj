@@ -3253,6 +3253,7 @@
 		A1B2C3D42FEA000000000002 /* RemoteConfigBlobHealthTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigBlobHealthTests.swift; sourceTree = "<group>"; };
 		A1C4E7B209D8F3561B4E7C90 /* WebViewInstance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewInstance.swift; sourceTree = "<group>"; };
 		A1D3F80D2D524F51BA60157C /* ButtonComponentViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonComponentViewTests.swift; sourceTree = "<group>"; };
+		8791899B9EC6689C720D475D /* NativePaywallNavigationPreferenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativePaywallNavigationPreferenceTests.swift; sourceTree = "<group>"; };
 		A1E0F0012F297A0100000001 /* EventsManagerStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventsManagerStrings.swift; sourceTree = "<group>"; };
 		A524378A284FFF0200E788BD /* AttributionPosterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionPosterTests.swift; sourceTree = "<group>"; };
 		A525BF4A26C320D100C354C4 /* SubscriberAttributesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberAttributesManager.swift; sourceTree = "<group>"; };
@@ -3783,6 +3784,7 @@
 				0E4CCD8E9E454A2EB3760E06 /* ButtonComponentViewModelMappingTests.swift */,
 				BF1EED2238264990801EEA0B /* ButtonComponentAccessibilityLabelTests.swift */,
 				A1D3F80D2D524F51BA60157C /* ButtonComponentViewTests.swift */,
+				8791899B9EC6689C720D475D /* NativePaywallNavigationPreferenceTests.swift */,
 				9F2A6D48C1B34E7295D8F0A3 /* BrowserNavigateToTests.swift */,
 				AAAA44750000000000000031 /* ExternalPurchaseLinkTests.swift */,
 				AAAA44830000000000000021 /* HostedCheckoutTests.swift */,
