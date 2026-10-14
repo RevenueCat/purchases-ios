@@ -646,6 +646,34 @@ jobs:
           path: fastlane/test_output
           destination: scan-test-output
 
+  revenuecat-ads-tests:
+    executor:
+      name: macos-executor
+      xcode_version: "27.0.0"
+    steps:
+      - checkout
+      - install-dependencies:
+          install_xcbeautify: false
+      - update-spm-installation-commit
+      - run:
+          name: SPM RevenueCatAds Release Build
+          command: cd AdapterSDKs/RevenueCatAds && swift build -c release
+          no_output_timeout: 30m
+      - run:
+          name: RevenueCatAds unit tests
+          command: bundle exec fastlane test_revenuecat_ads
+          no_output_timeout: 10m
+          environment:
+            DEVICE: iPhone 17,OS=27.0
+      - compress_result_bundle:
+          directory: fastlane/test_output
+          bundle_name: revenuecat_ads
+      - store_test_results:
+          path: fastlane/test_output/revenuecat_ads/tests.xml
+      - store_artifacts:
+          path: fastlane/test_output
+          destination: scan-test-output
+
   spm-receipt-parser:
     executor:
       name: macos-executor
@@ -2407,6 +2435,9 @@ workflows:
       - revenuecat-admob-tests:
           context:
             - slack-secrets
+      - revenuecat-ads-tests:
+          context:
+            - slack-secrets
 
       # =============================================================
       # Hold gate for the Full Test Suite
@@ -2604,6 +2635,7 @@ workflows:
             - spm-receipt-parser
             - check-app-extension-safe-api-usage
             - revenuecat-admob-tests
+            - revenuecat-ads-tests
             - deploy-purchase-tester
             - run-workflow-maestro-tests
             - run-all-maestro-e2e-tests
@@ -2909,6 +2941,9 @@ workflows:
       - revenuecat-admob-tests:
           context:
             - slack-secrets
+      - revenuecat-ads-tests:
+          context:
+            - slack-secrets
       - deploy-purchase-tester:
           dry_run: true
           context:
@@ -2976,6 +3011,7 @@ workflows:
             - installation-tests-carthage
             - api-tests
             - revenuecat-admob-tests
+            - revenuecat-ads-tests
             - deploy-purchase-tester
             - binary_size_analysis
 
