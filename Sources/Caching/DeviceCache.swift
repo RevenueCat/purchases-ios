@@ -349,6 +349,43 @@ class DeviceCache {
         }
     }
 
+    func merge(subscriberAttributes: SubscriberAttribute.Dictionary, appUserID: String) {
+        self.lockingUserDefaults.write {
+            let localAttributes = Self.storedSubscriberAttributes($0, appUserID: appUserID)
+
+            // start with the new attributes as the source of truth
+            var merged = subscriberAttributes
+            for (id, localAttribute) in localAttributes {
+                if let newAttribute = subscriberAttributes[id] {
+                    if localAttribute.setTime > newAttribute.setTime {
+                        // the existing attribute was modified more recently than the one we're asked to save
+                        // keep the existing one so it can still get synced
+                        merged[id] = localAttribute
+                    } else {
+                        // the new attribute was modified more recently than the local attribute
+                        // the new attribute overrides the locally saved one
+                    }
+                } else {
+                    // the new set of information does not have this locally-saved attribute
+                    if localAttribute.isSynced {
+                        // the attribute was already synced. therefore it has been *deleted* on the server
+                        // do nothing here to remove it from the locally cached attributes
+                    } else {
+                        // the existing attribute has NOT been synced
+                        // therefore we need to preserve it so it can be saved
+                        merged[id] = localAttribute
+                    }
+                }
+            }
+
+            if merged != localAttributes {
+                // use "set" instead of "store", because the latter does its own naive merging
+                // that would preserve a deleted-from-the-server attribute in the local cache
+                Self.set($0, subscriberAttributesByKey: merged, appUserID: appUserID)
+            }
+        }
+    }
+
     func subscriberAttribute(attributeKey: String, appUserID: String) -> SubscriberAttribute? {
         return self.userDefaults.read {
             Self.storedSubscriberAttributes($0, appUserID: appUserID)[attributeKey]
@@ -712,6 +749,20 @@ private extension DeviceCache {
             subscriberAttributesForAppUserID[key] = attributes.asDictionary()
         }
         groupedSubscriberAttributes[appUserID] = subscriberAttributesForAppUserID
+        userDefaults.set(groupedSubscriberAttributes, forKey: CacheKeys.subscriberAttributes)
+    }
+
+    static func set(
+        _ userDefaults: UserDefaults,
+        subscriberAttributesByKey: [String: SubscriberAttribute],
+        appUserID: String
+    ) {
+        var groupedSubscriberAttributes = Self.storedAttributesForAllUsers(userDefaults)
+        if subscriberAttributesByKey.isEmpty {
+            groupedSubscriberAttributes.removeValue(forKey: appUserID)
+        } else {
+            groupedSubscriberAttributes[appUserID] = subscriberAttributesByKey.mapValues { $0.asDictionary() }
+        }
         userDefaults.set(groupedSubscriberAttributes, forKey: CacheKeys.subscriberAttributes)
     }
 

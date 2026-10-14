@@ -274,6 +274,11 @@ class CustomerInfoManager {
             do {
                 let jsonData = try JSONEncoder.default.encode(customerInfo)
                 self.deviceCache.cache(customerInfo: jsonData, appUserID: appUserID)
+
+                if let attrs = customerInfo.subscriber.subscriberAttributes?.attributes {
+                    let map = Dictionary(uniqueKeysWithValues: attrs.map { ($0.key, $0) })
+                    self.deviceCache.merge(subscriberAttributes: map, appUserID: appUserID)
+                }
             } catch {
                 Logger.error(Strings.customerInfo.error_encoding_customerinfo(error))
             }

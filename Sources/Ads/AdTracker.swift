@@ -270,6 +270,31 @@ public final class AdTracker: NSObject {
     }
 
     /**
+     Tracks when an ad SDK reports that the user earned a reward.
+
+     Use this method for manual rewarded ad integrations that don't use RevenueCat reward verification.
+     If you use RevenueCat reward verification, the SDK tracks this event automatically when
+     ``Purchases/pollRewardVerification(clientTransactionID:trackingMetadata:)`` starts.
+
+     - Parameter data: The earned reward event data
+
+     ## Example:
+     ```swift
+     Purchases.shared.adTracker.trackAdRewardEarnedUnverified(.init(
+         networkName: "AdMob",
+         mediatorName: .adMob,
+         adFormat: .rewarded,
+         placement: "home_screen",
+         adUnitId: "ca-app-pub-123",
+         impressionId: "impression-456"
+     ))
+     ```
+     */
+    public func trackAdRewardEarnedUnverified(_ data: AdRewardEarnedUnverified) {
+        self.trackAdRewardEarnedUnverified(data, captureMethod: .manual)
+    }
+
+    /**
      Tracks when the ad SDK reports a user-earned reward, before server-side verification has completed.
 
      - Parameter data: The earned (unverified) reward event data

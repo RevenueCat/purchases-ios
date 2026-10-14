@@ -503,7 +503,11 @@ struct WorkflowPaywallView: View {
         // values every page reads when re-resolving `state` conditions.
         .environment(\.paywallStateValues, self.stateStore.values)
         .environment(\.paywallStateDefaults, self.stateStore.defaults)
-        .displayError(self.workflowPresentationError, onDismiss: self.onDismiss)
+        // The external presenter owns the error, so don't show the built-in alert too.
+        .displayError(
+            self.onPresentationError == nil ? self.workflowPresentationError : .constant(nil),
+            onDismiss: self.onDismiss
+        )
         .modifier(PaywallURLEventsModifier(purchaseHandler: self.purchaseHandler))
     }
 

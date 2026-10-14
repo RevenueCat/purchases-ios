@@ -127,6 +127,7 @@ enum Strings {
     case web_checkout_load_failed(String)
     case web_checkout_http_error(statusCode: Int)
     case web_checkout_content_process_terminated
+    case web_checkout_external_url_not_opened(scheme: String)
     case hosted_checkout_dismissed_without_returning
 
     // Exit Offers
@@ -417,6 +418,8 @@ extension Strings: CustomStringConvertible {
             return "Web checkout failed to load. The server responded with HTTP status code \(statusCode)."
         case .web_checkout_content_process_terminated:
             return "Web checkout content process terminated."
+        case .web_checkout_external_url_not_opened(let scheme):
+            return "Web checkout could not open a '\(scheme)' link. The checkout page stays as it was."
         case .hosted_checkout_dismissed_without_returning:
             return "The checkout was closed before the page reported an outcome. " +
             "It is kept, so that buying again carries on with it."

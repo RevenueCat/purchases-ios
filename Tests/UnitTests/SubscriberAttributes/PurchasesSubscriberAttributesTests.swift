@@ -1241,4 +1241,127 @@ class PurchasesSubscriberAttributesTests: TestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetATTConsentStatusParameters?.appUserID) == appUserID
     }
 
+    // MARK: - attributesForCurrentUser
+
+    func testAttributesForCurrentUserIsEmptyWhenNothingIsStored() {
+        expect(self.attribution.attributesForCurrentUser).to(beEmpty())
+    }
+
+    func testAttributesForCurrentUserExposesKeyValueAndLastUpdatedDate() throws {
+        let setTime = Date(timeIntervalSince1970: 1_600_000_000)
+        let stored = SubscriberAttribute(withKey: "$email", value: "user@example.com", isSynced: true, setTime: setTime)
+        self.mockDeviceCache.merge(subscriberAttributes: [stored.key: stored],
+                                   appUserID: self.mockIdentityManager.currentAppUserID)
+
+        let attributes = self.attribution.attributesForCurrentUser
+
+        expect(attributes).to(haveCount(1))
+        let attribute = try XCTUnwrap(attributes.first)
+        expect(attribute.key) == "$email"
+        expect(attribute.value) == "user@example.com"
+        expect(attribute.lastUpdatedDate) == setTime
+    }
+
+    func testAttributesForCurrentUserIncludesSyncedAndUnsyncedAttributes() {
+        let synced = SubscriberAttribute(withKey: "band", value: "Rush", isSynced: true, setTime: Date())
+        let unsynced = SubscriberAttribute(withKey: "song", value: "YYZ", isSynced: false, setTime: Date())
+        self.mockDeviceCache.merge(subscriberAttributes: [synced.key: synced, unsynced.key: unsynced],
+                                   appUserID: self.mockIdentityManager.currentAppUserID)
+
+        let values = Dictionary(uniqueKeysWithValues: self.attribution.attributesForCurrentUser.map {
+            ($0.key, $0.value)
+        })
+
+        expect(values) == ["band": "Rush", "song": "YYZ"]
+    }
+
+    func testAttributesForCurrentUserExcludesOtherUsersAttributes() {
+        let mine = SubscriberAttribute(withKey: "band", value: "Rush", isSynced: true, setTime: Date())
+        let theirs = SubscriberAttribute(withKey: "song", value: "YYZ", isSynced: true, setTime: Date())
+        self.mockDeviceCache.merge(subscriberAttributes: [mine.key: mine],
+                                   appUserID: self.mockIdentityManager.currentAppUserID)
+        self.mockDeviceCache.merge(subscriberAttributes: [theirs.key: theirs], appUserID: "another_user")
+
+        expect(self.attribution.attributesForCurrentUser.map(\.key)) == ["band"]
+    }
+
+    func testAttributesForCurrentUserFollowsCurrentAppUserID() {
+        let first = SubscriberAttribute(withKey: "band", value: "Rush", isSynced: true, setTime: Date())
+        let second = SubscriberAttribute(withKey: "band", value: "Yes", isSynced: true, setTime: Date())
+        self.mockDeviceCache.merge(subscriberAttributes: [first.key: first], appUserID: "first_user")
+        self.mockDeviceCache.merge(subscriberAttributes: [second.key: second], appUserID: "second_user")
+
+        self.mockIdentityManager.mockAppUserID = "first_user"
+        expect(self.attribution.attributesForCurrentUser.map(\.value)) == ["Rush"]
+
+        self.mockIdentityManager.mockAppUserID = "second_user"
+        expect(self.attribution.attributesForCurrentUser.map(\.value)) == ["Yes"]
+    }
+
+    func testAttributesForCurrentUserExcludesSyncedAttributesWithBlankValues() {
+        let present = SubscriberAttribute(withKey: "band", value: "Rush", isSynced: true, setTime: Date())
+        let deleted = SubscriberAttribute(withKey: "$email", value: nil, isSynced: true, setTime: Date())
+        self.mockDeviceCache.merge(subscriberAttributes: [present.key: present, deleted.key: deleted],
+                                   appUserID: self.mockIdentityManager.currentAppUserID)
+
+        expect(self.attribution.attributesForCurrentUser.map(\.key)) == ["band"]
+    }
+
+    func testAttributesForCurrentUserExcludesUnsyncedAttributesWithBlankValues() {
+        let present = SubscriberAttribute(withKey: "band", value: "Rush", isSynced: false, setTime: Date())
+        let deleted = SubscriberAttribute(withKey: "$email", value: "", isSynced: false, setTime: Date())
+        self.mockDeviceCache.merge(subscriberAttributes: [present.key: present, deleted.key: deleted],
+                                   appUserID: self.mockIdentityManager.currentAppUserID)
+
+        expect(self.attribution.attributesForCurrentUser.map(\.key)) == ["band"]
+    }
+
+    func testAttributesForCurrentUserIsEmptyWhenAllValuesAreBlank() {
+        let deleted = SubscriberAttribute(withKey: "$email", value: nil, isSynced: true, setTime: Date())
+        self.mockDeviceCache.merge(subscriberAttributes: [deleted.key: deleted],
+                                   appUserID: self.mockIdentityManager.currentAppUserID)
+
+        expect(self.attribution.attributesForCurrentUser).to(beEmpty())
+    }
+
+    func testAttributesForCurrentUserExcludesAttributeDeletedLocallyAfterBeingSynced() {
+        let original = SubscriberAttribute(withKey: "$email",
+                                           value: "user@example.com",
+                                           isSynced: true,
+                                           setTime: Date(timeIntervalSince1970: 1_600_000_000))
+        let cleared = SubscriberAttribute(withKey: "$email",
+                                          value: nil,
+                                          isSynced: false,
+                                          setTime: Date(timeIntervalSince1970: 1_600_000_060))
+        let appUserID = self.mockIdentityManager.currentAppUserID
+        self.mockDeviceCache.merge(subscriberAttributes: [original.key: original], appUserID: appUserID)
+        expect(self.attribution.attributesForCurrentUser.map(\.key)) == ["$email"]
+
+        self.mockDeviceCache.merge(subscriberAttributes: [cleared.key: cleared], appUserID: appUserID)
+
+        expect(self.attribution.attributesForCurrentUser).to(beEmpty())
+    }
+
+    func testAttributesForCurrentUserExcludesNullValuesFromCustomerInfo() throws {
+        let appUserID = self.mockIdentityManager.currentAppUserID
+        let info = try CustomerInfo(data: [
+            "request_date": "2019-08-16T10:30:42Z",
+            "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": appUserID,
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any],
+                "original_application_version": NSNull(),
+                "subscriber_attributes": [
+                    "band": ["value": "Rush", "updated_at_ms": 1_600_000_000_000] as [String: Any],
+                    "$email": ["value": NSNull(), "updated_at_ms": 1_600_000_000_000] as [String: Any]
+                ]
+            ] as [String: Any]
+        ])
+
+        self.customerInfoManager.cache(customerInfo: info, appUserID: appUserID)
+
+        expect(self.attribution.attributesForCurrentUser.map(\.key)) == ["band"]
+    }
+
 }

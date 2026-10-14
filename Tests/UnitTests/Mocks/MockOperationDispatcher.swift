@@ -59,7 +59,10 @@ class MockOperationDispatcher: OperationDispatcher {
     var shouldInvokeDispatchOnWorkerThreadBlock = true
     var forwardToOriginalDispatchOnWorkerThread = false
     var invokedDispatchOnWorkerThreadDelayParam: JitterableDelay?
-    var invokedDispatchOnWorkerThreadDelayParams: [JitterableDelay?] = []
+    private let workerThreadDelayParams: Atomic<[JitterableDelay?]> = .init([])
+    var invokedDispatchOnWorkerThreadDelayParams: [JitterableDelay?] {
+        return self.workerThreadDelayParams.value
+    }
     /// Keeps blocks in `heldWorkerThreadBlocks` instead of invoking them, like a queue waiting on a delay.
     var shouldHoldDispatchOnWorkerThreadBlocks = false
     private(set) var heldWorkerThreadBlocks: [@Sendable () -> Void] = []
@@ -67,7 +70,7 @@ class MockOperationDispatcher: OperationDispatcher {
     override func dispatchOnWorkerThread(jitterableDelay delay: JitterableDelay = .none,
                                          block: @escaping @Sendable () -> Void) {
         self.invokedDispatchOnWorkerThreadDelayParam = delay
-        self.invokedDispatchOnWorkerThreadDelayParams.append(delay)
+        self.workerThreadDelayParams.modify { $0.append(delay) }
         self.invokedDispatchOnWorkerThread = true
         self.invokedDispatchOnWorkerThreadCount += 1
         if self.forwardToOriginalDispatchOnWorkerThread {
