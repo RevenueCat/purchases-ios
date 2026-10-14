@@ -35,9 +35,6 @@ struct SubscriptionDetailView: View {
     @Environment(\.navigationOptions)
     var navigationOptions
 
-    @Environment(\.openURL)
-    var openURL
-
     @Environment(\.supportInformation)
     private var support
 
@@ -302,11 +299,22 @@ private extension SubscriptionDetailView {
 
     @ViewBuilder
     func contactSupportView(_ url: URL) -> some View {
+        if #available(iOS 18.0, *) {
+            OpenURLReader { openURL in
+                contactSupportButton { openURL(url) }
+            }
+        } else {
+            // On iOS 16 and 17, reading `openURL` here loops forever once a screen is pushed on top.
+            contactSupportButton { URLUtilities.openURLIfNotAppExtension(url) }
+        }
+    }
+
+    func contactSupportButton(open: @escaping () -> Void) -> some View {
         AsyncButton {
             if RuntimeUtils.isSimulator {
                 self.showSimulatorAlert = true
             } else {
-                openURL(url)
+                open()
             }
         } label: {
             CompatibilityLabeledContent(localization[.contactSupport])
@@ -337,6 +345,22 @@ private extension SubscriptionDetailView {
         .padding(.horizontal)
         .buttonStyle(.customerCenterButtonStyle(for: colorScheme))
         .tint(colorScheme == .dark ? .white : .black)
+    }
+}
+
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+private struct OpenURLReader<Content: View>: View {
+
+    @Environment(\.openURL)
+    private var openURL
+
+    let content: (OpenURLAction) -> Content
+
+    var body: some View {
+        content(openURL)
     }
 }
 
