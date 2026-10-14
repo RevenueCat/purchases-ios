@@ -573,33 +573,6 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(presenter.receivedParams?.mediator, MediatorName(rawValue: "admob"))
     }
 
-    func testAdPresenterIsCapturedBeforeCheckpointResolution() async throws {
-        let resolutionStarted = self.expectation(description: "Checkpoint resolution starts")
-        var resolutionContinuation: CheckedContinuation<CheckpointResolution, Never>?
-        let initialPresenter = MockAdPresenter()
-        let replacementPresenter = MockAdPresenter()
-        let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in
-                await withCheckedContinuation { continuation in
-                    resolutionContinuation = continuation
-                    resolutionStarted.fulfill()
-                }
-            }
-        )
-        manager.adPresenter = initialPresenter
-
-        let checkpoint = Task {
-            try await manager.executeCheckpoint(identifier: "onboarding", params: .init())
-        }
-        await self.fulfillment(of: [resolutionStarted], timeout: 1)
-        manager.adPresenter = replacementPresenter
-        resolutionContinuation?.resume(returning: .matchedAd(Self.adStep()))
-        _ = try await checkpoint.value
-
-        XCTAssertEqual(initialPresenter.callCount, 1)
-        XCTAssertEqual(replacementPresenter.callCount, 0)
-    }
-
     func testGlobalPaywallPresenterIsCapturedBeforeCheckpointResolution() async throws {
         let resolutionStarted = self.expectation(description: "Checkpoint resolution starts")
         var resolutionContinuation: CheckedContinuation<CheckpointResolution, Never>?

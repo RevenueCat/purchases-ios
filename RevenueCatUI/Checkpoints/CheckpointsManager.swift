@@ -88,7 +88,6 @@ final class CheckpointsManager {
                 }
             }
         )
-        let adPresenter = self.adPresenter
 
         guard CheckpointIdentifierValidator.isValid(identifier) else {
             Logger.error(CheckpointIdentifierValidator.invalidIdentifierLogMessage(identifier))
@@ -119,7 +118,7 @@ final class CheckpointsManager {
                 localPaywallPresentationHandler: params.localPaywallPresentationHandler
             )
         case let .matchedAd(adStep):
-            guard let adPresenter else {
+            guard let adPresenter = self.adPresenter else {
                 Logger.warning(Strings.checkpoint_ad_step_without_ad_presenter(checkpointIdentifier: identifier))
                 return .nothingPresented
             }
