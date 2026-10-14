@@ -194,12 +194,15 @@ public struct PaywallView: View {
 
     init(configuration: PaywallViewConfiguration, paywallViewOwnsPurchaseHandler: Bool = true) {
         self.paywallViewOwnsPurchaseHandler = paywallViewOwnsPurchaseHandler
-        if paywallViewOwnsPurchaseHandler {
+        if configuration.purchaseHandler.isCustomerCenterPreview {
+            // An isolated preview must not create an unused handler that subscribes to global purchases.
+            self._internalPurchaseHandler = .init(wrappedValue: configuration.purchaseHandler)
+            self.externalPurchaseHandler = configuration.purchaseHandler
+        } else if paywallViewOwnsPurchaseHandler {
             self._internalPurchaseHandler = .init(wrappedValue: configuration.purchaseHandler)
             self.externalPurchaseHandler = PurchaseHandler.default()
         } else {
-            // this is unused and is only present to fulfill the need to have an object assigned
-            // to a @StateObject
+            // This StateObject is unused when the external handler owns the purchase state.
             self._internalPurchaseHandler = .init(wrappedValue: PurchaseHandler.default())
             self.externalPurchaseHandler = configuration.purchaseHandler
         }
@@ -319,6 +322,7 @@ public struct PaywallView: View {
     }
 
     func showZeroDecimalPlacePrices(countries: [String]?) -> Bool {
+        guard !purchaseHandler.isCustomerCenterPreview else { return false }
         if Purchases.isConfigured, let countries, let currentCountry = Purchases.shared.storeFrontCountryCode {
             return countries.contains(currentCountry)
         } else {
@@ -451,6 +455,7 @@ private extension PaywallView {
     }
 
     func failedToLoadFont(_ fontConfig: UIConfig.FontsConfig) {
+        guard !purchaseHandler.isCustomerCenterPreview else { return }
         if Purchases.isConfigured {
             Purchases.shared.failedToLoadFontWithConfig(fontConfig)
         }
