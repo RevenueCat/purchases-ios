@@ -110,6 +110,41 @@ final class SetupTests: AdapterTestCase {
         XCTAssertFalse(firstState === secondState)
         XCTAssertTrue(stashedState === secondState)
     }
+
+    func testDisablingVerificationClearsOptionsAndStoredState() {
+        let fakeAd = FakeRewardedAd()
+        RewardVerification.Setup.install(on: fakeAd, token: Self.testToken)
+
+        fakeAd.disableRewardVerification()
+        fakeAd.disableRewardVerification()
+
+        XCTAssertNil(fakeAd.serverSideVerificationOptions)
+        XCTAssertNil(RewardVerification.Setup.verificationState(for: fakeAd))
+    }
+
+    func testDisablingVerificationClearsCustomOptionsWithoutStoredState() {
+        let fakeAd = FakeRewardedAd()
+        let options = GoogleMobileAds.ServerSideVerificationOptions()
+        options.userIdentifier = "custom-user"
+        options.customRewardText = "custom-data"
+        fakeAd.serverSideVerificationOptions = options
+
+        fakeAd.disableRewardVerification()
+
+        XCTAssertNil(fakeAd.serverSideVerificationOptions)
+        XCTAssertNil(RewardVerification.Setup.verificationState(for: fakeAd))
+    }
+
+    func testVerificationCanBeEnabledAgainAfterDisabling() {
+        let fakeAd = FakeRewardedAd()
+        RewardVerification.Setup.install(on: fakeAd, token: Self.testToken)
+        fakeAd.disableRewardVerification()
+
+        let state = RewardVerification.Setup.install(on: fakeAd, token: Self.testToken)
+
+        XCTAssertNotNil(fakeAd.serverSideVerificationOptions)
+        XCTAssertTrue(RewardVerification.Setup.verificationState(for: fakeAd) === state)
+    }
 }
 
 // MARK: - Test doubles

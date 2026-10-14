@@ -10,6 +10,7 @@ import Foundation
 import GoogleMobileAds
 import RevenueCat
 import SwiftUI
+import UIKit
 
 /// Displays a prompt for an already-loaded rewarded ad with RevenueCat reward verification.
 ///
@@ -35,6 +36,8 @@ import SwiftUI
 @MainActor
 public struct RewardedAdPrompt<Content: View>: View {
 
+    private let prompt: RewardedAdPromptView<Content>
+
     /// Creates a prompt for an already-loaded rewarded ad.
     ///
     /// - Parameters:
@@ -58,7 +61,15 @@ public struct RewardedAdPrompt<Content: View>: View {
         onResult: @escaping @MainActor (RewardedAdPromptVerificationResult) -> Void,
         @ViewBuilder content: @escaping (RewardedAdPromptContext) -> Content
     ) {
-        fatalError("Implemented in the next stacked PR.")
+        self.prompt = .init(
+            session: session,
+            rewardedAd: rewardedAd,
+            placement: placement,
+            resultDispatcherFactory: {
+                VerifiedRewardResultDispatcher(onResult: onResult)
+            },
+            content: content
+        )
     }
 
     /// Creates a prompt for an already-loaded rewarded interstitial ad.
@@ -84,12 +95,20 @@ public struct RewardedAdPrompt<Content: View>: View {
         onResult: @escaping @MainActor (RewardedAdPromptVerificationResult) -> Void,
         @ViewBuilder content: @escaping (RewardedAdPromptContext) -> Content
     ) {
-        fatalError("Implemented in the next stacked PR.")
+        self.prompt = .init(
+            session: session,
+            rewardedAd: rewardedAd,
+            placement: placement,
+            resultDispatcherFactory: {
+                VerifiedRewardResultDispatcher(onResult: onResult)
+            },
+            content: content
+        )
     }
 
     /// The offer content until the prompt is accepted.
     public var body: some View {
-        EmptyView()
+        self.prompt
     }
 
 }
@@ -120,6 +139,8 @@ public struct RewardedAdPrompt<Content: View>: View {
 @MainActor
 public struct RewardedAdPromptWithoutVerification<Content: View>: View {
 
+    private let prompt: RewardedAdPromptView<Content>
+
     /// Creates a prompt for an already-loaded rewarded ad.
     ///
     /// - Parameters:
@@ -143,7 +164,15 @@ public struct RewardedAdPromptWithoutVerification<Content: View>: View {
         onResult: @escaping @MainActor (RewardedAdPromptUnverifiedResult) -> Void,
         @ViewBuilder content: @escaping (RewardedAdPromptContext) -> Content
     ) {
-        fatalError("Implemented in the next stacked PR.")
+        self.prompt = .init(
+            session: session,
+            rewardedAd: rewardedAd,
+            placement: placement,
+            resultDispatcherFactory: {
+                UnverifiedRewardResultDispatcher(onResult: onResult)
+            },
+            content: content
+        )
     }
 
     /// Creates a prompt for an already-loaded rewarded interstitial ad.
@@ -169,12 +198,100 @@ public struct RewardedAdPromptWithoutVerification<Content: View>: View {
         onResult: @escaping @MainActor (RewardedAdPromptUnverifiedResult) -> Void,
         @ViewBuilder content: @escaping (RewardedAdPromptContext) -> Content
     ) {
-        fatalError("Implemented in the next stacked PR.")
+        self.prompt = .init(
+            session: session,
+            rewardedAd: rewardedAd,
+            placement: placement,
+            resultDispatcherFactory: {
+                UnverifiedRewardResultDispatcher(onResult: onResult)
+            },
+            content: content
+        )
     }
 
     /// The offer content until the prompt is accepted.
     public var body: some View {
-        EmptyView()
+        self.prompt
+    }
+
+}
+
+@available(iOS 15.0, *)
+@MainActor
+private struct RewardedAdPromptView<Content: View>: View {
+
+    @Environment(\.rewardedAdPromptDependencies) private var dependencies
+
+    let session: RewardedAdPromptSession?
+    let rewardedAd: any RewardedAdPromptAd
+    let placement: String?
+    let resultDispatcherFactory: @MainActor () -> any RewardedAdPromptResultDispatching
+    let content: (RewardedAdPromptContext) -> Content
+
+    var body: some View {
+        RewardedAdPromptStateView(
+            session: self.session,
+            ad: self.rewardedAd,
+            placement: self.placement,
+            resultDispatcherFactory: self.resultDispatcherFactory,
+            dependencies: self.dependencies ?? .live,
+            content: self.content
+        )
+        .id(ObjectIdentifier(self.rewardedAd))
+    }
+
+}
+
+@available(iOS 15.0, *)
+@MainActor
+private struct RewardedAdPromptStateView<Content: View>: View {
+
+    @StateObject private var model: RewardedAdPromptModel
+
+    private let content: (RewardedAdPromptContext) -> Content
+    private let resultDispatcherFactory: @MainActor () -> any RewardedAdPromptResultDispatching
+    private let session: RewardedAdPromptSession?
+    private let placement: String?
+
+    init(
+        session: RewardedAdPromptSession?,
+        ad rewardedAd: any RewardedAdPromptAd,
+        placement: String?,
+        resultDispatcherFactory: @escaping @MainActor () -> any RewardedAdPromptResultDispatching,
+        dependencies: RewardedAdPromptDependencies,
+        @ViewBuilder content: @escaping (RewardedAdPromptContext) -> Content
+    ) {
+        self._model = StateObject(wrappedValue: RewardedAdPromptModel(
+            session: session,
+            ad: rewardedAd,
+            placement: placement,
+            resultDispatcherFactory: resultDispatcherFactory,
+            dependencies: dependencies
+        ))
+        self.content = content
+        self.resultDispatcherFactory = resultDispatcherFactory
+        self.session = session
+        self.placement = placement
+    }
+
+    var body: some View {
+        Group {
+            if let context = self.model.context(resultDispatcherFactory: self.resultDispatcherFactory) {
+                self.content(context)
+                    .onAppear {
+                        self.model.promptDidAppear(session: self.session, placement: self.placement)
+                    }
+            }
+        }
+        .background {
+            RewardedAdPromptPresentationAnchor { viewController in
+                self.model.setPresentationAnchor(viewController)
+            }
+            .frame(width: 0, height: 0)
+        }
+        .task {
+            await self.model.prepareIfNeeded()
+        }
     }
 
 }
