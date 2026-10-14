@@ -157,6 +157,11 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
             window.layoutIfNeeded()
             controller.beginAppearanceTransition(true, animated: false)
             controller.endAppearanceTransition()
+            defer {
+                window.isHidden = true
+                window.rootViewController = nil
+                window.resignKey()
+            }
             let deadline = Date().addingTimeInterval(5)
             var screenshot = Self.pweng317Capture(window)
             while Date() < deadline {
@@ -164,7 +169,8 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
                 screenshot = Self.pweng317Capture(window)
                 if let redTop = Self.pweng317FirstColoredRow(screenshot, green: false) {
                     if width == 900, Self.pweng317FirstColoredRow(screenshot, green: true) != nil { break }
-                    if width == 400, redTop <= 1 { break }
+                    if width == 400, let fixtureTop = Self.pweng317FixtureTop(controller, in: window),
+                       abs(CGFloat(redTop) - fixtureTop) <= 1 { break }
                 }
             }
             let attachment = XCTAttachment(image: screenshot)
@@ -172,22 +178,29 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
             attachment.lifetime = .keepAlways
             add(attachment)
             let redTop = try XCTUnwrap(Self.pweng317FirstColoredRow(screenshot, green: false))
+            // The enclosing SwiftUI host can position this UIKit fixture below a phone's notch.
+            // Assert against the fixture's own origin, not the enclosing window's absolute origin.
+            let fixtureTop = try XCTUnwrap(Self.pweng317FixtureTop(controller, in: window))
             if width == 900 {
                 let greenTop = try XCTUnwrap(Self.pweng317FirstColoredRow(screenshot, green: true))
-                XCTAssertGreaterThanOrEqual(greenTop, 60)
+                XCTAssertGreaterThanOrEqual(CGFloat(greenTop) - fixtureTop, 60)
                 XCTAssertGreaterThan(redTop, greenTop)
             } else {
-                XCTAssertLessThanOrEqual(redTop, 1)
+                XCTAssertEqual(CGFloat(redTop), fixtureTop, accuracy: 1)
                 XCTAssertNil(Self.pweng317FirstColoredRow(screenshot, green: true))
             }
             if zlayer {
                 let textTop = try XCTUnwrap(Self.pweng317FirstColoredRow(screenshot, green: false, blue: true))
-                XCTAssertGreaterThanOrEqual(textTop, 60)
+                XCTAssertGreaterThanOrEqual(CGFloat(textTop) - fixtureTop, 60)
             }
-            window.isHidden = true
-            window.rootViewController = nil
-            window.resignKey()
         }
+    }
+
+    private static func pweng317FixtureTop(_ controller: UIViewController, in window: UIWindow) -> CGFloat? {
+        if controller is UIHostingController<AnyView> {
+            return controller.view.convert(controller.view.bounds.origin, to: window).y
+        }
+        return controller.children.lazy.compactMap { pweng317FixtureTop($0, in: window) }.first
     }
 
     private func assertPWENG317ResponsiveHero(zlayer: Bool) throws {
