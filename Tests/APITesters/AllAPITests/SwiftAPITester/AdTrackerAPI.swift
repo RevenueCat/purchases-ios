@@ -20,6 +20,7 @@ func checkAdTrackerAPI() {
         let mediatorName: MediatorName = MediatorName(rawValue: "")
         let _: MediatorName = .adMob
         let _: MediatorName = .appLovin
+        let _: MediatorName = .revenueCat
         let _: String = mediatorName.rawValue
 
         let adFormat: AdFormat = AdFormat(rawValue: "")
