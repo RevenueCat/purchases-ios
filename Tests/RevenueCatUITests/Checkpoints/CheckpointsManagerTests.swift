@@ -958,12 +958,12 @@ private extension CheckpointsManagerTests {
             checkpointIdentifier: "test_checkpoint",
             error: NSError(domain: "test", code: 1),
             customVariables: [:],
-            flowCanContinue: true
+            stage: .duringFlowPresentation
         )
     }
 
     static var errorPresentationCompletion: ErrorPresentationCompletion {
-        return .init { _ in }
+        return .init {}
     }
 
 }

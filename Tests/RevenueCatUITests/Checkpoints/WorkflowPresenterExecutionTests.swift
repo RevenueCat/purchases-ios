@@ -129,7 +129,7 @@ final class WorkflowPresenterExecutionTests: TestCase {
             workflow: self.workflow(),
             customVariables: customVariables,
             presentationMode: .modalSheet,
-            errorPresentationHandler: { _, completion in completion.complete(.continue) }
+            errorPresentationHandler: { _, completion in completion.complete() }
         )
     }
 

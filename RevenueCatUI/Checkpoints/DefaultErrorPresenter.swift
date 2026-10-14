@@ -71,8 +71,8 @@ final class DefaultErrorPresenter: ErrorPresenter {
         if let current = self.presentation {
             let superseded = self.pendingPresentation
             self.pendingPresentation = next
-            superseded?.completion.complete(.retry)
-            self.finish(current, result: .retry)
+            superseded?.completion.complete()
+            self.finish(current)
         } else {
             self.beginPresentation(next)
         }
@@ -81,7 +81,7 @@ final class DefaultErrorPresenter: ErrorPresenter {
     private func beginPresentation(_ current: Presentation) {
         guard let host = self.presentationContextProvider() else {
             Logger.error("Cannot present checkpoint error: no presentation context found.")
-            current.completion.complete(current.params.flowCanContinue ? .retry : .continue)
+            current.completion.complete()
             return
         }
 
@@ -99,21 +99,15 @@ final class DefaultErrorPresenter: ErrorPresenter {
     }
 
     private func acknowledge(_ current: Presentation) {
-        self.finish(
-            current,
-            result: current.params.flowCanContinue ? .retry : .continue
-        )
+        self.finish(current)
     }
 
-    private func finish(
-        _ current: Presentation,
-        result: ErrorPresentationCompletion.Result
-    ) {
+    private func finish(_ current: Presentation) {
         guard self.presentation === current, !current.isFinishing else { return }
         current.isFinishing = true
 
         let completed = { [self] in
-            current.completion.complete(result)
+            current.completion.complete()
             guard self.presentation === current else { return }
 
             self.presentation = nil
@@ -151,7 +145,7 @@ final class DefaultErrorPresenter: ErrorPresenter {
 final class DefaultErrorPresenter: ErrorPresenter {
 
     func present(params: ErrorPresentationParams, completion: ErrorPresentationCompletion) {
-        completion.complete(params.flowCanContinue ? .retry : .continue)
+        completion.complete()
     }
 
 }

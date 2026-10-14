@@ -30,7 +30,7 @@ final class DefaultErrorPresenterTests: TestCase {
 
         XCTAssertEqual(harness.presentedTitles, ["Error"])
         XCTAssertEqual(harness.presentedMessages, ["boom"])
-        XCTAssertEqual(harness.results, [])
+        XCTAssertEqual(harness.completionCount, 0)
     }
 
     func testPurchaseErrorUsesExistingPaywallMessageFormatting() {
@@ -43,7 +43,7 @@ final class DefaultErrorPresenterTests: TestCase {
                 checkpointIdentifier: "test_checkpoint",
                 error: error,
                 customVariables: [:],
-                flowCanContinue: true
+                stage: .duringFlowPresentation
             ),
             completion: harness.completion
         )
@@ -51,28 +51,28 @@ final class DefaultErrorPresenterTests: TestCase {
         XCTAssertEqual(harness.presentedMessages.first, expectedMessage)
     }
 
-    func testRecoverableErrorAcknowledgementRetries() {
+    func testRecoverableErrorAcknowledgementCompletes() {
         let harness = Harness()
         harness.presenter.present(
-            params: Self.params(flowCanContinue: true),
+            params: Self.params(stage: .duringFlowPresentation),
             completion: harness.completion
         )
 
         harness.acknowledgement?()
 
-        XCTAssertEqual(harness.results, ["retry"])
+        XCTAssertEqual(harness.completionCount, 1)
     }
 
     func testTerminalErrorAcknowledgementContinues() {
         let harness = Harness()
         harness.presenter.present(
-            params: Self.params(flowCanContinue: false),
+            params: Self.params(stage: .beforeFlowPresentation),
             completion: harness.completion
         )
 
         harness.acknowledgement?()
 
-        XCTAssertEqual(harness.results, ["continue"])
+        XCTAssertEqual(harness.completionCount, 1)
     }
 
     func testOnlyFirstAcknowledgementCounts() {
@@ -83,31 +83,31 @@ final class DefaultErrorPresenterTests: TestCase {
         acknowledgement?()
         acknowledgement?()
 
-        XCTAssertEqual(harness.results, ["retry"])
+        XCTAssertEqual(harness.completionCount, 1)
     }
 
-    func testNewErrorReplacesEarlierPresentationWithRetry() {
+    func testNewErrorCompletesEarlierPresentation() {
         let harness = Harness()
-        var secondResults: [String] = []
+        var secondCompletionCount = 0
         harness.presenter.present(params: Self.params(), completion: harness.completion)
         let staleAcknowledgement = harness.acknowledgement
 
         harness.presenter.present(
-            params: Self.params(flowCanContinue: false),
-            completion: .init { secondResults.append(Self.name(of: $0)) }
+            params: Self.params(stage: .beforeFlowPresentation),
+            completion: .init { secondCompletionCount += 1 }
         )
 
-        XCTAssertEqual(harness.results, ["retry"])
+        XCTAssertEqual(harness.completionCount, 1)
         staleAcknowledgement?()
-        XCTAssertEqual(harness.results, ["retry"])
+        XCTAssertEqual(harness.completionCount, 1)
         harness.acknowledgement?()
-        XCTAssertEqual(secondResults, ["continue"])
+        XCTAssertEqual(secondCompletionCount, 1)
     }
 
     func testNewestErrorWinsWhilePreviousAlertIsDismissing() {
         let harness = Harness(defersDismissal: true)
-        var secondResults: [String] = []
-        var thirdResults: [String] = []
+        var secondCompletionCount = 0
+        var thirdCompletionCount = 0
         harness.presenter.present(
             params: Self.params(message: "first"),
             completion: harness.completion
@@ -115,51 +115,51 @@ final class DefaultErrorPresenterTests: TestCase {
 
         harness.presenter.present(
             params: Self.params(message: "second"),
-            completion: .init { secondResults.append(Self.name(of: $0)) }
+            completion: .init { secondCompletionCount += 1 }
         )
         harness.presenter.present(
-            params: Self.params(message: "third", flowCanContinue: false),
-            completion: .init { thirdResults.append(Self.name(of: $0)) }
+            params: Self.params(message: "third", stage: .beforeFlowPresentation),
+            completion: .init { thirdCompletionCount += 1 }
         )
 
-        XCTAssertEqual(secondResults, ["retry"])
+        XCTAssertEqual(secondCompletionCount, 1)
         XCTAssertEqual(harness.presentedMessages, ["first"])
 
         harness.completeNextDismissal()
 
-        XCTAssertEqual(harness.results, ["retry"])
+        XCTAssertEqual(harness.completionCount, 1)
         XCTAssertEqual(harness.presentedMessages, ["first", "third"])
-        XCTAssertEqual(thirdResults, [])
+        XCTAssertEqual(thirdCompletionCount, 0)
 
         harness.acknowledgement?()
         harness.completeNextDismissal()
 
-        XCTAssertEqual(harness.results, ["retry"])
-        XCTAssertEqual(secondResults, ["retry"])
-        XCTAssertEqual(thirdResults, ["continue"])
+        XCTAssertEqual(harness.completionCount, 1)
+        XCTAssertEqual(secondCompletionCount, 1)
+        XCTAssertEqual(thirdCompletionCount, 1)
     }
 
     func testMissingPresentationContextDoesNotLeaveFlowWaiting() {
-        var recoverableResults: [String] = []
-        var terminalResults: [String] = []
+        var recoverableCompletionCount = 0
+        var terminalCompletionCount = 0
         let presenter = DefaultErrorPresenter(presentationContextProvider: { nil })
 
         presenter.present(
-            params: Self.params(flowCanContinue: true),
-            completion: .init { recoverableResults.append(Self.name(of: $0)) }
+            params: Self.params(stage: .duringFlowPresentation),
+            completion: .init { recoverableCompletionCount += 1 }
         )
         presenter.present(
-            params: Self.params(flowCanContinue: false),
-            completion: .init { terminalResults.append(Self.name(of: $0)) }
+            params: Self.params(stage: .beforeFlowPresentation),
+            completion: .init { terminalCompletionCount += 1 }
         )
 
-        XCTAssertEqual(recoverableResults, ["retry"])
-        XCTAssertEqual(terminalResults, ["continue"])
+        XCTAssertEqual(recoverableCompletionCount, 1)
+        XCTAssertEqual(terminalCompletionCount, 1)
     }
 
     private static func params(
         message: String = "boom",
-        flowCanContinue: Bool = true
+        stage: ErrorPresentationStage = .duringFlowPresentation
     ) -> ErrorPresentationParams {
         return .init(
             checkpointIdentifier: "test_checkpoint",
@@ -169,16 +169,8 @@ final class DefaultErrorPresenterTests: TestCase {
                 userInfo: [NSLocalizedDescriptionKey: message]
             ),
             customVariables: [:],
-            flowCanContinue: flowCanContinue
+            stage: stage
         )
-    }
-
-    private static func name(of result: ErrorPresentationCompletion.Result) -> String {
-        switch result.action {
-        case .retry: return "retry"
-        case .continue: return "continue"
-        case .navigateBack: return "navigateBack"
-        }
     }
 
     @MainActor
@@ -188,7 +180,7 @@ final class DefaultErrorPresenterTests: TestCase {
         var presentedTitles: [String] = []
         var presentedMessages: [String] = []
         var acknowledgement: (@MainActor () -> Void)?
-        var results: [String] = []
+        var completionCount = 0
         var deferredAlerts: [DeferredDismissalViewController] = []
 
         init(defersDismissal: Bool = false) {
@@ -212,8 +204,8 @@ final class DefaultErrorPresenterTests: TestCase {
             }
         )
 
-        lazy var completion = ErrorPresentationCompletion { [weak self] result in
-            self?.results.append(DefaultErrorPresenterTests.name(of: result))
+        lazy var completion = ErrorPresentationCompletion { [weak self] in
+            self?.completionCount += 1
         }
 
         func completeNextDismissal() {
