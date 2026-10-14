@@ -46,10 +46,8 @@ public extension Purchases {
 
     /// The presenter used when a checkpoint selects an ad step.
     ///
-    /// Set this to let an ad mediator adapter register itself so a resolved ad step displays an ad
-    /// automatically, with no per-checkpoint app code. Unlike ``paywallPresenter``, there is no built-in
-    /// RevenueCat-managed UI for ads: a checkpoint that resolves to an ad step with no presenter registered
-    /// presents nothing.
+    /// Set this to let an ad mediator adapter register itself so a resolved checkpoint displays an ad
+    /// automatically, with no per-checkpoint app code.
     @MainActor
     var adPresenter: AdPresenter? {
         get { return self.checkpointsManager.adPresenter }
