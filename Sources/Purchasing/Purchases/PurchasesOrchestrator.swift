@@ -601,6 +601,8 @@ final class PurchasesOrchestrator {
                           completion: completionWithTracking)
         } else if let simulatedStoreProduct = product.testStoreProduct {
             self.handlePurchase(simulatedStoreProduct: simulatedStoreProduct,
+                                presentedOfferingContext: package?.presentedOfferingContext,
+                                paywallEvent: paywallEvent,
                                 metadata: metadata,
                                 completion: completionWithTracking)
         } else {
@@ -2270,16 +2272,24 @@ private extension PurchasesOrchestrator {
 private extension PurchasesOrchestrator {
 
     func handlePurchase(simulatedStoreProduct: SimulatedStoreProduct,
+                        presentedOfferingContext: PresentedOfferingContext?,
+                        paywallEvent: PaywallEvent?,
                         metadata: [String: String]?,
                         completion: @escaping PurchaseCompletedBlock) {
         if self.systemInfo.isSimulatedStoreAPIKey {
-            self.purchase(simulatedStoreProduct: simulatedStoreProduct, metadata: metadata, completion: completion)
+            self.purchase(simulatedStoreProduct: simulatedStoreProduct,
+                          presentedOfferingContext: presentedOfferingContext,
+                          paywallEvent: paywallEvent,
+                          metadata: metadata,
+                          completion: completion)
         } else {
             self.handleTestProductNotAvailableForPurchase(completion)
         }
     }
 
     private func purchase(simulatedStoreProduct: SimulatedStoreProduct,
+                          presentedOfferingContext: PresentedOfferingContext?,
+                          paywallEvent: PaywallEvent?,
                           metadata: [String: String]?,
                           completion: @escaping PurchaseCompletedBlock) {
         Task {
@@ -2293,7 +2303,11 @@ private extension PurchasesOrchestrator {
                 await completion(nil, nil, purchasesError.asPublicError, false)
             case .success(let transaction):
                 do {
-                    let customerInfo = try await self.handlePurchasedTransaction(transaction, .purchase, metadata)
+                    let customerInfo = try await self.handlePurchasedTransaction(
+                        transaction, .purchase, metadata,
+                        presentedOfferingContext: presentedOfferingContext,
+                        presentedPaywall: paywallEvent
+                    )
                     await completion(transaction, customerInfo, nil, false)
                 } catch {
                     let purchasesError = ErrorUtils.purchasesError(withUntypedError: error)
