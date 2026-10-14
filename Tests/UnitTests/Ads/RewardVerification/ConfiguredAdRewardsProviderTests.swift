@@ -37,8 +37,8 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         let maybeRewards = await self.provider.rewards(forAdUnitId: "ad-unit")
         let rewards = try XCTUnwrap(maybeRewards)
 
-        expect(rewards.configuredReward.virtualCurrency?.code) == "coins"
-        expect(rewards.configuredReward.virtualCurrency?.amount) == 10
+        expect(rewards.configuredReward?.virtualCurrency?.code) == "coins"
+        expect(rewards.configuredReward?.virtualCurrency?.amount) == 10
         expect(rewards.moreRewards[0].entitlement?.identifier) == "premium"
         expect(rewards.moreRewards[0].entitlement?.duration) == AdRewardDuration(value: 30, unit: .minute)
         expect(rewards.moreRewards[1].virtualCurrency?.code) == "gems"
@@ -66,7 +66,7 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
 
             let maybeReward = await self.provider.rewards(forAdUnitId: "ad-unit")
             let reward = try XCTUnwrap(maybeReward)
-            expect(reward.configuredReward.entitlement?.duration) == AdRewardDuration(value: value, unit: unit)
+            expect(reward.configuredReward?.entitlement?.duration) == AdRewardDuration(value: value, unit: unit)
         }
     }
 
@@ -102,7 +102,7 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
 
         let rewards = await self.provider.rewards(forAdUnitId: "AD-UNIT")
 
-        expect(rewards).to(beNil())
+        expect(rewards) == ConfiguredAdRewards()
         expect(self.manager.invokedBlobDataParameters.last?.topic) == .adRewards
         expect(self.manager.invokedBlobDataParameters.last?.itemKey) == "default"
     }
@@ -123,7 +123,7 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         self.manager.stubbedBlobData[.adRewards] = [:]
         let cached = await self.provider.rewards(forAdUnitId: "ad-unit")
 
-        expect(initial?.configuredReward.virtualCurrency?.amount) == 10
+        expect(initial?.configuredReward?.virtualCurrency?.amount) == 10
         expect(cached) == initial
     }
 
@@ -132,10 +132,10 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         let initial = await self.provider.rewards(forAdUnitId: "ad-unit")
 
         self.manager.configGeneration += 1
-        self.manager.stubbedBlobData[.adRewards]?["default"] = #"{"ad-unit":{"more_rewards":[]}}"#.asData
+        self.manager.stubbedBlobData[.adRewards]?["default"] = #"{"ad-unit":{"more_rewards":"invalid"}}"#.asData
         let cached = await self.provider.rewards(forAdUnitId: "ad-unit")
 
-        expect(initial?.configuredReward.virtualCurrency?.amount) == 10
+        expect(initial?.configuredReward?.virtualCurrency?.amount) == 10
         expect(cached) == initial
     }
 
@@ -146,6 +146,56 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
 
         self.manager.configGeneration += 1
         self.manager.stubbedTopics[.adRewards] = nil
+        let rewards = await self.provider.rewards(forAdUnitId: "ad-unit")
+
+        expect(rewards) == ConfiguredAdRewards()
+    }
+
+    func testMissingPrimaryRewardReturnsAvailableEmptyConfiguration() async throws {
+        try self.stub(content: ["more_rewards": []])
+
+        let rewards = await self.provider.rewards(forAdUnitId: "ad-unit")
+
+        expect(rewards) == ConfiguredAdRewards()
+    }
+
+    func testExplicitNullAndNoRewardAreNotUnsupportedRewards() async throws {
+        for primary: AnyDecodable in [.null, ["type": "no_reward"]] {
+            try self.stub(content: ["reward": primary])
+
+            let rewards = await self.provider.rewards(forAdUnitId: "ad-unit")
+
+            expect(rewards) == ConfiguredAdRewards()
+        }
+    }
+
+    func testAdditionalRewardsCanExistWithoutPrimaryReward() async throws {
+        try self.stub(content: [
+            "reward": .null,
+            "more_rewards": [
+                .null,
+                ["type": "no_reward"],
+                ["type": "virtual_currency", "code": "coins", "amount": 10]
+            ]
+        ])
+
+        let maybeRewards = await self.provider.rewards(forAdUnitId: "ad-unit")
+        let rewards = try XCTUnwrap(maybeRewards)
+
+        expect(rewards.configuredReward).to(beNil())
+        expect(rewards.moreRewards.count) == 1
+        expect(rewards.moreRewards.first?.virtualCurrency?.amount) == 10
+    }
+
+    func testAbsentTopicInCommittedConfigReturnsAvailableEmptyConfiguration() async {
+        let rewards = await self.provider.rewards(forAdUnitId: "ad-unit")
+
+        expect(rewards) == ConfiguredAdRewards()
+    }
+
+    func testUnavailableConfigReturnsNilRatherThanEmptyConfiguration() async {
+        self.manager.stubbedHasCommittedConfig = false
+
         let rewards = await self.provider.rewards(forAdUnitId: "ad-unit")
 
         expect(rewards).to(beNil())
