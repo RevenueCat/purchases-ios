@@ -117,7 +117,7 @@ final class PaywallPromoOfferCacheTests: TestCase {
         )
     }
 
-    func testEligibilityRequestsRunConcurrently() async {
+    func testEligibilityRequestsAreFetchedInSingleBatch() async {
         let firstPackage = Self.makePackage(
             promoDiscountIdentifier: Self.promoCode,
             productIdentifier: "first"
@@ -126,16 +126,14 @@ final class PaywallPromoOfferCacheTests: TestCase {
             promoDiscountIdentifier: Self.promoCode,
             productIdentifier: "second"
         )
-        var activeRequestCount = 0
-        var maximumActiveRequestCount = 0
+        var fetchCallCount = 0
+        var fetchedProductIDs: [String] = []
         let cache = PaywallPromoOfferCache(
             subscriptionHistoryTracker: nil,
-            offerFetcher: { discount, _ in
-                activeRequestCount += 1
-                maximumActiveRequestCount = max(maximumActiveRequestCount, activeRequestCount)
-                try await Task.sleep(nanoseconds: 50_000_000)
-                activeRequestCount -= 1
-                return Self.makeOffer(for: discount)
+            offersFetcher: { requests in
+                fetchCallCount += 1
+                fetchedProductIDs = requests.map(\.product.productIdentifier)
+                return requests.map { Self.makeOffer(for: $0.discount) }
             }
         )
 
@@ -144,7 +142,8 @@ final class PaywallPromoOfferCacheTests: TestCase {
             (secondPackage, Self.promoCode)
         ])
 
-        XCTAssertEqual(maximumActiveRequestCount, 2)
+        XCTAssertEqual(fetchCallCount, 1)
+        XCTAssertEqual(fetchedProductIDs, ["first", "second"])
         XCTAssertNotNil(cache.get(for: firstPackage))
         XCTAssertNotNil(cache.get(for: secondPackage))
     }

@@ -22,6 +22,7 @@ class OfferingsAPI {
 
     typealias IntroEligibilityResponseHandler = ([String: IntroEligibility], BackendError?) -> Void
     typealias OfferSigningResponseHandler = Backend.ResponseHandler<PostOfferForSigningOperation.SigningData>
+    typealias OffersSigningResponseHandler = Backend.ResponseHandler<[PostOfferForSigningOperation.SigningResult]>
     typealias OfferingsResponseHandler = Backend.ResponseHandler<OfferingsFetchResult>
     typealias WebOfferingProductsResponseHandler = Backend.ResponseHandler<WebOfferingProductsResponse>
 
@@ -102,13 +103,38 @@ class OfferingsAPI {
               receipt: EncodedAppleReceipt,
               appUserID: String,
               completion: @escaping OfferSigningResponseHandler) {
+        let offer = PostOfferForSigningOperation.OfferData(
+            offerIdentifier: offerIdentifier,
+            productIdentifier: productIdentifier,
+            subscriptionGroup: subscriptionGroup
+        )
+        self.post(
+            offersForSigning: [offer],
+            receipt: receipt,
+            appUserID: appUserID
+        ) { result in
+            completion(result.flatMap { results in
+                guard let firstResult = results.first else {
+                    return .failure(.unexpectedBackendResponse(.postOfferIdMissingOffersInResponse))
+                }
+                return firstResult.result
+            })
+        }
+    }
+
+    func post(
+        offersForSigning offers: [PostOfferForSigningOperation.OfferData],
+        receipt: EncodedAppleReceipt,
+        appUserID: String,
+        completion: @escaping OffersSigningResponseHandler
+    ) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
 
-        let postOfferData = PostOfferForSigningOperation.PostOfferForSigningData(offerIdentifier: offerIdentifier,
-                                                                                 productIdentifier: productIdentifier,
-                                                                                 subscriptionGroup: subscriptionGroup,
-                                                                                 receipt: receipt)
+        let postOfferData = PostOfferForSigningOperation.PostOfferForSigningData(
+            offers: offers,
+            receipt: receipt
+        )
         let postOfferForSigningOperation = PostOfferForSigningOperation(configuration: config,
                                                                         postOfferForSigningData: postOfferData,
                                                                         responseHandler: completion)

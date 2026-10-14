@@ -75,11 +75,11 @@ class BasePurchasesTests: TestCase {
         self.mockPurchasedProductsFetcher = MockPurchasedProductsFetcher()
         self.mockTransactionFetcher = MockStoreKit2TransactionFetcher()
 
-        let httpClient = MockHTTPClient(systemInfo: self.systemInfo,
-                                        eTagManager: MockETagManager(),
-                                        tokenManager: MockTokenManager(),
-                                        diagnosticsTracker: self.diagnosticsTracker)
-        let config = BackendConfiguration(httpClient: httpClient,
+        self.httpClient = MockHTTPClient(systemInfo: self.systemInfo,
+                                         eTagManager: MockETagManager(),
+                                         tokenManager: MockTokenManager(),
+                                         diagnosticsTracker: self.diagnosticsTracker)
+        let config = BackendConfiguration(httpClient: self.httpClient,
                                           operationDispatcher: self.mockOperationDispatcher,
                                           operationQueue: MockBackend.QueueProvider.createQueue(for: .default),
                                           diagnosticsQueue: MockBackend.QueueProvider.createDiagnosticsQueue(),
@@ -182,6 +182,7 @@ class BasePurchasesTests: TestCase {
     var attribution: Attribution!
     var identityManager: MockIdentityManager!
     var tokenManager: MockTokenManager!
+    var httpClient: MockHTTPClient!
     var clock: TestClock!
     var systemInfo: MockSystemInfo!
     var mockOperationDispatcher: MockOperationDispatcher!
@@ -951,6 +952,7 @@ private extension BasePurchasesTests {
         self.customerInfoManager = nil
         self.identityManager = nil
         self.tokenManager = nil
+        self.httpClient = nil
         self.mockOfferingsManager = nil
         self.mockOfflineEntitlementsManager = nil
         self.mockPurchasedProductsFetcher = nil

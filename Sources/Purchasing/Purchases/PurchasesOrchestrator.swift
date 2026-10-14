@@ -477,6 +477,20 @@ final class PurchasesOrchestrator {
         }
     }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func promotionalOffers(
+        for requests: [(discount: StoreProductDiscount, product: StoreProduct)]
+    ) async -> [PromotionalOffer?] {
+        guard !requests.isEmpty else { return [] }
+
+        guard let receipt = await self.promotionalOfferReceipt() else {
+            return Array(repeating: nil, count: requests.count)
+        }
+
+        let signingResults = await self.signPromotionalOffers(requests, receipt: receipt)
+        return Self.promotionalOffers(for: requests, signingResults: signingResults)
+    }
+
     func purchase(params: PurchaseParams, trackDiagnostics: Bool, completion: @escaping PurchaseCompletedBlock) {
         var product = params.product
         if product == nil {
@@ -2260,6 +2274,90 @@ private extension PurchasesOrchestrator {
                 .mapError { $0.asPurchasesError }
 
             completion(result)
+        }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    private func promotionalOfferReceipt() async -> EncodedAppleReceipt? {
+        guard self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable else {
+            return await self.storeKit1PromotionalOfferReceipt()
+        }
+
+        let transaction = await self.transactionFetcher.firstVerifiedAutoRenewableTransaction
+        guard let transaction, let jwsRepresentation = transaction.jwsRepresentation else {
+            return nil
+        }
+
+        return await self.encodedReceipt(transaction: transaction, jwsRepresentation: jwsRepresentation)
+    }
+
+    private func storeKit1PromotionalOfferReceipt() async -> EncodedAppleReceipt? {
+        return await withUnsafeContinuation { continuation in
+            self.receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { receiptData, _ in
+                guard let receiptData, !receiptData.isEmpty else {
+                    continuation.resume(returning: nil)
+                    return
+                }
+
+                self.operationDispatcher.dispatchOnWorkerThread {
+                    let receipt = self.receiptParser.receiptHasTransactions(receiptData: receiptData)
+                        ? EncodedAppleReceipt.receipt(receiptData)
+                        : nil
+                    continuation.resume(returning: receipt)
+                }
+            }
+        }
+    }
+
+    private func signPromotionalOffers(
+        _ requests: [(discount: StoreProductDiscount, product: StoreProduct)],
+        receipt: EncodedAppleReceipt
+    ) async -> [PostOfferForSigningOperation.SigningResult] {
+        let signingRequests = requests.compactMap { request -> PostOfferForSigningOperation.OfferData? in
+            guard let offerIdentifier = request.discount.offerIdentifier,
+                  let subscriptionGroup = request.product.subscriptionGroupIdentifier else {
+                return nil
+            }
+
+            return .init(
+                offerIdentifier: offerIdentifier,
+                productIdentifier: request.product.productIdentifier,
+                subscriptionGroup: subscriptionGroup
+            )
+        }
+        guard !signingRequests.isEmpty else { return [] }
+
+        return (try? await Async.call { completion in
+            self.backend.offerings.post(
+                offersForSigning: signingRequests,
+                receipt: receipt,
+                appUserID: self.appUserID,
+                completion: completion
+            )
+        }) ?? []
+    }
+
+    private static func promotionalOffers(
+        for requests: [(discount: StoreProductDiscount, product: StoreProduct)],
+        signingResults: [PostOfferForSigningOperation.SigningResult]
+    ) -> [PromotionalOffer?] {
+        return requests.map { request in
+            guard let offerIdentifier = request.discount.offerIdentifier,
+                  let signingResult = signingResults.first(where: {
+                      $0.offerIdentifier == offerIdentifier
+                          && $0.productIdentifier == request.product.productIdentifier
+                  }),
+                  case .success(let data) = signingResult.result else {
+                return nil
+            }
+
+            return request.discount.promotionalOffer(
+                withSignedDataIdentifier: offerIdentifier,
+                keyIdentifier: data.keyIdentifier,
+                nonce: data.nonce,
+                signature: data.signature,
+                timestamp: data.timestamp
+            )
         }
     }
 

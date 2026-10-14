@@ -22,7 +22,9 @@ internal final class PaywallPromoOfferCache: ObservableObject {
 
     typealias ProductID = String
     typealias PackageInfo = (package: Package, promotionalOfferProductCode: String?)
-    typealias OfferFetcher = @MainActor (StoreProductDiscount, StoreProduct) async throws -> PromotionalOffer
+    typealias OffersFetcher = @MainActor (
+        [(discount: StoreProductDiscount, product: StoreProduct)]
+    ) async -> [PromotionalOffer?]
 
     enum Status: Equatable {
         case unknown
@@ -40,22 +42,19 @@ internal final class PaywallPromoOfferCache: ObservableObject {
     /// backend, so paywall previews/mocks can show promo components and pricing without a real
     /// subscriber or a backend-signed offer.
     private let simulateEligible: Bool
-    private let offerFetcher: OfferFetcher
+    private let offersFetcher: OffersFetcher
 
     // MARK: - Init
 
     init(
         subscriptionHistoryTracker: SubscriptionHistoryTracker?,
         simulateEligible: Bool = false,
-        offerFetcher: @escaping OfferFetcher = { discount, product in
-            return try await Purchases.shared.promotionalOffer(
-                forProductDiscount: discount,
-                product: product
-            )
+        offersFetcher: @escaping OffersFetcher = { requests in
+            return await Purchases.shared.promotionalOffers(for: requests)
         }
     ) {
         self.simulateEligible = simulateEligible
-        self.offerFetcher = offerFetcher
+        self.offersFetcher = offersFetcher
 
         // Simulate mode passes no tracker: it only ever produces `.signedEligible`/absent entries,
         // which never consult `hasAnySubscriptionHistory`, so we skip the tracker's StoreKit work.
@@ -126,7 +125,7 @@ internal final class PaywallPromoOfferCache: ObservableObject {
         // This ensures a single atomic update to the @Published property,
         // which reliably triggers objectWillChange and view updates.
         var newCacheEntries: [ProductID: Status] = [:]
-        var requests: [(ProductID, Task<Status, Never>)] = []
+        var requests: [(discount: StoreProductDiscount, product: StoreProduct)] = []
 
         for packageInfo in packageInfos {
             let storeProduct = packageInfo.package.storeProduct
@@ -140,20 +139,18 @@ internal final class PaywallPromoOfferCache: ObservableObject {
                     continue
                 }
 
-                let request = Task { @MainActor [offerFetcher] in
-                    do {
-                        let promoOffer = try await offerFetcher(discount, storeProduct)
-                        return Status.signedEligible(promoOffer)
-                    } catch {
-                        return Status.ineligible
-                    }
-                }
-                requests.append((storeProduct.productIdentifier, request))
+                newCacheEntries[storeProduct.productIdentifier] = .ineligible
+                requests.append((discount, storeProduct))
             }
         }
 
-        for (productID, request) in requests {
-            newCacheEntries[productID] = await request.value
+        if !requests.isEmpty {
+            let offers = await self.offersFetcher(requests)
+            for (request, offer) in zip(requests, offers) {
+                if let offer {
+                    newCacheEntries[request.product.productIdentifier] = .signedEligible(offer)
+                }
+            }
         }
 
         // Single atomic assignment to trigger @Published and objectWillChange

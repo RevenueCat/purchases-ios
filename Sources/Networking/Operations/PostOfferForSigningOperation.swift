@@ -17,22 +17,36 @@ class PostOfferForSigningOperation: NetworkOperation {
 
     typealias SigningData = (signature: String, keyIdentifier: String, nonce: UUID, timestamp: Int)
 
-    struct PostOfferForSigningData {
+    struct SigningResult {
+
+        let offerIdentifier: String
+        let productIdentifier: String
+        let result: Result<SigningData, BackendError>
+
+    }
+
+    struct OfferData {
 
         let offerIdentifier: String
         let productIdentifier: String
         let subscriptionGroup: String
+
+    }
+
+    struct PostOfferForSigningData {
+
+        let offers: [OfferData]
         let receipt: EncodedAppleReceipt
 
     }
 
     private let configuration: UserSpecificConfiguration
     private let postOfferData: PostOfferForSigningData
-    private let responseHandler: OfferingsAPI.OfferSigningResponseHandler
+    private let responseHandler: OfferingsAPI.OffersSigningResponseHandler
 
     init(configuration: UserSpecificConfiguration,
          postOfferForSigningData: PostOfferForSigningData,
-         responseHandler: @escaping OfferingsAPI.OfferSigningResponseHandler) {
+         responseHandler: @escaping OfferingsAPI.OffersSigningResponseHandler) {
         self.configuration = configuration
         self.postOfferData = postOfferForSigningData
         self.responseHandler = responseHandler
@@ -51,7 +65,7 @@ class PostOfferForSigningOperation: NetworkOperation {
         )
 
         self.httpClient.perform(request) { (response: VerifiedHTTPResponse<PostOfferResponse>.Result) in
-            let result: Result<PostOfferForSigningOperation.SigningData, BackendError> = response
+            let result: Result<[PostOfferForSigningOperation.SigningResult], BackendError> = response
                 .mapError { error -> BackendError in
                     if case .decoding = error {
                         return .unexpectedBackendResponse(.postOfferIdSignature,
@@ -65,13 +79,19 @@ class PostOfferForSigningOperation: NetworkOperation {
 
                     let offers = response.offers
 
-                    guard let firstOffer = offers.first else {
+                    guard !offers.isEmpty else {
                         Logger.debug(Strings.backendError.offerings_response_no_offerings)
 
                         return .failure(.unexpectedBackendResponse(.postOfferIdMissingOffersInResponse))
                     }
 
-                    return Self.handleOffer(firstOffer, statusCode: statusCode)
+                    return .success(offers.map { offer in
+                        return .init(
+                            offerIdentifier: offer.offerIdentifier,
+                            productIdentifier: offer.productIdentifier,
+                            result: Self.handleOffer(offer, statusCode: statusCode)
+                        )
+                    })
                 }
 
             self.responseHandler(result)
@@ -131,13 +151,13 @@ private extension PostOfferForSigningOperation {
         init(appUserID: String, data: PostOfferForSigningData) {
             self.appUserID = appUserID
             self.fetchToken = data.receipt.serialized()
-            self.generateOffers = [
-                .init(
-                    offerID: data.offerIdentifier,
-                    productID: data.productIdentifier,
-                    subscriptionGroup: data.subscriptionGroup
+            self.generateOffers = data.offers.map {
+                return .init(
+                    offerID: $0.offerIdentifier,
+                    productID: $0.productIdentifier,
+                    subscriptionGroup: $0.subscriptionGroup
                 )
-            ]
+            }
         }
 
     }
