@@ -21,8 +21,6 @@ public typealias AdPresentationCompletion = @MainActor (AdPresentationResult) ->
 /// Presents an ad for an ad step selected by a checkpoint.
 ///
 /// Set an instance on ``Purchases/adPresenter`` to use it for all checkpoint-selected ad steps.
-/// This is a separate presenter from ``PaywallPresenter``: an ad step never selects an offering, and
-/// presenting one does not necessarily involve any RevenueCat-managed UI.
 @_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
