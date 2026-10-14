@@ -18,6 +18,9 @@ import SwiftUI
 enum NativePaywallNavigationContext {
     case automatic
     case standalone
+    #if os(iOS)
+    case uiKit(NativePaywallUIKitOwner)
+    #endif
 }
 
 /// Chooses the final container before mounting stateful paywall content.
@@ -34,6 +37,15 @@ struct NativePaywallNavigationModifier: ViewModifier {
             switch self.context {
             case .standalone:
                 self.wrapped(content: content)
+            case .uiKit(let owner):
+                if owner.context == nil {
+                    Color.clear
+                } else if let controller = owner.controller,
+                          controller.navigationController?.isNavigationBarHidden == false {
+                    content.modifier(NativePaywallCloseHost(uiKitOwner: owner))
+                } else {
+                    content
+                }
             case .automatic:
                 content.modifier(NativePaywallCloseHost(detectNavigation: true))
             }

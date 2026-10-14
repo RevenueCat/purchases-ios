@@ -121,6 +121,11 @@ final class ButtonComponentViewModelMappingTests: TestCase {
                     )
                     let expected = selected ? override : (base ?? false)
                     XCTAssertEqual(preference, expected, "\(actionType), selected=\(selected)")
+                    let expectedRole: NativePaywallCloseCoordinator.Role? = expected
+                        ? (actionType == "navigate_back" ? .back : .close) : nil
+                    XCTAssertEqual(viewModel.nativeNavigationRole(
+                        dismissesPaywall: false, useNativeIfPossible: preference
+                    ), expectedRole)
                     XCTAssertEqual(viewModel.action.paywallComponentInteractionValue, actionType)
                     XCTAssertEqual(component.isCloseWorkflowAction, actionType == "close_workflow")
                 }
