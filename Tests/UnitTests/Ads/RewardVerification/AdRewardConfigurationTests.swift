@@ -43,10 +43,6 @@ final class AdRewardConfigurationTests: TestCase {
         expect(AdRewardDuration(value: -1, unit: .minute)).to(beNil())
     }
 
-    func testSecondDurationUnitRawValue() {
-        expect(AdRewardDuration.Unit.second.rawValue) == "second"
-    }
-
     func testEntitlementConfigurationRejectsEmptyIdentifier() throws {
         let duration = try XCTUnwrap(AdRewardDuration(value: 30, unit: .minute))
 

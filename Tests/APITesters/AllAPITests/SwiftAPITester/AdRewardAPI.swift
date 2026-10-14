@@ -65,7 +65,6 @@ func checkEntitlementRewardConfigurationAPI() {
 func checkAdRewardDurationAPI() {
     let _: Int = adRewardDuration.value
     let _: AdRewardDuration.Unit = adRewardDuration.unit
-    let _: String = adRewardDuration.unit.rawValue
     let _: AdRewardDuration.Unit = .second
     let _: AdRewardDuration.Unit = .minute
     let _: AdRewardDuration.Unit = .hour

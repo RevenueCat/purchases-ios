@@ -126,8 +126,7 @@ public struct AdRewardDuration: Sendable, Equatable {
     /// A unit used to express a configured rewarded-ad entitlement duration.
     public struct Unit: Sendable, Equatable, Hashable {
 
-        /// The raw string representation of this unit.
-        public let rawValue: String
+        private let rawValue: String
 
         /// A duration expressed in seconds.
         public static let second = Unit(rawValue: "second")

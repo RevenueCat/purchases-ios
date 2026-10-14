@@ -251,7 +251,6 @@ public struct AdRewardDuration : Swift.Sendable, Swift.Equatable {
   public let value: Swift.Int
   public let unit: RevenueCat.AdRewardDuration.Unit
   public struct Unit : Swift.Sendable, Swift.Equatable, Swift.Hashable {
-    public let rawValue: Swift.String
     public static let second: RevenueCat.AdRewardDuration.Unit
     public static let minute: RevenueCat.AdRewardDuration.Unit
     public static let hour: RevenueCat.AdRewardDuration.Unit
