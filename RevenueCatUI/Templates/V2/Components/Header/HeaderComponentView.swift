@@ -52,8 +52,10 @@ struct HeaderComponentView: View {
         .onPreferenceChange(NativePaywallHiddenButtonsKey.self) { self.hiddenNativeButtons = $0 }
         // The paywall extends through the top safe area when it has a header. Removing native-only
         // header content must retain the inset that keeps the body below the caller's navigation bar.
-        .frame(height: self.collapsesNativeOnlyHeader ? self.collapsedHeaderHeight : nil)
+        .frame(height: self.collapsesNativeOnlyHeader ? self.collapsedHeaderHeight : nil, alignment: .bottom)
         .opacity(self.collapsesNativeOnlyHeader ? 0 : 1)
+        .allowsHitTesting(!self.collapsesNativeOnlyHeader)
+        .accessibilityHidden(self.collapsesNativeOnlyHeader)
     }
 
     private var collapsesNativeOnlyHeader: Bool {
