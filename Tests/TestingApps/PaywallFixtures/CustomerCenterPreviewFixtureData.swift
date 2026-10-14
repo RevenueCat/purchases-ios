@@ -5,6 +5,27 @@ import Foundation
 
 /// Small local paywalls for testing link interception and dismissal through Customer Center.
 enum CustomerCenterPreviewFixtureData {
+    static func customerInfo(productID: String) -> CustomerInfo {
+        let response: [String: Any] = [
+            "request_date": "2026-10-14T12:00:00Z",
+            "subscriber": [
+                "original_app_user_id": "preview customer", "first_seen": "2026-01-01T00:00:00Z",
+                "subscriptions": [productID: [
+                    "purchase_date": "2026-10-01T00:00:00Z", "expires_date": "2099-01-01T00:00:00Z",
+                    "store": "app_store", "period_type": "normal", "ownership_type": "PURCHASED"
+                ]]
+            ]
+        ]
+        do {
+            let decoder = JSONDecoder()
+            decoder.keyDecodingStrategy = .convertFromSnakeCase
+            decoder.dateDecodingStrategy = .iso8601
+            return try decoder.decode(CustomerInfo.self, from: JSONSerialization.data(withJSONObject: response))
+        } catch {
+            preconditionFailure("Invalid preview customer fixture: \(error)")
+        }
+    }
+
     static func offering() -> Offering {
         let package = PaywallFixture.iconOnlyButton.packages[0]
         let mode = ProcessInfo.processInfo.environment["PREVIEW_PAYWALL"] ?? "legacy"

@@ -27,12 +27,32 @@ class BaseManageSubscriptionViewModel: ObservableObject {
     let screen: CustomerCenterConfigData.Screen
     let localization: CustomerCenterConfigData.Localization
 
+    var helpPathPurchase: PurchaseInformation? { purchaseInformation }
+
+    let previewActions: CustomerCenterPreviewActions?
+
     var relevantPathsForPurchase: [CustomerCenterConfigData.HelpPath] {
         paths.relevantPaths(
-            for: purchaseInformation,
+            for: helpPathPurchase,
             allowMissingPurchase: allowMissingPurchase,
             localization: localization
         )
+    }
+
+    private func publishPreviewDiagnostics() {
+        guard let preview = purchasesProvider as? CustomerCenterPreviewProvider else { return }
+        preview.onPreviewDiagnostics(paths.map { path in
+            let reason = path.hiddenReason(for: helpPathPurchase, allowMissingPurchase: allowMissingPurchase)
+            let title = helpPathPurchase.map {
+                path.resubscribeVariantIfNeeded(for: $0, localization: localization).title
+            } ?? path.title
+            return CustomerCenterPreviewDiagnostic(
+                pathID: path.id, title: title,
+                productID: helpPathPurchase?.productIdentifier,
+                visible: reason == nil,
+                reason: reason ?? "Available for this customer"
+            )
+        })
     }
 
     /// Used to exclude .missingPurchase path
@@ -63,7 +83,9 @@ class BaseManageSubscriptionViewModel: ObservableObject {
     let actionWrapper: CustomerCenterActionWrapper
 
     @Published
-    var purchaseInformation: PurchaseInformation?
+    var purchaseInformation: PurchaseInformation? {
+        didSet { publishPreviewDiagnostics() }
+    }
 
     @Published
     var showAllInAppCurrenciesScreen: Bool = false
@@ -92,14 +114,19 @@ class BaseManageSubscriptionViewModel: ObservableObject {
             self.paths = screen.supportedPaths
             self.purchaseInformation = purchaseInformation
             self.purchasesProvider = purchasesProvider
+            self.previewActions = (purchasesProvider as? CustomerCenterPreviewProvider).map {
+                CustomerCenterPreviewActions(provider: $0)
+            }
             self.refundRequestStatus = refundRequestStatus
             self.actionWrapper = actionWrapper
             self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase
             ?? LoadPromotionalOfferUseCase(purchasesProvider: purchasesProvider)
+            publishPreviewDiagnostics()
         }
 
 #if os(iOS) || targetEnvironment(macCatalyst)
     func handleHelpPath(_ path: CustomerCenterConfigData.HelpPath, withActiveProductId: String? = nil) async {
+        guard previewActions?.isRunning != true else { return }
         if let action = path.asAction() {
             self.actionWrapper.handleAction(.buttonTapped(action: action))
         }
@@ -179,9 +206,9 @@ private extension BaseManageSubscriptionViewModel {
 
 #if os(iOS) || targetEnvironment(macCatalyst)
     private func onPathSelected(path: CustomerCenterConfigData.HelpPath, withActiveProductId: String?) async {
-        if let provider = purchasesProvider as? CustomerCenterPreviewProvider,
+        if let previewActions,
            let action = previewAction(for: path, activeProductID: withActiveProductId) {
-            await provider.performPreviewAction(action)
+            await previewActions.perform(action)
             return
         }
 

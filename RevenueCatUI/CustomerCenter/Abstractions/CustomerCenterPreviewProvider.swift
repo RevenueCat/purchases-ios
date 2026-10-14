@@ -30,6 +30,30 @@ import SwiftUI
     case customAction(String)
 }
 
+/// Explains whether a configured help path appears for a simulated purchase.
+@available(iOS 15.0, *)
+@_spi(Internal) public struct CustomerCenterPreviewDiagnostic: Sendable, Equatable {
+    /// Identifier of the configured help path.
+    public let pathID: String
+    /// Display title of the help path.
+    public let title: String
+    /// Identifier of the purchase being evaluated, if any.
+    public let productID: String?
+    /// Whether the rendering rules include the path.
+    public let visible: Bool
+    /// Human-readable explanation of visibility.
+    public let reason: String
+
+    /// Creates a diagnostic from the same eligibility rules used by the view.
+    public init(pathID: String, title: String, productID: String?, visible: Bool, reason: String) {
+        self.pathID = pathID
+        self.title = title
+        self.productID = productID
+        self.visible = visible
+        self.reason = reason
+    }
+}
+
 /// Internal hooks for isolated, stateful previews. Normal SDK integrations do not use this provider.
 @available(iOS 15.0, *)
 @_spi(Internal) public protocol CustomerCenterPreviewProvider: CustomerCenterPurchasesType {
@@ -45,6 +69,8 @@ import SwiftUI
     func previewPromotionalOfferEligibility() async -> Bool
     /// Supplies the project variables entered in the mobile preview settings.
     func previewCustomVariables() async -> [String: CustomVariableValue]
+    /// Receives path visibility diagnostics.
+    func onPreviewDiagnostics(_ diagnostics: [CustomerCenterPreviewDiagnostic])
 }
 
 @available(iOS 15.0, *)
@@ -79,6 +105,8 @@ extension CustomerCenterPreviewProvider {
     public func previewPromotionalOfferEligibility() async -> Bool { false }
     /// Defaults to no preview variable overrides.
     public func previewCustomVariables() async -> [String: CustomVariableValue] { [:] }
+    /// Ignores diagnostics when the provider has no diagnostics interface.
+    public func onPreviewDiagnostics(_ diagnostics: [CustomerCenterPreviewDiagnostic]) {}
 }
 
 @available(iOS 15.0, *)
