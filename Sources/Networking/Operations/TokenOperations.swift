@@ -67,6 +67,7 @@ extension TokenLogInOperation: @unchecked Sendable {}
 
 private extension TokenLogInOperation {
 
+    // swiftlint:disable:next function_body_length
     func logIn(completion: @escaping () -> Void) {
         guard self.token.validate() else {
             self.tokenCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in

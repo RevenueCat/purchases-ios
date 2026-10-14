@@ -303,7 +303,6 @@ private extension BaseBackendTokenLoginTests {
 
 }
 
-
 class TokenLogInAnonymousBodyTests: TestCase {
 
     func testEncodesAppUserIDWhenPresent() throws {
