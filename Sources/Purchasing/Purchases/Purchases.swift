@@ -3067,10 +3067,6 @@ internal extension Purchases {
         return await self.workflowManager.workflowListings()
     }
 
-    func workflow(withIdentifier workflowID: String) async throws -> WorkflowDataResult {
-        return try await self.workflowManager.getWorkflow(workflowId: workflowID)
-    }
-
     #if DEBUG
 
     /// - Returns: the parsed `AppleReceipt`

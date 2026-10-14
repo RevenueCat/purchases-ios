@@ -53,18 +53,22 @@ struct WorkflowRow: Identifiable {
             for listing in listings {
                 group.addTask {
                     do {
-                        let result = try await Purchases.shared.workflow(withIdentifier: listing.workflowId)
-                        let initialStep = result.workflow.steps[result.workflow.initialStepId]
+                        let result = try await Purchases.shared.workflow(forWorkflowIdentifier: listing.workflowId)
+                        let workflow = result.workflow
+                        let initialStep = workflow.steps[workflow.initialStepId]
+                        // Same rule as checkpoints: an offering step must be the flow's only step.
+                        let isUILess = initialStep?.isOfferingStep == true
+                        let uiLessOfferingIdentifier = workflow.steps.count == 1 ? initialStep?.offeringIdentifier : nil
                         return .init(
                             listing: listing,
-                            name: result.workflow.displayName,
-                            error: nil,
+                            name: workflow.displayName,
+                            error: isUILess && uiLessOfferingIdentifier == nil
+                                ? "Not servable: an offering step must be the only step and name an offering."
+                                : nil,
                             offeringIdentifiers: Set(
                                 result.workflow.steps.values.compactMap { result.workflow.offeringIdentifier(for: $0) }
                             ),
-                            uiLessOfferingIdentifier: initialStep?.isOfferingStep == true
-                                ? initialStep?.offeringIdentifier ?? listing.offeringIdentifier
-                                : nil
+                            uiLessOfferingIdentifier: isUILess ? uiLessOfferingIdentifier : nil
                         )
                     } catch {
                         return .init(
@@ -95,7 +99,7 @@ struct PresentedWorkflow: Identifiable {
     let context: WorkflowContext
 
     static func load(workflowId: String) async throws -> PresentedWorkflow {
-        async let result = Purchases.shared.workflow(withIdentifier: workflowId)
+        async let result = Purchases.shared.workflow(forWorkflowIdentifier: workflowId)
         let offerings = try await Purchases.shared.offerings()
         let workflow = try await result
 
@@ -119,10 +123,19 @@ struct PresentedWorkflow: Identifiable {
 enum UILessFlowPresenter {
 
     private static let presenter = DefaultPaywallPresenter()
+    // Checkpoints always pass an error presenter, so purchase and restore errors are shown.
+    private static let errorPresenter = DefaultErrorPresenter()
 
     static func present(_ offering: Offering, customVariables: [String: CustomVariableValue]) {
         self.presenter.present(
-            params: .init(checkpointIdentifier: "paywalls_tester", customVariables: customVariables, offering: offering)
+            params: .init(
+                checkpointIdentifier: "paywalls_tester",
+                customVariables: customVariables,
+                offering: offering,
+                errorPresentationHandler: { params, completion in
+                    self.errorPresenter.present(params: params, completion: completion)
+                }
+            )
         ) { _ in }
     }
 
