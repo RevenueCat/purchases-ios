@@ -166,7 +166,11 @@ internal final class PaywallPromoOfferCache: ObservableObject {
     // MARK: - Public API
 
     func computeEligibility(for packageInfos: [PackageInfo]) async {
-        await self.checkSignedEligibility(packageInfos: packageInfos)
+        while !Task.isCancelled {
+            if await self.checkSignedEligibility(packageInfos: packageInfos) {
+                return
+            }
+        }
     }
 
     func isMostLikelyEligible(for package: Package?) -> Bool {
@@ -213,7 +217,8 @@ internal final class PaywallPromoOfferCache: ObservableObject {
 
     // MARK: - Internal Logic
 
-    private func checkSignedEligibility(packageInfos: [PackageInfo]) async {
+    /// Returns whether the results were computed for the context that is still current.
+    private func checkSignedEligibility(packageInfos: [PackageInfo]) async -> Bool {
         let context = self.contextProvider()
         let requestsByKey = self.requests(packageInfos: packageInfos, context: context)
 
@@ -248,7 +253,7 @@ internal final class PaywallPromoOfferCache: ObservableObject {
         }
 
         // An identity or Purchases configuration change while requests were running makes every result stale.
-        guard self.contextProvider() == context else { return }
+        guard self.contextProvider() == context else { return false }
 
         var updatedCache = self.cachedContext == context ? self.cache : [:]
         for (key, value) in newCacheEntries {
@@ -260,20 +265,27 @@ internal final class PaywallPromoOfferCache: ObservableObject {
             self.cachedContext = context
             self.cache = updatedCache
         }
+
+        return true
     }
 
     private func requests(packageInfos: [PackageInfo], context: CacheContext) -> [CacheKey: Request] {
         var requestsByKey: [CacheKey: Request] = [:]
+        var routedProductIDs: Set<ProductID> = []
 
         for packageInfo in packageInfos {
             let storeProduct = packageInfo.package.storeProduct
-            guard let productCode = packageInfo.promotionalOfferProductCode else { continue }
-
             let productID = storeProduct.productIdentifier
-            if self.promotionalOfferProductCodesByProductID[productID] == nil {
-                self.promotionalOfferProductCodesByProductID[productID] = productCode
+
+            // A workflow page can configure a different App Store promotional offer for the same
+            // product. Route reads and purchases to this computation's first placement while retaining
+            // separately keyed cached signatures for offers used by other pages.
+            if routedProductIDs.insert(productID).inserted {
+                self.promotionalOfferProductCodesByProductID[productID] =
+                    packageInfo.promotionalOfferProductCode
             }
 
+            guard let productCode = packageInfo.promotionalOfferProductCode else { continue }
             guard let discount = storeProduct.discounts.first(where: { $0.offerIdentifier == productCode }) else {
                 continue
             }

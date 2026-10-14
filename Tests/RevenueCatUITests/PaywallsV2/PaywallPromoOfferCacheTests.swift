@@ -20,7 +20,7 @@ import XCTest
 @MainActor
 final class PaywallPromoOfferCacheTests: TestCase {
 
-    private static let promoCode = "promo_code"
+    private nonisolated static let promoCode = "promo_code"
 
     // Both `PaywallView` initializers map their `simulatePromoEligible` flag through this factory.
     // It is the single mapping site: if it stops producing a cache, every promo preview silently
@@ -223,14 +223,31 @@ final class PaywallPromoOfferCacheTests: TestCase {
         }
 
         await cache.computeEligibility(for: [(package, Self.promoCode)])
+        XCTAssertEqual(cache.get(for: package)?.signedData.identifier, Self.promoCode)
+
         await cache.computeEligibility(for: [(package, secondPromoCode)])
         XCTAssertEqual(callCount, 2)
+        XCTAssertEqual(cache.get(for: package)?.signedData.identifier, secondPromoCode)
 
         await cache.computeEligibility(for: [
             (package, Self.promoCode),
             (package, secondPromoCode)
         ])
         XCTAssertEqual(callCount, 2)
+        XCTAssertEqual(cache.get(for: package)?.signedData.identifier, Self.promoCode)
+    }
+
+    func testLaterEligibilityComputationCanRemovePromoOfferFromProduct() async {
+        let package = Self.makePackage()
+        let cache = Self.makeCache { discount, _ in
+            return Self.makeOffer(discount: discount)
+        }
+
+        await cache.computeEligibility(for: [(package, Self.promoCode)])
+        XCTAssertNotNil(cache.get(for: package))
+
+        await cache.computeEligibility(for: [(package, nil)])
+        XCTAssertNil(cache.get(for: package))
     }
 
     func testIdentityAndConfigurationChangesInvalidateCache() async {
@@ -286,6 +303,33 @@ final class PaywallPromoOfferCacheTests: TestCase {
         fetcher.resumeAll()
         await oldConfigurationCheck.value
         await newConfigurationCheck.value
+
+        XCTAssertEqual(fetcher.callCount, 2)
+        XCTAssertNotNil(cache.get(for: package))
+    }
+
+    func testIdentityChangeDuringCheckRetriesBeforeReturning() async {
+        let package = Self.makePackage()
+        var appUserID = "first-user"
+        let fetcher = SuspendedOfferFetcher()
+        let cache = PaywallPromoOfferCache(
+            requestTimeout: 1,
+            appUserIDProvider: { appUserID },
+            purchasesInstanceProvider: { nil },
+            offerFetcher: fetcher.fetch
+        )
+
+        let computation = Task { @MainActor in
+            await cache.computeEligibility(for: [(package, Self.promoCode)])
+        }
+        await fetcher.waitForCallCount(1)
+
+        appUserID = "second-user"
+        fetcher.resumeAll()
+        await fetcher.waitForCallCount(2)
+
+        fetcher.resumeAll()
+        await computation.value
 
         XCTAssertEqual(fetcher.callCount, 2)
         XCTAssertNotNil(cache.get(for: package))
