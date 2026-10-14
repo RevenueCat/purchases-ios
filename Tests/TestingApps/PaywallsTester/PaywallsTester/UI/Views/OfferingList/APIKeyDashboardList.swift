@@ -251,7 +251,7 @@ struct APIKeyDashboardList: View {
         }
         List {
             #if DEBUG && !os(tvOS)
-            self.workflowsSection
+            self.workflowsSection(data: data)
             self.uiLessWorkflowsSection(data: data)
             #endif
             ForEach(data.sections, id: \.self) { section in
@@ -416,7 +416,7 @@ struct APIKeyDashboardList: View {
 
     #if DEBUG && !os(tvOS)
     @ViewBuilder
-    private var workflowsSection: some View {
+    private func workflowsSection(data: Data) -> some View {
         let rows = self.filteredWorkflowRows.filter { $0.uiLessOfferingIdentifier == nil }
 
         if !rows.isEmpty {
@@ -449,13 +449,22 @@ struct APIKeyDashboardList: View {
                             Text("Full screen")
                             Image(systemName: PaywallTesterViewMode.fullScreen.icon)
                         }
+                        // Opens like an app does, so the SDK resolves the flow from the offering.
+                        ForEach(row.claimedOfferingIdentifiers.sorted(), id: \.self) { identifier in
+                            if let offering = self.offering(identifier, in: data) {
+                                Section("By offering: \(identifier)") {
+                                    self.button(for: .workflow, offering: offering)
+                                    self.button(for: .presentWorkflow, offering: offering)
+                                }
+                            }
+                        }
                     }
                     #endif
                 }
             } header: {
                 SectionHeader(
                     title: "Flows",
-                    caption: "Opened by id. Shows the offering each flow is attached to."
+                    caption: "Opened by id. Long press a flow with an offering to open it by offering."
                 )
             }
         }
@@ -498,9 +507,12 @@ struct APIKeyDashboardList: View {
         }
     }
 
+    private func offering(_ identifier: String, in data: Data) -> Offering? {
+        return data.offeringsBySection.values.joined().first { $0.identifier == identifier }
+    }
+
     private func openOffering(_ identifier: String, in data: Data) {
-        guard let offering = data.offeringsBySection.values.joined().first(where: { $0.identifier == identifier })
-        else {
+        guard let offering = self.offering(identifier, in: data) else {
             self.workflowLoadError = "Offering '\(identifier)' is not in the offerings."
             return
         }
