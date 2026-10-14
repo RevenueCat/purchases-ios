@@ -21,7 +21,8 @@ This sample uses **Google Mobile Ads SDK v13** Swift API (no `GAD` prefix):
 - **Banner** - `GoogleMobileAds.BannerView.loadAndTrack(request:placement:)`
 - **Interstitial** - `GoogleMobileAds.InterstitialAd.loadAndTrack(..., fullScreenContentDelegate: self)`
 - **App Open** - `GoogleMobileAds.AppOpenAd.loadAndTrack(..., fullScreenContentDelegate: self)`
-- **Rewarded** - `GoogleMobileAds.RewardedAd.loadAndTrack(..., fullScreenContentDelegate: self)`
+- **Rewarded** - `loadAndTrack` preloads the ad; `RewardedAdPrompt(ad: ...)` resolves rewards, tracks the prompt,
+  and presents the supplied ad
 - **Rewarded Interstitial** - `GoogleMobileAds.RewardedInterstitialAd.loadAndTrack(..., fullScreenContentDelegate: self)`
 - **Native** - `GoogleMobileAds.AdLoader.loadAndTrack(...)` with AdMob native/ad-loader delegates
 - **Native Video** - native loader with a video-oriented ad unit ID
@@ -31,7 +32,8 @@ This sample uses **Google Mobile Ads SDK v13** Swift API (no `GAD` prefix):
 
 - `Sources/App.swift` - initializes `GoogleMobileAds.MobileAds` and `Purchases`
 - `Sources/HomeView.swift` - UI for loading/showing each ad format and status
-- `Sources/AdManagers/*AdManager.swift` - one focused manager per ad format integration path
+- `Sources/DetailViews/RewardedDetailView.swift` - configured rewarded-ad prompt integration
+- `Sources/AdManagers/*AdManager.swift` - one focused manager for each remaining ad format integration path
 - `Sources/Constants.swift` - RevenueCat API key
 
 ---
@@ -64,7 +66,8 @@ This sample uses **Google Mobile Ads SDK v13** Swift API (no `GAD` prefix):
 
 1. Open `Sources/Constants.swift`.
 2. Replace `YOUR_REVENUECAT_API_KEY` with your real RevenueCat API key.
-3. Keep the default AdMob test ad unit IDs in each `Sources/AdManagers/*AdManager.swift` file for local testing.
+3. Configure the rewarded test ad unit ID in RevenueCat if you want to exercise the configured-reward prompt.
+4. Keep the default AdMob test ad unit IDs in the sample for local testing.
 
 ### 3. Build and run
 
@@ -82,12 +85,17 @@ In the app:
 3. Tap **Show** (where applicable).
 4. Interact with the ad and dismiss it.
 
-In both rewarded detail screens:
+In the rewarded interstitial screen:
 
 - Choose whether **Reward Verification** is enabled using the toggle.
 - Tap **Load**, then tap **Show** to present using that loaded mode.
 
-The result card reflects the state of ad loading, reward granting, and optional reward verification.
+In the rewarded screen, tap **Load** to preload an ad using `loadAndTrack`. The prompt receives that ad
+and renders immediately, using configured rewards from the local cache when available. It shows a button describing
+the configured rewards. Tapping it tracks acceptance and presents the ad. The verification toggle demonstrates
+both `RewardedAdPrompt` and `RewardedAdPromptWithoutVerification`.
+
+The result card reflects reward granting and optional reward verification.
 
 The sample prints diagnostics in the Xcode console and emits RevenueCat ad events for each format. For dashboard verification, background the app after testing to trigger SDK flush.
 
@@ -124,7 +132,23 @@ The sample prints diagnostics in the Xcode console and emits RevenueCat ad event
 
 All formats in this app use `loadAndTrack` APIs and pass a `placement` value to improve reporting segmentation.
 
-For reward verification flows, the sample explicitly calls `enableRewardVerification()` on loaded rewarded ad instances, then uses `present(..., rewardVerificationStarted:, rewardVerificationCompleted:)` to show verification progress and map outcomes to real-world behavior:
+For regular rewarded ads, the dedicated **Load** button calls `loadAndTrack` and passes the loaded ad to
+the prompt. The prompt owns reward-configuration preparation, prompt tracking, and presentation, not ad loading.
+`RewardedAdPrompt` enables RevenueCat reward verification, while `RewardedAdPromptWithoutVerification`
+clears any existing per-ad SSV options and RevenueCat verification state before presentation, leaving
+the app responsible for granting the reward. The custom SwiftUI content reads the configured reward
+and calls `prompt.accept()` when tapped. The **Load** button handles ad-loading failures. The prompt
+reads reward configuration from the local cache without waiting for a fetch. When metadata is unavailable
+or no rewards are configured, the sample uses a generic `Watch an ad to earn a reward` offer;
+presentation and verification outcomes are delivered through `onResult`. If the prompt has no attached
+presentation controller or AdMob cannot present the ad, the result is `.notPresented` with a `presentationError`.
+`onResult` is called once on the main actor: `.rewardEarned` arrives when AdMob reports the reward,
+and `.verificationCompleted` arrives when verification finishes. Neither implies the ad has closed;
+later dismissal produces no second result. Dismissal before earning a reward reports `.dismissed` instead.
+Rewarded interstitials continue to demonstrate the lower-level `enableRewardVerification()` and
+`present(..., rewardVerificationStarted:, rewardVerificationCompleted:)` APIs.
+
+Verified results are mapped to real-world behavior:
 
 - grant virtual currency when `reward.virtualCurrency` is present
 - handle the `noReward` verified case separately
@@ -132,7 +156,8 @@ For reward verification flows, the sample explicitly calls `enableRewardVerifica
 - rely on adapter-managed cache invalidation for verified virtual currency rewards (then refetch balances when needed)
 
 > **Important:** Do not reassign wrapped delegates/handlers after calling `loadAndTrack`.
-> For full-screen ads, pass your `fullScreenContentDelegate` through `loadAndTrack`.
+> For full-screen ads, pass your `fullScreenContentDelegate` through `loadAndTrack` or use
+> `setTrackingFullScreenContentDelegate`. The prompt uses the latter when accepting the ad.
 > Replacing delegates/handlers afterward can bypass tracking wrappers.
 
 ## Test ad unit IDs used by this sample
