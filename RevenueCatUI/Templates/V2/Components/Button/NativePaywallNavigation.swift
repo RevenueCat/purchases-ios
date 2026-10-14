@@ -41,7 +41,9 @@ struct NativePaywallNavigationModifier: ViewModifier {
                 if owner.context == nil {
                     Color.clear
                 } else if let controller = owner.controller,
-                          controller.navigationController?.isNavigationBarHidden == false {
+                          let navigation = controller.navigationController,
+                          navigation.viewControllers.contains(where: { $0 === controller }),
+                          !navigation.isNavigationBarHidden {
                     content.modifier(NativePaywallCloseHost(uiKitOwner: owner))
                 } else {
                     content
