@@ -12,12 +12,12 @@
 //  Created by Antonio Pallares on 1/8/25.
 
 import Foundation
-#if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
-import UIKit
-#elseif os(watchOS)
+#if os(watchOS)
 import UIKit
 import WatchKit
-#elseif os(macOS)
+#elseif canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
 import AppKit
 #endif
 
@@ -34,21 +34,53 @@ protocol SimulatedStorePurchaseUI: Sendable {
     ///
     /// - Parameters:
     ///   - product: The product to be purchased.
+    ///   - presentationContext: The platform UI context where the purchase UI should be presented.
     /// - Returns: A result indicating the selected outcome of the purchase UI interaction.
-    func presentPurchaseUI(for product: SimulatedStoreProduct) async -> SimulatedStorePurchaseUIResult
+    func presentPurchaseUI(
+        for product: SimulatedStoreProduct,
+        presentationContext: PresentationContext?
+    ) async -> SimulatedStorePurchaseUIResult
 
 }
 
 /// Contains the logic to present a system alert for the confirmation of Simulated Store products purchases.
 struct DefaultSimulatedStorePurchaseUI: SimulatedStorePurchaseUI {
 
-    private let systemInfo: SystemInfo
+    #if os(watchOS)
+
+    init(systemInfo: SystemInfo) {}
+
+    #else
+
+    private let defaultPresentationContextProvider: @MainActor @Sendable () -> PresentationContext?
 
     init(systemInfo: SystemInfo) {
-        self.systemInfo = systemInfo
+        self.defaultPresentationContextProvider = {
+            return PresentationContext.defaultPresentationContext(systemInfo: systemInfo)
+        }
     }
 
-    func presentPurchaseUI(for product: SimulatedStoreProduct) async -> SimulatedStorePurchaseUIResult {
+    init(
+        defaultPresentationContextProvider: @escaping @MainActor @Sendable () -> PresentationContext?
+    ) {
+        self.defaultPresentationContextProvider = defaultPresentationContextProvider
+    }
+
+    @MainActor
+    func resolvedPresentationContext(_ context: PresentationContext?) -> PresentationContext? {
+        guard let context, context.isValidForPresentation else {
+            return self.defaultPresentationContextProvider()
+        }
+
+        return context
+    }
+
+    #endif
+
+    func presentPurchaseUI(
+        for product: SimulatedStoreProduct,
+        presentationContext: PresentationContext? = nil
+    ) async -> SimulatedStorePurchaseUIResult {
         await Task { @MainActor in
             return await withUnsafeContinuation { continuation in
 
@@ -74,7 +106,7 @@ struct DefaultSimulatedStorePurchaseUI: SimulatedStorePurchaseUI {
                     }
                 )
 
-                self.showAlert(alert) { (error: PurchasesError) in
+                self.showAlert(alert, presentationContext: presentationContext) { (error: PurchasesError) in
                     completion(.error(error))
                 }
             }
@@ -103,7 +135,7 @@ struct DefaultSimulatedStorePurchaseUI: SimulatedStorePurchaseUI {
                     }
                 )
 
-                self.showAlert(alert) { _ in
+                self.showAlert(alert, presentationContext: nil) { _ in
                     completion()
                 }
             }
@@ -220,13 +252,59 @@ private extension DefaultSimulatedStorePurchaseUI {
 
 }
 
-private extension DefaultSimulatedStorePurchaseUI {
+#if os(watchOS)
+
+extension DefaultSimulatedStorePurchaseUI {
 
     @MainActor
-    func showAlert(_ alert: Alert, onError: (PurchasesError) -> Void) {
+    private func showAlert(
+        _ alert: Alert,
+        presentationContext: PresentationContext?,
+        onError: (PurchasesError) -> Void
+    ) {
+        let actions: [WKAlertAction] = alert.actions.map { action in
+            WKAlertAction(title: action.title, style: action.style.alertActionStyle) {
+                action.callback(action.title)
+            }
+        }
 
-        #if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
-        guard let viewController = self.findTopViewController() else {
+        WKInterfaceDevice.current().play(.click)
+
+        let controller = WKExtension.shared().rootInterfaceController
+        controller?.presentAlert(withTitle: alert.title,
+                                 message: alert.message,
+                                 preferredStyle: .alert,
+                                 actions: actions)
+    }
+
+}
+
+extension DefaultSimulatedStorePurchaseUI.Action.Style {
+
+    var alertActionStyle: WKAlertActionStyle {
+        switch self {
+        case .destructive:
+            return .destructive
+        case .cancel:
+            return .cancel
+        case .default:
+            return .default
+        }
+    }
+
+}
+
+#elseif canImport(UIKit)
+
+extension DefaultSimulatedStorePurchaseUI {
+
+    @MainActor
+    private func showAlert(
+        _ alert: Alert,
+        presentationContext: PresentationContext?,
+        onError: (PurchasesError) -> Void
+    ) {
+        guard let viewController = self.findTopViewController(presentationContext: presentationContext) else {
             Logger.warn(Strings.purchase.unable_to_find_root_view_controller_for_simulated_purchase)
             onError(ErrorUtils.unknownError(
                 message: Strings.purchase.unable_to_find_root_view_controller_for_simulated_purchase.description
@@ -246,57 +324,18 @@ private extension DefaultSimulatedStorePurchaseUI {
         }
 
         viewController.present(alertController, animated: true)
-
-        #elseif os(watchOS)
-
-        let actions: [WKAlertAction] = alert.actions.map { action in
-            WKAlertAction(title: action.title, style: action.style.alertActionStyle) {
-                action.callback(action.title)
-            }
-
-        }
-
-        WKInterfaceDevice.current().play(.click)
-
-        let controller = WKExtension.shared().rootInterfaceController
-        controller?.presentAlert(withTitle: alert.title,
-                                 message: alert.message,
-                                 preferredStyle: .alert,
-                                 actions: actions)
-
-        #elseif os(macOS)
-
-        let nsAlert = NSAlert()
-        nsAlert.messageText = alert.title
-        nsAlert.informativeText = alert.message
-        nsAlert.alertStyle = .informational
-
-        // Only up to 3 actions are supported on macOS. Keep a local array of the ones we actually show.
-        let displayedActions = Array(alert.actions.prefix(3))
-        displayedActions.forEach { action in
-            nsAlert.addButton(withTitle: action.title)
-        }
-
-        let response = nsAlert.runModal()
-
-        // Map the modal response to the button index (0-based).
-        let indexMap: [NSApplication.ModalResponse: Int] = [
-            .alertFirstButtonReturn: 0,
-            .alertSecondButtonReturn: 1,
-            .alertThirdButtonReturn: 2
-        ]
-        let selectedIndex = indexMap[response] ?? 0
-        let selectedAction = displayedActions[safe: selectedIndex]
-        selectedAction?.callback(selectedAction?.title ?? "")
-
-        #endif
-
     }
+
+    @MainActor
+    func findTopViewController(
+        presentationContext: PresentationContext?
+    ) -> UIViewController? {
+        return self.resolvedPresentationContext(presentationContext)?.presentationViewController
+    }
+
 }
 
 extension DefaultSimulatedStorePurchaseUI.Action.Style {
-
-    #if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
 
     var alertActionStyle: UIAlertAction.Style {
         switch self {
@@ -309,39 +348,51 @@ extension DefaultSimulatedStorePurchaseUI.Action.Style {
         }
     }
 
-    #elseif os(watchOS)
+}
 
-    var alertActionStyle: WKAlertActionStyle {
-        switch self {
-        case .destructive:
-            return .destructive
-        case .cancel:
-            return .cancel
-        case .default:
-            return .default
+#elseif canImport(AppKit)
+
+extension DefaultSimulatedStorePurchaseUI {
+
+    @MainActor
+    private func showAlert(
+        _ alert: Alert,
+        presentationContext: PresentationContext?,
+        onError: (PurchasesError) -> Void
+    ) {
+        let nsAlert = NSAlert()
+        nsAlert.messageText = alert.title
+        nsAlert.informativeText = alert.message
+        nsAlert.alertStyle = .informational
+
+        // Only up to 3 actions are supported on macOS. Keep a local array of the ones we actually show.
+        let displayedActions = Array(alert.actions.prefix(3))
+        displayedActions.forEach { action in
+            nsAlert.addButton(withTitle: action.title)
+        }
+
+        // Map the modal response to the button index (0-based).
+        let indexMap: [NSApplication.ModalResponse: Int] = [
+            .alertFirstButtonReturn: 0,
+            .alertSecondButtonReturn: 1,
+            .alertThirdButtonReturn: 2
+        ]
+        let handleResponse: @MainActor (NSApplication.ModalResponse) -> Void = { response in
+            let selectedIndex = indexMap[response] ?? 0
+            let selectedAction = displayedActions[safe: selectedIndex]
+            selectedAction?.callback(selectedAction?.title ?? "")
+        }
+
+        if let window = self.findPresentationWindow(presentationContext: presentationContext) {
+            nsAlert.beginSheetModal(for: window, completionHandler: handleResponse)
+        } else {
+            handleResponse(nsAlert.runModal())
         }
     }
 
-    #endif
-}
-
-// MARK: - Helper
-
-#if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
-
-fileprivate extension DefaultSimulatedStorePurchaseUI {
-
     @MainActor
-    func findTopViewController() -> UIViewController? {
-        guard let application = self.systemInfo.sharedUIApplication else {
-            return nil
-        }
-
-        if #available(macCatalyst 13.1, *) {
-            return application.currentPresentationViewController
-        }
-
-        return nil
+    func findPresentationWindow(presentationContext: PresentationContext?) -> NSWindow? {
+        return self.resolvedPresentationContext(presentationContext)?.window
     }
 
 }

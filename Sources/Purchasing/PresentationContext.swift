@@ -13,18 +13,11 @@
 
 import Foundation
 
-#if canImport(UIKit)
+#if canImport(UIKit) && !os(watchOS)
 import UIKit
-#endif
-
-#if canImport(AppKit)
-import AppKit
-#endif
 
 /// The platform UI context for presenting SDK-owned UI.
 @_spi(Internal) public struct PresentationContext: @unchecked Sendable {
-
-    #if canImport(UIKit) && !os(watchOS)
 
     let scene: UIScene
 
@@ -33,7 +26,35 @@ import AppKit
         self.scene = scene
     }
 
-    #elseif canImport(AppKit) && !targetEnvironment(macCatalyst)
+    @MainActor
+    static func defaultPresentationContext(systemInfo: SystemInfo) -> Self? {
+        if #available(macCatalyst 13.1, *) {
+            return systemInfo.sharedUIApplication?.currentWindowScene.map(Self.init(scene:))
+        }
+
+        return nil
+    }
+
+    var isValidForPresentation: Bool {
+        return self.scene is UIWindowScene
+    }
+
+    @available(macCatalyst 13.1, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(watchOSApplicationExtension, unavailable)
+    @MainActor
+    var presentationViewController: UIViewController? {
+        return (self.scene as? UIWindowScene)?.currentPresentationViewController
+    }
+
+}
+
+#elseif canImport(AppKit) && !targetEnvironment(macCatalyst)
+import AppKit
+
+/// The platform UI context for presenting SDK-owned UI.
+@_spi(Internal) public struct PresentationContext: @unchecked Sendable {
 
     let window: NSWindow
 
@@ -42,6 +63,22 @@ import AppKit
         self.window = window
     }
 
-    #endif
+    @MainActor
+    static func defaultPresentationContext(systemInfo: SystemInfo) -> Self? {
+        return (NSApplication.shared.keyWindow ?? NSApplication.shared.mainWindow).map(Self.init(window:))
+    }
+
+    var isValidForPresentation: Bool {
+        return true
+    }
 
 }
+
+#else
+
+/// The platform UI context for presenting SDK-owned UI.
+@_spi(Internal) public struct PresentationContext: @unchecked Sendable {
+
+}
+
+#endif

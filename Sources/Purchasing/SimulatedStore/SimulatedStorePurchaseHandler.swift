@@ -17,7 +17,10 @@ enum TestPurchaseResult {
 protocol SimulatedStorePurchaseHandlerType: AnyObject, Sendable {
 
     @MainActor
-    func purchase(product: TestStoreProduct) async -> TestPurchaseResult
+    func purchase(
+        product: TestStoreProduct,
+        presentationContext: PresentationContext?
+    ) async -> TestPurchaseResult
 
 }
 
@@ -45,7 +48,10 @@ actor SimulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType {
         self.dateProvider = dateProvider
     }
 
-    func purchase(product: TestStoreProduct) async -> TestPurchaseResult {
+    func purchase(
+        product: TestStoreProduct,
+        presentationContext: PresentationContext? = nil
+    ) async -> TestPurchaseResult {
         guard !self.purchaseInProgress else {
             return .failure(ErrorUtils.operationAlreadyInProgressError())
         }
@@ -55,7 +61,10 @@ actor SimulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType {
                 return .failure(ErrorUtils.unknownError())
             }
 
-            let result = await self.purchaseUI.presentPurchaseUI(for: product)
+            let result = await self.purchaseUI.presentPurchaseUI(
+                for: product,
+                presentationContext: presentationContext
+            )
 
             let purchaseResult: TestPurchaseResult
             switch result {
