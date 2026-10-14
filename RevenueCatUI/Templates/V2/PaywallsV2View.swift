@@ -744,13 +744,10 @@ struct LoadedPaywallsV2View: View {
             .environment(\.heroMediaPresentation, heroMediaPresentation)
             // Used for header image and sticky footer
             .environment(\.safeAreaInsets, proxy.safeAreaInsets)
-            .applyIf(
+            .edgesIgnoringSafeArea(
                 paywallState.rootViewModel.headerViewModel != nil
-                || heroMediaPresentation.rootIsMedia,
-                apply: { view in
-                view
-                    .edgesIgnoringSafeArea(.top)
-            })
+                || heroMediaPresentation.rootIsMedia ? .top : []
+            )
             .applyIf(paywallState.rootViewModel.stackViewModel.component.size.height.isFill, apply: { view in
                 view.frame(maxHeight: .infinity, alignment: paywallState.rootViewModel.frameAlignment)
             })

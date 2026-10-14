@@ -145,6 +145,10 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
         try assertPWENG317ResponsiveHero(zlayer: true)
     }
 
+    func testPWENG317PreservesCarouselStateAcrossWidthRules() throws {
+        try assertPWENG317ResponsiveHero(zlayer: false, checkViewIdentity: true)
+    }
+
     func testPWENG317EmergePreviewFixturesUseLoadedRenderer() throws {
         for (name, width, zlayer) in [("narrow", 400, false), ("wide", 900, false), ("zlayer", 400, true)] {
             let fixture = ResponsiveHeroSafeAreaPreview(width: CGFloat(width), zlayer: zlayer)
@@ -203,7 +207,7 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
         return controller.children.lazy.compactMap { pweng317FixtureTop($0, in: window) }.first
     }
 
-    private func assertPWENG317ResponsiveHero(zlayer: Bool) throws {
+    private func assertPWENG317ResponsiveHero(zlayer: Bool, checkViewIdentity: Bool = false) throws {
         let redURL = try Self.pweng317ImageURL(color: .red, name: "hero")
         let greenURL = try Self.pweng317ImageURL(color: .green, name: "side")
         func image(_ url: URL, width: PaywallComponent.SizeConstraint) -> PaywallComponent {
@@ -223,11 +227,16 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
             text: "overlay", color: .init(light: .hex("#0000FF")),
             size: .init(width: .fill, height: .fixed(60)), fontSize: 16
         ))
+        let carousel = PaywallComponent.carousel(.init(pages: [
+            .init(components: [textOverlay]), .init(components: [textOverlay])
+        ]))
         let config = PaywallComponentsData.PaywallComponentsConfig(
             stack: .init(
-                components: [side, image(redURL, width: .fill)] + (zlayer ? [textOverlay] : []),
+                components: [side, image(redURL, width: .fill)] + (zlayer ? [textOverlay] : [])
+                    + (checkViewIdentity ? [carousel] : []),
                 dimension: zlayer ? .zlayer(.top) : .vertical(.leading, .start),
-                size: .init(width: .fill, height: .fill), spacing: 0
+                size: .init(width: .fill, height: .fill), spacing: 0,
+                overflow: checkViewIdentity ? .scroll : nil
             ),
             stickyFooter: nil, background: .color(.init(light: .hex("#FFFFFF")))
         )
@@ -238,6 +247,7 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
             offering: PaywallsV2LayoutFixtures.offering, introEligibilityChecker: Self.eligibleChecker,
             showZeroDecimalPlacePrices: false, colorScheme: .light
         ).get()
+        let carouselAppearCount = Self.pweng317ObserveCarouselAppearances(in: state)
         let eligibility = IntroOfferEligibilityContext(introEligibilityChecker: Self.eligibleChecker)
         let package = PackageContext(package: nil, variableContext: .init(packages: []))
         let view = LoadedPaywallsV2View(
@@ -281,6 +291,9 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
                        width == 900 ? redTop >= 60 : redTop <= 1 { break }
                 } else if redTop != nil && ((width == 900) == (greenTop != nil)) { break }
             }
+            if checkViewIdentity {
+                XCTAssertEqual(carouselAppearCount(), 1, "Width rules must preserve the carousel's view state")
+            }
             let attachment = XCTAttachment(image: screenshot)
             attachment.name = "PWENG317-\(zlayer ? "zlayer" : "vertical")-\(index + 1)-width-\(width)"
             attachment.lifetime = .keepAlways
@@ -304,6 +317,14 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
                 XCTAssertGreaterThanOrEqual(overlayTop, 60, "Text overlay must remain below the safe area")
             }
         }
+    }
+
+    private static func pweng317ObserveCarouselAppearances(in state: PaywallState) -> () -> Int {
+        var count = 0
+        if case .carousel(let carouselViewModel) = state.rootViewModel.stackViewModel.viewModels.last {
+            carouselViewModel.onViewAppear = { count += 1 }
+        }
+        return { count }
     }
 
     private static func pweng317ImageURL(color: UIColor, name: String) throws -> URL {
