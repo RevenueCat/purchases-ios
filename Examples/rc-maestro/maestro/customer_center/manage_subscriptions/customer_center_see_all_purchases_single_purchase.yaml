@@ -1,0 +1,8 @@
+appId: com.revenuecat.maestro.ios
+name: See all purchases from the single purchase screen
+
+---
+- launchApp
+- tapOn: "Customer Center with history"
+- tapOn: "(?i)see all purchases"
+- assertVisible: "Purchase History"

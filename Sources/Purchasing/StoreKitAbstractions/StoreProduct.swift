@@ -83,7 +83,7 @@ internal typealias SK2BillingPlanType = StoreKit.Product.SubscriptionInfo.Billin
         super.init()
 
         if self.localizedTitle.isEmpty {
-            Logger.warn(Strings.offering.product_details_empty_title(productIdentifier: self.productIdentifier))
+            Logger.warn(Strings.offering.product_details_empty_title(productIdentifier: self.id))
         }
     }
 
