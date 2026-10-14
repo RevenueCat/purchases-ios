@@ -12,13 +12,13 @@
 //  Created by Will Taylor on 2/25/25.
 
 import Foundation
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import StoreKit
 
 class MockStoreKit2ProductPurchaser: StoreKit2ProductPurchaserType {
 
     private(set) var invokedPurchaseCount = 0
-    private(set) var receivedStoreKit2ConfirmInOptions: StoreKit2ConfirmInOptions?
+    private(set) var receivedPresentationContext: PresentationContext?
 
     // This mock is also constructed by tests that support OS versions before StoreKit 2.
     private var _stubbedPurchaseResult: Any?
@@ -38,10 +38,10 @@ class MockStoreKit2ProductPurchaser: StoreKit2ProductPurchaserType {
     func purchase(
         product: any RevenueCat.PurchasableSK2Product,
         options: Set<StoreKit.Product.PurchaseOption>,
-        storeKit2ConfirmInOptions: RevenueCat.StoreKit2ConfirmInOptions?
+        presentationContext: RevenueCat.PresentationContext?
     ) async throws -> StoreKit.Product.PurchaseResult {
         self.invokedPurchaseCount += 1
-        self.receivedStoreKit2ConfirmInOptions = storeKit2ConfirmInOptions
+        self.receivedPresentationContext = presentationContext
         return try self.stubbedPurchaseResult.value.get()
     }
 }
