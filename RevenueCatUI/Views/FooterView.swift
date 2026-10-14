@@ -101,6 +101,7 @@ struct FooterView: View {
                 LinkButton(
                     localizedBundle: self.localizedBundle,
                     url: url,
+                    isCustomerCenterPreview: purchaseHandler.isCustomerCenterPreview,
                     titles: "Terms and conditions", "Terms",
                     onTap: {
                         self.componentInteractionLogger(.paywallFooterTermsLink(url: url))
@@ -116,6 +117,7 @@ struct FooterView: View {
                 LinkButton(
                     localizedBundle: self.localizedBundle,
                     url: url,
+                    isCustomerCenterPreview: purchaseHandler.isCustomerCenterPreview,
                     titles: "Privacy policy", "Privacy",
                     onTap: {
                         self.componentInteractionLogger(.paywallFooterPrivacyLink(url: url))
@@ -295,12 +297,20 @@ private struct LinkButton: View {
     private var displayLink = false
 
     let url: URL
+    let isCustomerCenterPreview: Bool
     let titles: [String]
     let onTap: (() -> Void)?
 
-    init(localizedBundle: Bundle, url: URL, titles: String..., onTap: (() -> Void)? = nil) {
+    init(
+        localizedBundle: Bundle,
+        url: URL,
+        isCustomerCenterPreview: Bool,
+        titles: String...,
+        onTap: (() -> Void)? = nil
+    ) {
         self.localizedBundle = localizedBundle
         self.url = url
+        self.isCustomerCenterPreview = isCustomerCenterPreview
         self.titles = titles
         self.onTap = onTap
     }
@@ -309,7 +319,11 @@ private struct LinkButton: View {
         #if canImport(WebKit) && !os(macOS) && !targetEnvironment(macCatalyst)
         Button {
             self.onTap?()
-            self.displayLink = true
+            if self.isCustomerCenterPreview {
+                self.openURL(self.url)
+            } else {
+                self.displayLink = true
+            }
         } label: {
             self.content
         }

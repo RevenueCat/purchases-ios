@@ -39,6 +39,7 @@ final class PurchaseHandler: ObservableObject {
     private var cancellables: Set<AnyCancellable> = Set()
 
     private let purchases: PaywallPurchasesType
+    private let customerCenterPreviewContext: (@Sendable () -> (appUserID: String, isSandbox: Bool))?
     let resolveBranch: @Sendable (WorkflowBranch) async -> WorkflowStepID
     private let paywallEventTracker: PaywallEventTracker
     private let keyWindowFocusResigner: KeyWindowFocusResigning
@@ -75,6 +76,20 @@ final class PurchaseHandler: ObservableObject {
     /// Whether the SDK is running in UI preview mode.
     var isUIPreviewMode: Bool {
         return purchases.isUIPreviewMode
+    }
+
+    /// Only the injected Customer Center provider enables isolated mobile-app preview behavior.
+    var isCustomerCenterPreview: Bool {
+        return customerCenterPreviewContext != nil
+    }
+
+    /// Resolves checkout URL parameters from the isolated preview provider when one is supplied.
+    var webCheckoutContext: (appUserID: String, isSandbox: Bool) {
+        if let customerCenterPreviewContext {
+            return customerCenterPreviewContext()
+        }
+        guard Purchases.isConfigured else { return ("", false) }
+        return (Purchases.shared.appUserID, Purchases.shared.isSandbox)
     }
 
     var preferredLocaleOverride: Locale? {
@@ -201,6 +216,7 @@ final class PurchaseHandler: ObservableObject {
         isConfigured: Bool = true,
         purchases: PaywallPurchasesType,
         resolveBranch: @escaping @Sendable (WorkflowBranch) async -> WorkflowStepID = { $0.fallbackStepId },
+        customerCenterPreviewContext: (@Sendable () -> (appUserID: String, isSandbox: Bool))? = nil,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
@@ -211,6 +227,7 @@ final class PurchaseHandler: ObservableObject {
     ) {
         self.isConfigured = isConfigured
         self.purchases = purchases
+        self.customerCenterPreviewContext = customerCenterPreviewContext
         self.resolveBranch = resolveBranch
         self.paywallEventTracker = eventTracker
         self.keyWindowFocusResigner = keyWindowFocusResigner
@@ -266,6 +283,29 @@ final class PurchaseHandler: ObservableObject {
             eventTracker: .init(purchases: purchases)
         )
     }
+
+#if os(iOS)
+    /// Keeps Customer Center previews independent of the configured Purchases instance and its events.
+    static func customerCenterPreview(
+        provider: CustomerCenterPreviewProvider,
+        performPurchase: @escaping PerformPurchase,
+        performRestore: @escaping PerformRestore
+    ) -> PurchaseHandler {
+        let purchases = NotConfiguredPurchases(
+            purchasesAreCompletedBy: .myApp,
+            customerInfoProvider: { try await provider.customerInfo() },
+            isUIPreviewMode: true
+        )
+        return .init(
+            purchases: purchases,
+            customerCenterPreviewContext: { (provider.appUserID, provider.isSandbox) },
+            performPurchase: performPurchase,
+            performRestore: performRestore,
+            purchaseResultPublisher: Empty().eraseToAnyPublisher(),
+            eventTracker: .init(purchases: purchases)
+        )
+    }
+#endif
 
     private func setResult(_ result: PaywallPurchaseResult) {
         guard result != self.purchaseResult else {
@@ -1284,7 +1324,8 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 
     var preferredLocaleOverride: String? { nil }
 
-    var isUIPreviewMode: Bool { false }
+    let isUIPreviewMode: Bool
+    private let customerInfoProvider: (@Sendable () async throws -> CustomerInfo)?
 
     var remoteConfigEnabled: Bool { false }
 
@@ -1292,9 +1333,16 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
         SubscriptionHistoryTracker()
     }
 
-    init(customerInfo: CustomerInfo? = nil, purchasesAreCompletedBy: PurchasesAreCompletedBy) {
+    init(
+        customerInfo: CustomerInfo? = nil,
+        purchasesAreCompletedBy: PurchasesAreCompletedBy,
+        customerInfoProvider: (@Sendable () async throws -> CustomerInfo)? = nil,
+        isUIPreviewMode: Bool = false
+    ) {
         self.customerInfo = customerInfo
         self.purchasesAreCompletedBy = purchasesAreCompletedBy
+        self.customerInfoProvider = customerInfoProvider
+        self.isUIPreviewMode = isUIPreviewMode
     }
 
     func offerings() async throws -> Offerings { throw ErrorCode.configurationError }
@@ -1317,6 +1365,7 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 #endif
 
     func customerInfo() async throws -> RevenueCat.CustomerInfo {
+        if let customerInfoProvider { return try await customerInfoProvider() }
         guard let info = customerInfo else { throw ErrorCode.configurationError }
         return info
     }

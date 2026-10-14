@@ -18,7 +18,7 @@ import Foundation
 /// or `WorkflowPreview.makeContext` for injected data) and passed into ``PaywallView``; it has no
 /// public initializer because callers never assemble it directly.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@_spi(Internal) public struct WorkflowContext {
+@_spi(Internal) public struct WorkflowContext: Sendable {
     let workflow: PublishedWorkflow
     let uiConfig: UIConfig
     /// Every step and exit offer lookup goes through this, so the developer-supplied offering is never bypassed.
@@ -321,7 +321,7 @@ import Foundation
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct WorkflowPackageContext {
+struct WorkflowPackageContext: Sendable {
     let selectedPackage: Package
     let packages: [Package]
     /// Apple promo offer product code per package identifier, used to resolve `promo_offer_condition`

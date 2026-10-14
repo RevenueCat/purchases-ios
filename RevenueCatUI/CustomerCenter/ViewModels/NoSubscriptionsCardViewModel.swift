@@ -24,6 +24,10 @@ final class NoSubscriptionsCardViewModel: ObservableObject {
     private let screenOffering: CustomerCenterConfigData.ScreenOffering?
     private let purchasesProvider: CustomerCenterPurchasesType
 
+    var previewProvider: CustomerCenterPreviewProvider? {
+        purchasesProvider as? CustomerCenterPreviewProvider
+    }
+
     init(
         screenOffering: CustomerCenterConfigData.ScreenOffering?,
         purchasesProvider: CustomerCenterPurchasesType

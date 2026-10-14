@@ -673,6 +673,7 @@ struct WorkflowPaywallView: View {
     }
 
     private func failedToLoadFont(_ fontConfig: UIConfig.FontsConfig) {
+        guard !purchaseHandler.isCustomerCenterPreview else { return }
         if Purchases.isConfigured {
             Purchases.shared.failedToLoadFontWithConfig(fontConfig)
         }

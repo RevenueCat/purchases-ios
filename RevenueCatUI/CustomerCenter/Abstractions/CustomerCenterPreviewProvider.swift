@@ -37,6 +37,12 @@ import SwiftUI
     func customerInfoUpdates() async -> AsyncStream<CustomerInfo>
     /// Handles platform actions without interacting with StoreKit or external applications.
     func handlePreviewAction(_ action: CustomerCenterPreviewAction) async throws
+    /// Resolves an optional workflow using app-supplied data.
+    func previewWorkflow(for offering: Offering) async throws -> WorkflowContext?
+    /// Indicates whether paywall promotional offers should be simulated as eligible.
+    func previewPromotionalOfferEligibility() async -> Bool
+    /// Supplies the project variables entered in the mobile preview settings.
+    func previewCustomVariables() async -> [String: CustomVariableValue]
 }
 
 @available(iOS 15.0, *)
@@ -63,6 +69,12 @@ extension CustomerCenterPreviewProvider {
         }
     }
 
+    /// Defaults to the standalone offering when the provider has no workflow support.
+    public func previewWorkflow(for offering: Offering) async throws -> WorkflowContext? { nil }
+    /// Defaults to ineligible promotional offers.
+    public func previewPromotionalOfferEligibility() async -> Bool { false }
+    /// Defaults to no preview variable overrides.
+    public func previewCustomVariables() async -> [String: CustomVariableValue] { [:] }
 }
 
 @available(iOS 15.0, *)
