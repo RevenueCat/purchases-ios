@@ -34,14 +34,6 @@ protocol RemoteConfigManagerType: AnyObject {
     /// reading again. Returns `nil` when the topic is still unavailable after refresh.
     func topic(_ topic: RemoteConfigTopic, policy: RemoteConfigReadPolicy) async -> RemoteConfiguration.ConfigTopic?
 
-    /// Returns one inline config item, joining an in-flight refresh or starting one stale-gated foreground refresh
-    /// when that item is not cached.
-    func configItem(
-        for topic: RemoteConfigTopic,
-        itemKey: String,
-        policy: RemoteConfigReadPolicy
-    ) async -> RemoteConfiguration.ConfigItem?
-
     /// Waits for the refresh currently in flight, if any, then returns the latest committed topic.
     /// Unlike `topic(_:)`, this never starts a refresh.
     func committedTopicAfterInFlightRefresh(_ topic: RemoteConfigTopic) async
@@ -103,13 +95,6 @@ enum RemoteConfigConsistencyError: Error, Equatable {
 extension RemoteConfigManagerType {
     func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
         return await self.topic(topic, policy: .fetchIfNeeded)
-    }
-
-    func configItem(
-        for topic: RemoteConfigTopic,
-        itemKey: String
-    ) async -> RemoteConfiguration.ConfigItem? {
-        return await self.configItem(for: topic, itemKey: itemKey, policy: .fetchIfNeeded)
     }
 
     func blobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data? {
@@ -307,14 +292,6 @@ final class NoOpRemoteConfigManager: RemoteConfigManagerType {
         return nil
     }
 
-    func configItem(
-        for topic: RemoteConfigTopic,
-        itemKey: String,
-        policy: RemoteConfigReadPolicy
-    ) async -> RemoteConfiguration.ConfigItem? {
-        return nil
-    }
-
     func committedTopicAfterInFlightRefresh(_ topic: RemoteConfigTopic) async
     -> RemoteConfiguration.ConfigTopic? {
         return nil
@@ -460,16 +437,6 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     func topic(_ topic: RemoteConfigTopic, policy: RemoteConfigReadPolicy) async -> RemoteConfiguration.ConfigTopic? {
         return await self.readCommittedState(refreshIfMissing: policy == .fetchIfNeeded) {
             await self.committedTopic(topic)
-        }
-    }
-
-    func configItem(
-        for topic: RemoteConfigTopic,
-        itemKey: String,
-        policy: RemoteConfigReadPolicy
-    ) async -> RemoteConfiguration.ConfigItem? {
-        return await self.readCommittedState(refreshIfMissing: policy == .fetchIfNeeded) {
-            await self.committedTopic(topic)?[itemKey]
         }
     }
 
