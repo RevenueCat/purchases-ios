@@ -26,7 +26,7 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
     }
 
     func testReturnsConfiguredRewardsInWireOrder() async throws {
-        self.stub(content: [
+        try self.stub(content: [
             "reward": ["type": "virtual_currency", "code": "coins", "amount": 10],
             "more_rewards": [
                 ["type": "entitlement", "identifier": "premium", "duration": "PT30M"],
@@ -56,7 +56,7 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         ]
 
         for (rawDuration, value, unit) in cases {
-            self.stub(content: [
+            try self.stub(content: [
                 "reward": [
                     "type": "entitlement",
                     "identifier": "premium",
@@ -71,7 +71,7 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
     }
 
     func testUnsupportedIndividualRewardsArePreserved() async throws {
-        self.stub(content: [
+        try self.stub(content: [
             "reward": ["type": "future_reward"],
             "more_rewards": [
                 ["type": "entitlement", "identifier": "premium", "duration": "PT0S"],
@@ -86,8 +86,8 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         expect(rewards.moreRewards) == [.unsupportedReward, .unsupportedReward]
     }
 
-    func testReturnsNilForMalformedOuterPayload() async {
-        self.stub(content: [
+    func testReturnsNilForMalformedOuterPayload() async throws {
+        try self.stub(content: [
             "reward": ["type": "virtual_currency", "code": "coins", "amount": 10],
             "more_rewards": ["not": "an array"]
         ])
@@ -97,26 +97,66 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         expect(rewards).to(beNil())
     }
 
-    func testUsesExactAdUnitIdentifierLookup() async {
-        self.stub(content: ["reward": ["type": "virtual_currency", "code": "coins", "amount": 10]])
+    func testUsesExactAdUnitIdentifierLookup() async throws {
+        try self.stub(content: ["reward": ["type": "virtual_currency", "code": "coins", "amount": 10]])
 
         let rewards = await self.provider.rewards(forAdUnitId: "AD-UNIT")
 
         expect(rewards).to(beNil())
-        expect(self.manager.invokedConfigItemParameters.last?.topic) == .adRewards
-        expect(self.manager.invokedConfigItemParameters.last?.itemKey) == "AD-UNIT"
+        expect(self.manager.invokedBlobDataParameters.last?.topic) == .adRewards
+        expect(self.manager.invokedBlobDataParameters.last?.itemKey) == "default"
     }
 
     func testEmptyAdUnitIdentifierReturnsNilWithoutReadingConfig() async {
         let rewards = await self.provider.rewards(forAdUnitId: "")
 
         expect(rewards).to(beNil())
-        expect(self.manager.invokedConfigItemParameters).to(beEmpty())
+        expect(self.manager.invokedTopicCount) == 0
+        expect(self.manager.invokedBlobDataParameters).to(beEmpty())
     }
 
-    private func stub(content: [String: AnyDecodable], adUnitId: String = "ad-unit") {
+    func testTemporarilyUnavailableBlobPreservesCachedConfiguration() async throws {
+        try self.stub(content: ["reward": ["type": "virtual_currency", "code": "coins", "amount": 10]])
+        let initial = await self.provider.rewards(forAdUnitId: "ad-unit")
+
+        self.manager.configGeneration += 1
+        self.manager.stubbedBlobData[.adRewards] = [:]
+        let cached = await self.provider.rewards(forAdUnitId: "ad-unit")
+
+        expect(initial?.configuredReward.virtualCurrency?.amount) == 10
+        expect(cached) == initial
+    }
+
+    func testInvalidReplacementBlobPreservesCachedConfiguration() async throws {
+        try self.stub(content: ["reward": ["type": "virtual_currency", "code": "coins", "amount": 10]])
+        let initial = await self.provider.rewards(forAdUnitId: "ad-unit")
+
+        self.manager.configGeneration += 1
+        self.manager.stubbedBlobData[.adRewards]?["default"] = #"{"ad-unit":{"more_rewards":[]}}"#.asData
+        let cached = await self.provider.rewards(forAdUnitId: "ad-unit")
+
+        expect(initial?.configuredReward.virtualCurrency?.amount) == 10
+        expect(cached) == initial
+    }
+
+    func testTopicRemovalClearsCachedConfiguration() async throws {
+        try self.stub(content: ["reward": ["type": "virtual_currency", "code": "coins", "amount": 10]])
+        let initial = await self.provider.rewards(forAdUnitId: "ad-unit")
+        expect(initial).toNot(beNil())
+
+        self.manager.configGeneration += 1
+        self.manager.stubbedTopics[.adRewards] = nil
+        let rewards = await self.provider.rewards(forAdUnitId: "ad-unit")
+
+        expect(rewards).to(beNil())
+    }
+
+    private func stub(content: [String: AnyDecodable], adUnitId: String = "ad-unit") throws {
         self.manager.stubbedTopics[.adRewards] = [
-            adUnitId: RemoteConfiguration.ConfigItem(content: content)
+            "default": RemoteConfiguration.ConfigItem(blobRef: String(repeating: "A", count: 32), prefetch: true)
+        ]
+        self.manager.stubbedBlobData[.adRewards] = [
+            "default": try JSONEncoder.default.encode([adUnitId: AnyDecodable.object(content)])
         ]
     }
 

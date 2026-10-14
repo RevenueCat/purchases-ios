@@ -299,6 +299,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let customerInfoManager: CustomerInfoManager
     private let eventsManager: EventsManagerType?
     private let remoteConfigManager: RemoteConfigManagerType
+    private let configuredAdRewardsProvider: ConfiguredAdRewardsProvider
     private let sdkSettingsConfigProvider: SDKSettingsConfigProviderType
     private let subscriberDimensionsConfigProvider: SubscriberDimensionsConfigProviderType
 
@@ -992,6 +993,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.remoteConfigManager = systemInfo.remoteConfigEnabled
             ? remoteConfigManager
             : NoOpRemoteConfigManager()
+        self.configuredAdRewardsProvider = ConfiguredAdRewardsProvider(manager: self.remoteConfigManager)
         self.sdkSettingsConfigProvider = sdkSettingsConfigProvider
         self.subscriberDimensionsConfigProvider = subscriberDimensionsConfigProvider
         self.offlineEntitlementsManager = offlineEntitlementsManager
