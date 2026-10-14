@@ -33,6 +33,7 @@ enum Strings {
 
     case attempted_to_track_event_with_missing_data
     case paywall_unknown_button_action_tracked_for_diagnostics(componentName: String?, actionValue: String?)
+    case paywall_native_navigation_action_failed(Error)
 
     case image_starting_request(URL)
     case image_result(Result<(), ImageLoader.Error>)
@@ -249,6 +250,9 @@ extension Strings: CustomStringConvertible {
         case .paywall_view_model_construction_failed(let error):
             return "Paywall view model construction failed: \(error)\n" +
             "Will use fallback paywall."
+
+        case .paywall_native_navigation_action_failed(let error):
+            return "Native paywall navigation action failed: \(error.localizedDescription)"
 
         case .paywall_could_not_find_localization(let string):
             return "Could not find paywall localization data for \(string)"

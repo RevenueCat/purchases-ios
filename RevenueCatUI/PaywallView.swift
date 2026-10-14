@@ -388,6 +388,9 @@ public struct PaywallView: View {
                         backNavigationBridge: self.workflowBackNavigationBridge,
                         onPresentationError: self.workflowPresentationErrorHandler
                     )
+                    .modifier(NativePaywallNavigationModifier(
+                        paywallComponents: paywallComponents, workflowContext: workflowContext
+                    ))
                 } else {
                     PaywallsV2View(
                         paywallComponents: paywallComponents,
@@ -401,6 +404,9 @@ public struct PaywallView: View {
                         colorScheme: colorScheme,
                         promoOfferCache: self.promoOfferCache
                     )
+                    .modifier(NativePaywallNavigationModifier(
+                        paywallComponents: paywallComponents, workflowContext: workflowContext
+                    ))
                 }
             }
         } else {
