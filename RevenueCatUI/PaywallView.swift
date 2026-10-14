@@ -271,6 +271,23 @@ public struct PaywallView: View {
             // and pulling down in the paywall would execute the parent's refreshable action
             .refreshableDisabled()
             .modifier(PaywallURLEventsModifier(purchaseHandler: self.purchaseHandler))
+            // Publish outside SDK-owned navigation, which consumes preferences from its content.
+            .preference(key: PurchaseInProgressPreferenceKey.self,
+                        value: self.purchaseHandler.packageBeingPurchased)
+            .preference(key: PurchasedResultPreferenceKey.self,
+                        value: .init(
+                            data: self.purchaseHandler.sessionPurchaseResult,
+                            diffKey: self.purchaseHandler.sessionPurchaseResult == .cancelled ?
+                            self.purchaseHandler.consecutiveCancellationRequestID : nil
+                        ))
+            .preference(key: RestoredCustomerInfoPreferenceKey.self,
+                        value: self.purchaseHandler.restoredCustomerInfo)
+            .preference(key: RestoreInProgressPreferenceKey.self,
+                        value: self.purchaseHandler.restoreInProgress)
+            .preference(key: PurchaseErrorPreferenceKey.self,
+                        value: self.purchaseHandler.purchaseError as NSError?)
+            .preference(key: RestoreErrorPreferenceKey.self,
+                        value: self.purchaseHandler.restoreError as NSError?)
     }
 
     @MainActor
