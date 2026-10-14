@@ -26,7 +26,7 @@ public typealias AdPresentationCompletion = @MainActor (AdPresentationResult) ->
 @MainActor
 public protocol AdPresenter: AnyObject {
 
-    /// Presents a checkpoint-selected ad and reports one terminal result through `completion`.
+    /// Presents an ad and reports result through `completion`.
     ///
     /// The checkpoint remains pending until `completion` is called. Only the first reported result is used;
     /// later calls are ignored.
