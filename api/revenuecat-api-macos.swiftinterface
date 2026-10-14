@@ -224,7 +224,7 @@ public struct AdReward : Swift.Sendable, Swift.Equatable {
   public static func == (a: RevenueCat.AdReward, b: RevenueCat.AdReward) -> Swift.Bool
 }
 public struct ConfiguredAdRewards : Swift.Sendable, Swift.Equatable {
-  public let configuredReward: RevenueCat.AdRewardConfiguration
+  public let configuredReward: RevenueCat.AdRewardConfiguration?
   public let moreRewards: [RevenueCat.AdRewardConfiguration]
   public static func == (a: RevenueCat.ConfiguredAdRewards, b: RevenueCat.ConfiguredAdRewards) -> Swift.Bool
 }

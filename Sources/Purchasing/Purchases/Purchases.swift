@@ -2075,7 +2075,8 @@ extension Purchases {
     /// Returns the rewards currently configured for a rewarded ad unit.
     ///
     /// The result contains the primary configured reward and any additional rewards that are configured
-    /// to be granted alongside it. Returns `nil` if the ad unit has no configured rewards.
+    /// to be granted alongside it. Returns `nil` when configuration is unavailable. If configuration is
+    /// available but no rewards are configured, the container has no primary reward and no additional rewards.
     ///
     /// - Parameter adUnitId: The ad network's rewarded ad unit identifier.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
