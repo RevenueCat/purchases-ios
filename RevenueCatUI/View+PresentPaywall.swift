@@ -672,6 +672,9 @@ private struct PresentingPaywallModifier: ViewModifier {
                 promoOfferCache: self.promoOfferCacheOwner.cache
             )
         )
+        #if !os(tvOS)
+        .environment(\.nativePaywallNavigationContext, .standalone)
+        #endif
         .environment(\.workflowCompletedInSessionBinding, self.$workflowCompletedInSession)
         .onAppear(perform: self.resetWorkflowCompletedInSession)
         .onPurchaseStarted {
@@ -792,6 +795,9 @@ private struct PresentingPaywallModifier: ViewModifier {
             )
         )
         .customPaywallVariables(self.customPaywallVariables)
+        #if !os(tvOS)
+        .environment(\.nativePaywallNavigationContext, .standalone)
+        #endif
         .environment(\.workflowCompletedInSessionBinding, self.$workflowCompletedInSession)
         .onPurchaseStarted {
             self.purchaseStarted?($0)
@@ -963,6 +969,9 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
                 promoOfferCache: self.promoOfferCacheOwner.cache
             )
         )
+        #if !os(tvOS)
+        .environment(\.nativePaywallNavigationContext, .standalone)
+        #endif
         .environment(\.workflowCompletedInSessionBinding, self.$workflowCompletedInSession)
         .onAppear(perform: self.resetWorkflowCompletedInSession)
         .onPurchaseStarted {
@@ -1014,6 +1023,9 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
             )
         )
         .customPaywallVariables(self.customPaywallVariables)
+        #if !os(tvOS)
+        .environment(\.nativePaywallNavigationContext, .standalone)
+        #endif
         .environment(\.workflowCompletedInSessionBinding, self.$workflowCompletedInSession)
         .onPurchaseStarted {
             self.purchaseStarted?($0)
