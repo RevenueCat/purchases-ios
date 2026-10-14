@@ -20,6 +20,39 @@ import UIKit
 @MainActor
 final class NativePaywallUIKitTests: NativePaywallNavigationTestCase {
 
+    func testEmbeddedControllerKeepsConfiguredCloseWithAndWithoutParentNavigation() async throws {
+        for hasNavigation in [false, true] {
+            let owner = NativePaywallUIKitOwner()
+            let child = UIHostingController(rootView: AnyView(Color.clear))
+            let parent = UIViewController()
+            let help = UIBarButtonItem(title: "Help", primaryAction: UIAction { _ in })
+            parent.navigationItem.rightBarButtonItem = help
+            parent.addChild(child)
+            parent.view.addSubview(child.view)
+            child.view.frame = parent.view.bounds
+            child.didMove(toParent: parent)
+            let navigation = UINavigationController(rootViewController: UIViewController())
+            if hasNavigation { navigation.pushViewController(parent, animated: false) }
+            owner.prepare(controller: child)
+            var fallbackAppearances = 0
+            child.rootView = AnyView(
+                NativePaywallCloseButton(
+                    enabled: true, accessibilityLabel: "Close", action: {},
+                    content: { Button("Configured Close") {}.onAppear { fallbackAppearances += 1 } }
+                )
+                .modifier(NativePaywallNavigationModifier(requested: true))
+                .environment(\.nativePaywallNavigationContext, try XCTUnwrap(owner.context))
+            )
+            let window = self.host(hasNavigation ? navigation : parent)
+            defer { self.close(window) }
+            await self.waitForPresentation()
+            XCTAssertEqual(fallbackAppearances, 1, "Embedded controls need the configured fallback")
+            XCTAssertEqual(self.navigationCount(in: child), 0, "Embedding must not add navigation")
+            XCTAssertNil(child.navigationItem.rightBarButtonItem)
+            XCTAssertTrue(parent.navigationItem.rightBarButtonItem === help)
+        }
+    }
+
     func testKnownUIKitOwnerPreservesCallerButtonsAndRunsClose() async throws {
         let controller = UIViewController()
         let help = UIBarButtonItem(title: "Help", primaryAction: UIAction { _ in })

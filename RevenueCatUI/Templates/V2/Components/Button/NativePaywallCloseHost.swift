@@ -199,9 +199,9 @@ final class NativePaywallUIKitOwner: NSObject, ObservableObject {
     static let closeIdentifier = NativePaywallCloseHost.closeIdentifier
     static let backIdentifier = NativePaywallCloseHost.backIdentifier
     weak var controller: UIViewController?
-    @Published private var hasNavigation: Bool?
+    @Published private var isStandalone: Bool?
     var context: NativePaywallNavigationContext? {
-        self.hasNavigation.map { $0 ? .uiKit(self) : .standalone }
+        self.isStandalone.map { $0 ? .standalone : .uiKit(self) }
     }
     private var items: [UIBarButtonItem] = []
     private var backAction: NativePaywallCloseCoordinator.CloseAction?
@@ -209,9 +209,9 @@ final class NativePaywallUIKitOwner: NSObject, ObservableObject {
 
     func prepare(controller: UIViewController) {
         self.controller = controller
-        let hasNavigation = controller.navigationController != nil
-        guard self.hasNavigation != hasNavigation else { return }
-        self.hasNavigation = hasNavigation
+        let isStandalone = controller.parent == nil && controller.navigationController == nil
+        guard self.isStandalone != isStandalone else { return }
+        self.isStandalone = isStandalone
     }
 
     func install(_ action: NativePaywallCloseCoordinator.CloseAction?) {
