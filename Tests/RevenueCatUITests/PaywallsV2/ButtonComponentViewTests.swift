@@ -23,6 +23,26 @@ import UIKit
 @MainActor
 final class ButtonComponentViewTests: TestCase {
 
+    func testRegisteredNativeButtonRunsItsActionWithoutMountingFallback() async throws {
+        let coordinator = NativePaywallCloseCoordinator()
+        var actions = 0
+        var fallbackAppearances = 0
+        let button = NativePaywallCloseButton(
+            enabled: true, accessibilityLabel: "Close", action: { actions += 1 },
+            content: { Button("Configured Close") {}.onAppear { fallbackAppearances += 1 } }
+        )
+        .environment(\.nativePaywallCloseCoordinator, coordinator)
+        let (window, _) = Self.host(button)
+        defer { window.isHidden = true; window.rootViewController = nil }
+        let registered = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            coordinator.actions.count == 1
+        }, object: nil)
+        await fulfillment(of: [registered], timeout: 2)
+        try await coordinator.performAction(id: XCTUnwrap(coordinator.actions.first?.id))
+        XCTAssertEqual(actions, 1)
+        XCTAssertEqual(fallbackAppearances, 0)
+    }
+
     func testButtonWithVisibleFalse_IsNotRendered() throws {
         let viewModel = try Self.makeViewModel(
             component: PaywallComponent.ButtonComponent(
@@ -91,6 +111,17 @@ final class ButtonComponentViewTests: TestCase {
             hostedView.containsText("Close"),
             "A button with a .selected override that hides should not render when selected."
         )
+    }
+
+    func testNativePreferenceWithoutHostRetainsConfiguredButton() async {
+        let fallback = expectation(description: "Configured button is rendered without a native host")
+        let button = NativePaywallCloseButton(
+            enabled: true, accessibilityLabel: "Close", action: {},
+            content: { Button("Close") {}.onAppear { fallback.fulfill() } }
+        )
+        let (window, _) = Self.host(button)
+        defer { window.isHidden = true; window.rootViewController = nil }
+        await fulfillment(of: [fallback], timeout: 2)
     }
 
 }
