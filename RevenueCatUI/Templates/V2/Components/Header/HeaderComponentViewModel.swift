@@ -33,6 +33,28 @@ class HeaderComponentViewModel {
         self.firstItemIgnoresSafeArea = firstItemIgnoresSafeArea
     }
 
+    /// Decorative stacks collapse with their buttons, but other header content remains in place.
+    var buttonOnlyContentIdentifiers: Set<ObjectIdentifier>? {
+        Self.buttonIdentifiers(in: self.stackViewModel)
+    }
+
+    private static func buttonIdentifiers(in stack: StackComponentViewModel) -> Set<ObjectIdentifier>? {
+        guard stack.badgeViewModels.isEmpty else { return nil }
+        var identifiers: Set<ObjectIdentifier> = []
+        for viewModel in stack.viewModels {
+            switch viewModel {
+            case .button(let button):
+                identifiers.insert(ObjectIdentifier(button))
+            case .stack(let child):
+                guard let children = Self.buttonIdentifiers(in: child) else { return nil }
+                identifiers.formUnion(children)
+            default:
+                return nil
+            }
+        }
+        return identifiers
+    }
+
 }
 
 #endif
