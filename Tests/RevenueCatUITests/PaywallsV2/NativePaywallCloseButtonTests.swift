@@ -9,7 +9,7 @@
 //
 
 @_spi(Internal) import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 import SwiftUI
 import XCTest
 
@@ -19,6 +19,54 @@ import UIKit
 @available(iOS 15.0, *)
 @MainActor
 final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
+
+    func testOwnedNativeNavigationDeliversPurchaseAndRestoreCallbacks() async throws {
+        let data = PaywallComponentsData(
+            templateName: "native-callbacks", assetBaseURL: URL(string: "https://example.com")!,
+            componentsConfig: .init(base: .init(
+                stack: .init(components: [.button(.init(
+                    action: .navigateBack,
+                    stack: .init(components: [.text(.init(text: "close", color: .init(light: .hex("#000000"))))]),
+                    useNativeIfPossible: true
+                ))]), stickyFooter: nil, background: .color(.init(light: .hex("#FFFFFF")))
+            )),
+            componentsLocalizations: ["en_US": ["close": .string("Close")]],
+            revision: 1, defaultLocaleIdentifier: "en_US"
+        )
+        let offering = Offering(
+            identifier: "native-callbacks", serverDescription: "",
+            paywallComponents: .init(uiConfig: PreviewUIConfig.make(), data: data),
+            availablePackages: [TestData.annualPackage], webCheckoutUrl: nil
+        )
+        let handler = PurchaseHandler.mock()
+        let purchased = expectation(description: "Purchase callback crosses native navigation")
+        let restored = expectation(description: "Restore callback crosses native navigation")
+        let host = UIHostingController(rootView:
+            PaywallView(configuration: .init(
+                offering: offering, introEligibility: .producing(eligibility: .eligible),
+                purchaseHandler: handler
+            ))
+                .environment(\.nativePaywallNavigationContext, .standalone)
+                .onPurchaseCompleted { info in
+                    XCTAssertTrue(info === TestData.customerInfo)
+                    purchased.fulfill()
+                }
+                .onRestoreCompleted { info in
+                    XCTAssertTrue(info === TestData.customerInfo)
+                    restored.fulfill()
+                }
+        )
+        let window = self.host(host)
+        defer { self.close(window) }
+        await self.waitForPresentation()
+        XCTAssertEqual(self.navigationCount(in: host), 1)
+        XCTAssertEqual(self.toolbarButtons(in: host.view).count, 1)
+        _ = try await handler.purchase(package: TestData.annualPackage)
+        await fulfillment(of: [purchased], timeout: 3)
+        _ = try await handler.restorePurchases()
+        handler.setRestored(TestData.customerInfo, success: true)
+        await fulfillment(of: [restored], timeout: 3)
+    }
 
     func testSwiftUINavigationContainersInstallNativeClose() async {
         if #available(iOS 16.0, *) {
