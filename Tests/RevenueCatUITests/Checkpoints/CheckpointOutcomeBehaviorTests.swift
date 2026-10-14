@@ -110,12 +110,13 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
         XCTAssertEqual(errorPresenter.presentations.first?.error as NSError?, expectedError)
     }
 
-    // Terminal workflow error: do not invoke the callback again or the error presenter.
+    // Terminal workflow error: invoke the during-Flow error presenter and do not invoke the callback.
     func testTerminalWorkflowError() async {
+        let expectedError = NSError(domain: "CheckpointOutcomeBehaviorTests", code: 3)
         let errorPresenter = ErrorPresentationRecorder()
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
-            checkpointPresenter: OutcomeCheckpointPresenter(outcome: .failed)
+            checkpointPresenter: TerminalErrorReportingCheckpointPresenter(error: expectedError)
         )
 
         let result = await manager.checkpointForCallback(
@@ -124,24 +125,42 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
         )
 
         self.assertSuppressed(result)
-        XCTAssertTrue(errorPresenter.presentations.isEmpty)
+        XCTAssertEqual(errorPresenter.presentations.count, 1)
+        XCTAssertEqual(errorPresenter.presentations.first?.error as NSError?, expectedError)
+        XCTAssertEqual(errorPresenter.presentations.first?.stage, .duringFlowPresentation)
     }
 
-    // Terminal default paywall error: do not invoke the callback again or the error presenter.
+    // Terminal default paywall error: invoke the during-Flow error presenter and do not invoke the callback.
     func testTerminalDefaultPaywallError() async {
+        let expectedError = NSError(domain: "CheckpointOutcomeBehaviorTests", code: 4)
         let errorPresenter = ErrorPresentationRecorder()
         let manager = CheckpointsManager { _, _ in .matchedOffering(Self.offering()) }
 
         let result = await manager.checkpointForCallback(
             identifier: "soft_paywall",
             params: .init(
-                paywallPresenter: { _, completion in completion(.failed) },
-                errorPresenter: { params, _ in errorPresenter.presentations.append(params) }
+                paywallPresenter: { params, completion in
+                    params.errorPresentationHandler?(
+                        .init(
+                            checkpointIdentifier: params.checkpointIdentifier,
+                            error: expectedError,
+                            customVariables: params.customVariables,
+                            stage: .duringFlowPresentation
+                        ),
+                        .init { completion(.failed) }
+                    )
+                },
+                errorPresenter: { params, completion in
+                    errorPresenter.presentations.append(params)
+                    completion.complete()
+                }
             )
         )
 
         self.assertSuppressed(result)
-        XCTAssertTrue(errorPresenter.presentations.isEmpty)
+        XCTAssertEqual(errorPresenter.presentations.count, 1)
+        XCTAssertEqual(errorPresenter.presentations.first?.error as NSError?, expectedError)
+        XCTAssertEqual(errorPresenter.presentations.first?.stage, .duringFlowPresentation)
     }
 
     // Completed Flow with a newly active entitlement: invoke the callback with that entitlement.
@@ -193,13 +212,14 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
         XCTAssertTrue(errorPresenter.presentations.isEmpty)
     }
 
-    // Post-Flow synchronization failure: invoke the callback with an empty result without presenting an error yet.
+    // Post-Flow synchronization failure: invoke the after-Flow error presenter, then callback with an empty result.
     func testPostFlowSynchronizationFailure() async {
+        let expectedError = NSError(domain: "CheckpointOutcomeBehaviorTests", code: 5)
         let errorPresenter = ErrorPresentationRecorder()
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
             checkpointPresenter: OutcomeCheckpointPresenter(
-                outcome: .synchronizationFailed(NSError(domain: "test", code: 1))
+                outcome: .synchronizationFailed(expectedError)
             )
         )
 
@@ -212,7 +232,9 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
             return XCTFail("Expected the callback to be invoked")
         }
         XCTAssertTrue(flowResult?.obtainedEntitlements.isEmpty == true)
-        XCTAssertTrue(errorPresenter.presentations.isEmpty)
+        XCTAssertEqual(errorPresenter.presentations.count, 1)
+        XCTAssertEqual(errorPresenter.presentations.first?.error as NSError?, expectedError)
+        XCTAssertEqual(errorPresenter.presentations.first?.stage, .afterFlowPresentation)
     }
 
     private func assertCompletedWithNil(
@@ -330,6 +352,7 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class ErrorPresentationRecorder: @unchecked Sendable {
     var presentations: [ErrorPresentationParams] = []
 }
@@ -378,6 +401,41 @@ private final class OutcomeCheckpointPresenter: CheckpointPresenterType {
         localPaywallPresentationHandler: PaywallPresentationHandler?
     ) async throws -> CheckpointPresentationOutcome {
         return self.outcome
+    }
+
+}
+
+@MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class TerminalErrorReportingCheckpointPresenter: CheckpointPresenterType {
+
+    private let error: any Error
+
+    init(error: any Error) {
+        self.error = error
+    }
+
+    func presentWorkflow(_ presentation: WorkflowPresentationRequest) async throws -> CheckpointPresentationOutcome {
+        await withCheckedContinuation { continuation in
+            presentation.errorPresentationHandler(
+                .init(
+                    checkpointIdentifier: presentation.checkpointIdentifier,
+                    error: self.error,
+                    customVariables: presentation.customVariables,
+                    stage: .duringFlowPresentation
+                ),
+                .init { continuation.resume() }
+            )
+        }
+        return .failed
+    }
+
+    func presentOffering(
+        params: PaywallPresentationParams,
+        globalPaywallPresenter: PaywallPresenter?,
+        localPaywallPresentationHandler: PaywallPresentationHandler?
+    ) async throws -> CheckpointPresentationOutcome {
+        return .failed
     }
 
 }

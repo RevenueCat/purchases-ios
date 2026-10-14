@@ -717,24 +717,50 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(customerInfoSynchronizerCallCount, 1)
     }
 
-    func testCustomerInfoSynchronizationFailureReturnsEmptyResult() async {
+    func testCustomerInfoSynchronizationFailurePresentsErrorThenReturnsEmptyResult() async {
         let expectedError = NSError(domain: "test", code: 42)
+        let errorPresented = self.expectation(description: "Error is presented")
+        var errorPresentationParams: ErrorPresentationParams?
+        var errorPresentationCompletion: ErrorPresentationCompletion?
+        var checkpointCompleted = false
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
             workflowPresenter: MockWorkflowPresenter(),
             customerInfoSynchronizer: { throw expectedError }
         )
 
-        let result = await manager.checkpointForCallback(
-            identifier: "onboarding",
-            params: .init(paywallPresenter: { _, completion in completion(.continued) })
-        )
+        let checkpoint = Task { @MainActor in
+            let result = await manager.checkpointForCallback(
+                identifier: "onboarding",
+                params: .init(
+                    paywallPresenter: { _, completion in completion(.continued) },
+                    errorPresenter: { params, completion in
+                        errorPresentationParams = params
+                        errorPresentationCompletion = completion
+                        errorPresented.fulfill()
+                    }
+                )
+            )
+            checkpointCompleted = true
+            return result
+        }
+
+        await self.fulfillment(of: [errorPresented], timeout: 1)
+        XCTAssertFalse(checkpointCompleted)
+        XCTAssertEqual(errorPresentationParams?.checkpointIdentifier, "onboarding")
+        XCTAssertEqual(errorPresentationParams?.error as NSError?, expectedError)
+        XCTAssertEqual(errorPresentationParams?.stage, .afterFlowPresentation)
+
+        errorPresentationCompletion?.complete()
+        errorPresentationCompletion?.complete()
+        let result = await checkpoint.value
 
         guard case let .completed(flowResult) = result else {
             return XCTFail("Expected a completed callback")
         }
         XCTAssertNotNil(flowResult)
         XCTAssertTrue(flowResult?.obtainedEntitlements.isEmpty == true)
+        XCTAssertTrue(checkpointCompleted)
     }
 
     func testOnlyFirstPresenterCompletionSynchronizesCustomerInfo() async throws {
