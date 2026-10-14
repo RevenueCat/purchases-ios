@@ -20,6 +20,7 @@ struct CustomCheckpointUseCaseView: View {
 
     @ObservedObject var model: CheckpointDemoModel
     @ObservedObject var customVariables: CustomVariables
+    @ObservedObject private var rewardPollLog = RewardPollLog.shared
 
     @State private var identifier = ""
     @State private var status: String?
@@ -53,6 +54,15 @@ struct CustomCheckpointUseCaseView: View {
                     Text("This presentation mode applies only to this checkpoint invocation.")
                 }
             }
+
+            if !self.rewardPollLog.lines.isEmpty {
+                Section("Reward verification polling") {
+                    ForEach(Array(self.rewardPollLog.lines.enumerated()), id: \.offset) { _, line in
+                        Text(line)
+                            .font(.caption.monospaced())
+                    }
+                }
+            }
         }
         .navigationTitle("Custom checkpoint")
     }
@@ -63,6 +73,7 @@ struct CustomCheckpointUseCaseView: View {
         let identifier = self.trimmedIdentifier
         let paywallPresenter = self.model.localPaywallPresenter
         self.status = "Checkpoint requested."
+        self.rewardPollLog.clear()
 
         Purchases.shared.checkpoint(
             identifier,
@@ -80,6 +91,10 @@ struct CustomCheckpointUseCaseView: View {
     private static func describe(_ result: FlowResult?) -> String {
         guard let result else {
             return "No flow was presented or the flow could not complete."
+        }
+
+        if let adOutcome = result.adOutcome {
+            return "Ad outcome: \(adOutcome)."
         }
 
         let entitlementIdentifiers = result.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted()
