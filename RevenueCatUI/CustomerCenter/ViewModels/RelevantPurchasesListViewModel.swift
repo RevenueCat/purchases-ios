@@ -57,6 +57,11 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
             )
         }
 
+    func updateSelectedPurchase(using customerInfoViewModel: CustomerCenterViewModel) {
+        guard let selected = purchaseInformation else { return }
+        purchaseInformation = customerInfoViewModel.purchase(matching: selected)
+    }
+
     // Used for Previews
     convenience init(
         screen: CustomerCenterConfigData.Screen,

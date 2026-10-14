@@ -841,7 +841,6 @@
 		5798C9422DF1985700F44400 /* ButtonStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C8DF2DF1985700F44400 /* ButtonStyles.swift */; };
 		5798C9432DF1985700F44400 /* CustomerCenterView+Actions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C8DD2DF1985700F44400 /* CustomerCenterView+Actions.swift */; };
 		5798C9442DF1985700F44400 /* PromotionalOfferViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C90F2DF1985700F44400 /* PromotionalOfferViewModel.swift */; };
-		5798C9452DF1985700F44400 /* CustomerInfo+CurrentEntitlement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C8E22DF1985700F44400 /* CustomerInfo+CurrentEntitlement.swift */; };
 		5798C9462DF1985700F44400 /* RelevantPurchasesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C92A2DF1985700F44400 /* RelevantPurchasesListView.swift */; };
 		5798C9472DF1985700F44400 /* CustomerCenterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C9222DF1985700F44400 /* CustomerCenterView.swift */; };
 		5798C9482DF1985700F44400 /* PurchaseDetailItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5798C9062DF1985700F44400 /* PurchaseDetailItem.swift */; };
@@ -2688,7 +2687,6 @@
 		5798C8DF2DF1985700F44400 /* ButtonStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonStyles.swift; sourceTree = "<group>"; };
 		5798C8E02DF1985700F44400 /* ColorFromAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorFromAppearance.swift; sourceTree = "<group>"; };
 		5798C8E12DF1985700F44400 /* ContactSupportUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactSupportUtilities.swift; sourceTree = "<group>"; };
-		5798C8E22DF1985700F44400 /* CustomerInfo+CurrentEntitlement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CustomerInfo+CurrentEntitlement.swift"; sourceTree = "<group>"; };
 		5798C8E32DF1985700F44400 /* CustomerCenterAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterAction.swift; sourceTree = "<group>"; };
 		5798C8E42DF1985700F44400 /* CustomerCenterActionViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterActionViewModifier.swift; sourceTree = "<group>"; };
 		5798C8E52DF1985700F44400 /* CustomerCenterActionWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterActionWrapper.swift; sourceTree = "<group>"; };
@@ -3579,6 +3577,7 @@
 		FEDA000000000000000000E0 /* MockRemoteConfigSourceProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRemoteConfigSourceProvider.swift; sourceTree = "<group>"; };
 		FEDA0000000000000000F0A1 /* GetRemoteConfigFallbackOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetRemoteConfigFallbackOperation.swift; sourceTree = "<group>"; };
 		FFB683A085B695768EAB9AA5 /* WorkflowsConfigProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowsConfigProviderTests.swift; sourceTree = "<group>"; };
+		AE841F7F44424C93CF2B7314 /* CustomerCenterDataStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterDataStateTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -5117,7 +5116,6 @@
 				5798C8DF2DF1985700F44400 /* ButtonStyles.swift */,
 				5798C8E02DF1985700F44400 /* ColorFromAppearance.swift */,
 				5798C8E12DF1985700F44400 /* ContactSupportUtilities.swift */,
-				5798C8E22DF1985700F44400 /* CustomerInfo+CurrentEntitlement.swift */,
 				5798C8F42DF1985700F44400 /* Data */,
 				5798C8F82DF1985700F44400 /* Extensions */,
 				5798C8FD2DF1985700F44400 /* Mocks */,
@@ -5282,6 +5280,7 @@
 		3544DA6B2C2C848E00704E9D /* CustomerCenter */ = {
 			isa = PBXGroup;
 			children = (
+				AE841F7F44424C93CF2B7314 /* CustomerCenterDataStateTests.swift */,
 				DBD243292EBDF4B80066AC6F /* PromotionalOfferViewTests.swift */,
 				57B0E87F2DFAC2C400EB5FE1 /* PurchaseCardViewBadgeTests.swift */,
 				1DEF75992ECF139F00614CB2 /* CreateTicketViewTests.swift */,
@@ -9396,7 +9395,6 @@
 				5798C9432DF1985700F44400 /* CustomerCenterView+Actions.swift in Sources */,
 				5798C9442DF1985700F44400 /* PromotionalOfferViewModel.swift in Sources */,
 				16C7FA352F4F3D740061BD5A /* DualColorImageGenerator.swift in Sources */,
-				5798C9452DF1985700F44400 /* CustomerInfo+CurrentEntitlement.swift in Sources */,
 				5798C9462DF1985700F44400 /* RelevantPurchasesListView.swift in Sources */,
 				5798C9472DF1985700F44400 /* CustomerCenterView.swift in Sources */,
 				5798C9482DF1985700F44400 /* PurchaseDetailItem.swift in Sources */,

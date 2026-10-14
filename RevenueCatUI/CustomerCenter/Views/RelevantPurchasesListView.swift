@@ -76,6 +76,9 @@ struct RelevantPurchasesListView: View {
 
     var body: some View {
         content
+            .onReceive(customerInfoViewModel.$customerInfo) { _ in
+                viewModel.updateSelectedPurchase(using: customerInfoViewModel)
+            }
             .applyIf(self.viewModel.screen.type == .management, apply: {
                 $0.navigationTitle(self.viewModel.screen.title)
                     .navigationBarTitleDisplayMode(.inline)

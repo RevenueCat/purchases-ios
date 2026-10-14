@@ -46,14 +46,7 @@ import Foundation
     @Published
     var changePlansSheet = false
 
-    @Published
-    var state: CustomerCenterViewState {
-        didSet {
-            if case let .error(stateError) = state {
-                self.error = stateError
-            }
-        }
-    }
+    @Published var state: CustomerCenterViewState
 
     @Published
     var configuration: CustomerCenterConfigData? {
@@ -125,7 +118,7 @@ import Foundation
 
     private let currentVersionFetcher: CurrentVersionFetcher
 
-    internal var customerInfo: CustomerInfo?
+    @Published internal var customerInfo: CustomerInfo?
 
     /// The action wrapper that handles both the deprecated handler and the new preference system
     internal let actionWrapper: CustomerCenterActionWrapper
@@ -133,7 +126,6 @@ import Foundation
     /// Used to make testing easier
     internal var currentTask: Task<Void, Never>?
 
-    private var error: Error?
     private var impressionData: CustomerCenterEvent.Data?
 
     init(
@@ -187,18 +179,24 @@ import Foundation
 
     #endif
 
-    func publisher(for purchase: PurchaseInformation?) -> AnyPublisher<PurchaseInformation, Never>? {
-        guard let productIdentifier = purchase?.productIdentifier else {
-            return nil
+    func publisher(for purchase: PurchaseInformation?) -> AnyPublisher<PurchaseInformation?, Never> {
+        $customerInfo.map { [weak self] _ -> PurchaseInformation? in
+            guard let self else { return nil }
+            let purchases = self.subscriptionsSection + self.nonSubscriptionsSection
+            guard let purchase else { return purchases.first }
+            return self.purchase(matching: purchase)
         }
+        .eraseToAnyPublisher()
+    }
 
-        return $subscriptionsSection.combineLatest($nonSubscriptionsSection)
-            .throttle(for: .seconds(0.3), scheduler: DispatchQueue.main, latest: true)
-            .compactMap {
-                $0.first(where: { $0.productIdentifier == productIdentifier })
-                ?? $1.first(where: { $0.productIdentifier == productIdentifier })
+    func purchase(matching purchase: PurchaseInformation) -> PurchaseInformation? {
+        let purchases = subscriptionsSection + nonSubscriptionsSection
+        return purchases.first { $0.productIdentifier == purchase.productIdentifier }
+            ?? purchases.first {
+                purchase.subscriptionGroupID != nil
+                    && $0.subscriptionGroupID == purchase.subscriptionGroupID
+                    && $0.store == purchase.store
             }
-            .eraseToAnyPublisher()
     }
 
     func loadScreen(shouldSync: Bool = false) async {
@@ -258,10 +256,9 @@ private extension VirtualCurrencies {
 private extension CustomerCenterViewModel {
 
     func loadPurchases(customerInfo: CustomerInfo, configuration: CustomerCenterConfigData) async throws {
-        self.customerInfo = customerInfo
-
         await loadSubscriptionsSection(customerInfo: customerInfo, configuration: configuration)
         await loadNonSubscriptionsSection(customerInfo: customerInfo, configuration: configuration)
+        self.customerInfo = customerInfo
     }
 
     func loadNonSubscriptionsSection(customerInfo: CustomerInfo, configuration: CustomerCenterConfigData) async {
@@ -304,6 +301,7 @@ private extension CustomerCenterViewModel {
             .first
 
         guard let inactiveSub = inactive?.value else {
+            self.subscriptionsSection = []
             return
         }
 
