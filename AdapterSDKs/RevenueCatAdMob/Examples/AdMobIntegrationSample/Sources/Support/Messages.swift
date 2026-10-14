@@ -45,11 +45,34 @@ struct Message: Equatable {
         static let waitingForReward = Message(text: "⏳ Waiting for reward...", severity: .info, isLoading: false)
         static let verifyingReward = Message(text: "⏳ Verifying reward...", severity: .info, isLoading: true)
         static let loadFailed = Message(text: "❌ Load failed", severity: .error, isLoading: false)
+        static let rewardEarned = Message(text: "✅ AdMob reported that the reward was earned", severity: .success,
+                                          isLoading: false)
+        static let configurationRequired = Message(
+            text: "⚠️ Add a valid RevenueCat API key.",
+            severity: .warning,
+            isLoading: false
+        )
         static let dismissedBeforeReward = Message(
             text: "⚠️ Ad dismissed before reward was earned",
             severity: .warning,
             isLoading: false
         )
+
+        static func loadFailed(_ error: Error) -> Message {
+            return Message(
+                text: "❌ \(error.localizedDescription)",
+                severity: .error,
+                isLoading: false
+            )
+        }
+
+        static func notPresented(_ error: RewardedAdPromptError) -> Message {
+            return Message(
+                text: "⚠️ Ad not presented\n\(error.localizedDescription)",
+                severity: .warning,
+                isLoading: false
+            )
+        }
 
         static func rewardGranted(amount: NSDecimalNumber, type: String) -> Message {
             return .init(

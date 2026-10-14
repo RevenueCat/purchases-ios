@@ -5,8 +5,6 @@ struct HomeView: View {
     @StateObject private var bannerAdManager = BannerAdManager()
     @StateObject private var interstitialAdManager = InterstitialAdManager()
     @StateObject private var appOpenAdManager = AppOpenAdManager()
-    @StateObject private var rewardedAdManager = RewardedAdManager()
-    @StateObject private var verifiedRewardedAdManager = VerifiedRewardedAdManager()
     @StateObject private var rewardedInterstitialAdManager = RewardedInterstitialAdManager()
     @StateObject private var verifiedRewardedInterstitialAdManager = VerifiedRewardedInterstitialAdManager()
     @StateObject private var nativeAdManager = NativeAdManager()
@@ -62,10 +60,7 @@ struct HomeView: View {
         case .appOpen:
             AppOpenDetailView(manager: self.appOpenAdManager)
         case .rewarded:
-            RewardedDetailView(
-                rewardedAdManager: self.rewardedAdManager,
-                verifiedRewardedAdManager: self.verifiedRewardedAdManager
-            )
+            RewardedDetailView()
         case .rewardedInterstitial:
             RewardedInterstitialDetailView(
                 rewardedInterstitialAdManager: self.rewardedInterstitialAdManager,

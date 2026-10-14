@@ -10,5 +10,10 @@ enum Constants {
     ///
     /// NOTE: For this sample app, you can use any valid RevenueCat API key.
     /// The sample demonstrates ad event tracking, not subscription functionality.
-    static let revenueCatAPIKey = "YOUR_REVENUECAT_API_KEY"
+    static let revenueCatAPIKey = ProcessInfo.processInfo.environment["REVENUECAT_API_KEY"]
+        ?? "YOUR_REVENUECAT_API_KEY"
+
+    static var isRevenueCatAPIKeyConfigured: Bool {
+        return Self.revenueCatAPIKey != "YOUR_REVENUECAT_API_KEY"
+    }
 }
