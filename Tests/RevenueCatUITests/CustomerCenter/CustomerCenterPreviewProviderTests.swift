@@ -21,6 +21,32 @@ import XCTest
 @available(iOS 15.0, *)
 @MainActor
 final class CustomerCenterPreviewProviderTests: TestCase {
+    func testLoadingRefreshesCustomerInfoWithoutSyncingForStandardAndPreviewProviders() async {
+        for provider in [CustomerCenterStateTestProvider(), PreviewProvider()] {
+            let root = CustomerCenterViewModel(uiPreviewPurchaseProvider: provider)
+
+            await root.loadScreen()
+
+            XCTAssertEqual(root.state, .success)
+            XCTAssertEqual(root.customerInfo, provider.mock.customerInfo)
+            XCTAssertEqual(provider.mock.customerInfoFetchPolicy, .fetchCurrent)
+            XCTAssertEqual(provider.mock.syncPurchasesCount, 0)
+        }
+    }
+
+    func testLoadingUsesSyncedCustomerInfoForStandardAndPreviewProviders() async {
+        for provider in [CustomerCenterStateTestProvider(), PreviewProvider()] {
+            let root = CustomerCenterViewModel(uiPreviewPurchaseProvider: provider)
+
+            await root.loadScreen(shouldSync: true)
+
+            XCTAssertEqual(root.state, .success)
+            XCTAssertEqual(root.customerInfo, provider.mock.syncPurchasesResult)
+            XCTAssertEqual(provider.mock.syncPurchasesCount, 1)
+            XCTAssertNil(provider.mock.customerInfoFetchPolicy)
+        }
+    }
+
     func testPurchaseCancellationIsRecognizedForStandardAndPreviewProviders() async {
         for provider in [CustomerCenterStateTestProvider(), PreviewProvider()] {
             let model = NoSubscriptionsCardViewModel(screenOffering: nil, purchasesProvider: provider)
@@ -99,13 +125,13 @@ final class CustomerCenterPreviewProviderTests: TestCase {
         XCTAssertTrue(error is CancellationError)
     }
 
-    func testPreviewUpdatesRequireAnExplicitPreviewProvider() async {
+    func testPreviewObservationIgnoresStandardProviders() async {
         let provider = CustomerCenterStateTestProvider()
         let root = CustomerCenterViewModel(uiPreviewPurchaseProvider: provider)
         await root.loadScreen()
         let originalInfo = root.customerInfo
 
-        await root.loadPreviewScreen(customerInfo: CustomerInfoFixtures.customerInfoWithLifetimePromotional)
+        await root.observePreviewCustomerInfoUpdates()
 
         XCTAssertEqual(root.customerInfo, originalInfo)
     }
@@ -246,6 +272,7 @@ final class CustomerCenterPreviewProviderTests: TestCase {
         let provider = PreviewProvider()
         let root = CustomerCenterViewModel(uiPreviewPurchaseProvider: provider)
         await root.loadScreen()
+        provider.mock.customerInfoFetchPolicy = nil
         let next = CustomerInfoFixtures.customerInfoWithLifetimePromotional
         let updated = expectation(description: "Preview customer information updated")
         let subscription = root.$customerInfo.sink { if $0 == next { updated.fulfill() } }
@@ -256,6 +283,8 @@ final class CustomerCenterPreviewProviderTests: TestCase {
         XCTAssertEqual(root.customerInfo, next)
         XCTAssertEqual(root.subscriptionsSection.first?.productIdentifier, "rc_promo_pro_cat_lifetime")
         XCTAssertTrue(root.nonSubscriptionsSection.isEmpty)
+        XCTAssertNil(provider.mock.customerInfoFetchPolicy)
+        XCTAssertEqual(provider.mock.syncPurchasesCount, 0)
 
         observation.cancel()
         await observation.value

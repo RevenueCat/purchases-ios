@@ -72,7 +72,7 @@ extension CustomerCenterViewModel {
         guard let provider = purchasesProvider as? CustomerCenterPreviewProvider else { return }
         for await customerInfo in await provider.customerInfoUpdates() {
             guard !Task.isCancelled else { return }
-            await loadPreviewScreen(customerInfo: customerInfo)
+            await loadPreviewScreen(provider: provider, customerInfo: customerInfo)
         }
     }
 }
