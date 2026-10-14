@@ -90,7 +90,7 @@ private struct RegisteredNativePaywallButton: View {
             self.updateRegistration(self.registration)
             self.availabilityChanged?(true)
         }
-        .onChange(of: self.registration) { self.updateRegistration($0) }
+        .onChangeOf(self.registration) { self.updateRegistration($0) }
         .onDisappear {
             self.coordinator.unregister(id: self.identifier)
             self.availabilityChanged?(false)
