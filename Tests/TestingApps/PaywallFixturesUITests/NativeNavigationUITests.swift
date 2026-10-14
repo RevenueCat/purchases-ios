@@ -54,11 +54,11 @@ final class NativeNavigationUITests: XCTestCase {
 
     private func assertWorkflowNavigation(in app: XCUIApplication) {
         self.assertVisible(app.staticTexts["Workflow root"], in: app)
-        XCTAssertTrue(app.buttons[self.closeIdentifier].waitForExistence(timeout: 10), app.debugDescription)
-        XCTAssertTrue(app.buttons[self.closeIdentifier].isEnabled, app.debugDescription)
+        self.assertNativeControls(in: app, back: false, close: true)
         app.buttons["Continue"].tap()
 
         self.assertVisible(app.staticTexts["Workflow detail"], in: app)
+        self.assertNativeControls(in: app, back: true, close: true)
         let back = app.buttons[self.backIdentifier]
         XCTAssertTrue(back.waitForExistence(timeout: 10), app.debugDescription)
         XCTAssertTrue(back.isHittable, app.debugDescription)
@@ -73,6 +73,7 @@ final class NativeNavigationUITests: XCTestCase {
         let detailBodyTop = app.staticTexts["Workflow detail"].frame.minY
         app.buttons["Continue without Close"].tap()
         self.assertVisible(app.staticTexts["Workflow without Close"], in: app)
+        self.assertNativeControls(in: app, back: true, close: false)
         XCTAssertFalse(app.buttons[self.closeIdentifier].exists, app.debugDescription)
         XCTAssertTrue(back.isHittable, app.debugDescription)
         XCTAssertFalse(app.buttons["BackButton"].exists, app.debugDescription)
@@ -81,11 +82,13 @@ final class NativeNavigationUITests: XCTestCase {
                        accuracy: 1, app.debugDescription)
         back.tap()
         self.assertVisible(app.staticTexts["Workflow detail"], in: app)
+        self.assertNativeControls(in: app, back: true, close: true)
         XCTAssertTrue(app.buttons[self.closeIdentifier].isHittable, app.debugDescription)
         XCTAssertFalse(app.buttons["Designed Close"].exists, app.debugDescription)
         back.tap()
 
         self.assertVisible(app.buttons["Continue"], in: app)
+        self.assertNativeControls(in: app, back: false, close: true)
         let rootText = app.staticTexts["Workflow root"]
         XCTAssertTrue(rootText.exists, app.debugDescription)
         XCTAssertGreaterThan(rootText.frame.width, 0, app.debugDescription)
@@ -122,6 +125,17 @@ final class NativeNavigationUITests: XCTestCase {
         XCTAssertFalse(app.staticTexts["Paywall dismissed"].exists, app.debugDescription)
         outerClose.tap()
         XCTAssertTrue(app.staticTexts["Paywall dismissed"].waitForExistence(timeout: 10), app.debugDescription)
+    }
+
+    private func assertNativeControls(in app: XCUIApplication, back: Bool, close: Bool) {
+        let ready = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            let backButton = app.buttons[self.backIdentifier]
+            let closeButton = app.buttons[self.closeIdentifier]
+            return backButton.exists == back && closeButton.exists == close
+                && (!back || (backButton.isEnabled && backButton.isHittable))
+                && (!close || (closeButton.isEnabled && closeButton.isHittable))
+        }, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [ready], timeout: 10), .completed, app.debugDescription)
     }
 
     private func launch(_ fixture: String, presentation: String = "push") -> XCUIApplication {
