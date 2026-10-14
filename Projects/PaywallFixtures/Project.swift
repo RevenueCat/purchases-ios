@@ -5,7 +5,7 @@ import ProjectDescriptionHelpers
 // A home for static paywall fixtures: paywalls defined in code, rendered with no API key, no
 // backend and no dashboard state, so tests can assert against a known component tree.
 //
-// iPhone-only and iOS 17+ because the tests here drive the real accessibility tree, and
+// iPhone/iPad and iOS 17+ because the tests here drive the real accessibility tree, and
 // `performAccessibilityAudit` needs iOS 17 or later.
 let project = Project(
     name: "PaywallFixtures",
@@ -15,7 +15,7 @@ let project = Project(
     targets: [
         .target(
             name: "PaywallFixtures",
-            destinations: [.iPhone],
+            destinations: [.iPhone, .iPad],
             product: .app,
             bundleId: "com.revenuecat.PaywallFixtures",
             deploymentTargets: .iOS("17.0"),
@@ -34,7 +34,7 @@ let project = Project(
         ),
         .target(
             name: "PaywallFixturesUITests",
-            destinations: [.iPhone],
+            destinations: [.iPhone, .iPad],
             product: .uiTests,
             bundleId: "com.revenuecat.PaywallFixturesUITests",
             deploymentTargets: .iOS("17.0"),

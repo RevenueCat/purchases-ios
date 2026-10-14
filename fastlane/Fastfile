@@ -973,6 +973,7 @@ platform :ios do
     xcargs = if hosted
       "-only-testing:RevenueCatUITests/NativePaywallCloseButtonTests " \
         "-only-testing:RevenueCatUITests/NativePaywallUIKitTests " \
+        "-only-testing:RevenueCatUITests/NativePaywallWorkflowTests " \
         "-only-testing:RevenueCatUITests/ButtonComponentViewTests"
     else
       "-testPlan #{test_plan}"
