@@ -54,20 +54,19 @@ final class ConfiguredAdRewardsProvider {
 
         self.updateCache(with: resolution)
 
-        guard let reward = self.cachedRewards.value?.rewards?[adUnitId] else {
-            if !(await self.manager.hasCommittedConfig()) {
-                Logger.warn(AdsStrings.configured_ad_rewards_unavailable(adUnitID: adUnitId))
-            }
+        guard await self.manager.hasCommittedConfig(), let cached = self.cachedRewards.value else {
+            Logger.warn(AdsStrings.configured_ad_rewards_unavailable(adUnitID: adUnitId))
             return nil
         }
 
-        return reward
+        return cached.rewards?[adUnitId] ?? ConfiguredAdRewards()
     }
 
     private func resolveConfiguration() async -> Resolution {
         let generation = self.manager.configGeneration
-        guard let topic = await self.manager.awaitTopicAndPrefetchBlobsReady(.adRewards) else {
-            return .removed(generation: generation)
+        let topic = await self.manager.awaitTopicAndPrefetchBlobsReady(.adRewards)
+        guard let topic else {
+            return await self.manager.hasCommittedConfig() ? .removed(generation: generation) : .unavailable
         }
 
         guard topic[Self.blobItemKey]?.blobRef != nil,
@@ -108,18 +107,23 @@ final class ConfiguredAdRewardsProvider {
         return payload.mapValues { rewards in
             ConfiguredAdRewards(
                 configuredReward: Self.decodeReward(rewards.reward),
-                moreRewards: (rewards.moreRewards ?? []).map(Self.decodeReward)
+                moreRewards: (rewards.moreRewards ?? []).compactMap(Self.decodeReward)
             )
         }
     }
 
-    private static func decodeReward(_ reward: AnyDecodable) -> AdRewardConfiguration {
+    private static func decodeReward(_ reward: AnyDecodable?) -> AdRewardConfiguration? {
+        guard let reward else { return nil }
+        if case .null = reward { return nil }
         guard case let .object(payload) = reward,
               case let .string(type)? = payload["type"] else {
             return .unsupportedReward
         }
 
         switch type {
+        case AdReward.Kind.noReward:
+            return nil
+
         case AdReward.Kind.virtualCurrency:
             guard case let .string(code)? = payload["code"],
                   case let .int(amount)? = payload["amount"],
@@ -173,7 +177,7 @@ extension ConfiguredAdRewardsProvider: @unchecked Sendable {}
 
 private struct WireConfiguredAdRewards: Decodable {
 
-    let reward: AnyDecodable
+    let reward: AnyDecodable?
     let moreRewards: [AnyDecodable]?
 
 }
