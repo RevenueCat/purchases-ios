@@ -505,7 +505,7 @@ struct APIKeyDashboardList: View {
             return
         }
         #if canImport(UIKit) && !os(watchOS)
-        UILessFlowPresenter.present(offering)
+        UILessFlowPresenter.present(offering, customVariables: self.customVariables)
         #else
         self.isLoadingPaywall = true
         self.presentedPaywall = .init(offering: offering, mode: .workflow)

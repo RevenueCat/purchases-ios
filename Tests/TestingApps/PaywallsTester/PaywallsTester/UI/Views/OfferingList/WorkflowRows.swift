@@ -120,8 +120,10 @@ enum UILessFlowPresenter {
 
     private static let presenter = DefaultPaywallPresenter()
 
-    static func present(_ offering: Offering) {
-        self.presenter.present(params: .init(checkpointIdentifier: "paywalls_tester", offering: offering)) { _ in }
+    static func present(_ offering: Offering, customVariables: [String: CustomVariableValue]) {
+        self.presenter.present(
+            params: .init(checkpointIdentifier: "paywalls_tester", customVariables: customVariables, offering: offering)
+        ) { _ in }
     }
 
 }
