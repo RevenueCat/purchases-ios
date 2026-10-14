@@ -127,6 +127,7 @@ import Foundation
     internal var currentTask: Task<Void, Never>?
 
     private var impressionData: CustomerCenterEvent.Data?
+    private var previewLoadGeneration = 0
 
     init(
         actionWrapper: CustomerCenterActionWrapper,
@@ -231,9 +232,11 @@ import Foundation
         }
     }
 
-    /// Publishes a complete preview update only if the observing task is still active.
+    /// Publishes a complete preview update only if this is the latest load and its task is still active.
     func loadPreviewScreen(shouldSync: Bool = false, customerInfo: CustomerInfo? = nil) async {
-        guard let provider = purchasesProvider as? CustomerCenterPreviewProvider else { return }
+        guard let provider = purchasesProvider as? CustomerCenterPreviewProvider, !Task.isCancelled else { return }
+        previewLoadGeneration += 1
+        let generation = previewLoadGeneration
 
         do {
             let resolvedCustomerInfo: CustomerInfo
@@ -258,6 +261,7 @@ import Foundation
                 virtualCurrencies = try? await purchasesProvider.virtualCurrencies()
             }
             try Task.checkCancellation()
+            guard generation == previewLoadGeneration else { return }
             self.updatePreviewConfiguration(configuration, provider: provider)
             self.subscriptionsSection = subscriptions
             self.nonSubscriptionsSection = nonSubscriptions
@@ -266,7 +270,7 @@ import Foundation
             self.state = .success
         } catch is CancellationError {
         } catch {
-            guard !Task.isCancelled else { return }
+            guard !Task.isCancelled, generation == previewLoadGeneration else { return }
             self.state = .error(error)
         }
     }

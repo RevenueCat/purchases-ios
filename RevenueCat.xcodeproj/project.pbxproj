@@ -3585,6 +3585,7 @@
 		AE841F7F44424C93CF2B7314 /* CustomerCenterDataStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterDataStateTests.swift; sourceTree = "<group>"; };
 		5CFC0D5799A0F95C634C8B5E /* CustomerCenterPreviewProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterPreviewProviderTests.swift; sourceTree = "<group>"; };
 		6AB7056A482B4E098D3131B8 /* CustomerCenterViewModel+Purchases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CustomerCenterViewModel+Purchases.swift"; sourceTree = "<group>"; };
+		109A6E06CCBA4CB798D94535 /* CustomerCenterPreviewLoadingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterPreviewLoadingTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -5288,6 +5289,7 @@
 			isa = PBXGroup;
 			children = (
 				5CFC0D5799A0F95C634C8B5E /* CustomerCenterPreviewProviderTests.swift */,
+				109A6E06CCBA4CB798D94535 /* CustomerCenterPreviewLoadingTests.swift */,
 				AE841F7F44424C93CF2B7314 /* CustomerCenterDataStateTests.swift */,
 				DBD243292EBDF4B80066AC6F /* PromotionalOfferViewTests.swift */,
 				57B0E87F2DFAC2C400EB5FE1 /* PurchaseCardViewBadgeTests.swift */,
