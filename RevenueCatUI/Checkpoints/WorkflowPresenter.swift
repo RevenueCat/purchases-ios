@@ -279,7 +279,6 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
                     error,
                     kind: .flowCouldNotBeShown,
                     onCompletion: { [weak self] in
-                        self?.stage(.outcome(.completed(customerInfo: nil)))
                         self?.presentedViewController?.continueAfterCheckpointError()
                     }
                 )

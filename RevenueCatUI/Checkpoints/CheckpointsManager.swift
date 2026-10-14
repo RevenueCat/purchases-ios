@@ -178,13 +178,15 @@ final class CheckpointsManager {
                     customerInfo: customerInfo,
                     initialActiveEntitlementIdentifiers: initialActiveEntitlementIdentifiers
                 ))
+            case .synchronizationFailed:
+                return .completed(FlowResult(obtainedEntitlements: []))
             case .failed, .nothingPresented:
-                return .completed(nil)
+                return .suppressed
             }
         } catch CheckpointError.operationAlreadyInProgress {
             return .suppressed
         } catch {
-            return .completed(nil)
+            return .suppressed
         }
     }
 

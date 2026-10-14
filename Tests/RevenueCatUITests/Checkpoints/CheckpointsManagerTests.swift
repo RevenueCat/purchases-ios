@@ -374,7 +374,7 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertTrue(executor.presentations.isEmpty)
     }
 
-    func testCallbackCheckpointReturnsNilWhenWorkflowErrors() async {
+    func testCallbackCheckpointIsSuppressedWhenWorkflowErrors() async {
         let executor = MockWorkflowPresenter()
         executor.execution = .failed
         let manager = CheckpointsManager(
@@ -384,10 +384,9 @@ final class CheckpointsManagerTests: TestCase {
 
         let result = await manager.checkpointForCallback(identifier: "soft_paywall", params: .init())
 
-        guard case let .completed(flowResult) = result else {
-            return XCTFail("Expected a completed callback")
+        guard case .suppressed = result else {
+            return XCTFail("Expected the callback not to be invoked")
         }
-        XCTAssertNil(flowResult)
     }
 
     func testCallbackCheckpointOnlyReturnsEntitlementsAbsentFromCachedCustomerInfo() async throws {
@@ -718,7 +717,7 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(customerInfoSynchronizerCallCount, 1)
     }
 
-    func testCustomerInfoSynchronizationFailureReturnsNil() async {
+    func testCustomerInfoSynchronizationFailureReturnsEmptyResult() async {
         let expectedError = NSError(domain: "test", code: 42)
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
@@ -734,7 +733,8 @@ final class CheckpointsManagerTests: TestCase {
         guard case let .completed(flowResult) = result else {
             return XCTFail("Expected a completed callback")
         }
-        XCTAssertNil(flowResult)
+        XCTAssertNotNil(flowResult)
+        XCTAssertTrue(flowResult?.obtainedEntitlements.isEmpty == true)
     }
 
     func testOnlyFirstPresenterCompletionSynchronizesCustomerInfo() async throws {

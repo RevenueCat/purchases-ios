@@ -129,7 +129,9 @@ final class CheckpointPresenter: CheckpointPresenterType {
             self.hasReportedCompletion = true
             self.slot.release(self.token)
 
-            if result == .navigatedBack {
+            if result == .failed {
+                self.complete(execution: .failed)
+            } else if result == .navigatedBack {
                 self.complete(execution: .backedOut)
             } else {
                 self.synchronizeCustomerInfo()
@@ -145,7 +147,7 @@ final class CheckpointPresenter: CheckpointPresenterType {
                     self.complete(execution: .completed(customerInfo: customerInfo))
                 } catch {
                     Logger.error(error.localizedDescription)
-                    self.complete(execution: .failed)
+                    self.complete(execution: .synchronizationFailed(error))
                 }
             }
         }
@@ -199,11 +201,11 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         completion: @escaping PaywallPresentationCompletion
     ) {
         guard let presentationContext = UIApplication.extensionSafeApplication?.currentPresentationViewController else {
-            completion(.closed)
+            completion(.failed)
             return
         }
         guard self.session == nil else {
-            completion(.closed)
+            completion(.failed)
             return
         }
 
@@ -215,7 +217,7 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
                     error,
                     kind: .flowCouldNotBeShown,
                     onCompletion: { [weak self] in
-                        self?.session?.presentedViewController?.continueAfterCheckpointError()
+                        self?.completeAfterTerminalError()
                     }
                 )
             }
@@ -225,7 +227,7 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         controller.modalPresentationStyle = params.presentationMode.modalPresentationStyle
         presentationContext.present(controller, animated: true)
         if controller.presentingViewController == nil {
-            self.completeAsClosed()
+            self.completeAfterTerminalError()
         }
     }
 
@@ -306,9 +308,10 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         controller.dismiss(animated: true)
     }
 
-    private func completeAsClosed() {
+    private func completeAfterTerminalError() {
         guard let session = self.takeSession() else { return }
-        session.completion(.closed)
+        session.presentedViewController?.continueAfterCheckpointError()
+        session.completion(.failed)
     }
 
     private func takeSession() -> PresentationSession? {
@@ -465,7 +468,7 @@ private final class DefaultPaywallPresenter: PaywallPresenter {
         params: PaywallPresentationParams,
         completion: @escaping PaywallPresentationCompletion
     ) {
-        completion(.closed)
+        completion(.failed)
     }
 }
 #endif

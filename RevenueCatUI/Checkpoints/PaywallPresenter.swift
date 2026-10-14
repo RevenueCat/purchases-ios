@@ -138,4 +138,7 @@ public struct PaywallPresentationResult: Hashable {
     /// point from which it presented the checkpoint.
     public static let navigatedBack = Self(rawValue: 2)
 
+    /// The SDK-provided paywall could not complete its presentation.
+    static let failed = Self(rawValue: 3)
+
 }

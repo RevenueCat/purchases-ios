@@ -76,8 +76,8 @@ final class WorkflowPresenterTests: TestCase {
         viewController.simulateWorkflowPresentationError(error)
         completion?.complete()
 
-        guard case .completed(nil)? = presenter.presentationDidDismiss() else {
-            return XCTFail("Expected completing a terminal error to continue out of the workflow")
+        guard case .failed? = presenter.presentationDidDismiss() else {
+            return XCTFail("Expected completing a terminal error to preserve the failure outcome")
         }
     }
 
@@ -103,7 +103,7 @@ final class WorkflowPresenterTests: TestCase {
 
         XCTAssertEqual(presentedErrors.map(\.kind), [.flowCouldNotBeShown])
         try XCTUnwrap(completions.first).complete()
-        guard case .completed(nil)? = presenter.presentationDidDismiss() else {
+        guard case .failed? = presenter.presentationDidDismiss() else {
             return XCTFail("Expected the terminal error completion to remain active")
         }
     }
@@ -225,8 +225,8 @@ final class WorkflowPresenterTests: TestCase {
         XCTAssertEqual(completions.count, 2)
         try XCTUnwrap(completions.last).complete()
 
-        guard case .completed(nil)? = presenter.presentationDidDismiss() else {
-            return XCTFail("Expected the handled terminal error to complete the workflow")
+        guard case .failed? = presenter.presentationDidDismiss() else {
+            return XCTFail("Expected the handled terminal error to preserve the failure outcome")
         }
     }
 

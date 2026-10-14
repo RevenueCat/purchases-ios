@@ -50,6 +50,7 @@ enum CheckpointPresentationOutcome {
     case completed(customerInfo: CustomerInfo?)
     case backedOut
     case failed
+    case synchronizationFailed(any Error)
 
     var hasCustomerInfo: Bool {
         guard case .completed(.some) = self else { return false }
