@@ -28,6 +28,9 @@ final class ConfiguredAdRewardsProvider {
     }
 
     private let manager: RemoteConfigManagerType
+
+    /// Keeps the last successfully decoded rewards until a newer valid configuration is ready,
+    /// or until the topic is removed.
     private let cachedRewards: Atomic<CachedRewards?> = .init(nil)
 
     init(manager: RemoteConfigManagerType) {
@@ -165,6 +168,8 @@ final class ConfiguredAdRewardsProvider {
     private static let blobItemKey = "default"
 
 }
+
+extension ConfiguredAdRewardsProvider: @unchecked Sendable {}
 
 private struct WireConfiguredAdRewards: Decodable {
 
