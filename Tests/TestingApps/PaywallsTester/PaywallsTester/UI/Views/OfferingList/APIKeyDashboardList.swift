@@ -197,7 +197,7 @@ struct APIKeyDashboardList: View {
             )
 
             #if DEBUG && !os(tvOS)
-            self.workflowRows = await WorkflowRow.loadAll()
+            self.workflowRows = await WorkflowRow.loadAll(offerings: offerings)
             #endif
 
             self.offerings = .success(
@@ -233,7 +233,7 @@ struct APIKeyDashboardList: View {
         var offerings = data.offeringsBySection[section] ?? []
         #if DEBUG && !os(tvOS)
         // A claimed offering is opened through its flow in the Flows section.
-        let claimed = Set(self.workflowRows.compactMap(\.claimedOfferingIdentifier))
+        let claimed = self.workflowRows.reduce(into: Set<String>()) { $0.formUnion($1.claimedOfferingIdentifiers) }
         offerings.removeAll { claimed.contains($0.identifier) }
         #endif
         guard !searchText.isEmpty else { return offerings }

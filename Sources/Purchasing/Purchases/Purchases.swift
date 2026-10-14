@@ -3063,11 +3063,15 @@ internal extension Purchases {
         return self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable
     }
 
-    func workflowListings() async -> [WorkflowListing] {
-        return await self.workflowManager.workflowListings()
+    #if DEBUG
+
+    func workflowIds() async -> [String] {
+        return await self.workflowManager.workflowIds()
     }
 
-    #if DEBUG
+    func workflowId(forOfferingIdentifier offeringID: String) async -> String? {
+        return await self.workflowManager.workflowId(forOfferingId: offeringID)
+    }
 
     /// - Returns: the parsed `AppleReceipt`
     ///

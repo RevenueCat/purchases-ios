@@ -363,18 +363,15 @@ class WorkflowsConfigProviderTests: TestCase {
                                       expectedCount: 1)
     }
 
-    func testWorkflowListingsIncludeWorkflowsThatClaimNoOffering() async {
+    func testWorkflowIdsIncludeWorkflowsThatClaimNoOffering() async {
         self.commit(workflows: [
             "wf-claimed": .init(blobRef: "claimed-ref", content: ["offering_identifier": "premium"]),
             "wf-unclaimed": .init(blobRef: "unclaimed-ref")
         ])
 
-        let listings = await self.provider.workflowListings()
+        let workflowIds = await self.provider.workflowIds()
 
-        expect(listings) == [
-            .init(workflowId: "wf-claimed", offeringIdentifier: "premium"),
-            .init(workflowId: "wf-unclaimed", offeringIdentifier: nil)
-        ]
+        expect(workflowIds) == ["wf-claimed", "wf-unclaimed"]
     }
 
     func testOfferingIdMapReflectsATopicChangeInsteadOfServingAStaleCachedMap() async throws {

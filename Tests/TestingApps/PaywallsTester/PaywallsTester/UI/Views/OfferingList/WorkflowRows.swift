@@ -15,7 +15,9 @@ import SwiftUI
 /// A workflow synced through remote config, listed by id so workflows that claim no offering can be opened too.
 struct WorkflowRow: Identifiable {
 
-    let listing: WorkflowListing
+    let id: String
+    /// Offerings that route to this flow, resolved the same way the SDK resolves an offering entry point.
+    let claimedOfferingIdentifiers: Set<String>
     let name: String?
     let error: String?
     /// Offerings this flow's steps use, claimed or not.
@@ -23,44 +25,49 @@ struct WorkflowRow: Identifiable {
     /// Set when the first step is an offering step: the flow shows no UI and only returns this offering.
     let uiLessOfferingIdentifier: String?
 
-    var id: String { self.listing.workflowId }
-
     var subtitle: String {
         if let error { return error }
-        if let claimed = self.listing.offeringIdentifier { return "Offering: \(claimed)" }
+        if !self.claimedOfferingIdentifiers.isEmpty {
+            return "Offering: \(self.claimedOfferingIdentifiers.sorted().joined(separator: ", "))"
+        }
         // Not attached to an offering, so show what its screens use instead.
         guard !self.offeringIdentifiers.isEmpty else { return "No offering" }
         return "Uses: \(self.offeringIdentifiers.sorted().joined(separator: ", "))"
     }
 
-    var claimedOfferingIdentifier: String? { self.listing.offeringIdentifier }
-
     func uses(_ offeringIdentifier: String) -> Bool {
-        return self.listing.offeringIdentifier == offeringIdentifier
+        return self.claimedOfferingIdentifiers.contains(offeringIdentifier)
             || self.offeringIdentifiers.contains(offeringIdentifier)
     }
 
     func matches(_ searchText: String) -> Bool {
-        return [self.id, self.name, self.listing.offeringIdentifier]
-            .compactMap { $0 }
+        return ([self.id, self.name].compactMap { $0 } + self.claimedOfferingIdentifiers)
             .contains { $0.localizedCaseInsensitiveContains(searchText) }
     }
 
-    static func loadAll() async -> [WorkflowRow] {
-        let listings = await Purchases.shared.workflowListings()
+    static func loadAll(offerings: [Offering]) async -> [WorkflowRow] {
+        let workflowIds = await Purchases.shared.workflowIds()
+        var claims: [String: Set<String>] = [:]
+        for offering in offerings {
+            if let workflowId = await Purchases.shared.workflowId(forOfferingIdentifier: offering.identifier) {
+                claims[workflowId, default: []].insert(offering.identifier)
+            }
+        }
 
         return await withTaskGroup(of: WorkflowRow.self) { group in
-            for listing in listings {
+            for workflowId in workflowIds {
+                let claimed = claims[workflowId] ?? []
                 group.addTask {
                     do {
-                        let result = try await Purchases.shared.workflow(forWorkflowIdentifier: listing.workflowId)
+                        let result = try await Purchases.shared.workflow(forWorkflowIdentifier: workflowId)
                         let workflow = result.workflow
                         let initialStep = workflow.steps[workflow.initialStepId]
                         // Same rule as checkpoints: an offering step must be the flow's only step.
                         let isUILess = initialStep?.isOfferingStep == true
                         let uiLessOfferingIdentifier = workflow.steps.count == 1 ? initialStep?.offeringIdentifier : nil
                         return .init(
-                            listing: listing,
+                            id: workflowId,
+                            claimedOfferingIdentifiers: claimed,
                             name: workflow.displayName,
                             error: isUILess && uiLessOfferingIdentifier == nil
                                 ? "Not servable: an offering step must be the only step and name an offering."
@@ -72,7 +79,8 @@ struct WorkflowRow: Identifiable {
                         )
                     } catch {
                         return .init(
-                            listing: listing,
+                            id: workflowId,
+                            claimedOfferingIdentifiers: claimed,
                             name: nil,
                             error: error.localizedDescription,
                             offeringIdentifiers: [],

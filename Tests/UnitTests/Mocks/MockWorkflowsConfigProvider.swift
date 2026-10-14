@@ -24,10 +24,10 @@ final class MockWorkflowsConfigProvider: WorkflowsConfigProviderType, @unchecked
         return self.stubbedWorkflowIdForOfferingId[offeringId]
     }
 
-    var stubbedWorkflowListings: [WorkflowListing] = []
+    var stubbedWorkflowIds: [String] = []
 
-    func workflowListings() async -> [WorkflowListing] {
-        return self.stubbedWorkflowListings
+    func workflowIds() async -> [String] {
+        return self.stubbedWorkflowIds
     }
 
     var stubbedGetWorkflowResult: [String: WorkflowDataResult] = [:]
