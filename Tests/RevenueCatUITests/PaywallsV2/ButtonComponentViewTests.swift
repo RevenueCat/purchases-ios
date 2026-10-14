@@ -79,6 +79,43 @@ final class ButtonComponentViewTests: TestCase {
         await fulfillment(of: [removed], timeout: 2)
     }
 
+    func testInactiveWorkflowPageKeepsNativeHeaderCollapsedWithoutRegisteringActions() async throws {
+        let button = PaywallComponent.ButtonComponent(
+            action: .navigateBack, stack: Self.makeButtonStack(label: "Close"), useNativeIfPossible: true
+        )
+        let data = PaywallComponentsData(
+            templateName: "native-header", assetBaseURL: URL(string: "https://example.com")!,
+            componentsConfig: .init(base: .init(
+                stack: .init(components: []),
+                header: .init(stack: .init(
+                    components: [.button(button)], size: .init(width: .fill, height: .fixed(100))
+                )),
+                stickyFooter: nil, background: .color(.init(light: .hex("#FFFFFF")))
+            )),
+            componentsLocalizations: ["en_US": ["Close": .string("Close")]],
+            revision: 1, defaultLocaleIdentifier: "en_US"
+        )
+        let components = Offering.PaywallComponents(uiConfig: PreviewUIConfig.make(), data: data)
+        let offering = Offering(identifier: "native-header", serverDescription: "", paywallComponents: components,
+                                availablePackages: [TestData.annualPackage], webCheckoutUrl: nil)
+        let coordinator = NativePaywallCloseCoordinator()
+        var hiddenButtons = 0
+        let view = PaywallsV2View(
+            paywallComponents: components, offering: offering, purchaseHandler: .mock(),
+            introEligibilityChecker: BaseSnapshotTest.eligibleChecker, showZeroDecimalPlacePrices: false,
+            onDismiss: {}, failedToLoadFont: { _ in }, colorScheme: .light, isActiveWorkflowPage: false
+        )
+        .environment(\.nativePaywallCloseCoordinator, coordinator)
+        .onPreferenceChange(NativePaywallHiddenButtonsKey.self) { hiddenButtons = $0.count }
+        let (window, _) = Self.host(view)
+        defer { window.isHidden = true; window.rootViewController = nil }
+        let settled = expectation(description: "Inactive page layout settled")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { settled.fulfill() }
+        await fulfillment(of: [settled], timeout: 2)
+        XCTAssertEqual(hiddenButtons, 1, "Inactive native buttons must remain placeholders")
+        XCTAssertTrue(coordinator.actions.isEmpty, "Inactive pages must not own native toolbar actions")
+    }
+
     func testRegisteredNativeButtonRunsItsActionWithoutMountingFallback() async throws {
         try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
         let coordinator = NativePaywallCloseCoordinator()
