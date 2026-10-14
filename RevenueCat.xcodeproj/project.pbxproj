@@ -3259,6 +3259,7 @@
 		A1B2C3D42FEA000000000002 /* RemoteConfigBlobHealthTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigBlobHealthTests.swift; sourceTree = "<group>"; };
 		A1C4E7B209D8F3561B4E7C90 /* WebViewInstance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewInstance.swift; sourceTree = "<group>"; };
 		A1D3F80D2D524F51BA60157C /* ButtonComponentViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonComponentViewTests.swift; sourceTree = "<group>"; };
+		B908F5CB817F396D0FC1FE01 /* NativePaywallUIKitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativePaywallUIKitTests.swift; sourceTree = "<group>"; };
 		BD9C71EFAD89F3607CAA511C /* NativePaywallNavigationTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativePaywallNavigationTestCase.swift; sourceTree = "<group>"; };
 		8791899B9EC6689C720D475D /* NativePaywallNavigationPreferenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativePaywallNavigationPreferenceTests.swift; sourceTree = "<group>"; };
 		767283B01A8711A5E4DC7014 /* NativePaywallCloseButtonTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativePaywallCloseButtonTests.swift; sourceTree = "<group>"; };
@@ -3792,6 +3793,7 @@
 				0E4CCD8E9E454A2EB3760E06 /* ButtonComponentViewModelMappingTests.swift */,
 				BF1EED2238264990801EEA0B /* ButtonComponentAccessibilityLabelTests.swift */,
 				A1D3F80D2D524F51BA60157C /* ButtonComponentViewTests.swift */,
+				B908F5CB817F396D0FC1FE01 /* NativePaywallUIKitTests.swift */,
 				BD9C71EFAD89F3607CAA511C /* NativePaywallNavigationTestCase.swift */,
 				8791899B9EC6689C720D475D /* NativePaywallNavigationPreferenceTests.swift */,
 				767283B01A8711A5E4DC7014 /* NativePaywallCloseButtonTests.swift */,
