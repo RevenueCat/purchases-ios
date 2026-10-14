@@ -26,13 +26,23 @@ public struct RewardedAdPromptContext {
     /// but no rewards were configured. Neither state prevents accepting the prompt or enables verification.
     public let rewardConfiguration: ConfiguredAdRewards?
 
+    private let acceptAction: @MainActor () -> Void
+
+    init(
+        rewardConfiguration: ConfiguredAdRewards?,
+        acceptAction: @escaping @MainActor () -> Void
+    ) {
+        self.rewardConfiguration = rewardConfiguration
+        self.acceptAction = acceptAction
+    }
+
     /// Accepts the prompt, tracks the acceptance, and presents the loaded rewarded ad.
     ///
     /// Only the first call for a rendered prompt has an effect.
     /// If no attached presentation controller is available, `onResult` reports `.notPresented`
     /// asynchronously after this method returns.
     public func accept() {
-        fatalError("Implemented in the next stacked PR.")
+        self.acceptAction()
     }
 
 }

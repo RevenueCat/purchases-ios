@@ -32,6 +32,8 @@ import SwiftUI
 @MainActor
 public struct RewardedAdPromptWithoutVerification<Content: View>: View {
 
+    private let prompt: RewardedAdPromptView<Content>
+
     /// Creates a prompt for an already-loaded rewarded ad.
     ///
     /// - Parameters:
@@ -55,7 +57,15 @@ public struct RewardedAdPromptWithoutVerification<Content: View>: View {
         onResult: @escaping @MainActor (RewardedAdPromptUnverifiedResult) -> Void,
         @ViewBuilder content: @escaping (RewardedAdPromptUnverifiedContext) -> Content
     ) {
-        fatalError("Implemented in the next stacked PR.")
+        self.prompt = .init(
+            session: session,
+            rewardedAd: rewardedAd,
+            placement: placement,
+            resultDispatcherFactory: {
+                UnverifiedRewardResultDispatcher(onResult: onResult)
+            },
+            content: content
+        )
     }
 
     /// Creates a prompt for an already-loaded rewarded interstitial ad.
@@ -81,12 +91,20 @@ public struct RewardedAdPromptWithoutVerification<Content: View>: View {
         onResult: @escaping @MainActor (RewardedAdPromptUnverifiedResult) -> Void,
         @ViewBuilder content: @escaping (RewardedAdPromptUnverifiedContext) -> Content
     ) {
-        fatalError("Implemented in the next stacked PR.")
+        self.prompt = .init(
+            session: session,
+            rewardedAd: rewardedAd,
+            placement: placement,
+            resultDispatcherFactory: {
+                UnverifiedRewardResultDispatcher(onResult: onResult)
+            },
+            content: content
+        )
     }
 
     /// The offer content until the prompt is accepted.
     public var body: some View {
-        EmptyView()
+        self.prompt
     }
 
 }
