@@ -122,6 +122,12 @@ public struct CustomerCenterView: View {
         navigationContent
             .task {
                 await loadInformationIfNeeded()
+                await viewModel.observePreviewCustomerInfoUpdates()
+            }
+            .transformEnvironment(\.openURL) { action in
+                if let provider = viewModel.purchasesProvider as? CustomerCenterPreviewProvider {
+                    action = provider.previewOpenURLAction
+                }
             }
             .onAppear {
 #if DEBUG

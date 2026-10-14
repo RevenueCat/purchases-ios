@@ -78,6 +78,10 @@ final class NoSubscriptionsCardViewModel: ObservableObject {
             let result = try await purchasesProvider.purchase(package: packageToPurchase)
             return (result.userCancelled, nil)
         } catch {
+            if (error as NSError).domain == ErrorCode.errorDomain,
+               (error as NSError).code == ErrorCode.purchaseCancelledError.rawValue {
+                return (true, nil)
+            }
             return (false, error)
         }
     }

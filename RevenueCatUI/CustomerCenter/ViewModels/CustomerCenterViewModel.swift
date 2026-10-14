@@ -200,13 +200,24 @@ import Foundation
     }
 
     func loadScreen(shouldSync: Bool = false) async {
+        if purchasesProvider is CustomerCenterPreviewProvider {
+            await loadPreviewScreen(shouldSync: shouldSync)
+            return
+        }
+
         do {
             let customerInfo = shouldSync ?
             try await self.purchasesProvider.syncPurchases() :
             try await purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
 
             let configuration = try await self.loadCustomerCenterConfig()
-            try await self.loadPurchases(customerInfo: customerInfo, configuration: configuration)
+            self.subscriptionsSection = await loadSubscriptions(
+                customerInfo: customerInfo, configuration: configuration
+            )
+            self.nonSubscriptionsSection = await loadNonSubscriptions(
+                customerInfo: customerInfo, configuration: configuration
+            )
+            self.customerInfo = customerInfo
 
             if shouldShowVirtualCurrencies {
                 purchasesProvider.invalidateVirtualCurrenciesCache()
@@ -216,6 +227,46 @@ import Foundation
             }
             self.state = .success
         } catch {
+            self.state = .error(error)
+        }
+    }
+
+    /// Publishes a complete preview update only if the observing task is still active.
+    func loadPreviewScreen(shouldSync: Bool = false, customerInfo: CustomerInfo? = nil) async {
+        guard let provider = purchasesProvider as? CustomerCenterPreviewProvider else { return }
+
+        do {
+            let resolvedCustomerInfo: CustomerInfo
+            if let customerInfo {
+                resolvedCustomerInfo = customerInfo
+            } else {
+                resolvedCustomerInfo = shouldSync ?
+                try await purchasesProvider.syncPurchases() :
+                try await purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
+            }
+
+            let configuration = try await purchasesProvider.loadCustomerCenter()
+            let subscriptions = await loadSubscriptions(
+                customerInfo: resolvedCustomerInfo, configuration: configuration
+            )
+            let nonSubscriptions = await loadNonSubscriptions(
+                customerInfo: resolvedCustomerInfo, configuration: configuration
+            )
+            var virtualCurrencies: VirtualCurrencies?
+            if configuration.support.displayVirtualCurrencies == true {
+                purchasesProvider.invalidateVirtualCurrenciesCache()
+                virtualCurrencies = try? await purchasesProvider.virtualCurrencies()
+            }
+            try Task.checkCancellation()
+            self.updatePreviewConfiguration(configuration, provider: provider)
+            self.subscriptionsSection = subscriptions
+            self.nonSubscriptionsSection = nonSubscriptions
+            self.virtualCurrencies = virtualCurrencies
+            self.customerInfo = resolvedCustomerInfo
+            self.state = .success
+        } catch is CancellationError {
+        } catch {
+            guard !Task.isCancelled else { return }
             self.state = .error(error)
         }
     }
@@ -255,108 +306,6 @@ private extension VirtualCurrencies {
 @available(watchOS, unavailable)
 private extension CustomerCenterViewModel {
 
-    func loadPurchases(customerInfo: CustomerInfo, configuration: CustomerCenterConfigData) async throws {
-        await loadSubscriptionsSection(customerInfo: customerInfo, configuration: configuration)
-        await loadNonSubscriptionsSection(customerInfo: customerInfo, configuration: configuration)
-        self.customerInfo = customerInfo
-    }
-
-    func loadNonSubscriptionsSection(customerInfo: CustomerInfo, configuration: CustomerCenterConfigData) async {
-        var activeNonSubscriptionPurchases: [PurchaseInformation] = []
-        // customerInfo returns these oldest first, and the management screen only shows the first few
-        for subscription in customerInfo.nonSubscriptions.sorted(by: { $0.purchaseDate > $1.purchaseDate }) {
-
-            let purchaseInfo: PurchaseInformation = await .from(
-                transaction: subscription,
-                customerInfo: customerInfo,
-                purchasesProvider: purchasesProvider,
-                changePlans: [],
-                customerCenterStoreKitUtilities: customerCenterStoreKitUtilities,
-                localization: configuration.localization
-            )
-            activeNonSubscriptionPurchases.append(purchaseInfo)
-        }
-        self.nonSubscriptionsSection = activeNonSubscriptionPurchases
-    }
-
-    func loadMostRecentExpiredTransaction(customerInfo: CustomerInfo, configuration: CustomerCenterConfigData) async {
-        let inactive = customerInfo.subscriptionsByProductIdentifier
-            .filter { !$0.value.isActive }
-            .sorted { sub1, sub2 in
-                // most recent expired
-                let date1 = sub1.value.expiresDate
-                let date2 = sub2.value.expiresDate
-
-                switch (date1, date2) {
-                case let (date1?, date2?):
-                    return date1 > date2
-                case (nil, _?):
-                    return false
-                case (_?, nil):
-                    return true
-                case (nil, nil):
-                    return false
-                }
-            }
-            .first
-
-        guard let inactiveSub = inactive?.value else {
-            self.subscriptionsSection = []
-            return
-        }
-
-        let purchaseInfo: PurchaseInformation = await .from(
-            transaction: inactiveSub,
-            customerInfo: customerInfo,
-            purchasesProvider: purchasesProvider,
-            changePlans: [],
-            customerCenterStoreKitUtilities: customerCenterStoreKitUtilities,
-            localization: configuration.localization
-        )
-
-        self.subscriptionsSection = [purchaseInfo]
-    }
-
-    func loadSubscriptionsSection(
-        customerInfo: CustomerInfo,
-        configuration: CustomerCenterConfigData
-    ) async {
-        var activeSubscriptionPurchases: [PurchaseInformation] = []
-        let subscriptions = customerInfo.activeSubscriptions
-            .compactMap({ id in
-                // Do the opposite as CustomerInfo.extractProductIDAndBasePlan for non-apple products
-                let idWithoutBasePlan = id.split(separator: ":").first.map { id in String(id) } ?? id
-                return customerInfo.subscriptionsByProductIdentifier[idWithoutBasePlan]
-                    ?? customerInfo.subscriptionsByProductIdentifier[id] // fallback in case it fails
-            })
-            .sorted(by: {
-                guard let date1 = $0.expiresDate, let date2 = $1.expiresDate else {
-                    return $0.expiresDate != nil
-                }
-
-                return date1 < date2
-            })
-
-        for subscription in subscriptions {
-            let purchaseInfo: PurchaseInformation = await .from(
-                transaction: subscription,
-                customerInfo: customerInfo,
-                purchasesProvider: purchasesProvider,
-                changePlans: configuration.changePlans,
-                customerCenterStoreKitUtilities: customerCenterStoreKitUtilities,
-                localization: configuration.localization
-            )
-
-            activeSubscriptionPurchases.append(purchaseInfo)
-        }
-
-        if activeSubscriptionPurchases.isEmpty {
-            await loadMostRecentExpiredTransaction(customerInfo: customerInfo, configuration: configuration)
-        } else {
-            self.subscriptionsSection = activeSubscriptionPurchases
-        }
-    }
-
     func loadCustomerCenterConfig() async throws -> CustomerCenterConfigData {
         let configuration = try await purchasesProvider.loadCustomerCenter()
 
@@ -373,6 +322,17 @@ private extension CustomerCenterViewModel {
         }
 
         return configuration
+    }
+
+    func updatePreviewConfiguration(
+        _ configuration: CustomerCenterConfigData, provider: CustomerCenterPreviewProvider
+    ) {
+        self.configuration = configuration
+        self.onUpdateAppClick = nil
+        if let productId = configuration.productId,
+            let url = URL(string: "https://itunes.apple.com/app/id\(productId)") {
+            self.onUpdateAppClick = provider.previewURLHandler(for: url)
+        }
     }
 }
 
