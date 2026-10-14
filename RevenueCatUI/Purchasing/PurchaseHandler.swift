@@ -40,6 +40,7 @@ final class PurchaseHandler: ObservableObject {
 
     private let purchases: PaywallPurchasesType
     private let customerCenterPreviewContext: (@Sendable () -> (appUserID: String, isSandbox: Bool))?
+    private let customerCenterPreviewURLHandler: (@Sendable (URL) async throws -> Void)?
     let resolveBranch: @Sendable (WorkflowBranch) async -> WorkflowStepID
     private let paywallEventTracker: PaywallEventTracker
     private let keyWindowFocusResigner: KeyWindowFocusResigning
@@ -217,6 +218,7 @@ final class PurchaseHandler: ObservableObject {
         purchases: PaywallPurchasesType,
         resolveBranch: @escaping @Sendable (WorkflowBranch) async -> WorkflowStepID = { $0.fallbackStepId },
         customerCenterPreviewContext: (@Sendable () -> (appUserID: String, isSandbox: Bool))? = nil,
+        customerCenterPreviewURLHandler: (@Sendable (URL) async throws -> Void)? = nil,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
@@ -228,6 +230,7 @@ final class PurchaseHandler: ObservableObject {
         self.isConfigured = isConfigured
         self.purchases = purchases
         self.customerCenterPreviewContext = customerCenterPreviewContext
+        self.customerCenterPreviewURLHandler = customerCenterPreviewURLHandler
         self.resolveBranch = resolveBranch
         self.paywallEventTracker = eventTracker
         self.keyWindowFocusResigner = keyWindowFocusResigner
@@ -299,6 +302,7 @@ final class PurchaseHandler: ObservableObject {
         return .init(
             purchases: purchases,
             customerCenterPreviewContext: { (provider.appUserID, provider.isSandbox) },
+            customerCenterPreviewURLHandler: { try await provider.handlePreviewAction(.openURL($0)) },
             performPurchase: performPurchase,
             performRestore: performRestore,
             purchaseResultPublisher: Empty().eraseToAnyPublisher(),
@@ -306,6 +310,26 @@ final class PurchaseHandler: ObservableObject {
         )
     }
 #endif
+
+    /// Completes simulated checkout before callers dismiss, without opening an external application.
+    @MainActor
+    func performCustomerCenterPreviewCheckout(url: URL) async throws -> Bool {
+        guard let customerCenterPreviewURLHandler, !actionInProgress, !Task.isCancelled else { return false }
+        startAction(.externalPurchasePreparation)
+        defer { actionTypeInProgress = nil }
+
+        do {
+            try await customerCenterPreviewURLHandler(url)
+            try Task.checkCancellation()
+            signalWebCheckoutOpened()
+            return true
+        } catch is CancellationError {
+            return false
+        } catch {
+            guard !Task.isCancelled else { return false }
+            throw error
+        }
+    }
 
     private func setResult(_ result: PaywallPurchaseResult) {
         guard result != self.purchaseResult else {

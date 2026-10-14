@@ -172,6 +172,11 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
+        if purchaseHandler.isCustomerCenterPreview {
+            try await self.performInAppPurchase(selectedPackage: selectedPackage)
+            return
+        }
+
         switch await HostedCheckout.start(for: selectedPackage,
                                           purchaseHandler: self.purchaseHandler,
                                           purchaseInitiatedAction: self.purchaseInitiatedAction) {
@@ -285,8 +290,8 @@ struct PurchaseButtonComponentView: View {
         }
 
         if purchaseHandler.isCustomerCenterPreview {
-            self.openURL(launchWebCheckout.url)
-            if launchWebCheckout.autoDismiss {
+            let completed = try await purchaseHandler.performCustomerCenterPreviewCheckout(url: launchWebCheckout.url)
+            if completed && launchWebCheckout.autoDismiss {
                 self.onDismiss()
             }
             return

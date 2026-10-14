@@ -28,12 +28,20 @@ enum CustomerCenterPreviewFixtureData {
         if mode == "web_link" {
             action = .button(.init(action: .navigateTo(destination: .webPaywallLink(urlLid: "url", method: .externalBrowser)),
                                    stack: stack))
+        } else if mode == "hosted" {
+            action = .purchaseButton(.init(stack: stack, action: nil, method: .hostedWebCheckout, name: nil))
         } else {
             action = .purchaseButton(.init(stack: stack, action: nil, method: .customWebCheckout(.init(
                 customUrl: .init(url: "url", appUserIDParam: "user", envParam: "env"),
                 autoDismiss: mode == "checkout_dismiss", openMethod: .inAppBrowser
             )), name: nil))
         }
+        let packageComponents: [PaywallComponent] = mode == "hosted" ? [
+            .package(.init(packageID: package.identifier, isSelectedByDefault: true, applePromoOfferProductCode: nil,
+                           stack: .init(components: [
+                            .text(.init(text: "plan", color: .init(light: .hex("#000000"))))
+                           ], size: .init(width: .fill, height: .fixed(48)))))
+        ] : []
         let data = PaywallComponentsData(
             templateName: "preview", assetBaseURL: URL(string: "https://example.invalid")!,
             componentsConfig: .init(base: .init(
@@ -41,13 +49,12 @@ enum CustomerCenterPreviewFixtureData {
                     .button(.init(action: .navigateBack, stack: .init(components: [
                         .text(.init(text: "close", color: .init(light: .hex("#000000"))))
                     ], size: .init(width: .fill, height: .fixed(48))))),
-                    action
-                ], size: .init(width: .fill, height: .fill), spacing: 24,
+                ] + packageComponents + [action], size: .init(width: .fill, height: .fill), spacing: 24,
                    padding: .init(top: 80, bottom: 24, leading: 16, trailing: 16)), stickyFooter: nil,
                 background: .color(.init(light: .hex("#ffffff")))
             )),
             componentsLocalizations: ["en_US": ["action": .string("Preview checkout"), "close": .string("Close preview"),
-                                               "url": .string("https://example.invalid/checkout")]],
+                                               "url": .string("https://example.invalid/checkout"), "plan": .string("Preview plan")]],
             revision: 1, defaultLocaleIdentifier: "en_US"
         )
         let uiConfig = UIConfig(app: .init(colors: [:], fonts: [:]), localizations: [:],

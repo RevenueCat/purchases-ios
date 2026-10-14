@@ -100,6 +100,79 @@ final class CustomerCenterPreviewPaywallTests: TestCase {
         }
     }
 
+    func testPreviewCheckoutWaitsForProviderAndPreventsDuplicateActions() async throws {
+        let provider = PreviewPaywallProvider()
+        let handler = PurchaseHandler.customerCenterPreview(
+            provider: provider, performPurchase: { _ in (false, nil) }, performRestore: { (true, nil) }
+        )
+        let url = try XCTUnwrap(URL(string: "https://example.com/checkout"))
+        let started = expectation(description: "Preview action started")
+        let resumeAction = Atomic<CheckedContinuation<Void, Never>?>(nil)
+        defer { resumeAction.getAndSet(nil)?.resume() }
+        provider.urlAction = { receivedURL in
+            XCTAssertEqual(receivedURL, url)
+            await withCheckedContinuation { continuation in
+                resumeAction.value = continuation
+                started.fulfill()
+            }
+        }
+        var checkoutEvents = 0
+        let subscription = handler.webCheckoutOpenedPublisher.sink { checkoutEvents += 1 }
+        defer { subscription.cancel() }
+        let action = Task { try await handler.performCustomerCenterPreviewCheckout(url: url) }
+        await fulfillment(of: [started], timeout: 2)
+        XCTAssertTrue(handler.actionInProgress)
+        XCTAssertEqual(checkoutEvents, 0)
+        let duplicate = try await handler.performCustomerCenterPreviewCheckout(url: url)
+        XCTAssertFalse(duplicate)
+
+        resumeAction.getAndSet(nil)?.resume()
+        let completed = try await action.value
+
+        XCTAssertTrue(completed)
+        XCTAssertFalse(handler.actionInProgress)
+        XCTAssertEqual(checkoutEvents, 1)
+    }
+
+    func testFailedPreviewCheckoutPreservesErrorAndClearsBusyState() async throws {
+        let provider = PreviewPaywallProvider()
+        let error = NSError(domain: "Preview", code: 1)
+        provider.urlAction = { _ in throw error }
+        let handler = PurchaseHandler.customerCenterPreview(
+            provider: provider, performPurchase: { _ in (false, nil) }, performRestore: { (true, nil) }
+        )
+        var checkoutEvents = 0
+        let subscription = handler.webCheckoutOpenedPublisher.sink { checkoutEvents += 1 }
+        defer { subscription.cancel() }
+        do {
+            _ = try await handler.performCustomerCenterPreviewCheckout(
+                url: XCTUnwrap(URL(string: "https://example.com/checkout"))
+            )
+            XCTFail("Expected the provider error")
+        } catch let receivedError {
+            XCTAssertEqual(receivedError as NSError, error)
+        }
+        XCTAssertFalse(handler.actionInProgress)
+        XCTAssertEqual(checkoutEvents, 0)
+    }
+
+    func testCancelledPreviewCheckoutDoesNotSignalCompletion() async throws {
+        let provider = PreviewPaywallProvider()
+        provider.urlAction = { _ in throw CancellationError() }
+        let handler = PurchaseHandler.customerCenterPreview(
+            provider: provider, performPurchase: { _ in (false, nil) }, performRestore: { (true, nil) }
+        )
+        var checkoutEvents = 0
+        let subscription = handler.webCheckoutOpenedPublisher.sink { checkoutEvents += 1 }
+        defer { subscription.cancel() }
+        let completed = try await handler.performCustomerCenterPreviewCheckout(
+            url: XCTUnwrap(URL(string: "https://example.com/checkout"))
+        )
+        XCTAssertFalse(completed)
+        XCTAssertFalse(handler.actionInProgress)
+        XCTAssertEqual(checkoutEvents, 0)
+    }
+
     func testInjectedPaywallPurchasesUsePreviewCustomerInformation() async throws {
         let provider = PreviewPaywallProvider()
         let next = CustomerInfoFixtures.customerInfoWithLifetimePromotional
@@ -121,11 +194,14 @@ final class CustomerCenterPreviewPaywallTests: TestCase {
 @available(iOS 15.0, *)
 private final class PreviewPaywallProvider: CustomerCenterStateTestProvider,
                                            CustomerCenterPreviewProvider, @unchecked Sendable {
+    var urlAction: (@Sendable (URL) async throws -> Void)?
     var previewAppUserID = "preview"
     var previewIsSandbox = true
     override var appUserID: String { previewAppUserID }
     override var isSandbox: Bool { previewIsSandbox }
     func customerInfoUpdates() async -> AsyncStream<CustomerInfo> { AsyncStream { $0.finish() } }
-    func handlePreviewAction(_ action: CustomerCenterPreviewAction) async throws {}
+    func handlePreviewAction(_ action: CustomerCenterPreviewAction) async throws {
+        if case let .openURL(url) = action { try await urlAction?(url) }
+    }
 }
 #endif

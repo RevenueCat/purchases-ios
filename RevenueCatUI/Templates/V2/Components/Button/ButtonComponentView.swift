@@ -193,7 +193,7 @@ struct ButtonComponentView: View {
         case .restorePurchases:
             try await restorePurchases()
         case .navigateTo(let destination):
-            await navigateTo(destination: destination)
+            try await navigateTo(destination: destination)
         case .navigateBack:
             self.navigateBack()
         case .closeWorkflow:
@@ -275,7 +275,7 @@ struct ButtonComponentView: View {
         self.purchaseHandler.setRestored(customerInfo, success: success)
     }
 
-    private func navigateTo(destination: ButtonComponentViewModel.Destination) async {
+    private func navigateTo(destination: ButtonComponentViewModel.Destination) async throws {
         switch destination {
         case .customerCenter:
             guard !purchaseHandler.isCustomerCenterPreview else { return }
@@ -299,7 +299,7 @@ struct ButtonComponentView: View {
         case .unknown:
             break
         case .webPaywallLink(url: let url, method: let method):
-            await self.openWebPaywallLink(url: url, method: method)
+            try await self.openWebPaywallLink(url: url, method: method)
         }
     }
 
@@ -328,14 +328,15 @@ struct ButtonComponentView: View {
     }
 
     @MainActor
-    private func openWebPaywallLink(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) async {
+    private func openWebPaywallLink(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) async throws {
         guard !self.purchaseHandler.actionInProgress else {
             return
         }
 
         if purchaseHandler.isCustomerCenterPreview {
-            self.openURL(url)
-            self.onDismiss()
+            if try await purchaseHandler.performCustomerCenterPreviewCheckout(url: url) {
+                self.onDismiss()
+            }
             return
         }
 

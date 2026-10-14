@@ -43,7 +43,12 @@ private final class CustomerCenterPreviewFixtureProvider: ObservableObject, Cust
     }
     func purchase(package: Package) async throws -> PurchaseResultData {
         events.append("purchase")
-        return (nil, info, false)
+        switch ProcessInfo.processInfo.environment["PREVIEW_ACTION_OUTCOME"] {
+        case "cancel": throw ErrorCode.purchaseCancelledError
+        case "failure": throw NSError(domain: "Preview", code: 1,
+                                       userInfo: [NSLocalizedDescriptionKey: "Preview purchase failed"])
+        default: return (nil, info, false)
+        }
     }
     func purchase(product: StoreProduct, promotionalOffer: PromotionalOffer?) async throws -> PurchaseResultData {
         events.append("purchase")
@@ -61,7 +66,16 @@ private final class CustomerCenterPreviewFixtureProvider: ObservableObject, Cust
         .init(isPresented: .constant(false), subscriptionGroupID: nil)
     }
     func handlePreviewAction(_ action: CustomerCenterPreviewAction) async throws {
-        if case let .openURL(url) = action { events.append(url.absoluteString) }
+        if case let .openURL(url) = action {
+            let outcome = ProcessInfo.processInfo.environment["PREVIEW_ACTION_OUTCOME"]
+            if outcome == "delayed" {
+                try await Task.sleep(nanoseconds: 3_000_000_000)
+            } else if outcome == "failure" {
+                throw NSError(domain: "Preview", code: 1,
+                              userInfo: [NSLocalizedDescriptionKey: "Preview checkout failed"])
+            }
+            events.append(url.absoluteString)
+        }
     }
     func loadCustomerCenter() async throws -> CustomerCenterConfigData {
         .init(

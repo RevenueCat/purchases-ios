@@ -46,6 +46,63 @@ final class CustomerCenterPreviewUITests: XCTestCase {
         }
     }
 
+    func testCheckoutWaitsForProviderBeforeDismissal() {
+        for mode in ["checkout_dismiss", "web_link"] {
+            for configured in [false, true] {
+                let app = launch(mode: mode, configured: configured, outcome: "delayed")
+                openPreview(app)
+                let checkout = app.buttons["Preview checkout"]
+                XCTAssertTrue(checkout.waitForExistence(timeout: 10))
+                checkout.tap()
+                // The checkout label becomes a spinner while pending; the close button identifies the sheet.
+                let close = app.buttons["Close preview"]
+                XCTAssertTrue(close.exists, "Paywall dismissed while the provider was still working")
+                XCTAssertTrue(close.waitForNonExistence(timeout: 10))
+                assertEvent("https://example.invalid/checkout", in: app)
+            }
+        }
+    }
+
+    func testFailedCheckoutKeepsPaywallOpen() {
+        for mode in ["checkout_dismiss", "web_link"] {
+            for configured in [false, true] {
+                let app = launch(mode: mode, configured: configured, outcome: "failure")
+                openPreview(app)
+                let checkout = app.buttons["Preview checkout"]
+                XCTAssertTrue(checkout.waitForExistence(timeout: 10))
+                checkout.tap()
+                XCTAssertTrue(app.alerts.firstMatch.waitForExistence(timeout: 5))
+                XCTAssertTrue(app.alerts.staticTexts["Preview checkout failed"].exists)
+                app.alerts.buttons.firstMatch.tap()
+                XCTAssertTrue(checkout.isHittable)
+                XCTAssertEqual(app.webViews.count, 0)
+                app.buttons["Close preview"].tap()
+            }
+        }
+    }
+
+    func testHostedCheckoutUsesSimulatedPurchaseOutcomes() {
+        for outcome in ["success", "cancel", "failure"] {
+            for configured in [false, true] {
+                let app = launch(mode: "hosted", configured: configured, outcome: outcome)
+                openPreview(app)
+                let checkout = app.buttons["Preview checkout"]
+                XCTAssertTrue(checkout.waitForExistence(timeout: 10))
+                checkout.tap()
+                if outcome == "failure" {
+                    XCTAssertTrue(app.alerts.firstMatch.waitForExistence(timeout: 5))
+                    XCTAssertTrue(app.alerts.staticTexts["Preview purchase failed"].exists)
+                    app.alerts.buttons.firstMatch.tap()
+                } else {
+                    XCTAssertEqual(app.alerts.count, 0)
+                }
+                XCTAssertEqual(app.webViews.count, 0)
+                if app.buttons["Close preview"].exists { app.buttons["Close preview"].tap() }
+                assertEvent("purchase", in: app)
+            }
+        }
+    }
+
     private func verifyCheckout(mode: String, dismisses: Bool) {
         for configured in [false, true] {
             let app = launch(mode: mode, configured: configured)
@@ -70,10 +127,11 @@ final class CustomerCenterPreviewUITests: XCTestCase {
         }
     }
 
-    private func launch(mode: String, configured: Bool) -> XCUIApplication {
+    private func launch(mode: String, configured: Bool, outcome: String = "success") -> XCUIApplication {
         let app = XCUIApplication()
         app.launchEnvironment["PAYWALL_FIXTURE"] = "customer_center_preview"
         app.launchEnvironment["PREVIEW_PAYWALL"] = mode
+        app.launchEnvironment["PREVIEW_ACTION_OUTCOME"] = outcome
         app.launchEnvironment["PREVIEW_CONFIGURE_SDK"] = configured ? "1" : "0"
         app.launch()
         XCTAssertTrue(app.staticTexts[configured ? "SDK configured" : "SDK unconfigured"].waitForExistence(timeout: 15))
