@@ -170,6 +170,34 @@ final class ButtonComponentViewTests: TestCase {
         )
     }
 
+    func testNativeRegistrationPreservesDismissalAndAnalytics() async throws {
+        let coordinator = NativePaywallCloseCoordinator()
+        let viewModel = try Self.makeViewModel(component: .init(
+            name: "close", action: .navigateBack,
+            stack: Self.makeButtonStack(label: "Close"), useNativeIfPossible: true
+        ))
+        var dismissals = 0
+        var interactions: [PaywallEvent.ComponentInteractionData] = []
+        let view = Self.nativeTestView(viewModel: viewModel, onDismiss: { dismissals += 1 })
+            .environment(\.nativePaywallCloseCoordinator, coordinator)
+            .environment(\.componentInteractionLogger, ComponentInteractionLogger { event in
+                interactions.append(event)
+                return true
+            })
+        let (window, hostedView) = Self.host(view)
+        defer { window.isHidden = true; window.rootViewController = nil }
+        let registered = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            coordinator.actions.count == 1
+        }, object: nil)
+        await fulfillment(of: [registered], timeout: 2)
+        XCTAssertFalse(hostedView.containsText("Close"))
+        try await coordinator.performAction(id: XCTUnwrap(coordinator.actions.first?.id))
+        XCTAssertEqual(dismissals, 1)
+        XCTAssertEqual(interactions.count, 1)
+        XCTAssertEqual(interactions.first?.componentValue, "navigate_back")
+        XCTAssertEqual(interactions.first?.componentName, "close")
+    }
+
     func testNativePreferenceWithoutHostRetainsConfiguredButton() async {
         let fallback = expectation(description: "Configured button is rendered without a native host")
         let button = NativePaywallCloseButton(
@@ -179,6 +207,19 @@ final class ButtonComponentViewTests: TestCase {
         let (window, _) = Self.host(button)
         defer { window.isHidden = true; window.rootViewController = nil }
         await fulfillment(of: [fallback], timeout: 2)
+    }
+
+    private static func nativeTestView(
+        viewModel: ButtonComponentViewModel, onDismiss: @escaping () -> Void
+    ) -> some View {
+        ButtonComponentView(viewModel: viewModel, onDismiss: onDismiss)
+            .environmentObject(PurchaseHandler.default())
+            .environmentObject(PackageContext(package: nil, variableContext: .init(packages: [])))
+            .environmentObject(IntroOfferEligibilityContext(introEligibilityChecker: BaseSnapshotTest.eligibleChecker))
+            .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
+            .environment(\.componentViewState, .default)
+            .environment(\.screenCondition, .compact)
+            .environment(\.safeAreaInsets, EdgeInsets())
     }
 
 }
