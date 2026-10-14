@@ -20,7 +20,7 @@ import XCTest
 @MainActor
 final class PaywallPromoOfferCacheTests: TestCase {
 
-    private nonisolated static let promoCode = "promo_code"
+    private static let promoCode = "promo_code"
 
     // Both `PaywallView` initializers map their `simulatePromoEligible` flag through this factory.
     // It is the single mapping site: if it stops producing a cache, every promo preview silently
@@ -37,8 +37,7 @@ final class PaywallPromoOfferCacheTests: TestCase {
         await cache.computeEligibility(for: [(package, Self.promoCode)])
 
         XCTAssertNotNil(cache.get(for: package), "A simulated cache seeds a display-only signed offer.")
-        let purchasableOffer = await cache.purchasableOffer(for: package)
-        XCTAssertNil(purchasableOffer, "A fabricated offer must never reach StoreKit.")
+        XCTAssertNil(cache.purchasableOffer(for: package), "A fabricated offer must never reach StoreKit.")
     }
 
     func testSimulateEligibleSeedsSignedOfferForMatchingDiscount() async {
@@ -64,9 +63,8 @@ final class PaywallPromoOfferCacheTests: TestCase {
             cache.get(for: package),
             "Display paths still read the fabricated offer."
         )
-        let purchasableOffer = await cache.purchasableOffer(for: package)
         XCTAssertNil(
-            purchasableOffer,
+            cache.purchasableOffer(for: package),
             "A fabricated offer carries sentinel signing data and must never reach a real purchase."
         )
     }
@@ -119,269 +117,36 @@ final class PaywallPromoOfferCacheTests: TestCase {
         )
     }
 
-    func testColdChecksStartConcurrently() async {
-        let firstPackage = Self.makePackage(productIdentifier: "first")
-        let secondPackage = Self.makePackage(productIdentifier: "second")
-        let fetcher = SuspendedOfferFetcher()
-        let cache = Self.makeCache(offerFetcher: fetcher.fetch)
-
-        let computation = Task { @MainActor in
-            await cache.computeEligibility(for: [
-                (firstPackage, Self.promoCode),
-                (secondPackage, Self.promoCode)
-            ])
-        }
-
-        await fetcher.waitForCallCount(2)
-        XCTAssertEqual(fetcher.callCount, 2, "Every cold check must start before the first result is awaited.")
-
-        fetcher.resumeAll()
-        await computation.value
-
-        XCTAssertNotNil(cache.get(for: firstPackage))
-        XCTAssertNotNil(cache.get(for: secondPackage))
-    }
-
-    func testDuplicateConcurrentChecksCoalesceAndSubsequentChecksUseCache() async {
-        let package = Self.makePackage()
-        let fetcher = SuspendedOfferFetcher()
-        let cache = Self.makeCache(offerFetcher: fetcher.fetch)
-
-        let firstComputation = Task { @MainActor in
-            await cache.computeEligibility(for: [(package, Self.promoCode)])
-        }
-        await fetcher.waitForCallCount(1)
-
-        let duplicateComputation = Task { @MainActor in
-            await cache.computeEligibility(for: [(package, Self.promoCode)])
-        }
-        for _ in 0..<10 {
-            await Task.yield()
-        }
-
-        XCTAssertEqual(fetcher.callCount, 1)
-        fetcher.resumeAll()
-        await firstComputation.value
-        await duplicateComputation.value
-
-        await cache.computeEligibility(for: [(package, Self.promoCode)])
-        XCTAssertEqual(fetcher.callCount, 1, "A fresh cached signature must not make another request.")
-    }
-
-    func testTimeoutDoesNotBlockAndRemainsRetryable() async {
-        let package = Self.makePackage()
-        let fetcher = SuspendedOfferFetcher()
-        let cache = Self.makeCache(requestTimeout: 0.01, offerFetcher: fetcher.fetch)
-
-        await cache.computeEligibility(for: [(package, Self.promoCode)])
-        XCTAssertEqual(fetcher.callCount, 1)
-        XCTAssertNil(cache.get(for: package))
-
-        await cache.computeEligibility(for: [(package, Self.promoCode)])
-        XCTAssertEqual(fetcher.callCount, 2, "A timed-out request must not be cached as ineligible.")
-
-        fetcher.resumeAll()
-    }
-
-    func testTransientFailuresAreNotCached() async {
-        let package = Self.makePackage()
-        var callCount = 0
-        let cache = Self.makeCache { _, _ in
-            callCount += 1
-            throw NSError(domain: "PaywallPromoOfferCacheTests", code: 1)
-        }
-
-        await cache.computeEligibility(for: [(package, Self.promoCode)])
-        await cache.computeEligibility(for: [(package, Self.promoCode)])
-
-        XCTAssertEqual(callCount, 2)
-        XCTAssertNil(cache.get(for: package))
-    }
-
-    func testIneligibleResultIsCached() async {
-        let package = Self.makePackage()
-        var callCount = 0
-        let cache = Self.makeCache { _, _ in
-            callCount += 1
-            throw ErrorCode.ineligibleError
-        }
-
-        await cache.computeEligibility(for: [(package, Self.promoCode)])
-        await cache.computeEligibility(for: [(package, Self.promoCode)])
-
-        XCTAssertEqual(callCount, 1)
-        XCTAssertNil(cache.get(for: package))
-    }
-
-    func testDifferentPromoCodesUseDistinctCacheEntries() async {
-        let secondPromoCode = "second_promo_code"
-        let package = Self.makePackage(additionalPromoDiscountIdentifiers: [secondPromoCode])
-        var callCount = 0
-        let cache = Self.makeCache { discount, _ in
-            callCount += 1
-            return Self.makeOffer(discount: discount)
-        }
-
-        await cache.computeEligibility(for: [(package, Self.promoCode)])
-        XCTAssertEqual(cache.get(for: package)?.signedData.identifier, Self.promoCode)
-
-        await cache.computeEligibility(for: [(package, secondPromoCode)])
-        XCTAssertEqual(callCount, 2)
-        XCTAssertEqual(cache.get(for: package)?.signedData.identifier, secondPromoCode)
-
-        await cache.computeEligibility(for: [
-            (package, Self.promoCode),
-            (package, secondPromoCode)
-        ])
-        XCTAssertEqual(callCount, 2)
-        XCTAssertEqual(cache.get(for: package)?.signedData.identifier, Self.promoCode)
-    }
-
-    func testLaterEligibilityComputationCanRemovePromoOfferFromProduct() async {
-        let package = Self.makePackage()
-        let cache = Self.makeCache { discount, _ in
-            return Self.makeOffer(discount: discount)
-        }
-
-        await cache.computeEligibility(for: [(package, Self.promoCode)])
-        XCTAssertNotNil(cache.get(for: package))
-
-        await cache.computeEligibility(for: [(package, nil)])
-        XCTAssertNil(cache.get(for: package))
-    }
-
-    func testIdentityAndConfigurationChangesInvalidateCache() async {
-        let package = Self.makePackage()
-        var appUserID = "first-user"
-        var purchasesInstance = NSObject()
-        var callCount = 0
+    func testEligibilityRequestsRunConcurrently() async {
+        let firstPackage = Self.makePackage(
+            promoDiscountIdentifier: Self.promoCode,
+            productIdentifier: "first"
+        )
+        let secondPackage = Self.makePackage(
+            promoDiscountIdentifier: Self.promoCode,
+            productIdentifier: "second"
+        )
+        var activeRequestCount = 0
+        var maximumActiveRequestCount = 0
         let cache = PaywallPromoOfferCache(
-            requestTimeout: 1,
-            appUserIDProvider: { appUserID },
-            purchasesInstanceProvider: { ObjectIdentifier(purchasesInstance) },
+            subscriptionHistoryTracker: nil,
             offerFetcher: { discount, _ in
-                callCount += 1
-                return Self.makeOffer(discount: discount)
+                activeRequestCount += 1
+                maximumActiveRequestCount = max(maximumActiveRequestCount, activeRequestCount)
+                try await Task.sleep(nanoseconds: 50_000_000)
+                activeRequestCount -= 1
+                return Self.makeOffer(for: discount)
             }
         )
-
-        await cache.computeEligibility(for: [(package, Self.promoCode)])
-        await cache.computeEligibility(for: [(package, Self.promoCode)])
-        XCTAssertEqual(callCount, 1)
-
-        appUserID = "second-user"
-        await cache.computeEligibility(for: [(package, Self.promoCode)])
-        XCTAssertEqual(callCount, 2)
-
-        purchasesInstance = NSObject()
-        await cache.computeEligibility(for: [(package, Self.promoCode)])
-        XCTAssertEqual(callCount, 3)
-    }
-
-    func testConfigurationChangeDoesNotCoalesceWithOldInFlightRequest() async {
-        let package = Self.makePackage()
-        var purchasesInstance = NSObject()
-        let fetcher = SuspendedOfferFetcher()
-        let cache = PaywallPromoOfferCache(
-            requestTimeout: 1,
-            appUserIDProvider: { "user" },
-            purchasesInstanceProvider: { ObjectIdentifier(purchasesInstance) },
-            offerFetcher: fetcher.fetch
-        )
-
-        let oldConfigurationCheck = Task { @MainActor in
-            await cache.computeEligibility(for: [(package, Self.promoCode)])
-        }
-        await fetcher.waitForCallCount(1)
-
-        purchasesInstance = NSObject()
-        let newConfigurationCheck = Task { @MainActor in
-            await cache.computeEligibility(for: [(package, Self.promoCode)])
-        }
-        await fetcher.waitForCallCount(2)
-
-        fetcher.resumeAll()
-        await oldConfigurationCheck.value
-        await newConfigurationCheck.value
-
-        XCTAssertEqual(fetcher.callCount, 2)
-        XCTAssertNotNil(cache.get(for: package))
-    }
-
-    func testIdentityChangeDuringCheckRetriesBeforeReturning() async {
-        let package = Self.makePackage()
-        var appUserID = "first-user"
-        let fetcher = SuspendedOfferFetcher()
-        let cache = PaywallPromoOfferCache(
-            requestTimeout: 1,
-            appUserIDProvider: { appUserID },
-            purchasesInstanceProvider: { nil },
-            offerFetcher: fetcher.fetch
-        )
-
-        let computation = Task { @MainActor in
-            await cache.computeEligibility(for: [(package, Self.promoCode)])
-        }
-        await fetcher.waitForCallCount(1)
-
-        appUserID = "second-user"
-        fetcher.resumeAll()
-        await fetcher.waitForCallCount(2)
-
-        fetcher.resumeAll()
-        await computation.value
-
-        XCTAssertEqual(fetcher.callCount, 2)
-        XCTAssertNotNil(cache.get(for: package))
-    }
-
-    func testPurchaseUsesFreshSignatureAndRefreshesExpiredSignature() async {
-        let package = Self.makePackage()
-        var now = Date(timeIntervalSince1970: 1_000_000)
-        var callCount = 0
-        let cache = PaywallPromoOfferCache(
-            requestTimeout: 1,
-            appUserIDProvider: { "user" },
-            purchasesInstanceProvider: { nil },
-            dateProvider: { now },
-            offerFetcher: { discount, _ in
-                callCount += 1
-                return Self.makeOffer(
-                    discount: discount,
-                    timestamp: Int(now.timeIntervalSince1970 * 1_000)
-                )
-            }
-        )
-
-        await cache.computeEligibility(for: [(package, Self.promoCode)])
-        let freshOffer = await cache.purchasableOffer(for: package)
-        XCTAssertNotNil(freshOffer)
-        XCTAssertEqual(callCount, 1, "A valid signature must go directly to purchase.")
-
-        now.addTimeInterval(24 * 60 * 60)
-        let refreshedOffer = await cache.purchasableOffer(for: package)
-        XCTAssertNotNil(refreshedOffer)
-        XCTAssertEqual(callCount, 2, "An expired signature must be refreshed at purchase time.")
-    }
-
-    func testConcurrentResultsPublishOnce() async {
-        let firstPackage = Self.makePackage(productIdentifier: "first")
-        let secondPackage = Self.makePackage(productIdentifier: "second")
-        let cache = Self.makeCache { discount, _ in
-            return Self.makeOffer(discount: discount)
-        }
-        var publicationCount = 0
-        let cancellable = cache.objectWillChange.sink {
-            publicationCount += 1
-        }
 
         await cache.computeEligibility(for: [
             (firstPackage, Self.promoCode),
             (secondPackage, Self.promoCode)
         ])
 
-        XCTAssertEqual(publicationCount, 1)
-        withExtendedLifetime(cancellable) {}
+        XCTAssertEqual(maximumActiveRequestCount, 2)
+        XCTAssertNotNil(cache.get(for: firstPackage))
+        XCTAssertNotNil(cache.get(for: secondPackage))
     }
 
 }
@@ -399,37 +164,20 @@ private extension PaywallPromoOfferCacheTests {
         )
     }
 
-    static func makeCache(
-        requestTimeout: TimeInterval = 1,
-        offerFetcher: @escaping PaywallPromoOfferCache.OfferFetcher
-    ) -> PaywallPromoOfferCache {
-        return PaywallPromoOfferCache(
-            requestTimeout: requestTimeout,
-            appUserIDProvider: { "user" },
-            purchasesInstanceProvider: { nil },
-            offerFetcher: offerFetcher
-        )
-    }
-
-    static func makeOffer(
-        discount: StoreProductDiscount,
-        timestamp: Int = Int(Date().timeIntervalSince1970 * 1_000)
-    ) -> PromotionalOffer {
+    static func makeOffer(for discount: StoreProductDiscount) -> PromotionalOffer {
         return discount.promotionalOffer(
-            withSignedDataIdentifier: discount.offerIdentifier ?? promoCode,
+            withSignedDataIdentifier: promoCode,
             keyIdentifier: "key",
             nonce: UUID(),
             signature: "signature",
-            timestamp: timestamp
+            timestamp: 0
         )
     }
 
     static func makePackage(
-        promoDiscountIdentifier: String = promoCode,
-        productIdentifier: String = "com.revenuecat.monthly",
-        additionalPromoDiscountIdentifiers: [String] = []
+        promoDiscountIdentifier: String,
+        productIdentifier: String = "com.revenuecat.monthly"
     ) -> Package {
-        let promoDiscountIdentifiers = [promoDiscountIdentifier] + additionalPromoDiscountIdentifiers
         let product = TestStoreProduct(
             localizedTitle: "PRO monthly",
             price: 3.99,
@@ -440,9 +188,9 @@ private extension PaywallPromoOfferCacheTests {
             localizedDescription: "Monthly subscription",
             subscriptionGroupIdentifier: "group",
             subscriptionPeriod: .init(value: 1, unit: .month),
-            discounts: promoDiscountIdentifiers.map {
+            discounts: [
                 TestStoreProductDiscount(
-                    identifier: $0,
+                    identifier: promoDiscountIdentifier,
                     price: 1.99,
                     localizedPriceString: "$1.99",
                     paymentMode: .payAsYouGo,
@@ -450,7 +198,7 @@ private extension PaywallPromoOfferCacheTests {
                     numberOfPeriods: 3,
                     type: .promotional
                 )
-            },
+            ],
             locale: Locale(identifier: "en_US")
         )
 
@@ -461,37 +209,6 @@ private extension PaywallPromoOfferCacheTests {
             offeringIdentifier: "default",
             webCheckoutUrl: nil
         )
-    }
-
-}
-
-@MainActor
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private final class SuspendedOfferFetcher {
-
-    private(set) var callCount = 0
-    private var continuations: [CheckedContinuation<Void, Never>] = []
-
-    func fetch(discount: StoreProductDiscount, product: StoreProduct) async throws -> PromotionalOffer {
-        self.callCount += 1
-        await withCheckedContinuation { continuation in
-            self.continuations.append(continuation)
-        }
-        return PaywallPromoOfferCacheTests.makeOffer(discount: discount)
-    }
-
-    func waitForCallCount(_ expectedCount: Int) async {
-        while self.callCount < expectedCount {
-            await Task.yield()
-        }
-    }
-
-    func resumeAll() {
-        let continuations = self.continuations
-        self.continuations.removeAll()
-        for continuation in continuations {
-            continuation.resume()
-        }
     }
 
 }
