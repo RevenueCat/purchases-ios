@@ -55,8 +55,8 @@ struct ComponentsView: View {
                         ? max(safeAreaInsets.top, overlaidHeaderHeight)
                         : 0
                 )
-                .background {
-                    if self.workflowRenderingContext.isHeader {
+                .applyIf(self.workflowRenderingContext.isHeader) { view in
+                    view.background {
                         switch item {
                         case .stack, .root:
                             EmptyView() // Descendants report their own rendered content.
