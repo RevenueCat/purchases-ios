@@ -20,6 +20,11 @@ import UIKit
 @MainActor
 class NativePaywallNavigationTestCase: TestCase {
 
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
+    }
+
     func toolbarButtons(in view: UIView) -> [UIButton] {
         NativePaywallTestSupport.controls(of: UIButton.self, in: view)
     }
@@ -28,6 +33,11 @@ class NativePaywallNavigationTestCase: TestCase {
         let settled = expectation(description: "Presentation settled")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { settled.fulfill() }
         await fulfillment(of: [settled], timeout: 2)
+    }
+
+    func navigationController(in controller: UIViewController) -> UINavigationController? {
+        if let navigation = controller as? UINavigationController { return navigation }
+        return controller.children.lazy.compactMap { self.navigationController(in: $0) }.first
     }
 
     func navigationCount(in controller: UIViewController?) -> Int {

@@ -28,18 +28,23 @@ struct NativePaywallCloseHost: ViewModifier {
     static let closeIdentifier = "RevenueCat.NativePaywallClose"
     static let backIdentifier = "RevenueCat.NativePaywallBack"
     var enabled = true
+    var ownsNavigation = false
     @StateObject private var coordinator = NativePaywallCloseCoordinator()
 
     @ViewBuilder func body(content: Content) -> some View {
         #if os(iOS)
             self.surface(content)
-                .navigationBarBackButtonHidden(self.coordinator.action(for: .back) != nil)
+                .navigationBarBackButtonHidden(self.enabled && self.coordinator.action(for: .back) != nil)
                 .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        NativePaywallToolbarClose(coordinator: self.coordinator, primary: true)
+                    if self.enabled, self.coordinator.action(for: .back) != nil {
+                        ToolbarItem(placement: .cancellationAction) {
+                            NativePaywallToolbarClose(coordinator: self.coordinator, primary: true)
+                        }
                     }
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        NativePaywallToolbarClose(coordinator: self.coordinator, primary: false)
+                    if self.enabled, self.coordinator.action(for: .close) != nil {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            NativePaywallToolbarClose(coordinator: self.coordinator, primary: false)
+                        }
                     }
                 }
         #else
@@ -47,10 +52,21 @@ struct NativePaywallCloseHost: ViewModifier {
         #endif
     }
 
-    private func surface(_ content: Content) -> some View {
-        VStack(spacing: 0) { content }
+    #if os(iOS)
+    @ViewBuilder private func surface(_ content: Content) -> some View {
+        let view = VStack(spacing: 0) { content }
             .environment(\.nativePaywallCloseCoordinator, self.enabled ? self.coordinator : nil)
+        if self.ownsNavigation {
+            if #available(iOS 16.0, *) {
+                view.toolbar(self.coordinator.actions.isEmpty ? .hidden : .visible, for: .navigationBar)
+            } else {
+                view.navigationBarHidden(self.coordinator.actions.isEmpty)
+            }
+        } else {
+            view
+        }
     }
+    #endif
 
 }
 
