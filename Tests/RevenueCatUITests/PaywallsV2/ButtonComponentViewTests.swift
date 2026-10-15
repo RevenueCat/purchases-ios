@@ -247,7 +247,7 @@ final class ButtonComponentViewTests: TestCase {
         var height: CGFloat = -1
         let view = StackComponentView(viewModel: model, onDismiss: {})
             .fixedSize(horizontal: false, vertical: true)
-            .background(GeometryReader { geometry in
+            .overlay(GeometryReader { geometry in
                 Color.clear.preference(key: NativeRegistrationHeightKey.self, value: geometry.size.height)
             })
             .onPreferenceChange(NativeRegistrationHeightKey.self) { height = $0 }
@@ -297,7 +297,7 @@ final class ButtonComponentViewTests: TestCase {
                 component: .init(stack: stack), stackViewModel: model, firstItemIgnoresSafeArea: false
             ), onDismiss: {})
                 .fixedSize(horizontal: false, vertical: true)
-                .background(GeometryReader { proxy in
+                .overlay(GeometryReader { proxy in
                     Color.clear.preference(key: NativeRegistrationHeightKey.self, value: proxy.size.height)
                 })
                 .onPreferenceChange(NativeRegistrationHeightKey.self) { height = $0 }
@@ -317,6 +317,7 @@ final class ButtonComponentViewTests: TestCase {
                     abs(height - expected) < 0.5
                 }, object: nil)
                 await fulfillment(of: [resized], timeout: 2)
+                XCTAssertEqual(height, expected, accuracy: 0.5, "selected=\(value), badge=\(hasBadge)")
             }
         }
     }
@@ -507,6 +508,7 @@ final class ButtonComponentViewTests: TestCase {
         }
         window.rootViewController = navigation
         window.makeKeyAndVisible()
+        window.layoutIfNeeded()
         controller.view.layoutIfNeeded()
         defer {
             window.isHidden = true
@@ -1163,7 +1165,7 @@ private struct NativeRegistrationTestView: View {
             Color.blue.frame(height: 20)
         }
         .fixedSize(horizontal: false, vertical: true)
-        .background(GeometryReader { proxy in
+        .overlay(GeometryReader { proxy in
             Color.clear.preference(key: NativeRegistrationHeightKey.self, value: proxy.size.height)
         })
     }
