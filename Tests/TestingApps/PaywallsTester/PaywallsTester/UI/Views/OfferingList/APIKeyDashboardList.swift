@@ -197,7 +197,9 @@ struct APIKeyDashboardList: View {
             )
 
             #if DEBUG && !os(tvOS)
-            self.workflowRows = await WorkflowRow.loadAll(offerings: offerings)
+            let workflowRows = await WorkflowRow.loadAll(offerings: offerings)
+            guard !Task.isCancelled else { return }
+            self.workflowRows = workflowRows
             #endif
 
             self.offerings = .success(
@@ -721,7 +723,11 @@ extension APIKeyDashboardList.PaywallSection: CustomStringConvertible {
         case .components:
             return "V2"
         case .noPaywall:
+            #if DEBUG && !os(tvOS)
             return "Unclaimed offerings"
+            #else
+            return "No paywall"
+            #endif
         }
     }
 
@@ -730,9 +736,12 @@ extension APIKeyDashboardList.PaywallSection: CustomStringConvertible {
     }
 
     var caption: String {
-        return self == .noPaywall
-            ? "No paywall or flow attached. Opens the fallback."
-            : "Paywalls attached directly to an offering."
+        guard self == .noPaywall else { return "Paywalls attached directly to an offering." }
+        #if DEBUG && !os(tvOS)
+        return "No paywall or flow attached. Opens the fallback."
+        #else
+        return "No paywall attached."
+        #endif
     }
 
 }
