@@ -377,7 +377,7 @@ private extension RewardedAdPromptModelTests {
     }
 
     static func makeConfiguredRewards() -> ConfiguredAdRewards {
-        return .init(configuredReward: .unsupportedReward)
+        return .init(reward: .unsupportedReward)
     }
 
 }
