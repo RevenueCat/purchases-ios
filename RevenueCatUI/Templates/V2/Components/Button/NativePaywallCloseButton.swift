@@ -31,19 +31,23 @@ struct NativePaywallCloseButton<Content: View>: View {
     @Environment(\.nativePaywallPageID) private var pageID
     @Environment(\.nativePaywallControlsPresented) private var controlsPresented
     @State private var identifier = UUID()
+    @Environment(\.nativePaywallLayoutButtons) private var layoutButtons
+    @Environment(\.nativePaywallRegistrationOnly) private var registrationOnly
 
     var body: some View {
         if self.enabled, let coordinator {
-            RegisteredNativePaywallButton(
-                coordinator: coordinator, identifier: self.identifier,
-                accessibilityLabel: self.accessibilityLabel, role: self.role,
-                isWorkflowClose: self.isWorkflowClose, registrationEnabled: self.registrationEnabled,
-                interactionEnabled: self.interactionEnabled,
-                componentIdentifier: self.componentIdentifier, pageID: self.pageID, action: self.action,
-                availabilityChanged: self.availabilityChanged
-            )
-            if !self.controlsPresented { self.content() }
-        } else {
+            if self.registrationOnly || self.componentIdentifier.map({ self.layoutButtons.contains($0) }) != true {
+                RegisteredNativePaywallButton(
+                    coordinator: coordinator, identifier: self.identifier,
+                    accessibilityLabel: self.accessibilityLabel, role: self.role,
+                    isWorkflowClose: self.isWorkflowClose, registrationEnabled: self.registrationEnabled,
+                    interactionEnabled: self.interactionEnabled,
+                    componentIdentifier: self.componentIdentifier, pageID: self.pageID, action: self.action,
+                    availabilityChanged: self.availabilityChanged
+                )
+            }
+            if !self.controlsPresented && !self.registrationOnly { self.content() }
+        } else if !self.registrationOnly {
             self.content()
         }
     }
@@ -131,6 +135,14 @@ private struct NativePaywallControlsPresentedKey: EnvironmentKey {
     static let defaultValue = true
 }
 
+private struct NativePaywallLayoutButtonsKey: EnvironmentKey {
+    static let defaultValue: Set<ObjectIdentifier> = []
+}
+
+private struct NativePaywallRegistrationOnlyKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
 private struct NativePaywallPageIDKey: EnvironmentKey {
     static let defaultValue: UUID? = nil
 }
@@ -154,6 +166,15 @@ extension EnvironmentValues {
     var nativePaywallControlsPresented: Bool {
         get { self[NativePaywallControlsPresentedKey.self] }
         set { self[NativePaywallControlsPresentedKey.self] = newValue }
+    }
+
+    var nativePaywallLayoutButtons: Set<ObjectIdentifier> {
+        get { self[NativePaywallLayoutButtonsKey.self] }
+        set { self[NativePaywallLayoutButtonsKey.self] = newValue }
+    }
+    var nativePaywallRegistrationOnly: Bool {
+        get { self[NativePaywallRegistrationOnlyKey.self] }
+        set { self[NativePaywallRegistrationOnlyKey.self] = newValue }
     }
 
     var nativePaywallInteractionEnabled: Bool {

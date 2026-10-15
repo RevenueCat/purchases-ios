@@ -60,6 +60,8 @@ struct StackComponentView: View {
     @Environment(\.paywallAncestorScrollsVertically)
     private var paywallAncestorScrollsVertically
 
+    @Environment(\.nativePaywallCloseCoordinator) private var nativeCoordinator
+
     private let viewModel: StackComponentViewModel
     private let isScrollableByDefault: Bool
     private let onDismiss: () -> Void
@@ -194,6 +196,20 @@ struct StackComponentView: View {
                uiConfigProvider: self.viewModel.uiConfigProvider)
         .apply(badge: style.badge, border: style.border, shadow: style.shadow, shape: style.shape)
         .padding(style.margin)
+        .environment(\.nativePaywallLayoutButtons, Set(self.viewModel.viewModels.compactMap { item in
+            if case .button(let button) = item { return ObjectIdentifier(button) }
+            return nil
+        }))
+        .background {
+            if self.nativeCoordinator != nil {
+                ForEach(Array(self.viewModel.viewModels.enumerated()), id: \.offset) { _, item in
+                    if case .button(let button) = item {
+                        ButtonComponentView(viewModel: button, onDismiss: self.onDismiss)
+                            .environment(\.nativePaywallRegistrationOnly, true)
+                    }
+                }
+            }
+        }
     }
 
 }
