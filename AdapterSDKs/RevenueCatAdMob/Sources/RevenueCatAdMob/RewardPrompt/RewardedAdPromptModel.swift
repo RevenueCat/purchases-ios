@@ -68,7 +68,7 @@ struct RewardedAdPromptDependencies {
         return .init(
             isPurchasesConfigured: { Purchases.isConfigured },
             loadConfiguredRewards: { adUnitID in
-                await Purchases.shared.cachedAdRewards(forAdUnitId: adUnitID)
+                Purchases.shared.cachedAdRewards(forAdUnitId: adUnitID)
             },
             trackPromptShown: { adUnitID, placement in
                 Purchases.shared.adTracker.trackRewardedAdPromptShown(.init(
