@@ -60,7 +60,11 @@ struct NativePaywallCloseHost: ViewModifier {
     @ViewBuilder private var navigationProbe: some View {
         if self.detectNavigation {
             NativePaywallNavigationDetection { identifier, available in
-                if available { self.mountedControls.insert(identifier) } else { self.mountedControls.remove(identifier) }
+                if available {
+                    self.mountedControls.insert(identifier)
+                } else {
+                    self.mountedControls.remove(identifier)
+                }
             }.frame(width: 0, height: 0)
         }
     }
