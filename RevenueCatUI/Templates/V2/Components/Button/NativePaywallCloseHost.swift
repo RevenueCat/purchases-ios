@@ -266,10 +266,14 @@ final class NativePaywallUIKitOwner: NSObject, ObservableObject {
     }
 
     func removeClose() {
-        self.controller?.navigationItem.leftBarButtonItems = self.controller?.navigationItem.leftBarButtonItems?
-            .filter { item in !self.items.contains { $0 === item } }
-        self.controller?.navigationItem.rightBarButtonItems = self.controller?.navigationItem.rightBarButtonItems?
-            .filter { item in !self.items.contains { $0 === item } }
+        if let navigationItem = self.controller?.navigationItem {
+            for path in [\UINavigationItem.leftBarButtonItems, \UINavigationItem.rightBarButtonItems] {
+                guard let existing = navigationItem[keyPath: path],
+                      existing.contains(where: { item in self.items.contains { $0 === item } }) else { continue }
+                let remaining = existing.filter { item in !self.items.contains { $0 === item } }
+                navigationItem[keyPath: path] = remaining.isEmpty ? nil : remaining
+            }
+        }
         self.items = []
         self.backAction = nil
         self.closeAction = nil
