@@ -24,6 +24,7 @@ final class NativePaywallCloseCoordinator: ObservableObject {
 
     @Published private(set) var actions: [CloseAction] = []
     private var registrations: [CloseAction] = []
+    private var callbacks: [UUID: () async throws -> Void] = [:]
     private var activePageID: UUID?
 
     func activatePage(_ pageID: UUID?) {
@@ -45,8 +46,10 @@ final class NativePaywallCloseCoordinator: ObservableObject {
         isEnabled: Bool = true,
         action: @escaping () async throws -> Void
     ) {
+        self.callbacks[id] = action
         let value = CloseAction(
-            id: id, label: label, perform: action, role: role, isWorkflowClose: isWorkflowClose,
+            id: id, label: label, perform: { [weak self] in try await self?.callbacks[id]?() },
+            role: role, isWorkflowClose: isWorkflowClose,
             pageID: pageID, isEnabled: isEnabled
         )
         if let index = self.registrations.firstIndex(where: { $0.id == id }) {
@@ -70,6 +73,7 @@ final class NativePaywallCloseCoordinator: ObservableObject {
 
     func unregister(id: UUID) {
         self.registrations.removeAll { $0.id == id }
+        self.callbacks[id] = nil
         self.updateActions()
     }
 
