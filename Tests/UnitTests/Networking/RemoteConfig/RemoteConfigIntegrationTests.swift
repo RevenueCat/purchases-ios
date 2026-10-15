@@ -287,8 +287,8 @@ final class RemoteConfigIntegrationTests: TestCase {
         let rewards = try XCTUnwrap(maybeRewards)
         let requestedURLs = await self.downloader.requestedURLs()
 
-        expect(rewards.configuredReward?.virtualCurrency?.code) == "coins"
-        expect(rewards.configuredReward?.virtualCurrency?.amount) == 10
+        expect(rewards.reward?.virtualCurrency?.code) == "coins"
+        expect(rewards.reward?.virtualCurrency?.amount) == 10
         expect(rewards.moreRewards.first?.entitlement?.identifier) == "premium"
         expect(rewards.moreRewards.first?.entitlement?.duration) == AdRewardDuration(value: 30, unit: .minute)
         expect(differentlyCasedRewards) == ConfiguredAdRewards()
@@ -310,7 +310,7 @@ final class RemoteConfigIntegrationTests: TestCase {
             .rewards(forAdUnitId: "rewarded-ad-unit")
         let requestedURLStrings = await self.downloader.requestedURLStrings()
 
-        expect(rewards?.configuredReward?.virtualCurrency?.amount) == 10
+        expect(rewards?.reward?.virtualCurrency?.amount) == 10
         expect(requestedURLStrings) == [Self.url(source, ref: ref)]
         expect(self.blobStore.read(ref: ref)) == payload
     }
@@ -347,7 +347,7 @@ final class RemoteConfigIntegrationTests: TestCase {
 
         let rewards = await provider.rewards(forAdUnitId: "rewarded-ad-unit")
 
-        expect(initialRewards?.configuredReward?.virtualCurrency?.amount) == 10
+        expect(initialRewards?.reward?.virtualCurrency?.amount) == 10
         expect(rewards) == initialRewards
         expect(self.blobStore.read(ref: expectedRef)).to(beNil())
     }
@@ -379,7 +379,7 @@ final class RemoteConfigIntegrationTests: TestCase {
         let rewards = await ConfiguredAdRewardsProvider(manager: self.manager)
             .rewards(forAdUnitId: "rewarded-ad-unit")
 
-        expect(rewards?.configuredReward?.virtualCurrency?.amount) == 10
+        expect(rewards?.reward?.virtualCurrency?.amount) == 10
         expect(self.blobStore.read(ref: ref)) == payload
     }
 
