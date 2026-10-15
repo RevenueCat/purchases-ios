@@ -210,6 +210,9 @@ struct StackComponentView: View {
                 }
             }
         }
+        .transformPreference(NativePaywallHeaderContentKey.self) { content in
+            content.hasVisibleContent = content.hasVisibleContent || style.badge != nil
+        }
     }
 
 }

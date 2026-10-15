@@ -171,9 +171,9 @@ final class ButtonComponentViewTests: TestCase {
         XCTAssertEqual(height, 64, accuracy: 0.5)
     }
 
-    func testNativeHeaderTracksHiddenTextAndHiddenStacksAsOverridesChange() async throws {
+    func testNativeHeaderTracksHiddenSiblingsAndPreservesBadgesAcrossOverrides() async throws {
         try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
-        for hidesStack in [false, true] {
+        for (hidesStack, hasBadge) in [(false, false), (true, false), (false, true), (true, true)] {
             let title = PaywallComponent.TextComponent(
                 visible: hidesStack, text: "Title", color: .init(light: .hex("#000000")),
                 overrides: hidesStack ? nil : [.init(conditions: [.selected], properties: .init(visible: true))]
@@ -185,7 +185,11 @@ final class ButtonComponentViewTests: TestCase {
             let stack = PaywallComponent.StackComponent(
                 components: [.button(.init(action: .navigateBack, stack: Self.makeButtonStack(label: "Close"),
                                            useNativeIfPossible: true)), sibling],
-                size: .init(width: .fill, height: .fixed(100))
+                size: .init(width: .fill, height: .fixed(100)),
+                badge: hasBadge ? .init(style: .overlaid, alignment: .top, stack: .init(
+                    components: [], size: .init(width: .fixed(20), height: .fixed(20)),
+                    backgroundColor: .init(light: .hex("#FF0000"))
+                )) : nil
             )
             let model = try StackComponentViewModel(component: stack, localizationProvider: .init(
                 locale: Locale(identifier: "en_US"),
@@ -211,7 +215,7 @@ final class ButtonComponentViewTests: TestCase {
                 .environment(\.safeAreaInsets, EdgeInsets())
             let (window, _) = Self.host(NativeHeaderVisibilityTestView(state: state, content: content))
             defer { window.isHidden = true; window.rootViewController = nil }
-            for (value, expected) in [(1, CGFloat(0)), (2, 100), (1, 0)] {
+            for (value, expected) in [(1, CGFloat(hasBadge ? 100 : 0)), (2, 100), (1, hasBadge ? 100 : 0)] {
                 state.value = value
                 let resized = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
                     abs(height - expected) < 0.5
