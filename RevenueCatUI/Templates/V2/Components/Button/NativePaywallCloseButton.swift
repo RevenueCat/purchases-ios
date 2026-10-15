@@ -95,7 +95,7 @@ private struct RegisteredNativePaywallButton: View {
             key: NativePaywallHiddenButtonsKey.self,
             value: self.controlsPresented ? Set([self.componentIdentifier].compactMap { $0 }) : []
         )
-        .preference(key: NativePaywallHeaderContentKey.self, value: .init(hasNativeButtons: true))
+        .preference(key: NativePaywallHeaderContentKey.self, value: .init(hasNativeButtons: self.controlsPresented))
         .onAppear {
             self.updateRegistration(self.registration)
             self.availabilityChanged?(self.controlsPresented)
