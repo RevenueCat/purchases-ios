@@ -54,7 +54,25 @@ final class CheckpointPresenter: CheckpointPresenterType {
             throw CheckpointError.operationAlreadyInProgress
         }
         defer { self.slot.release(token) }
-        return try await self.workflowPresenter.present(presentation)
+
+        do {
+            return try await self.workflowPresenter.present(presentation)
+        } catch CheckpointError.operationAlreadyInProgress {
+            throw CheckpointError.operationAlreadyInProgress
+        } catch {
+            await withCheckedContinuation { continuation in
+                presentation.errorPresentationHandler(
+                    .init(
+                        checkpointIdentifier: presentation.checkpointIdentifier,
+                        error: error,
+                        customVariables: presentation.customVariables,
+                        kind: .flowCouldNotBeShown
+                    ),
+                    .init { continuation.resume() }
+                )
+            }
+            return .failed
+        }
     }
 
     func presentOffering(
@@ -188,24 +206,37 @@ import UIKit
 final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewControllerDelegate {
 
     private let cachedCustomerInfoProvider: CheckpointsManager.CachedCustomerInfoProvider
+    private let presentationContextProvider: @MainActor () -> UIViewController?
     private var session: PresentationSession?
 
     init(
-        cachedCustomerInfoProvider: @escaping CheckpointsManager.CachedCustomerInfoProvider = { nil }
+        cachedCustomerInfoProvider: @escaping CheckpointsManager.CachedCustomerInfoProvider = { nil },
+        presentationContextProvider: @escaping @MainActor () -> UIViewController? = {
+            UIApplication.extensionSafeApplication?.currentPresentationViewController
+        }
     ) {
         self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
+        self.presentationContextProvider = presentationContextProvider
     }
 
     func present(
         params: PaywallPresentationParams,
         completion: @escaping PaywallPresentationCompletion
     ) {
-        guard let presentationContext = UIApplication.extensionSafeApplication?.currentPresentationViewController else {
-            completion(.failed)
+        guard self.session == nil else {
+            Self.presentStartupError(
+                .operationAlreadyInProgress,
+                params: params,
+                completion: completion
+            )
             return
         }
-        guard self.session == nil else {
-            completion(.failed)
+        guard let presentationContext = self.presentationContextProvider() else {
+            Self.presentStartupError(
+                .noPresentationContext,
+                params: params,
+                completion: completion
+            )
             return
         }
 
@@ -223,8 +254,12 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         controller.delegate = self
         controller.modalPresentationStyle = params.presentationMode.modalPresentationStyle
         presentationContext.present(controller, animated: true)
-        if controller.presentingViewController == nil {
-            self.completeAfterPresentationFailure()
+        if controller.presentingViewController == nil, let session = self.takeSession() {
+            Self.presentStartupError(
+                .presentationFailed,
+                params: session.params,
+                completion: session.completion
+            )
         }
     }
 
@@ -323,11 +358,6 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         guard let session = self.session else { return }
         session.hasTerminalError = true
         session.presentedViewController?.continueAfterCheckpointError()
-    }
-
-    private func completeAfterPresentationFailure() {
-        guard let session = self.takeSession() else { return }
-        session.completion(.failed)
     }
 
     private func takeSession() -> PresentationSession? {
@@ -437,28 +467,30 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
     }
     #endif
 
-    private final class PresentationSession {
-        let params: PaywallPresentationParams
-        let completion: PaywallPresentationCompletion
-        let initialActiveEntitlementIdentifiers: Set<String>?
-        weak var presentedViewController: PaywallViewController?
-        var activeErrorPresentationID: UUID?
-        var didPurchaseOrRestoreAccess = false
-        var hasTerminalError = false
+}
 
-        init(
-            params: PaywallPresentationParams,
-            completion: @escaping PaywallPresentationCompletion,
-            initialActiveEntitlementIdentifiers: Set<String>?,
-            presentedViewController: PaywallViewController?
-        ) {
-            self.params = params
-            self.completion = completion
-            self.initialActiveEntitlementIdentifiers = initialActiveEntitlementIdentifiers
-            self.presentedViewController = presentedViewController
-        }
+@MainActor
+@available(iOS 15.0, macOS 12.0, *)
+private final class PresentationSession {
+    let params: PaywallPresentationParams
+    let completion: PaywallPresentationCompletion
+    let initialActiveEntitlementIdentifiers: Set<String>?
+    weak var presentedViewController: PaywallViewController?
+    var activeErrorPresentationID: UUID?
+    var didPurchaseOrRestoreAccess = false
+    var hasTerminalError = false
+
+    init(
+        params: PaywallPresentationParams,
+        completion: @escaping PaywallPresentationCompletion,
+        initialActiveEntitlementIdentifiers: Set<String>?,
+        presentedViewController: PaywallViewController?
+    ) {
+        self.params = params
+        self.completion = completion
+        self.initialActiveEntitlementIdentifiers = initialActiveEntitlementIdentifiers
+        self.presentedViewController = presentedViewController
     }
-
 }
 
 @MainActor
@@ -489,7 +521,38 @@ private final class DefaultPaywallPresenter: PaywallPresenter {
         params: PaywallPresentationParams,
         completion: @escaping PaywallPresentationCompletion
     ) {
-        completion(.failed)
+        Self.presentStartupError(
+            .presentationFailed,
+            params: params,
+            completion: completion
+        )
     }
 }
 #endif
+
+@MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension DefaultPaywallPresenter {
+
+    static func presentStartupError(
+        _ error: CheckpointError,
+        params: PaywallPresentationParams,
+        completion: @escaping PaywallPresentationCompletion
+    ) {
+        guard let handler = params.errorPresentationHandler else {
+            completion(.failed)
+            return
+        }
+
+        handler(
+            .init(
+                checkpointIdentifier: params.checkpointIdentifier,
+                error: error,
+                customVariables: params.customVariables,
+                kind: .flowCouldNotBeShown
+            ),
+            .init { completion(.failed) }
+        )
+    }
+
+}

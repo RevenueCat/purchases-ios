@@ -17,6 +17,8 @@ import Foundation
 
 enum CheckpointError: Error {
 
+    case invalidIdentifier(String)
+    case configurationUnavailable
     case operationAlreadyInProgress
     case noPresentationContext
     case presentationFailed
@@ -31,7 +33,7 @@ extension CheckpointError: CustomNSError {
 
     var errorCode: Int {
         switch self {
-        case .noPresentationContext, .presentationFailed:
+        case .invalidIdentifier, .configurationUnavailable, .noPresentationContext, .presentationFailed:
             return ErrorCode.configurationError.rawValue
         case .operationAlreadyInProgress:
             return ErrorCode.operationAlreadyInProgressForProductError.rawValue
@@ -44,6 +46,10 @@ extension CheckpointError: CustomNSError {
 
     private var errorDescription: String {
         switch self {
+        case let .invalidIdentifier(identifier):
+            return CheckpointIdentifierValidator.invalidIdentifierLogMessage(identifier)
+        case .configurationUnavailable:
+            return "Checkpoint configuration is unavailable."
         case .operationAlreadyInProgress:
             return "Another checkpoint UI is already being presented."
         case .noPresentationContext:

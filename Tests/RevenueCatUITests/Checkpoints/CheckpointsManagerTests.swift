@@ -182,6 +182,42 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(defaultCallCount, 0)
     }
 
+    // Completing one error presentation must not re-enter the next presenter inline.
+    func testErrorPresentationHandlersShareFIFOQueueAcrossCustomAndDefaultPresenters() async {
+        let manager = CheckpointsManager { _, _ in .noAction(.unknownCheckpoint) }
+        var presentationOrder: [String] = []
+        var customCompletion: ErrorPresentationCompletion?
+        let defaultPresented = self.expectation(description: "Default error presented")
+
+        let customHandler = manager.errorPresentationHandler(
+            for: .init(errorPresenter: { _, completion in
+                presentationOrder.append("custom")
+                customCompletion = completion
+            }),
+            defaultHandler: { XCTFail("Expected custom presenter"); return { _, _ in } }
+        )
+        let defaultHandler = manager.errorPresentationHandler(
+            for: .init(),
+            defaultHandler: {
+                return { _, _ in
+                    presentationOrder.append("default")
+                    defaultPresented.fulfill()
+                }
+            }
+        )
+
+        customHandler(Self.errorPresentationParams, Self.errorPresentationCompletion)
+        defaultHandler(Self.errorPresentationParams, Self.errorPresentationCompletion)
+
+        XCTAssertEqual(presentationOrder, ["custom"])
+
+        customCompletion?.complete()
+
+        XCTAssertEqual(presentationOrder, ["custom"])
+        await self.fulfillment(of: [defaultPresented], timeout: 1)
+        XCTAssertEqual(presentationOrder, ["custom", "default"])
+    }
+
     func testNoActionDoesNotPresentAnything() async throws {
         let manager = CheckpointsManager { _, _ in .noAction(.unknownCheckpoint) }
 
@@ -717,24 +753,50 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(customerInfoSynchronizerCallCount, 1)
     }
 
-    func testCustomerInfoSynchronizationFailureReturnsEmptyResult() async {
+    func testCustomerInfoSynchronizationFailurePresentsErrorThenReturnsEmptyResult() async {
         let expectedError = NSError(domain: "test", code: 42)
+        let errorPresented = self.expectation(description: "Error is presented")
+        var errorPresentationParams: ErrorPresentationParams?
+        var errorPresentationCompletion: ErrorPresentationCompletion?
+        var checkpointCompleted = false
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
             workflowPresenter: MockWorkflowPresenter(),
             customerInfoSynchronizer: { throw expectedError }
         )
 
-        let result = await manager.checkpointForCallback(
-            identifier: "onboarding",
-            params: .init(paywallPresenter: { _, completion in completion(.continued) })
-        )
+        let checkpoint = Task { @MainActor in
+            let result = await manager.checkpointForCallback(
+                identifier: "onboarding",
+                params: .init(
+                    paywallPresenter: { _, completion in completion(.continued) },
+                    errorPresenter: { params, completion in
+                        errorPresentationParams = params
+                        errorPresentationCompletion = completion
+                        errorPresented.fulfill()
+                    }
+                )
+            )
+            checkpointCompleted = true
+            return result
+        }
+
+        await self.fulfillment(of: [errorPresented], timeout: 1)
+        XCTAssertFalse(checkpointCompleted)
+        XCTAssertEqual(errorPresentationParams?.checkpointIdentifier, "onboarding")
+        XCTAssertEqual(errorPresentationParams?.error as NSError?, expectedError)
+        XCTAssertEqual(errorPresentationParams?.kind, .flowResultSyncFailed)
+
+        errorPresentationCompletion?.complete()
+        errorPresentationCompletion?.complete()
+        let result = await checkpoint.value
 
         guard case let .completed(flowResult) = result else {
             return XCTFail("Expected a completed callback")
         }
         XCTAssertNotNil(flowResult)
         XCTAssertTrue(flowResult?.obtainedEntitlements.isEmpty == true)
+        XCTAssertTrue(checkpointCompleted)
     }
 
     func testOnlyFirstPresenterCompletionSynchronizesCustomerInfo() async throws {
@@ -897,21 +959,66 @@ final class CheckpointsManagerTests: TestCase {
 
     }
 
-    func testPresentationErrorIsForwardedWithoutPresentedResult() async {
+    func testPresentationErrorIsPresentedAndReturnsFailed() async throws {
         let expectedError = NSError(domain: "test", code: 42)
+        let executor = MockWorkflowPresenter()
+        executor.error = expectedError
+        var presentedError: (any Error)?
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
+            workflowPresenter: executor
+        )
+
+        let outcome = try await manager.executeCheckpoint(
+            identifier: "soft_paywall",
+            params: .init(errorPresenter: { params, completion in
+                presentedError = params.error
+                completion.complete()
+            })
+        )
+
+        guard case .failed = outcome else {
+            return XCTFail("Expected a failed presentation outcome")
+        }
+        XCTAssertEqual(presentedError as NSError?, expectedError)
+    }
+
+    func testWorkflowStartupErrorKeepsPresentationSlotUntilErrorPresentationCompletes() async throws {
+        let expectedError = NSError(domain: "test", code: 42)
+        let errorPresented = self.expectation(description: "Error is presented")
+        var errorPresentationCompletion: ErrorPresentationCompletion?
         let executor = MockWorkflowPresenter()
         executor.error = expectedError
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
             workflowPresenter: executor
         )
+
+        let firstCheckpoint = Task {
+            await manager.checkpointForCallback(
+                identifier: "soft_paywall",
+                params: .init(errorPresenter: { _, completion in
+                    errorPresentationCompletion = completion
+                    errorPresented.fulfill()
+                })
+            )
+        }
+        await self.fulfillment(of: [errorPresented], timeout: 1)
+
         do {
             _ = try await manager.executeCheckpoint(identifier: "soft_paywall", params: .init())
-            XCTFail("Expected checkpoint to throw")
+            XCTFail("Expected the error presentation to keep owning the presentation slot")
         } catch {
-            XCTAssertEqual(error as NSError, expectedError)
+            XCTAssertEqual(
+                (error as NSError).code,
+                ErrorCode.operationAlreadyInProgressForProductError.rawValue
+            )
         }
 
+        errorPresentationCompletion?.complete()
+        guard case .suppressed = await firstCheckpoint.value else {
+            return XCTFail("Expected the failed presentation to suppress the callback")
+        }
     }
 
     func testValidCheckpointIdentifierReachesResolution() async throws {

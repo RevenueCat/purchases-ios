@@ -26,6 +26,7 @@ final class CheckpointsManager {
     private let resolveCheckpoint: (String, CheckpointCallParams) async throws -> CheckpointResolution
     private let cachedCustomerInfoProvider: CachedCustomerInfoProvider
     private let checkpointPresenter: CheckpointPresenterType
+    private let errorPresentationQueue = ErrorPresentationQueue()
     var paywallPresenter: PaywallPresenter?
     var errorPresenter: ErrorPresenter?
 
@@ -57,19 +58,46 @@ final class CheckpointsManager {
         defaultHandler makeDefaultHandler: @escaping () -> ErrorPresentationHandler
     ) -> ErrorPresentationHandler {
         if let localHandler = params.localErrorPresentationHandler {
-            return localHandler
+            return { [errorPresentationQueue] params, completion in
+                errorPresentationQueue.enqueue(
+                    params: params,
+                    handler: localHandler,
+                    completion: completion
+                )
+            }
         }
 
         var defaultHandler: ErrorPresentationHandler?
-        return { [weak self] params, completion in
+        return { [weak self, errorPresentationQueue] params, completion in
+            let handler: ErrorPresentationHandler
             if let globalPresenter = self?.errorPresenter {
-                globalPresenter.present(params: params, completion: completion)
+                handler = { params, completion in
+                    globalPresenter.present(params: params, completion: completion)
+                }
             } else {
-                let handler = defaultHandler ?? makeDefaultHandler()
-                defaultHandler = handler
-                handler(params, completion)
+                let resolvedDefaultHandler = defaultHandler ?? makeDefaultHandler()
+                defaultHandler = resolvedDefaultHandler
+                handler = resolvedDefaultHandler
             }
+
+            errorPresentationQueue.enqueue(
+                params: params,
+                handler: handler,
+                completion: completion
+            )
         }
+    }
+
+    private func errorPresentationHandler(for params: CheckpointCallParams) -> ErrorPresentationHandler {
+        return self.errorPresentationHandler(
+            for: params,
+            defaultHandler: {
+                let presenter = DefaultErrorPresenter()
+                return { params, completion in
+                    presenter.present(params: params, completion: completion)
+                }
+            }
+        )
     }
 
     func executeCheckpoint(
@@ -98,15 +126,7 @@ final class CheckpointsManager {
         resolution: CheckpointResolution,
         globalPaywallPresenter: PaywallPresenter?
     ) async throws -> CheckpointPresentationOutcome {
-        let errorPresentationHandler = self.errorPresentationHandler(
-            for: params,
-            defaultHandler: {
-                let presenter = DefaultErrorPresenter()
-                return { params, completion in
-                    presenter.present(params: params, completion: completion)
-                }
-            }
-        )
+        let errorPresentationHandler = self.errorPresentationHandler(for: params)
 
         switch resolution {
         case let .matchedWorkflow(workflow):
@@ -140,23 +160,56 @@ final class CheckpointsManager {
         identifier: String,
         params: CheckpointCallParams
     ) async -> CheckpointCallbackResult {
+        switch await self.checkpointOutcome(identifier: identifier, params: params) {
+        case let .completed(result):
+            return .completed(result)
+        case .suppressed:
+            return .suppressed
+        case let .failed(error):
+            await self.presentCheckpointError(
+                error,
+                identifier: identifier,
+                params: params,
+                kind: .flowCouldNotBeShown
+            )
+            return .suppressed
+        case let .synchronizationFailed(error):
+            await self.presentCheckpointError(
+                error,
+                identifier: identifier,
+                params: params,
+                kind: .flowResultSyncFailed
+            )
+            return .completed(FlowResult(obtainedEntitlements: []))
+        }
+    }
+
+    private func checkpointOutcome(
+        identifier: String,
+        params: CheckpointCallParams
+    ) async -> CheckpointOutcome {
         let initialActiveEntitlementIdentifiers = self.initialActiveEntitlementIdentifiers()
         let globalPaywallPresenter = self.paywallPresenter
 
         guard CheckpointIdentifierValidator.isValid(identifier) else {
             Logger.error(CheckpointIdentifierValidator.invalidIdentifierLogMessage(identifier))
-            return .suppressed
+            return .failed(CheckpointError.invalidIdentifier(identifier))
         }
 
         let resolution: CheckpointResolution
         do {
             resolution = try await self.resolveCheckpoint(identifier, params)
         } catch {
-            return .suppressed
+            return .failed(error)
         }
 
-        if let result = self.callbackResult(for: resolution) {
-            return result
+        switch resolution {
+        case .noAction(.configurationUnavailable):
+            return .failed(CheckpointError.configurationUnavailable)
+        case .noAction(.unknownCheckpoint), .noAction(.noMatch):
+            return .completed(nil)
+        case .matchedWorkflow, .matchedOffering:
+            break
         }
 
         do {
@@ -166,33 +219,41 @@ final class CheckpointsManager {
                 resolution: resolution,
                 globalPaywallPresenter: globalPaywallPresenter
             ) {
-            case .backedOut:
-                return .suppressed
             case let .completed(customerInfo):
                 return .completed(self.flowResult(
                     customerInfo: customerInfo,
                     initialActiveEntitlementIdentifiers: initialActiveEntitlementIdentifiers
                 ))
-            case .synchronizationFailed:
-                return .completed(FlowResult(obtainedEntitlements: []))
-            case .failed, .nothingPresented:
+            case let .synchronizationFailed(error):
+                return .synchronizationFailed(error)
+            case .backedOut, .failed, .nothingPresented:
                 return .suppressed
             }
         } catch CheckpointError.operationAlreadyInProgress {
             return .suppressed
         } catch {
-            return .suppressed
+            return .failed(error)
         }
     }
 
-    private func callbackResult(for resolution: CheckpointResolution) -> CheckpointCallbackResult? {
-        switch resolution {
-        case .noAction(.configurationUnavailable):
-            return .suppressed
-        case .noAction(.unknownCheckpoint), .noAction(.noMatch):
-            return .completed(nil)
-        case .matchedWorkflow, .matchedOffering:
-            return nil
+    private func presentCheckpointError(
+        _ error: any Error,
+        identifier: String,
+        params: CheckpointCallParams,
+        kind: CheckpointFailureKind
+    ) async {
+        let errorPresentationHandler = self.errorPresentationHandler(for: params)
+
+        await withCheckedContinuation { continuation in
+            errorPresentationHandler(
+                .init(
+                    checkpointIdentifier: identifier,
+                    error: error,
+                    customVariables: params.customVariables,
+                    kind: kind
+                ),
+                .init { continuation.resume() }
+            )
         }
     }
 
@@ -220,4 +281,12 @@ final class CheckpointsManager {
 enum CheckpointCallbackResult {
     case completed(FlowResult?)
     case suppressed
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private enum CheckpointOutcome {
+    case completed(FlowResult?)
+    case suppressed
+    case failed(any Error)
+    case synchronizationFailed(any Error)
 }
