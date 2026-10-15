@@ -204,6 +204,7 @@ final class NativePaywallUIKitOwner: NSObject, ObservableObject {
         self.isStandalone.map { $0 ? .standalone : .uiKit(self) }
     }
     private var items: [UIBarButtonItem] = []
+    private var originalSupplementBackButton: Bool?
     private var backAction: NativePaywallCloseCoordinator.CloseAction?
     private var closeAction: NativePaywallCloseCoordinator.CloseAction?
 
@@ -225,6 +226,8 @@ final class NativePaywallUIKitOwner: NSObject, ObservableObject {
         let close = actions.first { $0.role == .close && $0.isWorkflowClose }
             ?? actions.first { $0.role == .close }
         if let back {
+            self.originalSupplementBackButton = controller.navigationItem.leftItemsSupplementBackButton
+            controller.navigationItem.leftItemsSupplementBackButton = false
             self.backAction = back
             let item = UIBarButtonItem(
                 image: UIImage(systemName: "chevron.backward"), style: .plain,
@@ -267,6 +270,9 @@ final class NativePaywallUIKitOwner: NSObject, ObservableObject {
 
     func removeClose() {
         if let navigationItem = self.controller?.navigationItem {
+            if let originalSupplementBackButton {
+                navigationItem.leftItemsSupplementBackButton = originalSupplementBackButton
+            }
             for path in [\UINavigationItem.leftBarButtonItems, \UINavigationItem.rightBarButtonItems] {
                 guard let existing = navigationItem[keyPath: path],
                       existing.contains(where: { item in self.items.contains { $0 === item } }) else { continue }
@@ -275,6 +281,7 @@ final class NativePaywallUIKitOwner: NSObject, ObservableObject {
             }
         }
         self.items = []
+        self.originalSupplementBackButton = nil
         self.backAction = nil
         self.closeAction = nil
     }
