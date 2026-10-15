@@ -182,6 +182,35 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(defaultCallCount, 0)
     }
 
+    func testErrorPresentationHandlersShareFIFOQueueAcrossCustomAndDefaultPresenters() {
+        let manager = CheckpointsManager { _, _ in .noAction(.unknownCheckpoint) }
+        var presentationOrder: [String] = []
+        var customCompletion: ErrorPresentationCompletion?
+
+        let customHandler = manager.errorPresentationHandler(
+            for: .init(errorPresenter: { _, completion in
+                presentationOrder.append("custom")
+                customCompletion = completion
+            }),
+            defaultHandler: { XCTFail("Expected custom presenter"); return { _, _ in } }
+        )
+        let defaultHandler = manager.errorPresentationHandler(
+            for: .init(),
+            defaultHandler: {
+                return { _, _ in presentationOrder.append("default") }
+            }
+        )
+
+        customHandler(Self.errorPresentationParams, Self.errorPresentationCompletion)
+        defaultHandler(Self.errorPresentationParams, Self.errorPresentationCompletion)
+
+        XCTAssertEqual(presentationOrder, ["custom"])
+
+        customCompletion?.complete()
+
+        XCTAssertEqual(presentationOrder, ["custom", "default"])
+    }
+
     func testNoActionDoesNotPresentAnything() async throws {
         let manager = CheckpointsManager { _, _ in .noAction(.unknownCheckpoint) }
 

@@ -26,6 +26,7 @@ final class CheckpointsManager {
     private let resolveCheckpoint: (String, CheckpointCallParams) async throws -> CheckpointResolution
     private let cachedCustomerInfoProvider: CachedCustomerInfoProvider
     private let checkpointPresenter: CheckpointPresenterType
+    private let errorPresentationQueue = ErrorPresentationQueue()
     var paywallPresenter: PaywallPresenter?
     var errorPresenter: ErrorPresenter?
 
@@ -57,18 +58,33 @@ final class CheckpointsManager {
         defaultHandler makeDefaultHandler: @escaping () -> ErrorPresentationHandler
     ) -> ErrorPresentationHandler {
         if let localHandler = params.localErrorPresentationHandler {
-            return localHandler
+            return { [errorPresentationQueue] params, completion in
+                errorPresentationQueue.enqueue(
+                    params: params,
+                    handler: localHandler,
+                    completion: completion
+                )
+            }
         }
 
         var defaultHandler: ErrorPresentationHandler?
-        return { [weak self] params, completion in
+        return { [weak self, errorPresentationQueue] params, completion in
+            let handler: ErrorPresentationHandler
             if let globalPresenter = self?.errorPresenter {
-                globalPresenter.present(params: params, completion: completion)
+                handler = { params, completion in
+                    globalPresenter.present(params: params, completion: completion)
+                }
             } else {
-                let handler = defaultHandler ?? makeDefaultHandler()
-                defaultHandler = handler
-                handler(params, completion)
+                let resolvedDefaultHandler = defaultHandler ?? makeDefaultHandler()
+                defaultHandler = resolvedDefaultHandler
+                handler = resolvedDefaultHandler
             }
+
+            errorPresentationQueue.enqueue(
+                params: params,
+                handler: handler,
+                completion: completion
+            )
         }
     }
 
