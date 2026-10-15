@@ -529,6 +529,7 @@ private extension UIView {
 
 }
 
+@available(iOS 15.0, *)
 private struct NativeHeaderVisibilityTestView<Content: View>: View {
     @ObservedObject var state: NativeRegistrationTestState
     let content: Content
