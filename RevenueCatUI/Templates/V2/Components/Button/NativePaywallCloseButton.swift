@@ -189,4 +189,39 @@ extension EnvironmentValues {
     }
 }
 
+#if os(iOS)
+/// Observes attachment from an actual native control without allocating a separate toolbar item.
+@available(iOS 15.0, *)
+struct NativePaywallNavigationDetection: UIViewRepresentable {
+    let detected: (UUID, Bool) -> Void
+    func makeUIView(context: Context) -> NativePaywallToolbarProbe {
+        NativePaywallToolbarProbe(detected: self.detected)
+    }
+    func updateUIView(_ view: NativePaywallToolbarProbe, context: Context) { view.detected = self.detected }
+}
+
+@available(iOS 15.0, *)
+final class NativePaywallToolbarProbe: UIView {
+    private let identifier = UUID()
+    var detected: (UUID, Bool) -> Void
+    init(detected: @escaping (UUID, Bool) -> Void) {
+        self.detected = detected
+        super.init(frame: .zero)
+        self.isAccessibilityElement = false
+    }
+    required init?(coder: NSCoder) { nil }
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        let available = self.window != nil
+        let identifier = self.identifier
+        let detected = self.detected
+        DispatchQueue.main.async { [weak self] in
+            // Detachment must clear the ID even when the removed view was already deallocated.
+            guard !available || self?.window != nil else { return }
+            detected(identifier, available)
+        }
+    }
+}
+#endif
+
 #endif
