@@ -91,7 +91,12 @@ struct FixturePaywallView: View {
             offering: self.fixture.offering,
             introEligibility: Self.eligibility,
             simulatePromoEligible: true,
-            performPurchase: { _ in (userCancelled: true, error: nil) },
+            performPurchase: { _ in
+                if PaymentSheetStandIn.isRequested {
+                    await PaymentSheetStandIn.presentUntilBackgrounded()
+                }
+                return (userCancelled: true, error: nil)
+            },
             performRestore: { (success: false, error: nil) }
         )
         .environment(\.voiceOverEnabledOverride, self.pretendsVoiceOverIsRunning)

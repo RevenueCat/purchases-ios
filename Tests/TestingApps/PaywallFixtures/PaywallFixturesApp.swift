@@ -24,7 +24,16 @@ struct PaywallFixturesApp: App {
     /// deliberately not a real one: offerings and customer info come from the fixture, purchases are
     /// stubbed, so no request needs to succeed and no secret belongs in this app.
     init() {
-        Purchases.configure(withAPIKey: "appl_paywallFixtures")
+        if PaymentSheetStandIn.isRequested {
+            // `performPurchase` only runs when the app completes purchases itself.
+            Purchases.configure(
+                with: .builder(withAPIKey: "appl_paywallFixtures")
+                    .with(purchasesAreCompletedBy: .myApp, storeKitVersion: .storeKit2)
+                    .build()
+            )
+        } else {
+            Purchases.configure(withAPIKey: "appl_paywallFixtures")
+        }
     }
 
     var body: some Scene {

@@ -259,6 +259,10 @@ public struct PaywallView: View {
     // swiftlint:disable:next missing_docs
     public var body: some View {
         self.content
+            // A paywall has no text input, so a keyboard over it belongs to someone else, like the
+            // App Store payment sheet. If the device locks over that sheet, the keyboard goes away
+            // without the paywall hearing of it and the layout stays shifted up (#7864).
+            .applyIf(self.mode.isFullScreen) { $0.ignoresSafeArea(.keyboard) }
             .environment(\.asyncButtonDisplaysErrors, self.displaysPurchaseAndRestoreErrors)
             .displayError(self.$error) {
                 guard let onRequestedDismissal = self.onRequestedDismissal else {
