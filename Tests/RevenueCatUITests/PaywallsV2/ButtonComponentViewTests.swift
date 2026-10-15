@@ -1070,7 +1070,13 @@ private extension ButtonComponentViewTests {
             rootView: view
                 .frame(width: 300, height: 200)
         )
-        let window = UIWindow(frame: CGRect(origin: .zero, size: CGSize(width: 300, height: 200)))
+        let window: UIWindow
+        if let scene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first {
+            window = UIWindow(windowScene: scene)
+            window.frame = CGRect(origin: .zero, size: CGSize(width: 300, height: 200))
+        } else {
+            window = UIWindow(frame: CGRect(origin: .zero, size: CGSize(width: 300, height: 200)))
+        }
         window.rootViewController = controller
         window.makeKeyAndVisible()
         controller.view.layoutIfNeeded()
