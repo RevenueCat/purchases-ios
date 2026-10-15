@@ -1,0 +1,40 @@
+# The same real Flow purchase failure is routed to the E2E app's custom checkpoint error presenter.
+
+appId: com.revenuecat.maestro.ios
+name: Injected purchase failure passes action context to the custom checkpoint error presenter
+env:
+  MAESTRO_STORE: test_store
+
+---
+- clearState
+- pressKey: home
+- launchApp:
+    arguments:
+      e2e_test_flow: checkpoint_purchase_failure_custom_error_presenter
+      maestro_store: test_store
+- extendedWaitUntil:
+    visible: "Using custom error presenter"
+    timeout: 15000
+- tapOn: "Hit checkpoint"
+
+- extendedWaitUntil:
+    visible: "Test Store purchase Flow"
+    timeout: 20000
+- tapOn: "Test purchase"
+
+- extendedWaitUntil:
+    visible: "Custom error presenter: flowActionFailed"
+    timeout: 15000
+- assertVisible: ".*Checkpoint: maestro_checkpoint.*"
+- assertVisible: ".*Purchase failure simulated successfully in Test Store.*"
+- takeScreenshot: "checkpoint_purchase_failure_custom_error_presenter - context"
+- tapOn: "Dismiss custom error"
+
+- assertVisible: "Test Store purchase Flow"
+- swipe:
+    start: "50%,10%"
+    end: "50%,90%"
+    duration: 600
+- extendedWaitUntil:
+    visible: "Callback: none (call #1)"
+    timeout: 15000

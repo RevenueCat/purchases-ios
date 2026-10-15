@@ -20,6 +20,14 @@ import Foundation
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
 import UIKit
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+enum WorkflowPresentationUpdate {
+    case outcome(CheckpointPresentationOutcome)
+    case recoverableErrorHandled
+    case workflowPresentationError(NSError)
+    case dismissalReason(WorkflowDismissalReason)
+}
+
 /// Presents resolved checkpoint workflows using RevenueCatUI.
 ///
 /// Purchase, restore, and error outcomes are staged as they occur and delivered
@@ -30,13 +38,6 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
 
     typealias PresentationStarter = (WorkflowPresentationRequest) throws -> Bool
     private typealias Continuation = CheckedContinuation<CheckpointPresentationOutcome, Error>
-
-    enum PresentationUpdate {
-        case outcome(CheckpointPresentationOutcome)
-        case recoverableErrorHandled
-        case workflowPresentationError(NSError)
-        case dismissalReason(WorkflowDismissalReason)
-    }
 
     private enum WorkflowOutcomeState {
         case none
@@ -69,7 +70,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         var outcomeState: WorkflowOutcomeState = .none
         var dismissalReason: WorkflowDismissalReason = .close
 
-        mutating func record(_ update: PresentationUpdate) -> Bool {
+        mutating func record(_ update: WorkflowPresentationUpdate) -> Bool {
             switch update {
             case let .outcome(outcome):
                 guard !self.outcomeState.outcome.hasCustomerInfo || outcome.hasCustomerInfo else { return false }
@@ -100,13 +101,21 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
     }
 
     private let presentationStarter: PresentationStarter?
+    private let performPurchase: PerformPurchase?
+    private let performRestore: PerformRestore?
     private var presentationState: PresentationState?
     private var pendingContinuation: Continuation?
     private weak var presentedViewController: PaywallViewController?
     private var activeErrorPresentation: ActiveErrorPresentation?
 
-    init(presentationStarter: PresentationStarter? = nil) {
+    init(
+        presentationStarter: PresentationStarter? = nil,
+        performPurchase: PerformPurchase? = nil,
+        performRestore: PerformRestore? = nil
+    ) {
         self.presentationStarter = presentationStarter
+        self.performPurchase = performPurchase
+        self.performRestore = performRestore
         super.init()
     }
 
@@ -153,7 +162,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
     }
 
     @discardableResult
-    func stage(_ update: PresentationUpdate) -> Bool {
+    func stage(_ update: WorkflowPresentationUpdate) -> Bool {
         return self.presentationState?.record(update) == true
     }
 
@@ -278,6 +287,8 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         let viewController = PaywallViewController(
             workflowContext: workflowContext,
             displayCloseButton: true,
+            performPurchase: self.performPurchase,
+            performRestore: self.performRestore,
             workflowPresentationErrorHandler: { [weak self] error, behavior in
                 guard let self else { return }
                 switch behavior {

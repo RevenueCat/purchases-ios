@@ -41,10 +41,10 @@ struct RcMaestroApp: App {
         }
 
         let forceServerErrorStrategy = Constants.forceServerErrorStrategy
-        Purchases.configure(
-            with: .builder(withAPIKey: Constants.apiKey)
-                .with(appUserID: Constants.appUserID)
-                .with(dangerousSettings: .init(
+        var configuration = Configuration.builder(withAPIKey: Constants.apiKey)
+            .with(appUserID: Constants.appUserID)
+            .with(preferredUILocaleOverride: Constants.preferredUILocale)
+            .with(dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(
                         forceServerErrorStrategy: .init { request in
@@ -71,8 +71,13 @@ struct RcMaestroApp: App {
                         }
                     )
                 ))
-                .build()
-        )
+        if Self.usesInjectedPurchaseFailure {
+            configuration = configuration.with(
+                purchasesAreCompletedBy: .myApp,
+                storeKitVersion: .default
+            )
+        }
+        Purchases.configure(with: configuration.build())
     }
 
     var body: some Scene {
@@ -105,6 +110,12 @@ struct RcMaestroApp: App {
             UserDefaults.standard.bool(forKey: "maestro_storekit_warmup")
     }
     #endif
+
+    private static var usesInjectedPurchaseFailure: Bool {
+        guard let flow = UserDefaults.standard.string(forKey: "e2e_test_flow") else { return false }
+        return flow == E2ETestFlow.checkpointPurchaseFailure.rawValue ||
+            flow == E2ETestFlow.checkpointPurchaseFailureCustomErrorPresenter.rawValue
+    }
     
     /*
      Parses the launch argument with the e2e test flow to run
@@ -147,6 +158,27 @@ enum E2ETestFlow: String {
     case openWorkflowUIKit = "open_workflow_uikit"
     case openDefaultPackageVisibility = "open_default_package_visibility"
     case openDeveloperProvidedOffering = "open_developer_provided_offering"
+    case checkpointInvalidIdentifier = "checkpoint_invalid_identifier"
+    case checkpointInvalidIdentifierCustomErrorPresenter = "checkpoint_invalid_identifier_custom_error_presenter"
+    case checkpointResolutionFailure = "checkpoint_resolution_failure"
+    case checkpointResolutionFailureCustomErrorPresenter = "checkpoint_resolution_failure_custom_error_presenter"
+    case checkpointConfigurationUnavailable = "checkpoint_configuration_unavailable"
+    case checkpointConfigurationUnavailableCustomErrorPresenter =
+        "checkpoint_configuration_unavailable_custom_error_presenter"
+    case checkpointInitialScreenFailure = "checkpoint_initial_screen_failure"
+    case checkpointInitialScreenFailureCustomErrorPresenter =
+        "checkpoint_initial_screen_failure_custom_error_presenter"
+    case checkpointSecondScreenFailure = "checkpoint_second_screen_failure"
+    case checkpointSecondScreenFailureCustomErrorPresenter = "checkpoint_second_screen_failure_custom_error_presenter"
+    case checkpointPurchaseFailure = "checkpoint_purchase_failure"
+    case checkpointPurchaseFailureCustomErrorPresenter = "checkpoint_purchase_failure_custom_error_presenter"
+    case checkpointResultSyncFailure = "checkpoint_result_sync_failure"
+    case checkpointResultSyncFailureCustomErrorPresenter = "checkpoint_result_sync_failure_custom_error_presenter"
+    case checkpointSuccessfulWorkflow = "checkpoint_successful_workflow"
+    case checkpointNoMatch = "checkpoint_no_match"
+    case checkpointInitialScreenFailureJapanese = "checkpoint_initial_screen_failure_japanese"
+    case checkpointSecondScreenFailureSpanish = "checkpoint_second_screen_failure_spanish"
+    case checkpointPublished = "checkpoint_published"
 
     @ViewBuilder
     var view: some View {
@@ -167,6 +199,44 @@ enum E2ETestFlow: String {
             E2ETestFlowView.OpenDefaultPackageVisibility()
         case .openDeveloperProvidedOffering:
             E2ETestFlowView.OpenDeveloperProvidedOffering()
+        case .checkpointInvalidIdentifier:
+            E2ETestFlowView.CheckpointInvalidIdentifier()
+        case .checkpointInvalidIdentifierCustomErrorPresenter:
+            E2ETestFlowView.CheckpointInvalidIdentifierCustomErrorPresenter()
+        case .checkpointResolutionFailure:
+            E2ETestFlowView.CheckpointResolutionFailure()
+        case .checkpointResolutionFailureCustomErrorPresenter:
+            E2ETestFlowView.CheckpointResolutionFailureCustomErrorPresenter()
+        case .checkpointConfigurationUnavailable:
+            E2ETestFlowView.CheckpointConfigurationUnavailable()
+        case .checkpointConfigurationUnavailableCustomErrorPresenter:
+            E2ETestFlowView.CheckpointConfigurationUnavailableCustomErrorPresenter()
+        case .checkpointInitialScreenFailure:
+            E2ETestFlowView.CheckpointInitialScreenFailure()
+        case .checkpointInitialScreenFailureCustomErrorPresenter:
+            E2ETestFlowView.CheckpointInitialScreenFailureCustomErrorPresenter()
+        case .checkpointSecondScreenFailure:
+            E2ETestFlowView.CheckpointSecondScreenFailure()
+        case .checkpointSecondScreenFailureCustomErrorPresenter:
+            E2ETestFlowView.CheckpointSecondScreenFailureCustomErrorPresenter()
+        case .checkpointPurchaseFailure:
+            E2ETestFlowView.CheckpointPurchaseFailure()
+        case .checkpointPurchaseFailureCustomErrorPresenter:
+            E2ETestFlowView.CheckpointPurchaseFailureCustomErrorPresenter()
+        case .checkpointResultSyncFailure:
+            E2ETestFlowView.CheckpointResultSyncFailure()
+        case .checkpointResultSyncFailureCustomErrorPresenter:
+            E2ETestFlowView.CheckpointResultSyncFailureCustomErrorPresenter()
+        case .checkpointSuccessfulWorkflow:
+            E2ETestFlowView.CheckpointSuccessfulWorkflow()
+        case .checkpointNoMatch:
+            E2ETestFlowView.CheckpointNoMatch()
+        case .checkpointInitialScreenFailureJapanese:
+            E2ETestFlowView.CheckpointInitialScreenFailureJapanese()
+        case .checkpointSecondScreenFailureSpanish:
+            E2ETestFlowView.CheckpointSecondScreenFailureSpanish()
+        case .checkpointPublished:
+            E2ETestFlowView.CheckpointPublished()
         }
     }
 }

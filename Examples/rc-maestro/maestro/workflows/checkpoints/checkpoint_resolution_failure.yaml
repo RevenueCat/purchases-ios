@@ -1,0 +1,31 @@
+# The native resolver throws before a Flow is selected. The SDK presents the error and suppresses the callback.
+
+appId: com.revenuecat.maestro.ios
+name: Checkpoint resolution failure shows an error and does not invoke its callback
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+- pressKey: home
+- launchApp:
+    arguments:
+      e2e_test_flow: checkpoint_resolution_failure
+- extendedWaitUntil:
+    visible: "Hit checkpoint"
+    timeout: 15000
+- tapOn:
+    text: "Hit checkpoint"
+
+- extendedWaitUntil:
+    visible: "This content couldn't be loaded. Please try again later."
+    timeout: 15000
+- takeScreenshot: "checkpoint_resolution_failure - error"
+- tapOn:
+    text: "OK"
+
+- extendedWaitUntil:
+    visible: "Callback: not invoked"
+    timeout: 15000
+- waitForAnimationToEnd
+- assertNotVisible: ".*call #.*"

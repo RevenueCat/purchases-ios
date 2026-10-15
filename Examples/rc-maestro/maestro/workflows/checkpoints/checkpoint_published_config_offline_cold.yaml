@@ -1,0 +1,33 @@
+# The real published checkpoint cannot resolve while its configuration endpoint is unavailable on a cold cache.
+# This exercises the production resolver rather than the injected checkpoint harness.
+
+appId: com.revenuecat.maestro.ios
+name: Published checkpoint with cold offline configuration shows an error and does not invoke its callback
+tags:
+  - debug-only
+env:
+  MAESTRO_STORE: test_store
+
+---
+- clearState
+- pressKey: home
+- launchApp:
+    arguments:
+      e2e_test_flow: checkpoint_published
+      checkpoint_identifier: donottouch_sdk_everyone
+      app_user_id: "maestro-checkpoint-${Date.now()}"
+      force_server_error_strategy: remote_config_network_error
+- extendedWaitUntil:
+    visible: "Hit checkpoint"
+    timeout: 20000
+- tapOn: "Hit checkpoint"
+
+- extendedWaitUntil:
+    visible: "This content couldn't be loaded. Please try again later."
+    timeout: 20000
+- takeScreenshot: "checkpoint_published_config_offline_cold - error"
+- tapOn: "OK"
+
+- waitForAnimationToEnd
+- assertVisible: "Callback: not invoked"
+- assertNotVisible: ".*call #.*"

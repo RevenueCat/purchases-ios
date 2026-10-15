@@ -1,0 +1,47 @@
+# A checkpoint resolves successfully and presents the first screen of its Flow. The native E2E fixture makes the
+# second step reference a missing screen. Navigating forward must present the checkpoint error and suppress the
+# checkpoint callback.
+#
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store \
+#     Examples/rc-maestro/maestro/workflows/checkpoints/checkpoint_second_screen_failure.yaml
+
+appId: com.revenuecat.maestro.ios
+name: Checkpoint presents an error when the second Flow screen fails to load
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+- pressKey: home
+- launchApp:
+    arguments:
+      e2e_test_flow: checkpoint_second_screen_failure
+- extendedWaitUntil:
+    visible: "Hit checkpoint"
+    timeout: 15000
+- assertVisible: "Callback: not invoked"
+- tapOn:
+    text: "Hit checkpoint"
+
+- extendedWaitUntil:
+    visible: "First screen loaded"
+    timeout: 20000
+- tapOn:
+    text: "Continue"
+
+- extendedWaitUntil:
+    visible: "Something went wrong. Please try again."
+    timeout: 15000
+- takeScreenshot: "checkpoint_second_screen_failure - error"
+- tapOn:
+    text: "OK"
+
+- assertVisible: "First screen loaded"
+- swipe:
+    start: "50%,10%"
+    end: "50%,90%"
+    duration: 600
+- extendedWaitUntil:
+    visible: "Callback: none (call #1)"
+    timeout: 15000

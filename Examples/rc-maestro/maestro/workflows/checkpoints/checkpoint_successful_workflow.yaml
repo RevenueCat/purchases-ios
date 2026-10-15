@@ -1,0 +1,32 @@
+# A checkpoint resolves to and presents a real Workflow. Closing it normally invokes the callback exactly once with
+# an empty result.
+
+appId: com.revenuecat.maestro.ios
+name: Successful matched Workflow closes and invokes its callback once
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+- pressKey: home
+- launchApp:
+    arguments:
+      e2e_test_flow: checkpoint_successful_workflow
+- extendedWaitUntil:
+    visible: "Hit checkpoint"
+    timeout: 15000
+- tapOn: "Hit checkpoint"
+
+- extendedWaitUntil:
+    visible: "First screen loaded"
+    timeout: 20000
+- takeScreenshot: "checkpoint_successful_workflow - presented"
+- swipe:
+    start: "50%,10%"
+    end: "50%,90%"
+    duration: 600
+
+- extendedWaitUntil:
+    visible: "Callback: none (call #1)"
+    timeout: 15000
+- assertNotVisible: ".*call #2.*"
