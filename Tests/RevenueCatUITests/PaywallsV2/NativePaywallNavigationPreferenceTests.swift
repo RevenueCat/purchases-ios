@@ -20,6 +20,22 @@ import UIKit
 @MainActor
 final class NativePaywallNavigationPreferenceTests: TestCase {
 
+    func testCoordinatorRefreshesActionWithoutChangingRegistrationMetadata() async throws {
+        let coordinator = NativePaywallCloseCoordinator()
+        let id = UUID()
+        var performed = 0
+        coordinator.register(id: id, label: "Close", action: { performed = 1 })
+        let installed = try XCTUnwrap(coordinator.action(for: .close))
+        coordinator.register(id: id, label: "Close", action: { performed = 2 })
+        try await installed.perform()
+        XCTAssertEqual(performed, 2, "Already installed UIKit and SwiftUI actions must use the current callback")
+        XCTAssertEqual(coordinator.actions.count, 1)
+        coordinator.unregister(id: id)
+        performed = 0
+        try await installed.perform()
+        XCTAssertEqual(performed, 0, "Removed actions must not retain their callback")
+    }
+
     func testCoordinatorRejectsDisabledAndInactiveActions() async throws {
         let coordinator = NativePaywallCloseCoordinator()
         let id = UUID()
