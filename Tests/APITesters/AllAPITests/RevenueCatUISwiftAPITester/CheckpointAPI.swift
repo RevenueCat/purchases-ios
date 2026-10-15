@@ -81,13 +81,13 @@ private func checkErrorPresentationAPI(_ purchases: Purchases) {
         let _: String = params.checkpointIdentifier
         let _: any Error = params.error
         let _: [String: CustomVariableValue] = params.customVariables
-        let _: ErrorPresentationStage = params.stage
+        let _: CheckpointFailureKind = params.kind
         completion.complete()
     }
 
-    let _: ErrorPresentationStage = .beforeFlowPresentation
-    let _: ErrorPresentationStage = .duringFlowPresentation
-    let _: ErrorPresentationStage = .afterFlowPresentation
+    let _: CheckpointFailureKind = .flowCouldNotBeShown
+    let _: CheckpointFailureKind = .flowActionFailed
+    let _: CheckpointFailureKind = .flowResultSyncFailed
     let _: ErrorPresentationHandler = presenter
     purchases.checkpoint("test_checkpoint", errorPresenter: presenter) { _ in }
 }

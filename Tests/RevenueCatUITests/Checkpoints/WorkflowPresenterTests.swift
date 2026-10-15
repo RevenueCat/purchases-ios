@@ -59,7 +59,7 @@ final class WorkflowPresenterTests: TestCase {
         XCTAssertEqual(receivedParams?.checkpointIdentifier, "test_checkpoint")
         XCTAssertEqual(receivedParams?.customVariables, ["source": "test"])
         XCTAssertEqual(receivedParams?.error as NSError?, error)
-        XCTAssertEqual(receivedParams?.stage, .duringFlowPresentation)
+        XCTAssertEqual(receivedParams?.kind, .flowActionFailed)
     }
 
     func testCompletionAfterWorkflowPresentationErrorTerminatesDuringFlow() throws {
@@ -101,7 +101,7 @@ final class WorkflowPresenterTests: TestCase {
         presenter.paywallViewController(viewController, didFailPurchasingWith: purchaseError)
         presenter.paywallViewController(viewController, didFailRestoringWith: purchaseError)
 
-        XCTAssertEqual(presentedErrors.map(\.stage), [.duringFlowPresentation])
+        XCTAssertEqual(presentedErrors.map(\.kind), [.flowActionFailed])
         try XCTUnwrap(completions.first).complete()
         guard case .completed(nil)? = presenter.presentationDidDismiss() else {
             return XCTFail("Expected the terminal error completion to remain active")
@@ -126,7 +126,7 @@ final class WorkflowPresenterTests: TestCase {
         XCTAssertEqual(receivedParams?.checkpointIdentifier, "test_checkpoint")
         XCTAssertEqual(receivedParams?.customVariables, ["source": "test"])
         XCTAssertEqual(receivedParams?.error as NSError?, error)
-        XCTAssertEqual(receivedParams?.stage, .duringFlowPresentation)
+        XCTAssertEqual(receivedParams?.kind, .flowActionFailed)
     }
 
     func testPurchaseErrorIsRoutedAfterRestoreWithoutNewEntitlements() throws {
@@ -145,7 +145,7 @@ final class WorkflowPresenterTests: TestCase {
         presenter.paywallViewController(controller, didFailPurchasingWith: error)
 
         XCTAssertEqual(receivedParams?.error as NSError?, error)
-        XCTAssertEqual(receivedParams?.stage, .duringFlowPresentation)
+        XCTAssertEqual(receivedParams?.kind, .flowActionFailed)
         guard case .failed? = presenter.presentationDidDismiss() else {
             return XCTFail("Expected the purchase failure outcome")
         }
@@ -221,7 +221,7 @@ final class WorkflowPresenterTests: TestCase {
             NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
         )
 
-        XCTAssertEqual(presentedErrors.map(\.stage), [.duringFlowPresentation, .duringFlowPresentation])
+        XCTAssertEqual(presentedErrors.map(\.kind), [.flowActionFailed, .flowActionFailed])
         XCTAssertEqual(completions.count, 2)
         try XCTUnwrap(completions.last).complete()
 
@@ -769,7 +769,7 @@ final class DefaultPaywallPresenterTests: TestCase {
         XCTAssertEqual(receivedParams?.checkpointIdentifier, "test_checkpoint")
         XCTAssertEqual(receivedParams?.customVariables, ["source": "test"])
         XCTAssertEqual(receivedParams?.error as NSError?, error)
-        XCTAssertEqual(receivedParams?.stage, .duringFlowPresentation)
+        XCTAssertEqual(receivedParams?.kind, .flowActionFailed)
     }
 
     func testPurchaseCancellationIsNotRoutedToErrorPresenter() {

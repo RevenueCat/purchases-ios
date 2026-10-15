@@ -213,7 +213,7 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
             workflowPresentationErrorHandler: { [weak self] error in
                 self?.presentError(
                     error,
-                    stage: .duringFlowPresentation,
+                    kind: .flowActionFailed,
                     onCompletion: { [weak self] in
                         self?.session?.presentedViewController?.continueAfterCheckpointError()
                     }
@@ -259,7 +259,7 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
 
     private func presentError(
         _ error: any Error,
-        stage: ErrorPresentationStage,
+        kind: CheckpointFailureKind,
         onCompletion: (@MainActor () -> Void)? = nil
     ) {
         guard let session = self.session,
@@ -271,7 +271,7 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
                 checkpointIdentifier: session.params.checkpointIdentifier,
                 error: error,
                 customVariables: session.params.customVariables,
-                stage: stage
+                kind: kind
             ),
             .init { [weak self] in
                 self?.handleErrorPresentationResult(
@@ -357,7 +357,7 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
             guard !error.isPurchaseCancellation else { return }
             self.presentError(
                 error,
-                stage: .duringFlowPresentation
+                kind: .flowActionFailed
             )
         }
     }
@@ -369,7 +369,7 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         MainActor.assumeIsolated {
             self.presentError(
                 error,
-                stage: .duringFlowPresentation
+                kind: .flowActionFailed
             )
         }
     }
@@ -401,7 +401,7 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         guard !error.isPurchaseCancellation else { return }
         self.presentError(
             error,
-            stage: .duringFlowPresentation
+            kind: .flowActionFailed
         )
     }
 
@@ -411,7 +411,7 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
     ) {
         self.presentError(
             error,
-            stage: .duringFlowPresentation
+            kind: .flowActionFailed
         )
     }
     #endif

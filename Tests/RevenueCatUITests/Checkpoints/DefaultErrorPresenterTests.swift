@@ -43,7 +43,7 @@ final class DefaultErrorPresenterTests: TestCase {
                 checkpointIdentifier: "test_checkpoint",
                 error: error,
                 customVariables: [:],
-                stage: .duringFlowPresentation
+                kind: .flowActionFailed
             ),
             completion: harness.completion
         )
@@ -54,7 +54,7 @@ final class DefaultErrorPresenterTests: TestCase {
     func testRecoverableErrorAcknowledgementCompletes() {
         let harness = Harness()
         harness.presenter.present(
-            params: Self.params(stage: .duringFlowPresentation),
+            params: Self.params(kind: .flowActionFailed),
             completion: harness.completion
         )
 
@@ -66,7 +66,7 @@ final class DefaultErrorPresenterTests: TestCase {
     func testTerminalErrorAcknowledgementContinues() {
         let harness = Harness()
         harness.presenter.present(
-            params: Self.params(stage: .beforeFlowPresentation),
+            params: Self.params(kind: .flowCouldNotBeShown),
             completion: harness.completion
         )
 
@@ -93,7 +93,7 @@ final class DefaultErrorPresenterTests: TestCase {
         let staleAcknowledgement = harness.acknowledgement
 
         harness.presenter.present(
-            params: Self.params(stage: .beforeFlowPresentation),
+            params: Self.params(kind: .flowCouldNotBeShown),
             completion: .init { secondCompletionCount += 1 }
         )
 
@@ -118,7 +118,7 @@ final class DefaultErrorPresenterTests: TestCase {
             completion: .init { secondCompletionCount += 1 }
         )
         harness.presenter.present(
-            params: Self.params(message: "third", stage: .beforeFlowPresentation),
+            params: Self.params(message: "third", kind: .flowCouldNotBeShown),
             completion: .init { thirdCompletionCount += 1 }
         )
 
@@ -145,11 +145,11 @@ final class DefaultErrorPresenterTests: TestCase {
         let presenter = DefaultErrorPresenter(presentationContextProvider: { nil })
 
         presenter.present(
-            params: Self.params(stage: .duringFlowPresentation),
+            params: Self.params(kind: .flowActionFailed),
             completion: .init { recoverableCompletionCount += 1 }
         )
         presenter.present(
-            params: Self.params(stage: .beforeFlowPresentation),
+            params: Self.params(kind: .flowCouldNotBeShown),
             completion: .init { terminalCompletionCount += 1 }
         )
 
@@ -159,7 +159,7 @@ final class DefaultErrorPresenterTests: TestCase {
 
     private static func params(
         message: String = "boom",
-        stage: ErrorPresentationStage = .duringFlowPresentation
+        kind: CheckpointFailureKind = .flowActionFailed
     ) -> ErrorPresentationParams {
         return .init(
             checkpointIdentifier: "test_checkpoint",
@@ -169,7 +169,7 @@ final class DefaultErrorPresenterTests: TestCase {
                 userInfo: [NSLocalizedDescriptionKey: message]
             ),
             customVariables: [:],
-            stage: stage
+            kind: kind
         )
     }
 

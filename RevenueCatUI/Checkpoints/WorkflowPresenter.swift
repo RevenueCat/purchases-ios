@@ -159,7 +159,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
 
     private func presentError(
         _ error: any Error,
-        stage: ErrorPresentationStage,
+        kind: CheckpointFailureKind,
         onCompletion: (@MainActor () -> Void)? = nil
     ) {
         guard let state = self.presentationState else { return }
@@ -170,7 +170,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
                 checkpointIdentifier: state.checkpointIdentifier,
                 error: error,
                 customVariables: state.customVariables,
-                stage: stage
+                kind: kind
             ),
             .init { [weak self] in
                 self?.handleErrorPresentationResult(
@@ -277,7 +277,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
                 guard let self, self.stage(.workflowPresentationError(error)) else { return }
                 self.presentError(
                     error,
-                    stage: .duringFlowPresentation,
+                    kind: .flowActionFailed,
                     onCompletion: { [weak self] in
                         self?.stage(.outcome(.completed(customerInfo: nil)))
                         self?.presentedViewController?.continueAfterCheckpointError()
@@ -330,7 +330,7 @@ extension WorkflowPresenter {
             guard self.stage(.outcome(.failed)) else { return }
             self.presentError(
                 error,
-                stage: .duringFlowPresentation,
+                kind: .flowActionFailed,
                 onCompletion: { [weak self] in self?.stage(.recoverableErrorHandled) }
             )
         }
@@ -345,7 +345,7 @@ extension WorkflowPresenter {
             guard self.stage(.outcome(.failed)) else { return }
             self.presentError(
                 error,
-                stage: .duringFlowPresentation,
+                kind: .flowActionFailed,
                 onCompletion: { [weak self] in self?.stage(.recoverableErrorHandled) }
             )
         }
@@ -391,7 +391,7 @@ extension WorkflowPresenter {
         guard self.stage(.outcome(.failed)) else { return }
         self.presentError(
             error,
-            stage: .duringFlowPresentation,
+            kind: .flowActionFailed,
             onCompletion: { [weak self] in self?.stage(.recoverableErrorHandled) }
         )
     }
@@ -404,7 +404,7 @@ extension WorkflowPresenter {
         guard self.stage(.outcome(.failed)) else { return }
         self.presentError(
             error,
-            stage: .duringFlowPresentation,
+            kind: .flowActionFailed,
             onCompletion: { [weak self] in self?.stage(.recoverableErrorHandled) }
         )
     }

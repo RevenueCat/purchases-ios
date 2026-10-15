@@ -54,19 +54,19 @@ public final class ErrorPresentationParams {
     /// The custom variables supplied to the checkpoint call.
     public let customVariables: [String: CustomVariableValue]
 
-    /// When the error occurred relative to Flow presentation.
-    public let stage: ErrorPresentationStage
+    /// What kind of failure occurred.
+    public let kind: CheckpointFailureKind
 
     init(
         checkpointIdentifier: String,
         error: any Error,
         customVariables: [String: CustomVariableValue],
-        stage: ErrorPresentationStage
+        kind: CheckpointFailureKind
     ) {
         self.checkpointIdentifier = checkpointIdentifier
         self.error = error
         self.customVariables = customVariables
-        self.stage = stage
+        self.kind = kind
     }
 
 }
