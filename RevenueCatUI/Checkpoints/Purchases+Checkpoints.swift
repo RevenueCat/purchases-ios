@@ -45,11 +45,12 @@ public extension Purchases {
         set { self.checkpointsManager.setErrorPresenter(newValue) }
     }
 
-    /// Passes a checkpoint and calls `onPassed` after a matching flow finishes.
+    /// Passes a checkpoint and calls `onPassed` when the app can continue past it.
     ///
-    /// The callback receives `nil` when the checkpoint has no matching flow or the flow cannot complete. If the user
-    /// backs out of the workflow, the callback is not called. A completed flow returns a result that may contain
-    /// entitlements obtained while it was presented.
+    /// The callback receives `nil` when the identifier is not configured or no rule matches. A completed flow returns
+    /// a result that may contain entitlements obtained while it was presented. If post-flow synchronization fails,
+    /// the callback receives a result containing no obtained entitlements. The callback is not called if another error
+    /// prevents completion, another checkpoint flow already owns presentation, or the user backs out.
     /// - Parameters:
     ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard. It must start with a letter,
     ///     contain only ASCII letters, numbers, underscores, and hyphens, and be no more than 255 characters.
@@ -59,7 +60,8 @@ public extension Purchases {
     ///     ``paywallPresenter`` for this call.
     ///   - errorPresenter: A custom presenter used for errors in this checkpoint's RevenueCat-presented flow. This
     ///     overrides the global ``errorPresenter`` for this call.
-    ///   - onPassed: Called on the main actor when the checkpoint completes.
+    ///   - onPassed: Called on the main actor when the checkpoint passes, with `nil` if no flow matched or a result if
+    ///     a matching flow completed.
     func checkpoint(
         _ identifier: String,
         customVariables: [String: CustomVariableValue] = [:],

@@ -76,8 +76,8 @@ final class WorkflowPresenterTests: TestCase {
         viewController.simulateWorkflowPresentationError(error)
         completion?.complete()
 
-        guard case .completed(nil)? = presenter.presentationDidDismiss() else {
-            return XCTFail("Expected completing a terminal error to continue out of the workflow")
+        guard case .failed? = presenter.presentationDidDismiss() else {
+            return XCTFail("Expected completing a terminal error to preserve the failure outcome")
         }
     }
 
@@ -103,7 +103,7 @@ final class WorkflowPresenterTests: TestCase {
 
         XCTAssertEqual(presentedErrors.map(\.kind), [.flowCouldNotBeShown])
         try XCTUnwrap(completions.first).complete()
-        guard case .completed(nil)? = presenter.presentationDidDismiss() else {
+        guard case .failed? = presenter.presentationDidDismiss() else {
             return XCTFail("Expected the terminal error completion to remain active")
         }
     }
@@ -225,8 +225,8 @@ final class WorkflowPresenterTests: TestCase {
         XCTAssertEqual(completions.count, 2)
         try XCTUnwrap(completions.last).complete()
 
-        guard case .completed(nil)? = presenter.presentationDidDismiss() else {
-            return XCTFail("Expected the handled terminal error to complete the workflow")
+        guard case .failed? = presenter.presentationDidDismiss() else {
+            return XCTFail("Expected the handled terminal error to preserve the failure outcome")
         }
     }
 
@@ -853,6 +853,99 @@ final class DefaultPaywallPresenterTests: TestCase {
         XCTAssertEqual(controller.dismissCallCount, 0)
         secondCompletion.complete()
         XCTAssertEqual(controller.dismissCallCount, 0)
+    }
+
+    // A terminal rendering error releases the presentation only after the paywall finishes dismissing.
+    func testTerminalWorkflowErrorCompletesOnlyAfterPaywallDismissal() throws {
+        var errorCompletion: ErrorPresentationCompletion?
+        var result: PaywallPresentationResult?
+        let presenter = DefaultPaywallPresenter()
+        let controller = self.makePaywallViewControllerForDismissalRecording()
+        presenter.prepareForPresentation(
+            params: .init(
+                checkpointIdentifier: "test_checkpoint",
+                offering: Self.offering(),
+                errorPresentationHandler: { params, completion in
+                    XCTAssertEqual(params.kind, .flowCouldNotBeShown)
+                    errorCompletion = completion
+                }
+            ),
+            completion: { result = $0 },
+            presentedViewController: controller
+        )
+
+        presenter.presentWorkflowError(
+            NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
+        )
+        try XCTUnwrap(errorCompletion).complete()
+
+        XCTAssertEqual(controller.dismissCallCount, 1)
+        XCTAssertNil(result)
+
+        presenter.paywallViewControllerWasDismissed(controller)
+
+        XCTAssertEqual(result, .failed)
+    }
+
+    // A successful purchase takes precedence over a later terminal rendering error.
+    func testPurchaseTakesPrecedenceOverLaterTerminalWorkflowError() throws {
+        var errorCompletion: ErrorPresentationCompletion?
+        var result: PaywallPresentationResult?
+        let presenter = DefaultPaywallPresenter()
+        let controller = self.makePaywallViewControllerForDismissalRecording()
+        presenter.prepareForPresentation(
+            params: .init(
+                checkpointIdentifier: "test_checkpoint",
+                offering: Self.offering(),
+                errorPresentationHandler: { _, completion in errorCompletion = completion }
+            ),
+            completion: { result = $0 },
+            presentedViewController: controller
+        )
+
+        presenter.paywallViewController(
+            controller,
+            didFinishPurchasingWith: TestData.customerInfo,
+            transaction: nil
+        )
+        presenter.presentWorkflowError(
+            NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
+        )
+        try XCTUnwrap(errorCompletion).complete()
+        presenter.paywallViewControllerWasDismissed(controller)
+
+        XCTAssertEqual(result, .continued)
+    }
+
+    // A successful restore takes precedence over a later terminal rendering error.
+    func testRestoreTakesPrecedenceOverLaterTerminalWorkflowError() throws {
+        var errorCompletion: ErrorPresentationCompletion?
+        var result: PaywallPresentationResult?
+        let presenter = DefaultPaywallPresenter(
+            cachedCustomerInfoProvider: { try? Self.customerInfo(activeEntitlements: ["pro"]) }
+        )
+        let controller = self.makePaywallViewControllerForDismissalRecording()
+        presenter.prepareForPresentation(
+            params: .init(
+                checkpointIdentifier: "test_checkpoint",
+                offering: Self.offering(),
+                errorPresentationHandler: { _, completion in errorCompletion = completion }
+            ),
+            completion: { result = $0 },
+            presentedViewController: controller
+        )
+
+        presenter.paywallViewController(
+            controller,
+            didFinishRestoringWith: try Self.customerInfo(activeEntitlements: ["premium", "pro"])
+        )
+        presenter.presentWorkflowError(
+            NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
+        )
+        try XCTUnwrap(errorCompletion).complete()
+        presenter.paywallViewControllerWasDismissed(controller)
+
+        XCTAssertEqual(result, .continued)
     }
 
     func testNavigatingBackWithoutPurchaseOrRestoreReportsNavigatedBack() {

@@ -77,6 +77,27 @@ final class CheckpointsManager {
         params: CheckpointCallParams
     ) async throws -> CheckpointPresentationOutcome {
         let globalPaywallPresenter = self.paywallPresenter
+
+        guard CheckpointIdentifierValidator.isValid(identifier) else {
+            Logger.error(CheckpointIdentifierValidator.invalidIdentifierLogMessage(identifier))
+            return .nothingPresented
+        }
+
+        let resolution = try await self.resolveCheckpoint(identifier, params)
+        return try await self.executeCheckpoint(
+            identifier: identifier,
+            params: params,
+            resolution: resolution,
+            globalPaywallPresenter: globalPaywallPresenter
+        )
+    }
+
+    private func executeCheckpoint(
+        identifier: String,
+        params: CheckpointCallParams,
+        resolution: CheckpointResolution,
+        globalPaywallPresenter: PaywallPresenter?
+    ) async throws -> CheckpointPresentationOutcome {
         let errorPresentationHandler = self.errorPresentationHandler(
             for: params,
             defaultHandler: {
@@ -87,12 +108,7 @@ final class CheckpointsManager {
             }
         )
 
-        guard CheckpointIdentifierValidator.isValid(identifier) else {
-            Logger.error(CheckpointIdentifierValidator.invalidIdentifierLogMessage(identifier))
-            return .nothingPresented
-        }
-
-        switch try await self.resolveCheckpoint(identifier, params) {
+        switch resolution {
         case let .matchedWorkflow(workflow):
             let presentation = WorkflowPresentationRequest(
                 checkpointIdentifier: identifier,
@@ -125,9 +141,31 @@ final class CheckpointsManager {
         params: CheckpointCallParams
     ) async -> CheckpointCallbackResult {
         let initialActiveEntitlementIdentifiers = self.initialActiveEntitlementIdentifiers()
+        let globalPaywallPresenter = self.paywallPresenter
+
+        guard CheckpointIdentifierValidator.isValid(identifier) else {
+            Logger.error(CheckpointIdentifierValidator.invalidIdentifierLogMessage(identifier))
+            return .suppressed
+        }
+
+        let resolution: CheckpointResolution
+        do {
+            resolution = try await self.resolveCheckpoint(identifier, params)
+        } catch {
+            return .suppressed
+        }
+
+        if let result = self.callbackResult(for: resolution) {
+            return result
+        }
 
         do {
-            switch try await self.executeCheckpoint(identifier: identifier, params: params) {
+            switch try await self.executeCheckpoint(
+                identifier: identifier,
+                params: params,
+                resolution: resolution,
+                globalPaywallPresenter: globalPaywallPresenter
+            ) {
             case .backedOut:
                 return .suppressed
             case let .completed(customerInfo):
@@ -135,13 +173,26 @@ final class CheckpointsManager {
                     customerInfo: customerInfo,
                     initialActiveEntitlementIdentifiers: initialActiveEntitlementIdentifiers
                 ))
+            case .synchronizationFailed:
+                return .completed(FlowResult(obtainedEntitlements: []))
             case .failed, .nothingPresented:
-                return .completed(nil)
+                return .suppressed
             }
         } catch CheckpointError.operationAlreadyInProgress {
             return .suppressed
         } catch {
+            return .suppressed
+        }
+    }
+
+    private func callbackResult(for resolution: CheckpointResolution) -> CheckpointCallbackResult? {
+        switch resolution {
+        case .noAction(.configurationUnavailable):
+            return .suppressed
+        case .noAction(.unknownCheckpoint), .noAction(.noMatch):
             return .completed(nil)
+        case .matchedWorkflow, .matchedOffering:
+            return nil
         }
     }
 

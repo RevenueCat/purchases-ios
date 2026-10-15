@@ -127,7 +127,7 @@ public struct PaywallPresentationResult: Hashable {
     /// RevenueCat synchronizes purchases and refreshes customer information before completing the checkpoint.
     public static let continued = Self(rawValue: 0)
 
-    /// The customer closed the custom paywall, or the presentation could not be completed.
+    /// The customer closed the custom paywall and the checkpoint should continue.
     ///
     /// RevenueCat synchronizes purchases and refreshes customer information before completing the checkpoint.
     public static let closed = Self(rawValue: 1)
@@ -137,5 +137,8 @@ public struct PaywallPresentationResult: Hashable {
     /// RevenueCat does not synchronize purchases or invoke the checkpoint's passed callback, leaving the app at the
     /// point from which it presented the checkpoint.
     public static let navigatedBack = Self(rawValue: 2)
+
+    /// Internal: The SDK-provided paywall could not complete its presentation.
+    static let failed = Self(rawValue: 3)
 
 }

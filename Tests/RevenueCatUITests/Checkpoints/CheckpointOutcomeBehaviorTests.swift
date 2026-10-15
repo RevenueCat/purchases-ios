@@ -1,0 +1,335 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  CheckpointOutcomeBehaviorTests.swift
+//
+//  Created by Rick van der Linden.
+//
+
+@_spi(Internal) @testable import RevenueCat
+@_spi(InviteOnlyCheckpointsApi) @_spi(Internal) @testable import RevenueCatUI
+import XCTest
+
+@MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+final class CheckpointOutcomeBehaviorTests: TestCase {
+
+    // Unknown checkpoint: invoke the callback with nil and do not invoke the error presenter.
+    func testUnknownCheckpoint() async {
+        await self.assertCompletedWithNil(.noAction(.unknownCheckpoint))
+    }
+
+    // No matching rule: invoke the callback with nil and do not invoke the error presenter.
+    func testNoMatchingRule() async {
+        await self.assertCompletedWithNil(.noAction(.noMatch))
+    }
+
+    // Invalid checkpoint identifier: do not invoke the callback or the error presenter.
+    func testInvalidCheckpointIdentifier() async {
+        let errorPresenterCalls = CallCounter()
+        let manager = CheckpointsManager { _, _ in
+            XCTFail("Invalid identifiers must not reach resolution")
+            return .noAction(.noMatch)
+        }
+
+        let result = await manager.checkpointForCallback(
+            identifier: " checkout😀",
+            params: self.params(errorPresenterCalls: errorPresenterCalls)
+        )
+
+        self.assertSuppressed(result)
+        XCTAssertEqual(errorPresenterCalls.count, 0)
+    }
+
+    // Checkpoint resolution failure: do not invoke the callback or the error presenter.
+    func testResolutionFailure() async {
+        let errorPresenterCalls = CallCounter()
+        let manager = CheckpointsManager { _, _ in
+            throw NSError(domain: "CheckpointOutcomeBehaviorTests", code: 1)
+        }
+
+        let result = await manager.checkpointForCallback(
+            identifier: "soft_paywall",
+            params: self.params(errorPresenterCalls: errorPresenterCalls)
+        )
+
+        self.assertSuppressed(result)
+        XCTAssertEqual(errorPresenterCalls.count, 0)
+    }
+
+    // Configuration unavailable: do not invoke the callback or the error presenter.
+    func testConfigurationUnavailable() async {
+        let errorPresenterCalls = CallCounter()
+        let manager = CheckpointsManager { _, _ in .noAction(.configurationUnavailable) }
+
+        let result = await manager.checkpointForCallback(
+            identifier: "soft_paywall",
+            params: self.params(errorPresenterCalls: errorPresenterCalls)
+        )
+
+        self.assertSuppressed(result)
+        XCTAssertEqual(errorPresenterCalls.count, 0)
+    }
+
+    // Presentation startup failure: do not invoke the callback or the error presenter.
+    func testPresentationStartupFailure() async {
+        let errorPresenterCalls = CallCounter()
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
+            checkpointPresenter: FailingCheckpointPresenter()
+        )
+
+        let result = await manager.checkpointForCallback(
+            identifier: "soft_paywall",
+            params: self.params(errorPresenterCalls: errorPresenterCalls)
+        )
+
+        self.assertSuppressed(result)
+        XCTAssertEqual(errorPresenterCalls.count, 0)
+    }
+
+    // Terminal workflow error: do not invoke the callback again or the error presenter.
+    func testTerminalWorkflowError() async {
+        let errorPresenterCalls = CallCounter()
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
+            checkpointPresenter: OutcomeCheckpointPresenter(outcome: .failed)
+        )
+
+        let result = await manager.checkpointForCallback(
+            identifier: "soft_paywall",
+            params: self.params(errorPresenterCalls: errorPresenterCalls)
+        )
+
+        self.assertSuppressed(result)
+        XCTAssertEqual(errorPresenterCalls.count, 0)
+    }
+
+    // Terminal default paywall error: do not invoke the callback again or the error presenter.
+    func testTerminalDefaultPaywallError() async {
+        let errorPresenterCalls = CallCounter()
+        let manager = CheckpointsManager { _, _ in .matchedOffering(Self.offering()) }
+
+        let result = await manager.checkpointForCallback(
+            identifier: "soft_paywall",
+            params: .init(
+                paywallPresenter: { _, completion in completion(.failed) },
+                errorPresenter: { _, _ in errorPresenterCalls.count += 1 }
+            )
+        )
+
+        self.assertSuppressed(result)
+        XCTAssertEqual(errorPresenterCalls.count, 0)
+    }
+
+    // Completed Flow with a newly active entitlement: invoke the callback with that entitlement.
+    func testFlowCompletesWithObtainedEntitlement() async throws {
+        let errorPresenterCalls = CallCounter()
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
+            checkpointPresenter: OutcomeCheckpointPresenter(
+                outcome: .completed(
+                    customerInfo: try Self.customerInfo(activeEntitlements: ["premium", "pro"])
+                )
+            ),
+            cachedCustomerInfoProvider: {
+                try? Self.customerInfo(activeEntitlements: ["pro"])
+            }
+        )
+
+        let result = await manager.checkpointForCallback(
+            identifier: "soft_paywall",
+            params: self.params(errorPresenterCalls: errorPresenterCalls)
+        )
+
+        guard case let .completed(flowResult) = result else {
+            return XCTFail("Expected the callback to be invoked")
+        }
+        XCTAssertEqual(flowResult?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
+        XCTAssertEqual(errorPresenterCalls.count, 0)
+    }
+
+    // Completed Flow with only previously active entitlements: invoke the callback with an empty result.
+    func testFlowCompletesWithoutObtainedEntitlement() async throws {
+        let errorPresenterCalls = CallCounter()
+        let customerInfo = try Self.customerInfo(activeEntitlements: ["premium"])
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
+            checkpointPresenter: OutcomeCheckpointPresenter(outcome: .completed(customerInfo: customerInfo)),
+            cachedCustomerInfoProvider: { customerInfo }
+        )
+
+        let result = await manager.checkpointForCallback(
+            identifier: "soft_paywall",
+            params: self.params(errorPresenterCalls: errorPresenterCalls)
+        )
+
+        guard case let .completed(flowResult) = result else {
+            return XCTFail("Expected the callback to be invoked")
+        }
+        XCTAssertTrue(flowResult?.obtainedEntitlements.isEmpty == true)
+        XCTAssertEqual(errorPresenterCalls.count, 0)
+    }
+
+    // Post-Flow synchronization failure: invoke the callback with an empty result without presenting an error yet.
+    func testPostFlowSynchronizationFailure() async {
+        let errorPresenterCalls = CallCounter()
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
+            checkpointPresenter: OutcomeCheckpointPresenter(
+                outcome: .synchronizationFailed(NSError(domain: "test", code: 1))
+            )
+        )
+
+        let result = await manager.checkpointForCallback(
+            identifier: "soft_paywall",
+            params: self.params(errorPresenterCalls: errorPresenterCalls)
+        )
+
+        guard case let .completed(flowResult) = result else {
+            return XCTFail("Expected the callback to be invoked")
+        }
+        XCTAssertTrue(flowResult?.obtainedEntitlements.isEmpty == true)
+        XCTAssertEqual(errorPresenterCalls.count, 0)
+    }
+
+    private func assertCompletedWithNil(
+        _ resolution: CheckpointResolution,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) async {
+        let errorPresenterCalls = CallCounter()
+        let manager = CheckpointsManager { _, _ in resolution }
+
+        let result = await manager.checkpointForCallback(
+            identifier: "soft_paywall",
+            params: self.params(errorPresenterCalls: errorPresenterCalls)
+        )
+
+        guard case let .completed(flowResult) = result else {
+            return XCTFail("Expected the callback to be invoked", file: file, line: line)
+        }
+        XCTAssertNil(flowResult, file: file, line: line)
+        XCTAssertEqual(errorPresenterCalls.count, 0, file: file, line: line)
+    }
+
+    private func assertSuppressed(
+        _ result: CheckpointCallbackResult,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        guard case .suppressed = result else {
+            return XCTFail("Expected the callback not to be invoked", file: file, line: line)
+        }
+    }
+
+    private func params(errorPresenterCalls: CallCounter) -> CheckpointCallParams {
+        return .init(errorPresenter: { _, _ in
+            errorPresenterCalls.count += 1
+        })
+    }
+
+    private static func workflow() -> ResolvedCheckpointWorkflow {
+        return ResolvedCheckpointWorkflow(
+            workflow: PublishedWorkflow(
+                id: "workflow-id",
+                displayName: "Test",
+                initialStepId: "step-id",
+                singleStepFallbackId: nil,
+                steps: ["step-id": WorkflowStep(id: "step-id", type: "screen", screenId: nil)],
+                screens: [:]
+            ),
+            uiConfig: .empty,
+            offerings: .preview(offerings: [])
+        )
+    }
+
+    private static func offering() -> Offering {
+        return Offering(
+            identifier: "offering-id",
+            serverDescription: "Test offering",
+            availablePackages: [],
+            webCheckoutUrl: nil
+        )
+    }
+
+    private static func customerInfo(activeEntitlements: [String]) throws -> CustomerInfo {
+        let infos = Dictionary(uniqueKeysWithValues: activeEntitlements.map { identifier in
+            (
+                identifier,
+                EntitlementInfo(
+                    identifier: identifier,
+                    isActive: true,
+                    willRenew: true,
+                    periodType: .normal,
+                    latestPurchaseDate: Date(timeIntervalSince1970: 0),
+                    expirationDate: Date(timeIntervalSince1970: 4_102_444_800),
+                    store: .appStore,
+                    productIdentifier: "\(identifier)-product",
+                    isSandbox: true,
+                    ownershipType: .purchased
+                )
+            )
+        })
+
+        return CustomerInfo(
+            entitlements: EntitlementInfos(entitlements: infos),
+            requestDate: Date(timeIntervalSince1970: 0),
+            firstSeen: Date(timeIntervalSince1970: 0),
+            originalAppUserId: "test-user"
+        )
+    }
+
+}
+
+private final class CallCounter: @unchecked Sendable {
+    var count = 0
+}
+
+@MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class FailingCheckpointPresenter: CheckpointPresenterType {
+
+    func presentWorkflow(_ presentation: WorkflowPresentationRequest) async throws -> CheckpointPresentationOutcome {
+        throw NSError(domain: "CheckpointOutcomeBehaviorTests", code: 2)
+    }
+
+    func presentOffering(
+        params: PaywallPresentationParams,
+        globalPaywallPresenter: PaywallPresenter?,
+        localPaywallPresentationHandler: PaywallPresentationHandler?
+    ) async throws -> CheckpointPresentationOutcome {
+        throw NSError(domain: "CheckpointOutcomeBehaviorTests", code: 2)
+    }
+
+}
+
+@MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class OutcomeCheckpointPresenter: CheckpointPresenterType {
+
+    private let outcome: CheckpointPresentationOutcome
+
+    init(outcome: CheckpointPresentationOutcome) {
+        self.outcome = outcome
+    }
+
+    func presentWorkflow(_ presentation: WorkflowPresentationRequest) async throws -> CheckpointPresentationOutcome {
+        return self.outcome
+    }
+
+    func presentOffering(
+        params: PaywallPresentationParams,
+        globalPaywallPresenter: PaywallPresenter?,
+        localPaywallPresentationHandler: PaywallPresentationHandler?
+    ) async throws -> CheckpointPresentationOutcome {
+        return self.outcome
+    }
+
+}
