@@ -203,8 +203,6 @@ final class CheckpointsManager {
                 resolution: resolution,
                 globalPaywallPresenter: globalPaywallPresenter
             ) {
-            case .backedOut:
-                return .suppressed
             case let .completed(customerInfo):
                 return .completed(self.flowResult(
                     customerInfo: customerInfo,
@@ -212,7 +210,7 @@ final class CheckpointsManager {
                 ))
             case let .synchronizationFailed(error):
                 return .synchronizationFailed(error)
-            case .failed, .nothingPresented:
+            case .backedOut, .failed, .nothingPresented:
                 return .suppressed
             }
         } catch CheckpointError.operationAlreadyInProgress {

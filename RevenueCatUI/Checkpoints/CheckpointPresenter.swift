@@ -449,28 +449,30 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
     }
     #endif
 
-    private final class PresentationSession {
-        let params: PaywallPresentationParams
-        let completion: PaywallPresentationCompletion
-        let initialActiveEntitlementIdentifiers: Set<String>?
-        weak var presentedViewController: PaywallViewController?
-        var activeErrorPresentationID: UUID?
-        var didPurchaseOrRestoreAccess = false
-        var hasTerminalError = false
+}
 
-        init(
-            params: PaywallPresentationParams,
-            completion: @escaping PaywallPresentationCompletion,
-            initialActiveEntitlementIdentifiers: Set<String>?,
-            presentedViewController: PaywallViewController?
-        ) {
-            self.params = params
-            self.completion = completion
-            self.initialActiveEntitlementIdentifiers = initialActiveEntitlementIdentifiers
-            self.presentedViewController = presentedViewController
-        }
+@MainActor
+@available(iOS 15.0, macOS 12.0, *)
+private final class PresentationSession {
+    let params: PaywallPresentationParams
+    let completion: PaywallPresentationCompletion
+    let initialActiveEntitlementIdentifiers: Set<String>?
+    weak var presentedViewController: PaywallViewController?
+    var activeErrorPresentationID: UUID?
+    var didPurchaseOrRestoreAccess = false
+    var hasTerminalError = false
+
+    init(
+        params: PaywallPresentationParams,
+        completion: @escaping PaywallPresentationCompletion,
+        initialActiveEntitlementIdentifiers: Set<String>?,
+        presentedViewController: PaywallViewController?
+    ) {
+        self.params = params
+        self.completion = completion
+        self.initialActiveEntitlementIdentifiers = initialActiveEntitlementIdentifiers
+        self.presentedViewController = presentedViewController
     }
-
 }
 
 @MainActor
