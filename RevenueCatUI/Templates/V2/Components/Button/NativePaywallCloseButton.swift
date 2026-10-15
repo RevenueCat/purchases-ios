@@ -29,6 +29,7 @@ struct NativePaywallCloseButton<Content: View>: View {
     @Environment(\.nativePaywallCloseCoordinator) private var coordinator
     @Environment(\.nativePaywallButtonRegistrationEnabled) private var registrationEnabled
     @Environment(\.nativePaywallPageID) private var pageID
+    @Environment(\.nativePaywallControlsPresented) private var controlsPresented
     @State private var identifier = UUID()
 
     var body: some View {
@@ -41,6 +42,7 @@ struct NativePaywallCloseButton<Content: View>: View {
                 componentIdentifier: self.componentIdentifier, pageID: self.pageID, action: self.action,
                 availabilityChanged: self.availabilityChanged
             )
+            if !self.controlsPresented { self.content() }
         } else {
             self.content()
         }
@@ -56,6 +58,7 @@ private struct RegisteredNativePaywallButton: View {
     let isWorkflowClose: Bool
     let registrationEnabled: Bool
     let interactionEnabled: Bool
+    @Environment(\.nativePaywallControlsPresented) private var controlsPresented
     @Environment(\.carouselState) private var carouselState
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.nativePaywallInteractionEnabled) private var workflowInteractionEnabled
@@ -86,7 +89,7 @@ private struct RegisteredNativePaywallButton: View {
         Color.clear.frame(width: 0, height: 0).accessibilityHidden(true)
         .preference(
             key: NativePaywallHiddenButtonsKey.self,
-            value: Set([self.componentIdentifier].compactMap { $0 })
+            value: self.controlsPresented ? Set([self.componentIdentifier].compactMap { $0 }) : []
         )
         .onAppear {
             self.updateRegistration(self.registration)
@@ -122,6 +125,10 @@ struct NativePaywallHiddenButtonsKey: PreferenceKey {
     }
 }
 
+private struct NativePaywallControlsPresentedKey: EnvironmentKey {
+    static let defaultValue = true
+}
+
 private struct NativePaywallPageIDKey: EnvironmentKey {
     static let defaultValue: UUID? = nil
 }
@@ -142,6 +149,11 @@ private struct NativePaywallInteractionEnabledKey: EnvironmentKey {
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension EnvironmentValues {
+    var nativePaywallControlsPresented: Bool {
+        get { self[NativePaywallControlsPresentedKey.self] }
+        set { self[NativePaywallControlsPresentedKey.self] = newValue }
+    }
+
     var nativePaywallInteractionEnabled: Bool {
         get { self[NativePaywallInteractionEnabledKey.self] }
         set { self[NativePaywallInteractionEnabledKey.self] = newValue }
