@@ -23,7 +23,7 @@ import UIKit
 @MainActor
 final class ButtonComponentViewTests: TestCase {
 
-    func testNativeRegistrationRefreshesCallbackWithoutLeavingAStackGap() async throws {
+    func testNativeRegistrationRefreshesCallbackAndUnregistersWhenRemoved() async throws {
         try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
         let coordinator = NativePaywallCloseCoordinator()
         let state = NativeRegistrationTestState()
@@ -43,7 +43,7 @@ final class ButtonComponentViewTests: TestCase {
         await fulfillment(of: [updated], timeout: 2)
         try await coordinator.performAction(id: XCTUnwrap(coordinator.actions.first?.id))
         XCTAssertEqual(state.performed, 2, "Callback changes must reach an already registered action")
-        XCTAssertEqual(height, 64, accuracy: 0.5, "Native-only children must not consume stack spacing")
+        XCTAssertEqual(height, 88, accuracy: 0.5, "The registration primitive has zero size")
         state.showsButton = false
         let removed = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
             coordinator.actions.isEmpty

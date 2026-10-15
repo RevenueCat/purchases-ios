@@ -82,7 +82,7 @@ private struct RegisteredNativePaywallButton: View {
     var body: some View {
         // Every opted-in component delegates its role to the shared toolbar. Only the
         // coordinator selects which callback owns that slot; duplicates stay out of content.
-        EmptyView().accessibilityHidden(true)
+        Color.clear.frame(width: 0, height: 0).accessibilityHidden(true)
         .preference(
             key: NativePaywallHiddenButtonsKey.self,
             value: Set([self.componentIdentifier].compactMap { $0 })
