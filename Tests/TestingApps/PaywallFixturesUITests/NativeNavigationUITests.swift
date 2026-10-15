@@ -162,7 +162,8 @@ final class NativeNavigationUITests: XCTestCase {
         let ready = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
             let backButton = app.buttons[self.backIdentifier]
             let closeButton = app.buttons[self.closeIdentifier]
-            return backButton.exists == back && closeButton.exists == close
+            return app.buttons.matching(identifier: self.backIdentifier).count == (back ? 1 : 0)
+                && app.buttons.matching(identifier: self.closeIdentifier).count == (close ? 1 : 0)
                 && (!back || (backButton.isEnabled && backButton.isHittable))
                 && (!close || (closeButton.isEnabled && closeButton.isHittable))
         }, object: nil)
