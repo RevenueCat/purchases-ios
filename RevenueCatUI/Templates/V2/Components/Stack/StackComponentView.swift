@@ -70,6 +70,7 @@ struct StackComponentView: View {
     /// area when displayed as a sticky footer.
     private let additionalPadding: EdgeInsets
     private let showActivityIndicatorOverContent: Bool
+    @Environment(\.nativePaywallHeaderCollapsed) private var suppressNativeHeaderLayout
 
     init(
         viewModel: StackComponentViewModel,
@@ -113,6 +114,8 @@ struct StackComponentView: View {
     @ViewBuilder
     // swiftlint:disable:next function_body_length
     private func make(style: StackComponentStyle) -> some View {
+        let layoutSize: PaywallComponent.Size = self.suppressNativeHeaderLayout
+            ? .init(width: style.size.width, height: .fit(nil)) : style.size
         let contentViewModels = self.viewModel.viewModels.filter { item in
             if case .button(let button) = item { return !self.hiddenNativeButtons.contains(ObjectIdentifier(button)) }
             return true
@@ -128,7 +131,7 @@ struct StackComponentView: View {
                     onDismiss: self.onDismiss
                 )
                 // This alignment positions the inner VStack horizontally and vertically
-                .size(style.size,
+                .size(layoutSize,
                       horizontalAlignment: horizontalAlignment.frameAlignment,
                       verticalAlignment: distribution.verticalFrameAlignment)
             case .horizontal(let verticalAlignment, let distribution):
@@ -140,7 +143,7 @@ struct StackComponentView: View {
                     onDismiss: self.onDismiss
                 )
                 // This alignment positions the inner VStack horizontally and vertically
-                .size(style.size,
+                .size(layoutSize,
                       horizontalAlignment: distribution.horizontalFrameAlignment,
                       verticalAlignment: verticalAlignment.frameAlignment)
             case .zlayer(let alignment):
@@ -153,13 +156,13 @@ struct StackComponentView: View {
                     )
                 }
                 // These alignments define the position of inner components inside the ZStack
-                .size(style.size,
+                .size(layoutSize,
                       horizontalAlignment: alignment.stackAlignment,
                       verticalAlignment: alignment.stackAlignment)
             }
         }
         .hidden(if: self.showActivityIndicatorOverContent)
-        .padding(style.padding.extend(by: style.border?.width ?? 0))
+        .padding(self.suppressNativeHeaderLayout ? EdgeInsets() : style.padding.extend(by: style.border?.width ?? 0))
         .padding(additionalPadding)
         .applyIf(self.showActivityIndicatorOverContent, apply: { view in
             view.progressOverlay(for: style.backgroundStyle)
@@ -168,7 +171,7 @@ struct StackComponentView: View {
         .environment(\.paywallRootStackIsZLayer, self.paywallRootStackIsZLayer && style.scrollable != false)
         .scrollableIfEnabled(
             style.dimension,
-            size: style.size,
+            size: layoutSize,
             enabled: style.scrollable ?? self.isScrollableByDefault,
             zLayerShouldScroll: PaywallZLayerScrollPolicy.shouldApplyScroll(
                 stackScrollPreference: style.scrollable,
@@ -181,7 +184,7 @@ struct StackComponentView: View {
                background: style.backgroundStyle,
                uiConfigProvider: self.viewModel.uiConfigProvider)
         .apply(badge: style.badge, border: style.border, shadow: style.shadow, shape: style.shape)
-        .padding(style.margin)
+        .padding(self.suppressNativeHeaderLayout ? EdgeInsets() : style.margin)
         .environment(\.nativePaywallLayoutButtons, Set(self.viewModel.viewModels.compactMap { item in
             if case .button(let button) = item { return ObjectIdentifier(button) }
             return nil
@@ -194,6 +197,9 @@ struct StackComponentView: View {
                             .environment(\.nativePaywallRegistrationOnly, true)
                     }
                 }
+                .frame(width: 0, height: 0)
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
             }
         }
         .onPreferenceChange(NativePaywallHiddenButtonsKey.self) { self.hiddenNativeButtons = $0 }

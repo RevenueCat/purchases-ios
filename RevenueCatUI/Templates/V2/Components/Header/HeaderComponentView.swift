@@ -49,6 +49,7 @@ struct HeaderComponentView: View {
             )
         )
         .environment(\.workflowRenderingContext, self.workflowRenderingContext.markingHeader())
+        .environment(\.nativePaywallHeaderCollapsed, self.collapsesNativeOnlyHeader)
         .onPreferenceChange(NativePaywallHeaderContentKey.self) { self.contentVisibility = $0 }
         // The paywall extends through the top safe area when it has a header. Removing native-only
         // header content must retain the inset that keeps the body below the caller's navigation bar.
