@@ -10,14 +10,12 @@ import Foundation
 
 @_spi(Internal) import RevenueCat
 
-#if !os(tvOS)
 enum WorkflowPresentationErrorBehavior: Equatable {
     case endFlow
     case keepCurrentScreen
 }
 
 typealias WorkflowPresentationErrorHandler = (NSError, WorkflowPresentationErrorBehavior) -> Void
-#endif
 
 /// Parameters needed to configure a ``PaywallView``.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
