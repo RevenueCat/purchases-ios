@@ -157,8 +157,8 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
         XCTAssertEqual(errorPresenter.presentations.first?.stage, .duringFlowPresentation)
     }
 
-    // Terminal default paywall error: invoke the during-Flow error presenter and do not invoke the callback.
-    func testTerminalDefaultPaywallError() async {
+    // Terminal custom paywall error: invoke the during-Flow error presenter and do not invoke the callback.
+    func testTerminalCustomPaywallError() async {
         let expectedError = NSError(domain: "CheckpointOutcomeBehaviorTests", code: 4)
         let errorPresenter = ErrorPresentationRecorder()
         let manager = CheckpointsManager { _, _ in .matchedOffering(Self.offering()) }
