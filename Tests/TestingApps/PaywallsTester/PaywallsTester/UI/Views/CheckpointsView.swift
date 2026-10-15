@@ -250,6 +250,14 @@ private struct CheckpointResult {
         )
     }
 
+    static func failed(identifier: String, error: Error) -> Self {
+        return Self(
+            identifier: identifier,
+            outcome: "Error",
+            details: error.localizedDescription
+        )
+    }
+
 }
 
 private struct SubscriberAttributeEditor: View {
