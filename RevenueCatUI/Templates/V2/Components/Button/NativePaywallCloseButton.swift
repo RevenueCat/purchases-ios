@@ -8,6 +8,7 @@
 //      https://opensource.org/licenses/MIT
 //
 
+import Combine
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
@@ -81,7 +82,7 @@ private struct RegisteredNativePaywallButton: View {
     var body: some View {
         // Every opted-in component delegates its role to the shared toolbar. Only the
         // coordinator selects which callback owns that slot; duplicates stay out of content.
-        Color.clear.frame(width: 0, height: 0).accessibilityHidden(true)
+        EmptyView().accessibilityHidden(true)
         .preference(
             key: NativePaywallHiddenButtonsKey.self,
             value: Set([self.componentIdentifier].compactMap { $0 })
@@ -90,7 +91,7 @@ private struct RegisteredNativePaywallButton: View {
             self.updateRegistration(self.registration)
             self.availabilityChanged?(true)
         }
-        .onChangeOf(self.registration) { self.updateRegistration($0) }
+        .onReceive(Just(self.registration)) { self.updateRegistration($0) }
         .onDisappear {
             self.coordinator.unregister(id: self.identifier)
             self.availabilityChanged?(false)

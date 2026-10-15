@@ -23,7 +23,36 @@ import UIKit
 @MainActor
 final class ButtonComponentViewTests: TestCase {
 
+    func testNativeRegistrationRefreshesCallbackWithoutLeavingAStackGap() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
+        let coordinator = NativePaywallCloseCoordinator()
+        let state = NativeRegistrationTestState()
+        var height: CGFloat = 0
+        let view = NativeRegistrationTestView(state: state)
+            .environment(\.nativePaywallCloseCoordinator, coordinator)
+            .onPreferenceChange(NativeRegistrationHeightKey.self) { height = $0 }
+        let (window, _) = Self.host(view)
+        defer { window.isHidden = true; window.rootViewController = nil }
+        let registered = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            coordinator.actions.count == 1
+        }, object: nil)
+        await fulfillment(of: [registered], timeout: 2)
+        state.value = 2
+        let updated = expectation(description: "Callback view updated")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { updated.fulfill() }
+        await fulfillment(of: [updated], timeout: 2)
+        try await coordinator.performAction(id: XCTUnwrap(coordinator.actions.first?.id))
+        XCTAssertEqual(state.performed, 2, "Callback changes must reach an already registered action")
+        XCTAssertEqual(height, 64, accuracy: 0.5, "Native-only children must not consume stack spacing")
+        state.showsButton = false
+        let removed = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            coordinator.actions.isEmpty
+        }, object: nil)
+        await fulfillment(of: [removed], timeout: 2)
+    }
+
     func testRegisteredNativeButtonRunsItsActionWithoutMountingFallback() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
         let coordinator = NativePaywallCloseCoordinator()
         var actions = 0
         var fallbackAppearances = 0
@@ -206,6 +235,38 @@ private extension UIView {
         return self.subviews.contains { $0.containsText(text) }
     }
 
+}
+
+@MainActor
+private final class NativeRegistrationTestState: ObservableObject {
+    @Published var value = 1
+    @Published var showsButton = true
+    var performed = 0
+}
+
+private struct NativeRegistrationTestView: View {
+    @ObservedObject var state: NativeRegistrationTestState
+    var body: some View {
+        let value = self.state.value
+        VStack(spacing: 24) {
+            Color.red.frame(height: 20)
+            if self.state.showsButton {
+                NativePaywallCloseButton(enabled: true, accessibilityLabel: "Close",
+                                         action: { self.state.performed = value },
+                                         content: { Color.clear.frame(height: 40) })
+            }
+            Color.blue.frame(height: 20)
+        }
+        .fixedSize(horizontal: false, vertical: true)
+        .background(GeometryReader { proxy in
+            Color.clear.preference(key: NativeRegistrationHeightKey.self, value: proxy.size.height)
+        })
+    }
+}
+
+private struct NativeRegistrationHeightKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
 }
 
 #endif
