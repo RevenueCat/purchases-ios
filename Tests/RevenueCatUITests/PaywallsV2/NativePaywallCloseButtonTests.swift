@@ -166,6 +166,38 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
         XCTAssertEqual(self.toolbarButtons(in: host.view).count, 1)
     }
 
+    func testOwnedNavigationHidesUnusedBarAcrossNativeOverrides() async throws {
+        let state = NativeNavigationVisibilityTestState()
+        let host = UIHostingController(rootView: NativeNavigationVisibilityTestView(state: state)
+            .modifier(NativePaywallNavigationModifier(requested: true))
+            .environment(\.nativePaywallNavigationContext, .standalone))
+        let window = self.host(host)
+        defer { self.close(window) }
+        for enabled in [false, true, false] {
+            state.native = enabled
+            await self.waitForPresentation()
+            let navigation = try XCTUnwrap(self.navigationController(in: host))
+            XCTAssertEqual(navigation.isNavigationBarHidden, !enabled)
+            XCTAssertEqual(self.navigationCount(in: host), 1)
+            XCTAssertEqual(self.toolbarButtons(in: host.view).count, enabled ? 1 : 0)
+        }
+    }
+
+    func testEmptyNativeHostPreservesCallerToolbarItems() async {
+        for enabled in [false, true] {
+            let host = UIHostingController(rootView: NavigationView {
+                Text("Paywall").modifier(NativePaywallCloseHost(enabled: enabled))
+                    .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Caller") {} } }
+            }.navigationViewStyle(.stack))
+            let window = self.host(host)
+            await self.waitForPresentation()
+            let buttons = self.toolbarButtons(in: host.view)
+            XCTAssertEqual(buttons.count, 1)
+            XCTAssertTrue(buttons.contains { $0.accessibilityLabel == "Caller" })
+            self.close(window)
+        }
+    }
+
     func testHiddenNavigationBarKeepsConfiguredClose() async {
         guard #available(iOS 16.0, *) else { return }
         await self.assertNativeClose(expected: false, expectedNavigationCount: 1) { button in
@@ -199,6 +231,19 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
         XCTAssertEqual(self.toolbarButtons(in: host.view).count, expected ? 1 : 0, file: file, line: line)
     }
 
+}
+
+@MainActor
+private final class NativeNavigationVisibilityTestState: ObservableObject {
+    @Published var native = false
+}
+
+private struct NativeNavigationVisibilityTestView: View {
+    @ObservedObject var state: NativeNavigationVisibilityTestState
+    var body: some View {
+        NativePaywallCloseButton(enabled: self.state.native, accessibilityLabel: "Close", action: {},
+                                 content: { Text("Configured Close") })
+    }
 }
 
 #endif

@@ -52,11 +52,11 @@ struct NativePaywallNavigationModifier: ViewModifier {
     @ViewBuilder private func wrapped(content: Content) -> some View {
         if #available(iOS 16.0, *) {
             NavigationStack {
-                content.modifier(NativePaywallCloseHost()).toolbar(.visible, for: .navigationBar)
+                content.modifier(NativePaywallCloseHost(ownsNavigation: true))
             }
         } else {
             NavigationView {
-                content.modifier(NativePaywallCloseHost()).navigationBarHidden(false)
+                content.modifier(NativePaywallCloseHost(ownsNavigation: true))
             }
             .navigationViewStyle(.stack)
         }
