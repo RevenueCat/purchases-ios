@@ -41,7 +41,9 @@ final class NativePaywallNavigationPreferenceTests: TestCase {
         let id = UUID()
         var count = 0
         coordinator.register(id: id, label: "Close", isEnabled: false, action: { count += 1 })
+        let installed = try XCTUnwrap(coordinator.actions.first)
         try await coordinator.performAction(id: id)
+        try await installed.perform()
         XCTAssertEqual(count, 0)
         XCTAssertEqual(coordinator.actions.count, 1, "Disabled controls remain registered and visible")
         coordinator.register(id: id, label: "Close", isEnabled: true, action: { count += 1 })
@@ -49,7 +51,12 @@ final class NativePaywallNavigationPreferenceTests: TestCase {
         XCTAssertEqual(count, 1)
         coordinator.activatePage(UUID())
         try await coordinator.performAction(id: id)
+        try await installed.perform()
         XCTAssertEqual(count, 1, "A queued tap must not invoke an outgoing page's action")
+        coordinator.activatePage(nil)
+        coordinator.register(id: id, label: "Close", isEnabled: false, action: { count += 1 })
+        try await installed.perform()
+        XCTAssertEqual(count, 1, "Held actions must use the current disabled state")
     }
 
     func testCoordinatorUpdatesBackToCloseWithoutDuplicateRegistration() {
