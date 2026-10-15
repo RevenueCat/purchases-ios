@@ -56,6 +56,7 @@ private struct RegisteredNativePaywallButton: View {
     let isWorkflowClose: Bool
     let registrationEnabled: Bool
     let interactionEnabled: Bool
+    @Environment(\.carouselState) private var carouselState
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.nativePaywallInteractionEnabled) private var workflowInteractionEnabled
     let componentIdentifier: ObjectIdentifier?
@@ -73,7 +74,7 @@ private struct RegisteredNativePaywallButton: View {
     }
 
     private var registration: Registration {
-        .init(enabled: self.registrationEnabled,
+        .init(enabled: self.registrationEnabled && (self.carouselState?.distanceFromActive ?? 0) == 0,
               isEnabled: self.isEnabled && self.interactionEnabled && self.workflowInteractionEnabled,
               label: self.accessibilityLabel,
               role: self.role, isWorkflowClose: self.isWorkflowClose, pageID: self.pageID)
