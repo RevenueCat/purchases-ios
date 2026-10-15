@@ -1030,6 +1030,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self._authentication.internalDelegate = self
 
         self.identityManager.remoteConfigManager = self.remoteConfigManager
+        self.remoteConfigManager.addConfigLifecycleObserver(self.configuredAdRewardsProvider)
 
         Logger.verbose(Strings.configure.purchases_init(self, paymentQueueWrapper))
 
