@@ -49,8 +49,10 @@ final class ErrorPresentationQueue {
             presentation.params,
             .init { [weak self] in
                 presentation.completion.complete()
-                self?.isPresenting = false
-                self?.presentNextIfNeeded()
+                Task { @MainActor [weak self] in
+                    self?.isPresenting = false
+                    self?.presentNextIfNeeded()
+                }
             }
         )
     }

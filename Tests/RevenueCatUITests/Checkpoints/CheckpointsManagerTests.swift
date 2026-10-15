@@ -182,10 +182,12 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(defaultCallCount, 0)
     }
 
-    func testErrorPresentationHandlersShareFIFOQueueAcrossCustomAndDefaultPresenters() {
+    // Completing one error presentation must not re-enter the next presenter inline.
+    func testErrorPresentationHandlersShareFIFOQueueAcrossCustomAndDefaultPresenters() async {
         let manager = CheckpointsManager { _, _ in .noAction(.unknownCheckpoint) }
         var presentationOrder: [String] = []
         var customCompletion: ErrorPresentationCompletion?
+        let defaultPresented = self.expectation(description: "Default error presented")
 
         let customHandler = manager.errorPresentationHandler(
             for: .init(errorPresenter: { _, completion in
@@ -197,7 +199,10 @@ final class CheckpointsManagerTests: TestCase {
         let defaultHandler = manager.errorPresentationHandler(
             for: .init(),
             defaultHandler: {
-                return { _, _ in presentationOrder.append("default") }
+                return { _, _ in
+                    presentationOrder.append("default")
+                    defaultPresented.fulfill()
+                }
             }
         )
 
@@ -208,6 +213,8 @@ final class CheckpointsManagerTests: TestCase {
 
         customCompletion?.complete()
 
+        XCTAssertEqual(presentationOrder, ["custom"])
+        await self.fulfillment(of: [defaultPresented], timeout: 1)
         XCTAssertEqual(presentationOrder, ["custom", "default"])
     }
 
