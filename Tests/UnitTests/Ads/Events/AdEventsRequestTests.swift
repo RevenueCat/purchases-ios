@@ -332,6 +332,12 @@ class AdFeatureEventsRequestTests: TestCase {
         expect(requestEvent.captureMethod) == "ios_admob_adapter"
     }
 
+    func testHybridAdapterCaptureMethodsSerializeToTheirWireValues() {
+        expect(AdEventCaptureMethod.flutterAdMobAdapter.rawValue) == "flutter_admob_adapter"
+        expect(AdEventCaptureMethod.reactNativeAdMobAdapter.rawValue) == "react_native_admob_adapter"
+        expect(AdEventCaptureMethod.unityAdMobAdapter.rawValue) == "unity_admob_adapter"
+    }
+
     func testLegacyAdapterCaptureMethodCanStillBeDeserialized() throws {
         let data = try XCTUnwrap("\"adapter\"".data(using: .utf8))
         let captureMethod = try JSONDecoder.default.decode(AdEventCaptureMethod.self, from: data)

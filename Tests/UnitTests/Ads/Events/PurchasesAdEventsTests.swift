@@ -256,6 +256,37 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.rewardVerificationEnabled) == true
     }
 
+    func testTrackAdRewardEarnedStoresEventWithoutRewardVerification() async throws {
+        let data = AdRewardEarnedUnverified(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123"
+        )
+
+        self.purchases.adTracker.trackAdRewardEarnedUnverified(data)
+
+        await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
+
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents
+
+        guard case let .rewardEarnedUnverified(_, eventData) = trackedEvents.first else {
+            fail("Expected AdEvent.rewardEarnedUnverified but got \(String(describing: trackedEvents.first))")
+            return
+        }
+
+        expect(eventData.networkName) == "AdMob"
+        expect(eventData.mediatorName) == .adMob
+        expect(eventData.adFormat) == .rewarded
+        expect(eventData.placement) == "home_screen"
+        expect(eventData.adUnitId) == "ca-app-pub-123"
+        expect(eventData.impressionId) == "impression-123"
+        expect(eventData.rewardVerificationEnabled) == false
+        expect(trackedEvents.first?.creationData.captureMethod) == .manual
+    }
+
     func testTrackAdRewardVerifiedStoresEvent() async throws {
         let data = AdRewardVerified(
             networkName: "AdMob",

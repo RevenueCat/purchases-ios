@@ -137,7 +137,7 @@ extension Purchases {
                     } catch {
                         Logger.error(
                             Strings.eligibility.check_eligibility_failed(
-                                productIdentifier: product.productIdentifier,
+                                productIdentifier: product.id,
                                 error: error
                             )
                         )

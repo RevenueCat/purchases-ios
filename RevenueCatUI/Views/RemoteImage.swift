@@ -93,6 +93,8 @@ struct RemoteImage<Content: View>: View {
         ) { image, size in
             content(image, size)
         }
+        // New loaders per URL set, so a reused view (e.g. same position in another tab) never shows the old image.
+        .id([self.url, self.lowResUrl, self.darkUrl, self.darkLowResUrl])
     }
 
 }
