@@ -2072,17 +2072,17 @@ public extension Purchases {
 
 extension Purchases {
 
-    /// Returns the rewards currently configured for a rewarded ad unit.
+    /// Returns the latest locally cached rewards configured for a rewarded ad unit.
     ///
     /// The result contains the primary configured reward and any additional rewards that are configured
-    /// to be granted alongside it. Returns `nil` when configuration is unavailable. If configuration is
-    /// available but no rewards are configured, the container has no primary reward and no additional rewards.
+    /// to be granted alongside it. Returns `nil` when configuration has not been loaded yet. If configuration
+    /// is available but no rewards are configured, the container has no primary reward and no additional rewards.
     ///
     /// - Parameter adUnitId: The ad network's rewarded ad unit identifier.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    public func adRewards(
+    public func cachedAdRewards(
         forAdUnitId adUnitId: String
-    ) async -> ConfiguredAdRewards? {
+    ) -> ConfiguredAdRewards? {
         return nil
     }
 
