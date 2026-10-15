@@ -10,7 +10,6 @@
 
 @_spi(Internal) import RevenueCat
 @_spi(Internal) @testable import RevenueCatUI
-import SnapshotTesting
 import SwiftUI
 import XCTest
 
@@ -98,6 +97,7 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
 
     func testAutomaticDetectionDoesNotAllocateAnExtraToolbarItem() async throws {
         var referenceImages: [Int: UIImage] = [:]
+        var toolbarBand: CGRect?
         for automatic in [false, true] {
             let state = NativeNavigationVisibilityTestState()
             let content = NativeNavigationVisibilityTestView(state: state)
@@ -119,7 +119,15 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
                 await self.waitForPresentation()
                 XCTAssertFalse(try XCTUnwrap(self.navigationController(in: host)).isNavigationBarHidden)
                 XCTAssertEqual(state.available, native)
-                if !automatic { XCTAssertEqual(self.toolbarButtons(in: host.view).count, native ? 1 : 0) }
+                if !automatic {
+                    let buttons = self.toolbarButtons(in: host.view)
+                    XCTAssertEqual(buttons.count, native ? 1 : 0)
+                    if let close = buttons.first {
+                        let frame = close.convert(close.bounds, to: window)
+                        toolbarBand = CGRect(x: 0, y: frame.minY - 4,
+                                             width: window.bounds.width, height: frame.height + 8)
+                    }
+                }
                 let bounds = CGRect(x: 0, y: 0, width: window.bounds.width, height: 200)
                 let screenshot = UIGraphicsImageRenderer(bounds: bounds).image { _ in
                     window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
@@ -129,16 +137,54 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
                 attachment.lifetime = .keepAlways
                 self.add(attachment)
                 if automatic {
-                    let reference = try XCTUnwrap(referenceImages[phase])
-                    if let difference = Diffing<UIImage>.image(precision: 0.99).diff(reference, screenshot) {
-                        difference.1.forEach { self.add($0) }
-                        XCTFail("Detection must not add a toolbar slot: \(difference.0)")
+                    let band = try XCTUnwrap(toolbarBand)
+                    let expected = try self.toolbarIconCenters(in: XCTUnwrap(referenceImages[phase]), band: band)
+                    let actual = try self.toolbarIconCenters(in: screenshot, band: band)
+                    XCTAssertEqual(expected.count, native ? 2 : 1)
+                    XCTAssertEqual(actual.count, expected.count)
+                    for (reference, rendered) in zip(expected, actual) {
+                        XCTAssertEqual(rendered, reference, accuracy: Double(screenshot.scale),
+                                       "Detection must not displace toolbar content")
                     }
                 } else {
                     referenceImages[phase] = screenshot
                 }
             }
         }
+    }
+
+    // Compare icon positions without depending on whether the OS shares or separates glass backgrounds.
+    private func toolbarIconCenters(in image: UIImage, band: CGRect) throws -> [Double] {
+        let crop = CGRect(x: band.minX * image.scale, y: band.minY * image.scale,
+                          width: band.width * image.scale, height: band.height * image.scale)
+        let cgImage = try XCTUnwrap(image.cgImage?.cropping(to: crop))
+        let width = cgImage.width
+        let height = cgImage.height
+        var pixels = [UInt8](repeating: 0, count: width * height * 4)
+        try pixels.withUnsafeMutableBytes { bytes in
+            let context = try XCTUnwrap(CGContext(
+                data: bytes.baseAddress, width: width, height: height,
+                bitsPerComponent: 8, bytesPerRow: width * 4,
+                space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+            ))
+            context.draw(cgImage, in: CGRect(x: 0, y: 0, width: CGFloat(width), height: CGFloat(height)))
+        }
+        var centers: [Double] = []
+        var start: Int?
+        for column in 0...width {
+            let hasInk = column < width && (0..<height).contains { row in
+                let offset = (row * width + column) * 4
+                return pixels[offset] < 64 && pixels[offset + 1] < 64 && pixels[offset + 2] < 64
+                    && pixels[offset + 3] > 128
+            }
+            if hasInk, start == nil { start = column }
+            if !hasInk, let first = start {
+                centers.append(Double(first + column - 1) / 2)
+                start = nil
+            }
+        }
+        return centers
     }
 
     func testAutomaticDetectionReusesNavigationStack() async {
