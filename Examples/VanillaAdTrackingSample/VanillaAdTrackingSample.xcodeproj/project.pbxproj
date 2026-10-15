@@ -10,9 +10,9 @@
 		17B2C94FD4D827E7BA5E6B64 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8493993B09AFA145F87F5E6B /* App.swift */; };
 		1E0479B6B8FF7E0629674A83 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C0D0D8A703F013F32BFEFCD /* HomeView.swift */; };
 		492E89E506CC3CB2E94C144F /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 28EE205657475F2A12069D7B /* RevenueCat */; };
-		812452DF034E5258FB769E9E /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = F37F9820EE376E496C6E13B8 /* GoogleMobileAds */; };
-		900A37ADEA73A9B8FF456A2D /* AdMobManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4327881DBAFF923E0833CA38 /* AdMobManager.swift */; };
+		812452DF034E5258FB769E9E /* UnityMediationSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 920966C47BD809BE19FE5C68 /* UnityMediationSDK */; };
 		9BBA1B246F87A7F407792663 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 329609D8E9BFC17DE8FC91C9 /* Constants.swift */; };
+		AA5310DFE728B05C8838566E /* LevelPlayManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5D293048788DE6786721A1 /* LevelPlayManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -31,7 +31,7 @@
 /* Begin PBXFileReference section */
 		0F6570A337104A67AA05D79A /* VanillaAdTrackingSample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VanillaAdTrackingSample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		329609D8E9BFC17DE8FC91C9 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
-		4327881DBAFF923E0833CA38 /* AdMobManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdMobManager.swift; sourceTree = "<group>"; };
+		6E5D293048788DE6786721A1 /* LevelPlayManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelPlayManager.swift; sourceTree = "<group>"; };
 		8493993B09AFA145F87F5E6B /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		8A9E8BD4B43023D03D4F10B7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8C0D0D8A703F013F32BFEFCD /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
@@ -44,7 +44,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				492E89E506CC3CB2E94C144F /* RevenueCat in Frameworks */,
-				812452DF034E5258FB769E9E /* GoogleMobileAds in Frameworks */,
+				812452DF034E5258FB769E9E /* UnityMediationSDK in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -72,10 +72,10 @@
 		8945306CBD37F4CFB91E08C3 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
-				4327881DBAFF923E0833CA38 /* AdMobManager.swift */,
 				8493993B09AFA145F87F5E6B /* App.swift */,
 				329609D8E9BFC17DE8FC91C9 /* Constants.swift */,
 				8C0D0D8A703F013F32BFEFCD /* HomeView.swift */,
+				6E5D293048788DE6786721A1 /* LevelPlayManager.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -107,7 +107,7 @@
 			name = VanillaAdTrackingSample;
 			packageProductDependencies = (
 				28EE205657475F2A12069D7B /* RevenueCat */,
-				F37F9820EE376E496C6E13B8 /* GoogleMobileAds */,
+				920966C47BD809BE19FE5C68 /* UnityMediationSDK */,
 			);
 			productName = VanillaAdTrackingSample;
 			productReference = 0F6570A337104A67AA05D79A /* VanillaAdTrackingSample.app */;
@@ -134,8 +134,8 @@
 			);
 			mainGroup = CB81F35405EDFD1A24E4527A;
 			packageReferences = (
-				D774E246E7D9D925CBB51ECC /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
-				230AD3C1212D2F2FCA3EC8D8 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+				FAA862755ED7AAF51125E19E /* XCRemoteSwiftPackageReference "purchases-ios" */,
+				48476A336226F3A2CF78D7E0 /* XCRemoteSwiftPackageReference "LevelPlay-Swift-Package" */,
 			);
 			productRefGroup = 75120B4DB6F102BA35EEEB54 /* Products */;
 			projectDirPath = "";
@@ -161,10 +161,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				900A37ADEA73A9B8FF456A2D /* AdMobManager.swift in Sources */,
 				17B2C94FD4D827E7BA5E6B64 /* App.swift in Sources */,
 				9BBA1B246F87A7F407792663 /* Constants.swift in Sources */,
 				1E0479B6B8FF7E0629674A83 /* HomeView.swift in Sources */,
+				AA5310DFE728B05C8838566E /* LevelPlayManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -247,6 +247,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				OTHER_LDFLAGS = "$(inherited) -ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.sample.VanillaAdTrackingSample;
 				PRODUCT_NAME = VanillaAdTrackingSample;
 				SDKROOT = iphoneos;
@@ -329,6 +330,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				OTHER_LDFLAGS = "$(inherited) -ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.sample.VanillaAdTrackingSample;
 				PRODUCT_NAME = VanillaAdTrackingSample;
 				SDKROOT = iphoneos;
@@ -369,20 +371,20 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		230AD3C1212D2F2FCA3EC8D8 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+		48476A336226F3A2CF78D7E0 /* XCRemoteSwiftPackageReference "LevelPlay-Swift-Package" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			repositoryURL = "https://github.com/ironsource-mobile/LevelPlay-Swift-Package";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 13.0.0;
+				minimumVersion = 9.5.0;
 			};
 		};
-		D774E246E7D9D925CBB51ECC /* XCRemoteSwiftPackageReference "purchases-ios-spm" */ = {
+		FAA862755ED7AAF51125E19E /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/RevenueCat/purchases-ios-spm";
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 5.66.0;
+				branch = main;
+				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -390,13 +392,11 @@
 /* Begin XCSwiftPackageProductDependency section */
 		28EE205657475F2A12069D7B /* RevenueCat */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = D774E246E7D9D925CBB51ECC /* XCRemoteSwiftPackageReference "purchases-ios-spm" */;
 			productName = RevenueCat;
 		};
-		F37F9820EE376E496C6E13B8 /* GoogleMobileAds */ = {
+		920966C47BD809BE19FE5C68 /* UnityMediationSDK */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 230AD3C1212D2F2FCA3EC8D8 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
-			productName = GoogleMobileAds;
+			productName = UnityMediationSDK;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

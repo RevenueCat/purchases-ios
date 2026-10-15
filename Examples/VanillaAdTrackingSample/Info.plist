@@ -18,10 +18,18 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
-	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<key>LEVELPLAY_APP_KEY</key>
+	<string>$(LEVELPLAY_APP_KEY)</string>
+	<key>LEVELPLAY_BANNER_AD_UNIT_ID</key>
+	<string>$(LEVELPLAY_BANNER_AD_UNIT_ID)</string>
+	<key>LEVELPLAY_INTERSTITIAL_AD_UNIT_ID</key>
+	<string>$(LEVELPLAY_INTERSTITIAL_AD_UNIT_ID)</string>
+	<key>LEVELPLAY_REWARDED_AD_UNIT_ID</key>
+	<string>$(LEVELPLAY_REWARDED_AD_UNIT_ID)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>REVENUECAT_API_KEY</key>
+	<string>$(REVENUECAT_API_KEY)</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

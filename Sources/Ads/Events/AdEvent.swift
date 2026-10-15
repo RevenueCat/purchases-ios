@@ -80,6 +80,9 @@ public final class MediatorName: NSObject, Codable, @unchecked Sendable {
     /// AppLovin MAX mediation network
     public static let appLovin = MediatorName(rawValue: "AppLovin")
 
+    /// Unity LevelPlay mediation network
+    public static let levelPlay = MediatorName(rawValue: "LevelPlay")
+
     // MARK: - NSObject overrides for equality
 
     public override func isEqual(_ object: Any?) -> Bool {
