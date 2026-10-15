@@ -183,23 +183,32 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
         }
     }
 
-    func testEmptyNativeHostPreservesCallerToolbarItems() async {
-        for enabled in [false, true] {
+    func testEmptyNativeHostPreservesCallerToolbarItems() async throws {
+        for enabled in [nil, false, true] as [Bool?] {
+            var callerAppeared = false
+            let content = enabled.map { AnyView(Text("Paywall").modifier(NativePaywallCloseHost(enabled: $0))) }
+                ?? AnyView(Text("Paywall"))
             let host = UIHostingController(rootView: NavigationView {
-                Text("Paywall").modifier(NativePaywallCloseHost(enabled: enabled))
-                    .navigationTitle("Paywall")
+                content.navigationTitle("Paywall")
                     .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
                             Button {} label: { Image(systemName: "questionmark.circle") }
                                 .accessibilityLabel("Caller")
+                                .onAppear { callerAppeared = true }
                         }
                     }
             }.navigationViewStyle(.stack))
             let window = self.host(host)
             await self.waitForPresentation()
-            let buttons = self.toolbarButtons(in: host.view)
-            XCTAssertEqual(buttons.count, 1)
-            XCTAssertTrue(buttons.contains { $0.accessibilityLabel == "Caller" })
+            XCTAssertTrue(callerAppeared, "Caller item must appear with and without an empty native host")
+            XCTAssertFalse(try XCTUnwrap(self.navigationController(in: host)).isNavigationBarHidden)
+            let screenshot = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in
+                window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
+            }
+            let attachment = XCTAttachment(image: screenshot)
+            attachment.name = "Caller toolbar with native host \(String(describing: enabled))"
+            attachment.lifetime = .keepAlways
+            self.add(attachment)
             self.close(window)
         }
     }
