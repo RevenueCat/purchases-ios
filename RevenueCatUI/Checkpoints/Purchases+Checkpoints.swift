@@ -44,6 +44,16 @@ public extension Purchases {
         set { self.checkpointsManager.setErrorPresenter(newValue) }
     }
 
+    /// The presenter used when a checkpoint selects an ad step.
+    ///
+    /// Set this to let an ad mediator adapter register itself so a resolved checkpoint displays an ad
+    /// automatically, with no per-checkpoint app code.
+    @MainActor
+    var adPresenter: AdPresenter? {
+        get { return self.checkpointsManager.adPresenter }
+        set { self.checkpointsManager.setAdPresenter(newValue) }
+    }
+
     /// Passes a checkpoint and calls `onPassed` after a matching flow finishes.
     ///
     /// The callback receives `nil` when the checkpoint has no matching flow or the flow cannot complete. If the user
