@@ -866,7 +866,7 @@ final class DefaultPaywallPresenterTests: TestCase {
                 checkpointIdentifier: "test_checkpoint",
                 offering: Self.offering(),
                 errorPresentationHandler: { params, completion in
-                    XCTAssertEqual(params.kind, .flowActionFailed)
+                    XCTAssertEqual(params.kind, .flowCouldNotBeShown)
                     errorCompletion = completion
                 }
             ),
