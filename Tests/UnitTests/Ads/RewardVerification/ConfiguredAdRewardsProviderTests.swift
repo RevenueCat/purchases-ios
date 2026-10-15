@@ -38,8 +38,8 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         let maybeRewards = self.provider.cachedRewards(forAdUnitId: "ad-unit")
         let rewards = try XCTUnwrap(maybeRewards)
 
-        expect(rewards.configuredReward?.virtualCurrency?.code) == "coins"
-        expect(rewards.configuredReward?.virtualCurrency?.amount) == 10
+        expect(rewards.reward?.virtualCurrency?.code) == "coins"
+        expect(rewards.reward?.virtualCurrency?.amount) == 10
         expect(rewards.moreRewards[0].entitlement?.identifier) == "premium"
         expect(rewards.moreRewards[0].entitlement?.duration) == AdRewardDuration(value: 30, unit: .minute)
         expect(rewards.moreRewards[1].virtualCurrency?.code) == "gems"
@@ -60,7 +60,7 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
 
         await self.provider.warm()
 
-        expect(self.provider.cachedRewards(forAdUnitId: "ad-unit")?.configuredReward?.virtualCurrency?.amount) == 10
+        expect(self.provider.cachedRewards(forAdUnitId: "ad-unit")?.reward?.virtualCurrency?.amount) == 10
     }
 
     func testSupportsEachDurationUnitWithoutNormalization() async throws {
@@ -86,7 +86,7 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
             await self.provider.warm()
             let maybeReward = self.provider.cachedRewards(forAdUnitId: "ad-unit")
             let reward = try XCTUnwrap(maybeReward)
-            expect(reward.configuredReward?.entitlement?.duration) == AdRewardDuration(value: value, unit: unit)
+            expect(reward.reward?.entitlement?.duration) == AdRewardDuration(value: value, unit: unit)
         }
     }
 
@@ -103,7 +103,7 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         let maybeRewards = self.provider.cachedRewards(forAdUnitId: "ad-unit")
         let rewards = try XCTUnwrap(maybeRewards)
 
-        expect(rewards.configuredReward) == .unsupportedReward
+        expect(rewards.reward) == .unsupportedReward
         expect(rewards.moreRewards) == [.unsupportedReward, .unsupportedReward]
     }
 
@@ -148,7 +148,7 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         await self.provider.warm()
         let cached = self.provider.cachedRewards(forAdUnitId: "ad-unit")
 
-        expect(initial?.configuredReward?.virtualCurrency?.amount) == 10
+        expect(initial?.reward?.virtualCurrency?.amount) == 10
         expect(cached) == initial
     }
 
@@ -161,7 +161,7 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         self.manager.stubbedTopics[.adRewards] = nil
         await self.provider.warm()
 
-        expect(self.provider.cachedRewards(forAdUnitId: "ad-unit")?.configuredReward?.virtualCurrency?.amount) == 10
+        expect(self.provider.cachedRewards(forAdUnitId: "ad-unit")?.reward?.virtualCurrency?.amount) == 10
     }
 
     func testInvalidReplacementBlobPreservesCachedConfiguration() async throws {
@@ -174,7 +174,7 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         await self.provider.warm()
         let cached = self.provider.cachedRewards(forAdUnitId: "ad-unit")
 
-        expect(initial?.configuredReward?.virtualCurrency?.amount) == 10
+        expect(initial?.reward?.virtualCurrency?.amount) == 10
         expect(cached) == initial
     }
 
@@ -226,7 +226,7 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         let maybeRewards = self.provider.cachedRewards(forAdUnitId: "ad-unit")
         let rewards = try XCTUnwrap(maybeRewards)
 
-        expect(rewards.configuredReward).to(beNil())
+        expect(rewards.reward).to(beNil())
         expect(rewards.moreRewards.count) == 1
         expect(rewards.moreRewards.first?.virtualCurrency?.amount) == 10
     }

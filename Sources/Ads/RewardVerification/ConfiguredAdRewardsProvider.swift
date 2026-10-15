@@ -119,7 +119,7 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
         let payload = try JSONDecoder.default.decode([String: WireConfiguredAdRewards].self, from: data)
         return payload.mapValues { rewards in
             ConfiguredAdRewards(
-                configuredReward: Self.decodeReward(rewards.reward),
+                reward: Self.decodeReward(rewards.reward),
                 moreRewards: (rewards.moreRewards ?? []).compactMap(Self.decodeReward)
             )
         }
