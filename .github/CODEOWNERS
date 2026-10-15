@@ -1,14 +1,58 @@
 # CODEOWNERS for purchases-ios
+#
+# The last matching pattern takes precedence, so rules go from broadest to most specific.
+# Code owner review is not required to merge: these rules only decide who gets a review request.
 
-# Default owners
+# Fallback for anything not matched below (build config, samples, test apps, CI, release files)
 * @RevenueCat/sdk
 
-# Customer Center code and related UI tests
-/RevenueCatUI/CustomerCenter/ @RevenueCat/customer-center
-/Tests/RevenueCatUITests/ @RevenueCat/customer-center
+# Core SDK
+/Sources/ @RevenueCat/coresdk
+/Tests/UnitTests/ @RevenueCat/coresdk
+/Tests/StoreKitUnitTests/ @RevenueCat/coresdk
+/Tests/BackendIntegrationTests/ @RevenueCat/coresdk
+/Tests/ReceiptParserTests/ @RevenueCat/coresdk
 
-# Paywalls
-/RevenueCatUI/Templates/ @RevenueCat/paywalls
-/RevenueCatUI/Views/ @RevenueCat/paywalls
-/RevenueCatUI/PaywallView.swift @RevenueCat/paywalls
-/RevenueCatUI/View+PresentPaywall* @RevenueCat/paywalls
+# The Xcode project file changes whenever any source file is added, moved or removed, so it
+# carries no owner of its own: the owners of the files being changed get the review request
+/RevenueCat.xcodeproj/project.pbxproj
+
+# Paywalls (V1 templates and V2 components)
+/RevenueCatUI/ @RevenueCat/paywalls
+/Tests/RevenueCatUITests/ @RevenueCat/paywalls
+/Sources/Paywalls/ @RevenueCat/paywalls
+/Tests/UnitTests/Paywalls/ @RevenueCat/paywalls
+/Projects/Paywall*/ @RevenueCat/paywalls
+/Tests/TestingApps/Paywall*/ @RevenueCat/paywalls
+
+# Checkpoints (Sources/ checkpoints code is already covered by the core SDK rule)
+/RevenueCatUI/Checkpoints/ @RevenueCat/coresdk
+/Tests/RevenueCatUITests/Checkpoints/ @RevenueCat/coresdk
+/Examples/CheckpointTester/ @RevenueCat/coresdk
+
+# Workflows
+/Sources/**/*Workflow* @RevenueCat/workflows
+/RevenueCatUI/**/*Workflow* @RevenueCat/workflows
+/Tests/**/*Workflow* @RevenueCat/workflows
+/Examples/rc-maestro/maestro/workflows/ @RevenueCat/workflows
+/Examples/rc-maestro/rc-maestro/Sources/rc-maestro/e2e-test-flows/*workflow* @RevenueCat/workflows
+
+# Ads
+/Sources/Ads/ @RevenueCat/ads
+/Tests/UnitTests/Ads/ @RevenueCat/ads
+/AdapterSDKs/ @RevenueCat/ads
+/Projects/AdMobIntegrationSample/ @RevenueCat/ads
+/Projects/RevenueCatAdMob/ @RevenueCat/ads
+/Examples/VanillaAdTrackingSample/ @RevenueCat/ads
+
+# Customer Center code and related UI tests
+/Sources/CustomerCenter/ @RevenueCat/customer-center
+/Tests/UnitTests/CustomerCenter/ @RevenueCat/customer-center
+/RevenueCatUI/CustomerCenter/ @RevenueCat/customer-center
+/Tests/RevenueCatUITests/CustomerCenter/ @RevenueCat/customer-center
+/Examples/rc-maestro/maestro/customer_center/ @RevenueCat/customer-center
+
+# Public API surface: changes here should stay visible to the whole SDK team
+/api/ @RevenueCat/sdk
+/Tests/APITesters/ @RevenueCat/sdk
+/Projects/APITesters/ @RevenueCat/sdk
