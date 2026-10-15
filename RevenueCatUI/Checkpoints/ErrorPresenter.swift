@@ -74,6 +74,7 @@ public final class ErrorPresentationParams {
 /// Completes checkpoint error handling.
 ///
 /// Call ``complete()`` exactly once after handling the error. Later calls on the same completion are ignored.
+/// Completing error presentation does not choose the checkpoint outcome or indicate that the checkpoint passed.
 @_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
@@ -88,7 +89,8 @@ public final class ErrorPresentationCompletion {
 
     /// Reports that error presentation has finished.
     ///
-    /// The SDK determines how the checkpoint flow proceeds after the presenter finishes.
+    /// The SDK determines whether the flow continues, ends without invoking the checkpoint callback, or invokes the
+    /// callback for a flow that had already completed.
     public func complete() {
         guard !self.hasCompleted else { return }
         self.hasCompleted = true
