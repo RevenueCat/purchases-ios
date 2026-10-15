@@ -23,6 +23,47 @@ import UIKit
 @MainActor
 final class ButtonComponentViewTests: TestCase {
 
+    func testRenderedCarouselsOnlyPublishTheInitialActiveSlidesAction() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
+        for loops in [false, true] {
+            let pages: [PaywallComponent.StackComponent] = (0..<3).map { index in
+                .init(components: [.button(.init(
+                    id: "slide-\(index)", action: .navigateBack,
+                    stack: Self.makeButtonStack(label: "Close"), useNativeIfPossible: true
+                ))], size: .init(width: .fill, height: .fixed(100)))
+            }
+            let data = PaywallComponentsData(
+                templateName: "native-carousel", assetBaseURL: URL(string: "https://example.com")!,
+                componentsConfig: .init(base: .init(
+                    stack: .init(components: [.carousel(.init(pages: pages, initialPageIndex: 1, loop: loops))]),
+                    stickyFooter: nil, background: .color(.init(light: .hex("#FFFFFF")))
+                )),
+                componentsLocalizations: ["en_US": ["Close": .string("Close")]],
+                revision: 1, defaultLocaleIdentifier: "en_US"
+            )
+            let components = Offering.PaywallComponents(uiConfig: PreviewUIConfig.make(), data: data)
+            let offering = Offering(identifier: "native-carousel", serverDescription: "", paywallComponents: components,
+                                    availablePackages: [TestData.annualPackage], webCheckoutUrl: nil)
+            let coordinator = NativePaywallCloseCoordinator()
+            var triggered: [String] = []
+            let view = PaywallsV2View(
+                paywallComponents: components, offering: offering, purchaseHandler: .mock(),
+                introEligibilityChecker: BaseSnapshotTest.eligibleChecker, showZeroDecimalPlacePrices: false,
+                onDismiss: {}, failedToLoadFont: { _ in }, colorScheme: .light
+            )
+            .environment(\.nativePaywallCloseCoordinator, coordinator)
+            .environment(\.workflowTriggerAction, { triggered.append($0); return true })
+            let (window, _) = Self.host(view)
+            defer { window.isHidden = true; window.rootViewController = nil }
+            let registered = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+                coordinator.actions.count == 1
+            }, object: nil)
+            await fulfillment(of: [registered], timeout: 2)
+            try await coordinator.performAction(id: XCTUnwrap(coordinator.actions.first?.id))
+            XCTAssertEqual(triggered, ["slide-1"], "Only the visible original or loop copy may supply the callback")
+        }
+    }
+
     func testOnlyActiveCarouselPageRegistersAcrossLoopCopiesAndNestedCarousels() async throws {
         try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
         let coordinator = NativePaywallCloseCoordinator()
