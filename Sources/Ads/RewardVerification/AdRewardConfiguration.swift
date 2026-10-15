@@ -16,16 +16,16 @@ import Foundation
 public struct ConfiguredAdRewards: Sendable, Equatable {
 
     /// The primary configured reward, or `nil` when none is configured.
-    public let configuredReward: AdRewardConfiguration?
+    public let reward: AdRewardConfiguration?
 
     /// Additional configured rewards, which may exist even when no primary reward is configured.
     public let moreRewards: [AdRewardConfiguration]
 
     internal init(
-        configuredReward: AdRewardConfiguration? = nil,
+        reward: AdRewardConfiguration? = nil,
         moreRewards: [AdRewardConfiguration] = []
     ) {
-        self.configuredReward = configuredReward
+        self.reward = reward
         self.moreRewards = moreRewards
     }
 

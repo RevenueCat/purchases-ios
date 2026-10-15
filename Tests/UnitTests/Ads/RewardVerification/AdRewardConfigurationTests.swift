@@ -19,7 +19,7 @@ final class AdRewardConfigurationTests: TestCase {
     func testConfiguredRewardsCanRepresentAvailableConfigurationWithoutRewards() {
         let configured = ConfiguredAdRewards()
 
-        expect(configured.configuredReward).to(beNil())
+        expect(configured.reward).to(beNil())
         expect(configured.moreRewards).to(beEmpty())
     }
 
@@ -63,11 +63,11 @@ final class AdRewardConfigurationTests: TestCase {
             EntitlementRewardConfiguration(identifier: "pro", duration: duration)
         )
         let configured = ConfiguredAdRewards(
-            configuredReward: .virtualCurrency(currency),
+            reward: .virtualCurrency(currency),
             moreRewards: [.entitlement(entitlement)]
         )
 
-        expect(configured.configuredReward?.virtualCurrency) == currency
+        expect(configured.reward?.virtualCurrency) == currency
         expect(configured.moreRewards) == [.entitlement(entitlement)]
     }
 
