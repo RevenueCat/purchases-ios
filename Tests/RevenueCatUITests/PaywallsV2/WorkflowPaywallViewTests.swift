@@ -239,15 +239,6 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(WorkflowPaywallView.presentationError(for: context.workflow.initialStepId, in: context)).to(beNil())
     }
 
-    func testPresentationErrorBeforeAnyPageRendersTerminatesTheWorkflow() {
-        expect(WorkflowPaywallView.presentationErrorBehavior(hasCurrentPage: false)) == .endFlow
-    }
-
-    // Forward and back navigation failures both preserve the valid page already on screen.
-    func testNavigationErrorWhileAPageIsVisibleKeepsThatPagePresented() {
-        expect(WorkflowPaywallView.presentationErrorBehavior(hasCurrentPage: true)) == .keepCurrentScreen
-    }
-
     // Dismissing a built-in navigation error restores the active workflow state.
     func testDismissingBuiltInNavigationErrorKeepsWorkflowActive() {
         var state = WorkflowPresentationState.displayingError(

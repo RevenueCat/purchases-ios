@@ -1125,13 +1125,11 @@ struct WorkflowPaywallView: View {
         self.stepEventCoordinator.trackInitialStep(self.navigator.currentStep, hasRenderedPage: true)
     }
 
-    static func presentationErrorBehavior(hasCurrentPage: Bool) -> WorkflowPresentationErrorBehavior {
-        return hasCurrentPage ? .keepCurrentScreen : .endFlow
-    }
-
     private func failWorkflowPresentation(for stepId: String) {
         let error = Self.presentationError(for: stepId, in: self.context) ?? ErrorCode.configurationError as NSError
-        let behavior = Self.presentationErrorBehavior(hasCurrentPage: self.transitionState.currentPage != nil)
+        let behavior: WorkflowPresentationErrorBehavior = self.transitionState.currentPage == nil
+            ? .endFlow
+            : .keepCurrentScreen
         switch behavior {
         case .endFlow:
             guard self.presentationState.canReportPresentationError else { return }

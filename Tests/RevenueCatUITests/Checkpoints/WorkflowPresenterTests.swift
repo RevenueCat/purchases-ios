@@ -50,7 +50,7 @@ final class WorkflowPresenterTests: TestCase {
 
         try presenter.startPresentation(presentation)
         let viewController = try presenter.makePaywallViewController(for: presentation)
-        viewController.simulateWorkflowPresentationError(error)
+        viewController.simulateWorkflowPresentationError(error, behavior: .endFlow)
         let execution = presenter.presentationDidDismiss()
 
         guard case .failed? = execution else {
@@ -73,7 +73,7 @@ final class WorkflowPresenterTests: TestCase {
 
         try presenter.startPresentation(presentation)
         let viewController = try presenter.makePaywallViewController(for: presentation)
-        viewController.simulateWorkflowPresentationError(error)
+        viewController.simulateWorkflowPresentationError(error, behavior: .endFlow)
         completion?.complete()
 
         guard case .failed? = presenter.presentationDidDismiss() else {
@@ -122,7 +122,7 @@ final class WorkflowPresenterTests: TestCase {
 
         try presenter.startPresentation(presentation)
         let viewController = try presenter.makePaywallViewController(for: presentation)
-        viewController.simulateWorkflowPresentationError(workflowError)
+        viewController.simulateWorkflowPresentationError(workflowError, behavior: .endFlow)
         presenter.paywallViewController(viewController, didFailPurchasingWith: purchaseError)
         presenter.paywallViewController(viewController, didFailRestoringWith: purchaseError)
 
@@ -243,7 +243,8 @@ final class WorkflowPresenterTests: TestCase {
         try XCTUnwrap(completions.first).complete()
 
         controller.simulateWorkflowPresentationError(
-            NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
+            NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue),
+            behavior: .endFlow
         )
 
         XCTAssertEqual(presentedErrors.map(\.kind), [.flowActionFailed, .flowCouldNotBeShown])
@@ -341,7 +342,7 @@ final class WorkflowPresenterTests: TestCase {
             didFinishPurchasingWith: TestData.customerInfo,
             transaction: transaction
         )
-        controller.simulateWorkflowPresentationError(error)
+        controller.simulateWorkflowPresentationError(error, behavior: .endFlow)
         let execution = presenter.presentationDidDismiss()
 
         guard case let .completed(customerInfo)? = execution else {
@@ -359,7 +360,7 @@ final class WorkflowPresenterTests: TestCase {
 
         try presenter.startPresentation(presentation)
         presenter.paywallViewController(controller, didFinishRestoringWith: restoredCustomerInfo)
-        controller.simulateWorkflowPresentationError(error)
+        controller.simulateWorkflowPresentationError(error, behavior: .endFlow)
         let execution = presenter.presentationDidDismiss()
 
         guard case let .completed(customerInfo)? = execution else {
@@ -376,7 +377,7 @@ final class WorkflowPresenterTests: TestCase {
 
         try presenter.startPresentation(presentation)
         presenter.paywallViewControllerDidOpenWebCheckout(controller)
-        controller.simulateWorkflowPresentationError(error)
+        controller.simulateWorkflowPresentationError(error, behavior: .endFlow)
         let execution = presenter.presentationDidDismiss()
 
         guard case .completed(nil)? = execution else {

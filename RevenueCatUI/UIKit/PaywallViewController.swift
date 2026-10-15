@@ -150,7 +150,7 @@ public class PaywallViewController: UIViewController {
 
     func simulateWorkflowPresentationError(
         _ error: NSError,
-        behavior: WorkflowPresentationErrorBehavior = .endFlow
+        behavior: WorkflowPresentationErrorBehavior
     ) {
         self.configuration.workflowPresentationErrorHandler?(error, behavior)
     }
