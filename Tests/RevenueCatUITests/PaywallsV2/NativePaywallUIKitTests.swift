@@ -40,6 +40,40 @@ final class NativePaywallUIKitTests: NativePaywallNavigationTestCase {
                        NativePaywallUIKitOwner.closeIdentifier)
     }
 
+    func testWorkflowBackSuppressesAndRestoresCallerSupplementFlag() async throws {
+        for supplementsBackButton in [false, true] {
+            let controller = UIViewController()
+            let navigation = UINavigationController(rootViewController: UIViewController())
+            navigation.pushViewController(controller, animated: false)
+            let caller = UIBarButtonItem(title: "Caller", primaryAction: UIAction { _ in })
+            controller.navigationItem.leftBarButtonItems = [caller]
+            controller.navigationItem.leftItemsSupplementBackButton = supplementsBackButton
+            let owner = NativePaywallUIKitOwner()
+            owner.prepare(controller: controller)
+            var backs = 0
+            let back = NativePaywallCloseCoordinator.CloseAction(
+                id: UUID(), label: "Back", perform: { backs += 1 }, role: .back
+            )
+            for _ in 0..<2 {
+                owner.install([back])
+                XCTAssertFalse(controller.navigationItem.leftItemsSupplementBackButton)
+                XCTAssertEqual(controller.navigationItem.leftBarButtonItems?.count, 2)
+                XCTAssertTrue(controller.navigationItem.leftBarButtonItems?.first === caller)
+            }
+            let item = try XCTUnwrap(controller.navigationItem.leftBarButtonItems?.last)
+            let target = try XCTUnwrap(item.target as? NSObject)
+            target.perform(try XCTUnwrap(item.action), with: item)
+            await self.waitForPresentation()
+            XCTAssertEqual(backs, 1)
+            owner.install(.init(id: UUID(), label: "Close", perform: {}))
+            XCTAssertEqual(controller.navigationItem.leftItemsSupplementBackButton, supplementsBackButton)
+            XCTAssertTrue(controller.navigationItem.leftBarButtonItem === caller)
+            owner.removeClose()
+            XCTAssertEqual(controller.navigationItem.leftItemsSupplementBackButton, supplementsBackButton)
+            XCTAssertTrue(controller.navigationController === navigation)
+        }
+    }
+
     func testRemovingNativeBackRestoresSystemBackWithoutChangingCallerItems() {
         let controller = UIViewController()
         let navigation = UINavigationController(rootViewController: UIViewController())
