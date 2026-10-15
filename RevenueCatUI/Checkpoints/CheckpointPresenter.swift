@@ -242,8 +242,8 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
 
         let controller = makeDefaultCheckpointPaywallViewController(
             params: params,
-            workflowPresentationErrorHandler: { [weak self] error in
-                self?.presentWorkflowError(error)
+            workflowPresentationErrorHandler: { [weak self] error, behavior in
+                self?.handleWorkflowPresentationError(error, behavior: behavior)
             }
         )
         self.prepareForPresentation(
@@ -292,16 +292,6 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
                 Set(customerInfo.entitlements.active.keys)
             },
             presentedViewController: presentedViewController
-        )
-    }
-
-    func presentWorkflowError(_ error: any Error) {
-        self.presentError(
-            error,
-            kind: .flowCouldNotBeShown,
-            onCompletion: { [weak self] in
-                self?.dismissAfterTerminalError()
-            }
         )
     }
 
@@ -358,6 +348,24 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         guard let session = self.session else { return }
         session.hasTerminalError = true
         session.presentedViewController?.continueAfterCheckpointError()
+    }
+
+    func handleWorkflowPresentationError(
+        _ error: NSError,
+        behavior: WorkflowPresentationErrorBehavior
+    ) {
+        switch behavior {
+        case .endFlow:
+            self.presentError(
+                error,
+                kind: .flowCouldNotBeShown,
+                onCompletion: { [weak self] in
+                    self?.dismissAfterTerminalError()
+                }
+            )
+        case .keepCurrentScreen:
+            self.presentError(error, kind: .flowActionFailed)
+        }
     }
 
     private func takeSession() -> PresentationSession? {
@@ -497,7 +505,7 @@ private final class PresentationSession {
 @available(iOS 15.0, macOS 12.0, *)
 func makeDefaultCheckpointPaywallViewController(
     params: PaywallPresentationParams,
-    workflowPresentationErrorHandler: ((NSError) -> Void)? = nil
+    workflowPresentationErrorHandler: WorkflowPresentationErrorHandler? = nil
 ) -> PaywallViewController {
     let controller = PaywallViewController(
         checkpointOffering: params.offering,

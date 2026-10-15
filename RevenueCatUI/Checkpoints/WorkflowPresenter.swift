@@ -278,15 +278,22 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         let viewController = PaywallViewController(
             workflowContext: workflowContext,
             displayCloseButton: true,
-            workflowPresentationErrorHandler: { [weak self] error in
-                guard let self, self.stage(.workflowPresentationError(error)) else { return }
-                self.presentError(
-                    error,
-                    kind: .flowCouldNotBeShown,
-                    onCompletion: { [weak self] in
-                        self?.presentedViewController?.continueAfterCheckpointError()
-                    }
-                )
+            workflowPresentationErrorHandler: { [weak self] error, behavior in
+                guard let self else { return }
+                switch behavior {
+                case .endFlow:
+                    guard self.stage(.workflowPresentationError(error)) else { return }
+                    self.presentError(
+                        error,
+                        kind: .flowCouldNotBeShown,
+                        onCompletion: { [weak self] in
+                            self?.presentedViewController?.continueAfterCheckpointError()
+                        }
+                    )
+                case .keepCurrentScreen:
+                    Logger.error(error.localizedDescription)
+                    self.presentError(error, kind: .flowActionFailed)
+                }
             }
         )
         self.presentedViewController = viewController

@@ -148,8 +148,11 @@ public class PaywallViewController: UIViewController {
         self.applyOfferingBasedExitOffer(offering)
     }
 
-    func simulateWorkflowPresentationError(_ error: NSError) {
-        self.configuration.workflowPresentationErrorHandler?(error)
+    func simulateWorkflowPresentationError(
+        _ error: NSError,
+        behavior: WorkflowPresentationErrorBehavior
+    ) {
+        self.configuration.workflowPresentationErrorHandler?(error, behavior)
     }
 
     func continueAfterCheckpointError() {
@@ -206,7 +209,7 @@ public class PaywallViewController: UIViewController {
     internal convenience init(
         checkpointOffering offering: Offering,
         displayCloseButton: Bool,
-        workflowPresentationErrorHandler: ((NSError) -> Void)?
+        workflowPresentationErrorHandler: WorkflowPresentationErrorHandler?
     ) {
         self.init(
             content: .optionalOffering(offering),
@@ -232,7 +235,7 @@ public class PaywallViewController: UIViewController {
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
-        workflowPresentationErrorHandler: ((NSError) -> Void)? = nil
+        workflowPresentationErrorHandler: WorkflowPresentationErrorHandler? = nil
     ) {
         self.init(
             content: .offering(workflowContext.initialOffering),

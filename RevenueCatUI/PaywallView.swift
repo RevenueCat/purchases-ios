@@ -56,7 +56,7 @@ public struct PaywallView: View {
 
     private var displaysPurchaseAndRestoreErrors: Bool
 
-    private var workflowPresentationErrorHandler: ((NSError) -> Void)?
+    private var workflowPresentationErrorHandler: WorkflowPresentationErrorHandler?
 
     private var workflowBackNavigationBridge: WorkflowBackNavigationBridge
 
