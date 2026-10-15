@@ -40,14 +40,12 @@ struct NativePaywallCloseHost: ViewModifier {
             .toolbar {
                 ToolbarItemGroup(placement: .cancellationAction) {
                     if self.enabled, self.coordinator.action(for: .back) != nil {
-                        NativePaywallToolbarClose(coordinator: self.coordinator, primary: true)
-                            .background { self.navigationProbe }
+                        NativePaywallToolbarClose(coordinator: self.coordinator, primary: true, probe: self.navigationProbe)
                     }
                 }
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                     if self.enabled, self.coordinator.action(for: .close) != nil {
-                        NativePaywallToolbarClose(coordinator: self.coordinator, primary: false)
-                            .background { self.navigationProbe }
+                        NativePaywallToolbarClose(coordinator: self.coordinator, primary: false, probe: self.navigationProbe)
                     }
                 }
             }
@@ -89,9 +87,10 @@ struct NativePaywallCloseHost: ViewModifier {
 
 #if os(iOS)
 @available(iOS 15.0, *)
-private struct NativePaywallToolbarClose: View {
+private struct NativePaywallToolbarClose<Probe: View>: View {
     @ObservedObject var coordinator: NativePaywallCloseCoordinator
     let primary: Bool
+    let probe: Probe
 
     @ViewBuilder var body: some View {
         if self.primary {
@@ -99,7 +98,7 @@ private struct NativePaywallToolbarClose: View {
                 Button {
                     Task { await performNativePaywallAction { try await self.coordinator.performAction(id: back.id) } }
                 } label: {
-                    Image(systemName: "chevron.backward")
+                    Image(systemName: "chevron.backward").background { self.probe }
                 }
                 .accessibilityLabel(back.label)
                 .accessibilityIdentifier(NativePaywallCloseHost.backIdentifier)
@@ -115,6 +114,8 @@ private struct NativePaywallToolbarClose: View {
         if #available(iOS 26.0, *) {
             Button(role: .close) {
                 Task { await performNativePaywallAction { try await self.coordinator.performAction(id: action.id) } }
+            } label: {
+                Image(systemName: "xmark").background { self.probe }
             }
                 .accessibilityLabel(action.label)
                 .accessibilityIdentifier(NativePaywallCloseHost.closeIdentifier)
@@ -129,7 +130,7 @@ private struct NativePaywallToolbarClose: View {
     private func legacyCloseButton(_ action: NativePaywallCloseCoordinator.CloseAction) -> some View {
         Button {
             Task { await performNativePaywallAction { try await self.coordinator.performAction(id: action.id) } }
-        } label: { Image(systemName: "xmark") }
+        } label: { Image(systemName: "xmark").background { self.probe } }
             .accessibilityLabel(action.label)
             .accessibilityIdentifier(NativePaywallCloseHost.closeIdentifier)
     }

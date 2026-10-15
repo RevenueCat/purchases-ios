@@ -11,6 +11,7 @@
 @_spi(Internal) import RevenueCat
 @_spi(Internal) @testable import RevenueCatUI
 import SwiftUI
+import SnapshotTesting
 import XCTest
 
 #if os(iOS)
@@ -96,34 +97,49 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
     }
 
     func testAutomaticDetectionDoesNotAllocateAnExtraToolbarItem() async throws {
-        let state = NativeNavigationVisibilityTestState()
-        let host = UIHostingController(rootView: NavigationView {
-            NativeNavigationVisibilityTestView(state: state)
-                .modifier(NativePaywallNavigationModifier(requested: true))
-                .navigationTitle("Paywall")
-                .toolbar {
+        var referenceImages: [Int: UIImage] = [:]
+        for automatic in [false, true] {
+            let state = NativeNavigationVisibilityTestState()
+            let content = NativeNavigationVisibilityTestView(state: state)
+            let presented = automatic
+                ? AnyView(content.modifier(NativePaywallNavigationModifier(requested: true)))
+                : AnyView(content.modifier(NativePaywallCloseHost()))
+            let host = UIHostingController(rootView: NavigationView {
+                presented.navigationTitle("Paywall").toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("Help") {}.accessibilityIdentifier("Caller.Help")
+                        Button {} label: { Image(systemName: "questionmark.circle") }
+                            .accessibilityLabel("Help")
                     }
                 }
-        }.navigationViewStyle(.stack))
-        let window = self.host(host)
-        defer { self.close(window) }
-        for native in [false, true, false] {
-            state.native = native
-            await self.waitForPresentation()
-            let navigation = try XCTUnwrap(self.navigationController(in: host))
-            let item = try XCTUnwrap(navigation.topViewController?.navigationItem)
-            XCTAssertEqual(item.rightBarButtonItems?.count, native ? 2 : 1,
-                           "Only Help and a real native Close may occupy trailing slots")
-            XCTAssertEqual(self.toolbarButtons(in: host.view).count, native ? 1 : 0)
-            let screenshot = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in
-                window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
+            }.navigationViewStyle(.stack))
+            let window = self.host(host)
+            defer { self.close(window) }
+            for (phase, native) in [false, true, false].enumerated() {
+                state.native = native
+                await self.waitForPresentation()
+                XCTAssertFalse(try XCTUnwrap(self.navigationController(in: host)).isNavigationBarHidden)
+                let controls = self.toolbarButtons(in: host.view).filter {
+                    $0.accessibilityIdentifier == NativePaywallCloseHost.closeIdentifier
+                }
+                XCTAssertEqual(controls.count, native ? 1 : 0)
+                let bounds = CGRect(x: 0, y: 0, width: window.bounds.width, height: 200)
+                let screenshot = UIGraphicsImageRenderer(bounds: bounds).image { _ in
+                    window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
+                }
+                let attachment = XCTAttachment(image: screenshot)
+                attachment.name = "Automatic \(automatic), native \(native), phase \(phase)"
+                attachment.lifetime = .keepAlways
+                self.add(attachment)
+                if automatic {
+                    let reference = try XCTUnwrap(referenceImages[phase])
+                    if let difference = Diffing<UIImage>.image(precision: 0.99).diff(reference, screenshot) {
+                        difference.1.forEach { self.add($0) }
+                        XCTFail("Detection must not add a toolbar slot: \(difference.0)")
+                    }
+                } else {
+                    referenceImages[phase] = screenshot
+                }
             }
-            let attachment = XCTAttachment(image: screenshot)
-            attachment.name = "Automatic navigation with native Close \(native)"
-            attachment.lifetime = .keepAlways
-            self.add(attachment)
         }
     }
 
