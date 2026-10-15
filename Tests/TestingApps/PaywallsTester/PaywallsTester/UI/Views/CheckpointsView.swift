@@ -158,7 +158,7 @@ struct CheckpointsView: View {
                     identifier: params.checkpointIdentifier,
                     error: params.error
                 )
-                completion.complete(.continue)
+                completion.complete()
             },
             { flowResult in
                 guard self.result?.isFailure != true else { return }
