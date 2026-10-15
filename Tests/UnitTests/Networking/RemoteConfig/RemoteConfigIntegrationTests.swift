@@ -282,8 +282,9 @@ final class RemoteConfigIntegrationTests: TestCase {
 
         await self.refresh(with: container)
         let provider = ConfiguredAdRewardsProvider(manager: self.manager)
-        let maybeRewards = await provider.rewards(forAdUnitId: "rewarded-ad-unit")
-        let differentlyCasedRewards = await provider.rewards(forAdUnitId: "REWARDED-AD-UNIT")
+        await provider.warm()
+        let maybeRewards = provider.cachedRewards(forAdUnitId: "rewarded-ad-unit")
+        let differentlyCasedRewards = provider.cachedRewards(forAdUnitId: "REWARDED-AD-UNIT")
         let rewards = try XCTUnwrap(maybeRewards)
         let requestedURLs = await self.downloader.requestedURLs()
 
@@ -306,8 +307,9 @@ final class RemoteConfigIntegrationTests: TestCase {
         await self.downloader.setResponse(.success(payload), for: source, ref: ref)
 
         await self.refresh(with: container)
-        let rewards = await ConfiguredAdRewardsProvider(manager: self.manager)
-            .rewards(forAdUnitId: "rewarded-ad-unit")
+        let provider = ConfiguredAdRewardsProvider(manager: self.manager)
+        await provider.warm()
+        let rewards = provider.cachedRewards(forAdUnitId: "rewarded-ad-unit")
         let requestedURLStrings = await self.downloader.requestedURLStrings()
 
         expect(rewards?.configuredReward?.virtualCurrency?.amount) == 10
@@ -326,7 +328,8 @@ final class RemoteConfigIntegrationTests: TestCase {
         )
         await self.refresh(with: initialContainer)
         let provider = ConfiguredAdRewardsProvider(manager: self.manager)
-        let initialRewards = await provider.rewards(forAdUnitId: "rewarded-ad-unit")
+        await provider.warm()
+        let initialRewards = provider.cachedRewards(forAdUnitId: "rewarded-ad-unit")
 
         let expectedPayload = #"""
         {"rewarded-ad-unit":{"reward":{"type":"virtual_currency","code":"coins","amount":20}}}
@@ -345,7 +348,8 @@ final class RemoteConfigIntegrationTests: TestCase {
         await expect(self.diskCache.read()?.topics.entries[RemoteConfigTopic.adRewards.wireName]?["default"]?.blobRef)
             .toEventually(equal(expectedRef), timeout: Self.pollTimeout, pollInterval: Self.pollInterval)
 
-        let rewards = await provider.rewards(forAdUnitId: "rewarded-ad-unit")
+        await provider.warm()
+        let rewards = provider.cachedRewards(forAdUnitId: "rewarded-ad-unit")
 
         expect(initialRewards?.configuredReward?.virtualCurrency?.amount) == 10
         expect(rewards) == initialRewards
@@ -376,8 +380,9 @@ final class RemoteConfigIntegrationTests: TestCase {
         await self.waitForRemoteConfigRequestCount(2)
         await self.waitForPersistedManifest(unchangedConfiguration.manifest)
 
-        let rewards = await ConfiguredAdRewardsProvider(manager: self.manager)
-            .rewards(forAdUnitId: "rewarded-ad-unit")
+        let provider = ConfiguredAdRewardsProvider(manager: self.manager)
+        await provider.warm()
+        let rewards = provider.cachedRewards(forAdUnitId: "rewarded-ad-unit")
 
         expect(rewards?.configuredReward?.virtualCurrency?.amount) == 10
         expect(self.blobStore.read(ref: ref)) == payload
@@ -394,7 +399,8 @@ final class RemoteConfigIntegrationTests: TestCase {
         )
         await self.refresh(with: initialContainer)
         let provider = ConfiguredAdRewardsProvider(manager: self.manager)
-        let initialRewards = await provider.rewards(forAdUnitId: "rewarded-ad-unit")
+        await provider.warm()
+        let initialRewards = provider.cachedRewards(forAdUnitId: "rewarded-ad-unit")
         expect(initialRewards).toNot(beNil())
 
         let removedConfiguration = RemoteConfiguration(
@@ -410,7 +416,8 @@ final class RemoteConfigIntegrationTests: TestCase {
         await self.waitForRemoteConfigRequestCount(2)
         await self.waitForPersistedManifest(removedConfiguration.manifest)
 
-        let rewards = await provider.rewards(forAdUnitId: "rewarded-ad-unit")
+        await provider.warm()
+        let rewards = provider.cachedRewards(forAdUnitId: "rewarded-ad-unit")
 
         expect(rewards) == ConfiguredAdRewards()
         expect(self.diskCache.read()?.topics.entries[RemoteConfigTopic.adRewards.wireName]).to(beNil())

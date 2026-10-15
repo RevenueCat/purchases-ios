@@ -2102,7 +2102,7 @@ extension Purchases {
     public func cachedAdRewards(
         forAdUnitId adUnitId: String
     ) -> ConfiguredAdRewards? {
-        return nil
+        return self.configuredAdRewardsProvider.cachedRewards(forAdUnitId: adUnitId)
     }
 
     /// Generates a reward verification token for a loaded rewarded ad.

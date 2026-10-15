@@ -54,18 +54,7 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
             return nil
         }
 
-        return self.cachedRewards.value?.rewards?[adUnitId]
-    }
-
-    func rewards(forAdUnitId adUnitId: String) async -> ConfiguredAdRewards? {
-        guard !adUnitId.isEmpty else {
-            Logger.warn(AdsStrings.configured_ad_rewards_empty_ad_unit_id)
-            return nil
-        }
-
-        await self.warm()
-
-        guard await self.manager.hasCommittedConfig(), let cached = self.cachedRewards.value else {
+        guard let cached = self.cachedRewards.value else {
             Logger.warn(AdsStrings.configured_ad_rewards_unavailable(adUnitID: adUnitId))
             return nil
         }
