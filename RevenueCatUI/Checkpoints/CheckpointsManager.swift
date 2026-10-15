@@ -155,13 +155,8 @@ final class CheckpointsManager {
             return .suppressed
         }
 
-        switch resolution {
-        case .noAction(.configurationUnavailable):
-            return .suppressed
-        case .noAction(.unknownCheckpoint), .noAction(.noMatch):
-            return .completed(nil)
-        case .matchedWorkflow, .matchedOffering:
-            break
+        if let result = self.callbackResult(for: resolution) {
+            return result
         }
 
         do {
@@ -187,6 +182,17 @@ final class CheckpointsManager {
             return .suppressed
         } catch {
             return .suppressed
+        }
+    }
+
+    private func callbackResult(for resolution: CheckpointResolution) -> CheckpointCallbackResult? {
+        switch resolution {
+        case .noAction(.configurationUnavailable):
+            return .suppressed
+        case .noAction(.unknownCheckpoint), .noAction(.noMatch):
+            return .completed(nil)
+        case .matchedWorkflow, .matchedOffering:
+            return nil
         }
     }
 
