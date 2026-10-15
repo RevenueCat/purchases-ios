@@ -43,8 +43,9 @@ struct NativePaywallCloseHost: ViewModifier {
         #if os(iOS)
         if let owner = self.uiKitOwner {
             self.surface(content)
-                .onReceive(self.coordinator.$actions) { owner.install($0) }
-                .onDisappear { owner.removeClose() }
+                .onAppear { owner.activate(self.coordinator) }
+                .onReceive(self.coordinator.$actions) { owner.install($0, from: self.coordinator) }
+                .onDisappear { owner.removeClose(from: self.coordinator) }
         } else {
             self.nativeNavigation(content)
         }
@@ -205,6 +206,7 @@ final class NativePaywallUIKitOwner: NSObject, ObservableObject {
     }
     private var items: [UIBarButtonItem] = []
     private var originalSupplementBackButton: Bool?
+    private weak var activeSource: NativePaywallCloseCoordinator?
     private var backAction: NativePaywallCloseCoordinator.CloseAction?
     private var closeAction: NativePaywallCloseCoordinator.CloseAction?
 
@@ -213,6 +215,22 @@ final class NativePaywallUIKitOwner: NSObject, ObservableObject {
         let isStandalone = controller.parent == nil && controller.navigationController == nil
         guard self.isStandalone != isStandalone else { return }
         self.isStandalone = isStandalone
+    }
+
+    func activate(_ source: NativePaywallCloseCoordinator) {
+        self.activeSource = source
+        self.install(source.actions)
+    }
+
+    func install(_ actions: [NativePaywallCloseCoordinator.CloseAction], from source: NativePaywallCloseCoordinator) {
+        guard self.activeSource === source else { return }
+        self.install(actions)
+    }
+
+    func removeClose(from source: NativePaywallCloseCoordinator) {
+        guard self.activeSource === source else { return }
+        self.activeSource = nil
+        self.removeClose()
     }
 
     func install(_ action: NativePaywallCloseCoordinator.CloseAction?) {

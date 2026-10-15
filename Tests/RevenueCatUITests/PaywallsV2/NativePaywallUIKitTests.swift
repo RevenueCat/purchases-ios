@@ -20,6 +20,35 @@ import UIKit
 @MainActor
 final class NativePaywallUIKitTests: NativePaywallNavigationTestCase {
 
+    func testReplacedHostCannotRemoveOrReinstallOverTheCurrentHostsControls() async throws {
+        let controller = UIViewController()
+        let navigation = UINavigationController(rootViewController: controller)
+        let owner = NativePaywallUIKitOwner()
+        owner.prepare(controller: controller)
+        let previous = NativePaywallCloseCoordinator()
+        let current = NativePaywallCloseCoordinator()
+        var previousTaps = 0
+        var currentTaps = 0
+        previous.register(id: UUID(), label: "Previous", action: { previousTaps += 1 })
+        current.register(id: UUID(), label: "Current", action: { currentTaps += 1 })
+        owner.activate(previous)
+        owner.activate(current)
+        let currentItem = try XCTUnwrap(controller.navigationItem.rightBarButtonItem)
+        owner.removeClose(from: previous)
+        owner.install(previous.actions, from: previous)
+        XCTAssertTrue(controller.navigationItem.rightBarButtonItem === currentItem,
+                      "A replaced host's late disappearance and publisher cannot alter the new controls")
+        XCTAssertEqual(currentItem.accessibilityLabel, "Current")
+        let target = try XCTUnwrap(currentItem.target as? NSObject)
+        target.perform(try XCTUnwrap(currentItem.action), with: currentItem)
+        await self.waitForPresentation()
+        XCTAssertEqual(previousTaps, 0)
+        XCTAssertEqual(currentTaps, 1)
+        owner.removeClose(from: current)
+        XCTAssertNil(controller.navigationItem.rightBarButtonItems)
+        XCTAssertTrue(controller.navigationController === navigation)
+    }
+
     func testUIKitContentAppearsWhenOwnerIsPreparedAfterMounting() async throws {
         let owner = NativePaywallUIKitOwner()
         let appeared = expectation(description: "Prepared UIKit paywall content appears")
