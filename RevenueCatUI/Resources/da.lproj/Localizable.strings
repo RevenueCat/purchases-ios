@@ -29,3 +29,12 @@
 "Your purchase was successful." = "Dit køb er gennemført.";
 "Purchase unavailable" = "Købet er ikke tilgængeligt";
 "This purchase isn't available in your region." = "Dette køb er ikke tilgængeligt i din region.";
+"Couldn't connect. Check your internet connection and try again." = "Kunne ikke oprette forbindelse. Tjek din internetforbindelse, og prøv igen.";
+"This content couldn't be loaded. Please try again later." = "Dette indhold kunne ikke indlæses. Prøv igen senere.";
+"There was a problem with the store. Please try again later." = "Der opstod et problem med butikken. Prøv igen senere.";
+"Purchases aren't allowed on this device." = "Køb er ikke tilladt på denne enhed.";
+"This product isn't available right now." = "Dette produkt er ikke tilgængeligt lige nu.";
+"You already own this product." = "Du ejer allerede dette produkt.";
+"Your payment is pending. You'll get access once it's approved." = "Din betaling afventer. Du får adgang, når den er godkendt.";
+"Something went wrong. Please try again." = "Noget gik galt. Prøv igen.";
+"Your purchases couldn't be verified. Please try again later." = "Dine køb kunne ikke bekræftes. Prøv igen senere.";
