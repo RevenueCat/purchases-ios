@@ -154,7 +154,7 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
         self.assertSuppressed(result)
         XCTAssertEqual(errorPresenter.presentations.count, 1)
         XCTAssertEqual(errorPresenter.presentations.first?.error as NSError?, expectedError)
-        XCTAssertEqual(errorPresenter.presentations.first?.stage, .duringFlowPresentation)
+        XCTAssertEqual(errorPresenter.presentations.first?.kind, .flowActionFailed)
     }
 
     // Terminal custom paywall error: invoke the during-Flow error presenter and do not invoke the callback.
@@ -172,7 +172,7 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
                             checkpointIdentifier: params.checkpointIdentifier,
                             error: expectedError,
                             customVariables: params.customVariables,
-                            stage: .duringFlowPresentation
+                            kind: .flowActionFailed
                         ),
                         .init { completion(.failed) }
                     )
@@ -187,7 +187,7 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
         self.assertSuppressed(result)
         XCTAssertEqual(errorPresenter.presentations.count, 1)
         XCTAssertEqual(errorPresenter.presentations.first?.error as NSError?, expectedError)
-        XCTAssertEqual(errorPresenter.presentations.first?.stage, .duringFlowPresentation)
+        XCTAssertEqual(errorPresenter.presentations.first?.kind, .flowActionFailed)
     }
 
     // Completed Flow with a newly active entitlement: invoke the callback with that entitlement.
@@ -261,7 +261,7 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
         XCTAssertTrue(flowResult?.obtainedEntitlements.isEmpty == true)
         XCTAssertEqual(errorPresenter.presentations.count, 1)
         XCTAssertEqual(errorPresenter.presentations.first?.error as NSError?, expectedError)
-        XCTAssertEqual(errorPresenter.presentations.first?.stage, .afterFlowPresentation)
+        XCTAssertEqual(errorPresenter.presentations.first?.kind, .flowResultSyncFailed)
     }
 
     private func assertCompletedWithNil(
@@ -307,7 +307,7 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
             file: file,
             line: line
         )
-        XCTAssertEqual(errorPresenter.presentations.first?.stage, .beforeFlowPresentation, file: file, line: line)
+        XCTAssertEqual(errorPresenter.presentations.first?.kind, .flowCouldNotBeShown, file: file, line: line)
         XCTAssertEqual(
             errorPresenter.presentations.first?.customVariables,
             ["source": "test"],
@@ -449,7 +449,7 @@ private final class TerminalErrorCheckpointPresenter: CheckpointPresenterType {
                     checkpointIdentifier: presentation.checkpointIdentifier,
                     error: self.error,
                     customVariables: presentation.customVariables,
-                    stage: .duringFlowPresentation
+                    kind: .flowActionFailed
                 ),
                 .init { continuation.resume() }
             )

@@ -154,7 +154,7 @@ final class CheckpointsManager {
                 error,
                 identifier: identifier,
                 params: params,
-                stage: .beforeFlowPresentation
+                kind: .flowCouldNotBeShown
             )
             return .suppressed
         case let .synchronizationFailed(error):
@@ -162,7 +162,7 @@ final class CheckpointsManager {
                 error,
                 identifier: identifier,
                 params: params,
-                stage: .afterFlowPresentation
+                kind: .flowResultSyncFailed
             )
             return .completed(FlowResult(obtainedEntitlements: []))
         }
@@ -226,7 +226,7 @@ final class CheckpointsManager {
         _ error: any Error,
         identifier: String,
         params: CheckpointCallParams,
-        stage: ErrorPresentationStage
+        kind: CheckpointFailureKind
     ) async {
         let errorPresentationHandler = self.errorPresentationHandler(for: params)
 
@@ -236,7 +236,7 @@ final class CheckpointsManager {
                     checkpointIdentifier: identifier,
                     error: error,
                     customVariables: params.customVariables,
-                    stage: stage
+                    kind: kind
                 ),
                 .init { continuation.resume() }
             )

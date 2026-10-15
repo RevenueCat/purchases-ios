@@ -529,7 +529,7 @@ private extension DefaultPaywallPresenter {
                 checkpointIdentifier: params.checkpointIdentifier,
                 error: error,
                 customVariables: params.customVariables,
-                stage: .beforeFlowPresentation
+                kind: .flowCouldNotBeShown
             ),
             .init { completion(.failed) }
         )

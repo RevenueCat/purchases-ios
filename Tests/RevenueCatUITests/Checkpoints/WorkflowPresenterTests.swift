@@ -774,7 +774,7 @@ final class DefaultPaywallPresenterTests: TestCase {
         XCTAssertNil(presentationResult)
         XCTAssertEqual(receivedParams?.checkpointIdentifier, "test_checkpoint")
         XCTAssertEqual(receivedParams?.customVariables, ["source": "test"])
-        XCTAssertEqual(receivedParams?.stage, .beforeFlowPresentation)
+        XCTAssertEqual(receivedParams?.kind, .flowCouldNotBeShown)
         let error = try XCTUnwrap(receivedParams?.error as? CheckpointError)
         guard case .noPresentationContext = error else {
             return XCTFail("Expected noPresentationContext, got \(error)")

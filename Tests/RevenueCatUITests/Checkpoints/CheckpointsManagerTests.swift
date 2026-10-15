@@ -749,7 +749,7 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertFalse(checkpointCompleted)
         XCTAssertEqual(errorPresentationParams?.checkpointIdentifier, "onboarding")
         XCTAssertEqual(errorPresentationParams?.error as NSError?, expectedError)
-        XCTAssertEqual(errorPresentationParams?.stage, .afterFlowPresentation)
+        XCTAssertEqual(errorPresentationParams?.kind, .flowResultSyncFailed)
 
         errorPresentationCompletion?.complete()
         errorPresentationCompletion?.complete()
