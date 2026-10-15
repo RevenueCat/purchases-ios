@@ -116,7 +116,7 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
         let errorPresenter = ErrorPresentationRecorder()
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
-            checkpointPresenter: TerminalErrorReportingCheckpointPresenter(error: expectedError)
+            checkpointPresenter: TerminalErrorCheckpointPresenter(error: expectedError)
         )
 
         let result = await manager.checkpointForCallback(
@@ -407,7 +407,7 @@ private final class OutcomeCheckpointPresenter: CheckpointPresenterType {
 
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private final class TerminalErrorReportingCheckpointPresenter: CheckpointPresenterType {
+private final class TerminalErrorCheckpointPresenter: CheckpointPresenterType {
 
     private let error: any Error
 
