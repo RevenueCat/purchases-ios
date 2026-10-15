@@ -40,12 +40,16 @@ struct NativePaywallCloseHost: ViewModifier {
             .toolbar {
                 ToolbarItemGroup(placement: .cancellationAction) {
                     if self.enabled, self.coordinator.action(for: .back) != nil {
-                        NativePaywallToolbarClose(coordinator: self.coordinator, primary: true, probe: self.navigationProbe)
+                        NativePaywallToolbarClose(
+                            coordinator: self.coordinator, primary: true, probe: self.navigationProbe
+                        )
                     }
                 }
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                     if self.enabled, self.coordinator.action(for: .close) != nil {
-                        NativePaywallToolbarClose(coordinator: self.coordinator, primary: false, probe: self.navigationProbe)
+                        NativePaywallToolbarClose(
+                            coordinator: self.coordinator, primary: false, probe: self.navigationProbe
+                        )
                     }
                 }
             }

@@ -10,8 +10,8 @@
 
 @_spi(Internal) import RevenueCat
 @_spi(Internal) @testable import RevenueCatUI
-import SwiftUI
 import SnapshotTesting
+import SwiftUI
 import XCTest
 
 #if os(iOS)
