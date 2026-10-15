@@ -135,6 +135,10 @@ private struct NativePaywallControlsPresentedKey: EnvironmentKey {
     static let defaultValue = true
 }
 
+private struct NativePaywallHeaderCollapsedKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
 private struct NativePaywallLayoutButtonsKey: EnvironmentKey {
     static let defaultValue: Set<ObjectIdentifier> = []
 }
@@ -166,6 +170,11 @@ extension EnvironmentValues {
     var nativePaywallControlsPresented: Bool {
         get { self[NativePaywallControlsPresentedKey.self] }
         set { self[NativePaywallControlsPresentedKey.self] = newValue }
+    }
+
+    var nativePaywallHeaderCollapsed: Bool {
+        get { self[NativePaywallHeaderCollapsedKey.self] }
+        set { self[NativePaywallHeaderCollapsedKey.self] = newValue }
     }
 
     var nativePaywallLayoutButtons: Set<ObjectIdentifier> {
