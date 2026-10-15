@@ -29,7 +29,7 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         try self.stub(content: [
             "reward": ["type": "virtual_currency", "code": "coins", "amount": 10],
             "more_rewards": [
-                ["type": "entitlement", "identifier": "premium", "duration": "PT30M"],
+                ["type": "entitlement", "identifier": "premium", "duration_in_seconds": .int(30 * 60)],
                 ["type": "virtual_currency", "code": "gems", "amount": 2]
             ]
         ])
@@ -41,7 +41,7 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         expect(rewards.reward?.virtualCurrency?.code) == "coins"
         expect(rewards.reward?.virtualCurrency?.amount) == 10
         expect(rewards.moreRewards[0].entitlement?.identifier) == "premium"
-        expect(rewards.moreRewards[0].entitlement?.duration) == AdRewardDuration(value: 30, unit: .minute)
+        expect(rewards.moreRewards[0].entitlement?.durationInSeconds) == 30 * 60
         expect(rewards.moreRewards[1].virtualCurrency?.code) == "gems"
     }
 
@@ -63,38 +63,71 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         expect(self.provider.cachedRewards(forAdUnitId: "ad-unit")?.reward?.virtualCurrency?.amount) == 10
     }
 
-    func testSupportsEachDurationUnitWithoutNormalization() async throws {
-        let cases: [(String, Int, AdRewardDuration.Unit)] = [
-            ("PT30S", 30, .second),
-            ("PT60M", 60, .minute),
-            ("PT2H", 2, .hour),
-            ("P3D", 3, .day),
-            ("P4W", 4, .week),
-            ("P5M", 5, .month),
-            ("P6Y", 6, .year)
-        ]
+    func testAsyncRewardsReturnsCachedValueWithoutWaitingForRefresh() async throws {
+        try self.stub(content: [
+            "reward": ["type": "virtual_currency", "code": "coins", "amount": 10]
+        ])
+        await self.provider.warm()
 
-        for (rawDuration, value, unit) in cases {
-            try self.stub(content: [
-                "reward": [
-                    "type": "entitlement",
-                    "identifier": "premium",
-                    "duration": .string(rawDuration)
-                ]
-            ])
+        let rewards = await self.provider.rewards(forAdUnitId: "ad-unit")
 
-            await self.provider.warm()
-            let maybeReward = self.provider.cachedRewards(forAdUnitId: "ad-unit")
-            let reward = try XCTUnwrap(maybeReward)
-            expect(reward.reward?.entitlement?.duration) == AdRewardDuration(value: value, unit: unit)
-        }
+        expect(rewards?.reward?.virtualCurrency?.amount) == 10
+        expect(self.manager.invokedCommittedTopicAfterInFlightRefreshCount) == 0
+    }
+
+    func testAsyncRewardsWaitsForInFlightRefreshWithoutStartingAnotherRefresh() async throws {
+        try self.stub(content: [
+            "reward": ["type": "virtual_currency", "code": "coins", "amount": 10]
+        ])
+
+        let rewards = await self.provider.rewards(forAdUnitId: "ad-unit")
+
+        expect(rewards?.reward?.virtualCurrency?.amount) == 10
+        expect(self.manager.invokedCommittedTopicAfterInFlightRefreshCount) == 1
+        expect(self.manager.invokedTopicCount) == 0
+        expect(self.manager.invokedEnsureBlobsDownloadedRefs) == [[String(repeating: "A", count: 32)]]
+        expect(self.manager.invokedCachedBlobDataParameters.count) == 1
+    }
+
+    func testAsyncRewardsReturnsNilWhenConfigurationRemainsUnavailable() async {
+        self.manager.stubbedHasCommittedConfig = false
+
+        let rewards = await self.provider.rewards(forAdUnitId: "ad-unit")
+
+        expect(rewards).to(beNil())
+        expect(self.manager.invokedCommittedTopicAfterInFlightRefreshCount) == 1
+        expect(self.manager.invokedTopicCount) == 0
+        expect(self.manager.invokedEnsureBlobsDownloadedRefs).to(beEmpty())
+    }
+
+    func testAsyncRewardsWithEmptyAdUnitIdentifierDoesNotWaitForRefresh() async {
+        let rewards = await self.provider.rewards(forAdUnitId: "")
+
+        expect(rewards).to(beNil())
+        expect(self.manager.invokedCommittedTopicAfterInFlightRefreshCount) == 0
+    }
+
+    func testReturnsEntitlementDurationInSeconds() async throws {
+        try self.stub(content: [
+            "reward": [
+                "type": "entitlement",
+                "identifier": "premium",
+                "duration_in_seconds": .int(90)
+            ]
+        ])
+
+        await self.provider.warm()
+        let maybeReward = self.provider.cachedRewards(forAdUnitId: "ad-unit")
+        let reward = try XCTUnwrap(maybeReward)
+
+        expect(reward.reward?.entitlement?.durationInSeconds) == 90
     }
 
     func testUnsupportedIndividualRewardsArePreserved() async throws {
         try self.stub(content: [
             "reward": ["type": "future_reward"],
             "more_rewards": [
-                ["type": "entitlement", "identifier": "premium", "duration": "PT0S"],
+                ["type": "entitlement", "identifier": "premium", "duration_in_seconds": .int(0)],
                 ["type": "virtual_currency", "code": "coins", "amount": 0]
             ]
         ])

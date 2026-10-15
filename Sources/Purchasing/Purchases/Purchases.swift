@@ -2088,7 +2088,7 @@ extension Purchases {
     public func adRewards(
         forAdUnitId adUnitId: String
     ) async -> ConfiguredAdRewards? {
-        return nil
+        return await self.configuredAdRewardsProvider.rewards(forAdUnitId: adUnitId)
     }
 
     /// Returns the latest locally cached rewards configured for a rewarded ad unit.

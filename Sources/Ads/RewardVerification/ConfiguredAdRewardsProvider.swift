@@ -16,6 +16,11 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
 
     private typealias RewardsByAdUnitID = [String: ConfiguredAdRewards]
 
+    private enum ReadMode {
+        case fetchIfNeeded
+        case waitForInFlight
+    }
+
     private enum Resolution {
         case available(generation: Int, rewards: RewardsByAdUnitID)
         case removed(generation: Int)
@@ -54,19 +59,43 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
             return nil
         }
 
-        guard let cached = self.cachedRewards.value else {
+        guard let rewards = self.cachedRewardsValue(forAdUnitId: adUnitId) else {
             Logger.warn(AdsStrings.configured_ad_rewards_unavailable(adUnitID: adUnitId))
             return nil
         }
 
-        return cached.rewards?[adUnitId] ?? ConfiguredAdRewards()
+        return rewards
+    }
+
+    func rewards(forAdUnitId adUnitId: String) async -> ConfiguredAdRewards? {
+        guard !adUnitId.isEmpty else {
+            Logger.warn(AdsStrings.configured_ad_rewards_empty_ad_unit_id)
+            return nil
+        }
+
+        if let rewards = self.cachedRewardsValue(forAdUnitId: adUnitId) {
+            return rewards
+        }
+
+        await self.warm(mode: .waitForInFlight)
+
+        guard let rewards = self.cachedRewardsValue(forAdUnitId: adUnitId) else {
+            Logger.warn(AdsStrings.configured_ad_rewards_unavailable(adUnitID: adUnitId))
+            return nil
+        }
+
+        return rewards
     }
 
     func warm() async {
+        await self.warm(mode: .fetchIfNeeded)
+    }
+
+    private func warm(mode: ReadMode) async {
         let resolution: Resolution
         do {
             resolution = try await self.manager.readConsistent {
-                return await self.resolveConfiguration()
+                return await self.resolveConfiguration(mode: mode)
             } ?? .unavailable
         } catch {
             resolution = .unavailable
@@ -75,17 +104,38 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
         self.updateCache(with: resolution)
     }
 
-    private func resolveConfiguration() async -> Resolution {
+    private func resolveConfiguration(mode: ReadMode) async -> Resolution {
         let generation = self.manager.configGeneration
-        let topic = await self.manager.awaitTopicAndPrefetchBlobsReady(.adRewards)
+        let topic: RemoteConfiguration.ConfigTopic?
+        switch mode {
+        case .fetchIfNeeded:
+            topic = await self.manager.awaitTopicAndPrefetchBlobsReady(.adRewards)
+        case .waitForInFlight:
+            topic = await self.manager.committedTopicAfterInFlightRefresh(.adRewards)
+        }
+
         guard let topic else {
             return await self.manager.hasCommittedConfig() ? .removed(generation: generation) : .unavailable
         }
 
-        guard topic[Self.blobItemKey]?.blobRef != nil,
-              let data = await self.manager.blobData(for: .adRewards, itemKey: Self.blobItemKey) else {
+        guard let blobRef = topic[Self.blobItemKey]?.blobRef else {
             return .unavailable
         }
+
+        let data: Data?
+        switch mode {
+        case .fetchIfNeeded:
+            data = await self.manager.blobData(for: .adRewards, itemKey: Self.blobItemKey)
+        case .waitForInFlight:
+            _ = await self.manager.ensureBlobsDownloaded([blobRef])
+            data = await self.manager.blobData(
+                for: .adRewards,
+                itemKey: Self.blobItemKey,
+                policy: .cachedOnly
+            )
+        }
+
+        guard let data else { return .unavailable }
 
         do {
             return .available(
@@ -96,6 +146,11 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
             Logger.warn(AdsStrings.configured_ad_rewards_invalid_blob(error: error))
             return .unavailable
         }
+    }
+
+    private func cachedRewardsValue(forAdUnitId adUnitId: String) -> ConfiguredAdRewards? {
+        guard let cached = self.cachedRewards.value else { return nil }
+        return cached.rewards?[adUnitId] ?? ConfiguredAdRewards()
     }
 
     private func updateCache(with resolution: Resolution) {
@@ -147,9 +202,11 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
 
         case AdReward.Kind.entitlement:
             guard case let .string(identifier)? = payload["identifier"],
-                  case let .string(rawDuration)? = payload["duration"],
-                  let duration = Self.decodeDuration(rawDuration),
-                  let reward = EntitlementRewardConfiguration(identifier: identifier, duration: duration) else {
+                  case let .int(durationInSeconds)? = payload["duration_in_seconds"],
+                  let reward = EntitlementRewardConfiguration(
+                    identifier: identifier,
+                    durationInSeconds: durationInSeconds
+                  ) else {
                 return .unsupportedReward
             }
             return .entitlement(reward)
@@ -158,28 +215,6 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
             Logger.warn(AdsStrings.unknown_reward_kind(rawValue: type))
             return .unsupportedReward
         }
-    }
-
-    private static func decodeDuration(_ rawValue: String) -> AdRewardDuration? {
-        guard rawValue.range(
-            of: #"^P(?:[1-9]\d*Y|[1-9]\d*M|[1-9]\d*W|[1-9]\d*D|T(?:[1-9]\d*H|[1-9]\d*M|[1-9]\d*S))$"#,
-            options: [.regularExpression, .caseInsensitive]
-        ) != nil,
-              let duration = ISODurationFormatter.parse(from: rawValue) else {
-            return nil
-        }
-
-        let components: [(Int, AdRewardDuration.Unit)] = [
-            (duration.years, .year),
-            (duration.months, .month),
-            (duration.weeks, .week),
-            (duration.days, .day),
-            (duration.hours, .hour),
-            (duration.minutes, .minute),
-            (duration.seconds, .second)
-        ]
-        guard let component = components.first(where: { $0.0 > 0 }) else { return nil }
-        return AdRewardDuration(value: component.0, unit: component.1)
     }
 
     private static let blobItemKey = "default"
