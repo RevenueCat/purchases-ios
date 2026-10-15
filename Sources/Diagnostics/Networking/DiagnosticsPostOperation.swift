@@ -32,7 +32,8 @@ final class DiagnosticsPostOperation: NetworkOperation {
     }
 
     override func begin(completion: @escaping () -> Void) {
-        let request = HTTPRequest(method: .post(self.request), path: .postDiagnostics)
+        let request = HTTPRequest(method: .post(self.request),
+                                  requestPath: HTTPRequest.Path2.postDiagnostics)
 
         self.httpClient.perform(request) { (response: VerifiedHTTPResponse<HTTPEmptyResponseBody>.Result) in
             defer {

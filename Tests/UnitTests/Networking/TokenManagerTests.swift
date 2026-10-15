@@ -536,7 +536,7 @@ class TokenManagerTests: TestCase {
 
         var duplicateHandlerResult: Bool?
         let secondAction = manager.tokenRefreshRequest(
-            for: Self.makeRequest(path: .getOfferings(appUserID: "user")),
+            for: Self.makeRequest(path: HTTPRequest.Path2.getOfferings(appUserID: "user")),
             response: Self.unauthorizedResponse
         ) { wasSuccessful in
             duplicateHandlerResult = wasSuccessful
@@ -664,7 +664,7 @@ class TokenManagerTests: TestCase {
 
         _ = manager.tokenRefreshRequest(for: Self.makeRequest(), response: Self.unauthorizedResponse) { _ in }
         var duplicateResult: Bool?
-        _ = manager.tokenRefreshRequest(for: Self.makeRequest(path: .getOfferings(appUserID: "user")),
+        _ = manager.tokenRefreshRequest(for: Self.makeRequest(path: HTTPRequest.Path2.getOfferings(appUserID: "user")),
                                         response: Self.unauthorizedResponse) { wasSuccessful in
             duplicateResult = wasSuccessful
         }
@@ -722,8 +722,8 @@ private extension TokenManagerTests {
 
     /// Builds a minimal `HTTPClient.Request` for exercising `TokenManager` methods that take one,
     /// without needing to spin up a full `HTTPClient`.
-    static func makeRequest(path: HTTPRequest.Path = .getCustomerInfo(appUserID: "user")) -> HTTPClient.Request {
-        let httpRequest = HTTPRequest(method: .get, path: path)
+    static func makeRequest(path: any HTTPRequestPath) -> HTTPClient.Request {
+        let httpRequest = HTTPRequest(method: .get, requestPath: path)
         return HTTPClient.Request(httpRequest: httpRequest,
                                   authHeaders: [:],
                                   defaultHeaders: [:],
@@ -731,6 +731,14 @@ private extension TokenManagerTests {
                                   preferIAMPath: false,
                                   internalSettings: DangerousSettings.Internal.default,
                                   completionHandler: { (_: VerifiedHTTPResponse<Data>.Result) in })
+    }
+
+    static func makeRequest(path: HTTPRequest.Path) -> HTTPClient.Request {
+        self.makeRequest(path: path as any HTTPRequestPath)
+    }
+
+    static func makeRequest() -> HTTPClient.Request {
+        self.makeRequest(path: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"))
     }
 
     static func makeTokenResponse(

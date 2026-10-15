@@ -549,7 +549,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         }
 
         let firstRequestPath = HTTPRequest.Path.mockPath.relativePath
-        let queuedRequestPath = HTTPRequest.Path.getCustomerInfo(appUserID: "queued-user").relativePath
+        let queuedRequestPath = HTTPRequest.Path2.getCustomerInfo(appUserID: "queued-user").relativePath
 
         let firstRequestCompleted: Atomic<Bool> = false
         client.perform(.init(method: .get, path: .mockPath)) { (_: EmptyResponse) in
@@ -557,7 +557,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         }
         // Enqueued while the first request's attempt/probe is in flight.
         let queuedResult: EmptyResponse? = waitUntilValue(timeout: .seconds(5)) { completion in
-            client.perform(.init(method: .get, path: .getCustomerInfo(appUserID: "queued-user"))) {
+            let path = HTTPRequest.Path2.getCustomerInfo(appUserID: "queued-user")
+            client.perform(.init(method: .get, requestPath: path)) {
                 completion($0)
             }
         }
@@ -1262,8 +1263,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testRemoteConfigFallbackSendsETagHeaders() {
-        let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app")
-        let request = HTTPRequest(method: .get, path: path)
+        let path = HTTPRequest.Path2.remoteConfigFallback(domain: "app")
+        let request = HTTPRequest(method: .get, requestPath: path)
         let responseData = "{\"domain\":\"app\",\"manifest\":\"test\",\"active_topics\":[],\"topics\":{}}".asData
         let eTag = "fallback-etag"
         let eTagValidationTime = Date(timeIntervalSince1970: 1234567)
@@ -1297,8 +1298,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testRemoteConfigFallbackGetsCachedResponseWhenStatusCodeIsNotModified() {
-        let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app")
-        let request = HTTPRequest(method: .get, path: path)
+        let path = HTTPRequest.Path2.remoteConfigFallback(domain: "app")
+        let request = HTTPRequest(method: .get, requestPath: path)
         let cachedResponseData = """
         {"domain":"app","manifest":"cached","active_topics":[],"topics":{}}
         """.asData
@@ -1800,7 +1801,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     // MARK: Dynamic timeout management
 
     func testRecordsSuccessOnMainBackendAfterSuccessfulRequestToMainBackend() throws {
-        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
+        let request = HTTPRequest(method: .get,
+                                  requestPath: HTTPRequest.Path2.getOfferings(appUserID: "test_user_id"))
         let host = try XCTUnwrap(SystemInfo.apiBaseURL.host)
 
         timeoutManager.recordRequestResult(host: host, .mainSourceTimedOut)
@@ -1842,7 +1844,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testRecordsTimeoutOnMainBackendWithFallbackWhenTimeoutOccursOnMainBackendWithFallback() throws {
-        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
+        let request = HTTPRequest(method: .get,
+                                  requestPath: HTTPRequest.Path2.getOfferings(appUserID: "test_user_id"))
 
         // main request
         let url = try XCTUnwrap(request.path.url(preferIAMPath: self.tokenManager.enabled)?.absoluteString)
@@ -1874,7 +1877,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     /// legacy network timeout.
     func testUsesReTieredFlatTimeoutForFallbackHostRequestWhenAPISourcesEnabled() throws {
         let client = self.createClient(self.systemInfoUsingAPISources())
-        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
+        let request = HTTPRequest(method: .get,
+                                  requestPath: HTTPRequest.Path2.getOfferings(appUserID: "test_user_id"))
 
         let url = try XCTUnwrap(request.path.url(preferIAMPath: self.tokenManager.enabled)?.absoluteString)
         stub(condition: isAbsoluteURLString(url)) { _ in
@@ -1969,8 +1973,9 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         // The domain layer aims this path at a fallback host, so even with API sources enabled it must
         // get the flat fallback tier rather than the aggressive main-source tiers.
         let client = self.createClient(self.systemInfoUsingAPISources())
-        let request = HTTPRequest(method: .get, path: HTTPRequest.FallbackPath.remoteConfig(domain: "app"))
-        let host = try XCTUnwrap(HTTPRequest.FallbackPath.serverHostURL.host)
+        let path = HTTPRequest.Path2.remoteConfigFallback(domain: "app")
+        let request = HTTPRequest(method: .get, requestPath: path)
+        let host = try XCTUnwrap(path.serverHostURL.host)
 
         let url = try XCTUnwrap(request.path.url(preferIAMPath: self.tokenManager.enabled)?.absoluteString)
         stub(condition: isAbsoluteURLString(url)) { request in
@@ -1998,8 +2003,9 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
     func testRemoteConfigFallbackSuccessDoesNotClearMainSourceMemory() throws {
         let client = self.createClient(self.systemInfoUsingAPISources())
-        let request = HTTPRequest(method: .get, path: HTTPRequest.FallbackPath.remoteConfig(domain: "app"))
-        let host = try XCTUnwrap(HTTPRequest.FallbackPath.serverHostURL.host)
+        let path = HTTPRequest.Path2.remoteConfigFallback(domain: "app")
+        let request = HTTPRequest(method: .get, requestPath: path)
+        let host = try XCTUnwrap(path.serverHostURL.host)
 
         timeoutManager.recordRequestResult(host: host, .mainSourceTimedOut)
 
@@ -2261,7 +2267,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         // Recreate client so it picks up the proxy URL
         self.client = self.createClient()
 
-        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
+        let request = HTTPRequest(method: .get,
+                                  requestPath: HTTPRequest.Path2.getOfferings(appUserID: "test_user_id"))
 
         stub(condition: isHost("proxy.revenuecat.com")) { request in
             // With a proxy URL, the request should use a flat timeout because fallback URLs are
@@ -2293,7 +2300,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         // Simulate a previous timeout on the proxy host
         timeoutManager.recordRequestResult(host: "proxy.revenuecat.com", .mainSourceTimedOut)
 
-        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
+        let request = HTTPRequest(method: .get,
+                                  requestPath: HTTPRequest.Path2.getOfferings(appUserID: "test_user_id"))
 
         stub(condition: isHost("proxy.revenuecat.com")) { request in
             // Even after a previous timeout, with a proxy URL set the request should use a flat timeout,
@@ -2321,7 +2329,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
         timeoutManager.recordRequestResult(host: "proxy.revenuecat.com", .mainSourceTimedOut)
 
-        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
+        let request = HTTPRequest(method: .get,
+                                  requestPath: HTTPRequest.Path2.getOfferings(appUserID: "test_user_id"))
 
         stub(condition: isHost("proxy.revenuecat.com")) { request in
             XCTAssertEqual(request.timeoutInterval, HTTPRequestTimeoutManager.Timeout.flat)
@@ -3576,19 +3585,19 @@ extension HTTPClientTests {
     ) -> HTTPClient.Request {
         let completionHandler: HTTPClient.Completion<CustomerInfo> = { _ in return }
 
-        let path: HTTPRequest.Path
+        let path: any HTTPRequestPath
         if hasFallbackUrls {
-            path = .getOfferings(appUserID: "abc123")
+            path = HTTPRequest.Path2.getOfferings(appUserID: "abc123")
             expect(path.fallbackUrls).toNot(
                 beEmpty(),
                 description: "This test requires a path that has at least 1 fallback host"
             )
         } else {
-            path = .getCustomerInfo(appUserID: "abc123")
+            path = HTTPRequest.Path2.getCustomerInfo(appUserID: "abc123")
         }
 
         let request: HTTPClient.Request = .init(
-            httpRequest: .init(method: .get, path: path, isRetryable: isRetryable),
+            httpRequest: .init(method: .get, requestPath: path, isRetryable: isRetryable),
             authHeaders: .init(),
             defaultHeaders: .init(),
             verificationMode: .default,
@@ -4686,7 +4695,8 @@ final class HTTPClientTimeoutManagerTests: BaseHTTPClientTests<MockETagManager, 
     /// Verifies that when a timeout occurs on the main backend for an endpoint that supports fallback,
     /// the HTTPClient records the correct events
     func testRecordsTimeoutOnMainBackendAndOtherOnFallbackSuccessWithFallbackEvent() throws {
-        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
+        let request = HTTPRequest(method: .get,
+                                  requestPath: HTTPRequest.Path2.getOfferings(appUserID: "test_user_id"))
 
         // main request times out
         let url = try XCTUnwrap(request.path.url(preferIAMPath: self.tokenManager.enabled)?.absoluteString)

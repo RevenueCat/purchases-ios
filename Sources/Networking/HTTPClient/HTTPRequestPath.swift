@@ -20,6 +20,11 @@ protocol HTTPRequestPath {
     /// The base URL for requests to this path.
     static var serverHostURL: URL { get }
 
+    /// The base URL for this request's path.
+    ///
+    /// Defaults to `Self.serverHostURL`.
+    var serverHostURL: URL { get }
+
     /// The fallback URLs to use when the main server is down.
     ///
     /// Not all endpoints have a fallback URL, but some do.
@@ -100,6 +105,8 @@ struct DefaultResponseSignatureContextProvider: ResponseSignatureContextProvider
 
 extension HTTPRequestPath {
 
+    var serverHostURL: URL { Self.serverHostURL }
+
     var fallbackUrls: [URL] {
         return []
     }
@@ -154,7 +161,7 @@ extension HTTPRequestPath {
         } else if let apiSourceURL {
             baseURL = apiSourceURL
         } else {
-            baseURL = Self.serverHostURL
+            baseURL = self.serverHostURL
         }
 
         let path = preferIAMPath ? self.relativeIAMPath : self.relativePath
@@ -168,9 +175,6 @@ extension HTTPRequest {
 
     enum Path: Hashable {
 
-        case getCustomerInfo(appUserID: String)
-        case getOfferings(appUserID: String)
-        case getIntroEligibility(appUserID: String)
         case logIn
         case postAttributionData(appUserID: String)
         case postOfferForSigning
@@ -196,36 +200,12 @@ extension HTTPRequest {
         case tokenLogOut
     }
 
-    enum FallbackPath: Hashable {
-
-        case remoteConfig(domain: String)
-
-    }
-
-    enum FeatureEventsPath: Hashable {
-
-        case postEvents
-
-    }
-
-    enum DiagnosticsPath: Hashable {
-
-        case postDiagnostics
-
-    }
-
     enum WebBillingPath: Hashable {
 
         case getWebOfferingProducts(appUserID: String)
         case getWebBillingProducts(userId: String, productIds: Set<String>)
         case postHostedCheckout
         case getHostedCheckoutStatus(operationSessionID: String, appUserID: String)
-
-    }
-
-    enum AdPath: Hashable {
-
-        case postEvents
 
     }
 
@@ -247,8 +227,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var fallbackRelativePath: String? {
         switch self {
-        case .getOfferings:
-            return "/v1/offerings"
         case .getProductEntitlementMapping:
             return "/v1/product_entitlement_mapping"
         default:
@@ -275,10 +253,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var authenticated: Bool {
         switch self {
-        case .getCustomerInfo,
-                .getOfferings,
-                .getIntroEligibility,
-                .logIn,
+        case .logIn,
                 .postAttributionData,
                 .postOfferForSigning,
                 .postReceiptData,
@@ -308,10 +283,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var shouldSendEtag: Bool {
         switch self {
-        case .getCustomerInfo,
-                .getOfferings,
-                .getIntroEligibility,
-                .logIn,
+        case .logIn,
                 .postAttributionData,
                 .postOfferForSigning,
                 .postReceiptData,
@@ -340,12 +312,10 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var supportsSignatureVerification: Bool {
         switch self {
-        case .getCustomerInfo,
-                .logIn,
+        case .logIn,
                 .postReceiptData,
                 .postRedeemWebPurchase,
                 .health,
-                .getOfferings,
                 .getProductEntitlementMapping,
                 .getVirtualCurrencies,
                 .spendVirtualCurrencies,
@@ -355,8 +325,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .remoteConfig,
                 .rewardVerificationStatus:
             return true
-        case .getIntroEligibility,
-                .postSubscriberAttributes,
+        case .postSubscriberAttributes,
                 .postAttributionData,
                 .postAdServicesToken,
                 .postOfferForSigning,
@@ -372,8 +341,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var needsNonceForSigning: Bool {
         switch self {
-        case .getCustomerInfo,
-                .logIn,
+        case .logIn,
                 .postReceiptData,
                 .postRedeemWebPurchase,
                 .getVirtualCurrencies,
@@ -387,9 +355,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .tokenRefresh,
                 .tokenLogOut:
             return true
-        case .getOfferings,
-                .getIntroEligibility,
-                .postSubscriberAttributes,
+        case .postSubscriberAttributes,
                 .postAttributionData,
                 .postAdServicesToken,
                 .postOfferForSigning,
@@ -425,15 +391,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var pathComponent: String {
         switch self {
-        case let .getCustomerInfo(appUserID):
-            return "subscribers/\(Self.escape(appUserID))"
-
-        case let .getOfferings(appUserID):
-            return "subscribers/\(Self.escape(appUserID))/offerings"
-
-        case let .getIntroEligibility(appUserID):
-            return "subscribers/\(Self.escape(appUserID))/intro_eligibility"
-
         case let .appHealthReport(appUserID):
             return "subscribers/\(Self.escape(appUserID))/health_report"
 
@@ -513,12 +470,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         // that the corresponding server paths have not yet been migrated to
         // support access token authorization
         switch self {
-        case .getCustomerInfo:
-            return "customer"
-        case .getOfferings:
-            return "customer/offerings"
-        case .getIntroEligibility:
-            return "customer/intro_eligibility"
         case .logIn:
             assertionFailure("The .login endpoint is not allowed when IAM is enabled")
             Logger.error("The .login endpoint is not allowed when IAM is enabled")
@@ -570,15 +521,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var name: String {
         switch self {
-        case .getCustomerInfo:
-            return "get_customer"
-
-        case .getOfferings:
-            return "get_offerings"
-
-        case .getIntroEligibility:
-            return "get_intro_eligibility"
-
         case .logIn:
             return "log_in"
 
@@ -670,74 +612,4 @@ extension HTTPRequest.Path: HTTPRequestPath {
     private static func escape(_ appUserID: String) -> String {
         return appUserID.trimmedAndEscaped
     }
-}
-
-extension HTTPRequest.FallbackPath: HTTPRequestPath {
-
-    // swiftlint:disable:next force_unwrapping
-    static let serverHostURL = URL(string: "https://api-production.8-lives-cat.io")!
-
-    var isFallbackHostPath: Bool {
-        switch self {
-        case .remoteConfig:
-            return true
-        }
-    }
-
-    var authenticated: Bool {
-        switch self {
-        case .remoteConfig:
-            return true
-        }
-    }
-
-    var shouldSendEtag: Bool {
-        switch self {
-        case .remoteConfig:
-            return true
-        }
-    }
-
-    var supportsSignatureVerification: Bool {
-        switch self {
-        case .remoteConfig:
-            return true
-        }
-    }
-
-    var needsNonceForSigning: Bool {
-        switch self {
-        case .remoteConfig:
-            return false
-        }
-    }
-
-    var responseSignatureContextProvider: ResponseSignatureContextProvider {
-        switch self {
-        case .remoteConfig:
-            return FallbackSignatureContextProvider()
-        }
-    }
-
-    var relativePath: String {
-        switch self {
-        case let .remoteConfig(domain):
-            return "/v1/config/\(domain.trimmedAndEscaped)"
-        }
-    }
-
-    var name: String {
-        switch self {
-        case .remoteConfig:
-            return "remote_config_fallback"
-        }
-    }
-
-    var additionalHeaders: HTTPRequest.Headers {
-        switch self {
-        case .remoteConfig:
-            return [:]
-        }
-    }
-
 }

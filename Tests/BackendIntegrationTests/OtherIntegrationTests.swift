@@ -82,9 +82,10 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         expect(info2.isComputedOffline) == false
 
         self.logger.verifyMessageWasLogged(Strings.customerInfo.vending_cache, level: .debug)
-        try self.logger.verifyMessageWasNotLogged(
+        let path = HTTPRequest.Path2.getCustomerInfo(appUserID: try self.purchases.appUserID)
+        self.logger.verifyMessageWasNotLogged(
             Strings.network.api_request_started(
-                .init(method: .get, path: .getCustomerInfo(appUserID: self.purchases.appUserID))
+                .init(method: .get, requestPath: path)
             )
         )
     }
@@ -114,7 +115,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         self.logger.verifyMessageWasLogged(
             Strings.network.api_request_completed(
                 .init(method: .get,
-                      path: .getOfferings(appUserID: try self.purchases.appUserID)),
+                      requestPath: HTTPRequest.Path2.getOfferings(appUserID: try self.purchases.appUserID)),
                 httpCode: .notModified,
                 metadata: nil
             ),
@@ -129,13 +130,9 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         _ = await customerInfoIterator?.next()
 
         // 2. Verify only one CustomerInfo request was done
-        try self.logger.verifyMessageWasLogged(
-            Strings.network.api_request_started(
-                .init(
-                    method: .get,
-                    path: .getCustomerInfo(appUserID: self.purchases.appUserID)
-                )
-            ),
+        let path = HTTPRequest.Path2.getCustomerInfo(appUserID: try self.purchases.appUserID)
+        self.logger.verifyMessageWasLogged(
+            Strings.network.api_request_started(.init(method: .get, requestPath: path)),
             level: .debug,
             expectedCount: 1
         )
@@ -150,7 +147,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
             Strings.network.api_request_started(
                 .init(
                     method: .get,
-                    path: .getOfferings(appUserID: self.purchases.appUserID)
+                    requestPath: HTTPRequest.Path2.getOfferings(appUserID: self.purchases.appUserID)
                 )
             ),
             level: .debug,
@@ -165,8 +162,8 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         // 2. Re-fetch user
         let info2 = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
 
-        let expectedRequest = HTTPRequest(method: .get,
-                                          path: .getCustomerInfo(appUserID: try self.purchases.appUserID))
+        let path = HTTPRequest.Path2.getCustomerInfo(appUserID: try self.purchases.appUserID)
+        let expectedRequest = HTTPRequest(method: .get, requestPath: path)
 
         // 3. Verify response was 304
         self.logger.verifyMessageWasLogged(
@@ -186,8 +183,8 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         // 3. Re-fetch user
         let info3 = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
 
-        let expectedRequest = HTTPRequest(method: .get,
-                                          path: .getCustomerInfo(appUserID: try self.purchases.appUserID))
+        let path = HTTPRequest.Path2.getCustomerInfo(appUserID: try self.purchases.appUserID)
+        let expectedRequest = HTTPRequest(method: .get, requestPath: path)
 
         // 4. Verify response was 304
         self.logger.verifyMessageWasLogged(
@@ -213,7 +210,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
 
         // 4. Block the head of the serial request pipeline with a slow, harmless request,
         // so the requests enqueued next run in a known order once it finishes.
-        let offeringsPath = HTTPRequest.Path.getOfferings(appUserID: anonymousUserID).relativePath
+        let offeringsPath = HTTPRequest.Path2.getOfferings(appUserID: anonymousUserID).relativePath
         stub(
             condition: { $0.url?.absoluteString.hasSuffix(offeringsPath) == true },
             response: { _ in HTTPStubsResponse(data: Data(), statusCode: 400, headers: nil).responseTime(5) }
@@ -243,7 +240,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         expect(anonymousInfo.originalAppUserId) == anonymousUserID
 
         // Verify the anonymous request only started after logIn completed, otherwise the race was not reproduced.
-        let anonymousPath = HTTPRequest.Path.getCustomerInfo(appUserID: anonymousUserID).relativePath
+        let anonymousPath = HTTPRequest.Path2.getCustomerInfo(appUserID: anonymousUserID).relativePath
         let logInCompleted = "API request completed: POST '\(HTTPRequest.Path.logIn.relativePath)'"
         let anonymousFetchStarted = Strings.network.starting_request(httpMethod: "GET", path: anonymousPath).description
         let messages = self.logger.messages.map(\.message)

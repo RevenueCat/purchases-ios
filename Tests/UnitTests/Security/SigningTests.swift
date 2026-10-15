@@ -51,9 +51,12 @@ class SigningTests: TestCase {
                 path: Self.mockPath,
                 iamEnabled: false,
                 message: message.asData,
+                requestHeaders: [:],
+                requestBody: nil,
                 nonce: nonce.asData,
                 etag: nil,
-                requestDate: requestDate
+                requestDate: requestDate,
+                useFallbackPath: false
             ),
             publicKey: Signing.loadPublicKey()
         )) == .failed(.invalidSignatureFormat)
@@ -72,9 +75,12 @@ class SigningTests: TestCase {
             path: Self.mockPath,
             iamEnabled: false,
             message: message.asData,
+            requestHeaders: [:],
+            requestBody: nil,
             nonce: nonce.asData,
             etag: etag,
-            requestDate: requestDate
+            requestDate: requestDate,
+            useFallbackPath: false
         )
 
         let signature = try self.sign(parameters: parameters, salt: salt.asData)
@@ -100,8 +106,11 @@ class SigningTests: TestCase {
             path: Self.mockPath,
             iamEnabled: false,
             message: "Hello World".asData,
+            requestHeaders: [:],
+            requestBody: nil,
             nonce: "nonce".asData,
-            requestDate: Self.mockDate.millisecondsSince1970
+            requestDate: Self.mockDate.millisecondsSince1970,
+            useFallbackPath: false
         )
         let intermediateKey = try self.createIntermediatePublicKeyData(
             expiration: Self.mockDate.addingTimeInterval(DispatchTimeInterval.days(365).seconds)
@@ -140,9 +149,12 @@ class SigningTests: TestCase {
             path: Self.mockPath,
             iamEnabled: false,
             message: message.asData,
+            requestHeaders: [:],
+            requestBody: nil,
             nonce: nonce.asData,
             etag: etag,
-            requestDate: requestDate
+            requestDate: requestDate,
+            useFallbackPath: false
         )
 
         let signature = try self.sign(parameters: parameters, salt: salt.asData)
@@ -171,9 +183,12 @@ class SigningTests: TestCase {
                 path: Self.mockPath,
                 iamEnabled: false,
                 message: "Hello World".asData,
+                requestHeaders: [:],
+                requestBody: nil,
                 nonce: "nonce".asData,
                 etag: nil,
-                requestDate: 1677005916012
+                requestDate: 1677005916012,
+                useFallbackPath: false
             ),
             publicKey: Signing.loadPublicKey()
         )) == .failed(.invalidSignatureFormat)
@@ -189,9 +204,12 @@ class SigningTests: TestCase {
                 path: Self.mockPath,
                 iamEnabled: false,
                 message: "Hello World".asData,
+                requestHeaders: [:],
+                requestBody: nil,
                 nonce: "nonce".asData,
                 etag: nil,
-                requestDate: 1677005916012
+                requestDate: 1677005916012,
+                useFallbackPath: false
             ),
             publicKey: Signing.loadPublicKey()
         )
@@ -214,8 +232,11 @@ class SigningTests: TestCase {
             path: Self.mockPath,
             iamEnabled: false,
             message: "Hello World".asData,
+            requestHeaders: [:],
+            requestBody: nil,
             nonce: "nonce".asData,
-            requestDate: Self.mockDate.millisecondsSince1970
+            requestDate: Self.mockDate.millisecondsSince1970,
+            useFallbackPath: false
         )
         let intermediateKey = try self.createIntermediatePublicKeyData(
             expiration: Self.intermediateKeyFutureExpiration
@@ -254,9 +275,12 @@ class SigningTests: TestCase {
                 path: Self.mockPath,
                 iamEnabled: false,
                 message: message.asData,
+                requestHeaders: [:],
+                requestBody: nil,
                 nonce: nonce.asData,
                 etag: nil,
-                requestDate: requestDate
+                requestDate: requestDate,
+                useFallbackPath: false
             ),
             publicKey: self.publicKey
         )) == .failed(.payloadSignatureMismatch)
@@ -274,9 +298,12 @@ class SigningTests: TestCase {
                 path: Self.mockPath,
                 iamEnabled: false,
                 message: "Hello World".asData,
+                requestHeaders: [:],
+                requestBody: nil,
                 nonce: "nonce".asData,
                 etag: nil,
-                requestDate: 1677005916012
+                requestDate: 1677005916012,
+                useFallbackPath: false
             ),
             publicKey: Signing.loadPublicKey()
         )
@@ -299,9 +326,12 @@ class SigningTests: TestCase {
                 path: Self.mockPath,
                 iamEnabled: false,
                 message: message.asData,
+                requestHeaders: [:],
+                requestBody: nil,
                 nonce: nonce.asData,
                 etag: nil,
-                requestDate: requestDate
+                requestDate: requestDate,
+                useFallbackPath: false
             ),
             salt: salt.asData
         )
@@ -315,9 +345,12 @@ class SigningTests: TestCase {
             path: Self.mockPath,
             iamEnabled: false,
             message: message.asData,
+            requestHeaders: [:],
+            requestBody: nil,
             nonce: nonce.asData,
             etag: nil,
-            requestDate: requestDate
+            requestDate: requestDate,
+            useFallbackPath: false
         )
 
         expect(self.signing.verificationResult(
@@ -340,9 +373,12 @@ class SigningTests: TestCase {
                 path: Self.mockPath,
                 iamEnabled: false,
                 message: message.asData,
+                requestHeaders: [:],
+                requestBody: nil,
                 nonce: nonce.asData,
                 etag: etag,
-                requestDate: requestDate
+                requestDate: requestDate,
+                useFallbackPath: false
             ),
             salt: salt.asData
         )
@@ -358,9 +394,12 @@ class SigningTests: TestCase {
                 path: Self.mockPath,
                 iamEnabled: false,
                 message: message.asData,
+                requestHeaders: [:],
+                requestBody: nil,
                 nonce: nonce.asData,
                 etag: etag,
-                requestDate: requestDate
+                requestDate: requestDate,
+                useFallbackPath: false
             ),
             publicKey: self.publicKey
         )) == .verified
@@ -398,14 +437,15 @@ class SigningTests: TestCase {
         expect(
             self.signing.verificationResult(
                 for: expectedSignature,
-                with: .init(
-                    path: .getCustomerInfo(appUserID: "login"),
-                    iamEnabled: false,
-                    message: response.asData,
-                    nonce: nonce,
-                    etag: etag,
-                    requestDate: requestDate
-                ),
+                with: .init(path: HTTPRequest.Path2.getCustomerInfo(appUserID: "login"),
+                            iamEnabled: false,
+                            message: response.asData,
+                            requestHeaders: [:],
+                            requestBody: nil,
+                            nonce: nonce,
+                            etag: etag,
+                            requestDate: requestDate,
+                            useFallbackPath: false),
                 publicKey: Signing.loadPublicKey()
             )
         ) == .verified
@@ -433,12 +473,15 @@ class SigningTests: TestCase {
             self.signing.verificationResult(
                 for: expectedSignature,
                 with: .init(
-                    path: .getOfferings(appUserID: "test"),
+                    path: HTTPRequest.Path2.getOfferings(appUserID: "test"),
                     iamEnabled: false,
                     message: response.asData,
+                    requestHeaders: [:],
+                    requestBody: nil,
                     nonce: nil,
                     etag: nil,
-                    requestDate: requestDate
+                    requestDate: requestDate,
+                    useFallbackPath: false
                 ),
                 publicKey: Signing.loadPublicKey()
             )
@@ -465,12 +508,15 @@ class SigningTests: TestCase {
             self.signing.verificationResult(
                 for: expectedSignature,
                 with: .init(
-                    path: .health,
+                    path: HTTPRequest.Path.health,
                     iamEnabled: false,
                     message: response.asData,
+                    requestHeaders: [:],
+                    requestBody: nil,
                     nonce: nonce,
                     etag: nil,
-                    requestDate: requestDate
+                    requestDate: requestDate,
+                    useFallbackPath: false
                 ),
                 publicKey: Signing.loadPublicKey()
             )
@@ -499,12 +545,15 @@ class SigningTests: TestCase {
             self.signing.verificationResult(
                 for: expectedSignature,
                 with: .init(
-                    path: .getCustomerInfo(appUserID: "login"),
+                    path: HTTPRequest.Path2.getCustomerInfo(appUserID: "login"),
                     iamEnabled: false,
                     message: nil, // 304 response
+                    requestHeaders: [:],
+                    requestBody: nil,
                     nonce: nonce,
                     etag: etag,
-                    requestDate: requestDate
+                    requestDate: requestDate,
+                    useFallbackPath: false
                 ),
                 publicKey: Signing.loadPublicKey()
             )
@@ -530,17 +579,21 @@ class SigningTests: TestCase {
         let nonce = try XCTUnwrap(Data(base64Encoded: "MTIzNDU2Nzg5MGFi"))
         let requestDate: UInt64 = 1688671515638
         let etag = "a896a69e4b31304d"
+        let path = HTTPRequest.Path2.getCustomerInfo(appUserID: "$RCAnonymousID:1af512a3b9c848899fe427f39dd69f2b")
 
         expect(
             self.signing.verificationResult(
                 for: expectedSignature,
                 with: .init(
-                    path: .getCustomerInfo(appUserID: "$RCAnonymousID:1af512a3b9c848899fe427f39dd69f2b"),
+                    path: path,
                     iamEnabled: false,
                     message: response.asData,
+                    requestHeaders: [:],
+                    requestBody: nil,
                     nonce: nonce,
                     etag: etag,
-                    requestDate: requestDate
+                    requestDate: requestDate,
+                    useFallbackPath: false
                 ),
                 publicKey: Signing.loadPublicKey()
             )
@@ -573,16 +626,18 @@ class SigningTests: TestCase {
             self.signing.verificationResult(
                 for: expectedSignature,
                 with: .init(
-                    path: .logIn,
+                    path: HTTPRequest.Path.logIn,
                     iamEnabled: false,
                     message: response.asData,
+                    requestHeaders: [:],
                     requestBody: LogInOperation.Body(
                         appUserID: "$RCAnonymousID:6b2787de2fb848a8b403a45f695ee74f",
                         newAppUserID: "F72BF276-CD70-4C27-BCD2-FC1EFD988FA3"
                     ),
                     nonce: nonce,
                     etag: nil,
-                    requestDate: requestDate
+                    requestDate: requestDate,
+                    useFallbackPath: false
                 ),
                 publicKey: Signing.loadPublicKey()
             )
@@ -609,20 +664,22 @@ class SigningTests: TestCase {
 
         let nonce = try XCTUnwrap(Data(base64Encoded: "MTIzNDU2Nzg5MGFi"))
         let requestDate: UInt64 = 1702063024732
-
+        let path = HTTPRequest.Path2.getCustomerInfo(appUserID: "$RCAnonymousID:6ca4535c42714f88abc99c563703f113")
         expect(
             self.signing.verificationResult(
                 for: expectedSignature,
                 with: .init(
-                    path: .getCustomerInfo(appUserID: "$RCAnonymousID:6ca4535c42714f88abc99c563703f113"),
+                    path: path,
                     iamEnabled: false,
                     message: response.asData,
                     requestHeaders: [
                         "X-Is-Sandbox": "true"
                     ],
+                    requestBody: nil,
                     nonce: nonce,
                     etag: "5f74102dd8cbfc5e",
-                    requestDate: requestDate
+                    requestDate: requestDate,
+                    useFallbackPath: false
                 ),
                 publicKey: Signing.loadPublicKey()
             )
@@ -657,7 +714,7 @@ class SigningTests: TestCase {
             self.signing.verificationResult(
                 for: expectedSignature,
                 with: .init(
-                    path: .logIn,
+                    path: HTTPRequest.Path.logIn,
                     iamEnabled: false,
                     message: response.asData,
                     requestHeaders: [
@@ -669,7 +726,8 @@ class SigningTests: TestCase {
                     ),
                     nonce: nonce,
                     etag: nil,
-                    requestDate: requestDate
+                    requestDate: requestDate,
+                    useFallbackPath: false
                 ),
                 publicKey: Signing.loadPublicKey()
             )
@@ -934,7 +992,9 @@ class SigningTests: TestCase {
         let requestDate = Date().millisecondsSince1970
         let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
         let salt = Self.createSalt()
-        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "userId"), nonce: nonce.asData)
+        let request = HTTPRequest(method: .get,
+                                  requestPath: HTTPRequest.Path2.getOfferings(appUserID: "userId"),
+                                  nonce: nonce.asData)
         let requestHeaders: HTTPRequest.Headers = [
             HTTPClient.RequestHeader.sandbox.rawValue: "\(Bool.random())"
         ]
@@ -981,7 +1041,9 @@ class SigningTests: TestCase {
         let requestDate = Date().millisecondsSince1970
         let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
         let salt = Self.createSalt()
-        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "userId"), nonce: nonce.asData)
+        let request = HTTPRequest(method: .get,
+                                  requestPath: HTTPRequest.Path2.getOfferings(appUserID: "userId"),
+                                  nonce: nonce.asData)
         let requestHeaders: HTTPRequest.Headers = [
             HTTPClient.RequestHeader.sandbox.rawValue: "\(Bool.random())"
         ]
@@ -1027,7 +1089,7 @@ class SigningTests: TestCase {
         let requestDate: UInt64 = 1677005916012
         let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
         let salt = Self.createSalt()
-        let offeringsPath = HTTPRequest.Path.getOfferings(appUserID: "test_user")
+        let offeringsPath = HTTPRequest.Path2.getOfferings(appUserID: "test_user")
 
         // Sign with fallback path
         let signatureWithFallback = try self.sign(
@@ -1035,6 +1097,8 @@ class SigningTests: TestCase {
                 path: offeringsPath,
                 iamEnabled: false,
                 message: message.asData,
+                requestHeaders: [:],
+                requestBody: nil,
                 nonce: nil,
                 etag: nil,
                 requestDate: requestDate,
@@ -1055,6 +1119,7 @@ class SigningTests: TestCase {
                 path: offeringsPath,
                 iamEnabled: false,
                 message: message.asData,
+                requestHeaders: [:],
                 nonce: nil,
                 etag: nil,
                 requestDate: requestDate,
@@ -1077,6 +1142,7 @@ class SigningTests: TestCase {
                 path: productEntitlementMappingPath,
                 iamEnabled: false,
                 message: message.asData,
+                requestHeaders: [:],
                 nonce: nil,
                 etag: nil,
                 requestDate: requestDate,
@@ -1097,6 +1163,7 @@ class SigningTests: TestCase {
                 path: productEntitlementMappingPath,
                 iamEnabled: false,
                 message: message.asData,
+                requestHeaders: [:],
                 nonce: nil,
                 etag: nil,
                 requestDate: requestDate,
@@ -1111,7 +1178,7 @@ class SigningTests: TestCase {
         let requestDate: UInt64 = 1677005916012
         let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
         let salt = Self.createSalt()
-        let offeringsPath = HTTPRequest.Path.getOfferings(appUserID: "test_user")
+        let offeringsPath = HTTPRequest.Path2.getOfferings(appUserID: "test_user")
 
         // Sign with regular path
         let signatureRegular = try self.sign(
@@ -1119,6 +1186,7 @@ class SigningTests: TestCase {
                 path: offeringsPath,
                 iamEnabled: false,
                 message: message.asData,
+                requestHeaders: [:],
                 nonce: nil,
                 etag: nil,
                 requestDate: requestDate,
@@ -1139,6 +1207,7 @@ class SigningTests: TestCase {
                 path: offeringsPath,
                 iamEnabled: false,
                 message: message.asData,
+                requestHeaders: [:],
                 nonce: nil,
                 etag: nil,
                 requestDate: requestDate,
@@ -1153,7 +1222,7 @@ class SigningTests: TestCase {
         let requestDate: UInt64 = 1677005916012
         let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
         let salt = Self.createSalt()
-        let offeringsPath = HTTPRequest.Path.getOfferings(appUserID: "test_user")
+        let offeringsPath = HTTPRequest.Path2.getOfferings(appUserID: "test_user")
 
         // Sign with regular path
         let signatureRegular = try self.sign(
@@ -1161,6 +1230,7 @@ class SigningTests: TestCase {
                 path: offeringsPath,
                 iamEnabled: false,
                 message: message.asData,
+                requestHeaders: [:],
                 nonce: nil,
                 etag: nil,
                 requestDate: requestDate,
@@ -1181,6 +1251,7 @@ class SigningTests: TestCase {
                 path: offeringsPath,
                 iamEnabled: false,
                 message: message.asData,
+                requestHeaders: [:],
                 nonce: nil,
                 etag: nil,
                 requestDate: requestDate,
@@ -1196,7 +1267,7 @@ class SigningTests: TestCase {
         let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
         let etag = "97d4f0d2353d784a"
         let salt = Self.createSalt()
-        let offeringsPath = HTTPRequest.Path.getOfferings(appUserID: "test_user")
+        let offeringsPath = HTTPRequest.Path2.getOfferings(appUserID: "test_user")
 
         // Sign with fallback path
         let signatureWithFallback = try self.sign(
@@ -1204,6 +1275,7 @@ class SigningTests: TestCase {
                 path: offeringsPath,
                 iamEnabled: false,
                 message: message.asData,
+                requestHeaders: [:],
                 nonce: nil,
                 etag: etag,
                 requestDate: requestDate,
@@ -1224,6 +1296,7 @@ class SigningTests: TestCase {
                 path: offeringsPath,
                 iamEnabled: false,
                 message: message.asData,
+                requestHeaders: [:],
                 nonce: nil,
                 etag: etag,
                 requestDate: requestDate,
@@ -1241,7 +1314,9 @@ class SigningTests: TestCase {
         let requestDate = Date().millisecondsSince1970
         let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
         let salt = Self.createSalt()
-        let request = HTTPRequest(method: .get, path: .getCustomerInfo(appUserID: "user"), nonce: nonce.asData)
+        let request = HTTPRequest(method: .get,
+                                  requestPath: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"),
+                                  nonce: nonce.asData)
         let requestHeaders: HTTPRequest.Headers = [:]
 
         // The backend signs using the IAM relative path ("/v1/customer") once IAM is enabled,
@@ -1303,7 +1378,9 @@ class SigningTests: TestCase {
         let salt = Self.createSalt()
         // `.getCustomerInfo` is an authenticated path: unlike `.health`, the auth value is actually
         // folded into the signed bytes, so this test can tell bearer-token from API-key signing apart.
-        let request = HTTPRequest(method: .get, path: .getCustomerInfo(appUserID: "user"), nonce: nonce.asData)
+        let request = HTTPRequest(method: .get,
+                                  requestPath: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"),
+                                  nonce: nonce.asData)
         let accessToken = "iam-access-token-123"
         let requestHeaders: HTTPRequest.Headers = [
             HTTPClient.RequestHeader.authorization.rawValue: "Bearer \(accessToken)"
@@ -1360,7 +1437,9 @@ class SigningTests: TestCase {
         let salt = Self.createSalt()
         // `.getCustomerInfo` is an authenticated path: unlike `.health`, the auth value is actually
         // folded into the signed bytes, so this test can tell bearer-token from API-key signing apart.
-        let request = HTTPRequest(method: .get, path: .getCustomerInfo(appUserID: "user"), nonce: nonce.asData)
+        let request = HTTPRequest(method: .get,
+                                  requestPath: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"),
+                                  nonce: nonce.asData)
         let requestHeaders: HTTPRequest.Headers = [
             HTTPClient.RequestHeader.authorization.rawValue: "Bearer some-access-token"
         ]
@@ -1411,13 +1490,15 @@ class SigningTests: TestCase {
 
     func testDebugDescriptionUsesIAMRelativePathWhenIAMEnabled() {
         let parameters: Signing.SignatureParameters = .init(
-            path: .getCustomerInfo(appUserID: "user"),
+            path: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"),
             iamEnabled: true,
             message: nil,
             requestHeaders: [:],
+            requestBody: nil,
             nonce: nil,
             etag: nil,
-            requestDate: 0
+            requestDate: 0,
+            useFallbackPath: false
         )
 
         expect(parameters.debugDescription).to(contain("path: '/v1/customer'"))
@@ -1425,13 +1506,15 @@ class SigningTests: TestCase {
 
     func testDebugDescriptionUsesRegularRelativePathWhenIAMDisabled() {
         let parameters: Signing.SignatureParameters = .init(
-            path: .getCustomerInfo(appUserID: "user"),
+            path: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"),
             iamEnabled: false,
             message: nil,
             requestHeaders: [:],
+            requestBody: nil,
             nonce: nil,
             etag: nil,
-            requestDate: 0
+            requestDate: 0,
+            useFallbackPath: false
         )
 
         expect(parameters.debugDescription).to(contain("path: '/v1/subscribers/user'"))
@@ -1484,7 +1567,7 @@ private extension SigningTests {
     )
 
     static let apiKey = "appl_fFVBVAoYujMZJnepIziGKVjnZBz"
-    static let mockPath: HTTPRequest.Path = .getCustomerInfo(appUserID: "user")
+    static let mockPath: any HTTPRequestPath = HTTPRequest.Path2.getCustomerInfo(appUserID: "user")
 
     // 2023-07-07: The hardcoded signatures have an intermediate signature that expires
     // 2 weeks after that date.
