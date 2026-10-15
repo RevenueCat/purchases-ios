@@ -25,26 +25,8 @@ class NativePaywallNavigationTestCase: TestCase {
         try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
     }
 
-    func toolbarButtons(in view: UIView) -> [UIAccessibilityIdentification] {
-        var visited: Set<ObjectIdentifier> = []
-        var buttons: [UIAccessibilityIdentification] = []
-        func visit(_ object: NSObject) {
-            guard visited.insert(ObjectIdentifier(object)).inserted else { return }
-            if let element = object as? UIAccessibilityIdentification,
-               [NativePaywallCloseHost.backIdentifier, NativePaywallCloseHost.closeIdentifier]
-                .contains(element.accessibilityIdentifier ?? ""),
-               object.accessibilityTraits.contains(.button) {
-                buttons.append(element)
-            }
-            if let view = object as? UIView { view.subviews.forEach(visit) }
-            let count = object.accessibilityElementCount()
-            guard count > 0, count < 1_000 else { return }
-            for index in 0..<count {
-                if let element = object.accessibilityElement(at: index) as? NSObject { visit(element) }
-            }
-        }
-        visit(view)
-        return buttons
+    func toolbarButtons(in view: UIView) -> [UIButton] {
+        NativePaywallTestSupport.controls(of: UIButton.self, in: view)
     }
 
     func waitForPresentation() async {
