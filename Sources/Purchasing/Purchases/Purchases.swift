@@ -2092,7 +2092,7 @@ extension Purchases {
     func adRewards(
         forAdUnitId adUnitId: String
     ) async -> ConfiguredAdRewards? {
-        return nil
+        return await self.configuredAdRewardsProvider.rewards(forAdUnitId: adUnitId)
     }
 
 }

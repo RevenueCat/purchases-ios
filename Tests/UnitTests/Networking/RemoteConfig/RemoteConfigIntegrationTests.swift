@@ -290,7 +290,7 @@ final class RemoteConfigIntegrationTests: TestCase {
         expect(rewards.reward?.virtualCurrency?.code) == "coins"
         expect(rewards.reward?.virtualCurrency?.amount) == 10
         expect(rewards.moreRewards.first?.entitlement?.identifier) == "premium"
-        expect(rewards.moreRewards.first?.entitlement?.duration) == AdRewardDuration(value: 30, unit: .minute)
+        expect(rewards.moreRewards.first?.entitlement?.durationInSeconds) == 30 * 60
         expect(differentlyCasedRewards) == ConfiguredAdRewards()
         expect(requestedURLs).to(beEmpty())
     }
@@ -1007,7 +1007,7 @@ private extension RemoteConfigIntegrationTests {
           {
             "type": "entitlement",
             "identifier": "premium",
-            "duration": "PT30M"
+            "duration_in_seconds": 1800
           }
         ]
       }
