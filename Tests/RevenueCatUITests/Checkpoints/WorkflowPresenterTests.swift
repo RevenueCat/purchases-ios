@@ -59,7 +59,7 @@ final class WorkflowPresenterTests: TestCase {
         XCTAssertEqual(receivedParams?.checkpointIdentifier, "test_checkpoint")
         XCTAssertEqual(receivedParams?.customVariables, ["source": "test"])
         XCTAssertEqual(receivedParams?.error as NSError?, error)
-        XCTAssertEqual(receivedParams?.kind, .flowActionFailed)
+        XCTAssertEqual(receivedParams?.kind, .flowCouldNotBeShown)
     }
 
     func testCompletionAfterWorkflowPresentationErrorTerminatesDuringFlow() throws {
@@ -101,7 +101,7 @@ final class WorkflowPresenterTests: TestCase {
         presenter.paywallViewController(viewController, didFailPurchasingWith: purchaseError)
         presenter.paywallViewController(viewController, didFailRestoringWith: purchaseError)
 
-        XCTAssertEqual(presentedErrors.map(\.kind), [.flowActionFailed])
+        XCTAssertEqual(presentedErrors.map(\.kind), [.flowCouldNotBeShown])
         try XCTUnwrap(completions.first).complete()
         guard case .completed(nil)? = presenter.presentationDidDismiss() else {
             return XCTFail("Expected the terminal error completion to remain active")
@@ -221,7 +221,7 @@ final class WorkflowPresenterTests: TestCase {
             NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
         )
 
-        XCTAssertEqual(presentedErrors.map(\.kind), [.flowActionFailed, .flowActionFailed])
+        XCTAssertEqual(presentedErrors.map(\.kind), [.flowActionFailed, .flowCouldNotBeShown])
         XCTAssertEqual(completions.count, 2)
         try XCTUnwrap(completions.last).complete()
 

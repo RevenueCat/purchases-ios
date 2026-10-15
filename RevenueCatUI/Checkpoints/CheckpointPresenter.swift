@@ -213,7 +213,7 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
             workflowPresentationErrorHandler: { [weak self] error in
                 self?.presentError(
                     error,
-                    kind: .flowActionFailed,
+                    kind: .flowCouldNotBeShown,
                     onCompletion: { [weak self] in
                         self?.session?.presentedViewController?.continueAfterCheckpointError()
                     }

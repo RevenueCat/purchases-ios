@@ -277,7 +277,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
                 guard let self, self.stage(.workflowPresentationError(error)) else { return }
                 self.presentError(
                     error,
-                    kind: .flowActionFailed,
+                    kind: .flowCouldNotBeShown,
                     onCompletion: { [weak self] in
                         self?.stage(.outcome(.completed(customerInfo: nil)))
                         self?.presentedViewController?.continueAfterCheckpointError()
