@@ -272,6 +272,7 @@ private final class NativeRegistrationTestState: ObservableObject {
     var performed = 0
 }
 
+@available(iOS 15.0, *)
 private struct NativeCarouselRegistrationTestView: View {
     @ObservedObject var state: NativeRegistrationTestState
     var body: some View {
@@ -291,6 +292,7 @@ private struct NativeCarouselRegistrationTestView: View {
     }
 }
 
+@available(iOS 15.0, *)
 private struct NativeRegistrationTestView: View {
     @ObservedObject var state: NativeRegistrationTestState
     var body: some View {
