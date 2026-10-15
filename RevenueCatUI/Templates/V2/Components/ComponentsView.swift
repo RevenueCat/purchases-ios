@@ -25,6 +25,8 @@ struct ComponentsView: View {
     @Environment(\.overlaidHeaderHeight)
     private var overlaidHeaderHeight
 
+    @Environment(\.workflowRenderingContext) private var workflowRenderingContext
+
     let componentViewModels: [PaywallComponentViewModel]
     /// When true, applies safe area top padding to all children except the first.
     /// Used for ZStacks where the first child is a hero image that bleeds into the safe area.
@@ -53,6 +55,21 @@ struct ComponentsView: View {
                         ? max(safeAreaInsets.top, overlaidHeaderHeight)
                         : 0
                 )
+                .background {
+                    if self.workflowRenderingContext.isHeader {
+                        switch item {
+                        case .stack, .root:
+                            EmptyView() // Descendants report their own rendered content.
+                        default:
+                            GeometryReader { geometry in
+                                Color.clear.preference(
+                                    key: NativePaywallHeaderContentKey.self,
+                                    value: .init(hasVisibleContent: geometry.size.width > 0 && geometry.size.height > 0)
+                                )
+                            }
+                        }
+                    }
+                }
         }
     }
 

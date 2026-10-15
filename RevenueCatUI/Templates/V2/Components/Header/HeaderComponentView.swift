@@ -24,7 +24,7 @@ struct HeaderComponentView: View {
     @Environment(\.workflowRenderingContext)
     private var workflowRenderingContext
 
-    @State private var hiddenNativeButtons: Set<ObjectIdentifier> = []
+    @State private var contentVisibility = NativePaywallHeaderContentKey.defaultValue
 
     private let viewModel: HeaderComponentViewModel
     private let onDismiss: () -> Void
@@ -49,7 +49,7 @@ struct HeaderComponentView: View {
             )
         )
         .environment(\.workflowRenderingContext, self.workflowRenderingContext.markingHeader())
-        .onPreferenceChange(NativePaywallHiddenButtonsKey.self) { self.hiddenNativeButtons = $0 }
+        .onPreferenceChange(NativePaywallHeaderContentKey.self) { self.contentVisibility = $0 }
         // The paywall extends through the top safe area when it has a header. Removing native-only
         // header content must retain the inset that keeps the body below the caller's navigation bar.
         .frame(height: self.collapsesNativeOnlyHeader ? self.collapsedHeaderHeight : nil, alignment: .bottom)
@@ -59,8 +59,7 @@ struct HeaderComponentView: View {
     }
 
     private var collapsesNativeOnlyHeader: Bool {
-        guard let buttons = self.viewModel.buttonOnlyContentIdentifiers, !buttons.isEmpty else { return false }
-        return buttons.isSubset(of: self.hiddenNativeButtons)
+        self.contentVisibility.hasNativeButtons && !self.contentVisibility.hasVisibleContent
     }
 
     private var collapsedHeaderHeight: CGFloat {
