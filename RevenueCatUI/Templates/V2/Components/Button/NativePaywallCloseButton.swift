@@ -92,7 +92,9 @@ private struct RegisteredNativePaywallButton: View {
             self.updateRegistration(self.registration)
             self.availabilityChanged?(true)
         }
-        .onReceive(Just(self.registration)) { self.updateRegistration($0) }
+        .onChangeOf(self.registration) { self.updateRegistration($0) }
+        // Refresh closures without publishing observable state during a body update.
+        .onReceive(Just(self.action)) { self.coordinator.refreshAction(id: self.identifier, action: $0) }
         .onDisappear {
             self.coordinator.unregister(id: self.identifier)
             self.availabilityChanged?(false)
