@@ -19,6 +19,28 @@ final class NativeNavigationUITests: XCTestCase {
         self.continueAfterFailure = false
     }
 
+    #if os(iOS)
+    func testWorkflowBackPreventsCallerPopUntilReturningToRoot() {
+        let app = self.launch("native_workflow_navigation")
+        self.assertVisible(app.staticTexts["Workflow root"], in: app)
+        app.buttons["Continue"].tap()
+        self.assertVisible(app.staticTexts["Workflow detail"], in: app)
+        self.assertNativeControls(in: app, back: true, close: true)
+        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.01, dy: 0.5))
+        let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5))
+        // Workflow Back must not pop the caller's screen while workflow history exists.
+        start.press(forDuration: 0.1, thenDragTo: end)
+        self.assertVisible(app.staticTexts["Workflow detail"], in: app)
+        app.buttons[self.backIdentifier].tap()
+        self.assertVisible(app.staticTexts["Workflow root"], in: app)
+        self.assertNativeControls(in: app, back: false, close: true)
+        // At the workflow root, the caller's standard edge-swipe navigation remains available.
+        start.press(forDuration: 0.1, thenDragTo: end)
+        self.assertVisible(app.buttons["Show native paywall"], in: app)
+        XCTAssertFalse(app.buttons[self.closeIdentifier].exists, app.debugDescription)
+    }
+    #endif
+
     func testNativeBackNavigatesWithinWorkflowWithoutPoppingCallerNavigation() {
         let app = self.launch("native_workflow_navigation")
         self.assertWorkflowNavigation(in: app)
