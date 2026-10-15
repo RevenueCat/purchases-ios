@@ -29,33 +29,46 @@ struct NativePaywallCloseHost: ViewModifier {
     static let backIdentifier = "RevenueCat.NativePaywallBack"
     var enabled = true
     var ownsNavigation = false
+    var detectNavigation = false
+    @State private var mountedControls: Set<UUID> = []
     @StateObject private var coordinator = NativePaywallCloseCoordinator()
 
     @ViewBuilder func body(content: Content) -> some View {
         #if os(iOS)
-            self.surface(content)
-                .navigationBarBackButtonHidden(self.enabled && self.coordinator.action(for: .back) != nil)
-                .toolbar {
+        self.surface(content)
+            .navigationBarBackButtonHidden(self.enabled && self.coordinator.action(for: .back) != nil)
+            .toolbar {
+                ToolbarItemGroup(placement: .cancellationAction) {
                     if self.enabled, self.coordinator.action(for: .back) != nil {
-                        ToolbarItem(placement: .cancellationAction) {
-                            NativePaywallToolbarClose(coordinator: self.coordinator, primary: true)
-                        }
-                    }
-                    if self.enabled, self.coordinator.action(for: .close) != nil {
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            NativePaywallToolbarClose(coordinator: self.coordinator, primary: false)
-                        }
+                        NativePaywallToolbarClose(coordinator: self.coordinator, primary: true)
+                            .background { self.navigationProbe }
                     }
                 }
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    if self.enabled, self.coordinator.action(for: .close) != nil {
+                        NativePaywallToolbarClose(coordinator: self.coordinator, primary: false)
+                            .background { self.navigationProbe }
+                    }
+                }
+            }
         #else
         content
         #endif
     }
 
     #if os(iOS)
+    @ViewBuilder private var navigationProbe: some View {
+        if self.detectNavigation {
+            NativePaywallNavigationDetection { identifier, available in
+                if available { self.mountedControls.insert(identifier) } else { self.mountedControls.remove(identifier) }
+            }.frame(width: 0, height: 0)
+        }
+    }
+
     @ViewBuilder private func surface(_ content: Content) -> some View {
         let view = VStack(spacing: 0) { content }
             .environment(\.nativePaywallCloseCoordinator, self.enabled ? self.coordinator : nil)
+            .environment(\.nativePaywallControlsPresented, !self.detectNavigation || !self.mountedControls.isEmpty)
         if self.ownsNavigation {
             if #available(iOS 16.0, *) {
                 view.toolbar(self.coordinator.actions.isEmpty ? .hidden : .visible, for: .navigationBar)

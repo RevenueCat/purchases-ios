@@ -25,7 +25,6 @@ enum NativePaywallNavigationContext {
 struct NativePaywallNavigationModifier: ViewModifier {
     let requested: Bool
     @Environment(\.nativePaywallNavigationContext) private var context
-    @State private var detectedNavigation = false
 
     @ViewBuilder func body(content: Content) -> some View {
         #if os(iOS)
@@ -36,11 +35,7 @@ struct NativePaywallNavigationModifier: ViewModifier {
             case .standalone:
                 self.wrapped(content: content)
             case .automatic:
-                content.modifier(NativePaywallCloseHost(enabled: self.detectedNavigation))
-                    .toolbar {
-                        NativePaywallNavigationDetection { self.detectedNavigation = $0 }
-                            .frame(width: 0, height: 0)
-                    }
+                content.modifier(NativePaywallCloseHost(detectNavigation: true))
             }
         }
         #else
@@ -63,45 +58,6 @@ struct NativePaywallNavigationModifier: ViewModifier {
     }
     #endif
 }
-
-#if os(iOS)
-/// Confirm that SwiftUI mounted the toolbar in a window. Unknown hosts retain the designed button.
-@available(iOS 15.0, *)
-private struct NativePaywallNavigationDetection: UIViewRepresentable {
-    let detected: (Bool) -> Void
-
-    func makeUIView(context: Context) -> NativePaywallToolbarProbe {
-        NativePaywallToolbarProbe(detected: self.detected)
-    }
-
-    func updateUIView(_ view: NativePaywallToolbarProbe, context: Context) {
-        view.detected = self.detected
-    }
-}
-
-@available(iOS 15.0, *)
-private final class NativePaywallToolbarProbe: UIView {
-    var detected: (Bool) -> Void
-
-    init(detected: @escaping (Bool) -> Void) {
-        self.detected = detected
-        super.init(frame: .zero)
-        self.isAccessibilityElement = false
-    }
-
-    required init?(coder: NSCoder) { nil }
-
-    override func didMoveToWindow() {
-        super.didMoveToWindow()
-        let available = self.window != nil
-        // Publish after UIKit finishes mounting, and discard superseded attachment events.
-        DispatchQueue.main.async { [weak self] in
-            guard let self, (self.window != nil) == available else { return }
-            self.detected(available)
-        }
-    }
-}
-#endif
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, *)
 private struct NativePaywallNavigationContextKey: EnvironmentKey {
