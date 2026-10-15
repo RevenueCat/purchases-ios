@@ -28,7 +28,7 @@ final class PaywallViewConfigurationTests: TestCase {
             workflowPresentationErrorHandler: { error, _ in receivedError = error }
         )
 
-        configuration.workflowPresentationErrorHandler?(expectedError, .terminate)
+        configuration.workflowPresentationErrorHandler?(expectedError, .endFlow)
 
         expect(receivedError) === expectedError
     }

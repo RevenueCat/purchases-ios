@@ -281,7 +281,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
             workflowPresentationErrorHandler: { [weak self] error, behavior in
                 guard let self else { return }
                 switch behavior {
-                case .terminate:
+                case .endFlow:
                     guard self.stage(.workflowPresentationError(error)) else { return }
                     self.presentError(
                         error,
@@ -290,7 +290,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
                             self?.presentedViewController?.continueAfterCheckpointError()
                         }
                     )
-                case .remainPresented:
+                case .keepCurrentScreen:
                     Logger.error(error.localizedDescription)
                     self.presentError(error, kind: .flowActionFailed)
                 }

@@ -355,7 +355,7 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         behavior: WorkflowPresentationErrorBehavior
     ) {
         switch behavior {
-        case .terminate:
+        case .endFlow:
             self.presentError(
                 error,
                 kind: .flowCouldNotBeShown,
@@ -363,7 +363,7 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
                     self?.dismissAfterTerminalError()
                 }
             )
-        case .remainPresented:
+        case .keepCurrentScreen:
             self.presentError(error, kind: .flowActionFailed)
         }
     }

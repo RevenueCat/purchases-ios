@@ -12,8 +12,8 @@ import Foundation
 
 #if !os(tvOS)
 enum WorkflowPresentationErrorBehavior: Equatable {
-    case terminate
-    case remainPresented
+    case endFlow
+    case keepCurrentScreen
 }
 
 typealias WorkflowPresentationErrorHandler = (NSError, WorkflowPresentationErrorBehavior) -> Void

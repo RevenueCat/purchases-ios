@@ -240,11 +240,38 @@ final class WorkflowPaywallViewTests: TestCase {
     }
 
     func testPresentationErrorBeforeAnyPageRendersTerminatesTheWorkflow() {
-        expect(WorkflowPaywallView.presentationErrorBehavior(hasCurrentPage: false)) == .terminate
+        expect(WorkflowPaywallView.presentationErrorBehavior(hasCurrentPage: false)) == .endFlow
     }
 
-    func testPresentationErrorWhileAPageIsVisibleKeepsThatPagePresented() {
-        expect(WorkflowPaywallView.presentationErrorBehavior(hasCurrentPage: true)) == .remainPresented
+    // Forward and back navigation failures both preserve the valid page already on screen.
+    func testNavigationErrorWhileAPageIsVisibleKeepsThatPagePresented() {
+        expect(WorkflowPaywallView.presentationErrorBehavior(hasCurrentPage: true)) == .keepCurrentScreen
+    }
+
+    // Dismissing a built-in navigation error restores the active workflow state.
+    func testDismissingBuiltInNavigationErrorKeepsWorkflowActive() {
+        var state = WorkflowPresentationState.displayingError(
+            error: ErrorCode.configurationError as NSError,
+            behavior: .keepCurrentScreen
+        )
+
+        state.updateError(nil)
+
+        expect(state.error).to(beNil())
+        expect(state.hasFailed) == false
+    }
+
+    // Dismissing a built-in terminal error leaves the workflow marked as failed.
+    func testDismissingBuiltInTerminalErrorKeepsWorkflowFailed() {
+        var state = WorkflowPresentationState.displayingError(
+            error: ErrorCode.configurationError as NSError,
+            behavior: .endFlow
+        )
+
+        state.updateError(nil)
+
+        expect(state.error).to(beNil())
+        expect(state.hasFailed) == true
     }
 
     func testWorkflowPackageOverridePrefersWorkflowValueOverPageDefault() {
@@ -984,7 +1011,7 @@ extension WorkflowPaywallViewTests {
         }
 
         await expect(reportedError?.code).toEventually(equal(ErrorCode.configurationError.rawValue))
-        expect(reportedBehavior) == .terminate
+        expect(reportedBehavior) == .endFlow
         await expect(controller.presentedViewController).toEventually(beNil())
     }
 
@@ -1019,11 +1046,11 @@ extension WorkflowPaywallViewTests {
 
         XCTAssertTrue(view.handleTriggeredNavigation(componentId: componentId))
         expect(reportedErrors.first?.code) == ErrorCode.configurationError.rawValue
-        expect(reportedBehaviors) == [.remainPresented]
+        expect(reportedBehaviors) == [.keepCurrentScreen]
 
         // The failed destination did not advance or invalidate the current screen.
         XCTAssertTrue(view.handleTriggeredNavigation(componentId: componentId))
-        expect(reportedBehaviors) == [.remainPresented, .remainPresented]
+        expect(reportedBehaviors) == [.keepCurrentScreen, .keepCurrentScreen]
     }
 
     @MainActor

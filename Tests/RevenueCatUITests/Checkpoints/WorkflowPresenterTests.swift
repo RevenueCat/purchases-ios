@@ -97,7 +97,7 @@ final class WorkflowPresenterTests: TestCase {
 
         try presenter.startPresentation(presentation)
         let viewController = try presenter.makePaywallViewController(for: presentation)
-        viewController.simulateWorkflowPresentationError(error, behavior: .remainPresented)
+        viewController.simulateWorkflowPresentationError(error, behavior: .keepCurrentScreen)
         completion?.complete()
 
         XCTAssertEqual(receivedParams?.kind, .flowActionFailed)
@@ -890,7 +890,7 @@ final class DefaultPaywallPresenterTests: TestCase {
         )
         let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
 
-        presenter.handleWorkflowPresentationError(error, behavior: .remainPresented)
+        presenter.handleWorkflowPresentationError(error, behavior: .keepCurrentScreen)
         errorCompletion?.complete()
 
         XCTAssertEqual(receivedParams?.kind, .flowActionFailed)
@@ -961,7 +961,7 @@ final class DefaultPaywallPresenterTests: TestCase {
 
         presenter.handleWorkflowPresentationError(
             NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue),
-            behavior: .terminate
+            behavior: .endFlow
         )
         try XCTUnwrap(errorCompletion).complete()
 
@@ -996,7 +996,7 @@ final class DefaultPaywallPresenterTests: TestCase {
         )
         presenter.handleWorkflowPresentationError(
             NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue),
-            behavior: .terminate
+            behavior: .endFlow
         )
         try XCTUnwrap(errorCompletion).complete()
         presenter.paywallViewControllerWasDismissed(controller)
@@ -1028,7 +1028,7 @@ final class DefaultPaywallPresenterTests: TestCase {
         )
         presenter.handleWorkflowPresentationError(
             NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue),
-            behavior: .terminate
+            behavior: .endFlow
         )
         try XCTUnwrap(errorCompletion).complete()
         presenter.paywallViewControllerWasDismissed(controller)
