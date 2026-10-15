@@ -12,7 +12,7 @@
 
 import Foundation
 
-final class ConfiguredAdRewardsProvider {
+final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
 
     private typealias RewardsByAdUnitID = [String: ConfiguredAdRewards]
 
@@ -37,12 +37,43 @@ final class ConfiguredAdRewardsProvider {
         self.manager = manager
     }
 
+    func remoteConfigEventReceived(_ event: RemoteConfigLifecycleEvent) {
+        switch event {
+        case .observerRegistered, .committed:
+            Task { [weak self] in
+                await self?.warm()
+            }
+        case .refreshFinished:
+            break
+        }
+    }
+
+    func cachedRewards(forAdUnitId adUnitId: String) -> ConfiguredAdRewards? {
+        guard !adUnitId.isEmpty else {
+            Logger.warn(AdsStrings.configured_ad_rewards_empty_ad_unit_id)
+            return nil
+        }
+
+        return self.cachedRewards.value?.rewards?[adUnitId]
+    }
+
     func rewards(forAdUnitId adUnitId: String) async -> ConfiguredAdRewards? {
         guard !adUnitId.isEmpty else {
             Logger.warn(AdsStrings.configured_ad_rewards_empty_ad_unit_id)
             return nil
         }
 
+        await self.warm()
+
+        guard await self.manager.hasCommittedConfig(), let cached = self.cachedRewards.value else {
+            Logger.warn(AdsStrings.configured_ad_rewards_unavailable(adUnitID: adUnitId))
+            return nil
+        }
+
+        return cached.rewards?[adUnitId] ?? ConfiguredAdRewards()
+    }
+
+    func warm() async {
         let resolution: Resolution
         do {
             resolution = try await self.manager.readConsistent {
@@ -53,13 +84,6 @@ final class ConfiguredAdRewardsProvider {
         }
 
         self.updateCache(with: resolution)
-
-        guard await self.manager.hasCommittedConfig(), let cached = self.cachedRewards.value else {
-            Logger.warn(AdsStrings.configured_ad_rewards_unavailable(adUnitID: adUnitId))
-            return nil
-        }
-
-        return cached.rewards?[adUnitId] ?? ConfiguredAdRewards()
     }
 
     private func resolveConfiguration() async -> Resolution {

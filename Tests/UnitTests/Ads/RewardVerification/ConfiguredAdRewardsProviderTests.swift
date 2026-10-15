@@ -44,6 +44,24 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         expect(rewards.moreRewards[1].virtualCurrency?.code) == "gems"
     }
 
+    func testCachedRewardsReturnsNilBeforeWarm() throws {
+        try self.stub(content: [
+            "reward": ["type": "virtual_currency", "code": "coins", "amount": 10]
+        ])
+
+        expect(self.provider.cachedRewards(forAdUnitId: "ad-unit")).to(beNil())
+    }
+
+    func testWarmPopulatesSynchronousCache() async throws {
+        try self.stub(content: [
+            "reward": ["type": "virtual_currency", "code": "coins", "amount": 10]
+        ])
+
+        await self.provider.warm()
+
+        expect(self.provider.cachedRewards(forAdUnitId: "ad-unit")?.configuredReward.virtualCurrency?.amount) == 10
+    }
+
     func testSupportsEachDurationUnitWithoutNormalization() async throws {
         let cases: [(String, Int, AdRewardDuration.Unit)] = [
             ("PT30S", 30, .second),
@@ -125,6 +143,18 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
 
         expect(initial?.configuredReward?.virtualCurrency?.amount) == 10
         expect(cached) == initial
+    }
+
+    func testFailedConfigRefreshPreservesCachedConfiguration() async throws {
+        try self.stub(content: ["reward": ["type": "virtual_currency", "code": "coins", "amount": 10]])
+        await self.provider.warm()
+
+        self.manager.configGeneration += 1
+        self.manager.stubbedHasCommittedConfig = false
+        self.manager.stubbedTopics[.adRewards] = nil
+        await self.provider.warm()
+
+        expect(self.provider.cachedRewards(forAdUnitId: "ad-unit")?.configuredReward.virtualCurrency?.amount) == 10
     }
 
     func testInvalidReplacementBlobPreservesCachedConfiguration() async throws {
