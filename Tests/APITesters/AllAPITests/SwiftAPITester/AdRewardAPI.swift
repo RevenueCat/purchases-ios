@@ -15,7 +15,6 @@ var configuredAdRewards: ConfiguredAdRewards!
 var adRewardConfiguration: AdRewardConfiguration!
 var virtualCurrencyRewardConfiguration: VirtualCurrencyRewardConfiguration!
 var entitlementRewardConfiguration: EntitlementRewardConfiguration!
-var adRewardDuration: AdRewardDuration!
 
 func checkAdRewardAPI() {
     let _: VirtualCurrencyReward? = adReward.virtualCurrency
@@ -59,17 +58,5 @@ func checkVirtualCurrencyRewardConfigurationAPI() {
 
 func checkEntitlementRewardConfigurationAPI() {
     let _: String = entitlementRewardConfiguration.identifier
-    let _: AdRewardDuration = entitlementRewardConfiguration.duration
-}
-
-func checkAdRewardDurationAPI() {
-    let _: Int = adRewardDuration.value
-    let _: AdRewardDuration.Unit = adRewardDuration.unit
-    let _: AdRewardDuration.Unit = .second
-    let _: AdRewardDuration.Unit = .minute
-    let _: AdRewardDuration.Unit = .hour
-    let _: AdRewardDuration.Unit = .day
-    let _: AdRewardDuration.Unit = .week
-    let _: AdRewardDuration.Unit = .month
-    let _: AdRewardDuration.Unit = .year
+    let _: Int = entitlementRewardConfiguration.durationInSeconds
 }

@@ -97,62 +97,13 @@ public struct EntitlementRewardConfiguration: Sendable, Equatable {
     /// The entitlement identifier.
     public let identifier: String
 
-    /// The duration for which the entitlement will be granted.
-    public let duration: AdRewardDuration
+    /// The duration for which the entitlement will be granted, in seconds.
+    public let durationInSeconds: Int
 
-    internal init?(identifier: String, duration: AdRewardDuration) {
-        guard !identifier.isEmpty else { return nil }
+    internal init?(identifier: String, durationInSeconds: Int) {
+        guard !identifier.isEmpty, durationInSeconds > 0 else { return nil }
         self.identifier = identifier
-        self.duration = duration
-    }
-
-}
-
-/// A configured rewarded-ad entitlement duration.
-public struct AdRewardDuration: Sendable, Equatable {
-
-    /// The number of duration units.
-    public let value: Int
-
-    /// The unit in which the duration is expressed.
-    public let unit: Unit
-
-    internal init?(value: Int, unit: Unit) {
-        guard value > 0 else { return nil }
-        self.value = value
-        self.unit = unit
-    }
-
-    /// A unit used to express a configured rewarded-ad entitlement duration.
-    public struct Unit: Sendable, Equatable, Hashable {
-
-        private let rawValue: String
-
-        /// A duration expressed in seconds.
-        public static let second = Unit(rawValue: "second")
-
-        /// A duration expressed in minutes.
-        public static let minute = Unit(rawValue: "minute")
-
-        /// A duration expressed in hours.
-        public static let hour = Unit(rawValue: "hour")
-
-        /// A duration expressed in days.
-        public static let day = Unit(rawValue: "day")
-
-        /// A duration expressed in weeks.
-        public static let week = Unit(rawValue: "week")
-
-        /// A duration expressed in months.
-        public static let month = Unit(rawValue: "month")
-
-        /// A duration expressed in years.
-        public static let year = Unit(rawValue: "year")
-
-        internal init(rawValue: String) {
-            self.rawValue = rawValue
-        }
-
+        self.durationInSeconds = durationInSeconds
     }
 
 }

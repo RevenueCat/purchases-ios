@@ -243,27 +243,8 @@ public struct VirtualCurrencyRewardConfiguration : Swift.Sendable, Swift.Equatab
 }
 public struct EntitlementRewardConfiguration : Swift.Sendable, Swift.Equatable {
   public let identifier: Swift.String
-  public let duration: RevenueCat.AdRewardDuration
+  public let durationInSeconds: Swift.Int
   public static func == (a: RevenueCat.EntitlementRewardConfiguration, b: RevenueCat.EntitlementRewardConfiguration) -> Swift.Bool
-}
-public struct AdRewardDuration : Swift.Sendable, Swift.Equatable {
-  public let value: Swift.Int
-  public let unit: RevenueCat.AdRewardDuration.Unit
-  public struct Unit : Swift.Sendable, Swift.Equatable, Swift.Hashable {
-    public static let second: RevenueCat.AdRewardDuration.Unit
-    public static let minute: RevenueCat.AdRewardDuration.Unit
-    public static let hour: RevenueCat.AdRewardDuration.Unit
-    public static let day: RevenueCat.AdRewardDuration.Unit
-    public static let week: RevenueCat.AdRewardDuration.Unit
-    public static let month: RevenueCat.AdRewardDuration.Unit
-    public static let year: RevenueCat.AdRewardDuration.Unit
-    public static func == (a: RevenueCat.AdRewardDuration.Unit, b: RevenueCat.AdRewardDuration.Unit) -> Swift.Bool
-    public func hash(into hasher: inout Swift.Hasher)
-    public var hashValue: Swift.Int {
-      get
-    }
-  }
-  public static func == (a: RevenueCat.AdRewardDuration, b: RevenueCat.AdRewardDuration) -> Swift.Bool
 }
 public struct EntitlementReward : Swift.Sendable, Swift.Equatable {
   public let identifier: Swift.String

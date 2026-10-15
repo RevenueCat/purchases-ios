@@ -32,8 +32,9 @@ final class AdRewardConfigurationTests: TestCase {
     }
 
     func testEntitlementConfiguration() throws {
-        let duration = try XCTUnwrap(AdRewardDuration(value: 30, unit: .minute))
-        let reward = try XCTUnwrap(EntitlementRewardConfiguration(identifier: "pro", duration: duration))
+        let reward = try XCTUnwrap(
+            EntitlementRewardConfiguration(identifier: "pro", durationInSeconds: 30 * 60)
+        )
         let configuration = AdRewardConfiguration.entitlement(reward)
 
         expect(configuration.entitlement) == reward
@@ -45,22 +46,19 @@ final class AdRewardConfigurationTests: TestCase {
         expect(AdRewardConfiguration.unsupportedReward.entitlement).to(beNil())
     }
 
-    func testDurationRejectsNonPositiveValues() {
-        expect(AdRewardDuration(value: 0, unit: .minute)).to(beNil())
-        expect(AdRewardDuration(value: -1, unit: .minute)).to(beNil())
+    func testEntitlementConfigurationRejectsNonPositiveDurations() {
+        expect(EntitlementRewardConfiguration(identifier: "pro", durationInSeconds: 0)).to(beNil())
+        expect(EntitlementRewardConfiguration(identifier: "pro", durationInSeconds: -1)).to(beNil())
     }
 
-    func testEntitlementConfigurationRejectsEmptyIdentifier() throws {
-        let duration = try XCTUnwrap(AdRewardDuration(value: 30, unit: .minute))
-
-        expect(EntitlementRewardConfiguration(identifier: "", duration: duration)).to(beNil())
+    func testEntitlementConfigurationRejectsEmptyIdentifier() {
+        expect(EntitlementRewardConfiguration(identifier: "", durationInSeconds: 30 * 60)).to(beNil())
     }
 
     func testConfiguredRewardsExposePrimaryAndAdditionalRewards() throws {
         let currency = try XCTUnwrap(VirtualCurrencyRewardConfiguration(code: "coins", amount: 10))
-        let duration = try XCTUnwrap(AdRewardDuration(value: 30, unit: .minute))
         let entitlement = try XCTUnwrap(
-            EntitlementRewardConfiguration(identifier: "pro", duration: duration)
+            EntitlementRewardConfiguration(identifier: "pro", durationInSeconds: 30 * 60)
         )
         let configured = ConfiguredAdRewards(
             reward: .virtualCurrency(currency),
