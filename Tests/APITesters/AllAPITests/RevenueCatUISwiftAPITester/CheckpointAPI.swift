@@ -81,12 +81,13 @@ private func checkErrorPresentationAPI(_ purchases: Purchases) {
         let _: String = params.checkpointIdentifier
         let _: any Error = params.error
         let _: [String: CustomVariableValue] = params.customVariables
-        let _: Bool = params.flowCanContinue
-        completion.complete(.retry)
-        completion.complete(.continue)
-        completion.complete(.navigateBack)
+        let _: CheckpointFailureKind = params.kind
+        completion.complete()
     }
 
+    let _: CheckpointFailureKind = .flowCouldNotBeShown
+    let _: CheckpointFailureKind = .flowActionFailed
+    let _: CheckpointFailureKind = .flowResultSyncFailed
     let _: ErrorPresentationHandler = presenter
     purchases.checkpoint("test_checkpoint", errorPresenter: presenter) { _ in }
 }
@@ -107,7 +108,7 @@ private final class CheckpointAPIPaywallPresenter: PaywallPresenter {
 private final class CheckpointAPIErrorPresenter: ErrorPresenter {
 
     func present(params: ErrorPresentationParams, completion: ErrorPresentationCompletion) {
-        completion.complete(.continue)
+        completion.complete()
     }
 
 }

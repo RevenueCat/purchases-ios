@@ -46,9 +46,10 @@ public protocol PaywallPresenter: AnyObject {
 /// Presents a checkpoint-selected offering using a custom paywall.
 ///
 /// The checkpoint remains pending until the completion closure is called. Only the first reported result is used;
-/// later calls are ignored. Pass this closure to ``Purchases/checkpoint(_:customVariables:paywallPresenter:_:)``
-/// to override the global presenter for one checkpoint call. RevenueCat synchronizes purchases and determines which
-/// entitlements were obtained after the presentation ends.
+/// later calls are ignored. Pass this closure to
+/// ``Purchases/checkpoint(_:customVariables:presentationMode:paywallPresenter:errorPresenter:_:)`` to override the
+/// global presenter for one checkpoint call. RevenueCat synchronizes purchases and determines which entitlements were
+/// obtained after the presentation ends.
 @_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public typealias PaywallPresentationHandler = @MainActor (

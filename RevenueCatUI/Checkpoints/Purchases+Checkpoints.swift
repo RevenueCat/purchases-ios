@@ -23,9 +23,10 @@ public extension Purchases {
 
     /// The custom presenter used when a checkpoint selects an offering.
     ///
-    /// This presenter is used when the individual ``checkpoint(_:customVariables:paywallPresenter:_:)`` call does not
-    /// provide a `paywallPresenter` closure. A closure passed to a checkpoint call overrides this presenter for that
-    /// call. Set this property to `nil` to use the default paywall presenter.
+    /// This presenter is used when the individual
+    /// ``checkpoint(_:customVariables:presentationMode:paywallPresenter:errorPresenter:_:)`` call does not provide a
+    /// `paywallPresenter` closure. A closure passed to a checkpoint call overrides this presenter for that call. Set
+    /// this property to `nil` to use the default paywall presenter.
     @MainActor
     var paywallPresenter: PaywallPresenter? {
         get { return self.checkpointsManager.paywallPresenter }
@@ -35,9 +36,9 @@ public extension Purchases {
     /// The custom presenter used for errors in RevenueCat-presented checkpoint flows.
     ///
     /// This presenter is used when the individual
-    /// ``checkpoint(_:customVariables:paywallPresenter:errorPresenter:_:)`` call does not provide an `errorPresenter`
-    /// closure. A closure passed to a checkpoint call overrides this presenter for that call. When neither is set,
-    /// the SDK handles error presentation by default.
+    /// ``checkpoint(_:customVariables:presentationMode:paywallPresenter:errorPresenter:_:)`` call does not provide an
+    /// `errorPresenter` closure. A closure passed to a checkpoint call overrides this presenter for that call. When
+    /// neither is set, the SDK handles error presentation by default.
     @MainActor
     var errorPresenter: ErrorPresenter? {
         get { return self.checkpointsManager.errorPresenter }

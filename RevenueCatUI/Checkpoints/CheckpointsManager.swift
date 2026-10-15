@@ -54,19 +54,22 @@ final class CheckpointsManager {
 
     func errorPresentationHandler(
         for params: CheckpointCallParams,
-        defaultHandler makeDefaultHandler: () -> ErrorPresentationHandler
+        defaultHandler makeDefaultHandler: @escaping () -> ErrorPresentationHandler
     ) -> ErrorPresentationHandler {
         if let localHandler = params.localErrorPresentationHandler {
             return localHandler
         }
 
-        if let globalPresenter = self.errorPresenter {
-            return { params, completion in
+        var defaultHandler: ErrorPresentationHandler?
+        return { [weak self] params, completion in
+            if let globalPresenter = self?.errorPresenter {
                 globalPresenter.present(params: params, completion: completion)
+            } else {
+                let handler = defaultHandler ?? makeDefaultHandler()
+                defaultHandler = handler
+                handler(params, completion)
             }
         }
-
-        return makeDefaultHandler()
     }
 
     func executeCheckpoint(

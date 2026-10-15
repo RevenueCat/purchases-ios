@@ -122,6 +122,66 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(defaultCallCount, 1)
     }
 
+    // Replacing the global presenter while a Flow is active affects its later errors.
+    func testErrorPresentationHandlerUsesReplacementGlobalPresenterDuringActiveFlow() {
+        let initialPresenter = MockErrorPresenter()
+        let replacementPresenter = MockErrorPresenter()
+        let manager = CheckpointsManager { _, _ in .noAction(.unknownCheckpoint) }
+        manager.errorPresenter = initialPresenter
+        var defaultCallCount = 0
+        let handler = manager.errorPresentationHandler(
+            for: .init(),
+            defaultHandler: { return { _, _ in defaultCallCount += 1 } }
+        )
+
+        manager.errorPresenter = replacementPresenter
+        handler(Self.errorPresentationParams, Self.errorPresentationCompletion)
+
+        XCTAssertEqual(initialPresenter.callCount, 0)
+        XCTAssertEqual(replacementPresenter.callCount, 1)
+        XCTAssertEqual(defaultCallCount, 0)
+    }
+
+    // Removing the global presenter while a Flow is active falls back to the SDK presenter.
+    func testErrorPresentationHandlerUsesDefaultAfterRemovingGlobalPresenterDuringActiveFlow() {
+        let initialPresenter = MockErrorPresenter()
+        let manager = CheckpointsManager { _, _ in .noAction(.unknownCheckpoint) }
+        manager.errorPresenter = initialPresenter
+        var defaultCallCount = 0
+        let handler = manager.errorPresentationHandler(
+            for: .init(),
+            defaultHandler: { return { _, _ in defaultCallCount += 1 } }
+        )
+
+        manager.errorPresenter = nil
+        handler(Self.errorPresentationParams, Self.errorPresentationCompletion)
+
+        XCTAssertEqual(initialPresenter.callCount, 0)
+        XCTAssertEqual(defaultCallCount, 1)
+    }
+
+    // A per-call presenter remains fixed when the global presenter changes.
+    func testErrorPresentationHandlerKeepsLocalPresenterDuringActiveFlow() {
+        let initialPresenter = MockErrorPresenter()
+        let replacementPresenter = MockErrorPresenter()
+        let manager = CheckpointsManager { _, _ in .noAction(.unknownCheckpoint) }
+        manager.errorPresenter = initialPresenter
+        var localCallCount = 0
+        var defaultCallCount = 0
+        let handler = manager.errorPresentationHandler(
+            for: .init(errorPresenter: { _, _ in localCallCount += 1 }),
+            defaultHandler: { return { _, _ in defaultCallCount += 1 } }
+        )
+
+        manager.errorPresenter = replacementPresenter
+        handler(Self.errorPresentationParams, Self.errorPresentationCompletion)
+
+        XCTAssertEqual(localCallCount, 1)
+        XCTAssertEqual(initialPresenter.callCount, 0)
+        XCTAssertEqual(replacementPresenter.callCount, 0)
+        XCTAssertEqual(defaultCallCount, 0)
+    }
+
     func testNoActionDoesNotPresentAnything() async throws {
         let manager = CheckpointsManager { _, _ in .noAction(.unknownCheckpoint) }
 
@@ -958,12 +1018,12 @@ private extension CheckpointsManagerTests {
             checkpointIdentifier: "test_checkpoint",
             error: NSError(domain: "test", code: 1),
             customVariables: [:],
-            flowCanContinue: true
+            kind: .flowActionFailed
         )
     }
 
     static var errorPresentationCompletion: ErrorPresentationCompletion {
-        return .init { _ in }
+        return .init {}
     }
 
 }

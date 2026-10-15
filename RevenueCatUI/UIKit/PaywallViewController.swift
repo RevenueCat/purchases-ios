@@ -156,14 +156,6 @@ public class PaywallViewController: UIViewController {
         self.dismiss(animated: true)
     }
 
-    func navigateBackAfterCheckpointError(flowCanContinue: Bool) {
-        if flowCanContinue, self.configuration.workflowBackNavigationBridge.navigateBack() {
-            return
-        }
-        self.workflowDismissalReason = .navigatedBack
-        self.dismiss(animated: true)
-    }
-
     /// Prevents this controller from resolving or presenting exit offers.
     func disableExitOffers() {
         self.shouldDisplayExitOffers = false

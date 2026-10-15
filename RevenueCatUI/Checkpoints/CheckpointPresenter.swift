@@ -211,7 +211,13 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         let controller = makeDefaultCheckpointPaywallViewController(
             params: params,
             workflowPresentationErrorHandler: { [weak self] error in
-                self?.presentError(error, flowCanContinue: false)
+                self?.presentError(
+                    error,
+                    kind: .flowCouldNotBeShown,
+                    onCompletion: { [weak self] in
+                        self?.session?.presentedViewController?.continueAfterCheckpointError()
+                    }
+                )
             }
         )
         self.session?.presentedViewController = controller
@@ -253,51 +259,37 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
 
     private func presentError(
         _ error: any Error,
-        flowCanContinue: Bool,
-        controller: PaywallViewController? = nil
+        kind: CheckpointFailureKind,
+        onCompletion: (@MainActor () -> Void)? = nil
     ) {
         guard let session = self.session,
               let handler = session.params.errorPresentationHandler else { return }
         let presentationID = UUID()
         session.activeErrorPresentationID = presentationID
-        let controller = controller ?? session.presentedViewController
-
         handler(
             .init(
                 checkpointIdentifier: session.params.checkpointIdentifier,
                 error: error,
                 customVariables: session.params.customVariables,
-                flowCanContinue: flowCanContinue
+                kind: kind
             ),
-            .init { [weak self, weak controller] result in
+            .init { [weak self] in
                 self?.handleErrorPresentationResult(
-                    result,
-                    flowCanContinue: flowCanContinue,
                     presentationID: presentationID,
-                    controller: controller
+                    onCompletion: onCompletion
                 )
             }
         )
     }
 
     private func handleErrorPresentationResult(
-        _ result: ErrorPresentationCompletion.Result,
-        flowCanContinue: Bool,
         presentationID: UUID,
-        controller: PaywallViewController?
+        onCompletion: (@MainActor () -> Void)?
     ) {
         guard let session = self.session,
               session.activeErrorPresentationID == presentationID else { return }
         session.activeErrorPresentationID = nil
-
-        switch result.action {
-        case .retry where flowCanContinue:
-            break
-        case .retry, .continue:
-            controller?.continueAfterCheckpointError()
-        case .navigateBack:
-            controller?.navigateBackAfterCheckpointError(flowCanContinue: flowCanContinue)
-        }
+        onCompletion?()
     }
 
     private func didCompleteRestore(
@@ -363,7 +355,10 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
     ) {
         MainActor.assumeIsolated {
             guard !error.isPurchaseCancellation else { return }
-            self.presentError(error, flowCanContinue: true, controller: controller)
+            self.presentError(
+                error,
+                kind: .flowActionFailed
+            )
         }
     }
 
@@ -372,7 +367,10 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         didFailRestoringWith error: NSError
     ) {
         MainActor.assumeIsolated {
-            self.presentError(error, flowCanContinue: true, controller: controller)
+            self.presentError(
+                error,
+                kind: .flowActionFailed
+            )
         }
     }
     #else
@@ -401,14 +399,20 @@ final class DefaultPaywallPresenter: NSObject, PaywallPresenter, PaywallViewCont
         didFailPurchasingWith error: NSError
     ) {
         guard !error.isPurchaseCancellation else { return }
-        self.presentError(error, flowCanContinue: true, controller: controller)
+        self.presentError(
+            error,
+            kind: .flowActionFailed
+        )
     }
 
     func paywallViewController(
         _ controller: PaywallViewController,
         didFailRestoringWith error: NSError
     ) {
-        self.presentError(error, flowCanContinue: true, controller: controller)
+        self.presentError(
+            error,
+            kind: .flowActionFailed
+        )
     }
     #endif
 
