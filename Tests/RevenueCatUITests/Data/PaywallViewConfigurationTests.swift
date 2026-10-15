@@ -25,10 +25,10 @@ final class PaywallViewConfigurationTests: TestCase {
         let configuration = PaywallViewConfiguration(
             content: .defaultOffering,
             purchaseHandler: .default(),
-            workflowPresentationErrorHandler: { receivedError = $0 }
+            workflowPresentationErrorHandler: { error, _ in receivedError = error }
         )
 
-        configuration.workflowPresentationErrorHandler?(expectedError)
+        configuration.workflowPresentationErrorHandler?(expectedError, .terminate)
 
         expect(receivedError) === expectedError
     }

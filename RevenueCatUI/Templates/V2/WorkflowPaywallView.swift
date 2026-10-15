@@ -268,7 +268,7 @@ struct WorkflowPaywallView: View {
     private let showZeroDecimalPlacePrices: Bool
     private let displayCloseButton: Bool
     private let onDismiss: () -> Void
-    private let onPresentationError: ((NSError) -> Void)?
+    private let onPresentationError: WorkflowPresentationErrorHandler?
 
     @ObservedObject private var backNavigationBridge: WorkflowBackNavigationBridge
 
@@ -284,6 +284,7 @@ struct WorkflowPaywallView: View {
     // Observing it directly would re-render the whole page ForEach + header overlay on each update.
     @StateObject private var promoOfferCacheOwner: PromoOfferCacheOwner
     @State private var presentationState: PresentationState
+    @State private var navigationPresentationError: NSError?
     /// Owns the per-impression workflow step event state machine (trace id, fire-once flags, gating).
     /// Created in `init`, so a new presentation (new view identity) yields a fresh `traceId`, unless a
     /// checkpoint passed the one its hit carries. Its sequence/gating is unit tested in
@@ -310,7 +311,7 @@ struct WorkflowPaywallView: View {
         promoOfferCache: PaywallPromoOfferCache?,
         onDismiss: @escaping () -> Void,
         backNavigationBridge: WorkflowBackNavigationBridge = WorkflowBackNavigationBridge(),
-        onPresentationError: ((NSError) -> Void)? = nil
+        onPresentationError: WorkflowPresentationErrorHandler? = nil
     ) {
         self.context = context
         self.purchaseHandler = purchaseHandler
@@ -368,6 +369,7 @@ struct WorkflowPaywallView: View {
                 .failing(error: $0)
             } ?? .active
         )
+        self._navigationPresentationError = .init(initialValue: nil)
         self._stepEventCoordinator = .init(
             wrappedValue: WorkflowStepEventCoordinator(
                 workflow: context.workflow,
@@ -507,6 +509,10 @@ struct WorkflowPaywallView: View {
         .displayError(
             self.onPresentationError == nil ? self.workflowPresentationError : .constant(nil),
             onDismiss: self.onDismiss
+        )
+        .displayError(
+            self.onPresentationError == nil ? self.$navigationPresentationError : .constant(nil),
+            onDismiss: {}
         )
         .modifier(PaywallURLEventsModifier(purchaseHandler: self.purchaseHandler))
     }
@@ -826,7 +832,7 @@ struct WorkflowPaywallView: View {
         return .navigateBack
     }
 
-    private func handleTriggeredNavigation(componentId: String) -> Bool {
+    func handleTriggeredNavigation(componentId: String) -> Bool {
         guard !self.transitionState.isTransitioning else {
             return false
         }
@@ -1100,14 +1106,23 @@ struct WorkflowPaywallView: View {
         self.stepEventCoordinator.trackInitialStep(self.navigator.currentStep, hasRenderedPage: true)
     }
 
-    private func failWorkflowPresentation(for stepId: String) {
-        guard self.presentationState.canReportPresentationError else { return }
+    static func presentationErrorBehavior(hasCurrentPage: Bool) -> WorkflowPresentationErrorBehavior {
+        return hasCurrentPage ? .remainPresented : .terminate
+    }
 
+    private func failWorkflowPresentation(for stepId: String) {
         let error = Self.presentationError(for: stepId, in: self.context) ?? ErrorCode.configurationError as NSError
-        self.trackCurrentWorkflowLeft()
-        self.exitOfferOfferingBinding.wrappedValue = nil
-        self.presentationState = .failing(error: error)
-        self.reportPresentationError(for: stepId)
+        let behavior = Self.presentationErrorBehavior(hasCurrentPage: self.transitionState.currentPage != nil)
+        switch behavior {
+        case .terminate:
+            guard self.presentationState.canReportPresentationError else { return }
+            self.trackCurrentWorkflowLeft()
+            self.exitOfferOfferingBinding.wrappedValue = nil
+            self.presentationState = .failing(error: error)
+            self.reportPresentationError(error, for: stepId, behavior: behavior)
+        case .remainPresented:
+            self.reportPresentationError(error, for: stepId, behavior: behavior)
+        }
     }
 
     private var workflowPresentationError: Binding<NSError?> {
@@ -1129,14 +1144,26 @@ struct WorkflowPaywallView: View {
     private func reportPresentationError(for stepId: String) {
         guard let error = self.presentationState.error else { return }
 
+        self.reportPresentationError(error, for: stepId, behavior: .terminate)
+    }
+
+    private func reportPresentationError(
+        _ error: NSError,
+        for stepId: String,
+        behavior: WorkflowPresentationErrorBehavior
+    ) {
         let message = Strings.workflow_paywall_invalid_state(
             currentStepId: stepId,
             screenId: self.context.workflow.steps[stepId]?.screenId
         )
         Logger.error("\(message): \(error.localizedDescription)")
         if let onPresentationError = self.onPresentationError {
-            self.presentationState = .failureReported
-            onPresentationError(error)
+            if behavior == .terminate {
+                self.presentationState = .failureReported
+            }
+            onPresentationError(error, behavior)
+        } else if behavior == .remainPresented {
+            self.navigationPresentationError = error
         }
     }
 

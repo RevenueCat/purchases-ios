@@ -239,6 +239,14 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(WorkflowPaywallView.presentationError(for: context.workflow.initialStepId, in: context)).to(beNil())
     }
 
+    func testPresentationErrorBeforeAnyPageRendersTerminatesTheWorkflow() {
+        expect(WorkflowPaywallView.presentationErrorBehavior(hasCurrentPage: false)) == .terminate
+    }
+
+    func testPresentationErrorWhileAPageIsVisibleKeepsThatPagePresented() {
+        expect(WorkflowPaywallView.presentationErrorBehavior(hasCurrentPage: true)) == .remainPresented
+    }
+
     func testWorkflowPackageOverridePrefersWorkflowValueOverPageDefault() {
         let defaultPackage = PaywallsV2View.effectiveDefaultPackage(
             pageDefaultPackage: TestData.monthlyPackage,
@@ -751,6 +759,30 @@ private extension WorkflowPaywallViewTests {
         """
     }
 
+    static func workflowStepJSON(
+        id: String,
+        screenId: String,
+        componentId: String,
+        destinationStepId: String
+    ) -> String {
+        return """
+        "\(id)": {
+            "id": "\(id)",
+            "type": "screen",
+            "screen_id": "\(screenId)",
+            "triggers": [{
+                "name": "Continue",
+                "type": "on_press",
+                "action_id": "continue_action",
+                "component_id": "\(componentId)"
+            }],
+            "trigger_actions": {
+                "continue_action": { "type": "step", "step_id": "\(destinationStepId)" }
+            }
+        },
+        """
+    }
+
     static func packageComponentJSON(id: String, isDefault: Bool) -> String {
         return """
         {
@@ -928,6 +960,7 @@ extension WorkflowPaywallViewTests {
             initialScreenJSON: Self.makeScreenJSON(offeringId: "missing_offering")
         )
         var reportedError: NSError?
+        var reportedBehavior: WorkflowPresentationErrorBehavior?
         let view = WorkflowPaywallView(
             context: context,
             purchaseHandler: .mock(),
@@ -936,7 +969,10 @@ extension WorkflowPaywallViewTests {
             displayCloseButton: false,
             promoOfferCache: nil,
             onDismiss: {},
-            onPresentationError: { reportedError = $0 }
+            onPresentationError: { error, behavior in
+                reportedError = error
+                reportedBehavior = behavior
+            }
         )
         let controller = UIHostingController(rootView: view)
         let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
@@ -948,7 +984,46 @@ extension WorkflowPaywallViewTests {
         }
 
         await expect(reportedError?.code).toEventually(equal(ErrorCode.configurationError.rawValue))
+        expect(reportedBehavior) == .terminate
         await expect(controller.presentedViewController).toEventually(beNil())
+    }
+
+    @MainActor
+    func testInvalidNavigationDestinationKeepsCurrentScreenAndReportsActionFailure() throws {
+        let componentId = "continue_button"
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            initialStepJSON: Self.workflowStepJSON(
+                id: "step_initial",
+                screenId: "screen_initial",
+                componentId: componentId,
+                destinationStepId: "step_terminal"
+            ),
+            terminalScreenJSON: Self.makeScreenJSON(offeringId: "missing_offering")
+        )
+        var reportedErrors: [NSError] = []
+        var reportedBehaviors: [WorkflowPresentationErrorBehavior] = []
+        let view = WorkflowPaywallView(
+            context: context,
+            purchaseHandler: .mock(),
+            introEligibilityChecker: .producing(eligibility: .eligible),
+            showZeroDecimalPlacePrices: false,
+            displayCloseButton: false,
+            promoOfferCache: nil,
+            onDismiss: {},
+            onPresentationError: { error, behavior in
+                reportedErrors.append(error)
+                reportedBehaviors.append(behavior)
+            }
+        )
+
+        XCTAssertTrue(view.handleTriggeredNavigation(componentId: componentId))
+        expect(reportedErrors.first?.code) == ErrorCode.configurationError.rawValue
+        expect(reportedBehaviors) == [.remainPresented]
+
+        // The failed destination did not advance or invalidate the current screen.
+        XCTAssertTrue(view.handleTriggeredNavigation(componentId: componentId))
+        expect(reportedBehaviors) == [.remainPresented, .remainPresented]
     }
 
     @MainActor
@@ -984,7 +1059,7 @@ extension WorkflowPaywallViewTests {
             displayCloseButton: false,
             promoOfferCache: nil,
             onDismiss: {},
-            onPresentationError: { reportedError = $0 }
+            onPresentationError: { error, _ in reportedError = error }
         )
         .environment(\.workflowExitOfferOfferingBinding, exitOfferBinding)
 
