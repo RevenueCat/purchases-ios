@@ -751,6 +751,40 @@ final class WorkflowPresenterTests: TestCase {
 @MainActor
 final class DefaultPaywallPresenterTests: TestCase {
 
+    // Missing presentation context: route the startup error before reporting presentation failure.
+    func testMissingPresentationContextRoutesErrorBeforeReportingFailure() throws {
+        var receivedParams: ErrorPresentationParams?
+        var errorCompletion: ErrorPresentationCompletion?
+        var presentationResult: PaywallPresentationResult?
+        let presenter = DefaultPaywallPresenter(presentationContextProvider: { nil })
+
+        presenter.present(
+            params: .init(
+                checkpointIdentifier: "test_checkpoint",
+                customVariables: ["source": "test"],
+                offering: Self.offering(),
+                errorPresentationHandler: { params, completion in
+                    receivedParams = params
+                    errorCompletion = completion
+                }
+            ),
+            completion: { presentationResult = $0 }
+        )
+
+        XCTAssertNil(presentationResult)
+        XCTAssertEqual(receivedParams?.checkpointIdentifier, "test_checkpoint")
+        XCTAssertEqual(receivedParams?.customVariables, ["source": "test"])
+        XCTAssertEqual(receivedParams?.stage, .beforeFlowPresentation)
+        let error = try XCTUnwrap(receivedParams?.error as? CheckpointError)
+        guard case .noPresentationContext = error else {
+            return XCTFail("Expected noPresentationContext, got \(error)")
+        }
+
+        errorCompletion?.complete()
+
+        XCTAssertEqual(presentationResult, .failed)
+    }
+
     func testPurchaseErrorIsRoutedWhilePaywallRemainsPresented() {
         var receivedParams: ErrorPresentationParams?
         let presenter = DefaultPaywallPresenter()

@@ -110,6 +110,33 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
         XCTAssertEqual(errorPresenter.presentations.first?.error as NSError?, expectedError)
     }
 
+    #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
+    // Default Offering startup failure: invoke the error presenter with the concrete error and suppress the callback.
+    func testDefaultOfferingStartupFailure() async {
+        let errorPresenter = ErrorPresentationRecorder()
+        let presenter = CheckpointPresenter(
+            workflowPresenter: WorkflowPresenter(),
+            defaultPaywallPresenter: DefaultPaywallPresenter(presentationContextProvider: { nil })
+        )
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            checkpointPresenter: presenter
+        )
+
+        let result = await manager.checkpointForCallback(
+            identifier: "soft_paywall",
+            params: self.params(errorPresenter: errorPresenter)
+        )
+
+        self.assertSuppressed(result)
+        self.assertTerminalErrorWasPresented(by: errorPresenter, checkpointIdentifier: "soft_paywall")
+        XCTAssertEqual(
+            (errorPresenter.presentations.first?.error as NSError?)?.localizedDescription,
+            CheckpointError.noPresentationContext.localizedDescription
+        )
+    }
+    #endif
+
     // Terminal workflow error: invoke the during-Flow error presenter and do not invoke the callback.
     func testTerminalWorkflowError() async {
         let expectedError = NSError(domain: "CheckpointOutcomeBehaviorTests", code: 3)
