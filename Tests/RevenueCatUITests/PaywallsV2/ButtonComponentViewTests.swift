@@ -138,6 +138,61 @@ final class ButtonComponentViewTests: TestCase {
         XCTAssertEqual(fallbackAppearances, 0)
     }
 
+    func testNativeButtonsDoNotLeaveFlexStackSpacers() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
+        let markers: [PaywallComponent] = ["#FF0000", "#0000FF"].map { color in
+            .stack(.init(components: [], size: .init(width: .fixed(20), height: .fixed(20)),
+                         backgroundColor: .init(light: .hex(color))))
+        }
+        let button = PaywallComponent.button(.init(
+            action: .navigateBack, stack: Self.makeButtonStack(label: "Close"), useNativeIfPossible: true
+        ))
+        for distribution: PaywallComponent.FlexDistribution in [.spaceBetween, .spaceAround, .spaceEvenly] {
+            for dimension: PaywallComponent.Dimension in [
+                .vertical(.center, distribution), .horizontal(.center, distribution)
+            ] {
+                func stack(_ children: [PaywallComponent]) -> PaywallComponent.StackComponent {
+                    .init(components: children, dimension: dimension,
+                          size: .init(width: .fixed(200), height: .fixed(200)), spacing: 24)
+                }
+                let reference = try await self.renderNativeStack(stack(markers), actions: 0)
+                let native = try await self.renderNativeStack(stack([markers[0], button, markers[1]]), actions: 1)
+                let empty = try await self.renderNativeStack(stack([]), actions: 0)
+                XCTAssertNotEqual(reference.pngData(), empty.pngData(), "Markers must actually render")
+                XCTAssertEqual(native.pngData(), reference.pngData(), "Native children must not affect flex spacing")
+            }
+        }
+    }
+
+    private func renderNativeStack(_ stack: PaywallComponent.StackComponent, actions: Int) async throws -> UIImage {
+        let model = try StackComponentViewModel(component: stack, localizationProvider: .init(
+            locale: Locale(identifier: "en_US"), localizedStrings: ["Close": .string("Close")]
+        ), colorScheme: .light)
+        let coordinator = NativePaywallCloseCoordinator()
+        let view = StackComponentView(viewModel: model, onDismiss: {})
+            .environment(\.nativePaywallCloseCoordinator, coordinator)
+            .environmentObject(PurchaseHandler.default())
+            .environmentObject(PackageContext(package: nil, variableContext: .init(packages: [])))
+            .environmentObject(IntroOfferEligibilityContext(
+                introEligibilityChecker: BaseSnapshotTest.eligibleChecker
+            ))
+            .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
+        let (window, hosted) = Self.host(view)
+        defer { window.isHidden = true; window.rootViewController = nil }
+        let registered = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            coordinator.actions.count == actions
+        }, object: nil)
+        await fulfillment(of: [registered], timeout: 2)
+        let settled = expectation(description: "Flex layout settles")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { settled.fulfill() }
+        await fulfillment(of: [settled], timeout: 2)
+        window.layoutIfNeeded()
+        hosted.layoutIfNeeded()
+        return UIGraphicsImageRenderer(bounds: hosted.bounds).image { _ in
+            hosted.drawHierarchy(in: hosted.bounds, afterScreenUpdates: true)
+        }
+    }
+
     func testNativeButtonsDoNotConsumeMainOrFooterStackSpacing() async throws {
         try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
         let marker = PaywallComponent.stack(.init(components: [], size: .init(width: .fill, height: .fixed(20))))

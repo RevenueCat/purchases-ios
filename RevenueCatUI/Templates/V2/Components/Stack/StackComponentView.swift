@@ -61,6 +61,7 @@ struct StackComponentView: View {
     private var paywallAncestorScrollsVertically
 
     @Environment(\.nativePaywallCloseCoordinator) private var nativeCoordinator
+    @State private var hiddenNativeButtons: Set<ObjectIdentifier> = []
 
     private let viewModel: StackComponentViewModel
     private let isScrollableByDefault: Bool
@@ -112,6 +113,10 @@ struct StackComponentView: View {
     @ViewBuilder
     // swiftlint:disable:next function_body_length
     private func make(style: StackComponentStyle) -> some View {
+        let contentViewModels = self.viewModel.viewModels.filter { item in
+            if case .button(let button) = item { return !self.hiddenNativeButtons.contains(ObjectIdentifier(button)) }
+            return true
+        }
         Group {
             switch style.dimension {
             case .vertical(let horizontalAlignment, let distribution):
@@ -119,7 +124,7 @@ struct StackComponentView: View {
                     style: style,
                     horizontalAlignment: horizontalAlignment,
                     distribution: distribution,
-                    viewModels: self.viewModel.viewModels,
+                    viewModels: contentViewModels,
                     onDismiss: self.onDismiss
                 )
                 // This alignment positions the inner VStack horizontally and vertically
@@ -131,7 +136,7 @@ struct StackComponentView: View {
                     style: style,
                     verticalAlignment: verticalAlignment,
                     distribution: distribution,
-                    viewModels: self.viewModel.viewModels,
+                    viewModels: contentViewModels,
                     onDismiss: self.onDismiss
                 )
                 // This alignment positions the inner VStack horizontally and vertically
@@ -142,7 +147,7 @@ struct StackComponentView: View {
                 // This alignment defines the position of inner components relative to each other
                 ZStack(alignment: alignment.stackAlignment) {
                     ComponentsView(
-                        componentViewModels: self.viewModel.viewModels,
+                        componentViewModels: contentViewModels,
                         pushNonFirstChildrenBelowSafeArea: self.viewModel.firstChildIsFullWidthMedia,
                         onDismiss: self.onDismiss
                     )
@@ -191,6 +196,7 @@ struct StackComponentView: View {
                 }
             }
         }
+        .onPreferenceChange(NativePaywallHiddenButtonsKey.self) { self.hiddenNativeButtons = $0 }
         .transformPreference(NativePaywallHeaderContentKey.self) { content in
             content.hasVisibleContent = content.hasVisibleContent || style.badge != nil
         }
