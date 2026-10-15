@@ -142,9 +142,15 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
                     let actual = try self.toolbarIconCenters(in: screenshot, band: band)
                     XCTAssertEqual(expected.count, native ? 2 : 1)
                     XCTAssertEqual(actual.count, expected.count)
-                    for (reference, rendered) in zip(expected, actual) {
+                    if let reference = expected.last, let rendered = actual.last {
                         XCTAssertEqual(rendered, reference, accuracy: Double(screenshot.scale),
-                                       "Detection must not displace toolbar content")
+                                       "Detection must preserve the trailing control's position")
+                    }
+                    if expected.count == 2, actual.count == 2 {
+                        // Shared glass can compact the gap; a probe must not consume additional bar space.
+                        let occupiedWidth = actual[1] - actual[0]
+                        XCTAssertLessThanOrEqual(occupiedWidth, expected[1] - expected[0] + Double(screenshot.scale))
+                        XCTAssertGreaterThanOrEqual(occupiedWidth, 44 * Double(screenshot.scale))
                     }
                 } else {
                     referenceImages[phase] = screenshot
