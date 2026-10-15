@@ -187,7 +187,13 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
         for enabled in [false, true] {
             let host = UIHostingController(rootView: NavigationView {
                 Text("Paywall").modifier(NativePaywallCloseHost(enabled: enabled))
-                    .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Caller") {} } }
+                    .navigationTitle("Paywall")
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button {} label: { Image(systemName: "questionmark.circle") }
+                                .accessibilityLabel("Caller")
+                        }
+                    }
             }.navigationViewStyle(.stack))
             let window = self.host(host)
             await self.waitForPresentation()
