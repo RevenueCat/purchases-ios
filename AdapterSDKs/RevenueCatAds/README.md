@@ -89,6 +89,20 @@ not expose the bid response, so `PrebidAdModule` installs an event handler that 
 standalone one and keeps the response. The network name is currently always `Equativ`. Tracking is
 skipped (with a debug log) while `Purchases` is not configured and never affects the ad flow.
 
+## Running the sample
+
+The sample is `Examples/AdsIntegrationSample` (one screen: API key, server URL, placement ID,
+Load/Show buttons and an event log).
+
+1. Have a RevenueCat backend that serves ads and a public API key of a project on it.
+2. Open `Examples/AdsIntegrationSample/AdsIntegrationSample.xcodeproj` and run it on an iOS Simulator
+   (for a backend on your Mac, the Simulator reaches its `localhost`; a physical device does not).
+3. Enter a RevenueCat API key (or set it in `Sources/Constants.swift`), keep or change the server URL
+   and placement ID, tap **Load**, then **Show** once it is ready.
+
+The sample's `Info.plist` allows plain HTTP for `localhost` only. The library itself does not touch
+App Transport Security.
+
 ## Development
 
 ```bash
