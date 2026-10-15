@@ -923,21 +923,66 @@ final class CheckpointsManagerTests: TestCase {
 
     }
 
-    func testPresentationErrorIsForwardedWithoutPresentedResult() async {
+    func testPresentationErrorIsPresentedAndReturnsFailed() async throws {
         let expectedError = NSError(domain: "test", code: 42)
+        let executor = MockWorkflowPresenter()
+        executor.error = expectedError
+        var presentedError: (any Error)?
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
+            workflowPresenter: executor
+        )
+
+        let outcome = try await manager.executeCheckpoint(
+            identifier: "soft_paywall",
+            params: .init(errorPresenter: { params, completion in
+                presentedError = params.error
+                completion.complete()
+            })
+        )
+
+        guard case .failed = outcome else {
+            return XCTFail("Expected a failed presentation outcome")
+        }
+        XCTAssertEqual(presentedError as NSError?, expectedError)
+    }
+
+    func testWorkflowStartupErrorKeepsPresentationSlotUntilErrorPresentationCompletes() async throws {
+        let expectedError = NSError(domain: "test", code: 42)
+        let errorPresented = self.expectation(description: "Error is presented")
+        var errorPresentationCompletion: ErrorPresentationCompletion?
         let executor = MockWorkflowPresenter()
         executor.error = expectedError
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
             workflowPresenter: executor
         )
+
+        let firstCheckpoint = Task {
+            await manager.checkpointForCallback(
+                identifier: "soft_paywall",
+                params: .init(errorPresenter: { _, completion in
+                    errorPresentationCompletion = completion
+                    errorPresented.fulfill()
+                })
+            )
+        }
+        await self.fulfillment(of: [errorPresented], timeout: 1)
+
         do {
             _ = try await manager.executeCheckpoint(identifier: "soft_paywall", params: .init())
-            XCTFail("Expected checkpoint to throw")
+            XCTFail("Expected the error presentation to keep owning the presentation slot")
         } catch {
-            XCTAssertEqual(error as NSError, expectedError)
+            XCTAssertEqual(
+                (error as NSError).code,
+                ErrorCode.operationAlreadyInProgressForProductError.rawValue
+            )
         }
 
+        errorPresentationCompletion?.complete()
+        guard case .suppressed = await firstCheckpoint.value else {
+            return XCTFail("Expected the failed presentation to suppress the callback")
+        }
     }
 
     func testValidCheckpointIdentifierReachesResolution() async throws {

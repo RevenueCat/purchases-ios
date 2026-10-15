@@ -54,7 +54,25 @@ final class CheckpointPresenter: CheckpointPresenterType {
             throw CheckpointError.operationAlreadyInProgress
         }
         defer { self.slot.release(token) }
-        return try await self.workflowPresenter.present(presentation)
+
+        do {
+            return try await self.workflowPresenter.present(presentation)
+        } catch CheckpointError.operationAlreadyInProgress {
+            throw CheckpointError.operationAlreadyInProgress
+        } catch {
+            await withCheckedContinuation { continuation in
+                presentation.errorPresentationHandler(
+                    .init(
+                        checkpointIdentifier: presentation.checkpointIdentifier,
+                        error: error,
+                        customVariables: presentation.customVariables,
+                        kind: .flowCouldNotBeShown
+                    ),
+                    .init { continuation.resume() }
+                )
+            }
+            return .failed
+        }
     }
 
     func presentOffering(
