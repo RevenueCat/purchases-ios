@@ -95,6 +95,38 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
         await self.assertNativeClose(expected: false) { button in button }
     }
 
+    func testAutomaticDetectionDoesNotAllocateAnExtraToolbarItem() async throws {
+        let state = NativeNavigationVisibilityTestState()
+        let host = UIHostingController(rootView: NavigationView {
+            NativeNavigationVisibilityTestView(state: state)
+                .modifier(NativePaywallNavigationModifier(requested: true))
+                .navigationTitle("Paywall")
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Help") {}.accessibilityIdentifier("Caller.Help")
+                    }
+                }
+        }.navigationViewStyle(.stack))
+        let window = self.host(host)
+        defer { self.close(window) }
+        for native in [false, true, false] {
+            state.native = native
+            await self.waitForPresentation()
+            let navigation = try XCTUnwrap(self.navigationController(in: host))
+            let item = try XCTUnwrap(navigation.topViewController?.navigationItem)
+            XCTAssertEqual(item.rightBarButtonItems?.count, native ? 2 : 1,
+                           "Only Help and a real native Close may occupy trailing slots")
+            XCTAssertEqual(self.toolbarButtons(in: host.view).count, native ? 1 : 0)
+            let screenshot = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in
+                window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
+            }
+            let attachment = XCTAttachment(image: screenshot)
+            attachment.name = "Automatic navigation with native Close \(native)"
+            attachment.lifetime = .keepAlways
+            self.add(attachment)
+        }
+    }
+
     func testAutomaticDetectionReusesNavigationStack() async {
         if #available(iOS 16.0, *) {
             await self.assertNativeClose(expectedNavigationCount: 1) { button in
@@ -253,6 +285,7 @@ private final class NativeNavigationVisibilityTestState: ObservableObject {
     @Published var native = false
 }
 
+@available(iOS 15.0, *)
 private struct NativeNavigationVisibilityTestView: View {
     @ObservedObject var state: NativeNavigationVisibilityTestState
     var body: some View {
