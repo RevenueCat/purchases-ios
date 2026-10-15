@@ -134,7 +134,7 @@ struct StackComponentView: View {
     // swiftlint:disable:next function_body_length
     private func make(style: StackComponentStyle) -> some View {
         let layoutSize: PaywallComponent.Size = self.suppressNativeHeaderLayout
-            ? .init(width: style.size.width, height: .fit(nil)) : style.size
+            ? .init(width: .fixed(0), height: .fit(nil)) : style.size
         let contentViewModels = self.viewModel.viewModels.filter { item in
             if case .button(let button) = item { return !self.hiddenNativeButtons.contains(ObjectIdentifier(button)) }
             return true
@@ -150,6 +150,7 @@ struct StackComponentView: View {
                     onDismiss: self.onDismiss
                 )
                 // This alignment positions the inner VStack horizontally and vertically
+                .fixedSize(horizontal: self.suppressNativeHeaderLayout, vertical: self.suppressNativeHeaderLayout)
                 .size(layoutSize,
                       horizontalAlignment: horizontalAlignment.frameAlignment,
                       verticalAlignment: distribution.verticalFrameAlignment)
@@ -162,6 +163,7 @@ struct StackComponentView: View {
                     onDismiss: self.onDismiss
                 )
                 // This alignment positions the inner VStack horizontally and vertically
+                .fixedSize(horizontal: self.suppressNativeHeaderLayout, vertical: self.suppressNativeHeaderLayout)
                 .size(layoutSize,
                       horizontalAlignment: distribution.horizontalFrameAlignment,
                       verticalAlignment: verticalAlignment.frameAlignment)
@@ -175,6 +177,7 @@ struct StackComponentView: View {
                     )
                 }
                 // These alignments define the position of inner components inside the ZStack
+                .fixedSize(horizontal: self.suppressNativeHeaderLayout, vertical: self.suppressNativeHeaderLayout)
                 .size(layoutSize,
                       horizontalAlignment: alignment.stackAlignment,
                       verticalAlignment: alignment.stackAlignment)
