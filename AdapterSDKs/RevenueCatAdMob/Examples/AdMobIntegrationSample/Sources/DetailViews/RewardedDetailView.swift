@@ -182,7 +182,7 @@ struct RewardedDetailView: View {
         guard let configuredRewards else {
             return "Watch an ad to earn a reward"
         }
-        let rewards = [configuredRewards.configuredReward].compactMap { $0 } + configuredRewards.moreRewards
+        let rewards = [configuredRewards.reward].compactMap { $0 } + configuredRewards.moreRewards
         guard !rewards.isEmpty else { return "Watch an ad to earn a reward" }
         return "Watch an ad to earn " + rewards.map(self.rewardDescription).joined(separator: " + ")
     }
