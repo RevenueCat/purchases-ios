@@ -80,6 +80,7 @@ final class ButtonComponentViewTests: TestCase {
     }
 
     func testInactiveWorkflowPageKeepsNativeHeaderCollapsedWithoutRegisteringActions() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
         let button = PaywallComponent.ButtonComponent(
             action: .navigateBack, stack: Self.makeButtonStack(label: "Close"), useNativeIfPossible: true
         )
@@ -135,6 +136,56 @@ final class ButtonComponentViewTests: TestCase {
         try await coordinator.performAction(id: XCTUnwrap(coordinator.actions.first?.id))
         XCTAssertEqual(actions, 1)
         XCTAssertEqual(fallbackAppearances, 0)
+    }
+
+    func testNativeHeaderTracksHiddenTextAndHiddenStacksAsOverridesChange() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
+        for hidesStack in [false, true] {
+            let title = PaywallComponent.TextComponent(
+                visible: hidesStack, text: "Title", color: .init(light: .hex("#000000")),
+                overrides: hidesStack ? nil : [.init(conditions: [.selected], properties: .init(visible: true))]
+            )
+            let sibling: PaywallComponent = hidesStack ? .stack(.init(
+                visible: false, components: [.text(title)],
+                overrides: [.init(conditions: [.selected], properties: .init(visible: true))]
+            )) : .text(title)
+            let stack = PaywallComponent.StackComponent(
+                components: [.button(.init(action: .navigateBack, stack: Self.makeButtonStack(label: "Close"),
+                                           useNativeIfPossible: true)), sibling],
+                size: .init(width: .fill, height: .fixed(100))
+            )
+            let model = try StackComponentViewModel(component: stack, localizationProvider: .init(
+                locale: Locale(identifier: "en_US"),
+                localizedStrings: ["Title": .string("Title"), "Close": .string("Close")]
+            ), colorScheme: .light)
+            let state = NativeRegistrationTestState()
+            var height: CGFloat = -1
+            let content = HeaderComponentView(viewModel: .init(
+                component: .init(stack: stack), stackViewModel: model, firstItemIgnoresSafeArea: false
+            ), onDismiss: {})
+                .fixedSize(horizontal: false, vertical: true)
+                .background(GeometryReader { proxy in
+                    Color.clear.preference(key: NativeRegistrationHeightKey.self, value: proxy.size.height)
+                })
+                .onPreferenceChange(NativeRegistrationHeightKey.self) { height = $0 }
+                .environment(\.nativePaywallCloseCoordinator, NativePaywallCloseCoordinator())
+                .environmentObject(PurchaseHandler.default())
+                .environmentObject(PackageContext(package: nil, variableContext: .init(packages: [])))
+                .environmentObject(IntroOfferEligibilityContext(
+                    introEligibilityChecker: BaseSnapshotTest.eligibleChecker
+                ))
+                .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
+                .environment(\.safeAreaInsets, EdgeInsets())
+            let (window, _) = Self.host(NativeHeaderVisibilityTestView(state: state, content: content))
+            defer { window.isHidden = true; window.rootViewController = nil }
+            for (value, expected) in [(1, CGFloat(0)), (2, 100), (1, 0)] {
+                state.value = value
+                let resized = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+                    abs(height - expected) < 0.5
+                }, object: nil)
+                await fulfillment(of: [resized], timeout: 2)
+            }
+        }
     }
 
     func testButtonWithVisibleFalse_IsNotRendered() throws {
@@ -252,7 +303,9 @@ final class ButtonComponentViewTests: TestCase {
         ButtonComponentView(viewModel: viewModel, onDismiss: onDismiss)
             .environmentObject(PurchaseHandler.default())
             .environmentObject(PackageContext(package: nil, variableContext: .init(packages: [])))
-            .environmentObject(IntroOfferEligibilityContext(introEligibilityChecker: BaseSnapshotTest.eligibleChecker))
+            .environmentObject(IntroOfferEligibilityContext(
+                    introEligibilityChecker: BaseSnapshotTest.eligibleChecker
+                ))
             .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
             .environment(\.componentViewState, .default)
             .environment(\.screenCondition, .compact)
@@ -341,6 +394,14 @@ private extension UIView {
         return self.subviews.contains { $0.containsText(text) }
     }
 
+}
+
+private struct NativeHeaderVisibilityTestView<Content: View>: View {
+    @ObservedObject var state: NativeRegistrationTestState
+    let content: Content
+    var body: some View {
+        self.content.environment(\.componentViewState, self.state.value == 1 ? .default : .selected)
+    }
 }
 
 @MainActor
