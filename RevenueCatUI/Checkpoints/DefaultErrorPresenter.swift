@@ -27,8 +27,9 @@ final class DefaultErrorPresenter: ErrorPresenter {
     typealias PreferredUILocaleProvider = @MainActor () -> String?
     typealias AlertFactory = @MainActor (
         _ host: UIViewController,
-        _ title: String,
+        _ title: String?,
         _ message: String,
+        _ acknowledgementTitle: String,
         _ acknowledged: @escaping @MainActor () -> Void
     ) -> UIViewController
 
@@ -55,11 +56,12 @@ final class DefaultErrorPresenter: ErrorPresenter {
             UIApplication.extensionSafeApplication?.currentPresentationViewController
         },
         preferredUILocaleProvider: @escaping PreferredUILocaleProvider = { nil },
-        alertFactory: @escaping AlertFactory = { host, title, message, acknowledged in
+        alertFactory: @escaping AlertFactory = { host, title, message, acknowledgementTitle, acknowledged in
             DefaultErrorPresenter.makeAlert(
                 host: host,
                 title: title,
                 message: message,
+                acknowledgementTitle: acknowledgementTitle,
                 acknowledged: acknowledged
             )
         }
@@ -90,11 +92,12 @@ final class DefaultErrorPresenter: ErrorPresenter {
         }
 
         self.presentation = current
-        let content = LocalizedAlertError.Content(error: current.params.error as NSError)
+        let localizedBundle = self.localizedBundle
         current.alertController = self.alertFactory(
             host,
-            content.title,
-            current.params.localizedMessage(in: self.localizedBundle),
+            nil,
+            current.params.localizedMessage(in: localizedBundle),
+            localizedBundle.localizedString(forKey: "OK", value: "OK", table: nil),
             { [weak self, weak current] in
                 guard let self, let current else { return }
                 self.acknowledge(current)
@@ -131,13 +134,13 @@ final class DefaultErrorPresenter: ErrorPresenter {
 
     private static func makeAlert(
         host: UIViewController,
-        title: String,
+        title: String?,
         message: String,
+        acknowledgementTitle: String,
         acknowledged: @escaping @MainActor () -> Void
     ) -> UIViewController {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let okTitle = Bundle.revenueCatUI.localizedString(forKey: "OK", value: "OK", table: nil)
-        alert.addAction(UIAlertAction(title: okTitle, style: .default) { _ in acknowledged() })
+        alert.addAction(UIAlertAction(title: acknowledgementTitle, style: .default) { _ in acknowledged() })
         host.present(alert, animated: true)
         return alert
     }
@@ -161,7 +164,7 @@ private extension ErrorPresentationParams {
         }
 
         let message: String
-        if error.revenueCatErrorCode == .networkError {
+        if error.revenueCatErrorCode == .networkError || error.revenueCatErrorCode == .offlineConnectionError {
             message = "Couldn't connect. Check your internet connection and try again."
         } else if self.kind == .flowCouldNotBeShown {
             message = "This content couldn't be loaded. Please try again later."

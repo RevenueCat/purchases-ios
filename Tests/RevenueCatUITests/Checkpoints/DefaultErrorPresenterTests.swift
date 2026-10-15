@@ -28,8 +28,9 @@ final class DefaultErrorPresenterTests: TestCase {
 
         harness.presenter.present(params: Self.params(), completion: harness.completion)
 
-        XCTAssertEqual(harness.presentedTitles, ["Error"])
+        XCTAssertNil(harness.presentedTitle)
         XCTAssertEqual(harness.presentedMessages, ["Something went wrong. Please try again."])
+        XCTAssertEqual(harness.presentedAcknowledgementTitles, ["OK"])
         XCTAssertEqual(harness.completionCount, 0)
     }
 
@@ -77,22 +78,24 @@ final class DefaultErrorPresenterTests: TestCase {
         XCTAssertEqual(harness.presentedMessages, ["Your purchases couldn't be verified. Please try again later."])
     }
 
-    func testNetworkErrorUsesConnectionMessageForEveryFailureKind() {
+    func testConnectionErrorsUseNetworkMessageForEveryFailureKind() {
         let expectedMessage = "Couldn't connect. Check your internet connection and try again."
 
-        for kind in [
-            CheckpointFailureKind.flowCouldNotBeShown,
-            .flowActionFailed,
-            .flowResultSyncFailed
-        ] {
-            let harness = Harness()
+        for errorCode in [ErrorCode.networkError, .offlineConnectionError] {
+            for kind in [
+                CheckpointFailureKind.flowCouldNotBeShown,
+                .flowActionFailed,
+                .flowResultSyncFailed
+            ] {
+                let harness = Harness()
 
-            harness.presenter.present(
-                params: Self.params(errorCode: .networkError, kind: kind),
-                completion: harness.completion
-            )
+                harness.presenter.present(
+                    params: Self.params(errorCode: errorCode, kind: kind),
+                    completion: harness.completion
+                )
 
-            XCTAssertEqual(harness.presentedMessages, [expectedMessage])
+                XCTAssertEqual(harness.presentedMessages, [expectedMessage])
+            }
         }
     }
 
@@ -141,7 +144,7 @@ final class DefaultErrorPresenterTests: TestCase {
     }
 
     func testMessageUsesPreferredUILocaleOverride() {
-        let harness = Harness(localeIdentifier: "es_ES")
+        let harness = Harness(localeIdentifier: "ja")
 
         harness.presenter.present(
             params: Self.params(errorCode: .configurationError, kind: .flowCouldNotBeShown),
@@ -150,8 +153,10 @@ final class DefaultErrorPresenterTests: TestCase {
 
         XCTAssertEqual(
             harness.presentedMessages,
-            ["No se pudo cargar este contenido. Inténtalo de nuevo más tarde."]
+            ["このコンテンツを読み込めませんでした。しばらくしてからもう一度お試しください。"]
         )
+        XCTAssertNil(harness.presentedTitle)
+        XCTAssertEqual(harness.presentedAcknowledgementTitles, ["わかりました"])
     }
 
     func testMessageUsesSystemLocalizationWithoutPreferredUILocaleOverride() {
@@ -318,8 +323,9 @@ final class DefaultErrorPresenterTests: TestCase {
         private let host = UIViewController()
         private let defersDismissal: Bool
         private let localeIdentifier: String?
-        var presentedTitles: [String] = []
+        var presentedTitle: String?
         var presentedMessages: [String] = []
+        var presentedAcknowledgementTitles: [String] = []
         var acknowledgement: (@MainActor () -> Void)?
         var completionCount = 0
         var deferredAlerts: [DeferredDismissalViewController] = []
@@ -332,9 +338,10 @@ final class DefaultErrorPresenterTests: TestCase {
         lazy var presenter = DefaultErrorPresenter(
             presentationContextProvider: { [host] in host },
             preferredUILocaleProvider: { [localeIdentifier] in localeIdentifier },
-            alertFactory: { [weak self] _, title, message, acknowledgement in
-                self?.presentedTitles.append(title)
+            alertFactory: { [weak self] _, title, message, acknowledgementTitle, acknowledgement in
+                self?.presentedTitle = title
                 self?.presentedMessages.append(message)
+                self?.presentedAcknowledgementTitles.append(acknowledgementTitle)
                 self?.acknowledgement = acknowledgement
 
                 if self?.defersDismissal == true {
