@@ -10,6 +10,14 @@ struct RewardedDetailView: View {
     private static let adUnitID = ProcessInfo.processInfo.environment["ADMOB_REWARDED_AD_UNIT_ID"]
         ?? "ca-app-pub-3940256099942544/1712485313"
 
+    private static let durationFormatter: DateComponentsFormatter = {
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.day, .hour, .minute, .second]
+        formatter.unitsStyle = .full
+        formatter.maximumUnitCount = 2
+        return formatter
+    }()
+
     @State private var usesRewardVerification = true
     @State private var message: Message?
     @State private var promptSession = RewardedAdPromptSession()
@@ -191,27 +199,12 @@ struct RewardedDetailView: View {
         if let virtualCurrency = reward.virtualCurrency {
             return "\(virtualCurrency.amount) \(virtualCurrency.code)"
         } else if let entitlement = reward.entitlement {
-            let duration = entitlement.duration
-            return "\(duration.value) \(self.description(for: duration.unit, value: duration.value)) of "
-                + entitlement.identifier
+            let duration = Self.durationFormatter.string(from: entitlement.durationInSeconds)
+                ?? "\(Int(entitlement.durationInSeconds)) seconds"
+            return "\(duration) of \(entitlement.identifier)"
         } else {
             return "the configured reward"
         }
-    }
-
-    private func description(for unit: AdRewardDuration.Unit, value: Int) -> String {
-        let description: String
-        switch unit {
-        case .second: description = "second"
-        case .minute: description = "minute"
-        case .hour: description = "hour"
-        case .day: description = "day"
-        case .week: description = "week"
-        case .month: description = "month"
-        case .year: description = "year"
-        default: description = "unit"
-        }
-        return value == 1 ? description : description + "s"
     }
 
 }
