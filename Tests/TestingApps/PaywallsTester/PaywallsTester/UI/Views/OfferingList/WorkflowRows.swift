@@ -21,9 +21,11 @@ struct WorkflowRow: Identifiable {
     let name: String?
     let error: String?
     /// Offerings this flow's steps use, claimed or not.
-    let offeringIdentifiers: Set<String>
-    /// Set when the first step is an offering step: the flow shows no UI and only returns this offering.
-    let uiLessOfferingIdentifier: String?
+    let stepOfferingIdentifiers: Set<String>
+    /// Set for an offering flow: its only step is an offering step, so it shows no UI and returns this offering.
+    let returnedOfferingIdentifier: String?
+
+    var isOfferingFlow: Bool { self.returnedOfferingIdentifier != nil }
 
     var subtitle: String {
         if let error { return error }
@@ -31,13 +33,13 @@ struct WorkflowRow: Identifiable {
             return "Offering: \(self.claimedOfferingIdentifiers.sorted().joined(separator: ", "))"
         }
         // Not attached to an offering, so show what its screens use instead.
-        guard !self.offeringIdentifiers.isEmpty else { return "No offering" }
-        return "Uses: \(self.offeringIdentifiers.sorted().joined(separator: ", "))"
+        guard !self.stepOfferingIdentifiers.isEmpty else { return "No offering" }
+        return "Uses: \(self.stepOfferingIdentifiers.sorted().joined(separator: ", "))"
     }
 
-    func uses(_ offeringIdentifier: String) -> Bool {
+    func referencesOffering(_ offeringIdentifier: String) -> Bool {
         return self.claimedOfferingIdentifiers.contains(offeringIdentifier)
-            || self.offeringIdentifiers.contains(offeringIdentifier)
+            || self.stepOfferingIdentifiers.contains(offeringIdentifier)
     }
 
     func matches(_ searchText: String) -> Bool {
@@ -63,19 +65,19 @@ struct WorkflowRow: Identifiable {
                         let workflow = result.workflow
                         let initialStep = workflow.steps[workflow.initialStepId]
                         // Same rule as checkpoints: an offering step must be the flow's only step.
-                        let isUILess = initialStep?.isOfferingStep == true
-                        let uiLessOfferingIdentifier = workflow.steps.count == 1 ? initialStep?.offeringIdentifier : nil
+                        let startsWithOfferingStep = initialStep?.isOfferingStep == true
+                        let returnedOfferingIdentifier = workflow.steps.count == 1 ? initialStep?.offeringIdentifier : nil
                         return .init(
                             id: workflowId,
                             claimedOfferingIdentifiers: claimed,
                             name: workflow.displayName,
-                            error: isUILess && uiLessOfferingIdentifier == nil
+                            error: startsWithOfferingStep && returnedOfferingIdentifier == nil
                                 ? "Not servable: an offering step must be the only step and name an offering."
                                 : nil,
-                            offeringIdentifiers: Set(
+                            stepOfferingIdentifiers: Set(
                                 result.workflow.steps.values.compactMap { result.workflow.offeringIdentifier(for: $0) }
                             ),
-                            uiLessOfferingIdentifier: isUILess ? uiLessOfferingIdentifier : nil
+                            returnedOfferingIdentifier: startsWithOfferingStep ? returnedOfferingIdentifier : nil
                         )
                     } catch {
                         return .init(
@@ -83,8 +85,8 @@ struct WorkflowRow: Identifiable {
                             claimedOfferingIdentifiers: claimed,
                             name: nil,
                             error: error.localizedDescription,
-                            offeringIdentifiers: [],
-                            uiLessOfferingIdentifier: nil
+                            stepOfferingIdentifiers: [],
+                            returnedOfferingIdentifier: nil
                         )
                     }
                 }
@@ -125,10 +127,10 @@ struct PresentedWorkflow: Identifiable {
 }
 
 #if canImport(UIKit) && !os(watchOS)
-/// Shows a UI-less flow's offering with the presenter the SDK uses when a checkpoint returns an offering:
+/// Shows an offering flow's offering with the presenter the SDK uses when a checkpoint returns an offering:
 /// the offering's paywall, or the fallback paywall.
 @MainActor
-enum UILessFlowPresenter {
+enum OfferingFlowPresenter {
 
     private static let presenter = DefaultPaywallPresenter()
     // Checkpoints always pass an error presenter, so purchase and restore errors are shown.

@@ -252,7 +252,7 @@ struct APIKeyDashboardList: View {
         List {
             #if DEBUG && !os(tvOS)
             self.workflowsSection(data: data)
-            self.uiLessWorkflowsSection(data: data)
+            self.offeringFlowsSection(data: data)
             #endif
             ForEach(data.sections, id: \.self) { section in
                 let offerings = filteredOfferings(for: section, in: data)
@@ -417,7 +417,7 @@ struct APIKeyDashboardList: View {
     #if DEBUG && !os(tvOS)
     @ViewBuilder
     private func workflowsSection(data: Data) -> some View {
-        let rows = self.filteredWorkflowRows.filter { $0.uiLessOfferingIdentifier == nil }
+        let rows = self.filteredWorkflowRows.filter { !$0.isOfferingFlow }
 
         if !rows.isEmpty {
             Section {
@@ -477,15 +477,15 @@ struct APIKeyDashboardList: View {
     }
 
     @ViewBuilder
-    private func uiLessWorkflowsSection(data: Data) -> some View {
-        let rows = self.filteredWorkflowRows.filter { $0.uiLessOfferingIdentifier != nil }
+    private func offeringFlowsSection(data: Data) -> some View {
+        let rows = self.filteredWorkflowRows.filter(\.isOfferingFlow)
 
         if !rows.isEmpty {
             Section {
                 ForEach(rows) { row in
-                    let offeringIdentifier = row.uiLessOfferingIdentifier ?? ""
+                    let offeringIdentifier = row.returnedOfferingIdentifier ?? ""
                     Button {
-                        self.openOffering(offeringIdentifier, in: data)
+                        self.openOfferingFlow(offeringIdentifier, in: data)
                     } label: {
                         VStack(alignment: .leading) {
                             Text(row.name ?? row.id)
@@ -500,7 +500,7 @@ struct APIKeyDashboardList: View {
                 }
             } header: {
                 SectionHeader(
-                    title: "UI-less flows",
+                    title: "Offering flows",
                     caption: "Return only an offering. Opens that offering, like an app."
                 )
             }
@@ -511,13 +511,13 @@ struct APIKeyDashboardList: View {
         return data.offeringsBySection.values.joined().first { $0.identifier == identifier }
     }
 
-    private func openOffering(_ identifier: String, in data: Data) {
+    private func openOfferingFlow(_ identifier: String, in data: Data) {
         guard let offering = self.offering(identifier, in: data) else {
             self.workflowLoadError = "Offering '\(identifier)' is not in the offerings."
             return
         }
         #if canImport(UIKit) && !os(watchOS)
-        UILessFlowPresenter.present(offering, customVariables: self.customVariables)
+        OfferingFlowPresenter.present(offering, customVariables: self.customVariables)
         #else
         self.isLoadingPaywall = true
         self.presentedPaywall = .init(offering: offering, mode: .workflow)
@@ -683,7 +683,7 @@ struct APIKeyDashboardList: View {
 
     private func flowsUsingDescription(_ offering: Offering) -> String? {
         #if DEBUG && !os(tvOS)
-        let names = self.workflowRows.filter { $0.uses(offering.identifier) }.map { $0.name ?? $0.id }
+        let names = self.workflowRows.filter { $0.referencesOffering(offering.identifier) }.map { $0.name ?? $0.id }
         return names.isEmpty ? nil : "Used by: \(names.joined(separator: ", "))"
         #else
         return nil
