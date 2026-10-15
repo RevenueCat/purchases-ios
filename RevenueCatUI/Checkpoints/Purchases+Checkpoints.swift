@@ -120,6 +120,7 @@ private extension Purchases {
                 return try await self.resolveCheckpoint(identifier: identifier, params: params.coreParams)
             },
             cachedCustomerInfoProvider: { [weak self] in self?.cachedCustomerInfo },
+            preferredUILocaleProvider: { [weak self] in self?.preferredLocaleOverride },
             customerInfoSynchronizer: { [weak self] in
                 guard let self else { throw CancellationError() }
                 return try await self.syncPurchases()

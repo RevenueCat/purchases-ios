@@ -24,10 +24,12 @@ import UIKit
 final class DefaultErrorPresenter: ErrorPresenter {
 
     typealias PresentationContextProvider = @MainActor () -> UIViewController?
+    typealias PreferredUILocaleProvider = @MainActor () -> String?
     typealias AlertFactory = @MainActor (
         _ host: UIViewController,
-        _ title: String,
+        _ title: String?,
         _ message: String,
+        _ acknowledgementTitle: String,
         _ acknowledged: @escaping @MainActor () -> Void
     ) -> UIViewController
 
@@ -44,6 +46,7 @@ final class DefaultErrorPresenter: ErrorPresenter {
     }
 
     private let presentationContextProvider: PresentationContextProvider
+    private let preferredUILocaleProvider: PreferredUILocaleProvider
     private let alertFactory: AlertFactory
     private var presentation: Presentation?
     private var pendingPresentation: Presentation?
@@ -52,16 +55,19 @@ final class DefaultErrorPresenter: ErrorPresenter {
         presentationContextProvider: @escaping PresentationContextProvider = {
             UIApplication.extensionSafeApplication?.currentPresentationViewController
         },
-        alertFactory: @escaping AlertFactory = { host, title, message, acknowledged in
+        preferredUILocaleProvider: @escaping PreferredUILocaleProvider = { nil },
+        alertFactory: @escaping AlertFactory = { host, title, message, acknowledgementTitle, acknowledged in
             DefaultErrorPresenter.makeAlert(
                 host: host,
                 title: title,
                 message: message,
+                acknowledgementTitle: acknowledgementTitle,
                 acknowledged: acknowledged
             )
         }
     ) {
         self.presentationContextProvider = presentationContextProvider
+        self.preferredUILocaleProvider = preferredUILocaleProvider
         self.alertFactory = alertFactory
     }
 
@@ -86,11 +92,12 @@ final class DefaultErrorPresenter: ErrorPresenter {
         }
 
         self.presentation = current
-        let content = LocalizedAlertError.Content(error: current.params.error as NSError)
+        let localizedBundle = self.localizedBundle
         current.alertController = self.alertFactory(
             host,
-            content.title,
-            content.message,
+            nil,
+            current.params.localizedMessage(in: localizedBundle),
+            localizedBundle.localizedString(forKey: "OK", value: "OK", table: nil),
             { [weak self, weak current] in
                 guard let self, let current else { return }
                 self.acknowledge(current)
@@ -127,15 +134,69 @@ final class DefaultErrorPresenter: ErrorPresenter {
 
     private static func makeAlert(
         host: UIViewController,
-        title: String,
+        title: String?,
         message: String,
+        acknowledgementTitle: String,
         acknowledged: @escaping @MainActor () -> Void
     ) -> UIViewController {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let okTitle = Bundle.revenueCatUI.localizedString(forKey: "OK", value: "OK", table: nil)
-        alert.addAction(UIAlertAction(title: okTitle, style: .default) { _ in acknowledged() })
+        alert.addAction(UIAlertAction(title: acknowledgementTitle, style: .default) { _ in acknowledged() })
         host.present(alert, animated: true)
         return alert
+    }
+
+    private var localizedBundle: Bundle {
+        guard let identifier = self.preferredUILocaleProvider() else {
+            return .revenueCatUI
+        }
+        return Localization.localizedBundle(Locale(identifier: identifier))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, *)
+private extension ErrorPresentationParams {
+
+    func localizedMessage(in bundle: Bundle) -> String {
+        let error = self.error as NSError
+        guard error.revenueCatErrorCode != .testStoreSimulatedPurchaseError else {
+            return error.localizedDescription
+        }
+
+        let message: String
+        if error.revenueCatErrorCode == .networkError || error.revenueCatErrorCode == .offlineConnectionError {
+            message = "Couldn't connect. Check your internet connection and try again."
+        } else if self.kind == .flowCouldNotBeShown {
+            message = "This content couldn't be loaded. Please try again later."
+        } else if self.kind == .flowResultSyncFailed {
+            message = "Your purchases couldn't be verified. Please try again later."
+        } else {
+            switch error.revenueCatErrorCode {
+            case .storeProblemError:
+                message = "There was a problem with the store. Please try again later."
+            case .purchaseNotAllowedError:
+                message = "Purchases aren't allowed on this device."
+            case .productNotAvailableForPurchaseError:
+                message = "This product isn't available right now."
+            case .productAlreadyPurchasedError:
+                message = "You already own this product."
+            case .paymentPendingError:
+                message = "Your payment is pending. You'll get access once it's approved."
+            default:
+                message = "Something went wrong. Please try again."
+            }
+        }
+
+        return bundle.localizedString(forKey: message, value: message, table: nil)
+    }
+
+}
+
+private extension NSError {
+
+    var revenueCatErrorCode: ErrorCode? {
+        guard self.domain == ErrorCode.errorDomain else { return nil }
+        return ErrorCode(rawValue: self.code)
     }
 
 }
@@ -143,6 +204,10 @@ final class DefaultErrorPresenter: ErrorPresenter {
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class DefaultErrorPresenter: ErrorPresenter {
+
+    typealias PreferredUILocaleProvider = @MainActor () -> String?
+
+    init(preferredUILocaleProvider: @escaping PreferredUILocaleProvider = { nil }) {}
 
     func present(params: ErrorPresentationParams, completion: ErrorPresentationCompletion) {
         completion.complete()

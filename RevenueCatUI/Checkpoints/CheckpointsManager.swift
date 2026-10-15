@@ -22,9 +22,11 @@ final class CheckpointsManager {
 
     typealias CustomerInfoSynchronizer = @MainActor () async throws -> CustomerInfo
     typealias CachedCustomerInfoProvider = @MainActor () -> CustomerInfo?
+    typealias PreferredUILocaleProvider = @MainActor () -> String?
 
     private let resolveCheckpoint: (String, CheckpointCallParams) async throws -> CheckpointResolution
     private let cachedCustomerInfoProvider: CachedCustomerInfoProvider
+    private let preferredUILocaleProvider: PreferredUILocaleProvider
     private let checkpointPresenter: CheckpointPresenterType
     private let errorPresentationQueue = ErrorPresentationQueue()
     var paywallPresenter: PaywallPresenter?
@@ -34,10 +36,12 @@ final class CheckpointsManager {
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
         checkpointPresenter: CheckpointPresenterType? = nil,
         cachedCustomerInfoProvider: @escaping CachedCustomerInfoProvider = { nil },
+        preferredUILocaleProvider: @escaping PreferredUILocaleProvider = { nil },
         customerInfoSynchronizer: @escaping CustomerInfoSynchronizer = { throw CancellationError() }
     ) {
         self.resolveCheckpoint = resolveCheckpoint
         self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
+        self.preferredUILocaleProvider = preferredUILocaleProvider
         self.checkpointPresenter = checkpointPresenter ?? CheckpointPresenter(
             workflowPresenter: WorkflowPresenter(),
             cachedCustomerInfoProvider: cachedCustomerInfoProvider,
@@ -92,7 +96,8 @@ final class CheckpointsManager {
         return self.errorPresentationHandler(
             for: params,
             defaultHandler: {
-                let presenter = DefaultErrorPresenter()
+                let preferredUILocaleProvider = self.preferredUILocaleProvider
+                let presenter = DefaultErrorPresenter(preferredUILocaleProvider: preferredUILocaleProvider)
                 return { params, completion in
                     presenter.present(params: params, completion: completion)
                 }
