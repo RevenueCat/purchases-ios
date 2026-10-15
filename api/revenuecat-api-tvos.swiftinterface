@@ -39,6 +39,7 @@ final public class AdTracker : ObjectiveC.NSObject {
   public init(rawValue: Swift.String)
   public static let adMob: RevenueCat.MediatorName
   public static let appLovin: RevenueCat.MediatorName
+  public static let revenueCat: RevenueCat.MediatorName
   @objc override final public func isEqual(_ object: Any?) -> Swift.Bool
   @objc override final public var hash: Swift.Int {
     @objc get

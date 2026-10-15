@@ -80,6 +80,9 @@ public final class MediatorName: NSObject, Codable, @unchecked Sendable {
     /// AppLovin MAX mediation network
     public static let appLovin = MediatorName(rawValue: "AppLovin")
 
+    /// RevenueCat Ads mediation
+    public static let revenueCat = MediatorName(rawValue: "RevenueCat")
+
     // MARK: - NSObject overrides for equality
 
     public override func isEqual(_ object: Any?) -> Bool {
