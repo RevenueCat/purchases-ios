@@ -38,16 +38,7 @@ struct NativePaywallNavigationModifier: ViewModifier {
             case .standalone:
                 self.wrapped(content: content)
             case .uiKit(let owner):
-                if owner.context == nil {
-                    Color.clear
-                } else if let controller = owner.controller,
-                          let navigation = controller.navigationController,
-                          navigation.viewControllers.contains(where: { $0 === controller }),
-                          !navigation.isNavigationBarHidden {
-                    content.modifier(NativePaywallCloseHost(uiKitOwner: owner))
-                } else {
-                    content
-                }
+                NativePaywallUIKitNavigation(owner: owner, content: content)
             case .automatic:
                 content.modifier(NativePaywallCloseHost(detectNavigation: true))
             }
@@ -72,6 +63,31 @@ struct NativePaywallNavigationModifier: ViewModifier {
     }
     #endif
 }
+
+#if os(iOS)
+@available(iOS 15.0, *)
+private struct NativePaywallUIKitNavigation<Content: View>: View {
+    @ObservedObject var owner: NativePaywallUIKitOwner
+    let content: Content
+
+    @ViewBuilder var body: some View {
+        if self.owner.context == nil {
+            Color.clear
+        } else if case .standalone? = self.owner.context {
+            self.content.modifier(NativePaywallNavigationModifier(requested: true))
+                .environment(\.nativePaywallNavigationContext, .standalone)
+        } else if let controller = self.owner.controller,
+                  let navigation = controller.navigationController,
+                  navigation.viewControllers.contains(where: { $0 === controller }),
+                  !navigation.isNavigationBarHidden {
+            self.content.modifier(NativePaywallCloseHost(uiKitOwner: self.owner))
+        } else {
+            self.content
+        }
+    }
+}
+
+#endif
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, *)
 private struct NativePaywallNavigationContextKey: EnvironmentKey {

@@ -459,6 +459,7 @@ final class ButtonComponentViewTests: TestCase {
     }
 
     func testWorkflowHeaderBackAndClosePreserveActionsAndAnalytics() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
         let back = PaywallComponent.ButtonComponent(
             name: "workflow-back", action: .navigateBack,
             stack: Self.makeButtonStack(label: "Back"), useNativeIfPossible: true
@@ -527,6 +528,7 @@ final class ButtonComponentViewTests: TestCase {
     }
 
     func testNativeOnlyHeaderCollapsesButDesignedHeaderRemains() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
         let cases: [(Bool, Bool, CGFloat, CGFloat)] = [
             (true, false, 0, 0), (true, false, 88, 88), (false, false, 0, 100), (true, true, 0, 100)
         ]

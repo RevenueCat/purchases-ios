@@ -20,6 +20,49 @@ import UIKit
 @MainActor
 final class NativePaywallUIKitTests: NativePaywallNavigationTestCase {
 
+    func testUIKitContentAppearsWhenOwnerIsPreparedAfterMounting() async throws {
+        let owner = NativePaywallUIKitOwner()
+        let appeared = expectation(description: "Prepared UIKit paywall content appears")
+        let host = UIHostingController(rootView: NativePaywallCloseButton(
+            enabled: true, accessibilityLabel: "Close", action: {}, content: { Text("Configured Close") }
+        ).onAppear { appeared.fulfill() }
+            .modifier(NativePaywallNavigationModifier(requested: true))
+            .environment(\.nativePaywallNavigationContext, .uiKit(owner)))
+        let navigation = UINavigationController(rootViewController: host)
+        let window = self.host(navigation)
+        defer { self.close(window) }
+        await self.waitForPresentation()
+        XCTAssertNil(host.navigationItem.rightBarButtonItem)
+        owner.prepare(controller: host)
+        await fulfillment(of: [appeared], timeout: 2)
+        await self.waitForPresentation()
+        XCTAssertEqual(host.navigationItem.rightBarButtonItem?.accessibilityIdentifier,
+                       NativePaywallUIKitOwner.closeIdentifier)
+    }
+
+    func testRemovingNativeBackRestoresSystemBackWithoutChangingCallerItems() {
+        let controller = UIViewController()
+        let navigation = UINavigationController(rootViewController: UIViewController())
+        navigation.pushViewController(controller, animated: false)
+        let owner = NativePaywallUIKitOwner()
+        owner.prepare(controller: controller)
+        owner.install([.init(id: UUID(), label: "Back", perform: {}, role: .back)])
+        XCTAssertNotNil(controller.navigationItem.leftBarButtonItem)
+        owner.install([])
+        XCTAssertNil(controller.navigationItem.leftBarButtonItems)
+        XCTAssertFalse(controller.navigationItem.hidesBackButton)
+        let caller = UIBarButtonItem(title: "Caller", primaryAction: UIAction { _ in })
+        controller.navigationItem.leftBarButtonItems = [caller]
+        owner.install([.init(id: UUID(), label: "Back", perform: {}, role: .back)])
+        owner.removeClose()
+        XCTAssertEqual(controller.navigationItem.leftBarButtonItems?.count, 1)
+        XCTAssertTrue(controller.navigationItem.leftBarButtonItem === caller)
+        controller.navigationItem.leftBarButtonItems = []
+        owner.install(.init(id: UUID(), label: "Close", perform: {}))
+        owner.removeClose()
+        XCTAssertNotNil(controller.navigationItem.leftBarButtonItems, "Preserve the caller's explicit empty array")
+    }
+
     func testEmbeddedControllerKeepsConfiguredCloseWithAndWithoutParentNavigation() async throws {
         for hasNavigation in [false, true] {
             let owner = NativePaywallUIKitOwner()
@@ -104,7 +147,7 @@ final class NativePaywallUIKitTests: NativePaywallNavigationTestCase {
         XCTAssertEqual(backs, 1)
         XCTAssertEqual(closes, 1)
         owner.removeClose()
-        XCTAssertTrue(controller.navigationItem.leftBarButtonItems?.isEmpty == true)
+        XCTAssertNil(controller.navigationItem.leftBarButtonItems)
         XCTAssertTrue(controller.navigationItem.rightBarButtonItem === help)
         XCTAssertTrue(controller.navigationController === navigation)
     }
