@@ -72,6 +72,7 @@ final class NativePaywallCloseCoordinator: ObservableObject {
     }
 
     func unregister(id: UUID) {
+        guard self.registrations.contains(where: { $0.id == id }) else { return }
         self.registrations.removeAll { $0.id == id }
         self.callbacks[id] = nil
         self.updateActions()
