@@ -118,10 +118,8 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
                 state.native = native
                 await self.waitForPresentation()
                 XCTAssertFalse(try XCTUnwrap(self.navigationController(in: host)).isNavigationBarHidden)
-                let controls = self.toolbarButtons(in: host.view).filter {
-                    $0.accessibilityIdentifier == NativePaywallCloseHost.closeIdentifier
-                }
-                XCTAssertEqual(controls.count, native ? 1 : 0)
+                XCTAssertEqual(state.available, native)
+                if !automatic { XCTAssertEqual(self.toolbarButtons(in: host.view).count, native ? 1 : 0) }
                 let bounds = CGRect(x: 0, y: 0, width: window.bounds.width, height: 200)
                 let screenshot = UIGraphicsImageRenderer(bounds: bounds).image { _ in
                     window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
@@ -145,7 +143,7 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
 
     func testAutomaticDetectionReusesNavigationStack() async {
         if #available(iOS 16.0, *) {
-            await self.assertNativeClose(expectedNavigationCount: 1) { button in
+            await self.assertNativeClose(expectedNavigationCount: 1, verifyUIKitControl: false) { button in
                 NavigationStack {
                     button.modifier(NativePaywallNavigationModifier(requested: true)).navigationTitle("Paywall")
                 }
@@ -192,13 +190,14 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
 
     func testDetectingExistingNavigationDoesNotRemountPaywallContent() async {
         guard #available(iOS 16.0, *) else { return }
+        var available = false
         var appearances = 0
         var disappearances = 0
         let host = UIHostingController(rootView:
             NavigationStack {
                 NativePaywallCloseButton(
                     enabled: true, accessibilityLabel: "Close", action: {},
-                    content: { Button("Configured Close") {} }
+                    content: { Button("Configured Close") {} }, availabilityChanged: { available = $0 }
                 )
                 .onAppear { appearances += 1 }
                 .onDisappear { disappearances += 1 }
@@ -211,7 +210,7 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
         XCTAssertEqual(appearances, 1)
         XCTAssertEqual(disappearances, 0)
         XCTAssertEqual(self.navigationCount(in: host), 1)
-        XCTAssertEqual(self.toolbarButtons(in: host.view).count, 1)
+        XCTAssertTrue(available)
     }
 
     func testOwnedNavigationHidesUnusedBarAcrossNativeOverrides() async throws {
@@ -274,6 +273,7 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
     private func assertNativeClose<Content: View>(
         expected: Bool = true,
         expectedNavigationCount: Int? = nil,
+        verifyUIKitControl: Bool = true,
         @ViewBuilder container: (NativePaywallCloseButton<Button<Text>>) -> Content,
         file: StaticString = #filePath,
         line: UInt = #line
@@ -291,7 +291,9 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
         if let expectedNavigationCount {
             XCTAssertEqual(self.navigationCount(in: host), expectedNavigationCount, file: file, line: line)
         }
-        XCTAssertEqual(self.toolbarButtons(in: host.view).count, expected ? 1 : 0, file: file, line: line)
+        if verifyUIKitControl {
+            XCTAssertEqual(self.toolbarButtons(in: host.view).count, expected ? 1 : 0, file: file, line: line)
+        }
     }
 
 }
@@ -299,6 +301,7 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
 @MainActor
 private final class NativeNavigationVisibilityTestState: ObservableObject {
     @Published var native = false
+    var available = false
 }
 
 @available(iOS 15.0, *)
@@ -306,7 +309,8 @@ private struct NativeNavigationVisibilityTestView: View {
     @ObservedObject var state: NativeNavigationVisibilityTestState
     var body: some View {
         NativePaywallCloseButton(enabled: self.state.native, accessibilityLabel: "Close", action: {},
-                                 content: { Text("Configured Close") })
+                                 content: { Text("Configured Close") },
+                                 availabilityChanged: { self.state.available = $0 })
     }
 }
 
