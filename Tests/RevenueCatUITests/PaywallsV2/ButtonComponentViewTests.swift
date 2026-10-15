@@ -138,6 +138,39 @@ final class ButtonComponentViewTests: TestCase {
         XCTAssertEqual(fallbackAppearances, 0)
     }
 
+    func testNativeButtonsDoNotConsumeMainOrFooterStackSpacing() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
+        let marker = PaywallComponent.stack(.init(components: [], size: .init(width: .fill, height: .fixed(20))))
+        let stack = PaywallComponent.StackComponent(components: [marker, .button(.init(
+            action: .navigateBack, stack: Self.makeButtonStack(label: "Close"), useNativeIfPossible: true
+        )), marker], spacing: 24)
+        let model = try StackComponentViewModel(component: stack, localizationProvider: .init(
+            locale: Locale(identifier: "en_US"), localizedStrings: ["Close": .string("Close")]
+        ), colorScheme: .light)
+        let coordinator = NativePaywallCloseCoordinator()
+        var height: CGFloat = -1
+        let view = StackComponentView(viewModel: model, onDismiss: {})
+            .fixedSize(horizontal: false, vertical: true)
+            .background(GeometryReader { geometry in
+                Color.clear.preference(key: NativeRegistrationHeightKey.self, value: geometry.size.height)
+            })
+            .onPreferenceChange(NativeRegistrationHeightKey.self) { height = $0 }
+            .environment(\.nativePaywallCloseCoordinator, coordinator)
+            .environmentObject(PurchaseHandler.default())
+            .environmentObject(PackageContext(package: nil, variableContext: .init(packages: [])))
+            .environmentObject(IntroOfferEligibilityContext(
+                introEligibilityChecker: BaseSnapshotTest.eligibleChecker
+            ))
+            .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
+        let (window, _) = Self.host(view)
+        defer { window.isHidden = true; window.rootViewController = nil }
+        let registered = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            coordinator.actions.count == 1 && abs(height - 64) < 0.5
+        }, object: nil)
+        await fulfillment(of: [registered], timeout: 2)
+        XCTAssertEqual(height, 64, accuracy: 0.5)
+    }
+
     func testNativeHeaderTracksHiddenTextAndHiddenStacksAsOverridesChange() async throws {
         try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
         for hidesStack in [false, true] {
