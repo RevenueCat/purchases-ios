@@ -18,6 +18,7 @@ import RevenueCat
 
 enum Strings {
 
+    case customer_center_preview_action_failed(Error)
     case package_not_subscription(Package)
     case found_multiple_packages_of_same_identifier(String)
     case unrecognized_variable_name(variableName: String)
@@ -153,6 +154,8 @@ extension Strings: CustomStringConvertible {
 
     var description: String {
         switch self {
+        case .customer_center_preview_action_failed(let error):
+            return "Customer Center preview action failed: \(error)"
         case let .package_not_subscription(package):
             return "Expected package '\(package.identifier)' to be a subscription. " +
             "Type: \(package.packageType.debugDescription)"

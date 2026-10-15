@@ -179,6 +179,12 @@ private extension BaseManageSubscriptionViewModel {
 
 #if os(iOS) || targetEnvironment(macCatalyst)
     private func onPathSelected(path: CustomerCenterConfigData.HelpPath, withActiveProductId: String?) async {
+        if let provider = purchasesProvider as? CustomerCenterPreviewProvider,
+           let action = previewAction(for: path, activeProductID: withActiveProductId) {
+            await provider.performPreviewAction(action)
+            return
+        }
+
         switch path.type {
         case .missingPurchase:
             self.showRestoreAlert = true
@@ -213,6 +219,30 @@ private extension BaseManageSubscriptionViewModel {
 
         default:
             break
+        }
+    }
+
+    private func previewAction(
+        for path: CustomerCenterConfigData.HelpPath,
+        activeProductID: String?
+    ) -> CustomerCenterPreviewAction? {
+        switch path.type {
+        case .cancel where purchaseInformation?.store != .appStore:
+            return purchaseInformation?.managementURL.map(CustomerCenterPreviewAction.openURL)
+        case .cancel:
+            return .manageSubscriptions
+        case .changePlans:
+            return .changePlans(
+                currentProductID: purchaseInformation?.productIdentifier ?? activeProductID,
+                productIDs: changePlanProductIDs,
+                subscriptionGroupID: purchaseSubscriptionGroupID
+            )
+        case .customUrl:
+            return path.url.map(CustomerCenterPreviewAction.openURL)
+        case .customAction:
+            return path.customActionIdentifier.map(CustomerCenterPreviewAction.customAction)
+        default:
+            return nil
         }
     }
 

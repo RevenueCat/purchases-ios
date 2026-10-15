@@ -301,7 +301,9 @@ private extension SubscriptionDetailView {
 
     @ViewBuilder
     func contactSupportView(_ url: URL) -> some View {
-        if #available(iOS 18.0, *) {
+        if let provider = viewModel.purchasesProvider as? CustomerCenterPreviewProvider {
+            contactSupportButton(open: provider.previewURLHandler(for: url))
+        } else if #available(iOS 18.0, *) {
             OpenURLReader { openURL in
                 contactSupportButton { openURL(url) }
             }
@@ -313,7 +315,7 @@ private extension SubscriptionDetailView {
 
     func contactSupportButton(open: @escaping () -> Void) -> some View {
         AsyncButton {
-            if RuntimeUtils.isSimulator {
+            if RuntimeUtils.isSimulator && !(viewModel.purchasesProvider is CustomerCenterPreviewProvider) {
                 self.showSimulatorAlert = true
             } else {
                 open()
