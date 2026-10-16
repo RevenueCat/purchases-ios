@@ -61,7 +61,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     #if DEBUG
     func testSimulatedErrorCheckpointThrowsConfigurationError() async {
         do {
-            _ = try await self.resolve(identifier: "error_checkpoint")
+            _ = try await self.resolve(identifier: "f0rc3_3rr0r")
             XCTFail("Expected resolution to throw")
         } catch {
             XCTAssertEqual((error as NSError).code, ErrorCode.configurationError.rawValue)
