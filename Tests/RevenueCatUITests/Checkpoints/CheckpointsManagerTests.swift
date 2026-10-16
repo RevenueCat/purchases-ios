@@ -393,7 +393,7 @@ final class CheckpointsManagerTests: TestCase {
         }
     }
 
-    func testCallbackCheckpointIsSuppressedWithoutPresentingErrorWhenPresentationContextIsBusy() async {
+    func testCallbackCheckpointIsSuppressedWithoutPresentingErrorWhenPresentationContextIsUnavailable() async {
         let workflowPresenter = WorkflowPresenter(presentationStarter: { _ in false })
         var errorPresentationCount = 0
         let manager = CheckpointsManager(

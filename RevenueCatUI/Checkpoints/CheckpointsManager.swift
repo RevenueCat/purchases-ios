@@ -237,7 +237,7 @@ final class CheckpointsManager {
                 return .suppressed
             }
         } catch CheckpointError.operationAlreadyInProgress,
-                CheckpointError.presentationContextBusy {
+                CheckpointError.presentationContextUnavailable {
             return .suppressed
         } catch {
             return .failed(error)
