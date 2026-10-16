@@ -69,7 +69,8 @@ import SwiftUI
     func previewPromotionalOfferEligibility() async -> Bool
     /// Supplies the project variables entered in the mobile preview settings.
     func previewCustomVariables() async -> [String: CustomVariableValue]
-    /// Receives path visibility diagnostics.
+    /// Receives path visibility diagnostics. Called from the screen's actor so hosts can drive preview UI state.
+    @MainActor
     func onPreviewDiagnostics(_ diagnostics: [CustomerCenterPreviewDiagnostic])
 }
 
@@ -106,6 +107,7 @@ extension CustomerCenterPreviewProvider {
     /// Defaults to no preview variable overrides.
     public func previewCustomVariables() async -> [String: CustomVariableValue] { [:] }
     /// Ignores diagnostics when the provider has no diagnostics interface.
+    @MainActor
     public func onPreviewDiagnostics(_ diagnostics: [CustomerCenterPreviewDiagnostic]) {}
 }
 

@@ -43,9 +43,7 @@ final class CustomerCenterPreviewActions: ObservableObject {
                 // Cancellation is an expected preview outcome.
             } catch {
                 guard !Task.isCancelled, self.actionID == id else { return }
-                let nsError = error as NSError
-                if nsError.domain != ErrorCode.errorDomain
-                    || nsError.code != ErrorCode.purchaseCancelledError.rawValue {
+                if !(error as NSError).isPurchaseCancellation {
                     self.failure = error.localizedDescription
                 }
             }
