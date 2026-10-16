@@ -120,9 +120,8 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
 
         expect(result) == expected
 
-        expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 2
-        expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList)
-            .to(contain([Set([Self.productID1]), Set([Self.productID2])]))
+        expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 1
+        expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters) == productIDs
     }
 
     func testOnlyCachesEligibilitiesThatDidNotFail() async {
@@ -143,13 +142,11 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
 
         expect(result) == expected
 
-        expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 3
-        expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList)
-            .to(contain([
-                [Self.productID1],
-                [Self.productID2],
-                [Self.productID2]
-            ]))
+        expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 2
+        expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList) == [
+            productIDs,
+            [Self.productID2]
+        ]
     }
 
     func testFetchesOnlyMissingProductsFromCache() async {
@@ -184,67 +181,47 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
 
         expect(result) == allEligibilities
 
-        expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 3
-        expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList)
-            .to(contain([
-                [Self.productID1],
-                [Self.productID2],
-                [Self.productID3]
-            ]))
+        expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 2
+        expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList) == [
+            cachedProductIDs,
+            [Self.productID3]
+        ]
 
         let cachedResult = await self.caching.checkEligibility(productIdentifiers: productIDs)
         expect(cachedResult) == allEligibilities
 
-        expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 3
+        expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 2
     }
 
-    func testOverlappingRequestsShareInFlightChecksByProduct() async {
+    func testIdenticalRequestsShareInFlightCheck() async {
         let checker = DelayedTrialOrIntroPriceEligibilityChecker()
         let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: checker)
+        let productIDs: Set<String> = [Self.productID1, Self.productID2]
 
         let firstRequest = Task {
-            await caching.checkEligibility(productIdentifiers: [Self.productID1, Self.productID2])
+            await caching.checkEligibility(productIdentifiers: productIDs)
         }
 
-        await expect(checker.invocations.count).toEventually(equal(2))
+        await expect(checker.invocations.count).toEventually(equal(1))
 
         let secondRequest = Task {
-            await caching.checkEligibility(productIdentifiers: [Self.productID2, Self.productID3])
+            await caching.checkEligibility(productIdentifiers: productIDs)
         }
 
-        await expect(checker.invocations.count).toEventually(equal(3))
+        await expect(checker.invocations.count).toAlways(equal(1))
 
-        let firstResult: Result = [
+        let expected: Result = [
             Self.productID1: .init(eligibilityStatus: .eligible),
             Self.productID2: .init(eligibilityStatus: .ineligible)
         ]
-        let secondResult: Result = [
-            Self.productID3: .init(eligibilityStatus: .noIntroOfferExists)
-        ]
-
-        checker.complete(
-            productIdentifiers: [Self.productID1],
-            with: [Self.productID1: firstResult[Self.productID1]!]
-        )
-        checker.complete(
-            productIdentifiers: [Self.productID2],
-            with: [Self.productID2: firstResult[Self.productID2]!]
-        )
-        checker.complete(productIdentifiers: [Self.productID3], with: secondResult)
+        checker.complete(productIdentifiers: productIDs, with: expected)
 
         let receivedFirstResult = await firstRequest.value
         let receivedSecondResult = await secondRequest.value
 
-        expect(checker.invocations).to(contain(
-            Set([Self.productID1]),
-            Set([Self.productID2]),
-            Set([Self.productID3])
-        ))
-        expect(receivedFirstResult) == firstResult
-        expect(receivedSecondResult) == [
-            Self.productID2: firstResult[Self.productID2]!,
-            Self.productID3: secondResult[Self.productID3]!
-        ]
+        expect(checker.invocations) == [productIDs]
+        expect(receivedFirstResult) == expected
+        expect(receivedSecondResult) == expected
     }
 
     func testClearCache() async {
