@@ -50,6 +50,10 @@ private func checkCheckpointResultAPI(_ result: CheckpointResult) {
     let _: FlowResult? = result.flow
 }
 
+private func checkFlowResultAPI(_ result: FlowResult) {
+    let _: Set<ObtainedEntitlement> = result.obtainedEntitlements
+}
+
 @MainActor
 private func checkPaywallPresentationAPI(
     _ purchases: Purchases
