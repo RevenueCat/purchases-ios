@@ -18,6 +18,7 @@ import Foundation
 import RevenueCat
 @_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
 import SwiftUI
+import UIKit
 
 struct CheckpointsView: View {
 
@@ -27,6 +28,7 @@ struct CheckpointsView: View {
     @State private var variables = [CheckpointVariable()]
     @State private var result: CheckpointDisplayResult?
     @State private var isSubscriberAttributeEditorPresented = false
+    @StateObject private var errorPresenter = CheckpointErrorPresenter()
 
     init() {
         self._recentIdentifiers = .init(initialValue: RecentCheckpointIdentifiers.load())
@@ -67,6 +69,10 @@ struct CheckpointsView: View {
             .sheet(isPresented: self.$isSubscriberAttributeEditorPresented) {
                 SubscriberAttributeEditor()
             }
+            .background(
+                CheckpointErrorPresenterHost(presenter: self.errorPresenter)
+                    .frame(width: 0, height: 0)
+            )
         }
     }
 
@@ -82,7 +88,8 @@ struct CheckpointsView: View {
             Button("Trigger checkpoint", action: self.triggerCheckpoint)
                 .disabled(self.trimmedIdentifier.isEmpty)
         } footer: {
-            Text("Runs the checkpoint with the custom variables below.")
+            Text("Purchase and restore errors use an app-owned view controller to present a modal, matching an app " +
+                 "that presents its own error UI while the checkpoint paywall is visible.")
         }
     }
 
@@ -158,7 +165,8 @@ struct CheckpointsView: View {
                     identifier: params.checkpointIdentifier,
                     error: params.error
                 )
-                completion.complete()
+
+                self.errorPresenter.present(params: params, completion: completion)
             },
             { checkpointResult in
                 self.result = .completed(identifier: identifier, flowResult: checkpointResult.flow)
@@ -172,6 +180,87 @@ struct CheckpointsView: View {
             currentIdentifiers: self.recentIdentifiers
         )
     }
+
+}
+
+private struct CheckpointErrorSheet: View {
+
+    let message: String
+    let continueAction: () -> Void
+
+    var body: some View {
+        NavigationView {
+            VStack(alignment: .leading, spacing: 16) {
+                Text(self.message)
+                Spacer()
+                Button("Continue", action: self.continueAction)
+                    .buttonStyle(.borderedProminent)
+                    .frame(maxWidth: .infinity)
+            }
+            .padding()
+            .navigationTitle("Checkpoint error")
+            .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+
+}
+
+private struct CheckpointErrorPresenterHost: UIViewControllerRepresentable {
+
+    let presenter: CheckpointErrorPresenter
+
+    func makeUIViewController(context: Context) -> CheckpointErrorPresenterViewController {
+        let viewController = CheckpointErrorPresenterViewController()
+        self.presenter.viewController = viewController
+        return viewController
+    }
+
+    func updateUIViewController(_ viewController: CheckpointErrorPresenterViewController, context: Context) {
+        self.presenter.viewController = viewController
+    }
+
+}
+
+private final class CheckpointErrorPresenter: ObservableObject {
+
+    weak var viewController: CheckpointErrorPresenterViewController?
+
+    @MainActor
+    func present(params: ErrorPresentationParams, completion: ErrorPresentationCompletion) {
+        self.viewController?.presentError(params: params, completion: completion)
+    }
+
+}
+
+private final class CheckpointErrorPresenterViewController: UIViewController {
+
+    override func loadView() {
+        let view = UIView()
+        view.backgroundColor = .clear
+        self.view = view
+    }
+
+    @MainActor
+    func presentError(params: ErrorPresentationParams, completion: ErrorPresentationCompletion) {
+        let viewControllerBox = WeakViewControllerBox()
+        let viewController = UIHostingController(
+            rootView: CheckpointErrorSheet(message: params.error.localizedDescription) {
+                completion.complete()
+                viewControllerBox.value?.dismiss(animated: true)
+            }
+            .interactiveDismissDisabled()
+        )
+        viewControllerBox.value = viewController
+        viewController.modalPresentationStyle = .pageSheet
+
+        self.present(viewController, animated: true)
+    }
+
+}
+
+private final class WeakViewControllerBox {
+
+    weak var value: UIViewController?
 
 }
 
