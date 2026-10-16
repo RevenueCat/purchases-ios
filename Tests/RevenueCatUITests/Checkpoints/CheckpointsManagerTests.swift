@@ -342,10 +342,10 @@ final class CheckpointsManagerTests: TestCase {
             executor.presentations.first?.initialActiveEntitlementIdentifiers,
             ["premium", "pro"]
         )
-        guard case let .completed(flowResult) = result else {
+        guard case let .completed(checkpointResult) = result else {
             return XCTFail("Expected a completed callback")
         }
-        XCTAssertEqual(flowResult?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
+        XCTAssertEqual(checkpointResult.flow?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
     }
 
     func testCallbackCheckpointReturnsCompletedResultAfterWorkflowDismissal() async {
@@ -357,10 +357,10 @@ final class CheckpointsManagerTests: TestCase {
 
         let result = await manager.checkpointForCallback(identifier: "soft_paywall", params: .init())
 
-        guard case let .completed(flowResult) = result else {
+        guard case let .completed(checkpointResult) = result else {
             return XCTFail("Expected a completed callback")
         }
-        XCTAssertEqual(flowResult?.obtainedEntitlements, [])
+        XCTAssertEqual(checkpointResult.flow?.obtainedEntitlements, [])
     }
 
     func testCallbackCheckpointIsSuppressedWhenWorkflowBacksOut() async {
@@ -403,10 +403,10 @@ final class CheckpointsManagerTests: TestCase {
 
         let result = await manager.checkpointForCallback(identifier: "soft_paywall", params: .init())
 
-        guard case let .completed(flowResult) = result else {
+        guard case let .completed(checkpointResult) = result else {
             return XCTFail("Expected a completed callback")
         }
-        XCTAssertNil(flowResult)
+        XCTAssertNil(checkpointResult.flow)
         XCTAssertTrue(executor.presentations.isEmpty)
     }
 
@@ -451,10 +451,10 @@ final class CheckpointsManagerTests: TestCase {
 
         let result = await manager.checkpointForCallback(identifier: "purchase", params: .init())
 
-        guard case let .completed(flowResult) = result else {
+        guard case let .completed(checkpointResult) = result else {
             return XCTFail("Expected a completed callback")
         }
-        XCTAssertEqual(flowResult?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
+        XCTAssertEqual(checkpointResult.flow?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
         XCTAssertEqual(cachedCustomerInfoCallCount, 2)
     }
 
@@ -473,10 +473,10 @@ final class CheckpointsManagerTests: TestCase {
 
         let result = await manager.checkpointForCallback(identifier: "purchase", params: .init())
 
-        guard case let .completed(flowResult) = result else {
+        guard case let .completed(checkpointResult) = result else {
             return XCTFail("Expected a completed callback")
         }
-        XCTAssertEqual(flowResult?.obtainedEntitlements, [])
+        XCTAssertEqual(checkpointResult.flow?.obtainedEntitlements, [])
     }
 
     func testCallbackCheckpointTreatsAllEntitlementsAsObtainedWithoutCachedCustomerInfo() async throws {
@@ -496,11 +496,11 @@ final class CheckpointsManagerTests: TestCase {
 
         let result = await manager.checkpointForCallback(identifier: "restore", params: .init())
 
-        guard case let .completed(flowResult) = result else {
+        guard case let .completed(checkpointResult) = result else {
             return XCTFail("Expected a completed callback")
         }
         XCTAssertEqual(
-            flowResult?.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted(),
+            checkpointResult.flow?.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted(),
             ["premium", "pro"]
         )
         XCTAssertEqual(cachedCustomerInfoCallCount, 2)
@@ -679,10 +679,10 @@ final class CheckpointsManagerTests: TestCase {
 
         let result = await manager.checkpointForCallback(identifier: "restore", params: .init())
 
-        guard case let .completed(flowResult) = result else {
+        guard case let .completed(checkpointResult) = result else {
             return XCTFail("Expected a completed callback")
         }
-        XCTAssertEqual(flowResult?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
+        XCTAssertEqual(checkpointResult.flow?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
     }
 
     func testDefaultPaywallPresenterNavigatedBackSuppressesCheckpointCallback() async {
@@ -746,10 +746,10 @@ final class CheckpointsManagerTests: TestCase {
             params: .init(paywallPresenter: { _, completion in completion(.continued) })
         )
 
-        guard case let .completed(flowResult) = result else {
+        guard case let .completed(checkpointResult) = result else {
             return XCTFail("Expected a completed callback")
         }
-        XCTAssertEqual(flowResult?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
+        XCTAssertEqual(checkpointResult.flow?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
         XCTAssertEqual(customerInfoSynchronizerCallCount, 1)
     }
 
@@ -791,11 +791,11 @@ final class CheckpointsManagerTests: TestCase {
         errorPresentationCompletion?.complete()
         let result = await checkpoint.value
 
-        guard case let .completed(flowResult) = result else {
+        guard case let .completed(checkpointResult) = result else {
             return XCTFail("Expected a completed callback")
         }
-        XCTAssertNotNil(flowResult)
-        XCTAssertTrue(flowResult?.obtainedEntitlements.isEmpty == true)
+        XCTAssertNotNil(checkpointResult.flow)
+        XCTAssertTrue(checkpointResult.flow?.obtainedEntitlements.isEmpty == true)
         XCTAssertTrue(checkpointCompleted)
     }
 
@@ -838,10 +838,10 @@ final class CheckpointsManagerTests: TestCase {
             returning: try Self.customerInfo(activeEntitlements: ["premium"])
         )
 
-        guard case let .completed(flowResult) = await checkpoint.value else {
+        guard case let .completed(checkpointResult) = await checkpoint.value else {
             return XCTFail("Expected the first completion to finish the checkpoint")
         }
-        XCTAssertEqual(flowResult?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
+        XCTAssertEqual(checkpointResult.flow?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
     }
 
     func testStalePresenterCompletionCannotReleaseReplacementPresentation() async throws {

@@ -210,10 +210,10 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
             params: self.params(errorPresenter: errorPresenter)
         )
 
-        guard case let .completed(flowResult) = result else {
+        guard case let .completed(checkpointResult) = result else {
             return XCTFail("Expected the callback to be invoked")
         }
-        XCTAssertEqual(flowResult?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
+        XCTAssertEqual(checkpointResult.flow?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
         XCTAssertTrue(errorPresenter.presentations.isEmpty)
     }
 
@@ -232,10 +232,10 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
             params: self.params(errorPresenter: errorPresenter)
         )
 
-        guard case let .completed(flowResult) = result else {
+        guard case let .completed(checkpointResult) = result else {
             return XCTFail("Expected the callback to be invoked")
         }
-        XCTAssertTrue(flowResult?.obtainedEntitlements.isEmpty == true)
+        XCTAssertTrue(checkpointResult.flow?.obtainedEntitlements.isEmpty == true)
         XCTAssertTrue(errorPresenter.presentations.isEmpty)
     }
 
@@ -255,10 +255,10 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
             params: self.params(errorPresenter: errorPresenter)
         )
 
-        guard case let .completed(flowResult) = result else {
+        guard case let .completed(checkpointResult) = result else {
             return XCTFail("Expected the callback to be invoked")
         }
-        XCTAssertTrue(flowResult?.obtainedEntitlements.isEmpty == true)
+        XCTAssertTrue(checkpointResult.flow?.obtainedEntitlements.isEmpty == true)
         XCTAssertEqual(errorPresenter.presentations.count, 1)
         XCTAssertEqual(errorPresenter.presentations.first?.error as NSError?, expectedError)
         XCTAssertEqual(errorPresenter.presentations.first?.kind, .flowResultSyncFailed)
@@ -277,10 +277,10 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
             params: self.params(errorPresenter: errorPresenter)
         )
 
-        guard case let .completed(flowResult) = result else {
+        guard case let .completed(checkpointResult) = result else {
             return XCTFail("Expected the callback to be invoked", file: file, line: line)
         }
-        XCTAssertNil(flowResult, file: file, line: line)
+        XCTAssertNil(checkpointResult.flow, file: file, line: line)
         XCTAssertTrue(errorPresenter.presentations.isEmpty, file: file, line: line)
     }
 

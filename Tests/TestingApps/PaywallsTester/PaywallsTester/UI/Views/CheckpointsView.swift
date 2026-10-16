@@ -25,7 +25,7 @@ struct CheckpointsView: View {
     @State private var identifier = ""
     @State private var recentIdentifiers: [String]
     @State private var variables = [CheckpointVariable()]
-    @State private var result: CheckpointResult?
+    @State private var result: CheckpointDisplayResult?
     @State private var isSubscriberAttributeEditorPresented = false
 
     init() {
@@ -160,8 +160,8 @@ struct CheckpointsView: View {
                 )
                 completion.complete()
             },
-            { flowResult in
-                self.result = .completed(identifier: identifier, flowResult: flowResult)
+            { checkpointResult in
+                self.result = .completed(identifier: identifier, flowResult: checkpointResult.flow)
             }
         )
     }
@@ -217,7 +217,7 @@ private struct CheckpointResultRow: View {
 
 }
 
-private struct CheckpointResult {
+private struct CheckpointDisplayResult {
 
     let identifier: String
     let outcome: String

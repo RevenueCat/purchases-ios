@@ -48,11 +48,10 @@ public extension Purchases {
 
     /// Passes a checkpoint and calls `onPassed` when the app can continue past it.
     ///
-    /// The callback receives `nil` when the identifier is not configured or no rule matches. A completed flow returns
-    /// a result that may contain entitlements obtained while it was presented. If post-flow synchronization fails,
-    /// the SDK presents the error before calling `onPassed` with a result containing no obtained entitlements. The
-    /// callback is not called if another error prevents completion, another checkpoint flow already owns presentation,
-    /// or the user backs out.
+    /// The callback receives a result containing an optional flow result. The flow result is `nil` when the identifier
+    /// is not configured or no rule matches. If post-flow synchronization fails, the SDK presents the error before
+    /// returning a flow result containing no obtained entitlements. The callback is not called if another error prevents
+    /// completion, another checkpoint flow already owns presentation, or the user backs out.
     /// - Parameters:
     ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard. It must start with a letter,
     ///     contain only ASCII letters, numbers, underscores, and hyphens, and be no more than 255 characters.
@@ -62,15 +61,14 @@ public extension Purchases {
     ///     ``paywallPresenter`` for this call.
     ///   - errorPresenter: A custom presenter used when the SDK presents errors from this checkpoint, including
     ///     failures before a flow is presented. This overrides the global ``errorPresenter`` for this call.
-    ///   - onPassed: Called on the main actor when the checkpoint passes, with `nil` if no flow matched or a result if
-    ///     a matching flow completed.
+    ///   - onPassed: Called on the main actor when the checkpoint passes.
     func checkpoint(
         _ identifier: String,
         customVariables: [String: CustomVariableValue] = [:],
         presentationMode: FlowPresentationMode = .default,
         paywallPresenter: PaywallPresentationHandler? = nil,
         errorPresenter: ErrorPresentationHandler? = nil,
-        _ onPassed: @escaping (FlowResult?) -> Void
+        _ onPassed: @escaping (CheckpointResult) -> Void
     ) {
         let params = CheckpointCallParams(
             customVariables: customVariables,
@@ -89,7 +87,7 @@ private extension Purchases {
     func performCheckpoint(
         _ identifier: String,
         params: CheckpointCallParams,
-        onPassed: @escaping (FlowResult?) -> Void
+        onPassed: @escaping (CheckpointResult) -> Void
     ) {
         Task { @MainActor in
             switch await self.checkpointsManager.checkpointForCallback(
