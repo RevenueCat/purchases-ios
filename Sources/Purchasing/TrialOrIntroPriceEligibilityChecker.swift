@@ -163,7 +163,6 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
             }
         }
     }
-
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func sk2CheckEligibility(_ compoundProductIdentifiers: Set<String>) async throws -> [String: IntroEligibility] {
         var introDictionary: [String: IntroEligibility] = compoundProductIdentifiers.dictionaryWithValues { _ in
@@ -171,11 +170,14 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         }
 
         let products = try await self.productsManager.sk2Products(withIdentifiers: compoundProductIdentifiers)
-        for sk2StoreProduct in products {
-            let eligibilityStatus: IntroEligibilityStatus = await checkEligibility(for: sk2StoreProduct)
-            introDictionary[sk2StoreProduct.id] = .init(eligibilityStatus: eligibilityStatus)
+        await withTaskGroup(of: (String, IntroEligibilityStatus).self) { group in
+            for sk2StoreProduct in products {
+                group.addTask { (sk2StoreProduct.id, await self.checkEligibility(for: sk2StoreProduct)) }
+            }
+            for await (productIdentifier, status) in group {
+                introDictionary[productIdentifier] = .init(eligibilityStatus: status)
+            }
         }
-
         return introDictionary
     }
 
