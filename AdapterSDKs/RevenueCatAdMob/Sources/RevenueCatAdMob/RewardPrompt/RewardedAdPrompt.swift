@@ -13,22 +13,24 @@ import SwiftUI
 
 /// Displays a prompt for an already-loaded rewarded ad with RevenueCat reward verification.
 ///
-/// The component renders your content immediately and reads reward configuration from the local cache
-/// without starting or waiting for a fetch. It tracks a prompt-shown event when the content appears.
+/// The component reads cached reward configuration and passes it to your content through the context
+/// for immediate rendering.
+/// No network fetch is started or awaited. It tracks a prompt-shown event when the content appears.
 /// Call ``RewardedAdPromptContext/accept()``
 /// to track acceptance and present the supplied ad.
 ///
-/// When cached configuration is unavailable, the context's `rewardConfiguration` is `nil`.
-/// This does not prevent accepting the offer. RevenueCat must be configured before using the prompt.
-/// If the ad cannot be presented, `onResult` reports `.notPresented` with a presentation error.
+/// Reward configuration is prefetched automatically. If it is not cached yet or could not be loaded,
+/// the context's `rewardConfiguration` is `nil`. Your content can show a generic offer without reward
+/// details, or omit the offer UI.
 ///
-/// A terminal result is delivered at most once, on the main actor. After the reward is earned,
-/// `.verificationCompleted` is delivered when verification finishes, whether successful or not,
-/// independently of ad dismissal.
-/// `.dismissed` is delivered only if the ad closes before a reward is earned. The callback is not a signal
-/// that the ad has closed; `.notPresented` may be delivered synchronously from `accept()`.
-/// The `onResult` closure from the latest rendered offer is captured on acceptance and retained
-/// for that ad's terminal outcome, even if the view updates afterward.
+/// After acceptance, `onResult` delivers at most one terminal result on the main actor:
+///
+/// - `.verificationCompleted`: The ad was dismissed and RevenueCat verification finished,
+///   successfully or not. Verification begins when the reward is earned; delivery waits for both.
+/// - `.dismissed`: The ad closed before a reward was earned.
+/// - `.notPresented`: No presentation controller is attached to the prompt's window,
+///   or AdMob failed to present the ad. Inspect `presentationError`. Delivery is deferred
+///   to the main queue, after `accept()` returns.
 @available(iOS 15.0, *)
 @MainActor
 public struct RewardedAdPrompt<Content: View>: View {
@@ -46,7 +48,8 @@ public struct RewardedAdPrompt<Content: View>: View {
     ///     automatically, without changing the tracking session you provide.
     ///   - placement: Optional placement label for prompt analytics. The value recorded for the shown
     ///     event is retained for acceptance; changing the label alone does not start a new session.
-    ///   - onResult: Handles the terminal result after acceptance.
+    ///   - onResult: Handles the terminal result after acceptance. Updating this closure affects only
+    ///     future acceptances, not an offer already accepted.
     ///   - content: Offer content, with optional cached reward configuration.
     public init(
         session: RewardedAdPromptSession? = nil,
@@ -71,7 +74,8 @@ public struct RewardedAdPrompt<Content: View>: View {
     ///     automatically, without changing the tracking session you provide.
     ///   - placement: Optional placement label for prompt analytics. The value recorded for the shown
     ///     event is retained for acceptance; changing the label alone does not start a new session.
-    ///   - onResult: Handles the terminal result after acceptance.
+    ///   - onResult: Handles the terminal result after acceptance. Updating this closure affects only
+    ///     future acceptances, not an offer already accepted.
     ///   - content: Offer content, with optional cached reward configuration.
     public init(
         session: RewardedAdPromptSession? = nil,
@@ -92,26 +96,26 @@ public struct RewardedAdPrompt<Content: View>: View {
 
 /// Displays a prompt for an already-loaded rewarded ad without RevenueCat reward verification.
 ///
-/// The component renders your content immediately and reads reward configuration from the local cache
-/// without starting or waiting for a fetch. It tracks a prompt-shown event when the content appears.
+/// The component reads cached reward configuration and passes it to your content through the context
+/// for immediate rendering.
+/// No network fetch is started or awaited. It tracks a prompt-shown event when the content appears.
 /// Call ``RewardedAdPromptContext/accept()``
 /// to track acceptance and present the supplied ad.
 ///
 /// The app is responsible for granting the reward when AdMob reports that it was earned.
-/// Immediately before presentation, this component clears any existing per-ad server-side verification
-/// options and RevenueCat verification state, including verification enabled before supplying the ad.
-/// AdMob's dashboard-side callback configuration is not changed.
-/// When cached configuration is unavailable, the context's `rewardConfiguration` is `nil`.
-/// This does not prevent accepting the offer. RevenueCat must be configured before using the prompt.
-/// If the ad cannot be presented, `onResult` reports `.notPresented` with a presentation error.
 ///
-/// A terminal result is delivered at most once, on the main actor. `.rewardEarned` arrives when AdMob
-/// reports the reward; the ad may still be visible. `.dismissed` is delivered only if the ad closes
-/// before a reward is earned.
-/// Later dismissal does not deliver a second result. The callback is not a signal that the ad has closed;
-/// `.notPresented` may be delivered synchronously from `accept()`.
-/// The `onResult` closure from the latest rendered offer is captured on acceptance and retained
-/// for that ad's terminal outcome, even if the view updates afterward.
+/// Reward configuration is prefetched automatically. If it is not cached yet or could not be loaded,
+/// the context's `rewardConfiguration` is `nil`. Your content can show a generic offer without reward
+/// details, or omit the offer UI.
+///
+/// After acceptance, `onResult` delivers at most one terminal result on the main actor:
+///
+/// - `.rewardEarned`: The ad was dismissed after AdMob reported that the reward was earned.
+///   The app is responsible for granting the reward.
+/// - `.dismissed`: The ad closed before a reward was earned.
+/// - `.notPresented`: No presentation controller is attached to the prompt's window,
+///   or AdMob failed to present the ad. Inspect `presentationError`. Delivery is deferred
+///   to the main queue, after `accept()` returns.
 @available(iOS 15.0, *)
 @MainActor
 public struct RewardedAdPromptWithoutVerification<Content: View>: View {
@@ -129,7 +133,8 @@ public struct RewardedAdPromptWithoutVerification<Content: View>: View {
     ///     automatically, without changing the tracking session you provide.
     ///   - placement: Optional placement label for prompt analytics. The value recorded for the shown
     ///     event is retained for acceptance; changing the label alone does not start a new session.
-    ///   - onResult: Handles the terminal result after acceptance.
+    ///   - onResult: Handles the terminal result after acceptance. Updating this closure affects only
+    ///     future acceptances, not an offer already accepted.
     ///   - content: Offer content, with optional cached reward configuration.
     public init(
         session: RewardedAdPromptSession? = nil,
@@ -154,7 +159,8 @@ public struct RewardedAdPromptWithoutVerification<Content: View>: View {
     ///     automatically, without changing the tracking session you provide.
     ///   - placement: Optional placement label for prompt analytics. The value recorded for the shown
     ///     event is retained for acceptance; changing the label alone does not start a new session.
-    ///   - onResult: Handles the terminal result after acceptance.
+    ///   - onResult: Handles the terminal result after acceptance. Updating this closure affects only
+    ///     future acceptances, not an offer already accepted.
     ///   - content: Offer content, with optional cached reward configuration.
     public init(
         session: RewardedAdPromptSession? = nil,

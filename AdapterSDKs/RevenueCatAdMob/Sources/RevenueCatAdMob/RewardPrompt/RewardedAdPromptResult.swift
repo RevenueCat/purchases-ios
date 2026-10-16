@@ -31,7 +31,7 @@ public struct RewardedAdPromptVerificationResult {
     /// A category of verification-enabled rewarded-ad prompt result.
     public struct Kind: Sendable, Equatable, Hashable {
 
-        /// Reward verification finished, whether successful or not. The ad may still be visible.
+        /// The ad was dismissed and reward verification finished, whether successful or not.
         public static let verificationCompleted = Kind(rawValue: "verification_completed")
 
         /// The ad was dismissed before a reward was earned.
@@ -63,7 +63,7 @@ public struct RewardedAdPromptUnverifiedResult {
     /// A category of verification-disabled rewarded-ad prompt result.
     public struct Kind: Sendable, Equatable, Hashable {
 
-        /// AdMob reported that the reward was earned. The app grants the reward; the ad may still be visible.
+        /// The ad was dismissed after AdMob reported that the reward was earned. The app grants the reward.
         public static let rewardEarned = Kind(rawValue: "reward_earned")
 
         /// The ad was dismissed before a reward was earned.
