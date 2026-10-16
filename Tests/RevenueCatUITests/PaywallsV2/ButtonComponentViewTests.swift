@@ -391,6 +391,84 @@ final class ButtonComponentViewTests: TestCase {
         )
     }
 
+    func testConfiguredCloseStillWorksDuringPurchaseWithoutNativeControls() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
+        for coordinator in [nil, NativePaywallCloseCoordinator()] {
+            let handler = PurchaseHandler.default()
+            handler.actionTypeInProgress = .purchase
+            let viewModel = try Self.makeViewModel(component: .init(
+                action: .navigateBack, stack: Self.makeButtonStack(label: "Close"), useNativeIfPossible: true
+            ))
+            let dismissed = expectation(description: "Configured Close remains usable during purchase")
+            let view = ButtonComponentView(viewModel: viewModel, onDismiss: { dismissed.fulfill() })
+                .environmentObject(handler)
+                .environmentObject(PackageContext(package: nil, variableContext: .init(packages: [])))
+                .environmentObject(IntroOfferEligibilityContext(
+                    introEligibilityChecker: BaseSnapshotTest.eligibleChecker
+                ))
+                .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
+                .environment(\.nativePaywallCloseCoordinator, coordinator)
+                .environment(\.nativePaywallControlsPresented, false)
+                .environment(\.safeAreaInsets, EdgeInsets())
+                .buttonStyle(.bordered)
+            let (window, hostedView) = Self.host(view)
+            defer { window.isHidden = true; window.rootViewController = nil }
+            func findButton(in view: UIView) -> UIControl? {
+                if let control = view as? UIControl,
+                   control.allControlEvents.contains(.primaryActionTriggered) { return control }
+                return view.subviews.lazy.compactMap { findButton(in: $0) }.first
+            }
+            let button = try XCTUnwrap(findButton(in: hostedView))
+            XCTAssertTrue(button.isEnabled)
+            button.sendActions(for: .primaryActionTriggered)
+            await fulfillment(of: [dismissed], timeout: 2)
+        }
+    }
+
+    func testPromotingNativeButtonsDoesNotRemountSiblingCarousel() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
+        let dimensions: [PaywallComponent.Dimension] = [
+            .vertical(.leading, .start), .horizontal(.center, .start), .zlayer(.center),
+            .vertical(.leading, .spaceBetween), .horizontal(.center, .spaceBetween),
+            .vertical(.leading, .spaceAround), .horizontal(.center, .spaceAround),
+            .vertical(.leading, .spaceEvenly), .horizontal(.center, .spaceEvenly)
+        ]
+        for dimension in dimensions {
+            let close = PaywallComponent.button(.init(
+                action: .navigateBack, stack: Self.makeButtonStack(label: "Close"), useNativeIfPossible: true
+            ))
+            let model = try StackComponentViewModel(component: .init(
+                components: [close, .carousel(.init(pages: [Self.makeButtonStack(label: "Close")])), close],
+                dimension: dimension, size: .init(width: .fixed(280), height: .fixed(180)), spacing: 8
+            ), localizationProvider: .init(
+                locale: Locale(identifier: "en_US"), localizedStrings: ["Close": .string("Close")]
+            ), colorScheme: .light)
+            guard case .carousel(let carousel) = model.viewModels[1] else { return XCTFail("Missing carousel") }
+            var appearances = 0
+            carousel.onViewAppear = { appearances += 1 }
+            let state = NativeRegistrationTestState()
+            state.showsButton = false
+            let content = StackComponentView(viewModel: model, onDismiss: {})
+                .environment(\.nativePaywallCloseCoordinator, NativePaywallCloseCoordinator())
+                .environmentObject(PurchaseHandler.default())
+                .environmentObject(PackageContext(package: nil, variableContext: .init(packages: [])))
+                .environmentObject(IntroOfferEligibilityContext(
+                    introEligibilityChecker: BaseSnapshotTest.eligibleChecker
+                ))
+                .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
+                .environment(\.safeAreaInsets, EdgeInsets())
+            let (window, _) = Self.host(NativePromotionTestView(state: state, content: content))
+            defer { window.isHidden = true; window.rootViewController = nil }
+            for presented in [false, true, false] {
+                state.showsButton = presented
+                let settled = expectation(description: "Native promotion settled")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { settled.fulfill() }
+                await fulfillment(of: [settled], timeout: 2)
+                XCTAssertEqual(appearances, 1, "Promotion must preserve carousel state in \(dimension)")
+            }
+        }
+    }
+
     func testNativeRegistrationPreservesDismissalAndAnalytics() async throws {
         let coordinator = NativePaywallCloseCoordinator()
         let viewModel = try Self.makeViewModel(component: .init(
@@ -535,6 +613,15 @@ private struct NativeHeaderVisibilityTestView<Content: View>: View {
     let content: Content
     var body: some View {
         self.content.environment(\.componentViewState, self.state.value == 1 ? .default : .selected)
+    }
+}
+
+@available(iOS 15.0, *)
+private struct NativePromotionTestView<Content: View>: View {
+    @ObservedObject var state: NativeRegistrationTestState
+    let content: Content
+    var body: some View {
+        self.content.environment(\.nativePaywallControlsPresented, self.state.showsButton)
     }
 }
 

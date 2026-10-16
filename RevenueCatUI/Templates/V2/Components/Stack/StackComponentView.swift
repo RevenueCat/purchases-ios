@@ -116,10 +116,6 @@ struct StackComponentView: View {
     private func make(style: StackComponentStyle) -> some View {
         let layoutSize: PaywallComponent.Size = self.suppressNativeHeaderLayout
             ? .init(width: .fixed(0), height: .fit(nil)) : style.size
-        let contentViewModels = self.viewModel.viewModels.filter { item in
-            if case .button(let button) = item { return !self.hiddenNativeButtons.contains(ObjectIdentifier(button)) }
-            return true
-        }
         Group {
             switch style.dimension {
             case .vertical(let horizontalAlignment, let distribution):
@@ -127,7 +123,7 @@ struct StackComponentView: View {
                     style: style,
                     horizontalAlignment: horizontalAlignment,
                     distribution: distribution,
-                    viewModels: contentViewModels,
+                    viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
                 )
                 // This alignment positions the inner VStack horizontally and vertically
@@ -140,7 +136,7 @@ struct StackComponentView: View {
                     style: style,
                     verticalAlignment: verticalAlignment,
                     distribution: distribution,
-                    viewModels: contentViewModels,
+                    viewModels: self.viewModel.viewModels,
                     onDismiss: self.onDismiss
                 )
                 // This alignment positions the inner VStack horizontally and vertically
@@ -152,7 +148,7 @@ struct StackComponentView: View {
                 // This alignment defines the position of inner components relative to each other
                 ZStack(alignment: alignment.stackAlignment) {
                     ComponentsView(
-                        componentViewModels: contentViewModels,
+                        componentViewModels: self.viewModel.viewModels,
                         pushNonFirstChildrenBelowSafeArea: self.viewModel.firstChildIsFullWidthMedia,
                         onDismiss: self.onDismiss
                     )
@@ -164,6 +160,7 @@ struct StackComponentView: View {
                       verticalAlignment: alignment.stackAlignment)
             }
         }
+        .environment(\.nativePaywallHiddenLayoutButtons, self.hiddenNativeButtons)
         .hidden(if: self.showActivityIndicatorOverContent)
         .padding(self.suppressNativeHeaderLayout ? EdgeInsets() : style.padding.extend(by: style.border?.width ?? 0))
         .padding(additionalPadding)
