@@ -79,9 +79,9 @@ struct HardPaywallUseCaseView: View {
             paywallPresenter: self.model.localPaywallPresenter,
             errorPresenter: self.model.localErrorPresenter
         ) { result in
-            let obtained = result?.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted() ?? []
+            let obtained = result.flow?.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted() ?? []
             guard !obtained.isEmpty else {
-                self.status = result == nil
+                self.status = result.flow == nil
                     ? "No completed flow. Content remains locked."
                     : "Checkpoint completed without an active entitlement. Content remains locked."
                 return

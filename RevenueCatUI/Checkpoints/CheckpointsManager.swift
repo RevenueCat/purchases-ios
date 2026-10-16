@@ -167,7 +167,7 @@ final class CheckpointsManager {
     ) async -> CheckpointCallbackResult {
         switch await self.checkpointOutcome(identifier: identifier, params: params) {
         case let .completed(result):
-            return .completed(result)
+            return .completed(CheckpointResult(flow: result))
         case .suppressed:
             return .suppressed
         case let .failed(error):
@@ -185,7 +185,9 @@ final class CheckpointsManager {
                 params: params,
                 kind: .flowResultSyncFailed
             )
-            return .completed(FlowResult(obtainedEntitlements: []))
+            return .completed(CheckpointResult(
+                flow: FlowResult(obtainedEntitlements: [])
+            ))
         }
     }
 
@@ -284,7 +286,7 @@ final class CheckpointsManager {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum CheckpointCallbackResult {
-    case completed(FlowResult?)
+    case completed(CheckpointResult)
     case suppressed
 }
 
