@@ -25,6 +25,7 @@ See minimum platform version requirements for RevenueCat's *Purchases* SDK [here
 | 🤑 Restoring transactions           | [Views/UserView.swift](Shared/Sources/Views/UserView.swift#L72) |
 | 👥 Identifying the user             | [ViewModels/UserViewModel.swift](Shared/Sources/ViewModels/UserViewModel.swift) |
 | 🚪 Logging out the user             | [ViewModels/UserViewModel.swift](Shared/Sources/ViewModels/UserViewModel.swift) |
+| 🚩 Reacting to checkpoint results   | [Checkpoints/](MagicWeatherSwiftUI/Sources/Checkpoints) |
 
 ## Setup & Run
 
@@ -66,6 +67,21 @@ See minimum platform version requirements for RevenueCat's *Purchases* SDK [here
 
 #### Purchase Flow Demo
 <img src="https://i.imgur.com/SSbRLhr.gif" width="220px" />
+
+## Checkpoints
+
+The **Checkpoints** tab shows how an app reacts to a checkpoint result. The checkpoints API is invite-only and experimental, so the samples use `@_spi(InviteOnlyCheckpointsApi) import RevenueCatUI`.
+
+Each sample fires a checkpoint ID. Create these checkpoints in your RevenueCat project:
+
+| Checkpoint ID | Sample | What to attach | What the sample does |
+| --- | --- | --- | --- |
+| `hard_paywall` | Hard paywall | A paywall | The content stays locked until the result has an active entitlement. |
+| `soft_paywall` | Soft paywall | A paywall | The content is always available. The result only updates the status. |
+| `onboarding_complete` | Onboarding | Any flow | Onboarding goes to its last step when it fires the checkpoint. It does not wait for the result. |
+| `entitlement_gate` | Entitlement gate | A paywall | The app checks `CustomerInfo` first. It fires the checkpoint only when the customer has no active entitlement. |
+
+If a checkpoint ID does not exist or no rule matches, the result has no flow, and the sample shows "No completed flow".
 
 ## Support
 
