@@ -35,19 +35,12 @@ struct HeaderComponentView: View {
         self.onDismiss = onDismiss
     }
 
-    @Environment(\.heroMediaPresentation)
-    private var heroMediaPresentation
-
-    private var firstItemIgnoresSafeArea: Bool {
-        heroMediaPresentation?.headerIgnoresSafeArea ?? viewModel.firstItemIgnoresSafeArea
-    }
-
     var body: some View {
         StackComponentView(
             viewModel: self.viewModel.stackViewModel,
             onDismiss: self.onDismiss,
             additionalPadding: .init(
-                top: self.firstItemIgnoresSafeArea ? 0 : self.safeAreaInsets.top,
+                top: self.viewModel.firstItemIgnoresSafeArea ? 0 : self.safeAreaInsets.top,
                 leading: 0,
                 bottom: 0,
                 trailing: 0

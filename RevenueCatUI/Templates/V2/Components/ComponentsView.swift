@@ -26,7 +26,7 @@ struct ComponentsView: View {
     private var overlaidHeaderHeight
 
     let componentViewModels: [PaywallComponentViewModel]
-    /// Exempts the current direct hero child while keeping its sibling content below the safe area.
+    /// The direct hero child stays above the safe area while its siblings receive padding.
     private let safeAreaExemptChildIndex: Int?
     private let onDismiss: () -> Void
     private let defaultPackage: Package?

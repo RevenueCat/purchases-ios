@@ -22,299 +22,83 @@ import XCTest
 class ViewModelFactoryTests: TestCase {
 
     @MainActor
-    func testPWENG317HiddenLeadingSideImageDoesNotRemoveMobileHeroDetection() throws {
-        try assertPWENG317HiddenSidePreservesHero(width: .fixed(200))
-    }
-
-    @MainActor
-    func testPWENG317HiddenFillWidthSideImagePreservesRootHeroDetection() throws {
-        try assertPWENG317HiddenSidePreservesHero(width: .fill)
-    }
-
-    @MainActor
-    private func assertPWENG317HiddenSidePreservesHero(width: PaywallComponent.SizeConstraint) throws {
+    func testHeroDetectionUsesRenderedStackVisibility() throws {
         let hero = PaywallComponent.image(.init(
-            source: .init(light: .init(width: 400, height: 240,
-                                       original: Self.sampleURL, heic: Self.sampleURL,
-                                       heicLowRes: Self.sampleURL)),
+            source: .init(light: .init(
+                width: 400, height: 240,
+                original: Self.sampleURL, heic: Self.sampleURL, heicLowRes: Self.sampleURL
+            )),
             size: .init(width: .fill, height: .fixed(240))
         ))
-        let sideImage = PaywallComponent.image(.init(
-            source: .init(light: .init(width: 200, height: 240,
-                                       original: Self.sampleURL, heic: Self.sampleURL,
-                                       heicLowRes: Self.sampleURL)),
-            size: .init(width: width, height: .fixed(240))
-        ))
-        let hiddenSide = PaywallComponent.stack(.init(
-            visible: false,
-            components: [sideImage],
+        let side = PaywallComponent.stack(.init(
+            visible: false, components: [.webView(Self.webViewComponent(width: .fixed(200)))],
             overrides: [.init(
                 extendedConditions: [.windowWidth(operator: .greaterThanOrEqual, value: 800)],
                 properties: .init(visible: true)
             )]
         ))
-        func root(_ components: [PaywallComponent]) throws -> RootViewModel {
-            var factory = ViewModelFactory()
-            return try factory.toRootViewModel(
-                componentsConfig: .init(stack: .init(components: components),
-                                        stickyFooter: nil, background: .color(Self.black)),
-                offering: Self.mockOffering,
-                localizationProvider: .init(locale: .current, localizedStrings: [:]),
-                uiConfigProvider: try Self.createUIConfigProvider(),
-                colorScheme: .light
-            )
-        }
-        let baseline = try root([hero])
-        XCTAssertTrue(baseline.firstItemIsFullWidthMedia)
-        let changed = try root([hiddenSide, hero])
-        guard case .stack(let sideViewModel) = changed.stackViewModel.viewModels[0] else {
-            XCTFail("Expected the hidden side stack")
-            return
-        }
-        func sideVisible(width: CGFloat) -> Bool {
-            sideViewModel.styles(
-                state: .default, condition: .compact,
-                isEligibleForIntroOffer: false, isEligibleForPromoOffer: false,
-                selectedPackageId: nil, customVariables: [:],
-                windowSize: CGSize(width: width, height: 800), colorScheme: .light
-            ).visible
-        }
-        XCTAssertFalse(sideVisible(width: 400))
-        XCTAssertTrue(sideVisible(width: 900))
         let provider = try Self.createUIConfigProvider()
-        for windowWidth: CGFloat in [400, 900, 400] {
-            let context = HeroMediaContext(conditionContext: provider.conditionContext(
-                selectedPackageId: nil, customVariables: [:],
-                windowSize: CGSize(width: windowWidth, height: 800)
-            ))
-            let presentation = changed.heroMediaPresentation(context: context)
-            XCTAssertEqual(presentation.rootIsMedia, windowWidth < 800 || width.isFill)
-        }
-    }
-
-    @available(iOS 15.0, macOS 12.0, *)
-    func testPWENG317DefaultVisibleSideHiddenByWindowRule() throws {
-        let hero = PaywallComponent.image(.init(
-            source: .init(light: .init(width: 400, height: 240,
-                                       original: Self.sampleURL, heic: Self.sampleURL, heicLowRes: Self.sampleURL)),
-            size: .init(width: .fill, height: .fixed(240))
-        ))
-        let side = PaywallComponent.stack(.init(
-            components: [.text(.init(text: "side", color: Self.black))],
-            overrides: [.init(
-                extendedConditions: [.windowWidth(operator: .lessThan, value: 800)],
-                properties: .init(visible: false)
-            )]
-        ))
-        let node = HeroMediaNode(
-            component: .stack(.init(components: [side, hero])), discardRules: false,
-            uiConfigProvider: try Self.createUIConfigProvider()
-        )
-        let provider = try Self.createUIConfigProvider()
-        for width: CGFloat in [400, 900, 400] {
-            let context = HeroMediaContext(conditionContext: provider.conditionContext(
-                selectedPackageId: nil, customVariables: [:], windowSize: CGSize(width: width, height: 800)
-            ))
-            XCTAssertEqual(node.firstVisible(context: context).isMedia, width < 800)
-        }
-    }
-
-    @available(iOS 15.0, macOS 12.0, *)
-    func testPWENG317HiddenAncestorAndVisibleEmptyBranch() throws {
-        let hero = Self.pweng317Hero()
-        let hiddenAncestor = PaywallComponent.stack(.init(
-            visible: false,
-            components: [.stack(.init(components: [.text(.init(text: "side", color: Self.black))]))]
-        ))
-        let emptyBranch = PaywallComponent.stack(.init(components: []))
-        let provider = try Self.createUIConfigProvider()
-        let context = HeroMediaContext(conditionContext: provider.conditionContext(
-            selectedPackageId: nil, customVariables: [:], windowSize: CGSize(width: 400, height: 800)
-        ))
-        let hiddenNode = HeroMediaNode(
-            component: .stack(.init(components: [hiddenAncestor, hero])),
-            discardRules: false, uiConfigProvider: provider
-        )
-        XCTAssertTrue(hiddenNode.firstVisible(context: context).isMedia)
-        let emptyNode = HeroMediaNode(
-            component: .stack(.init(components: [emptyBranch, hero])), discardRules: false, uiConfigProvider: provider
-        )
-        XCTAssertFalse(emptyNode.firstVisible(context: context).isMedia)
-    }
-
-    @available(iOS 15.0, macOS 12.0, *)
-    func testPWENG317MediaSizeOverrideUpdatesRootAndHeaderPresentation() throws {
-        let hero = Self.pweng317Hero(overrides: [.init(
-            extendedConditions: [.windowWidth(operator: .greaterThanOrEqual, value: 800)],
-            properties: .init(size: .init(width: .fixed(200), height: .fixed(240)))
-        )])
-        var factory = ViewModelFactory()
-        let root = try factory.toRootViewModel(
-            componentsConfig: .init(
-                stack: .init(components: [hero]), header: .init(stack: .init(components: [hero])),
-                stickyFooter: nil, background: .color(Self.black)
-            ),
-            offering: Self.mockOffering,
+        let factory = ViewModelFactory()
+        let stack = try factory.toStackViewModel(
+            component: .init(components: [.fallbackHeader, side, hero], dimension: .zlayer(.top)),
+            packageValidator: factory.packageValidator, purchaseButtonCollector: nil,
             localizationProvider: .init(locale: .current, localizedStrings: [:]),
-            uiConfigProvider: try Self.createUIConfigProvider(), colorScheme: .light
+            uiConfigProvider: provider, offering: Self.mockOffering, colorScheme: .light
         )
-        let provider = try Self.createUIConfigProvider()
-        for width: CGFloat in [400, 900, 400] {
-            let context = HeroMediaContext(conditionContext: provider.conditionContext(
-                selectedPackageId: nil, customVariables: [:], windowSize: CGSize(width: width, height: 800)
-            ))
-            let presentation = root.heroMediaPresentation(context: context)
-            XCTAssertEqual(presentation.rootIsMedia, width < 800)
-            XCTAssertEqual(presentation.headerIgnoresSafeArea, width < 800)
+        for width in [400, 900, 400] {
+            let visible: (StackComponentViewModel) -> Bool = { stack in
+                stack.styles(
+                    state: .default, condition: .compact, isEligibleForIntroOffer: false,
+                    isEligibleForPromoOffer: false, selectedPackageId: nil, customVariables: [:],
+                    windowSize: CGSize(width: CGFloat(width), height: 700), colorScheme: .light
+                ).visible
+            }
+            XCTAssertEqual(stack.firstVisibleMedia(isStackVisible: visible) != nil, width < 800)
+            XCTAssertEqual(stack.safeAreaExemptChildIndex(isStackVisible: visible), width < 800 ? 1 : nil)
         }
     }
 
     @MainActor
-    func testPWENG317PackageHeroDetectionUsesRendererVisibilityContext() throws {
-        let provider = try Self.createUIConfigProvider()
-        let product = TestStoreProduct(
-            localizedTitle: "Annual", price: 10, currencyCode: "USD", localizedPriceString: "$10.00",
-            productIdentifier: "annual", productType: .autoRenewableSubscription,
-            localizedDescription: "", locale: Locale(identifier: "en_US")
-        )
-        let package = Package(
-            identifier: "$rc_annual", packageType: .annual, storeProduct: product.toStoreProduct(),
-            offeringIdentifier: "test", webCheckoutUrl: nil
-        )
-        let offering = Offering(
-            identifier: "test", serverDescription: "Test", metadata: [:],
-            availablePackages: [package], webCheckoutUrl: nil
-        )
-        let component = PaywallComponent.PackageComponent(
-            packageID: package.identifier,
-            isSelectedByDefault: false,
-            applePromoOfferProductCode: nil,
-            stack: .init(components: []),
-            overrides: [.init(
-                extendedConditions: [.state(operator: .equals, name: "hidePackage", value: .bool(true))],
-                properties: .init(visible: false)
-            )]
-        )
-        let renderer = PackageVisibilityResolver(
-            component: component, uiConfigProvider: provider, discardRules: false
-        )
-        let windowSize = CGSize(width: 400, height: 800)
-        let rendererVisible = renderer.visible(
-            state: .default, condition: .compact,
-            isEligibleForIntroOffer: false, isEligibleForPromoOffer: false,
-            selectedPackageId: nil, customVariables: [:], windowSize: windowSize
-        )
-        let node = HeroMediaNode(
-            component: .stack(.init(components: [.package(component), Self.pweng317Hero()])),
-            discardRules: false, offering: offering, uiConfigProvider: provider
-        )
-        let context = HeroMediaContext(conditionContext: provider.conditionContext(
-            selectedPackageId: nil, customVariables: [:],
-            stateValues: ["hidePackage": .bool(true)], stateDefaults: ["hidePackage": .bool(true)],
-            windowSize: windowSize
-        ))
-        XCTAssertTrue(rendererVisible)
-        XCTAssertEqual(node.firstVisible(context: context).isMedia, !rendererVisible)
-    }
-
-    @available(iOS 15.0, macOS 12.0, *)
-    private static func pweng317Hero(
-        overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialImageComponent>? = nil
-    ) -> PaywallComponent {
-        .image(.init(
-            source: .init(light: .init(width: 400, height: 240, original: Self.sampleURL,
-                                       heic: Self.sampleURL, heicLowRes: Self.sampleURL)),
-            size: .init(width: .fill, height: .fixed(240)), overrides: overrides
-        ))
-    }
-
-    @MainActor
-    func testPWENG317ZLayerVisiblePackageStopsDirectHeroAndFallbackKeepsIndexAligned() throws {
-        let provider = try Self.createUIConfigProvider()
-        let product = TestStoreProduct(
-            localizedTitle: "Annual", price: 10, currencyCode: "USD", localizedPriceString: "$10.00",
-            productIdentifier: "annual", productType: .autoRenewableSubscription,
-            localizedDescription: "", locale: Locale(identifier: "en_US")
-        )
-        let package = Package(
-            identifier: "$rc_annual", packageType: .annual, storeProduct: product.toStoreProduct(),
-            offeringIdentifier: "test", webCheckoutUrl: nil
-        )
-        let offering = Offering(identifier: "test", serverDescription: "", availablePackages: [package],
-                                webCheckoutUrl: nil)
-        let packageComponent = PaywallComponent.package(.init(
-            packageID: package.identifier, isSelectedByDefault: false, applePromoOfferProductCode: nil,
-            stack: .init(components: [])
-        ))
-        let context = HeroMediaContext(conditionContext: provider.conditionContext(
-            selectedPackageId: nil, customVariables: [:], windowSize: CGSize(width: 400, height: 800)
-        ))
-        let packageNode = HeroMediaNode(
-            component: .stack(.init(components: [packageComponent, Self.pweng317Hero()], dimension: .zlayer(.top))),
-            discardRules: false, offering: offering, uiConfigProvider: provider
-        )
-        XCTAssertNil(packageNode.firstVisibleDirectMediaIndex(context: context))
-        let fallbackNode = HeroMediaNode(
-            component: .stack(.init(components: [.fallbackHeader, Self.pweng317Hero()], dimension: .zlayer(.top))),
-            discardRules: false, uiConfigProvider: provider
-        )
-        XCTAssertEqual(fallbackNode.firstVisibleDirectMediaIndex(context: context), 0)
-        let nestedNode = HeroMediaNode(
-            component: .stack(.init(components: [.stack(.init(components: [Self.pweng317Hero()]))])),
-            discardRules: false, uiConfigProvider: provider
-        )
-        XCTAssertNil(nestedNode.firstVisibleDirectMediaIndex(context: context))
-    }
-
-    @MainActor
-    func testPWENG317HeroVisibilityMatchesRenderersThatOmitStateStoreContext() throws {
-        let conditions: [PaywallComponent.ExtendedCondition] = [
-            .state(operator: .equals, name: "hideLeading", value: .bool(true))
+    func testHeroDetectionPreservesVisibleLeadingComponents() throws {
+        let hero = PaywallComponent.webView(Self.webViewComponent(width: .fill))
+        let text = PaywallComponent.text(.init(text: "text", color: Self.black))
+        let cases: [([PaywallComponent], Bool, Int?)] = [
+            ([hero], true, 0),
+            ([.fallbackHeader, hero], true, 0),
+            ([.webView(Self.webViewComponent(width: .fixed(200))), hero], false, nil),
+            ([text, hero], false, nil),
+            ([.stack(.init(components: [])), hero], false, nil),
+            ([.stack(.init(components: [hero]))], true, nil),
+            ([.stack(.init(visible: false, components: [text])), hero], true, 1),
+            ([.stack(.init(components: [
+                .stack(.init(visible: false, components: [text])), hero
+            ]))], false, nil),
+            ([.stack(.init(visible: false, components: [text])), .stack(.init(components: [hero]))], true, 1),
+            ([.stack(.init(visible: false, components: [hero])), .stack(.init(components: [hero]))], true, 1),
+            ([.stack(.init(visible: false, components: [text])), .stack(.init(
+                components: [.stack(.init(components: [hero])), text], dimension: .zlayer(.top)
+            ))], false, nil),
+            ([.stack(.init(visible: false, components: [text])), .stack(.init(components: [
+                .stack(.init(visible: false, components: [hero])), text
+            ]))], false, nil)
         ]
-        let video = PaywallComponent.video(.init(
-            source: .init(light: .init(width: 400, height: 240, url: Self.sampleURL,
-                                       checksum: nil, urlLowRes: nil, checksumLowRes: nil)),
-            overrides: [.init(extendedConditions: conditions, properties: .init(visible: false))]
-        ))
-        let timeline = PaywallComponent.timeline(.init(
-            iconAlignment: nil, itemSpacing: nil, textSpacing: nil, columnGutter: nil,
-            size: .init(width: .fill, height: .fit(nil)), padding: .zero, margin: .zero, items: [],
-            overrides: [.init(extendedConditions: conditions, properties: .init(
-                visible: false, iconAlignment: nil, itemSpacing: nil, textSpacing: nil, columnGutter: nil,
-                size: nil, padding: nil, margin: nil
-            ))]
-        ))
-        let tabs = PaywallComponent.tabs(.init(
-            control: .init(type: .buttons, stack: .init(components: [])), tabs: [],
-            overrides: [.init(extendedConditions: conditions, properties: .init(visible: false))]
-        ))
-        let carousel = PaywallComponent.carousel(.init(
-            pages: [.init(components: [])],
-            overrides: [.init(extendedConditions: conditions, properties: .init(visible: false))]
-        ))
-        let button = PaywallComponent.button(.init(
-            action: .restorePurchases, stack: .init(components: []),
-            overrides: [.init(extendedConditions: conditions, properties: .init(visible: false))]
-        ))
-        let provider = try Self.createUIConfigProvider()
-        for (name, component, expected) in [
-            ("video", video, HeroMediaNode.Result.media(.video)),
-            ("timeline", timeline, .nonMedia), ("tabs", tabs, .nonMedia),
-            ("carousel", carousel, .nonMedia), ("button", button, .nonMedia)
-        ] {
-            let node = HeroMediaNode(
-                component: .stack(.init(components: [component, Self.pweng317Hero()])),
-                discardRules: false, uiConfigProvider: provider
+        let factory = ViewModelFactory()
+        for (components, expectsMedia, directIndex) in cases {
+            let stack = try factory.toStackViewModel(
+                component: .init(components: components, dimension: .zlayer(.top)),
+                packageValidator: factory.packageValidator, purchaseButtonCollector: nil,
+                localizationProvider: .init(locale: .current, localizedStrings: ["text": .string("Text")]),
+                uiConfigProvider: try Self.createUIConfigProvider(), offering: Self.mockOffering, colorScheme: .light
             )
-            for useDefault in [false, true] {
-                let context = HeroMediaContext(conditionContext: provider.conditionContext(
-                    selectedPackageId: nil, customVariables: [:],
-                    stateValues: useDefault ? [:] : ["hideLeading": .bool(true)],
-                    stateDefaults: useDefault ? ["hideLeading": .bool(true)] : [:],
-                    windowSize: CGSize(width: 400, height: 800)
-                ))
-                XCTAssertEqual(node.firstVisible(context: context), expected, name)
+            let visible: (StackComponentViewModel) -> Bool = { stack in
+                stack.styles(
+                    state: .default, condition: .compact, isEligibleForIntroOffer: false,
+                    isEligibleForPromoOffer: false, selectedPackageId: nil,
+                    customVariables: [:], colorScheme: .light
+                ).visible
             }
+            XCTAssertEqual(stack.firstVisibleMedia(isStackVisible: visible) != nil, expectsMedia)
+            XCTAssertEqual(stack.safeAreaExemptChildIndex(isStackVisible: visible), directIndex)
         }
     }
 
@@ -1130,10 +914,7 @@ class ViewModelFactoryTests: TestCase {
             colorScheme: .light
         )
 
-        let context = HeroMediaContext(conditionContext: try Self.createUIConfigProvider().conditionContext(
-            selectedPackageId: nil, customVariables: [:]
-        ))
-        expect(viewModel.heroMediaNode.firstVisibleDirectMediaIndex(context: context)).to(equal(0))
+        expect(viewModel.safeAreaExemptChildIndex(isStackVisible: { _ in true }) != nil).to(beTrue())
     }
 
     @MainActor
@@ -1159,10 +940,7 @@ class ViewModelFactoryTests: TestCase {
             colorScheme: .light
         )
 
-        let context = HeroMediaContext(conditionContext: try Self.createUIConfigProvider().conditionContext(
-            selectedPackageId: nil, customVariables: [:]
-        ))
-        expect(viewModel.heroMediaNode.firstVisibleDirectMediaIndex(context: context)).to(beNil())
+        expect(viewModel.safeAreaExemptChildIndex(isStackVisible: { _ in true }) != nil).to(beFalse())
     }
 
     // MARK: - Layout Tests

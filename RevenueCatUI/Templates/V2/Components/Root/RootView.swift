@@ -38,9 +38,6 @@ struct RootView: View {
     @Environment(\.workflowRenderingContext)
     private var workflowRenderingContext
 
-    @Environment(\.heroMediaPresentation)
-    private var heroMediaPresentation
-
     private let viewModel: RootViewModel
     private let onDismiss: () -> Void
     private let defaultPackage: Package?
@@ -85,16 +82,10 @@ struct RootView: View {
         }
     }
 
-    private var shouldOverlayHeader: Bool {
-        guard viewModel.headerViewModel != nil else { return false }
-        guard let heroMediaPresentation else { return viewModel.shouldOverlayHeader }
-        return heroMediaPresentation.rootIsMedia || heroMediaPresentation.headerIgnoresSafeArea
-    }
-
     var body: some View {
         VStack(alignment: .center, spacing: 0) {
             if let headerViewModel = viewModel.headerViewModel,
-               !shouldOverlayHeader {
+               !viewModel.shouldOverlayHeader {
                 HeaderComponentView(
                     viewModel: headerViewModel,
                     onDismiss: onDismiss
@@ -109,13 +100,14 @@ struct RootView: View {
                 StackComponentView(
                     viewModel: viewModel.stackViewModel,
                     isScrollableByDefault: true,
+                    resolveHeroFromVisibleStacks: viewModel.headerViewModel == nil,
                     onDismiss: onDismiss,
                     additionalPadding: EdgeInsets(top: 0, leading: 0, bottom: overlaidFooterHeight, trailing: 0)
                 )
                 .environment(\.overlaidHeaderHeight, overlaidHeaderHeight)
 
                 if let headerViewModel = viewModel.headerViewModel,
-                   shouldOverlayHeader {
+                   viewModel.shouldOverlayHeader {
                     HeaderComponentView(
                         viewModel: headerViewModel,
                         onDismiss: onDismiss

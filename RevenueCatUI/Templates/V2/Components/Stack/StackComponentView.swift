@@ -62,21 +62,39 @@ struct StackComponentView: View {
 
     private let viewModel: StackComponentViewModel
     private let isScrollableByDefault: Bool
+    private let resolveHeroFromVisibleStacks: Bool
     private let onDismiss: () -> Void
     /// Used when this stack needs more padding than defined in the component, e.g. to avoid being drawn in the safe
     /// area when displayed as a sticky footer.
     private let additionalPadding: EdgeInsets
     private let showActivityIndicatorOverContent: Bool
 
+    private func isStackVisible(_ stack: StackComponentViewModel) -> Bool {
+        stack.styles(
+            state: self.componentViewState,
+            condition: self.screenCondition,
+            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(package: self.packageContext.package),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(for: self.packageContext.package),
+            selectedPackageId: self.selectedPackageId,
+            customVariables: self.customVariables,
+            stateValues: self.paywallStateValues,
+            stateDefaults: self.paywallStateDefaults,
+            windowSize: self.paywallWindowSize,
+            colorScheme: self.colorScheme
+        ).visible
+    }
+
     init(
         viewModel: StackComponentViewModel,
         isScrollableByDefault: Bool = false,
+        resolveHeroFromVisibleStacks: Bool = false,
         onDismiss: @escaping () -> Void,
         additionalPadding: EdgeInsets? = nil,
         showActivityIndicatorOverContent: Bool = false
     ) {
         self.viewModel = viewModel
         self.isScrollableByDefault = isScrollableByDefault
+        self.resolveHeroFromVisibleStacks = resolveHeroFromVisibleStacks
         self.onDismiss = onDismiss
         self.additionalPadding = additionalPadding ?? EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
         self.showActivityIndicatorOverContent = showActivityIndicatorOverContent
@@ -102,25 +120,14 @@ struct StackComponentView: View {
             colorScheme: colorScheme
         ) { style in
             if style.visible {
-                self.make(style: style, heroContext: HeroMediaContext(
-                    state: self.componentViewState, condition: self.screenCondition,
-                    isEligibleForIntroOffer: isEligibleForIntroOffer,
-                    isEligibleForPromoOffer: isEligibleForPromoOffer,
-                    introEligibilityForPackage: { self.introOfferEligibilityContext.isEligible(package: $0) },
-                    promoEligibilityForPackage: { self.paywallPromoOfferCache.isMostLikelyEligible(for: $0) },
-                    conditionContext: self.viewModel.uiConfigProvider.conditionContext(
-                        selectedPackageId: self.selectedPackageId, customVariables: self.customVariables,
-                        stateValues: self.paywallStateValues, stateDefaults: self.paywallStateDefaults,
-                        windowSize: self.paywallWindowSize
-                    )
-                ))
+                self.make(style: style)
             }
         }
     }
 
     @ViewBuilder
     // swiftlint:disable:next function_body_length
-    private func make(style: StackComponentStyle, heroContext: HeroMediaContext) -> some View {
+    private func make(style: StackComponentStyle) -> some View {
         Group {
             switch style.dimension {
             case .vertical(let horizontalAlignment, let distribution):
@@ -153,8 +160,9 @@ struct StackComponentView: View {
                     ComponentsView(
                         componentViewModels: self.viewModel.viewModels,
                         onDismiss: self.onDismiss,
-                        safeAreaExemptChildIndex: self.viewModel.heroMediaNode
-                            .firstVisibleDirectMediaIndex(context: heroContext)
+                        safeAreaExemptChildIndex: self.viewModel.safeAreaExemptChildIndex(
+                            isStackVisible: { !self.resolveHeroFromVisibleStacks || self.isStackVisible($0) }
+                        )
                     )
                 }
                 // These alignments define the position of inner components inside the ZStack

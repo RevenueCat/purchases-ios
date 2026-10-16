@@ -10,11 +10,8 @@
 //  RootViewLayoutSnapshotTests.swift
 //
 
-@_spi(Internal) @testable import RevenueCat
+@_spi(Internal) import RevenueCat
 @_spi(Internal) @testable import RevenueCatUI
-#if canImport(UIKit)
-import UIKit
-#endif
 import SwiftUI
 import XCTest
 
@@ -138,76 +135,43 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
     }
 
     func testPWENG317ResponsiveHeroSafeAreaOnSimulator() throws {
-        try assertPWENG317ResponsiveHero(zlayer: false)
+        try assertPWENG317ResponsiveHero(layout: .vertical)
     }
 
     func testPWENG317ZLayerHeroAndTextSafeAreaOnSimulator() throws {
-        try assertPWENG317ResponsiveHero(zlayer: true)
+        try assertPWENG317ResponsiveHero(layout: .overlay)
     }
 
     func testPWENG317PreservesCarouselStateAcrossWidthRules() throws {
-        try assertPWENG317ResponsiveHero(zlayer: false, checkViewIdentity: true)
+        try assertPWENG317ResponsiveHero(layout: .vertical, checkViewIdentity: true)
     }
 
-    func testPWENG317EmergePreviewFixturesUseLoadedRenderer() throws {
-        for (name, width, zlayer) in [("narrow", 400, false), ("wide", 900, false), ("zlayer", 400, true)] {
-            let fixture = ResponsiveHeroSafeAreaPreview(width: CGFloat(width), zlayer: zlayer)
-            let controller = UIHostingController(rootView: fixture)
-            let window = UIWindow(frame: CGRect(x: 0, y: 0, width: width, height: 700))
-            window.backgroundColor = .white
-            window.rootViewController = controller
-            window.makeKeyAndVisible()
-            controller.view.frame = window.bounds
-            window.layoutIfNeeded()
-            controller.beginAppearanceTransition(true, animated: false)
-            controller.endAppearanceTransition()
-            defer {
-                window.isHidden = true
-                window.rootViewController = nil
-                window.resignKey()
-            }
-            let deadline = Date().addingTimeInterval(5)
-            var screenshot = Self.pweng317Capture(window)
-            while Date() < deadline {
-                RunLoop.main.run(until: Date().addingTimeInterval(0.05))
-                screenshot = Self.pweng317Capture(window)
-                if let redTop = Self.pweng317FirstColoredRow(screenshot, green: false) {
-                    if width == 900, Self.pweng317FirstColoredRow(screenshot, green: true) != nil { break }
-                    if width == 400, let fixtureTop = Self.pweng317FixtureTop(controller, in: window),
-                       abs(CGFloat(redTop) - fixtureTop) <= 1 { break }
-                }
-            }
-            let attachment = XCTAttachment(image: screenshot)
-            attachment.name = "PWENG317-Emerge-\(name)"
-            attachment.lifetime = .keepAlways
-            add(attachment)
-            let redTop = try XCTUnwrap(Self.pweng317FirstColoredRow(screenshot, green: false))
-            // The enclosing SwiftUI host can position this UIKit fixture below a phone's notch.
-            // Assert against the fixture's own origin, not the enclosing window's absolute origin.
-            let fixtureTop = try XCTUnwrap(Self.pweng317FixtureTop(controller, in: window))
-            if width == 900 {
-                let greenTop = try XCTUnwrap(Self.pweng317FirstColoredRow(screenshot, green: true))
-                XCTAssertGreaterThanOrEqual(CGFloat(greenTop) - fixtureTop, 60)
-                XCTAssertGreaterThan(redTop, greenTop)
-            } else {
-                XCTAssertEqual(CGFloat(redTop), fixtureTop, accuracy: 1)
-                XCTAssertNil(Self.pweng317FirstColoredRow(screenshot, green: true))
-            }
-            if zlayer {
-                let textTop = try XCTUnwrap(Self.pweng317FirstColoredRow(screenshot, green: false, blue: true))
-                XCTAssertGreaterThanOrEqual(CGFloat(textTop) - fixtureTop, 60)
-            }
-        }
+    func testPWENG317DoesNotAddSafeAreaPaddingInsideNestedZLayer() throws {
+        try assertPWENG317ResponsiveHero(layout: .nestedCard)
     }
 
-    private static func pweng317FixtureTop(_ controller: UIViewController, in window: UIWindow) -> CGFloat? {
-        if controller is UIHostingController<AnyView> {
-            return controller.view.convert(controller.view.bounds.origin, to: window).y
-        }
-        return controller.children.lazy.compactMap { pweng317FixtureTop($0, in: window) }.first
+    func testPWENG317PreservesExistingHeaderZLayerLayout() throws {
+        try assertPWENG317ResponsiveHero(layout: .overlay, withHeader: true)
     }
 
-    private func assertPWENG317ResponsiveHero(zlayer: Bool, checkViewIdentity: Bool = false) throws {
+    func testPWENG317PreservesLeadingNestedZLayerInsets() throws {
+        try assertPWENG317ResponsiveHero(layout: .leadingNestedCard)
+    }
+
+    func testPWENG317HeroContainerAndRootOverlayKeepSafeAreaClearance() throws {
+        try assertPWENG317ResponsiveHero(layout: .heroContainer)
+    }
+
+    private enum HeroLayout {
+        case vertical, overlay, nestedCard, leadingNestedCard, heroContainer
+    }
+
+    private func assertPWENG317ResponsiveHero(
+        layout: HeroLayout, checkViewIdentity: Bool = false, withHeader: Bool = false
+    ) throws {
+        let zlayer = layout != .vertical
+        let nestedZLayer = layout == .nestedCard || layout == .leadingNestedCard
+        let leadingNestedZLayer = layout == .leadingNestedCard
         let redURL = try Self.pweng317ImageURL(color: .red, name: "hero")
         let greenURL = try Self.pweng317ImageURL(color: .green, name: "side")
         func image(_ url: URL, width: PaywallComponent.SizeConstraint) -> PaywallComponent {
@@ -230,14 +194,22 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
         let carousel = PaywallComponent.carousel(.init(pages: [
             .init(components: [textOverlay]), .init(components: [textOverlay])
         ]))
+        let components = [side, image(redURL, width: .fill)] + (zlayer ? [textOverlay] : [])
+            + (checkViewIdentity ? [carousel] : [])
+        let rootComponents = Self.pweng317RootComponents(
+            layout: layout, components: components, hero: image(redURL, width: .fill), text: textOverlay
+        )
         let config = PaywallComponentsData.PaywallComponentsConfig(
             stack: .init(
-                components: [side, image(redURL, width: .fill)] + (zlayer ? [textOverlay] : [])
-                    + (checkViewIdentity ? [carousel] : []),
-                dimension: zlayer ? .zlayer(.top) : .vertical(.leading, .start),
+                components: rootComponents,
+                dimension: zlayer && !nestedZLayer ? .zlayer(.top) : .vertical(.leading, .start),
                 size: .init(width: .fill, height: .fill), spacing: 0,
                 overflow: checkViewIdentity ? .scroll : nil
             ),
+            header: withHeader ? .init(stack: .init(components: [.text(.init(
+                text: "overlay", color: .init(light: .hex("#000000")),
+                size: .init(width: .fill, height: .fixed(60)), fontSize: 16
+            ))])) : nil,
             stickyFooter: nil, background: .color(.init(light: .hex("#FFFFFF")))
         )
         let provider = PaywallsV2LayoutFixtures.uiConfigProvider
@@ -287,18 +259,25 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
                 let greenTop = Self.pweng317FirstColoredRow(screenshot, green: true)
                 if zlayer {
                     let blueTop = Self.pweng317FirstColoredRow(screenshot, green: false, blue: true)
-                    if let redTop, let blueTop, blueTop >= 60,
-                       width == 900 ? redTop >= 60 : redTop <= 1 { break }
+                    if Self.pweng317OverlayIsReady(
+                        redTop: redTop, blueTop: blueTop, width: width,
+                        nestedZLayer: nestedZLayer, withHeader: withHeader || leadingNestedZLayer
+                    ) { break }
                 } else if redTop != nil && ((width == 900) == (greenTop != nil)) { break }
             }
-            if checkViewIdentity {
-                XCTAssertEqual(carouselAppearCount(), 1, "Width rules must preserve the carousel's view state")
-            }
+            XCTAssertEqual(carouselAppearCount(), checkViewIdentity ? 1 : 0,
+                           "Width rules must preserve the carousel's view state")
             let attachment = XCTAttachment(image: screenshot)
             attachment.name = "PWENG317-\(zlayer ? "zlayer" : "vertical")-\(index + 1)-width-\(width)"
             attachment.lifetime = .keepAlways
             add(attachment)
             let redTop = try XCTUnwrap(Self.pweng317FirstColoredRow(screenshot, green: false))
+            if nestedZLayer || withHeader {
+                try assertPWENG317ExistingInsets(
+                    screenshot, redTop: redTop, withHeader: withHeader || leadingNestedZLayer
+                )
+                continue
+            }
             if width == 900 {
                 if zlayer {
                     XCTAssertGreaterThanOrEqual(redTop, 60, "Wide ZLayer content must retain safe-area clearance")
@@ -316,6 +295,45 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
                 let overlayTop = try XCTUnwrap(Self.pweng317FirstColoredRow(screenshot, green: false, blue: true))
                 XCTAssertGreaterThanOrEqual(overlayTop, 60, "Text overlay must remain below the safe area")
             }
+        }
+    }
+
+    private static func pweng317RootComponents(
+        layout: HeroLayout, components: [PaywallComponent], hero: PaywallComponent, text: PaywallComponent
+    ) -> [PaywallComponent] {
+        switch layout {
+        case .nestedCard, .leadingNestedCard:
+            return (layout == .leadingNestedCard ? [] : [hero]) + [.stack(.init(
+                components: components, dimension: .zlayer(.top), size: .init(width: .fill, height: .fixed(240))
+            ))]
+        case .heroContainer:
+            return [components[0], .stack(.init(components: [.stack(.init(
+                components: [hero, text], dimension: .zlayer(.top)
+            ))])), text]
+        default:
+            return components
+        }
+    }
+
+    private static func pweng317OverlayIsReady(
+        redTop: Int?, blueTop: Int?, width: Int, nestedZLayer: Bool, withHeader: Bool
+    ) -> Bool {
+        guard let redTop, let blueTop else { return false }
+        if withHeader { return blueTop - redTop < 60 }
+        if nestedZLayer { return (240..<300).contains(blueTop) }
+        return blueTop >= 60 && (width == 900 ? redTop >= 60 : redTop <= 1)
+    }
+
+    private func assertPWENG317ExistingInsets(_ screenshot: UIImage, redTop: Int, withHeader: Bool) throws {
+        let textTop = try XCTUnwrap(Self.pweng317FirstColoredRow(screenshot, green: false, blue: true))
+        if withHeader {
+            XCTAssertGreaterThanOrEqual(redTop, 60, "The existing leading layout keeps its clearance")
+            XCTAssertGreaterThanOrEqual(textTop, redTop)
+            XCTAssertLessThan(textTop - redTop, 60, "Existing layouts must not gain another safe-area inset")
+        } else {
+            XCTAssertLessThanOrEqual(redTop, 1)
+            XCTAssertGreaterThanOrEqual(textTop, 240)
+            XCTAssertLessThan(textTop, 300, "A nested card must not gain another top safe-area inset")
         }
     }
 

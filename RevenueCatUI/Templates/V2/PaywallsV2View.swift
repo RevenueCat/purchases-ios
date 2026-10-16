@@ -708,26 +708,26 @@ struct LoadedPaywallsV2View: View {
         )
     }
 
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.componentViewState) private var componentViewState
     @Environment(\.paywallStateValues) private var paywallStateValues
     @Environment(\.paywallStateDefaults) private var paywallStateDefaults
 
-    private var heroMediaPresentation: HeroMediaPresentation {
-        paywallState.rootViewModel.heroMediaPresentation(context: HeroMediaContext(
-            state: componentViewState,
-            condition: screenCondition,
-            isEligibleForIntroOffer: introOfferEligibilityContext.isEligible(package: selectedPackageContext.package),
-            isEligibleForPromoOffer: paywallPromoOfferCache.isMostLikelyEligible(for: selectedPackageContext.package),
-            introEligibilityForPackage: { introOfferEligibilityContext.isEligible(package: $0) },
-            promoEligibilityForPackage: { paywallPromoOfferCache.isMostLikelyEligible(for: $0) },
-            conditionContext: uiConfigProvider.conditionContext(
-                selectedPackageId: selectedPackageContext.package?.identifier,
-                customVariables: customVariables,
-                stateValues: paywallStateValues,
-                stateDefaults: paywallStateDefaults,
-                windowSize: paywallWindowSize
-            )
-        ))
+    private var firstVisibleRootIsMedia: Bool {
+        paywallState.rootViewModel.stackViewModel.firstVisibleMedia { stack in
+            stack.styles(
+                state: componentViewState, condition: screenCondition,
+                isEligibleForIntroOffer: introOfferEligibilityContext.isEligible(
+                    package: selectedPackageContext.package
+                ),
+                isEligibleForPromoOffer: paywallPromoOfferCache.isMostLikelyEligible(
+                    for: selectedPackageContext.package
+                ),
+                selectedPackageId: selectedPackageContext.package?.identifier, customVariables: customVariables,
+                stateValues: paywallStateValues, stateDefaults: paywallStateDefaults,
+                windowSize: paywallWindowSize, colorScheme: colorScheme
+            ).visible
+        } != nil
     }
 
     var body: some View {
@@ -741,12 +741,11 @@ struct LoadedPaywallsV2View: View {
                 .fixMacButtons()
                 .environment(\.closeWorkflowAction, self.closeWorkflowAction ?? self.onDismiss)
             }
-            .environment(\.heroMediaPresentation, heroMediaPresentation)
             // Used for header image and sticky footer
             .environment(\.safeAreaInsets, proxy.safeAreaInsets)
             .edgesIgnoringSafeArea(
                 paywallState.rootViewModel.headerViewModel != nil
-                || heroMediaPresentation.rootIsMedia ? .top : []
+                || firstVisibleRootIsMedia ? .top : []
             )
             .applyIf(paywallState.rootViewModel.stackViewModel.component.size.height.isFill, apply: { view in
                 view.frame(maxHeight: .infinity, alignment: paywallState.rootViewModel.frameAlignment)

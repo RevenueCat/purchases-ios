@@ -39,6 +39,68 @@ class StackComponentViewModel {
 
     let badgeViewModels: [BadgeContents]
 
+    /// Skip hidden root siblings without changing visibility inside nested hero containers.
+    func firstVisibleMedia(
+        isStackVisible: (StackComponentViewModel) -> Bool, requireDirectZLayerMedia: Bool = false
+    ) -> ViewModelFactory.FirstMediaType? {
+        let firstIndex = requireDirectZLayerMedia
+            ? self.viewModels.indices.first : firstVisibleChildIndex(isStackVisible: isStackVisible)
+        guard isStackVisible(self), let index = firstIndex else {
+            return nil
+        }
+        if case .stack(let stack) = self.viewModels[index] {
+            // A newly exposed nested ZLayer must already inset its own overlay content.
+            if requireDirectZLayerMedia, case .zlayer = self.component.dimension { return nil }
+            let promotingHero = requireDirectZLayerMedia || index > 0
+            let media = stack.firstVisibleMedia(
+                isStackVisible: { !promotingHero || isStackVisible($0) },
+                requireDirectZLayerMedia: promotingHero
+            )
+            if media == nil && index > 0 { return self.firstVisibleMedia(isStackVisible: { _ in true }) }
+            return media
+        }
+        return directMediaType(at: index)
+    }
+
+    func safeAreaExemptChildIndex(isStackVisible: (StackComponentViewModel) -> Bool) -> Int? {
+        guard case .zlayer = self.component.dimension,
+              let index = firstVisibleChildIndex(isStackVisible: isStackVisible) else {
+            return nil
+        }
+        if directMediaType(at: index) != nil { return index }
+        if index > 0, case .stack(let stack) = self.viewModels[index],
+           stack.firstVisibleMedia(isStackVisible: isStackVisible, requireDirectZLayerMedia: true) != nil {
+            return index
+        }
+        return nil
+    }
+
+    private func firstVisibleChildIndex(isStackVisible: (StackComponentViewModel) -> Bool) -> Int? {
+        self.viewModels.firstIndex {
+            if case .stack(let stack) = $0 { return isStackVisible(stack) }
+            return true
+        }
+    }
+
+    private func directMediaType(at index: Int) -> ViewModelFactory.FirstMediaType? {
+        let components = self.component.components.filter {
+            if case .fallbackHeader = $0 { return false }
+            return true
+        }
+        // Copies used by tabs can replace the child view models without changing the component.
+        guard components.indices.contains(index) else { return nil }
+        switch (self.viewModels[index], components[index]) {
+        case (.image, .image(let image)):
+            return image.size.width.isFill ? .image : nil
+        case (.video, .video(let video)):
+            return video.size.width.isFill ? .video : nil
+        case (.webView, .webView(let webView)):
+            return webView.size.width.isFill ? .webView : nil
+        default:
+            return nil
+        }
+    }
+
     /// Whether this stack renders anything a screen reader can announce, at any depth.
     /// Anything uncertain counts as `true`, so a derived label never overrides wording that works.
     var containsAnnounceableContent: Bool {
@@ -70,9 +132,6 @@ class StackComponentViewModel {
         }
     }
 
-    let heroMediaNode: HeroMediaNode
-    private let offering: Offering?
-
     private let discardRules: Bool
 
     init(
@@ -80,19 +139,13 @@ class StackComponentViewModel {
         viewModels: [PaywallComponentViewModel],
         badgeViewModels: [BadgeContents],
         uiConfigProvider: UIConfigProvider,
-        discardRules: Bool = false,
-        offering: Offering? = nil
+        discardRules: Bool = false
     ) {
         self.component = component
         self.viewModels = viewModels
         self.uiConfigProvider = uiConfigProvider
         self.badgeViewModels = badgeViewModels
         self.discardRules = discardRules
-        self.offering = offering
-        self.heroMediaNode = HeroMediaNode(
-            component: .stack(component), discardRules: discardRules,
-            offering: offering, uiConfigProvider: uiConfigProvider
-        )
         self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
 
@@ -102,8 +155,7 @@ class StackComponentViewModel {
             viewModels: newViewModels,
             badgeViewModels: self.badgeViewModels,
             uiConfigProvider: self.uiConfigProvider,
-            discardRules: self.discardRules,
-            offering: self.offering
+            discardRules: self.discardRules
         )
     }
 
