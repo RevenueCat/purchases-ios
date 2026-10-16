@@ -52,7 +52,7 @@ final class PaywallViewConfigurationTests: TestCase {
             remoteConfigEnabled: true
         )).to(beNil())
         expect(handler.cachedInitialOffering(
-            for: .offeringIdentifier(cachedOffering.identifier, presentedOfferingContext: nil),
+            for: .offeringIdentifier(.init(cachedOffering.identifier), presentedOfferingContext: nil),
             remoteConfigEnabled: true
         )).to(beNil())
     }
@@ -95,7 +95,7 @@ final class PaywallViewConfigurationTests: TestCase {
             remoteConfigEnabled: false
         )?.identifier) == cachedOffering.identifier
         expect(handler.cachedInitialOffering(
-            for: .offeringIdentifier(cachedOffering.identifier, presentedOfferingContext: nil),
+            for: .offeringIdentifier(.init(cachedOffering.identifier), presentedOfferingContext: nil),
             remoteConfigEnabled: false
         )?.identifier) == cachedOffering.identifier
     }
@@ -197,7 +197,7 @@ final class PaywallViewConfigurationTests: TestCase {
             remoteConfigEnabled: false
         )
         let offeringIdentifierResult = try await handler.resolvePaywallViewData(
-            for: .offeringIdentifier(initialOffering.identifier, presentedOfferingContext: nil),
+            for: .offeringIdentifier(.init(initialOffering.identifier), presentedOfferingContext: nil),
             remoteConfigEnabled: false
         )
 
@@ -367,7 +367,7 @@ final class PaywallViewConfigurationTests: TestCase {
         purchases.cachedWorkflowBlock = { _ in cachedWorkflow }
 
         let result = handler.cachedInitialPaywallViewData(
-            for: .offeringIdentifier(fetchedOffering.identifier, presentedOfferingContext: nil),
+            for: .offeringIdentifier(.init(fetchedOffering.identifier), presentedOfferingContext: nil),
             remoteConfigEnabled: true
         )
 
@@ -426,7 +426,8 @@ final class PaywallViewConfigurationTests: TestCase {
         }
 
         let result = try await handler.resolvePaywallViewData(
-            for: .offeringIdentifier(initialOffering.identifier, presentedOfferingContext: presentedOfferingContext),
+            for: .offeringIdentifier(.init(initialOffering.identifier),
+                                     presentedOfferingContext: presentedOfferingContext),
             remoteConfigEnabled: true
         )
 
@@ -805,7 +806,7 @@ final class PaywallViewConfigurationTests: TestCase {
         }
 
         let result = try await handler.resolvePaywallViewData(
-            for: .offeringIdentifier(offering.identifier, presentedOfferingContext: presentedOfferingContext),
+            for: .offeringIdentifier(.init(offering.identifier), presentedOfferingContext: presentedOfferingContext),
             remoteConfigEnabled: true
         )
 
