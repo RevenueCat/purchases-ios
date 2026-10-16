@@ -360,6 +360,7 @@ class LocalTransactionMetadataStoreTests: TestCase {
         expect(retrieved?.productData?.price) == originalMetadata.productData?.price
         expect(retrieved?.originalPurchasesAreCompletedBy) == originalMetadata.originalPurchasesAreCompletedBy
         expect(retrieved?.transactionData.presentedOfferingContext?.checkpointIdentifier) == "checkout"
+        expect(retrieved?.transactionData.presentedOfferingContext?.traceID) == "trace"
     }
 
     func testMetadataDecodingSupportsRecordsWithoutCheckpointIdentifier() throws {
@@ -433,7 +434,7 @@ class LocalTransactionMetadataStoreTests: TestCase {
                 offeringIdentifier: "test_offering",
                 placementIdentifier: "test_placement",
                 targetingContext: nil
-            ).withCheckpointIdentifier("checkout"),
+            ).withCheckpointIdentifier("checkout", traceID: "trace"),
             presentedPaywall: nil,
             unsyncedAttributes: ["key": .init(attribute: .email, value: "test@example.com")],
             metadata: ["custom_key": "custom_value"],

@@ -736,6 +736,19 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         })
     }
 
+    func testTerminalOfferingWorkflowAttributesPackagesToTheHitTraceID() async throws {
+        self.stubOfferingWorkflow(offeringID: self.offeringID)
+
+        let resolved = try await self.resolveCheckpoint()
+        let offering = try XCTUnwrap(Self.resolvedOffering(resolved.resolution))
+        let hit = CheckpointEvent.Data(identifier: self.checkpointIdentifier, date: Date(), resolved: resolved)
+
+        XCTAssertTrue(offering.availablePackages.allSatisfy {
+            $0.presentedOfferingContext.traceID == resolved.traceID
+        })
+        XCTAssertEqual(hit.traceID, resolved.traceID)
+    }
+
     func testTerminalOfferingWorkflowReadsItsOfferingFromTheStep() async throws {
         let secondaryOffering = Self.offering(id: "secondary")
         self.offerings = Self.offerings([self.offering, secondaryOffering])
@@ -984,10 +997,17 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     }
 
     private static func offering(id: String) -> Offering {
+        let package = Package(
+            identifier: "$rc_monthly",
+            packageType: .monthly,
+            storeProduct: StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "monthly")),
+            offeringIdentifier: id,
+            webCheckoutUrl: nil
+        )
         return Offering(
             identifier: id,
             serverDescription: "Test offering",
-            availablePackages: [],
+            availablePackages: [package],
             webCheckoutUrl: nil
         )
     }

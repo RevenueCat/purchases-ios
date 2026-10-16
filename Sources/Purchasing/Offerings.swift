@@ -163,7 +163,7 @@ private extension Offering {
                 placementIdentifier: placementIdentifier ?? oldContext.placementIdentifier,
                 targetingContext: targeting.flatMap { .init(revision: $0.revision,
                                                             ruleId: $0.ruleId) } ?? oldContext.targetingContext
-            ).withCheckpointIdentifier(oldContext.checkpointIdentifier)
+            ).withCheckpointIdentifier(oldContext.checkpointIdentifier, traceID: oldContext.traceID)
 
             return Package(identifier: pkg.identifier,
                            packageType: pkg.packageType,

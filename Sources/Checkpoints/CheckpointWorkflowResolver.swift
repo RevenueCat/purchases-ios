@@ -45,15 +45,18 @@ struct ResolvedCheckpoint {
 
     let resolution: CheckpointResolution
     let checkpointRuleID: String?
-    /// The matched workflow's trace id, so the hit and the workflow run join on it. Fresh otherwise.
+    /// The matched workflow's or offering's trace id, so the hit and its purchases join on it. Fresh otherwise.
     let traceID: String
 
     init(_ resolution: CheckpointResolution, checkpointRuleID: String? = nil) {
         self.resolution = resolution
         self.checkpointRuleID = checkpointRuleID
-        if case let .matchedWorkflow(workflow) = resolution {
+        switch resolution {
+        case let .matchedWorkflow(workflow):
             self.traceID = workflow.traceId
-        } else {
+        case let .matchedOffering(offering):
+            self.traceID = offering.presentedOfferingContext?.traceID ?? UUID().uuidString
+        case .noAction:
             self.traceID = UUID().uuidString
         }
     }
@@ -331,7 +334,9 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             return .noAction(.configurationUnavailable)
         }
 
-        return .matchedOffering(match.offering.withPresentedCheckpointIdentifier(checkpointIdentifier))
+        return .matchedOffering(
+            match.offering.withPresentedCheckpointIdentifier(checkpointIdentifier, traceID: UUID().uuidString)
+        )
     }
 
     private func resolveWorkflow(workflowData: WorkflowDataResult) async -> CheckpointResolution {
