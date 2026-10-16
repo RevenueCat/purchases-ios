@@ -137,6 +137,8 @@ final class VerifiedRewardResultDispatcher: RewardedAdPromptResultDispatching {
 
     private let resultHandler: @MainActor (RewardedAdPromptVerificationResult) -> Void
     private var rewardWasEarned = false
+    private var hasDismissed = false
+    private var verificationResult: RewardVerificationResult?
     private var hasDeliveredResult = false
 
     init(onResult: @escaping @MainActor (RewardedAdPromptVerificationResult) -> Void) {
@@ -164,22 +166,35 @@ final class VerifiedRewardResultDispatcher: RewardedAdPromptResultDispatching {
     }
 
     func verificationCompleted(_ result: RewardVerificationResult) {
-        guard !self.hasDeliveredResult else { return }
+        guard !self.hasDeliveredResult, self.verificationResult == nil else { return }
 
-        self.hasDeliveredResult = true
-        self.resultHandler(.verificationCompleted(result))
+        self.verificationResult = result
+        self.deliverResultIfReady()
     }
 
     func dismissed() {
-        guard !self.hasDeliveredResult, !self.rewardWasEarned else { return }
-        self.hasDeliveredResult = true
-        self.resultHandler(.dismissed)
+        self.hasDismissed = true
+        self.deliverResultIfReady()
     }
 
     func notPresented(_ error: RewardedAdPromptError) {
         guard !self.hasDeliveredResult else { return }
         self.hasDeliveredResult = true
-        self.resultHandler(.notPresented(error))
+        DispatchQueue.main.async {
+            self.resultHandler(.notPresented(error))
+        }
+    }
+
+    private func deliverResultIfReady() {
+        guard self.hasDismissed, !self.hasDeliveredResult else { return }
+
+        if let verificationResult = self.verificationResult {
+            self.hasDeliveredResult = true
+            self.resultHandler(.verificationCompleted(verificationResult))
+        } else if !self.rewardWasEarned {
+            self.hasDeliveredResult = true
+            self.resultHandler(.dismissed)
+        }
     }
 
 }
@@ -189,6 +204,7 @@ final class VerifiedRewardResultDispatcher: RewardedAdPromptResultDispatching {
 final class UnverifiedRewardResultDispatcher: RewardedAdPromptResultDispatching {
 
     private let resultHandler: @MainActor (RewardedAdPromptUnverifiedResult) -> Void
+    private var rewardWasEarned = false
     private var hasDeliveredResult = false
 
     init(onResult: @escaping @MainActor (RewardedAdPromptUnverifiedResult) -> Void) {
@@ -209,21 +225,21 @@ final class UnverifiedRewardResultDispatcher: RewardedAdPromptResultDispatching 
     }
 
     func rewardEarned() {
-        guard !self.hasDeliveredResult else { return }
-        self.hasDeliveredResult = true
-        self.resultHandler(.rewardEarned)
+        self.rewardWasEarned = true
     }
 
     func dismissed() {
         guard !self.hasDeliveredResult else { return }
         self.hasDeliveredResult = true
-        self.resultHandler(.dismissed)
+        self.resultHandler(self.rewardWasEarned ? .rewardEarned : .dismissed)
     }
 
     func notPresented(_ error: RewardedAdPromptError) {
         guard !self.hasDeliveredResult else { return }
         self.hasDeliveredResult = true
-        self.resultHandler(.notPresented(error))
+        DispatchQueue.main.async {
+            self.resultHandler(.notPresented(error))
+        }
     }
 
 }

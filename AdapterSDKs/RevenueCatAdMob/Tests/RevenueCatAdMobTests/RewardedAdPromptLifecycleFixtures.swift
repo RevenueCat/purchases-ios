@@ -43,6 +43,7 @@ final class PromptLifecycleState: ObservableObject {
 final class PromptLifecycleProbe {
 
     var context: RewardedAdPromptContext?
+    var renderedConfigurations: [ConfiguredAdRewards?] = []
     var lastLabel: String?
     var appearances = 0
     var disappearances = 0
@@ -50,17 +51,19 @@ final class PromptLifecycleProbe {
     var acceptedCount = 0
     var shownPlacements: [String?] = []
     var acceptedPlacements: [String?] = []
-    var preparationCount = 0
+    var cachedRewardsReadCount = 0
     var resultLabels: [String] = []
     var renderedResultLabel: String?
-    var loadRewards: () async -> ConfiguredAdRewards? = { ConfiguredAdRewards() }
+    var cachedRewards: () -> ConfiguredAdRewards? = {
+        ConfiguredAdRewards(reward: nil, moreRewards: [])
+    }
 
     var dependencies: RewardedAdPromptDependencies {
         .init(
             isPurchasesConfigured: { true },
-            loadConfiguredRewards: { _ in
-                self.preparationCount += 1
-                return await self.loadRewards()
+            readCachedRewards: { _ in
+                self.cachedRewardsReadCount += 1
+                return self.cachedRewards()
             },
             trackPromptShown: { _, placement in
                 self.shownCount += 1
@@ -123,6 +126,7 @@ struct PromptLifecycleHost: View {
 
     private func content(_ context: RewardedAdPromptContext) -> some View {
         self.probe.context = context
+        self.probe.renderedConfigurations.append(context.rewardConfiguration)
         self.probe.lastLabel = self.state.label
         return Text(self.state.label)
             .onAppear { self.probe.appearances += 1 }

@@ -10,7 +10,7 @@ import UIKit
 @MainActor
 final class RewardedAdPromptModelTests: AdapterTestCase {
 
-    func testDoesNotPrepareWhenPurchasesIsNotConfigured() async {
+    func testDoesNotReadCacheWhenPurchasesIsNotConfigured() {
         var results: [RewardedAdPromptUnverifiedResult] = []
         let model = self.makeModel(
             resultDispatcherFactory: {
@@ -18,7 +18,7 @@ final class RewardedAdPromptModelTests: AdapterTestCase {
             },
             dependencies: .init(
                 isPurchasesConfigured: { false },
-                loadConfiguredRewards: { _ in
+                readCachedRewards: { _ in
                     XCTFail("Configured rewards should not load")
                     return nil
                 },
@@ -27,40 +27,40 @@ final class RewardedAdPromptModelTests: AdapterTestCase {
             )
         )
 
-        await model.prepareIfNeeded()
+        model.refreshCachedRewardsIfNeeded()
 
         XCTAssertNil(model.context)
         XCTAssertTrue(results.isEmpty)
     }
 
-    func testResolvesRewardsForSuppliedAdOnlyOnceWithoutEnablingVerification() async throws {
+    func testFirstContextContainsCachedRewardsWithoutEnablingVerification() throws {
         let rewards = Self.makeConfiguredRewards()
         let rewardedAd = MockRewardedAdPromptAd()
-        var preparationCount = 0
+        var cachedRewardsReadCount = 0
         let model = self.makeModel(ad: rewardedAd, dependencies: .init(
             isPurchasesConfigured: { true },
-            loadConfiguredRewards: { adUnitID in
+            readCachedRewards: { adUnitID in
                 XCTAssertEqual(adUnitID, rewardedAd.adUnitID)
-                preparationCount += 1
+                cachedRewardsReadCount += 1
                 return rewards
             },
             trackPromptShown: { _, _ in },
             trackPromptAccepted: { _, _ in }
         ))
 
-        await model.prepareIfNeeded()
-        await model.prepareIfNeeded()
-
-        XCTAssertEqual(preparationCount, 1)
         XCTAssertEqual(try XCTUnwrap(model.context).rewardConfiguration, rewards)
+        XCTAssertEqual(cachedRewardsReadCount, 1)
+        model.refreshCachedRewardsIfNeeded()
+        model.refreshCachedRewardsIfNeeded()
+        XCTAssertEqual(cachedRewardsReadCount, 1)
         XCTAssertEqual(rewardedAd.enableVerificationCallCount, 0)
         XCTAssertNil(rewardedAd.delegate)
     }
 
-    func testAllRewardMetadataStatesAllowVerifiedPresentation() async throws {
+    func testAllRewardMetadataStatesAllowVerifiedPresentation() throws {
         let states: [ConfiguredAdRewards?] = [
             nil,
-            ConfiguredAdRewards(),
+            ConfiguredAdRewards(reward: nil, moreRewards: []),
             Self.makeConfiguredRewards()
         ]
         for configuredRewards in states {
@@ -73,14 +73,14 @@ final class RewardedAdPromptModelTests: AdapterTestCase {
                 },
                 dependencies: .init(
                     isPurchasesConfigured: { true },
-                    loadConfiguredRewards: { _ in configuredRewards },
+                    readCachedRewards: { _ in configuredRewards },
                     trackPromptShown: { _, _ in },
                     trackPromptAccepted: { _, _ in }
                 )
             )
 
             XCTAssertNotNil(model.context)
-            await model.prepareIfNeeded()
+            model.refreshCachedRewardsIfNeeded()
             let context = try XCTUnwrap(model.context)
             XCTAssertEqual(context.rewardConfiguration, configuredRewards)
             XCTAssertTrue(results.isEmpty)
@@ -93,30 +93,31 @@ final class RewardedAdPromptModelTests: AdapterTestCase {
             XCTAssertEqual(rewardedAd.verificationEnabledPresentationCount, 1)
             rewardedAd.verificationStarted?()
             rewardedAd.verificationCompleted?(.verified(.noReward))
+            XCTAssertTrue(results.isEmpty)
+            rewardedAd.delegate?.adDidDismissFullScreenContent?(PresentedAdStub())
             XCTAssertEqual(results.count, 1)
             XCTAssertEqual(results.first?.rewardVerificationResult, .verified(.noReward))
         }
     }
 
-    func testLaterCacheReadCanResolveRewardsAndPresentSameSuppliedAd() async throws {
+    func testLaterCacheReadCanResolveRewardsAndPresentSameSuppliedAd() throws {
         let rewardedAd = MockRewardedAdPromptAd()
-        var preparationCount = 0
+        var cachedRewardsReadCount = 0
         let model = self.makeModel(ad: rewardedAd, dependencies: .init(
             isPurchasesConfigured: { true },
-            loadConfiguredRewards: { _ in
-                preparationCount += 1
-                return preparationCount == 1 ? nil : Self.makeConfiguredRewards()
+            readCachedRewards: { _ in
+                cachedRewardsReadCount += 1
+                return cachedRewardsReadCount == 1 ? nil : Self.makeConfiguredRewards()
             },
             trackPromptShown: { _, _ in },
             trackPromptAccepted: { _, _ in }
         ))
 
-        await model.prepareIfNeeded()
         XCTAssertNil(model.context?.rewardConfiguration)
         XCTAssertNotNil(model.context)
-        await model.prepareIfNeeded()
+        model.refreshCachedRewardsIfNeeded()
 
-        XCTAssertEqual(preparationCount, 2)
+        XCTAssertEqual(cachedRewardsReadCount, 2)
         let window = RewardedAdPromptTestWindow(rootViewController: UIViewController())
         defer { window.isHidden = true }
         model.setPresentationAnchor(try XCTUnwrap(window.rootViewController))
@@ -124,42 +125,7 @@ final class RewardedAdPromptModelTests: AdapterTestCase {
         XCTAssertEqual(rewardedAd.verificationDisabledPresentationCount, 1)
     }
 
-    func testCancelledCacheReadCanResumeWithoutChangingAvailability() async {
-        let rewardedAd = MockRewardedAdPromptAd()
-        let started = expectation(description: "Preparation started")
-        var continuation: CheckedContinuation<ConfiguredAdRewards?, Never>?
-        var preparationCount = 0
-        let model = self.makeModel(ad: rewardedAd, dependencies: .init(
-            isPurchasesConfigured: { true },
-            loadConfiguredRewards: { _ in
-                preparationCount += 1
-                if preparationCount == 1 {
-                    return await withCheckedContinuation {
-                        continuation = $0
-                        started.fulfill()
-                    }
-                }
-                return Self.makeConfiguredRewards()
-            },
-            trackPromptShown: { _, _ in },
-            trackPromptAccepted: { _, _ in }
-        ))
-
-        let preparation = Task { await model.prepareIfNeeded() }
-        await self.fulfillment(of: [started], timeout: 1)
-        preparation.cancel()
-        continuation?.resume(returning: Self.makeConfiguredRewards())
-        await preparation.value
-        XCTAssertNotNil(model.context)
-        XCTAssertNil(model.context?.rewardConfiguration)
-
-        await model.prepareIfNeeded()
-
-        XCTAssertEqual(preparationCount, 2)
-        XCTAssertNotNil(model.context)
-    }
-
-    func testTracksShownAndAcceptedOnceAndPresentsVerificationEnabledAd() async throws {
+    func testTracksShownAndAcceptedOnceAndPresentsVerificationEnabledAd() throws {
         let rewardedAd = MockRewardedAdPromptAd()
         var shownEvents: [(String, String?)] = []
         var acceptedEvents: [(String, String?)] = []
@@ -171,13 +137,13 @@ final class RewardedAdPromptModelTests: AdapterTestCase {
             },
             dependencies: .init(
                 isPurchasesConfigured: { true },
-                loadConfiguredRewards: { _ in Self.makeConfiguredRewards() },
+                readCachedRewards: { _ in Self.makeConfiguredRewards() },
                 trackPromptShown: { shownEvents.append(($0, $1)) },
                 trackPromptAccepted: { acceptedEvents.append(($0, $1)) }
             )
         )
 
-        await model.prepareIfNeeded()
+        model.refreshCachedRewardsIfNeeded()
         model.promptDidAppear()
         model.promptDidAppear()
         let window = RewardedAdPromptTestWindow(rootViewController: UIViewController())
@@ -196,7 +162,7 @@ final class RewardedAdPromptModelTests: AdapterTestCase {
         XCTAssertEqual(acceptedEvents.first?.1, "placement")
         XCTAssertTrue(model.hasAccepted)
         XCTAssertNil(model.context)
-        XCTAssertTrue(rewardedAd.delegate === model)
+        XCTAssertNotNil(rewardedAd.delegate)
         XCTAssertEqual(rewardedAd.enableVerificationCallCount, 1)
         XCTAssertEqual(rewardedAd.verificationEnabledPresentationCount, 1)
         XCTAssertEqual(rewardedAd.disableVerificationCallCount, 0)
@@ -205,11 +171,14 @@ final class RewardedAdPromptModelTests: AdapterTestCase {
         rewardedAd.verificationStarted?()
         rewardedAd.verificationCompleted?(.failed)
 
+        XCTAssertTrue(results.isEmpty)
+        rewardedAd.delegate?.adDidDismissFullScreenContent?(PresentedAdStub())
+
         XCTAssertEqual(results.count, 1)
         XCTAssertEqual(results.first?.kind, .verificationCompleted)
     }
 
-    func testVerificationDisabledResultOverridesPreviouslyEnabledVerification() async throws {
+    func testVerificationDisabledResultOverridesPreviouslyEnabledVerification() throws {
         let rewardedAd = MockRewardedAdPromptAd()
         rewardedAd.enableRewardVerification()
         var results: [RewardedAdPromptUnverifiedResult] = []
@@ -220,20 +189,20 @@ final class RewardedAdPromptModelTests: AdapterTestCase {
             },
             dependencies: .init(
                 isPurchasesConfigured: { true },
-                loadConfiguredRewards: { _ in Self.makeConfiguredRewards() },
+                readCachedRewards: { _ in Self.makeConfiguredRewards() },
                 trackPromptShown: { _, _ in },
                 trackPromptAccepted: { _, _ in }
             )
         )
 
-        await model.prepareIfNeeded()
+        model.refreshCachedRewardsIfNeeded()
         XCTAssertTrue(rewardedAd.isRewardVerificationEnabled)
         let window = RewardedAdPromptTestWindow(rootViewController: UIViewController())
         defer { window.isHidden = true }
         model.setPresentationAnchor(try XCTUnwrap(window.rootViewController))
         try XCTUnwrap(model.context).accept()
 
-        XCTAssertTrue(rewardedAd.delegate === model)
+        XCTAssertNotNil(rewardedAd.delegate)
         XCTAssertEqual(rewardedAd.enableVerificationCallCount, 1)
         XCTAssertEqual(rewardedAd.disableVerificationCallCount, 1)
         XCTAssertFalse(rewardedAd.isRewardVerificationEnabled)
@@ -242,15 +211,25 @@ final class RewardedAdPromptModelTests: AdapterTestCase {
 
         rewardedAd.rewardEarned?()
 
+        XCTAssertTrue(results.isEmpty)
+        rewardedAd.delegate?.adDidDismissFullScreenContent?(PresentedAdStub())
+
         XCTAssertEqual(results.count, 1)
         XCTAssertEqual(results.first?.kind, .rewardEarned)
     }
 
-    func testVerifiedPresentationFailureDoesNotReturnToPreparation() async throws {
+    func testVerifiedPresentationFailureDoesNotReadCacheAgain() async throws {
+        let delivered = self.expectation(description: "Presentation failure delivered")
         var results: [RewardedAdPromptVerificationResult] = []
-        let underlyingError = try await self.assertPresentationFailureDoesNotReturnToPreparation {
-            VerifiedRewardResultDispatcher(onResult: { results.append($0) })
+        let underlyingError = try self.assertPresentationFailureDoesNotReadCacheAgain {
+            VerifiedRewardResultDispatcher(onResult: {
+                results.append($0)
+                delivered.fulfill()
+            })
         }
+
+        XCTAssertTrue(results.isEmpty)
+        await self.fulfillment(of: [delivered], timeout: 1)
 
         XCTAssertEqual(results.count, 1)
         let result = try XCTUnwrap(results.first)
@@ -259,11 +238,18 @@ final class RewardedAdPromptModelTests: AdapterTestCase {
         XCTAssertNil(result.rewardVerificationResult)
     }
 
-    func testUnverifiedPresentationFailureDoesNotReturnToPreparation() async throws {
+    func testUnverifiedPresentationFailureDoesNotReadCacheAgain() async throws {
+        let delivered = self.expectation(description: "Presentation failure delivered")
         var results: [RewardedAdPromptUnverifiedResult] = []
-        let underlyingError = try await self.assertPresentationFailureDoesNotReturnToPreparation {
-            UnverifiedRewardResultDispatcher(onResult: { results.append($0) })
+        let underlyingError = try self.assertPresentationFailureDoesNotReadCacheAgain {
+            UnverifiedRewardResultDispatcher(onResult: {
+                results.append($0)
+                delivered.fulfill()
+            })
         }
+
+        XCTAssertTrue(results.isEmpty)
+        await self.fulfillment(of: [delivered], timeout: 1)
 
         XCTAssertEqual(results.count, 1)
         let result = try XCTUnwrap(results.first)
@@ -275,57 +261,20 @@ final class RewardedAdPromptModelTests: AdapterTestCase {
 
 @available(iOS 15.0, *)
 @MainActor
-extension RewardedAdPromptModelTests {
-
-    func testPromptCanBeAcceptedWhileCachedMetadataReadIsPending() async throws {
-        let rewardedAd = MockRewardedAdPromptAd()
-        let started = expectation(description: "Cache read started")
-        var continuation: CheckedContinuation<ConfiguredAdRewards?, Never>?
-        let model = self.makeModel(ad: rewardedAd, dependencies: .init(
-            isPurchasesConfigured: { true },
-            loadConfiguredRewards: { _ in
-                await withCheckedContinuation {
-                    continuation = $0
-                    started.fulfill()
-                }
-            },
-            trackPromptShown: { _, _ in },
-            trackPromptAccepted: { _, _ in }
-        ))
-        let preparation = Task { await model.prepareIfNeeded() }
-        await self.fulfillment(of: [started], timeout: 1)
-
-        let context = try XCTUnwrap(model.context)
-        XCTAssertNil(context.rewardConfiguration)
-        let window = RewardedAdPromptTestWindow(rootViewController: UIViewController())
-        defer { window.isHidden = true }
-        model.setPresentationAnchor(try XCTUnwrap(window.rootViewController))
-        context.accept()
-
-        XCTAssertEqual(rewardedAd.verificationDisabledPresentationCount, 1)
-        continuation?.resume(returning: Self.makeConfiguredRewards())
-        await preparation.value
-        XCTAssertNil(model.context)
-    }
-
-}
-
-@available(iOS 15.0, *)
-@MainActor
 private extension RewardedAdPromptModelTests {
 
-    func assertPresentationFailureDoesNotReturnToPreparation(
+    func assertPresentationFailureDoesNotReadCacheAgain(
         resultDispatcherFactory: @escaping @MainActor () -> any RewardedAdPromptResultDispatching
-    ) async throws -> NSError {
+    ) throws -> NSError {
         let rewardedAd = MockRewardedAdPromptAd()
-        var preparationCount = 0
+        var cachedRewardsReadCount = 0
         let model = self.makeModel(
             ad: rewardedAd,
             resultDispatcherFactory: resultDispatcherFactory,
             dependencies: .init(
                 isPurchasesConfigured: { true },
-                loadConfiguredRewards: { _ in
-                    preparationCount += 1
+                readCachedRewards: { _ in
+                    cachedRewardsReadCount += 1
                     return Self.makeConfiguredRewards()
                 },
                 trackPromptShown: { _, _ in },
@@ -333,7 +282,7 @@ private extension RewardedAdPromptModelTests {
             )
         )
 
-        await model.prepareIfNeeded()
+        model.refreshCachedRewardsIfNeeded()
         let window = RewardedAdPromptTestWindow(rootViewController: UIViewController())
         defer { window.isHidden = true }
         model.setPresentationAnchor(try XCTUnwrap(window.rootViewController))
@@ -348,11 +297,11 @@ private extension RewardedAdPromptModelTests {
         rewardedAd.rewardEarned?()
         rewardedAd.verificationCompleted?(.failed)
         context.accept()
-        await model.prepareIfNeeded()
+        model.refreshCachedRewardsIfNeeded()
 
         XCTAssertTrue(model.hasAccepted)
         XCTAssertNil(model.context)
-        XCTAssertEqual(preparationCount, 1)
+        XCTAssertEqual(cachedRewardsReadCount, 1)
         XCTAssertEqual(
             rewardedAd.verificationEnabledPresentationCount + rewardedAd.verificationDisabledPresentationCount,
             1
