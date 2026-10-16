@@ -1053,6 +1053,183 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("30%"))
     }
 
+    // MARK: - Discount variables
+
+    func testOfferDiscountsVsStandardProrateAFreeTrialOverTheFirstYear() {
+        let package = discountTestPackage(
+            price: 59.99,
+            period: .init(value: 1, unit: .year),
+            packageType: .annual,
+            offer: .init(paymentMode: .freeTrial, price: 0, period: .init(value: 1, unit: .week), periods: 1)
+        )
+
+        // 59.99 - 59.99 * 358 / 365 = 1.15
+        expect(self.discountVariable("product.offer_absolute_discount_vs_standard", package)).to(equal("$1.15"))
+        expect(self.discountVariable("product.offer_relative_discount_vs_standard", package)).to(equal("2%"))
+    }
+
+    func testOfferDiscountsVsMostExpensiveIncludeTheOfferInTheFirstYear() {
+        let package = discountTestPackage(
+            price: 59.99,
+            period: .init(value: 1, unit: .year),
+            packageType: .annual,
+            offer: .init(paymentMode: .freeTrial, price: 0, period: .init(value: 1, unit: .week), periods: 1)
+        )
+
+        // 9.99 * 12 - 59.99 * 358 / 365 = 61.04
+        expect(self.discountVariable("product.offer_absolute_discount", package, mostExpensive: 9.99))
+            .to(equal("$61.04"))
+        expect(self.discountVariable("product.offer_relative_discount", package, mostExpensive: 9.99))
+            .to(equal("51%"))
+    }
+
+    func testAbsoluteDiscountComparesTheStandardPriceWithTheMostExpensiveOverTheProductPeriod() {
+        let package = discountTestPackage(
+            price: 59.99,
+            period: .init(value: 1, unit: .year),
+            packageType: .annual,
+            offer: .init(paymentMode: .freeTrial, price: 0, period: .init(value: 1, unit: .week), periods: 1)
+        )
+
+        // 9.99 * 12 - 59.99, ignoring the offer
+        expect(self.discountVariable("product.absolute_discount", package, mostExpensive: 9.99)).to(equal("$59.89"))
+    }
+
+    func testOfferDiscountsCountOnlyTheFirstPeriodOfAPayAsYouGoOffer() {
+        let package = discountTestPackage(
+            price: 9.99,
+            period: .init(value: 1, unit: .month),
+            packageType: .monthly,
+            offer: .init(paymentMode: .payAsYouGo, price: 4.99, period: .init(value: 1, unit: .month), periods: 3)
+        )
+
+        expect(self.discountVariable("product.offer_absolute_discount_vs_standard", package)).to(equal("$5.00"))
+        expect(self.discountVariable("product.offer_relative_discount_vs_standard", package)).to(equal("50%"))
+    }
+
+    func testOfferDiscountsProrateAPayUpFrontOfferLongerThanThePeriod() {
+        let package = discountTestPackage(
+            price: 9.99,
+            period: .init(value: 1, unit: .month),
+            packageType: .monthly,
+            offer: .init(paymentMode: .payUpFront, price: 19.99, period: .init(value: 3, unit: .month), periods: 1)
+        )
+
+        // 9.99 - 19.99 / 3
+        expect(self.discountVariable("product.offer_absolute_discount_vs_standard", package)).to(equal("$3.33"))
+    }
+
+    func testOfferDiscountsChargeTheRegularPriceForThePeriodAfterAShortOffer() {
+        let package = discountTestPackage(
+            price: 9.99,
+            period: .init(value: 1, unit: .month),
+            packageType: .monthly,
+            offer: .init(paymentMode: .freeTrial, price: 0, period: .init(value: 1, unit: .week), periods: 1)
+        )
+
+        // 9.99 * 7 / 30
+        expect(self.discountVariable("product.offer_absolute_discount_vs_standard", package)).to(equal("$2.33"))
+    }
+
+    func testAbsoluteDiscountsDropTrailingZerosWhenConfigured() {
+        let package = discountTestPackage(
+            price: 9.99,
+            period: .init(value: 1, unit: .month),
+            packageType: .monthly,
+            offer: .init(paymentMode: .payAsYouGo, price: 4.99, period: .init(value: 1, unit: .month), periods: 3)
+        )
+
+        expect(self.discountVariable(
+            "product.offer_absolute_discount_vs_standard",
+            package,
+            showZeroDecimalPlacePrices: true
+        )).to(equal("$5"))
+    }
+
+    func testOfferDiscountsAreEmptyWhenNotEligibleForTheOffer() {
+        let package = discountTestPackage(
+            price: 59.99,
+            period: .init(value: 1, unit: .year),
+            packageType: .annual,
+            offer: .init(paymentMode: .freeTrial, price: 0, period: .init(value: 1, unit: .week), periods: 1)
+        )
+
+        for variable in [
+            "product.offer_relative_discount",
+            "product.offer_absolute_discount",
+            "product.offer_relative_discount_vs_standard",
+            "product.offer_absolute_discount_vs_standard"
+        ] {
+            expect(self.discountVariable(variable, package, mostExpensive: 9.99, isEligibleForIntroOffer: false))
+                .to(equal(""), description: variable)
+        }
+        expect(self.discountVariable(
+            "product.absolute_discount",
+            package,
+            mostExpensive: 9.99,
+            isEligibleForIntroOffer: false
+        )).to(equal("$59.89"))
+    }
+
+    func testDiscountsVsMostExpensiveAreEmptyWithoutAMostExpensivePrice() {
+        let package = discountTestPackage(
+            price: 59.99,
+            period: .init(value: 1, unit: .year),
+            packageType: .annual,
+            offer: .init(paymentMode: .freeTrial, price: 0, period: .init(value: 1, unit: .week), periods: 1)
+        )
+
+        expect(self.discountVariable("product.offer_relative_discount", package)).to(equal(""))
+        expect(self.discountVariable("product.offer_absolute_discount", package)).to(equal(""))
+        expect(self.discountVariable("product.absolute_discount", package)).to(equal(""))
+    }
+
+    func testAbsoluteDiscountIsEmptyForTheMostExpensiveProduct() {
+        let package = discountTestPackage(
+            price: 9.99,
+            period: .init(value: 1, unit: .month),
+            packageType: .monthly,
+            offer: nil
+        )
+
+        expect(self.discountVariable("product.absolute_discount", package, mostExpensive: 9.99)).to(equal(""))
+    }
+
+    func testDiscountVariablesAreEmptyForLifetime() {
+        for variable in [
+            "product.absolute_discount",
+            "product.offer_relative_discount",
+            "product.offer_absolute_discount",
+            "product.offer_relative_discount_vs_standard",
+            "product.offer_absolute_discount_vs_standard"
+        ] {
+            expect(self.discountVariable(variable, TestData.lifetimePackage, mostExpensive: 9.99))
+                .to(equal(""), description: variable)
+        }
+    }
+
+    private func discountVariable(
+        _ variable: String,
+        _ package: Package,
+        mostExpensive: Double? = nil,
+        isEligibleForIntroOffer: Bool = true,
+        showZeroDecimalPlacePrices: Bool = false
+    ) -> String {
+        return VariableHandlerV2(
+            variableCompatibilityMap: Self.variableMapping,
+            functionCompatibilityMap: Self.functionMapping,
+            discountRelativeToMostExpensivePerMonth: nil,
+            mostExpensivePricePerMonth: mostExpensive,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+        ).processVariables(
+            in: "{{ \(variable) }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: isEligibleForIntroOffer
+        )
+    }
+
     func testFunctionUppercase() {
         let result = variableHandler.processVariables(
             in: "{{ product.period | uppercase }}",
@@ -2429,6 +2606,53 @@ class CustomVariableValueTests: TestCase {
         expect(stringDict["premium"]).to(equal("true"))
     }
 
+}
+
+private struct DiscountTestOffer {
+
+    let paymentMode: StoreProductDiscount.PaymentMode
+    let price: Decimal
+    let period: SubscriptionPeriod
+    let periods: Int
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private func discountTestPackage(
+    price: Decimal,
+    period: SubscriptionPeriod,
+    packageType: PackageType,
+    offer: DiscountTestOffer?
+) -> Package {
+    return Package(
+        identifier: packageType.identifier,
+        packageType: packageType,
+        storeProduct: TestStoreProduct(
+            localizedTitle: "Pro",
+            price: price,
+            currencyCode: "USD",
+            localizedPriceString: "$\(price)",
+            productIdentifier: "com.revenuecat.product.discount_variables",
+            productType: .autoRenewableSubscription,
+            localizedDescription: "PRO",
+            subscriptionGroupIdentifier: "group",
+            subscriptionPeriod: period,
+            introductoryDiscount: offer.map {
+                .init(
+                    identifier: "intro",
+                    price: $0.price,
+                    localizedPriceString: "$\($0.price)",
+                    paymentMode: $0.paymentMode,
+                    subscriptionPeriod: $0.period,
+                    numberOfPeriods: $0.periods,
+                    type: .introductory
+                )
+            },
+            locale: Locale(identifier: "en_US")
+        ).toStoreProduct(),
+        offeringIdentifier: "offering",
+        webCheckoutUrl: nil
+    )
 }
 
 /// Product whose displayed price uses "$" but whose formatter locale (ro_RO) renders USD as "2,00 USD".
