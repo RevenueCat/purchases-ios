@@ -529,7 +529,7 @@ final class PurchasesOrchestrator {
                  winBackOffer: winBackOffer,
                  introductoryOfferEligibilityJWS: introductoryOfferEligibilityJWS,
                  promotionalOfferOptions: promotionalOfferOptions,
-                 storeKit2ConfirmInOptions: params.storeKit2ConfirmInOptions,
+                 presentationContext: params.presentationContext,
                  metadata: metadata,
                  quantity: params.quantity,
                  trackDiagnostics: trackDiagnostics,
@@ -543,7 +543,7 @@ final class PurchasesOrchestrator {
                   winBackOffer: WinBackOffer? = nil,
                   introductoryOfferEligibilityJWS: String? = nil,
                   promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions? = nil,
-                  storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions? = nil,
+                  presentationContext: PresentationContext? = nil,
                   metadata: [String: String]? = nil,
                   paywallEvent: PaywallEvent? = nil,
                   quantity: Int? = nil,
@@ -594,7 +594,7 @@ final class PurchasesOrchestrator {
                           introductoryOfferEligibilityJWS: introductoryOfferEligibilityJWS,
                           billingPlanType: billingPlanType,
                           promotionalOfferOptions: promotionalOfferOptions,
-                          storeKit2ConfirmInOptions: storeKit2ConfirmInOptions,
+                          presentationContext: presentationContext,
                           metadata: metadata,
                           paywallEvent: paywallEvent,
                           quantity: quantity,
@@ -724,7 +724,7 @@ final class PurchasesOrchestrator {
                   introductoryOfferEligibilityJWS: String?,
                   billingPlanType: BillingPlanType?,
                   promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?,
-                  storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions?,
+                  presentationContext: PresentationContext?,
                   metadata: [String: String]? = nil,
                   paywallEvent: PaywallEvent? = nil,
                   quantity: Int? = nil,
@@ -742,7 +742,7 @@ final class PurchasesOrchestrator {
                     metadata: metadata,
                     paywallEvent: paywallEvent,
                     quantity: quantity,
-                    storeKit2ConfirmInOptions: storeKit2ConfirmInOptions
+                    presentationContext: presentationContext
                 )
 
                 if !result.userCancelled {
@@ -784,7 +784,7 @@ final class PurchasesOrchestrator {
                   metadata: [String: String]? = nil,
                   paywallEvent: PaywallEvent? = nil,
                   quantity: Int? = nil,
-                  storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions? = nil) async throws -> PurchaseResultData {
+                  presentationContext: PresentationContext? = nil) async throws -> PurchaseResultData {
         // Run the purchase + receipt post as a task that a concurrent queue-initiated receipt post for
         // the same product can await, so the attributed purchase post reaches the backend first. The
         // task only starts once registered, so a transaction reaching `Transaction.updates`
@@ -801,7 +801,7 @@ final class PurchasesOrchestrator {
                 metadata: metadata,
                 paywallEvent: paywallEvent,
                 quantity: quantity,
-                storeKit2ConfirmInOptions: storeKit2ConfirmInOptions
+                presentationContext: presentationContext
             )
         }
 
@@ -838,7 +838,7 @@ final class PurchasesOrchestrator {
         metadata: [String: String]? = nil,
         paywallEvent: PaywallEvent? = nil,
         quantity: Int? = nil,
-        storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions? = nil
+        presentationContext: PresentationContext? = nil
     ) async throws -> PurchaseResultData {
         let result: Product.PurchaseResult
         var options: Set<Product.PurchaseOption> = [.simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)]
@@ -938,7 +938,7 @@ final class PurchasesOrchestrator {
             result = try await self.storeKit2ProductPurchaser.purchase(
                 product: sk2Product,
                 options: options,
-                storeKit2ConfirmInOptions: storeKit2ConfirmInOptions
+                presentationContext: presentationContext
             )
 
             // The `purchase(sk2Product)` call can throw a `StoreKitError.userCancelled` error.
