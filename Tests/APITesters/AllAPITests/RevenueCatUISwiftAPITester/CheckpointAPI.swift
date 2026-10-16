@@ -44,10 +44,26 @@ func checkCheckpointAPI(_ purchases: Purchases) {
 
     let entitlement: ObtainedEntitlement? = nil
     let _: EntitlementInfo? = entitlement?.entitlementInfo
+    let product: ObtainedProduct? = nil
+    let _: StoreProduct? = product?.product
 }
 
 private func checkCheckpointResultAPI(_ result: CheckpointResult) {
     let _: FlowResult? = result.flow
+    let _: CustomerInfo? = result.customerInfo
+    let _: ObtainedEntitlement? = result.obtainedEntitlement("pro")
+    let _: Bool = result.didObtainEntitlement("pro")
+    let _: ObtainedProduct? = result.obtainedProduct("monthly")
+    let _: Bool = result.didObtainProduct("monthly")
+}
+
+private func checkFlowResultAPI(_ result: FlowResult) {
+    let _: Set<ObtainedEntitlement> = result.obtainedEntitlements
+    let _: Set<ObtainedProduct> = result.obtainedProducts
+    let _: ObtainedEntitlement? = result.obtainedEntitlement("pro")
+    let _: Bool = result.didObtainEntitlement("pro")
+    let _: ObtainedProduct? = result.obtainedProduct("monthly")
+    let _: Bool = result.didObtainProduct("monthly")
 }
 
 private func checkFlowResultAPI(_ result: FlowResult) {

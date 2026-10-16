@@ -15,6 +15,55 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
+/// The result of completing a checkpoint flow.
+@_spi(InviteOnlyCheckpointsApi)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public struct FlowResult: @unchecked Sendable {
+
+    /// Active entitlements present after the flow that were not active in cached customer information before it began.
+    ///
+    /// The SDK compares the final customer information with the customer information cached before presenting the
+    /// flow. When no cached customer information is available, this can include entitlements that were already active
+    /// or were obtained from another source.
+    public let obtainedEntitlements: Set<ObtainedEntitlement>
+
+    /// Products newly observed after the flow completed.
+    ///
+    /// The SDK compares the final customer information with the customer information cached before presenting the
+    /// flow. When no cached customer information is available, this can include products that were previously
+    /// purchased or restored.
+    public let obtainedProducts: Set<ObtainedProduct>
+
+    init(
+        obtainedEntitlements: Set<ObtainedEntitlement> = [],
+        obtainedProducts: Set<ObtainedProduct> = []
+    ) {
+        self.obtainedEntitlements = obtainedEntitlements
+        self.obtainedProducts = obtainedProducts
+    }
+
+    /// Returns the entitlement with `identifier` that was obtained while the flow was presented.
+    public func obtainedEntitlement(_ identifier: String) -> ObtainedEntitlement? {
+        return self.obtainedEntitlements.first { $0.entitlementInfo.identifier == identifier }
+    }
+
+    /// Returns whether the entitlement with `identifier` was obtained while the flow was presented.
+    public func didObtainEntitlement(_ identifier: String) -> Bool {
+        return self.obtainedEntitlement(identifier) != nil
+    }
+
+    /// Returns the product with `identifier` that was newly observed after the flow completed.
+    public func obtainedProduct(_ identifier: String) -> ObtainedProduct? {
+        return self.obtainedProducts.first { $0.product.productIdentifier == identifier }
+    }
+
+    /// Returns whether the product with `identifier` was newly observed after the flow completed.
+    public func didObtainProduct(_ identifier: String) -> Bool {
+        return self.obtainedProduct(identifier) != nil
+    }
+
+}
+
 /// An active entitlement reported after completing a checkpoint flow.
 @_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -39,20 +88,26 @@ public struct ObtainedEntitlement: Hashable, @unchecked Sendable {
 
 }
 
-/// The result of completing a checkpoint flow.
+/// A product newly observed after completing a checkpoint flow.
 @_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public struct FlowResult: @unchecked Sendable {
+public struct ObtainedProduct: Hashable, @unchecked Sendable {
 
-    /// Active entitlements present after the flow that were not active in cached customer information before it began.
-    ///
-    /// The SDK compares the final customer information with the customer information cached before presenting the
-    /// flow. When no cached customer information is available, this can include entitlements that were already active
-    /// or were obtained from another source.
-    public let obtainedEntitlements: Set<ObtainedEntitlement>
+    /// The product observed after completing the flow.
+    public let product: StoreProduct
 
-    init(obtainedEntitlements: Set<ObtainedEntitlement> = []) {
-        self.obtainedEntitlements = obtainedEntitlements
+    init(product: StoreProduct) {
+        self.product = product
+    }
+
+    /// Returns whether two obtained products represent the same product identifier.
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        return lhs.product.productIdentifier == rhs.product.productIdentifier
+    }
+
+    /// Hashes the product identifier.
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.product.productIdentifier)
     }
 
 }
@@ -75,6 +130,27 @@ extension CustomerInfo {
         comparedTo initialActiveEntitlementIdentifiers: Set<String>?
     ) -> Bool {
         return !self.obtainedEntitlements(comparedTo: initialActiveEntitlementIdentifiers).isEmpty
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func obtainedProducts(
+        comparedTo initialCustomerInfo: CustomerInfo?,
+        from availableProducts: [StoreProduct]
+    ) -> [ObtainedProduct] {
+        let productsByIdentifier = Dictionary(
+            availableProducts.map { ($0.productIdentifier, $0) },
+            uniquingKeysWith: { first, _ in first }
+        )
+
+        return productsByIdentifier.values.compactMap { product in
+            let identifier = product.productIdentifier
+            guard let purchaseDate = self.purchaseDate(forProductIdentifier: identifier),
+                  purchaseDate != initialCustomerInfo?.purchaseDate(forProductIdentifier: identifier) else {
+                return nil
+            }
+
+            return ObtainedProduct(product: product)
+        }
     }
 
 }
