@@ -1,0 +1,36 @@
+# The checkpoint presents a real offering paywall. Closing it completes the presentation and invokes the injected
+# customer-info synchronizer, whose failure is shown by the default checkpoint error presenter.
+
+appId: com.revenuecat.maestro.ios
+name: Completed offering with failed result synchronization uses the default checkpoint error presenter
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+- pressKey: home
+- launchApp:
+    arguments:
+      e2e_test_flow: checkpoint_result_sync_failure
+- extendedWaitUntil:
+    visible: "Hit checkpoint"
+    timeout: 15000
+- tapOn: "Hit checkpoint"
+
+- extendedWaitUntil:
+    visible: "Ignite your child's curiosity"
+    timeout: 20000
+- swipe:
+    start: "50%,10%"
+    end: "50%,90%"
+    duration: 600
+
+- extendedWaitUntil:
+    visible: "Your purchases couldn't be verified. Please try again later."
+    timeout: 15000
+- takeScreenshot: "checkpoint_result_sync_failure - error"
+- tapOn: "OK"
+
+- extendedWaitUntil:
+    visible: "Callback: none (call #1)"
+    timeout: 15000

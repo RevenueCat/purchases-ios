@@ -62,6 +62,10 @@ enum Constants {
         UserDefaults.standard.string(forKey: "app_user_id")
     }
 
+    static var preferredUILocale: String? {
+        UserDefaults.standard.string(forKey: "app_locale")
+    }
+
     /*
      The API base URL to configure SystemInfo with
      To be used in (e2e) tests in order to test against different environments

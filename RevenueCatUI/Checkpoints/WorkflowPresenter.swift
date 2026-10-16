@@ -12,7 +12,7 @@
 //  Created by Rick van der Linden.
 //
 
-// swiftlint:disable file_length
+// swiftlint:disable file_length type_body_length
 
 import Foundation
 @_spi(Internal) import RevenueCat
@@ -100,13 +100,21 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
     }
 
     private let presentationStarter: PresentationStarter?
+    private let performPurchase: PerformPurchase?
+    private let performRestore: PerformRestore?
     private var presentationState: PresentationState?
     private var pendingContinuation: Continuation?
     private weak var presentedViewController: PaywallViewController?
     private var activeErrorPresentation: ActiveErrorPresentation?
 
-    init(presentationStarter: PresentationStarter? = nil) {
+    init(
+        presentationStarter: PresentationStarter? = nil,
+        performPurchase: PerformPurchase? = nil,
+        performRestore: PerformRestore? = nil
+    ) {
         self.presentationStarter = presentationStarter
+        self.performPurchase = performPurchase
+        self.performRestore = performRestore
         super.init()
     }
 
@@ -283,6 +291,8 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         let viewController = PaywallViewController(
             workflowContext: workflowContext,
             displayCloseButton: true,
+            performPurchase: self.performPurchase,
+            performRestore: self.performRestore,
             workflowPresentationErrorHandler: { [weak self] error, behavior in
                 guard let self else { return }
                 switch behavior {

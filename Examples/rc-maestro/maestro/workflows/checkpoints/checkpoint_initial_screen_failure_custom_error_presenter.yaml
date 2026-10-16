@@ -1,0 +1,43 @@
+# A missing initial Flow screen is handed to the E2E app's custom ErrorPresenter before any Flow UI is shown.
+
+appId: com.revenuecat.maestro.ios
+name: Custom error presenter receives an initial Flow screen failure
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+- pressKey: home
+- launchApp:
+    arguments:
+      e2e_test_flow: checkpoint_initial_screen_failure_custom_error_presenter
+- extendedWaitUntil:
+    visible: "Using custom error presenter"
+    timeout: 15000
+- tapOn:
+    text: "Hit checkpoint"
+
+- extendedWaitUntil:
+    visible: "Custom error presenter: flowCouldNotBeShown"
+    timeout: 15000
+- assertVisible: ".*Checkpoint: maestro_checkpoint.*"
+- assertVisible: ".*Screen '__maestro_missing_initial_screen__' not found in workflow.*"
+- takeScreenshot: "checkpoint_initial_screen_failure_custom_error_presenter - context"
+- tapOn:
+    text: "Dismiss custom error"
+
+- extendedWaitUntil:
+    visible: "Callback: not invoked"
+    timeout: 15000
+- assertNotVisible: "First screen loaded"
+- waitForAnimationToEnd
+- assertNotVisible: ".*call #.*"
+
+# A second presentation proves the failed initial Flow fully closed and released the checkpoint presentation slot.
+- tapOn: "Hit checkpoint"
+- extendedWaitUntil:
+    visible: "Custom error presenter: flowCouldNotBeShown"
+    timeout: 15000
+- tapOn: "Dismiss custom error"
+- waitForAnimationToEnd
+- assertNotVisible: ".*call #.*"

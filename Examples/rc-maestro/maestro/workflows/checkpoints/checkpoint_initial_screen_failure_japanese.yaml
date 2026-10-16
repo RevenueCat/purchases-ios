@@ -1,0 +1,33 @@
+# The checkpoint resolves to a real Flow whose initial screen is missing. The default presenter uses the injected
+# preferred UI locale, then the Flow closes without invoking the callback.
+
+appId: com.revenuecat.maestro.ios
+name: Initial Flow screen failure uses Japanese localized error copy
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+- pressKey: home
+- launchApp:
+    arguments:
+      e2e_test_flow: checkpoint_initial_screen_failure_japanese
+- extendedWaitUntil:
+    visible: "Hit checkpoint"
+    timeout: 15000
+- tapOn:
+    text: "Hit checkpoint"
+
+- extendedWaitUntil:
+    visible: "このコンテンツを読み込めませんでした。しばらくしてからもう一度お試しください。"
+    timeout: 15000
+- takeScreenshot: "checkpoint_initial_screen_failure_japanese - error"
+- tapOn:
+    text: "わかりました"
+
+- extendedWaitUntil:
+    visible: "Callback: not invoked"
+    timeout: 15000
+- assertNotVisible: "First screen loaded"
+- waitForAnimationToEnd
+- assertNotVisible: ".*call #.*"

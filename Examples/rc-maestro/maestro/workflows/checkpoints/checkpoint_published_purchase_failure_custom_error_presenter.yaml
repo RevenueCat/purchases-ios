@@ -1,0 +1,48 @@
+# The real published checkpoint resolves through RevenueCat and presents its real Test Store paywall. Its simulated
+# purchase failure must reach the custom ErrorPresenter and leave the Flow open.
+
+appId: com.revenuecat.maestro.ios
+name: Published checkpoint purchase failure uses the custom error presenter and keeps its Flow open
+env:
+  MAESTRO_STORE: test_store
+
+---
+- clearState
+- pressKey: home
+- launchApp:
+    arguments:
+      e2e_test_flow: checkpoint_published_custom_error_presenter
+      checkpoint_identifier: donottouch_sdk_everyone
+      app_user_id: "maestro-checkpoint-${Date.now()}"
+- extendedWaitUntil:
+    visible: "Using custom error presenter"
+    timeout: 20000
+- tapOn: "Hit checkpoint"
+
+- extendedWaitUntil:
+    visible: "Continue"
+    timeout: 20000
+- tapOn: "Continue"
+
+- extendedWaitUntil:
+    visible: "Test failed purchase"
+    timeout: 15000
+- tapOn: "Test failed purchase"
+
+- extendedWaitUntil:
+    visible: "Custom error presenter: flowActionFailed"
+    timeout: 15000
+- assertVisible: ".*Checkpoint: donottouch_sdk_everyone.*"
+- assertVisible: ".*Custom variable keys: source.*"
+- assertVisible: ".*Purchase failure simulated successfully in Test Store.*"
+- takeScreenshot: "checkpoint_published_purchase_failure_custom_error_presenter - context"
+- tapOn: "Dismiss custom error"
+
+- assertVisible: "Continue"
+- swipe:
+    start: "50%,10%"
+    end: "50%,90%"
+    duration: 600
+- extendedWaitUntil:
+    visible: "Callback: none (call #1)"
+    timeout: 15000

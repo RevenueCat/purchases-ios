@@ -1,0 +1,35 @@
+# The real published checkpoint cannot resolve while its configuration endpoint is unavailable on a cold cache.
+# This verifies that the production resolver forwards its failure context to a custom ErrorPresenter.
+
+appId: com.revenuecat.maestro.ios
+name: Published checkpoint with cold offline configuration uses the custom error presenter
+tags:
+  - debug-only
+env:
+  MAESTRO_STORE: test_store
+
+---
+- clearState
+- pressKey: home
+- launchApp:
+    arguments:
+      e2e_test_flow: checkpoint_published_custom_error_presenter
+      checkpoint_identifier: donottouch_sdk_everyone
+      app_user_id: "maestro-checkpoint-${Date.now()}"
+      force_server_error_strategy: remote_config_network_error
+- extendedWaitUntil:
+    visible: "Using custom error presenter"
+    timeout: 20000
+- tapOn: "Hit checkpoint"
+
+- extendedWaitUntil:
+    visible: "Custom error presenter: flowCouldNotBeShown"
+    timeout: 20000
+- assertVisible: ".*Checkpoint: donottouch_sdk_everyone.*"
+- assertVisible: ".*Custom variable keys: source.*"
+- takeScreenshot: "checkpoint_published_config_offline_cold_custom_error_presenter - context"
+- tapOn: "Dismiss custom error"
+
+- waitForAnimationToEnd
+- assertVisible: "Callback: not invoked"
+- assertNotVisible: ".*call #.*"
