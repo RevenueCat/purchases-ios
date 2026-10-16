@@ -951,7 +951,7 @@ final class CheckpointsManagerTests: TestCase {
         let manager = CheckpointsManager { _, _ in throw expectedError }
 
         do {
-            _ = try await manager.executeCheckpoint(identifier: "error_checkpoint", params: .init())
+            _ = try await manager.executeCheckpoint(identifier: "f0rc3_3rr0r", params: .init())
             XCTFail("Expected checkpoint to throw")
         } catch {
             XCTAssertEqual(error as NSError, expectedError)

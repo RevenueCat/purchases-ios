@@ -377,7 +377,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
     }
 
     #if DEBUG
-    private static let simulatedErrorCheckpointIdentifier = "error_checkpoint"
+    private static let simulatedErrorCheckpointIdentifier = "f0rc3_3rr0r"
     #endif
 }
 /// An audience referenced by a checkpoint rule that the SDK couldn't read, so the rule can't be evaluated.
