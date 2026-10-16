@@ -25,24 +25,26 @@ class MockExternalPurchaseTokenAPI: ExternalPurchaseTokenAPI {
     var invokedPostExternalPurchaseTokenParameters: (
         appUserID: String,
         purchaseType: ExternalPurchaseTokenType,
+        tokenID: String,
         token: String?
     )?
 
-    var stubbedPostExternalPurchaseTokenResult: Result<ExternalPurchaseTokenResponse, BackendError>?
+    var stubbedPostExternalPurchaseTokenError: BackendError?
     var postExternalPurchaseTokenCallback: (() -> Void)?
 
     override func postExternalPurchaseToken(
         appUserID: String,
         purchaseType: ExternalPurchaseTokenType,
+        tokenID: String,
         token: String?,
-        completion: @escaping ExternalPurchaseTokenAPI.ExternalPurchaseTokenResponseHandler
+        completion: @escaping ExternalPurchaseTokenAPI.SimpleResponseHandler
     ) {
         self.invokedPostExternalPurchaseToken = true
         self.invokedPostExternalPurchaseTokenCount += 1
-        self.invokedPostExternalPurchaseTokenParameters = (appUserID, purchaseType, token)
+        self.invokedPostExternalPurchaseTokenParameters = (appUserID, purchaseType, tokenID, token)
 
         self.postExternalPurchaseTokenCallback?()
-        completion(self.stubbedPostExternalPurchaseTokenResult ?? .failure(.missingAppUserID()))
+        completion(self.stubbedPostExternalPurchaseTokenError)
     }
 
 }
