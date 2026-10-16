@@ -103,6 +103,60 @@ final class CustomerCenterPreviewUITests: XCTestCase {
         }
     }
 
+    func testPreviewHelpActionsDisableCompetingButtonsAndAvoidSync() {
+        for configured in [false, true] {
+            let app = launch(mode: "actions", configured: configured, outcome: "delayed")
+            let cancel = app.descendants(matching: .any).matching(identifier: "Preview cancel").firstMatch
+            let plans = app.descendants(matching: .any).matching(identifier: "Preview change plan").firstMatch
+            XCTAssertTrue(cancel.waitForExistence(timeout: 10), app.debugDescription)
+            cancel.tap()
+            assertEvent("started manage", in: app)
+            XCTAssertFalse(cancel.isEnabled)
+            XCTAssertFalse(plans.isEnabled)
+            assertEvent("completed manage", in: app)
+            XCTAssertTrue(plans.wait(for: \.isEnabled, toEqual: true, timeout: 5))
+            plans.tap()
+            assertEvent("completed change", in: app)
+            XCTAssertFalse(app.staticTexts["preview.events"].label.contains("sync"))
+            XCTAssertEqual(app.webViews.count, 0)
+        }
+    }
+
+    func testPreviewHelpActionFailureIsVisibleAndAllowsRetry() {
+        for configured in [false, true] {
+            let app = launch(mode: "actions", configured: configured, outcome: "failure")
+            let cancel = app.descendants(matching: .any).matching(identifier: "Preview cancel").firstMatch
+            XCTAssertTrue(cancel.waitForExistence(timeout: 10), app.debugDescription)
+            cancel.tap()
+            let alert = app.alerts["Preview action failed"]
+            XCTAssertTrue(alert.waitForExistence(timeout: 5))
+            XCTAssertTrue(alert.staticTexts["Preview action could not finish"].exists)
+            alert.buttons["OK"].tap()
+            XCTAssertTrue(cancel.isEnabled)
+            app.descendants(matching: .any).matching(identifier: "Preview change plan").firstMatch.tap()
+            XCTAssertTrue(alert.waitForExistence(timeout: 5))
+            assertEvent("started change", in: app)
+        }
+    }
+
+    func testLeavingPreviewCancelsActionWithoutReplay() {
+        for configured in [false, true] {
+            let app = launch(mode: "actions", configured: configured, outcome: "delayed")
+            let cancel = app.descendants(matching: .any).matching(identifier: "Preview cancel").firstMatch
+            XCTAssertTrue(cancel.waitForExistence(timeout: 10), app.debugDescription)
+            cancel.tap()
+            app.buttons["Hide customer center"].tap()
+            assertEvent("cancelled manage", in: app)
+            app.buttons["Show customer center"].tap()
+            XCTAssertTrue(cancel.waitForExistence(timeout: 10))
+            XCTAssertTrue(cancel.isEnabled)
+            let events = app.staticTexts["preview.events"].label
+            XCTAssertEqual(events.components(separatedBy: "started manage").count - 1, 1)
+            XCTAssertFalse(events.contains("completed manage"))
+            XCTAssertEqual(app.alerts.count, 0)
+        }
+    }
+
     private func verifyCheckout(mode: String, dismisses: Bool) {
         for configured in [false, true] {
             let app = launch(mode: mode, configured: configured)

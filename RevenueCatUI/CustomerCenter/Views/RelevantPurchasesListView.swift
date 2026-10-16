@@ -76,6 +76,7 @@ struct RelevantPurchasesListView: View {
 
     var body: some View {
         content
+            .modifier(CustomerCenterPreviewActionsModifier(actions: viewModel.previewActions))
             .onReceive(customerInfoViewModel.$customerInfo) { _ in
                 viewModel.updateSelectedPurchase(using: customerInfoViewModel)
             }
