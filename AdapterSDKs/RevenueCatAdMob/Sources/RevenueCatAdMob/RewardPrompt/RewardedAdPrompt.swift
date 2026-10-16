@@ -279,6 +279,7 @@ private struct RewardedAdPromptStateView<Content: View>: View {
             if let context = self.model.context(resultDispatcherFactory: self.resultDispatcherFactory) {
                 self.content(context)
                     .onAppear {
+                        self.model.refreshCachedRewardsIfNeeded()
                         self.model.promptDidAppear(session: self.session, placement: self.placement)
                     }
             }
@@ -288,9 +289,6 @@ private struct RewardedAdPromptStateView<Content: View>: View {
                 self.model.setPresentationAnchor(viewController)
             }
             .frame(width: 0, height: 0)
-        }
-        .task {
-            await self.model.prepareIfNeeded()
         }
     }
 

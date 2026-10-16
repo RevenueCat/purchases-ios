@@ -12,6 +12,47 @@ import UIKit
 @MainActor
 final class RewardedAdPromptLifecycleTests: AdapterTestCase {
 
+    func testFirstContentBuildReceivesCachedRewardsForBothPromptTypesAndAdFormats() async throws {
+        let rewards = ConfiguredAdRewards(reward: .unsupportedReward)
+        for usesVerification in [false, true] {
+            for usesInterstitial in [false, true] {
+                let state = PromptLifecycleState()
+                state.usesVerification = usesVerification
+                state.usesInterstitial = usesInterstitial
+                let probe = PromptLifecycleProbe()
+                probe.cachedRewards = { rewards }
+                let window = makePromptLifecycleWindow(state: state, probe: probe)
+                defer { window.isHidden = true }
+                await expect { probe.appearances }.toEventually(equal(1))
+
+                XCTAssertEqual(try XCTUnwrap(probe.renderedConfigurations.first), rewards)
+                XCTAssertTrue(probe.renderedConfigurations.allSatisfy { $0 == rewards })
+                XCTAssertEqual(probe.cachedRewardsReadCount, 1)
+                XCTAssertEqual(probe.shownCount, 1)
+            }
+        }
+    }
+
+    func testReplacingAdReadsNewCachedSnapshotWithoutAnIntermediateNilConfiguration() async throws {
+        let state = PromptLifecycleState()
+        let probe = PromptLifecycleProbe()
+        let firstRewards = ConfiguredAdRewards(reward: .unsupportedReward)
+        probe.cachedRewards = { firstRewards }
+        let window = makePromptLifecycleWindow(state: state, probe: probe)
+        defer { window.isHidden = true }
+        await expect { probe.appearances }.toEventually(equal(1))
+        XCTAssertEqual(try XCTUnwrap(probe.renderedConfigurations.first), firstRewards)
+
+        let replacementRewards = ConfiguredAdRewards()
+        probe.cachedRewards = { replacementRewards }
+        state.rewardedAd = LifecycleRewardedAd()
+        await expect { probe.appearances }.toEventually(equal(2))
+
+        XCTAssertEqual(probe.context?.rewardConfiguration, replacementRewards)
+        XCTAssertTrue(probe.renderedConfigurations.allSatisfy { $0 != nil })
+        XCTAssertEqual(probe.cachedRewardsReadCount, 2)
+    }
+
     func testParentUpdatesPreserveDefaultSessionAndPresentationState() async throws {
         let state = PromptLifecycleState()
         let probe = PromptLifecycleProbe()
@@ -22,7 +63,7 @@ final class RewardedAdPromptLifecycleTests: AdapterTestCase {
         state.label = "Updated offer"
         await expect { probe.lastLabel }.toEventually(equal("Updated offer"))
         XCTAssertEqual(probe.shownCount, 1)
-        XCTAssertEqual(probe.preparationCount, 1)
+        XCTAssertEqual(probe.cachedRewardsReadCount, 1)
 
         try XCTUnwrap(probe.context).accept()
         await expect { probe.disappearances }.toEventually(equal(1))
@@ -35,27 +76,6 @@ final class RewardedAdPromptLifecycleTests: AdapterTestCase {
         XCTAssertEqual(probe.shownCount, 1)
     }
 
-    func testMetadataUpdateDoesNotRecreateModelOrCountAnotherImpression() async {
-        let state = PromptLifecycleState()
-        let probe = PromptLifecycleProbe()
-        var continuation: CheckedContinuation<ConfiguredAdRewards?, Never>?
-        probe.loadRewards = {
-            await withCheckedContinuation { continuation = $0 }
-        }
-        let window = makePromptLifecycleWindow(state: state, probe: probe)
-        defer { window.isHidden = true }
-        await expect { continuation != nil }.toEventually(beTrue())
-        await expect { probe.appearances }.toEventually(equal(1))
-        XCTAssertNil(probe.context?.rewardConfiguration)
-
-        continuation?.resume(returning: ConfiguredAdRewards())
-        await expect { probe.context?.rewardConfiguration }.toEventually(equal(ConfiguredAdRewards()))
-
-        XCTAssertEqual(probe.shownCount, 1)
-        XCTAssertEqual(probe.preparationCount, 1)
-        XCTAssertEqual(probe.appearances, 1)
-    }
-
     func testReplacingAdFromSameUnitPresentsNewInstanceWithoutCallerIdentity() async throws {
         let state = PromptLifecycleState()
         let originalAd = state.rewardedAd
@@ -66,37 +86,12 @@ final class RewardedAdPromptLifecycleTests: AdapterTestCase {
 
         state.rewardedAd = LifecycleRewardedAd()
         await expect { probe.appearances }.toEventually(equal(2))
-        await expect { probe.preparationCount }.toEventually(equal(2))
+        await expect { probe.cachedRewardsReadCount }.toEventually(equal(2))
         try XCTUnwrap(probe.context).accept()
 
         XCTAssertEqual(originalAd.adUnitID, state.rewardedAd.adUnitID)
         XCTAssertEqual(originalAd.presentationCount, 0)
         XCTAssertEqual(state.rewardedAd.presentationCount, 1)
-        XCTAssertEqual(probe.shownCount, 2)
-    }
-
-    func testReplacingAdCancelsOldPreparationAndIgnoresItsLateMetadata() async {
-        let state = PromptLifecycleState()
-        let probe = PromptLifecycleProbe()
-        var continuation: CheckedContinuation<ConfiguredAdRewards?, Never>?
-        var oldPreparationWasCancelled = false
-        probe.loadRewards = {
-            guard probe.preparationCount == 1 else { return nil }
-            let rewards = await withCheckedContinuation { continuation = $0 }
-            oldPreparationWasCancelled = Task.isCancelled
-            return rewards
-        }
-        let window = makePromptLifecycleWindow(state: state, probe: probe)
-        defer { window.isHidden = true }
-        await expect { continuation != nil }.toEventually(beTrue())
-
-        state.rewardedAd = LifecycleRewardedAd()
-        await expect { probe.appearances }.toEventually(equal(2))
-        await expect { probe.preparationCount }.toEventually(equal(2))
-        continuation?.resume(returning: ConfiguredAdRewards())
-        await expect { oldPreparationWasCancelled }.toEventually(beTrue())
-
-        XCTAssertNil(probe.context?.rewardConfiguration)
         XCTAssertEqual(probe.shownCount, 2)
     }
 
@@ -116,10 +111,44 @@ final class RewardedAdPromptLifecycleTests: AdapterTestCase {
         try XCTUnwrap(probe.context).accept()
         state.rewardedAd.rewardEarned?()
 
+        XCTAssertTrue(probe.resultLabels.isEmpty)
+        state.rewardedAd.fullScreenContentDelegate?.adDidDismissFullScreenContent?(state.rewardedAd)
+
         XCTAssertEqual(originalAd.presentationCount, 1)
         XCTAssertEqual(state.rewardedAd.presentationCount, 1)
         XCTAssertEqual(probe.acceptedCount, 2)
         XCTAssertEqual(probe.resultLabels, ["replacement"])
+    }
+
+    func testAcceptedRewardWaitsForDismissalAfterPromptRemovalOrReplacement() async throws {
+        for replacesAd in [false, true] {
+            let state = PromptLifecycleState()
+            let originalAd = state.rewardedAd
+            let probe = PromptLifecycleProbe()
+            let window = makePromptLifecycleWindow(state: state, probe: probe)
+            defer { window.isHidden = true }
+            await expect { probe.appearances }.toEventually(equal(1))
+            try XCTUnwrap(probe.context).accept()
+            await expect { probe.disappearances }.toEventually(equal(1))
+
+            state.resultLabel = "replacement"
+            if replacesAd {
+                state.rewardedAd = LifecycleRewardedAd()
+                await expect { probe.appearances }.toEventually(equal(2))
+            } else {
+                state.isVisible = false
+                await self.flushUpdates(window)
+            }
+
+            originalAd.rewardEarned?()
+            XCTAssertTrue(probe.resultLabels.isEmpty)
+
+            let delegate = try XCTUnwrap(originalAd.fullScreenContentDelegate)
+            delegate.adDidDismissFullScreenContent?(originalAd)
+            delegate.adDidDismissFullScreenContent?(originalAd)
+
+            XCTAssertEqual(probe.resultLabels, ["original"])
+        }
     }
 
     func testReplacingAdPreservesCallerSessionUntilAcceptance() async throws {
@@ -166,7 +195,7 @@ final class RewardedAdPromptLifecycleTests: AdapterTestCase {
             XCTAssertEqual(state.rewardedAd.presentationCount, 1)
             XCTAssertEqual(probe.shownCount, 1)
             XCTAssertEqual(probe.acceptedCount, 1)
-            XCTAssertEqual(probe.preparationCount, 1)
+            XCTAssertEqual(probe.cachedRewardsReadCount, 1)
         }
     }
 
@@ -189,7 +218,7 @@ final class RewardedAdPromptLifecycleTests: AdapterTestCase {
             XCTAssertEqual(state.rewardedAd.presentationCount, 1)
             XCTAssertEqual(probe.shownCount, 1)
             XCTAssertEqual(probe.acceptedCount, 1)
-            XCTAssertEqual(probe.preparationCount, 1)
+            XCTAssertEqual(probe.cachedRewardsReadCount, 1)
         }
     }
 
@@ -206,7 +235,7 @@ final class RewardedAdPromptLifecycleTests: AdapterTestCase {
                 state.rewardedAd = LifecycleRewardedAd()
                 state.interstitialAd = LifecycleRewardedInterstitialAd()
                 await expect { probe.appearances }.toEventually(equal(2))
-                await expect { probe.preparationCount }.toEventually(equal(2))
+                await expect { probe.cachedRewardsReadCount }.toEventually(equal(2))
 
                 XCTAssertEqual(probe.shownCount, 2)
                 window.isHidden = true
@@ -228,7 +257,7 @@ final class RewardedAdPromptLifecycleTests: AdapterTestCase {
         await expect { probe.appearances }.toEventually(equal(2))
 
         XCTAssertEqual(probe.shownCount, expectedShownCount)
-        XCTAssertEqual(probe.preparationCount, 2)
+        XCTAssertEqual(probe.cachedRewardsReadCount, 2)
     }
 
     private func flushUpdates(_ window: UIWindow) async {

@@ -1,6 +1,7 @@
 import XCTest
 
 #if os(iOS) && canImport(GoogleMobileAds) && canImport(SwiftUI)
+@_spi(Internal) import RevenueCat
 @testable import RevenueCatAdMob
 import UIKit
 
@@ -89,9 +90,9 @@ final class RewardedAdPromptPresentationTests: AdapterTestCase {
         XCTAssertNil(anchor.rewardedAdPromptPresentationViewController)
     }
 
-    func testMissingAnchorReportsNotPresentedOnceForBothModes() throws {
+    func testMissingAnchorReportsNotPresentedOnceForBothModes() async throws {
         for verified in [true, false] {
-            try self.assertNotPresented(verified: verified, anchor: nil)
+            try await self.assertNotPresented(verified: verified, anchor: nil)
         }
     }
 
@@ -112,20 +113,62 @@ final class RewardedAdPromptPresentationTests: AdapterTestCase {
         XCTAssertEqual(results.first?.kind, .dismissed)
     }
 
-    func testDetachedAnchorReportsNotPresentedOnceForBothModes() throws {
-        for verified in [true, false] {
-            try self.assertNotPresented(verified: verified, anchor: UIViewController())
+    func testRewardResultSurvivesModelReleaseForBothModesAndVerificationOrders() throws {
+        for verified in [false, true] {
+            for verificationFinishesFirst in [false, true] {
+                let rewardedAd = MockRewardedAdPromptAd()
+                var resultCount = 0
+                var model: RewardedAdPromptModel? = self.makeModel(ad: rewardedAd, resultDispatcherFactory: {
+                    if verified {
+                        return VerifiedRewardResultDispatcher(onResult: { result in
+                            XCTAssertEqual(result.kind, .verificationCompleted)
+                            XCTAssertEqual(result.rewardVerificationResult, .verified(.noReward))
+                            resultCount += 1
+                        })
+                    } else {
+                        return UnverifiedRewardResultDispatcher(onResult: { result in
+                            XCTAssertEqual(result.kind, .rewardEarned)
+                            resultCount += 1
+                        })
+                    }
+                })
+                let window = RewardedAdPromptTestWindow(rootViewController: UIViewController())
+                defer { window.isHidden = true }
+                model?.setPresentationAnchor(try XCTUnwrap(window.rootViewController))
+                try XCTUnwrap(model?.context).accept()
+                weak var releasedModel = model
+                model = nil
+                XCTAssertNil(releasedModel)
+
+                rewardedAd.verificationStarted?()
+                rewardedAd.rewardEarned?()
+                if verificationFinishesFirst { rewardedAd.verificationCompleted?(.verified(.noReward)) }
+                XCTAssertEqual(resultCount, 0)
+
+                let delegate = try XCTUnwrap(rewardedAd.delegate)
+                delegate.adDidDismissFullScreenContent?(PresentedAdStub())
+                XCTAssertEqual(resultCount, verified && !verificationFinishesFirst ? 0 : 1)
+                if !verificationFinishesFirst { rewardedAd.verificationCompleted?(.verified(.noReward)) }
+                delegate.adDidDismissFullScreenContent?(PresentedAdStub())
+                XCTAssertEqual(resultCount, 1)
+            }
         }
     }
 
-    func testAnchorDetachedAfterResolutionReportsNotPresentedForBothModes() throws {
+    func testDetachedAnchorReportsNotPresentedOnceForBothModes() async throws {
+        for verified in [true, false] {
+            try await self.assertNotPresented(verified: verified, anchor: UIViewController())
+        }
+    }
+
+    func testAnchorDetachedAfterResolutionReportsNotPresentedForBothModes() async throws {
         for verified in [true, false] {
             let anchor = UIViewController()
             let window = RewardedAdPromptTestWindow(rootViewController: anchor)
             defer { window.isHidden = true }
             XCTAssertNotNil(anchor.rewardedAdPromptPresentationViewController)
 
-            try self.assertNotPresented(verified: verified, anchor: anchor) {
+            try await self.assertNotPresented(verified: verified, anchor: anchor) {
                 window.rootViewController = UIViewController()
             }
         }
@@ -141,7 +184,8 @@ private extension RewardedAdPromptPresentationTests {
         verified: Bool,
         anchor: UIViewController?,
         beforeAcceptance: () -> Void = {}
-    ) throws {
+    ) async throws {
+        let delivered = self.expectation(description: "Presentation failure delivered")
         let rewardedAd = MockRewardedAdPromptAd()
         var errors: [RewardedAdPromptError] = []
         var acceptanceCount = 0
@@ -151,11 +195,13 @@ private extension RewardedAdPromptPresentationTests {
                     XCTAssertEqual(result.kind, .notPresented)
                     XCTAssertNil(result.rewardVerificationResult)
                     if let error = result.presentationError { errors.append(error) }
+                    delivered.fulfill()
                 })
             } else {
                 return UnverifiedRewardResultDispatcher(onResult: { result in
                     XCTAssertEqual(result.kind, .notPresented)
                     if let error = result.presentationError { errors.append(error) }
+                    delivered.fulfill()
                 })
             }
         }, trackAccepted: { acceptanceCount += 1 })
@@ -165,6 +211,9 @@ private extension RewardedAdPromptPresentationTests {
 
         context.accept()
         context.accept()
+
+        XCTAssertTrue(errors.isEmpty)
+        await self.fulfillment(of: [delivered], timeout: 1)
 
         XCTAssertEqual(errors.count, 1)
         XCTAssertEqual(errors.first?.code, .presentationContextUnavailable)
@@ -191,10 +240,7 @@ private extension RewardedAdPromptPresentationTests {
             resultDispatcherFactory: resultDispatcherFactory,
             dependencies: .init(
                 isPurchasesConfigured: { true },
-                loadConfiguredRewards: { _ in
-                    XCTFail("Presentation must not fetch metadata")
-                    return nil
-                },
+                readCachedRewards: { _ in nil },
                 trackPromptShown: { _, _ in },
                 trackPromptAccepted: { _, _ in trackAccepted() }
             )

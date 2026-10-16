@@ -60,14 +60,14 @@ extension GoogleMobileAds.RewardedInterstitialAd: RewardedAdPromptAd {}
 struct RewardedAdPromptDependencies {
 
     let isPurchasesConfigured: () -> Bool
-    let loadConfiguredRewards: (String) async -> ConfiguredAdRewards?
+    let readCachedRewards: (String) -> ConfiguredAdRewards?
     let trackPromptShown: (String, String?) -> Void
     let trackPromptAccepted: (String, String?) -> Void
 
     static var live: Self {
         return .init(
             isPurchasesConfigured: { Purchases.isConfigured },
-            loadConfiguredRewards: { adUnitID in
+            readCachedRewards: { adUnitID in
                 Purchases.shared.cachedAdRewards(forAdUnitId: adUnitID)
             },
             trackPromptShown: { adUnitID, placement in
@@ -141,8 +141,8 @@ final class RewardedAdPromptModel: NSObject, ObservableObject {
     private let dependencies: RewardedAdPromptDependencies
 
     private weak var presentationAnchor: UIViewController?
-    private var isPreparing = false
-    private var resultDispatcher: (any RewardedAdPromptResultDispatching)?
+    // AdMob delegates are weak. Keep dismissal handling alive independently of the SwiftUI view.
+    private static let presentationDelegateStore = AssociatedObjectStore<RewardedAdPromptPresentationDelegate>()
 
     init(
         session: RewardedAdPromptSession?,
@@ -160,21 +160,17 @@ final class RewardedAdPromptModel: NSObject, ObservableObject {
         self.resultDispatcherFactory = resultDispatcherFactory
         self.dependencies = dependencies
         super.init()
+        self.refreshCachedRewardsIfNeeded()
     }
 
-    func prepareIfNeeded() async {
-        guard !self.isPreparing, self.configuredRewards == nil, !self.hasAccepted else { return }
+    func refreshCachedRewardsIfNeeded() {
+        guard self.configuredRewards == nil, !self.hasAccepted else { return }
         guard self.dependencies.isPurchasesConfigured() else {
             Logger.warn(RewardedAdPromptStrings.purchases_not_configured)
             return
         }
 
-        self.isPreparing = true
-        defer { self.isPreparing = false }
-
-        let configuredRewards = await self.dependencies.loadConfiguredRewards(self.adUnitID)
-        guard !Task.isCancelled else { return }
-        guard let configuredRewards else {
+        guard let configuredRewards = self.dependencies.readCachedRewards(self.adUnitID) else {
             Logger.debug(RewardedAdPromptStrings.configured_rewards_unavailable(adUnitID: self.adUnitID))
             return
         }
@@ -208,7 +204,6 @@ final class RewardedAdPromptModel: NSObject, ObservableObject {
         let placement = self.session.placementForAcceptance(fallback: self.placement)
         self.session.resetAfterAcceptance()
         let resultDispatcher = resultDispatcherFactory()
-        self.resultDispatcher = resultDispatcher
 
         self.dependencies.trackPromptAccepted(self.adUnitID, placement)
         guard let viewController = self.presentationAnchor?.rewardedAdPromptPresentationViewController else {
@@ -216,17 +211,26 @@ final class RewardedAdPromptModel: NSObject, ObservableObject {
             return
         }
 
-        self.rewardedAd.setTrackingFullScreenContentDelegate(self)
+        let delegate = RewardedAdPromptPresentationDelegate(resultDispatcher: resultDispatcher)
+        Self.presentationDelegateStore.set(delegate, for: self.rewardedAd)
+        self.rewardedAd.setTrackingFullScreenContentDelegate(delegate)
         resultDispatcher.present(self.rewardedAd, from: viewController)
     }
 
 }
 
 @available(iOS 15.0, *)
-extension RewardedAdPromptModel: GoogleMobileAds.FullScreenContentDelegate {
+@MainActor
+private final class RewardedAdPromptPresentationDelegate: NSObject, GoogleMobileAds.FullScreenContentDelegate {
+
+    private let resultDispatcher: any RewardedAdPromptResultDispatching
+
+    init(resultDispatcher: any RewardedAdPromptResultDispatching) {
+        self.resultDispatcher = resultDispatcher
+    }
 
     func adDidDismissFullScreenContent(_ presentingAd: any GoogleMobileAds.FullScreenPresentingAd) {
-        self.resultDispatcher?.dismissed()
+        self.resultDispatcher.dismissed()
     }
 
     func ad(
@@ -234,7 +238,7 @@ extension RewardedAdPromptModel: GoogleMobileAds.FullScreenContentDelegate {
         didFailToPresentFullScreenContentWithError error: any Error
     ) {
         let promptError = RewardedAdPromptError(code: .adFailedToPresent, underlyingError: error)
-        self.resultDispatcher?.notPresented(promptError)
+        self.resultDispatcher.notPresented(promptError)
     }
 
 }
