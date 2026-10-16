@@ -48,6 +48,8 @@
 # Customer Center code and related UI tests
 /Sources/CustomerCenter/ @RevenueCat/customer-center
 /Tests/UnitTests/CustomerCenter/ @RevenueCat/customer-center
+/Sources/Networking/**/*CustomerCenter* @RevenueCat/customer-center
+/Tests/UnitTests/Networking/**/*CustomerCenter* @RevenueCat/customer-center
 /RevenueCatUI/CustomerCenter/ @RevenueCat/customer-center
 /Tests/RevenueCatUITests/CustomerCenter/ @RevenueCat/customer-center
 /Examples/rc-maestro/maestro/customer_center/ @RevenueCat/customer-center
