@@ -25,7 +25,7 @@ struct CustomerCenterInjectedPaywall: View {
 
     private enum LoadState {
         case loading
-        case loaded(WorkflowContext?, [String: CustomVariableValue], PaywallPromoOfferCache)
+        case loaded(WorkflowContext?, [String: CustomVariableValue], IntroEligibilityStatus, PaywallPromoOfferCache)
         case failed(String)
     }
 
@@ -35,10 +35,15 @@ struct CustomerCenterInjectedPaywall: View {
     var body: some View {
         Group {
             switch state {
-            case let .loaded(workflow, customVariables, promoOfferCache):
+            case let .loaded(workflow, customVariables, introEligibility, promoOfferCache):
                 if let offering {
-                    injectedPaywall(offering: offering, workflow: workflow, promoOfferCache: promoOfferCache)
-                        .customPaywallVariables(customVariables)
+                    injectedPaywall(
+                        offering: offering,
+                        workflow: workflow,
+                        introEligibility: introEligibility,
+                        promoOfferCache: promoOfferCache
+                    )
+                    .customPaywallVariables(customVariables)
                 } else {
                     VStack {
                         Text("The configured preview offering is unavailable.")
@@ -59,6 +64,7 @@ struct CustomerCenterInjectedPaywall: View {
             state = .loading
             do {
                 let customVariables = await provider.previewCustomVariables()
+                let introEligible = await provider.previewIntroOfferEligibility()
                 let promoEligible = await provider.previewPromotionalOfferEligibility()
                 let workflow: WorkflowContext?
                 if let offering {
@@ -67,7 +73,12 @@ struct CustomerCenterInjectedPaywall: View {
                     workflow = nil
                 }
                 try Task.checkCancellation()
-                state = .loaded(workflow, customVariables, PaywallPromoOfferCache(simulateEligible: promoEligible))
+                state = .loaded(
+                    workflow,
+                    customVariables,
+                    introEligible ? .eligible : .ineligible,
+                    PaywallPromoOfferCache(simulateEligible: promoEligible)
+                )
             } catch is CancellationError {
             } catch {
                 state = .failed(error.localizedDescription)
@@ -79,12 +90,13 @@ struct CustomerCenterInjectedPaywall: View {
     private func injectedPaywall(
         offering: Offering,
         workflow: WorkflowContext?,
+        introEligibility: IntroEligibilityStatus,
         promoOfferCache: PaywallPromoOfferCache
     ) -> some View {
         var configuration = PaywallViewConfiguration(
             offering: workflow?.initialOffering ?? offering,
             displayCloseButton: true,
-            introEligibility: .producing(eligibility: .eligible),
+            introEligibility: .producing(eligibility: introEligibility),
             purchaseHandler: .customerCenterPreview(
                 provider: provider,
                 performPurchase: performPurchase,

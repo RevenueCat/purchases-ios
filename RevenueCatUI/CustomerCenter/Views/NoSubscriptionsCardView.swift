@@ -107,33 +107,35 @@ struct NoSubscriptionsCardView: View {
         #endif
         .animation(.easeInOut(duration: 0.3), value: viewModel.isLoadingOffering)
         .sheet(isPresented: $viewModel.showOffering, content: {
-            if let provider = viewModel.previewProvider {
-                CustomerCenterInjectedPaywall(
-                    provider: provider,
-                    offering: viewModel.offering,
-                    performPurchase: viewModel.performPurchase(packageToPurchase:),
-                    performRestore: viewModel.performRestore,
-                    onClose: viewModel.hidePaywall
-                )
-            } else {
-                PaywallView(
-                    configuration: .init(
+            Group {
+                if let provider = viewModel.previewProvider {
+                    CustomerCenterInjectedPaywall(
+                        provider: provider,
                         offering: viewModel.offering,
-                        displayCloseButton: false,
-                        purchaseHandler: .default(performPurchase: viewModel.performPurchase(packageToPurchase:),
-                                                  performRestore: viewModel.performRestore)
+                        performPurchase: viewModel.performPurchase(packageToPurchase:),
+                        performRestore: viewModel.performRestore,
+                        onClose: viewModel.hidePaywall
                     )
-                )
-                .onRestoreInitiated { resume in
-                    Task(priority: .userInitiated) { @MainActor in
-                        if let restoreInitiated = self.externalActions.restoreInitiated {
-                            restoreInitiated(resume)
-                        } else {
-                            resume()
-                        }
+                } else {
+                    PaywallView(
+                        configuration: .init(
+                            offering: viewModel.offering,
+                            displayCloseButton: false,
+                            purchaseHandler: .default(performPurchase: viewModel.performPurchase(packageToPurchase:),
+                                                      performRestore: viewModel.performRestore)
+                        )
+                    )
+                    .paywallSource(.customerCenter)
+                }
+            }
+            .onRestoreInitiated { resume in
+                Task(priority: .userInitiated) { @MainActor in
+                    if let restoreInitiated = self.externalActions.restoreInitiated {
+                        restoreInitiated(resume)
+                    } else {
+                        resume()
                     }
                 }
-                .paywallSource(.customerCenter)
             }
         })
         .onAppear {

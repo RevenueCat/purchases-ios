@@ -39,6 +39,8 @@ import SwiftUI
     func handlePreviewAction(_ action: CustomerCenterPreviewAction) async throws
     /// Resolves an optional workflow using app-supplied data.
     func previewWorkflow(for offering: Offering) async throws -> WorkflowContext?
+    /// Indicates whether paywall intro offers should be simulated as eligible.
+    func previewIntroOfferEligibility() async -> Bool
     /// Indicates whether paywall promotional offers should be simulated as eligible.
     func previewPromotionalOfferEligibility() async -> Bool
     /// Supplies the project variables entered in the mobile preview settings.
@@ -71,6 +73,8 @@ extension CustomerCenterPreviewProvider {
 
     /// Defaults to the standalone offering when the provider has no workflow support.
     public func previewWorkflow(for offering: Offering) async throws -> WorkflowContext? { nil }
+    /// Defaults to eligible intro offers.
+    public func previewIntroOfferEligibility() async -> Bool { true }
     /// Defaults to ineligible promotional offers.
     public func previewPromotionalOfferEligibility() async -> Bool { false }
     /// Defaults to no preview variable overrides.
