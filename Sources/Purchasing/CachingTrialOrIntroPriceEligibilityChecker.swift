@@ -18,9 +18,23 @@ import Foundation
 /// `TrialOrIntroPriceEligibilityCheckerType` decorator that adds caching behavior on each request.
 class CachingTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType {
 
+    private struct RequestKey: Hashable, Sendable {
+        let productIdentifier: String
+        let cacheGeneration: Int
+    }
+
+    private struct UncacheableEligibilityError: Error {
+        let eligibility: IntroEligibility?
+    }
+
     private let checker: TrialOrIntroPriceEligibilityCheckerType
 
     private let cache: Atomic<[String: IntroEligibility]> = .init([:])
+
+    // This acts as a synchronous cache invalidation trigger to prevent a possible race condition
+    // with actor cache clearing from a non-isolated context
+    private let cacheGeneration: Atomic<Int> = .init(0)
+    private let deferredRequests = KeyedDeferredValueStore<RequestKey, IntroEligibility>()
 
     /// Creates a `CachingTrialOrIntroPriceEligibilityChecker` wrapping the underlying checker,
     /// or returns `checker` if it already is this type.
@@ -41,6 +55,12 @@ class CachingTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCh
     func clearCache() {
         Logger.debug(Strings.eligibility.clearing_intro_eligibility_cache)
 
+        self.cacheGeneration.modify {
+            $0 += 1
+        }
+        Task(priority: .userInitiated) {
+            await self.deferredRequests.clear()
+        }
         self.cache.value.removeAll(keepingCapacity: false)
     }
 
@@ -59,9 +79,6 @@ extension CachingTrialOrIntroPriceEligibilityChecker {
 
         let uniqueProductIdentifiers = Set(productIdentifiers)
 
-        // Note: this can suffer from race conditions, but the only downside is performing concurrent requests
-        // multiple times instead of returning the cached result on the second one.
-        // It's a fine compromise to keep this implementation simpler.
         let cached = self.cache.value.filter { uniqueProductIdentifiers.contains($0.key) }
 
         if !cached.isEmpty {
@@ -73,15 +90,75 @@ extension CachingTrialOrIntroPriceEligibilityChecker {
         if missingProducts.isEmpty {
             completion(cached)
         } else {
-            self.checker.checkEligibility(productIdentifiers: missingProducts) { result in
-                let productsToCache = result.filter { $0.value.shouldCache }
+            let cacheGeneration = self.cacheGeneration.value
+            let requestKeys = Set(missingProducts.map {
+                RequestKey(productIdentifier: $0, cacheGeneration: cacheGeneration)
+            })
 
-                Logger.debug(Strings.eligibility.caching_intro_eligibility_for_products(Set(productsToCache.keys)))
-                self.cache.modify { $0 += productsToCache }
+            Task {
+                let tasks = await self.tasks(for: requestKeys, cacheGeneration: cacheGeneration)
 
-                completion(cached + result)
+                var result = cached
+                for (requestKey, task) in tasks {
+                    do {
+                        result[requestKey.productIdentifier] = try await task.value
+                    } catch let error as UncacheableEligibilityError {
+                        result[requestKey.productIdentifier] = error.eligibility
+                    }
+                }
+
+                completion(result)
             }
         }
+    }
+
+    private func tasks(
+        for requestKeys: Set<RequestKey>,
+        cacheGeneration: Int
+    ) async -> [RequestKey: AnyTask<IntroEligibility>] {
+        var tasks: [RequestKey: AnyTask<IntroEligibility>] = [:]
+        var previousTask: AnyTask<IntroEligibility>?
+
+        for requestKey in requestKeys.sorted(by: { $0.productIdentifier < $1.productIdentifier }) {
+            let precedingTask = previousTask
+            tasks[requestKey] = await self.deferredRequests.getOrPut(
+                Task {
+                    _ = try? await precedingTask?.value
+                    return try await self.checkEligibility(
+                        for: requestKey,
+                        cacheGeneration: cacheGeneration
+                    )
+                },
+                forKey: requestKey
+            )
+            previousTask = tasks[requestKey]
+        }
+
+        return tasks
+    }
+
+    private func checkEligibility(
+        for requestKey: RequestKey,
+        cacheGeneration: Int
+    ) async throws -> IntroEligibility {
+        let productIdentifier = requestKey.productIdentifier
+        let result = await Async.call { completion in
+            self.checker.checkEligibility(
+                productIdentifiers: [productIdentifier],
+                completion: completion
+            )
+        }
+
+        guard let eligibility = result[productIdentifier],
+              eligibility.shouldCache,
+              self.cacheGeneration.value == cacheGeneration else {
+            throw UncacheableEligibilityError(eligibility: result[productIdentifier])
+        }
+
+        Logger.debug(Strings.eligibility.caching_intro_eligibility_for_products([productIdentifier]))
+        self.cache.modify { $0[productIdentifier] = eligibility }
+
+        return eligibility
     }
 
 }
