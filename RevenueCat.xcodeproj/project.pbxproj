@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6E3D303CC6866D3321E0AB80 /* NativePaywallNavigationPreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75E05D8CB2A9815AF566CCC8 /* NativePaywallNavigationPreference.swift */; };
+		9C2F3C5174C2557D06DDF622 /* NativePaywallCloseCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CC48F7925622D08522BDDAF /* NativePaywallCloseCoordinator.swift */; };
 		D22A00000000000000000001 /* AnyDecodable+DimensionValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22A00000000000000000002 /* AnyDecodable+DimensionValue.swift */; };
 		D23A00000000000000000001 /* Dictionary+DimensionValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23A00000000000000000002 /* Dictionary+DimensionValue.swift */; };
 		D17A00000000000000000001 /* StoreDimensionProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D17A00000000000000000002 /* StoreDimensionProvider.swift */; };
@@ -1777,6 +1779,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		75E05D8CB2A9815AF566CCC8 /* NativePaywallNavigationPreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativePaywallNavigationPreference.swift; sourceTree = "<group>"; };
+		6CC48F7925622D08522BDDAF /* NativePaywallCloseCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativePaywallCloseCoordinator.swift; sourceTree = "<group>"; };
 		D22A00000000000000000002 /* AnyDecodable+DimensionValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AnyDecodable+DimensionValue.swift"; sourceTree = "<group>"; };
 		D23A00000000000000000002 /* Dictionary+DimensionValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Dictionary+DimensionValue.swift"; sourceTree = "<group>"; };
 		D17A00000000000000000002 /* StoreDimensionProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreDimensionProvider.swift; sourceTree = "<group>"; };
@@ -3249,6 +3253,7 @@
 		A1B2C3D42FEA000000000002 /* RemoteConfigBlobHealthTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigBlobHealthTests.swift; sourceTree = "<group>"; };
 		A1C4E7B209D8F3561B4E7C90 /* WebViewInstance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewInstance.swift; sourceTree = "<group>"; };
 		A1D3F80D2D524F51BA60157C /* ButtonComponentViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonComponentViewTests.swift; sourceTree = "<group>"; };
+		8791899B9EC6689C720D475D /* NativePaywallNavigationPreferenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativePaywallNavigationPreferenceTests.swift; sourceTree = "<group>"; };
 		A1E0F0012F297A0100000001 /* EventsManagerStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventsManagerStrings.swift; sourceTree = "<group>"; };
 		A524378A284FFF0200E788BD /* AttributionPosterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionPosterTests.swift; sourceTree = "<group>"; };
 		A525BF4A26C320D100C354C4 /* SubscriberAttributesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberAttributesManager.swift; sourceTree = "<group>"; };
@@ -3779,6 +3784,7 @@
 				0E4CCD8E9E454A2EB3760E06 /* ButtonComponentViewModelMappingTests.swift */,
 				BF1EED2238264990801EEA0B /* ButtonComponentAccessibilityLabelTests.swift */,
 				A1D3F80D2D524F51BA60157C /* ButtonComponentViewTests.swift */,
+				8791899B9EC6689C720D475D /* NativePaywallNavigationPreferenceTests.swift */,
 				9F2A6D48C1B34E7295D8F0A3 /* BrowserNavigateToTests.swift */,
 				AAAA44750000000000000031 /* ExternalPurchaseLinkTests.swift */,
 				AAAA44830000000000000021 /* HostedCheckoutTests.swift */,
@@ -6335,6 +6341,8 @@
 			isa = PBXGroup;
 			children = (
 				7707A94F2CAD9775006E0313 /* ButtonComponentView.swift */,
+				75E05D8CB2A9815AF566CCC8 /* NativePaywallNavigationPreference.swift */,
+				6CC48F7925622D08522BDDAF /* NativePaywallCloseCoordinator.swift */,
 				7707A94D2CAD94D2006E0313 /* ButtonComponentViewModel.swift */,
 				FD9BCEBB2DC946C400408A5D /* BottomSheetView.swift */,
 			);
@@ -9239,6 +9247,8 @@
 				887A60BC2C1D037000E1A461 /* Template5View.swift in Sources */,
 				2C8EC7202CCF276100D6CCF8 /* PresentedPartials.swift in Sources */,
 				7707A9502CAD9775006E0313 /* ButtonComponentView.swift in Sources */,
+				6E3D303CC6866D3321E0AB80 /* NativePaywallNavigationPreference.swift in Sources */,
+				9C2F3C5174C2557D06DDF622 /* NativePaywallCloseCoordinator.swift in Sources */,
 				16A7F4C62E564B97001F9FC8 /* TransitionModifier.swift in Sources */,
 				887A60BE2C1D037000E1A461 /* PaywallFooterViewController.swift in Sources */,
 				DBD2A168300E81E20019DB7F /* VideoAudioSessionHandler.swift in Sources */,
