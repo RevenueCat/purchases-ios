@@ -311,7 +311,8 @@ final class PurchaseHandler: ObservableObject {
     }
 #endif
 
-    /// Completes simulated checkout before callers dismiss, without opening an external application.
+    /// Sends the checkout URL to the preview provider.
+    /// Returns `true` when checkout completed, so the caller can dismiss.
     @MainActor
     func performCustomerCenterPreviewCheckout(url: URL) async throws -> Bool {
         guard let customerCenterPreviewURLHandler, !actionInProgress, !Task.isCancelled else { return false }
@@ -490,6 +491,12 @@ extension PurchaseHandler {
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func invalidateCustomerInfoCache() {
         self.purchases.invalidateCustomerInfoCache()
+    }
+#endif
+
+#if !os(tvOS)
+    func failedToLoadFont(_ fontConfig: UIConfig.FontsConfig) {
+        self.purchases.failedToLoadFontWithConfig(fontConfig)
     }
 #endif
 

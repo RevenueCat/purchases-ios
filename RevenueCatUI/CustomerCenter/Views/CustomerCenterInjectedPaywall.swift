@@ -53,7 +53,6 @@ struct CustomerCenterInjectedPaywall: View {
                 ProgressView()
             }
         }
-        .environment(\.openURL, provider.previewOpenURLAction)
         .task(id: attempt) {
             state = .loading
             do {
