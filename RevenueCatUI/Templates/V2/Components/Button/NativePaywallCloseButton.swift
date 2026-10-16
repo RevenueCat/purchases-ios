@@ -143,6 +143,10 @@ private struct NativePaywallLayoutButtonsKey: EnvironmentKey {
     static let defaultValue: Set<ObjectIdentifier> = []
 }
 
+private struct NativePaywallHiddenLayoutButtonsKey: EnvironmentKey {
+    static let defaultValue: Set<ObjectIdentifier> = []
+}
+
 private struct NativePaywallRegistrationOnlyKey: EnvironmentKey {
     static let defaultValue = false
 }
@@ -180,6 +184,10 @@ extension EnvironmentValues {
     var nativePaywallLayoutButtons: Set<ObjectIdentifier> {
         get { self[NativePaywallLayoutButtonsKey.self] }
         set { self[NativePaywallLayoutButtonsKey.self] = newValue }
+    }
+    var nativePaywallHiddenLayoutButtons: Set<ObjectIdentifier> {
+        get { self[NativePaywallHiddenLayoutButtonsKey.self] }
+        set { self[NativePaywallHiddenLayoutButtonsKey.self] = newValue }
     }
     var nativePaywallRegistrationOnly: Bool {
         get { self[NativePaywallRegistrationOnlyKey.self] }

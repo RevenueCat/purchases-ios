@@ -123,7 +123,10 @@ struct ButtonComponentView: View {
                 isWorkflowClose: self.viewModel.component.isCloseWorkflowAction,
                 componentIdentifier: ObjectIdentifier(self.viewModel),
                 interactionEnabled: !self.purchaseHandler.actionInProgress,
-                action: { try await self.performAction() },
+                action: {
+                    guard !self.purchaseHandler.actionInProgress else { return }
+                    try await self.performAction()
+                },
                 content: { self.configuredButton }
             )
         }
@@ -247,11 +250,6 @@ struct ButtonComponentView: View {
     }
 
     private func performAction() async throws {
-        if self.resolvedNativeNavigationRole != nil,
-           self.purchaseHandler.actionInProgress {
-            return
-        }
-
         if let id = viewModel.id,
            let triggerWorkflow = workflowTriggerAction,
            triggerWorkflow(id) {
