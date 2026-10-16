@@ -197,7 +197,6 @@ private struct CarouselView<Content: View>: View {
     @State private var translation: CGFloat = 0
     #else
     @GestureState private var translation: CGFloat = 0
-    @State private var dragVelocityTracker = CarouselDragVelocityTracker()
     #endif
 
     /// A timer for auto-play, if enabled.
@@ -323,18 +322,15 @@ private struct CarouselView<Content: View>: View {
             #else
             .simultaneousGesture(
                 DragGesture()
-                    .onChanged({ value in
+                    .onChanged({ _ in
                         pauseAutoPlay(for: 10)
-                        dragVelocityTracker.addSample(translation: value.translation.width, at: value.time)
                     })
                     .updating($translation) { value, state, _ in
                         state = value.translation.width
                     }
                     .onEnded { value in
-                        let velocity = dragVelocityTracker.velocity(endingAt: value.time)
-                        dragVelocityTracker = CarouselDragVelocityTracker()
                         self.dragOffset = value.translation.width
-                        handleDragEnd(translation: value.translation.width, velocity: velocity)
+                        handleDragEnd(translation: value.translation.width, velocity: value.velocity.width)
                     }
             )
             #endif
@@ -639,43 +635,6 @@ enum CarouselPaging {
             target = min(max(target, 0), count - 1)
         }
         return target
-    }
-
-}
-
-/// Estimates horizontal drag velocity (pt/s) from `DragGesture` samples.
-struct CarouselDragVelocityTracker {
-
-    private static let smoothing: CGFloat = 0.6
-    private static let minSampleInterval: TimeInterval = 0.001
-    private static let stallInterval: TimeInterval = 0.1
-
-    private var lastTranslation: CGFloat = 0
-    private var lastTime: Date?
-    private var velocity: CGFloat?
-
-    mutating func addSample(translation: CGFloat, at time: Date) {
-        // A gap longer than the stall interval starts a new gesture (e.g. after a cancelled one).
-        guard let lastTime, time.timeIntervalSince(lastTime) <= Self.stallInterval else {
-            self = Self()
-            self.lastTranslation = translation
-            self.lastTime = time
-            return
-        }
-
-        let interval = max(time.timeIntervalSince(lastTime), Self.minSampleInterval)
-        let sampleVelocity = (translation - self.lastTranslation) / CGFloat(interval)
-        // The first measured interval seeds the average so short flicks aren't underestimated.
-        self.velocity = self.velocity.map { Self.smoothing * $0 + (1 - Self.smoothing) * sampleVelocity }
-            ?? sampleVelocity
-        self.lastTranslation = translation
-        self.lastTime = time
-    }
-
-    /// Zero if the drag stalled before release, so a pause before lifting isn't a fling.
-    func velocity(endingAt time: Date) -> CGFloat {
-        guard let lastTime, time.timeIntervalSince(lastTime) <= Self.stallInterval else { return 0 }
-        return self.velocity ?? 0
     }
 
 }

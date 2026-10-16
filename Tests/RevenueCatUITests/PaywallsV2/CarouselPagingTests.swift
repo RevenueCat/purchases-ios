@@ -95,36 +95,6 @@ class CarouselPagingTests: TestCase {
         )
     }
 
-    // MARK: - Velocity tracker
-
-    func testTrackerMeasuresVelocityInPointsPerSecond() {
-        let start = Date()
-        var tracker = CarouselDragVelocityTracker()
-        for step in 0...20 {
-            tracker.addSample(translation: -CGFloat(step) * 10, at: start.addingTimeInterval(Double(step) * 0.01))
-        }
-
-        XCTAssertEqual(tracker.velocity(endingAt: start.addingTimeInterval(0.21)), -1000, accuracy: 1)
-    }
-
-    func testTrackerReportsFullSpeedFromASingleInterval() {
-        let start = Date()
-        var tracker = CarouselDragVelocityTracker()
-        tracker.addSample(translation: 0, at: start)
-        tracker.addSample(translation: -6, at: start.addingTimeInterval(0.01))
-
-        XCTAssertEqual(tracker.velocity(endingAt: start.addingTimeInterval(0.01)), -600, accuracy: 1)
-    }
-
-    func testTrackerReportsZeroAfterStall() {
-        let start = Date()
-        var tracker = CarouselDragVelocityTracker()
-        tracker.addSample(translation: 0, at: start)
-        tracker.addSample(translation: -20, at: start.addingTimeInterval(0.01))
-
-        XCTAssertEqual(tracker.velocity(endingAt: start.addingTimeInterval(0.2)), 0)
-    }
-
     // MARK: - Helpers
 
     /// `drag` is a fraction of the page width.
