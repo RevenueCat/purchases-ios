@@ -59,6 +59,8 @@ final class CheckpointPresenter: CheckpointPresenterType {
             return try await self.workflowPresenter.present(presentation)
         } catch CheckpointError.operationAlreadyInProgress {
             throw CheckpointError.operationAlreadyInProgress
+        } catch CheckpointError.presentationContextUnavailable {
+            throw CheckpointError.presentationContextUnavailable
         } catch {
             await withCheckedContinuation { continuation in
                 presentation.errorPresentationHandler(

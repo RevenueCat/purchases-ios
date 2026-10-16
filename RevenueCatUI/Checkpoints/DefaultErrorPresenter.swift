@@ -103,6 +103,11 @@ final class DefaultErrorPresenter: ErrorPresenter {
                 self.acknowledge(current)
             }
         )
+
+        guard current.alertController?.presentingViewController != nil else {
+            self.finish(current)
+            return
+        }
     }
 
     private func acknowledge(_ current: Presentation) {
