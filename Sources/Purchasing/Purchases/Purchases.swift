@@ -299,6 +299,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let customerInfoManager: CustomerInfoManager
     private let eventsManager: EventsManagerType?
     private let remoteConfigManager: RemoteConfigManagerType
+    private let configuredAdRewardsProvider: ConfiguredAdRewardsProvider
     private let sdkSettingsConfigProvider: SDKSettingsConfigProviderType
     private let subscriberDimensionsConfigProvider: SubscriberDimensionsConfigProviderType
 
@@ -992,6 +993,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.remoteConfigManager = systemInfo.remoteConfigEnabled
             ? remoteConfigManager
             : NoOpRemoteConfigManager()
+        self.configuredAdRewardsProvider = ConfiguredAdRewardsProvider(manager: self.remoteConfigManager)
         self.sdkSettingsConfigProvider = sdkSettingsConfigProvider
         self.subscriberDimensionsConfigProvider = subscriberDimensionsConfigProvider
         self.offlineEntitlementsManager = offlineEntitlementsManager
@@ -1028,6 +1030,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self._authentication.internalDelegate = self
 
         self.identityManager.remoteConfigManager = self.remoteConfigManager
+        self.remoteConfigManager.addConfigLifecycleObserver(self.configuredAdRewardsProvider)
 
         Logger.verbose(Strings.configure.purchases_init(self, paymentQueueWrapper))
 
@@ -2085,7 +2088,7 @@ extension Purchases {
     public func adRewards(
         forAdUnitId adUnitId: String
     ) async -> ConfiguredAdRewards? {
-        return nil
+        return await self.configuredAdRewardsProvider.rewards(forAdUnitId: adUnitId)
     }
 
     /// Returns the latest locally cached rewards configured for a rewarded ad unit.
@@ -2099,7 +2102,7 @@ extension Purchases {
     public func cachedAdRewards(
         forAdUnitId adUnitId: String
     ) -> ConfiguredAdRewards? {
-        return nil
+        return self.configuredAdRewardsProvider.cachedRewards(forAdUnitId: adUnitId)
     }
 
     /// Generates a reward verification token for a loaded rewarded ad.
