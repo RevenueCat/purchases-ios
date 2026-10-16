@@ -179,6 +179,7 @@ enum E2ETestFlow: String {
     case checkpointInitialScreenFailureJapanese = "checkpoint_initial_screen_failure_japanese"
     case checkpointSecondScreenFailureSpanish = "checkpoint_second_screen_failure_spanish"
     case checkpointPublished = "checkpoint_published"
+    case checkpointPublishedCustomErrorPresenter = "checkpoint_published_custom_error_presenter"
 
     @ViewBuilder
     var view: some View {
@@ -237,6 +238,8 @@ enum E2ETestFlow: String {
             E2ETestFlowView.CheckpointSecondScreenFailureSpanish()
         case .checkpointPublished:
             E2ETestFlowView.CheckpointPublished()
+        case .checkpointPublishedCustomErrorPresenter:
+            E2ETestFlowView.CheckpointPublishedCustomErrorPresenter()
         }
     }
 }

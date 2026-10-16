@@ -131,4 +131,14 @@ extension E2ETestFlowView {
         }
     }
 
+    struct CheckpointPublishedCustomErrorPresenter: View {
+        var body: some View {
+            CheckpointBackendE2ETestView(
+                checkpointIdentifier: UserDefaults.standard.string(forKey: "checkpoint_identifier") ??
+                    "donottouch_sdk_everyone",
+                usesCustomErrorPresenter: true
+            )
+        }
+    }
+
 }

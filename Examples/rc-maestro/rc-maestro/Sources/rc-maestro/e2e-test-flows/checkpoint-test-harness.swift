@@ -15,9 +15,19 @@ import UIKit
 struct CheckpointBackendE2ETestView: View {
 
     let checkpointIdentifier: String
+    private let usesCustomErrorPresenter: Bool
 
     @State private var callbackStatus = "Callback: not invoked"
     @State private var callbackCount = 0
+    private let customErrorPresenter: CheckpointE2ECustomErrorPresenter
+
+    init(checkpointIdentifier: String, usesCustomErrorPresenter: Bool = false) {
+        let customErrorPresenter = CheckpointE2ECustomErrorPresenter()
+        self.checkpointIdentifier = checkpointIdentifier
+        self.usesCustomErrorPresenter = usesCustomErrorPresenter
+        self.customErrorPresenter = customErrorPresenter
+        Purchases.shared.errorPresenter = usesCustomErrorPresenter ? customErrorPresenter : nil
+    }
 
     var body: some View {
         VStack(spacing: 16) {
@@ -38,6 +48,10 @@ struct CheckpointBackendE2ETestView: View {
             .buttonStyle(.borderedProminent)
 
             Text(self.callbackStatus)
+
+            if self.usesCustomErrorPresenter {
+                Text("Using custom error presenter")
+            }
         }
         .multilineTextAlignment(.center)
         .padding()
@@ -65,12 +79,12 @@ struct CheckpointE2ETestView: View {
         self.usesCustomErrorPresenter = usesCustomErrorPresenter
         self.customErrorPresenter = customErrorPresenter
         let workflowPresenter: WorkflowPresenter
-        if testCase == .purchaseFailure {
+        if let purchaseError = testCase.injectedPurchaseError {
             workflowPresenter = WorkflowPresenter(
                 performPurchase: { _ in
                     return (
                         userCancelled: false,
-                        error: ErrorUtils.testStoreSimulatedPurchaseError()
+                        error: purchaseError
                     )
                 },
                 performRestore: { (success: false, error: nil) }
@@ -79,8 +93,8 @@ struct CheckpointE2ETestView: View {
             workflowPresenter = WorkflowPresenter()
         }
         let customerInfoSynchronizer: CheckpointsManager.CustomerInfoSynchronizer
-        if testCase == .resultSyncFailure {
-            customerInfoSynchronizer = { throw CheckpointE2ETestError.resultSyncFailed }
+        if let synchronizationError = testCase.injectedCustomerInfoSynchronizationError {
+            customerInfoSynchronizer = { throw synchronizationError }
         } else {
             customerInfoSynchronizer = { throw CancellationError() }
         }
@@ -235,6 +249,24 @@ enum CheckpointE2ETestCase: Equatable {
         }
     }
 
+    var injectedPurchaseError: (any Error)? {
+        switch self {
+        case .purchaseFailure:
+            return ErrorUtils.testStoreSimulatedPurchaseError()
+        default:
+            return nil
+        }
+    }
+
+    var injectedCustomerInfoSynchronizationError: (any Error)? {
+        switch self {
+        case .resultSyncFailure:
+            return CheckpointE2ETestError.resultSyncFailed
+        default:
+            return nil
+        }
+    }
+
     func resolve(identifier _: String) async throws -> CheckpointResolution {
         switch self {
         case .invalidIdentifier:
@@ -244,257 +276,18 @@ enum CheckpointE2ETestCase: Equatable {
         case .configurationUnavailable:
             return .noAction(.configurationUnavailable)
         case .initialScreenFailure:
-            return Self.initialScreenFailureResolution()
+            return CheckpointE2EFixtures.initialScreenFailureResolution()
         case .secondScreenFailure:
-            return Self.secondScreenFailureResolution()
+            return CheckpointE2EFixtures.secondScreenFailureResolution()
         case .purchaseFailure:
-            return Self.purchaseFailureResolution()
+            return CheckpointE2EFixtures.purchaseFailureResolution()
         case .resultSyncFailure:
             return .matchedOffering(TestData.offeringWithNoIntroOffer)
         case .successfulWorkflow:
-            return Self.successfulWorkflowResolution()
+            return CheckpointE2EFixtures.successfulWorkflowResolution()
         case .noMatch:
             return .noAction(.noMatch)
         }
-    }
-
-    private static func successfulWorkflowResolution() -> CheckpointResolution {
-        return .matchedWorkflow(
-            ResolvedCheckpointWorkflow(
-                workflow: PublishedWorkflow(
-                    id: "checkpoint-successful-workflow",
-                    displayName: "Checkpoint successful Workflow",
-                    initialStepId: "success-step",
-                    singleStepFallbackId: nil,
-                    steps: [
-                        "success-step": WorkflowStep(
-                            id: "success-step",
-                            type: "screen",
-                            screenId: "first-screen"
-                        )
-                    ],
-                    screens: ["first-screen": Self.firstScreen]
-                ),
-                uiConfig: .empty,
-                offerings: .preview(offerings: [])
-            )
-        )
-    }
-
-    private static func initialScreenFailureResolution() -> CheckpointResolution {
-        return .matchedWorkflow(
-            ResolvedCheckpointWorkflow(
-                workflow: PublishedWorkflow(
-                    id: "checkpoint-initial-screen-failure",
-                    displayName: "Checkpoint initial screen failure",
-                    initialStepId: "initial-step",
-                    singleStepFallbackId: nil,
-                    steps: [
-                        "initial-step": WorkflowStep(
-                            id: "initial-step",
-                            type: "screen",
-                            screenId: "__maestro_missing_initial_screen__"
-                        )
-                    ],
-                    screens: [:]
-                ),
-                uiConfig: .empty,
-                offerings: .preview(offerings: [])
-            )
-        )
-    }
-
-    private static func secondScreenFailureResolution() -> CheckpointResolution {
-        return .matchedWorkflow(
-            ResolvedCheckpointWorkflow(
-                workflow: Self.secondScreenFailureWorkflow,
-                uiConfig: .empty,
-                offerings: .preview(offerings: [])
-            )
-        )
-    }
-
-    private static func purchaseFailureResolution() -> CheckpointResolution {
-        let offering = Offering(
-            identifier: "offering",
-            serverDescription: "Checkpoint E2E purchase offering",
-            availablePackages: [TestData.monthlyPackage],
-            webCheckoutUrl: nil
-        )
-        return .matchedWorkflow(
-            ResolvedCheckpointWorkflow(
-                workflow: PublishedWorkflow(
-                    id: "checkpoint-purchase-failure",
-                    displayName: "Checkpoint purchase failure",
-                    initialStepId: "purchase-step",
-                    singleStepFallbackId: nil,
-                    steps: [
-                        "purchase-step": WorkflowStep(
-                            id: "purchase-step",
-                            type: "screen",
-                            screenId: "purchase-screen"
-                        )
-                    ],
-                    screens: [
-                        "purchase-screen": Self.purchaseScreen(
-                            packageIdentifier: TestData.monthlyPackage.identifier,
-                            offeringIdentifier: offering.identifier
-                        )
-                    ]
-                ),
-                uiConfig: .empty,
-                offerings: .preview(offerings: [offering])
-            )
-        )
-    }
-
-    private static var secondScreenFailureWorkflow: PublishedWorkflow {
-        return PublishedWorkflow(
-            id: "checkpoint-second-screen-failure",
-            displayName: "Checkpoint second screen failure",
-            initialStepId: "first-step",
-            singleStepFallbackId: nil,
-            steps: [
-                "first-step": WorkflowStep(
-                    id: "first-step",
-                    type: "screen",
-                    screenId: "first-screen",
-                    triggers: [
-                        WorkflowTrigger(
-                            name: "Continue",
-                            type: .onPress,
-                            actionId: "show-second-step",
-                            componentId: "continue-button"
-                        )
-                    ],
-                    triggerActions: ["show-second-step": .step(stepId: "second-step")]
-                ),
-                "second-step": WorkflowStep(
-                    id: "second-step",
-                    type: "screen",
-                    screenId: "__maestro_missing_screen__"
-                )
-            ],
-            screens: ["first-screen": Self.firstScreen]
-        )
-    }
-
-    private static var firstScreen: WorkflowScreen {
-        let foregroundColor = PaywallComponent.ColorScheme(light: .hex("#111111"))
-        let buttonText = PaywallComponent.TextComponent(
-            text: "continue",
-            fontWeight: .bold,
-            color: foregroundColor
-        )
-        let button = PaywallComponent.ButtonComponent(
-            id: "continue-button",
-            action: .workflowTrigger,
-            stack: .init(
-                components: [.text(buttonText)],
-                backgroundColor: .init(light: .hex("#F2C94C")),
-                padding: .default
-            )
-        )
-        let title = PaywallComponent.TextComponent(
-            text: "title",
-            fontWeight: .bold,
-            color: foregroundColor,
-            fontSize: 28
-        )
-        let root = PaywallComponent.StackComponent(
-            components: [.text(title), .button(button)],
-            dimension: .vertical(.center, .center),
-            spacing: 24,
-            padding: .default
-        )
-
-        return WorkflowScreen(
-            name: "First screen",
-            templateName: "checkpoint-e2e",
-            assetBaseURL: URL(fileURLWithPath: "/"),
-            componentsConfig: .init(
-                base: .init(
-                    stack: root,
-                    stickyFooter: nil,
-                    background: .color(.init(light: .hex("#FFFFFF")))
-                )
-            ),
-            componentsLocalizations: [
-                "en": [
-                    "title": .string("First screen loaded"),
-                    "continue": .string("Continue")
-                ]
-            ],
-            defaultLocale: "en",
-            offeringIdentifier: nil
-        )
-    }
-
-    private static func purchaseScreen(
-        packageIdentifier: String,
-        offeringIdentifier: String
-    ) -> WorkflowScreen {
-        let foregroundColor = PaywallComponent.ColorScheme(light: .hex("#111111"))
-        let package = PaywallComponent.PackageComponent(
-            packageID: packageIdentifier,
-            isSelectedByDefault: true,
-            applePromoOfferProductCode: nil,
-            stack: .init(
-                components: [
-                    .text(.init(text: "package", fontWeight: .bold, color: foregroundColor))
-                ],
-                backgroundColor: .init(light: .hex("#F2F2F2")),
-                padding: .default
-            )
-        )
-        let purchaseButton = PaywallComponent.PurchaseButtonComponent(
-            stack: .init(
-                components: [
-                    .text(.init(
-                        text: "purchase",
-                        fontWeight: .bold,
-                        color: .init(light: .hex("#FFFFFF"))
-                    ))
-                ],
-                backgroundColor: .init(light: .hex("#5B2EFF")),
-                padding: .default
-            ),
-            action: .inAppCheckout,
-            method: .inAppCheckout,
-            name: nil
-        )
-        let root = PaywallComponent.StackComponent(
-            components: [
-                .text(.init(text: "title", fontWeight: .bold, color: foregroundColor, fontSize: 28)),
-                .package(package),
-                .purchaseButton(purchaseButton)
-            ],
-            dimension: .vertical(.center, .center),
-            spacing: 24,
-            padding: .default
-        )
-
-        return WorkflowScreen(
-            name: "Purchase screen",
-            templateName: "checkpoint-e2e",
-            assetBaseURL: URL(fileURLWithPath: "/"),
-            componentsConfig: .init(
-                base: .init(
-                    stack: root,
-                    stickyFooter: nil,
-                    background: .color(.init(light: .hex("#FFFFFF")))
-                )
-            ),
-            componentsLocalizations: [
-                "en": [
-                    "title": .string("Test Store purchase Flow"),
-                    "package": .string("Monthly test package"),
-                    "purchase": .string("Test purchase")
-                ]
-            ],
-            defaultLocale: "en",
-            offeringIdentifier: offeringIdentifier
-        )
     }
 
 }

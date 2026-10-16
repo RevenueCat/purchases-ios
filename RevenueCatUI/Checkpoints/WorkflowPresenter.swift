@@ -12,21 +12,13 @@
 //  Created by Rick van der Linden.
 //
 
-// swiftlint:disable file_length
+// swiftlint:disable file_length type_body_length
 
 import Foundation
 @_spi(Internal) import RevenueCat
 
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
 import UIKit
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-enum WorkflowPresentationUpdate {
-    case outcome(CheckpointPresentationOutcome)
-    case recoverableErrorHandled
-    case workflowPresentationError(NSError)
-    case dismissalReason(WorkflowDismissalReason)
-}
 
 /// Presents resolved checkpoint workflows using RevenueCatUI.
 ///
@@ -38,6 +30,13 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
 
     typealias PresentationStarter = (WorkflowPresentationRequest) throws -> Bool
     private typealias Continuation = CheckedContinuation<CheckpointPresentationOutcome, Error>
+
+    enum PresentationUpdate {
+        case outcome(CheckpointPresentationOutcome)
+        case recoverableErrorHandled
+        case workflowPresentationError(NSError)
+        case dismissalReason(WorkflowDismissalReason)
+    }
 
     private enum WorkflowOutcomeState {
         case none
@@ -70,7 +69,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         var outcomeState: WorkflowOutcomeState = .none
         var dismissalReason: WorkflowDismissalReason = .close
 
-        mutating func record(_ update: WorkflowPresentationUpdate) -> Bool {
+        mutating func record(_ update: PresentationUpdate) -> Bool {
             switch update {
             case let .outcome(outcome):
                 guard !self.outcomeState.outcome.hasCustomerInfo || outcome.hasCustomerInfo else { return false }
@@ -162,7 +161,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
     }
 
     @discardableResult
-    func stage(_ update: WorkflowPresentationUpdate) -> Bool {
+    func stage(_ update: PresentationUpdate) -> Bool {
         return self.presentationState?.record(update) == true
     }
 
