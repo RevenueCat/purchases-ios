@@ -708,6 +708,28 @@ struct LoadedPaywallsV2View: View {
         )
     }
 
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.componentViewState) private var componentViewState
+    @Environment(\.paywallStateValues) private var paywallStateValues
+    @Environment(\.paywallStateDefaults) private var paywallStateDefaults
+
+    private var firstVisibleRootIsMedia: Bool {
+        paywallState.rootViewModel.stackViewModel.firstVisibleMedia { stack in
+            stack.styles(
+                state: componentViewState, condition: screenCondition,
+                isEligibleForIntroOffer: introOfferEligibilityContext.isEligible(
+                    package: selectedPackageContext.package
+                ),
+                isEligibleForPromoOffer: paywallPromoOfferCache.isMostLikelyEligible(
+                    for: selectedPackageContext.package
+                ),
+                selectedPackageId: selectedPackageContext.package?.identifier, customVariables: customVariables,
+                stateValues: paywallStateValues, stateDefaults: paywallStateDefaults,
+                windowSize: paywallWindowSize, colorScheme: colorScheme
+            ).visible
+        } != nil
+    }
+
     var body: some View {
         GeometryReader { proxy in
             VStack(spacing: 0) {
@@ -721,13 +743,10 @@ struct LoadedPaywallsV2View: View {
             }
             // Used for header image and sticky footer
             .environment(\.safeAreaInsets, proxy.safeAreaInsets)
-            .applyIf(
+            .edgesIgnoringSafeArea(
                 paywallState.rootViewModel.headerViewModel != nil
-                || paywallState.rootViewModel.firstItemIsFullWidthMedia,
-                apply: { view in
-                view
-                    .edgesIgnoringSafeArea(.top)
-            })
+                || firstVisibleRootIsMedia ? .top : []
+            )
             .applyIf(paywallState.rootViewModel.stackViewModel.component.size.height.isFill, apply: { view in
                 view.frame(maxHeight: .infinity, alignment: paywallState.rootViewModel.frameAlignment)
             })
