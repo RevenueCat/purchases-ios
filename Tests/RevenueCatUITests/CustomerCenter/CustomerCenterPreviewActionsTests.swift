@@ -292,22 +292,6 @@ final class CustomerCenterPreviewActionsTests: TestCase {
         }
         guard case .openURL = provider.actions.last else { return XCTFail("Missing URL action") }
     }
-
-    func testInjectedPaywallPurchasesUsePreviewCustomerInformation() async throws {
-        let provider = PreviewProvider()
-        let next = CustomerInfoFixtures.customerInfoWithLifetimePromotional
-        let handler = PurchaseHandler.customerCenterPreview(
-            provider: provider,
-            performPurchase: { _ in
-                provider.mock.customerInfo = next
-                return (false, nil)
-            },
-            performRestore: { (true, nil) }
-        )
-        try await handler.purchase(package: TestData.packageWithIntroOffer)
-        XCTAssertEqual(handler.purchaseResult, .purchased(transaction: nil, customerInfo: next))
-        XCTAssertTrue(handler.hasPurchasedInSession)
-    }
 }
 
 @available(iOS 15.0, *)

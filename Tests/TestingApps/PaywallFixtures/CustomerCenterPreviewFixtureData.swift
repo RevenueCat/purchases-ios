@@ -5,6 +5,13 @@ import Foundation
 
 /// Small local paywalls for testing link interception and dismissal through Customer Center.
 enum CustomerCenterPreviewFixtureData {
+    /// Launch environment read once so the view, the provider and the fixture data agree on the mode.
+    static let mode = ProcessInfo.processInfo.environment["PREVIEW_PAYWALL"] ?? "legacy"
+    /// Outcome the UI tests ask a preview action to simulate.
+    static let actionOutcome = ProcessInfo.processInfo.environment["PREVIEW_ACTION_OUTCOME"]
+
+    static var isActionsPreview: Bool { mode == "actions" }
+
     static func customerInfo(productID: String) -> CustomerInfo {
         let response: [String: Any] = [
             "request_date": "2026-10-14T12:00:00Z",
@@ -28,7 +35,6 @@ enum CustomerCenterPreviewFixtureData {
 
     static func offering() -> Offering {
         let package = PaywallFixture.iconOnlyButton.packages[0]
-        let mode = ProcessInfo.processInfo.environment["PREVIEW_PAYWALL"] ?? "legacy"
         if mode == "legacy" {
             let paywall = PaywallData(
                 templateName: "1",

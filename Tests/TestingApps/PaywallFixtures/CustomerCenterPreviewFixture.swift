@@ -16,7 +16,7 @@ struct CustomerCenterPreviewFixture: View {
             Text(Purchases.isConfigured ? "SDK configured" : "SDK unconfigured")
             Text(provider.events.joined(separator: " | "))
                 .accessibilityIdentifier("preview.events")
-            if ProcessInfo.processInfo.environment["PREVIEW_PAYWALL"] == "actions" {
+            if CustomerCenterPreviewFixtureData.isActionsPreview {
                 Button(showCustomerCenter ? "Hide customer center" : "Show customer center") {
                     showCustomerCenter.toggle()
                 }
@@ -42,7 +42,7 @@ private final class CustomerCenterPreviewFixtureProvider: ObservableObject, Cust
     init() {
         let offering = CustomerCenterPreviewFixtureData.offering()
         self.offering = offering
-        if ProcessInfo.processInfo.environment["PREVIEW_PAYWALL"] == "actions" {
+        if CustomerCenterPreviewFixtureData.isActionsPreview {
             self.info = CustomerCenterPreviewFixtureData.customerInfo(
                 productID: offering.availablePackages[0].storeProduct.id
             )
@@ -52,7 +52,7 @@ private final class CustomerCenterPreviewFixtureProvider: ObservableObject, Cust
         }
     }
 
-    private var isActionsPreview: Bool { ProcessInfo.processInfo.environment["PREVIEW_PAYWALL"] == "actions" }
+    private var isActionsPreview: Bool { CustomerCenterPreviewFixtureData.isActionsPreview }
 
     func customerInfo() async throws -> CustomerInfo { info }
     func customerInfo(fetchPolicy: CacheFetchPolicy) async throws -> CustomerInfo { info }
@@ -69,7 +69,7 @@ private final class CustomerCenterPreviewFixtureProvider: ObservableObject, Cust
     }
     func purchase(package: Package) async throws -> PurchaseResultData {
         events.append("purchase")
-        switch ProcessInfo.processInfo.environment["PREVIEW_ACTION_OUTCOME"] {
+        switch CustomerCenterPreviewFixtureData.actionOutcome {
         case "cancel": throw ErrorCode.purchaseCancelledError
         case "failure": throw NSError(domain: "Preview", code: 1,
                                        userInfo: [NSLocalizedDescriptionKey: "Preview purchase failed"])
@@ -101,9 +101,9 @@ private final class CustomerCenterPreviewFixtureProvider: ObservableObject, Cust
             }
             events.append("started " + name)
             do {
-                if ProcessInfo.processInfo.environment["PREVIEW_ACTION_OUTCOME"] == "delayed" {
+                if CustomerCenterPreviewFixtureData.actionOutcome == "delayed" {
                     try await Task.sleep(nanoseconds: 3_000_000_000)
-                } else if ProcessInfo.processInfo.environment["PREVIEW_ACTION_OUTCOME"] == "failure" {
+                } else if CustomerCenterPreviewFixtureData.actionOutcome == "failure" {
                     throw NSError(domain: "Preview", code: 1,
                                   userInfo: [NSLocalizedDescriptionKey: "Preview action could not finish"])
                 }
@@ -116,7 +116,7 @@ private final class CustomerCenterPreviewFixtureProvider: ObservableObject, Cust
             return
         }
         if case let .openURL(url) = action {
-            let outcome = ProcessInfo.processInfo.environment["PREVIEW_ACTION_OUTCOME"]
+            let outcome = CustomerCenterPreviewFixtureData.actionOutcome
             if outcome == "delayed" {
                 try await Task.sleep(nanoseconds: 3_000_000_000)
             } else if outcome == "failure" {

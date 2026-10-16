@@ -35,14 +35,14 @@ final class CustomerCenterPreviewActions: ObservableObject {
         actionID = id
         isRunning = true
         failure = nil
-        let task = Task { [provider] in
+        let task = Task { [provider, weak self] in
             do {
                 try Task.checkCancellation()
                 try await provider.handlePreviewAction(action)
             } catch is CancellationError {
                 // Cancellation is an expected preview outcome.
             } catch {
-                guard !Task.isCancelled, self.actionID == id else { return }
+                guard !Task.isCancelled, let self, self.actionID == id else { return }
                 if !(error as NSError).isPurchaseCancellation {
                     self.failure = error.localizedDescription
                 }
