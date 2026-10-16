@@ -128,7 +128,7 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
                                              width: window.bounds.width, height: frame.height + 8)
                     }
                 }
-                let bounds = CGRect(x: 0, y: 0, width: window.bounds.width, height: 200)
+                let bounds = window.bounds
                 let screenshot = UIGraphicsImageRenderer(bounds: bounds).image { _ in
                     window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
                 }
