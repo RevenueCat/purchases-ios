@@ -223,7 +223,8 @@ private enum FamilySharingTogglePreview {
                         ))
                     ],
                     dimension: .horizontal(.center, .start),
-                    size: .init(width: .fit(nil), height: .fit(nil))
+                    size: .init(width: .fit(nil), height: .fit(nil)),
+                    spacing: 8
                 )
             ),
             tabs: [
