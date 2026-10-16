@@ -394,7 +394,8 @@ final class CheckpointsManagerTests: TestCase {
     }
 
     func testCallbackCheckpointIsSuppressedWithoutPresentingErrorWhenPresentationContextIsUnavailable() async {
-        let workflowPresenter = WorkflowPresenter(presentationStarter: { _ in false })
+        let workflowPresenter = MockWorkflowPresenter()
+        workflowPresenter.error = CheckpointError.presentationContextUnavailable
         var errorPresentationCount = 0
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
