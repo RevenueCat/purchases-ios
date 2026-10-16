@@ -20,6 +20,31 @@ import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct StackComponentView: View {
+    let viewModel: StackComponentViewModel
+    var independentSelectionContext: PackageContext?
+    var isScrollableByDefault: Bool = false
+    let onDismiss: () -> Void
+    var additionalPadding: EdgeInsets?
+    var showActivityIndicatorOverContent: Bool = false
+
+    var body: some View {
+        let content = StackComponentContentView(
+            viewModel: viewModel,
+            isScrollableByDefault: isScrollableByDefault,
+            onDismiss: onDismiss,
+            additionalPadding: additionalPadding,
+            showActivityIndicatorOverContent: showActivityIndicatorOverContent
+        )
+        if let validator = viewModel.independentPackageValidator {
+            IndependentPackageSelectionView(validator: validator, selection: independentSelectionContext) { content }
+        } else {
+            content
+        }
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct StackComponentContentView: View {
 
     @EnvironmentObject
     private var packageContext: PackageContext

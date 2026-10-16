@@ -123,6 +123,9 @@ struct LoadedTabsComponentView: View {
     @Environment(\.isPaywallLoading)
     private var isPaywallLoading
 
+    @Environment(\.independentPurchaseContext)
+    private var independentPurchaseContext
+
     private let viewModel: TabsComponentViewModel
     private let workflowDefaultPackage: Package?
     private let onDismiss: () -> Void
@@ -337,7 +340,7 @@ struct LoadedTabsComponentView: View {
 
                     self.packageContext.update(
                         package: context.package,
-                        variableContext: context.variableContext
+                        variableContext: self.parentVariableContext(for: context.variableContext)
                     )
                 },
                 onDismiss: self.onDismiss
@@ -379,7 +382,7 @@ struct LoadedTabsComponentView: View {
                     if let package = tierPackageContext.package, tierPackageContext !== self.packageContext {
                         self.packageContext.update(
                             package: package,
-                            variableContext: tierPackageContext.variableContext
+                            variableContext: self.parentVariableContext(for: tierPackageContext.variableContext)
                         )
                     }
                 }
@@ -435,7 +438,7 @@ struct LoadedTabsComponentView: View {
                     // Switching tabs restores a selection rather than making one, so it isn't a tap.
                     self.packageContext.update(
                         package: parentUpdate.package,
-                        variableContext: parentUpdate.variableContext,
+                        variableContext: self.parentVariableContext(for: parentUpdate.variableContext),
                         isReconcile: true
                     )
                 }
@@ -494,6 +497,12 @@ struct LoadedTabsComponentView: View {
                 }
             }
         }
+    }
+
+    private func parentVariableContext(
+        for tabVariableContext: PackageContext.VariableContext
+    ) -> PackageContext.VariableContext {
+        return self.independentPurchaseContext ? self.parentOwnedVariableContext : tabVariableContext
     }
 
     private func publishSelectedTabState(_ tabId: String) {
