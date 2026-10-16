@@ -564,15 +564,15 @@ final class WorkflowPresenterTests: TestCase {
 
     #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
 
-    func testRejectedPresentationThrowsAndCleansStoredCall() {
+    func testBusyPresentationContextThrowsAndCleansStoredCall() {
         var shouldAcceptPresentation = false
         let presenter = WorkflowPresenter { _ in shouldAcceptPresentation }
 
         XCTAssertThrowsError(
             try presenter.startPresentation(Self.presentation())
         ) { error in
-            guard case CheckpointError.presentationFailed = error else {
-                return XCTFail("Expected presentationFailed, got \(error)")
+            guard case CheckpointError.presentationContextBusy = error else {
+                return XCTFail("Expected presentationContextBusy, got \(error)")
             }
         }
 

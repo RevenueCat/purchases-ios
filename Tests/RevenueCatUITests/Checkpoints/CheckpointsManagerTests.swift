@@ -393,6 +393,28 @@ final class CheckpointsManagerTests: TestCase {
         }
     }
 
+    func testCallbackCheckpointIsSuppressedWithoutPresentingErrorWhenPresentationContextIsBusy() async {
+        let workflowPresenter = WorkflowPresenter(presentationStarter: { _ in false })
+        var errorPresentationCount = 0
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
+            workflowPresenter: workflowPresenter
+        )
+
+        let result = await manager.checkpointForCallback(
+            identifier: "soft_paywall",
+            params: .init(errorPresenter: { _, completion in
+                errorPresentationCount += 1
+                completion.complete()
+            })
+        )
+
+        guard case .suppressed = result else {
+            return XCTFail("Expected the callback to be suppressed")
+        }
+        XCTAssertEqual(errorPresentationCount, 0)
+    }
+
     func testUnmatchedCallbackCheckpointStillCompletesWhileAnotherFlowIsBeingPresented() async {
         let executor = MockWorkflowPresenter()
         executor.error = CheckpointError.operationAlreadyInProgress

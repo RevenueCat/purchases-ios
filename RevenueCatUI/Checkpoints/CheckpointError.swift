@@ -21,6 +21,7 @@ enum CheckpointError: Error {
     case configurationUnavailable
     case operationAlreadyInProgress
     case noPresentationContext
+    case presentationContextBusy
     case presentationFailed
 
 }
@@ -33,7 +34,8 @@ extension CheckpointError: CustomNSError {
 
     var errorCode: Int {
         switch self {
-        case .invalidIdentifier, .configurationUnavailable, .noPresentationContext, .presentationFailed:
+        case .invalidIdentifier, .configurationUnavailable, .noPresentationContext,
+             .presentationContextBusy, .presentationFailed:
             return ErrorCode.configurationError.rawValue
         case .operationAlreadyInProgress:
             return ErrorCode.operationAlreadyInProgressForProductError.rawValue
@@ -54,6 +56,8 @@ extension CheckpointError: CustomNSError {
             return "Another checkpoint UI is already being presented."
         case .noPresentationContext:
             return "Unable to locate a view controller for checkpoint presentation."
+        case .presentationContextBusy:
+            return "Another view controller presentation is in progress."
         case .presentationFailed:
             return "Unable to present checkpoint UI."
         }
