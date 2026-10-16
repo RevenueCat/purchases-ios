@@ -2864,6 +2864,9 @@ func initialDiagnosticsCollectionDecision(
     return remoteConfigEnabled ? .undetermined : .disabled
 }
 
+/// Resolves diagnostics collection using the remote setting when present, otherwise falling back
+/// to ``Configuration/Builder/with(diagnosticsEnabled:)``. The remote setting is enabled only at
+/// the developer's request or with their explicit approval.
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 func resolvedDiagnosticsCollectionDecision(
     remoteDiagnosticsEnabled: Bool?,
