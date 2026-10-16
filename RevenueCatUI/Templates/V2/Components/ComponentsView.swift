@@ -25,6 +25,10 @@ struct ComponentsView: View {
     @Environment(\.overlaidHeaderHeight)
     private var overlaidHeaderHeight
 
+    @Environment(\.workflowRenderingContext) private var workflowRenderingContext
+
+    @Environment(\.nativePaywallHiddenLayoutButtons) private var hiddenNativeButtons
+
     let componentViewModels: [PaywallComponentViewModel]
     /// When true, applies safe area top padding to all children except the first.
     /// Used for ZStacks where the first child is a hero image that bleeds into the safe area.
@@ -45,7 +49,8 @@ struct ComponentsView: View {
     }
 
     var body: some View {
-        ForEach(Array(componentViewModels.enumerated()), id: \.offset) { index, item in
+        ForEach(self.componentViewModels.indicesExcludingNativeButtons(self.hiddenNativeButtons), id: \.self) { index in
+            let item = self.componentViewModels[index]
             view(for: item)
                 .padding(
                     .top,
@@ -53,6 +58,21 @@ struct ComponentsView: View {
                         ? max(safeAreaInsets.top, overlaidHeaderHeight)
                         : 0
                 )
+                .applyIf(self.workflowRenderingContext.isHeader) { view in
+                    view.background {
+                        switch item {
+                        case .stack, .root:
+                            EmptyView() // Descendants report their own rendered content.
+                        default:
+                            GeometryReader { geometry in
+                                Color.clear.preference(
+                                    key: NativePaywallHeaderContentKey.self,
+                                    value: .init(hasVisibleContent: geometry.size.width > 0 && geometry.size.height > 0)
+                                )
+                            }
+                        }
+                    }
+                }
         }
     }
 

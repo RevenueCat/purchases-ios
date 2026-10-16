@@ -84,6 +84,8 @@ struct SheetPresentationPlan: Equatable {
 /// the animation and tap-to-dismiss behavior.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct BottomSheetOverlayModifier: ViewModifier {
+    @Environment(\.nativePaywallButtonRegistrationEnabled) private var nativeRegistrationEnabled
+
     @Binding var sheetViewModel: SheetViewModel?
     let safeAreaInsets: EdgeInsets
     let onSheetContentAppear: (() -> Void)?
@@ -157,6 +159,8 @@ struct BottomSheetOverlayModifier: ViewModifier {
     func body(content: Content) -> some View {
         ZStack {
             content
+                .environment(\.nativePaywallButtonRegistrationEnabled,
+                             self.nativeRegistrationEnabled && self.sheetViewModel == nil)
                 .blur(radius: sheetViewModel?.sheet.backgroundBlur == true ? 10 : 0)
                 .animation(.easeInOut(duration: 0.25), value: sheetViewModel?.sheet.backgroundBlur)
                 // Blur is visual only: without this VoiceOver still walks what is behind.
@@ -189,6 +193,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
                             trailing: 0
                         )
                     )
+                    .environment(\.nativePaywallCloseEnabled, false)
                     // Dismissal in here closes the sheet, so a `navigate_back` button must not
                     // inherit the workflow's back stack or handler. Its label and tap both refer
                     // to the sheet's local dismissal.

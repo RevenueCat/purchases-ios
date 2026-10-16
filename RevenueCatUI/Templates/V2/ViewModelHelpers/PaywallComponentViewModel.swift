@@ -42,4 +42,17 @@ enum PaywallComponentViewModel {
     case webView(WebViewComponentViewModel)
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension Array where Element == PaywallComponentViewModel {
+    /// Filter original indices so promoting a button preserves every sibling's view identity.
+    func indicesExcludingNativeButtons(_ hiddenButtons: Set<ObjectIdentifier>) -> [Int] {
+        self.indices.filter { index in
+            if case .button(let button) = self[index] {
+                return !hiddenButtons.contains(ObjectIdentifier(button))
+            }
+            return true
+        }
+    }
+}
+
 #endif

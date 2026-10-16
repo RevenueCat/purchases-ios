@@ -184,6 +184,18 @@ class ButtonComponentViewModel {
         }
     }
 
+    func nativeNavigationRole(
+        dismissesPaywall: Bool,
+        useNativeIfPossible: Bool? = nil
+    ) -> NativePaywallCloseCoordinator.Role? {
+        guard useNativeIfPossible ?? self.component.useNativeIfPossible else { return nil }
+        switch self.action {
+        case .navigateBack: return dismissesPaywall ? .close : .back
+        case .closeWorkflow: return .close
+        default: return nil
+        }
+    }
+
     var isRestoreAction: Bool {
         switch self.action {
         case .restorePurchases:

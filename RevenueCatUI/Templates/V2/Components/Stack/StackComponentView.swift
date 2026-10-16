@@ -60,6 +60,9 @@ struct StackComponentView: View {
     @Environment(\.paywallAncestorScrollsVertically)
     private var paywallAncestorScrollsVertically
 
+    @Environment(\.nativePaywallCloseCoordinator) private var nativeCoordinator
+    @State private var hiddenNativeButtons: Set<ObjectIdentifier> = []
+
     private let viewModel: StackComponentViewModel
     private let isScrollableByDefault: Bool
     private let onDismiss: () -> Void
@@ -67,6 +70,7 @@ struct StackComponentView: View {
     /// area when displayed as a sticky footer.
     private let additionalPadding: EdgeInsets
     private let showActivityIndicatorOverContent: Bool
+    @Environment(\.nativePaywallHeaderCollapsed) private var suppressNativeHeaderLayout
 
     init(
         viewModel: StackComponentViewModel,
@@ -80,6 +84,13 @@ struct StackComponentView: View {
         self.onDismiss = onDismiss
         self.additionalPadding = additionalPadding ?? EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
         self.showActivityIndicatorOverContent = showActivityIndicatorOverContent
+    }
+
+    private var layoutButtonIdentifiers: Set<ObjectIdentifier> {
+        Set(self.viewModel.viewModels.compactMap { item in
+            if case .button(let button) = item { return ObjectIdentifier(button) }
+            return nil
+        })
     }
 
     var body: some View {
@@ -110,6 +121,8 @@ struct StackComponentView: View {
     @ViewBuilder
     // swiftlint:disable:next function_body_length
     private func make(style: StackComponentStyle) -> some View {
+        let layoutSize: PaywallComponent.Size = self.suppressNativeHeaderLayout
+            ? .init(width: .fixed(0), height: .fit(nil)) : style.size
         Group {
             switch style.dimension {
             case .vertical(let horizontalAlignment, let distribution):
@@ -121,7 +134,8 @@ struct StackComponentView: View {
                     onDismiss: self.onDismiss
                 )
                 // This alignment positions the inner VStack horizontally and vertically
-                .size(style.size,
+                .fixedSize(horizontal: self.suppressNativeHeaderLayout, vertical: self.suppressNativeHeaderLayout)
+                .size(layoutSize,
                       horizontalAlignment: horizontalAlignment.frameAlignment,
                       verticalAlignment: distribution.verticalFrameAlignment)
             case .horizontal(let verticalAlignment, let distribution):
@@ -133,7 +147,8 @@ struct StackComponentView: View {
                     onDismiss: self.onDismiss
                 )
                 // This alignment positions the inner VStack horizontally and vertically
-                .size(style.size,
+                .fixedSize(horizontal: self.suppressNativeHeaderLayout, vertical: self.suppressNativeHeaderLayout)
+                .size(layoutSize,
                       horizontalAlignment: distribution.horizontalFrameAlignment,
                       verticalAlignment: verticalAlignment.frameAlignment)
             case .zlayer(let alignment):
@@ -146,13 +161,17 @@ struct StackComponentView: View {
                     )
                 }
                 // These alignments define the position of inner components inside the ZStack
-                .size(style.size,
+                .fixedSize(horizontal: self.suppressNativeHeaderLayout, vertical: self.suppressNativeHeaderLayout)
+                .size(layoutSize,
                       horizontalAlignment: alignment.stackAlignment,
                       verticalAlignment: alignment.stackAlignment)
             }
         }
+        .environment(
+            \.nativePaywallHiddenLayoutButtons, self.hiddenNativeButtons.intersection(self.layoutButtonIdentifiers)
+        )
         .hidden(if: self.showActivityIndicatorOverContent)
-        .padding(style.padding.extend(by: style.border?.width ?? 0))
+        .padding(self.suppressNativeHeaderLayout ? EdgeInsets() : style.padding.extend(by: style.border?.width ?? 0))
         .padding(additionalPadding)
         .applyIf(self.showActivityIndicatorOverContent, apply: { view in
             view.progressOverlay(for: style.backgroundStyle)
@@ -161,7 +180,7 @@ struct StackComponentView: View {
         .environment(\.paywallRootStackIsZLayer, self.paywallRootStackIsZLayer && style.scrollable != false)
         .scrollableIfEnabled(
             style.dimension,
-            size: style.size,
+            size: layoutSize,
             enabled: style.scrollable ?? self.isScrollableByDefault,
             zLayerShouldScroll: PaywallZLayerScrollPolicy.shouldApplyScroll(
                 stackScrollPreference: style.scrollable,
@@ -174,7 +193,25 @@ struct StackComponentView: View {
                background: style.backgroundStyle,
                uiConfigProvider: self.viewModel.uiConfigProvider)
         .apply(badge: style.badge, border: style.border, shadow: style.shadow, shape: style.shape)
-        .padding(style.margin)
+        .padding(self.suppressNativeHeaderLayout ? EdgeInsets() : style.margin)
+        .environment(\.nativePaywallLayoutButtons, self.layoutButtonIdentifiers)
+        .background {
+            if self.nativeCoordinator != nil {
+                ForEach(Array(self.viewModel.viewModels.enumerated()), id: \.offset) { _, item in
+                    if case .button(let button) = item {
+                        ButtonComponentView(viewModel: button, onDismiss: self.onDismiss)
+                            .environment(\.nativePaywallRegistrationOnly, true)
+                    }
+                }
+                .frame(width: 0, height: 0)
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
+            }
+        }
+        .onPreferenceChange(NativePaywallHiddenButtonsKey.self) { self.hiddenNativeButtons = $0 }
+        .transformPreference(NativePaywallHeaderContentKey.self) { content in
+            content.hasVisibleContent = content.hasVisibleContent || style.badge != nil
+        }
     }
 
 }
