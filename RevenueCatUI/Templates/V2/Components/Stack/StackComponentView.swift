@@ -86,6 +86,13 @@ struct StackComponentView: View {
         self.showActivityIndicatorOverContent = showActivityIndicatorOverContent
     }
 
+    private var layoutButtonIdentifiers: Set<ObjectIdentifier> {
+        Set(self.viewModel.viewModels.compactMap { item in
+            if case .button(let button) = item { return ObjectIdentifier(button) }
+            return nil
+        })
+    }
+
     var body: some View {
         let isEligibleForIntroOffer = self.introOfferEligibilityContext.isEligible(
             package: self.packageContext.package
@@ -179,7 +186,9 @@ struct StackComponentView: View {
                       verticalAlignment: alignment.stackAlignment)
             }
         }
-        .environment(\.nativePaywallHiddenLayoutButtons, self.hiddenNativeButtons)
+        .environment(
+            \.nativePaywallHiddenLayoutButtons, self.hiddenNativeButtons.intersection(self.layoutButtonIdentifiers)
+        )
         .hidden(if: self.showActivityIndicatorOverContent)
         .padding(self.suppressNativeHeaderLayout ? EdgeInsets() : style.padding.extend(by: style.border?.width ?? 0))
         .padding(additionalPadding)
@@ -204,10 +213,7 @@ struct StackComponentView: View {
                uiConfigProvider: self.viewModel.uiConfigProvider)
         .apply(badge: style.badge, border: style.border, shadow: style.shadow, shape: style.shape)
         .padding(self.suppressNativeHeaderLayout ? EdgeInsets() : style.margin)
-        .environment(\.nativePaywallLayoutButtons, Set(self.viewModel.viewModels.compactMap { item in
-            if case .button(let button) = item { return ObjectIdentifier(button) }
-            return nil
-        }))
+        .environment(\.nativePaywallLayoutButtons, self.layoutButtonIdentifiers)
         .background {
             if self.nativeCoordinator != nil {
                 ForEach(Array(self.viewModel.viewModels.enumerated()), id: \.offset) { _, item in

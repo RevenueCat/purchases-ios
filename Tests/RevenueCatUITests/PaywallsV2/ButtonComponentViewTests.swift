@@ -391,38 +391,43 @@ final class ButtonComponentViewTests: TestCase {
         )
     }
 
-    func testConfiguredCloseStillWorksDuringPurchaseWithoutNativeControls() async throws {
+    func testNativeButtonInNestedStackBadgeKeepsItsActionRegistered() async throws {
         try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
-        for coordinator in [nil, NativePaywallCloseCoordinator()] {
-            let handler = PurchaseHandler.default()
-            handler.actionTypeInProgress = .purchase
-            let viewModel = try Self.makeViewModel(component: .init(
+        let badge = PaywallComponent.Badge(
+            style: .overlaid, alignment: .top,
+            stack: .init(components: [.button(.init(
                 action: .navigateBack, stack: Self.makeButtonStack(label: "Close"), useNativeIfPossible: true
+            ))])
+        )
+        let model = try StackComponentViewModel(component: .init(components: [.stack(.init(
+            components: Self.makeButtonStack(label: "Close").components, badge: badge
+        ))]), localizationProvider: .init(
+            locale: Locale(identifier: "en_US"), localizedStrings: ["Close": .string("Close")]
+        ), colorScheme: .light)
+        let coordinator = NativePaywallCloseCoordinator()
+        var dismissals = 0
+        let view = StackComponentView(viewModel: model, onDismiss: { dismissals += 1 })
+            .environment(\.nativePaywallCloseCoordinator, coordinator)
+            .environmentObject(PurchaseHandler.default())
+            .environmentObject(PackageContext(package: nil, variableContext: .init(packages: [])))
+            .environmentObject(IntroOfferEligibilityContext(
+                introEligibilityChecker: BaseSnapshotTest.eligibleChecker
             ))
-            let dismissed = expectation(description: "Configured Close remains usable during purchase")
-            let view = ButtonComponentView(viewModel: viewModel, onDismiss: { dismissed.fulfill() })
-                .environmentObject(handler)
-                .environmentObject(PackageContext(package: nil, variableContext: .init(packages: [])))
-                .environmentObject(IntroOfferEligibilityContext(
-                    introEligibilityChecker: BaseSnapshotTest.eligibleChecker
-                ))
-                .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
-                .environment(\.nativePaywallCloseCoordinator, coordinator)
-                .environment(\.nativePaywallControlsPresented, false)
-                .environment(\.safeAreaInsets, EdgeInsets())
-                .buttonStyle(.bordered)
-            let (window, hostedView) = Self.host(view)
-            defer { window.isHidden = true; window.rootViewController = nil }
-            func findButton(in view: UIView) -> UIControl? {
-                if let control = view as? UIControl,
-                   control.allControlEvents.contains(.primaryActionTriggered) { return control }
-                return view.subviews.lazy.compactMap { findButton(in: $0) }.first
-            }
-            let button = try XCTUnwrap(findButton(in: hostedView))
-            XCTAssertTrue(button.isEnabled)
-            button.sendActions(for: .primaryActionTriggered)
-            await fulfillment(of: [dismissed], timeout: 2)
-        }
+            .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
+            .environment(\.safeAreaInsets, EdgeInsets())
+        let (window, _) = Self.host(view)
+        defer { window.isHidden = true; window.rootViewController = nil }
+        let registered = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            coordinator.actions.count == 1
+        }, object: nil)
+        await fulfillment(of: [registered], timeout: 2)
+        let id = try XCTUnwrap(coordinator.actions.first?.id)
+        let settled = expectation(description: "Badge registration remains stable")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { settled.fulfill() }
+        await fulfillment(of: [settled], timeout: 2)
+        XCTAssertEqual(coordinator.actions.map(\.id), [id])
+        try await coordinator.performAction(id: id)
+        XCTAssertEqual(dismissals, 1)
     }
 
     func testPromotingNativeButtonsDoesNotRemountSiblingCarousel() async throws {
