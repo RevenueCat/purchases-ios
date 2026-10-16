@@ -99,7 +99,7 @@ public class PaywallViewController: UIViewController {
     }
 
     private final var shouldBlockTouchEvents: Bool
-    private final var dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)?
+    final var dismissRequestedHandler: ((_ controller: PaywallViewController) -> Void)?
 
     private var configuration: PaywallViewConfiguration {
         didSet {
@@ -156,7 +156,7 @@ public class PaywallViewController: UIViewController {
     }
 
     func continueAfterCheckpointError() {
-        self.dismiss(animated: true)
+        self.dismissPaywall()
     }
 
     /// Prevents this controller from resolving or presenting exit offers.

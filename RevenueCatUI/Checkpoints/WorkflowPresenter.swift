@@ -20,6 +20,33 @@ import Foundation
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
 import UIKit
 
+// SPIKE (WFL-740): not a proposed API shape. Lets a hybrid host embed the workflow
+// paywall as a child view controller, so the host's presentation slot stays free.
+/// Embeds checkpoint workflow paywalls in the host's view controller hierarchy.
+@_spi(Internal)
+@MainActor
+public protocol CheckpointPaywallHost: AnyObject {
+
+    /// Add `controller` to the host's view controller hierarchy.
+    func embed(_ controller: UIViewController)
+
+    /// Remove `controller` from the host's view controller hierarchy.
+    func remove(_ controller: UIViewController)
+
+}
+
+/// Holds the host that workflow paywalls are handed to.
+@_spi(Internal)
+@MainActor
+// `no_new_public_enums` rules out a caseless enum here.
+// swiftlint:disable:next convenience_type
+public struct CheckpointPaywallHosting {
+
+    /// When set, workflow paywalls are handed to this host instead of being presented.
+    public static weak var host: CheckpointPaywallHost?
+
+}
+
 /// Presents resolved checkpoint workflows using RevenueCatUI.
 ///
 /// Purchase, restore, and error outcomes are staged as they occur and delivered
@@ -253,6 +280,9 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
     }
 
     private func presentAutomatically(_ presentation: WorkflowPresentationRequest) throws {
+        if try self.embedInHostIfNeeded(presentation) {
+            return
+        }
         guard let presentationContext = UIApplication.extensionSafeApplication?.currentPresentationViewController else {
             throw CheckpointError.noPresentationContext
         }
@@ -300,6 +330,24 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         viewController.disableExitOffers()
         viewController.customVariables = presentation.customVariables
         return viewController
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, *)
+private extension WorkflowPresenter {
+
+    // SPIKE (WFL-740): hand the paywall to the host instead of presenting it.
+    func embedInHostIfNeeded(_ presentation: WorkflowPresentationRequest) throws -> Bool {
+        guard let host = CheckpointPaywallHosting.host else { return false }
+        let viewController = try self.makePaywallViewController(for: presentation)
+        viewController.delegate = self
+        viewController.dismissRequestedHandler = { [weak self, weak host] controller in
+            host?.remove(controller)
+            self?.handleDismissal(of: controller)
+        }
+        host.embed(viewController)
+        return true
     }
 
 }
