@@ -527,7 +527,7 @@ class LocalTransactionMetadataStoreE2ETests: TestCase {
         expect(retrieved?.transactionData.presentedOfferingContext?.targetingContext?.ruleId)
             == originalMetadata.transactionData.presentedOfferingContext?.targetingContext?.ruleId
         expect(retrieved?.transactionData.presentedOfferingContext?.checkpointIdentifier)
-            == originalMetadata.transactionData.presentedOfferingContext?.checkpointIdentifier
+            == "integration_checkpoint"
         expect(retrieved?.transactionData.metadata) == originalMetadata.transactionData.metadata
         expect(retrieved?.transactionData.aadAttributionToken) == originalMetadata.transactionData.aadAttributionToken
         expect(retrieved?.transactionData.storeCountry) == originalMetadata.transactionData.storeCountry
@@ -1031,7 +1031,7 @@ class LocalTransactionMetadataStoreE2ETests: TestCase {
                 offeringIdentifier: "integration_offering",
                 placementIdentifier: "integration_placement",
                 targetingContext: .init(revision: 42, ruleId: "rule_integration_123")
-            ),
+            ).withCheckpointIdentifier("integration_checkpoint"),
             presentedPaywall: nil,
             unsyncedAttributes: nil,
             metadata: ["integration_key": "integration_value", "another_key": "another_value"],
