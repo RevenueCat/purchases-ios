@@ -3065,6 +3065,14 @@ internal extension Purchases {
 
     #if DEBUG
 
+    func workflowIds() async -> [String] {
+        return await self.workflowManager.workflowIds()
+    }
+
+    func workflowId(forOfferingIdentifier offeringID: String) async -> String? {
+        return await self.workflowManager.workflowId(forOfferingId: offeringID)
+    }
+
     /// - Returns: the parsed `AppleReceipt`
     ///
     /// - Warning: this is only meant for integration tests, as a way to debug purchase failures.

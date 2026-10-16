@@ -87,6 +87,20 @@ struct APIKeyDashboardList: View {
     @State
     private var presentedWorkflowExitOffer: Offering?
 
+    #if DEBUG && !os(tvOS)
+    @State
+    private var workflowRows: [WorkflowRow] = []
+
+    @State
+    private var presentedWorkflowSheet: PresentedWorkflow?
+
+    @State
+    private var presentedWorkflowFull: PresentedWorkflow?
+
+    @State
+    private var workflowLoadError: String?
+    #endif
+
     @State
     private var isLoadingPaywall: Bool = false
 
@@ -103,7 +117,7 @@ struct APIKeyDashboardList: View {
         ZStack {
             NavigationView {
                 self.content
-                    .navigationTitle("Live Paywalls")
+                    .navigationTitle(Self.title)
                     #if !os(macOS)
                     .navigationBarTitleDisplayMode(.inline)
                     #endif
@@ -182,6 +196,12 @@ struct APIKeyDashboardList: View {
                 by: PaywallSection.init(offering:)
             )
 
+            #if DEBUG && !os(tvOS)
+            let workflowRows = await WorkflowRow.loadAll(offerings: offerings)
+            guard !Task.isCancelled else { return }
+            self.workflowRows = workflowRows
+            #endif
+
             self.offerings = .success(
                 .init(
                     sections: Array(offeringsBySection.keys).sorted(),
@@ -212,7 +232,12 @@ struct APIKeyDashboardList: View {
     }
 
     private func filteredOfferings(for section: PaywallSection, in data: Data) -> [Offering] {
-        let offerings = data.offeringsBySection[section] ?? []
+        var offerings = data.offeringsBySection[section] ?? []
+        #if DEBUG && !os(tvOS)
+        // A claimed offering is opened through its flow in the Flows section.
+        let claimed = self.workflowRows.reduce(into: Set<String>()) { $0.formUnion($1.claimedOfferingIdentifiers) }
+        offerings.removeAll { claimed.contains($0.identifier) }
+        #endif
         guard !searchText.isEmpty else { return offerings }
         return offerings.filter {
             $0.id.localizedCaseInsensitiveContains(searchText) ||
@@ -223,7 +248,14 @@ struct APIKeyDashboardList: View {
 
     @ViewBuilder
     private func list(with data: Data) -> some View {
+        let firstPaywallSection = data.sections.first {
+            $0 != .noPaywall && !self.filteredOfferings(for: $0, in: data).isEmpty
+        }
         List {
+            #if DEBUG && !os(tvOS)
+            self.workflowsSection(data: data)
+            self.offeringFlowsSection(data: data)
+            #endif
             ForEach(data.sections, id: \.self) { section in
                 let offerings = filteredOfferings(for: section, in: data)
                 if !offerings.isEmpty {
@@ -258,7 +290,7 @@ struct APIKeyDashboardList: View {
                                 #endif
                             } else {
                                 #if !os(watchOS)
-                                OfferButton(offering: offering) {
+                                OfferButton(offering: offering, detail: self.flowsUsingDescription(offering)) {
                                     self.isLoadingPaywall = true
                                     self.presentedPaywall = .init(offering: offering, mode: .workflow)
                                 }
@@ -277,12 +309,15 @@ struct APIKeyDashboardList: View {
                             }
                         }
                     } header: {
-                        Text(verbatim: section.description)
+                        SectionHeader(
+                            title: section.title,
+                            caption: section == firstPaywallSection || section == .noPaywall ? section.caption : nil
+                        )
                     }
                 }
             }
         }
-        .searchable(text: $searchText, prompt: "Search offerings")
+        .searchable(text: $searchText, prompt: "Search")
         .sheet(item: self.$presentedPaywall) { paywall in
             PaywallPresenter(offering: paywall.offering, mode: paywall.mode, introEligility: .eligible)
                 .onRestoreCompleted { _ in
@@ -356,7 +391,165 @@ struct APIKeyDashboardList: View {
                         self.isLoadingPaywall = false
                     }
                 }
+                #if DEBUG && !os(tvOS)
+                .sheet(item: self.$presentedWorkflowSheet, onDismiss: self.handleWorkflowDismiss) { workflow in
+                    self.workflowPaywallView(for: workflow)
+                }
+                #if os(macOS)
+                .sheet(item: self.$presentedWorkflowFull, onDismiss: self.handleWorkflowDismiss) { workflow in
+                    self.workflowPaywallView(for: workflow)
+                }
+                #else
+                .fullScreenCover(item: self.$presentedWorkflowFull, onDismiss: self.handleWorkflowDismiss) { workflow in
+                    self.workflowPaywallView(for: workflow)
+                }
+                #endif
+                .alert(
+                    "Couldn't open flow",
+                    isPresented: .init(
+                        get: { self.workflowLoadError != nil },
+                        set: { if !$0 { self.workflowLoadError = nil } }
+                    ),
+                    actions: {},
+                    message: { Text(self.workflowLoadError ?? "") }
+                )
+                #endif
     }
+
+    #if DEBUG && !os(tvOS)
+    @ViewBuilder
+    private func workflowsSection(data: Data) -> some View {
+        let rows = self.filteredWorkflowRows.filter { !$0.isOfferingFlow }
+
+        if !rows.isEmpty {
+            Section {
+                ForEach(rows) { row in
+                    Button {
+                        self.openWorkflow(row.id, fullScreen: false)
+                    } label: {
+                        VStack(alignment: .leading) {
+                            Text(row.name ?? row.id)
+                            Text(row.subtitle)
+                                .font(.caption)
+                                .foregroundStyle(row.error == nil ? Color.secondary : Color.red)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    #if !os(watchOS)
+                    .contextMenu {
+                        Button {
+                            self.openWorkflow(row.id, fullScreen: false)
+                        } label: {
+                            Text("Sheet")
+                            Image(systemName: PaywallTesterViewMode.sheet.icon)
+                        }
+                        Button {
+                            self.openWorkflow(row.id, fullScreen: true)
+                        } label: {
+                            Text("Full screen")
+                            Image(systemName: PaywallTesterViewMode.fullScreen.icon)
+                        }
+                        // Opens like an app does, so the SDK resolves the flow from the offering.
+                        ForEach(row.claimedOfferingIdentifiers.sorted(), id: \.self) { identifier in
+                            if let offering = self.offering(identifier, in: data) {
+                                Section("By offering: \(identifier)") {
+                                    self.button(for: .workflow, offering: offering)
+                                    self.button(for: .presentWorkflow, offering: offering)
+                                }
+                            }
+                        }
+                    }
+                    #endif
+                }
+            } header: {
+                SectionHeader(
+                    title: "Flows",
+                    caption: "Opened by id. Long press a flow with an offering to open it by offering."
+                )
+            }
+        }
+    }
+
+    private var filteredWorkflowRows: [WorkflowRow] {
+        return self.searchText.isEmpty
+            ? self.workflowRows
+            : self.workflowRows.filter { $0.matches(self.searchText) }
+    }
+
+    @ViewBuilder
+    private func offeringFlowsSection(data: Data) -> some View {
+        let rows = self.filteredWorkflowRows.filter(\.isOfferingFlow)
+
+        if !rows.isEmpty {
+            Section {
+                ForEach(rows) { row in
+                    let offeringIdentifier = row.returnedOfferingIdentifier ?? ""
+                    Button {
+                        self.openOfferingFlow(offeringIdentifier, in: data)
+                    } label: {
+                        VStack(alignment: .leading) {
+                            Text(row.name ?? row.id)
+                            Text("Offering: \(offeringIdentifier)")
+                                .font(.caption)
+                                .foregroundStyle(Color.secondary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
+            } header: {
+                SectionHeader(
+                    title: "Offering flows",
+                    caption: "Return only an offering. Opens that offering, like an app."
+                )
+            }
+        }
+    }
+
+    private func offering(_ identifier: String, in data: Data) -> Offering? {
+        return data.offeringsBySection.values.joined().first { $0.identifier == identifier }
+    }
+
+    private func openOfferingFlow(_ identifier: String, in data: Data) {
+        guard let offering = self.offering(identifier, in: data) else {
+            self.workflowLoadError = "Offering '\(identifier)' is not in the offerings."
+            return
+        }
+        #if canImport(UIKit) && !os(watchOS)
+        OfferingFlowPresenter.present(offering, customVariables: self.customVariables)
+        #else
+        self.isLoadingPaywall = true
+        self.presentedPaywall = .init(offering: offering, mode: .workflow)
+        #endif
+    }
+
+    private func openWorkflow(_ workflowId: String, fullScreen: Bool) {
+        Task {
+            do {
+                let workflow = try await PresentedWorkflow.load(workflowId: workflowId)
+                if fullScreen {
+                    self.presentedWorkflowFull = workflow
+                } else {
+                    self.presentedWorkflowSheet = workflow
+                }
+            } catch {
+                self.workflowLoadError = error.localizedDescription
+            }
+        }
+    }
+
+    private func workflowPaywallView(for workflow: PresentedWorkflow) -> some View {
+        PaywallView(workflowContext: workflow.context, displayCloseButton: true)
+            .environment(\.workflowExitOfferOfferingBinding, self.$workflowExitOfferOffering)
+            .customPaywallVariables(self.customVariables)
+            .onURLOpened { url in
+                print("Paywall Handler - onURLOpened: \(url)")
+            }
+    }
+    #endif
 
     #if !os(watchOS)
     @ViewBuilder
@@ -447,8 +640,25 @@ struct APIKeyDashboardList: View {
         }
     }
 
+    private struct SectionHeader: View {
+        let title: String
+        let caption: String?
+
+        var body: some View {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(verbatim: self.title)
+                if let caption {
+                    Text(verbatim: caption)
+                        .font(.caption)
+                        .textCase(nil)
+                }
+            }
+        }
+    }
+
     private struct OfferButton: View {
         let offering: Offering
+        var detail: String?
         let action: () -> Void
 
         var body: some View {
@@ -456,7 +666,7 @@ struct APIKeyDashboardList: View {
                 HStack {
                     VStack(alignment: .leading) {
                         Text(self.offering.id)
-                        Text(self.offering.serverDescription)
+                        Text(self.detail ?? self.offering.serverDescription)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -472,6 +682,21 @@ struct APIKeyDashboardList: View {
             .buttonStyle(.plain)
         }
     }
+
+    private func flowsUsingDescription(_ offering: Offering) -> String? {
+        #if DEBUG && !os(tvOS)
+        let names = self.workflowRows.filter { $0.referencesOffering(offering.identifier) }.map { $0.name ?? $0.id }
+        return names.isEmpty ? nil : "Used by: \(names.joined(separator: ", "))"
+        #else
+        return nil
+        #endif
+    }
+
+    #if DEBUG && !os(tvOS)
+    static let title = "Flows"
+    #else
+    static let title = "Live Paywalls"
+    #endif
 
     #if targetEnvironment(macCatalyst)
     private static let modesInstructions = "Right click or ⌘ + click to open in different modes."
@@ -498,8 +723,25 @@ extension APIKeyDashboardList.PaywallSection: CustomStringConvertible {
         case .components:
             return "V2"
         case .noPaywall:
+            #if DEBUG && !os(tvOS)
+            return "Unclaimed offerings"
+            #else
             return "No paywall"
+            #endif
         }
+    }
+
+    var title: String {
+        return self == .noPaywall ? self.description : "Paywalls · \(self.description)"
+    }
+
+    var caption: String {
+        guard self == .noPaywall else { return "Paywalls attached directly to an offering." }
+        #if DEBUG && !os(tvOS)
+        return "No paywall or flow attached. Opens the fallback."
+        #else
+        return "No paywall attached."
+        #endif
     }
 
 }
