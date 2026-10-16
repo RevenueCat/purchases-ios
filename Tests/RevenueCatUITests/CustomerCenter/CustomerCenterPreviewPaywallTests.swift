@@ -173,6 +173,20 @@ final class CustomerCenterPreviewPaywallTests: TestCase {
         XCTAssertEqual(checkoutEvents, 0)
     }
 
+    func testPreviewUsesProviderStorefrontCountry() {
+        let provider = PreviewPaywallProvider()
+        let handler = PurchaseHandler.customerCenterPreview(
+            provider: provider,
+            performPurchase: { _ in (false, nil) },
+            performRestore: { (true, nil) }
+        )
+
+        provider.previewStoreFrontCountryCode = "JPN"
+        XCTAssertEqual(handler.configuredStoreEnvironment.storeFrontCountryCode, "JPN")
+        provider.previewStoreFrontCountryCode = nil
+        XCTAssertNil(handler.configuredStoreEnvironment.storeFrontCountryCode)
+    }
+
     func testInjectedPaywallPurchasesUsePreviewCustomerInformation() async throws {
         let provider = PreviewPaywallProvider()
         let next = CustomerInfoFixtures.customerInfoWithLifetimePromotional
@@ -197,8 +211,10 @@ private final class PreviewPaywallProvider: CustomerCenterStateTestProvider,
     var urlAction: (@Sendable (URL) async throws -> Void)?
     var previewAppUserID = "preview"
     var previewIsSandbox = true
+    var previewStoreFrontCountryCode: String? = "US"
     override var appUserID: String { previewAppUserID }
     override var isSandbox: Bool { previewIsSandbox }
+    override var storeFrontCountryCode: String? { previewStoreFrontCountryCode }
     func customerInfoUpdates() async -> AsyncStream<CustomerInfo> { AsyncStream { $0.finish() } }
     func handlePreviewAction(_ action: CustomerCenterPreviewAction) async throws {
         if case let .openURL(url) = action { try await urlAction?(url) }

@@ -297,7 +297,8 @@ final class PurchaseHandler: ObservableObject {
         let purchases = NotConfiguredPurchases(
             purchasesAreCompletedBy: .myApp,
             customerInfoProvider: { try await provider.customerInfo() },
-            isUIPreviewMode: true
+            isUIPreviewMode: true,
+            storeFrontCountryCode: provider.storeFrontCountryCode
         )
         return .init(
             purchases: purchases,
@@ -1368,22 +1369,24 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
         customerInfo: CustomerInfo? = nil,
         purchasesAreCompletedBy: PurchasesAreCompletedBy,
         customerInfoProvider: (@Sendable () async throws -> CustomerInfo)? = nil,
-        isUIPreviewMode: Bool = false
+        isUIPreviewMode: Bool = false,
+        storeFrontCountryCode: @autoclosure @escaping @Sendable () -> String? = nil
     ) {
         self.customerInfo = customerInfo
         self.purchasesAreCompletedBy = purchasesAreCompletedBy
         self.customerInfoProvider = customerInfoProvider
         self.isUIPreviewMode = isUIPreviewMode
+        self.configuredStoreEnvironment = ConfiguredStoreEnvironment(
+            apiKey: "test_",
+            storeFrontCountryCode: storeFrontCountryCode()
+        )
     }
 
     func offerings() async throws -> Offerings { throw ErrorCode.configurationError }
 
     var cachedOfferings: Offerings? { nil }
 
-    let configuredStoreEnvironment = ConfiguredStoreEnvironment(
-        apiKey: "test_",
-        storeFrontCountryCode: nil
-    )
+    let configuredStoreEnvironment: ConfiguredStoreEnvironment
 
 #if !os(tvOS)
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {

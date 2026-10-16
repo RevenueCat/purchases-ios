@@ -40,8 +40,10 @@ struct CustomerCenterInjectedPaywall: View {
                     injectedPaywall(offering: offering, workflow: workflow, promoOfferCache: promoOfferCache)
                         .customPaywallVariables(customVariables)
                 } else {
-                    Text("The configured preview offering is unavailable.")
-                    Button("Close", action: onClose)
+                    VStack {
+                        Text("The configured preview offering is unavailable.")
+                        Button("Close", action: onClose)
+                    }
                 }
             case let .failed(message):
                 VStack {
