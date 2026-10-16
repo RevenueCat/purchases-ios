@@ -1693,6 +1693,15 @@ public extension Purchases {
         return try await promotionalOfferAsync(forProductDiscount: discount, product: product)
     }
 
+    /// Signs multiple promotional offers in one backend request.
+    @_spi(Internal)
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func promotionalOffers(
+        for requests: [(discount: StoreProductDiscount, product: StoreProduct)]
+    ) async -> [PromotionalOffer?] {
+        return await self.purchasesOrchestrator.promotionalOffers(for: requests)
+    }
+
     func eligiblePromotionalOffers(forProduct product: StoreProduct) async -> [PromotionalOffer] {
         return await eligiblePromotionalOffersAsync(forProduct: product)
     }

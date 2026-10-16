@@ -62,6 +62,83 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         expect(self.httpClient.calls).to(haveCount(1))
     }
 
+    func testMultipleOffersForSigningUseOneRequestAndPreservePartialResults() throws {
+        self.httpClient.disableSnapshotTesting()
+        let signatureError = ErrorResponse(
+            code: .invalidAppleSubscriptionKey,
+            originalCode: 7234,
+            message: "Invalid subscription key"
+        )
+        let response: [String: Any] = [
+            "offers": [
+                [
+                    "offer_id": "first_offer",
+                    "product_id": "first_product",
+                    "key_id": "first_key",
+                    "signature_data": [
+                        "signature": "first_signature",
+                        "nonce": UUID().uuidString,
+                        "timestamp": Int64(123)
+                    ],
+                    "signature_error": nil
+                ] as [String: Any?],
+                [
+                    "offer_id": "second_offer",
+                    "product_id": "second_product",
+                    "key_id": "second_key",
+                    "signature_data": nil,
+                    "signature_error": [
+                        "message": signatureError.message!,
+                        "code": signatureError.code.rawValue
+                    ]
+                ] as [String: Any?]
+            ]
+        ]
+        self.httpClient.mock(
+            requestPath: .postOfferForSigning,
+            response: .init(statusCode: .success, response: response)
+        )
+
+        let result = waitUntilValue { completed in
+            self.offerings.post(
+                offersForSigning: [
+                    .init(
+                        offerIdentifier: "first_offer",
+                        productIdentifier: "first_product",
+                        subscriptionGroup: "first_group"
+                    ),
+                    .init(
+                        offerIdentifier: "second_offer",
+                        productIdentifier: "second_product",
+                        subscriptionGroup: "second_group"
+                    )
+                ],
+                receipt: .receipt("receipt".asData),
+                appUserID: Self.userID,
+                completion: completed
+            )
+        }
+
+        guard case .success(let signingResults) = result else {
+            return XCTFail("Expected a successful batch response")
+        }
+        XCTAssertEqual(signingResults.count, 2)
+        XCTAssertEqual(signingResults[0].offerIdentifier, "first_offer")
+        XCTAssertNoThrow(try signingResults[0].result.get())
+        XCTAssertEqual(signingResults[1].offerIdentifier, "second_offer")
+        XCTAssertThrowsError(try signingResults[1].result.get())
+        XCTAssertEqual(self.httpClient.calls.count, 1)
+
+        let requestBody = try XCTUnwrap(self.httpClient.calls.first?.request.requestBody)
+        let body = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: requestBody.jsonEncodedData) as? [String: Any]
+        )
+        let generatedOffers = try XCTUnwrap(body["generate_offers"] as? [[String: Any]])
+        XCTAssertEqual(generatedOffers.count, 2)
+        XCTAssertEqual(generatedOffers[0]["offer_id"] as? String, "first_offer")
+        XCTAssertEqual(generatedOffers[1]["offer_id"] as? String, "second_offer")
+    }
+
     func testOfferForSigningNetworkError() {
         let mockedError = NetworkError.unexpectedResponse(nil)
 

@@ -117,6 +117,37 @@ final class PaywallPromoOfferCacheTests: TestCase {
         )
     }
 
+    func testEligibilityRequestsAreFetchedInSingleBatch() async {
+        let firstPackage = Self.makePackage(
+            promoDiscountIdentifier: Self.promoCode,
+            productIdentifier: "first"
+        )
+        let secondPackage = Self.makePackage(
+            promoDiscountIdentifier: Self.promoCode,
+            productIdentifier: "second"
+        )
+        var fetchCallCount = 0
+        var fetchedProductIDs: [String] = []
+        let cache = PaywallPromoOfferCache(
+            subscriptionHistoryTracker: nil,
+            offersFetcher: { requests in
+                fetchCallCount += 1
+                fetchedProductIDs = requests.map(\.product.productIdentifier)
+                return requests.map { Self.makeOffer(for: $0.discount) }
+            }
+        )
+
+        await cache.computeEligibility(for: [
+            (firstPackage, Self.promoCode),
+            (secondPackage, Self.promoCode)
+        ])
+
+        XCTAssertEqual(fetchCallCount, 1)
+        XCTAssertEqual(fetchedProductIDs, ["first", "second"])
+        XCTAssertNotNil(cache.get(for: firstPackage))
+        XCTAssertNotNil(cache.get(for: secondPackage))
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -132,13 +163,26 @@ private extension PaywallPromoOfferCacheTests {
         )
     }
 
-    static func makePackage(promoDiscountIdentifier: String) -> Package {
+    static func makeOffer(for discount: StoreProductDiscount) -> PromotionalOffer {
+        return discount.promotionalOffer(
+            withSignedDataIdentifier: promoCode,
+            keyIdentifier: "key",
+            nonce: UUID(),
+            signature: "signature",
+            timestamp: 0
+        )
+    }
+
+    static func makePackage(
+        promoDiscountIdentifier: String,
+        productIdentifier: String = "com.revenuecat.monthly"
+    ) -> Package {
         let product = TestStoreProduct(
             localizedTitle: "PRO monthly",
             price: 3.99,
             currencyCode: "USD",
             localizedPriceString: "$3.99",
-            productIdentifier: "com.revenuecat.monthly",
+            productIdentifier: productIdentifier,
             productType: .autoRenewableSubscription,
             localizedDescription: "Monthly subscription",
             subscriptionGroupIdentifier: "group",

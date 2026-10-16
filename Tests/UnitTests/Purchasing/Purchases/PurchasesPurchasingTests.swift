@@ -1205,6 +1205,35 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
         expect(self.backend.getCustomerInfoCallCount) == 0
     }
 
+    func testPromotionalOffersUseOneReceiptAndOneSigningRequest() async throws {
+        guard #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) else {
+            throw XCTSkip("Batch promotional offer signing requires StoreKit 2-era OS versions.")
+        }
+
+        self.setupPurchases()
+        self.mockReceiptParser.stubbedReceiptHasTransactionsResult = true
+        let firstProduct = Self.product(identifier: "first_product", offerIdentifier: "first_offer")
+        let secondProduct = Self.product(identifier: "second_product", offerIdentifier: "second_offer")
+        let firstDiscount = try XCTUnwrap(firstProduct.discounts.first)
+        let secondDiscount = try XCTUnwrap(secondProduct.discounts.first)
+        self.httpClient.disableSnapshotTesting()
+        self.httpClient.mock(
+            requestPath: .postOfferForSigning,
+            response: .init(statusCode: .success, response: Self.signingResponse)
+        )
+
+        let offers = await self.purchasesOrchestrator.promotionalOffers(for: [
+            (firstDiscount, firstProduct),
+            (secondDiscount, secondProduct)
+        ])
+
+        XCTAssertEqual(self.receiptFetcher.receiptDataTimesCalled, 1)
+        XCTAssertEqual(self.httpClient.calls.count, 1)
+        XCTAssertEqual(offers.count, 2)
+        XCTAssertEqual(offers[0]?.signedData.identifier, "first_offer")
+        XCTAssertNil(offers[1])
+    }
+
     // MARK: -
 
     private func setUpPurchasesCustomEntitlementMode() {
@@ -1215,5 +1244,57 @@ class PurchasesPurchasingCustomSetupTests: BasePurchasesTests {
     }
 
     private static let mockProduct = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "com.product.id1"))
+
+    private static let signingResponse: [String: Any] = [
+        "offers": [
+            [
+                "offer_id": "first_offer",
+                "product_id": "first_product",
+                "key_id": "key",
+                "signature_data": [
+                    "signature": "signature",
+                    "nonce": UUID().uuidString,
+                    "timestamp": Int64(123)
+                ],
+                "signature_error": nil
+            ] as [String: Any?],
+            [
+                "offer_id": "second_offer",
+                "product_id": "second_product",
+                "key_id": "key",
+                "signature_data": nil,
+                "signature_error": [
+                    "message": "Ineligible",
+                    "code": BackendErrorCode.userIneligibleForPromoOffer.rawValue
+                ]
+            ] as [String: Any?]
+        ]
+    ]
+
+    private static func product(identifier: String, offerIdentifier: String) -> StoreProduct {
+        return TestStoreProduct(
+            localizedTitle: "Subscription",
+            price: 3.99,
+            currencyCode: "USD",
+            localizedPriceString: "$3.99",
+            productIdentifier: identifier,
+            productType: .autoRenewableSubscription,
+            localizedDescription: "Subscription",
+            subscriptionGroupIdentifier: "group",
+            subscriptionPeriod: .init(value: 1, unit: .month),
+            discounts: [
+                TestStoreProductDiscount(
+                    identifier: offerIdentifier,
+                    price: 1.99,
+                    localizedPriceString: "$1.99",
+                    paymentMode: .payAsYouGo,
+                    subscriptionPeriod: .init(value: 1, unit: .month),
+                    numberOfPeriods: 3,
+                    type: .promotional
+                )
+            ],
+            locale: Locale(identifier: "en_US")
+        ).toStoreProduct()
+    }
 
 }
