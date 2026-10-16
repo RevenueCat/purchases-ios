@@ -277,7 +277,8 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
             offerings: presentation.workflow.offerings,
             uiConfig: presentation.workflow.uiConfig,
             workflowBlobRef: presentation.workflow.workflowBlobRef,
-            traceId: presentation.workflow.traceId
+            traceId: presentation.workflow.traceId,
+            checkpointIdentifier: presentation.checkpointIdentifier
         )
         let viewController = PaywallViewController(
             workflowContext: workflowContext,

@@ -2117,7 +2117,7 @@ extension RevenueCat.Offerings {
   }
   @objc(currentOfferingForPlacement:) final public func currentOffering(forPlacement placementIdentifier: Swift.String) -> RevenueCat.Offering?
 }
-@objc(RCPresentedOfferingContext) final public class PresentedOfferingContext : ObjectiveC.NSObject {
+@_hasMissingDesignatedInitializers @objc(RCPresentedOfferingContext) final public class PresentedOfferingContext : ObjectiveC.NSObject {
   @objc(RCTargetingContext) final public class TargetingContext : ObjectiveC.NSObject {
     @objc final public let revision: Swift.Int
     @objc final public let ruleId: Swift.String
