@@ -59,9 +59,12 @@ extension UIApplication {
 
 }
 
-private extension UIViewController {
+extension UIViewController {
 
-    var topMostViewController: UIViewController {
+    /// Resolves the visible controller through presented and container view controllers.
+    @_spi(Internal)
+    @MainActor
+    public var topMostViewController: UIViewController {
         if let presentedViewController {
             return presentedViewController.topMostViewController
         }

@@ -72,6 +72,18 @@ internal extension RewardVerification {
 }
 
 @available(iOS 15.0, *)
+internal extension RewardVerification.CapableAd {
+
+    /// Clears per-ad SSV options and RevenueCat correlation state before unverified presentation.
+    @MainActor
+    func disableRewardVerification() {
+        self.serverSideVerificationOptions = nil
+        RewardVerification.stateStore.set(nil, for: self)
+    }
+
+}
+
+@available(iOS 15.0, *)
 extension GoogleMobileAds.RewardedAd: RewardVerification.CapableAd {}
 
 @available(iOS 15.0, *)

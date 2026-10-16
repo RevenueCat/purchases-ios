@@ -18,8 +18,31 @@ import Foundation
 @MainActor
 public final class RewardedAdPromptSession {
 
+    private var hasTrackedPromptShown = false
+    private var shownPlacement: String?
+
     /// Creates a rewarded-ad prompt tracking session.
     public init() {}
+
+    /// Returns whether the current appearance should produce a prompt-shown event.
+    ///
+    func consumePromptShown(placement: String? = nil) -> Bool {
+        guard !self.hasTrackedPromptShown else { return false }
+
+        self.hasTrackedPromptShown = true
+        self.shownPlacement = placement
+        return true
+    }
+
+    func placementForAcceptance(fallback: String?) -> String? {
+        return self.hasTrackedPromptShown ? self.shownPlacement : fallback
+    }
+
+    /// Allows the next appearance to represent a new prompt after the current prompt is accepted.
+    func resetAfterAcceptance() {
+        self.hasTrackedPromptShown = false
+        self.shownPlacement = nil
+    }
 
 }
 
