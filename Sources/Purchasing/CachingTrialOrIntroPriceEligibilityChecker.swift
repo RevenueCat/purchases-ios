@@ -117,13 +117,10 @@ extension CachingTrialOrIntroPriceEligibilityChecker {
         cacheGeneration: Int
     ) async -> [RequestKey: AnyTask<IntroEligibility>] {
         var tasks: [RequestKey: AnyTask<IntroEligibility>] = [:]
-        var previousTask: AnyTask<IntroEligibility>?
 
-        for requestKey in requestKeys.sorted(by: { $0.productIdentifier < $1.productIdentifier }) {
-            let precedingTask = previousTask
+        for requestKey in requestKeys {
             tasks[requestKey] = await self.deferredRequests.getOrPut(
                 Task {
-                    _ = try? await precedingTask?.value
                     return try await self.checkEligibility(
                         for: requestKey,
                         cacheGeneration: cacheGeneration
@@ -131,7 +128,6 @@ extension CachingTrialOrIntroPriceEligibilityChecker {
                 },
                 forKey: requestKey
             )
-            previousTask = tasks[requestKey]
         }
 
         return tasks

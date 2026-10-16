@@ -190,11 +190,13 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
             await caching.checkEligibility(productIdentifiers: [Self.productID1, Self.productID2])
         }
 
-        await expect(checker.invocations.count).toEventually(equal(1))
+        await expect(checker.invocations.count).toEventually(equal(2))
 
         let secondRequest = Task {
             await caching.checkEligibility(productIdentifiers: [Self.productID2, Self.productID3])
         }
+
+        await expect(checker.invocations.count).toEventually(equal(3))
 
         let firstResult: Result = [
             Self.productID1: .init(eligibilityStatus: .eligible),
@@ -208,24 +210,20 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
             productIdentifiers: [Self.productID1],
             with: [Self.productID1: firstResult[Self.productID1]!]
         )
-        await expect(checker.invocations.count).toEventually(equal(2))
-
         checker.complete(
             productIdentifiers: [Self.productID2],
             with: [Self.productID2: firstResult[Self.productID2]!]
         )
-        await expect(checker.invocations.count).toEventually(equal(3))
-
         checker.complete(productIdentifiers: [Self.productID3], with: secondResult)
 
         let receivedFirstResult = await firstRequest.value
         let receivedSecondResult = await secondRequest.value
 
-        expect(checker.invocations) == [
-            [Self.productID1],
-            [Self.productID2],
-            [Self.productID3]
-        ]
+        expect(checker.invocations).to(contain(
+            Set([Self.productID1]),
+            Set([Self.productID2]),
+            Set([Self.productID3])
+        ))
         expect(receivedFirstResult) == firstResult
         expect(receivedSecondResult) == [
             Self.productID2: firstResult[Self.productID2]!,
