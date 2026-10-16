@@ -147,9 +147,9 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
                                        "Detection must preserve the trailing control's position")
                     }
                     if expected.count == 2, actual.count == 2 {
-                        // Shared glass can compact the gap; a probe must not consume additional bar space.
+                        // Detection must preserve the system Close control's separate group and spacing.
                         let occupiedWidth = actual[1] - actual[0]
-                        XCTAssertLessThanOrEqual(occupiedWidth, expected[1] - expected[0] + Double(screenshot.scale))
+                        XCTAssertEqual(occupiedWidth, expected[1] - expected[0], accuracy: Double(screenshot.scale))
                         XCTAssertGreaterThanOrEqual(occupiedWidth, 44 * Double(screenshot.scale))
                     }
                 } else {

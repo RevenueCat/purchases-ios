@@ -38,43 +38,64 @@ struct NativePaywallCloseHost: ViewModifier {
 
     @ViewBuilder func body(content: Content) -> some View {
         #if os(iOS)
-        self.surface(content)
-            .navigationBarBackButtonHidden(self.enabled && self.coordinator.action(for: .back) != nil)
-            .toolbar {
-                ToolbarItemGroup(placement: .cancellationAction) {
-                    if self.enabled, self.coordinator.action(for: .back) != nil {
-                        NativePaywallToolbarClose(
-                            coordinator: self.coordinator, primary: true, detectNavigation: self.detectNavigation,
-                            probe: self.navigationProbe, detected: self.controlAttachmentChanged
-                        )
-                    }
-                }
-                ToolbarItemGroup(placement: .navigationBarTrailing) {
-                    if self.enabled, self.coordinator.action(for: .close) != nil {
-                        NativePaywallToolbarClose(
-                            coordinator: self.coordinator, primary: false, detectNavigation: self.detectNavigation,
-                            probe: self.navigationProbe, detected: self.controlAttachmentChanged
-                        )
-                    }
-                }
-            }
+        self.nativeNavigation(content)
         #else
         content
         #endif
     }
 
     #if os(iOS)
-    @ViewBuilder private var navigationProbe: some View {
-        if self.detectNavigation {
-            NativePaywallNavigationDetection(detected: self.controlAttachmentChanged).frame(width: 0, height: 0)
+    @ViewBuilder private func nativeNavigation(_ content: Content) -> some View {
+        let view = self.surface(content)
+            .navigationBarBackButtonHidden(self.enabled && self.coordinator.action(for: .back) != nil)
+        #if compiler(>=6.2)
+        if #available(iOS 26.0, *) {
+            view.toolbar {
+                self.backToolbarItem
+                if self.detectNavigation, self.enabled, self.coordinator.action(for: .close) != nil {
+                    ToolbarSpacer(.fixed, placement: .navigationBarTrailing)
+                }
+                self.closeToolbarItem
+            }
+        } else {
+            view.toolbar { self.backToolbarItem; self.closeToolbarItem }
+        }
+        #else
+        view.toolbar { self.backToolbarItem; self.closeToolbarItem }
+        #endif
+    }
+
+    private var backToolbarItem: some ToolbarContent {
+        ToolbarItemGroup(placement: .cancellationAction) {
+            if self.enabled, self.coordinator.action(for: .back) != nil {
+                NativePaywallToolbarClose(
+                    coordinator: self.coordinator, primary: true, detectNavigation: self.detectNavigation,
+                    probe: self.navigationProbe
+                )
+            }
         }
     }
 
-    private func controlAttachmentChanged(_ identifier: UUID, _ available: Bool) {
-        if available {
-            self.mountedControls.insert(identifier)
-        } else {
-            self.mountedControls.remove(identifier)
+    private var closeToolbarItem: some ToolbarContent {
+        ToolbarItemGroup(placement: .navigationBarTrailing) {
+            if self.enabled, self.coordinator.action(for: .close) != nil {
+                NativePaywallToolbarClose(
+                    coordinator: self.coordinator, primary: false, detectNavigation: self.detectNavigation,
+                    probe: self.navigationProbe
+                )
+            }
+        }
+    }
+
+    @ViewBuilder private var navigationProbe: some View {
+        if self.detectNavigation {
+            NativePaywallNavigationDetection { identifier, available in
+                if available {
+                    self.mountedControls.insert(identifier)
+                } else {
+                    self.mountedControls.remove(identifier)
+                }
+            }.frame(width: 0, height: 0)
         }
     }
 
@@ -103,8 +124,6 @@ private struct NativePaywallToolbarClose<Probe: View>: View {
     let primary: Bool
     let detectNavigation: Bool
     let probe: Probe
-    let detected: (UUID, Bool) -> Void
-    @State private var closeControlIdentifier = UUID()
 
     @ViewBuilder var body: some View {
         if self.primary {
@@ -126,15 +145,19 @@ private struct NativePaywallToolbarClose<Probe: View>: View {
     @ViewBuilder private func closeButton(_ action: NativePaywallCloseCoordinator.CloseAction) -> some View {
         #if compiler(>=6.2)
         if #available(iOS 26.0, *) {
-            Button(role: .close) {
-                self.performAction(action.id)
+            Group {
+                if self.detectNavigation {
+                    Button(role: .close) {
+                        self.performAction(action.id)
+                    } label: {
+                        Image(systemName: "xmark").background { self.probe }
+                    }
+                } else {
+                    Button(role: .close) {
+                        self.performAction(action.id)
+                    }
+                }
             }
-            .onGeometryChange(for: Bool.self) { geometry in
-                geometry.size.width > 0 && geometry.size.height > 0
-            } action: { available in
-                if self.detectNavigation { self.detected(self.closeControlIdentifier, available) }
-            }
-            .onDisappear { self.detected(self.closeControlIdentifier, false) }
             .accessibilityLabel(action.label)
             .accessibilityIdentifier(NativePaywallCloseHost.closeIdentifier)
         } else {
