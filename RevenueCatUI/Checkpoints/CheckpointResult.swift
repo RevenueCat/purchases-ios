@@ -13,17 +13,42 @@
 //
 
 import Foundation
+@_spi(Internal) import RevenueCat
 
 /// The result of passing a checkpoint.
 @_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public struct CheckpointResult: Sendable {
+public struct CheckpointResult: @unchecked Sendable {
 
     /// Information about the presented flow, or `nil` when the checkpoint had nothing to present.
     public let flow: FlowResult?
 
-    init(flow: FlowResult?) {
+    /// Customer information returned by the flow, when available.
+    public let customerInfo: CustomerInfo?
+
+    init(flow: FlowResult?, customerInfo: CustomerInfo?) {
         self.flow = flow
+        self.customerInfo = customerInfo
+    }
+
+    /// Returns the entitlement with `identifier` that was obtained while the flow was presented.
+    public func obtainedEntitlement(_ identifier: String) -> ObtainedEntitlement? {
+        return self.flow?.obtainedEntitlement(identifier)
+    }
+
+    /// Returns whether the entitlement with `identifier` was obtained while the flow was presented.
+    public func didObtainEntitlement(_ identifier: String) -> Bool {
+        return self.obtainedEntitlement(identifier) != nil
+    }
+
+    /// Returns the product with `identifier` that was newly observed after the flow completed.
+    public func obtainedProduct(_ identifier: String) -> ObtainedProduct? {
+        return self.flow?.obtainedProduct(identifier)
+    }
+
+    /// Returns whether the product with `identifier` was newly observed after the flow completed.
+    public func didObtainProduct(_ identifier: String) -> Bool {
+        return self.obtainedProduct(identifier) != nil
     }
 
 }
