@@ -405,8 +405,9 @@ final class ButtonComponentViewTests: TestCase {
             locale: Locale(identifier: "en_US"), localizedStrings: ["Close": .string("Close")]
         ), colorScheme: .light)
         let coordinator = NativePaywallCloseCoordinator()
-        var dismissals = 0
-        let view = StackComponentView(viewModel: model, onDismiss: { dismissals += 1 })
+        var backActions = 0
+        let view = StackComponentView(viewModel: model, onDismiss: {})
+            .environment(\.workflowNavigateBackHandler, { backActions += 1 })
             .environment(\.nativePaywallCloseCoordinator, coordinator)
             .environmentObject(PurchaseHandler.default())
             .environmentObject(PackageContext(package: nil, variableContext: .init(packages: [])))
@@ -427,7 +428,7 @@ final class ButtonComponentViewTests: TestCase {
         await fulfillment(of: [settled], timeout: 2)
         XCTAssertEqual(coordinator.actions.map(\.id), [id])
         try await coordinator.performAction(id: id)
-        XCTAssertEqual(dismissals, 1)
+        XCTAssertEqual(backActions, 1)
     }
 
     func testPromotingNativeButtonsDoesNotRemountSiblingCarousel() async throws {
