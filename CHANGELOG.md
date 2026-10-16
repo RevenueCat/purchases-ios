@@ -99,7 +99,7 @@
 * Title the already-owned hosted checkout alert as a purchase (#7893) via Antonio Pallares (@ajpallares)
 * AGENTS.md update 2026 September (#7884) via cursor[bot] (@cursor[bot])
 * feat(ads): send ad unit id to backend during reward polling (#7872) via Peter Porfy (@peterporfy)
-* feat(diagnostics): configure collection from SDK settings (#7815) via Rick (@rickvdl)
+* feat(diagnostics): support collection through SDK settings with explicit developer approval (#7815) via Rick (@rickvdl)
 * refactor(remote-config): introduce config lifecycle observers (#7875) via Rick (@rickvdl)
 * other(paywalls): extract prototype skeleton UI (#7873) via Facundo Menzella (@facumenzella)
 
