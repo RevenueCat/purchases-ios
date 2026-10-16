@@ -98,6 +98,7 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
     func testAutomaticDetectionDoesNotAllocateAnExtraToolbarItem() async throws {
         var referenceImages: [Int: UIImage] = [:]
         var toolbarBand: CGRect?
+        var verticalToolbar = false
         for automatic in [false, true] {
             let state = NativeNavigationVisibilityTestState()
             let content = NativeNavigationVisibilityTestView(state: state)
@@ -124,8 +125,14 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
                     XCTAssertEqual(buttons.count, native ? 1 : 0)
                     if let close = buttons.first {
                         let frame = close.convert(close.bounds, to: window)
-                        toolbarBand = CGRect(x: 0, y: frame.minY - 4,
-                                             width: window.bounds.width, height: frame.height + 8)
+                        let bar = try XCTUnwrap(self.navigationController(in: host)).navigationBar
+                        let barFrame = bar.convert(bar.bounds, to: window)
+                        verticalToolbar = frame.midY > barFrame.maxY
+                        toolbarBand = verticalToolbar
+                            ? CGRect(x: frame.minX - 4, y: 0,
+                                     width: frame.width + 8, height: window.bounds.height)
+                            : CGRect(x: 0, y: frame.minY - 4,
+                                     width: window.bounds.width, height: frame.height + 8)
                     }
                 }
                 let bounds = window.bounds
@@ -138,8 +145,10 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
                 self.add(attachment)
                 if automatic {
                     let band = try XCTUnwrap(toolbarBand)
-                    let expected = try self.toolbarIconCenters(in: XCTUnwrap(referenceImages[phase]), band: band)
-                    let actual = try self.toolbarIconCenters(in: screenshot, band: band)
+                    let expected = try self.toolbarIconCenters(
+                        in: XCTUnwrap(referenceImages[phase]), band: band, vertical: verticalToolbar
+                    )
+                    let actual = try self.toolbarIconCenters(in: screenshot, band: band, vertical: verticalToolbar)
                     XCTAssertEqual(expected.count, native ? 2 : 1)
                     XCTAssertEqual(actual.count, expected.count)
                     if let reference = expected.last, let rendered = actual.last {
@@ -148,9 +157,9 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
                     }
                     if expected.count == 2, actual.count == 2 {
                         // Detection must preserve the system Close control's separate group and spacing.
-                        let occupiedWidth = actual[1] - actual[0]
-                        XCTAssertEqual(occupiedWidth, expected[1] - expected[0], accuracy: Double(screenshot.scale))
-                        XCTAssertGreaterThanOrEqual(occupiedWidth, 44 * Double(screenshot.scale))
+                        let controlSpacing = actual[1] - actual[0]
+                        XCTAssertEqual(controlSpacing, expected[1] - expected[0], accuracy: Double(screenshot.scale))
+                        XCTAssertGreaterThanOrEqual(controlSpacing, 44 * Double(screenshot.scale))
                     }
                 } else {
                     referenceImages[phase] = screenshot
@@ -160,7 +169,7 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
     }
 
     // Compare icon positions without depending on whether the OS shares or separates glass backgrounds.
-    private func toolbarIconCenters(in image: UIImage, band: CGRect) throws -> [Double] {
+    private func toolbarIconCenters(in image: UIImage, band: CGRect, vertical: Bool) throws -> [Double] {
         let crop = CGRect(x: band.minX * image.scale, y: band.minY * image.scale,
                           width: band.width * image.scale, height: band.height * image.scale)
         let cgImage = try XCTUnwrap(image.cgImage?.cropping(to: crop))
@@ -178,15 +187,19 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
         }
         var centers: [Double] = []
         var start: Int?
-        for column in 0...width {
-            let hasInk = column < width && (0..<height).contains { row in
+        let axisLength = vertical ? height : width
+        let crossLength = vertical ? width : height
+        for position in 0...axisLength {
+            let hasInk = position < axisLength && (0..<crossLength).contains { cross in
+                let row = vertical ? position : cross
+                let column = vertical ? cross : position
                 let offset = (row * width + column) * 4
                 return pixels[offset] < 64 && pixels[offset + 1] < 64 && pixels[offset + 2] < 64
                     && pixels[offset + 3] > 128
             }
-            if hasInk, start == nil { start = column }
+            if hasInk, start == nil { start = position }
             if !hasInk, let first = start {
-                centers.append(Double(first + column - 1) / 2)
+                centers.append(Double(first + position - 1) / 2)
                 start = nil
             }
         }
@@ -319,6 +332,14 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
                 button.modifier(NativePaywallNavigationModifier(requested: true))
                     .toolbar(.hidden, for: .navigationBar)
             }
+        }
+    }
+
+    func testAutomaticDetectionReusesLegacyNavigationWithoutWrapping() async {
+        await self.assertNativeClose(expectedNavigationCount: 1, verifyUIKitControl: false) { button in
+            NavigationView {
+                button.modifier(NativePaywallNavigationModifier(requested: true))
+            }.navigationViewStyle(.stack)
         }
     }
 
