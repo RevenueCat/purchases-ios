@@ -45,6 +45,22 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
         expect(self.mockChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters) == [Self.productID1]
     }
 
+    func testCallsCompletionOnMainThread() async {
+        let expected: Result = [
+            Self.productID1: .init(eligibilityStatus: .eligible)
+        ]
+        self.mockChecker.stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult = expected
+        let completionCalled = self.expectation(description: "Completion called")
+
+        self.caching.checkEligibility(productIdentifiers: [Self.productID1]) { result in
+            expect(Thread.isMainThread).to(beTrue())
+            expect(result) == expected
+            completionCalled.fulfill()
+        }
+
+        await self.fulfillment(of: [completionCalled], timeout: 1)
+    }
+
     func testCachesResultForOneProduct() async {
         let expected: Result = [
             Self.productID1: .init(eligibilityStatus: .eligible)

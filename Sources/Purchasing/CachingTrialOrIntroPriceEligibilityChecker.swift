@@ -107,7 +107,9 @@ extension CachingTrialOrIntroPriceEligibilityChecker {
                     }
                 }
 
-                completion(result)
+                await MainActor.run {
+                    completion(result)
+                }
             }
         }
     }
