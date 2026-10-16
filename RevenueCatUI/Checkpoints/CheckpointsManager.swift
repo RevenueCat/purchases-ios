@@ -109,11 +109,18 @@ final class CheckpointsManager {
         identifier: String,
         params: CheckpointCallParams
     ) async throws -> CheckpointPresentationOutcome {
+        return try await self.executeCheckpointWithContext(identifier: identifier, params: params).outcome
+    }
+
+    private func executeCheckpointWithContext(
+        identifier: String,
+        params: CheckpointCallParams
+    ) async throws -> CheckpointExecutionResult {
         let globalPaywallPresenter = self.paywallPresenter
 
         guard CheckpointIdentifierValidator.isValid(identifier) else {
             Logger.error(CheckpointIdentifierValidator.invalidIdentifierLogMessage(identifier))
-            return .nothingPresented
+            return .init(outcome: .nothingPresented)
         }
 
         let resolution = try await self.resolveCheckpoint(identifier, params)
@@ -130,7 +137,7 @@ final class CheckpointsManager {
         params: CheckpointCallParams,
         resolution: CheckpointResolution,
         globalPaywallPresenter: PaywallPresenter?
-    ) async throws -> CheckpointPresentationOutcome {
+    ) async throws -> CheckpointExecutionResult {
         let errorPresentationHandler = self.errorPresentationHandler(for: params)
 
         switch resolution {
@@ -143,21 +150,27 @@ final class CheckpointsManager {
                 initialActiveEntitlementIdentifiers: self.initialActiveEntitlementIdentifiers(),
                 errorPresentationHandler: errorPresentationHandler
             )
-            return try await self.checkpointPresenter.presentWorkflow(presentation)
+            return .init(
+                outcome: try await self.checkpointPresenter.presentWorkflow(presentation),
+                availableProducts: workflow.offerings.all.values.flatMap(\.availablePackages).map(\.storeProduct)
+            )
         case let .matchedOffering(offering):
-            return try await self.checkpointPresenter.presentOffering(
-                params: .init(
-                    checkpointIdentifier: identifier,
-                    customVariables: params.customVariables,
-                    presentationMode: params.presentationMode,
-                    offering: offering,
-                    errorPresentationHandler: errorPresentationHandler
+            return .init(
+                outcome: try await self.checkpointPresenter.presentOffering(
+                    params: .init(
+                        checkpointIdentifier: identifier,
+                        customVariables: params.customVariables,
+                        presentationMode: params.presentationMode,
+                        offering: offering,
+                        errorPresentationHandler: errorPresentationHandler
+                    ),
+                    globalPaywallPresenter: globalPaywallPresenter,
+                    localPaywallPresentationHandler: params.localPaywallPresentationHandler
                 ),
-                globalPaywallPresenter: globalPaywallPresenter,
-                localPaywallPresentationHandler: params.localPaywallPresentationHandler
+                availableProducts: offering.availablePackages.map(\.storeProduct)
             )
         case .noAction:
-            return .nothingPresented
+            return .init(outcome: .nothingPresented)
         }
     }
 
@@ -167,7 +180,7 @@ final class CheckpointsManager {
     ) async -> CheckpointCallbackResult {
         switch await self.checkpointOutcome(identifier: identifier, params: params) {
         case let .completed(result):
-            return .completed(CheckpointResult(flow: result))
+            return .completed(result)
         case .suppressed:
             return .suppressed
         case let .failed(error):
@@ -186,7 +199,8 @@ final class CheckpointsManager {
                 kind: .flowResultSyncFailed
             )
             return .completed(CheckpointResult(
-                flow: FlowResult(obtainedEntitlements: [])
+                flow: FlowResult(obtainedEntitlements: []),
+                customerInfo: nil
             ))
         }
     }
@@ -195,7 +209,8 @@ final class CheckpointsManager {
         identifier: String,
         params: CheckpointCallParams
     ) async -> CheckpointOutcome {
-        let initialActiveEntitlementIdentifiers = self.initialActiveEntitlementIdentifiers()
+        let initialCustomerInfo = self.cachedCustomerInfoProvider()
+        let initialActiveEntitlementIdentifiers = initialCustomerInfo.map { Set($0.entitlements.active.keys) }
         let globalPaywallPresenter = self.paywallPresenter
 
         guard CheckpointIdentifierValidator.isValid(identifier) else {
@@ -214,22 +229,28 @@ final class CheckpointsManager {
         case .noAction(.configurationUnavailable):
             return .failed(CheckpointError.configurationUnavailable)
         case .noAction(.unknownCheckpoint), .noAction(.noMatch):
-            return .completed(nil)
+            return .completed(CheckpointResult(flow: nil, customerInfo: nil))
         case .matchedWorkflow, .matchedOffering:
             break
         }
 
         do {
-            switch try await self.executeCheckpoint(
+            let execution = try await self.executeCheckpoint(
                 identifier: identifier,
                 params: params,
                 resolution: resolution,
                 globalPaywallPresenter: globalPaywallPresenter
-            ) {
+            )
+            switch execution.outcome {
             case let .completed(customerInfo):
-                return .completed(self.flowResult(
-                    customerInfo: customerInfo,
-                    initialActiveEntitlementIdentifiers: initialActiveEntitlementIdentifiers
+                return .completed(CheckpointResult(
+                    flow: self.flowResult(
+                        customerInfo: customerInfo,
+                        initialCustomerInfo: initialCustomerInfo,
+                        initialActiveEntitlementIdentifiers: initialActiveEntitlementIdentifiers,
+                        availableProducts: execution.availableProducts
+                    ),
+                    customerInfo: customerInfo
                 ))
             case let .synchronizationFailed(error):
                 return .synchronizationFailed(error)
@@ -266,20 +287,41 @@ final class CheckpointsManager {
 
     private func flowResult(
         customerInfo: CustomerInfo?,
-        initialActiveEntitlementIdentifiers: Set<String>?
+        initialCustomerInfo: CustomerInfo?,
+        initialActiveEntitlementIdentifiers: Set<String>?,
+        availableProducts: [StoreProduct]
     ) -> FlowResult {
         let obtainedEntitlements = customerInfo?
             .obtainedEntitlements(comparedTo: initialActiveEntitlementIdentifiers)
             .map(ObtainedEntitlement.init)
             ?? []
+        let obtainedProducts = customerInfo?
+            .obtainedProducts(comparedTo: initialCustomerInfo, from: availableProducts)
+            ?? []
 
-        return FlowResult(obtainedEntitlements: Set(obtainedEntitlements))
+        return FlowResult(
+            obtainedEntitlements: Set(obtainedEntitlements),
+            obtainedProducts: Set(obtainedProducts)
+        )
     }
 
     private func initialActiveEntitlementIdentifiers() -> Set<String>? {
         return self.cachedCustomerInfoProvider().map { customerInfo in
             Set(customerInfo.entitlements.active.keys)
         }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct CheckpointExecutionResult {
+
+    let outcome: CheckpointPresentationOutcome
+    let availableProducts: [StoreProduct]
+
+    init(outcome: CheckpointPresentationOutcome, availableProducts: [StoreProduct] = []) {
+        self.outcome = outcome
+        self.availableProducts = availableProducts
     }
 
 }
@@ -292,7 +334,7 @@ enum CheckpointCallbackResult {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private enum CheckpointOutcome {
-    case completed(FlowResult?)
+    case completed(CheckpointResult)
     case suppressed
     case failed(any Error)
     case synchronizationFailed(any Error)
