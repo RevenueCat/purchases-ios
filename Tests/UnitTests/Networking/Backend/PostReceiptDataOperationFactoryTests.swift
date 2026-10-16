@@ -46,6 +46,93 @@ class PostReceiptDataOperationFactoryTests: TestCase {
         )
     }
 
+    func testEncodesPresentedCheckpointIdentifier() throws {
+        let context = PresentedOfferingContext(offeringIdentifier: "offering")
+            .withCheckpointIdentifier("checkout")
+        let postData = PostReceiptDataOperation.PostData(
+            transactionData: .init(presentedOfferingContext: context, unsyncedAttributes: nil, storeCountry: nil),
+            postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
+            appUserID: self.appUserID,
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: false,
+            purchaseCompletedBy: .revenueCat,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: nil,
+            containsAttributionData: false
+        )
+
+        let data = try JSONEncoder.default.encode(postData)
+        let body = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+
+        expect(body["presented_checkpoint_identifier"] as? String) == "checkout"
+    }
+
+    func testOmitsPresentedCheckpointIdentifierWhenAbsent() throws {
+        let postData = PostReceiptDataOperation.PostData(
+            transactionData: .init(
+                presentedOfferingContext: .init(offeringIdentifier: "offering"),
+                unsyncedAttributes: nil,
+                storeCountry: nil
+            ),
+            postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
+            appUserID: self.appUserID,
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: false,
+            purchaseCompletedBy: .revenueCat,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: nil,
+            containsAttributionData: false
+        )
+
+        let data = try JSONEncoder.default.encode(postData)
+        let body = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+
+        expect(body.keys).toNot(contain("presented_checkpoint_identifier"))
+    }
+
+    func testCacheKeyDiffersForPresentedCheckpointIdentifier() {
+        let config = self.createConfig()
+        let postData: (String) -> PostReceiptDataOperation.PostData = { checkpointIdentifier in
+            let context = PresentedOfferingContext(offeringIdentifier: "offering")
+                .withCheckpointIdentifier(checkpointIdentifier)
+            return PostReceiptDataOperation.PostData(
+                transactionData: .init(
+                    presentedOfferingContext: context,
+                    unsyncedAttributes: nil,
+                    storeCountry: nil
+                ),
+                postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
+                appUserID: self.appUserID,
+                productData: nil,
+                receipt: self.receipt,
+                observerMode: false,
+                purchaseCompletedBy: .revenueCat,
+                testReceiptIdentifier: nil,
+                appTransaction: nil,
+                transactionId: nil,
+                containsAttributionData: false
+            )
+        }
+        let factoryA = PostReceiptDataOperation.createFactory(
+            configuration: config,
+            postData: postData("checkout_a"),
+            customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>(),
+            offlineCustomerInfoCreator: nil
+        )
+        let factoryC = PostReceiptDataOperation.createFactory(
+            configuration: config,
+            postData: postData("checkout_c"),
+            customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>(),
+            offlineCustomerInfoCreator: nil
+        )
+
+        expect(factoryA.cacheKey) != factoryC.cacheKey
+    }
+
     func testCacheKeyStabilityWhenOnlyAttributeTimestampChanges() {
         let time1 = Date(timeIntervalSince1970: 1000)
         let time2 = Date(timeIntervalSince1970: 2000)

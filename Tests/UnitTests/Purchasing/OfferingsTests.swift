@@ -683,6 +683,37 @@ class OfferingsTests: TestCase {
         expect(offering.presentedOfferingContext).to(beNil())
     }
 
+    func testWithPresentedCheckpointIdentifierPreservesExistingContext() throws {
+        let context = PresentedOfferingContext(
+            offeringIdentifier: "offering_a",
+            placementIdentifier: "onboarding",
+            targetingContext: .init(revision: 3, ruleId: "rule_abc")
+        )
+        let package = Package(
+            identifier: "$rc_monthly",
+            packageType: .monthly,
+            storeProduct: StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "monthly")),
+            presentedOfferingContext: context,
+            webCheckoutUrl: nil
+        )
+        let offering = Offering(
+            identifier: "offering_a",
+            serverDescription: "",
+            availablePackages: [package],
+            webCheckoutUrl: nil
+        )
+
+        let presentedOffering = offering.withPresentedCheckpointIdentifier("checkout")
+        let presentedContext = try XCTUnwrap(presentedOffering.presentedOfferingContext)
+
+        expect(presentedContext.offeringIdentifier) == "offering_a"
+        expect(presentedContext.placementIdentifier) == "onboarding"
+        expect(presentedContext.targetingContext?.revision) == 3
+        expect(presentedContext.targetingContext?.ruleId) == "rule_abc"
+        expect(presentedContext.checkpointIdentifier) == "checkout"
+        expect(offering.presentedOfferingContext?.checkpointIdentifier).to(beNil())
+    }
+
     func testLifetimePackage() throws {
         try testPackageType(packageType: PackageType.lifetime)
     }

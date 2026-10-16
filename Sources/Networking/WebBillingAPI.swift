@@ -80,6 +80,7 @@ class WebBillingAPI {
                             packageID: packageID,
                             presentedOfferingIdentifier: presentedOfferingContext.offeringIdentifier,
                             presentedPlacementIdentifier: presentedOfferingContext.placementIdentifier,
+                            presentedCheckpointIdentifier: presentedOfferingContext.checkpointIdentifier,
                             appliedTargetingRule: presentedOfferingContext.targetingContext.map {
                                 .init(revision: $0.revision, ruleID: $0.ruleId)
                             },

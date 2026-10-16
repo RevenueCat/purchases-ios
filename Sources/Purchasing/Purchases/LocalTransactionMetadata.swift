@@ -141,6 +141,7 @@ private struct PurchasedTransactionDataEncodedWrapper: Codable {
     // Raw properties of PresentedOfferingContext, to avoid making it `Codable` because it's public
     private let offeringIdentifier: String?
     private let placementIdentifier: String?
+    private let checkpointIdentifier: String?
     private let targetingContextRevision: Int?
     private let targetingContextRuleId: String?
 
@@ -152,6 +153,7 @@ private struct PurchasedTransactionDataEncodedWrapper: Codable {
         self.storeCountry = purchasedTransactionData.storeCountry
         self.offeringIdentifier = purchasedTransactionData.presentedOfferingContext?.offeringIdentifier
         self.placementIdentifier = purchasedTransactionData.presentedOfferingContext?.placementIdentifier
+        self.checkpointIdentifier = purchasedTransactionData.presentedOfferingContext?.checkpointIdentifier
         self.targetingContextRevision = purchasedTransactionData.presentedOfferingContext?.targetingContext?.revision
         self.targetingContextRuleId = purchasedTransactionData.presentedOfferingContext?.targetingContext?.ruleId
     }
@@ -184,7 +186,7 @@ private struct PurchasedTransactionDataEncodedWrapper: Codable {
             offeringIdentifier: offeringIdentifier,
             placementIdentifier: self.placementIdentifier,
             targetingContext: targetingContext
-        )
+        ).withCheckpointIdentifier(self.checkpointIdentifier)
     }
 }
 
