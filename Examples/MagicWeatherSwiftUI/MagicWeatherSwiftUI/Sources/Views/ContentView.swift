@@ -39,6 +39,17 @@ struct ContentView: View {
                 Image(systemName: "person.circle.fill")
                 Text("User")
             }
+
+            NavigationView {
+                CheckpointsView()
+                    .navigationTitle("Checkpoints")
+                    .navigationBarTitleDisplayMode(.inline)
+            }
+            .navigationViewStyle(StackNavigationViewStyle())
+            .tabItem {
+                Image(systemName: "flag.checkered")
+                Text("Checkpoints")
+            }
         }
         .sheet(isPresented: $paywallPresented, content: {
             PaywallView(isPresented: $paywallPresented)

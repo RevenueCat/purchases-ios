@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CB0D7E032F8A1B2C00C0FFEE /* CheckpointsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB0D7E022F8A1B2C00C0FFEE /* CheckpointsView.swift */; };
+		CB0D7E052F8A1B2C00C0FFEE /* HardPaywallSampleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB0D7E042F8A1B2C00C0FFEE /* HardPaywallSampleView.swift */; };
+		CB0D7E072F8A1B2C00C0FFEE /* SoftPaywallSampleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB0D7E062F8A1B2C00C0FFEE /* SoftPaywallSampleView.swift */; };
+		CB0D7E092F8A1B2C00C0FFEE /* OnboardingSampleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB0D7E082F8A1B2C00C0FFEE /* OnboardingSampleView.swift */; };
+		CB0D7E0B2F8A1B2C00C0FFEE /* EntitlementGateSampleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB0D7E0A2F8A1B2C00C0FFEE /* EntitlementGateSampleView.swift */; };
 		53F702E92D75EFF100DE2198 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 53F702E82D75EFF100DE2198 /* RevenueCat */; };
 		53F702EB2D75EFF100DE2198 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 53F702EA2D75EFF100DE2198 /* RevenueCatUI */; };
 		A73C6EF82E29944D00DBC86A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A73C6EE22E29944D00DBC86A /* Assets.xcassets */; };
@@ -38,6 +43,11 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		CB0D7E022F8A1B2C00C0FFEE /* CheckpointsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointsView.swift; sourceTree = "<group>"; };
+		CB0D7E042F8A1B2C00C0FFEE /* HardPaywallSampleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HardPaywallSampleView.swift; sourceTree = "<group>"; };
+		CB0D7E062F8A1B2C00C0FFEE /* SoftPaywallSampleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoftPaywallSampleView.swift; sourceTree = "<group>"; };
+		CB0D7E082F8A1B2C00C0FFEE /* OnboardingSampleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingSampleView.swift; sourceTree = "<group>"; };
+		CB0D7E0A2F8A1B2C00C0FFEE /* EntitlementGateSampleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementGateSampleView.swift; sourceTree = "<group>"; };
 		5597797E25ACDC3E00C33DFB /* Magic Weather SwiftUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Magic Weather SwiftUI.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5597798125ACDC3E00C33DFB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		5791CE812742E39900E50C4B /* Magic Weather SwiftUI.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Magic Weather SwiftUI.entitlements"; sourceTree = "<group>"; };
@@ -70,6 +80,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		CB0D7E012F8A1B2C00C0FFEE /* Checkpoints */ = {
+			isa = PBXGroup;
+			children = (
+				CB0D7E022F8A1B2C00C0FFEE /* CheckpointsView.swift */,
+				CB0D7E042F8A1B2C00C0FFEE /* HardPaywallSampleView.swift */,
+				CB0D7E062F8A1B2C00C0FFEE /* SoftPaywallSampleView.swift */,
+				CB0D7E082F8A1B2C00C0FFEE /* OnboardingSampleView.swift */,
+				CB0D7E0A2F8A1B2C00C0FFEE /* EntitlementGateSampleView.swift */,
+			);
+			path = Checkpoints;
+			sourceTree = "<group>";
+		};
 		55413BF525B73F7200ECCA5A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -155,6 +177,7 @@
 			isa = PBXGroup;
 			children = (
 				A73C6EE82E29944D00DBC86A /* Helpers */,
+				CB0D7E012F8A1B2C00C0FFEE /* Checkpoints */,
 				A73C6EEB2E29944D00DBC86A /* Lifecycle */,
 				A73C6EEE2E29944D00DBC86A /* ViewModels */,
 				A73C6EF32E29944D00DBC86A /* Views */,
@@ -262,6 +285,11 @@
 				A73C6F032E29944D00DBC86A /* PurchasesDelegateHandler.swift in Sources */,
 				A73C6F042E29944D00DBC86A /* ContentView.swift in Sources */,
 				A73C6F052E29944D00DBC86A /* WeatherViewModel.swift in Sources */,
+				CB0D7E032F8A1B2C00C0FFEE /* CheckpointsView.swift in Sources */,
+				CB0D7E052F8A1B2C00C0FFEE /* HardPaywallSampleView.swift in Sources */,
+				CB0D7E072F8A1B2C00C0FFEE /* SoftPaywallSampleView.swift in Sources */,
+				CB0D7E092F8A1B2C00C0FFEE /* OnboardingSampleView.swift in Sources */,
+				CB0D7E0B2F8A1B2C00C0FFEE /* EntitlementGateSampleView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
