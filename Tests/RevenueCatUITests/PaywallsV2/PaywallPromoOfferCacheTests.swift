@@ -40,6 +40,17 @@ final class PaywallPromoOfferCacheTests: TestCase {
         XCTAssertNil(cache.purchasableOffer(for: package), "A fabricated offer must never reach StoreKit.")
     }
 
+    func testSimulatedIneligibleCacheNeverFetchesSignedOffers() async {
+        let package = Self.makePackage(promoDiscountIdentifier: Self.promoCode)
+        let cache = PaywallPromoOfferCache(simulateEligible: false)
+
+        await cache.computeEligibility(for: [(package, Self.promoCode)])
+
+        XCTAssertNil(cache.get(for: package))
+        XCTAssertNil(cache.purchasableOffer(for: package))
+        XCTAssertFalse(cache.isMostLikelyEligible(for: package))
+    }
+
     func testSimulateEligibleSeedsSignedOfferForMatchingDiscount() async {
         let package = Self.makePackage(promoDiscountIdentifier: Self.promoCode)
         let cache = PaywallPromoOfferCache(simulateEligible: true)

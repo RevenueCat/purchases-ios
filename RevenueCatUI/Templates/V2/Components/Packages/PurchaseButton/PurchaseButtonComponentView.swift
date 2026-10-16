@@ -172,6 +172,11 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
+        if purchaseHandler.isCustomerCenterPreview {
+            try await self.performInAppPurchase(selectedPackage: selectedPackage)
+            return
+        }
+
         switch await HostedCheckout.start(for: selectedPackage,
                                           purchaseHandler: self.purchaseHandler,
                                           purchaseInitiatedAction: self.purchaseInitiatedAction) {
@@ -266,10 +271,11 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
+        let checkoutContext = purchaseHandler.webCheckoutContext
         guard let launchWebCheckout = self.viewModel.urlForWebCheckout(
             packageContext: self.packageContext,
-            appUserID: Purchases.isConfigured ? Purchases.shared.appUserID : "",
-            isSandbox: Purchases.isConfigured ? Purchases.shared.isSandbox : false
+            appUserID: checkoutContext.appUserID,
+            isSandbox: checkoutContext.isSandbox
         ) else {
             Logger.error(Strings.no_web_checkout_url_found)
             return
@@ -280,6 +286,14 @@ struct PurchaseButtonComponentView: View {
         self.logIfInPreview("Web Product: \(launchWebCheckout)")
 
         guard !self.isInPreview else {
+            return
+        }
+
+        if purchaseHandler.isCustomerCenterPreview {
+            let completed = try await purchaseHandler.performCustomerCenterPreviewCheckout(url: launchWebCheckout.url)
+            if completed && launchWebCheckout.autoDismiss {
+                self.onDismiss()
+            }
             return
         }
 

@@ -23,6 +23,32 @@ import XCTest
 @MainActor
 class PurchaseCompletedHandlerTests: TestCase {
 
+    func testStandardPaywallForwardsPurchasesForBothHandlerOwnershipModes() throws {
+        for ownsHandler in [true, false] {
+            let handler = PurchaseHandler.mock()
+            var receivedCustomerInfo: CustomerInfo?
+            let dispose = try PaywallView(
+                configuration: .init(
+                    offering: Self.offering.withLocalImages,
+                    introEligibility: .producing(eligibility: .eligible),
+                    purchaseHandler: handler
+                ),
+                paywallViewOwnsPurchaseHandler: ownsHandler
+            )
+            .onPurchaseCompleted { customerInfo in
+                receivedCustomerInfo = customerInfo
+            }
+            .addToHierarchy()
+            defer { dispose() }
+
+            Task {
+                try await handler.purchase(package: Self.package)
+            }
+
+            expect(receivedCustomerInfo).toEventually(equal(TestData.customerInfo))
+        }
+    }
+
     func testOnPurchaseStarted() throws {
         var started = false
         var packageBeingPurchased: Package?
