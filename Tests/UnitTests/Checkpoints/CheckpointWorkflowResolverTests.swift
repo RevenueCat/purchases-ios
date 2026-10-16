@@ -722,6 +722,20 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertNil(Self.resolvedWorkflow(resolution))
     }
 
+    func testTerminalOfferingWorkflowAttributesPackagesToCheckpoint() async throws {
+        self.stubOfferingWorkflow(offeringID: self.offeringID)
+
+        let resolution = try await self.resolve()
+        let offering = try XCTUnwrap(Self.resolvedOffering(resolution))
+
+        XCTAssertTrue(offering.availablePackages.allSatisfy {
+            $0.presentedOfferingContext.checkpointIdentifier == self.checkpointIdentifier
+        })
+        XCTAssertTrue(self.offering.availablePackages.allSatisfy {
+            $0.presentedOfferingContext.checkpointIdentifier == nil
+        })
+    }
+
     func testTerminalOfferingWorkflowReadsItsOfferingFromTheStep() async throws {
         let secondaryOffering = Self.offering(id: "secondary")
         self.offerings = Self.offerings([self.offering, secondaryOffering])

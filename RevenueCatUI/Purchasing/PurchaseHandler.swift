@@ -768,7 +768,8 @@ extension PurchaseHandler {
         presentedOfferingContext: PresentedOfferingContext?,
         developerProvidedOffering: Offering?,
         workflowBlobRef: String? = nil,
-        traceId: String? = nil
+        traceId: String? = nil,
+        checkpointIdentifier: String? = nil
     ) throws -> WorkflowContext {
         guard let step = workflow.steps[workflow.initialStepId] else {
             throw PaywallError.workflowInitialStepNotFound(
@@ -817,7 +818,8 @@ extension PurchaseHandler {
             initialOffering: offering,
             presentedOfferingContext: presentedOfferingContext,
             workflowBlobRef: workflowBlobRef,
-            traceId: traceId
+            traceId: traceId,
+            checkpointIdentifier: checkpointIdentifier
         )
     }
 
