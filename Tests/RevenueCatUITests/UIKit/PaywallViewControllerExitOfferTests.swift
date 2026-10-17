@@ -157,6 +157,48 @@ final class PaywallViewControllerExitOfferTests: TestCase {
         expect(exitOffer.dismissCallCount).to(equal(1))
     }
 
+    // MARK: - Swipe to dismiss
+
+    func testCannotBeSwipedAwayWhileAPurchaseIsInProgress() {
+        let controller = PaywallViewController(offering: Self.makeOffering(identifier: "main"))
+        controller.loadViewIfNeeded()
+
+        controller.purchaseHandlerForTesting.actionTypeInProgress = .purchase
+
+        expect(controller.isModalInPresentation) == true
+    }
+
+    func testCannotBeSwipedAwayWhileAPurchaseIsInProgressWithoutExitOffers() {
+        let controller = PaywallViewController(offering: Self.makeOffering(identifier: "main"))
+        controller.disableExitOffers()
+        controller.loadViewIfNeeded()
+
+        controller.purchaseHandlerForTesting.actionTypeInProgress = .purchase
+
+        expect(controller.isModalInPresentation) == true
+    }
+
+    func testCanBeSwipedAwayOnceThePurchaseEnds() {
+        let controller = PaywallViewController(offering: Self.makeOffering(identifier: "main"))
+        controller.loadViewIfNeeded()
+        controller.purchaseHandlerForTesting.actionTypeInProgress = .purchase
+
+        controller.purchaseHandlerForTesting.actionTypeInProgress = nil
+
+        expect(controller.isModalInPresentation) == false
+    }
+
+    func testKeepsTheHostsSwipeBlockingAfterThePurchaseEnds() {
+        let controller = PaywallViewController(offering: Self.makeOffering(identifier: "main"))
+        controller.isModalInPresentation = true
+        controller.loadViewIfNeeded()
+        controller.purchaseHandlerForTesting.actionTypeInProgress = .purchase
+
+        controller.purchaseHandlerForTesting.actionTypeInProgress = nil
+
+        expect(controller.isModalInPresentation) == true
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
