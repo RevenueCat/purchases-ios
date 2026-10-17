@@ -39,6 +39,8 @@ enum CustomerInfoStrings {
     case sending_customerinfo_with_changed_active_entitlements_to_delegate
     case vending_cache
     case error_encoding_customerinfo(Error)
+    case entitlement_expiration_scheduled(date: Date)
+    case entitlements_reached_expiration(identifiers: [String])
 
 }
 
@@ -100,6 +102,10 @@ extension CustomerInfoStrings: LogMessage {
             return "Vending CustomerInfo from cache."
         case let .error_encoding_customerinfo(error):
             return "Couldn't encode CustomerInfo:\n\(error)"
+        case let .entitlement_expiration_scheduled(date):
+            return "Next entitlement expiration check scheduled for \(date)."
+        case let .entitlements_reached_expiration(identifiers):
+            return "Entitlements reached their expiration date: \(identifiers)."
         }
 
     }

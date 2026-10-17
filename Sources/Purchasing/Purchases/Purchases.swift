@@ -3227,6 +3227,7 @@ private extension Purchases {
                 self?.dispatchSyncSubscriberAttributes()
             }
         )
+        self.customerInfoManager.rearmEntitlementExpiration()
         self.transactionMetadataSyncHelper.syncIfNeeded(
             allowSharingAppStoreAccount: self.purchasesOrchestrator.allowSharingAppStoreAccount
         )
@@ -3429,6 +3430,7 @@ private extension Purchases {
 
         self.delegate?.purchases?(self, receivedUpdated: info)
         self.customerInfoManager.setLastSentCustomerInfo(info)
+        self.customerInfoManager.armEntitlementExpiration(with: info, appUserID: self.appUserID)
     }
 
     private func updateOfferingsCache(isAppBackgrounded: Bool) {
