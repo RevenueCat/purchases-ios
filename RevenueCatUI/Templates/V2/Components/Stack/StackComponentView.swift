@@ -66,6 +66,9 @@ struct StackComponentView: View {
     @Environment(\.isPromoOfferEligibilityLoading)
     private var isPromoOfferEligibilityLoading
 
+    @Environment(\.redactionReasons)
+    private var redactionReasons
+
     private let viewModel: StackComponentViewModel
     private let isScrollableByDefault: Bool
     private let onDismiss: () -> Void
@@ -109,12 +112,10 @@ struct StackComponentView: View {
         ) { style in
             if style.visible {
                 self.make(style: style)
-                    .applyIf(self.redactsWhileOfferEligibilityLoads(
+                    .redacted(reason: self.redactsWhileOfferEligibilityLoads(
                         isEligibleForIntroOffer: isEligibleForIntroOffer,
                         isEligibleForPromoOffer: isEligibleForPromoOffer
-                    )) { view in
-                        view.redacted(reason: .placeholder)
-                    }
+                    ) ? self.redactionReasons.union(.placeholder) : self.redactionReasons)
             }
         }
     }

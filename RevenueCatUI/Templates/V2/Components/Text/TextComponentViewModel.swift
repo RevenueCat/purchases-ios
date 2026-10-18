@@ -159,8 +159,8 @@ class TextComponentViewModel {
             override.conditions.contains(where: \.dependsOnOfferEligibility)
         } ?? false
 
-        var templates: Set<String> = []
-        var sawHiddenOutcome = false
+        var possibleVisibleTexts: Set<String> = []
+        var couldBeHidden = false
         for outcome in offerEligibility.unresolvedOutcomes(variesWithEligibility: variesWithEligibility) {
             let partial = LocalizedTextPartial.buildPartial(
                 state: state,
@@ -171,17 +171,19 @@ class TextComponentViewModel {
                 with: self.presentedOverrides
             )
             if partial?.partial.visible ?? self.component.visible ?? true {
-                templates.insert(partial?.text ?? self.text)
+                possibleVisibleTexts.insert(partial?.text ?? self.text)
             } else {
-                sawHiddenOutcome = true
+                couldBeHidden = true
             }
         }
 
-        if (sawHiddenOutcome && !templates.isEmpty) || templates.count > 1 {
+        let visibilityCanChange = couldBeHidden && !possibleVisibleTexts.isEmpty
+        let textCanChange = possibleVisibleTexts.count > 1
+        if visibilityCanChange || textCanChange {
             return true
         }
 
-        guard let template = templates.first else {
+        guard let template = possibleVisibleTexts.first else {
             return false
         }
 

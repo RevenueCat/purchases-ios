@@ -50,6 +50,52 @@ extension EnvironmentValues {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension View {
+
+    func redactedWhileOfferEligibilityLoads(
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        isVisible: @escaping (Bool, Bool) -> Bool
+    ) -> some View {
+        self.modifier(OfferEligibilityRedactionModifier(
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            isVisible: isVisible
+        ))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct OfferEligibilityRedactionModifier: ViewModifier {
+
+    @Environment(\.isIntroOfferEligibilityLoading)
+    private var isIntroOfferEligibilityLoading
+
+    @Environment(\.isPromoOfferEligibilityLoading)
+    private var isPromoOfferEligibilityLoading
+
+    @Environment(\.redactionReasons)
+    private var redactionReasons
+
+    let isEligibleForIntroOffer: Bool
+    let isEligibleForPromoOffer: Bool
+    let isVisible: (Bool, Bool) -> Bool
+
+    func body(content: Content) -> some View {
+        let offerEligibility = OfferEligibilityState(
+            isEligibleForIntroOffer: self.isEligibleForIntroOffer,
+            isEligibleForPromoOffer: self.isEligibleForPromoOffer,
+            isIntroOfferEligibilityLoading: self.isIntroOfferEligibilityLoading,
+            isPromoOfferEligibilityLoading: self.isPromoOfferEligibilityLoading
+        )
+        let shouldRedact = offerEligibility.visibilityCanChange(isVisible: self.isVisible)
+        content.redacted(reason: shouldRedact ? self.redactionReasons.union(.placeholder) : self.redactionReasons)
+    }
+
+}
+
 #if DEBUG
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

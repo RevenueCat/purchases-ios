@@ -95,20 +95,20 @@ struct ButtonComponentView: View {
     }
 
     var body: some View {
-        if !self.viewModel.hasUnknownAction,
-           self.viewModel.visible(
-               state: self.componentViewState,
-               condition: self.screenCondition,
-               isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                   package: self.packageContext.package
-               ),
-               isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
-                   for: self.packageContext.package
-               ),
-               selectedPackageId: self.selectedPackageId,
-               customVariables: self.customVariables,
-               windowSize: self.paywallWindowSize
-           ) {
+        let isEligibleForIntroOffer = self.introOfferEligibilityContext.isEligible(package: self.packageContext.package)
+        let isEligibleForPromoOffer = self.paywallPromoOfferCache.isMostLikelyEligible(for: self.packageContext.package)
+        let isVisible: (Bool, Bool) -> Bool = { intro, promo in
+            self.viewModel.visible(
+                state: self.componentViewState,
+                condition: self.screenCondition,
+                isEligibleForIntroOffer: intro,
+                isEligibleForPromoOffer: promo,
+                selectedPackageId: self.selectedPackageId,
+                customVariables: self.customVariables,
+                windowSize: self.paywallWindowSize
+            )
+        }
+        if !self.viewModel.hasUnknownAction, isVisible(isEligibleForIntroOffer, isEligibleForPromoOffer) {
             AsyncButton {
                 try await performAction()
             } label: {
@@ -116,6 +116,11 @@ struct ButtonComponentView: View {
                     viewModel: self.viewModel.stackViewModel,
                     onDismiss: self.onDismiss,
                     showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
+                )
+                .redactedWhileOfferEligibilityLoads(
+                    isEligibleForIntroOffer: isEligibleForIntroOffer,
+                    isEligibleForPromoOffer: isEligibleForPromoOffer,
+                    isVisible: isVisible
                 )
             }
             .applyIfLet(self.derivedAccessibilityLabel, apply: { view, label in

@@ -3425,6 +3425,7 @@
 		E78770053AB84EF380CC0C1D /* TextComponentViewLoadingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TextComponentViewLoadingTests.swift; sourceTree = "<group>"; };
 		C4E8A91D2F6D4E70A1B3C5D9 /* OfferEligibilityTextRedactionTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OfferEligibilityTextRedactionTests.swift; sourceTree = "<group>"; };
 		C4E8A91E2F6D4E71A1B3C5DA /* StackOfferEligibilityVisibilityTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StackOfferEligibilityVisibilityTests.swift; sourceTree = "<group>"; };
+		C4E8A91F2F6D4E71A1B3C5DB /* ContainerOfferEligibilityVisibilityTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContainerOfferEligibilityVisibilityTests.swift; sourceTree = "<group>"; };
 		E7D46162A95A4706925EC868 /* TabControlHapticFeedbackTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabControlHapticFeedbackTests.swift; sourceTree = "<group>"; };
 		E7EAAD1DC166ABD68E484EAA /* RootViewSheetDismissalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewSheetDismissalTests.swift; sourceTree = "<group>"; };
 		E7EB64E9D44783DD16A28B05 /* WebViewComponentViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewComponentViewTests.swift; sourceTree = "<group>"; };
@@ -3775,6 +3776,7 @@
 				E78770053AB84EF380CC0C1D /* TextComponentViewLoadingTests.swift */,
 				C4E8A91D2F6D4E70A1B3C5D9 /* OfferEligibilityTextRedactionTests.swift */,
 				C4E8A91E2F6D4E71A1B3C5DA /* StackOfferEligibilityVisibilityTests.swift */,
+				C4E8A91F2F6D4E71A1B3C5DB /* ContainerOfferEligibilityVisibilityTests.swift */,
 				E180EBDC5DC2B19E9F0C71D1 /* CarouselPagingTests.swift */,
 				B413E59F2F97B3B900B5F0CA /* CarouselTabSwitchTests.swift */,
 				B413E5A02F97B3B900B5F0CA /* PaywallsV2ViewTests.swift */,
