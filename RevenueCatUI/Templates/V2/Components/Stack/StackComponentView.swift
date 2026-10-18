@@ -108,13 +108,12 @@ struct StackComponentView: View {
             colorScheme: colorScheme
         ) { style in
             if style.visible {
+                let redactionReason: RedactionReasons = self.redactsWhileOfferEligibilityLoads(
+                    isEligibleForIntroOffer: isEligibleForIntroOffer,
+                    isEligibleForPromoOffer: isEligibleForPromoOffer
+                ) ? .placeholder : []
                 self.make(style: style)
-                    .applyIf(self.redactsWhileOfferEligibilityLoads(
-                        isEligibleForIntroOffer: isEligibleForIntroOffer,
-                        isEligibleForPromoOffer: isEligibleForPromoOffer
-                    )) { view in
-                        view.redacted(reason: .placeholder)
-                    }
+                    .redacted(reason: redactionReason)
             }
         }
     }

@@ -208,33 +208,21 @@ class StackComponentViewModel {
         offerEligibility: OfferEligibilityState,
         conditionContext: ConditionContext
     ) -> Bool {
-        guard offerEligibility.isLoading else {
-            return false
-        }
-
         let variesWithEligibility = self.presentedOverrides?.contains { override in
             override.conditions.contains(where: \.dependsOnOfferEligibility)
         } ?? false
 
-        var sawVisibleOutcome = false
-        var sawHiddenOutcome = false
-        for outcome in offerEligibility.unresolvedOutcomes(variesWithEligibility: variesWithEligibility) {
+        return offerEligibility.visibilityCanChange(variesWithEligibility: variesWithEligibility) { intro, promo in
             let partial = PresentedStackPartial.buildPartial(
                 state: state,
                 condition: condition,
-                isEligibleForIntroOffer: outcome.isEligibleForIntroOffer,
-                isEligibleForPromoOffer: outcome.isEligibleForPromoOffer,
+                isEligibleForIntroOffer: intro,
+                isEligibleForPromoOffer: promo,
                 conditionContext: conditionContext,
                 with: self.presentedOverrides
             )
-            if partial?.visible ?? self.component.visible ?? true {
-                sawVisibleOutcome = true
-            } else {
-                sawHiddenOutcome = true
-            }
+            return partial?.visible ?? self.component.visible ?? true
         }
-
-        return sawVisibleOutcome && sawHiddenOutcome
     }
 
 }

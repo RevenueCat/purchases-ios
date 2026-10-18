@@ -25,8 +25,8 @@ struct OfferEligibilityState {
         return self.isIntroOfferEligibilityLoading || self.isPromoOfferEligibilityLoading
     }
 
-    /// Eligibility values still in play. A resolved check contributes only its result, so a stack or
-    /// string that depends on the other check can render as soon as its own check finishes.
+    /// Eligibility values still in play. A resolved check contributes only its result, so a component
+    /// that depends on the other check can render as soon as its own check finishes.
     func unresolvedOutcomes(
         variesWithEligibility: Bool
     ) -> [(isEligibleForIntroOffer: Bool, isEligibleForPromoOffer: Bool)] {
@@ -45,6 +45,28 @@ struct OfferEligibilityState {
                 )
             }
         }
+    }
+
+    /// Whether the eligibility results still in play disagree about visibility.
+    func visibilityCanChange(
+        variesWithEligibility: Bool,
+        isVisible: (_ isEligibleForIntroOffer: Bool, _ isEligibleForPromoOffer: Bool) -> Bool
+    ) -> Bool {
+        guard self.isLoading else {
+            return false
+        }
+
+        var couldBeVisible = false
+        var couldBeHidden = false
+        for outcome in self.unresolvedOutcomes(variesWithEligibility: variesWithEligibility) {
+            if isVisible(outcome.isEligibleForIntroOffer, outcome.isEligibleForPromoOffer) {
+                couldBeVisible = true
+            } else {
+                couldBeHidden = true
+            }
+        }
+
+        return couldBeVisible && couldBeHidden
     }
 
 }
