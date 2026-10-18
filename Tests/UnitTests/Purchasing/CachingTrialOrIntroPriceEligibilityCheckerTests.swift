@@ -256,6 +256,79 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
         expect(receivedSecondResult) == expected.filter { secondProductIDs.contains($0.key) }
     }
 
+    func testRequestDoesNotShareInFlightCheckMissingSomeOfItsProducts() async {
+        let checker = DelayedTrialOrIntroPriceEligibilityChecker()
+        let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: checker)
+        let firstProductIDs: Set<String> = [Self.productID1]
+        let secondProductIDs: Set<String> = [Self.productID1, Self.productID2]
+
+        let firstRequest = Task {
+            await caching.checkEligibility(productIdentifiers: firstProductIDs)
+        }
+
+        await expect(checker.invocations.count).toEventually(equal(1))
+
+        let secondRequest = Task {
+            await caching.checkEligibility(productIdentifiers: secondProductIDs)
+        }
+
+        await expect(checker.invocations.count).toEventually(equal(2))
+
+        let firstExpected: Result = [
+            Self.productID1: .init(eligibilityStatus: .eligible)
+        ]
+        let secondExpected: Result = [
+            Self.productID1: .init(eligibilityStatus: .eligible),
+            Self.productID2: .init(eligibilityStatus: .ineligible)
+        ]
+        checker.complete(productIdentifiers: firstProductIDs, with: firstExpected)
+        checker.complete(productIdentifiers: secondProductIDs, with: secondExpected)
+
+        let receivedFirstResult = await firstRequest.value
+        let receivedSecondResult = await secondRequest.value
+
+        expect(checker.invocations) == [firstProductIDs, secondProductIDs]
+        expect(receivedFirstResult) == firstExpected
+        expect(receivedSecondResult) == secondExpected
+    }
+
+    func testClearCacheDoesNotShareOrCacheInFlightRequestFromPreviousGeneration() async {
+        let checker = DelayedTrialOrIntroPriceEligibilityChecker()
+        let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: checker)
+        let productIDs: Set<String> = [Self.productID1]
+
+        let firstRequest = Task {
+            await caching.checkEligibility(productIdentifiers: productIDs)
+        }
+
+        await expect(checker.invocations.count).toEventually(equal(1))
+        caching.clearCache()
+
+        let secondRequest = Task {
+            await caching.checkEligibility(productIdentifiers: productIDs)
+        }
+
+        await expect(checker.invocations.count).toEventually(equal(2))
+
+        let firstExpected: Result = [
+            Self.productID1: .init(eligibilityStatus: .eligible)
+        ]
+        let secondExpected: Result = [
+            Self.productID1: .init(eligibilityStatus: .ineligible)
+        ]
+        checker.complete(productIdentifiers: productIDs, with: firstExpected)
+        checker.complete(productIdentifiers: productIDs, with: secondExpected)
+
+        let receivedFirstResult = await firstRequest.value
+        let receivedSecondResult = await secondRequest.value
+        let cachedResult = await caching.checkEligibility(productIdentifiers: productIDs)
+
+        expect(checker.invocations) == [productIDs, productIDs]
+        expect(receivedFirstResult) == firstExpected
+        expect(receivedSecondResult) == secondExpected
+        expect(cachedResult) == secondExpected
+    }
+
     func testClearCache() async {
         let expected: Result = [
             Self.productID1: .init(eligibilityStatus: .eligible)
@@ -289,7 +362,7 @@ private final class DelayedTrialOrIntroPriceEligibilityChecker: TrialOrIntroPric
 
     private struct State {
         var invocations: [Set<String>] = []
-        var completions: [Set<String>: ReceiveIntroEligibilityBlock] = [:]
+        var completions: [Set<String>: [ReceiveIntroEligibilityBlock]] = [:]
     }
 
     private let state = Atomic(State())
@@ -304,7 +377,7 @@ private final class DelayedTrialOrIntroPriceEligibilityChecker: TrialOrIntroPric
     ) {
         self.state.modify {
             $0.invocations.append(productIdentifiers)
-            $0.completions[productIdentifiers] = completion
+            $0.completions[productIdentifiers, default: []].append(completion)
         }
     }
 
@@ -312,8 +385,14 @@ private final class DelayedTrialOrIntroPriceEligibilityChecker: TrialOrIntroPric
         productIdentifiers: Set<String>,
         with result: [String: IntroEligibility]
     ) {
-        let completion = self.state.modify {
-            $0.completions.removeValue(forKey: productIdentifiers)
+        let completion: ReceiveIntroEligibilityBlock? = self.state.modify { state in
+            guard var completions = state.completions[productIdentifiers], !completions.isEmpty else {
+                return nil
+            }
+
+            let completion = completions.removeFirst()
+            state.completions[productIdentifiers] = completions.isEmpty ? nil : completions
+            return completion
         }
         completion?(result)
     }

@@ -23,16 +23,33 @@ class CachingTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCh
         let cacheGeneration: Int
     }
 
+    private enum RequestAction {
+        case complete([String: IntroEligibility])
+        case wait
+        case start(RequestKey)
+    }
+
     private struct State {
         var cachedEligibilities: [String: IntroEligibility] = [:]
         var cacheGeneration = 0
         var inFlightRequests: [RequestKey: [ReceiveIntroEligibilityBlock]] = [:]
 
-        mutating func appendCompletion(
-            for requestKey: RequestKey,
-            cached: [String: IntroEligibility],
+        mutating func prepareRequest(
+            productIdentifiers: Set<String>,
             completion: @escaping ReceiveIntroEligibilityBlock
-        ) -> Bool {
+        ) -> (action: RequestAction, cachedProductIdentifiers: Set<String>) {
+            let cached = self.cachedEligibilities.filter { productIdentifiers.contains($0.key) }
+            let cachedProductIdentifiers = Set(cached.keys)
+            let missingProducts = productIdentifiers.subtracting(cached.keys)
+
+            guard !missingProducts.isEmpty else {
+                return (.complete(cached), cachedProductIdentifiers)
+            }
+
+            let requestKey = RequestKey(
+                productIdentifiers: missingProducts,
+                cacheGeneration: self.cacheGeneration
+            )
             let containingRequestKey = self.inFlightRequests.keys.first { inFlightRequestKey in
                 inFlightRequestKey.cacheGeneration == requestKey.cacheGeneration
                     && inFlightRequestKey.productIdentifiers.isSuperset(of: requestKey.productIdentifiers)
@@ -42,7 +59,9 @@ class CachingTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCh
                 let requestedProducts = fetched.filter { requestKey.productIdentifiers.contains($0.key) }
                 completion(cached + requestedProducts)
             }
-            return containingRequestKey != nil
+
+            let action: RequestAction = containingRequestKey == nil ? .start(requestKey) : .wait
+            return (action, cachedProductIdentifiers)
         }
     }
 
@@ -87,36 +106,26 @@ extension CachingTrialOrIntroPriceEligibilityChecker {
             return
         }
 
-        let (cached, cacheGeneration) = self.state.withValue { state in
-            let cached = state.cachedEligibilities.filter { productIdentifiers.contains($0.key) }
-            return (cached, state.cacheGeneration)
+        let (action, cachedProductIdentifiers) = self.state.modify {
+            $0.prepareRequest(productIdentifiers: productIdentifiers, completion: completion)
         }
 
-        if !cached.isEmpty {
-            Logger.debug(Strings.eligibility.found_cached_eligibility_for_products(Set(cached.keys)))
+        if !cachedProductIdentifiers.isEmpty {
+            Logger.debug(Strings.eligibility.found_cached_eligibility_for_products(cachedProductIdentifiers))
         }
 
-        let missingProducts = productIdentifiers.subtracting(cached.keys)
-
-        if missingProducts.isEmpty {
+        switch action {
+        case .complete(let cached):
             completion(cached)
-        } else {
-            let requestKey = RequestKey(
-                productIdentifiers: missingProducts,
-                cacheGeneration: cacheGeneration
-            )
-            let requestInProgress = self.state.modify {
-                $0.appendCompletion(for: requestKey, cached: cached, completion: completion)
-            }
-
-            guard !requestInProgress else { return }
-
+        case .wait:
+            return
+        case .start(let requestKey):
             self.checker.checkEligibility(
                 productIdentifiers: requestKey.productIdentifiers,
                 completion: { result in
                     let productsToCache = result.filter { $0.value.shouldCache }
                     let (completions, didCache) = self.state.modify { state in
-                        let didCache = state.cacheGeneration == cacheGeneration
+                        let didCache = state.cacheGeneration == requestKey.cacheGeneration
                         if didCache {
                             state.cachedEligibilities += productsToCache
                         }
