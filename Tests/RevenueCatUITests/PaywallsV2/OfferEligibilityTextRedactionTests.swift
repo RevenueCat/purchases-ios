@@ -72,6 +72,66 @@ class OfferEligibilityTextRedactionTests: TestCase {
         expect(self.redacts(viewModel)).to(beTrue())
     }
 
+    func testIntroOfferCopyDoesNotWaitForPromoEligibilityAfterIntroEligibilityResolves() throws {
+        let viewModel = try Self.makeViewModel(
+            text: "Subscribe",
+            extraStrings: ["intro_key": "Start your free trial"],
+            overrides: [
+                .init(
+                    conditions: [.introOffer],
+                    properties: .init(visible: nil, text: "intro_key")
+                )
+            ]
+        )
+
+        expect(self.redacts(
+            viewModel,
+            isEligibleForIntroOffer: true,
+            isIntroOfferEligibilityLoading: false,
+            isPromoOfferEligibilityLoading: true
+        )).to(beFalse())
+    }
+
+    func testPromoOfferCopyDoesNotWaitForIntroEligibilityAfterPromoEligibilityResolves() throws {
+        let viewModel = try Self.makeViewModel(
+            text: "Subscribe",
+            extraStrings: ["promo_key": "Claim this offer"],
+            overrides: [
+                .init(
+                    extendedConditions: [.promoOfferCondition(operator: .equals, value: true)],
+                    properties: .init(visible: nil, text: "promo_key")
+                )
+            ]
+        )
+
+        expect(self.redacts(
+            viewModel,
+            isEligibleForPromoOffer: true,
+            isIntroOfferEligibilityLoading: true,
+            isPromoOfferEligibilityLoading: false
+        )).to(beFalse())
+    }
+
+    func testOfferVariablesWaitForEitherEligibilityResult() throws {
+        let viewModel = try Self.makeViewModel(text: "{{ product.offer_price }}")
+
+        expect(self.redacts(
+            viewModel,
+            isIntroOfferEligibilityLoading: true,
+            isPromoOfferEligibilityLoading: false
+        )).to(beTrue())
+        expect(self.redacts(
+            viewModel,
+            isIntroOfferEligibilityLoading: false,
+            isPromoOfferEligibilityLoading: true
+        )).to(beTrue())
+        expect(self.redacts(
+            viewModel,
+            isIntroOfferEligibilityLoading: false,
+            isPromoOfferEligibilityLoading: false
+        )).to(beFalse())
+    }
+
     func testOfferOverrideThatDoesNotChangeCopyDoesNotNeedEligibility() throws {
         let colorOnly = try Self.makeViewModel(
             text: "Subscribe",
@@ -133,11 +193,21 @@ private extension OfferEligibilityTextRedactionTests {
     func redacts(
         _ viewModel: TextComponentViewModel,
         state: ComponentViewState = .default,
-        condition: ScreenCondition = .compact
+        condition: ScreenCondition = .compact,
+        isEligibleForIntroOffer: Bool = false,
+        isEligibleForPromoOffer: Bool = false,
+        isIntroOfferEligibilityLoading: Bool = true,
+        isPromoOfferEligibilityLoading: Bool = true
     ) -> Bool {
         return viewModel.redactsWhileOfferEligibilityLoads(
             state: state,
             condition: condition,
+            offerEligibility: .init(
+                isEligibleForIntroOffer: isEligibleForIntroOffer,
+                isEligibleForPromoOffer: isEligibleForPromoOffer,
+                isIntroOfferEligibilityLoading: isIntroOfferEligibilityLoading,
+                isPromoOfferEligibilityLoading: isPromoOfferEligibilityLoading
+            ),
             conditionContext: .init()
         )
     }

@@ -25,6 +25,13 @@ import UIKit
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class TextComponentViewModel {
 
+    struct OfferEligibilityState {
+        let isEligibleForIntroOffer: Bool
+        let isEligibleForPromoOffer: Bool
+        let isIntroOfferEligibilityLoading: Bool
+        let isPromoOfferEligibilityLoading: Bool
+    }
+
     private let localizationProvider: LocalizationProvider
     let uiConfigProvider: UIConfigProvider
     private let component: PaywallComponent.TextComponent
@@ -147,13 +154,23 @@ class TextComponentViewModel {
     func redactsWhileOfferEligibilityLoads(
         state: ComponentViewState,
         condition: ScreenCondition,
+        offerEligibility: OfferEligibilityState,
         conditionContext: ConditionContext
     ) -> Bool {
+        guard offerEligibility.isIntroOfferEligibilityLoading ||
+                offerEligibility.isPromoOfferEligibilityLoading else {
+            return false
+        }
+
         let variesWithEligibility = self.presentedOverrides?.contains { override in
             override.conditions.contains(where: Self.conditionDependsOnOfferEligibility)
         } ?? false
-        let introValues = variesWithEligibility ? [false, true] : [false]
-        let promoValues = variesWithEligibility ? [false, true] : [false]
+        let introValues = variesWithEligibility && offerEligibility.isIntroOfferEligibilityLoading
+            ? [false, true]
+            : [offerEligibility.isEligibleForIntroOffer]
+        let promoValues = variesWithEligibility && offerEligibility.isPromoOfferEligibilityLoading
+            ? [false, true]
+            : [offerEligibility.isEligibleForPromoOffer]
 
         var templates: Set<String> = []
         for isEligibleForIntroOffer in introValues {

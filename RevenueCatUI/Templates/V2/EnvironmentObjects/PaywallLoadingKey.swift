@@ -21,11 +21,31 @@ private struct PaywallLoadingKey: EnvironmentKey {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct IntroOfferEligibilityLoadingKey: EnvironmentKey {
+    static let defaultValue: Bool = false
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct PromoOfferEligibilityLoadingKey: EnvironmentKey {
+    static let defaultValue: Bool = false
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension EnvironmentValues {
 
     var isPaywallLoading: Bool {
         get { self[PaywallLoadingKey.self] }
         set { self[PaywallLoadingKey.self] = newValue }
+    }
+
+    var isIntroOfferEligibilityLoading: Bool {
+        get { self[IntroOfferEligibilityLoadingKey.self] }
+        set { self[IntroOfferEligibilityLoadingKey.self] = newValue }
+    }
+
+    var isPromoOfferEligibilityLoading: Bool {
+        get { self[PromoOfferEligibilityLoadingKey.self] }
+        set { self[PromoOfferEligibilityLoadingKey.self] = newValue }
     }
 
 }
@@ -40,7 +60,7 @@ private struct PaywallLoadingOverrideKey: EnvironmentKey {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension EnvironmentValues {
 
-    /// Overrides `isPaywallLoading` from outside `PaywallsV2View` for preview and test contexts.
+    /// Overrides paywall and eligibility loading from outside `PaywallsV2View` for preview and test contexts.
     var paywallLoadingOverride: Bool? {
         get { self[PaywallLoadingOverrideKey.self] }
         set { self[PaywallLoadingOverrideKey.self] = newValue }

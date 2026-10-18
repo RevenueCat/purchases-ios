@@ -62,8 +62,11 @@ struct TextComponentView: View {
 
     @Environment(\.redactionReasons) private var redactionReasons
 
-    @Environment(\.isPaywallLoading)
-    private var isPaywallLoading
+    @Environment(\.isIntroOfferEligibilityLoading)
+    private var isIntroOfferEligibilityLoading
+
+    @Environment(\.isPromoOfferEligibilityLoading)
+    private var isPromoOfferEligibilityLoading
 
     @Environment(\.accessibilityVoiceOverEnabled)
     private var accessibilityVoiceOverEnabled
@@ -88,14 +91,23 @@ struct TextComponentView: View {
         self.viewModel = viewModel
     }
 
-    private var shouldRedactWhileLoading: Bool {
-        guard self.isPaywallLoading else {
+    private func shouldRedactWhileLoading(
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool
+    ) -> Bool {
+        guard self.isIntroOfferEligibilityLoading || self.isPromoOfferEligibilityLoading else {
             return false
         }
 
         return self.viewModel.redactsWhileOfferEligibilityLoads(
             state: self.componentViewState,
             condition: self.screenCondition,
+            offerEligibility: .init(
+                isEligibleForIntroOffer: isEligibleForIntroOffer,
+                isEligibleForPromoOffer: isEligibleForPromoOffer,
+                isIntroOfferEligibilityLoading: self.isIntroOfferEligibilityLoading,
+                isPromoOfferEligibilityLoading: self.isPromoOfferEligibilityLoading
+            ),
             conditionContext: self.viewModel.uiConfigProvider.conditionContext(
                 selectedPackageId: self.selectedPackageId,
                 customVariables: self.customVariables,
@@ -111,7 +123,10 @@ struct TextComponentView: View {
             package: self.packageContext.package
         )
         let promoOffer = self.paywallPromoOfferCache.get(for: self.packageContext.package)
-        let shouldRedactWhileLoading = self.shouldRedactWhileLoading
+        let shouldRedactWhileLoading = self.shouldRedactWhileLoading(
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: promoOffer != nil
+        )
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
