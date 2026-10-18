@@ -16,6 +16,9 @@ import Foundation
 extension VariablesV2 {
 
     /// Substitution reads the discount selected from intro and promo eligibility.
+    ///
+    /// Every `product.offer_*` case is included. A variable that reads `OfferContext` under another
+    /// name has to be added here. `OfferEligibilityTextRedactionTests` pins the resulting set.
     var dependsOnOfferEligibility: Bool {
         return self.rawValue.hasPrefix("product.offer_")
     }

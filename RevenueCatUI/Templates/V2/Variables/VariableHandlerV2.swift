@@ -302,7 +302,7 @@ private enum VariableLocalizationKey: String {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-enum VariablesV2: String {
+enum VariablesV2: String, CaseIterable {
 
     case productCurrencyCode = "product.currency_code"
     case productCurrencySymbol = "product.currency_symbol"
@@ -321,6 +321,7 @@ enum VariablesV2: String {
     case productPeriodInMonths = "product.period_in_months"
     case productPeriodInYears = "product.period_in_years"
     case productPeriodWithUnit = "product.period_with_unit"
+    // These read intro and promo eligibility. `dependsOnOfferEligibility` includes every `product.offer_*` case.
     case productOfferPrice = "product.offer_price"
     case productOfferPricePerDay = "product.offer_price_per_day"
     case productOfferPricePerWeek = "product.offer_price_per_week"
@@ -1150,6 +1151,7 @@ extension VariablesV2 {
         let daysFromToday = discount.subscriptionPeriod.periodInUnit(unit: .day)
 
         let calendar = Calendar.current
+        // swiftlint:disable:next force_unwrapping
         let futureDate = calendar.date(byAdding: .day, value: daysFromToday, to: date)!
 
         let formatter = DateFormatter()
