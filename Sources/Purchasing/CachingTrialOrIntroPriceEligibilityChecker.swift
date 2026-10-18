@@ -27,6 +27,23 @@ class CachingTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCh
         var cachedEligibilities: [String: IntroEligibility] = [:]
         var cacheGeneration = 0
         var inFlightRequests: [RequestKey: [ReceiveIntroEligibilityBlock]] = [:]
+
+        mutating func appendCompletion(
+            for requestKey: RequestKey,
+            cached: [String: IntroEligibility],
+            completion: @escaping ReceiveIntroEligibilityBlock
+        ) -> Bool {
+            let containingRequestKey = self.inFlightRequests.keys.first { inFlightRequestKey in
+                inFlightRequestKey.cacheGeneration == requestKey.cacheGeneration
+                    && inFlightRequestKey.productIdentifiers.isSuperset(of: requestKey.productIdentifiers)
+            }
+            let key = containingRequestKey ?? requestKey
+            self.inFlightRequests[key, default: []].append { fetched in
+                let requestedProducts = fetched.filter { requestKey.productIdentifiers.contains($0.key) }
+                completion(cached + requestedProducts)
+            }
+            return containingRequestKey != nil
+        }
     }
 
     private let checker: TrialOrIntroPriceEligibilityCheckerType
@@ -88,12 +105,8 @@ extension CachingTrialOrIntroPriceEligibilityChecker {
                 productIdentifiers: missingProducts,
                 cacheGeneration: cacheGeneration
             )
-            let requestInProgress = self.state.modify { state in
-                let requestInProgress = state.inFlightRequests[requestKey]?.isEmpty == false
-                state.inFlightRequests[requestKey, default: []].append { fetched in
-                    completion(cached + fetched)
-                }
-                return requestInProgress
+            let requestInProgress = self.state.modify {
+                $0.appendCompletion(for: requestKey, cached: cached, completion: completion)
             }
 
             guard !requestInProgress else { return }

@@ -224,6 +224,38 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
         expect(receivedSecondResult) == expected
     }
 
+    func testRequestSharesInFlightCheckContainingAllItsProducts() async {
+        let checker = DelayedTrialOrIntroPriceEligibilityChecker()
+        let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: checker)
+        let firstProductIDs: Set<String> = [Self.productID1, Self.productID2]
+        let secondProductIDs: Set<String> = [Self.productID1]
+
+        let firstRequest = Task {
+            await caching.checkEligibility(productIdentifiers: firstProductIDs)
+        }
+
+        await expect(checker.invocations.count).toEventually(equal(1))
+
+        let secondRequest = Task {
+            await caching.checkEligibility(productIdentifiers: secondProductIDs)
+        }
+
+        await expect(checker.invocations.count).toAlways(equal(1))
+
+        let expected: Result = [
+            Self.productID1: .init(eligibilityStatus: .eligible),
+            Self.productID2: .init(eligibilityStatus: .ineligible)
+        ]
+        checker.complete(productIdentifiers: firstProductIDs, with: expected)
+
+        let receivedFirstResult = await firstRequest.value
+        let receivedSecondResult = await secondRequest.value
+
+        expect(checker.invocations) == [firstProductIDs]
+        expect(receivedFirstResult) == expected
+        expect(receivedSecondResult) == expected.filter { secondProductIDs.contains($0.key) }
+    }
+
     func testClearCache() async {
         let expected: Result = [
             Self.productID1: .init(eligibilityStatus: .eligible)
