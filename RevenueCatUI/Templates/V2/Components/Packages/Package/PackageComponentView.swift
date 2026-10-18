@@ -35,6 +35,12 @@ struct PackageComponentView: View {
     @Environment(\.paywallWindowSize)
     private var paywallWindowSize
 
+    @Environment(\.isIntroOfferEligibilityLoading)
+    private var isIntroOfferEligibilityLoading
+
+    @Environment(\.isPromoOfferEligibilityLoading)
+    private var isPromoOfferEligibilityLoading
+
     @Environment(\.customPaywallVariables)
     private var customVariables
 
@@ -55,24 +61,43 @@ struct PackageComponentView: View {
     }
 
     var body: some View {
+        let packageViewState = self.packageViewState
+        let isEligibleForIntroOffer = self.introOfferEligibilityContext.isEligible(
+            package: self.viewModel.package
+        )
+        let isEligibleForPromoOffer = self.paywallPromoOfferCache.isMostLikelyEligible(
+            for: self.viewModel.package
+        )
+
         if let package = self.viewModel.package,
            viewModel.visible(
                state: packageViewState,
                condition: screenCondition,
-               isEligibleForIntroOffer: introOfferEligibilityContext.isEligible(
-                   package: package
-               ),
-               isEligibleForPromoOffer: paywallPromoOfferCache.isMostLikelyEligible(
-                   for: package
-               ),
+               isEligibleForIntroOffer: isEligibleForIntroOffer,
+               isEligibleForPromoOffer: isEligibleForPromoOffer,
                selectedPackageId: selectedPackageId,
                customVariables: customVariables,
                windowSize: paywallWindowSize
            ) {
+            let redactionReason: RedactionReasons = self.viewModel.redactsWhileOfferEligibilityLoads(
+                state: packageViewState,
+                condition: self.screenCondition,
+                offerEligibility: .init(
+                    isEligibleForIntroOffer: isEligibleForIntroOffer,
+                    isEligibleForPromoOffer: isEligibleForPromoOffer,
+                    isIntroOfferEligibilityLoading: self.isIntroOfferEligibilityLoading,
+                    isPromoOfferEligibilityLoading: self.isPromoOfferEligibilityLoading
+                ),
+                selectedPackageId: self.selectedPackageId,
+                customVariables: self.customVariables,
+                windowSize: self.paywallWindowSize
+            ) ? .placeholder : []
+
             StackComponentView(
                 viewModel: self.viewModel.stackViewModel,
                 onDismiss: self.onDismiss
             )
+            .redacted(reason: redactionReason)
             .environment(\.componentViewState, packageViewState)
             // Overrides the existing PackageContext
             .environmentObject(PackageContext(

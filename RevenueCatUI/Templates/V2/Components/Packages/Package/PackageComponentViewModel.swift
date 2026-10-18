@@ -79,6 +79,24 @@ class PackageComponentViewModel {
         )
     }
 
+    func redactsWhileOfferEligibilityLoads(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        offerEligibility: OfferEligibilityState,
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
+        windowSize: CGSize? = nil
+    ) -> Bool {
+        return self.visibilityResolver.redactsWhileOfferEligibilityLoads(
+            state: state,
+            condition: condition,
+            offerEligibility: offerEligibility,
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables,
+            windowSize: windowSize
+        )
+    }
+
 }
 
 extension PresentedPackagePartial: PresentedPartial {

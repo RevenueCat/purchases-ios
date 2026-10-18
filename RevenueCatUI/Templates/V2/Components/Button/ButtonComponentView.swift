@@ -52,6 +52,12 @@ struct ButtonComponentView: View {
     @Environment(\.paywallWindowSize)
     private var paywallWindowSize
 
+    @Environment(\.isIntroOfferEligibilityLoading)
+    private var isIntroOfferEligibilityLoading
+
+    @Environment(\.isPromoOfferEligibilityLoading)
+    private var isPromoOfferEligibilityLoading
+
     @Environment(\.customPaywallVariables)
     private var customVariables
 
@@ -95,20 +101,37 @@ struct ButtonComponentView: View {
     }
 
     var body: some View {
+        let isEligibleForIntroOffer = self.introOfferEligibilityContext.isEligible(
+            package: self.packageContext.package
+        )
+        let isEligibleForPromoOffer = self.paywallPromoOfferCache.isMostLikelyEligible(
+            for: self.packageContext.package
+        )
+
         if !self.viewModel.hasUnknownAction,
            self.viewModel.visible(
                state: self.componentViewState,
                condition: self.screenCondition,
-               isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                   package: self.packageContext.package
-               ),
-               isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
-                   for: self.packageContext.package
-               ),
+               isEligibleForIntroOffer: isEligibleForIntroOffer,
+               isEligibleForPromoOffer: isEligibleForPromoOffer,
                selectedPackageId: self.selectedPackageId,
                customVariables: self.customVariables,
                windowSize: self.paywallWindowSize
            ) {
+            let redactionReason: RedactionReasons = self.viewModel.redactsWhileOfferEligibilityLoads(
+                state: self.componentViewState,
+                condition: self.screenCondition,
+                offerEligibility: .init(
+                    isEligibleForIntroOffer: isEligibleForIntroOffer,
+                    isEligibleForPromoOffer: isEligibleForPromoOffer,
+                    isIntroOfferEligibilityLoading: self.isIntroOfferEligibilityLoading,
+                    isPromoOfferEligibilityLoading: self.isPromoOfferEligibilityLoading
+                ),
+                selectedPackageId: self.selectedPackageId,
+                customVariables: self.customVariables,
+                windowSize: self.paywallWindowSize
+            ) ? .placeholder : []
+
             AsyncButton {
                 try await performAction()
             } label: {
@@ -117,6 +140,7 @@ struct ButtonComponentView: View {
                     onDismiss: self.onDismiss,
                     showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
                 )
+                .redacted(reason: redactionReason)
             }
             .applyIfLet(self.derivedAccessibilityLabel, apply: { view, label in
                 view.accessibilityLabel(label)
