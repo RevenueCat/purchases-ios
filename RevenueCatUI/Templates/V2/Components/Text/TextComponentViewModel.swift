@@ -11,6 +11,8 @@
 //
 //  Created by Josh Holtz on 6/11/24.
 
+// swiftlint:disable file_length
+
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
@@ -138,6 +140,61 @@ class TextComponentViewModel {
         )
 
         apply(style)
+    }
+
+    /// True when intro or promo eligibility can change the string this component shows.
+    /// Visibility-only overrides are ignored: a stable string can render while the check runs.
+    func redactsWhileOfferEligibilityLoads(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        conditionContext: ConditionContext
+    ) -> Bool {
+        let variesWithEligibility = self.presentedOverrides?.contains { override in
+            override.conditions.contains(where: Self.conditionDependsOnOfferEligibility)
+        } ?? false
+        let introValues = variesWithEligibility ? [false, true] : [false]
+        let promoValues = variesWithEligibility ? [false, true] : [false]
+
+        var templates: Set<String> = []
+        for isEligibleForIntroOffer in introValues {
+            for isEligibleForPromoOffer in promoValues {
+                let partial = LocalizedTextPartial.buildPartial(
+                    state: state,
+                    condition: condition,
+                    isEligibleForIntroOffer: isEligibleForIntroOffer,
+                    isEligibleForPromoOffer: isEligibleForPromoOffer,
+                    conditionContext: conditionContext,
+                    with: self.presentedOverrides
+                )
+                let visible = partial?.partial.visible ?? self.component.visible ?? true
+                guard visible else { continue }
+                templates.insert(partial?.text ?? self.text)
+            }
+        }
+
+        if templates.count > 1 {
+            return true
+        }
+
+        guard let template = templates.first else {
+            return false
+        }
+
+        return VariableHandlerV2.textDependsOnOfferEligibility(
+            template,
+            variableCompatibilityMap: self.uiConfigProvider.variableConfig.variableCompatibilityMap
+        )
+    }
+
+    private static func conditionDependsOnOfferEligibility(
+        _ condition: PaywallComponent.ExtendedCondition
+    ) -> Bool {
+        switch condition {
+        case .introOffer, .promoOffer, .introOfferCondition, .promoOfferCondition:
+            return true
+        default:
+            return false
+        }
     }
 
     private struct TextProcessingConfig {

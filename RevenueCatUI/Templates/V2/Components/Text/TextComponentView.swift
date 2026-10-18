@@ -88,11 +88,30 @@ struct TextComponentView: View {
         self.viewModel = viewModel
     }
 
+    private var shouldRedactWhileLoading: Bool {
+        guard self.isPaywallLoading else {
+            return false
+        }
+
+        return self.viewModel.redactsWhileOfferEligibilityLoads(
+            state: self.componentViewState,
+            condition: self.screenCondition,
+            conditionContext: self.viewModel.uiConfigProvider.conditionContext(
+                selectedPackageId: self.selectedPackageId,
+                customVariables: self.customVariables,
+                stateValues: self.paywallStateValues,
+                stateDefaults: self.paywallStateDefaults,
+                windowSize: self.paywallWindowSize
+            )
+        )
+    }
+
     var body: some View {
         let isEligibleForIntroOffer = self.introOfferEligibilityContext.isEligible(
             package: self.packageContext.package
         )
         let promoOffer = self.paywallPromoOfferCache.get(for: self.packageContext.package)
+        let shouldRedactWhileLoading = self.shouldRedactWhileLoading
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
@@ -118,7 +137,7 @@ struct TextComponentView: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .multilineTextAlignment(style.textAlignment)
                     .foregroundColorScheme(style.color)
-                    .redacted(reason: isPaywallLoading ? .placeholder : self.redactionReasons)
+                    .redacted(reason: shouldRedactWhileLoading ? .placeholder : self.redactionReasons)
                     .padding(style.padding)
                     .size(style.size,
                           horizontalAlignment: style.horizontalAlignment)
@@ -394,11 +413,11 @@ struct TextComponentView_Previews: PreviewProvider {
 
         defaultPreview
         .environment(\.isPaywallLoading, true)
-        .previewDisplayName("Default (Loading)")
+        .previewDisplayName("Default (Loading, static text)")
 
         platformPreview
         .environment(\.isPaywallLoading, true)
-        .previewDisplayName("Detected Platform (Loading)")
+        .previewDisplayName("Detected Platform (Loading, static text)")
 
         // Markdown
         TextComponentView(
