@@ -11,6 +11,60 @@
 //
 
 import Foundation
+@_spi(Internal) import RevenueCat
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct OfferEligibilityState {
+
+    let isEligibleForIntroOffer: Bool
+    let isEligibleForPromoOffer: Bool
+    let isIntroOfferEligibilityLoading: Bool
+    let isPromoOfferEligibilityLoading: Bool
+
+    var isLoading: Bool {
+        return self.isIntroOfferEligibilityLoading || self.isPromoOfferEligibilityLoading
+    }
+
+    /// Eligibility values still in play. A resolved check contributes only its result, so a stack or
+    /// string that depends on the other check can render as soon as its own check finishes.
+    func unresolvedOutcomes(
+        variesWithEligibility: Bool
+    ) -> [(isEligibleForIntroOffer: Bool, isEligibleForPromoOffer: Bool)] {
+        let introValues = variesWithEligibility && self.isIntroOfferEligibilityLoading
+            ? [false, true]
+            : [self.isEligibleForIntroOffer]
+        let promoValues = variesWithEligibility && self.isPromoOfferEligibilityLoading
+            ? [false, true]
+            : [self.isEligibleForPromoOffer]
+
+        return introValues.flatMap { isEligibleForIntroOffer in
+            promoValues.map { isEligibleForPromoOffer in
+                (
+                    isEligibleForIntroOffer: isEligibleForIntroOffer,
+                    isEligibleForPromoOffer: isEligibleForPromoOffer
+                )
+            }
+        }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PaywallComponent.ExtendedCondition {
+
+    /// Intro and promo checks are the only conditions whose result arrives after first render.
+    /// `multipleIntroOffers` is always false on iOS, so it does not vary while a check is in flight.
+    var dependsOnOfferEligibility: Bool {
+        switch self {
+        case .introOffer, .promoOffer, .introOfferCondition, .promoOfferCondition:
+            return true
+        case .compact, .medium, .expanded, .selected, .multipleIntroOffers, .variable,
+             .selectedPackage, .state, .windowWidth, .windowHeight, .windowAspectRatio, .unsupported:
+            return false
+        }
+    }
+
+}
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension VariablesV2 {

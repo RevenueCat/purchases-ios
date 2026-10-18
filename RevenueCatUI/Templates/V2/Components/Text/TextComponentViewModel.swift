@@ -25,13 +25,6 @@ import UIKit
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class TextComponentViewModel {
 
-    struct OfferEligibilityState {
-        let isEligibleForIntroOffer: Bool
-        let isEligibleForPromoOffer: Bool
-        let isIntroOfferEligibilityLoading: Bool
-        let isPromoOfferEligibilityLoading: Bool
-    }
-
     private let localizationProvider: LocalizationProvider
     let uiConfigProvider: UIConfigProvider
     private let component: PaywallComponent.TextComponent
@@ -158,38 +151,29 @@ class TextComponentViewModel {
         offerEligibility: OfferEligibilityState,
         conditionContext: ConditionContext
     ) -> Bool {
-        guard offerEligibility.isIntroOfferEligibilityLoading ||
-                offerEligibility.isPromoOfferEligibilityLoading else {
+        guard offerEligibility.isLoading else {
             return false
         }
 
         let variesWithEligibility = self.presentedOverrides?.contains { override in
-            override.conditions.contains(where: Self.conditionDependsOnOfferEligibility)
+            override.conditions.contains(where: \.dependsOnOfferEligibility)
         } ?? false
-        let introValues = variesWithEligibility && offerEligibility.isIntroOfferEligibilityLoading
-            ? [false, true]
-            : [offerEligibility.isEligibleForIntroOffer]
-        let promoValues = variesWithEligibility && offerEligibility.isPromoOfferEligibilityLoading
-            ? [false, true]
-            : [offerEligibility.isEligibleForPromoOffer]
 
         var templates: Set<String> = []
         var sawHiddenOutcome = false
-        for isEligibleForIntroOffer in introValues {
-            for isEligibleForPromoOffer in promoValues {
-                let partial = LocalizedTextPartial.buildPartial(
-                    state: state,
-                    condition: condition,
-                    isEligibleForIntroOffer: isEligibleForIntroOffer,
-                    isEligibleForPromoOffer: isEligibleForPromoOffer,
-                    conditionContext: conditionContext,
-                    with: self.presentedOverrides
-                )
-                if partial?.partial.visible ?? self.component.visible ?? true {
-                    templates.insert(partial?.text ?? self.text)
-                } else {
-                    sawHiddenOutcome = true
-                }
+        for outcome in offerEligibility.unresolvedOutcomes(variesWithEligibility: variesWithEligibility) {
+            let partial = LocalizedTextPartial.buildPartial(
+                state: state,
+                condition: condition,
+                isEligibleForIntroOffer: outcome.isEligibleForIntroOffer,
+                isEligibleForPromoOffer: outcome.isEligibleForPromoOffer,
+                conditionContext: conditionContext,
+                with: self.presentedOverrides
+            )
+            if partial?.partial.visible ?? self.component.visible ?? true {
+                templates.insert(partial?.text ?? self.text)
+            } else {
+                sawHiddenOutcome = true
             }
         }
 
@@ -205,17 +189,6 @@ class TextComponentViewModel {
             template,
             variableCompatibilityMap: self.uiConfigProvider.variableConfig.variableCompatibilityMap
         )
-    }
-
-    private static func conditionDependsOnOfferEligibility(
-        _ condition: PaywallComponent.ExtendedCondition
-    ) -> Bool {
-        switch condition {
-        case .introOffer, .promoOffer, .introOfferCondition, .promoOfferCondition:
-            return true
-        default:
-            return false
-        }
     }
 
     private struct TextProcessingConfig {

@@ -201,6 +201,23 @@ class StackComponentViewModel {
         apply(style)
     }
 
+    /// True when this stack has an intro or promo override and either eligibility check is still loading.
+    /// The stack's contents stay placeholder-redacted until both checks finish.
+    func redactsWhileOfferEligibilityLoads(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        offerEligibility: OfferEligibilityState,
+        conditionContext: ConditionContext
+    ) -> Bool {
+        guard offerEligibility.isLoading else {
+            return false
+        }
+
+        return self.presentedOverrides?.contains { override in
+            override.conditions.contains(where: \.dependsOnOfferEligibility)
+        } ?? false
+    }
+
 }
 
 extension PresentedStackPartial: PresentedPartial {

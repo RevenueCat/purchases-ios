@@ -60,6 +60,12 @@ struct StackComponentView: View {
     @Environment(\.paywallAncestorScrollsVertically)
     private var paywallAncestorScrollsVertically
 
+    @Environment(\.isIntroOfferEligibilityLoading)
+    private var isIntroOfferEligibilityLoading
+
+    @Environment(\.isPromoOfferEligibilityLoading)
+    private var isPromoOfferEligibilityLoading
+
     private let viewModel: StackComponentViewModel
     private let isScrollableByDefault: Bool
     private let onDismiss: () -> Void
@@ -103,8 +109,37 @@ struct StackComponentView: View {
         ) { style in
             if style.visible {
                 self.make(style: style)
+                    .applyIf(self.redactsWhileOfferEligibilityLoads(
+                        isEligibleForIntroOffer: isEligibleForIntroOffer,
+                        isEligibleForPromoOffer: isEligibleForPromoOffer
+                    )) { view in
+                        view.redacted(reason: .placeholder)
+                    }
             }
         }
+    }
+
+    private func redactsWhileOfferEligibilityLoads(
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool
+    ) -> Bool {
+        return self.viewModel.redactsWhileOfferEligibilityLoads(
+            state: self.componentViewState,
+            condition: self.screenCondition,
+            offerEligibility: OfferEligibilityState(
+                isEligibleForIntroOffer: isEligibleForIntroOffer,
+                isEligibleForPromoOffer: isEligibleForPromoOffer,
+                isIntroOfferEligibilityLoading: self.isIntroOfferEligibilityLoading,
+                isPromoOfferEligibilityLoading: self.isPromoOfferEligibilityLoading
+            ),
+            conditionContext: self.viewModel.uiConfigProvider.conditionContext(
+                selectedPackageId: self.selectedPackageId,
+                customVariables: self.customVariables,
+                stateValues: self.paywallStateValues,
+                stateDefaults: self.paywallStateDefaults,
+                windowSize: self.paywallWindowSize
+            )
+        )
     }
 
     @ViewBuilder
