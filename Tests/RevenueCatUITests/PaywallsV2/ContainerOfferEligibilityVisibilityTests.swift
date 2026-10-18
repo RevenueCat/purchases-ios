@@ -17,16 +17,19 @@ import XCTest
 
 #if os(macOS)
 import AppKit
+#elseif os(iOS)
+import UIKit
 #endif
 
-#if !os(tvOS)
+#if os(iOS) || os(macOS)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@MainActor
 class ContainerOfferEligibilityVisibilityTests: TestCase {
 
     func testParentIntroVisibilityChangesWhileEligibilityLoads() throws {
         for isVisible in try Self.makeVisibilityChecks(conditions: [.introOffer]) {
-            XCTAssertTrue(Self.loading().visibilityCanChange(isVisible: isVisible))
+            self.assertRedaction(Self.loading(), isVisible: isVisible, expected: true)
         }
     }
 
@@ -34,25 +37,25 @@ class ContainerOfferEligibilityVisibilityTests: TestCase {
         for isVisible in try Self.makeVisibilityChecks(conditions: [
             .promoOfferCondition(operator: .equals, value: false)
         ]) {
-            XCTAssertTrue(Self.loading().visibilityCanChange(isVisible: isVisible))
+            self.assertRedaction(Self.loading(), isVisible: isVisible, expected: true)
         }
     }
 
     func testParentIntroVisibilityDoesNotWaitForPromoEligibility() throws {
         for isVisible in try Self.makeVisibilityChecks(conditions: [.introOffer]) {
-            XCTAssertFalse(Self.loading(intro: false).visibilityCanChange(isVisible: isVisible))
+            self.assertRedaction(Self.loading(intro: false), isVisible: isVisible, expected: false)
         }
     }
 
     func testParentPromoVisibilityDoesNotWaitForIntroEligibility() throws {
         for isVisible in try Self.makeVisibilityChecks(conditions: [.promoOffer]) {
-            XCTAssertFalse(Self.loading(promo: false).visibilityCanChange(isVisible: isVisible))
+            self.assertRedaction(Self.loading(promo: false), isVisible: isVisible, expected: false)
         }
     }
 
     func testParentVisibilityIgnoresUnrelatedScreenConditions() throws {
         for isVisible in try Self.makeVisibilityChecks(conditions: [.expanded, .introOffer]) {
-            XCTAssertFalse(Self.loading().visibilityCanChange(isVisible: isVisible))
+            self.assertRedaction(Self.loading(), isVisible: isVisible, expected: false)
         }
     }
 
@@ -62,23 +65,22 @@ class ContainerOfferEligibilityVisibilityTests: TestCase {
             visible: false,
             overrideVisibility: true
         ) {
-            XCTAssertTrue(Self.loading().visibilityCanChange(isVisible: isVisible))
+            self.assertRedaction(Self.loading(), isVisible: isVisible, expected: true)
         }
     }
 
     func testResolvedEligibilityDoesNotRedactParents() throws {
         for isVisible in try Self.makeVisibilityChecks(conditions: [.introOffer]) {
-            XCTAssertFalse(Self.loading(intro: false, promo: false).visibilityCanChange(isVisible: isVisible))
+            self.assertRedaction(Self.loading(intro: false, promo: false), isVisible: isVisible, expected: false)
         }
     }
 
     func testParentsWithUnchangedVisibilityDoNotRedact() throws {
         for isVisible in try Self.makeVisibilityChecks(conditions: [.introOffer], overrideVisibility: true) {
-            XCTAssertFalse(Self.loading().visibilityCanChange(isVisible: isVisible))
+            self.assertRedaction(Self.loading(), isVisible: isVisible, expected: false)
         }
     }
 
-    #if os(macOS)
     @MainActor
     func testRedactionEndsWithoutRecreatingChildren() {
         self.assertRedactionTransition(inheritedReasons: [], expectedReasons: [])
@@ -89,35 +91,75 @@ class ContainerOfferEligibilityVisibilityTests: TestCase {
         self.assertRedactionTransition(inheritedReasons: .placeholder, expectedReasons: .placeholder)
     }
 
-    @MainActor
     private func assertRedactionTransition(inheritedReasons: RedactionReasons, expectedReasons: RedactionReasons) {
-        _ = NSApplication.shared
         let loading = EligibilityLoadingState()
         var reasons: [RedactionReasons] = []
         var appearCount = 0
-        let view = NSHostingView(rootView: EligibilityRedactionProbe(
+        self.host(EligibilityRedactionProbe(
             loading: loading,
             inheritedReasons: inheritedReasons,
             onAppear: { appearCount += 1 },
             onChange: { reasons.append($0) }
-        ))
-        view.frame = CGRect(x: 0, y: 0, width: 200, height: 100)
-        view.layoutSubtreeIfNeeded()
-        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
-        XCTAssertEqual(reasons.last, .placeholder)
+        )) { layout in
+            layout()
+            RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+            XCTAssertEqual(reasons.last, .placeholder)
 
-        loading.isLoading = false
-        view.layoutSubtreeIfNeeded()
-        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
-        XCTAssertEqual(reasons.last, expectedReasons)
-        XCTAssertEqual(appearCount, 1)
+            loading.isLoading = false
+            layout()
+            RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+            XCTAssertEqual(reasons.last, expectedReasons)
+            XCTAssertEqual(appearCount, 1)
+        }
     }
-    #endif
 
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension ContainerOfferEligibilityVisibilityTests {
+
+    func assertRedaction(
+        _ eligibility: OfferEligibilityState,
+        isVisible: @escaping (Bool, Bool) -> Bool,
+        expected: Bool
+    ) {
+        var reasons: [RedactionReasons] = []
+        let view = RedactionProbe(onAppear: {}, onChange: { reasons.append($0) })
+            .redactedWhileOfferEligibilityLoads(
+                isEligibleForIntroOffer: eligibility.isEligibleForIntroOffer,
+                isEligibleForPromoOffer: eligibility.isEligibleForPromoOffer,
+                isVisible: isVisible
+            )
+            .environment(\.isIntroOfferEligibilityLoading, eligibility.isIntroOfferEligibilityLoading)
+            .environment(\.isPromoOfferEligibilityLoading, eligibility.isPromoOfferEligibilityLoading)
+        self.host(view) { layout in
+            layout()
+            RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+            XCTAssertEqual(reasons.last?.contains(.placeholder), expected)
+        }
+    }
+
+    func host<Content: View>(_ content: Content, perform: (() -> Void) -> Void) {
+        #if os(macOS)
+        _ = NSApplication.shared
+        let view = NSHostingView(rootView: content)
+        view.frame = CGRect(x: 0, y: 0, width: 200, height: 100)
+        let layout = { view.layoutSubtreeIfNeeded() }
+        #else
+        let controller = UIHostingController(rootView: content)
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 200, height: 100))
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+        defer {
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+        let layout = { controller.view.layoutIfNeeded() }
+        #endif
+        withExtendedLifetime(layout) {
+            perform(layout)
+        }
+    }
 
     static func loading(intro: Bool = true, promo: Bool = true) -> OfferEligibilityState {
         return .init(
@@ -197,12 +239,11 @@ private extension ContainerOfferEligibilityVisibilityTests {
 
 }
 
-#if os(macOS)
 private class EligibilityLoadingState: ObservableObject {
     @Published var isLoading = true
 }
 
-@available(macOS 12.0, *)
+@available(iOS 15.0, macOS 12.0, *)
 private struct EligibilityRedactionProbe: View {
     @ObservedObject var loading: EligibilityLoadingState
     let inheritedReasons: RedactionReasons
@@ -221,7 +262,7 @@ private struct EligibilityRedactionProbe: View {
     }
 }
 
-@available(macOS 12.0, *)
+@available(iOS 15.0, macOS 12.0, *)
 private struct RedactionProbe: View {
     @Environment(\.redactionReasons) private var redactionReasons
     let onAppear: () -> Void
@@ -236,6 +277,5 @@ private struct RedactionProbe: View {
             .onChangeOf(self.redactionReasons, perform: self.onChange)
     }
 }
-#endif
 
 #endif

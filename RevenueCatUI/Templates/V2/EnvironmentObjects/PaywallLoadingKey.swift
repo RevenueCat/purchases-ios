@@ -90,7 +90,10 @@ private struct OfferEligibilityRedactionModifier: ViewModifier {
             isIntroOfferEligibilityLoading: self.isIntroOfferEligibilityLoading,
             isPromoOfferEligibilityLoading: self.isPromoOfferEligibilityLoading
         )
-        let shouldRedact = offerEligibility.visibilityCanChange(isVisible: self.isVisible)
+        let possibleVisibilities = offerEligibility.unresolvedOutcomes(variesWithEligibility: true).map {
+            self.isVisible($0.isEligibleForIntroOffer, $0.isEligibleForPromoOffer)
+        }
+        let shouldRedact = offerEligibility.isLoading && Set(possibleVisibilities).count > 1
         content.redacted(reason: shouldRedact ? self.redactionReasons.union(.placeholder) : self.redactionReasons)
     }
 

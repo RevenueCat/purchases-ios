@@ -55,48 +55,53 @@ struct PackageComponentView: View {
     }
 
     var body: some View {
-        if let package = self.viewModel.package {
-            let isEligibleForIntroOffer = self.introOfferEligibilityContext.isEligible(package: package)
-            let isEligibleForPromoOffer = self.paywallPromoOfferCache.isMostLikelyEligible(for: package)
-            let isVisible: (Bool, Bool) -> Bool = { intro, promo in
-                self.viewModel.visible(
-                    state: self.packageViewState,
-                    condition: self.screenCondition,
-                    isEligibleForIntroOffer: intro,
-                    isEligibleForPromoOffer: promo,
-                    selectedPackageId: self.selectedPackageId,
-                    customVariables: self.customVariables,
-                    windowSize: self.paywallWindowSize
-                )
-            }
-            if isVisible(isEligibleForIntroOffer, isEligibleForPromoOffer) {
-                StackComponentView(
-                    viewModel: self.viewModel.stackViewModel,
-                    onDismiss: self.onDismiss
-                )
-                .redactedWhileOfferEligibilityLoads(
-                    isEligibleForIntroOffer: isEligibleForIntroOffer,
-                    isEligibleForPromoOffer: isEligibleForPromoOffer,
-                    isVisible: isVisible
-                )
-                .environment(\.componentViewState, packageViewState)
-                // Overrides the existing PackageContext
-                .environmentObject(PackageContext(
-                    // This is needed so text component children use this
-                    // package and not selected package for processing variables
-                    package: package,
-                    // However, reusing the same package variable context from parent
-                    variableContext: packageContext.variableContext)
-                )
-                .packageSelectorIfNeeded(
-                    packageContext: self.packageContext,
-                    package: package,
-                    componentName: self.viewModel.componentName,
-                    hasPurchaseButton: self.viewModel.hasPurchaseButton,
-                    hapticFeedbackEnabled: self.viewModel.hapticFeedbackEnabled
-                )
-            }
+        if let package = self.viewModel.package,
+           self.isVisible(
+               isEligibleForIntroOffer: introOfferEligibilityContext.isEligible(
+                   package: package
+               ),
+               isEligibleForPromoOffer: paywallPromoOfferCache.isMostLikelyEligible(
+                   for: package
+               )
+           ) {
+            StackComponentView(
+                viewModel: self.viewModel.stackViewModel,
+                onDismiss: self.onDismiss
+            )
+            .redactedWhileOfferEligibilityLoads(
+                isEligibleForIntroOffer: introOfferEligibilityContext.isEligible(package: package),
+                isEligibleForPromoOffer: paywallPromoOfferCache.isMostLikelyEligible(for: package),
+                isVisible: self.isVisible
+            )
+            .environment(\.componentViewState, packageViewState)
+            // Overrides the existing PackageContext
+            .environmentObject(PackageContext(
+                // This is needed so text component children use this
+                // package and not selected package for processing variables
+                package: package,
+                // However, reusing the same package variable context from parent
+                variableContext: packageContext.variableContext)
+            )
+            .packageSelectorIfNeeded(
+                packageContext: self.packageContext,
+                package: package,
+                componentName: self.viewModel.componentName,
+                hasPurchaseButton: self.viewModel.hasPurchaseButton,
+                hapticFeedbackEnabled: self.viewModel.hapticFeedbackEnabled
+            )
         }
+    }
+
+    private func isVisible(isEligibleForIntroOffer: Bool, isEligibleForPromoOffer: Bool) -> Bool {
+        return self.viewModel.visible(
+            state: self.packageViewState,
+            condition: self.screenCondition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackageId: self.selectedPackageId,
+            customVariables: self.customVariables,
+            windowSize: self.paywallWindowSize
+        )
     }
 
 }
