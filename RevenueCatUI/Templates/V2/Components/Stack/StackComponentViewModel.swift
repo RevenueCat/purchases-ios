@@ -201,8 +201,7 @@ class StackComponentViewModel {
         apply(style)
     }
 
-    /// True when this stack has an intro or promo override and either eligibility check is still loading.
-    /// The stack's contents stay placeholder-redacted until both checks finish.
+    /// True when intro or promo eligibility can change whether this stack is shown.
     func redactsWhileOfferEligibilityLoads(
         state: ComponentViewState,
         condition: ScreenCondition,
@@ -213,9 +212,29 @@ class StackComponentViewModel {
             return false
         }
 
-        return self.presentedOverrides?.contains { override in
+        let variesWithEligibility = self.presentedOverrides?.contains { override in
             override.conditions.contains(where: \.dependsOnOfferEligibility)
         } ?? false
+
+        var sawVisibleOutcome = false
+        var sawHiddenOutcome = false
+        for outcome in offerEligibility.unresolvedOutcomes(variesWithEligibility: variesWithEligibility) {
+            let partial = PresentedStackPartial.buildPartial(
+                state: state,
+                condition: condition,
+                isEligibleForIntroOffer: outcome.isEligibleForIntroOffer,
+                isEligibleForPromoOffer: outcome.isEligibleForPromoOffer,
+                conditionContext: conditionContext,
+                with: self.presentedOverrides
+            )
+            if partial?.visible ?? self.component.visible ?? true {
+                sawVisibleOutcome = true
+            } else {
+                sawHiddenOutcome = true
+            }
+        }
+
+        return sawVisibleOutcome && sawHiddenOutcome
     }
 
 }

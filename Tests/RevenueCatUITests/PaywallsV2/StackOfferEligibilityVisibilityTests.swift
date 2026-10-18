@@ -42,9 +42,42 @@ class StackOfferEligibilityVisibilityTests: TestCase {
         )).to(beFalse())
     }
 
-    func testIntroOfferConditionKeepsRedactingWhileAnyEligibilityCheckIsLoading() {
+    func testIntroOfferConditionDoesNotWaitForPromoEligibility() {
         let viewModel = Self.makeViewModel(overrides: [
             .init(conditions: [.introOffer], properties: .init(visible: false))
+        ])
+
+        expect(self.redacts(
+            viewModel,
+            isEligibleForIntroOffer: false,
+            isIntroOfferEligibilityLoading: false,
+            isPromoOfferEligibilityLoading: true
+        )).to(beFalse())
+        expect(self.redacts(
+            viewModel,
+            isEligibleForIntroOffer: true,
+            isIntroOfferEligibilityLoading: false,
+            isPromoOfferEligibilityLoading: true
+        )).to(beFalse())
+    }
+
+    func testPromoOfferConditionDoesNotWaitForIntroEligibility() {
+        let viewModel = Self.makeViewModel(overrides: [
+            .init(conditions: [.promoOffer], properties: .init(visible: false))
+        ])
+
+        expect(self.redacts(
+            viewModel,
+            isEligibleForPromoOffer: true,
+            isIntroOfferEligibilityLoading: true,
+            isPromoOfferEligibilityLoading: false
+        )).to(beFalse())
+    }
+
+    func testStackWithBothOfferConditionsWaitsForTheCheckThatChangesVisibility() {
+        let viewModel = Self.makeViewModel(overrides: [
+            .init(conditions: [.introOffer], properties: .init(visible: false)),
+            .init(conditions: [.promoOffer], properties: .init(visible: false))
         ])
 
         expect(self.redacts(
@@ -55,23 +88,16 @@ class StackOfferEligibilityVisibilityTests: TestCase {
         )).to(beTrue())
         expect(self.redacts(
             viewModel,
-            isEligibleForIntroOffer: true,
-            isIntroOfferEligibilityLoading: false,
-            isPromoOfferEligibilityLoading: true
-        )).to(beTrue())
-    }
-
-    func testPromoOfferConditionKeepsRedactingWhileIntroEligibilityLoads() {
-        let viewModel = Self.makeViewModel(overrides: [
-            .init(conditions: [.promoOffer], properties: .init(visible: false))
-        ])
-
-        expect(self.redacts(
-            viewModel,
-            isEligibleForPromoOffer: true,
+            isEligibleForPromoOffer: false,
             isIntroOfferEligibilityLoading: true,
             isPromoOfferEligibilityLoading: false
         )).to(beTrue())
+        expect(self.redacts(
+            viewModel,
+            isEligibleForIntroOffer: true,
+            isIntroOfferEligibilityLoading: false,
+            isPromoOfferEligibilityLoading: true
+        )).to(beFalse())
     }
 
     func testIntroOfferConditionRedactsWhetherTheStackEndsUpHiddenOrShown() {
@@ -94,7 +120,7 @@ class StackOfferEligibilityVisibilityTests: TestCase {
         )).to(beFalse())
     }
 
-    func testIntroOfferConditionRedactsEvenWhenVisibilityDoesNotChange() {
+    func testIntroOfferSpacingOverrideDoesNotRedact() {
         let viewModel = Self.makeViewModel(
             visible: false,
             overrides: [
@@ -102,10 +128,10 @@ class StackOfferEligibilityVisibilityTests: TestCase {
             ]
         )
 
-        expect(self.redacts(viewModel)).to(beTrue())
+        expect(self.redacts(viewModel)).to(beFalse())
     }
 
-    func testIntroOfferConditionRedactsRegardlessOfScreenCondition() {
+    func testIntroOfferConditionIgnoresOverridesForAnotherScreenCondition() {
         let viewModel = Self.makeViewModel(overrides: [
             .init(
                 conditions: [.expanded, .introOffer],
@@ -113,7 +139,7 @@ class StackOfferEligibilityVisibilityTests: TestCase {
             )
         ])
 
-        expect(self.redacts(viewModel, condition: .compact)).to(beTrue())
+        expect(self.redacts(viewModel, condition: .compact)).to(beFalse())
         expect(self.redacts(viewModel, condition: .expanded)).to(beTrue())
         expect(self.redacts(
             viewModel,
@@ -137,7 +163,7 @@ class StackOfferEligibilityVisibilityTests: TestCase {
             isEligibleForPromoOffer: false,
             isIntroOfferEligibilityLoading: true,
             isPromoOfferEligibilityLoading: false
-        )).to(beTrue())
+        )).to(beFalse())
         expect(self.redacts(
             viewModel,
             isIntroOfferEligibilityLoading: false,
