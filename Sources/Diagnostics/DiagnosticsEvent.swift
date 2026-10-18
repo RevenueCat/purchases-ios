@@ -229,6 +229,8 @@ fileprivate extension StoreProduct.ProductType {
         case .nonConsumable: return "NON_CONSUMABLE"
         case .nonRenewableSubscription: return "NON_RENEWABLE_SUBSCRIPTION"
         case .autoRenewableSubscription: return "AUTO_RENEWABLE_SUBSCRIPTION"
+        case .subscriptionBundle: return "SUBSCRIPTION_BUNDLE"
+        case .subscriptionSuite: return "SUBSCRIPTION_SUITE"
         }
     }
 }
