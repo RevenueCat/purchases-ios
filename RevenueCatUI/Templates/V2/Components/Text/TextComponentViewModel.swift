@@ -149,8 +149,9 @@ class TextComponentViewModel {
         apply(style)
     }
 
-    /// True when intro or promo eligibility can change the string this component shows.
-    /// Visibility-only overrides are ignored: a stable string can render while the check runs.
+    /// True when intro or promo eligibility can change the string this component shows, or whether it is shown.
+    /// A visibility change redacts too, so the real string is not shown and then hidden.
+    /// Color-only overrides are ignored.
     func redactsWhileOfferEligibilityLoads(
         state: ComponentViewState,
         condition: ScreenCondition,
@@ -173,6 +174,7 @@ class TextComponentViewModel {
             : [offerEligibility.isEligibleForPromoOffer]
 
         var templates: Set<String> = []
+        var sawHiddenOutcome = false
         for isEligibleForIntroOffer in introValues {
             for isEligibleForPromoOffer in promoValues {
                 let partial = LocalizedTextPartial.buildPartial(
@@ -183,13 +185,15 @@ class TextComponentViewModel {
                     conditionContext: conditionContext,
                     with: self.presentedOverrides
                 )
-                let visible = partial?.partial.visible ?? self.component.visible ?? true
-                guard visible else { continue }
-                templates.insert(partial?.text ?? self.text)
+                if partial?.partial.visible ?? self.component.visible ?? true {
+                    templates.insert(partial?.text ?? self.text)
+                } else {
+                    sawHiddenOutcome = true
+                }
             }
         }
 
-        if templates.count > 1 {
+        if (sawHiddenOutcome && !templates.isEmpty) || templates.count > 1 {
             return true
         }
 

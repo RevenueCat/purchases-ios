@@ -132,8 +132,8 @@ class OfferEligibilityTextRedactionTests: TestCase {
         )).to(beFalse())
     }
 
-    func testOfferOverrideThatDoesNotChangeCopyDoesNotNeedEligibility() throws {
-        let colorOnly = try Self.makeViewModel(
+    func testIntroOfferColorOverrideDoesNotNeedEligibility() throws {
+        let viewModel = try Self.makeViewModel(
             text: "Subscribe",
             overrides: [
                 .init(
@@ -142,15 +142,24 @@ class OfferEligibilityTextRedactionTests: TestCase {
                 )
             ]
         )
-        let visibilityOnly = try Self.makeViewModel(
+
+        expect(self.redacts(viewModel)).to(beFalse())
+    }
+
+    func testIntroOfferVisibilityOverrideNeedsEligibility() throws {
+        let viewModel = try Self.makeViewModel(
             text: "Subscribe",
             overrides: [
                 .init(conditions: [.introOffer], properties: .init(visible: false))
             ]
         )
 
-        expect(self.redacts(colorOnly)).to(beFalse())
-        expect(self.redacts(visibilityOnly)).to(beFalse())
+        expect(self.redacts(viewModel)).to(beTrue())
+        expect(self.redacts(
+            viewModel,
+            isIntroOfferEligibilityLoading: false,
+            isPromoOfferEligibilityLoading: false
+        )).to(beFalse())
     }
 
     func testNonOfferConditionDoesNotNeedEligibility() throws {
@@ -183,6 +192,31 @@ class OfferEligibilityTextRedactionTests: TestCase {
 
         expect(self.redacts(viewModel, condition: .compact)).to(beFalse())
         expect(self.redacts(viewModel, condition: .expanded)).to(beTrue())
+    }
+
+    func testDependsOnOfferEligibilityMatchesTheOfferVariables() {
+        let dependent = Set(VariablesV2.allCases.filter(\.dependsOnOfferEligibility))
+
+        expect(dependent).to(equal([
+            .productOfferPrice,
+            .productOfferPricePerDay,
+            .productOfferPricePerWeek,
+            .productOfferPricePerMonth,
+            .productOfferPricePerYear,
+            .productOfferPriceWithZero,
+            .productOfferPriceWithZeroPerDay,
+            .productOfferPriceWithZeroPerWeek,
+            .productOfferPriceWithZeroPerMonth,
+            .productOfferPriceWithZeroPerYear,
+            .productOfferPeriod,
+            .productOfferPeriodAbbreviated,
+            .productOfferPeriodInDays,
+            .productOfferPeriodInWeeks,
+            .productOfferPeriodInMonths,
+            .productOfferPeriodInYears,
+            .productOfferPeriodWithUnit,
+            .productOfferEndDate
+        ]))
     }
 
 }
