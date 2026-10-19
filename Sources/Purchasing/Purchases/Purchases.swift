@@ -2072,13 +2072,12 @@ public extension Purchases {
 
 extension Purchases {
 
-    /// Returns the rewards configured for a rewarded ad unit, waiting for remote configuration already loading
-    /// when no cached value is available.
+    /// Returns the rewards configured for a rewarded ad unit, loading remote configuration when needed.
     ///
-    /// This returns immediately when configuration is already cached. Otherwise, it waits for the remote-config
-    /// work currently in progress without starting an additional refresh. Returns `nil` when configuration is still
-    /// unavailable after that work finishes. Returns ``ConfiguredAdRewards/noConfiguredReward`` when configuration
-    /// is available but no rewards are configured for the ad unit.
+    /// This returns immediately when configuration is already cached. Otherwise, it joins remote-config work already
+    /// in progress or starts a stale-gated refresh. Returns `nil` when configuration is still unavailable after that
+    /// work finishes. Returns ``ConfiguredAdRewards/noConfiguredReward`` when configuration is available but no
+    /// rewards are configured for the ad unit.
     ///
     /// - Parameter adUnitId: The ad network's rewarded ad unit identifier.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
