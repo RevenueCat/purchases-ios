@@ -186,29 +186,24 @@ class PackageValidator {
         in context: PackageSelectionContext,
         offerEligibilityLoading: OfferEligibilityLoading
     ) -> Bool {
-        guard !offerEligibilityLoading.isEmpty, info.visibilityResolver.dependsOnOfferEligibility else {
-            return self.isVisible(info, in: context)
-        }
+        let offerEligibility = OfferEligibilityState(
+            isEligibleForIntroOffer: context.isEligibleForIntroOffer(info.package),
+            isEligibleForPromoOffer: context.isEligibleForPromoOffer(info.package),
+            loading: offerEligibilityLoading
+        )
 
-        let introValues = offerEligibilityLoading.contains(.intro)
-            ? [false, true]
-            : [context.isEligibleForIntroOffer(info.package)]
-        let promoValues = offerEligibilityLoading.contains(.promo)
-            ? [false, true]
-            : [context.isEligibleForPromoOffer(info.package)]
-
-        return introValues.contains { intro in
-            promoValues.contains { promo in
-                info.visibilityResolver.visible(
-                    state: .default,
-                    condition: context.condition,
-                    isEligibleForIntroOffer: intro,
-                    isEligibleForPromoOffer: promo,
-                    selectedPackageId: nil,
-                    customVariables: context.customVariables,
-                    windowSize: context.windowSize
-                )
-            }
+        return offerEligibility.unresolvedOutcomes(
+            variesWithEligibility: info.visibilityResolver.dependsOnOfferEligibility
+        ).contains { outcome in
+            info.visibilityResolver.visible(
+                state: .default,
+                condition: context.condition,
+                isEligibleForIntroOffer: outcome.isEligibleForIntroOffer,
+                isEligibleForPromoOffer: outcome.isEligibleForPromoOffer,
+                selectedPackageId: nil,
+                customVariables: context.customVariables,
+                windowSize: context.windowSize
+            )
         }
     }
 
