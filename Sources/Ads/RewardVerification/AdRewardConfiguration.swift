@@ -17,6 +17,9 @@ import Foundation
 /// Use the primary configured reward to customize the prompt, falling back to generic copy when configuration is
 /// unavailable or no reward is configured:
 ///
+/// A `nil` result means configuration is unavailable. ``noConfiguredReward`` means configuration loaded successfully,
+/// but the ad unit has no configured reward.
+///
 /// ```swift
 /// guard let reward = await Purchases.shared.adRewards(forAdUnitId: adUnitID)?.reward else {
 ///     showPrompt("Watch an ad to continue")
