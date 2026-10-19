@@ -199,8 +199,8 @@ struct RewardedDetailView: View {
         if let virtualCurrency = reward.virtualCurrency {
             return "\(virtualCurrency.amount) \(virtualCurrency.code)"
         } else if let entitlement = reward.entitlement {
-            let duration = Self.durationFormatter.string(from: entitlement.durationInSeconds)
-                ?? "\(Int(entitlement.durationInSeconds)) seconds"
+            let duration = Self.durationFormatter.string(from: entitlement.duration)
+                ?? "\(Int(entitlement.duration)) seconds"
             return "\(duration) of \(entitlement.identifier)"
         } else {
             return "the configured reward"
