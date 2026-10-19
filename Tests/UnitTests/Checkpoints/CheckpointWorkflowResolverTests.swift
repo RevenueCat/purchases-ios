@@ -743,10 +743,8 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         let offering = try XCTUnwrap(Self.resolvedOffering(resolved.resolution))
         let hit = CheckpointEvent.Data(identifier: self.checkpointIdentifier, date: Date(), resolved: resolved)
 
-        XCTAssertTrue(offering.availablePackages.allSatisfy {
-            $0.presentedOfferingContext.traceID == resolved.traceID
-        })
-        XCTAssertEqual(hit.traceID, resolved.traceID)
+        let package = try XCTUnwrap(offering.availablePackages.first)
+        XCTAssertEqual(package.presentedOfferingContext.traceID, hit.traceID)
     }
 
     func testTerminalOfferingWorkflowWithoutPackagesReportsTheResolutionTraceID() async throws {

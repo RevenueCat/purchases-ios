@@ -49,7 +49,9 @@ import Foundation
         self.workflow = workflow
         self.uiConfig = uiConfig
         self.offerings = offerings
-        self.initialOffering = checkpointIdentifier.map(initialOffering.withPresentedCheckpointIdentifier)
+        self.initialOffering = checkpointIdentifier.map {
+            initialOffering.withPresentedCheckpointIdentifier($0, traceID: nil)
+        }
             ?? initialOffering
         self.presentedOfferingContext = presentedOfferingContext
         self.checkpointIdentifier = checkpointIdentifier
@@ -340,7 +342,9 @@ private extension WorkflowContext {
         checkpointIdentifier: String?
     ) -> Offering {
         let contextualOffering = presentedOfferingContext.map(offering.withPresentedOfferingContext) ?? offering
-        return checkpointIdentifier.map(contextualOffering.withPresentedCheckpointIdentifier) ?? contextualOffering
+        return checkpointIdentifier.map {
+            contextualOffering.withPresentedCheckpointIdentifier($0, traceID: nil)
+        } ?? contextualOffering
     }
 
 }

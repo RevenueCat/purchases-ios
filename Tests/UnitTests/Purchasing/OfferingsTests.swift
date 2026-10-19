@@ -703,7 +703,7 @@ class OfferingsTests: TestCase {
             webCheckoutUrl: nil
         )
 
-        let presentedOffering = offering.withPresentedCheckpointIdentifier("checkout")
+        let presentedOffering = offering.withPresentedCheckpointIdentifier("checkout", traceID: nil)
         let presentedContext = try XCTUnwrap(presentedOffering.presentedOfferingContext)
 
         expect(presentedContext.offeringIdentifier) == "offering_a"

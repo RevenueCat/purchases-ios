@@ -331,11 +331,7 @@ public extension Offering {
     }
 
     /// Copies the offering and attributes its packages to the checkpoint that presented it.
-    func withPresentedCheckpointIdentifier(_ checkpointIdentifier: String) -> Self {
-        return self.withPresentedCheckpointIdentifier(checkpointIdentifier, traceID: nil)
-    }
-
-    internal func withPresentedCheckpointIdentifier(_ checkpointIdentifier: String, traceID: String?) -> Self {
+    func withPresentedCheckpointIdentifier(_ checkpointIdentifier: String, traceID: String?) -> Self {
         return Self(
             identifier: identifier,
             serverDescription: serverDescription,

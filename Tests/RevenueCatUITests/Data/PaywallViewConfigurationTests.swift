@@ -262,6 +262,29 @@ final class PaywallViewConfigurationTests: TestCase {
         )
 
         expect(result.workflowContext?.traceId) == "hit_trace"
+        expect(result.offering.availablePackages.first?.presentedOfferingContext.traceID) == "hit_trace"
+    }
+
+    func testResolvePaywallViewDataLeavesTraceIDUnsetForOfferingWithoutCheckpoint() async throws {
+        let initialOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let workflowOffering = Self.createOffering(identifier: "offering_b")
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+
+        purchases.offeringsBlock = {
+            Self.createOfferings([initialOffering, workflowOffering])
+        }
+        purchases.workflowBlock = { _ in
+            try Self.createWorkflowDataResult(offeringIdentifier: workflowOffering.identifier)
+        }
+
+        let result = try await handler.resolvePaywallViewData(
+            for: .offering(initialOffering),
+            remoteConfigEnabled: true
+        )
+
+        expect(result.workflowContext).toNot(beNil())
+        expect(result.workflowContext?.traceId).to(beNil())
     }
 
     func testCachedInitialPaywallViewDataReturnsWorkflowContextForCachedWorkflow() throws {
@@ -310,6 +333,7 @@ final class PaywallViewConfigurationTests: TestCase {
         )
 
         expect(result?.workflowContext?.traceId) == "hit_trace"
+        expect(result?.offering.availablePackages.first?.presentedOfferingContext.traceID) == "hit_trace"
     }
 
     func testResolvePaywallViewDataUsesPassedOfferingWhenWorkflowStepMatchesItsIdentifier() async throws {
