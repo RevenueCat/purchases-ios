@@ -2088,21 +2088,6 @@ extension Purchases {
         return nil
     }
 
-    /// Returns the latest locally cached rewards configured for a rewarded ad unit.
-    ///
-    /// The result contains the primary configured reward and any additional rewards that are configured
-    /// to be granted alongside it. Returns `nil` when configuration has not been loaded yet, and
-    /// ``ConfiguredAdRewards/noConfiguredReward`` when configuration is available but no rewards are configured
-    /// for the ad unit.
-    ///
-    /// - Parameter adUnitId: The ad network's rewarded ad unit identifier.
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func cachedAdRewards(
-        forAdUnitId adUnitId: String
-    ) -> ConfiguredAdRewards? {
-        return nil
-    }
-
 }
 
 // MARK: - Reward Verification
