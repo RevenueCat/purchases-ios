@@ -31,6 +31,7 @@ class TextComponentViewModel {
 
     private let text: String
     private let presentedOverrides: PresentedOverrides<LocalizedTextPartial>?
+    private let overridesDependOnOfferEligibility: Bool
 
     /// Whether this component renders anything a screen reader can announce. An empty base string
     /// still counts when overrides exist, since an override can supply text of its own.
@@ -60,9 +61,12 @@ class TextComponentViewModel {
             return ""
         }()
 
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides(discardRules: discardRules) {
+        let presentedOverrides = try component.overrides?.toPresentedOverrides(discardRules: discardRules) {
             try LocalizedTextPartial.create(from: $0, using: localizationProvider.localizedStrings)
         }
+        self.presentedOverrides = presentedOverrides
+        self.overridesDependOnOfferEligibility =
+            presentedOverrides?.contains(where: \.dependsOnOfferEligibility) ?? false
 
     }
 
@@ -155,13 +159,11 @@ class TextComponentViewModel {
             return false
         }
 
-        let variesWithEligibility = self.presentedOverrides?.contains { override in
-            override.conditions.contains(where: \.dependsOnOfferEligibility)
-        } ?? false
-
         var possibleVisibleTexts: Set<String> = []
         var couldBeHidden = false
-        for outcome in offerEligibility.unresolvedOutcomes(variesWithEligibility: variesWithEligibility) {
+        for outcome in offerEligibility.unresolvedOutcomes(
+            variesWithEligibility: self.overridesDependOnOfferEligibility
+        ) {
             let partial = LocalizedTextPartial.buildPartial(
                 state: state,
                 condition: condition,
