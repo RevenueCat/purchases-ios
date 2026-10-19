@@ -34,9 +34,9 @@ final class AdRewardConfigurationTests: TestCase {
 
     func testEntitlementConfiguration() throws {
         let reward = try XCTUnwrap(
-            EntitlementRewardConfiguration(identifier: "pro", durationInSeconds: 30 * 60)
+            EntitlementRewardConfiguration(identifier: "pro", duration: 30 * 60)
         )
-        expect(reward.durationInSeconds) == TimeInterval(30 * 60)
+        expect(reward.duration) == TimeInterval(30 * 60)
         let configuration = AdRewardConfiguration.entitlement(reward)
 
         expect(configuration.entitlement) == reward
@@ -49,18 +49,18 @@ final class AdRewardConfigurationTests: TestCase {
     }
 
     func testEntitlementConfigurationRejectsNonPositiveDurations() {
-        expect(EntitlementRewardConfiguration(identifier: "pro", durationInSeconds: 0)).to(beNil())
-        expect(EntitlementRewardConfiguration(identifier: "pro", durationInSeconds: -1)).to(beNil())
+        expect(EntitlementRewardConfiguration(identifier: "pro", duration: 0)).to(beNil())
+        expect(EntitlementRewardConfiguration(identifier: "pro", duration: -1)).to(beNil())
     }
 
     func testEntitlementConfigurationRejectsEmptyIdentifier() {
-        expect(EntitlementRewardConfiguration(identifier: "", durationInSeconds: 30 * 60)).to(beNil())
+        expect(EntitlementRewardConfiguration(identifier: "", duration: 30 * 60)).to(beNil())
     }
 
     func testConfiguredRewardsExposePrimaryAndAdditionalRewards() throws {
         let currency = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 10))
         let entitlement = try XCTUnwrap(
-            EntitlementRewardConfiguration(identifier: "pro", durationInSeconds: 30 * 60)
+            EntitlementRewardConfiguration(identifier: "pro", duration: 30 * 60)
         )
         let configured = ConfiguredAdRewards(
             reward: .virtualCurrency(currency),
