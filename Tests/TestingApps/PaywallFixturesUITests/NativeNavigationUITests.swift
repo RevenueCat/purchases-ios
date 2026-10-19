@@ -77,6 +77,7 @@ final class NativeNavigationUITests: XCTestCase {
     private func assertWorkflowNavigation(in app: XCUIApplication) {
         self.assertVisible(app.staticTexts["Workflow root"], in: app)
         self.assertNativeControls(in: app, back: false, close: true)
+        self.assertBodyBelowNavigation(in: app, title: "Workflow root", button: "Continue")
         app.buttons["Continue"].tap()
 
         self.assertVisible(app.staticTexts["Workflow detail"], in: app)
@@ -92,6 +93,7 @@ final class NativeNavigationUITests: XCTestCase {
             $0.isHittable && $0.label != "Continue without Close"
         }.map { $0.identifier }),
                        Set([self.backIdentifier, self.closeIdentifier]), app.debugDescription)
+        self.assertBodyBelowNavigation(in: app, title: "Workflow detail", button: "Continue without Close")
         let detailBodyTop = app.staticTexts["Workflow detail"].frame.minY
         app.buttons["Continue without Close"].tap()
         self.assertVisible(app.staticTexts["Workflow without Close"], in: app)
@@ -116,6 +118,7 @@ final class NativeNavigationUITests: XCTestCase {
         XCTAssertGreaterThan(rootText.frame.width, 0, app.debugDescription)
         XCTAssertGreaterThan(rootText.frame.height, 0, app.debugDescription)
         XCTAssertEqual(rootText.frame.minY, detailBodyTop, accuracy: 1, app.debugDescription)
+        self.assertBodyBelowNavigation(in: app, title: "Workflow root", button: "Continue")
         XCTAssertFalse(rootText.frame.intersects(app.buttons[self.closeIdentifier].frame), app.debugDescription)
         let screenshot = XCTAttachment(screenshot: app.screenshot())
         screenshot.name = "Workflow root after native Back"
@@ -156,6 +159,20 @@ final class NativeNavigationUITests: XCTestCase {
         XCTAssertFalse(app.staticTexts["Paywall dismissed"].exists, app.debugDescription)
         outerClose.tap()
         XCTAssertTrue(app.staticTexts["Paywall dismissed"].waitForExistence(timeout: 10), app.debugDescription)
+    }
+
+    private func assertBodyBelowNavigation(in app: XCUIApplication, title: String, button: String) {
+        // The fixture has no authored top padding. Its body must respect the whole native bar,
+        // even when centered text would not intersect the trailing Close button horizontally.
+        let belowNavigation = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            let navigationBar = app.navigationBars["Native paywall"]
+            let text = app.staticTexts[title]
+            let action = app.buttons[button]
+            return navigationBar.exists && navigationBar.frame.height > 0 && text.exists && action.exists
+                && text.frame.minY >= navigationBar.frame.maxY - 1
+                && action.frame.minY >= navigationBar.frame.maxY - 1
+        }, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [belowNavigation], timeout: 10), .completed, app.debugDescription)
     }
 
     private func assertNativeControls(in app: XCUIApplication, back: Bool, close: Bool) {

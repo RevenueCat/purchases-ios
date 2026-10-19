@@ -165,7 +165,7 @@ private enum NativeNavigationFixture {
                 stack: .init(components: [Self.text(title)] + buttons,
                              dimension: .vertical(.center, .start),
                              size: .init(width: .fill, height: .fill), spacing: 24,
-                             padding: .init(top: 32, bottom: 24, leading: 16, trailing: 16)),
+                             padding: .init(top: 0, bottom: 24, leading: 16, trailing: 16)),
                 header: headerClose.map { close in
                     .init(stack: .init(components: [close], size: .init(width: .fill, height: .fixed(120)),
                                        backgroundColor: .init(light: .hex("#ff00ff"))))
