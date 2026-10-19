@@ -2235,6 +2235,8 @@ extension RevenueCat.PackageType : Swift.Codable {
   case purchased = 0
   case familyShared = 1
   case unknown = 2
+  @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+  case assigned = 3
   public init?(rawValue: Swift.Int)
   public typealias RawValue = Swift.Int
   public var rawValue: Swift.Int {
@@ -2242,10 +2244,10 @@ extension RevenueCat.PackageType : Swift.Codable {
   }
 }
 extension RevenueCat.PurchaseOwnershipType : Swift.CaseIterable {
-  public typealias AllCases = [RevenueCat.PurchaseOwnershipType]
-  nonisolated public static var allCases: [RevenueCat.PurchaseOwnershipType] {
+  public static var allCases: [RevenueCat.PurchaseOwnershipType] {
     get
   }
+  public typealias AllCases = [RevenueCat.PurchaseOwnershipType]
 }
 extension RevenueCat.PurchaseOwnershipType : Swift.Sendable {
 }
