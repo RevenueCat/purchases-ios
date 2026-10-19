@@ -39,8 +39,9 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
 
     private let manager: RemoteConfigManagerType
 
-    /// Keeps the last successfully decoded rewards until a newer valid configuration is ready,
-    /// or until the topic is removed.
+    /// `ad_rewards` is app-scoped rather than subscriber-scoped, so this deliberately survives config-generation
+    /// changes, including identity-bound cache clears. It keeps the last successfully decoded rewards until a newer
+    /// valid configuration is ready, or until the topic is removed.
     private let cachedRewards: Atomic<CachedRewards?> = .init(nil)
 
     init(manager: RemoteConfigManagerType) {

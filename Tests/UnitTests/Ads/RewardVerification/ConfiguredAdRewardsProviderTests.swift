@@ -199,10 +199,12 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         expect(cached) == initial
     }
 
-    func testFailedConfigRefreshPreservesCachedConfiguration() async throws {
+    func testIdentityBoundGenerationChangePreservesAppScopedCachedConfiguration() async throws {
         try self.stub(content: ["reward": ["type": "virtual_currency", "code": "coins", "amount": 10]])
         await self.provider.warm()
 
+        // RemoteConfigManager advances its generation when identity-bound config is cleared. Ad rewards are app-scoped,
+        // so the last valid rewards remain usable while the replacement configuration is unavailable.
         self.manager.configGeneration += 1
         self.manager.stubbedHasCommittedConfig = false
         self.manager.stubbedTopics[.adRewards] = nil
