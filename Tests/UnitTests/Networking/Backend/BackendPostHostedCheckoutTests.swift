@@ -77,7 +77,7 @@ class BackendPostHostedCheckoutTests: BaseBackendTests {
             response: .init(statusCode: .success, response: Self.response)
         )
         let context = PresentedOfferingContext(offeringIdentifier: Self.offeringID)
-            .withCheckpointIdentifier("checkout")
+            .withCheckpointIdentifier("checkout", traceID: nil)
 
         _ = waitUntilValue { completed in
             self.postHostedCheckout(
@@ -196,7 +196,7 @@ class BackendPostHostedCheckoutTests: BaseBackendTests {
         self.httpClient.disableSnapshotTesting()
         self.expectTwoCalls(varying: { checkpointIdentifier in
             let context = PresentedOfferingContext(offeringIdentifier: Self.offeringID)
-                .withCheckpointIdentifier(checkpointIdentifier)
+                .withCheckpointIdentifier(checkpointIdentifier, traceID: nil)
             self.postHostedCheckout(
                 appUserID: Self.userID,
                 packageID: Self.packageID,

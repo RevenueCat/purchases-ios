@@ -82,7 +82,7 @@ import Foundation
         super.init()
     }
 
-    func withCheckpointIdentifier(_ checkpointIdentifier: String?, traceID: String? = nil) -> PresentedOfferingContext {
+    func withCheckpointIdentifier(_ checkpointIdentifier: String?, traceID: String?) -> PresentedOfferingContext {
         return PresentedOfferingContext(
             offeringIdentifier: self.offeringIdentifier,
             placementIdentifier: self.placementIdentifier,
