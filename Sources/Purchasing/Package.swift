@@ -50,7 +50,7 @@ import Foundation
     @_spi(Internal) public let checkpointIdentifier: String?
 
     /// The trace id of the checkpoint hit that presented this ``Package``.
-    let traceID: String?
+    @_spi(Internal) public let traceID: String?
 
     /// Initialize a ``PresentedOfferingContext``.
     @objc
