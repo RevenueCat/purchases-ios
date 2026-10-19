@@ -85,6 +85,7 @@ struct SubscriptionDetailView: View {
 
     var body: some View {
         content
+            .modifier(CustomerCenterPreviewActionsModifier(actions: viewModel.previewActions))
         // This is needed because `CustomerCenterViewModel` is isolated to @MainActor
         // A bigger refactor is needed, but its already throwing a warning.
             .modifier(self.customerInfoViewModel.purchasesProvider
@@ -108,7 +109,11 @@ struct SubscriptionDetailView: View {
                     productIDs: viewModel.changePlanProductIDs
                 )
             )
-            .onAppear { viewModel.didAppear() }
+            .onAppear {
+                viewModel.didAppear()
+                viewModel.startPublishingPreviewDiagnostics()
+            }
+            .onDisappear { viewModel.stopPublishingPreviewDiagnostics() }
             .onChangeOf(customerInfoViewModel.manageSubscriptionsSheet) { manageSubscriptionsSheet in
                 if !manageSubscriptionsSheet {
                     viewModel.refreshPurchase()
