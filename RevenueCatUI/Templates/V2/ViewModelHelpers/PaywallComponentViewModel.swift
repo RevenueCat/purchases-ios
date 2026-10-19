@@ -50,6 +50,9 @@ extension Array where Element == PaywallComponentViewModel {
             if case .button(let button) = self[index] {
                 return !hiddenButtons.contains(ObjectIdentifier(button))
             }
+            if case .stack(let stack) = self[index], let buttons = stack.nativeButtonContainerIdentifiers {
+                return !buttons.isSubset(of: hiddenButtons)
+            }
             return true
         }
     }

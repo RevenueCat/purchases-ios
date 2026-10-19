@@ -46,6 +46,7 @@ struct RootView: View {
     @State private var packageSelectionSheetComponentName: String?
     @State private var packageBeforeOpeningSheet: Package?
     @State private var overlaidHeaderHeight: CGFloat = 0
+    @State private var nativeHeaderCollapsed = false
     @State private var overlaidFooterHeight: CGFloat = 0
 
     internal init(
@@ -104,6 +105,10 @@ struct RootView: View {
                     additionalPadding: EdgeInsets(top: 0, leading: 0, bottom: overlaidFooterHeight, trailing: 0)
                 )
                 .environment(\.overlaidHeaderHeight, overlaidHeaderHeight)
+                // An authored hero can be hidden by a rule. Once its native-only header collapses,
+                // the body must reclaim the inset that the original overlay configuration removed.
+                .padding(.top, self.nativeHeaderCollapsed && viewModel.shouldOverlayHeader
+                         && !viewModel.firstItemIsFullWidthMedia ? self.safeAreaInsets.top : 0)
 
                 if let headerViewModel = viewModel.headerViewModel,
                    viewModel.shouldOverlayHeader {
@@ -146,6 +151,7 @@ struct RootView: View {
             }
         }
         .environment(\.paywallRootStackIsZLayer, self.paywallRootStackIsZLayer)
+        .onPreferenceChange(NativePaywallCollapsedHeaderKey.self) { self.nativeHeaderCollapsed = $0 }
         .environment(\.openSheet, { sheet in
             self.sheetViewModel = sheet
         })

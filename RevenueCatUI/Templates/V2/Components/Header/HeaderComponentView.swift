@@ -46,7 +46,8 @@ struct HeaderComponentView: View {
                 leading: 0,
                 bottom: 0,
                 trailing: 0
-            )
+            ),
+            isHeaderContainer: true
         )
         .environment(\.workflowRenderingContext, self.workflowRenderingContext.markingHeader())
         .environment(\.nativePaywallHeaderCollapsed, self.collapsesNativeOnlyHeader)
@@ -54,18 +55,15 @@ struct HeaderComponentView: View {
         // The paywall extends through the top safe area when it has a header. Removing native-only
         // header content must retain the inset that keeps the body below the caller's navigation bar.
         .fixedSize(horizontal: false, vertical: self.collapsesNativeOnlyHeader)
-        .frame(height: self.collapsesNativeOnlyHeader ? self.collapsedHeaderHeight : nil, alignment: .bottom)
+        .frame(height: self.collapsesNativeOnlyHeader ? self.safeAreaInsets.top : nil, alignment: .bottom)
         .opacity(self.collapsesNativeOnlyHeader ? 0 : 1)
         .allowsHitTesting(!self.collapsesNativeOnlyHeader)
         .accessibilityHidden(self.collapsesNativeOnlyHeader)
+        .preference(key: NativePaywallCollapsedHeaderKey.self, value: self.collapsesNativeOnlyHeader)
     }
 
     private var collapsesNativeOnlyHeader: Bool {
         self.contentVisibility.hasNativeButtons && !self.contentVisibility.hasVisibleContent
-    }
-
-    private var collapsedHeaderHeight: CGFloat {
-        self.viewModel.firstItemIgnoresSafeArea ? 0 : self.safeAreaInsets.top
     }
 
 }

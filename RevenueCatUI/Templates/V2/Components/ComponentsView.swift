@@ -28,6 +28,7 @@ struct ComponentsView: View {
     @Environment(\.workflowRenderingContext) private var workflowRenderingContext
 
     @Environment(\.nativePaywallHiddenLayoutButtons) private var hiddenNativeButtons
+    @Environment(\.nativePaywallLayoutButtons) private var registeredLayoutButtons
 
     let componentViewModels: [PaywallComponentViewModel]
     /// When true, applies safe area top padding to all children except the first.
@@ -99,6 +100,8 @@ struct ComponentsView: View {
                 viewModel: viewModel,
                 onDismiss: onDismiss
             )
+            .environment(\.nativePaywallStackRegistrationHandled,
+                         viewModel.nativeButtonContainerIdentifiers?.isSubset(of: self.registeredLayoutButtons) == true)
             .workflowSkeletonShimmer()
         case .button(let viewModel):
             ButtonComponentView(viewModel: viewModel, onDismiss: onDismiss)

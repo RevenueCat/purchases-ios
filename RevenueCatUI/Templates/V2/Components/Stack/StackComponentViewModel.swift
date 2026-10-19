@@ -40,6 +40,26 @@ class StackComponentViewModel: OfferEligibilityVisibilityDependency {
 
     let badgeViewModels: [BadgeContents]
 
+    /// Only undecorated, unconditional wrappers can disappear with their promoted buttons.
+    /// An authored empty stack, decoration, or an uncertain override keeps its existing layout.
+    var nativeButtonContainerIdentifiers: Set<ObjectIdentifier>? {
+        guard !self.viewModels.isEmpty,
+              self.component.background == nil, self.component.backgroundColor == nil,
+              self.component.border == nil, self.component.shadow == nil, self.component.badge == nil,
+              self.component.overrides == nil else { return nil }
+        var identifiers: Set<ObjectIdentifier> = []
+        for item in self.viewModels {
+            switch item {
+            case .button(let button): identifiers.insert(ObjectIdentifier(button))
+            case .stack(let stack):
+                guard let nested = stack.nativeButtonContainerIdentifiers else { return nil }
+                identifiers.formUnion(nested)
+            default: return nil
+            }
+        }
+        return identifiers
+    }
+
     /// Whether the first child is a full-width image, video, or web view.
     /// Used by ZStack rendering to push non-hero children below the safe area.
     var firstChildIsFullWidthMedia: Bool {

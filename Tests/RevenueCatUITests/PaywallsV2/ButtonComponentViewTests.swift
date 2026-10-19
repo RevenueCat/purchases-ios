@@ -234,6 +234,225 @@ final class ButtonComponentViewTests: TestCase {
         }
     }
 
+    func testNestedNativeOnlyWrappersDoNotLeaveSpacingInNormalOrFlexStacks() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
+        let markers: [PaywallComponent] = ["#FF0000", "#0000FF"].map { color in
+            .stack(.init(components: [], size: .init(width: .fixed(20), height: .fixed(20)),
+                         backgroundColor: .init(light: .hex(color))))
+        }
+        let button = PaywallComponent.button(.init(
+            action: .navigateBack, stack: Self.makeButtonStack(label: "Close"), useNativeIfPossible: true
+        ))
+        let wrapper = PaywallComponent.stack(.init(components: [.stack(.init(
+            components: [button], size: .init(width: .fixed(80), height: .fixed(80)),
+            padding: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
+        ))], size: .init(width: .fixed(100), height: .fixed(100))))
+        for distribution: PaywallComponent.FlexDistribution in [.start, .spaceBetween, .spaceAround, .spaceEvenly] {
+            for dimension: PaywallComponent.Dimension in [
+                .vertical(.center, distribution), .horizontal(.center, distribution)
+            ] {
+                func stack(_ children: [PaywallComponent]) -> PaywallComponent.StackComponent {
+                    .init(components: children, dimension: dimension,
+                          size: .init(width: .fixed(200), height: .fixed(200)), spacing: 12)
+                }
+                let reference = try await self.renderNativeStack(stack(markers), actions: 0)
+                let nested = try await self.renderNativeStack(stack([markers[0], wrapper, markers[1]]), actions: 1)
+                XCTAssertEqual(nested.pngData(), reference.pngData(), "Empty wrappers must not consume layout space")
+            }
+        }
+    }
+
+    func testNestedWrapperPromotionKeepsRegistrationStableAndRestoresFallback() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
+        let button = PaywallComponent.button(.init(
+            action: .navigateBack, stack: Self.makeButtonStack(label: "Close"), useNativeIfPossible: true
+        ))
+        let wrapper = PaywallComponent.stack(.init(
+            components: [button], size: .init(width: .fill, height: .fixed(80))
+        ))
+        let model = try StackComponentViewModel(component: .init(components: [wrapper]), localizationProvider: .init(
+            locale: Locale(identifier: "en_US"), localizedStrings: ["Close": .string("Close")]
+        ), colorScheme: .light)
+        let coordinator = NativePaywallCloseCoordinator()
+        let state = NativeRegistrationTestState()
+        var height: CGFloat = -1
+        var dismissals = 0
+        let content = StackComponentView(viewModel: model, onDismiss: { dismissals += 1 })
+            .fixedSize(horizontal: false, vertical: true)
+            .background(GeometryReader { proxy in
+                Color.clear.preference(key: NativeRegistrationHeightKey.self, value: proxy.size.height)
+            })
+            .onPreferenceChange(NativeRegistrationHeightKey.self) { height = $0 }
+        let (window, _) = Self.host(Self.nativeLayoutEnvironment(
+            NativeWrapperPresentationTestView(state: state, content: content), coordinator: coordinator
+        ))
+        defer { window.isHidden = true; window.rootViewController = nil }
+        var actionID: UUID?
+        for (value, expected): (Int, CGFloat) in [(0, 0), (1, 80), (0, 0), (1, 80), (0, 0)] {
+            state.value = value
+            let settled = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+                abs(height - expected) < 0.5 && coordinator.actions.count == 1
+            }, object: nil)
+            await fulfillment(of: [settled], timeout: 2)
+            let currentID = try XCTUnwrap(coordinator.actions.first?.id)
+            if let actionID { XCTAssertEqual(currentID, actionID, "Promotion must not remount action registration") }
+            actionID = currentID
+        }
+        try await coordinator.performAction(id: XCTUnwrap(actionID))
+        XCTAssertEqual(dismissals, 1)
+    }
+
+    func testNativePromotionPreservesDecoratedAndConditionalWrappers() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
+        let button = PaywallComponent.button(.init(
+            action: .navigateBack, stack: Self.makeButtonStack(label: "Close"), useNativeIfPossible: true
+        ))
+        for conditional in [false, true] {
+            func wrapper(_ children: [PaywallComponent]) -> PaywallComponent {
+                .stack(.init(
+                    components: children, size: .init(width: .fixed(80), height: .fixed(80)),
+                    backgroundColor: conditional ? nil : .init(light: .hex("#FF0000")),
+                    overrides: conditional ? [.init(conditions: [.selected], properties: .init(
+                        backgroundColor: .init(light: .hex("#0000FF"))
+                    ))] : nil
+                ))
+            }
+            func stack(_ child: PaywallComponent) -> PaywallComponent.StackComponent {
+                let marker = PaywallComponent.stack(.init(
+                    components: [], size: .init(width: .fixed(20), height: .fixed(20)),
+                    backgroundColor: .init(light: .hex("#0000FF"))
+                ))
+                return .init(components: [marker, child, marker],
+                             size: .init(width: .fixed(200), height: .fixed(200)), spacing: 12)
+            }
+            let reference = try await self.renderNativeStack(stack(wrapper([])), actions: 0)
+            let native = try await self.renderNativeStack(stack(wrapper([button])), actions: 1)
+            XCTAssertEqual(native.pngData(), reference.pngData(),
+                           "Authored decoration and uncertain layout must remain")
+        }
+    }
+
+    func testNativeHeaderPreservesDecorativeEmptyStacks() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
+        let button = PaywallComponent.button(.init(
+            action: .navigateBack, stack: Self.makeButtonStack(label: "Close"), useNativeIfPossible: true
+        ))
+        for decoration in 0..<3 {
+            let decorated = PaywallComponent.stack(.init(
+                components: [], size: .init(width: .fill, height: .fixed(60)),
+                backgroundColor: decoration == 0 ? .init(light: .hex("#FF0000")) : nil,
+                border: decoration == 1 ? .init(color: .init(light: .hex("#000000")), width: 2) : nil,
+                shadow: decoration == 2 ? .init(color: .init(light: .hex("#000000")), radius: 2, x: 0, y: 0) : nil
+            ))
+            let stack = PaywallComponent.StackComponent(components: [button, decorated], spacing: 0)
+            let model = try StackComponentViewModel(component: stack, localizationProvider: .init(
+                locale: Locale(identifier: "en_US"), localizedStrings: ["Close": .string("Close")]
+            ), colorScheme: .light)
+            var height: CGFloat = -1
+            let view = HeaderComponentView(viewModel: .init(
+                component: .init(stack: stack), stackViewModel: model, firstItemIgnoresSafeArea: false
+            ), onDismiss: {})
+                .fixedSize(horizontal: false, vertical: true)
+                .background(GeometryReader { proxy in
+                    Color.clear.preference(key: NativeRegistrationHeightKey.self, value: proxy.size.height)
+                })
+                .onPreferenceChange(NativeRegistrationHeightKey.self) { height = $0 }
+            let coordinator = NativePaywallCloseCoordinator()
+            let (window, _) = Self.host(Self.nativeLayoutEnvironment(view, coordinator: coordinator))
+            defer { window.isHidden = true; window.rootViewController = nil }
+            let visible = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+                height >= 60 && coordinator.actions.count == 1
+            }, object: nil)
+            await fulfillment(of: [visible], timeout: 2)
+            XCTAssertGreaterThanOrEqual(height, 60, "Decoration is visible content even without children")
+        }
+    }
+
+    func testCollapsedHiddenHeroRestoresRootBodySafeArea() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
+        let image = PaywallComponent.image(.init(visible: false, source: .init(light: .init(
+            width: 1, height: 1, original: URL(string: "https://example.com/hidden.png")!,
+            heic: URL(string: "https://example.com/hidden.png")!,
+            heicLowRes: URL(string: "https://example.com/hidden.png")!
+        ))))
+        let close = PaywallComponent.button(.init(
+            action: .navigateBack, stack: Self.makeButtonStack(label: "Close"), useNativeIfPossible: true
+        ))
+        var results: [Bool: CGFloat] = [:]
+        for hasHero in [false, true] {
+            let header = PaywallComponent.StackComponent(components: (hasHero ? [image] : []) + [close])
+            let config = PaywallComponentsData.PaywallComponentsConfig(
+                stack: .init(components: [.stack(.init(
+                    components: [], size: .init(width: .fill, height: .fixed(20)),
+                    backgroundColor: .init(light: .hex("#FF0000"))
+                ))]),
+                header: .init(stack: header), stickyFooter: nil,
+                background: .color(.init(light: .hex("#FFFFFF")))
+            )
+            var factory = ViewModelFactory()
+            let root = try factory.toRootViewModel(
+                componentsConfig: config,
+                offering: .init(identifier: "native-layout", serverDescription: "", availablePackages: [],
+                                webCheckoutUrl: nil),
+                localizationProvider: .init(locale: Locale(identifier: "en_US"),
+                                            localizedStrings: ["Close": .string("Close")]),
+                uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()), colorScheme: .light
+            )
+            let view = RootView(viewModel: root, onDismiss: {}, defaultPackage: nil)
+            let coordinator = NativePaywallCloseCoordinator()
+            let (window, hosted) = Self.host(Self.nativeLayoutEnvironment(
+                view, coordinator: coordinator,
+                safeAreaInsets: EdgeInsets(top: 88, leading: 0, bottom: 0, trailing: 0)
+            ))
+            defer { window.isHidden = true; window.rootViewController = nil }
+            let registered = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+                coordinator.actions.count == 1
+            }, object: nil)
+            await fulfillment(of: [registered], timeout: 2)
+            let settled = expectation(description: "Native header inset settled")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { settled.fulfill() }
+            await fulfillment(of: [settled], timeout: 2)
+            let screenshot = UIGraphicsImageRenderer(bounds: hosted.bounds).image { _ in
+                hosted.drawHierarchy(in: hosted.bounds, afterScreenUpdates: true)
+            }
+            results[hasHero] = try XCTUnwrap(self.firstRedRow(in: screenshot))
+        }
+        XCTAssertEqual(try XCTUnwrap(results[true]), try XCTUnwrap(results[false]), accuracy: 1)
+        XCTAssertGreaterThanOrEqual(try XCTUnwrap(results[true]), 88)
+    }
+
+    private func firstRedRow(in image: UIImage) -> CGFloat? {
+        guard let cgImage = image.cgImage else { return nil }
+        let rowBytes = cgImage.width * 4
+        guard let context = CGContext(
+            data: nil, width: cgImage.width, height: cgImage.height, bitsPerComponent: 8, bytesPerRow: rowBytes,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue
+        ), let data = context.data else { return nil }
+        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height))
+        let bytes = data.assumingMemoryBound(to: UInt8.self)
+        for row in 0..<cgImage.height {
+            for column in 0..<cgImage.width {
+                let offset = row * rowBytes + column * 4
+                if bytes[offset] > 200 && bytes[offset + 1] < 50 && bytes[offset + 2] < 50 {
+                    return CGFloat(row) / image.scale
+                }
+            }
+        }
+        return nil
+    }
+
+    private static func nativeLayoutEnvironment<Content: View>(
+        _ content: Content, coordinator: NativePaywallCloseCoordinator, safeAreaInsets: EdgeInsets = EdgeInsets()
+    ) -> some View {
+        content.environment(\.nativePaywallCloseCoordinator, coordinator)
+            .environmentObject(PurchaseHandler.default())
+            .environmentObject(PackageContext(package: nil, variableContext: .init(packages: [])))
+            .environmentObject(IntroOfferEligibilityContext(introEligibilityChecker: BaseSnapshotTest.eligibleChecker))
+            .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
+            .environment(\.safeAreaInsets, safeAreaInsets)
+    }
+
     func testNativeButtonsDoNotConsumeMainOrFooterStackSpacing() async throws {
         try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
         let marker = PaywallComponent.stack(.init(components: [], size: .init(width: .fill, height: .fixed(20))))
@@ -282,6 +501,7 @@ final class ButtonComponentViewTests: TestCase {
                 components: [.button(.init(action: .navigateBack, stack: Self.makeButtonStack(label: "Close"),
                                            useNativeIfPossible: true)), sibling],
                 size: .init(width: .fill, height: .fixed(100)),
+                backgroundColor: .init(light: .hex("#FF00FF")),
                 badge: hasBadge ? .init(style: .overlaid, alignment: .top, stack: .init(
                     components: [], size: .init(width: .fixed(20), height: .fixed(20)),
                     backgroundColor: .init(light: .hex("#FF0000"))
@@ -679,9 +899,18 @@ private struct NativeRegistrationTestView: View {
     }
 }
 
+@available(iOS 15.0, *)
+private struct NativeWrapperPresentationTestView<Content: View>: View {
+    @ObservedObject var state: NativeRegistrationTestState
+    let content: Content
+    var body: some View {
+        self.content.environment(\.nativePaywallControlsPresented, self.state.value == 0)
+    }
+}
+
 private struct NativeRegistrationHeightKey: PreferenceKey {
     static let defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
 }
 
 #endif
