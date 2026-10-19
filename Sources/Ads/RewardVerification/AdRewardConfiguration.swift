@@ -13,6 +13,23 @@
 import Foundation
 
 /// Rewards currently configured for a rewarded ad unit.
+///
+/// Use ``noConfiguredReward`` to distinguish an ad unit known to have no configured reward from configuration that
+/// is unavailable:
+///
+/// ```swift
+/// if let configuredRewards = await Purchases.shared.adRewards(forAdUnitId: adUnitID) {
+///     if configuredRewards == .noConfiguredReward {
+///         // Configuration loaded, but no RevenueCat reward is configured for this ad unit.
+///         showGenericAdPrompt()
+///     } else {
+///         showRewardPrompt(configuredRewards)
+///     }
+/// } else {
+///     // Configuration is temporarily unavailable.
+///     showGenericAdPrompt()
+/// }
+/// ```
 struct ConfiguredAdRewards: Sendable, Equatable {
 
     private enum Storage: Sendable, Equatable {
