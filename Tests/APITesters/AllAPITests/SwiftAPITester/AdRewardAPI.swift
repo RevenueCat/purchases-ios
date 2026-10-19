@@ -43,6 +43,8 @@ func checkRewardVerificationResultAPI() {
 func checkConfiguredAdRewardsAPI() {
     let _: AdRewardConfiguration? = configuredAdRewards.reward
     let _: [AdRewardConfiguration] = configuredAdRewards.moreRewards
+    let _: ConfiguredAdRewards = .noConfiguredReward
+    let _: Bool = configuredAdRewards == .noConfiguredReward
 }
 
 func checkAdRewardConfigurationAPI() {
