@@ -2068,7 +2068,7 @@ public extension Purchases {
 
 }
 
-// MARK: - Reward Verification
+// MARK: - Reward Configuration
 
 extension Purchases {
 
@@ -2102,6 +2102,12 @@ extension Purchases {
     ) -> ConfiguredAdRewards? {
         return nil
     }
+
+}
+
+// MARK: - Reward Verification
+
+extension Purchases {
 
     /// Generates a reward verification token for a loaded rewarded ad.
     ///
