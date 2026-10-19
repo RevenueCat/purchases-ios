@@ -2,6 +2,8 @@
 
 This file provides guidance to AI coding agents when working with code in this repository.
 
+**Before changing or reviewing Swift code, read [Contributing/SwiftStyleGuide.swift](Contributing/SwiftStyleGuide.swift).** Check new or modified code against its guidelines. During reviews, report actionable violations alongside correctness and API compatibility issues, even when builds and tests pass.
+
 ## Project Overview
 
 RevenueCat's official iOS SDK for in-app purchases and subscriptions. Supports iOS, macOS, tvOS, watchOS, and visionOS.
