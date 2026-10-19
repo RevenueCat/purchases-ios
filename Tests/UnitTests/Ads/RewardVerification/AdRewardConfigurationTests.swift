@@ -17,7 +17,7 @@ import XCTest
 final class AdRewardConfigurationTests: TestCase {
 
     func testConfiguredRewardsCanRepresentAvailableConfigurationWithoutRewards() {
-        let configured = ConfiguredAdRewards()
+        let configured = ConfiguredAdRewards(reward: nil, moreRewards: [])
 
         expect(configured.reward).to(beNil())
         expect(configured.moreRewards).to(beEmpty())
