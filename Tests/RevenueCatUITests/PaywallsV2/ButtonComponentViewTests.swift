@@ -31,7 +31,9 @@ final class ButtonComponentViewTests: TestCase {
             id: "inline", name: "Inline sheet", stack: .init(components: []),
             backgroundBlur: false, size: .init(width: .fill, height: .fixed(100))
         )
-        let sheetStack = try Self.makeViewModel(component: .init(action: .navigateBack, stack: sheet.stack)).stackViewModel
+        let sheetStack = try Self.makeViewModel(
+            component: .init(action: .navigateBack, stack: sheet.stack)
+        ).stackViewModel
         let view = NativeInlineSheetRegistrationTestView(
             state: state, sheet: .init(sheet: sheet, sheetStackViewModel: sheetStack)
         )
