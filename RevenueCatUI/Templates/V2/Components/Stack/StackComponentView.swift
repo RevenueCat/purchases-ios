@@ -142,7 +142,9 @@ struct StackComponentView: View {
                 if self.registrationOnly {
                     self.nativeButtonRegistrations
                 } else {
-                    self.make(style: style)
+                    // Bound the layout type before the style builder expands its conditional branches.
+                    // Without this boundary, Swift can abort on opaque type substitution in Release builds.
+                    AnyView(self.make(style: style))
                         .redactedWhileOfferEligibilityLoads(
                             self.viewModel,
                             isEligibleForIntroOffer: isEligibleForIntroOffer,
