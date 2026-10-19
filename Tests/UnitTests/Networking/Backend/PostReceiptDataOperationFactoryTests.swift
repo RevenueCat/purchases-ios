@@ -46,9 +46,9 @@ class PostReceiptDataOperationFactoryTests: TestCase {
         )
     }
 
-    func testEncodesPresentedCheckpointIdentifier() throws {
+    func testEncodesPresentedCheckpointIdentifierAndTraceID() throws {
         let context = PresentedOfferingContext(offeringIdentifier: "offering")
-            .withCheckpointIdentifier("checkout")
+            .withCheckpointIdentifier("checkout", traceID: "trace")
         let postData = PostReceiptDataOperation.PostData(
             transactionData: .init(presentedOfferingContext: context, unsyncedAttributes: nil, storeCountry: nil),
             postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
@@ -67,9 +67,10 @@ class PostReceiptDataOperationFactoryTests: TestCase {
         let body = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
 
         expect(body["presented_checkpoint_identifier"] as? String) == "checkout"
+        expect(body["presented_trace_id"] as? String) == "trace"
     }
 
-    func testOmitsPresentedCheckpointIdentifierWhenAbsent() throws {
+    func testOmitsPresentedCheckpointIdentifierAndTraceIDWhenAbsent() throws {
         let postData = PostReceiptDataOperation.PostData(
             transactionData: .init(
                 presentedOfferingContext: .init(offeringIdentifier: "offering"),
@@ -92,13 +93,14 @@ class PostReceiptDataOperationFactoryTests: TestCase {
         let body = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
 
         expect(body.keys).toNot(contain("presented_checkpoint_identifier"))
+        expect(body.keys).toNot(contain("presented_trace_id"))
     }
 
-    func testCacheKeyDiffersForPresentedCheckpointIdentifier() {
+    func testCacheKeyDiffersForPresentedCheckpointIdentifierAndTraceID() {
         let config = self.createConfig()
-        let postData: (String) -> PostReceiptDataOperation.PostData = { checkpointIdentifier in
+        let postData: (String, String?) -> PostReceiptDataOperation.PostData = { checkpointIdentifier, traceID in
             let context = PresentedOfferingContext(offeringIdentifier: "offering")
-                .withCheckpointIdentifier(checkpointIdentifier)
+                .withCheckpointIdentifier(checkpointIdentifier, traceID: traceID)
             return PostReceiptDataOperation.PostData(
                 transactionData: .init(
                     presentedOfferingContext: context,
@@ -119,18 +121,25 @@ class PostReceiptDataOperationFactoryTests: TestCase {
         }
         let factoryA = PostReceiptDataOperation.createFactory(
             configuration: config,
-            postData: postData("checkout_a"),
+            postData: postData("checkout_a", nil),
             customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>(),
             offlineCustomerInfoCreator: nil
         )
         let factoryC = PostReceiptDataOperation.createFactory(
             configuration: config,
-            postData: postData("checkout_c"),
+            postData: postData("checkout_c", nil),
+            customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>(),
+            offlineCustomerInfoCreator: nil
+        )
+        let factoryTraced = PostReceiptDataOperation.createFactory(
+            configuration: config,
+            postData: postData("checkout_a", "trace"),
             customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>(),
             offlineCustomerInfoCreator: nil
         )
 
         expect(factoryA.cacheKey) != factoryC.cacheKey
+        expect(factoryA.cacheKey) != factoryTraced.cacheKey
     }
 
     func testCacheKeyStabilityWhenOnlyAttributeTimestampChanges() {

@@ -736,6 +736,32 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         })
     }
 
+    func testTerminalOfferingWorkflowAttributesPackagesToTheHitTraceID() async throws {
+        self.stubOfferingWorkflow(offeringID: self.offeringID)
+
+        let resolved = try await self.resolveCheckpoint()
+        let offering = try XCTUnwrap(Self.resolvedOffering(resolved.resolution))
+        let hit = CheckpointEvent.Data(identifier: self.checkpointIdentifier, date: Date(), resolved: resolved)
+
+        let package = try XCTUnwrap(offering.availablePackages.first)
+        XCTAssertEqual(package.presentedOfferingContext.traceID, hit.traceID)
+    }
+
+    func testTerminalOfferingWorkflowWithoutPackagesReportsTheResolutionTraceID() async throws {
+        self.offerings = Self.offerings([
+            Offering(identifier: self.offeringID, serverDescription: "Test offering", availablePackages: [],
+                     webCheckoutUrl: nil)
+        ])
+        self.stubOfferingWorkflow(offeringID: self.offeringID)
+
+        let resolved = try await self.resolveCheckpoint()
+
+        guard case let .matchedOffering(_, traceID) = resolved.resolution else {
+            return XCTFail("Expected a matched offering, got \(resolved.resolution)")
+        }
+        XCTAssertEqual(resolved.traceID, traceID)
+    }
+
     func testTerminalOfferingWorkflowReadsItsOfferingFromTheStep() async throws {
         let secondaryOffering = Self.offering(id: "secondary")
         self.offerings = Self.offerings([self.offering, secondaryOffering])
@@ -956,7 +982,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     }
 
     private static func resolvedOffering(_ resolution: CheckpointResolution) -> Offering? {
-        guard case let .matchedOffering(offering) = resolution else { return nil }
+        guard case let .matchedOffering(offering, _) = resolution else { return nil }
         return offering
     }
 
@@ -984,10 +1010,17 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     }
 
     private static func offering(id: String) -> Offering {
+        let package = Package(
+            identifier: "$rc_monthly",
+            packageType: .monthly,
+            storeProduct: StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: "monthly")),
+            offeringIdentifier: id,
+            webCheckoutUrl: nil
+        )
         return Offering(
             identifier: id,
             serverDescription: "Test offering",
-            availablePackages: [],
+            availablePackages: [package],
             webCheckoutUrl: nil
         )
     }

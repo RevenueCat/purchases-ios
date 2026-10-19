@@ -142,6 +142,7 @@ private struct PurchasedTransactionDataEncodedWrapper: Codable {
     private let offeringIdentifier: String?
     private let placementIdentifier: String?
     private let checkpointIdentifier: String?
+    private let traceId: String?
     private let targetingContextRevision: Int?
     private let targetingContextRuleId: String?
 
@@ -154,6 +155,7 @@ private struct PurchasedTransactionDataEncodedWrapper: Codable {
         self.offeringIdentifier = purchasedTransactionData.presentedOfferingContext?.offeringIdentifier
         self.placementIdentifier = purchasedTransactionData.presentedOfferingContext?.placementIdentifier
         self.checkpointIdentifier = purchasedTransactionData.presentedOfferingContext?.checkpointIdentifier
+        self.traceId = purchasedTransactionData.presentedOfferingContext?.traceID
         self.targetingContextRevision = purchasedTransactionData.presentedOfferingContext?.targetingContext?.revision
         self.targetingContextRuleId = purchasedTransactionData.presentedOfferingContext?.targetingContext?.ruleId
     }
@@ -186,7 +188,7 @@ private struct PurchasedTransactionDataEncodedWrapper: Codable {
             offeringIdentifier: offeringIdentifier,
             placementIdentifier: self.placementIdentifier,
             targetingContext: targetingContext
-        ).withCheckpointIdentifier(self.checkpointIdentifier)
+        ).withCheckpointIdentifier(self.checkpointIdentifier, traceID: self.traceId)
     }
 }
 

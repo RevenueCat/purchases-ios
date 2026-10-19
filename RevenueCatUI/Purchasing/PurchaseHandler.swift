@@ -587,7 +587,8 @@ extension PurchaseHandler {
                 allOfferings: cachedOfferings,
                 presentedOfferingContext: offering.presentedOfferingContext,
                 developerProvidedOffering: content.passedOffering,
-                workflowBlobRef: fetchResult.workflowBlobRef
+                workflowBlobRef: fetchResult.workflowBlobRef,
+                traceId: offering.presentedOfferingContext?.traceID
               ) else {
             return nil
         }
@@ -816,7 +817,8 @@ extension PurchaseHandler {
                 allOfferings: allOfferings,
                 presentedOfferingContext: presentedOfferingContext,
                 developerProvidedOffering: developerProvidedOffering,
-                workflowBlobRef: fetchResult.workflowBlobRef
+                workflowBlobRef: fetchResult.workflowBlobRef,
+                traceId: presentedOfferingContext?.traceID
             )
         } catch WorkflowError.uiConfigUnavailable(let workflowId) {
             throw PaywallError.workflowUiConfigUnavailable(workflowId: workflowId)

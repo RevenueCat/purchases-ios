@@ -14,14 +14,16 @@
 
 import Foundation
 
+// swiftlint:disable file_length
+
 /// The result of resolving a checkpoint against RevenueCat configuration.
 @_spi(Internal) public enum CheckpointResolution {
 
     /// A workflow was selected for the checkpoint.
     case matchedWorkflow(ResolvedCheckpointWorkflow)
     /// An offering was selected for the checkpoint, with no RevenueCat-managed UI to present. The app
-    /// decides whether and how to use it.
-    case matchedOffering(Offering)
+    /// decides whether and how to use it. `traceID` identifies the hit, and the offering's packages carry it too.
+    case matchedOffering(Offering, traceID: String)
     /// No workflow should run for the checkpoint.
     case noAction(CheckpointResolutionReason)
 
@@ -45,15 +47,18 @@ struct ResolvedCheckpoint {
 
     let resolution: CheckpointResolution
     let checkpointRuleID: String?
-    /// The matched workflow's trace id, so the hit and the workflow run join on it. Fresh otherwise.
+    /// The matched workflow's or offering's trace id, so the hit and its purchases join on it. Fresh otherwise.
     let traceID: String
 
     init(_ resolution: CheckpointResolution, checkpointRuleID: String? = nil) {
         self.resolution = resolution
         self.checkpointRuleID = checkpointRuleID
-        if case let .matchedWorkflow(workflow) = resolution {
+        switch resolution {
+        case let .matchedWorkflow(workflow):
             self.traceID = workflow.traceId
-        } else {
+        case let .matchedOffering(_, traceID):
+            self.traceID = traceID
+        case .noAction:
             self.traceID = UUID().uuidString
         }
     }
@@ -331,7 +336,18 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             return .noAction(.configurationUnavailable)
         }
 
-        return .matchedOffering(match.offering.withPresentedCheckpointIdentifier(checkpointIdentifier))
+        return Self.makeMatchedOffering(match.offering, checkpointIdentifier: checkpointIdentifier)
+    }
+
+    private static func makeMatchedOffering(
+        _ offering: Offering,
+        checkpointIdentifier: String
+    ) -> CheckpointResolution {
+        let traceID = UUID().uuidString
+        return .matchedOffering(
+            offering.withPresentedCheckpointIdentifier(checkpointIdentifier, traceID: traceID),
+            traceID: traceID
+        )
     }
 
     private func resolveWorkflow(workflowData: WorkflowDataResult) async -> CheckpointResolution {

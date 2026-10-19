@@ -57,6 +57,7 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         /// - `ProductRequestData.cacheKey`
         /// - `presentedOfferingIdentifier`
         /// - `presentedCheckpointIdentifier`
+        /// - `presentedTraceID`
         /// - `observerMode`
         /// - `subscriberAttributesByKey`
 		/// - `sdkOriginated`
@@ -66,7 +67,7 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
         \(configuration.appUserID)-\(postData.isRestore)-\(postData.receipt.hash)
         -\(postData.productData?.cacheKey ?? "")
         -\(postData.presentedOfferingIdentifier ?? "")-\(postData.presentedCheckpointIdentifier ?? "")
-        -\(postData.observerMode)
+        -\(postData.presentedTraceID ?? "")-\(postData.observerMode)
         -\(postData.subscriberAttributesByKey?.individualizedCacheKeyPart ?? "")
         -\(postData.sdkOriginated)
         -\(postData.containsAttributionData ? (postData.transactionId ?? "") : "")
@@ -154,6 +155,7 @@ extension PostReceiptDataOperation {
         let presentedOfferingIdentifier: String?
         let presentedPlacementIdentifier: String?
         let presentedCheckpointIdentifier: String?
+        let presentedTraceID: String?
         let appliedTargetingRule: AppliedTargetingRule?
         let paywall: Paywall?
 
@@ -232,6 +234,7 @@ extension PostReceiptDataOperation.PostData {
             presentedOfferingIdentifier: data.presentedOfferingContext?.offeringIdentifier,
             presentedPlacementIdentifier: data.presentedOfferingContext?.placementIdentifier,
             presentedCheckpointIdentifier: data.presentedOfferingContext?.checkpointIdentifier,
+            presentedTraceID: data.presentedOfferingContext?.traceID,
             appliedTargetingRule: data.presentedOfferingContext?.targetingContext.flatMap {
                 .init(revision: $0.revision, ruleId: $0.ruleId)
             },
@@ -330,6 +333,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         case presentedOfferingIdentifier
         case presentedPlacementIdentifier
         case presentedCheckpointIdentifier
+        case presentedTraceID = "presented_trace_id"
         case appliedTargetingRule
         case paywall
         case presentedWorkflowId = "presented_workflow_id"
@@ -363,6 +367,7 @@ extension PostReceiptDataOperation.PostData: Encodable {
         try container.encodeIfPresent(self.presentedOfferingIdentifier, forKey: .presentedOfferingIdentifier)
         try container.encodeIfPresent(self.presentedPlacementIdentifier, forKey: .presentedPlacementIdentifier)
         try container.encodeIfPresent(self.presentedCheckpointIdentifier, forKey: .presentedCheckpointIdentifier)
+        try container.encodeIfPresent(self.presentedTraceID, forKey: .presentedTraceID)
         try container.encodeIfPresent(self.appliedTargetingRule, forKey: .appliedTargetingRule)
         try container.encodeIfPresent(self.paywall, forKey: .paywall)
         try container.encodeIfPresent(self.paywall?.workflowId, forKey: .presentedWorkflowId)

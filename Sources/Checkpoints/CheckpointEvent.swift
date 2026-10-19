@@ -138,7 +138,7 @@ extension CheckpointEvent.Data {
                 traceID: resolved.traceID
             )
 
-        case let .matchedOffering(offering):
+        case let .matchedOffering(offering, _):
             self.init(
                 identifier: identifier,
                 date: date,

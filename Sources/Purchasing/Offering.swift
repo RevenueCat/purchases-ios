@@ -331,7 +331,7 @@ public extension Offering {
     }
 
     /// Copies the offering and attributes its packages to the checkpoint that presented it.
-    func withPresentedCheckpointIdentifier(_ checkpointIdentifier: String) -> Self {
+    func withPresentedCheckpointIdentifier(_ checkpointIdentifier: String, traceID: String?) -> Self {
         return Self(
             identifier: identifier,
             serverDescription: serverDescription,
@@ -341,7 +341,7 @@ public extension Offering {
             hasPaywallComponents: hasPaywallComponents,
             availablePackages: availablePackages.map {
                 $0.withPresentedOfferingContext(
-                    $0.presentedOfferingContext.withCheckpointIdentifier(checkpointIdentifier)
+                    $0.presentedOfferingContext.withCheckpointIdentifier(checkpointIdentifier, traceID: traceID)
                 )
             },
             webCheckoutUrl: webCheckoutUrl
