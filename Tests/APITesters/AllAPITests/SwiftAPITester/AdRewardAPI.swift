@@ -60,5 +60,5 @@ func checkVirtualCurrencyRewardConfigurationAPI() {
 
 func checkEntitlementRewardConfigurationAPI() {
     let _: String = entitlementRewardConfiguration.identifier
-    let _: TimeInterval = entitlementRewardConfiguration.durationInSeconds
+    let _: TimeInterval = entitlementRewardConfiguration.duration
 }

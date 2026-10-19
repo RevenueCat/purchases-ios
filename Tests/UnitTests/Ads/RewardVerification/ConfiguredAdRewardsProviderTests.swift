@@ -40,7 +40,7 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         expect(rewards.reward?.virtualCurrency?.code) == "coins"
         expect(rewards.reward?.virtualCurrency?.amount) == 10
         expect(rewards.moreRewards[0].entitlement?.identifier) == "premium"
-        expect(rewards.moreRewards[0].entitlement?.durationInSeconds) == 30 * 60
+        expect(rewards.moreRewards[0].entitlement?.duration) == 30 * 60
         expect(rewards.moreRewards[1].virtualCurrency?.code) == "gems"
     }
 
@@ -119,7 +119,7 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         let maybeReward = self.provider.cachedRewards(forAdUnitId: "ad-unit")
         let reward = try XCTUnwrap(maybeReward)
 
-        expect(reward.reward?.entitlement?.durationInSeconds) == 90
+        expect(reward.reward?.entitlement?.duration) == 90
     }
 
     func testUnsupportedIndividualRewardsArePreserved() async throws {

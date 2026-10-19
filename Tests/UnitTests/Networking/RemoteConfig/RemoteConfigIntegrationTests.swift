@@ -290,7 +290,7 @@ final class RemoteConfigIntegrationTests: TestCase {
         expect(rewards.reward?.virtualCurrency?.code) == "coins"
         expect(rewards.reward?.virtualCurrency?.amount) == 10
         expect(rewards.moreRewards.first?.entitlement?.identifier) == "premium"
-        expect(rewards.moreRewards.first?.entitlement?.durationInSeconds) == 30 * 60
+        expect(rewards.moreRewards.first?.entitlement?.duration) == 30 * 60
         expect(differentlyCasedRewards) == .noConfiguredReward
         expect(requestedURLs).to(beEmpty())
     }

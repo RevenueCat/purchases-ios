@@ -209,7 +209,7 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
                   case let .int(durationInSeconds)? = payload["duration_in_seconds"],
                   let reward = EntitlementRewardConfiguration(
                     identifier: identifier,
-                    durationInSeconds: TimeInterval(durationInSeconds)
+                    duration: TimeInterval(durationInSeconds)
                   ) else {
                 return .unsupportedReward
             }
