@@ -14,6 +14,8 @@
 
 import Foundation
 
+// swiftlint:disable file_length
+
 /// The result of resolving a checkpoint against RevenueCat configuration.
 @_spi(Internal) public enum CheckpointResolution {
 
@@ -334,9 +336,16 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             return .noAction(.configurationUnavailable)
         }
 
+        return Self.makeMatchedOffering(match.offering, checkpointIdentifier: checkpointIdentifier)
+    }
+
+    private static func makeMatchedOffering(
+        _ offering: Offering,
+        checkpointIdentifier: String
+    ) -> CheckpointResolution {
         let traceID = UUID().uuidString
         return .matchedOffering(
-            match.offering.withPresentedCheckpointIdentifier(checkpointIdentifier, traceID: traceID),
+            offering.withPresentedCheckpointIdentifier(checkpointIdentifier, traceID: traceID),
             traceID: traceID
         )
     }
