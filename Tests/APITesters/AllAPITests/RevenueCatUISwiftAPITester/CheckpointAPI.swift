@@ -50,7 +50,7 @@ func checkCheckpointAPI(_ purchases: Purchases) {
 
 private func checkCheckpointResultAPI(_ result: CheckpointResult) {
     let _: FlowResult? = result.flow
-    let _: CustomerInfo? = result.customerInfo
+    let _: CustomerInfo? = result.customer
     let _: ObtainedEntitlement? = result.obtainedEntitlement("pro")
     let _: Bool = result.didObtainEntitlement("pro")
     let _: ObtainedProduct? = result.obtainedProduct("monthly")
@@ -64,10 +64,6 @@ private func checkFlowResultAPI(_ result: FlowResult) {
     let _: Bool = result.didObtainEntitlement("pro")
     let _: ObtainedProduct? = result.obtainedProduct("monthly")
     let _: Bool = result.didObtainProduct("monthly")
-}
-
-private func checkFlowResultAPI(_ result: FlowResult) {
-    let _: Set<ObtainedEntitlement> = result.obtainedEntitlements
 }
 
 @MainActor

@@ -200,7 +200,7 @@ final class CheckpointsManager {
             )
             return .completed(CheckpointResult(
                 flow: FlowResult(obtainedEntitlements: []),
-                customerInfo: nil
+                customer: nil
             ))
         }
     }
@@ -229,7 +229,7 @@ final class CheckpointsManager {
         case .noAction(.configurationUnavailable):
             return .failed(CheckpointError.configurationUnavailable)
         case .noAction(.unknownCheckpoint), .noAction(.noMatch):
-            return .completed(CheckpointResult(flow: nil, customerInfo: nil))
+            return .completed(CheckpointResult(flow: nil, customer: nil))
         case .matchedWorkflow, .matchedOffering:
             break
         }
@@ -250,7 +250,7 @@ final class CheckpointsManager {
                         initialActiveEntitlementIdentifiers: initialActiveEntitlementIdentifiers,
                         availableProducts: execution.availableProducts
                     ),
-                    customerInfo: customerInfo
+                    customer: customerInfo
                 ))
             case let .synchronizationFailed(error):
                 return .synchronizationFailed(error)

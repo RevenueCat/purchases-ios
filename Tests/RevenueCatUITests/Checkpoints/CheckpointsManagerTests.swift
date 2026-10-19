@@ -430,7 +430,7 @@ final class CheckpointsManagerTests: TestCase {
             return XCTFail("Expected a completed callback")
         }
         XCTAssertNil(checkpointResult.flow)
-        XCTAssertNil(checkpointResult.customerInfo)
+        XCTAssertNil(checkpointResult.customer)
         XCTAssertNil(checkpointResult.obtainedEntitlement("pro"))
         XCTAssertFalse(checkpointResult.didObtainEntitlement("pro"))
         XCTAssertNil(checkpointResult.obtainedProduct("pro-product"))
@@ -786,7 +786,7 @@ final class CheckpointsManagerTests: TestCase {
         let obtainedEntitlement = try XCTUnwrap(flowResult.obtainedEntitlement("premium"))
         let obtainedProduct = try XCTUnwrap(flowResult.obtainedProduct("premium-product"))
 
-        XCTAssertEqual(checkpointResult.customerInfo, terminalCustomerInfo)
+        XCTAssertEqual(checkpointResult.customer, terminalCustomerInfo)
         XCTAssertEqual(flowResult.obtainedEntitlements, [obtainedEntitlement])
         XCTAssertEqual(obtainedEntitlement.entitlementInfo.identifier, "premium")
         XCTAssertEqual(flowResult.obtainedProducts, [obtainedProduct])
@@ -855,7 +855,7 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertNotNil(checkpointResult.flow)
         XCTAssertTrue(checkpointResult.flow?.obtainedEntitlements.isEmpty == true)
         XCTAssertTrue(checkpointResult.flow?.obtainedProducts.isEmpty == true)
-        XCTAssertNil(checkpointResult.customerInfo)
+        XCTAssertNil(checkpointResult.customer)
         XCTAssertTrue(checkpointCompleted)
     }
 

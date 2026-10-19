@@ -23,12 +23,12 @@ public struct CheckpointResult: @unchecked Sendable {
     /// Information about the presented flow, or `nil` when the checkpoint had nothing to present.
     public let flow: FlowResult?
 
-    /// Customer information returned by the flow, when available.
-    public let customerInfo: CustomerInfo?
+    /// The customer's information returned by the flow, when available.
+    public let customer: CustomerInfo?
 
-    init(flow: FlowResult?, customerInfo: CustomerInfo?) {
+    init(flow: FlowResult?, customer: CustomerInfo?) {
         self.flow = flow
-        self.customerInfo = customerInfo
+        self.customer = customer
     }
 
     /// Returns the entitlement with `identifier` that was obtained while the flow was presented.
