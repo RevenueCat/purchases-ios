@@ -22,8 +22,8 @@ struct ConfiguredAdRewards: Sendable, Equatable {
     let moreRewards: [AdRewardConfiguration]
 
     internal init(
-        reward: AdRewardConfiguration? = nil,
-        moreRewards: [AdRewardConfiguration] = []
+        reward: AdRewardConfiguration?,
+        moreRewards: [AdRewardConfiguration]
     ) {
         self.reward = reward
         self.moreRewards = moreRewards
