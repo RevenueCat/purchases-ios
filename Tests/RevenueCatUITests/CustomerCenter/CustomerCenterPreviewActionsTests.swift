@@ -48,6 +48,8 @@ final class CustomerCenterPreviewActionsTests: TestCase {
             actionWrapper: CustomerCenterActionWrapper(), shouldShowSeeAllPurchases: true,
             purchasesProvider: provider
         )
+        let window = host(UIHostingController(rootView: ActiveSubscriptionButtonsView(viewModel: model)))
+        defer { window.isHidden = true; window.rootViewController = nil }
         model.purchaseInformation = .subscription
         XCTAssertEqual(Set(provider.diagnostics.filter(\.visible).map(\.pathID)),
                        Set(model.relevantPathsForPurchase.map(\.id)))
@@ -224,19 +226,57 @@ final class CustomerCenterPreviewActionsTests: TestCase {
         return window
     }
 
-    func testDiagnosticReadsDoNotEmitNewUpdates() {
+    func testDiagnosticsAreNotPublishedBeforeViewAppears() {
         let provider = PreviewProvider()
         let model = BaseManageSubscriptionViewModel(
             screen: CustomerCenterConfigData.mock().screens[.management]!,
             actionWrapper: CustomerCenterActionWrapper(),
             purchasesProvider: provider
         )
-        let initialCount = provider.diagnosticCalls
+        XCTAssertEqual(provider.diagnosticCalls, 0)
         _ = model.relevantPathsForPurchase
         _ = model.relevantPathsForPurchase
-        XCTAssertEqual(provider.diagnosticCalls, initialCount)
         model.purchaseInformation = .subscription
-        XCTAssertEqual(provider.diagnosticCalls, initialCount + 1)
+        XCTAssertEqual(provider.diagnosticCalls, 0)
+    }
+
+    func testDiagnosticsFollowViewLifecycleAndPurchaseChanges() async throws {
+        let provider = PreviewProvider()
+        let model = makeModel(provider)
+        let appeared = expectation(description: "Buttons appeared")
+        let disappeared = expectation(description: "Buttons disappeared")
+        let view = ActiveSubscriptionButtonsView(viewModel: model)
+            .onAppear { appeared.fulfill() }
+            .onDisappear { disappeared.fulfill() }
+        let controller = UIHostingController(rootView: AnyView(view))
+        let window = host(controller)
+        defer { window.isHidden = true; window.rootViewController = nil }
+        await fulfillment(of: [appeared], timeout: 2)
+
+        XCTAssertEqual(provider.diagnosticCalls, 1)
+        _ = model.relevantPathsForPurchase
+        XCTAssertEqual(provider.diagnosticCalls, 1)
+        model.purchaseInformation = .mock(isSubscription: true, productType: .autoRenewableSubscription,
+                                          isCancelled: true, renewalDate: nil)
+        XCTAssertEqual(provider.diagnosticCalls, 2)
+        let rendered = try XCTUnwrap(model.relevantPathsForPurchase.first { $0.type == .cancel })
+        XCTAssertEqual(provider.diagnostics.first { $0.pathID == rendered.id }?.title, "Resubscribe")
+
+        controller.rootView = AnyView(EmptyView())
+        controller.view.layoutIfNeeded()
+        await fulfillment(of: [disappeared], timeout: 2)
+        model.purchaseInformation = nil
+        XCTAssertEqual(provider.diagnosticCalls, 2)
+
+        let reappeared = expectation(description: "Buttons reappeared")
+        controller.rootView = AnyView(ActiveSubscriptionButtonsView(viewModel: model)
+            .onAppear { reappeared.fulfill() })
+        controller.view.layoutIfNeeded()
+        await fulfillment(of: [reappeared], timeout: 2)
+        XCTAssertEqual(provider.diagnosticCalls, 3)
+        XCTAssertTrue(provider.diagnostics.allSatisfy { $0.productID == nil })
+        XCTAssertEqual(Set(provider.diagnostics.filter(\.visible).map(\.pathID)),
+                       Set(model.relevantPathsForPurchase.map(\.id)))
     }
 
     func testDiagnosticsUseTheRenderedResubscribeTitle() throws {
@@ -249,6 +289,8 @@ final class CustomerCenterPreviewActionsTests: TestCase {
             purchasesProvider: provider
         )
         let rendered = try XCTUnwrap(model.relevantPathsForPurchase.first { $0.type == .cancel })
+        let window = host(UIHostingController(rootView: ActiveSubscriptionButtonsView(viewModel: model)))
+        defer { window.isHidden = true; window.rootViewController = nil }
         let diagnostic = try XCTUnwrap(provider.diagnostics.first { $0.pathID == rendered.id })
         XCTAssertEqual(rendered.title, "Resubscribe")
         XCTAssertEqual(diagnostic.title, rendered.title)
@@ -264,6 +306,8 @@ final class CustomerCenterPreviewActionsTests: TestCase {
             purchasesProvider: provider
         )
         let visible = Set(model.relevantPathsForPurchase.map(\.id))
+        let window = host(UIHostingController(rootView: ActiveSubscriptionButtonsView(viewModel: model)))
+        defer { window.isHidden = true; window.rootViewController = nil }
         XCTAssertEqual(Set(provider.diagnostics.filter(\.visible).map(\.pathID)), visible)
         XCTAssertTrue(provider.diagnostics.filter { !visible.contains($0.pathID) }.allSatisfy { !$0.reason.isEmpty })
     }

@@ -39,8 +39,18 @@ class BaseManageSubscriptionViewModel: ObservableObject {
         )
     }
 
+    func startPublishingPreviewDiagnostics() {
+        self.isPublishingPreviewDiagnostics = true
+        self.publishPreviewDiagnostics()
+    }
+
+    func stopPublishingPreviewDiagnostics() {
+        self.isPublishingPreviewDiagnostics = false
+    }
+
     private func publishPreviewDiagnostics() {
-        guard let preview = purchasesProvider as? CustomerCenterPreviewProvider else { return }
+        guard self.isPublishingPreviewDiagnostics,
+              let preview = purchasesProvider as? CustomerCenterPreviewProvider else { return }
         preview.onPreviewDiagnostics(paths.map { path in
             let reason = path.hiddenReason(for: helpPathPurchase, allowMissingPurchase: allowMissingPurchase)
             let title = helpPathPurchase.map {
@@ -97,6 +107,7 @@ class BaseManageSubscriptionViewModel: ObservableObject {
     private(set) var refundRequestStatus: RefundRequestStatus?
 
     private var loadingActiveProductId: String?
+    private var isPublishingPreviewDiagnostics = false
     private let loadPromotionalOfferUseCase: LoadPromotionalOfferUseCaseType
     let paths: [CustomerCenterConfigData.HelpPath]
     private(set) var purchasesProvider: CustomerCenterPurchasesType
@@ -121,7 +132,6 @@ class BaseManageSubscriptionViewModel: ObservableObject {
             self.actionWrapper = actionWrapper
             self.loadPromotionalOfferUseCase = loadPromotionalOfferUseCase
             ?? LoadPromotionalOfferUseCase(purchasesProvider: purchasesProvider)
-            publishPreviewDiagnostics()
         }
 
 #if os(iOS) || targetEnvironment(macCatalyst)
