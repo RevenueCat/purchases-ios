@@ -36,6 +36,16 @@ extension ValuePrintable where Self: NSNumber {
 // keep in mind that structs are value types.
 // More info here: https://developer.apple.com/documentation/swift/choosing_between_structures_and_classes
 
+// require explicit arguments for fields in internal production data-model initializers,
+// including optional fields and collections. Defaults such as nil or [] can hide missing
+// data and let callers silently omit newly added fields. Keep defaults used only for test
+// convenience in test factories or test-only extensions under Tests/.
+// Default arguments are allowed in consumer-facing public APIs. Treat @_spi(Internal) public
+// APIs as internal for this rule, rather than as consumer-facing public APIs.
+// Defaults that represent deliberate dependency configuration may remain.
+// Preserve existing public API defaults to avoid breaking callers.
+// Review new or modified model initializers for this even when tests pass.
+
 // documentation is required for each public entity.
 // Use DocC syntax for documentation: https://www.swift.org/documentation/docc/
 /// The MyStruct struct is responsible for ...
