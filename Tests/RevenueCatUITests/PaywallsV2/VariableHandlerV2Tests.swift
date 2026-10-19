@@ -2431,6 +2431,30 @@ class CustomVariableValueTests: TestCase {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+class WhiskerTests: TestCase {
+
+    func testVariableNamesUseTheSameExpressionsAsRendering() {
+        let template = "{{ first }} and {{ second | uppercase }} then {{ third|lowercase|ignored }}"
+
+        expect(Whisker.variableNames(in: template)).to(equal(["first", "second", "third"]))
+
+        let rendered = Whisker(template: template) { variable, function in
+            return "\(variable):\(function ?? "none")"
+        }.render()
+
+        expect(rendered).to(equal("first:none and second:uppercase then third:lowercase"))
+    }
+
+    func testEmptyAndIncompleteExpressionsAreIgnored() {
+        let template = "Empty: {{ }} incomplete: {{ product.offer_price"
+
+        expect(Whisker.variableNames(in: template)).to(beEmpty())
+        expect(Whisker(template: template, resolve: { _, _ in "resolved" }).render()).to(equal(template))
+    }
+
+}
+
 /// Product whose displayed price uses "$" but whose formatter locale (ro_RO) renders USD as "2,00 USD".
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private func mismatchedFormatterLocalePackage(price: Decimal, localizedPriceString: String) -> Package {

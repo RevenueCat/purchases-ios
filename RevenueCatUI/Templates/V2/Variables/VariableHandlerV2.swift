@@ -1437,35 +1437,58 @@ extension FunctionsV2 {
 
 struct Whisker {
 
+    private struct Expression {
+        let range: NSRange
+        let variable: String
+        let function: String?
+    }
+
     // swiftlint:disable:next force_try
     private static let regex = try! NSRegularExpression(pattern: "\\{\\{\\s*(.*?)\\s*\\}\\}")
 
     let template: String
     let resolve: (String, String?) -> String?
 
+    static func variableNames(in template: String) -> [String] {
+        return self.expressions(in: template).map(\.variable)
+    }
+
     func render() -> String {
         var result = template
-        let matches = Self.regex.matches(in: template, range: NSRange(template.startIndex..., in: template))
-
-        for match in matches.reversed() {
-            guard let range = Range(match.range(at: 1), in: template) else { continue }
-            let expression = String(template[range])
-
-            // Split the expression into variable and filter parts
-            let parts = expression.split(separator: "|").map { $0.trimmingCharacters(in: .whitespaces) }
-            let variablePart = parts[0]
-            let functionPart = parts.count > 1 ? parts[1] : nil
-
-            // Use the single callback to resolve the variable and apply the function
-            if let resolvedValue = resolve(variablePart, functionPart) {
+        for expression in Self.expressions(in: template).reversed() {
+            if let resolvedValue = resolve(expression.variable, expression.function) {
                 // Replace the full match range in the result
-                if let fullRange = Range(match.range, in: result) {
+                if let fullRange = Range(expression.range, in: result) {
                     result.replaceSubrange(fullRange, with: "\(resolvedValue)")
                 }
             }
         }
 
         return result
+    }
+
+    private static func expressions(in template: String) -> [Expression] {
+        return self.regex.matches(
+            in: template,
+            range: NSRange(template.startIndex..., in: template)
+        ).compactMap { match in
+            guard let range = Range(match.range(at: 1), in: template) else {
+                return nil
+            }
+
+            let parts = template[range].split(separator: "|").map {
+                $0.trimmingCharacters(in: .whitespaces)
+            }
+            guard let variable = parts.first, !variable.isEmpty else {
+                return nil
+            }
+
+            return Expression(
+                range: match.range,
+                variable: variable,
+                function: parts.count > 1 ? parts[1] : nil
+            )
+        }
     }
 
 }

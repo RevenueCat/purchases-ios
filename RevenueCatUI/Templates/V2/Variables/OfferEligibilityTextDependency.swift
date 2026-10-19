@@ -175,7 +175,7 @@ extension VariableHandlerV2 {
         _ text: String,
         variableCompatibilityMap: [String: String]
     ) -> Bool {
-        return OfferEligibilityPlaceholder.variableNames(in: text).contains { variableName in
+        return Whisker.variableNames(in: text).contains { variableName in
             self.resolvedVariable(
                 variableName,
                 variableCompatibilityMap: variableCompatibilityMap
@@ -197,36 +197,6 @@ extension VariableHandlerV2 {
         }
 
         return VariablesV2(rawValue: mappedName)
-    }
-
-}
-
-/// Placeholder syntax shared with `Whisker`: `{{ variable | function }}`.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private enum OfferEligibilityPlaceholder {
-
-    // swiftlint:disable:next force_try
-    private static let regex = try! NSRegularExpression(pattern: "\\{\\{\\s*(.*?)\\s*\\}\\}")
-
-    static func variableNames(in template: String) -> [String] {
-        return self.regex.matches(
-            in: template,
-            range: NSRange(template.startIndex..., in: template)
-        ).compactMap { match in
-            guard let range = Range(match.range(at: 1), in: template) else {
-                return nil
-            }
-
-            let expression = String(template[range])
-            let parts = expression.split(separator: "|").map {
-                $0.trimmingCharacters(in: .whitespaces)
-            }
-            guard let variableName = parts.first, !variableName.isEmpty else {
-                return nil
-            }
-
-            return variableName
-        }
     }
 
 }
