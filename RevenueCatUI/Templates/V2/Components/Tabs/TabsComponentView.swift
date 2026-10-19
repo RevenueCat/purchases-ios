@@ -259,7 +259,8 @@ struct LoadedTabsComponentView: View {
     private func reconcileSelection(_ context: PackageContext, tabViewModel: TabViewModel) {
         guard let resolved = tabViewModel.reconciledSelection(
             current: context.package,
-            in: self.packageSelectionContext
+            in: self.packageSelectionContext,
+            offerEligibilityLoading: self.offerEligibilityLoading
         ) else {
             return
         }

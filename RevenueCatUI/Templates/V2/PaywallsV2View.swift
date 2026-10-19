@@ -716,7 +716,8 @@ struct LoadedPaywallsV2View: View {
 
         guard let resolved = packageValidator.reconciledSelection(
             current: self.selectedPackageContext.package,
-            in: self.packageSelectionContext
+            in: self.packageSelectionContext,
+            offerEligibilityLoading: self.offerEligibilityLoading
         ) else {
             return
         }

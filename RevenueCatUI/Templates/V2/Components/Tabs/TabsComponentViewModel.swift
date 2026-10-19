@@ -185,8 +185,16 @@ class TabViewModel {
         return self.packageValidator.defaultSelectedPackage(in: context)
     }
 
-    func reconciledSelection(current: Package?, in context: PackageSelectionContext) -> Package? {
-        return self.packageValidator.reconciledSelection(current: current, in: context)
+    func reconciledSelection(
+        current: Package?,
+        in context: PackageSelectionContext,
+        offerEligibilityLoading: OfferEligibilityLoading = []
+    ) -> Package? {
+        return self.packageValidator.reconciledSelection(
+            current: current,
+            in: context,
+            offerEligibilityLoading: offerEligibilityLoading
+        )
     }
 
 }

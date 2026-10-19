@@ -141,13 +141,21 @@ class PackageValidator {
 
     /// The selection that should be in effect, or `nil` when nothing needs to change: only moves a
     /// selection nothing is rendering, and only to a package declared outside the tabs.
-    func reconciledSelection(current: Package?, in context: PackageSelectionContext) -> Package? {
+    func reconciledSelection(
+        current: Package?,
+        in context: PackageSelectionContext,
+        offerEligibilityLoading: OfferEligibilityLoading = []
+    ) -> Package? {
         guard self.hasPageScopedPackages else {
             // Every package lives in a tab, and each tab reconciles its own selection.
             return nil
         }
 
-        if let current, self.isRendering(current, in: context) {
+        if let current, self.couldBeRendering(
+            current,
+            in: context,
+            offerEligibilityLoading: offerEligibilityLoading
+        ) {
             return nil
         }
 
@@ -158,9 +166,49 @@ class PackageValidator {
     ///
     /// Blind to which tab is showing: counting a tab copy protects the showing tab's selection, at the
     /// cost of the limitation pinned by `testDuplicateInAnotherTabMasksAHiddenPageDefault`.
-    private func isRendering(_ package: Package, in context: PackageSelectionContext) -> Bool {
+    private func couldBeRendering(
+        _ package: Package,
+        in context: PackageSelectionContext,
+        offerEligibilityLoading: OfferEligibilityLoading
+    ) -> Bool {
         return self.scopedPackageInfos.contains { scoped in
-            scoped.info.package.identifier == package.identifier && self.isVisible(scoped.info, in: context)
+            scoped.info.package.identifier == package.identifier &&
+                self.couldBeVisible(
+                    scoped.info,
+                    in: context,
+                    offerEligibilityLoading: offerEligibilityLoading
+                )
+        }
+    }
+
+    private func couldBeVisible(
+        _ info: PackageInfo,
+        in context: PackageSelectionContext,
+        offerEligibilityLoading: OfferEligibilityLoading
+    ) -> Bool {
+        guard !offerEligibilityLoading.isEmpty, info.visibilityResolver.dependsOnOfferEligibility else {
+            return self.isVisible(info, in: context)
+        }
+
+        let introValues = offerEligibilityLoading.contains(.intro)
+            ? [false, true]
+            : [context.isEligibleForIntroOffer(info.package)]
+        let promoValues = offerEligibilityLoading.contains(.promo)
+            ? [false, true]
+            : [context.isEligibleForPromoOffer(info.package)]
+
+        return introValues.contains { intro in
+            promoValues.contains { promo in
+                info.visibilityResolver.visible(
+                    state: .default,
+                    condition: context.condition,
+                    isEligibleForIntroOffer: intro,
+                    isEligibleForPromoOffer: promo,
+                    selectedPackageId: nil,
+                    customVariables: context.customVariables,
+                    windowSize: context.windowSize
+                )
+            }
         }
     }
 
