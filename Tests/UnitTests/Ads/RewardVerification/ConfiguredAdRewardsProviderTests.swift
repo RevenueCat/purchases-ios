@@ -60,6 +60,37 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         await self.provider.warm()
 
         expect(self.provider.cachedRewards(forAdUnitId: "ad-unit")?.reward?.virtualCurrency?.amount) == 10
+        expect(self.manager.invokedTopicCount) == 0
+        expect(self.manager.invokedCommittedTopicAfterInFlightRefreshCount) == 0
+        expect(self.manager.invokedCachedBlobDataParameters.count) == 1
+    }
+
+    func testObserverRegistrationWarmsFromCacheWithoutFetching() async throws {
+        try self.stub(content: [
+            "reward": ["type": "virtual_currency", "code": "coins", "amount": 10]
+        ])
+
+        self.provider.remoteConfigEventReceived(.observerRegistered(generation: self.manager.configGeneration))
+
+        await expect(
+            self.provider.cachedRewards(forAdUnitId: "ad-unit")?.reward?.virtualCurrency?.amount
+        ).toEventually(equal(10))
+        expect(self.manager.invokedTopicCount) == 0
+        expect(self.manager.invokedCommittedTopicAfterInFlightRefreshCount) == 0
+    }
+
+    func testCommitWaitsForInFlightRefreshWithoutStartingAnotherRefresh() async throws {
+        try self.stub(content: [
+            "reward": ["type": "virtual_currency", "code": "coins", "amount": 10]
+        ])
+
+        self.provider.remoteConfigEventReceived(.committed(generation: self.manager.configGeneration))
+
+        await expect(
+            self.provider.cachedRewards(forAdUnitId: "ad-unit")?.reward?.virtualCurrency?.amount
+        ).toEventually(equal(10))
+        expect(self.manager.invokedCommittedTopicAfterInFlightRefreshCount) == 1
+        expect(self.manager.invokedTopicCount) == 0
     }
 
     func testAsyncRewardsReturnsCachedValueWithoutWaitingForRefresh() async throws {
@@ -74,7 +105,7 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         expect(self.manager.invokedCommittedTopicAfterInFlightRefreshCount) == 0
     }
 
-    func testAsyncRewardsWaitsForInFlightRefreshWithoutStartingAnotherRefresh() async throws {
+    func testAsyncRewardsFetchesConfigurationWhenCacheIsEmpty() async throws {
         try self.stub(content: [
             "reward": ["type": "virtual_currency", "code": "coins", "amount": 10]
         ])
@@ -82,10 +113,27 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         let rewards = await self.provider.rewards(forAdUnitId: "ad-unit")
 
         expect(rewards?.reward?.virtualCurrency?.amount) == 10
-        expect(self.manager.invokedCommittedTopicAfterInFlightRefreshCount) == 1
-        expect(self.manager.invokedTopicCount) == 0
+        expect(self.manager.invokedCommittedTopicAfterInFlightRefreshCount) == 0
+        expect(self.manager.invokedTopicCount) == 2
         expect(self.manager.invokedEnsureBlobsDownloadedRefs) == [[String(repeating: "A", count: 32)]]
-        expect(self.manager.invokedCachedBlobDataParameters.count) == 1
+        expect(self.manager.invokedBlobDataParameters.count) == 1
+    }
+
+    func testAsyncRewardsWaitsForFetchWhenInitialConfigurationHasNotStarted() async throws {
+        self.manager.stubbedHasCommittedConfig = false
+        self.manager.shouldStoreTopicCompletion = true
+
+        async let rewards = self.provider.rewards(forAdUnitId: "ad-unit")
+        await expect(self.manager.invokedTopicCount).toEventually(equal(1))
+
+        try self.stub(content: [
+            "reward": ["type": "virtual_currency", "code": "coins", "amount": 10]
+        ])
+        self.manager.stubbedHasCommittedConfig = true
+        let topic = try XCTUnwrap(self.manager.stubbedTopics[.adRewards])
+        self.manager.completeStoredTopic(with: topic)
+
+        expect(await rewards?.reward?.virtualCurrency?.amount) == 10
     }
 
     func testAsyncRewardsReturnsNilWhenConfigurationRemainsUnavailable() async {
@@ -94,16 +142,17 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         let rewards = await self.provider.rewards(forAdUnitId: "ad-unit")
 
         expect(rewards).to(beNil())
-        expect(self.manager.invokedCommittedTopicAfterInFlightRefreshCount) == 1
-        expect(self.manager.invokedTopicCount) == 0
+        expect(self.manager.invokedCommittedTopicAfterInFlightRefreshCount) == 0
+        expect(self.manager.invokedTopicCount) == 1
         expect(self.manager.invokedEnsureBlobsDownloadedRefs).to(beEmpty())
     }
 
-    func testAsyncRewardsWithEmptyAdUnitIdentifierDoesNotWaitForRefresh() async {
+    func testAsyncRewardsWithEmptyAdUnitIdentifierDoesNotFetchConfiguration() async {
         let rewards = await self.provider.rewards(forAdUnitId: "")
 
         expect(rewards).to(beNil())
         expect(self.manager.invokedCommittedTopicAfterInFlightRefreshCount) == 0
+        expect(self.manager.invokedTopicCount) == 0
     }
 
     func testReturnsEntitlementDurationInSeconds() async throws {
@@ -175,8 +224,8 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         let rewards = await self.provider.rewards(forAdUnitId: "AD-UNIT")
 
         expect(rewards) == .noConfiguredReward
-        expect(self.manager.invokedBlobDataParameters.last?.topic) == .adRewards
-        expect(self.manager.invokedBlobDataParameters.last?.itemKey) == "default"
+        expect(self.manager.invokedCachedBlobDataParameters.last?.topic) == .adRewards
+        expect(self.manager.invokedCachedBlobDataParameters.last?.itemKey) == "default"
     }
 
     func testEmptyAdUnitIdentifierReturnsNilWithoutReadingConfig() async {

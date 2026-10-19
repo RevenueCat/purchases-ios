@@ -22,6 +22,7 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
     private typealias RewardsByAdUnitID = [String: AdUnitRewards]
 
     private enum ReadMode {
+        case cachedOnly
         case fetchIfNeeded
         case waitForInFlight
     }
@@ -50,9 +51,13 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
 
     func remoteConfigEventReceived(_ event: RemoteConfigLifecycleEvent) {
         switch event {
-        case .observerRegistered, .committed:
+        case .observerRegistered:
             Task { [weak self] in
-                await self?.warm()
+                await self?.warm(mode: .cachedOnly)
+            }
+        case .committed:
+            Task { [weak self] in
+                await self?.warm(mode: .waitForInFlight)
             }
         case .refreshFinished:
             break
@@ -83,7 +88,7 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
             return rewards
         }
 
-        await self.warm(mode: .waitForInFlight)
+        await self.warm(mode: .fetchIfNeeded)
 
         guard let rewards = self.cachedRewardsValue(forAdUnitId: adUnitId) else {
             Logger.warn(AdsStrings.configured_ad_rewards_unavailable(adUnitID: adUnitId))
@@ -94,7 +99,7 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
     }
 
     func warm() async {
-        await self.warm(mode: .fetchIfNeeded)
+        await self.warm(mode: .cachedOnly)
     }
 
     private func warm(mode: ReadMode) async {
@@ -114,6 +119,8 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
         let generation = self.manager.configGeneration
         let topic: RemoteConfiguration.ConfigTopic?
         switch mode {
+        case .cachedOnly:
+            topic = await self.manager.topic(.adRewards, policy: .cachedOnly)
         case .fetchIfNeeded:
             topic = await self.manager.awaitTopicAndPrefetchBlobsReady(.adRewards)
         case .waitForInFlight:
@@ -130,6 +137,12 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
 
         let data: Data?
         switch mode {
+        case .cachedOnly:
+            data = await self.manager.blobData(
+                for: .adRewards,
+                itemKey: Self.blobItemKey,
+                policy: .cachedOnly
+            )
         case .fetchIfNeeded:
             data = await self.manager.blobData(for: .adRewards, itemKey: Self.blobItemKey)
         case .waitForInFlight:
