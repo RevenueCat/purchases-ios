@@ -904,6 +904,8 @@ jobs:
                 environment:
                   DEVICE: iPhone 17,OS=27.0
                   RC_COLLECT_TEST_DIAGNOSTICS: never
+            - store_test_results:
+                path: fastlane/test_output/revenuecatui-hosted
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
@@ -913,8 +915,6 @@ jobs:
           bundle_name: revenuecatui
       - store_test_results:
           path: fastlane/test_output/revenuecatui/tests.xml
-      - store_test_results:
-          path: fastlane/test_output/revenuecatui-hosted
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output
@@ -959,6 +959,8 @@ jobs:
                 no_output_timeout: 15m
                 environment:
                   DEVICE: iPhone 17,OS=26.5
+            - store_test_results:
+                path: fastlane/test_output/revenuecatui-hosted
       - create-snapshot-pr-if-needed:
           condition: << pipeline.parameters.generate_revenuecatui_snapshots >>
           job: "create_snapshot_pr"
@@ -968,8 +970,6 @@ jobs:
           bundle_name: revenuecatui
       - store_test_results:
           path: fastlane/test_output/revenuecatui/tests.xml
-      - store_test_results:
-          path: fastlane/test_output/revenuecatui-hosted
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output
