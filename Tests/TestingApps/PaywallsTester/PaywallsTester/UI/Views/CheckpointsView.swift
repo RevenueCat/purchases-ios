@@ -161,7 +161,7 @@ struct CheckpointsView: View {
                 completion.complete()
             },
             { checkpointResult in
-                self.result = .completed(identifier: identifier, flowResult: checkpointResult.flow)
+                self.result = .completed(identifier: identifier, result: checkpointResult)
             }
         )
     }
@@ -231,22 +231,25 @@ private struct CheckpointDisplayResult {
         )
     }
 
-    static func completed(identifier: String, flowResult: FlowResult?) -> Self {
-        guard let flowResult else {
+    static func completed(identifier: String, result: CheckpointResult) -> Self {
+        let activeNow = result.customer.entitlements.active.keys.sorted()
+        let activeNowDetails = "Active now: \(activeNow.isEmpty ? "none" : activeNow.joined(separator: ", "))."
+        guard let flowResult = result.flow else {
             return Self(
                 identifier: identifier,
                 outcome: "No action",
-                details: "No matching flow was presented."
+                details: "No matching flow was presented. \(activeNowDetails)"
             )
         }
 
         let identifiers = flowResult.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted()
+        let obtainedDetails = identifiers.isEmpty
+            ? "No new entitlements were granted."
+            : "Granted entitlements: \(identifiers.joined(separator: ", "))."
         return Self(
             identifier: identifier,
             outcome: "Flow completed",
-            details: identifiers.isEmpty
-                ? "No new entitlements were granted."
-                : "Granted entitlements: \(identifiers.joined(separator: ", "))."
+            details: "\(obtainedDetails) \(activeNowDetails)"
         )
     }
 

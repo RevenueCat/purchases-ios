@@ -21,10 +21,12 @@ import Foundation
 final class CheckpointsManager {
 
     typealias CustomerInfoSynchronizer = @MainActor () async throws -> CustomerInfo
+    typealias CustomerInfoProvider = @MainActor () async throws -> CustomerInfo
     typealias CachedCustomerInfoProvider = @MainActor () -> CustomerInfo?
     typealias PreferredUILocaleProvider = @MainActor () -> String?
 
     private let resolveCheckpoint: (String, CheckpointCallParams) async throws -> CheckpointResolution
+    private let customerInfoProvider: CustomerInfoProvider
     private let cachedCustomerInfoProvider: CachedCustomerInfoProvider
     private let preferredUILocaleProvider: PreferredUILocaleProvider
     private let checkpointPresenter: CheckpointPresenterType
@@ -34,12 +36,14 @@ final class CheckpointsManager {
 
     init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
+        customerInfoProvider: @escaping CustomerInfoProvider,
         checkpointPresenter: CheckpointPresenterType? = nil,
         cachedCustomerInfoProvider: @escaping CachedCustomerInfoProvider = { nil },
         preferredUILocaleProvider: @escaping PreferredUILocaleProvider = { nil },
         customerInfoSynchronizer: @escaping CustomerInfoSynchronizer = { throw CancellationError() }
     ) {
         self.resolveCheckpoint = resolveCheckpoint
+        self.customerInfoProvider = customerInfoProvider
         self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
         self.preferredUILocaleProvider = preferredUILocaleProvider
         self.checkpointPresenter = checkpointPresenter ?? CheckpointPresenter(
@@ -76,10 +80,12 @@ final class CheckpointsManager {
         }
 
         let resolution = try await self.resolveCheckpoint(identifier, params)
+        let customerInfoBefore = try await self.customerInfoBefore(identifier: identifier)
         return try await self.executeCheckpoint(
             identifier: identifier,
             params: params,
             resolution: resolution,
+            customerInfoBefore: customerInfoBefore,
             globalPaywallPresenter: globalPaywallPresenter
         )
     }
@@ -88,6 +94,7 @@ final class CheckpointsManager {
         identifier: String,
         params: CheckpointCallParams,
         resolution: CheckpointResolution,
+        customerInfoBefore: CustomerInfo,
         globalPaywallPresenter: PaywallPresenter?
     ) async throws -> CheckpointExecutionResult {
         let errorPresentationHandler = self.errorPresentationHandler(for: params)
@@ -99,7 +106,7 @@ final class CheckpointsManager {
                 workflow: workflow,
                 customVariables: params.customVariables,
                 presentationMode: params.presentationMode,
-                initialActiveEntitlementIdentifiers: self.initialActiveEntitlementIdentifiers(),
+                initialActiveEntitlementIdentifiers: customerInfoBefore.activeEntitlementIdentifiers,
                 errorPresentationHandler: errorPresentationHandler
             )
             return .init(
@@ -143,17 +150,14 @@ final class CheckpointsManager {
                 kind: .flowCouldNotBeShown
             )
             return .suppressed
-        case let .synchronizationFailed(error):
+        case let .synchronizationFailed(error, fallback):
             await self.presentCheckpointError(
                 error,
                 identifier: identifier,
                 params: params,
                 kind: .flowResultSyncFailed
             )
-            return .completed(CheckpointResult(
-                flow: FlowResult(obtainedEntitlements: [], obtainedProducts: []),
-                customer: nil
-            ))
+            return .completed(fallback)
         }
     }
 
@@ -161,8 +165,6 @@ final class CheckpointsManager {
         identifier: String,
         params: CheckpointCallParams
     ) async -> CheckpointOutcome {
-        let initialCustomerInfo = self.cachedCustomerInfoProvider()
-        let initialActiveEntitlementIdentifiers = initialCustomerInfo.map { Set($0.entitlements.active.keys) }
         let globalPaywallPresenter = self.paywallPresenter
 
         guard CheckpointIdentifierValidator.isValid(identifier) else {
@@ -177,35 +179,57 @@ final class CheckpointsManager {
             return .failed(error)
         }
 
+        let customerInfoBefore: CustomerInfo
+        do {
+            customerInfoBefore = try await self.customerInfoBefore(identifier: identifier)
+        } catch {
+            return .failed(error)
+        }
+
         switch resolution {
         case .noAction(.configurationUnavailable):
             return .failed(CheckpointError.configurationUnavailable)
         case .noAction(.unknownCheckpoint), .noAction(.noMatch):
-            return .completed(CheckpointResult(flow: nil, customer: nil))
+            return .completed(CheckpointResult(flow: nil, customer: customerInfoBefore))
         case .matchedWorkflow, .matchedOffering:
-            break
+            return await self.presentedOutcome(
+                identifier: identifier,
+                params: params,
+                resolution: resolution,
+                customerInfoBefore: customerInfoBefore,
+                globalPaywallPresenter: globalPaywallPresenter
+            )
         }
+    }
 
+    private func presentedOutcome(
+        identifier: String,
+        params: CheckpointCallParams,
+        resolution: CheckpointResolution,
+        customerInfoBefore: CustomerInfo,
+        globalPaywallPresenter: PaywallPresenter?
+    ) async -> CheckpointOutcome {
         do {
             let execution = try await self.executeCheckpoint(
                 identifier: identifier,
                 params: params,
                 resolution: resolution,
+                customerInfoBefore: customerInfoBefore,
                 globalPaywallPresenter: globalPaywallPresenter
             )
             switch execution.outcome {
             case let .completed(customerInfo):
-                return .completed(CheckpointResult(
-                    flow: self.flowResult(
-                        customerInfo: customerInfo,
-                        initialCustomerInfo: initialCustomerInfo,
-                        initialActiveEntitlementIdentifiers: initialActiveEntitlementIdentifiers,
-                        availableProducts: execution.availableProducts
-                    ),
-                    customer: customerInfo
+                return .completed(self.checkpointResult(
+                    customerInfo: customerInfo,
+                    customerInfoBefore: customerInfoBefore,
+                    availableProducts: execution.availableProducts
                 ))
             case let .synchronizationFailed(error):
-                return .synchronizationFailed(error)
+                return .synchronizationFailed(error, fallback: self.checkpointResult(
+                    customerInfo: nil,
+                    customerInfoBefore: customerInfoBefore,
+                    availableProducts: execution.availableProducts
+                ))
             case .backedOut, .failed, .nothingPresented:
                 return .suppressed
             }
@@ -217,30 +241,45 @@ final class CheckpointsManager {
         }
     }
 
-    private func flowResult(
-        customerInfo: CustomerInfo?,
-        initialCustomerInfo: CustomerInfo?,
-        initialActiveEntitlementIdentifiers: Set<String>?,
-        availableProducts: [StoreProduct]
-    ) -> FlowResult {
-        let obtainedEntitlements = customerInfo?
-            .obtainedEntitlements(comparedTo: initialActiveEntitlementIdentifiers)
-            .map(ObtainedEntitlement.init)
-            ?? []
-        let obtainedProducts = customerInfo?
-            .obtainedProducts(comparedTo: initialCustomerInfo, from: availableProducts)
-            ?? []
-
-        return FlowResult(
-            obtainedEntitlements: Set(obtainedEntitlements),
-            obtainedProducts: Set(obtainedProducts)
-        )
+    /// The customer's information read once the checkpoint is resolved and before anything is presented: cached
+    /// when warm, fetched otherwise, so a run that goes on always has one to deliver and to compare against. It comes
+    /// after resolving so the checkpoint hit is tracked either way, and so the resolver's own read has already
+    /// warmed the cache for a configured checkpoint.
+    private func customerInfoBefore(identifier: String) async throws -> CustomerInfo {
+        do {
+            return try await self.customerInfoProvider()
+        } catch {
+            Logger.error(
+                "Checkpoint '\(identifier)': the customer's information could not be read: " +
+                error.localizedDescription
+            )
+            throw error
+        }
     }
 
-    private func initialActiveEntitlementIdentifiers() -> Set<String>? {
-        return self.cachedCustomerInfoProvider().map { customerInfo in
-            Set(customerInfo.entitlements.active.keys)
-        }
+    /// The result of a passed flow. Its customer is the information the flow itself produced (a purchase, a restore
+    /// that granted access, or the sync after an app-owned paywall), else the latest cached copy (a restore that
+    /// granted nothing new, or a web checkout, refreshed it without being an outcome), else `customerInfoBefore`,
+    /// which the cache can only have lost to an identity change meanwhile. Whatever the outcome, what was obtained
+    /// is read from that customer against `customerInfoBefore`.
+    private func checkpointResult(
+        customerInfo: CustomerInfo?,
+        customerInfoBefore: CustomerInfo,
+        availableProducts: [StoreProduct]
+    ) -> CheckpointResult {
+        let customer = customerInfo ?? self.cachedCustomerInfoProvider() ?? customerInfoBefore
+        let obtainedEntitlements = customer
+            .obtainedEntitlements(comparedTo: customerInfoBefore.activeEntitlementIdentifiers)
+            .map(ObtainedEntitlement.init)
+        let obtainedProducts = customer.obtainedProducts(comparedTo: customerInfoBefore, from: availableProducts)
+
+        return CheckpointResult(
+            flow: FlowResult(
+                obtainedEntitlements: Set(obtainedEntitlements),
+                obtainedProducts: Set(obtainedProducts)
+            ),
+            customer: customer
+        )
     }
 
 }
@@ -345,5 +384,6 @@ private enum CheckpointOutcome {
     case completed(CheckpointResult)
     case suppressed
     case failed(any Error)
-    case synchronizationFailed(any Error)
+    /// The flow passed but its sync failed: `fallback` is delivered once the error has been presented.
+    case synchronizationFailed(any Error, fallback: CheckpointResult)
 }

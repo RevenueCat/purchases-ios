@@ -23,10 +23,11 @@ public struct CheckpointResult: Sendable {
     /// Information about the presented flow, or `nil` when the checkpoint had nothing to present.
     public let flow: FlowResult?
 
-    /// The customer's information returned by the flow, when available.
-    public let customer: CustomerInfo?
+    /// The customer's information once the checkpoint is passed: synced with what they obtained when the presented
+    /// flow ended with a purchase or restore, the latest known otherwise.
+    public let customer: CustomerInfo
 
-    init(flow: FlowResult?, customer: CustomerInfo?) {
+    init(flow: FlowResult?, customer: CustomerInfo) {
         self.flow = flow
         self.customer = customer
     }
@@ -54,6 +55,12 @@ public struct CheckpointResult: Sendable {
     /// ``obtainedProduct(_:)`` for the identifier's format.
     public func didObtainProduct(_ identifier: String) -> Bool {
         return self.obtainedProduct(identifier) != nil
+    }
+
+    /// Returns whether the customer holds an active entitlement with `identifier` according to ``customer``:
+    /// obtained during this checkpoint or already theirs before it.
+    public func hasEntitlement(_ identifier: String) -> Bool {
+        return self.customer.entitlements.active[identifier] != nil
     }
 
 }

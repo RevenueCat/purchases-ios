@@ -20,18 +20,16 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct FlowResult: Sendable {
 
-    /// Active entitlements present after the flow that were not active in cached customer information before it began.
+    /// Active entitlements present after the flow that were not active before it was presented.
     ///
-    /// The SDK compares the final customer information with the customer information cached before presenting the
-    /// flow. When no cached customer information is available, this can include entitlements that were already active
-    /// or were obtained from another source.
+    /// The SDK compares the customer information delivered with the result against the one read before presenting
+    /// the flow.
     public let obtainedEntitlements: Set<ObtainedEntitlement>
 
-    /// Products newly observed after the flow completed.
+    /// Products newly observed after the flow completed, among those its offerings sell.
     ///
-    /// The SDK compares the final customer information with the customer information cached before presenting the
-    /// flow. When no cached customer information is available, this can include products that were previously
-    /// purchased or restored.
+    /// The SDK compares the purchase dates in the customer information delivered with the result against the ones
+    /// read before presenting the flow: a renewal or a repeat purchase counts.
     public let obtainedProducts: Set<ObtainedProduct>
 
     init(
@@ -119,6 +117,10 @@ public struct ObtainedProduct: Hashable, Sendable {
 }
 
 extension CustomerInfo {
+
+    var activeEntitlementIdentifiers: Set<String> {
+        return Set(self.entitlements.active.keys)
+    }
 
     func obtainedEntitlements(
         comparedTo initialActiveEntitlementIdentifiers: Set<String>?
