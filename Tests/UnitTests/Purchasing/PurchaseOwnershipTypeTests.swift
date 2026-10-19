@@ -33,6 +33,12 @@ class PurchaseOwnershipTypeTests: TestCase {
     }
 
 }
+
+// MARK: - From StoreKit OwnershipType
+extension PurchaseOwnershipTypeTests {
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    func testFromStoreKitOwnershipType() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         expect(PurchaseOwnershipType.from(storeKitOwnershipType: .purchased)) == .purchased
