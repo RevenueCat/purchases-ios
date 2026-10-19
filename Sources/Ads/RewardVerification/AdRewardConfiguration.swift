@@ -14,20 +14,22 @@ import Foundation
 
 /// Rewards currently configured for a rewarded ad unit.
 ///
-/// Use ``noConfiguredReward`` to distinguish an ad unit known to have no configured reward from configuration that
-/// is unavailable:
+/// Use the primary configured reward to customize the prompt, falling back to generic copy when configuration is
+/// unavailable or no reward is configured:
 ///
 /// ```swift
-/// if let configuredRewards = await Purchases.shared.adRewards(forAdUnitId: adUnitID) {
-///     if configuredRewards == .noConfiguredReward {
-///         // Configuration loaded, but no RevenueCat reward is configured for this ad unit.
-///         showGenericAdPrompt()
-///     } else {
-///         showRewardPrompt(configuredRewards)
-///     }
+/// guard let reward = await Purchases.shared.adRewards(forAdUnitId: adUnitID)?.reward else {
+///     showPrompt("Watch an ad to continue")
+///     return
+/// }
+///
+/// if let currency = reward.virtualCurrency {
+///     showPrompt("Watch an ad for \(currency.amount) \(currency.code)")
+/// } else if let entitlement = reward.entitlement {
+///     let hours = entitlement.duration / 3_600
+///     showPrompt("Watch an ad for \(hours.formatted()) hours of access")
 /// } else {
-///     // Configuration is temporarily unavailable.
-///     showGenericAdPrompt()
+///     showPrompt("Watch an ad to continue")
 /// }
 /// ```
 struct ConfiguredAdRewards: Sendable, Equatable {
