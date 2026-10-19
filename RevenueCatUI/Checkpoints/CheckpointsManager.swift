@@ -144,7 +144,7 @@ final class CheckpointsManager {
                 errorPresentationHandler: errorPresentationHandler
             )
             return try await self.checkpointPresenter.presentWorkflow(presentation)
-        case let .matchedOffering(offering):
+        case let .matchedOffering(offering, _):
             return try await self.checkpointPresenter.presentOffering(
                 params: .init(
                     checkpointIdentifier: identifier,

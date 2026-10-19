@@ -119,7 +119,7 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
             defaultPaywallPresenter: DefaultPaywallPresenter(presentationContextProvider: { nil })
         )
         let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering(), traceID: "trace_id") },
             checkpointPresenter: presenter
         )
 
@@ -161,7 +161,7 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
     func testTerminalCustomPaywallError() async {
         let expectedError = NSError(domain: "CheckpointOutcomeBehaviorTests", code: 4)
         let errorPresenter = ErrorPresentationRecorder()
-        let manager = CheckpointsManager { _, _ in .matchedOffering(Self.offering()) }
+        let manager = CheckpointsManager { _, _ in .matchedOffering(Self.offering(), traceID: "trace_id") }
 
         let result = await manager.checkpointForCallback(
             identifier: "soft_paywall",

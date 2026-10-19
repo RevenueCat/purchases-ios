@@ -20,8 +20,8 @@ import Foundation
     /// A workflow was selected for the checkpoint.
     case matchedWorkflow(ResolvedCheckpointWorkflow)
     /// An offering was selected for the checkpoint, with no RevenueCat-managed UI to present. The app
-    /// decides whether and how to use it.
-    case matchedOffering(Offering)
+    /// decides whether and how to use it. `traceID` identifies the hit, and the offering's packages carry it too.
+    case matchedOffering(Offering, traceID: String)
     /// No workflow should run for the checkpoint.
     case noAction(CheckpointResolutionReason)
 
@@ -54,8 +54,8 @@ struct ResolvedCheckpoint {
         switch resolution {
         case let .matchedWorkflow(workflow):
             self.traceID = workflow.traceId
-        case let .matchedOffering(offering):
-            self.traceID = offering.presentedOfferingContext?.traceID ?? UUID().uuidString
+        case let .matchedOffering(_, traceID):
+            self.traceID = traceID
         case .noAction:
             self.traceID = UUID().uuidString
         }
@@ -334,8 +334,10 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             return .noAction(.configurationUnavailable)
         }
 
+        let traceID = UUID().uuidString
         return .matchedOffering(
-            match.offering.withPresentedCheckpointIdentifier(checkpointIdentifier, traceID: UUID().uuidString)
+            match.offering.withPresentedCheckpointIdentifier(checkpointIdentifier, traceID: traceID),
+            traceID: traceID
         )
     }
 

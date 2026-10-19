@@ -576,7 +576,7 @@ final class CheckpointsManagerTests: TestCase {
     func testResolvedOfferingUsesCallSitePaywallPresenter() async throws {
         let executor = MockWorkflowPresenter()
         let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering(), traceID: "trace_id") },
             workflowPresenter: executor,
             customerInfoSynchronizer: { try Self.customerInfo(activeEntitlements: []) }
         )
@@ -606,7 +606,7 @@ final class CheckpointsManagerTests: TestCase {
     func testCallSitePaywallPresenterOverridesGlobalPresenter() async throws {
         let global = MockPaywallPresenter()
         let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering(), traceID: "trace_id") },
             workflowPresenter: MockWorkflowPresenter()
         )
         manager.paywallPresenter = global
@@ -627,7 +627,7 @@ final class CheckpointsManagerTests: TestCase {
     func testResolvedOfferingUsesGlobalPaywallPresenter() async throws {
         let global = MockPaywallPresenter()
         let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering(), traceID: "trace_id") },
             workflowPresenter: MockWorkflowPresenter()
         )
         manager.paywallPresenter = global
@@ -659,7 +659,7 @@ final class CheckpointsManagerTests: TestCase {
         }
         await self.fulfillment(of: [resolutionStarted], timeout: 1)
         manager.paywallPresenter = replacementPresenter
-        resolutionContinuation?.resume(returning: .matchedOffering(Self.offering()))
+        resolutionContinuation?.resume(returning: .matchedOffering(Self.offering(), traceID: "trace_id"))
         _ = try await checkpoint.value
 
         XCTAssertEqual(initialPresenter.callCount, 1)
@@ -670,7 +670,7 @@ final class CheckpointsManagerTests: TestCase {
         let defaultPresenter = MockDefaultPaywallPresenter(result: .closed)
         var customerInfoSynchronizerCallCount = 0
         let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering(), traceID: "trace_id") },
             workflowPresenter: MockWorkflowPresenter(),
             defaultPaywallPresenter: defaultPresenter,
             customerInfoSynchronizer: {
@@ -693,7 +693,7 @@ final class CheckpointsManagerTests: TestCase {
         let terminalCustomerInfo = try Self.customerInfo(activeEntitlements: ["premium", "pro"])
         let defaultPresenter = MockDefaultPaywallPresenter(result: .continued)
         let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering(), traceID: "trace_id") },
             workflowPresenter: MockWorkflowPresenter(),
             defaultPaywallPresenter: defaultPresenter,
             cachedCustomerInfoProvider: { try? Self.customerInfo(activeEntitlements: ["pro"]) },
@@ -711,7 +711,7 @@ final class CheckpointsManagerTests: TestCase {
     func testDefaultPaywallPresenterNavigatedBackSuppressesCheckpointCallback() async {
         var customerInfoSynchronizerCallCount = 0
         let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering(), traceID: "trace_id") },
             workflowPresenter: MockWorkflowPresenter(),
             defaultPaywallPresenter: MockDefaultPaywallPresenter(result: .navigatedBack),
             customerInfoSynchronizer: {
@@ -731,7 +731,7 @@ final class CheckpointsManagerTests: TestCase {
     func testNavigatedBackSuppressesCheckpointCallback() async {
         var customerInfoSynchronizerCallCount = 0
         let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering(), traceID: "trace_id") },
             workflowPresenter: MockWorkflowPresenter(),
             customerInfoSynchronizer: {
                 customerInfoSynchronizerCallCount += 1
@@ -753,7 +753,7 @@ final class CheckpointsManagerTests: TestCase {
     func testContinueSynchronizesCustomerInfoAndReturnsNewEntitlements() async throws {
         var customerInfoSynchronizerCallCount = 0
         let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering(), traceID: "trace_id") },
             workflowPresenter: MockWorkflowPresenter(),
             cachedCustomerInfoProvider: {
                 try? Self.customerInfo(activeEntitlements: ["pro"])
@@ -783,7 +783,7 @@ final class CheckpointsManagerTests: TestCase {
         var errorPresentationCompletion: ErrorPresentationCompletion?
         var checkpointCompleted = false
         let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering(), traceID: "trace_id") },
             workflowPresenter: MockWorkflowPresenter(),
             customerInfoSynchronizer: { throw expectedError }
         )
@@ -829,7 +829,7 @@ final class CheckpointsManagerTests: TestCase {
         var synchronizationContinuation: CheckedContinuation<CustomerInfo, Error>?
         var customerInfoSynchronizerCallCount = 0
         let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering(), traceID: "trace_id") },
             workflowPresenter: MockWorkflowPresenter(),
             customerInfoSynchronizer: {
                 customerInfoSynchronizerCallCount += 1
@@ -873,7 +873,7 @@ final class CheckpointsManagerTests: TestCase {
         var firstCompletion: PaywallPresentationCompletion?
         var replacementCompletion: PaywallPresentationCompletion?
         let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering(), traceID: "trace_id") },
             workflowPresenter: MockWorkflowPresenter(),
             customerInfoSynchronizer: { try Self.customerInfo(activeEntitlements: []) }
         )
@@ -926,7 +926,7 @@ final class CheckpointsManagerTests: TestCase {
         var presenterCompletion: PaywallPresentationCompletion?
         var synchronizationContinuation: CheckedContinuation<CustomerInfo, Error>?
         let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering(), traceID: "trace_id") },
             workflowPresenter: MockWorkflowPresenter(),
             customerInfoSynchronizer: {
                 synchronizationStarted.fulfill()
