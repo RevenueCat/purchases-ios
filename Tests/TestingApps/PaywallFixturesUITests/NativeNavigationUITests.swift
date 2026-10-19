@@ -41,6 +41,39 @@ final class NativeNavigationUITests: XCTestCase {
     }
     #endif
 
+    #if os(iOS)
+    func testInlineSheetKeepsWorkflowBackDisabledWithoutRestoringCallerBack() {
+        let app = self.launch("native_workflow_navigation")
+        self.assertVisible(app.staticTexts["Workflow root"], in: app)
+        app.buttons["Continue"].tap()
+        self.assertVisible(app.staticTexts["Workflow detail"], in: app)
+        self.assertNativeControls(in: app, back: true, close: true)
+        let detailBodyTop = app.staticTexts["Workflow detail"].frame.minY
+        app.buttons["Open inline sheet"].tap()
+        self.assertVisible(app.buttons["Designed sheet Close"], in: app)
+        let suspended = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            let back = app.buttons[self.backIdentifier]
+            let close = app.buttons[self.closeIdentifier]
+            return back.exists && !back.isEnabled && close.exists && !close.isEnabled
+                && !app.buttons["BackButton"].exists
+        }, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [suspended], timeout: 10), .completed, app.debugDescription)
+        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.01, dy: 0.5))
+        let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5))
+        start.press(forDuration: 0.1, thenDragTo: end)
+        self.assertVisible(app.buttons["Designed sheet Close"], in: app)
+        app.buttons["Designed sheet Close"].tap()
+        self.assertVisible(app.staticTexts["Workflow detail"], in: app)
+        self.assertNativeControls(in: app, back: true, close: true)
+        XCTAssertEqual(app.staticTexts["Workflow detail"].frame.minY, detailBodyTop,
+                       accuracy: 1, app.debugDescription)
+        app.buttons[self.backIdentifier].tap()
+        self.assertVisible(app.staticTexts["Workflow root"], in: app)
+        app.buttons[self.closeIdentifier].tap()
+        XCTAssertTrue(app.staticTexts["Paywall dismissed"].waitForExistence(timeout: 10), app.debugDescription)
+    }
+    #endif
+
     func testNativeBackNavigatesWithinWorkflowWithoutPoppingCallerNavigation() {
         let app = self.launch("native_workflow_navigation")
         self.assertWorkflowNavigation(in: app)
@@ -90,7 +123,7 @@ final class NativeNavigationUITests: XCTestCase {
         XCTAssertFalse(app.buttons["Designed Close"].exists, app.debugDescription)
         // This pushed paywall replaces the caller's automatic Back while the workflow has history.
         XCTAssertEqual(Set(app.buttons.allElementsBoundByIndex.filter {
-            $0.isHittable && $0.label != "Continue without Close"
+            $0.isHittable && !["Continue without Close", "Open inline sheet"].contains($0.label)
         }.map { $0.identifier }),
                        Set([self.backIdentifier, self.closeIdentifier]), app.debugDescription)
         self.assertBodyBelowNavigation(in: app, title: "Workflow detail", button: "Continue without Close")
@@ -148,7 +181,10 @@ final class NativeNavigationUITests: XCTestCase {
         let sheetClose = app.buttons["Designed sheet Close"]
         XCTAssertTrue(sheetClose.waitForExistence(timeout: 10), app.debugDescription)
         XCTAssertTrue(sheetClose.isHittable, app.debugDescription)
-        XCTAssertFalse(outerClose.exists, app.debugDescription)
+        let suspended = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "exists == true AND enabled == false"), object: outerClose
+        )
+        XCTAssertEqual(XCTWaiter.wait(for: [suspended], timeout: 10), .completed, app.debugDescription)
         XCTAssertFalse(app.buttons[self.backIdentifier].exists, app.debugDescription)
         sheetClose.tap()
 

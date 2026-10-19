@@ -87,7 +87,8 @@ private enum NativeNavigationFixture {
             ], headerClose: try Self.closeWorkflow())
             let detail = Self.data(title: "Workflow detail", buttons: [
                 Self.button("Designed Back", action: .navigateBack, native: true),
-                Self.button("Continue without Close", action: .workflowTrigger, id: "no_close")
+                Self.button("Continue without Close", action: .workflowTrigger, id: "no_close"),
+                Self.button("Open inline sheet", action: .navigateTo(destination: .sheet(sheet: Self.inlineSheet)))
             ], headerClose: try Self.closeWorkflow())
             let withoutClose = Self.data(title: "Workflow without Close", buttons: [
                 Self.button("Designed Back", action: .navigateBack, native: true)
@@ -120,8 +121,8 @@ private enum NativeNavigationFixture {
         }
     }()
 
-    static var sheetOffering: Offering {
-        let sheet = PaywallComponent.ButtonComponent.Sheet(
+    static var inlineSheet: PaywallComponent.ButtonComponent.Sheet {
+        .init(
             id: "native-inline-sheet", name: "Inline sheet",
             stack: .init(
                 components: [Self.text("Sheet content"),
@@ -131,12 +132,15 @@ private enum NativeNavigationFixture {
                 padding: .init(top: 32, bottom: 32, leading: 24, trailing: 24)
             ), backgroundBlur: true, size: .init(width: .fill, height: .fixed(280))
         )
-        return Offering(
+    }
+
+    static var sheetOffering: Offering {
+        Offering(
             identifier: "native-sheet", serverDescription: "Native sheet",
             paywallComponents: .init(uiConfig: Self.baseUIConfig, data: Self.data(
                 title: "Outer paywall", buttons: [
                     Self.button("Designed outer Close", action: .navigateBack, native: true),
-                    Self.button("Open inline sheet", action: .navigateTo(destination: .sheet(sheet: sheet)))
+                    Self.button("Open inline sheet", action: .navigateTo(destination: .sheet(sheet: Self.inlineSheet)))
                 ]
             )), availablePackages: Self.baseOffering.availablePackages, webCheckoutUrl: nil
         )
