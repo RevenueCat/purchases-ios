@@ -16,9 +16,10 @@ import XCTest
 
 final class AdRewardConfigurationTests: TestCase {
 
-    func testConfiguredRewardsCanRepresentAvailableConfigurationWithoutRewards() {
-        let configured = ConfiguredAdRewards(reward: nil, moreRewards: [])
+    func testNoConfiguredRewardDoesNotExposeRewards() {
+        let configured = ConfiguredAdRewards.noConfiguredReward
 
+        expect(configured) == .noConfiguredReward
         expect(configured.reward).to(beNil())
         expect(configured.moreRewards).to(beEmpty())
     }
@@ -68,6 +69,7 @@ final class AdRewardConfigurationTests: TestCase {
 
         expect(configured.reward?.virtualCurrency) == currency
         expect(configured.moreRewards) == [.entitlement(entitlement)]
+        expect(configured) != .noConfiguredReward
     }
 
 }

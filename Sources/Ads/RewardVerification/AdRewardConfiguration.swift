@@ -15,18 +15,40 @@ import Foundation
 /// Rewards currently configured for a rewarded ad unit.
 struct ConfiguredAdRewards: Sendable, Equatable {
 
-    /// The primary configured reward, or `nil` when none is configured.
-    let reward: AdRewardConfiguration?
+    private enum Storage: Sendable, Equatable {
+        case rewards(
+            reward: AdRewardConfiguration,
+            moreRewards: [AdRewardConfiguration]
+        )
+        case noConfiguredReward
+    }
 
-    /// Additional configured rewards, which may exist even when no primary reward is configured.
-    let moreRewards: [AdRewardConfiguration]
+    private let storage: Storage
+
+    /// No RevenueCat reward is configured for this ad unit.
+    static let noConfiguredReward = ConfiguredAdRewards(storage: .noConfiguredReward)
+
+    /// The primary configured reward, or `nil` when this value is ``noConfiguredReward``.
+    var reward: AdRewardConfiguration? {
+        guard case let .rewards(reward, _) = self.storage else { return nil }
+        return reward
+    }
+
+    /// Additional configured rewards granted alongside ``reward``.
+    var moreRewards: [AdRewardConfiguration] {
+        guard case let .rewards(_, moreRewards) = self.storage else { return [] }
+        return moreRewards
+    }
 
     internal init(
-        reward: AdRewardConfiguration?,
+        reward: AdRewardConfiguration,
         moreRewards: [AdRewardConfiguration]
     ) {
-        self.reward = reward
-        self.moreRewards = moreRewards
+        self.storage = .rewards(reward: reward, moreRewards: moreRewards)
+    }
+
+    private init(storage: Storage) {
+        self.storage = storage
     }
 
 }
