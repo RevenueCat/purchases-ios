@@ -36,24 +36,11 @@ import StoreKit
     /**
      The user has access to the purchase through an organization.
      */
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     case assigned = 3
 
 }
 
-extension PurchaseOwnershipType: CaseIterable {
-
-    // Can't be synthesized because `assigned` has availability restrictions.
-    // swiftlint:disable:next missing_docs
-    public static var allCases: [PurchaseOwnershipType] {
-        var cases: [PurchaseOwnershipType] = [.purchased, .familyShared, .unknown]
-        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-            cases.append(.assigned)
-        }
-        return cases
-    }
-
-}
+extension PurchaseOwnershipType: CaseIterable {}
 extension PurchaseOwnershipType: Sendable {}
 
 extension PurchaseOwnershipType: DefaultValueProvider {

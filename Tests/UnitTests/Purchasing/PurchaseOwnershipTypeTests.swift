@@ -43,15 +43,9 @@ extension PurchaseOwnershipTypeTests {
 
         expect(PurchaseOwnershipType.from(storeKitOwnershipType: .purchased)) == .purchased
         expect(PurchaseOwnershipType.from(storeKitOwnershipType: .familyShared)) == .familyShared
-    }
-
-    #if compiler(>=6.4)
-    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func testFromStoreKitAssignedOwnershipType() throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
-
+        #if compiler(>=6.4)
         expect(PurchaseOwnershipType.from(storeKitOwnershipType: .assigned)) == .assigned
+        #endif
     }
-    #endif
 
 }
