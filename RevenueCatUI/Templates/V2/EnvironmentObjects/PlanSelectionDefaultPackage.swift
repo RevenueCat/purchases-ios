@@ -21,11 +21,20 @@ private struct PlanSelectionDefaultPackageKey: EnvironmentKey {
     static let defaultValue: Package? = nil
 }
 
+private struct IndependentPurchaseContextKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
 extension EnvironmentValues {
 
     var planSelectionDefaultPackage: Package? {
         get { self[PlanSelectionDefaultPackageKey.self] }
         set { self[PlanSelectionDefaultPackageKey.self] = newValue }
+    }
+
+    var independentPurchaseContext: Bool {
+        get { self[IndependentPurchaseContextKey.self] }
+        set { self[IndependentPurchaseContextKey.self] = newValue }
     }
 
 }
