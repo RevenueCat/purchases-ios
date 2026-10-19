@@ -229,6 +229,7 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
         }
 
         guard let reward = Self.decodeReward(payload["reward"]) else {
+            guard moreRewards.isEmpty else { return .unavailable }
             return .available(.noConfiguredReward)
         }
 
