@@ -35,6 +35,7 @@ final class AdRewardConfigurationTests: TestCase {
         let reward = try XCTUnwrap(
             EntitlementRewardConfiguration(identifier: "pro", durationInSeconds: 30 * 60)
         )
+        expect(reward.durationInSeconds) == TimeInterval(30 * 60)
         let configuration = AdRewardConfiguration.entitlement(reward)
 
         expect(configuration.entitlement) == reward

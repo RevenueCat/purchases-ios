@@ -81,9 +81,9 @@ struct EntitlementRewardConfiguration: Sendable, Equatable {
     let identifier: String
 
     /// The duration for which the entitlement will be granted, in seconds.
-    let durationInSeconds: Int
+    let durationInSeconds: TimeInterval
 
-    internal init?(identifier: String, durationInSeconds: Int) {
+    internal init?(identifier: String, durationInSeconds: TimeInterval) {
         guard !identifier.isEmpty, durationInSeconds > 0 else { return nil }
         self.identifier = identifier
         self.durationInSeconds = durationInSeconds
