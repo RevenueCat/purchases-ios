@@ -48,6 +48,12 @@ struct TimelineComponentView: View {
     @Environment(\.selectedPackageId)
     private var selectedPackageId
 
+    @Environment(\.isIntroOfferEligibilityLoading)
+    private var isIntroOfferEligibilityLoading
+
+    @Environment(\.isPromoOfferEligibilityLoading)
+    private var isPromoOfferEligibilityLoading
+
     internal init(viewModel: TimelineComponentViewModel) {
         self.viewModel = viewModel
     }
@@ -55,46 +61,69 @@ struct TimelineComponentView: View {
     @State private var maxIconWidth: CGFloat = 0
 
     var body: some View {
-        viewModel.styles(
-            state: self.componentViewState,
-            condition: self.screenCondition,
+        let offerEligibility = OfferEligibilityState(
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                 package: self.packageContext.package
             ),
             isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
                 for: self.packageContext.package
             ),
+            isIntroOfferEligibilityLoading: self.isIntroOfferEligibilityLoading,
+            isPromoOfferEligibilityLoading: self.isPromoOfferEligibilityLoading
+        )
+        viewModel.styles(
+            state: self.componentViewState,
+            condition: self.screenCondition,
+            isEligibleForIntroOffer: offerEligibility.isEligibleForIntroOffer,
+            isEligibleForPromoOffer: offerEligibility.isEligibleForPromoOffer,
             selectedPackageId: self.selectedPackageId,
             customVariables: self.customVariables,
             windowSize: self.paywallWindowSize
         ) { style in
             if style.visible {
-                timeline(style: style)
+                timeline(style: style, offerEligibility: offerEligibility)
+                    .redacted(
+                        reason: self.viewModel.redactsWhileOfferEligibilityLoads(
+                            state: self.componentViewState,
+                            condition: self.screenCondition,
+                            offerEligibility: offerEligibility,
+                            selectedPackageId: self.selectedPackageId,
+                            customVariables: self.customVariables,
+                            windowSize: self.paywallWindowSize
+                        ) ? .placeholder : []
+                    )
             }
         }
     }
 
     @ViewBuilder
     private func timeline(
-        style: TimelineComponentStyle
+        style: TimelineComponentStyle,
+        offerEligibility: OfferEligibilityState
     ) -> some View {
         VStack(alignment: .leading, spacing: style.itemSpacing ?? 0) {
             ForEach(viewModel.items, id: \.component) { item in
                 item.styles(
                     state: self.componentViewState,
                     condition: self.screenCondition,
-                    isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                        package: self.packageContext.package
-                    ),
-                    isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
-                        for: self.packageContext.package
-                    ),
+                    isEligibleForIntroOffer: offerEligibility.isEligibleForIntroOffer,
+                    isEligibleForPromoOffer: offerEligibility.isEligibleForPromoOffer,
                     selectedPackageId: self.selectedPackageId,
                     customVariables: self.customVariables,
                     windowSize: self.paywallWindowSize
                 ) { itemStyle in
                     if itemStyle.visible {
                         timelineRow(itemStyle: itemStyle, style: style)
+                            .redacted(
+                                reason: item.redactsWhileOfferEligibilityLoads(
+                                    state: self.componentViewState,
+                                    condition: self.screenCondition,
+                                    offerEligibility: offerEligibility,
+                                    selectedPackageId: self.selectedPackageId,
+                                    customVariables: self.customVariables,
+                                    windowSize: self.paywallWindowSize
+                                ) ? .placeholder : []
+                            )
                     }
                 }
             }
@@ -111,12 +140,8 @@ struct TimelineComponentView: View {
                     item.styles(
                         state: self.componentViewState,
                         condition: self.screenCondition,
-                        isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                            package: self.packageContext.package
-                        ),
-                        isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
-                            for: self.packageContext.package
-                        ),
+                        isEligibleForIntroOffer: offerEligibility.isEligibleForIntroOffer,
+                        isEligibleForPromoOffer: offerEligibility.isEligibleForPromoOffer,
                         selectedPackageId: self.selectedPackageId,
                         customVariables: self.customVariables,
                         windowSize: self.paywallWindowSize

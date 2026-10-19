@@ -212,4 +212,249 @@ private extension StackOfferEligibilityVisibilityTests {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+class CompositeOfferEligibilityVisibilityTests: TestCase {
+
+    func testStaticConditionsDoNotRedactWhileEligibilityLoads() throws {
+        let viewModels = try Self.makeViewModels(condition: .selected)
+
+        expect(self.redacts(viewModels.carousel)).to(beFalse())
+        expect(self.redacts(viewModels.tabs)).to(beFalse())
+        expect(self.redacts(viewModels.timeline)).to(beFalse())
+        expect(self.redacts(viewModels.timelineItem)).to(beFalse())
+    }
+
+    func testIntroOfferVisibilityConditionsRedactWhileEligibilityLoads() throws {
+        let viewModels = try Self.makeViewModels(condition: .introOffer)
+
+        expect(self.redacts(viewModels.carousel)).to(beTrue())
+        expect(self.redacts(viewModels.tabs)).to(beTrue())
+        expect(self.redacts(viewModels.timeline)).to(beTrue())
+        expect(self.redacts(viewModels.timelineItem)).to(beTrue())
+    }
+
+    func testCompositeComponentsStopRedactingWhenEligibilityResolves() throws {
+        let viewModels = try Self.makeViewModels(condition: .introOffer)
+        let offerEligibility = OfferEligibilityState(
+            isEligibleForIntroOffer: true,
+            isEligibleForPromoOffer: false,
+            isIntroOfferEligibilityLoading: false,
+            isPromoOfferEligibilityLoading: false
+        )
+
+        expect(self.redacts(viewModels.carousel, offerEligibility: offerEligibility)).to(beFalse())
+        expect(self.redacts(viewModels.tabs, offerEligibility: offerEligibility)).to(beFalse())
+        expect(self.redacts(viewModels.timeline, offerEligibility: offerEligibility)).to(beFalse())
+        expect(self.redacts(viewModels.timelineItem, offerEligibility: offerEligibility)).to(beFalse())
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension CompositeOfferEligibilityVisibilityTests {
+
+    typealias ViewModels = (
+        carousel: CarouselComponentViewModel,
+        tabs: TabsComponentViewModel,
+        timeline: TimelineComponentViewModel,
+        timelineItem: TimelineItemViewModel
+    )
+
+    var loadingOfferEligibility: OfferEligibilityState {
+        return .init(
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            isIntroOfferEligibilityLoading: true,
+            isPromoOfferEligibilityLoading: true
+        )
+    }
+
+    func redacts(
+        _ viewModel: CarouselComponentViewModel,
+        offerEligibility: OfferEligibilityState? = nil
+    ) -> Bool {
+        return viewModel.redactsWhileOfferEligibilityLoads(
+            state: .default,
+            condition: .compact,
+            offerEligibility: offerEligibility ?? self.loadingOfferEligibility,
+            selectedPackageId: nil,
+            customVariables: [:]
+        )
+    }
+
+    func redacts(
+        _ viewModel: TabsComponentViewModel,
+        offerEligibility: OfferEligibilityState? = nil
+    ) -> Bool {
+        return viewModel.redactsWhileOfferEligibilityLoads(
+            state: .default,
+            condition: .compact,
+            offerEligibility: offerEligibility ?? self.loadingOfferEligibility,
+            selectedPackageId: nil,
+            customVariables: [:]
+        )
+    }
+
+    func redacts(
+        _ viewModel: TimelineComponentViewModel,
+        offerEligibility: OfferEligibilityState? = nil
+    ) -> Bool {
+        return viewModel.redactsWhileOfferEligibilityLoads(
+            state: .default,
+            condition: .compact,
+            offerEligibility: offerEligibility ?? self.loadingOfferEligibility,
+            selectedPackageId: nil,
+            customVariables: [:]
+        )
+    }
+
+    func redacts(
+        _ viewModel: TimelineItemViewModel,
+        offerEligibility: OfferEligibilityState? = nil
+    ) -> Bool {
+        return viewModel.redactsWhileOfferEligibilityLoads(
+            state: .default,
+            condition: .compact,
+            offerEligibility: offerEligibility ?? self.loadingOfferEligibility,
+            selectedPackageId: nil,
+            customVariables: [:]
+        )
+    }
+
+    static func makeViewModels(
+        condition: PaywallComponent.ExtendedCondition
+    ) throws -> ViewModels {
+        let uiConfigProvider = UIConfigProvider(uiConfig: PreviewUIConfig.make())
+        let localizationProvider = LocalizationProvider(
+            locale: Locale(identifier: "en_US"),
+            localizedStrings: ["title": .string("Static text")]
+        )
+        let stackViewModel = StackComponentViewModel(
+            component: .init(components: []),
+            viewModels: [],
+            badgeViewModels: [],
+            uiConfigProvider: uiConfigProvider
+        )
+
+        let carousel = CarouselComponentViewModel(
+            localizationProvider: localizationProvider,
+            uiConfigProvider: uiConfigProvider,
+            component: .init(
+                pages: [],
+                overrides: [
+                    .init(extendedConditions: [condition], properties: .init(visible: false))
+                ]
+            ),
+            pageStackViewModels: []
+        )
+
+        let tabs = TabsComponentViewModel(
+            component: .init(
+                control: .init(type: .buttons, stack: .init(components: [])),
+                tabs: [],
+                overrides: [
+                    .init(extendedConditions: [condition], properties: .init(visible: false))
+                ]
+            ),
+            controlStackViewModel: stackViewModel,
+            tabViewModels: [],
+            uiConfigProvider: uiConfigProvider
+        )
+
+        let itemComponent = self.timelineItem(condition: condition)
+        let timelineItem = try self.timelineItemViewModel(
+            component: itemComponent,
+            localizationProvider: localizationProvider,
+            uiConfigProvider: uiConfigProvider
+        )
+        let timeline = TimelineComponentViewModel(
+            component: .init(
+                iconAlignment: nil,
+                itemSpacing: nil,
+                textSpacing: nil,
+                columnGutter: nil,
+                size: .init(width: .fill, height: .fit(nil)),
+                padding: .zero,
+                margin: .zero,
+                items: [itemComponent],
+                overrides: [
+                    .init(
+                        extendedConditions: [condition],
+                        properties: .init(
+                            visible: false,
+                            iconAlignment: nil,
+                            itemSpacing: nil,
+                            textSpacing: nil,
+                            columnGutter: nil,
+                            size: nil,
+                            padding: nil,
+                            margin: nil
+                        )
+                    )
+                ]
+            ),
+            items: [timelineItem],
+            uiConfigProvider: uiConfigProvider
+        )
+
+        return (carousel, tabs, timeline, timelineItem)
+    }
+
+    static func timelineItem(
+        condition: PaywallComponent.ExtendedCondition
+    ) -> PaywallComponent.TimelineComponent.Item {
+        return .init(
+            title: .init(
+                text: "title",
+                color: .init(light: .hex("#000000"))
+            ),
+            description: nil,
+            icon: .init(
+                baseUrl: "https://example.com",
+                iconName: "icon",
+                formats: .init(svg: "icon.svg", png: "icon.png", heic: "icon.heic", webp: "icon.webp"),
+                size: .init(width: .fixed(24), height: .fixed(24)),
+                padding: .zero,
+                margin: .zero,
+                color: .init(light: .hex("#000000")),
+                iconBackground: nil
+            ),
+            connector: .init(
+                width: 1,
+                color: .init(light: .hex("#000000")),
+                margin: .zero
+            ),
+            overrides: [
+                .init(
+                    extendedConditions: [condition],
+                    properties: .init(visible: false, connector: nil)
+                )
+            ]
+        )
+    }
+
+    static func timelineItemViewModel(
+        component: PaywallComponent.TimelineComponent.Item,
+        localizationProvider: LocalizationProvider,
+        uiConfigProvider: UIConfigProvider
+    ) throws -> TimelineItemViewModel {
+        return TimelineItemViewModel(
+            component: component,
+            title: try TextComponentViewModel(
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
+                component: component.title
+            ),
+            description: nil,
+            icon: IconComponentViewModel(
+                localizationProvider: localizationProvider,
+                uiConfigProvider: uiConfigProvider,
+                component: component.icon
+            ),
+            uiConfigProvider: uiConfigProvider
+        )
+    }
+
+}
+
 #endif

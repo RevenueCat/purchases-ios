@@ -85,6 +85,37 @@ class TimelineComponentViewModel {
         apply(style)
     }
 
+    /// True when intro or promo eligibility can change whether this timeline is shown.
+    func redactsWhileOfferEligibilityLoads(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        offerEligibility: OfferEligibilityState,
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
+        windowSize: CGSize? = nil
+    ) -> Bool {
+        let variesWithEligibility = self.presentedOverrides?.contains { override in
+            override.conditions.contains(where: \.dependsOnOfferEligibility)
+        } ?? false
+        let conditionContext = self.uiConfigProvider.conditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables,
+            windowSize: windowSize
+        )
+
+        return offerEligibility.visibilityCanChange(variesWithEligibility: variesWithEligibility) { intro, promo in
+            let partial = PresentedTimelinePartial.buildPartial(
+                state: state,
+                condition: condition,
+                isEligibleForIntroOffer: intro,
+                isEligibleForPromoOffer: promo,
+                conditionContext: conditionContext,
+                with: self.presentedOverrides
+            )
+            return partial?.visible ?? self.component.visible ?? true
+        }
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -149,6 +180,37 @@ class TimelineItemViewModel {
         )
 
         apply(style)
+    }
+
+    /// True when intro or promo eligibility can change whether this timeline item is shown.
+    func redactsWhileOfferEligibilityLoads(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        offerEligibility: OfferEligibilityState,
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
+        windowSize: CGSize? = nil
+    ) -> Bool {
+        let variesWithEligibility = self.presentedOverrides?.contains { override in
+            override.conditions.contains(where: \.dependsOnOfferEligibility)
+        } ?? false
+        let conditionContext = self.uiConfigProvider.conditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables,
+            windowSize: windowSize
+        )
+
+        return offerEligibility.visibilityCanChange(variesWithEligibility: variesWithEligibility) { intro, promo in
+            let partial = PresentedTimelineItemPartial.buildPartial(
+                state: state,
+                condition: condition,
+                isEligibleForIntroOffer: intro,
+                isEligibleForPromoOffer: promo,
+                conditionContext: conditionContext,
+                with: self.presentedOverrides
+            )
+            return partial?.visible ?? true
+        }
     }
 
 }

@@ -49,21 +49,29 @@ struct CarouselComponentView: View {
     @Environment(\.componentInteractionLogger)
     private var componentInteractionLogger
 
+    @Environment(\.isIntroOfferEligibilityLoading)
+    private var isIntroOfferEligibilityLoading
+
+    @Environment(\.isPromoOfferEligibilityLoading)
+    private var isPromoOfferEligibilityLoading
+
     let viewModel: CarouselComponentViewModel
     let onDismiss: () -> Void
 
     @State private var carouselHeight: CGFloat = 0
 
     var body: some View {
+        let isEligibleForIntroOffer = self.introOfferEligibilityContext.isEligible(
+            package: self.packageContext.package
+        )
+        let isEligibleForPromoOffer = self.paywallPromoOfferCache.isMostLikelyEligible(
+            for: self.packageContext.package
+        )
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
-            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                package: self.packageContext.package
-            ),
-            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
-                for: self.packageContext.package
-            ),
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackageId: self.selectedPackageId,
             customVariables: self.customVariables,
             windowSize: self.paywallWindowSize,
@@ -120,8 +128,33 @@ struct CarouselComponentView: View {
                        uiConfigProvider: self.viewModel.uiConfigProvider)
                 .shadow(shadow: style.shadow, shape: style.shape?.toInsettableShape())
                 .padding(style.margin)
+                .redacted(
+                    reason: self.redactsWhileOfferEligibilityLoads(
+                        isEligibleForIntroOffer: isEligibleForIntroOffer,
+                        isEligibleForPromoOffer: isEligibleForPromoOffer
+                    ) ? .placeholder : []
+                )
             }
         }
+    }
+
+    private func redactsWhileOfferEligibilityLoads(
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool
+    ) -> Bool {
+        return self.viewModel.redactsWhileOfferEligibilityLoads(
+            state: self.componentViewState,
+            condition: self.screenCondition,
+            offerEligibility: .init(
+                isEligibleForIntroOffer: isEligibleForIntroOffer,
+                isEligibleForPromoOffer: isEligibleForPromoOffer,
+                isIntroOfferEligibilityLoading: self.isIntroOfferEligibilityLoading,
+                isPromoOfferEligibilityLoading: self.isPromoOfferEligibilityLoading
+            ),
+            selectedPackageId: self.selectedPackageId,
+            customVariables: self.customVariables,
+            windowSize: self.paywallWindowSize
+        )
     }
 
     private func trackCarouselComponentInteraction(
