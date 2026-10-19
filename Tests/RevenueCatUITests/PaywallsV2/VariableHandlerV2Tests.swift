@@ -1221,19 +1221,42 @@ class VariableHandlerV2Test: TestCase {
     }
 
     func testDiscountVariablesAreEmptyForLifetime() {
-        for variable in [
-            "product.absolute_discount",
-            "product.offer_relative_discount",
-            "product.offer_absolute_discount",
-            "product.relative_discount_with_offer",
-            "product.absolute_discount_with_offer",
-            "product.relative_discount_with_offer_full_period",
-            "product.absolute_discount_with_offer_full_period"
-        ] {
+        for variable in Self.discountVariables {
             expect(self.discountVariable(variable, TestData.lifetimePackage, mostExpensive: 9.99))
                 .to(equal(""), description: variable)
         }
     }
+
+    func testDiscountVariablesIgnoreAnOfferWithoutPeriods() {
+        let package = discountTestPackage(
+            price: 99.99,
+            period: .init(value: 1, unit: .year),
+            packageType: .annual,
+            offer: .init(paymentMode: .payAsYouGo, price: 0.99, period: .init(value: 1, unit: .month), periods: 0)
+        )
+
+        for variable in [
+            "product.offer_relative_discount",
+            "product.offer_absolute_discount",
+            "product.relative_discount_with_offer",
+            "product.absolute_discount_with_offer"
+        ] {
+            expect(self.discountVariable(variable, package, mostExpensive: 9.99)).to(equal(""), description: variable)
+        }
+        // 9.99 * 12 - 99.99, as without an offer
+        expect(self.discountVariable("product.absolute_discount_with_offer_full_period", package, mostExpensive: 9.99))
+            .to(equal("$19.89"))
+    }
+
+    private static let discountVariables = [
+        "product.absolute_discount",
+        "product.offer_relative_discount",
+        "product.offer_absolute_discount",
+        "product.relative_discount_with_offer",
+        "product.absolute_discount_with_offer",
+        "product.relative_discount_with_offer_full_period",
+        "product.absolute_discount_with_offer_full_period"
+    ]
 
     private func yearlyWithOneWeekTrial() -> Package {
         return discountTestPackage(
