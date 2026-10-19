@@ -194,7 +194,7 @@ extension Package: VariableDataProvider {
         }
     }
 
-    func localizedRelativeDiscount(_ discount: Double?, _ locale: Locale) -> String? {
+    func localizedRelativeDiscount(_ discount: Decimal?, _ locale: Locale) -> String? {
         guard let discount else { return nil }
 
         return Localization.localized(discount: discount, locale: locale)

@@ -239,12 +239,9 @@ class TextComponentViewModel {
     ) -> String {
         let pkg = config.packageContext.package
 
-        let discount = pkg.flatMap { package in
-            Self.discount(
-                from: package.storeProduct.pricePerMonthForDiscount,
-                relativeTo: config.packageContext.variableContext.mostExpensivePricePerMonth
-            )
-        }
+        let discount = pkg?.storeProduct.pricePerMonthForDiscount?.discount(
+            relativeTo: config.packageContext.variableContext.mostExpensivePricePerMonth
+        )
 
         let handler = VariableHandlerV2(
             variableCompatibilityMap: config.variableConfig.variableCompatibilityMap,
@@ -277,8 +274,7 @@ class TextComponentViewModel {
             return text
         }
 
-        let discount = Self.discount(
-            from: package.storeProduct.pricePerMonthForDiscount,
+        let discount = package.storeProduct.pricePerMonthForDiscount?.discount(
             relativeTo: packageContext.variableContext.mostExpensivePricePerMonth
         )
 
@@ -293,13 +289,6 @@ class TextComponentViewModel {
             context: context,
             locale: locale
         )
-    }
-
-    private static func discount(from pricePerMonth: Double?, relativeTo mostExpensive: Double?) -> Double? {
-        guard let pricePerMonth, let mostExpensive else { return nil }
-        guard pricePerMonth < mostExpensive else { return nil }
-
-        return (mostExpensive - pricePerMonth) / mostExpensive
     }
 
 }

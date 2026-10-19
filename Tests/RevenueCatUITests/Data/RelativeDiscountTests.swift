@@ -39,6 +39,56 @@ class RelativeDiscountTests: TestCase {
     }
 
     @MainActor
+    func testHalfPercentageRoundsUpWithoutFloatingPointError() throws {
+        let packages = [
+            self.package(price: 11.58, period: .init(value: 1, unit: .year)),
+            self.package(price: 1, period: .init(value: 1, unit: .month))
+        ]
+
+        try self.assertDiscount(packages: packages, expectedDiscount: "4%", expectedPrices: "$0.96|$0.22")
+    }
+
+    @MainActor
+    func testWeeklyHalfPercentageRoundsUpWithoutRepeatingDecimalError() throws {
+        let packages = [
+            self.package(price: 10.95, period: .init(value: 1, unit: .year)),
+            self.package(price: 0.24, period: .init(value: 1, unit: .week))
+        ]
+
+        try self.assertDiscount(packages: packages, expectedDiscount: "13%", expectedPrices: "$0.91|$0.21")
+    }
+
+    @MainActor
+    func testWeeklyHalfPercentDiscountRoundsUpToOnePercent() throws {
+        let packages = [
+            self.package(price: 145.27, period: .init(value: 1, unit: .year)),
+            self.package(price: 2.80, period: .init(value: 1, unit: .week))
+        ]
+
+        try self.assertDiscount(packages: packages, expectedDiscount: "1%", expectedPrices: "$12.10|$2.78")
+    }
+
+    @MainActor
+    func testDailyBaselineUsesExistingMonthlyConversion() throws {
+        let packages = [
+            self.package(price: 29.99, period: .init(value: 1, unit: .year)),
+            self.package(price: 0.10, period: .init(value: 1, unit: .day))
+        ]
+
+        try self.assertDiscount(packages: packages, expectedDiscount: "17%", expectedPrices: "$2.49|$0.57")
+    }
+
+    @MainActor
+    func testMultiplePeriodUnitsAreIncludedInDiscount() throws {
+        let packages = [
+            self.package(price: 59.98, period: .init(value: 2, unit: .year)),
+            self.package(price: 5.98, period: .init(value: 2, unit: .month))
+        ]
+
+        try self.assertDiscount(packages: packages, expectedDiscount: "16%", expectedPrices: "$2.49|$0.57")
+    }
+
+    @MainActor
     func testEqualMonthlyPricesHaveNoDiscount() throws {
         let packages = [
             self.package(price: 24, period: .init(value: 1, unit: .year)),
