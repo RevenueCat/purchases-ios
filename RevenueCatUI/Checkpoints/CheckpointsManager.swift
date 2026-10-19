@@ -57,54 +57,6 @@ final class CheckpointsManager {
         self.errorPresenter = presenter
     }
 
-    func errorPresentationHandler(
-        for params: CheckpointCallParams,
-        defaultHandler makeDefaultHandler: @escaping () -> ErrorPresentationHandler
-    ) -> ErrorPresentationHandler {
-        if let localHandler = params.localErrorPresentationHandler {
-            return { [errorPresentationQueue] params, completion in
-                errorPresentationQueue.enqueue(
-                    params: params,
-                    handler: localHandler,
-                    completion: completion
-                )
-            }
-        }
-
-        var defaultHandler: ErrorPresentationHandler?
-        return { [weak self, errorPresentationQueue] params, completion in
-            let handler: ErrorPresentationHandler
-            if let globalPresenter = self?.errorPresenter {
-                handler = { params, completion in
-                    globalPresenter.present(params: params, completion: completion)
-                }
-            } else {
-                let resolvedDefaultHandler = defaultHandler ?? makeDefaultHandler()
-                defaultHandler = resolvedDefaultHandler
-                handler = resolvedDefaultHandler
-            }
-
-            errorPresentationQueue.enqueue(
-                params: params,
-                handler: handler,
-                completion: completion
-            )
-        }
-    }
-
-    private func errorPresentationHandler(for params: CheckpointCallParams) -> ErrorPresentationHandler {
-        return self.errorPresentationHandler(
-            for: params,
-            defaultHandler: {
-                let preferredUILocaleProvider = self.preferredUILocaleProvider
-                let presenter = DefaultErrorPresenter(preferredUILocaleProvider: preferredUILocaleProvider)
-                return { params, completion in
-                    presenter.present(params: params, completion: completion)
-                }
-            }
-        )
-    }
-
     func executeCheckpoint(
         identifier: String,
         params: CheckpointCallParams
@@ -265,27 +217,6 @@ final class CheckpointsManager {
         }
     }
 
-    private func presentCheckpointError(
-        _ error: any Error,
-        identifier: String,
-        params: CheckpointCallParams,
-        kind: CheckpointFailureKind
-    ) async {
-        let errorPresentationHandler = self.errorPresentationHandler(for: params)
-
-        await withCheckedContinuation { continuation in
-            errorPresentationHandler(
-                .init(
-                    checkpointIdentifier: identifier,
-                    error: error,
-                    customVariables: params.customVariables,
-                    kind: kind
-                ),
-                .init { continuation.resume() }
-            )
-        }
-    }
-
     private func flowResult(
         customerInfo: CustomerInfo?,
         initialCustomerInfo: CustomerInfo?,
@@ -310,6 +241,82 @@ final class CheckpointsManager {
         return self.cachedCustomerInfoProvider().map { customerInfo in
             Set(customerInfo.entitlements.active.keys)
         }
+    }
+
+}
+
+// MARK: - Error presentation handlers
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension CheckpointsManager {
+
+    func errorPresentationHandler(
+        for params: CheckpointCallParams,
+        defaultHandler makeDefaultHandler: @escaping () -> ErrorPresentationHandler
+    ) -> ErrorPresentationHandler {
+        if let localHandler = params.localErrorPresentationHandler {
+            return { [errorPresentationQueue] params, completion in
+                errorPresentationQueue.enqueue(
+                    params: params,
+                    handler: localHandler,
+                    completion: completion
+                )
+            }
+        }
+
+        var defaultHandler: ErrorPresentationHandler?
+        return { [weak self, errorPresentationQueue] params, completion in
+            let handler: ErrorPresentationHandler
+            if let globalPresenter = self?.errorPresenter {
+                handler = { params, completion in
+                    globalPresenter.present(params: params, completion: completion)
+                }
+            } else {
+                let resolvedDefaultHandler = defaultHandler ?? makeDefaultHandler()
+                defaultHandler = resolvedDefaultHandler
+                handler = resolvedDefaultHandler
+            }
+
+            errorPresentationQueue.enqueue(
+                params: params,
+                handler: handler,
+                completion: completion
+            )
+        }
+    }
+
+    private func presentCheckpointError(
+        _ error: any Error,
+        identifier: String,
+        params: CheckpointCallParams,
+        kind: CheckpointFailureKind
+    ) async {
+        let errorPresentationHandler = self.errorPresentationHandler(for: params)
+
+        await withCheckedContinuation { continuation in
+            errorPresentationHandler(
+                .init(
+                    checkpointIdentifier: identifier,
+                    error: error,
+                    customVariables: params.customVariables,
+                    kind: kind
+                ),
+                .init { continuation.resume() }
+            )
+        }
+    }
+
+    private func errorPresentationHandler(for params: CheckpointCallParams) -> ErrorPresentationHandler {
+        return self.errorPresentationHandler(
+            for: params,
+            defaultHandler: {
+                let preferredUILocaleProvider = self.preferredUILocaleProvider
+                let presenter = DefaultErrorPresenter(preferredUILocaleProvider: preferredUILocaleProvider)
+                return { params, completion in
+                    presenter.present(params: params, completion: completion)
+                }
+            }
+        )
     }
 
 }
