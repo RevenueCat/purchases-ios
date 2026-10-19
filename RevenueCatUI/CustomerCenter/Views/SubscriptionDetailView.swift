@@ -109,7 +109,11 @@ struct SubscriptionDetailView: View {
                     productIDs: viewModel.changePlanProductIDs
                 )
             )
-            .onAppear { viewModel.didAppear() }
+            .onAppear {
+                viewModel.didAppear()
+                viewModel.startPublishingPreviewDiagnostics()
+            }
+            .onDisappear { viewModel.stopPublishingPreviewDiagnostics() }
             .onChangeOf(customerInfoViewModel.manageSubscriptionsSheet) { manageSubscriptionsSheet in
                 if !manageSubscriptionsSheet {
                     viewModel.refreshPurchase()

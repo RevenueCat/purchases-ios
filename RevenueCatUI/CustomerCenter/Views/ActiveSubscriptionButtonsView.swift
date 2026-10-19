@@ -76,8 +76,6 @@ struct ActiveSubscriptionButtonsView: View {
                           : UIColor.secondarySystemBackground),
                     in: .rect(cornerRadius: CustomerCenterStylingUtilities.cornerRadius))
         #endif
-        .onAppear { self.viewModel.startPublishingPreviewDiagnostics() }
-        .onDisappear { self.viewModel.stopPublishingPreviewDiagnostics() }
     }
 }
 

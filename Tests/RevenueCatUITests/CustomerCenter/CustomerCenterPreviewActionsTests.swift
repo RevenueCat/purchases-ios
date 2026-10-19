@@ -48,8 +48,7 @@ final class CustomerCenterPreviewActionsTests: TestCase {
             actionWrapper: CustomerCenterActionWrapper(), shouldShowSeeAllPurchases: true,
             purchasesProvider: provider
         )
-        let window = host(UIHostingController(rootView: ActiveSubscriptionButtonsView(viewModel: model)))
-        defer { window.isHidden = true; window.rootViewController = nil }
+        model.startPublishingPreviewDiagnostics()
         model.purchaseInformation = .subscription
         XCTAssertEqual(Set(provider.diagnostics.filter(\.visible).map(\.pathID)),
                        Set(model.relevantPathsForPurchase.map(\.id)))
@@ -240,43 +239,78 @@ final class CustomerCenterPreviewActionsTests: TestCase {
         XCTAssertEqual(provider.diagnosticCalls, 0)
     }
 
-    func testDiagnosticsFollowViewLifecycleAndPurchaseChanges() async throws {
+    func testDetailDiagnosticsFollowScreenLifecycleWithActionsOffscreen() async throws {
         let provider = PreviewProvider()
-        let model = makeModel(provider)
-        let appeared = expectation(description: "Buttons appeared")
-        let disappeared = expectation(description: "Buttons disappeared")
-        let view = ActiveSubscriptionButtonsView(viewModel: model)
+        let root = CustomerCenterViewModel(uiPreviewPurchaseProvider: provider)
+        await root.loadScreen()
+        let title = String(repeating: "Subscription\n", count: 100)
+        root.subscriptionsSection = [
+            .mock(title: title, isSubscription: true, productType: .autoRenewableSubscription)
+        ]
+        let appeared = expectation(description: "Detail screen appeared")
+        let disappeared = expectation(description: "Detail screen disappeared")
+        let view = SubscriptionDetailView(
+            customerInfoViewModel: root, screen: try XCTUnwrap(root.configuration?.screens[.management]),
+            purchaseInformation: root.subscriptionsSection.first,
+            showPurchaseHistory: false, showVirtualCurrencies: false, allowsMissingPurchaseAction: false,
+            purchaseObservationMode: .currentPurchase, purchasesProvider: provider, actionWrapper: root.actionWrapper
+        )
+        let controller = UIHostingController(rootView: AnyView(view
             .onAppear { appeared.fulfill() }
-            .onDisappear { disappeared.fulfill() }
-        let controller = UIHostingController(rootView: AnyView(view))
+            .onDisappear { disappeared.fulfill() }))
         let window = host(controller)
         defer { window.isHidden = true; window.rootViewController = nil }
         await fulfillment(of: [appeared], timeout: 2)
 
-        XCTAssertEqual(provider.diagnosticCalls, 1)
-        _ = model.relevantPathsForPurchase
-        XCTAssertEqual(provider.diagnosticCalls, 1)
-        model.purchaseInformation = .mock(isSubscription: true, productType: .autoRenewableSubscription,
-                                          isCancelled: true, renewalDate: nil)
-        XCTAssertEqual(provider.diagnosticCalls, 2)
-        let rendered = try XCTUnwrap(model.relevantPathsForPurchase.first { $0.type == .cancel })
-        XCTAssertEqual(provider.diagnostics.first { $0.pathID == rendered.id }?.title, "Resubscribe")
+        XCTAssertFalse(provider.diagnostics.isEmpty)
+        let cancelPathID = try XCTUnwrap(root.configuration?.screens[.management]?.paths
+            .first { $0.type == .cancel }?.id)
+        root.subscriptionsSection = [
+            .mock(title: title, isSubscription: true, productType: .autoRenewableSubscription,
+                  isCancelled: true, renewalDate: nil)
+        ]
+        root.customerInfo = CustomerInfoFixtures.customerInfoWithExpiredAppleSubscriptions
+        controller.view.layoutIfNeeded()
+        XCTAssertEqual(provider.diagnostics.first { $0.pathID == cancelPathID }?.title, "Resubscribe")
 
         controller.rootView = AnyView(EmptyView())
         controller.view.layoutIfNeeded()
         await fulfillment(of: [disappeared], timeout: 2)
-        model.purchaseInformation = nil
-        XCTAssertEqual(provider.diagnosticCalls, 2)
+        let callsAfterDisappearance = provider.diagnosticCalls
+        root.subscriptionsSection = []
+        root.nonSubscriptionsSection = []
+        root.customerInfo = CustomerInfoFixtures.customerInfo(subscriptions: [], entitlements: [])
+        XCTAssertEqual(provider.diagnosticCalls, callsAfterDisappearance)
 
-        let reappeared = expectation(description: "Buttons reappeared")
-        controller.rootView = AnyView(ActiveSubscriptionButtonsView(viewModel: model)
-            .onAppear { reappeared.fulfill() })
+        let reappeared = expectation(description: "Detail screen reappeared")
+        controller.rootView = AnyView(view.onAppear { reappeared.fulfill() })
         controller.view.layoutIfNeeded()
         await fulfillment(of: [reappeared], timeout: 2)
-        XCTAssertEqual(provider.diagnosticCalls, 3)
+        XCTAssertGreaterThan(provider.diagnosticCalls, callsAfterDisappearance)
         XCTAssertTrue(provider.diagnostics.allSatisfy { $0.productID == nil })
-        XCTAssertEqual(Set(provider.diagnostics.filter(\.visible).map(\.pathID)),
-                       Set(model.relevantPathsForPurchase.map(\.id)))
+    }
+
+    func testListPublishesDiagnosticsWithActionsOffscreen() async throws {
+        let provider = PreviewProvider()
+        let root = CustomerCenterViewModel(uiPreviewPurchaseProvider: provider)
+        await root.loadScreen()
+        root.subscriptionsSection = (0..<30).map {
+            .mock(productIdentifier: "subscription.\($0)", isSubscription: true,
+                  productType: .autoRenewableSubscription)
+        }
+        let appeared = expectation(description: "List screen appeared")
+        let screen = try XCTUnwrap(root.configuration?.screens[.management])
+        let view = RelevantPurchasesListView(
+            customerInfoViewModel: root, screen: screen, shouldShowSeeAllPurchases: false,
+            purchasesProvider: provider, actionWrapper: root.actionWrapper
+        )
+        .onAppear { appeared.fulfill() }
+        let window = host(UIHostingController(rootView: view))
+        defer { window.isHidden = true; window.rootViewController = nil }
+        await fulfillment(of: [appeared], timeout: 2)
+
+        XCTAssertEqual(Set(provider.diagnostics.map(\.pathID)), Set(screen.paths.map(\.id)))
+        XCTAssertTrue(provider.diagnostics.allSatisfy { $0.productID == nil })
     }
 
     func testDiagnosticsUseTheRenderedResubscribeTitle() throws {
@@ -289,8 +323,7 @@ final class CustomerCenterPreviewActionsTests: TestCase {
             purchasesProvider: provider
         )
         let rendered = try XCTUnwrap(model.relevantPathsForPurchase.first { $0.type == .cancel })
-        let window = host(UIHostingController(rootView: ActiveSubscriptionButtonsView(viewModel: model)))
-        defer { window.isHidden = true; window.rootViewController = nil }
+        model.startPublishingPreviewDiagnostics()
         let diagnostic = try XCTUnwrap(provider.diagnostics.first { $0.pathID == rendered.id })
         XCTAssertEqual(rendered.title, "Resubscribe")
         XCTAssertEqual(diagnostic.title, rendered.title)
@@ -306,8 +339,7 @@ final class CustomerCenterPreviewActionsTests: TestCase {
             purchasesProvider: provider
         )
         let visible = Set(model.relevantPathsForPurchase.map(\.id))
-        let window = host(UIHostingController(rootView: ActiveSubscriptionButtonsView(viewModel: model)))
-        defer { window.isHidden = true; window.rootViewController = nil }
+        model.startPublishingPreviewDiagnostics()
         XCTAssertEqual(Set(provider.diagnostics.filter(\.visible).map(\.pathID)), visible)
         XCTAssertTrue(provider.diagnostics.filter { !visible.contains($0.pathID) }.allSatisfy { !$0.reason.isEmpty })
     }
