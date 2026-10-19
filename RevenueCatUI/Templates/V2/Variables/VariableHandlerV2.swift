@@ -350,8 +350,10 @@ enum VariablesV2: String {
     case productAbsoluteDiscount = "product.absolute_discount"
     case productOfferRelativeDiscount = "product.offer_relative_discount"
     case productOfferAbsoluteDiscount = "product.offer_absolute_discount"
-    case productOfferRelativeDiscountVsStandard = "product.offer_relative_discount_vs_standard"
-    case productOfferAbsoluteDiscountVsStandard = "product.offer_absolute_discount_vs_standard"
+    case productRelativeDiscountWithOffer = "product.relative_discount_with_offer"
+    case productAbsoluteDiscountWithOffer = "product.absolute_discount_with_offer"
+    case productRelativeDiscountWithOfferFullPeriod = "product.relative_discount_with_offer_full_period"
+    case productAbsoluteDiscountWithOfferFullPeriod = "product.absolute_discount_with_offer_full_period"
     case productStoreProductName = "product.store_product_name"
 
     // Countdown variables
@@ -723,37 +725,60 @@ extension VariablesV2 {
         case .productOfferRelativeDiscount:
             if let package {
                 return self.percent(
-                    self.offerSavings(
-                        package: package,
-                        offerContext: offerContext,
-                        baseline: .mostExpensive(pricePerMonth: context.mostExpensivePricePerMonth)
-                    )?.relative,
+                    self.offerSavings(package: package, offerContext: offerContext)?.relative,
                     localizations: localizations
                 )
             }
         case .productOfferAbsoluteDiscount:
             if let package {
                 return self.absoluteDiscount(
-                    self.offerSavings(
+                    self.offerSavings(package: package, offerContext: offerContext),
+                    package: package,
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                )
+            }
+        case .productRelativeDiscountWithOffer:
+            if let package {
+                return self.percent(
+                    self.offerTermSavings(
                         package: package,
                         offerContext: offerContext,
-                        baseline: .mostExpensive(pricePerMonth: context.mostExpensivePricePerMonth)
+                        mostExpensivePricePerMonth: context.mostExpensivePricePerMonth
+                    )?.relative,
+                    localizations: localizations
+                )
+            }
+        case .productAbsoluteDiscountWithOffer:
+            if let package {
+                return self.absoluteDiscount(
+                    self.offerTermSavings(
+                        package: package,
+                        offerContext: offerContext,
+                        mostExpensivePricePerMonth: context.mostExpensivePricePerMonth
                     ),
                     package: package,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
                 )
             }
-        case .productOfferRelativeDiscountVsStandard:
+        case .productRelativeDiscountWithOfferFullPeriod:
             if let package {
                 return self.percent(
-                    self.offerSavings(package: package, offerContext: offerContext, baseline: .standardPrice)?.relative,
+                    self.fullPeriodSavings(
+                        package: package,
+                        offerContext: offerContext,
+                        mostExpensivePricePerMonth: context.mostExpensivePricePerMonth
+                    )?.relative,
                     localizations: localizations
                 )
             }
-        case .productOfferAbsoluteDiscountVsStandard:
+        case .productAbsoluteDiscountWithOfferFullPeriod:
             if let package {
                 return self.absoluteDiscount(
-                    self.offerSavings(package: package, offerContext: offerContext, baseline: .standardPrice),
+                    self.fullPeriodSavings(
+                        package: package,
+                        offerContext: offerContext,
+                        mostExpensivePricePerMonth: context.mostExpensivePricePerMonth
+                    ),
                     package: package,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
                 )
@@ -1253,33 +1278,64 @@ extension VariablesV2 {
         return String(format: localizedFormat, percent)
     }
 
-    private func standardSavings(package: Package, mostExpensivePricePerMonth: Double?) -> FirstPeriodSavings? {
+    private func standardSavings(package: Package, mostExpensivePricePerMonth: Double?) -> DiscountSavings? {
         guard !self.isLifetime(package: package) else {
             return nil
         }
 
-        return FirstPeriodSavings(
-            product: package.storeProduct,
+        return DiscountSavings(
+            firstPeriodOf: package.storeProduct,
             discount: nil,
             baseline: .mostExpensive(pricePerMonth: mostExpensivePricePerMonth)
         )
     }
 
-    private func offerSavings(
-        package: Package,
-        offerContext: OfferContext,
-        baseline: FirstPeriodSavings.Baseline
-    ) -> FirstPeriodSavings? {
+    /// The offer against the product's own standard price. `nil` without an offer.
+    private func offerSavings(package: Package, offerContext: OfferContext) -> DiscountSavings? {
         guard !self.isLifetime(package: package),
               let discount = self.resolvedDiscount(for: package, offerContext: offerContext) else {
             return nil
         }
 
-        return FirstPeriodSavings(product: package.storeProduct, discount: discount, baseline: baseline)
+        return DiscountSavings(firstPeriodOf: package.storeProduct, discount: discount, baseline: .standardPrice)
+    }
+
+    /// Without an offer, this matches `product.absolute_discount`.
+    private func fullPeriodSavings(
+        package: Package,
+        offerContext: OfferContext,
+        mostExpensivePricePerMonth: Double?
+    ) -> DiscountSavings? {
+        guard !self.isLifetime(package: package) else {
+            return nil
+        }
+
+        return DiscountSavings(
+            firstPeriodOf: package.storeProduct,
+            discount: self.resolvedDiscount(for: package, offerContext: offerContext),
+            baseline: .mostExpensive(pricePerMonth: mostExpensivePricePerMonth)
+        )
+    }
+
+    /// Without a paid offer, this matches `product.absolute_discount`.
+    private func offerTermSavings(
+        package: Package,
+        offerContext: OfferContext,
+        mostExpensivePricePerMonth: Double?
+    ) -> DiscountSavings? {
+        guard !self.isLifetime(package: package) else {
+            return nil
+        }
+
+        return DiscountSavings(
+            offerTermOf: package.storeProduct,
+            discount: self.resolvedDiscount(for: package, offerContext: offerContext),
+            mostExpensivePricePerMonth: mostExpensivePricePerMonth
+        )
     }
 
     private func absoluteDiscount(
-        _ savings: FirstPeriodSavings?,
+        _ savings: DiscountSavings?,
         package: Package,
         showZeroDecimalPlacePrices: Bool
     ) -> String {
