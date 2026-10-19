@@ -619,36 +619,45 @@ final class ButtonComponentViewTests: TestCase {
                 action: .navigateBack, stack: Self.makeButtonStack(label: "Close"), useNativeIfPossible: true
             ))])
         )
-        let model = try StackComponentViewModel(component: .init(components: [.stack(.init(
-            components: Self.makeButtonStack(label: "Close").components, badge: badge
-        ))]), localizationProvider: .init(
-            locale: Locale(identifier: "en_US"), localizedStrings: ["Close": .string("Close")]
-        ), colorScheme: .light)
-        let coordinator = NativePaywallCloseCoordinator()
-        var backActions = 0
-        let view = StackComponentView(viewModel: model, onDismiss: {})
-            .environment(\.workflowNavigateBackHandler, { backActions += 1 })
-            .environment(\.nativePaywallCloseCoordinator, coordinator)
-            .environmentObject(PurchaseHandler.default())
-            .environmentObject(PackageContext(package: nil, variableContext: .init(packages: [])))
-            .environmentObject(IntroOfferEligibilityContext(
-                introEligibilityChecker: BaseSnapshotTest.eligibleChecker
-            ))
-            .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
-            .environment(\.safeAreaInsets, EdgeInsets())
-        let (window, _) = Self.host(view)
-        defer { window.isHidden = true; window.rootViewController = nil }
-        let registered = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
-            coordinator.actions.count == 1
-        }, object: nil)
-        await fulfillment(of: [registered], timeout: 2)
-        let id = try XCTUnwrap(coordinator.actions.first?.id)
-        let settled = expectation(description: "Badge registration remains stable")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { settled.fulfill() }
-        await fulfillment(of: [settled], timeout: 2)
-        XCTAssertEqual(coordinator.actions.map(\.id), [id])
-        try await coordinator.performAction(id: id)
-        XCTAssertEqual(backActions, 1)
+        for insideButton in [false, true] {
+            let label = PaywallComponent.StackComponent(
+                components: Self.makeButtonStack(label: "Close").components, badge: badge
+            )
+            let child: PaywallComponent = insideButton
+                ? .stack(.init(components: [.button(.init(action: .restorePurchases, stack: label))]))
+                : .stack(label)
+            let model = try StackComponentViewModel(
+                component: .init(components: [child]),
+                localizationProvider: .init(locale: Locale(identifier: "en_US"),
+                                            localizedStrings: ["Close": .string("Close")]),
+                colorScheme: .light
+            )
+            let coordinator = NativePaywallCloseCoordinator()
+            var backActions = 0
+            let view = StackComponentView(viewModel: model, onDismiss: {})
+                .environment(\.workflowNavigateBackHandler, { backActions += 1 })
+                .environment(\.nativePaywallCloseCoordinator, coordinator)
+                .environmentObject(PurchaseHandler.default())
+                .environmentObject(PackageContext(package: nil, variableContext: .init(packages: [])))
+                .environmentObject(IntroOfferEligibilityContext(
+                    introEligibilityChecker: BaseSnapshotTest.eligibleChecker
+                ))
+                .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
+                .environment(\.safeAreaInsets, EdgeInsets())
+            let (window, _) = Self.host(view)
+            defer { window.isHidden = true; window.rootViewController = nil }
+            let registered = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+                coordinator.actions.count == 1
+            }, object: nil)
+            await fulfillment(of: [registered], timeout: 2)
+            let id = try XCTUnwrap(coordinator.actions.first?.id)
+            let settled = expectation(description: "Badge registration remains stable")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { settled.fulfill() }
+            await fulfillment(of: [settled], timeout: 2)
+            XCTAssertEqual(coordinator.actions.map(\.id), [id])
+            try await coordinator.performAction(id: id)
+            XCTAssertEqual(backActions, 1)
+        }
     }
 
     func testPromotingNativeButtonsDoesNotRemountSiblingCarousel() async throws {
