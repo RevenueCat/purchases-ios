@@ -1125,6 +1125,11 @@ class VariableHandlerV2Test: TestCase {
             .to(equal("$27.12"))
         expect(self.discountVariable("product.relative_discount_with_offer_full_period", package, mostExpensive: 9.99))
             .to(equal("23%"))
+        // 99.99 - (0.99 + 99.99 * 335 / 365) over the first year
+        expect(self.discountVariable("product.offer_absolute_discount", package, mostExpensive: 9.99))
+            .to(equal("$7.23"))
+        expect(self.discountVariable("product.offer_relative_discount", package, mostExpensive: 9.99))
+            .to(equal("7%"))
     }
 
     func testDiscountsWithOfferTreatAFreeTrialAsNoOffer() {
