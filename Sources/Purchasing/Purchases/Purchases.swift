@@ -2082,7 +2082,7 @@ extension Purchases {
     ///
     /// - Parameter adUnitId: The ad network's rewarded ad unit identifier.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    public func adRewards(
+    func adRewards(
         forAdUnitId adUnitId: String
     ) async -> ConfiguredAdRewards? {
         return nil
@@ -2096,7 +2096,7 @@ extension Purchases {
     ///
     /// - Parameter adUnitId: The ad network's rewarded ad unit identifier.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    public func cachedAdRewards(
+    func cachedAdRewards(
         forAdUnitId adUnitId: String
     ) -> ConfiguredAdRewards? {
         return nil

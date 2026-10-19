@@ -13,13 +13,13 @@
 import Foundation
 
 /// Rewards currently configured for a rewarded ad unit.
-public struct ConfiguredAdRewards: Sendable, Equatable {
+struct ConfiguredAdRewards: Sendable, Equatable {
 
     /// The primary configured reward, or `nil` when none is configured.
-    public let reward: AdRewardConfiguration?
+    let reward: AdRewardConfiguration?
 
     /// Additional configured rewards, which may exist even when no primary reward is configured.
-    public let moreRewards: [AdRewardConfiguration]
+    let moreRewards: [AdRewardConfiguration]
 
     internal init(
         reward: AdRewardConfiguration? = nil,
@@ -35,7 +35,7 @@ public struct ConfiguredAdRewards: Sendable, Equatable {
 ///
 /// Inspect the reward by checking ``virtualCurrency`` or ``entitlement``. A reward shape that the
 /// SDK does not currently model is represented by ``unsupportedReward``.
-public struct AdRewardConfiguration: Sendable, Equatable {
+struct AdRewardConfiguration: Sendable, Equatable {
 
     private enum Storage: Sendable, Equatable {
         case virtualCurrency(VirtualCurrencyRewardConfiguration)
@@ -50,19 +50,19 @@ public struct AdRewardConfiguration: Sendable, Equatable {
     }
 
     /// The configured virtual-currency reward, if present.
-    public var virtualCurrency: VirtualCurrencyRewardConfiguration? {
+    var virtualCurrency: VirtualCurrencyRewardConfiguration? {
         guard case .virtualCurrency(let reward) = self.storage else { return nil }
         return reward
     }
 
     /// The configured entitlement reward, if present.
-    public var entitlement: EntitlementRewardConfiguration? {
+    var entitlement: EntitlementRewardConfiguration? {
         guard case .entitlement(let reward) = self.storage else { return nil }
         return reward
     }
 
     /// A configured reward shape that the SDK does not currently model.
-    public static let unsupportedReward = AdRewardConfiguration(storage: .unsupportedReward)
+    static let unsupportedReward = AdRewardConfiguration(storage: .unsupportedReward)
 
     internal static func virtualCurrency(_ reward: VirtualCurrencyRewardConfiguration) -> Self {
         return .init(storage: .virtualCurrency(reward))
@@ -75,13 +75,13 @@ public struct AdRewardConfiguration: Sendable, Equatable {
 }
 
 /// A virtual-currency reward currently configured for a rewarded ad unit.
-public struct VirtualCurrencyRewardConfiguration: Sendable, Equatable {
+struct VirtualCurrencyRewardConfiguration: Sendable, Equatable {
 
     /// The reward type identifier (e.g. `"coins"`, `"gems"`).
-    public let code: String
+    let code: String
 
     /// The configured reward amount.
-    public let amount: Int
+    let amount: Int
 
     internal init?(code: String, amount: Int) {
         guard !code.isEmpty, amount > 0 else { return nil }
@@ -92,13 +92,13 @@ public struct VirtualCurrencyRewardConfiguration: Sendable, Equatable {
 }
 
 /// An entitlement reward currently configured for a rewarded ad unit.
-public struct EntitlementRewardConfiguration: Sendable, Equatable {
+struct EntitlementRewardConfiguration: Sendable, Equatable {
 
     /// The entitlement identifier.
-    public let identifier: String
+    let identifier: String
 
     /// The duration for which the entitlement will be granted, in seconds.
-    public let durationInSeconds: Int
+    let durationInSeconds: Int
 
     internal init?(identifier: String, durationInSeconds: Int) {
         guard !identifier.isEmpty, durationInSeconds > 0 else { return nil }
