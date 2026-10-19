@@ -298,7 +298,7 @@ extension TemplateViewConfiguration.PackageConfiguration {
         return filtered
             .map { package in
                 let discount = Self.discount(
-                    from: package.storeProduct.pricePerMonth?.doubleValue,
+                    from: package.storeProduct.pricePerMonthForDiscount,
                     relativeTo: mostExpensivePricePerMonth
                 )
 
@@ -318,19 +318,8 @@ extension TemplateViewConfiguration.PackageConfiguration {
     private static func mostExpensivePricePerMonth(in packages: [Package]) -> Double? {
         return packages
             .lazy
-            .map(\.storeProduct)
-            .compactMap { product in
-                product.pricePerMonth.map {
-                    return (
-                        product: product,
-                        pricePerMonth: $0
-                    )
-                }
-            }
-            .max { productA, productB in
-                return productA.pricePerMonth.doubleValue < productB.pricePerMonth.doubleValue
-            }
-            .map(\.pricePerMonth.doubleValue)
+            .compactMap(\.storeProduct.pricePerMonthForDiscount)
+            .max()
     }
 
     private static func discount(from pricePerMonth: Double?, relativeTo mostExpensive: Double?) -> Double? {

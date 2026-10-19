@@ -241,7 +241,7 @@ class TextComponentViewModel {
 
         let discount = pkg.flatMap { package in
             Self.discount(
-                from: package.storeProduct.pricePerMonth?.doubleValue,
+                from: package.storeProduct.pricePerMonthForDiscount,
                 relativeTo: config.packageContext.variableContext.mostExpensivePricePerMonth
             )
         }
@@ -278,7 +278,7 @@ class TextComponentViewModel {
         }
 
         let discount = Self.discount(
-            from: package.storeProduct.pricePerMonth?.doubleValue,
+            from: package.storeProduct.pricePerMonthForDiscount,
             relativeTo: packageContext.variableContext.mostExpensivePricePerMonth
         )
 

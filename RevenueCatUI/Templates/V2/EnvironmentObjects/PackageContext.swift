@@ -61,19 +61,8 @@ class PackageContext: ObservableObject {
         private static func mostExpensivePricePerMonth(in packages: [Package]) -> Double? {
             return packages
                 .lazy
-                .map(\.storeProduct)
-                .compactMap { product in
-                    product.pricePerMonth.map {
-                        return (
-                            product: product,
-                            pricePerMonth: $0
-                        )
-                    }
-                }
-                .max { productA, productB in
-                    return productA.pricePerMonth.doubleValue < productB.pricePerMonth.doubleValue
-                }
-                .map(\.pricePerMonth.doubleValue)
+                .compactMap(\.storeProduct.pricePerMonthForDiscount)
+                .max()
         }
 
     }
