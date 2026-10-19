@@ -27,16 +27,24 @@ struct PackageSelectionContext {
     let isEligibleForIntroOffer: (Package) -> Bool
     let isEligibleForPromoOffer: (Package) -> Bool
 
+    /// Rendering reads these from the environment; selection has none, so the caller passes them in.
+    let stateValues: [String: PaywallComponent.ConditionValue]
+    let stateDefaults: [String: PaywallComponent.ConditionValue]
+
     init(
         condition: ScreenCondition,
         customVariables: [String: CustomVariableValue],
         windowSize: CGSize? = nil,
+        stateValues: [String: PaywallComponent.ConditionValue] = [:],
+        stateDefaults: [String: PaywallComponent.ConditionValue] = [:],
         isEligibleForIntroOffer: @escaping (Package) -> Bool,
         isEligibleForPromoOffer: @escaping (Package) -> Bool
     ) {
         self.condition = condition
         self.customVariables = customVariables
         self.windowSize = windowSize
+        self.stateValues = stateValues
+        self.stateDefaults = stateDefaults
         self.isEligibleForIntroOffer = isEligibleForIntroOffer
         self.isEligibleForPromoOffer = isEligibleForPromoOffer
     }
@@ -45,9 +53,18 @@ struct PackageSelectionContext {
     /// Rules keyed on custom variables or offer eligibility cannot be evaluated yet, so a selection made
     /// with this is provisional and has to be reconciled once the body resolves the real context.
     static var provisional: PackageSelectionContext {
+        return .provisional(stateDefaults: [:])
+    }
+
+    /// State defaults are known before the environment exists. Without them a stack shown only for the
+    /// default state reads as hidden and nothing gets seeded.
+    static func provisional(
+        stateDefaults: [String: PaywallComponent.ConditionValue]
+    ) -> PackageSelectionContext {
         return .init(
             condition: .compact,
             customVariables: [:],
+            stateDefaults: stateDefaults,
             isEligibleForIntroOffer: { _ in false },
             isEligibleForPromoOffer: { _ in false }
         )
@@ -114,7 +131,9 @@ class PackageValidator {
             isEligibleForPromoOffer: context.isEligibleForPromoOffer(info.package),
             selectedPackageId: nil,
             customVariables: context.customVariables,
-            windowSize: context.windowSize
+            windowSize: context.windowSize,
+            stateValues: context.stateValues,
+            stateDefaults: context.stateDefaults
         )
     }
 

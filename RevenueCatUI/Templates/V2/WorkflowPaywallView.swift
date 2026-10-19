@@ -1268,6 +1268,12 @@ private struct WorkflowHeaderOverlayPageView: View {
     @Environment(\.paywallWindowSize)
     private var paywallWindowSize
 
+    @Environment(\.paywallStateValues)
+    private var paywallStateValues
+
+    @Environment(\.paywallStateDefaults)
+    private var paywallStateDefaults
+
     @Environment(\.customPaywallVariables)
     private var customVariables
 
@@ -1351,6 +1357,8 @@ private struct WorkflowHeaderOverlayPageView: View {
                         condition: ScreenCondition.from(self.horizontalSizeClass),
                         customVariables: self.customVariables,
                         windowSize: self.paywallWindowSize,
+                        stateValues: self.paywallStateValues,
+                        stateDefaults: self.paywallStateDefaults,
                         isEligibleForIntroOffer: { [introOfferEligibilityContext] in
                             introOfferEligibilityContext.isEligible(package: $0)
                         },
