@@ -150,7 +150,7 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
 
     private func cachedRewardsValue(forAdUnitId adUnitId: String) -> ConfiguredAdRewards? {
         guard let cached = self.cachedRewards.value else { return nil }
-        return cached.rewards?[adUnitId] ?? ConfiguredAdRewards(reward: nil, moreRewards: [])
+        return cached.rewards?[adUnitId] ?? .noConfiguredReward
     }
 
     private func updateCache(with resolution: Resolution) {
@@ -173,8 +173,12 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
     private static func decodeConfiguration(_ data: Data) throws -> RewardsByAdUnitID {
         let payload = try JSONDecoder.default.decode([String: WireConfiguredAdRewards].self, from: data)
         return payload.mapValues { rewards in
-            ConfiguredAdRewards(
-                reward: Self.decodeReward(rewards.reward),
+            guard let reward = Self.decodeReward(rewards.reward) else {
+                return .noConfiguredReward
+            }
+
+            return ConfiguredAdRewards(
+                reward: reward,
                 moreRewards: (rewards.moreRewards ?? []).compactMap(Self.decodeReward)
             )
         }
