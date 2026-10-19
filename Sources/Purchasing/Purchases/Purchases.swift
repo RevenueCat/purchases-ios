@@ -2077,8 +2077,8 @@ extension Purchases {
     ///
     /// This returns immediately when configuration is already cached. Otherwise, it waits for the remote-config
     /// work currently in progress without starting an additional refresh. Returns `nil` when configuration is still
-    /// unavailable after that work finishes. If configuration is available but no rewards are configured, the
-    /// container has no primary reward and no additional rewards.
+    /// unavailable after that work finishes. Returns ``ConfiguredAdRewards/noConfiguredReward`` when configuration
+    /// is available but no rewards are configured for the ad unit.
     ///
     /// - Parameter adUnitId: The ad network's rewarded ad unit identifier.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -2091,8 +2091,9 @@ extension Purchases {
     /// Returns the latest locally cached rewards configured for a rewarded ad unit.
     ///
     /// The result contains the primary configured reward and any additional rewards that are configured
-    /// to be granted alongside it. Returns `nil` when configuration has not been loaded yet. If configuration
-    /// is available but no rewards are configured, the container has no primary reward and no additional rewards.
+    /// to be granted alongside it. Returns `nil` when configuration has not been loaded yet, and
+    /// ``ConfiguredAdRewards/noConfiguredReward`` when configuration is available but no rewards are configured
+    /// for the ad unit.
     ///
     /// - Parameter adUnitId: The ad network's rewarded ad unit identifier.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
