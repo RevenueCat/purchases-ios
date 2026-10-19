@@ -256,7 +256,7 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
         case AdReward.Kind.virtualCurrency:
             guard case let .string(code)? = payload["code"],
                   case let .int(amount)? = payload["amount"],
-                  let reward = VirtualCurrencyReward(code: code, amount: amount) else {
+                  let reward = VirtualCurrencyRewardConfiguration(code: code, amount: amount) else {
                 return .unsupportedReward
             }
             return .virtualCurrency(reward)
