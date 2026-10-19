@@ -84,7 +84,7 @@ struct SheetPresentationPlan: Equatable {
 /// the animation and tap-to-dismiss behavior.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct BottomSheetOverlayModifier: ViewModifier {
-    @Environment(\.nativePaywallButtonRegistrationEnabled) private var nativeRegistrationEnabled
+    @Environment(\.nativePaywallInteractionEnabled) private var nativeInteractionEnabled
 
     @Binding var sheetViewModel: SheetViewModel?
     let safeAreaInsets: EdgeInsets
@@ -159,8 +159,9 @@ struct BottomSheetOverlayModifier: ViewModifier {
     func body(content: Content) -> some View {
         ZStack {
             content
-                .environment(\.nativePaywallButtonRegistrationEnabled,
-                             self.nativeRegistrationEnabled && self.sheetViewModel == nil)
+                // Preserve native navigation ownership and layout while the sheet blocks outer actions.
+                .environment(\.nativePaywallInteractionEnabled,
+                             self.nativeInteractionEnabled && self.sheetViewModel == nil)
                 .blur(radius: sheetViewModel?.sheet.backgroundBlur == true ? 10 : 0)
                 .animation(.easeInOut(duration: 0.25), value: sheetViewModel?.sheet.backgroundBlur)
                 // Blur is visual only: without this VoiceOver still walks what is behind.

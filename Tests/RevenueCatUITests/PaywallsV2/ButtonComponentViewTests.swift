@@ -23,6 +23,68 @@ import UIKit
 @MainActor
 final class ButtonComponentViewTests: TestCase {
 
+    func testInlineSheetDisablesNativeActionsWithoutRemovingTheirNavigationSlots() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
+        let coordinator = NativePaywallCloseCoordinator()
+        let state = NativeRegistrationTestState()
+        let sheet = PaywallComponent.ButtonComponent.Sheet(
+            id: "inline", name: "Inline sheet", stack: .init(components: []),
+            backgroundBlur: false, size: .init(width: .fill, height: .fixed(100))
+        )
+        let sheetStack = try Self.makeViewModel(component: .init(action: .navigateBack, stack: sheet.stack)).stackViewModel
+        let view = NativeInlineSheetRegistrationTestView(
+            state: state, sheet: .init(sheet: sheet, sheetStackViewModel: sheetStack)
+        )
+        .environment(\.nativePaywallCloseCoordinator, coordinator)
+        .environmentObject(PackageContext(package: nil, variableContext: .init(packages: [])))
+        .environmentObject(IntroOfferEligibilityContext(introEligibilityChecker: BaseSnapshotTest.eligibleChecker))
+        .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
+        let (window, _) = Self.host(view)
+        defer { window.isHidden = true; window.rootViewController = nil }
+        let registered = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            coordinator.actions.count == 2 && coordinator.actions.allSatisfy(\.isEnabled)
+        }, object: nil)
+        await fulfillment(of: [registered], timeout: 2)
+        let originalIDs = Set(coordinator.actions.map(\.id))
+
+        state.value = 2
+        let suspended = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            coordinator.actions.count == 2 && coordinator.actions.allSatisfy { !$0.isEnabled }
+        }, object: nil)
+        await fulfillment(of: [suspended], timeout: 2)
+        XCTAssertEqual(Set(coordinator.actions.map(\.id)), originalIDs,
+                       "The sheet must not restore the caller's Back or change the outer layout")
+        let backID = try XCTUnwrap(coordinator.action(for: .back)?.id)
+        try await coordinator.performAction(id: backID)
+        XCTAssertEqual(state.performed, 0)
+
+        state.value = 1
+        let restored = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            coordinator.actions.count == 2 && coordinator.actions.allSatisfy(\.isEnabled)
+        }, object: nil)
+        await fulfillment(of: [restored], timeout: 2)
+        XCTAssertEqual(Set(coordinator.actions.map(\.id)), originalIDs)
+        try await coordinator.performAction(id: backID)
+        XCTAssertEqual(state.performed, 1)
+
+        state.showsButton = false
+        let ancestorDisabled = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            coordinator.actions.count == 2 && coordinator.actions.allSatisfy { !$0.isEnabled }
+        }, object: nil)
+        await fulfillment(of: [ancestorDisabled], timeout: 2)
+        for value in [2, 1] {
+            state.value = value
+            let unexpectedlyEnabled = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+                coordinator.actions.contains(where: \.isEnabled)
+            }, object: nil)
+            unexpectedlyEnabled.isInverted = true
+            await fulfillment(of: [unexpectedlyEnabled], timeout: 0.3)
+            XCTAssertEqual(Set(coordinator.actions.map(\.id)), originalIDs)
+            try await coordinator.performAction(id: backID)
+            XCTAssertEqual(state.performed, 1, "Closing a sheet must preserve an ancestor's disabled state")
+        }
+    }
+
     func testRenderedCarouselsOnlyPublishTheInitialActiveSlidesAction() async throws {
         try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
         for loops in [false, true] {
@@ -840,6 +902,26 @@ private extension UIView {
         return self.subviews.contains { $0.containsText(text) }
     }
 
+}
+
+@available(iOS 15.0, *)
+private struct NativeInlineSheetRegistrationTestView: View {
+    @ObservedObject var state: NativeRegistrationTestState
+    let sheet: SheetViewModel
+
+    var body: some View {
+        VStack {
+            NativePaywallCloseButton(enabled: true, accessibilityLabel: "Back", role: .back,
+                                     action: { self.state.performed += 1 }, content: { EmptyView() })
+            NativePaywallCloseButton(enabled: true, accessibilityLabel: "Close",
+                                     action: { self.state.performed += 1 }, content: { EmptyView() })
+        }
+        .bottomSheet(sheet: Binding(
+            get: { self.state.value == 2 ? self.sheet : nil },
+            set: { _ in self.state.value = 1 }
+        ), safeAreaInsets: .init())
+        .environment(\.nativePaywallInteractionEnabled, self.state.showsButton)
+    }
 }
 
 @available(iOS 15.0, *)
