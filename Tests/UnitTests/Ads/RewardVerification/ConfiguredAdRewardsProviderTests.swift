@@ -138,7 +138,7 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         expect(rewards.moreRewards) == [.unsupportedReward, .unsupportedReward]
     }
 
-    func testReturnsNilForMalformedOuterPayload() async throws {
+    func testReturnsNilForMalformedAdUnit() async throws {
         try self.stub(content: [
             "reward": ["type": "virtual_currency", "code": "coins", "amount": 10],
             "more_rewards": ["not": "an array"]
@@ -147,6 +147,26 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         let rewards = await self.provider.rewards(forAdUnitId: "ad-unit")
 
         expect(rewards).to(beNil())
+    }
+
+    func testMalformedAdUnitDoesNotHideValidAdUnits() async throws {
+        try self.stub(adUnits: [
+            "valid-ad-unit": [
+                "reward": ["type": "virtual_currency", "code": "coins", "amount": 10]
+            ],
+            "malformed-ad-unit": [
+                "reward": ["type": "virtual_currency", "code": "gems", "amount": 5],
+                "more_rewards": ["not": "an array"]
+            ]
+        ])
+
+        await self.provider.warm()
+
+        expect(
+            self.provider.cachedRewards(forAdUnitId: "valid-ad-unit")?.reward?.virtualCurrency?.amount
+        ) == 10
+        expect(self.provider.cachedRewards(forAdUnitId: "malformed-ad-unit")).to(beNil())
+        expect(self.provider.cachedRewards(forAdUnitId: "absent-ad-unit")) == .noConfiguredReward
     }
 
     func testUsesExactAdUnitIdentifierLookup() async throws {
@@ -192,15 +212,32 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
     }
 
     func testInvalidReplacementBlobPreservesCachedConfiguration() async throws {
-        try self.stub(content: ["reward": ["type": "virtual_currency", "code": "coins", "amount": 10]])
-        let initial = await self.provider.rewards(forAdUnitId: "ad-unit")
+        try self.stub(adUnits: [
+            "malformed-replacement": [
+                "reward": ["type": "virtual_currency", "code": "coins", "amount": 10]
+            ],
+            "valid-replacement": [
+                "reward": ["type": "virtual_currency", "code": "gems", "amount": 5]
+            ]
+        ])
+        await self.provider.warm()
 
         self.manager.configGeneration += 1
-        self.manager.stubbedBlobData[.adRewards]?["default"] = #"{"ad-unit":{"more_rewards":"invalid"}}"#.asData
-        let cached = await self.provider.rewards(forAdUnitId: "ad-unit")
+        try self.stub(adUnits: [
+            "malformed-replacement": [
+                "reward": ["type": "virtual_currency", "code": "coins", "amount": 20],
+                "more_rewards": ["not": "an array"]
+            ],
+            "valid-replacement": [
+                "reward": ["type": "virtual_currency", "code": "gems", "amount": 15]
+            ]
+        ])
+        await self.provider.warm()
+        let malformedRewards = await self.provider.rewards(forAdUnitId: "malformed-replacement")
+        let validRewards = await self.provider.rewards(forAdUnitId: "valid-replacement")
 
-        expect(initial?.reward?.virtualCurrency?.amount) == 10
-        expect(cached) == initial
+        expect(malformedRewards?.reward?.virtualCurrency?.amount) == 10
+        expect(validRewards?.reward?.virtualCurrency?.amount) == 15
     }
 
     func testTopicRemovalClearsCachedConfiguration() async throws {
@@ -263,11 +300,15 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
     }
 
     private func stub(content: [String: AnyDecodable], adUnitId: String = "ad-unit") throws {
+        try self.stub(adUnits: [adUnitId: content])
+    }
+
+    private func stub(adUnits: [String: [String: AnyDecodable]]) throws {
         self.manager.stubbedTopics[.adRewards] = [
             "default": RemoteConfiguration.ConfigItem(blobRef: String(repeating: "A", count: 32), prefetch: true)
         ]
         self.manager.stubbedBlobData[.adRewards] = [
-            "default": try JSONEncoder.default.encode([adUnitId: AnyDecodable.object(content)])
+            "default": try JSONEncoder.default.encode(adUnits.mapValues(AnyDecodable.object))
         ]
     }
 

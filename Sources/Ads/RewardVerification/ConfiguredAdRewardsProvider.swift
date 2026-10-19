@@ -14,7 +14,12 @@ import Foundation
 
 final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
 
-    private typealias RewardsByAdUnitID = [String: ConfiguredAdRewards]
+    private enum AdUnitRewards {
+        case available(ConfiguredAdRewards)
+        case unavailable
+    }
+
+    private typealias RewardsByAdUnitID = [String: AdUnitRewards]
 
     private enum ReadMode {
         case fetchIfNeeded
@@ -150,7 +155,17 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
 
     private func cachedRewardsValue(forAdUnitId adUnitId: String) -> ConfiguredAdRewards? {
         guard let cached = self.cachedRewards.value else { return nil }
-        return cached.rewards?[adUnitId] ?? .noConfiguredReward
+        guard let rewards = cached.rewards,
+              let adUnitRewards = rewards[adUnitId] else {
+            return .noConfiguredReward
+        }
+
+        switch adUnitRewards {
+        case let .available(rewards):
+            return rewards
+        case .unavailable:
+            return nil
+        }
     }
 
     private func updateCache(with resolution: Resolution) {
@@ -158,7 +173,18 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
         case let .available(generation, rewards):
             self.cachedRewards.modify { cached in
                 guard generation >= (cached?.generation ?? Int.min) else { return }
-                cached = .init(generation: generation, rewards: rewards)
+
+                var updatedRewards = rewards
+                for (adUnitID, adUnitRewards) in rewards {
+                    guard case .unavailable = adUnitRewards,
+                          case let .available(cachedAdUnitRewards)? = cached?.rewards?[adUnitID] else {
+                        continue
+                    }
+
+                    updatedRewards[adUnitID] = .available(cachedAdUnitRewards)
+                }
+
+                cached = .init(generation: generation, rewards: updatedRewards)
             }
         case let .removed(generation):
             self.cachedRewards.modify { cached in
@@ -171,17 +197,33 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
     }
 
     private static func decodeConfiguration(_ data: Data) throws -> RewardsByAdUnitID {
-        let payload = try JSONDecoder.default.decode([String: WireConfiguredAdRewards].self, from: data)
-        return payload.mapValues { rewards in
-            guard let reward = Self.decodeReward(rewards.reward) else {
-                return .noConfiguredReward
-            }
+        let payload = try JSONDecoder.default.decode([String: AnyDecodable].self, from: data)
+        return payload.mapValues(Self.decodeAdUnitRewards)
+    }
 
-            return ConfiguredAdRewards(
-                reward: reward,
-                moreRewards: (rewards.moreRewards ?? []).compactMap(Self.decodeReward)
-            )
+    private static func decodeAdUnitRewards(_ value: AnyDecodable) -> AdUnitRewards {
+        guard case let .object(payload) = value else { return .unavailable }
+
+        let moreRewards: [AnyDecodable]
+        switch payload["more_rewards"] {
+        case .none, .some(.null):
+            moreRewards = []
+        case let .some(.array(rewards)):
+            moreRewards = rewards
+        default:
+            return .unavailable
         }
+
+        guard let reward = Self.decodeReward(payload["reward"]) else {
+            return .available(.noConfiguredReward)
+        }
+
+        return .available(
+            ConfiguredAdRewards(
+                reward: reward,
+                moreRewards: moreRewards.compactMap(Self.decodeReward)
+            )
+        )
     }
 
     private static func decodeReward(_ reward: AnyDecodable?) -> AdRewardConfiguration? {
@@ -226,10 +268,3 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
 }
 
 extension ConfiguredAdRewardsProvider: @unchecked Sendable {}
-
-private struct WireConfiguredAdRewards: Decodable {
-
-    let reward: AnyDecodable?
-    let moreRewards: [AnyDecodable]?
-
-}
