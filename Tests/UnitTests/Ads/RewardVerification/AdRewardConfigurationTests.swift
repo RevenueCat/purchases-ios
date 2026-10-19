@@ -25,11 +25,17 @@ final class AdRewardConfigurationTests: TestCase {
     }
 
     func testVirtualCurrencyConfiguration() throws {
-        let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 10))
+        let reward = try XCTUnwrap(VirtualCurrencyRewardConfiguration(code: "coins", amount: 10))
         let configuration = AdRewardConfiguration.virtualCurrency(reward)
 
         expect(configuration.virtualCurrency) == reward
         expect(configuration.entitlement).to(beNil())
+    }
+
+    func testVirtualCurrencyConfigurationRejectsInvalidValues() {
+        expect(VirtualCurrencyRewardConfiguration(code: "", amount: 10)).to(beNil())
+        expect(VirtualCurrencyRewardConfiguration(code: "coins", amount: 0)).to(beNil())
+        expect(VirtualCurrencyRewardConfiguration(code: "coins", amount: -1)).to(beNil())
     }
 
     func testEntitlementConfiguration() throws {
@@ -58,7 +64,7 @@ final class AdRewardConfigurationTests: TestCase {
     }
 
     func testConfiguredRewardsExposePrimaryAndAdditionalRewards() throws {
-        let currency = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 10))
+        let currency = try XCTUnwrap(VirtualCurrencyRewardConfiguration(code: "coins", amount: 10))
         let entitlement = try XCTUnwrap(
             EntitlementRewardConfiguration(identifier: "pro", duration: 30 * 60)
         )

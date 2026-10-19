@@ -13,7 +13,7 @@
 
 import Foundation
 
-/// A virtual-currency reward with a code and amount.
+/// A virtual-currency reward granted by an ad network after a successful reward verification.
 public struct VirtualCurrencyReward: Sendable, Equatable {
 
     /// The reward type identifier (e.g. `"coins"`, `"gems"`).
@@ -24,8 +24,7 @@ public struct VirtualCurrencyReward: Sendable, Equatable {
 
     /// Creates a virtual-currency reward.
     ///
-    /// Returns `nil` if `code` is empty or `amount` is not positive. This is the single source of
-    /// truth for "what counts as a valid virtual-currency reward" across the SDK.
+    /// Returns `nil` if `code` is empty or `amount` is not positive.
     internal init?(code: String, amount: Int) {
         guard !code.isEmpty, amount > 0 else { return nil }
         self.code = code
