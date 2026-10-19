@@ -291,7 +291,7 @@ final class RemoteConfigIntegrationTests: TestCase {
         expect(rewards.reward?.virtualCurrency?.amount) == 10
         expect(rewards.moreRewards.first?.entitlement?.identifier) == "premium"
         expect(rewards.moreRewards.first?.entitlement?.durationInSeconds) == 30 * 60
-        expect(differentlyCasedRewards) == ConfiguredAdRewards()
+        expect(differentlyCasedRewards) == ConfiguredAdRewards(reward: nil, moreRewards: [])
         expect(requestedURLs).to(beEmpty())
     }
 
@@ -412,7 +412,7 @@ final class RemoteConfigIntegrationTests: TestCase {
 
         let rewards = await provider.rewards(forAdUnitId: "rewarded-ad-unit")
 
-        expect(rewards) == ConfiguredAdRewards()
+        expect(rewards) == ConfiguredAdRewards(reward: nil, moreRewards: [])
         expect(self.diskCache.read()?.topics.entries[RemoteConfigTopic.adRewards.wireName]).to(beNil())
     }
 

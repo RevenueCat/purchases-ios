@@ -80,6 +80,9 @@ func main() -> Int {
     checkAdRewardAPI()
     checkVirtualCurrencyRewardAPI()
     checkEntitlementRewardAPI()
+    checkConfiguredAdRewardsAPI()
+    checkAdRewardConfigurationAPI()
+    checkEntitlementRewardConfigurationAPI()
 
     checkAdTrackerAPI()
 

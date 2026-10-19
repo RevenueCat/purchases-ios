@@ -150,7 +150,7 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
 
     private func cachedRewardsValue(forAdUnitId adUnitId: String) -> ConfiguredAdRewards? {
         guard let cached = self.cachedRewards.value else { return nil }
-        return cached.rewards?[adUnitId] ?? ConfiguredAdRewards()
+        return cached.rewards?[adUnitId] ?? ConfiguredAdRewards(reward: nil, moreRewards: [])
     }
 
     private func updateCache(with resolution: Resolution) {
@@ -195,7 +195,7 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
         case AdReward.Kind.virtualCurrency:
             guard case let .string(code)? = payload["code"],
                   case let .int(amount)? = payload["amount"],
-                  let reward = VirtualCurrencyRewardConfiguration(code: code, amount: amount) else {
+                  let reward = VirtualCurrencyReward(code: code, amount: amount) else {
                 return .unsupportedReward
             }
             return .virtualCurrency(reward)
@@ -205,7 +205,7 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
                   case let .int(durationInSeconds)? = payload["duration_in_seconds"],
                   let reward = EntitlementRewardConfiguration(
                     identifier: identifier,
-                    durationInSeconds: durationInSeconds
+                    durationInSeconds: TimeInterval(durationInSeconds)
                   ) else {
                 return .unsupportedReward
             }

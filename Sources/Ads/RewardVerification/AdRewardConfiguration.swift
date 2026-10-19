@@ -34,7 +34,7 @@ import Foundation
 ///     showPrompt("Watch an ad to continue")
 /// }
 /// ```
-struct ConfiguredAdRewards: Sendable, Equatable {
+public struct ConfiguredAdRewards: Sendable, Equatable {
 
     private enum Storage: Sendable, Equatable {
         case rewards(
@@ -47,16 +47,16 @@ struct ConfiguredAdRewards: Sendable, Equatable {
     private let storage: Storage
 
     /// No RevenueCat reward is configured for this ad unit.
-    static let noConfiguredReward = ConfiguredAdRewards(storage: .noConfiguredReward)
+    public static let noConfiguredReward = ConfiguredAdRewards(storage: .noConfiguredReward)
 
     /// The primary configured reward, or `nil` when this value is ``noConfiguredReward``.
-    var reward: AdRewardConfiguration? {
+    public var reward: AdRewardConfiguration? {
         guard case let .rewards(reward, _) = self.storage else { return nil }
         return reward
     }
 
     /// Additional configured rewards granted alongside ``reward``.
-    var moreRewards: [AdRewardConfiguration] {
+    public var moreRewards: [AdRewardConfiguration] {
         guard case let .rewards(_, moreRewards) = self.storage else { return [] }
         return moreRewards
     }
@@ -78,7 +78,7 @@ struct ConfiguredAdRewards: Sendable, Equatable {
 ///
 /// Inspect the reward by checking ``virtualCurrency`` or ``entitlement``. A reward shape that the
 /// SDK does not currently model is represented by ``unsupportedReward``.
-struct AdRewardConfiguration: Sendable, Equatable {
+public struct AdRewardConfiguration: Sendable, Equatable {
 
     private enum Storage: Sendable, Equatable {
         case virtualCurrency(VirtualCurrencyRewardConfiguration)
@@ -93,19 +93,19 @@ struct AdRewardConfiguration: Sendable, Equatable {
     }
 
     /// The configured virtual-currency reward, if present.
-    var virtualCurrency: VirtualCurrencyRewardConfiguration? {
+    public var virtualCurrency: VirtualCurrencyRewardConfiguration? {
         guard case .virtualCurrency(let reward) = self.storage else { return nil }
         return reward
     }
 
     /// The configured entitlement reward, if present.
-    var entitlement: EntitlementRewardConfiguration? {
+    public var entitlement: EntitlementRewardConfiguration? {
         guard case .entitlement(let reward) = self.storage else { return nil }
         return reward
     }
 
     /// A configured reward shape that the SDK does not currently model.
-    static let unsupportedReward = AdRewardConfiguration(storage: .unsupportedReward)
+    public static let unsupportedReward = AdRewardConfiguration(storage: .unsupportedReward)
 
     internal static func virtualCurrency(_ reward: VirtualCurrencyRewardConfiguration) -> Self {
         return .init(storage: .virtualCurrency(reward))
@@ -118,13 +118,13 @@ struct AdRewardConfiguration: Sendable, Equatable {
 }
 
 /// A virtual-currency reward currently configured for a rewarded ad unit.
-struct VirtualCurrencyRewardConfiguration: Sendable, Equatable {
+public struct VirtualCurrencyRewardConfiguration: Sendable, Equatable {
 
     /// The reward type identifier (e.g. `"coins"`, `"gems"`).
-    let code: String
+    public let code: String
 
     /// The configured reward amount.
-    let amount: Int
+    public let amount: Int
 
     internal init?(code: String, amount: Int) {
         guard !code.isEmpty, amount > 0 else { return nil }
@@ -135,13 +135,13 @@ struct VirtualCurrencyRewardConfiguration: Sendable, Equatable {
 }
 
 /// An entitlement reward currently configured for a rewarded ad unit.
-struct EntitlementRewardConfiguration: Sendable, Equatable {
+public struct EntitlementRewardConfiguration: Sendable, Equatable {
 
     /// The entitlement identifier.
-    let identifier: String
+    public let identifier: String
 
     /// The duration for which the entitlement will be granted.
-    let duration: TimeInterval
+    public let duration: TimeInterval
 
     internal init?(identifier: String, duration: TimeInterval) {
         guard !identifier.isEmpty, duration > 0 else { return nil }
