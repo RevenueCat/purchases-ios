@@ -303,14 +303,14 @@ private struct CarouselView<Content: View>: View {
             .background(
                 ScrollViewGestureCoordinator(
                     translation: $translation,
-                    onDragEnded: { translationX in
+                    onDragEnded: { translationX, velocityX in
                         guard abs(translationX) > 0 else {
                             self.translation = 0
                             return
                         }
 
                         self.dragOffset = translationX
-                        handleDragEnd(translation: translationX)
+                        handleDragEnd(translation: translationX, velocity: velocityX)
                         self.translation = 0
                     },
                     onDragStarted: {
@@ -330,7 +330,7 @@ private struct CarouselView<Content: View>: View {
                     }
                     .onEnded { value in
                         self.dragOffset = value.translation.width
-                        handleDragEnd(translation: value.translation.width)
+                        handleDragEnd(translation: value.translation.width, velocity: value.velocity.width)
                     }
             )
             #endif
@@ -485,8 +485,7 @@ private struct CarouselView<Content: View>: View {
 
     // MARK: - Drag Handling
 
-    private func handleDragEnd(translation: CGFloat) {
-        let threshold = cardWidth * 0.2
+    private func handleDragEnd(translation: CGFloat, velocity: CGFloat) {
         let originalPageIndexBefore: Int? = self.originalCount > 0
             ? (self.loop ? self.index % self.originalCount : self.index)
             : nil
@@ -494,13 +493,14 @@ private struct CarouselView<Content: View>: View {
         withAnimation(.easeInOut(duration: 0.25)) {
             self.dragOffset = 0
 
-            if translation < -threshold {
-                // Swipe left => next
-                index += 1
-            } else if translation > threshold {
-                // Swipe right => prev
-                index -= 1
-            }
+            index = CarouselPaging.targetIndex(
+                start: index,
+                dragOffset: translation,
+                velocity: velocity,
+                pageWidth: cardWidth + spacing,
+                count: data.count,
+                loop: loop
+            )
 
             if loop {
                 expandDataIfNeeded()
@@ -597,6 +597,46 @@ private struct CarouselView<Content: View>: View {
         guard let lastID = data.last?.id else { return 0 }
         return lastID / originalCount
     }
+}
+
+enum CarouselPaging {
+
+    /// Release speed (pt/s) at or above which a release counts as a fling.
+    static let minFlingVelocity: CGFloat = 400
+
+    /// Fraction of a page a slow drag must exceed to move to the adjacent page.
+    static let snapPositionalThreshold: CGFloat = 0.5
+
+    /// Page to settle on after a drag. Negative `dragOffset`/`velocity` (pt, pt/s) move towards `start + 1`.
+    /// Mirrors Compose Pager: a fling picks the neighbour in the velocity direction, else the nearest page.
+    // swiftlint:disable:next function_parameter_count
+    static func targetIndex(
+        start: Int,
+        dragOffset: CGFloat,
+        velocity: CGFloat,
+        pageWidth: CGFloat,
+        count: Int,
+        loop: Bool
+    ) -> Int {
+        guard pageWidth > 0 else { return start }
+
+        var target: Int
+        if abs(velocity) >= minFlingVelocity {
+            let position = CGFloat(start) - dragOffset / pageWidth
+            target = velocity < 0 ? Int(position.rounded(.down)) + 1 : Int(position.rounded(.up)) - 1
+        } else if abs(dragOffset) > pageWidth * snapPositionalThreshold {
+            target = dragOffset < 0 ? start + 1 : start - 1
+        } else {
+            target = start
+        }
+
+        target = min(max(target, start - 1), start + 1)
+        if !loop {
+            target = min(max(target, 0), count - 1)
+        }
+        return target
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
