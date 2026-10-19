@@ -61,6 +61,7 @@ private extension PurchaseOwnershipType {
         switch self {
         case .purchased: return "PURCHASED"
         case .familyShared: return "FAMILY_SHARED"
+        case .assigned: return "ASSIGNED"
         case .unknown: return nil
         }
     }

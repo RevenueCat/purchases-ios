@@ -284,6 +284,7 @@ NSURL *url;
     switch(o) {
         case RCPurchaseOwnershipTypePurchased:
         case RCPurchaseOwnershipTypeFamilyShared:
+        case RCPurchaseOwnershipTypeAssigned:
         case RCPurchaseOwnershipTypeUnknown:
             NSLog(@"%ld", (long)o);
     }
