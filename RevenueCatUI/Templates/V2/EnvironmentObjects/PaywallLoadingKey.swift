@@ -13,19 +13,44 @@
 
 import SwiftUI
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct OfferEligibilityLoading: OptionSet {
+
+    let rawValue: Int
+
+    static let intro = Self(rawValue: 1 << 0)
+    static let promo = Self(rawValue: 1 << 1)
+
+    init(rawValue: Int) {
+        self.rawValue = rawValue
+    }
+
+    init(intro: Bool, promo: Bool) {
+        var loading: Self = []
+        if intro {
+            loading.insert(.intro)
+        }
+        if promo {
+            loading.insert(.promo)
+        }
+        self = loading
+    }
+
+}
+
 #if !os(tvOS) // For Paywalls V2
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct PaywallLoadingKey: EnvironmentKey {
-    static let defaultValue: Bool = false
+private struct OfferEligibilityLoadingKey: EnvironmentKey {
+    static let defaultValue: OfferEligibilityLoading = []
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension EnvironmentValues {
 
-    var isPaywallLoading: Bool {
-        get { self[PaywallLoadingKey.self] }
-        set { self[PaywallLoadingKey.self] = newValue }
+    var offerEligibilityLoading: OfferEligibilityLoading {
+        get { self[OfferEligibilityLoadingKey.self] }
+        set { self[OfferEligibilityLoadingKey.self] = newValue }
     }
 
 }
@@ -33,17 +58,17 @@ extension EnvironmentValues {
 #if DEBUG
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct PaywallLoadingOverrideKey: EnvironmentKey {
-    static let defaultValue: Bool? = nil
+private struct OfferEligibilityLoadingOverrideKey: EnvironmentKey {
+    static let defaultValue: OfferEligibilityLoading? = nil
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension EnvironmentValues {
 
-    /// Overrides `isPaywallLoading` from outside `PaywallsV2View` for preview and test contexts.
-    var paywallLoadingOverride: Bool? {
-        get { self[PaywallLoadingOverrideKey.self] }
-        set { self[PaywallLoadingOverrideKey.self] = newValue }
+    /// Overrides eligibility loading from outside `PaywallsV2View` for preview and test contexts.
+    var offerEligibilityLoadingOverride: OfferEligibilityLoading? {
+        get { self[OfferEligibilityLoadingOverrideKey.self] }
+        set { self[OfferEligibilityLoadingOverrideKey.self] = newValue }
     }
 
 }

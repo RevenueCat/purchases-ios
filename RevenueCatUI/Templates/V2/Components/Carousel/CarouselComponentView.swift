@@ -55,15 +55,17 @@ struct CarouselComponentView: View {
     @State private var carouselHeight: CGFloat = 0
 
     var body: some View {
+        let isEligibleForIntroOffer = self.introOfferEligibilityContext.isEligible(
+            package: self.packageContext.package
+        )
+        let isEligibleForPromoOffer = self.paywallPromoOfferCache.isMostLikelyEligible(
+            for: self.packageContext.package
+        )
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
-            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                package: self.packageContext.package
-            ),
-            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
-                for: self.packageContext.package
-            ),
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackageId: self.selectedPackageId,
             customVariables: self.customVariables,
             windowSize: self.paywallWindowSize,
@@ -120,6 +122,21 @@ struct CarouselComponentView: View {
                        uiConfigProvider: self.viewModel.uiConfigProvider)
                 .shadow(shadow: style.shadow, shape: style.shape?.toInsettableShape())
                 .padding(style.margin)
+                .redactedWhileOfferEligibilityLoads(
+                    self.viewModel,
+                    isEligibleForIntroOffer: isEligibleForIntroOffer,
+                    isEligibleForPromoOffer: isEligibleForPromoOffer
+                ) { intro, promo in
+                    self.viewModel.visible(
+                        state: self.componentViewState,
+                        condition: self.screenCondition,
+                        isEligibleForIntroOffer: intro,
+                        isEligibleForPromoOffer: promo,
+                        selectedPackageId: self.selectedPackageId,
+                        customVariables: self.customVariables,
+                        windowSize: self.paywallWindowSize
+                    )
+                }
             }
         }
     }
