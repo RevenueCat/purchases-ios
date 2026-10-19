@@ -60,12 +60,6 @@ struct StackComponentView: View {
     @Environment(\.paywallAncestorScrollsVertically)
     private var paywallAncestorScrollsVertically
 
-    @Environment(\.isIntroOfferEligibilityLoading)
-    private var isIntroOfferEligibilityLoading
-
-    @Environment(\.isPromoOfferEligibilityLoading)
-    private var isPromoOfferEligibilityLoading
-
     private let viewModel: StackComponentViewModel
     private let isScrollableByDefault: Bool
     private let onDismiss: () -> Void
@@ -108,37 +102,28 @@ struct StackComponentView: View {
             colorScheme: colorScheme
         ) { style in
             if style.visible {
-                let redactionReason: RedactionReasons = self.redactsWhileOfferEligibilityLoads(
-                    isEligibleForIntroOffer: isEligibleForIntroOffer,
-                    isEligibleForPromoOffer: isEligibleForPromoOffer
-                ) ? .placeholder : []
                 self.make(style: style)
-                    .redacted(reason: redactionReason)
+                    .redactedWhileOfferEligibilityLoads(
+                        self.viewModel,
+                        isEligibleForIntroOffer: isEligibleForIntroOffer,
+                        isEligibleForPromoOffer: isEligibleForPromoOffer
+                    ) { intro, promo in
+                        self.viewModel.visible(
+                            state: self.componentViewState,
+                            condition: self.screenCondition,
+                            isEligibleForIntroOffer: intro,
+                            isEligibleForPromoOffer: promo,
+                            conditionContext: self.viewModel.uiConfigProvider.conditionContext(
+                                selectedPackageId: self.selectedPackageId,
+                                customVariables: self.customVariables,
+                                stateValues: self.paywallStateValues,
+                                stateDefaults: self.paywallStateDefaults,
+                                windowSize: self.paywallWindowSize
+                            )
+                        )
+                    }
             }
         }
-    }
-
-    private func redactsWhileOfferEligibilityLoads(
-        isEligibleForIntroOffer: Bool,
-        isEligibleForPromoOffer: Bool
-    ) -> Bool {
-        return self.viewModel.redactsWhileOfferEligibilityLoads(
-            state: self.componentViewState,
-            condition: self.screenCondition,
-            offerEligibility: OfferEligibilityState(
-                isEligibleForIntroOffer: isEligibleForIntroOffer,
-                isEligibleForPromoOffer: isEligibleForPromoOffer,
-                isIntroOfferEligibilityLoading: self.isIntroOfferEligibilityLoading,
-                isPromoOfferEligibilityLoading: self.isPromoOfferEligibilityLoading
-            ),
-            conditionContext: self.viewModel.uiConfigProvider.conditionContext(
-                selectedPackageId: self.selectedPackageId,
-                customVariables: self.customVariables,
-                stateValues: self.paywallStateValues,
-                stateDefaults: self.paywallStateDefaults,
-                windowSize: self.paywallWindowSize
-            )
-        )
     }
 
     @ViewBuilder

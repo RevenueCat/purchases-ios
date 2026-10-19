@@ -28,6 +28,7 @@ struct PackageVisibilityResolver {
     private let componentVisible: Bool?
     private let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedPackagePartial>?
+    let dependsOnOfferEligibility: Bool
 
     init(
         component: PaywallComponent.PackageComponent,
@@ -36,7 +37,9 @@ struct PackageVisibilityResolver {
     ) {
         self.componentVisible = component.visible
         self.uiConfigProvider = uiConfigProvider
-        self.presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
+        let presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
+        self.presentedOverrides = presentedOverrides
+        self.dependsOnOfferEligibility = presentedOverrides?.contains(where: \.dependsOnOfferEligibility) ?? false
     }
 
     // swiftlint:disable:next function_parameter_count
@@ -65,40 +68,6 @@ struct PackageVisibilityResolver {
         )
 
         return partial?.visible ?? self.componentVisible ?? true
-    }
-
-    /// True when intro or promo eligibility can change whether this package is shown.
-    /// A package that depends on one check renders as soon as that check finishes.
-    func redactsWhileOfferEligibilityLoads(
-        state: ComponentViewState,
-        condition: ScreenCondition,
-        offerEligibility: OfferEligibilityState,
-        selectedPackageId: String?,
-        customVariables: [String: CustomVariableValue],
-        windowSize: CGSize? = nil
-    ) -> Bool {
-        guard offerEligibility.isLoading else {
-            return false
-        }
-
-        let variesWithEligibility = self.presentedOverrides?.contains { override in
-            override.conditions.contains(where: \.dependsOnOfferEligibility)
-        } ?? false
-        guard variesWithEligibility else {
-            return false
-        }
-
-        return offerEligibility.visibilityCanChange(variesWithEligibility: variesWithEligibility) { intro, promo in
-            self.visible(
-                state: state,
-                condition: condition,
-                isEligibleForIntroOffer: intro,
-                isEligibleForPromoOffer: promo,
-                selectedPackageId: selectedPackageId,
-                customVariables: customVariables,
-                windowSize: windowSize
-            )
-        }
     }
 
 }

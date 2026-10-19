@@ -12,6 +12,7 @@
 
 import Foundation
 @_spi(Internal) import RevenueCat
+import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct OfferEligibilityState {
@@ -52,7 +53,7 @@ struct OfferEligibilityState {
         variesWithEligibility: Bool,
         isVisible: (_ isEligibleForIntroOffer: Bool, _ isEligibleForPromoOffer: Bool) -> Bool
     ) -> Bool {
-        guard self.isLoading else {
+        guard self.isLoading, variesWithEligibility else {
             return false
         }
 
@@ -70,6 +71,76 @@ struct OfferEligibilityState {
     }
 
 }
+
+#if !os(tvOS)
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+protocol OfferEligibilityVisibilityDependency {
+
+    var dependsOnOfferEligibility: Bool { get }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PresentedOverride {
+
+    var dependsOnOfferEligibility: Bool {
+        return self.conditions.contains(where: \.dependsOnOfferEligibility)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct OfferEligibilityRedactionModifier: ViewModifier {
+
+    @Environment(\.isIntroOfferEligibilityLoading)
+    private var isIntroOfferEligibilityLoading
+
+    @Environment(\.isPromoOfferEligibilityLoading)
+    private var isPromoOfferEligibilityLoading
+
+    let dependsOnOfferEligibility: Bool
+    let isEligibleForIntroOffer: Bool
+    let isEligibleForPromoOffer: Bool
+    let isVisible: (_ isEligibleForIntroOffer: Bool, _ isEligibleForPromoOffer: Bool) -> Bool
+
+    func body(content: Content) -> some View {
+        let offerEligibility = OfferEligibilityState(
+            isEligibleForIntroOffer: self.isEligibleForIntroOffer,
+            isEligibleForPromoOffer: self.isEligibleForPromoOffer,
+            isIntroOfferEligibilityLoading: self.isIntroOfferEligibilityLoading,
+            isPromoOfferEligibilityLoading: self.isPromoOfferEligibilityLoading
+        )
+        let redacts = offerEligibility.visibilityCanChange(
+            variesWithEligibility: self.dependsOnOfferEligibility,
+            isVisible: self.isVisible
+        )
+
+        content.redacted(reason: redacts ? .placeholder : [])
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension View {
+
+    func redactedWhileOfferEligibilityLoads<Dependency: OfferEligibilityVisibilityDependency>(
+        _ dependency: Dependency,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        isVisible: @escaping (_ isEligibleForIntroOffer: Bool, _ isEligibleForPromoOffer: Bool) -> Bool
+    ) -> some View {
+        return self.modifier(OfferEligibilityRedactionModifier(
+            dependsOnOfferEligibility: dependency.dependsOnOfferEligibility,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            isVisible: isVisible
+        ))
+    }
+
+}
+
+#endif
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PaywallComponent.ExtendedCondition {

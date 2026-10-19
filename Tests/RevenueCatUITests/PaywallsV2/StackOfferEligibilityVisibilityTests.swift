@@ -185,17 +185,23 @@ private extension StackOfferEligibilityVisibilityTests {
         isIntroOfferEligibilityLoading: Bool = true,
         isPromoOfferEligibilityLoading: Bool = true
     ) -> Bool {
-        return viewModel.redactsWhileOfferEligibilityLoads(
-            state: state,
-            condition: condition,
-            offerEligibility: OfferEligibilityState(
-                isEligibleForIntroOffer: isEligibleForIntroOffer,
-                isEligibleForPromoOffer: isEligibleForPromoOffer,
-                isIntroOfferEligibilityLoading: isIntroOfferEligibilityLoading,
-                isPromoOfferEligibilityLoading: isPromoOfferEligibilityLoading
-            ),
-            conditionContext: .init()
+        let offerEligibility = OfferEligibilityState(
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            isIntroOfferEligibilityLoading: isIntroOfferEligibilityLoading,
+            isPromoOfferEligibilityLoading: isPromoOfferEligibilityLoading
         )
+        return offerEligibility.visibilityCanChange(
+            variesWithEligibility: viewModel.dependsOnOfferEligibility
+        ) { intro, promo in
+            viewModel.visible(
+                state: state,
+                condition: condition,
+                isEligibleForIntroOffer: intro,
+                isEligibleForPromoOffer: promo,
+                conditionContext: .init()
+            )
+        }
     }
 
     static func makeViewModel(
@@ -273,51 +279,74 @@ private extension CompositeOfferEligibilityVisibilityTests {
         _ viewModel: CarouselComponentViewModel,
         offerEligibility: OfferEligibilityState? = nil
     ) -> Bool {
-        return viewModel.redactsWhileOfferEligibilityLoads(
-            state: .default,
-            condition: .compact,
-            offerEligibility: offerEligibility ?? self.loadingOfferEligibility,
-            selectedPackageId: nil,
-            customVariables: [:]
-        )
+        return self.redacts(viewModel, offerEligibility: offerEligibility) { intro, promo in
+            viewModel.visible(
+                state: .default,
+                condition: .compact,
+                isEligibleForIntroOffer: intro,
+                isEligibleForPromoOffer: promo,
+                selectedPackageId: nil,
+                customVariables: [:]
+            )
+        }
     }
 
     func redacts(
         _ viewModel: TabsComponentViewModel,
         offerEligibility: OfferEligibilityState? = nil
     ) -> Bool {
-        return viewModel.redactsWhileOfferEligibilityLoads(
-            state: .default,
-            condition: .compact,
-            offerEligibility: offerEligibility ?? self.loadingOfferEligibility,
-            selectedPackageId: nil,
-            customVariables: [:]
-        )
+        return self.redacts(viewModel, offerEligibility: offerEligibility) { intro, promo in
+            viewModel.visible(
+                state: .default,
+                condition: .compact,
+                isEligibleForIntroOffer: intro,
+                isEligibleForPromoOffer: promo,
+                selectedPackageId: nil,
+                customVariables: [:]
+            )
+        }
     }
 
     func redacts(
         _ viewModel: TimelineComponentViewModel,
         offerEligibility: OfferEligibilityState? = nil
     ) -> Bool {
-        return viewModel.redactsWhileOfferEligibilityLoads(
-            state: .default,
-            condition: .compact,
-            offerEligibility: offerEligibility ?? self.loadingOfferEligibility,
-            selectedPackageId: nil,
-            customVariables: [:]
-        )
+        return self.redacts(viewModel, offerEligibility: offerEligibility) { intro, promo in
+            viewModel.visible(
+                state: .default,
+                condition: .compact,
+                isEligibleForIntroOffer: intro,
+                isEligibleForPromoOffer: promo,
+                selectedPackageId: nil,
+                customVariables: [:]
+            )
+        }
     }
 
     func redacts(
         _ viewModel: TimelineItemViewModel,
         offerEligibility: OfferEligibilityState? = nil
     ) -> Bool {
-        return viewModel.redactsWhileOfferEligibilityLoads(
-            state: .default,
-            condition: .compact,
-            offerEligibility: offerEligibility ?? self.loadingOfferEligibility,
-            selectedPackageId: nil,
-            customVariables: [:]
+        return self.redacts(viewModel, offerEligibility: offerEligibility) { intro, promo in
+            viewModel.visible(
+                state: .default,
+                condition: .compact,
+                isEligibleForIntroOffer: intro,
+                isEligibleForPromoOffer: promo,
+                selectedPackageId: nil,
+                customVariables: [:]
+            )
+        }
+    }
+
+    func redacts<Dependency: OfferEligibilityVisibilityDependency>(
+        _ dependency: Dependency,
+        offerEligibility: OfferEligibilityState?,
+        isVisible: (Bool, Bool) -> Bool
+    ) -> Bool {
+        return (offerEligibility ?? self.loadingOfferEligibility).visibilityCanChange(
+            variesWithEligibility: dependency.dependsOnOfferEligibility,
+            isVisible: isVisible
         )
     }
 

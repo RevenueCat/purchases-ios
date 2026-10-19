@@ -123,12 +123,6 @@ struct LoadedTabsComponentView: View {
     @Environment(\.isPaywallLoading)
     private var isPaywallLoading
 
-    @Environment(\.isIntroOfferEligibilityLoading)
-    private var isIntroOfferEligibilityLoading
-
-    @Environment(\.isPromoOfferEligibilityLoading)
-    private var isPromoOfferEligibilityLoading
-
     private let viewModel: TabsComponentViewModel
     private let workflowDefaultPackage: Package?
     private let onDismiss: () -> Void
@@ -501,32 +495,22 @@ struct LoadedTabsComponentView: View {
                     )
                 }
             }
-            .redacted(
-                reason: self.redactsWhileOfferEligibilityLoads(
-                    isEligibleForIntroOffer: isEligibleForIntroOffer,
-                    isEligibleForPromoOffer: isEligibleForPromoOffer
-                ) ? .placeholder : []
-            )
-        }
-    }
-
-    private func redactsWhileOfferEligibilityLoads(
-        isEligibleForIntroOffer: Bool,
-        isEligibleForPromoOffer: Bool
-    ) -> Bool {
-        return self.viewModel.redactsWhileOfferEligibilityLoads(
-            state: self.componentViewState,
-            condition: self.screenCondition,
-            offerEligibility: .init(
+            .redactedWhileOfferEligibilityLoads(
+                self.viewModel,
                 isEligibleForIntroOffer: isEligibleForIntroOffer,
-                isEligibleForPromoOffer: isEligibleForPromoOffer,
-                isIntroOfferEligibilityLoading: self.isIntroOfferEligibilityLoading,
-                isPromoOfferEligibilityLoading: self.isPromoOfferEligibilityLoading
-            ),
-            selectedPackageId: self.selectedPackageId,
-            customVariables: self.customVariables,
-            windowSize: self.paywallWindowSize
-        )
+                isEligibleForPromoOffer: isEligibleForPromoOffer
+            ) { intro, promo in
+                self.viewModel.visible(
+                    state: self.componentViewState,
+                    condition: self.screenCondition,
+                    isEligibleForIntroOffer: intro,
+                    isEligibleForPromoOffer: promo,
+                    selectedPackageId: self.selectedPackageId,
+                    customVariables: self.customVariables,
+                    windowSize: self.paywallWindowSize
+                )
+            }
+        }
     }
 
     private func publishSelectedTabState(_ tabId: String) {

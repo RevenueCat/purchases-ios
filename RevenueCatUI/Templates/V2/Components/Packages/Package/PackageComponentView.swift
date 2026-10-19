@@ -35,12 +35,6 @@ struct PackageComponentView: View {
     @Environment(\.paywallWindowSize)
     private var paywallWindowSize
 
-    @Environment(\.isIntroOfferEligibilityLoading)
-    private var isIntroOfferEligibilityLoading
-
-    @Environment(\.isPromoOfferEligibilityLoading)
-    private var isPromoOfferEligibilityLoading
-
     @Environment(\.customPaywallVariables)
     private var customVariables
 
@@ -79,25 +73,25 @@ struct PackageComponentView: View {
                customVariables: customVariables,
                windowSize: paywallWindowSize
            ) {
-            let redactionReason: RedactionReasons = self.viewModel.redactsWhileOfferEligibilityLoads(
-                state: packageViewState,
-                condition: self.screenCondition,
-                offerEligibility: .init(
-                    isEligibleForIntroOffer: isEligibleForIntroOffer,
-                    isEligibleForPromoOffer: isEligibleForPromoOffer,
-                    isIntroOfferEligibilityLoading: self.isIntroOfferEligibilityLoading,
-                    isPromoOfferEligibilityLoading: self.isPromoOfferEligibilityLoading
-                ),
-                selectedPackageId: self.selectedPackageId,
-                customVariables: self.customVariables,
-                windowSize: self.paywallWindowSize
-            ) ? .placeholder : []
-
             StackComponentView(
                 viewModel: self.viewModel.stackViewModel,
                 onDismiss: self.onDismiss
             )
-            .redacted(reason: redactionReason)
+            .redactedWhileOfferEligibilityLoads(
+                self.viewModel,
+                isEligibleForIntroOffer: isEligibleForIntroOffer,
+                isEligibleForPromoOffer: isEligibleForPromoOffer
+            ) { intro, promo in
+                self.viewModel.visible(
+                    state: packageViewState,
+                    condition: self.screenCondition,
+                    isEligibleForIntroOffer: intro,
+                    isEligibleForPromoOffer: promo,
+                    selectedPackageId: self.selectedPackageId,
+                    customVariables: self.customVariables,
+                    windowSize: self.paywallWindowSize
+                )
+            }
             .environment(\.componentViewState, packageViewState)
             // Overrides the existing PackageContext
             .environmentObject(PackageContext(

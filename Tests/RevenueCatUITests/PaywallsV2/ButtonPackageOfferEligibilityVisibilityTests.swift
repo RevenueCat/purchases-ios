@@ -199,18 +199,24 @@ private extension ButtonOfferEligibilityVisibilityTests {
         isIntroOfferEligibilityLoading: Bool = true,
         isPromoOfferEligibilityLoading: Bool = true
     ) -> Bool {
-        return viewModel.redactsWhileOfferEligibilityLoads(
-            state: state,
-            condition: condition,
-            offerEligibility: .init(
-                isEligibleForIntroOffer: isEligibleForIntroOffer,
-                isEligibleForPromoOffer: isEligibleForPromoOffer,
-                isIntroOfferEligibilityLoading: isIntroOfferEligibilityLoading,
-                isPromoOfferEligibilityLoading: isPromoOfferEligibilityLoading
-            ),
-            selectedPackageId: nil,
-            customVariables: [:]
+        let offerEligibility = OfferEligibilityState(
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            isIntroOfferEligibilityLoading: isIntroOfferEligibilityLoading,
+            isPromoOfferEligibilityLoading: isPromoOfferEligibilityLoading
         )
+        return offerEligibility.visibilityCanChange(
+            variesWithEligibility: viewModel.dependsOnOfferEligibility
+        ) { intro, promo in
+            viewModel.visible(
+                state: state,
+                condition: condition,
+                isEligibleForIntroOffer: intro,
+                isEligibleForPromoOffer: promo,
+                selectedPackageId: nil,
+                customVariables: [:]
+            )
+        }
     }
 
     static func makeViewModel(
@@ -256,18 +262,24 @@ private extension PackageOfferEligibilityVisibilityTests {
         isIntroOfferEligibilityLoading: Bool = true,
         isPromoOfferEligibilityLoading: Bool = true
     ) -> Bool {
-        return viewModel.redactsWhileOfferEligibilityLoads(
-            state: state,
-            condition: condition,
-            offerEligibility: .init(
-                isEligibleForIntroOffer: isEligibleForIntroOffer,
-                isEligibleForPromoOffer: isEligibleForPromoOffer,
-                isIntroOfferEligibilityLoading: isIntroOfferEligibilityLoading,
-                isPromoOfferEligibilityLoading: isPromoOfferEligibilityLoading
-            ),
-            selectedPackageId: nil,
-            customVariables: [:]
+        let offerEligibility = OfferEligibilityState(
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            isIntroOfferEligibilityLoading: isIntroOfferEligibilityLoading,
+            isPromoOfferEligibilityLoading: isPromoOfferEligibilityLoading
         )
+        return offerEligibility.visibilityCanChange(
+            variesWithEligibility: viewModel.dependsOnOfferEligibility
+        ) { intro, promo in
+            viewModel.visible(
+                state: state,
+                condition: condition,
+                isEligibleForIntroOffer: intro,
+                isEligibleForPromoOffer: promo,
+                selectedPackageId: nil,
+                customVariables: [:]
+            )
+        }
     }
 
     static func makeViewModel(

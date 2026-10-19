@@ -52,12 +52,6 @@ struct ButtonComponentView: View {
     @Environment(\.paywallWindowSize)
     private var paywallWindowSize
 
-    @Environment(\.isIntroOfferEligibilityLoading)
-    private var isIntroOfferEligibilityLoading
-
-    @Environment(\.isPromoOfferEligibilityLoading)
-    private var isPromoOfferEligibilityLoading
-
     @Environment(\.customPaywallVariables)
     private var customVariables
 
@@ -118,20 +112,6 @@ struct ButtonComponentView: View {
                customVariables: self.customVariables,
                windowSize: self.paywallWindowSize
            ) {
-            let redactionReason: RedactionReasons = self.viewModel.redactsWhileOfferEligibilityLoads(
-                state: self.componentViewState,
-                condition: self.screenCondition,
-                offerEligibility: .init(
-                    isEligibleForIntroOffer: isEligibleForIntroOffer,
-                    isEligibleForPromoOffer: isEligibleForPromoOffer,
-                    isIntroOfferEligibilityLoading: self.isIntroOfferEligibilityLoading,
-                    isPromoOfferEligibilityLoading: self.isPromoOfferEligibilityLoading
-                ),
-                selectedPackageId: self.selectedPackageId,
-                customVariables: self.customVariables,
-                windowSize: self.paywallWindowSize
-            ) ? .placeholder : []
-
             AsyncButton {
                 try await performAction()
             } label: {
@@ -140,7 +120,21 @@ struct ButtonComponentView: View {
                     onDismiss: self.onDismiss,
                     showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
                 )
-                .redacted(reason: redactionReason)
+                .redactedWhileOfferEligibilityLoads(
+                    self.viewModel,
+                    isEligibleForIntroOffer: isEligibleForIntroOffer,
+                    isEligibleForPromoOffer: isEligibleForPromoOffer
+                ) { intro, promo in
+                    self.viewModel.visible(
+                        state: self.componentViewState,
+                        condition: self.screenCondition,
+                        isEligibleForIntroOffer: intro,
+                        isEligibleForPromoOffer: promo,
+                        selectedPackageId: self.selectedPackageId,
+                        customVariables: self.customVariables,
+                        windowSize: self.paywallWindowSize
+                    )
+                }
             }
             .applyIfLet(self.derivedAccessibilityLabel, apply: { view, label in
                 view.accessibilityLabel(label)

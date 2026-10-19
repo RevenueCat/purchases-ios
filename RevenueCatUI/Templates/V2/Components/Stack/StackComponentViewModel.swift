@@ -29,11 +29,12 @@ struct BadgeContents {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-class StackComponentViewModel {
+class StackComponentViewModel: OfferEligibilityVisibilityDependency {
 
     let component: PaywallComponent.StackComponent
     let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedStackPartial>?
+    let dependsOnOfferEligibility: Bool
 
     let viewModels: [PaywallComponentViewModel]
 
@@ -104,7 +105,9 @@ class StackComponentViewModel {
         self.uiConfigProvider = uiConfigProvider
         self.badgeViewModels = badgeViewModels
         self.discardRules = discardRules
-        self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
+        let presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
+        self.presentedOverrides = presentedOverrides
+        self.dependsOnOfferEligibility = presentedOverrides?.contains(where: \.dependsOnOfferEligibility) ?? false
     }
 
     func copy(withViewModels newViewModels: [PaywallComponentViewModel]) -> StackComponentViewModel {
@@ -201,28 +204,22 @@ class StackComponentViewModel {
         apply(style)
     }
 
-    /// True when intro or promo eligibility can change whether this stack is shown.
-    func redactsWhileOfferEligibilityLoads(
+    func visible(
         state: ComponentViewState,
         condition: ScreenCondition,
-        offerEligibility: OfferEligibilityState,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
         conditionContext: ConditionContext
     ) -> Bool {
-        let variesWithEligibility = self.presentedOverrides?.contains { override in
-            override.conditions.contains(where: \.dependsOnOfferEligibility)
-        } ?? false
-
-        return offerEligibility.visibilityCanChange(variesWithEligibility: variesWithEligibility) { intro, promo in
-            let partial = PresentedStackPartial.buildPartial(
-                state: state,
-                condition: condition,
-                isEligibleForIntroOffer: intro,
-                isEligibleForPromoOffer: promo,
-                conditionContext: conditionContext,
-                with: self.presentedOverrides
-            )
-            return partial?.visible ?? self.component.visible ?? true
-        }
+        let partial = PresentedStackPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
+            with: self.presentedOverrides
+        )
+        return partial?.visible ?? self.component.visible ?? true
     }
 
 }
