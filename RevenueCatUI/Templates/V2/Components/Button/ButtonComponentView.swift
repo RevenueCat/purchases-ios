@@ -20,6 +20,7 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ButtonComponentView: View {
     @Environment(\.nativePaywallCloseEnabled) private var nativeCloseEnabled
+    @Environment(\.nativePaywallRegistrationOnly) private var registrationOnly
     @Environment(\.openURL) private var openURL
     @Environment(\.openSheet) private var openSheet
     @Environment(\.restoreInitiatedAction)
@@ -129,6 +130,10 @@ struct ButtonComponentView: View {
                 },
                 content: { self.configuredButton }
             )
+        } else if self.registrationOnly {
+            // A hidden sibling needs no space, but must not be mistaken for a native toolbar action.
+            Color.clear.frame(width: 0, height: 0)
+                .preference(key: NativePaywallInvisibleButtonsKey.self, value: [ObjectIdentifier(self.viewModel)])
         }
     }
 

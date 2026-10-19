@@ -131,6 +131,18 @@ struct NativePaywallHiddenButtonsKey: PreferenceKey {
     }
 }
 
+struct NativePaywallInvisibleButtonsKey: PreferenceKey {
+    static let defaultValue: Set<ObjectIdentifier> = []
+
+    static func reduce(value: inout Set<ObjectIdentifier>, nextValue: () -> Set<ObjectIdentifier>) {
+        value.formUnion(nextValue())
+    }
+}
+
+private struct NativePaywallInvisibleLayoutButtonsKey: EnvironmentKey {
+    static let defaultValue: Set<ObjectIdentifier> = []
+}
+
 private struct NativePaywallControlsPresentedKey: EnvironmentKey {
     static let defaultValue = true
 }
@@ -188,6 +200,11 @@ extension EnvironmentValues {
     var nativePaywallHiddenLayoutButtons: Set<ObjectIdentifier> {
         get { self[NativePaywallHiddenLayoutButtonsKey.self] }
         set { self[NativePaywallHiddenLayoutButtonsKey.self] = newValue }
+    }
+
+    var nativePaywallInvisibleLayoutButtons: Set<ObjectIdentifier> {
+        get { self[NativePaywallInvisibleLayoutButtonsKey.self] }
+        set { self[NativePaywallInvisibleLayoutButtonsKey.self] = newValue }
     }
     var nativePaywallRegistrationOnly: Bool {
         get { self[NativePaywallRegistrationOnlyKey.self] }

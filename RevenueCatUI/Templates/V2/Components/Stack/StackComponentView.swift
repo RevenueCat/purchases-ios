@@ -64,7 +64,9 @@ struct StackComponentView: View {
     @Environment(\.nativePaywallRegistrationOnly) private var registrationOnly
     @Environment(\.nativePaywallStackRegistrationHandled) private var registrationHandled
     @Environment(\.nativePaywallRegisteredLayoutButtons) private var registeredLayoutButtons
+    @Environment(\.nativePaywallInvisibleLayoutButtons) private var registeredInvisibleButtons
     @State private var hiddenNativeButtons: Set<ObjectIdentifier> = []
+    @State private var invisibleButtons: Set<ObjectIdentifier> = []
 
     private let viewModel: StackComponentViewModel
     private let isScrollableByDefault: Bool
@@ -105,8 +107,12 @@ struct StackComponentView: View {
         self.registrationHandled ? self.registeredLayoutButtons : self.hiddenNativeButtons
     }
 
-    private var nativeButtonRegistrations: some View {
-        ForEach(Array(self.viewModel.viewModels.enumerated()), id: \.offset) { _, item in
+    private var invisibleLayoutButtons: Set<ObjectIdentifier> {
+        self.registrationHandled ? self.registeredInvisibleButtons : self.invisibleButtons
+    }
+
+    private var nativeButtonRegistrations: AnyView {
+        AnyView(ForEach(Array(self.viewModel.viewModels.enumerated()), id: \.offset) { _, item in
             switch item {
             case .button(let button):
                 ButtonComponentView(viewModel: button, onDismiss: self.onDismiss)
@@ -116,7 +122,7 @@ struct StackComponentView: View {
                     .environment(\.nativePaywallRegistrationOnly, true)
             default: EmptyView()
             }
-        }
+        })
     }
 
     var body: some View {
@@ -142,9 +148,7 @@ struct StackComponentView: View {
                 if self.registrationOnly {
                     self.nativeButtonRegistrations
                 } else {
-                    // Bound the layout type before the style builder expands its conditional branches.
-                    // Without this boundary, Swift can abort on opaque type substitution in Release builds.
-                    AnyView(self.make(style: style))
+                    self.make(style: style)
                         .redactedWhileOfferEligibilityLoads(
                             self.viewModel,
                             isEligibleForIntroOffer: isEligibleForIntroOffer,
@@ -165,16 +169,20 @@ struct StackComponentView: View {
                             )
                         }
                 }
+            } else if self.registrationOnly, let identifiers = self.viewModel.nativeButtonContainerIdentifiers {
+                Color.clear.frame(width: 0, height: 0)
+                    .preference(key: NativePaywallInvisibleButtonsKey.self, value: identifiers)
             }
         }
     }
 
-    @ViewBuilder
     // swiftlint:disable:next function_body_length
-    private func make(style: StackComponentStyle) -> some View {
+    private func make(style: StackComponentStyle) -> AnyView {
         let layoutSize: PaywallComponent.Size = self.suppressNativeHeaderLayout
             ? .init(width: .fixed(0), height: .fit(nil)) : style.size
-        Group {
+        // Hide the recursive layout's concrete type from callers before Swift substitutes opaque types.
+        // An opaque return type can still crash Release compilation even when the caller wraps it in AnyView.
+        return AnyView(AnyView(Group {
             switch style.dimension {
             case .vertical(let horizontalAlignment, let distribution):
                 VerticalStack(
@@ -217,11 +225,12 @@ struct StackComponentView: View {
                       horizontalAlignment: alignment.stackAlignment,
                       verticalAlignment: alignment.stackAlignment)
             }
-        }
+        })
         .environment(
             \.nativePaywallHiddenLayoutButtons, self.hiddenLayoutButtons.intersection(self.layoutButtonIdentifiers)
         )
         .environment(\.nativePaywallRegisteredLayoutButtons, self.hiddenLayoutButtons)
+        .environment(\.nativePaywallInvisibleLayoutButtons, self.invisibleLayoutButtons)
         .hidden(if: self.showActivityIndicatorOverContent)
         .padding(self.suppressNativeHeaderLayout ? EdgeInsets() : style.padding.extend(by: style.border?.width ?? 0))
         .padding(additionalPadding)
@@ -257,12 +266,14 @@ struct StackComponentView: View {
             }
         }
         .onPreferenceChange(NativePaywallHiddenButtonsKey.self) { self.hiddenNativeButtons = $0 }
+        .onPreferenceChange(NativePaywallInvisibleButtonsKey.self) { self.invisibleButtons = $0 }
         .transformPreference(NativePaywallHeaderContentKey.self) { content in
             // Header chrome belongs to its controls; descendant decoration is independent content.
             let hasDecoration = style.backgroundStyle != nil || style.border != nil || style.shadow != nil
             content.hasVisibleContent = content.hasVisibleContent || style.badge != nil
                 || (!self.isHeaderContainer && hasDecoration)
         }
+        )
     }
 
 }

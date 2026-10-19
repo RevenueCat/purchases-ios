@@ -19,6 +19,7 @@ import SwiftUI
 struct FlexHStack: View {
 
     @Environment(\.nativePaywallHiddenLayoutButtons) private var hiddenNativeButtons
+    @Environment(\.nativePaywallInvisibleLayoutButtons) private var invisibleButtons
 
     let alignment: VerticalAlignment
     let justifyContent: JustifyContent
@@ -41,7 +42,9 @@ struct FlexHStack: View {
     }
 
     private var visibleIndices: [Int] {
-        self.componentViewModels.indicesExcludingNativeButtons(self.hiddenNativeButtons)
+        self.componentViewModels.indicesExcludingNativeButtons(
+            self.hiddenNativeButtons, invisibleButtons: self.invisibleButtons
+        )
     }
 
     var body: some View {

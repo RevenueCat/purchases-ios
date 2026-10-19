@@ -18,6 +18,7 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct FlexVStack: View {
     @Environment(\.nativePaywallHiddenLayoutButtons) private var hiddenNativeButtons
+    @Environment(\.nativePaywallInvisibleLayoutButtons) private var invisibleButtons
 
     let alignment: HorizontalAlignment
     let justifyContent: JustifyContent
@@ -40,7 +41,9 @@ struct FlexVStack: View {
     }
 
     private var visibleIndices: [Int] {
-        self.componentViewModels.indicesExcludingNativeButtons(self.hiddenNativeButtons)
+        self.componentViewModels.indicesExcludingNativeButtons(
+            self.hiddenNativeButtons, invisibleButtons: self.invisibleButtons
+        )
     }
 
     var body: some View {

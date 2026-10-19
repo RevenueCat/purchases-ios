@@ -307,10 +307,18 @@ final class ButtonComponentViewTests: TestCase {
         let button = PaywallComponent.button(.init(
             action: .navigateBack, stack: Self.makeButtonStack(label: "Close"), useNativeIfPossible: true
         ))
-        let wrapper = PaywallComponent.stack(.init(components: [.stack(.init(
-            components: [button], size: .init(width: .fixed(80), height: .fixed(80)),
-            padding: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
-        ))], size: .init(width: .fixed(100), height: .fixed(100))))
+        let secondary = PaywallComponent.button(.init(
+            visible: false, action: .navigateBack, stack: Self.makeButtonStack(label: "Close")
+        ))
+        let hiddenStack = PaywallComponent.stack(.init(visible: false, components: [.button(.init(
+            action: .navigateBack, stack: Self.makeButtonStack(label: "Close")
+        ))]))
+        let wrappers = [[button], [button, secondary], [button, hiddenStack]].map { children in
+            PaywallComponent.stack(.init(components: [.stack(.init(
+                components: children, size: .init(width: .fixed(80), height: .fixed(80)),
+                padding: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
+            ))], size: .init(width: .fixed(100), height: .fixed(100))))
+        }
         for distribution: PaywallComponent.FlexDistribution in [.start, .spaceBetween, .spaceAround, .spaceEvenly] {
             for dimension: PaywallComponent.Dimension in [
                 .vertical(.center, distribution), .horizontal(.center, distribution)
@@ -320,9 +328,120 @@ final class ButtonComponentViewTests: TestCase {
                           size: .init(width: .fixed(200), height: .fixed(200)), spacing: 12)
                 }
                 let reference = try await self.renderNativeStack(stack(markers), actions: 0)
-                let nested = try await self.renderNativeStack(stack([markers[0], wrapper, markers[1]]), actions: 1)
-                XCTAssertEqual(nested.pngData(), reference.pngData(), "Empty wrappers must not consume layout space")
+                for wrapper in wrappers {
+                    let nested = try await self.renderNativeStack(stack([markers[0], wrapper, markers[1]]), actions: 1)
+                    XCTAssertEqual(nested.pngData(), reference.pngData(),
+                                   "Empty wrappers must not consume layout space")
+                }
             }
+        }
+    }
+
+    func testNativeWrapperTracksHiddenSecondaryButtonWithoutRemountingRegistration() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
+        let close = PaywallComponent.button(.init(
+            action: .navigateBack, stack: Self.makeButtonStack(label: "Close"), useNativeIfPossible: true
+        ))
+        let secondary = PaywallComponent.button(.init(
+            visible: false, action: .navigateBack, stack: Self.makeButtonStack(label: "Close"),
+            overrides: [.init(conditions: [.selected], properties: .init(visible: true))]
+        ))
+        let wrapper = PaywallComponent.stack(.init(
+            components: [close, secondary], size: .init(width: .fill, height: .fixed(80))
+        ))
+        let model = try StackComponentViewModel(component: .init(components: [wrapper]), localizationProvider: .init(
+            locale: Locale(identifier: "en_US"), localizedStrings: ["Close": .string("Close")]
+        ), colorScheme: .light)
+        let coordinator = NativePaywallCloseCoordinator()
+        let state = NativeRegistrationTestState()
+        var height: CGFloat = -1
+        let content = StackComponentView(viewModel: model, onDismiss: {})
+            .fixedSize(horizontal: false, vertical: true)
+            .background(GeometryReader { proxy in
+                Color.clear.preference(key: NativeRegistrationHeightKey.self, value: proxy.size.height)
+            })
+            .onPreferenceChange(NativeRegistrationHeightKey.self) { height = $0 }
+        let (window, _) = Self.host(Self.nativeLayoutEnvironment(
+            NativeHeaderVisibilityTestView(state: state, content: content), coordinator: coordinator
+        ))
+        defer { window.isHidden = true; window.rootViewController = nil }
+        var actionID: UUID?
+        for (value, expected): (Int, CGFloat) in [(1, 0), (2, 80), (1, 0)] {
+            state.value = value
+            let settled = expectation(description: "Secondary button visibility settles")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { settled.fulfill() }
+            await fulfillment(of: [settled], timeout: 2)
+            XCTAssertEqual(height, expected, accuracy: 0.5, "selected=\(value)")
+            XCTAssertEqual(coordinator.actions.count, 1)
+            let currentID = try XCTUnwrap(coordinator.actions.first?.id)
+            if let actionID { XCTAssertEqual(currentID, actionID, "Visibility must not remount native registration") }
+            actionID = currentID
+        }
+    }
+
+    func testNativeHeaderRestoresSafeAreaWhenBodyHeroIsHidden() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
+        let imageURL = try Self.makeHeroImageURL()
+        defer { try? FileManager.default.removeItem(at: imageURL) }
+        let image = PaywallComponent.image(.init(
+            source: .init(light: .init(
+                width: 1, height: 1, original: imageURL, heic: imageURL, heicLowRes: imageURL
+            )),
+            size: .init(width: .fill, height: .fixed(60)),
+            overrides: [.init(conditions: [.selected], properties: .init(visible: false))]
+        ))
+        let close = PaywallComponent.button(.init(
+            action: .navigateBack, stack: Self.makeButtonStack(label: "Close"), useNativeIfPossible: true
+        ))
+        let config = PaywallComponentsData.PaywallComponentsConfig(
+            stack: .init(components: [image, .stack(.init(
+                components: [], size: .init(width: .fill, height: .fixed(20)),
+                backgroundColor: .init(light: .hex("#FF0000"))
+            ))], spacing: 0),
+            header: .init(stack: .init(components: [close])), stickyFooter: nil,
+            background: .color(.init(light: .hex("#FFFFFF")))
+        )
+        var factory = ViewModelFactory()
+        let root = try factory.toRootViewModel(
+            componentsConfig: config,
+            offering: .init(identifier: "native-layout", serverDescription: "", availablePackages: [],
+                            webCheckoutUrl: nil),
+            localizationProvider: .init(locale: Locale(identifier: "en_US"),
+                                        localizedStrings: ["Close": .string("Close")]),
+            uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()), colorScheme: .light
+        )
+        let state = NativeRegistrationTestState()
+        let coordinator = NativePaywallCloseCoordinator()
+        let (window, hosted) = Self.host(Self.nativeLayoutEnvironment(
+            NativeHeaderVisibilityTestView(
+                state: state, content: RootView(viewModel: root, onDismiss: {}, defaultPackage: nil)
+            ), coordinator: coordinator, safeAreaInsets: .init(top: 88, leading: 0, bottom: 0, trailing: 0)
+        ))
+        defer { window.isHidden = true; window.rootViewController = nil }
+        var visibleHeroBodyRow: CGFloat?
+        for value in [1, 2, 1, 2] {
+            state.value = value
+            let settled = expectation(description: "Body hero visibility settles")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { settled.fulfill() }
+            await fulfillment(of: [settled], timeout: 2)
+            let screenshot = UIGraphicsImageRenderer(bounds: hosted.bounds).image { _ in
+                hosted.drawHierarchy(in: hosted.bounds, afterScreenUpdates: true)
+            }
+            let attachment = XCTAttachment(image: screenshot)
+            attachment.name = "Body hero selected=\(value)"
+            attachment.lifetime = .keepAlways
+            self.add(attachment)
+            let bodyRow = try XCTUnwrap(self.firstRedRow(in: screenshot))
+            if value == 2 {
+                XCTAssertGreaterThanOrEqual(bodyRow, 88,
+                                            "Hiding the body hero must restore the body's top safe-area inset")
+            } else if let visibleHeroBodyRow {
+                XCTAssertEqual(bodyRow, visibleHeroBodyRow, accuracy: 1, "Revealing the hero must restore its layout")
+            } else {
+                XCTAssertGreaterThan(bodyRow, 0, "The visible hero must occupy space before the body")
+                visibleHeroBodyRow = bodyRow
+            }
+            XCTAssertEqual(coordinator.actions.count, 1)
         }
     }
 
@@ -434,6 +553,8 @@ final class ButtonComponentViewTests: TestCase {
 
     func testCollapsedHiddenHeroRestoresRootBodySafeArea() async throws {
         try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
+        let imageURL = try Self.makeHeroImageURL()
+        defer { try? FileManager.default.removeItem(at: imageURL) }
         let image = PaywallComponent.image(.init(visible: false, source: .init(light: .init(
             width: 1, height: 1, original: URL(string: "https://example.com/hidden.png")!,
             heic: URL(string: "https://example.com/hidden.png")!,
@@ -442,47 +563,77 @@ final class ButtonComponentViewTests: TestCase {
         let close = PaywallComponent.button(.init(
             action: .navigateBack, stack: Self.makeButtonStack(label: "Close"), useNativeIfPossible: true
         ))
-        var results: [Bool: CGFloat] = [:]
-        for hasHero in [false, true] {
-            let header = PaywallComponent.StackComponent(components: (hasHero ? [image] : []) + [close])
-            let config = PaywallComponentsData.PaywallComponentsConfig(
-                stack: .init(components: [.stack(.init(
-                    components: [], size: .init(width: .fill, height: .fixed(20)),
-                    backgroundColor: .init(light: .hex("#FF0000"))
-                ))]),
-                header: .init(stack: header), stickyFooter: nil,
-                background: .color(.init(light: .hex("#FFFFFF")))
-            )
-            var factory = ViewModelFactory()
-            let root = try factory.toRootViewModel(
-                componentsConfig: config,
-                offering: .init(identifier: "native-layout", serverDescription: "", availablePackages: [],
-                                webCheckoutUrl: nil),
-                localizationProvider: .init(locale: Locale(identifier: "en_US"),
-                                            localizedStrings: ["Close": .string("Close")]),
-                uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()), colorScheme: .light
-            )
-            let view = RootView(viewModel: root, onDismiss: {}, defaultPackage: nil)
-            let coordinator = NativePaywallCloseCoordinator()
-            let (window, hosted) = Self.host(Self.nativeLayoutEnvironment(
-                view, coordinator: coordinator,
-                safeAreaInsets: EdgeInsets(top: 88, leading: 0, bottom: 0, trailing: 0)
-            ))
-            defer { window.isHidden = true; window.rootViewController = nil }
-            let registered = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
-                coordinator.actions.count == 1
-            }, object: nil)
-            await fulfillment(of: [registered], timeout: 2)
-            let settled = expectation(description: "Native header inset settled")
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { settled.fulfill() }
-            await fulfillment(of: [settled], timeout: 2)
-            let screenshot = UIGraphicsImageRenderer(bounds: hosted.bounds).image { _ in
-                hosted.drawHierarchy(in: hosted.bounds, afterScreenUpdates: true)
+        let marker = PaywallComponent.stack(.init(
+            components: [], size: .init(width: .fill, height: .fixed(20)),
+            backgroundColor: .init(light: .hex("#FF0000"))
+        ))
+        let unrelatedCard = PaywallComponent.stack(.init(components: [.image(.init(
+            source: .init(light: .init(
+                width: 1, height: 1, original: imageURL, heic: imageURL, heicLowRes: imageURL
+            )), size: .init(width: .fill, height: .fixed(60))
+        )), marker], dimension: .zlayer(.top)))
+        for bodyLayout in 0..<3 {
+            var results: [Int: CGFloat] = [:]
+            var screenshots: [Int: Data] = [:]
+            for heroLocation in 0..<3 {
+                let header = PaywallComponent.StackComponent(components: (heroLocation == 1 ? [image] : []) + [close])
+                let body = PaywallComponent.StackComponent(
+                    components: (heroLocation == 2 ? [image] : []) + [.stack(.init(
+                        components: [marker, unrelatedCard], spacing: 0
+                    ))], dimension: bodyLayout == 0 ? .vertical(.center, .start) : .zlayer(.top)
+                )
+                let config = PaywallComponentsData.PaywallComponentsConfig(
+                    stack: bodyLayout == 2 ? .init(components: [.stack(body)]) : body,
+                    header: .init(stack: header), stickyFooter: nil,
+                    background: .color(.init(light: .hex("#FFFFFF")))
+                )
+                var factory = ViewModelFactory()
+                let root = try factory.toRootViewModel(
+                    componentsConfig: config,
+                    offering: .init(identifier: "native-layout", serverDescription: "", availablePackages: [],
+                                    webCheckoutUrl: nil),
+                    localizationProvider: .init(locale: Locale(identifier: "en_US"),
+                                                localizedStrings: ["Close": .string("Close")]),
+                    uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()), colorScheme: .light
+                )
+                let view = RootView(viewModel: root, onDismiss: {}, defaultPackage: nil)
+                let coordinator = NativePaywallCloseCoordinator()
+                let (window, hosted) = Self.host(Self.nativeLayoutEnvironment(
+                    view, coordinator: coordinator,
+                    safeAreaInsets: EdgeInsets(top: 88, leading: 0, bottom: 0, trailing: 0)
+                ))
+                defer { window.isHidden = true; window.rootViewController = nil }
+                let registered = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+                    coordinator.actions.count == 1
+                }, object: nil)
+                await fulfillment(of: [registered], timeout: 2)
+                let settled = expectation(description: "Native header inset settled")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { settled.fulfill() }
+                await fulfillment(of: [settled], timeout: 2)
+                let screenshot = UIGraphicsImageRenderer(bounds: hosted.bounds).image { _ in
+                    hosted.drawHierarchy(in: hosted.bounds, afterScreenUpdates: true)
+                }
+                results[heroLocation] = try XCTUnwrap(self.firstRedRow(in: screenshot))
+                screenshots[heroLocation] = screenshot.pngData()
             }
-            results[hasHero] = try XCTUnwrap(self.firstRedRow(in: screenshot))
+            for heroLocation in [1, 2] {
+                XCTAssertEqual(try XCTUnwrap(results[heroLocation]), try XCTUnwrap(results[0]), accuracy: 1,
+                               "A hidden hero must match the layout with no hero: bodyLayout=\(bodyLayout)")
+                XCTAssertGreaterThanOrEqual(try XCTUnwrap(results[heroLocation]), 88)
+                XCTAssertEqual(screenshots[heroLocation], screenshots[0],
+                               "Restoring the hero inset must preserve unrelated card overlays")
+            }
         }
-        XCTAssertEqual(try XCTUnwrap(results[true]), try XCTUnwrap(results[false]), accuracy: 1)
-        XCTAssertGreaterThanOrEqual(try XCTUnwrap(results[true]), 88)
+    }
+
+    private static func makeHeroImageURL() throws -> URL {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("native-hero-\(UUID()).png")
+        let hero = UIGraphicsImageRenderer(size: CGSize(width: 1, height: 1)).image { context in
+            UIColor.blue.setFill()
+            context.fill(CGRect(x: 0, y: 0, width: 1, height: 1))
+        }
+        try XCTUnwrap(hero.pngData()).write(to: url)
+        return url
     }
 
     private func firstRedRow(in image: UIImage) -> CGFloat? {

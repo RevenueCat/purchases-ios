@@ -28,6 +28,9 @@ struct ComponentsView: View {
     @Environment(\.workflowRenderingContext) private var workflowRenderingContext
 
     @Environment(\.nativePaywallHiddenLayoutButtons) private var hiddenNativeButtons
+    @Environment(\.nativePaywallInvisibleLayoutButtons) private var invisibleButtons
+    @Environment(\.nativePaywallBodyHeroIdentifier) private var bodyHeroIdentifier
+    @Environment(\.nativePaywallBodySafeAreaRestored) private var bodySafeAreaRestored
     @Environment(\.nativePaywallLayoutButtons) private var registeredLayoutButtons
 
     let componentViewModels: [PaywallComponentViewModel]
@@ -36,6 +39,12 @@ struct ComponentsView: View {
     private let pushNonFirstChildrenBelowSafeArea: Bool
     private let onDismiss: () -> Void
     private let defaultPackage: Package?
+
+    private var bodyHeroInsetAlreadyRestored: Bool {
+        guard let bodyHeroIdentifier else { return false }
+        return self.bodySafeAreaRestored
+            && self.componentViewModels.first?.nativeMediaIdentifier == bodyHeroIdentifier
+    }
 
     init(
         componentViewModels: [PaywallComponentViewModel],
@@ -50,12 +59,24 @@ struct ComponentsView: View {
     }
 
     var body: some View {
-        ForEach(self.componentViewModels.indicesExcludingNativeButtons(self.hiddenNativeButtons), id: \.self) { index in
+        ForEach(self.componentViewModels.indicesExcludingNativeButtons(
+            self.hiddenNativeButtons, invisibleButtons: self.invisibleButtons
+        ), id: \.self) { index in
             let item = self.componentViewModels[index]
             view(for: item)
+                .background {
+                    if let bodyHeroIdentifier, item.nativeMediaIdentifier == bodyHeroIdentifier {
+                        GeometryReader { geometry in
+                            Color.clear.preference(
+                                key: NativePaywallVisibleBodyHeroKey.self,
+                                value: geometry.size.width > 0 && geometry.size.height > 0
+                            )
+                        }
+                    }
+                }
                 .padding(
                     .top,
-                    index > 0 && pushNonFirstChildrenBelowSafeArea
+                    index > 0 && pushNonFirstChildrenBelowSafeArea && !self.bodyHeroInsetAlreadyRestored
                         ? max(safeAreaInsets.top, overlaidHeaderHeight)
                         : 0
                 )
