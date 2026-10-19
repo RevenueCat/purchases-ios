@@ -188,8 +188,10 @@ private extension StackOfferEligibilityVisibilityTests {
         let offerEligibility = OfferEligibilityState(
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
-            isIntroOfferEligibilityLoading: isIntroOfferEligibilityLoading,
-            isPromoOfferEligibilityLoading: isPromoOfferEligibilityLoading
+            loading: .init(
+                intro: isIntroOfferEligibilityLoading,
+                promo: isPromoOfferEligibilityLoading
+            )
         )
         return offerEligibility.visibilityCanChange(
             variesWithEligibility: viewModel.dependsOnOfferEligibility
@@ -244,8 +246,7 @@ class CompositeOfferEligibilityVisibilityTests: TestCase {
         let offerEligibility = OfferEligibilityState(
             isEligibleForIntroOffer: true,
             isEligibleForPromoOffer: false,
-            isIntroOfferEligibilityLoading: false,
-            isPromoOfferEligibilityLoading: false
+            loading: []
         )
 
         expect(self.redacts(viewModels.carousel, offerEligibility: offerEligibility)).to(beFalse())
@@ -270,8 +271,7 @@ private extension CompositeOfferEligibilityVisibilityTests {
         return .init(
             isEligibleForIntroOffer: false,
             isEligibleForPromoOffer: false,
-            isIntroOfferEligibilityLoading: true,
-            isPromoOfferEligibilityLoading: true
+            loading: [.intro, .promo]
         )
     }
 

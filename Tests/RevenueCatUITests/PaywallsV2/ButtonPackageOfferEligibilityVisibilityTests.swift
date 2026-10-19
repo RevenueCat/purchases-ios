@@ -202,8 +202,10 @@ private extension ButtonOfferEligibilityVisibilityTests {
         let offerEligibility = OfferEligibilityState(
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
-            isIntroOfferEligibilityLoading: isIntroOfferEligibilityLoading,
-            isPromoOfferEligibilityLoading: isPromoOfferEligibilityLoading
+            loading: .init(
+                intro: isIntroOfferEligibilityLoading,
+                promo: isPromoOfferEligibilityLoading
+            )
         )
         return offerEligibility.visibilityCanChange(
             variesWithEligibility: viewModel.dependsOnOfferEligibility
@@ -265,8 +267,10 @@ private extension PackageOfferEligibilityVisibilityTests {
         let offerEligibility = OfferEligibilityState(
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
-            isIntroOfferEligibilityLoading: isIntroOfferEligibilityLoading,
-            isPromoOfferEligibilityLoading: isPromoOfferEligibilityLoading
+            loading: .init(
+                intro: isIntroOfferEligibilityLoading,
+                promo: isPromoOfferEligibilityLoading
+            )
         )
         return offerEligibility.visibilityCanChange(
             variesWithEligibility: viewModel.dependsOnOfferEligibility

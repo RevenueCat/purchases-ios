@@ -120,8 +120,8 @@ struct LoadedTabsComponentView: View {
     @Environment(\.paywallStateStore)
     private var stateStore
 
-    @Environment(\.isPaywallLoading)
-    private var isPaywallLoading
+    @Environment(\.offerEligibilityLoading)
+    private var offerEligibilityLoading
 
     private let viewModel: TabsComponentViewModel
     private let workflowDefaultPackage: Package?
@@ -356,9 +356,8 @@ struct LoadedTabsComponentView: View {
                     )
                 )
             )
-            // Intro and promo eligibility both land after first render and can flip a package's
-            // visibility. `isPaywallLoading` goes false once both have resolved.
-            .onChangeOf(self.isPaywallLoading) { _ in
+            // Each eligibility result can independently flip package visibility.
+            .onChangeOf(self.offerEligibilityLoading) { _ in
                 self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
             }
             // A window resize (rotation, Split View, Stage Manager) can hide the

@@ -62,11 +62,8 @@ struct TextComponentView: View {
 
     @Environment(\.redactionReasons) private var redactionReasons
 
-    @Environment(\.isIntroOfferEligibilityLoading)
-    private var isIntroOfferEligibilityLoading
-
-    @Environment(\.isPromoOfferEligibilityLoading)
-    private var isPromoOfferEligibilityLoading
+    @Environment(\.offerEligibilityLoading)
+    private var offerEligibilityLoading
 
     @Environment(\.accessibilityVoiceOverEnabled)
     private var accessibilityVoiceOverEnabled
@@ -95,7 +92,7 @@ struct TextComponentView: View {
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool
     ) -> Bool {
-        guard self.isIntroOfferEligibilityLoading || self.isPromoOfferEligibilityLoading else {
+        guard !self.offerEligibilityLoading.isEmpty else {
             return false
         }
 
@@ -105,8 +102,7 @@ struct TextComponentView: View {
             offerEligibility: .init(
                 isEligibleForIntroOffer: isEligibleForIntroOffer,
                 isEligibleForPromoOffer: isEligibleForPromoOffer,
-                isIntroOfferEligibilityLoading: self.isIntroOfferEligibilityLoading,
-                isPromoOfferEligibilityLoading: self.isPromoOfferEligibilityLoading
+                loading: self.offerEligibilityLoading
             ),
             conditionContext: self.viewModel.uiConfigProvider.conditionContext(
                 selectedPackageId: self.selectedPackageId,
@@ -427,11 +423,11 @@ struct TextComponentView_Previews: PreviewProvider {
         .previewDisplayName("Detected Platform")
 
         defaultPreview
-        .environment(\.isPaywallLoading, true)
+        .environment(\.offerEligibilityLoading, [.intro, .promo])
         .previewDisplayName("Default (Loading, static text)")
 
         platformPreview
-        .environment(\.isPaywallLoading, true)
+        .environment(\.offerEligibilityLoading, [.intro, .promo])
         .previewDisplayName("Detected Platform (Loading, static text)")
 
         // Markdown

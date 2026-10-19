@@ -60,8 +60,8 @@ struct PaywallsV2View: View {
     private var inheritedStateStore
 
     #if DEBUG
-    @Environment(\.paywallLoadingOverride)
-    private var paywallLoadingOverride: Bool?
+    @Environment(\.offerEligibilityLoadingOverride)
+    private var offerEligibilityLoadingOverride
     #endif
 
     @StateObject
@@ -283,12 +283,13 @@ struct PaywallsV2View: View {
 
     private func loadedPaywallView(paywallState: PaywallState) -> some View {
         let contentLocale = paywallState.rootViewModel.localizationProvider.locale
-        var isIntroOfferEligibilityLoading = !self.didFinishIntroEligibilityCheck
-        var isPromoOfferEligibilityLoading = !self.didFinishPromoEligibilityCheck
+        var offerEligibilityLoading = OfferEligibilityLoading(
+            intro: !self.didFinishIntroEligibilityCheck,
+            promo: !self.didFinishPromoEligibilityCheck
+        )
         #if DEBUG
-        if let override = self.paywallLoadingOverride {
-            isIntroOfferEligibilityLoading = override
-            isPromoOfferEligibilityLoading = override
+        if let override = self.offerEligibilityLoadingOverride {
+            offerEligibilityLoading = override
         }
         #endif
         let workflow: PaywallWebViewStaticContext.Workflow? = {
@@ -321,12 +322,7 @@ struct PaywallsV2View: View {
             onDismiss: self.onDismiss,
             closeWorkflowAction: self.closeWorkflowAction
         )
-        .environment(
-            \.isPaywallLoading,
-            isIntroOfferEligibilityLoading || isPromoOfferEligibilityLoading
-        )
-        .environment(\.isIntroOfferEligibilityLoading, isIntroOfferEligibilityLoading)
-        .environment(\.isPromoOfferEligibilityLoading, isPromoOfferEligibilityLoading)
+        .environment(\.offerEligibilityLoading, offerEligibilityLoading)
         .environment(\.locale, contentLocale)
         .environment(\.layoutDirection, contentLocale.swiftUILayoutDirection)
         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
@@ -663,8 +659,8 @@ struct LoadedPaywallsV2View: View {
     @Environment(\.customPaywallVariables)
     private var customVariables
 
-    @Environment(\.isPaywallLoading)
-    private var isPaywallLoading
+    @Environment(\.offerEligibilityLoading)
+    private var offerEligibilityLoading
 
     @ObservedObject
     private var selectedPackageContext: PackageContext
@@ -775,9 +771,8 @@ struct LoadedPaywallsV2View: View {
             .onAppear {
                 self.reconcileSelection()
             }
-            // Intro and promo eligibility both land after first render and can flip a package's
-            // visibility. `isPaywallLoading` goes false once both have resolved.
-            .onChangeOf(self.isPaywallLoading) { _ in
+            // Each eligibility result can independently flip package visibility.
+            .onChangeOf(self.offerEligibilityLoading) { _ in
                 self.reconcileSelection()
             }
             // Leaving a tab can restore a package a rule hides, and this doesn't depend on

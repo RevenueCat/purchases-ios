@@ -259,7 +259,7 @@ struct Template1Preview_Previews: PreviewProvider {
             failedToLoadFont: { _ in },
             colorScheme: .light
         )
-        .environment(\.paywallLoadingOverride, true)
+        .environment(\.offerEligibilityLoadingOverride, [.intro, .promo])
         .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 800))
         .previewDisplayName("Template 1 (Loading)")

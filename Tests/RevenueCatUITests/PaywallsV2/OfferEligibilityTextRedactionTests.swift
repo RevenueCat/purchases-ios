@@ -239,8 +239,10 @@ private extension OfferEligibilityTextRedactionTests {
             offerEligibility: .init(
                 isEligibleForIntroOffer: isEligibleForIntroOffer,
                 isEligibleForPromoOffer: isEligibleForPromoOffer,
-                isIntroOfferEligibilityLoading: isIntroOfferEligibilityLoading,
-                isPromoOfferEligibilityLoading: isPromoOfferEligibilityLoading
+                loading: .init(
+                    intro: isIntroOfferEligibilityLoading,
+                    promo: isPromoOfferEligibilityLoading
+                )
             ),
             conditionContext: .init()
         )

@@ -19,11 +19,10 @@ struct OfferEligibilityState {
 
     let isEligibleForIntroOffer: Bool
     let isEligibleForPromoOffer: Bool
-    let isIntroOfferEligibilityLoading: Bool
-    let isPromoOfferEligibilityLoading: Bool
+    let loading: OfferEligibilityLoading
 
     var isLoading: Bool {
-        return self.isIntroOfferEligibilityLoading || self.isPromoOfferEligibilityLoading
+        return !self.loading.isEmpty
     }
 
     /// Eligibility values still in play. A resolved check contributes only its result, so a component
@@ -31,10 +30,10 @@ struct OfferEligibilityState {
     func unresolvedOutcomes(
         variesWithEligibility: Bool
     ) -> [(isEligibleForIntroOffer: Bool, isEligibleForPromoOffer: Bool)] {
-        let introValues = variesWithEligibility && self.isIntroOfferEligibilityLoading
+        let introValues = variesWithEligibility && self.loading.contains(.intro)
             ? [false, true]
             : [self.isEligibleForIntroOffer]
-        let promoValues = variesWithEligibility && self.isPromoOfferEligibilityLoading
+        let promoValues = variesWithEligibility && self.loading.contains(.promo)
             ? [false, true]
             : [self.isEligibleForPromoOffer]
 
@@ -93,11 +92,8 @@ extension PresentedOverride {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct OfferEligibilityRedactionModifier: ViewModifier {
 
-    @Environment(\.isIntroOfferEligibilityLoading)
-    private var isIntroOfferEligibilityLoading
-
-    @Environment(\.isPromoOfferEligibilityLoading)
-    private var isPromoOfferEligibilityLoading
+    @Environment(\.offerEligibilityLoading)
+    private var offerEligibilityLoading
 
     let dependsOnOfferEligibility: Bool
     let isEligibleForIntroOffer: Bool
@@ -108,8 +104,7 @@ private struct OfferEligibilityRedactionModifier: ViewModifier {
         let offerEligibility = OfferEligibilityState(
             isEligibleForIntroOffer: self.isEligibleForIntroOffer,
             isEligibleForPromoOffer: self.isEligibleForPromoOffer,
-            isIntroOfferEligibilityLoading: self.isIntroOfferEligibilityLoading,
-            isPromoOfferEligibilityLoading: self.isPromoOfferEligibilityLoading
+            loading: self.offerEligibilityLoading
         )
         let redacts = offerEligibility.visibilityCanChange(
             variesWithEligibility: self.dependsOnOfferEligibility,

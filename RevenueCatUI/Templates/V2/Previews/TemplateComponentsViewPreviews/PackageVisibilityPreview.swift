@@ -245,7 +245,7 @@ struct PackageVisibilityPreview_Previews: PreviewProvider {
             ),
             eligibility: .ineligible
         )
-        .environment(\.paywallLoadingOverride, true)
+        .environment(\.offerEligibilityLoadingOverride, [.intro, .promo])
         .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 800))
         .previewDisplayName("Package: static hidden default (Loading)")

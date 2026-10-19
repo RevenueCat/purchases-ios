@@ -83,9 +83,10 @@ private extension TextComponentViewLoadingTests {
         )
         return TextComponentView(viewModel: viewModel)
             .previewRequiredPaywallsV2Properties()
-            .environment(\.isPaywallLoading, isLoading)
-            .environment(\.isIntroOfferEligibilityLoading, isLoading)
-            .environment(\.isPromoOfferEligibilityLoading, isLoading)
+            .environment(
+                \.offerEligibilityLoading,
+                isLoading ? [.intro, .promo] : []
+            )
     }
 
 }
