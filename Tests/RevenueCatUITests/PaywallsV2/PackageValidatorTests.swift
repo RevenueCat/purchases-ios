@@ -337,6 +337,37 @@ final class PackageValidatorTests: TestCase {
         )
     }
 
+    func testReconcileDoesNotWaitForOffersTheHiddenPackageCannotHave() {
+        let package = TestData.lifetimePackage
+        let fallback = TestData.monthlyPackage
+        let availability = OfferEligibilityAvailability(packageInfos: [(package, nil), (fallback, nil)])
+
+        for condition in [PaywallComponent.ExtendedCondition.introOffer, .promoOffer] {
+            let validator = PackageValidator()
+            validator.add(Self.makePackageInfo(
+                package: package,
+                isSelectedByDefault: true,
+                visible: false,
+                overrides: [Self.offerVisibilityOverride(condition, visible: true)]
+            ))
+            validator.add(Self.makePackageInfo(
+                package: fallback,
+                isSelectedByDefault: false,
+                visible: true
+            ))
+
+            XCTAssertEqual(
+                validator.reconciledSelection(
+                    current: package,
+                    in: Self.context(),
+                    offerEligibilityLoading: [.intro, .promo],
+                    offerEligibilityAvailability: availability
+                )?.identifier,
+                fallback.identifier
+            )
+        }
+    }
+
     func testReconcileReturnsNilWhenNothingIsVisible() {
         let validator = PackageValidator()
         validator.add(Self.makePackageInfo(

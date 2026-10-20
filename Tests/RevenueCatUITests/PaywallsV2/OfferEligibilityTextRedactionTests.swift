@@ -194,6 +194,132 @@ class OfferEligibilityTextRedactionTests: TestCase {
         expect(self.redacts(viewModel, condition: .expanded)).to(beTrue())
     }
 
+    func testIntroCopyOnlyRedactsProductsWithAnIntroOffer() throws {
+        let monthly = TestData.monthlyPackage
+        let annual = Package(
+            identifier: "$rc_annual",
+            packageType: .annual,
+            storeProduct: TestData.productWithNoIntroOffer.toStoreProduct(),
+            offeringIdentifier: "default",
+            webCheckoutUrl: nil
+        )
+        let lifetime = TestData.lifetimePackage
+        let availability = OfferEligibilityAvailability(packageInfos: [
+            (monthly, nil), (annual, nil), (lifetime, nil)
+        ])
+        let viewModel = try Self.makeViewModel(
+            text: "{{ product.price_per_period_abbreviated }}",
+            extraStrings: ["intro_key": "1 week free, then {{ product.price_per_period_abbreviated }}"],
+            overrides: [.init(conditions: [.introOffer], properties: .init(visible: nil, text: "intro_key"))]
+        )
+
+        for package in [monthly, annual, lifetime] {
+            expect(self.redacts(
+                viewModel,
+                isPromoOfferEligibilityLoading: false,
+                package: package,
+                availability: availability
+            )) == (package == monthly)
+        }
+    }
+
+    func testPromoCopyRequiresAConfiguredMatchingOffer() throws {
+        let package = TestData.packageWithPromoOfferPayUpFront
+        let viewModel = try Self.makeViewModel(
+            text: "Subscribe",
+            extraStrings: ["promo_key": "Claim this offer"],
+            overrides: [.init(conditions: [.promoOffer], properties: .init(visible: nil, text: "promo_key"))]
+        )
+
+        // The product has an offer, but only a matching paywall association makes signing necessary.
+        for code in [nil, "missing", "intro"] as [String?] {
+            let availability = OfferEligibilityAvailability(packageInfos: [(package, code)])
+            expect(self.redacts(
+                viewModel,
+                isIntroOfferEligibilityLoading: false,
+                package: package,
+                availability: availability
+            )) == (code == "intro")
+        }
+    }
+
+    func testOfferVariablesOnlyWaitForApplicableChecks() throws {
+        let intro = TestData.monthlyPackage
+        let promo = TestData.packageWithPromoOfferPayUpFront
+        let lifetime = TestData.lifetimePackage
+        let availability = OfferEligibilityAvailability(packageInfos: [
+            (intro, nil), (promo, "intro"), (lifetime, nil)
+        ])
+        let viewModel = try Self.makeViewModel(text: "{{ product.offer_price }}")
+
+        for package in [intro, promo, lifetime] {
+            for loading in [[], [.intro], [.promo], [.intro, .promo]] as [OfferEligibilityLoading] {
+                let shouldRedact = (package == intro && loading.contains(.intro)) ||
+                    (package == promo && loading.contains(.promo))
+                expect(self.redacts(
+                    viewModel,
+                    isIntroOfferEligibilityLoading: loading.contains(.intro),
+                    isPromoOfferEligibilityLoading: loading.contains(.promo),
+                    package: package,
+                    availability: availability
+                )) == shouldRedact
+            }
+        }
+    }
+
+    func testVisibilityOnlyWaitsForOffersAvailableToThePackage() {
+        let intro = TestData.monthlyPackage
+        let promo = TestData.packageWithPromoOfferPayUpFront
+        let lifetime = TestData.lifetimePackage
+        let availability = OfferEligibilityAvailability(packageInfos: [
+            (intro, nil), (promo, "intro"), (lifetime, nil)
+        ])
+
+        for package in [intro, promo, lifetime] {
+            let state = OfferEligibilityState(
+                isEligibleForIntroOffer: false,
+                isEligibleForPromoOffer: false,
+                loading: availability.loading([.intro, .promo], for: package)
+            )
+            expect(state.visibilityCanChange(variesWithEligibility: true) { intro, _ in !intro }) ==
+                (package == intro)
+            expect(state.visibilityCanChange(variesWithEligibility: true) { _, promo in !promo }) ==
+                (package == promo)
+        }
+    }
+
+    @MainActor
+    func testSelectedPackageTextReevaluatesWhileEligibilityIsPending() throws {
+        let monthly = TestData.monthlyPackage
+        let lifetime = TestData.lifetimePackage
+        let packages = [monthly, lifetime]
+        let availability = OfferEligibilityAvailability(packageInfos: packages.map { ($0, nil) })
+        let context = PackageContext(package: monthly, variableContext: .init(packages: packages))
+        let viewModel = try Self.makeViewModel(text: "{{ product.offer_price }}")
+
+        for package in [monthly, lifetime, monthly] {
+            context.update(package: package, variableContext: context.variableContext)
+            expect(self.redacts(
+                viewModel,
+                package: context.package,
+                availability: availability
+            )) == (package == monthly)
+        }
+    }
+
+    func testInheritedAndDuplicatePromoAssociationsUseTheSigningConfiguration() {
+        let package = TestData.packageWithPromoOfferPayUpFront
+        let infos = PaywallsV2View.promoEligibilityPackageInfos(
+            paywallPackageInfos: [(package, nil), (package, nil)],
+            workflowPackages: [package],
+            workflowPromoOfferProductCodes: [package.identifier: "intro"]
+        )
+        let availability = OfferEligibilityAvailability(packageInfos: infos)
+
+        expect(availability.loading([.intro, .promo], for: package)) == [.promo]
+        expect(availability.loading([.intro, .promo], for: nil)).to(beEmpty())
+    }
+
     func testDependsOnOfferEligibilityMatchesTheOfferVariables() {
         let dependent = Set(VariablesV2.allCases.filter(\.dependsOnOfferEligibility))
 
@@ -237,7 +363,9 @@ private extension OfferEligibilityTextRedactionTests {
         isEligibleForIntroOffer: Bool = false,
         isEligibleForPromoOffer: Bool = false,
         isIntroOfferEligibilityLoading: Bool = true,
-        isPromoOfferEligibilityLoading: Bool = true
+        isPromoOfferEligibilityLoading: Bool = true,
+        package: Package? = nil,
+        availability: OfferEligibilityAvailability = .unknown
     ) -> Bool {
         return viewModel.redactsWhileOfferEligibilityLoads(
             state: state,
@@ -245,9 +373,9 @@ private extension OfferEligibilityTextRedactionTests {
             offerEligibility: .init(
                 isEligibleForIntroOffer: isEligibleForIntroOffer,
                 isEligibleForPromoOffer: isEligibleForPromoOffer,
-                loading: .init(
-                    intro: isIntroOfferEligibilityLoading,
-                    promo: isPromoOfferEligibilityLoading
+                loading: availability.loading(
+                    .init(intro: isIntroOfferEligibilityLoading, promo: isPromoOfferEligibilityLoading),
+                    for: package
                 )
             ),
             conditionContext: .init()

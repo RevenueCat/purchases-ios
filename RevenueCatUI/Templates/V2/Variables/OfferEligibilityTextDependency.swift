@@ -14,6 +14,47 @@ import Foundation
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
+/// Offers that can affect each product on this screen. This only narrows loading; it does not
+/// replace the eligibility results used to render or purchase an offer.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct OfferEligibilityAvailability {
+
+    /// Standalone component previews have no paywall configuration. Keep their loading overrides intact.
+    static let unknown = Self(offersByProductIdentifier: nil)
+
+    private let offersByProductIdentifier: [String: OfferEligibilityLoading]?
+
+    init(packageInfos: [(package: Package, promotionalOfferProductCode: String?)]) {
+        var offersByProductIdentifier: [String: OfferEligibilityLoading] = [:]
+        for info in packageInfos {
+            let product = info.package.storeProduct
+            var offers: OfferEligibilityLoading = []
+            if product.introductoryDiscount != nil {
+                offers.insert(.intro)
+            }
+            if let code = info.promotionalOfferProductCode,
+               product.discounts.contains(where: { $0.offerIdentifier == code }) {
+                offers.insert(.promo)
+            }
+            offersByProductIdentifier[product.productIdentifier, default: []].formUnion(offers)
+        }
+        self.init(offersByProductIdentifier: offersByProductIdentifier)
+    }
+
+    private init(offersByProductIdentifier: [String: OfferEligibilityLoading]?) {
+        self.offersByProductIdentifier = offersByProductIdentifier
+    }
+
+    func loading(_ loading: OfferEligibilityLoading, for package: Package?) -> OfferEligibilityLoading {
+        guard let offersByProductIdentifier = self.offersByProductIdentifier else {
+            return loading
+        }
+        guard let package else { return [] }
+        return loading.intersection(offersByProductIdentifier[package.storeProduct.productIdentifier] ?? [])
+    }
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct OfferEligibilityState {
 
@@ -74,6 +115,21 @@ struct OfferEligibilityState {
 #if !os(tvOS)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct OfferEligibilityAvailabilityKey: EnvironmentKey {
+    static let defaultValue = OfferEligibilityAvailability.unknown
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension EnvironmentValues {
+
+    var offerEligibilityAvailability: OfferEligibilityAvailability {
+        get { self[OfferEligibilityAvailabilityKey.self] }
+        set { self[OfferEligibilityAvailabilityKey.self] = newValue }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 protocol OfferEligibilityVisibilityDependency {
 
     var dependsOnOfferEligibility: Bool { get }
@@ -95,6 +151,12 @@ private struct OfferEligibilityRedactionModifier: ViewModifier {
     @Environment(\.offerEligibilityLoading)
     private var offerEligibilityLoading
 
+    @Environment(\.offerEligibilityAvailability)
+    private var offerEligibilityAvailability
+
+    @EnvironmentObject
+    private var packageContext: PackageContext
+
     let dependsOnOfferEligibility: Bool
     let isEligibleForIntroOffer: Bool
     let isEligibleForPromoOffer: Bool
@@ -104,7 +166,10 @@ private struct OfferEligibilityRedactionModifier: ViewModifier {
         let offerEligibility = OfferEligibilityState(
             isEligibleForIntroOffer: self.isEligibleForIntroOffer,
             isEligibleForPromoOffer: self.isEligibleForPromoOffer,
-            loading: self.offerEligibilityLoading
+            loading: self.offerEligibilityAvailability.loading(
+                self.offerEligibilityLoading,
+                for: self.packageContext.package
+            )
         )
         let redacts = offerEligibility.visibilityCanChange(
             variesWithEligibility: self.dependsOnOfferEligibility,

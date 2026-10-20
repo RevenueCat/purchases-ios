@@ -144,7 +144,8 @@ class PackageValidator {
     func reconciledSelection(
         current: Package?,
         in context: PackageSelectionContext,
-        offerEligibilityLoading: OfferEligibilityLoading = []
+        offerEligibilityLoading: OfferEligibilityLoading = [],
+        offerEligibilityAvailability: OfferEligibilityAvailability = .unknown
     ) -> Package? {
         guard self.hasPageScopedPackages else {
             // Every package lives in a tab, and each tab reconciles its own selection.
@@ -154,7 +155,8 @@ class PackageValidator {
         if let current, self.couldBeRendering(
             current,
             in: context,
-            offerEligibilityLoading: offerEligibilityLoading
+            offerEligibilityLoading: offerEligibilityLoading,
+            offerEligibilityAvailability: offerEligibilityAvailability
         ) {
             return nil
         }
@@ -169,14 +171,16 @@ class PackageValidator {
     private func couldBeRendering(
         _ package: Package,
         in context: PackageSelectionContext,
-        offerEligibilityLoading: OfferEligibilityLoading
+        offerEligibilityLoading: OfferEligibilityLoading,
+        offerEligibilityAvailability: OfferEligibilityAvailability
     ) -> Bool {
         return self.scopedPackageInfos.contains { scoped in
             scoped.info.package.identifier == package.identifier &&
                 self.couldBeVisible(
                     scoped.info,
                     in: context,
-                    offerEligibilityLoading: offerEligibilityLoading
+                    offerEligibilityLoading: offerEligibilityLoading,
+                    offerEligibilityAvailability: offerEligibilityAvailability
                 )
         }
     }
@@ -184,12 +188,13 @@ class PackageValidator {
     private func couldBeVisible(
         _ info: PackageInfo,
         in context: PackageSelectionContext,
-        offerEligibilityLoading: OfferEligibilityLoading
+        offerEligibilityLoading: OfferEligibilityLoading,
+        offerEligibilityAvailability: OfferEligibilityAvailability
     ) -> Bool {
         let offerEligibility = OfferEligibilityState(
             isEligibleForIntroOffer: context.isEligibleForIntroOffer(info.package),
             isEligibleForPromoOffer: context.isEligibleForPromoOffer(info.package),
-            loading: offerEligibilityLoading
+            loading: offerEligibilityAvailability.loading(offerEligibilityLoading, for: info.package)
         )
 
         return offerEligibility.unresolvedOutcomes(
