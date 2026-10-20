@@ -75,7 +75,7 @@ final class ObtainedProductsTests: TestCase {
         XCTAssertEqual(Set(obtained).count, 1)
     }
 
-    func testInstallmentPlanIsMatchedAndLookedUpByItsPlanIdentifier() throws {
+    func testInstallmentPlanIsMatchedByItsPlanIdentifierAndLookedUpByEither() throws {
         let installments = Self.storeProduct(identifier: "monthly", installmentsInfo: Self.monthlyInstallments)
         let obtained = try Self.customerInfo(purchaseDatesByProductId: ["monthly:monthly": Self.date(10)])
             .obtainedProducts(comparedTo: Self.customerInfo(), from: [installments])
@@ -84,8 +84,20 @@ final class ObtainedProductsTests: TestCase {
         XCTAssertEqual(obtained.map(\.product.id), ["monthly:monthly"])
         XCTAssertEqual(flowResult.obtainedProduct("monthly:monthly")?.product.id, "monthly:monthly")
         XCTAssertTrue(flowResult.didObtainProduct("monthly:monthly"))
-        XCTAssertNil(flowResult.obtainedProduct("monthly"))
-        XCTAssertFalse(flowResult.didObtainProduct("monthly"))
+        XCTAssertEqual(flowResult.obtainedProduct("monthly")?.product.id, "monthly:monthly")
+        XCTAssertTrue(flowResult.didObtainProduct("monthly"))
+    }
+
+    func testLookupPrefersTheExactBillingPlanOverThePlainIdentifier() {
+        let installments = Self.storeProduct(identifier: "monthly", installmentsInfo: Self.monthlyInstallments)
+        let flowResult = FlowResult(
+            obtainedEntitlements: [],
+            obtainedProducts: [ObtainedProduct(product: installments), ObtainedProduct(product: Self.monthly)]
+        )
+
+        XCTAssertEqual(flowResult.obtainedProduct("monthly")?.product.id, "monthly")
+        XCTAssertEqual(flowResult.obtainedProduct("monthly:monthly")?.product.id, "monthly:monthly")
+        XCTAssertNil(flowResult.obtainedProduct("annual"))
     }
 
     func testOnlyThePurchasedBillingPlanOfAProductIsReported() throws {

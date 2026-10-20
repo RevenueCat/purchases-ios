@@ -54,10 +54,12 @@ public struct FlowResult: Sendable {
 
     /// Returns the product with `identifier` that was newly observed after the flow completed.
     ///
-    /// `identifier` is the product's store identifier, suffixed with `:` and its billing plan type for a billing plan
-    /// other than up-front (`"com.app.monthly:monthly"`).
+    /// `identifier` is the product's store identifier. When more than one billing plan of a product was obtained,
+    /// the plain identifier returns the up-front plan; suffix it with `:` and the billing plan type
+    /// (`"com.app.annual:monthly"`) to select another.
     public func obtainedProduct(_ identifier: String) -> ObtainedProduct? {
         return self.obtainedProducts.first { $0.product.id == identifier }
+            ?? self.obtainedProducts.first { $0.product.productIdentifier == identifier }
     }
 
     /// Returns whether the product with `identifier` was newly observed after the flow completed. See
