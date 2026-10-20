@@ -214,6 +214,7 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
             return XCTFail("Expected the callback to be invoked")
         }
         XCTAssertEqual(checkpointResult.flow?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
+        XCTAssertNotNil(checkpointResult.customer)
         XCTAssertTrue(errorPresenter.presentations.isEmpty)
     }
 
@@ -236,6 +237,7 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
             return XCTFail("Expected the callback to be invoked")
         }
         XCTAssertTrue(checkpointResult.flow?.obtainedEntitlements.isEmpty == true)
+        XCTAssertEqual(checkpointResult.customer, customerInfo)
         XCTAssertTrue(errorPresenter.presentations.isEmpty)
     }
 
@@ -259,6 +261,8 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
             return XCTFail("Expected the callback to be invoked")
         }
         XCTAssertTrue(checkpointResult.flow?.obtainedEntitlements.isEmpty == true)
+        XCTAssertTrue(checkpointResult.flow?.obtainedProducts.isEmpty == true)
+        XCTAssertNil(checkpointResult.customer)
         XCTAssertEqual(errorPresenter.presentations.count, 1)
         XCTAssertEqual(errorPresenter.presentations.first?.error as NSError?, expectedError)
         XCTAssertEqual(errorPresenter.presentations.first?.kind, .flowResultSyncFailed)
@@ -281,6 +285,7 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
             return XCTFail("Expected the callback to be invoked", file: file, line: line)
         }
         XCTAssertNil(checkpointResult.flow, file: file, line: line)
+        XCTAssertNil(checkpointResult.customer, file: file, line: line)
         XCTAssertTrue(errorPresenter.presentations.isEmpty, file: file, line: line)
     }
 

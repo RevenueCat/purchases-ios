@@ -48,10 +48,12 @@ public extension Purchases {
 
     /// Passes a checkpoint and calls `onPassed` when the app can continue past it.
     ///
-    /// The callback receives a result containing an optional flow result. The flow result is `nil` when the identifier
-    /// is not configured or no rule matches. If post-flow synchronization fails, the SDK presents the error before
-    /// returning a flow result containing no obtained entitlements. The callback is not called if another error
-    /// prevents completion, another checkpoint flow already owns presentation, or the user backs out.
+    /// The callback receives a result containing an optional flow result and customer information. If the checkpoint
+    /// has no matching flow, both values are `nil`. A completed flow includes the customer information available
+    /// when it finished, together with the entitlements and products obtained while it was presented. If post-flow
+    /// synchronization fails, the SDK presents the error before returning a flow result with no obtained entitlements
+    /// or products and no customer information. The callback is not called if another error prevents completion,
+    /// another checkpoint flow already owns presentation, or the user backs out.
     /// - Parameters:
     ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard. It must start with a letter,
     ///     contain only ASCII letters, numbers, underscores, and hyphens, and be no more than 255 characters.
