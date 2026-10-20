@@ -12,62 +12,37 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
-/// What a subscriber saves against a baseline, over one of two windows:
-/// - `firstPeriodOf`: the product's first billing period. A yearly product is measured over its first year, a
-///   monthly one over its first month. An offer counts for the part of that period it covers, and the regular
-///   price is prorated over the rest.
-/// - `offerTermOf`: the offer's full term, against the most expensive per-month price.
+/// Savings against a baseline over the first billing period or the full offer term.
 ///
-/// The Android implementation must produce the same numbers.
+/// The Android and web implementations must produce the same numbers.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct DiscountSavings: Equatable {
 
-    enum Baseline {
-
-        /// The product's own price for one period.
-        case standardPrice
-        /// The most expensive per-month price in the tab, scaled to the product's period.
-        case mostExpensive(pricePerMonth: Double?)
-
-    }
-
     /// Rounded half up to the currency's minor unit.
     let amount: Decimal
-    let baseline: Decimal
+    /// Computed before rounding `amount`.
+    let relative: Double
 
-    var relative: Double {
-        return (self.amount / self.baseline as NSDecimalNumber).doubleValue
-    }
-
+    /// An offer counts for the part of the first period it covers; the regular price is prorated over the rest.
+    ///
     /// `nil` when the product isn't a subscription, the baseline is unknown, or nothing is saved.
-    init?(firstPeriodOf product: StoreProduct, discount: StoreProductDiscount?, baseline: Baseline) {
-        guard let period = product.subscriptionPeriod else {
+    init?(firstPeriodOf product: StoreProduct, discount: StoreProductDiscount?, baseline: Decimal?) {
+        guard let baseline, let period = product.subscriptionPeriod else {
             return nil
-        }
-
-        let baselineAmount: Decimal
-        switch baseline {
-        case .standardPrice:
-            baselineAmount = product.price
-        case let .mostExpensive(pricePerMonth):
-            guard let pricePerMonth else {
-                return nil
-            }
-            baselineAmount = Decimal(pricePerMonth) * period.numberOfUnitsAs(unit: .month)
         }
 
         let cost = discount.map {
             Self.firstPeriodCost(price: product.price, period: period, discount: $0)
         } ?? product.price
 
-        self.init(product: product, baseline: baselineAmount, cost: cost)
+        self.init(product: product, baseline: baseline, cost: cost)
     }
 
     /// Without a paid offer, the term is one period of the product at its regular price. A free trial counts as
     /// no offer, since "100% off" isn't the claim this makes.
     ///
     /// `nil` when the product isn't a subscription, the most expensive price is unknown, or nothing is saved.
-    init?(offerTermOf product: StoreProduct, discount: StoreProductDiscount?, mostExpensivePricePerMonth: Double?) {
+    init?(offerTermOf product: StoreProduct, discount: StoreProductDiscount?, mostExpensivePricePerMonth: Decimal?) {
         guard let mostExpensivePricePerMonth, let period = product.subscriptionPeriod else {
             return nil
         }
@@ -82,17 +57,18 @@ struct DiscountSavings: Equatable {
             cost = product.price
         }
 
-        self.init(product: product, baseline: Decimal(mostExpensivePricePerMonth) * months, cost: cost)
+        self.init(product: product, baseline: mostExpensivePricePerMonth * months, cost: cost)
     }
 
     private init?(product: StoreProduct, baseline: Decimal, cost: Decimal) {
-        let amount = (baseline - cost).rounded(scale: product.priceFormatter?.maximumFractionDigits ?? 2)
+        let saved = baseline - cost
+        let amount = saved.rounded(scale: product.priceFormatter?.maximumFractionDigits ?? 2)
         guard baseline > 0, amount > 0 else {
             return nil
         }
 
         self.amount = amount
-        self.baseline = baseline
+        self.relative = (saved / baseline as NSDecimalNumber).doubleValue
     }
 
     static func firstPeriodCost(

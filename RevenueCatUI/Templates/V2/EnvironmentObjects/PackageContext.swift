@@ -22,19 +22,40 @@ class PackageContext: ObservableObject {
     struct VariableContext {
 
         let mostExpensivePricePerMonth: Double?
+        /// Not truncated to two decimals like `mostExpensivePricePerMonth`, so discount amounts scaled from it
+        /// stay exact.
+        let exactMostExpensivePricePerMonth: Decimal?
         let showZeroDecimalPlacePrices: Bool
 
         init(packages: [Package], showZeroDecimalPlacePrices: Bool = true) {
-            let mostExpensivePricePerMonth = Self.mostExpensivePricePerMonth(in: packages)
             self.init(
-                mostExpensivePricePerMonth: mostExpensivePricePerMonth,
+                mostExpensivePricePerMonth: Self.mostExpensivePricePerMonth(in: packages),
+                exactMostExpensivePricePerMonth: Self.exactMostExpensivePricePerMonth(in: packages),
                 showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
             )
         }
 
-        init(mostExpensivePricePerMonth: Double? = nil, showZeroDecimalPlacePrices: Bool = true) {
+        init(
+            mostExpensivePricePerMonth: Double? = nil,
+            exactMostExpensivePricePerMonth: Decimal? = nil,
+            showZeroDecimalPlacePrices: Bool = true
+        ) {
             self.mostExpensivePricePerMonth = mostExpensivePricePerMonth
+            self.exactMostExpensivePricePerMonth = exactMostExpensivePricePerMonth
             self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
+        }
+
+        private static func exactMostExpensivePricePerMonth(in packages: [Package]) -> Decimal? {
+            return packages
+                .lazy
+                .map(\.storeProduct)
+                .compactMap { product -> Decimal? in
+                    guard let months = product.subscriptionPeriod?.numberOfUnitsAs(unit: .month), months > 0 else {
+                        return nil
+                    }
+                    return product.price / months
+                }
+                .max()
         }
 
         private static func mostExpensivePricePerMonth(in packages: [Package]) -> Double? {

@@ -1248,6 +1248,40 @@ class VariableHandlerV2Test: TestCase {
             .to(equal("$19.89"))
     }
 
+    func testRelativeDiscountsUseTheUnroundedAmount() {
+        let package = discountTestPackage(
+            price: 50,
+            period: .init(value: 1, unit: .week),
+            packageType: .weekly,
+            offer: .init(paymentMode: .freeTrial, price: 0, period: .init(value: 3, unit: .day), periods: 1),
+            currencyCode: "JPY"
+        )
+
+        // 50 * 3 / 7 = 21.43 saved, shown as ¥21, but 43% rather than 21 / 50
+        expect(self.discountVariable("product.offer_relative_discount", package)).to(equal("43%"))
+    }
+
+    func testDiscountsVsMostExpensiveUseTheExactMostExpensivePricePerMonth() {
+        let quarterly = discountTestPackage(
+            price: 29.99,
+            period: .init(value: 3, unit: .month),
+            packageType: .threeMonth,
+            offer: nil
+        )
+        let annual = discountTestPackage(
+            price: 59.99,
+            period: .init(value: 1, unit: .year),
+            packageType: .annual,
+            offer: nil
+        )
+        let mostExpensive = PackageContext.VariableContext(packages: [quarterly, annual])
+            .exactMostExpensivePricePerMonth
+
+        // 29.99 / 3 * 12 - 59.99, not 9.99 * 12 - 59.99
+        expect(self.discountVariable("product.absolute_discount", annual, mostExpensive: mostExpensive))
+            .to(equal("$59.97"))
+    }
+
     private static let discountVariables = [
         "product.absolute_discount",
         "product.offer_relative_discount",
@@ -1279,7 +1313,7 @@ class VariableHandlerV2Test: TestCase {
     private func discountVariable(
         _ variable: String,
         _ package: Package,
-        mostExpensive: Double? = nil,
+        mostExpensive: Decimal? = nil,
         isEligibleForIntroOffer: Bool = true,
         showZeroDecimalPlacePrices: Bool = false
     ) -> String {
@@ -2690,7 +2724,8 @@ private func discountTestPackage(
     price: Decimal,
     period: SubscriptionPeriod,
     packageType: PackageType,
-    offer: DiscountTestOffer?
+    offer: DiscountTestOffer?,
+    currencyCode: String = "USD"
 ) -> Package {
     return Package(
         identifier: packageType.identifier,
@@ -2698,7 +2733,7 @@ private func discountTestPackage(
         storeProduct: TestStoreProduct(
             localizedTitle: "Pro",
             price: price,
-            currencyCode: "USD",
+            currencyCode: currencyCode,
             localizedPriceString: "$\(price)",
             productIdentifier: "com.revenuecat.product.discount_variables",
             productType: .autoRenewableSubscription,

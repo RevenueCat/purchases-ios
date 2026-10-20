@@ -27,7 +27,7 @@ struct VariableHandlerV2 {
 
     private let showZeroDecimalPlacePrices: Bool
     private let discountRelativeToMostExpensivePerMonth: Double?
-    private let mostExpensivePricePerMonth: Double?
+    private let mostExpensivePricePerMonth: Decimal?
     private let dateProvider: () -> Date
 
     /// Custom variables provided by the SDK at runtime.
@@ -39,7 +39,7 @@ struct VariableHandlerV2 {
         variableCompatibilityMap: [String: String],
         functionCompatibilityMap: [String: String],
         discountRelativeToMostExpensivePerMonth: Double?,
-        mostExpensivePricePerMonth: Double? = nil,
+        mostExpensivePricePerMonth: Decimal? = nil,
         showZeroDecimalPlacePrices: Bool,
         customVariables: [String: CustomVariableValue] = [:],
         defaultCustomVariables: [String: CustomVariableValue] = [:],
@@ -385,7 +385,7 @@ extension VariablesV2 {
         let locale: Locale
         let localizations: [String: String]
         let discountRelativeToMostExpensivePerMonth: Double?
-        let mostExpensivePricePerMonth: Double?
+        let mostExpensivePricePerMonth: Decimal?
         let showZeroDecimalPlacePrices: Bool
         let isEligibleForIntroOffer: Bool
         let date: Date
@@ -1278,7 +1278,7 @@ extension VariablesV2 {
         return String(format: localizedFormat, percent)
     }
 
-    private func standardSavings(package: Package, mostExpensivePricePerMonth: Double?) -> DiscountSavings? {
+    private func standardSavings(package: Package, mostExpensivePricePerMonth: Decimal?) -> DiscountSavings? {
         guard !self.isLifetime(package: package) else {
             return nil
         }
@@ -1286,8 +1286,20 @@ extension VariablesV2 {
         return DiscountSavings(
             firstPeriodOf: package.storeProduct,
             discount: nil,
-            baseline: .mostExpensive(pricePerMonth: mostExpensivePricePerMonth)
+            baseline: self.mostExpensiveBaseline(
+                package: package,
+                mostExpensivePricePerMonth: mostExpensivePricePerMonth
+            )
         )
+    }
+
+    /// The most expensive per-month price, scaled to the package's period.
+    private func mostExpensiveBaseline(package: Package, mostExpensivePricePerMonth: Decimal?) -> Decimal? {
+        guard let mostExpensivePricePerMonth, let period = package.storeProduct.subscriptionPeriod else {
+            return nil
+        }
+
+        return mostExpensivePricePerMonth * period.numberOfUnitsAs(unit: .month)
     }
 
     /// The offer against the product's own standard price. `nil` without an offer.
@@ -1297,14 +1309,18 @@ extension VariablesV2 {
             return nil
         }
 
-        return DiscountSavings(firstPeriodOf: package.storeProduct, discount: discount, baseline: .standardPrice)
+        return DiscountSavings(
+            firstPeriodOf: package.storeProduct,
+            discount: discount,
+            baseline: package.storeProduct.price
+        )
     }
 
     /// Without an offer, this matches `product.absolute_discount`.
     private func fullPeriodSavings(
         package: Package,
         offerContext: OfferContext,
-        mostExpensivePricePerMonth: Double?
+        mostExpensivePricePerMonth: Decimal?
     ) -> DiscountSavings? {
         guard !self.isLifetime(package: package) else {
             return nil
@@ -1313,7 +1329,10 @@ extension VariablesV2 {
         return DiscountSavings(
             firstPeriodOf: package.storeProduct,
             discount: self.resolvedDiscount(for: package, offerContext: offerContext),
-            baseline: .mostExpensive(pricePerMonth: mostExpensivePricePerMonth)
+            baseline: self.mostExpensiveBaseline(
+                package: package,
+                mostExpensivePricePerMonth: mostExpensivePricePerMonth
+            )
         )
     }
 
@@ -1321,7 +1340,7 @@ extension VariablesV2 {
     private func offerTermSavings(
         package: Package,
         offerContext: OfferContext,
-        mostExpensivePricePerMonth: Double?
+        mostExpensivePricePerMonth: Decimal?
     ) -> DiscountSavings? {
         guard !self.isLifetime(package: package) else {
             return nil
