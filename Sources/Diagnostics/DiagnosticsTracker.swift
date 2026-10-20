@@ -187,8 +187,6 @@ protocol DiagnosticsTrackerType: Sendable {
 /// collection is enabled. Disabling collection deletes all persisted diagnostics events.
 final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
 
-    /// Session identifier attached to diagnostics events. Generated once per app launch, independently from
-    /// `SystemInfo.appSessionID`, so diagnostics cannot be correlated with other events from the same session.
     static let diagnosticsSessionID = UUID()
 
     private let diagnosticsFileHandler: DiagnosticsFileHandlerType
