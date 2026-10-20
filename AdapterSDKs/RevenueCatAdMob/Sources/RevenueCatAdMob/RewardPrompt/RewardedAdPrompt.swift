@@ -13,15 +13,14 @@ import SwiftUI
 
 /// Displays a prompt for an already-loaded rewarded ad with RevenueCat reward verification.
 ///
-/// The component reads cached reward configuration and passes it to your content through the context
-/// for immediate rendering.
-/// No network fetch is started or awaited. It tracks a prompt-shown event when the content appears.
+/// The component renders your content immediately, then resolves reward configuration asynchronously
+/// and updates the context without blocking the main thread. It tracks a prompt-shown event when the content appears.
 /// Call ``RewardedAdPromptContext/accept()``
 /// to track acceptance and present the supplied ad.
 ///
-/// Reward configuration is prefetched automatically. If it is not cached yet or could not be loaded,
-/// the context's `rewardConfiguration` is `nil`. Your content can show a generic offer without reward
-/// details, or omit the offer UI.
+/// While reward configuration is loading, or if it could not be loaded, the context's
+/// `rewardConfiguration` is `nil`. Your content can show a generic offer without reward details,
+/// or omit the offer UI.
 ///
 /// After acceptance, `onResult` delivers at most one terminal result on the main actor:
 ///
@@ -50,7 +49,7 @@ public struct RewardedAdPrompt<Content: View>: View {
     ///     event is retained for acceptance; changing the label alone does not start a new session.
     ///   - onResult: Handles the terminal result after acceptance. Updating this closure affects only
     ///     future acceptances, not an offer already accepted.
-    ///   - content: Offer content, with optional cached reward configuration.
+    ///   - content: Offer content, with optional reward configuration.
     public init(
         session: RewardedAdPromptSession? = nil,
         ad rewardedAd: GoogleMobileAds.RewardedAd,
@@ -76,7 +75,7 @@ public struct RewardedAdPrompt<Content: View>: View {
     ///     event is retained for acceptance; changing the label alone does not start a new session.
     ///   - onResult: Handles the terminal result after acceptance. Updating this closure affects only
     ///     future acceptances, not an offer already accepted.
-    ///   - content: Offer content, with optional cached reward configuration.
+    ///   - content: Offer content, with optional reward configuration.
     public init(
         session: RewardedAdPromptSession? = nil,
         ad rewardedAd: GoogleMobileAds.RewardedInterstitialAd,
@@ -96,17 +95,16 @@ public struct RewardedAdPrompt<Content: View>: View {
 
 /// Displays a prompt for an already-loaded rewarded ad without RevenueCat reward verification.
 ///
-/// The component reads cached reward configuration and passes it to your content through the context
-/// for immediate rendering.
-/// No network fetch is started or awaited. It tracks a prompt-shown event when the content appears.
+/// The component renders your content immediately, then resolves reward configuration asynchronously
+/// and updates the context without blocking the main thread. It tracks a prompt-shown event when the content appears.
 /// Call ``RewardedAdPromptContext/accept()``
 /// to track acceptance and present the supplied ad.
 ///
 /// The app is responsible for granting the reward when AdMob reports that it was earned.
 ///
-/// Reward configuration is prefetched automatically. If it is not cached yet or could not be loaded,
-/// the context's `rewardConfiguration` is `nil`. Your content can show a generic offer without reward
-/// details, or omit the offer UI.
+/// While reward configuration is loading, or if it could not be loaded, the context's
+/// `rewardConfiguration` is `nil`. Your content can show a generic offer without reward details,
+/// or omit the offer UI.
 ///
 /// After acceptance, `onResult` delivers at most one terminal result on the main actor:
 ///
@@ -135,7 +133,7 @@ public struct RewardedAdPromptWithoutVerification<Content: View>: View {
     ///     event is retained for acceptance; changing the label alone does not start a new session.
     ///   - onResult: Handles the terminal result after acceptance. Updating this closure affects only
     ///     future acceptances, not an offer already accepted.
-    ///   - content: Offer content, with optional cached reward configuration.
+    ///   - content: Offer content, with optional reward configuration.
     public init(
         session: RewardedAdPromptSession? = nil,
         ad rewardedAd: GoogleMobileAds.RewardedAd,
@@ -161,7 +159,7 @@ public struct RewardedAdPromptWithoutVerification<Content: View>: View {
     ///     event is retained for acceptance; changing the label alone does not start a new session.
     ///   - onResult: Handles the terminal result after acceptance. Updating this closure affects only
     ///     future acceptances, not an offer already accepted.
-    ///   - content: Offer content, with optional cached reward configuration.
+    ///   - content: Offer content, with optional reward configuration.
     public init(
         session: RewardedAdPromptSession? = nil,
         ad rewardedAd: GoogleMobileAds.RewardedInterstitialAd,
