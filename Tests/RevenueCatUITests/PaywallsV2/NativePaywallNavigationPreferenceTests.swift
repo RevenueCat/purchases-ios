@@ -127,19 +127,6 @@ final class NativePaywallNavigationPreferenceTests: TestCase {
         XCTAssertTrue(coordinator.actions.isEmpty)
     }
 
-    func testCarouselButtonsDoNotRequestNativeNavigationButOutsideSiblingsDo() throws {
-        for actionType in ["navigate_back", "close_workflow"] {
-            let fixture = try self.nativeOverrideFixture(actionType: actionType, nativeBase: true)
-            let buttonStack = fixture.paywallComponents.data.componentsConfig.base.stack
-            let carousel = PaywallComponent.carousel(.init(pages: [buttonStack, buttonStack], loop: true))
-            var config = fixture.paywallComponents.data.componentsConfig.base
-            config.stack = .init(components: [.stack(.init(components: [carousel]))])
-            XCTAssertFalse(config.requestsNativeClose, "Carousel buttons must not allocate native navigation")
-            config.stack = .init(components: [carousel, .stack(buttonStack)])
-            XCTAssertTrue(config.requestsNativeClose, "An outside sibling can still request native navigation")
-        }
-    }
-
     func testDecodedNativePreferenceOverrideRequestsPreflightForBothActions() throws {
         for actionType in ["navigate_back", "close_workflow"] {
             let fixture = try self.nativeOverrideFixture(actionType: actionType, nativeOverride: true)

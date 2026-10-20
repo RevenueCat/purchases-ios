@@ -33,11 +33,9 @@ struct NativePaywallCloseButton<Content: View>: View {
     @State private var identifier = UUID()
     @Environment(\.nativePaywallLayoutButtons) private var layoutButtons
     @Environment(\.nativePaywallRegistrationOnly) private var registrationOnly
-    @Environment(\.carouselState) private var carouselState
 
     var body: some View {
-        // Carousel actions belong to their pages, even when system navigation is requested.
-        if self.enabled, self.carouselState == nil, let coordinator {
+        if self.enabled, let coordinator {
             if self.registrationOnly || self.componentIdentifier.map({ self.layoutButtons.contains($0) }) != true {
                 RegisteredNativePaywallButton(
                     coordinator: coordinator, identifier: self.identifier,
@@ -65,6 +63,7 @@ private struct RegisteredNativePaywallButton: View {
     let registrationEnabled: Bool
     let interactionEnabled: Bool
     @Environment(\.nativePaywallControlsPresented) private var controlsPresented
+    @Environment(\.carouselState) private var carouselState
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.nativePaywallInteractionEnabled) private var workflowInteractionEnabled
     let componentIdentifier: ObjectIdentifier?
@@ -82,7 +81,7 @@ private struct RegisteredNativePaywallButton: View {
     }
 
     private var registration: Registration {
-        .init(enabled: self.registrationEnabled,
+        .init(enabled: self.registrationEnabled && (self.carouselState?.distanceFromActive ?? 0) == 0,
               isEnabled: self.isEnabled && self.interactionEnabled && self.workflowInteractionEnabled,
               label: self.accessibilityLabel,
               role: self.role, isWorkflowClose: self.isWorkflowClose, pageID: self.pageID)

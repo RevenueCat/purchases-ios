@@ -122,7 +122,7 @@ final class NativeNavigationUITests: XCTestCase {
         self.assertCarouselCloseDismisses(native: false)
     }
 
-    func testCarouselCloseStaysEmbeddedWhenSystemNavigationRequested() {
+    func testNativeCarouselCloseDismissesFromEachPage() {
         self.assertCarouselCloseDismisses(native: true)
     }
 
@@ -139,9 +139,9 @@ final class NativeNavigationUITests: XCTestCase {
                 start.press(forDuration: 0.05, thenDragTo: end)
                 self.assertVisible(app.staticTexts["Carousel page \(previous + 1)"], in: app)
             }
-            let close = app.buttons["Carousel Close \(page)"]
+            let close = app.buttons[native ? self.closeIdentifier : "Carousel Close \(page)"]
             self.assertVisible(close, in: app)
-            self.assertNativeControls(in: app, back: false, close: false)
+            self.assertNativeControls(in: app, back: false, close: native)
             close.tap()
             self.assertVisible(app.staticTexts["Paywall dismissed"], in: app)
             app.terminate()

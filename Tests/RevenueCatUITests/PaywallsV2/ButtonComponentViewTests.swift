@@ -87,7 +87,7 @@ final class ButtonComponentViewTests: TestCase {
         }
     }
 
-    func testRenderedCarouselsDoNotPromoteNativeOptedButtons() async throws {
+    func testRenderedCarouselsOnlyPublishTheInitialActiveSlidesAction() async throws {
         try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
         for loops in [false, true] {
             let pages: [PaywallComponent.StackComponent] = (0..<3).map { index in
@@ -109,43 +109,51 @@ final class ButtonComponentViewTests: TestCase {
             let offering = Offering(identifier: "native-carousel", serverDescription: "", paywallComponents: components,
                                     availablePackages: [TestData.annualPackage], webCheckoutUrl: nil)
             let coordinator = NativePaywallCloseCoordinator()
-            let appeared = expectation(description: "Carousel rendered")
+            var triggered: [String] = []
             let view = PaywallsV2View(
                 paywallComponents: components, offering: offering, purchaseHandler: .mock(),
                 introEligibilityChecker: BaseSnapshotTest.eligibleChecker, showZeroDecimalPlacePrices: false,
                 onDismiss: {}, failedToLoadFont: { _ in }, colorScheme: .light
             )
             .environment(\.nativePaywallCloseCoordinator, coordinator)
-            .onAppear { appeared.fulfill() }
+            .environment(\.workflowTriggerAction, { triggered.append($0); return true })
             let (window, _) = Self.host(view)
             defer { window.isHidden = true; window.rootViewController = nil }
-            await fulfillment(of: [appeared], timeout: 2)
-            let promoted = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
-                !coordinator.actions.isEmpty
+            let registered = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+                coordinator.actions.count == 1
             }, object: nil)
-            promoted.isInverted = true
-            await fulfillment(of: [promoted], timeout: 0.3)
+            await fulfillment(of: [registered], timeout: 2)
+            try await coordinator.performAction(id: XCTUnwrap(coordinator.actions.first?.id))
+            XCTAssertEqual(triggered, ["slide-1"], "Only the visible original or loop copy may supply the callback")
         }
     }
 
-    func testCarouselFallbackPreservesEveryPageAndOutsideNativeActions() async throws {
+    func testOnlyActiveCarouselPageRegistersAcrossLoopCopiesAndNestedCarousels() async throws {
         try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
         let coordinator = NativePaywallCloseCoordinator()
         let state = NativeRegistrationTestState()
-        let (window, _) = Self.host(NativeCarouselFallbackTestView(state: state)
+        let (window, _) = Self.host(NativeCarouselRegistrationTestView(state: state)
             .environment(\.nativePaywallCloseCoordinator, coordinator))
         defer { window.isHidden = true; window.rootViewController = nil }
         for activeIndex in [1, 2, 4] {
             state.value = activeIndex
-            state.showsButton = activeIndex != 2
-            let embedded = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
-                coordinator.actions.count == 1 && coordinator.actions.first?.label == "Outside carousel"
-                    && state.renderedButtons == Set(0..<9)
+            let active = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+                coordinator.actions.count == 1 && coordinator.actions.first?.label == "Slide \(activeIndex)"
             }, object: nil)
-            await fulfillment(of: [embedded], timeout: 2)
+            await fulfillment(of: [active], timeout: 2)
             try await coordinator.performAction(id: XCTUnwrap(coordinator.actions.first?.id))
-            XCTAssertEqual(state.performed, 100)
+            XCTAssertEqual(state.performed, activeIndex)
         }
+        state.showsButton = false
+        let inactiveAncestor = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            coordinator.actions.isEmpty
+        }, object: nil)
+        await fulfillment(of: [inactiveAncestor], timeout: 2)
+        state.showsButton = true
+        let restored = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            coordinator.actions.count == 1 && coordinator.actions.first?.label == "Slide 4"
+        }, object: nil)
+        await fulfillment(of: [restored], timeout: 2)
     }
 
     func testNativeRegistrationRefreshesCallbackAndUnregistersWhenRemoved() async throws {
@@ -1653,11 +1661,10 @@ private final class NativeRegistrationTestState: ObservableObject {
     @Published var showsButton = true
     @Published var eligibilityLoading: OfferEligibilityLoading = []
     var performed = 0
-    var renderedButtons: Set<Int> = []
 }
 
 @available(iOS 15.0, *)
-private struct NativeCarouselFallbackTestView: View {
+private struct NativeCarouselRegistrationTestView: View {
     @ObservedObject var state: NativeRegistrationTestState
     var body: some View {
         VStack {
@@ -1665,21 +1672,13 @@ private struct NativeCarouselFallbackTestView: View {
                 NativePaywallCloseButton(
                     enabled: true, accessibilityLabel: "Slide \(index)",
                     role: index.isMultiple(of: 2) ? .back : .close,
-                    action: { self.state.performed = index }, content: {
-                        Text("Slide \(index)")
-                            .onAppear { self.state.renderedButtons.insert(index) }
-                            .onDisappear { self.state.renderedButtons.remove(index) }
-                    }
+                    action: { self.state.performed = index }, content: { EmptyView() }
                 )
                 .environment(\.carouselState, CarouselState(
                     activeIndex: self.state.value, pageIndex: index,
                     ancestorDistanceFromActive: self.state.showsButton ? 0 : 1
                 ))
             }
-            NativePaywallCloseButton(
-                enabled: true, accessibilityLabel: "Outside carousel",
-                action: { self.state.performed = 100 }, content: { Text("Outside carousel") }
-            )
         }
     }
 }
