@@ -55,7 +55,21 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         expect(self.manager.invokedCommittedTopicAfterInFlightRefreshCount) == 0
         expect(self.manager.invokedTopicCount) == 2
         expect(self.manager.invokedEnsureBlobsDownloadedRefs) == [[String(repeating: "A", count: 32)]]
-        expect(self.manager.invokedCachedBlobDataParameters.count) == 1
+        expect(self.manager.invokedBlobDataParameters.count) == 1
+    }
+
+    func testAsyncRewardsFetchesBlobOnDemandWhenPrefetchIsDisabled() async throws {
+        try self.stub(
+            content: ["reward": ["type": "virtual_currency", "code": "coins", "amount": 10]],
+            prefetch: false
+        )
+
+        let rewards = await self.provider.rewards(forAdUnitId: "ad-unit")
+
+        expect(rewards?.reward?.virtualCurrency?.amount) == 10
+        expect(self.manager.invokedEnsureBlobsDownloadedRefs) == [[]]
+        expect(self.manager.invokedCachedBlobDataParameters).to(beEmpty())
+        expect(self.manager.invokedBlobDataParameters.count) == 1
     }
 
     func testAsyncRewardsWaitsForFetchWhenInitialConfigurationHasNotStarted() async throws {
@@ -166,8 +180,8 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         let rewards = await self.provider.rewards(forAdUnitId: "AD-UNIT")
 
         expect(rewards) == .noConfiguredReward
-        expect(self.manager.invokedCachedBlobDataParameters.last?.topic) == .adRewards
-        expect(self.manager.invokedCachedBlobDataParameters.last?.itemKey) == "default"
+        expect(self.manager.invokedBlobDataParameters.last?.topic) == .adRewards
+        expect(self.manager.invokedBlobDataParameters.last?.itemKey) == "default"
     }
 
     func testEmptyAdUnitIdentifierReturnsNilWithoutReadingConfig() async {
@@ -301,13 +315,20 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         expect(rewards).to(beNil())
     }
 
-    private func stub(content: [String: AnyDecodable], adUnitId: String = "ad-unit") throws {
-        try self.stub(adUnits: [adUnitId: content])
+    private func stub(
+        content: [String: AnyDecodable],
+        adUnitId: String = "ad-unit",
+        prefetch: Bool = true
+    ) throws {
+        try self.stub(adUnits: [adUnitId: content], prefetch: prefetch)
     }
 
-    private func stub(adUnits: [String: [String: AnyDecodable]]) throws {
+    private func stub(adUnits: [String: [String: AnyDecodable]], prefetch: Bool = true) throws {
         self.manager.stubbedTopics[.adRewards] = [
-            "default": RemoteConfiguration.ConfigItem(blobRef: String(repeating: "A", count: 32), prefetch: true)
+            "default": RemoteConfiguration.ConfigItem(
+                blobRef: String(repeating: "A", count: 32),
+                prefetch: prefetch
+            )
         ]
         self.manager.stubbedBlobData[.adRewards] = [
             "default": try JSONEncoder.default.encode(adUnits.mapValues(AnyDecodable.object))

@@ -81,8 +81,7 @@ final class ConfiguredAdRewardsProvider {
 
         let data = await self.manager.blobData(
             for: .adRewards,
-            itemKey: Self.blobItemKey,
-            policy: .cachedOnly
+            itemKey: Self.blobItemKey
         )
         guard let data else { return .unavailable }
 
