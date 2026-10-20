@@ -42,11 +42,15 @@ public struct CheckpointResult: @unchecked Sendable {
     }
 
     /// Returns the product with `identifier` that was newly observed after the flow completed.
+    ///
+    /// `identifier` is the product's store identifier, suffixed with `:` and its billing plan type for a billing plan
+    /// other than up-front (`"com.app.monthly:monthly"`).
     public func obtainedProduct(_ identifier: String) -> ObtainedProduct? {
         return self.flow?.obtainedProduct(identifier)
     }
 
-    /// Returns whether the product with `identifier` was newly observed after the flow completed.
+    /// Returns whether the product with `identifier` was newly observed after the flow completed. See
+    /// ``obtainedProduct(_:)`` for the identifier's format.
     public func didObtainProduct(_ identifier: String) -> Bool {
         return self.obtainedProduct(identifier) != nil
     }

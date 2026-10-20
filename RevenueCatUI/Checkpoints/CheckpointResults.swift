@@ -53,11 +53,15 @@ public struct FlowResult: @unchecked Sendable {
     }
 
     /// Returns the product with `identifier` that was newly observed after the flow completed.
+    ///
+    /// `identifier` is the product's store identifier, suffixed with `:` and its billing plan type for a billing plan
+    /// other than up-front (`"com.app.monthly:monthly"`).
     public func obtainedProduct(_ identifier: String) -> ObtainedProduct? {
-        return self.obtainedProducts.first { $0.product.productIdentifier == identifier }
+        return self.obtainedProducts.first { $0.product.id == identifier }
     }
 
-    /// Returns whether the product with `identifier` was newly observed after the flow completed.
+    /// Returns whether the product with `identifier` was newly observed after the flow completed. See
+    /// ``obtainedProduct(_:)`` for the identifier's format.
     public func didObtainProduct(_ identifier: String) -> Bool {
         return self.obtainedProduct(identifier) != nil
     }
@@ -100,14 +104,14 @@ public struct ObtainedProduct: Hashable, @unchecked Sendable {
         self.product = product
     }
 
-    /// Returns whether two obtained products represent the same product identifier.
+    /// Returns whether two obtained products represent the same product and billing plan.
     public static func == (lhs: Self, rhs: Self) -> Bool {
-        return lhs.product.productIdentifier == rhs.product.productIdentifier
+        return lhs.product.id == rhs.product.id
     }
 
-    /// Hashes the product identifier.
+    /// Hashes the product identifier and billing plan.
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(self.product.productIdentifier)
+        hasher.combine(self.product.id)
     }
 
 }
@@ -138,12 +142,12 @@ extension CustomerInfo {
         from availableProducts: [StoreProduct]
     ) -> [ObtainedProduct] {
         let productsByIdentifier = Dictionary(
-            availableProducts.map { ($0.productIdentifier, $0) },
+            availableProducts.map { ($0.id, $0) },
             uniquingKeysWith: { first, _ in first }
         )
 
         return productsByIdentifier.values.compactMap { product in
-            let identifier = product.productIdentifier
+            let identifier = product.id
             guard let purchaseDate = self.purchaseDate(forProductIdentifier: identifier),
                   purchaseDate != initialCustomerInfo?.purchaseDate(forProductIdentifier: identifier) else {
                 return nil
