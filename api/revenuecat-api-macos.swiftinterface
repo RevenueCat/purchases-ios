@@ -2475,7 +2475,6 @@ extension RevenueCat.Purchases {
   @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
   final public func adRewards(forAdUnitId adUnitId: Swift.String) async -> RevenueCat.ConfiguredAdRewards?
   @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-  @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
   final public func generateRewardVerificationToken(impressionId: Swift.String) -> RevenueCat.RewardVerificationToken
   @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
   final public func pollRewardVerification(clientTransactionID: Swift.String, trackingMetadata: RevenueCat.RewardedAdTrackingMetadata? = nil) async -> RevenueCat.RewardVerificationResult
