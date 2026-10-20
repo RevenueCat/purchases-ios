@@ -187,22 +187,26 @@ protocol DiagnosticsTrackerType: Sendable {
 /// collection is enabled. Disabling collection deletes all persisted diagnostics events.
 final class DiagnosticsTracker: DiagnosticsTrackerType, Sendable {
 
+    /// Session identifier attached to diagnostics events. Generated once per app launch, independently from
+    /// `SystemInfo.appSessionID`, so diagnostics cannot be correlated with other events from the same session.
+    static let diagnosticsSessionID = UUID()
+
     private let diagnosticsFileHandler: DiagnosticsFileHandlerType
     private let collectionDecision: Atomic<DiagnosticsCollectionDecision>
     private let diagnosticsDispatcher: OperationDispatcher
     private let dateProvider: DateProvider
-    private let appSessionID: UUID
+    private let diagnosticsSessionID: UUID
 
     init(diagnosticsFileHandler: DiagnosticsFileHandlerType,
          collectionDecision: DiagnosticsCollectionDecision,
          diagnosticsDispatcher: OperationDispatcher = .default,
          dateProvider: DateProvider = DateProvider(),
-         appSessionID: UUID = SystemInfo.appSessionID) {
+         diagnosticsSessionID: UUID = DiagnosticsTracker.diagnosticsSessionID) {
         self.diagnosticsFileHandler = diagnosticsFileHandler
         self.collectionDecision = .init(collectionDecision)
         self.diagnosticsDispatcher = diagnosticsDispatcher
         self.dateProvider = dateProvider
-        self.appSessionID = appSessionID
+        self.diagnosticsSessionID = diagnosticsSessionID
 
         if collectionDecision == .disabled {
             self.discardPersistedEvents()
@@ -608,7 +612,7 @@ private extension DiagnosticsTracker {
             DiagnosticsEvent(name: name,
                              properties: properties,
                              timestamp: self.dateProvider.now(),
-                             appSessionId: self.appSessionID)
+                             diagnosticsSessionId: self.diagnosticsSessionID)
         )
     }
 
@@ -618,7 +622,7 @@ private extension DiagnosticsTracker {
             let maxEventsStoredEvent = DiagnosticsEvent(name: .maxEventsStoredLimitReached,
                                                         properties: .empty,
                                                         timestamp: self.dateProvider.now(),
-                                                        appSessionId: self.appSessionID)
+                                                        diagnosticsSessionId: self.diagnosticsSessionID)
             await self.diagnosticsFileHandler.appendEvent(diagnosticsEvent: maxEventsStoredEvent)
         }
     }
