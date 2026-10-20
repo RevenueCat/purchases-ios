@@ -65,7 +65,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         let checkpointIdentifier: String
         let customVariables: [String: CustomVariableValue]
         let errorPresentationHandler: ErrorPresentationHandler
-        let initialActiveEntitlementIdentifiers: Set<String>?
+        let initialActiveEntitlementIdentifiers: Set<String>
         var outcomeState: WorkflowOutcomeState = .none
         var dismissalReason: WorkflowDismissalReason = .close
 
