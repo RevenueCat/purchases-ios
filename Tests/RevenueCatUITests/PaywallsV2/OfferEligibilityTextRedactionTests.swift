@@ -215,7 +215,13 @@ class OfferEligibilityTextRedactionTests: TestCase {
             .productOfferPeriodInMonths,
             .productOfferPeriodInYears,
             .productOfferPeriodWithUnit,
-            .productOfferEndDate
+            .productOfferEndDate,
+            .productOfferRelativeDiscount,
+            .productOfferAbsoluteDiscount,
+            .productRelativeDiscountWithOffer,
+            .productAbsoluteDiscountWithOffer,
+            .productRelativeDiscountWithOfferFullPeriod,
+            .productAbsoluteDiscountWithOfferFullPeriod
         ]))
     }
 
