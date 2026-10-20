@@ -74,7 +74,11 @@ private extension DebugViewSwiftUITests {
             DebugSummaryView(model: model)
         }
             .frame(width: width, height: height)
-            .snapshot(size: CGSize(width: width, height: height))
+            .snapshot(
+                size: CGSize(width: width, height: height),
+                // Xcode 27.2 shifts the otherwise identical list content by 7 pixels compared with Xcode 27.0.
+                precision: 0.95
+            )
     }
 
     static var mockCustomerInfo: CustomerInfo {
