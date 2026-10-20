@@ -73,7 +73,7 @@ public struct FlowResult: Sendable {
 /// An active entitlement reported after completing a checkpoint flow.
 @_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public struct ObtainedEntitlement: Hashable, @unchecked Sendable {
+public struct ObtainedEntitlement: Hashable, Sendable {
 
     /// Information about the active entitlement reported after the flow.
     public let entitlementInfo: EntitlementInfo
@@ -97,7 +97,7 @@ public struct ObtainedEntitlement: Hashable, @unchecked Sendable {
 /// A product newly observed after completing a checkpoint flow.
 @_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public struct ObtainedProduct: Hashable, @unchecked Sendable {
+public struct ObtainedProduct: Hashable, Sendable {
 
     /// The product observed after completing the flow.
     public let product: StoreProduct
