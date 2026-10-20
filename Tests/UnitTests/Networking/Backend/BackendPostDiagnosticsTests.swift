@@ -23,7 +23,7 @@ class BackendPostDiagnosticsTests: BaseBackendTests {
     static let eventId1 = UUID(uuidString: "8FDEAD13-A05B-4236-84CF-36BCDD36A7BC")!
     static let eventId2 = UUID(uuidString: "4FAF3FE9-F239-4CC1-BB07-C3320BA40BCF")!
 
-    static let appSessionId = UUID(uuidString: "FD06888D-DEA6-43C5-A36A-A1E06F2D6A42")!
+    static let diagnosticsSessionId = UUID(uuidString: "FD06888D-DEA6-43C5-A36A-A1E06F2D6A42")!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -49,7 +49,7 @@ class BackendPostDiagnosticsTests: BaseBackendTests {
                                      name: .customerInfoVerificationResult,
                                      properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                      timestamp: Self.eventTimestamp1,
-                                     appSessionId: Self.appSessionId)
+                                     diagnosticsSessionId: Self.diagnosticsSessionId)
 
         await expect {
             try await self.internalAPI.postDiagnosticsEvents(events: [event])
@@ -61,13 +61,13 @@ class BackendPostDiagnosticsTests: BaseBackendTests {
                                       name: .customerInfoVerificationResult,
                                       properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                       timestamp: Self.eventTimestamp1,
-                                      appSessionId: Self.appSessionId)
+                                      diagnosticsSessionId: Self.diagnosticsSessionId)
 
         let event2 = DiagnosticsEvent(id: Self.eventId2,
                                       name: .customerInfoVerificationResult,
                                       properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                       timestamp: Self.eventTimestamp2,
-                                      appSessionId: Self.appSessionId)
+                                      diagnosticsSessionId: Self.diagnosticsSessionId)
 
         await expect {
             try await self.internalAPI.postDiagnosticsEvents(events: [event1, event2])

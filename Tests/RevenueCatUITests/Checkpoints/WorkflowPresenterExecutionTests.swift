@@ -42,6 +42,14 @@ final class WorkflowPresenterExecutionTests: TestCase {
         )
     }
 
+    func testCheckpointIdentifierIsForwardedToWorkflowContext() throws {
+        let presenter = WorkflowPresenterHarness()
+
+        let viewController = try presenter.workflowPresenter.makePaywallViewController(for: Self.presentation())
+
+        XCTAssertEqual(viewController.workflowContextForTesting?.checkpointIdentifier, "test_checkpoint")
+    }
+
     func testExecutionForwardsBackOutFromThePresenter() async throws {
         let presenter = WorkflowPresenterHarness()
         presenter.onPresent = { presentation in
@@ -142,14 +150,27 @@ final class WorkflowPresenterExecutionTests: TestCase {
             availablePackages: [],
             webCheckoutUrl: nil
         )
+        let screen = WorkflowScreen(
+            name: nil,
+            templateName: "test",
+            assetBaseURL: URL(fileURLWithPath: "/"),
+            componentsConfig: .init(base: .init(
+                stack: .init(components: []),
+                stickyFooter: nil,
+                background: .color(.init(light: .hex("#ffffff")))
+            )),
+            componentsLocalizations: [:],
+            defaultLocale: "en_US",
+            offeringIdentifier: offering.identifier
+        )
         return ResolvedCheckpointWorkflow(
             workflow: PublishedWorkflow(
                 id: "workflow-id",
                 displayName: "Test",
                 initialStepId: "step-id",
                 singleStepFallbackId: nil,
-                steps: ["step-id": WorkflowStep(id: "step-id", type: "screen", screenId: nil)],
-                screens: [:]
+                steps: ["step-id": WorkflowStep(id: "step-id", type: "screen", screenId: "screen-id")],
+                screens: ["screen-id": screen]
             ),
             uiConfig: .empty,
             offerings: .preview(offerings: [offering])

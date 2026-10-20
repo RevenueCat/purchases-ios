@@ -120,7 +120,11 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
             do {
                 try self.startPresentation(presentation)
             } catch {
-                Logger.error(error.localizedDescription)
+                if case CheckpointError.presentationContextUnavailable = error {
+                    Logger.warning(error.localizedDescription)
+                } else {
+                    Logger.error(error.localizedDescription)
+                }
                 self.finish(throwing: error)
             }
         }
@@ -140,7 +144,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         do {
             if let presentationStarter = self.presentationStarter {
                 guard try presentationStarter(presentation) else {
-                    throw CheckpointError.presentationFailed
+                    throw CheckpointError.presentationContextUnavailable
                 }
             } else {
                 try self.presentAutomatically(presentation)
@@ -261,7 +265,7 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
         viewController.modalPresentationStyle = presentation.presentationMode.modalPresentationStyle
         presentationContext.present(viewController, animated: true)
         guard viewController.presentingViewController != nil else {
-            throw CheckpointError.presentationFailed
+            throw CheckpointError.presentationContextUnavailable
         }
     }
 
@@ -273,7 +277,8 @@ final class WorkflowPresenter: NSObject, WorkflowPresenterType {
             offerings: presentation.workflow.offerings,
             uiConfig: presentation.workflow.uiConfig,
             workflowBlobRef: presentation.workflow.workflowBlobRef,
-            traceId: presentation.workflow.traceId
+            traceId: presentation.workflow.traceId,
+            checkpointIdentifier: presentation.checkpointIdentifier
         )
         let viewController = PaywallViewController(
             workflowContext: workflowContext,

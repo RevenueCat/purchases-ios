@@ -24,7 +24,10 @@ struct PaywallFixturesApp: App {
     /// deliberately not a real one: offerings and customer info come from the fixture, purchases are
     /// stubbed, so no request needs to succeed and no secret belongs in this app.
     init() {
-        Purchases.configure(withAPIKey: "appl_paywallFixtures")
+        if ProcessInfo.processInfo.environment["PAYWALL_FIXTURE"] != CustomerCenterPreviewFixture.name
+            || ProcessInfo.processInfo.environment["PREVIEW_CONFIGURE_SDK"] == "1" {
+            Purchases.configure(withAPIKey: "appl_paywallFixtures")
+        }
     }
 
     var body: some Scene {

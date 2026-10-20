@@ -20,7 +20,7 @@ import SwiftUI
 typealias PresentedCarouselPartial = PaywallComponent.PartialCarouselComponent
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-class CarouselComponentViewModel {
+class CarouselComponentViewModel: OfferEligibilityVisibilityDependency {
 
     private let localizationProvider: LocalizationProvider
     let uiConfigProvider: UIConfigProvider
@@ -29,6 +29,7 @@ class CarouselComponentViewModel {
     private let pageContextNames: [String?]
 
     private let presentedOverrides: PresentedOverrides<PresentedCarouselPartial>?
+    let dependsOnOfferEligibility: Bool
 
     init(
         localizationProvider: LocalizationProvider,
@@ -43,7 +44,9 @@ class CarouselComponentViewModel {
         self.pageStackViewModels = pageStackViewModels
         self.pageContextNames = component.pages.map(\.name)
 
-        self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
+        let presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
+        self.presentedOverrides = presentedOverrides
+        self.dependsOnOfferEligibility = presentedOverrides?.contains(where: \.dependsOnOfferEligibility) ?? false
     }
 
     var componentName: String? {
@@ -110,6 +113,33 @@ class CarouselComponentViewModel {
         )
 
         apply(style)
+    }
+
+    // swiftlint:disable:next function_parameter_count
+    func visible(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
+        windowSize: CGSize? = nil
+    ) -> Bool {
+        let conditionContext = self.uiConfigProvider.conditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables,
+            windowSize: windowSize
+        )
+
+        let partial = PresentedCarouselPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
+            with: self.presentedOverrides
+        )
+        return partial?.visible ?? self.component.visible ?? true
     }
 
 }

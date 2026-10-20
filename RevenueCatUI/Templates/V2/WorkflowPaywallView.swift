@@ -698,9 +698,7 @@ struct WorkflowPaywallView: View {
     }
 
     private func failedToLoadFont(_ fontConfig: UIConfig.FontsConfig) {
-        if Purchases.isConfigured {
-            Purchases.shared.failedToLoadFontWithConfig(fontConfig)
-        }
+        purchaseHandler.failedToLoadFont(fontConfig)
     }
 
     private func handleDismiss(dismissalReason: WorkflowDismissalReason = .close) {

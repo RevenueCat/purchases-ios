@@ -49,11 +49,11 @@ class DiagnosticsTrackerTests: TestCase {
     // MARK: - trackEvent
 
     func testTrackEvent() async {
-        let appSessionId = SystemInfo.appSessionID
+        let diagnosticsSessionId = DiagnosticsTracker.diagnosticsSessionID
         let event = DiagnosticsEvent(name: .httpRequestPerformed,
                                      properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                      timestamp: Self.eventTimestamp1,
-                                     appSessionId: appSessionId)
+                                     diagnosticsSessionId: diagnosticsSessionId)
 
         self.tracker.track(event)
 
@@ -63,8 +63,12 @@ class DiagnosticsTrackerTests: TestCase {
                   name: .httpRequestPerformed,
                   properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: appSessionId)
+                  diagnosticsSessionId: diagnosticsSessionId)
         ]
+    }
+
+    func testDiagnosticsSessionIDIsDifferentFromAppSessionID() {
+        expect(DiagnosticsTracker.diagnosticsSessionID) != SystemInfo.appSessionID
     }
 
     func testDoesNotTrackEventsWhenDiagnosticsAreDisabled() async {
@@ -77,7 +81,7 @@ class DiagnosticsTrackerTests: TestCase {
         let event = DiagnosticsEvent(name: .httpRequestPerformed,
                                      properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                      timestamp: Self.eventTimestamp1,
-                                     appSessionId: SystemInfo.appSessionID)
+                                     diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
 
         self.tracker.track(event)
 
@@ -95,7 +99,7 @@ class DiagnosticsTrackerTests: TestCase {
         let event = DiagnosticsEvent(name: .httpRequestPerformed,
                                      properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                      timestamp: Self.eventTimestamp1,
-                                     appSessionId: SystemInfo.appSessionID)
+                                     diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
 
         self.tracker.track(event)
         let entriesBeforeDecision = await self.handler.getEntries()
@@ -104,7 +108,7 @@ class DiagnosticsTrackerTests: TestCase {
                   name: .httpRequestPerformed,
                   properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ]
 
         self.tracker.setCollectionDecision(.enabled)
@@ -115,7 +119,7 @@ class DiagnosticsTrackerTests: TestCase {
                   name: .httpRequestPerformed,
                   properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ]
     }
 
@@ -131,7 +135,7 @@ class DiagnosticsTrackerTests: TestCase {
             .init(name: .httpRequestPerformed,
                   properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         )
         self.tracker.setCollectionDecision(.disabled)
 
@@ -142,7 +146,7 @@ class DiagnosticsTrackerTests: TestCase {
             .init(name: .httpRequestPerformed,
                   properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         )
         self.tracker.setCollectionDecision(.enabled)
 
@@ -162,7 +166,7 @@ class DiagnosticsTrackerTests: TestCase {
             name: .httpRequestPerformed,
             properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
             timestamp: Self.eventTimestamp1,
-            appSessionId: SystemInfo.appSessionID
+            diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID
         )
 
         self.tracker.track(event)
@@ -176,15 +180,15 @@ class DiagnosticsTrackerTests: TestCase {
     }
 
     func testTrackMultipleEvents() async {
-        let appSessionId = SystemInfo.appSessionID
+        let diagnosticsSessionId = DiagnosticsTracker.diagnosticsSessionID
         let event1 = DiagnosticsEvent(name: .httpRequestPerformed,
                                       properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                       timestamp: Self.eventTimestamp1,
-                                      appSessionId: appSessionId)
+                                      diagnosticsSessionId: diagnosticsSessionId)
         let event2 = DiagnosticsEvent(name: .customerInfoVerificationResult,
                                       properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                       timestamp: Self.eventTimestamp2,
-                                      appSessionId: appSessionId)
+                                      diagnosticsSessionId: diagnosticsSessionId)
 
         self.tracker.track(event1)
         self.tracker.track(event2)
@@ -195,12 +199,12 @@ class DiagnosticsTrackerTests: TestCase {
                   name: .httpRequestPerformed,
                   properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: appSessionId),
+                  diagnosticsSessionId: diagnosticsSessionId),
             .init(id: event1.id,
                   name: .customerInfoVerificationResult,
                   properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                   timestamp: Self.eventTimestamp2,
-                  appSessionId: appSessionId)
+                  diagnosticsSessionId: diagnosticsSessionId)
         ])
     }
 
@@ -226,7 +230,7 @@ class DiagnosticsTrackerTests: TestCase {
             .init(name: .customerInfoVerificationResult,
                   properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ])
     }
 
@@ -260,7 +264,7 @@ class DiagnosticsTrackerTests: TestCase {
                     connectionErrorReason: .noNetwork
                   ),
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ])
     }
 
@@ -342,7 +346,7 @@ class DiagnosticsTrackerTests: TestCase {
                     storefront: "USA"
                   ),
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID),
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID),
             .init(name: .appleProductsRequest,
                   properties: DiagnosticsEvent.Properties(
                     responseTime: 20,
@@ -356,7 +360,7 @@ class DiagnosticsTrackerTests: TestCase {
                     storefront: "USA"
                   ),
                   timestamp: Self.eventTimestamp2,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ])
     }
 
@@ -596,7 +600,7 @@ class DiagnosticsTrackerTests: TestCase {
                     storefront: "USA"
                   ),
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ])
     }
 
@@ -630,7 +634,7 @@ class DiagnosticsTrackerTests: TestCase {
                     storefront: "USA"
                   ),
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ])
     }
 
@@ -656,7 +660,7 @@ class DiagnosticsTrackerTests: TestCase {
                     cacheStatus: .notFound
                   ),
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ])
     }
 
@@ -679,7 +683,7 @@ class DiagnosticsTrackerTests: TestCase {
                     notFoundProductIds: notFoundProductIds
                   ),
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ])
     }
 
@@ -692,7 +696,7 @@ class DiagnosticsTrackerTests: TestCase {
             .init(name: .getCustomerInfoStarted,
                   properties: .empty,
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ])
     }
 
@@ -715,7 +719,7 @@ class DiagnosticsTrackerTests: TestCase {
                     hadUnsyncedPurchasesBefore: true
                   ),
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ])
     }
 
@@ -732,7 +736,7 @@ class DiagnosticsTrackerTests: TestCase {
                     productType: .autoRenewableSubscription
                   ),
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ])
     }
 
@@ -755,7 +759,7 @@ class DiagnosticsTrackerTests: TestCase {
                     productType: .consumable
                   ),
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ])
     }
 
@@ -768,7 +772,7 @@ class DiagnosticsTrackerTests: TestCase {
             .init(name: .syncPurchasesStarted,
                   properties: .empty,
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ])
     }
 
@@ -785,7 +789,7 @@ class DiagnosticsTrackerTests: TestCase {
                     errorCode: 20
                   ),
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ])
     }
 
@@ -798,7 +802,7 @@ class DiagnosticsTrackerTests: TestCase {
             .init(name: .restorePurchasesStarted,
                   properties: .empty,
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ])
     }
 
@@ -815,7 +819,7 @@ class DiagnosticsTrackerTests: TestCase {
                     errorCode: 20
                   ),
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ])
     }
 
@@ -829,7 +833,7 @@ class DiagnosticsTrackerTests: TestCase {
             .init(name: .applePresentCodeRedemptionSheetRequest,
                   properties: .empty,
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ])
     }
 
@@ -855,7 +859,7 @@ class DiagnosticsTrackerTests: TestCase {
                     storefront: "USA"
                   ),
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ])
     }
 
@@ -886,7 +890,7 @@ class DiagnosticsTrackerTests: TestCase {
                     currency: "USD",
                     reason: "purchase"                  ),
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ])
     }
 
@@ -907,7 +911,7 @@ class DiagnosticsTrackerTests: TestCase {
                     skErrorDescription: "storekit error description"
                 ),
                 timestamp: Self.eventTimestamp1,
-                appSessionId: SystemInfo.appSessionID
+                diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID
             )
         ])
     }
@@ -927,7 +931,7 @@ class DiagnosticsTrackerTests: TestCase {
                     offerType: "offer_type"
                   ),
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ])
     }
 
@@ -935,10 +939,11 @@ class DiagnosticsTrackerTests: TestCase {
 
     func testTrackingEventClearsDiagnosticsFileIfTooBig() async throws {
         for _ in 0...8000 {
-            await self.handler.appendEvent(diagnosticsEvent: .init(name: .httpRequestPerformed,
-                                                                   properties: .empty,
-                                                                   timestamp: Date(),
-                                                                   appSessionId: SystemInfo.appSessionID))
+            let event = DiagnosticsEvent(name: .httpRequestPerformed,
+                                         properties: .empty,
+                                         timestamp: Date(),
+                                         diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
+            await self.handler.appendEvent(diagnosticsEvent: event)
         }
 
         let entries = await self.handler.getEntries()
@@ -947,7 +952,7 @@ class DiagnosticsTrackerTests: TestCase {
         let event = DiagnosticsEvent(name: .httpRequestPerformed,
                                      properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                      timestamp: Self.eventTimestamp2,
-                                     appSessionId: SystemInfo.appSessionID)
+                                     diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
 
         self.tracker.track(event)
 
@@ -957,11 +962,11 @@ class DiagnosticsTrackerTests: TestCase {
             .init(name: .maxEventsStoredLimitReached,
                   properties: .empty,
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID),
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID),
             .init(name: .httpRequestPerformed,
                   properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                   timestamp: Self.eventTimestamp2,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ])
     }
 
@@ -978,7 +983,7 @@ class DiagnosticsTrackerTests: TestCase {
             .init(name: .maxDiagnosticsSyncRetriesReached,
                   properties: .empty,
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ])
     }
 
@@ -993,7 +998,7 @@ class DiagnosticsTrackerTests: TestCase {
             .init(name: .clearingDiagnosticsAfterFailedSync,
                   properties: .empty,
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ])
     }
 
@@ -1008,7 +1013,7 @@ class DiagnosticsTrackerTests: TestCase {
             .init(name: .enteredOfflineEntitlementsMode,
                   properties: .empty,
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ])
     }
 
@@ -1027,7 +1032,7 @@ class DiagnosticsTrackerTests: TestCase {
                     errorMessage: "custom error msg"
                   ),
                   timestamp: Self.eventTimestamp1,
-                  appSessionId: SystemInfo.appSessionID)
+                  diagnosticsSessionId: DiagnosticsTracker.diagnosticsSessionID)
         ])
     }
 
@@ -1093,6 +1098,6 @@ private extension DiagnosticsTrackerTests {
         expect(obtained?.properties) == expected?.properties
         expect(obtained?.timestamp) == expected?.timestamp
         expect(obtained?.version) == expected?.version
-        expect(obtained?.appSessionId) == expected?.appSessionId
+        expect(obtained?.diagnosticsSessionId) == expected?.diagnosticsSessionId
     }
 }

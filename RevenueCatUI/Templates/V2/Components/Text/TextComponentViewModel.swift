@@ -11,6 +11,8 @@
 //
 //  Created by Josh Holtz on 6/11/24.
 
+// swiftlint:disable file_length
+
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
@@ -29,6 +31,7 @@ class TextComponentViewModel {
 
     private let text: String
     private let presentedOverrides: PresentedOverrides<LocalizedTextPartial>?
+    private let overridesDependOnOfferEligibility: Bool
 
     /// Whether this component renders anything a screen reader can announce. An empty base string
     /// still counts when overrides exist, since an override can supply text of its own.
@@ -58,9 +61,12 @@ class TextComponentViewModel {
             return ""
         }()
 
-        self.presentedOverrides = try self.component.overrides?.toPresentedOverrides(discardRules: discardRules) {
+        let presentedOverrides = try component.overrides?.toPresentedOverrides(discardRules: discardRules) {
             try LocalizedTextPartial.create(from: $0, using: localizationProvider.localizedStrings)
         }
+        self.presentedOverrides = presentedOverrides
+        self.overridesDependOnOfferEligibility =
+            presentedOverrides?.contains(where: \.dependsOnOfferEligibility) ?? false
 
     }
 
@@ -138,6 +144,55 @@ class TextComponentViewModel {
         )
 
         apply(style)
+    }
+
+    /// True when intro or promo eligibility can change the string this component shows, or whether it is shown.
+    /// A visibility change redacts too, so the real string is not shown and then hidden.
+    /// Color-only overrides are ignored.
+    func redactsWhileOfferEligibilityLoads(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        offerEligibility: OfferEligibilityState,
+        conditionContext: ConditionContext
+    ) -> Bool {
+        guard offerEligibility.isLoading else {
+            return false
+        }
+
+        var possibleVisibleTexts: Set<String> = []
+        var couldBeHidden = false
+        for outcome in offerEligibility.unresolvedOutcomes(
+            variesWithEligibility: self.overridesDependOnOfferEligibility
+        ) {
+            let partial = LocalizedTextPartial.buildPartial(
+                state: state,
+                condition: condition,
+                isEligibleForIntroOffer: outcome.isEligibleForIntroOffer,
+                isEligibleForPromoOffer: outcome.isEligibleForPromoOffer,
+                conditionContext: conditionContext,
+                with: self.presentedOverrides
+            )
+            if partial?.partial.visible ?? self.component.visible ?? true {
+                possibleVisibleTexts.insert(partial?.text ?? self.text)
+            } else {
+                couldBeHidden = true
+            }
+        }
+
+        let visibilityCanChange = couldBeHidden && !possibleVisibleTexts.isEmpty
+        let textCanChange = possibleVisibleTexts.count > 1
+        if visibilityCanChange || textCanChange {
+            return true
+        }
+
+        guard let possibleVisibleText = possibleVisibleTexts.first else {
+            return false
+        }
+
+        return VariableHandlerV2.textDependsOnOfferEligibility(
+            possibleVisibleText,
+            variableCompatibilityMap: self.uiConfigProvider.variableConfig.variableCompatibilityMap
+        )
     }
 
     private struct TextProcessingConfig {

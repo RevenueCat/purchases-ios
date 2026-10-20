@@ -144,7 +144,7 @@ final class CheckpointsManager {
                 errorPresentationHandler: errorPresentationHandler
             )
             return try await self.checkpointPresenter.presentWorkflow(presentation)
-        case let .matchedOffering(offering):
+        case let .matchedOffering(offering, _):
             return try await self.checkpointPresenter.presentOffering(
                 params: .init(
                     checkpointIdentifier: identifier,
@@ -236,7 +236,8 @@ final class CheckpointsManager {
             case .backedOut, .failed, .nothingPresented:
                 return .suppressed
             }
-        } catch CheckpointError.operationAlreadyInProgress {
+        } catch CheckpointError.operationAlreadyInProgress,
+                CheckpointError.presentationContextUnavailable {
             return .suppressed
         } catch {
             return .failed(error)

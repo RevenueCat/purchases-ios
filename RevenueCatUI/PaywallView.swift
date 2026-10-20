@@ -196,7 +196,7 @@ public struct PaywallView: View {
         self.paywallViewOwnsPurchaseHandler = paywallViewOwnsPurchaseHandler
         if paywallViewOwnsPurchaseHandler {
             self._internalPurchaseHandler = .init(wrappedValue: configuration.purchaseHandler)
-            self.externalPurchaseHandler = PurchaseHandler.default()
+            self.externalPurchaseHandler = configuration.purchaseHandler
         } else {
             // this is unused and is only present to fulfill the need to have an object assigned
             // to a @StateObject
@@ -319,7 +319,7 @@ public struct PaywallView: View {
     }
 
     func showZeroDecimalPlacePrices(countries: [String]?) -> Bool {
-        if Purchases.isConfigured, let countries, let currentCountry = Purchases.shared.storeFrontCountryCode {
+        if let countries, let currentCountry = purchaseHandler.configuredStoreEnvironment.storeFrontCountryCode {
             return countries.contains(currentCountry)
         } else {
             return false
@@ -451,9 +451,7 @@ private extension PaywallView {
     }
 
     func failedToLoadFont(_ fontConfig: UIConfig.FontsConfig) {
-        if Purchases.isConfigured {
-            Purchases.shared.failedToLoadFontWithConfig(fontConfig)
-        }
+        purchaseHandler.failedToLoadFont(fontConfig)
     }
 
 }

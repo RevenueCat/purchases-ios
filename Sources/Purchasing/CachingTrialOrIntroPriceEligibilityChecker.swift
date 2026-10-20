@@ -18,9 +18,55 @@ import Foundation
 /// `TrialOrIntroPriceEligibilityCheckerType` decorator that adds caching behavior on each request.
 class CachingTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType {
 
-    private let checker: TrialOrIntroPriceEligibilityCheckerType
+    private struct RequestKey: Hashable, Sendable {
+        let productIdentifiers: Set<String>
+        let cacheGeneration: Int
+    }
 
-    private let cache: Atomic<[String: IntroEligibility]> = .init([:])
+    private enum RequestAction {
+        case complete([String: IntroEligibility])
+        case wait
+        case start(RequestKey)
+    }
+
+    private struct State {
+        var cachedEligibilities: [String: IntroEligibility] = [:]
+        var cacheGeneration = 0
+        var inFlightRequests: [RequestKey: [ReceiveIntroEligibilityBlock]] = [:]
+
+        mutating func prepareRequest(
+            productIdentifiers: Set<String>,
+            completion: @escaping ReceiveIntroEligibilityBlock
+        ) -> (action: RequestAction, cachedProductIdentifiers: Set<String>) {
+            let cached = self.cachedEligibilities.filter { productIdentifiers.contains($0.key) }
+            let cachedProductIdentifiers = Set(cached.keys)
+            let missingProducts = productIdentifiers.subtracting(cached.keys)
+
+            guard !missingProducts.isEmpty else {
+                return (.complete(cached), cachedProductIdentifiers)
+            }
+
+            let requestKey = RequestKey(
+                productIdentifiers: missingProducts,
+                cacheGeneration: self.cacheGeneration
+            )
+            let containingRequestKey = self.inFlightRequests.keys.first { inFlightRequestKey in
+                inFlightRequestKey.cacheGeneration == requestKey.cacheGeneration
+                    && inFlightRequestKey.productIdentifiers.isSuperset(of: requestKey.productIdentifiers)
+            }
+            let key = containingRequestKey ?? requestKey
+            self.inFlightRequests[key, default: []].append { fetched in
+                let requestedProducts = fetched.filter { requestKey.productIdentifiers.contains($0.key) }
+                completion(cached + requestedProducts)
+            }
+
+            let action: RequestAction = containingRequestKey == nil ? .start(requestKey) : .wait
+            return (action, cachedProductIdentifiers)
+        }
+    }
+
+    private let checker: TrialOrIntroPriceEligibilityCheckerType
+    private let state: Atomic<State> = .init(.init())
 
     /// Creates a `CachingTrialOrIntroPriceEligibilityChecker` wrapping the underlying checker,
     /// or returns `checker` if it already is this type.
@@ -41,7 +87,10 @@ class CachingTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCh
     func clearCache() {
         Logger.debug(Strings.eligibility.clearing_intro_eligibility_cache)
 
-        self.cache.value.removeAll(keepingCapacity: false)
+        self.state.modify {
+            $0.cacheGeneration += 1
+            $0.cachedEligibilities.removeAll(keepingCapacity: false)
+        }
     }
 
 }
@@ -57,30 +106,44 @@ extension CachingTrialOrIntroPriceEligibilityChecker {
             return
         }
 
-        let uniqueProductIdentifiers = Set(productIdentifiers)
-
-        // Note: this can suffer from race conditions, but the only downside is performing concurrent requests
-        // multiple times instead of returning the cached result on the second one.
-        // It's a fine compromise to keep this implementation simpler.
-        let cached = self.cache.value.filter { uniqueProductIdentifiers.contains($0.key) }
-
-        if !cached.isEmpty {
-            Logger.debug(Strings.eligibility.found_cached_eligibility_for_products(Set(cached.keys)))
+        let (action, cachedProductIdentifiers) = self.state.modify {
+            $0.prepareRequest(productIdentifiers: productIdentifiers, completion: completion)
         }
 
-        let missingProducts = uniqueProductIdentifiers.subtracting(cached.keys)
+        if !cachedProductIdentifiers.isEmpty {
+            Logger.debug(Strings.eligibility.found_cached_eligibility_for_products(cachedProductIdentifiers))
+        }
 
-        if missingProducts.isEmpty {
+        switch action {
+        case .complete(let cached):
             completion(cached)
-        } else {
-            self.checker.checkEligibility(productIdentifiers: missingProducts) { result in
-                let productsToCache = result.filter { $0.value.shouldCache }
+        case .wait:
+            return
+        case .start(let requestKey):
+            self.checker.checkEligibility(
+                productIdentifiers: requestKey.productIdentifiers,
+                completion: { result in
+                    let productsToCache = result.filter { $0.value.shouldCache }
+                    let (completions, didCache) = self.state.modify { state in
+                        let didCache = state.cacheGeneration == requestKey.cacheGeneration
+                        if didCache {
+                            state.cachedEligibilities += productsToCache
+                        }
+                        let completions = state.inFlightRequests.removeValue(forKey: requestKey) ?? []
+                        return (completions, didCache)
+                    }
 
-                Logger.debug(Strings.eligibility.caching_intro_eligibility_for_products(Set(productsToCache.keys)))
-                self.cache.modify { $0 += productsToCache }
+                    if didCache {
+                        Logger.debug(
+                            Strings.eligibility.caching_intro_eligibility_for_products(Set(productsToCache.keys))
+                        )
+                    }
 
-                completion(cached + result)
-            }
+                    Task { @MainActor in
+                        completions.forEach { $0(result) }
+                    }
+                }
+            )
         }
     }
 
