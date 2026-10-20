@@ -37,8 +37,8 @@ extension CustomerCenterConfigData.HelpPath {
                 ? nil : "No purchase selected"
         }
         if !allowMissingPurchase && type == .missingPurchase { return "Purchase already selected" }
-        if purchase.ownershipType == .familyShared && type.requiresPurchaseOwnership {
-            return "Family-shared purchase"
+        if type.requiresPurchaseOwnership, let reason = purchase.ownershipType?.notOwnedByCustomerReason {
+            return reason
         }
         if purchase.store != .appStore && type.isAppStoreOnly { return "Requires an App Store purchase" }
         switch type {
@@ -92,6 +92,24 @@ extension CustomerCenterConfigData.HelpPath {
             customActionIdentifier: self.customActionIdentifier
         )
     }
+}
+
+private extension PurchaseOwnershipType {
+
+    /// Why the customer doesn't own this purchase, or nil if they do (or ownership can't be determined).
+    var notOwnedByCustomerReason: String? {
+        switch self {
+        case .familyShared:
+            return "Family-shared purchase"
+        case .assigned:
+            return "Organization-assigned purchase"
+        case .purchased, .unknown:
+            return nil
+        @unknown default:
+            return nil
+        }
+    }
+
 }
 
 private extension CustomerCenterConfigData.HelpPath.PathType {

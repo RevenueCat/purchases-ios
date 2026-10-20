@@ -1035,6 +1035,19 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beTrue())
     }
 
+    func testAssignedSubscriptionDoesNotShowRefundRequestOrChangePlans() {
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: Self.appStoreSubscription(ownershipType: .assigned),
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        // The organization owns the purchase, so the assigned user can't request a refund or change plans
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).to(beFalse())
+    }
+
     func testPurchasedSubscriptionShowsRefundRequestAndChangePlans() {
         let viewModel = BaseManageSubscriptionViewModel(
             screen: BaseManageSubscriptionViewModelTests.default,
