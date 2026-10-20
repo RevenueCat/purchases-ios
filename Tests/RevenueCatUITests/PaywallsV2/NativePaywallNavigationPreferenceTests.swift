@@ -173,6 +173,21 @@ final class NativePaywallNavigationPreferenceTests: TestCase {
         }
     }
 
+    func testPreflightFindsNativeButtonsThroughEveryContainerAtMultipleDepths() throws {
+        for action in ["navigate_back", "close_workflow"] {
+            let fixture = try self.nativeOverrideFixture(actionType: action, nativeBase: true)
+            let buttonStack = fixture.paywallComponents.data.componentsConfig.base.stack
+            var nested = PaywallComponent.stack(buttonStack)
+            for wrap in Self.containerWrappers {
+                let component = wrap(buttonStack)
+                XCTAssertTrue(self.config(stack: .init(components: [component])).requestsNativeClose)
+                nested = wrap(.init(components: [nested]))
+            }
+            XCTAssertTrue(self.config(stack: .init(components: [nested])).requestsNativeClose,
+                          "Mixed nested containers must still discover \(action)")
+        }
+    }
+
     func testDecodedWindowRulesCanRevealNativeButtonAndItsAncestorForPreflight() throws {
         for actionType in ["navigate_back", "close_workflow"] {
             let fixture = try self.nativeOverrideFixture(
@@ -208,6 +223,27 @@ final class NativePaywallNavigationPreferenceTests: TestCase {
 
     private func config(stack: PaywallComponent.StackComponent) -> PaywallComponentsData.PaywallComponentsConfig {
         .init(stack: stack, stickyFooter: nil, background: .color(.init(light: .hex("#FFFFFF"))))
+    }
+
+    private static var containerWrappers: [(PaywallComponent.StackComponent) -> PaywallComponent] {
+        [
+            { .stack($0) },
+            { .button(.init(action: .restorePurchases, stack: $0)) },
+            { .package(.init(packageID: "$rc_monthly", isSelectedByDefault: true,
+                             applePromoOfferProductCode: nil, stack: $0)) },
+            { .purchaseButton(.init(stack: $0, action: nil, method: nil, name: nil)) },
+            { .stickyFooter(.init(stack: $0)) },
+            { .tabs(.init(control: .init(type: .buttons, stack: $0), tabs: [])) },
+            { .tabs(.init(control: .init(type: .buttons, stack: .init(components: [])),
+                          tabs: [.init(id: "tab", stack: $0)])) },
+            { .tabControlButton(.init(tabId: "tab", stack: $0)) },
+            { .carousel(.init(pages: [.init(components: []), $0])) },
+            { .countdown(.init(style: .date(.distantFuture), countFrom: .hours, countdownStack: $0)) },
+            { .countdown(.init(style: .date(.distantFuture), countFrom: .hours,
+                               countdownStack: .init(components: []), endStack: $0)) },
+            { .countdown(.init(style: .date(.distantFuture), countFrom: .hours,
+                               countdownStack: .init(components: []), fallback: $0)) }
+        ]
     }
 
     private func requestsNativeNavigation(_ fixture: PaywallPreviewRenderer.Fixture) -> Bool {
