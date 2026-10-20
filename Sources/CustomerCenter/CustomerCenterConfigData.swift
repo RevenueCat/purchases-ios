@@ -320,7 +320,7 @@ import Foundation
                 case .sharedThroughFamilyMember:
                     return "Shared through family member"
                 case .assignedThroughOrganization:
-                    return "Assigned through an organization"
+                    return "Assigned through your organization"
                 case .active:
                     return "Active"
                 case .inactive:
