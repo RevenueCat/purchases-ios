@@ -15,8 +15,7 @@ import Foundation
     /// without breaking exhaustive `switch` statements in client code.
     public struct Code: Hashable, CustomStringConvertible {
 
-        /// Stable string identifier of the code.
-        public let rawValue: String
+        private let rawValue: String
 
         /// ``RCAds/configure(with:)`` has not been called successfully.
         public static let notConfigured = Code(rawValue: "not_configured")
