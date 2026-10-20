@@ -23,6 +23,7 @@ enum AdsStrings {
     case reward_verification_token_encoding_failed(error: Error)
     case configured_ad_rewards_empty_ad_unit_id
     case configured_ad_rewards_unavailable(adUnitID: String)
+    case configured_ad_rewards_invalid_ad_unit(adUnitID: String)
     case configured_ad_rewards_invalid_blob(error: Error)
 
     case poll_start(transactionID: String, maxAttempts: Int)
@@ -63,6 +64,8 @@ extension AdsStrings: LogMessage {
             return "Configured ad rewards require a non-empty ad unit identifier."
         case let .configured_ad_rewards_unavailable(adUnitID):
             return "Configured ad rewards are unavailable for ad unit '\(adUnitID)'."
+        case let .configured_ad_rewards_invalid_ad_unit(adUnitID):
+            return "Configured ad rewards for ad unit '\(adUnitID)' are malformed."
         case let .configured_ad_rewards_invalid_blob(error):
             return "Received an invalid configured ad rewards blob: \(error)"
 

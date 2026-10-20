@@ -58,6 +58,7 @@ final class ConfiguredAdRewardsProvider {
             case let .available(rewards):
                 return rewards
             case .unavailable:
+                Logger.warn(AdsStrings.configured_ad_rewards_invalid_ad_unit(adUnitID: adUnitId))
                 return nil
             }
         case .removed:

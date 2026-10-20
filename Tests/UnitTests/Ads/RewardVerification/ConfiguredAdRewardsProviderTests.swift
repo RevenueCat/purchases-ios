@@ -135,6 +135,9 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         let rewards = await self.provider.rewards(forAdUnitId: "ad-unit")
 
         expect(rewards).to(beNil())
+        expect(self.logger.messages).to(containElementSatisfying {
+            $0.level == .warn && $0.message.contains("Configured ad rewards for ad unit 'ad-unit' are malformed.")
+        })
     }
 
     func testMalformedAdUnitDoesNotHideValidAdUnits() async throws {
