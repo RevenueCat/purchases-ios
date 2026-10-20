@@ -45,27 +45,7 @@ final class CarouselTabSwitchTests: TestCase {
         var tab2CarouselAppearCount = 0
         tab2CarouselVM.onViewAppear = { tab2CarouselAppearCount += 1 }
 
-        let packageContext = PackageContext(package: nil, variableContext: .init(packages: []))
-        let view = LoadedTabsComponentView(
-            viewModel: viewModel,
-            parentPackageContext: packageContext,
-            onDismiss: {},
-            tabControlContext: tabControlContext
-        )
-        .environmentObject(packageContext)
-        .environmentObject(IntroOfferEligibilityContext(
-            introEligibilityChecker: BaseSnapshotTest.eligibleChecker
-        ))
-        .environmentObject(PaywallPromoOfferCache(
-            subscriptionHistoryTracker: SubscriptionHistoryTracker()
-        ))
-        .environment(\.screenCondition, .compact)
-        .environment(\.componentViewState, .default)
-        .environment(\.safeAreaInsets, EdgeInsets())
-        .environment(\.selectedPackageId, nil)
-        .frame(width: 400, height: 600)
-
-        let (window, _) = Self.host(view)
+        let window = Self.host(Self.makeTabsView(viewModel: viewModel, tabControlContext: tabControlContext))
         defer {
             window.isHidden = true
             window.rootViewController = nil
@@ -75,12 +55,7 @@ final class CarouselTabSwitchTests: TestCase {
         XCTAssertEqual(tab2CarouselAppearCount, 0, "Tab 2 carousel must not appear before switching to Tab 2")
 
         // Switch to Tab 2 programmatically
-        tabControlContext.selectedTabId = "tab2"
-
-        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
-        window.rootViewController?.view.setNeedsLayout()
-        window.rootViewController?.view.layoutIfNeeded()
-        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+        Self.switchTab(to: "tab2", in: tabControlContext, window: window)
 
         // After switching tabs the Tab 2 carousel must have appeared exactly once.
         //
@@ -98,6 +73,55 @@ final class CarouselTabSwitchTests: TestCase {
         )
     }
 
+    /// Each carousel remembers the page it was on: leaving a tab and coming back resumes its
+    /// carousel on that page, while the other tab's carousel still starts on its own initial page.
+    func testCarouselResumesOnLastPageWhenReturningToTab() throws {
+        let tab1Carousel = PaywallComponent.CarouselComponent(
+            pages: Self.makePages(count: 3),
+            // Auto-advance stands in for the user swiping: it walks to the last page and stops.
+            autoAdvance: .init(msTimePerPage: 50, msTransitionTime: 10, transitionType: .slide)
+        )
+        let tab2Carousel = PaywallComponent.CarouselComponent(
+            pages: Self.makePages(count: 3),
+            initialPageIndex: 1
+        )
+        let (viewModel, tab1CarouselVM, tab2CarouselVM, tabControlContext) = try Self.makeViewModelAndContext(
+            tab1Carousel: tab1Carousel,
+            tab2Carousel: tab2Carousel
+        )
+
+        let window = Self.host(Self.makeTabsView(viewModel: viewModel, tabControlContext: tabControlContext))
+        defer {
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+
+        Self.waitUntil { tab1CarouselVM.lastPageIndex == 2 }
+        XCTAssertEqual(tab1CarouselVM.lastPageIndex, 2, "Tab 1 carousel should have advanced to its last page")
+
+        Self.switchTab(to: "tab2", in: tabControlContext, window: window)
+
+        XCTAssertEqual(
+            tab2CarouselVM.lastPageIndex,
+            1,
+            "Tab 2 carousel must start on its own initial page, not on Tab 1's page"
+        )
+
+        var tab1PagesAfterReturning: [Int] = []
+        tab1CarouselVM.onPageIndexChange = { tab1PagesAfterReturning.append($0) }
+
+        Self.switchTab(to: "tab1", in: tabControlContext, window: window)
+
+        // Resuming jumps straight to page 2. Restarting from page 0 would only reach page 2 again
+        // by auto-advancing through page 1 first.
+        XCTAssertEqual(
+            tab1PagesAfterReturning.first,
+            2,
+            "Tab 1 carousel must resume on the page it was on before switching tabs"
+        )
+        XCTAssertFalse(tab1PagesAfterReturning.contains(1))
+    }
+
 }
 
 // MARK: - Helpers
@@ -109,6 +133,24 @@ private extension CarouselTabSwitchTests {
     /// `onViewAppear` callback), and the injected `TabControlContext`.
     static func makeViewModelAndContext() throws -> (
         TabsComponentViewModel,
+        CarouselComponentViewModel,
+        TabControlContext
+    ) {
+        let carousel = PaywallComponent.CarouselComponent(pages: [makeTextStack(text: "page")])
+        let (tabsViewModel, _, tab2CarouselVM, tabControlContext) = try makeViewModelAndContext(
+            tab1Carousel: carousel,
+            tab2Carousel: carousel
+        )
+        return (tabsViewModel, tab2CarouselVM, tabControlContext)
+    }
+
+    /// Returns the tabs view model, both tabs' carousel view models, and the injected `TabControlContext`.
+    static func makeViewModelAndContext(
+        tab1Carousel: PaywallComponent.CarouselComponent,
+        tab2Carousel: PaywallComponent.CarouselComponent
+    ) throws -> (
+        TabsComponentViewModel,
+        CarouselComponentViewModel,
         CarouselComponentViewModel,
         TabControlContext
     ) {
@@ -140,8 +182,8 @@ private extension CarouselTabSwitchTests {
                 ])
             ),
             tabs: [
-                .init(id: tab1Id, stack: makeStackWithCarousel()),
-                .init(id: tab2Id, stack: makeStackWithCarousel())
+                .init(id: tab1Id, stack: PaywallComponent.StackComponent(components: [.carousel(tab1Carousel)])),
+                .init(id: tab2Id, stack: PaywallComponent.StackComponent(components: [.carousel(tab2Carousel)]))
             ],
             defaultTabId: tab1Id
         )
@@ -158,9 +200,13 @@ private extension CarouselTabSwitchTests {
             throw XCTSkip("Test setup failed")
         }
 
-        // Dig out the Tab 2 CarouselComponentViewModel so we can set the onViewAppear hook
+        // Dig out each tab's CarouselComponentViewModel so tests can observe them
+        let tab1CarouselVM = try XCTUnwrap(
+            carouselViewModel(from: tabsViewModel, tabId: tab1Id),
+            "Expected to find a CarouselComponentViewModel in Tab 1"
+        )
         let tab2CarouselVM = try XCTUnwrap(
-            tab2CarouselViewModel(from: tabsViewModel, tabId: tab2Id),
+            carouselViewModel(from: tabsViewModel, tabId: tab2Id),
             "Expected to find a CarouselComponentViewModel in Tab 2"
         )
 
@@ -171,11 +217,11 @@ private extension CarouselTabSwitchTests {
             name: nil
         )
 
-        return (tabsViewModel, tab2CarouselVM, tabControlContext)
+        return (tabsViewModel, tab1CarouselVM, tab2CarouselVM, tabControlContext)
     }
 
     /// Walks the view model tree under the given tab to find its `CarouselComponentViewModel`.
-    static func tab2CarouselViewModel(
+    static func carouselViewModel(
         from tabsVM: TabsComponentViewModel,
         tabId: String
     ) -> CarouselComponentViewModel? {
@@ -194,12 +240,8 @@ private extension CarouselTabSwitchTests {
         return nil
     }
 
-    static func makeStackWithCarousel() -> PaywallComponent.StackComponent {
-        PaywallComponent.StackComponent(
-            components: [.carousel(PaywallComponent.CarouselComponent(
-                pages: [makeTextStack(text: "page")]
-            ))]
-        )
+    static func makePages(count: Int) -> [PaywallComponent.StackComponent] {
+        (0..<count).map { makeTextStack(text: "page \($0)") }
     }
 
     static func makeTextStack(text: String) -> PaywallComponent.StackComponent {
@@ -211,14 +253,55 @@ private extension CarouselTabSwitchTests {
         )
     }
 
-    static func host<Content: View>(_ view: Content) -> (UIWindow, UIView) {
+    static func makeTabsView(
+        viewModel: TabsComponentViewModel,
+        tabControlContext: TabControlContext
+    ) -> some View {
+        let packageContext = PackageContext(package: nil, variableContext: .init(packages: []))
+        return LoadedTabsComponentView(
+            viewModel: viewModel,
+            parentPackageContext: packageContext,
+            onDismiss: {},
+            tabControlContext: tabControlContext
+        )
+        .environmentObject(packageContext)
+        .environmentObject(IntroOfferEligibilityContext(
+            introEligibilityChecker: BaseSnapshotTest.eligibleChecker
+        ))
+        .environmentObject(PaywallPromoOfferCache(
+            subscriptionHistoryTracker: SubscriptionHistoryTracker()
+        ))
+        .environment(\.screenCondition, .compact)
+        .environment(\.componentViewState, .default)
+        .environment(\.safeAreaInsets, EdgeInsets())
+        .environment(\.selectedPackageId, nil)
+        .frame(width: 400, height: 600)
+    }
+
+    static func switchTab(to tabId: String, in tabControlContext: TabControlContext, window: UIWindow) {
+        tabControlContext.selectedTabId = tabId
+
+        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
+        window.rootViewController?.view.setNeedsLayout()
+        window.rootViewController?.view.layoutIfNeeded()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+    }
+
+    static func waitUntil(timeout: TimeInterval = 3, _ condition: () -> Bool) {
+        let deadline = Date().addingTimeInterval(timeout)
+        while !condition() && Date() < deadline {
+            RunLoop.main.run(until: Date().addingTimeInterval(0.05))
+        }
+    }
+
+    static func host<Content: View>(_ view: Content) -> UIWindow {
         let controller = UIHostingController(rootView: view)
         let window = UIWindow(frame: CGRect(origin: .zero, size: CGSize(width: 400, height: 600)))
         window.rootViewController = controller
         window.makeKeyAndVisible()
         controller.view.layoutIfNeeded()
         RunLoop.main.run(until: Date().addingTimeInterval(0.2))
-        return (window, controller.view)
+        return window
     }
 
 }
