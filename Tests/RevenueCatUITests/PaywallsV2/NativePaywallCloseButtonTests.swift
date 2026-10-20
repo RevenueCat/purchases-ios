@@ -295,6 +295,36 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
         }
     }
 
+    func testPushedNativeCloseHidesAndRestoresCallerBackAcrossOverrides() async throws {
+        guard #available(iOS 16.0, *) else { throw XCTSkip("NavigationStack requires iOS 16") }
+        let state = NativeNavigationVisibilityTestState()
+        let host = UIHostingController(rootView: NavigationStack(path: .constant([1])) {
+            Text("Account")
+                .navigationDestination(for: Int.self) { _ in
+                    NativeNavigationVisibilityTestView(state: state)
+                        .modifier(NativePaywallNavigationModifier(requested: true))
+                        .navigationTitle("Paywall")
+                }
+        })
+        let window = self.host(host)
+        defer { self.close(window) }
+        for enabled in [false, true, false, true, false] {
+            state.native = enabled
+            await self.waitForPresentation()
+            let navigation = try XCTUnwrap(self.navigationController(in: host))
+            let attachment = XCTAttachment(image: UIGraphicsImageRenderer(bounds: window.bounds).image { _ in
+                window.drawHierarchy(in: window.bounds, afterScreenUpdates: true)
+            })
+            attachment.name = "Pushed native Close enabled \(enabled)"
+            attachment.lifetime = .keepAlways
+            self.add(attachment)
+            XCTAssertEqual(state.available, enabled)
+            XCTAssertEqual(navigation.topViewController?.navigationItem.hidesBackButton, enabled,
+                           "Caller Back must return when the native Close is removed")
+            XCTAssertEqual(self.navigationCount(in: host), 1)
+        }
+    }
+
     func testEmptyNativeHostPreservesCallerToolbarItems() async throws {
         for enabled in [nil, false, true] as [Bool?] {
             var callerAppeared = false

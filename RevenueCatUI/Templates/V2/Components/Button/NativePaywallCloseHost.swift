@@ -56,6 +56,7 @@ struct NativePaywallCloseHost: ViewModifier {
 
     #if os(iOS)
     @ViewBuilder private func nativeNavigation(_ content: Content) -> some View {
+        // Both native Back and native Close replace the caller's automatic Back button.
         let view = self.surface(content)
             .navigationBarBackButtonHidden(self.enabled && !self.coordinator.actions.isEmpty)
         #if compiler(>=6.2)
