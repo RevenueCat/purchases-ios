@@ -4,12 +4,12 @@
 //  Created by RevenueCat.
 //
 
-import UIKit
 import XCTest
 
 #if os(iOS) && canImport(PrebidMobile)
 import RevenueCat
 @_spi(Experimental) @testable import RevenueCatAds
+import UIKit
 
 /// Local base class for RevenueCatAds unit tests.
 typealias TestCase = XCTestCase
