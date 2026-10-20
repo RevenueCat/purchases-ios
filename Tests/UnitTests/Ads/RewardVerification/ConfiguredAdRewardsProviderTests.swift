@@ -44,61 +44,6 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         expect(rewards.moreRewards[1].virtualCurrency?.code) == "gems"
     }
 
-    func testWarmPopulatesCache() async throws {
-        try self.stub(content: [
-            "reward": ["type": "virtual_currency", "code": "coins", "amount": 10]
-        ])
-
-        await self.provider.warm()
-        let rewards = await self.provider.rewards(forAdUnitId: "ad-unit")
-
-        expect(rewards?.reward?.virtualCurrency?.amount) == 10
-        expect(self.manager.invokedTopicCount) == 0
-        expect(self.manager.invokedCommittedTopicAfterInFlightRefreshCount) == 0
-        expect(self.manager.invokedCachedBlobDataParameters.count) == 1
-    }
-
-    func testObserverRegistrationWarmsFromCacheWithoutFetching() async throws {
-        try self.stub(content: [
-            "reward": ["type": "virtual_currency", "code": "coins", "amount": 10]
-        ])
-
-        self.provider.remoteConfigEventReceived(.observerRegistered(generation: self.manager.configGeneration))
-
-        await expect(self.manager.invokedCachedBlobDataParameters.count).toEventually(equal(1))
-        let rewards = await self.provider.rewards(forAdUnitId: "ad-unit")
-
-        expect(rewards?.reward?.virtualCurrency?.amount) == 10
-        expect(self.manager.invokedTopicCount) == 0
-        expect(self.manager.invokedCommittedTopicAfterInFlightRefreshCount) == 0
-    }
-
-    func testCommitWaitsForInFlightRefreshWithoutStartingAnotherRefresh() async throws {
-        try self.stub(content: [
-            "reward": ["type": "virtual_currency", "code": "coins", "amount": 10]
-        ])
-
-        self.provider.remoteConfigEventReceived(.committed(generation: self.manager.configGeneration))
-
-        await expect(self.manager.invokedCommittedTopicAfterInFlightRefreshCount).toEventually(equal(1))
-        let rewards = await self.provider.rewards(forAdUnitId: "ad-unit")
-
-        expect(rewards?.reward?.virtualCurrency?.amount) == 10
-        expect(self.manager.invokedTopicCount) == 0
-    }
-
-    func testAsyncRewardsReturnsCachedValueWithoutWaitingForRefresh() async throws {
-        try self.stub(content: [
-            "reward": ["type": "virtual_currency", "code": "coins", "amount": 10]
-        ])
-        await self.provider.warm()
-
-        let rewards = await self.provider.rewards(forAdUnitId: "ad-unit")
-
-        expect(rewards?.reward?.virtualCurrency?.amount) == 10
-        expect(self.manager.invokedCommittedTopicAfterInFlightRefreshCount) == 0
-    }
-
     func testAsyncRewardsFetchesConfigurationWhenCacheIsEmpty() async throws {
         try self.stub(content: [
             "reward": ["type": "virtual_currency", "code": "coins", "amount": 10]
@@ -110,7 +55,7 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         expect(self.manager.invokedCommittedTopicAfterInFlightRefreshCount) == 0
         expect(self.manager.invokedTopicCount) == 2
         expect(self.manager.invokedEnsureBlobsDownloadedRefs) == [[String(repeating: "A", count: 32)]]
-        expect(self.manager.invokedBlobDataParameters.count) == 1
+        expect(self.manager.invokedCachedBlobDataParameters.count) == 1
     }
 
     func testAsyncRewardsWaitsForFetchWhenInitialConfigurationHasNotStarted() async throws {
@@ -159,7 +104,6 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
             ]
         ])
 
-        await self.provider.warm()
         let maybeReward = await self.provider.rewards(forAdUnitId: "ad-unit")
         let reward = try XCTUnwrap(maybeReward)
 
@@ -182,23 +126,15 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         expect(rewards.moreRewards) == [.unsupportedReward, .unsupportedReward]
     }
 
-    func testReturnsNilForMalformedAdUnitWithoutReloadingConfiguration() async throws {
+    func testReturnsNilForMalformedAdUnit() async throws {
         try self.stub(content: [
             "reward": ["type": "virtual_currency", "code": "coins", "amount": 10],
             "more_rewards": ["not": "an array"]
         ])
 
-        let firstRewards = await self.provider.rewards(forAdUnitId: "ad-unit")
-        let topicReadCount = self.manager.invokedTopicCount
-        let blobReadCount = self.manager.invokedBlobDataParameters.count
-        let blobDownloadCount = self.manager.invokedEnsureBlobsDownloadedRefs.count
-        let secondRewards = await self.provider.rewards(forAdUnitId: "ad-unit")
+        let rewards = await self.provider.rewards(forAdUnitId: "ad-unit")
 
-        expect(firstRewards).to(beNil())
-        expect(secondRewards).to(beNil())
-        expect(self.manager.invokedTopicCount) == topicReadCount
-        expect(self.manager.invokedBlobDataParameters.count) == blobReadCount
-        expect(self.manager.invokedEnsureBlobsDownloadedRefs.count) == blobDownloadCount
+        expect(rewards).to(beNil())
     }
 
     func testMalformedAdUnitDoesNotHideValidAdUnits() async throws {
@@ -211,8 +147,6 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
                 "more_rewards": ["not": "an array"]
             ]
         ])
-
-        await self.provider.warm()
 
         let validRewards = await self.provider.rewards(forAdUnitId: "valid-ad-unit")
         let malformedRewards = await self.provider.rewards(forAdUnitId: "malformed-ad-unit")
@@ -241,34 +175,32 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         expect(self.manager.invokedBlobDataParameters).to(beEmpty())
     }
 
-    func testTemporarilyUnavailableBlobPreservesCachedConfiguration() async throws {
+    func testTemporarilyUnavailableBlobReturnsNil() async throws {
         try self.stub(content: ["reward": ["type": "virtual_currency", "code": "coins", "amount": 10]])
         let initial = await self.provider.rewards(forAdUnitId: "ad-unit")
 
         self.manager.configGeneration += 1
         self.manager.stubbedBlobData[.adRewards] = [:]
-        let cached = await self.provider.rewards(forAdUnitId: "ad-unit")
+        let unavailable = await self.provider.rewards(forAdUnitId: "ad-unit")
 
         expect(initial?.reward?.virtualCurrency?.amount) == 10
-        expect(cached) == initial
+        expect(unavailable).to(beNil())
     }
 
-    func testIdentityBoundGenerationChangePreservesAppScopedCachedConfiguration() async throws {
+    func testIdentityBoundGenerationChangeReturnsNilWhileConfigurationIsUnavailable() async throws {
         try self.stub(content: ["reward": ["type": "virtual_currency", "code": "coins", "amount": 10]])
-        await self.provider.warm()
+        let initial = await self.provider.rewards(forAdUnitId: "ad-unit")
 
-        // RemoteConfigManager advances its generation when identity-bound config is cleared. Ad rewards are app-scoped,
-        // so the last valid rewards remain usable while the replacement configuration is unavailable.
         self.manager.configGeneration += 1
         self.manager.stubbedHasCommittedConfig = false
         self.manager.stubbedTopics[.adRewards] = nil
-        await self.provider.warm()
         let rewards = await self.provider.rewards(forAdUnitId: "ad-unit")
 
-        expect(rewards?.reward?.virtualCurrency?.amount) == 10
+        expect(initial?.reward?.virtualCurrency?.amount) == 10
+        expect(rewards).to(beNil())
     }
 
-    func testInvalidReplacementBlobPreservesCachedConfiguration() async throws {
+    func testInvalidReplacementAdUnitDoesNotHideValidReplacement() async throws {
         try self.stub(adUnits: [
             "malformed-replacement": [
                 "reward": ["type": "virtual_currency", "code": "coins", "amount": 10]
@@ -277,7 +209,7 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
                 "reward": ["type": "virtual_currency", "code": "gems", "amount": 5]
             ]
         ])
-        await self.provider.warm()
+        let initial = await self.provider.rewards(forAdUnitId: "malformed-replacement")
 
         self.manager.configGeneration += 1
         try self.stub(adUnits: [
@@ -289,15 +221,15 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
                 "reward": ["type": "virtual_currency", "code": "gems", "amount": 15]
             ]
         ])
-        await self.provider.warm()
         let malformedRewards = await self.provider.rewards(forAdUnitId: "malformed-replacement")
         let validRewards = await self.provider.rewards(forAdUnitId: "valid-replacement")
 
-        expect(malformedRewards?.reward?.virtualCurrency?.amount) == 10
+        expect(initial?.reward?.virtualCurrency?.amount) == 10
+        expect(malformedRewards).to(beNil())
         expect(validRewards?.reward?.virtualCurrency?.amount) == 15
     }
 
-    func testTopicRemovalClearsCachedConfiguration() async throws {
+    func testTopicRemovalReturnsNoConfiguredReward() async throws {
         try self.stub(content: ["reward": ["type": "virtual_currency", "code": "coins", "amount": 10]])
         let initial = await self.provider.rewards(forAdUnitId: "ad-unit")
         expect(initial).toNot(beNil())

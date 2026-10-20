@@ -315,7 +315,7 @@ final class RemoteConfigIntegrationTests: TestCase {
         expect(self.blobStore.read(ref: ref)) == payload
     }
 
-    func testAdRewardsProviderPreservesCachedConfigurationAfterHashVerificationFailure() async throws {
+    func testAdRewardsProviderReturnsNilAfterHashVerificationFailure() async throws {
         let initialPayload = Self.adRewardsPayload
         let initialRef = RCContainerTestData.blobRef(for: initialPayload)
         let initialContainer = try Self.containerData(
@@ -348,7 +348,7 @@ final class RemoteConfigIntegrationTests: TestCase {
         let rewards = await provider.rewards(forAdUnitId: "rewarded-ad-unit")
 
         expect(initialRewards?.reward?.virtualCurrency?.amount) == 10
-        expect(rewards) == initialRewards
+        expect(rewards).to(beNil())
         expect(self.blobStore.read(ref: expectedRef)).to(beNil())
     }
 
