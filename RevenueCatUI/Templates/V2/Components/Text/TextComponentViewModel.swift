@@ -250,6 +250,7 @@ class TextComponentViewModel {
             variableCompatibilityMap: config.variableConfig.variableCompatibilityMap,
             functionCompatibilityMap: config.variableConfig.functionCompatibilityMap,
             discountRelativeToMostExpensivePerMonth: discount,
+            mostExpensivePricePerMonth: config.packageContext.variableContext.exactMostExpensivePricePerMonth,
             showZeroDecimalPlacePrices: config.packageContext.variableContext.showZeroDecimalPlacePrices,
             customVariables: config.customVariables,
             defaultCustomVariables: config.defaultCustomVariables
