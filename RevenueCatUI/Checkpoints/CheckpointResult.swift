@@ -18,7 +18,7 @@ import Foundation
 /// The result of passing a checkpoint.
 @_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public struct CheckpointResult: @unchecked Sendable {
+public struct CheckpointResult: Sendable {
 
     /// Information about the presented flow, or `nil` when the checkpoint had nothing to present.
     public let flow: FlowResult?

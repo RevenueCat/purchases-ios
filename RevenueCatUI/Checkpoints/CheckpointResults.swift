@@ -18,7 +18,7 @@ import Foundation
 /// The result of completing a checkpoint flow.
 @_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public struct FlowResult: @unchecked Sendable {
+public struct FlowResult: Sendable {
 
     /// Active entitlements present after the flow that were not active in cached customer information before it began.
     ///
