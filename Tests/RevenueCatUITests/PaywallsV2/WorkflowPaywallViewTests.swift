@@ -750,9 +750,10 @@ private extension WorkflowPaywallViewTests {
     static func makeScreenJSON(
         packages: [PackageSpec] = [],
         offeringId: String = "offering_test",
-        extraKeysJSON: String = ""
+        extraKeysJSON: String = "",
+        componentsJSON: String? = nil
     ) -> String {
-        let componentsJSON = packages
+        let componentsJSON = componentsJSON ?? packages
             .map { packageComponentJSON(id: $0.id, isDefault: $0.isDefault) }
             .joined(separator: ",")
         let extraKeys = extraKeysJSON.isEmpty ? "" : ",\n    \(extraKeysJSON)"
@@ -1721,6 +1722,96 @@ extension WorkflowPaywallViewTests {
         expect(firstVisit.sessionIdentifier) != secondVisit.sessionIdentifier
     }
 
+    @MainActor
+    func testNativeWorkflowCloseTracksDismissalWithTheActivePaywallContext() async throws {
+        try await self.assertNativeWorkflowDismissalAnalytics(actionType: "close_workflow")
+    }
+
+    @MainActor
+    func testRootNativeBackTracksNavigateBackWhenDisplayedAsClose() async throws {
+        try await self.assertNativeWorkflowDismissalAnalytics(actionType: "navigate_back")
+    }
+
+    @MainActor
+    private func assertNativeWorkflowDismissalAnalytics(actionType: String) async throws {
+        let paywallEvents: Atomic<[PaywallEvent]> = .init([])
+        let workflowEvents: Atomic<[WorkflowEvent]> = .init([])
+        let dispatcher = PaywallEventTrackerTestDispatcher.value
+        let (purchases, purchaseHandler) = Self.makeEventRecordingPurchaseHandler(
+            paywallEvents: paywallEvents, eventDispatcher: dispatcher
+        )
+        purchases.trackWorkflowEventBlock = { event in workflowEvents.modify { $0.append(event) } }
+        let buttonJSON = """
+        {
+            "type": "button", "id": "dismiss-button", "name": "Authored dismissal",
+            "action": { "type": "\(actionType)", "use_native_if_possible": true },
+            "stack": \(Self.stackJSON(components: "[]"))
+        }
+        """
+        let context = try Self.makeContext(
+            singleStepFallbackId: nil,
+            initialScreenJSON: Self.makeScreenJSON(componentsJSON: buttonJSON),
+            initialStepJSON: """
+            "step_initial": {
+                "id": "step_initial", "type": "screen", "screen_id": "screen_initial",
+                "metadata": { "screen_type": ["paywall"] }
+            },
+            """
+        )
+        let coordinator = NativePaywallCloseCoordinator()
+        let dispose = try DismissibleWorkflowAnalyticsHost(purchaseHandler: purchaseHandler, context: context)
+            .environment(\.nativePaywallCloseCoordinator, coordinator)
+            .environment(\.nativePaywallCloseEnabled, true)
+            .addToHierarchy()
+        var disposed = false
+        defer { if !disposed { dispose() } }
+
+        await expect(Self.impressionData(in: paywallEvents.value)).toEventually(haveCount(1))
+        await expect(coordinator.action(for: .close)).toEventuallyNot(beNil())
+        expect(coordinator.action(for: .back)).to(beNil())
+        let impression = try XCTUnwrap(Self.impressionData(in: paywallEvents.value).first)
+        let nativeClose = try XCTUnwrap(coordinator.action(for: .close))
+        try await nativeClose.perform()
+
+        await expect(workflowEvents.value.filter { if case .close = $0 { return true }; return false })
+            .toEventually(haveCount(1))
+        await expect(paywallEvents.value.filter { if case .close = $0 { return true }; return false })
+            .toEventually(haveCount(1))
+        dispose()
+        disposed = true
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            dispatcher { continuation.resume() }
+        }
+        let interactions = paywallEvents.value.filter { $0.componentInteractionData != nil }
+        expect(interactions).to(haveCount(1))
+        let interaction = try XCTUnwrap(interactions.first)
+        expect(interaction.componentInteractionData?.componentType) == .button
+        expect(interaction.componentInteractionData?.componentName) == "Authored dismissal"
+        expect(interaction.componentInteractionData?.componentValue) == actionType
+        expect(interaction.data.sessionIdentifier) == impression.sessionIdentifier
+        expect(interaction.data.paywallIdentifier) == impression.paywallIdentifier
+        expect(interaction.data.offeringIdentifier) == impression.offeringIdentifier
+        expect(interaction.data.workflowId) == "wf_test"
+        expect(interaction.data.stepId) == "step_initial"
+        expect(interaction.data.traceId) == impression.traceId
+        expect(interaction.data.traceId).toNot(beNil())
+        let completions = workflowEvents.value.filter { if case .stepCompleted = $0 { return true }; return false }
+        let closes = workflowEvents.value.filter { if case .close = $0 { return true }; return false }
+        expect(workflowEvents.value.map { event in
+            switch event {
+            case .stepStarted: return "started"
+            case .stepCompleted: return "completed"
+            case .close: return "close"
+            }
+        }) == ["started", "completed", "close"]
+        expect(completions).to(haveCount(1))
+        expect(closes).to(haveCount(1))
+        expect(completions.first?.data.toStepId).to(beNil())
+        expect(closes.first?.data.stepId) == "step_initial"
+        expect(closes.first?.data.traceId) == impression.traceId
+        expect(paywallEvents.value.filter { if case .close = $0 { return true }; return false }).to(haveCount(1))
+    }
+
     private static let reentryTraceId = "trace_reentry"
 
     private static func isImpression(_ event: PaywallEvent) -> Bool {
@@ -1738,7 +1829,8 @@ extension WorkflowPaywallViewTests {
     }
 
     private static func makeEventRecordingPurchaseHandler(
-        paywallEvents: Atomic<[PaywallEvent]>
+        paywallEvents: Atomic<[PaywallEvent]>,
+        eventDispatcher: @escaping PaywallEventTracker.EventDispatcher = PaywallEventTrackerTestDispatcher.value
     ) -> (MockPurchases, PurchaseHandler) {
         let purchases = MockPurchases { _, _, _ in
             return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
@@ -1751,11 +1843,33 @@ extension WorkflowPaywallViewTests {
         }
         let purchaseHandler = PurchaseHandler(
             purchases: purchases,
-            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
+            eventTracker: .init(purchases: purchases, eventDispatcher: eventDispatcher)
         )
         return (purchases, purchaseHandler)
     }
 
+}
+
+/// Removes the workflow on its actual dismissal callback so lifecycle analytics run as in PaywallView.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct DismissibleWorkflowAnalyticsHost: View {
+    @ObservedObject var purchaseHandler: PurchaseHandler
+    let context: WorkflowContext
+    @State private var isPresented = true
+
+    var body: some View {
+        if self.isPresented {
+            WorkflowPaywallView(
+                context: self.context,
+                purchaseHandler: self.purchaseHandler,
+                introEligibilityChecker: .producing(eligibility: .eligible),
+                showZeroDecimalPlacePrices: false,
+                displayCloseButton: false,
+                promoOfferCache: nil,
+                onDismiss: { self.isPresented = false }
+            )
+        }
+    }
 }
 
 /// Lets a test flip a workflow page between current and not-current, the signal
