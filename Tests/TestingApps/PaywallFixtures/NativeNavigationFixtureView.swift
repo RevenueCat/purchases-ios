@@ -71,7 +71,8 @@ struct NativeNavigationFixtureView: View {
             )
         } else {
             PaywallView(
-                offering: NativeNavigationFixture.sheetOffering,
+                offering: ProcessInfo.processInfo.environment["PAYWALL_CAROUSEL_BUTTONS"] != nil
+                    ? NativeNavigationFixture.carouselOffering : NativeNavigationFixture.sheetOffering,
                 performPurchase: { _ in (userCancelled: true, error: nil) },
                 performRestore: { (success: false, error: nil) }
             )
@@ -144,6 +145,36 @@ private enum NativeNavigationFixture {
                 ]
             )), availablePackages: Self.baseOffering.availablePackages, webCheckoutUrl: nil
         )
+    }
+
+    // Match Catbone's Close-over-hero layout without fetching remote media.
+    static var carouselOffering: Offering {
+        let pages: [PaywallComponent.StackComponent] = (1...3).map { index in
+            .init(components: [
+                .stack(.init(components: [
+                    .stack(.init(components: [], size: .init(width: .fill, height: .fixed(380)),
+                                 backgroundColor: .init(light: .hex("#EEEEFF")))),
+                    .button(.init(action: .navigateBack, stack: .init(
+                        components: [Self.text("Carousel Close \(index)")],
+                        dimension: .vertical(.center, .center),
+                        size: .init(width: .fixed(32), height: .fixed(32)),
+                        margin: .init(top: 16, bottom: 0, leading: 0, trailing: 16)
+                    ), useNativeIfPossible: ProcessInfo.processInfo.environment["PAYWALL_CAROUSEL_BUTTONS"] == "native"))
+                ], dimension: .zlayer(.topTrailing), size: .init(width: .fill, height: .fit(nil)))),
+                Self.text("Carousel page \(index)")
+            ], size: .init(width: .fill, height: .fit(nil)), spacing: 20)
+        }
+        var data = Self.data(title: "Outer paywall", buttons: [.carousel(.init(
+            pages: pages, pageAlignment: .top, pagePeek: 0
+        ))])
+        data.componentsLocalizations["en_US"] = (data.componentsLocalizations["en_US"] ?? [:]).merging(
+            Dictionary(uniqueKeysWithValues: (1...3).flatMap {
+                ["Carousel page \($0)", "Carousel Close \($0)"]
+            }.map { ($0, .string($0)) }), uniquingKeysWith: { _, new in new }
+        )
+        return Offering(identifier: "carousel-close", serverDescription: "Carousel Close",
+                        paywallComponents: .init(uiConfig: Self.baseUIConfig, data: data),
+                        availablePackages: Self.baseOffering.availablePackages, webCheckoutUrl: nil)
     }
 
     private static var baseOffering: Offering { PaywallFixture.sheetOverContent.offering }

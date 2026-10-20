@@ -117,6 +117,39 @@ final class NativeNavigationUITests: XCTestCase {
     }
     #endif
 
+    #if os(iOS)
+    func testEmbeddedCarouselCloseDismissesFromEachPage() {
+        self.assertCarouselCloseDismisses(native: false)
+    }
+
+    func testNativeCarouselCloseDismissesFromEachPage() {
+        self.assertCarouselCloseDismisses(native: true)
+    }
+
+    private func assertCarouselCloseDismisses(native: Bool) {
+        for page in 1...3 {
+            let app = self.launch("native_inline_sheet", presentation: "sheet", carouselNative: native)
+            self.assertVisible(app.staticTexts["Carousel page 1"], in: app)
+            for previous in 1..<page {
+                let title = app.staticTexts["Carousel page \(previous)"]
+                let origin = app.coordinate(withNormalizedOffset: .zero)
+                let width = app.windows.firstMatch.frame.width
+                let start = origin.withOffset(CGVector(dx: width * 0.8, dy: title.frame.midY))
+                let end = origin.withOffset(CGVector(dx: width * 0.2, dy: title.frame.midY))
+                start.press(forDuration: 0.05, thenDragTo: end)
+                self.assertVisible(app.staticTexts["Carousel page \(previous + 1)"], in: app)
+            }
+            let close = app.buttons[native ? self.closeIdentifier : "Carousel Close \(page)"]
+            self.assertVisible(close, in: app)
+            self.assertNativeControls(in: app, back: false, close: native)
+            close.tap()
+            self.assertVisible(app.staticTexts["Paywall dismissed"], in: app)
+            app.terminate()
+        }
+    }
+
+    #endif
+
     private func assertWorkflowNavigation(in app: XCUIApplication) {
         self.assertVisible(app.staticTexts["Workflow root"], in: app)
         self.assertNativeControls(in: app, back: false, close: true)
@@ -234,10 +267,15 @@ final class NativeNavigationUITests: XCTestCase {
         XCTAssertEqual(XCTWaiter.wait(for: [ready], timeout: 10), .completed, app.debugDescription)
     }
 
-    private func launch(_ fixture: String, presentation: String = "push") -> XCUIApplication {
+    private func launch(
+        _ fixture: String, presentation: String = "push", carouselNative: Bool? = nil
+    ) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchEnvironment["PAYWALL_FIXTURE"] = fixture
         app.launchEnvironment["PAYWALL_NATIVE_PRESENTATION"] = presentation
+        if let carouselNative {
+            app.launchEnvironment["PAYWALL_CAROUSEL_BUTTONS"] = carouselNative ? "native" : "embedded"
+        }
         app.launch()
         let showPaywall = app.buttons["Show native paywall"]
         XCTAssertTrue(showPaywall.waitForExistence(timeout: 30), app.debugDescription)
