@@ -127,7 +127,8 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         let topic = try XCTUnwrap(self.manager.stubbedTopics[.adRewards])
         self.manager.completeStoredTopic(with: topic)
 
-        expect(await rewards?.reward?.virtualCurrency?.amount) == 10
+        let resolvedRewards = await rewards
+        expect(resolvedRewards?.reward?.virtualCurrency?.amount) == 10
     }
 
     func testAsyncRewardsReturnsNilWhenConfigurationRemainsUnavailable() async {
@@ -181,15 +182,23 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         expect(rewards.moreRewards) == [.unsupportedReward, .unsupportedReward]
     }
 
-    func testReturnsNilForMalformedAdUnit() async throws {
+    func testReturnsNilForMalformedAdUnitWithoutReloadingConfiguration() async throws {
         try self.stub(content: [
             "reward": ["type": "virtual_currency", "code": "coins", "amount": 10],
             "more_rewards": ["not": "an array"]
         ])
 
-        let rewards = await self.provider.rewards(forAdUnitId: "ad-unit")
+        let firstRewards = await self.provider.rewards(forAdUnitId: "ad-unit")
+        let topicReadCount = self.manager.invokedTopicCount
+        let blobReadCount = self.manager.invokedBlobDataParameters.count
+        let blobDownloadCount = self.manager.invokedEnsureBlobsDownloadedRefs.count
+        let secondRewards = await self.provider.rewards(forAdUnitId: "ad-unit")
 
-        expect(rewards).to(beNil())
+        expect(firstRewards).to(beNil())
+        expect(secondRewards).to(beNil())
+        expect(self.manager.invokedTopicCount) == topicReadCount
+        expect(self.manager.invokedBlobDataParameters.count) == blobReadCount
+        expect(self.manager.invokedEnsureBlobsDownloadedRefs.count) == blobDownloadCount
     }
 
     func testMalformedAdUnitDoesNotHideValidAdUnits() async throws {

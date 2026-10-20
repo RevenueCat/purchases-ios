@@ -38,6 +38,12 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
         let rewards: RewardsByAdUnitID?
     }
 
+    private enum CachedReward {
+        case notLoaded
+        case available(ConfiguredAdRewards)
+        case unavailable
+    }
+
     private let manager: RemoteConfigManagerType
 
     /// `ad_rewards` is app-scoped rather than subscriber-scoped, so this deliberately survives config-generation
@@ -70,18 +76,24 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
             return nil
         }
 
-        if let rewards = self.cachedRewardsValue(forAdUnitId: adUnitId) {
+        switch self.cachedReward(forAdUnitId: adUnitId) {
+        case let .available(rewards):
             return rewards
+        case .unavailable:
+            return nil
+        case .notLoaded:
+            break
         }
 
         await self.warm(mode: .fetchIfNeeded)
 
-        guard let rewards = self.cachedRewardsValue(forAdUnitId: adUnitId) else {
+        switch self.cachedReward(forAdUnitId: adUnitId) {
+        case let .available(rewards):
+            return rewards
+        case .notLoaded, .unavailable:
             Logger.warn(AdsStrings.configured_ad_rewards_unavailable(adUnitID: adUnitId))
             return nil
         }
-
-        return rewards
     }
 
     func warm() async {
@@ -153,18 +165,18 @@ final class ConfiguredAdRewardsProvider: RemoteConfigLifecycleObserver {
         }
     }
 
-    private func cachedRewardsValue(forAdUnitId adUnitId: String) -> ConfiguredAdRewards? {
-        guard let cached = self.cachedRewards.value else { return nil }
+    private func cachedReward(forAdUnitId adUnitId: String) -> CachedReward {
+        guard let cached = self.cachedRewards.value else { return .notLoaded }
         guard let rewards = cached.rewards,
               let adUnitRewards = rewards[adUnitId] else {
-            return .noConfiguredReward
+            return .available(.noConfiguredReward)
         }
 
         switch adUnitRewards {
         case let .available(rewards):
-            return rewards
+            return .available(rewards)
         case .unavailable:
-            return nil
+            return .unavailable
         }
     }
 
