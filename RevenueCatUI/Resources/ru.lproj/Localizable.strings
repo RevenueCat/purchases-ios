@@ -29,3 +29,12 @@
 "Your purchase was successful." = "Покупка прошла успешно.";
 "Purchase unavailable" = "Покупка недоступна";
 "This purchase isn't available in your region." = "Эта покупка недоступна в вашем регионе.";
+"Couldn't connect. Check your internet connection and try again." = "Не удалось подключиться. Проверьте подключение к интернету и попробуйте снова.";
+"This content couldn't be loaded. Please try again later." = "Не удалось загрузить это содержимое. Пожалуйста, попробуйте позже.";
+"There was a problem with the store. Please try again later." = "Возникла проблема с магазином. Пожалуйста, попробуйте позже.";
+"Purchases aren't allowed on this device." = "Покупки на этом устройстве запрещены.";
+"This product isn't available right now." = "Этот продукт сейчас недоступен.";
+"You already own this product." = "У вас уже есть этот продукт.";
+"Your payment is pending. You'll get access once it's approved." = "Ваш платёж ожидает обработки. Вы получите доступ после его подтверждения.";
+"Something went wrong. Please try again." = "Что-то пошло не так. Пожалуйста, попробуйте снова.";
+"Your purchases couldn't be verified. Please try again later." = "Не удалось проверить ваши покупки. Пожалуйста, попробуйте позже.";

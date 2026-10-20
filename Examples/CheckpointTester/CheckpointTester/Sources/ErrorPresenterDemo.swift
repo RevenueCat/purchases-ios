@@ -57,7 +57,7 @@ private enum ErrorPresenterDemo {
         completion: ErrorPresentationCompletion
     ) {
         guard let presenter = Self.presentationViewController else {
-            completion.complete(params.flowCanContinue ? .retry : .continue)
+            completion.complete()
             return
         }
 
@@ -66,24 +66,15 @@ private enum ErrorPresenterDemo {
             message: Self.message(for: params),
             preferredStyle: .alert
         )
-        if params.flowCanContinue {
-            alert.addAction(UIAlertAction(title: "Retry", style: .default) { _ in
-                completion.complete(.retry)
-            })
-        }
-        alert.addAction(UIAlertAction(title: "Continue", style: .default) { _ in
-            completion.complete(.continue)
-        })
-        alert.addAction(UIAlertAction(title: "Back", style: .cancel) { _ in
-            completion.complete(.navigateBack)
+        alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+            completion.complete()
         })
         presenter.present(alert, animated: true)
     }
 
     private static func message(for params: ErrorPresentationParams) -> String {
         return "Checkpoint · \(params.checkpointIdentifier)\n\n" +
-            "\(params.error.localizedDescription)\n\n" +
-            "Flow can continue · \(params.flowCanContinue ? "yes" : "no")"
+            params.error.localizedDescription
     }
 
     private static var presentationViewController: UIViewController? {

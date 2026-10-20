@@ -277,6 +277,66 @@ final class PackageValidatorTests: TestCase {
         )
     }
 
+    func testReconcileKeepsSelectionThatCanReappearAfterPendingEligibility() {
+        let validator = PackageValidator()
+        validator.add(Self.makePackageInfo(
+            package: TestData.annualPackage,
+            isSelectedByDefault: true,
+            visible: true,
+            overrides: [
+                Self.offerVisibilityOverride(.introOffer, visible: false),
+                Self.offerVisibilityOverride(.promoOffer, visible: true)
+            ]
+        ))
+        validator.add(Self.makePackageInfo(
+            package: TestData.monthlyPackage,
+            isSelectedByDefault: false,
+            visible: true
+        ))
+
+        let context = Self.context(
+            isEligibleForIntroOffer: { _ in true },
+            isEligibleForPromoOffer: { _ in false }
+        )
+
+        XCTAssertNil(
+            validator.reconciledSelection(
+                current: TestData.annualPackage,
+                in: context,
+                offerEligibilityLoading: [.promo]
+            )
+        )
+    }
+
+    func testReconcileMovesSelectionWhenPendingEligibilityCannotRestoreIt() {
+        let validator = PackageValidator()
+        validator.add(Self.makePackageInfo(
+            package: TestData.annualPackage,
+            isSelectedByDefault: true,
+            visible: true,
+            overrides: [Self.offerVisibilityOverride(.introOffer, visible: false)]
+        ))
+        validator.add(Self.makePackageInfo(
+            package: TestData.monthlyPackage,
+            isSelectedByDefault: false,
+            visible: true
+        ))
+
+        let context = Self.context(
+            isEligibleForIntroOffer: { _ in true },
+            isEligibleForPromoOffer: { _ in false }
+        )
+
+        XCTAssertEqual(
+            validator.reconciledSelection(
+                current: TestData.annualPackage,
+                in: context,
+                offerEligibilityLoading: [.promo]
+            )?.identifier,
+            TestData.monthlyPackage.identifier
+        )
+    }
+
     func testReconcileReturnsNilWhenNothingIsVisible() {
         let validator = PackageValidator()
         validator.add(Self.makePackageInfo(
@@ -685,6 +745,16 @@ private extension PackageValidatorTests {
             extendedConditions: [
                 .variable(operator: .equals, variable: "can_trial", value: .bool(canTrial))
             ],
+            properties: .init(visible: visible)
+        )
+    }
+
+    static func offerVisibilityOverride(
+        _ condition: PaywallComponent.ExtendedCondition,
+        visible: Bool
+    ) -> PaywallComponent.ComponentOverride<PaywallComponent.PartialPackageComponent> {
+        return .init(
+            extendedConditions: [condition],
             properties: .init(visible: visible)
         )
     }

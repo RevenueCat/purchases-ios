@@ -14,7 +14,7 @@
 import Nimble
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class LocalTransactionMetadataStoreTests: TestCase {
 
@@ -359,6 +359,25 @@ class LocalTransactionMetadataStoreTests: TestCase {
         expect(retrieved?.productData?.currencyCode) == originalMetadata.productData?.currencyCode
         expect(retrieved?.productData?.price) == originalMetadata.productData?.price
         expect(retrieved?.originalPurchasesAreCompletedBy) == originalMetadata.originalPurchasesAreCompletedBy
+        expect(retrieved?.transactionData.presentedOfferingContext?.checkpointIdentifier) == "checkout"
+        expect(retrieved?.transactionData.presentedOfferingContext?.traceID) == "trace"
+    }
+
+    func testMetadataDecodingSupportsRecordsWithoutCheckpointIdentifier() throws {
+        let metadata = self.createCompleteTestMetadata()
+        let encoded = try JSONEncoder.default.encode(metadata)
+        var object = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+        var transactionData = try XCTUnwrap(
+            object["purchased_transaction_data_wrapper"] as? [String: Any]
+        )
+        transactionData.removeValue(forKey: "checkpoint_identifier")
+        object["purchased_transaction_data_wrapper"] = transactionData
+
+        let legacyData = try JSONSerialization.data(withJSONObject: object)
+        let decoded = try JSONDecoder.default.decode(LocalTransactionMetadata.self, from: legacyData)
+
+        expect(decoded.transactionData.presentedOfferingContext?.offeringIdentifier) == "test_offering"
+        expect(decoded.transactionData.presentedOfferingContext?.checkpointIdentifier).to(beNil())
     }
 
     // MARK: - Helper methods
@@ -411,11 +430,11 @@ class LocalTransactionMetadataStoreTests: TestCase {
         )
 
         let transactionData = PurchasedTransactionData(
-            presentedOfferingContext: .init(
+            presentedOfferingContext: PresentedOfferingContext(
                 offeringIdentifier: "test_offering",
                 placementIdentifier: "test_placement",
                 targetingContext: nil
-            ),
+            ).withCheckpointIdentifier("checkout", traceID: "trace"),
             presentedPaywall: nil,
             unsyncedAttributes: ["key": .init(attribute: .email, value: "test@example.com")],
             metadata: ["custom_key": "custom_value"],
@@ -508,6 +527,8 @@ class LocalTransactionMetadataStoreE2ETests: TestCase {
             == originalMetadata.transactionData.presentedOfferingContext?.targetingContext?.revision
         expect(retrieved?.transactionData.presentedOfferingContext?.targetingContext?.ruleId)
             == originalMetadata.transactionData.presentedOfferingContext?.targetingContext?.ruleId
+        expect(retrieved?.transactionData.presentedOfferingContext?.checkpointIdentifier)
+            == "integration_checkpoint"
         expect(retrieved?.transactionData.metadata) == originalMetadata.transactionData.metadata
         expect(retrieved?.transactionData.aadAttributionToken) == originalMetadata.transactionData.aadAttributionToken
         expect(retrieved?.transactionData.storeCountry) == originalMetadata.transactionData.storeCountry
@@ -1011,7 +1032,7 @@ class LocalTransactionMetadataStoreE2ETests: TestCase {
                 offeringIdentifier: "integration_offering",
                 placementIdentifier: "integration_placement",
                 targetingContext: .init(revision: 42, ruleId: "rule_integration_123")
-            ),
+            ).withCheckpointIdentifier("integration_checkpoint", traceID: nil),
             presentedPaywall: nil,
             unsyncedAttributes: nil,
             metadata: ["integration_key": "integration_value", "another_key": "another_value"],

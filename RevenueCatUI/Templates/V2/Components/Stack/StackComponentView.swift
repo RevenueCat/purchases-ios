@@ -103,6 +103,25 @@ struct StackComponentView: View {
         ) { style in
             if style.visible {
                 self.make(style: style)
+                    .redactedWhileOfferEligibilityLoads(
+                        self.viewModel,
+                        isEligibleForIntroOffer: isEligibleForIntroOffer,
+                        isEligibleForPromoOffer: isEligibleForPromoOffer
+                    ) { intro, promo in
+                        self.viewModel.visible(
+                            state: self.componentViewState,
+                            condition: self.screenCondition,
+                            isEligibleForIntroOffer: intro,
+                            isEligibleForPromoOffer: promo,
+                            conditionContext: self.viewModel.uiConfigProvider.conditionContext(
+                                selectedPackageId: self.selectedPackageId,
+                                customVariables: self.customVariables,
+                                stateValues: self.paywallStateValues,
+                                stateDefaults: self.paywallStateDefaults,
+                                windowSize: self.paywallWindowSize
+                            )
+                        )
+                    }
             }
         }
     }

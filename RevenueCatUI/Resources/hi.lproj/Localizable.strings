@@ -29,3 +29,12 @@
 "Your purchase was successful." = "आपकी खरीदारी सफल रही।";
 "Purchase unavailable" = "खरीदारी उपलब्ध नहीं है";
 "This purchase isn't available in your region." = "यह खरीदारी आपके क्षेत्र में उपलब्ध नहीं है।";
+"Couldn't connect. Check your internet connection and try again." = "कनेक्ट नहीं हो सका। अपना इंटरनेट कनेक्शन जांचें और फिर से कोशिश करें।";
+"This content couldn't be loaded. Please try again later." = "यह सामग्री लोड नहीं हो सकी। कृपया बाद में फिर से कोशिश करें।";
+"There was a problem with the store. Please try again later." = "स्टोर में कोई समस्या हुई। कृपया बाद में फिर से कोशिश करें।";
+"Purchases aren't allowed on this device." = "इस डिवाइस पर खरीदारी की अनुमति नहीं है।";
+"This product isn't available right now." = "यह उत्पाद अभी उपलब्ध नहीं है।";
+"You already own this product." = "यह उत्पाद पहले से आपके पास है।";
+"Your payment is pending. You'll get access once it's approved." = "आपका भुगतान लंबित है। स्वीकृत होने पर आपको एक्सेस मिल जाएगा।";
+"Something went wrong. Please try again." = "कुछ गलत हो गया। कृपया फिर से कोशिश करें।";
+"Your purchases couldn't be verified. Please try again later." = "आपकी खरीदारी सत्यापित नहीं हो सकी। कृपया बाद में फिर से कोशिश करें।";

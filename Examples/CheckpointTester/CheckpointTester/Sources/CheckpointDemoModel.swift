@@ -100,8 +100,8 @@ final class CheckpointDemoModel: ObservableObject {
 
     private var pendingOutcomeAlerts: [OutcomeAlert] = []
 
-    func showOutcome(_ result: FlowResult?, checkpointIdentifier: String) {
-        guard let result else {
+    func showOutcome(_ result: CheckpointResult, checkpointIdentifier: String) {
+        guard let flow = result.flow else {
             self.showOutcomeAlert(
                 title: "No completed flow",
                 message: "Checkpoint · \(checkpointIdentifier)\n\n" +
@@ -110,7 +110,7 @@ final class CheckpointDemoModel: ObservableObject {
             return
         }
 
-        let identifiers = result.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted()
+        let identifiers = flow.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted()
         self.showOutcomeAlert(
             title: "Checkpoint completed",
             message: identifiers.isEmpty

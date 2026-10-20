@@ -39,6 +39,8 @@ final class PurchaseHandler: ObservableObject {
     private var cancellables: Set<AnyCancellable> = Set()
 
     private let purchases: PaywallPurchasesType
+    private let customerCenterPreviewContext: (@Sendable () -> (appUserID: String, isSandbox: Bool))?
+    private let customerCenterPreviewURLHandler: (@Sendable (URL) async throws -> Void)?
     let resolveBranch: @Sendable (WorkflowBranch) async -> WorkflowStepID
     private let paywallEventTracker: PaywallEventTracker
     private let keyWindowFocusResigner: KeyWindowFocusResigning
@@ -75,6 +77,20 @@ final class PurchaseHandler: ObservableObject {
     /// Whether the SDK is running in UI preview mode.
     var isUIPreviewMode: Bool {
         return purchases.isUIPreviewMode
+    }
+
+    /// Only the injected Customer Center provider enables isolated mobile-app preview behavior.
+    var isCustomerCenterPreview: Bool {
+        return customerCenterPreviewContext != nil
+    }
+
+    /// Resolves checkout URL parameters from the isolated preview provider when one is supplied.
+    var webCheckoutContext: (appUserID: String, isSandbox: Bool) {
+        if let customerCenterPreviewContext {
+            return customerCenterPreviewContext()
+        }
+        guard Purchases.isConfigured else { return ("", false) }
+        return (Purchases.shared.appUserID, Purchases.shared.isSandbox)
     }
 
     var preferredLocaleOverride: Locale? {
@@ -201,6 +217,8 @@ final class PurchaseHandler: ObservableObject {
         isConfigured: Bool = true,
         purchases: PaywallPurchasesType,
         resolveBranch: @escaping @Sendable (WorkflowBranch) async -> WorkflowStepID = { $0.fallbackStepId },
+        customerCenterPreviewContext: (@Sendable () -> (appUserID: String, isSandbox: Bool))? = nil,
+        customerCenterPreviewURLHandler: (@Sendable (URL) async throws -> Void)? = nil,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
@@ -211,6 +229,8 @@ final class PurchaseHandler: ObservableObject {
     ) {
         self.isConfigured = isConfigured
         self.purchases = purchases
+        self.customerCenterPreviewContext = customerCenterPreviewContext
+        self.customerCenterPreviewURLHandler = customerCenterPreviewURLHandler
         self.resolveBranch = resolveBranch
         self.paywallEventTracker = eventTracker
         self.keyWindowFocusResigner = keyWindowFocusResigner
@@ -265,6 +285,52 @@ final class PurchaseHandler: ObservableObject {
             performRestore: performRestore,
             eventTracker: .init(purchases: purchases)
         )
+    }
+
+#if os(iOS)
+    /// Keeps Customer Center previews independent of the configured Purchases instance and its events.
+    static func customerCenterPreview(
+        provider: CustomerCenterPreviewProvider,
+        performPurchase: @escaping PerformPurchase,
+        performRestore: @escaping PerformRestore
+    ) -> PurchaseHandler {
+        let purchases = NotConfiguredPurchases(
+            purchasesAreCompletedBy: .myApp,
+            customerInfoProvider: { try await provider.customerInfo() },
+            isUIPreviewMode: true,
+            storeFrontCountryCode: provider.storeFrontCountryCode
+        )
+        return .init(
+            purchases: purchases,
+            customerCenterPreviewContext: { (provider.appUserID, provider.isSandbox) },
+            customerCenterPreviewURLHandler: { try await provider.handlePreviewAction(.openURL($0)) },
+            performPurchase: performPurchase,
+            performRestore: performRestore,
+            purchaseResultPublisher: Empty().eraseToAnyPublisher(),
+            eventTracker: .init(purchases: purchases)
+        )
+    }
+#endif
+
+    /// Sends the checkout URL to the preview provider.
+    /// Returns `true` when checkout completed, so the caller can dismiss.
+    @MainActor
+    func performCustomerCenterPreviewCheckout(url: URL) async throws -> Bool {
+        guard let customerCenterPreviewURLHandler, !actionInProgress, !Task.isCancelled else { return false }
+        startAction(.externalPurchasePreparation)
+        defer { actionTypeInProgress = nil }
+
+        do {
+            try await customerCenterPreviewURLHandler(url)
+            try Task.checkCancellation()
+            signalWebCheckoutOpened()
+            return true
+        } catch is CancellationError {
+            return false
+        } catch {
+            guard !Task.isCancelled else { return false }
+            throw error
+        }
     }
 
     private func setResult(_ result: PaywallPurchaseResult) {
@@ -429,6 +495,12 @@ extension PurchaseHandler {
     }
 #endif
 
+#if !os(tvOS)
+    func failedToLoadFont(_ fontConfig: UIConfig.FontsConfig) {
+        self.purchases.failedToLoadFontWithConfig(fontConfig)
+    }
+#endif
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -515,7 +587,8 @@ extension PurchaseHandler {
                 allOfferings: cachedOfferings,
                 presentedOfferingContext: offering.presentedOfferingContext,
                 developerProvidedOffering: content.passedOffering,
-                workflowBlobRef: fetchResult.workflowBlobRef
+                workflowBlobRef: fetchResult.workflowBlobRef,
+                traceId: offering.presentedOfferingContext?.traceID
               ) else {
             return nil
         }
@@ -744,7 +817,8 @@ extension PurchaseHandler {
                 allOfferings: allOfferings,
                 presentedOfferingContext: presentedOfferingContext,
                 developerProvidedOffering: developerProvidedOffering,
-                workflowBlobRef: fetchResult.workflowBlobRef
+                workflowBlobRef: fetchResult.workflowBlobRef,
+                traceId: presentedOfferingContext?.traceID
             )
         } catch WorkflowError.uiConfigUnavailable(let workflowId) {
             throw PaywallError.workflowUiConfigUnavailable(workflowId: workflowId)
@@ -768,7 +842,8 @@ extension PurchaseHandler {
         presentedOfferingContext: PresentedOfferingContext?,
         developerProvidedOffering: Offering?,
         workflowBlobRef: String? = nil,
-        traceId: String? = nil
+        traceId: String? = nil,
+        checkpointIdentifier: String? = nil
     ) throws -> WorkflowContext {
         guard let step = workflow.steps[workflow.initialStepId] else {
             throw PaywallError.workflowInitialStepNotFound(
@@ -817,7 +892,8 @@ extension PurchaseHandler {
             initialOffering: offering,
             presentedOfferingContext: presentedOfferingContext,
             workflowBlobRef: workflowBlobRef,
-            traceId: traceId
+            traceId: traceId,
+            checkpointIdentifier: checkpointIdentifier
         )
     }
 
@@ -1284,7 +1360,8 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 
     var preferredLocaleOverride: String? { nil }
 
-    var isUIPreviewMode: Bool { false }
+    let isUIPreviewMode: Bool
+    private let customerInfoProvider: (@Sendable () async throws -> CustomerInfo)?
 
     var remoteConfigEnabled: Bool { false }
 
@@ -1292,19 +1369,28 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
         SubscriptionHistoryTracker()
     }
 
-    init(customerInfo: CustomerInfo? = nil, purchasesAreCompletedBy: PurchasesAreCompletedBy) {
+    init(
+        customerInfo: CustomerInfo? = nil,
+        purchasesAreCompletedBy: PurchasesAreCompletedBy,
+        customerInfoProvider: (@Sendable () async throws -> CustomerInfo)? = nil,
+        isUIPreviewMode: Bool = false,
+        storeFrontCountryCode: @autoclosure @escaping @Sendable () -> String? = nil
+    ) {
         self.customerInfo = customerInfo
         self.purchasesAreCompletedBy = purchasesAreCompletedBy
+        self.customerInfoProvider = customerInfoProvider
+        self.isUIPreviewMode = isUIPreviewMode
+        self.configuredStoreEnvironment = ConfiguredStoreEnvironment(
+            apiKey: "test_",
+            storeFrontCountryCode: storeFrontCountryCode()
+        )
     }
 
     func offerings() async throws -> Offerings { throw ErrorCode.configurationError }
 
     var cachedOfferings: Offerings? { nil }
 
-    let configuredStoreEnvironment = ConfiguredStoreEnvironment(
-        apiKey: "test_",
-        storeFrontCountryCode: nil
-    )
+    let configuredStoreEnvironment: ConfiguredStoreEnvironment
 
 #if !os(tvOS)
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
@@ -1317,6 +1403,7 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 #endif
 
     func customerInfo() async throws -> RevenueCat.CustomerInfo {
+        if let customerInfoProvider { return try await customerInfoProvider() }
         guard let info = customerInfo else { throw ErrorCode.configurationError }
         return info
     }

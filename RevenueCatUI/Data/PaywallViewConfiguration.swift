@@ -10,6 +10,13 @@ import Foundation
 
 @_spi(Internal) import RevenueCat
 
+enum WorkflowPresentationErrorBehavior: Equatable {
+    case endFlow
+    case keepCurrentScreen
+}
+
+typealias WorkflowPresentationErrorHandler = (NSError, WorkflowPresentationErrorBehavior) -> Void
+
 /// Parameters needed to configure a ``PaywallView``.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PaywallViewConfiguration {
@@ -29,8 +36,8 @@ struct PaywallViewConfiguration {
     var displaysPurchaseAndRestoreErrors: Bool
     #if !os(tvOS)
     var workflowBackNavigationBridge = WorkflowBackNavigationBridge()
-    /// Receives a workflow configuration error so checkpoint presentation can report an error outcome.
-    var workflowPresentationErrorHandler: ((NSError) -> Void)?
+    /// Receives a workflow configuration error and whether the current presentation can remain active.
+    var workflowPresentationErrorHandler: WorkflowPresentationErrorHandler?
     /// A pre-built workflow context to seed directly (injection/preview path), bypassing the
     /// backend fetch. When set, `PaywallView` renders the workflow paywall immediately. Set by the
     /// `PaywallView(workflowContext:)` initializer; tvOS has no workflow paywall UI.
@@ -46,7 +53,7 @@ struct PaywallViewConfiguration {
         purchaseHandler: PurchaseHandler,
         promoOfferCache: PaywallPromoOfferCache? = nil,
         displaysPurchaseAndRestoreErrors: Bool = true,
-        workflowPresentationErrorHandler: ((NSError) -> Void)? = nil
+        workflowPresentationErrorHandler: WorkflowPresentationErrorHandler? = nil
     ) {
         self.content = content
         self.mode = mode

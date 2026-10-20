@@ -42,6 +42,14 @@ final class WorkflowPresenterExecutionTests: TestCase {
         )
     }
 
+    func testCheckpointIdentifierIsForwardedToWorkflowContext() throws {
+        let presenter = WorkflowPresenterHarness()
+
+        let viewController = try presenter.workflowPresenter.makePaywallViewController(for: Self.presentation())
+
+        XCTAssertEqual(viewController.workflowContextForTesting?.checkpointIdentifier, "test_checkpoint")
+    }
+
     func testExecutionForwardsBackOutFromThePresenter() async throws {
         let presenter = WorkflowPresenterHarness()
         presenter.onPresent = { presentation in
@@ -56,15 +64,17 @@ final class WorkflowPresenterExecutionTests: TestCase {
         }
     }
 
-    func testPresentationFailureResumesExecutionAndAllowsRetry() async throws {
+    func testPresentationFailureThrowsAndAllowsRetry() async throws {
         let presenter = WorkflowPresenterHarness()
         let expectedError = NSError(domain: "test", code: 42)
         presenter.presentationError = expectedError
         let workflowPresenter = presenter.workflowPresenter
 
-        let failure = try await workflowPresenter.present(Self.presentation())
-        guard case .failed = failure else {
-            return XCTFail("Expected presentation failure")
+        do {
+            _ = try await workflowPresenter.present(Self.presentation())
+            XCTFail("Expected presentation failure")
+        } catch {
+            XCTAssertEqual(error as NSError, expectedError)
         }
 
         presenter.presentationError = nil
@@ -129,7 +139,8 @@ final class WorkflowPresenterExecutionTests: TestCase {
             workflow: self.workflow(),
             customVariables: customVariables,
             presentationMode: .modalSheet,
-            errorPresentationHandler: { _, completion in completion.complete(.continue) }
+            initialActiveEntitlementIdentifiers: [],
+            errorPresentationHandler: { _, completion in completion.complete() }
         )
     }
 
@@ -140,14 +151,27 @@ final class WorkflowPresenterExecutionTests: TestCase {
             availablePackages: [],
             webCheckoutUrl: nil
         )
+        let screen = WorkflowScreen(
+            name: nil,
+            templateName: "test",
+            assetBaseURL: URL(fileURLWithPath: "/"),
+            componentsConfig: .init(base: .init(
+                stack: .init(components: []),
+                stickyFooter: nil,
+                background: .color(.init(light: .hex("#ffffff")))
+            )),
+            componentsLocalizations: [:],
+            defaultLocale: "en_US",
+            offeringIdentifier: offering.identifier
+        )
         return ResolvedCheckpointWorkflow(
             workflow: PublishedWorkflow(
                 id: "workflow-id",
                 displayName: "Test",
                 initialStepId: "step-id",
                 singleStepFallbackId: nil,
-                steps: ["step-id": WorkflowStep(id: "step-id", type: "screen", screenId: nil)],
-                screens: [:]
+                steps: ["step-id": WorkflowStep(id: "step-id", type: "screen", screenId: "screen-id")],
+                screens: ["screen-id": screen]
             ),
             uiConfig: .empty,
             offerings: .preview(offerings: [offering])
@@ -194,7 +218,7 @@ private final class WorkflowPresenterHarness {
         switch execution {
         case .nothingPresented:
             self.workflowPresenter.presentationDidDismiss()
-        case .completed, .failed:
+        case .completed, .failed, .synchronizationFailed:
             self.workflowPresenter.stage(.outcome(execution))
             self.workflowPresenter.presentationDidDismiss(reason: .close)
         case .backedOut:

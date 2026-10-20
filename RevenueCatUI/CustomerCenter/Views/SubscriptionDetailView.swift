@@ -85,6 +85,7 @@ struct SubscriptionDetailView: View {
 
     var body: some View {
         content
+            .modifier(CustomerCenterPreviewActionsModifier(actions: viewModel.previewActions))
         // This is needed because `CustomerCenterViewModel` is isolated to @MainActor
         // A bigger refactor is needed, but its already throwing a warning.
             .modifier(self.customerInfoViewModel.purchasesProvider
@@ -108,7 +109,11 @@ struct SubscriptionDetailView: View {
                     productIDs: viewModel.changePlanProductIDs
                 )
             )
-            .onAppear { viewModel.didAppear() }
+            .onAppear {
+                viewModel.didAppear()
+                viewModel.startPublishingPreviewDiagnostics()
+            }
+            .onDisappear { viewModel.stopPublishingPreviewDiagnostics() }
             .onChangeOf(customerInfoViewModel.manageSubscriptionsSheet) { manageSubscriptionsSheet in
                 if !manageSubscriptionsSheet {
                     viewModel.refreshPurchase()
@@ -301,7 +306,9 @@ private extension SubscriptionDetailView {
 
     @ViewBuilder
     func contactSupportView(_ url: URL) -> some View {
-        if #available(iOS 18.0, *) {
+        if let provider = viewModel.purchasesProvider as? CustomerCenterPreviewProvider {
+            contactSupportButton(open: provider.previewURLHandler(for: url))
+        } else if #available(iOS 18.0, *) {
             OpenURLReader { openURL in
                 contactSupportButton { openURL(url) }
             }
@@ -313,7 +320,7 @@ private extension SubscriptionDetailView {
 
     func contactSupportButton(open: @escaping () -> Void) -> some View {
         AsyncButton {
-            if RuntimeUtils.isSimulator {
+            if RuntimeUtils.isSimulator && !(viewModel.purchasesProvider is CustomerCenterPreviewProvider) {
                 self.showSimulatorAlert = true
             } else {
                 open()

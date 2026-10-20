@@ -88,6 +88,43 @@ final class WorkflowContextTests: TestCase {
         expect(packageContext.targetingContext?.ruleId) == presentedOfferingContext.targetingContext?.ruleId
     }
 
+    func testCheckpointIdentifierIsAppliedPerOfferingWithoutMutatingCachedOfferings() throws {
+        let initialOffering = Self.makeOfferingWithMatchingPackageContexts(identifier: "offering_a")
+        let stepOffering = Self.makeOfferingWithMatchingPackageContexts(identifier: "offering_b")
+        let context = WorkflowContext(
+            workflow: try Self.makeWorkflow(),
+            allOfferings: Self.makeOfferings([initialOffering, stepOffering]),
+            initialOffering: initialOffering,
+            presentedOfferingContext: nil,
+            checkpointIdentifier: "checkout"
+        )
+
+        let initialContext = try XCTUnwrap(
+            context.offering(for: initialOffering.identifier)?.availablePackages.first?.presentedOfferingContext
+        )
+        let stepContext = try XCTUnwrap(
+            context.offering(for: stepOffering.identifier)?.availablePackages.first?.presentedOfferingContext
+        )
+        let secondContext = WorkflowContext(
+            workflow: try Self.makeWorkflow(),
+            allOfferings: Self.makeOfferings([initialOffering, stepOffering]),
+            initialOffering: initialOffering,
+            presentedOfferingContext: nil,
+            checkpointIdentifier: "onboarding"
+        )
+        let secondInvocationContext = try XCTUnwrap(
+            secondContext.offering(for: stepOffering.identifier)?.presentedOfferingContext
+        )
+
+        expect(initialContext.offeringIdentifier) == "offering_a"
+        expect(initialContext.checkpointIdentifier) == "checkout"
+        expect(stepContext.offeringIdentifier) == "offering_b"
+        expect(stepContext.checkpointIdentifier) == "checkout"
+        expect(secondInvocationContext.checkpointIdentifier) == "onboarding"
+        expect(initialOffering.presentedOfferingContext?.checkpointIdentifier).to(beNil())
+        expect(stepOffering.presentedOfferingContext?.checkpointIdentifier).to(beNil())
+    }
+
     func testOfferingForStepUsesDeveloperProvidedOfferingWhenInitialOfferingIsContentOnly() throws {
         // A content-only initial step has no offering, so the developer-passed instance is not the
         // initial offering. A later step referencing its identifier must still render the passed instance.
@@ -208,7 +245,8 @@ final class WorkflowContextTests: TestCase {
         )
 
         expect(input.packageContext.package?.identifier) == "$rc_annual"
-        expect(input.packageContext.variableContext.mostExpensivePricePerMonth) == 14.99
+        expect(input.packageContext.variableContext.mostExpensivePricePerMonth)
+            == .init(numerator: 14.99, denominator: 1)
         expect(try Self.discountText(context: input.packageContext)) == "56%"
     }
 
@@ -588,6 +626,25 @@ final class WorkflowContextTests: TestCase {
         expect(context.exitOfferOffering?.identifier) == "exit_offering_a"
     }
 
+    func testExitOfferOfferingRetainsWorkflowCheckpointIdentifier() throws {
+        let offering = Self.makeOfferingWithMatchingPackageContexts(identifier: "offering_a")
+        let exitOffering = Self.makeOfferingWithMatchingPackageContexts(identifier: "exit_offering_a")
+        let context = WorkflowContext(
+            workflow: try Self.makeWorkflowWithExitOffer(
+                singleStepFallbackId: "step_1",
+                exitOfferOfferingId: "exit_offering_a"
+            ),
+            allOfferings: Self.makeOfferings([offering, exitOffering]),
+            initialOffering: offering,
+            presentedOfferingContext: nil,
+            checkpointIdentifier: "checkout"
+        )
+
+        expect(context.exitOfferOffering?.presentedOfferingContext?.offeringIdentifier) == "exit_offering_a"
+        expect(context.exitOfferOffering?.presentedOfferingContext?.checkpointIdentifier) == "checkout"
+        expect(exitOffering.presentedOfferingContext?.checkpointIdentifier).to(beNil())
+    }
+
     func testExitOfferOfferingUsesDeveloperProvidedOfferingWhenIdentifierMatches() throws {
         let offering = Self.makeOffering(identifier: "offering_a")
         let fetchedExitOffering = Self.makeOffering(identifier: "exit_offering_a")
@@ -870,6 +927,19 @@ private extension WorkflowContextTests {
             availablePackages: packages,
             webCheckoutUrl: nil
         )
+    }
+
+    static func makeOfferingWithMatchingPackageContexts(identifier: String) -> Offering {
+        let packages = TestData.packages.map { package in
+            return Package(
+                identifier: package.identifier,
+                packageType: package.packageType,
+                storeProduct: package.storeProduct,
+                presentedOfferingContext: .init(offeringIdentifier: identifier),
+                webCheckoutUrl: package.webCheckoutUrl
+            )
+        }
+        return self.makeOffering(identifier: identifier, packages: packages)
     }
 
     static func makeContentOnlyOffering() -> Offering {
@@ -1359,7 +1429,8 @@ private extension WorkflowContext {
         allOfferings: Offerings,
         initialOffering: Offering,
         presentedOfferingContext: PresentedOfferingContext?,
-        developerProvidedOffering: Offering? = nil
+        developerProvidedOffering: Offering? = nil,
+        checkpointIdentifier: String? = nil
     ) {
         self.init(
             workflow: workflow,
@@ -1369,7 +1440,8 @@ private extension WorkflowContext {
                 developerProvidedOffering: developerProvidedOffering
             ),
             initialOffering: initialOffering,
-            presentedOfferingContext: presentedOfferingContext
+            presentedOfferingContext: presentedOfferingContext,
+            checkpointIdentifier: checkpointIdentifier
         )
     }
 

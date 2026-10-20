@@ -29,3 +29,12 @@
 "Your purchase was successful." = "Nakup je bil uspešno opravljen.";
 "Purchase unavailable" = "Nakup ni na voljo";
 "This purchase isn't available in your region." = "Ta nakup v vaši regiji ni na voljo.";
+"Couldn't connect. Check your internet connection and try again." = "Povezava ni uspela. Preverite internetno povezavo in poskusite znova.";
+"This content couldn't be loaded. Please try again later." = "Te vsebine ni bilo mogoče naložiti. Poskusite znova pozneje.";
+"There was a problem with the store. Please try again later." = "Prišlo je do težave s trgovino. Poskusite znova pozneje.";
+"Purchases aren't allowed on this device." = "Nakupi v tej napravi niso dovoljeni.";
+"This product isn't available right now." = "Ta izdelek trenutno ni na voljo.";
+"You already own this product." = "Ta izdelek že imate.";
+"Your payment is pending. You'll get access once it's approved." = "Vaše plačilo je v obdelavi. Dostop boste dobili, ko bo odobreno.";
+"Something went wrong. Please try again." = "Nekaj je šlo narobe. Poskusite znova.";
+"Your purchases couldn't be verified. Please try again later." = "Vaših nakupov ni bilo mogoče preveriti. Poskusite znova pozneje.";
