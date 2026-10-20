@@ -30,11 +30,14 @@ final class PurchaseDetailViewModel: ObservableObject {
     var debugItems: [PurchaseDetailItem] = []
 
     var localizedOwnership: CCLocalizedString? {
-        if purchaseInfo.ownershipType == .familyShared {
+        switch purchaseInfo.ownershipType {
+        case .familyShared:
             return .sharedThroughFamilyMember
+        case .assigned:
+            return .assignedThroughOrganization
+        default:
+            return nil
         }
-
-        return nil
     }
 
     init(purchaseInfo: PurchaseInformation) {
