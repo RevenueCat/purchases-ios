@@ -14,11 +14,11 @@ import Foundation
 
 /// Rewards currently configured for a rewarded ad unit.
 ///
-/// Use the primary configured reward to customize the prompt, falling back to generic copy when configuration is
-/// unavailable or no reward is configured:
-///
 /// A `nil` result means configuration is unavailable. ``noConfiguredReward`` means configuration loaded successfully,
 /// but the ad unit has no configured reward.
+///
+/// Use the primary configured reward to customize the prompt, falling back to generic copy when configuration is
+/// unavailable or no reward is configured:
 ///
 /// ```swift
 /// guard let reward = await Purchases.shared.adRewards(forAdUnitId: adUnitID)?.reward else {
@@ -29,8 +29,7 @@ import Foundation
 /// if let currency = reward.virtualCurrency {
 ///     showPrompt("Watch an ad for \(currency.amount) \(currency.code)")
 /// } else if let entitlement = reward.entitlement {
-///     let hours = entitlement.duration / 3_600
-///     showPrompt("Watch an ad for \(hours.formatted()) hours of access")
+///     showPrompt("Watch an ad for \(format(entitlement.duration)) of access")
 /// } else {
 ///     showPrompt("Watch an ad to continue")
 /// }
