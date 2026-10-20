@@ -149,17 +149,20 @@ private enum NativeNavigationFixture {
 
     // Match Catbone's Close-over-hero layout without fetching remote media.
     static var carouselOffering: Offering {
-        let pages: [PaywallComponent.StackComponent] = (1...3).map { index in
-            .init(components: [
+        let pages: [PaywallComponent.StackComponent] = (1...5).map { index in
+            let close = PaywallComponent.button(.init(
+                action: .navigateBack, stack: .init(
+                    components: [Self.text("Carousel Close \(index)")],
+                    dimension: .vertical(.center, .center),
+                    size: .init(width: .fixed(32), height: .fixed(32)),
+                    margin: .init(top: 16, bottom: 0, leading: 0, trailing: 16)
+                ), useNativeIfPossible: ProcessInfo.processInfo.environment["PAYWALL_CAROUSEL_BUTTONS"] == "native"
+            ))
+            return .init(components: [
                 .stack(.init(components: [
                     .stack(.init(components: [], size: .init(width: .fill, height: .fixed(380)),
                                  backgroundColor: .init(light: .hex("#EEEEFF")))),
-                    .button(.init(action: .navigateBack, stack: .init(
-                        components: [Self.text("Carousel Close \(index)")],
-                        dimension: .vertical(.center, .center),
-                        size: .init(width: .fixed(32), height: .fixed(32)),
-                        margin: .init(top: 16, bottom: 0, leading: 0, trailing: 16)
-                    ), useNativeIfPossible: ProcessInfo.processInfo.environment["PAYWALL_CAROUSEL_BUTTONS"] == "native"))
+                    .stack(.init(components: [.stack(.init(components: [close]))]))
                 ], dimension: .zlayer(.topTrailing), size: .init(width: .fill, height: .fit(nil)))),
                 Self.text("Carousel page \(index)")
             ], size: .init(width: .fill, height: .fit(nil)), spacing: 20)
@@ -168,7 +171,7 @@ private enum NativeNavigationFixture {
             pages: pages, pageAlignment: .top, pagePeek: 0
         ))])
         data.componentsLocalizations["en_US"] = (data.componentsLocalizations["en_US"] ?? [:]).merging(
-            Dictionary(uniqueKeysWithValues: (1...3).flatMap {
+            Dictionary(uniqueKeysWithValues: (1...5).flatMap {
                 ["Carousel page \($0)", "Carousel Close \($0)"]
             }.map { ($0, .string($0)) }), uniquingKeysWith: { _, new in new }
         )

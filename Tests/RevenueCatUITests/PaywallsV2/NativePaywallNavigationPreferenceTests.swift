@@ -134,6 +134,45 @@ final class NativePaywallNavigationPreferenceTests: TestCase {
         }
     }
 
+    func testPreflightFindsNativeButtonsInNestedBadgesAndBadgeOverrides() throws {
+        for action in ["navigate_back", "close_workflow"] {
+            let fixture = try self.nativeOverrideFixture(actionType: action, nativeBase: true)
+            let buttonStack = fixture.paywallComponents.data.componentsConfig.base.stack
+            let badge = PaywallComponent.Badge(
+                style: .overlaid, alignment: .top,
+                stack: .init(components: [.stack(.init(components: [.stack(buttonStack)]))])
+            )
+            for conditional in [false, true] {
+                let stack = PaywallComponent.StackComponent(
+                    components: [], badge: conditional ? nil : badge,
+                    overrides: conditional ? [.init(conditions: [.selected], properties: .init(badge: badge))] : nil
+                )
+                XCTAssertTrue(self.config(stack: stack).requestsNativeClose,
+                              "Must discover \(action) in \(conditional ? "conditional" : "base") badge content")
+            }
+        }
+    }
+
+    func testPreflightSearchesButtonContentButExcludesItsSheetDestination() throws {
+        for action in ["navigate_back", "close_workflow"] {
+            let fixture = try self.nativeOverrideFixture(actionType: action, nativeBase: true)
+            let buttonStack = fixture.paywallComponents.data.componentsConfig.base.stack
+            let sheet = PaywallComponent.ButtonComponent.Sheet(
+                id: "separate-sheet", name: "Separate sheet", stack: buttonStack,
+                backgroundBlur: false, size: .init(width: .fill, height: .fit(nil))
+            )
+            for nativeInContent in [false, true] {
+                let button = PaywallComponent.button(.init(
+                    action: .navigateTo(destination: .sheet(sheet: sheet)),
+                    stack: nativeInContent ? buttonStack : .init(components: [])
+                ))
+                let config = self.config(stack: .init(components: [.stack(.init(components: [button]))]))
+                XCTAssertEqual(config.requestsNativeClose, nativeInContent,
+                               "The sheet's \(action) must not request navigation for its parent")
+            }
+        }
+    }
+
     func testDecodedWindowRulesCanRevealNativeButtonAndItsAncestorForPreflight() throws {
         for actionType in ["navigate_back", "close_workflow"] {
             let fixture = try self.nativeOverrideFixture(
@@ -165,6 +204,10 @@ final class NativePaywallNavigationPreferenceTests: TestCase {
             revealAncestor: true, revealButton: true, unsupportedSibling: true
         )
         XCTAssertFalse(self.requestsNativeNavigation(hidden))
+    }
+
+    private func config(stack: PaywallComponent.StackComponent) -> PaywallComponentsData.PaywallComponentsConfig {
+        .init(stack: stack, stickyFooter: nil, background: .color(.init(light: .hex("#FFFFFF"))))
     }
 
     private func requestsNativeNavigation(_ fixture: PaywallPreviewRenderer.Fixture) -> Bool {

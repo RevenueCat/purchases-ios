@@ -127,7 +127,7 @@ final class NativeNavigationUITests: XCTestCase {
     }
 
     private func assertCarouselCloseDismisses(native: Bool) {
-        for page in 1...3 {
+        for page in 1...5 {
             let app = self.launch("native_inline_sheet", presentation: "sheet", carouselNative: native)
             self.assertVisible(app.staticTexts["Carousel page 1"], in: app)
             for previous in 1..<page {
@@ -142,6 +142,12 @@ final class NativeNavigationUITests: XCTestCase {
             let close = app.buttons[native ? self.closeIdentifier : "Carousel Close \(page)"]
             self.assertVisible(close, in: app)
             self.assertNativeControls(in: app, back: false, close: native)
+            if native {
+                for embeddedPage in 1...5 {
+                    XCTAssertFalse(app.buttons["Carousel Close \(embeddedPage)"].exists,
+                                   "Every opted-in button must be replaced, including offscreen pages")
+                }
+            }
             close.tap()
             self.assertVisible(app.staticTexts["Paywall dismissed"], in: app)
             app.terminate()
