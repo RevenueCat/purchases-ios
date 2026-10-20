@@ -111,15 +111,16 @@ final class ConfiguredAdRewardsProvider {
             return .unavailable
         }
 
+        let decodedMoreRewards = moreRewards.compactMap(Self.decodeReward)
         guard let reward = Self.decodeReward(payload["reward"]) else {
-            guard moreRewards.isEmpty else { return .unavailable }
+            guard decodedMoreRewards.isEmpty else { return .unavailable }
             return .available(.noConfiguredReward)
         }
 
         return .available(
             ConfiguredAdRewards(
                 reward: reward,
-                moreRewards: moreRewards.compactMap(Self.decodeReward)
+                moreRewards: decodedMoreRewards
             )
         )
     }

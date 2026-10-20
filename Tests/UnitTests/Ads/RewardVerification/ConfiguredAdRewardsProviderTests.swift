@@ -271,6 +271,19 @@ final class ConfiguredAdRewardsProviderTests: TestCase {
         expect(rewards).to(beNil())
     }
 
+    func testEmptyAdditionalRewardsWithoutPrimaryRewardReturnNoConfiguredReward() async throws {
+        try self.stub(content: [
+            "more_rewards": [
+                .null,
+                ["type": "no_reward"]
+            ]
+        ])
+
+        let rewards = await self.provider.rewards(forAdUnitId: "ad-unit")
+
+        expect(rewards) == .noConfiguredReward
+    }
+
     func testAbsentTopicInCommittedConfigReturnsNoConfiguredReward() async {
         let rewards = await self.provider.rewards(forAdUnitId: "ad-unit")
 
