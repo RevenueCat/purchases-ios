@@ -2398,6 +2398,11 @@ workflows:
       - emerge_purchases_ui_snapshot_tests:
           context:
             - slack-secrets
+      - record-and-upload-paywalls-v2-snapshots:
+          push_to_validation_repo: false
+          upload_to_emerge: true
+          context:
+            - slack-secrets
       - binary_size_analysis:
           context:
             - slack-secrets
@@ -2510,13 +2515,6 @@ workflows:
             - approve-full-tests
           context:
             - slack-secrets
-      - record-and-upload-paywalls-v2-snapshots:
-          push_to_validation_repo: false
-          upload_to_emerge: true
-          requires:
-            - approve-full-tests
-          context:
-            - slack-secrets
 
       # Installation Tests
       - installation-tests-all-but-carthage:
@@ -2585,6 +2583,7 @@ workflows:
             - run-revenuecat-ui-ios-27
             - run-revenuecat-ui-ios-26
             - emerge_purchases_ui_snapshot_tests
+            - record-and-upload-paywalls-v2-snapshots
             - binary_size_analysis
             - build-tv-watch-mac-and-visionos
             # Full Test Suite
@@ -2605,7 +2604,6 @@ workflows:
             - spm-revenuecat-ui-macos
             - run-paywall-accessibility-ui-tests
             - record-and-upload-paywalls-v1-snapshots
-            - record-and-upload-paywalls-v2-snapshots
             - installation-tests-all-but-carthage
             - installation-tests-carthage
             - api-tests
