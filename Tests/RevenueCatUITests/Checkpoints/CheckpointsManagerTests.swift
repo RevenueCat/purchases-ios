@@ -811,6 +811,34 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(customerInfoSynchronizerCallCount, 1)
     }
 
+    func testWorkflowCompletionReportsTheProductsItsOfferingsSold() async throws {
+        let monthly = Self.storeProduct(identifier: "monthly")
+        let executor = MockWorkflowPresenter()
+        executor.execution = .completed(
+            customerInfo: try Self.customerInfo(
+                activeEntitlements: ["pro"],
+                purchaseDatesByProductId: [
+                    "monthly": Date(timeIntervalSince1970: 10),
+                    "lifetime": Date(timeIntervalSince1970: 10)
+                ]
+            )
+        )
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow(products: [monthly])) },
+            workflowPresenter: executor,
+            cachedCustomerInfoProvider: { try? Self.customerInfo(activeEntitlements: []) }
+        )
+
+        let result = await manager.checkpointForCallback(identifier: "soft_paywall", params: .init())
+
+        guard case let .completed(checkpointResult) = result else {
+            return XCTFail("Expected a completed callback")
+        }
+        XCTAssertEqual(checkpointResult.flow?.obtainedProducts.map(\.product.productIdentifier), ["monthly"])
+        XCTAssertTrue(checkpointResult.didObtainProduct("monthly"))
+        XCTAssertFalse(checkpointResult.didObtainProduct("lifetime"))
+    }
+
     func testCustomerInfoSynchronizationFailurePresentsErrorThenReturnsEmptyResult() async {
         let expectedError = NSError(domain: "test", code: 42)
         let errorPresented = self.expectation(description: "Error is presented")
@@ -1174,8 +1202,8 @@ final class CheckpointsManagerTests: TestCase {
         ).toStoreProduct()
     }
 
-    private static func workflow() -> ResolvedCheckpointWorkflow {
-        let offering = Self.offering()
+    private static func workflow(products: [StoreProduct] = []) -> ResolvedCheckpointWorkflow {
+        let offering = Self.offering(products: products)
         return ResolvedCheckpointWorkflow(
             workflow: PublishedWorkflow(
                 id: "workflow-id",
