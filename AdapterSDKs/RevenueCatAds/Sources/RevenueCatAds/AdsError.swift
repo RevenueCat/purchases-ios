@@ -22,13 +22,13 @@ import Foundation
         /// The configuration could not be resolved or was rejected by the ad module.
         public static let invalidConfiguration = Code(rawValue: "invalid_configuration")
         /// The call is not allowed in the ad's current state (e.g. `load()` while already loading).
-        public static let invalidState = Code(rawValue: "invalid_state")
+        public static let invalidState = Code(rawValue: "invalid_ad_state")
         /// `present(from:)` was called before an ad finished loading.
-        public static let notReady = Code(rawValue: "not_ready")
+        public static let notReady = Code(rawValue: "ad_not_ready")
         /// The auction completed without a winning bid.
-        public static let noFill = Code(rawValue: "no_fill")
+        public static let noFill = Code(rawValue: "ad_request_no_fill")
         /// The ad failed to load for any other reason; see ``AdsError/underlyingError``.
-        public static let loadFailed = Code(rawValue: "load_failed")
+        public static let loadFailed = Code(rawValue: "ad_request_load_failed")
 
         // swiftlint:disable:next missing_docs
         public var description: String { self.rawValue }
