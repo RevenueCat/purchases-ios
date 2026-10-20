@@ -628,6 +628,83 @@ final class CheckpointsManagerTests: TestCase {
         )
     }
 
+    func testNoMatchIsSuppressedWhenCustomerInfoCannotBeRead() async {
+        let expectedError = NSError(domain: "test", code: 7)
+        var presentedParams: ErrorPresentationParams?
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .noAction(.noMatch) },
+            workflowPresenter: MockWorkflowPresenter(),
+            customerInfoProvider: { throw expectedError }
+        )
+
+        let result = await manager.checkpointForCallback(
+            identifier: "soft_paywall",
+            params: .init(errorPresenter: { params, completion in
+                presentedParams = params
+                completion.complete()
+            })
+        )
+
+        guard case .suppressed = result else {
+            return XCTFail("Expected the callback to be suppressed")
+        }
+        XCTAssertEqual(presentedParams?.error as NSError?, expectedError)
+        XCTAssertEqual(presentedParams?.kind, .flowCouldNotBeShown)
+    }
+
+    func testUnknownCheckpointIsSuppressedWhenCustomerInfoCannotBeRead() async {
+        let expectedError = NSError(domain: "test", code: 7)
+        var presentedParams: ErrorPresentationParams?
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .noAction(.unknownCheckpoint) },
+            workflowPresenter: MockWorkflowPresenter(),
+            customerInfoProvider: { throw expectedError }
+        )
+
+        let result = await manager.checkpointForCallback(
+            identifier: "soft_paywall",
+            params: .init(errorPresenter: { params, completion in
+                presentedParams = params
+                completion.complete()
+            })
+        )
+
+        guard case .suppressed = result else {
+            return XCTFail("Expected the callback to be suppressed")
+        }
+        XCTAssertEqual(presentedParams?.error as NSError?, expectedError)
+        XCTAssertEqual(presentedParams?.kind, .flowCouldNotBeShown)
+    }
+
+    func testResolvedOfferingDoesNotReachThePaywallPresenterWhenCustomerInfoCannotBeRead() async {
+        let expectedError = NSError(domain: "test", code: 7)
+        var presentedParams: ErrorPresentationParams?
+        var paywallPresentationCount = 0
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering(), traceID: "trace_id") },
+            workflowPresenter: MockWorkflowPresenter(),
+            customerInfoProvider: { throw expectedError }
+        )
+
+        let result = await manager.checkpointForCallback(
+            identifier: "onboarding",
+            params: .init(
+                paywallPresenter: { _, _ in paywallPresentationCount += 1 },
+                errorPresenter: { params, completion in
+                    presentedParams = params
+                    completion.complete()
+                }
+            )
+        )
+
+        guard case .suppressed = result else {
+            return XCTFail("Expected the callback to be suppressed")
+        }
+        XCTAssertEqual(paywallPresentationCount, 0)
+        XCTAssertEqual(presentedParams?.error as NSError?, expectedError)
+        XCTAssertEqual(presentedParams?.kind, .flowCouldNotBeShown)
+    }
+
     func testRunCheckpointRecordsBackOutWithoutChangingDismissedOutcome() async throws {
         let executor = MockWorkflowPresenter()
         executor.execution = .backedOut
