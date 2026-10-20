@@ -53,9 +53,9 @@ public extension Purchases {
     /// reports the entitlements and products obtained while it was presented. The customer's information is always
     /// included: synced with what they obtained when the flow ended with a purchase or restore, the latest known
     /// otherwise. If post-flow synchronization fails, the SDK presents the error before calling back with the latest
-    /// known information. The callback is not called if the checkpoint could not be served (the customer's
-    /// information could not be read included), if another checkpoint flow already owns presentation, or if the user
-    /// backs out.
+    /// known information. The callback is not called if the checkpoint could not be served (this includes the cases
+    /// where the customer's information could not be read), if another checkpoint flow already owns presentation, or
+    /// if the user backs out.
     /// - Parameters:
     ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard. It must start with a letter,
     ///     contain only ASCII letters, numbers, underscores, and hyphens, and be no more than 255 characters.
