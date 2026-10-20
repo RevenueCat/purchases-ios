@@ -20,7 +20,7 @@ final class NativeNavigationUITests: XCTestCase {
     }
 
     #if os(iOS)
-    func testWorkflowBackPreventsCallerPopUntilReturningToRoot() {
+    func testNativeWorkflowControlsPreventCallerPopAtRootAndLaterPages() {
         let app = self.launch("native_workflow_navigation")
         self.assertVisible(app.staticTexts["Workflow root"], in: app)
         app.buttons["Continue"].tap()
@@ -34,10 +34,12 @@ final class NativeNavigationUITests: XCTestCase {
         app.buttons[self.backIdentifier].tap()
         self.assertVisible(app.staticTexts["Workflow root"], in: app)
         self.assertNativeControls(in: app, back: false, close: true)
-        // At the workflow root, the caller's standard edge-swipe navigation remains available.
+        // At the root, native Close still owns the exit instead of exposing the caller's Back.
         start.press(forDuration: 0.1, thenDragTo: end)
-        self.assertVisible(app.buttons["Show native paywall"], in: app)
-        XCTAssertFalse(app.buttons[self.closeIdentifier].exists, app.debugDescription)
+        self.assertVisible(app.staticTexts["Workflow root"], in: app)
+        self.assertNativeControls(in: app, back: false, close: true)
+        app.buttons[self.closeIdentifier].tap()
+        self.assertVisible(app.staticTexts["Paywall dismissed"], in: app)
     }
     #endif
 
@@ -77,6 +79,14 @@ final class NativeNavigationUITests: XCTestCase {
     func testNativeBackNavigatesWithinWorkflowWithoutPoppingCallerNavigation() {
         let app = self.launch("native_workflow_navigation")
         self.assertWorkflowNavigation(in: app)
+    }
+
+    func testSinglePageNativeBackDismissesWithoutCallerBack() {
+        let app = self.launch("native_inline_sheet")
+        self.assertVisible(app.staticTexts["Outer paywall"], in: app)
+        self.assertNativeControls(in: app, back: false, close: true)
+        app.buttons[self.closeIdentifier].tap()
+        self.assertVisible(app.staticTexts["Paywall dismissed"], in: app)
     }
 
     func testNativeBackAndCloseInSheetPresentation() {
@@ -219,6 +229,7 @@ final class NativeNavigationUITests: XCTestCase {
                 && app.buttons.matching(identifier: self.closeIdentifier).count == (close ? 1 : 0)
                 && (!back || (backButton.isEnabled && backButton.isHittable))
                 && (!close || (closeButton.isEnabled && closeButton.isHittable))
+                && (!(back || close) || !app.buttons["BackButton"].exists)
         }, object: nil)
         XCTAssertEqual(XCTWaiter.wait(for: [ready], timeout: 10), .completed, app.debugDescription)
     }

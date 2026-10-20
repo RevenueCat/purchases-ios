@@ -20,6 +20,31 @@ import UIKit
 @MainActor
 final class NativePaywallUIKitTests: NativePaywallNavigationTestCase {
 
+    func testNativeControlsHideCallerBackAndRestoreItsOriginalVisibility() {
+        for originallyHidden in [false, true] {
+            let controller = UIViewController()
+            let navigation = UINavigationController(rootViewController: UIViewController())
+            navigation.pushViewController(controller, animated: false)
+            controller.navigationItem.hidesBackButton = originallyHidden
+            let caller = UIBarButtonItem(title: "Caller", primaryAction: UIAction { _ in })
+            controller.navigationItem.leftBarButtonItems = [caller]
+            let owner = NativePaywallUIKitOwner()
+            owner.prepare(controller: controller)
+            for role in [NativePaywallCloseCoordinator.Role.close, .back, .close] {
+                owner.install([.init(id: UUID(), label: "Native", perform: {}, role: role)])
+                XCTAssertTrue(controller.navigationItem.hidesBackButton)
+                XCTAssertTrue(controller.navigationItem.leftBarButtonItems?.first === caller)
+            }
+            owner.install([])
+            XCTAssertEqual(controller.navigationItem.hidesBackButton, originallyHidden)
+            XCTAssertTrue(controller.navigationItem.leftBarButtonItem === caller)
+            owner.install([.init(id: UUID(), label: "Close", perform: {})])
+            owner.removeClose()
+            XCTAssertEqual(controller.navigationItem.hidesBackButton, originallyHidden)
+            XCTAssertTrue(controller.navigationController === navigation)
+        }
+    }
+
     func testReplacedHostCannotRemoveOrReinstallOverTheCurrentHostsControls() async throws {
         let controller = UIViewController()
         let navigation = UINavigationController(rootViewController: controller)
