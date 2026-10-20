@@ -386,7 +386,7 @@ private extension DiagnosticsSynchronizerTests {
         let event = DiagnosticsEvent(name: .httpRequestPerformed,
                                      properties: DiagnosticsEvent.Properties(verificationResult: "FAILED"),
                                      timestamp: timestamp,
-                                     appSessionId: UUID())
+                                     diagnosticsSessionId: UUID())
         await self.handler.appendEvent(diagnosticsEvent: event)
 
         return event

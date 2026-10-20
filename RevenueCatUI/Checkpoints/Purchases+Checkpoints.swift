@@ -48,10 +48,14 @@ public extension Purchases {
 
     /// Passes a checkpoint and calls `onPassed` when the app can continue past it.
     ///
-    /// The callback receives a result containing an optional flow result. The flow result is `nil` when the identifier
-    /// is not configured or no rule matches. If post-flow synchronization fails, the SDK presents the error before
-    /// returning a flow result containing no obtained entitlements. The callback is not called if another error
-    /// prevents completion, another checkpoint flow already owns presentation, or the user backs out.
+    /// The callback receives a result with an optional flow result and the customer's information. The flow result is
+    /// `nil` when the checkpoint had nothing to present: it is not configured, or no rule matched. A completed flow
+    /// reports the entitlements and products obtained while it was presented. The customer's information is always
+    /// included: synced with what they obtained when the flow ended with a purchase or restore, the latest known
+    /// otherwise. If post-flow synchronization fails, the SDK presents the error before calling back with the latest
+    /// known information. The callback is not called if the checkpoint could not be served (this includes the cases
+    /// where the customer's information could not be read), if another checkpoint flow already owns presentation, or
+    /// if the user backs out.
     /// - Parameters:
     ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard. It must start with a letter,
     ///     contain only ASCII letters, numbers, underscores, and hyphens, and be no more than 255 characters.
@@ -116,6 +120,10 @@ private extension Purchases {
                 }
 
                 return try await self.resolveCheckpoint(identifier: identifier, params: params.coreParams)
+            },
+            customerInfoProvider: { [weak self] in
+                guard let self else { throw CancellationError() }
+                return try await self.customerInfo(fetchPolicy: .cachedOrFetched)
             },
             cachedCustomerInfoProvider: { [weak self] in self?.cachedCustomerInfo },
             preferredUILocaleProvider: { [weak self] in self?.preferredLocaleOverride },

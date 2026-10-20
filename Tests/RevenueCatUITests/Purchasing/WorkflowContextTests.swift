@@ -245,7 +245,8 @@ final class WorkflowContextTests: TestCase {
         )
 
         expect(input.packageContext.package?.identifier) == "$rc_annual"
-        expect(input.packageContext.variableContext.mostExpensivePricePerMonth) == 14.99
+        expect(input.packageContext.variableContext.mostExpensivePricePerMonth)
+            == .init(numerator: 14.99, denominator: 1)
         expect(try Self.discountText(context: input.packageContext)) == "56%"
     }
 

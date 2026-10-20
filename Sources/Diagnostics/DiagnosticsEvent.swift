@@ -21,18 +21,29 @@ struct DiagnosticsEvent: Codable, Equatable {
     let name: EventName
     let properties: Properties
     let timestamp: Date
-    let appSessionId: UUID
+    /// Encoded under the `app_session_id` key for backend compatibility, but its value is
+    /// `DiagnosticsTracker.diagnosticsSessionID`, which is unrelated to `SystemInfo.appSessionID`.
+    let diagnosticsSessionId: UUID
 
     init(id: UUID = UUID(),
          name: EventName,
          properties: Properties,
          timestamp: Date,
-         appSessionId: UUID) {
+         diagnosticsSessionId: UUID) {
         self.id = id
         self.name = name
         self.properties = properties
         self.timestamp = timestamp
-        self.appSessionId = appSessionId
+        self.diagnosticsSessionId = diagnosticsSessionId
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case version
+        case name
+        case properties
+        case timestamp
+        case diagnosticsSessionId = "appSessionId"
     }
 
     enum EventName: String, Codable, Equatable {
