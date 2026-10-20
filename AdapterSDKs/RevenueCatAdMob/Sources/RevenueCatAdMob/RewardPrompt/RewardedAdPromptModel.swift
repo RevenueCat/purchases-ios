@@ -60,15 +60,15 @@ extension GoogleMobileAds.RewardedInterstitialAd: RewardedAdPromptAd {}
 struct RewardedAdPromptDependencies {
 
     let isPurchasesConfigured: () -> Bool
-    let readCachedRewards: (String) -> ConfiguredAdRewards?
+    let loadRewards: (String) async -> ConfiguredAdRewards?
     let trackPromptShown: (String, String?) -> Void
     let trackPromptAccepted: (String, String?) -> Void
 
     static var live: Self {
         return .init(
             isPurchasesConfigured: { Purchases.isConfigured },
-            readCachedRewards: { adUnitID in
-                Purchases.shared.cachedAdRewards(forAdUnitId: adUnitID)
+            loadRewards: { adUnitID in
+                await Purchases.shared.adRewards(forAdUnitId: adUnitID)
             },
             trackPromptShown: { adUnitID, placement in
                 Purchases.shared.adTracker.trackRewardedAdPromptShown(.init(
@@ -141,6 +141,7 @@ final class RewardedAdPromptModel: NSObject, ObservableObject {
     private let dependencies: RewardedAdPromptDependencies
 
     private weak var presentationAnchor: UIViewController?
+    private var isLoadingRewards = false
     // AdMob delegates are weak. Keep dismissal handling alive independently of the SwiftUI view.
     private static let presentationDelegateStore = AssociatedObjectStore<RewardedAdPromptPresentationDelegate>()
 
@@ -160,20 +161,23 @@ final class RewardedAdPromptModel: NSObject, ObservableObject {
         self.resultDispatcherFactory = resultDispatcherFactory
         self.dependencies = dependencies
         super.init()
-        self.refreshCachedRewardsIfNeeded()
     }
 
-    func refreshCachedRewardsIfNeeded() {
-        guard self.configuredRewards == nil, !self.hasAccepted else { return }
+    func loadRewardsIfNeeded() async {
+        guard self.configuredRewards == nil, !self.hasAccepted, !self.isLoadingRewards else { return }
         guard self.dependencies.isPurchasesConfigured() else {
             Logger.warn(RewardedAdPromptStrings.purchases_not_configured)
             return
         }
 
-        guard let configuredRewards = self.dependencies.readCachedRewards(self.adUnitID) else {
+        self.isLoadingRewards = true
+        defer { self.isLoadingRewards = false }
+
+        guard let configuredRewards = await self.dependencies.loadRewards(self.adUnitID) else {
             Logger.debug(RewardedAdPromptStrings.configured_rewards_unavailable(adUnitID: self.adUnitID))
             return
         }
+        guard !self.hasAccepted else { return }
 
         self.configuredRewards = configuredRewards
     }

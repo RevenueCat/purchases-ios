@@ -14,7 +14,7 @@ final class RewardedAdPromptTrackingTests: AdapterTestCase {
         var acceptedCount = 0
         let dependencies = RewardedAdPromptDependencies(
             isPurchasesConfigured: { true },
-            readCachedRewards: { _ in nil },
+            loadRewards: { _ in nil },
             trackPromptShown: { _, _ in shownCount += 1 },
             trackPromptAccepted: { _, _ in acceptedCount += 1 }
         )

@@ -240,7 +240,7 @@ private extension RewardedAdPromptPresentationTests {
             resultDispatcherFactory: resultDispatcherFactory,
             dependencies: .init(
                 isPurchasesConfigured: { true },
-                readCachedRewards: { _ in nil },
+                loadRewards: { _ in nil },
                 trackPromptShown: { _, _ in },
                 trackPromptAccepted: { _, _ in trackAccepted() }
             )

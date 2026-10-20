@@ -51,19 +51,19 @@ final class PromptLifecycleProbe {
     var acceptedCount = 0
     var shownPlacements: [String?] = []
     var acceptedPlacements: [String?] = []
-    var cachedRewardsReadCount = 0
+    var rewardsLoadCount = 0
     var resultLabels: [String] = []
     var renderedResultLabel: String?
-    var cachedRewards: () -> ConfiguredAdRewards? = {
-        ConfiguredAdRewards(reward: nil, moreRewards: [])
+    var rewards: () -> ConfiguredAdRewards? = {
+        .noConfiguredReward
     }
 
     var dependencies: RewardedAdPromptDependencies {
         .init(
             isPurchasesConfigured: { true },
-            readCachedRewards: { _ in
-                self.cachedRewardsReadCount += 1
-                return self.cachedRewards()
+            loadRewards: { _ in
+                self.rewardsLoadCount += 1
+                return self.rewards()
             },
             trackPromptShown: { _, placement in
                 self.shownCount += 1

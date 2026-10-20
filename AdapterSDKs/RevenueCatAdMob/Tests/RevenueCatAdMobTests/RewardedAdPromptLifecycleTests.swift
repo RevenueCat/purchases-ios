@@ -12,45 +12,47 @@ import UIKit
 @MainActor
 final class RewardedAdPromptLifecycleTests: AdapterTestCase {
 
-    func testFirstContentBuildReceivesCachedRewardsForBothPromptTypesAndAdFormats() async throws {
-        let rewards = ConfiguredAdRewards(reward: .unsupportedReward)
+    func testContentUpdatesWithLoadedRewardsForBothPromptTypesAndAdFormats() async throws {
+        let rewards = ConfiguredAdRewards(reward: .unsupportedReward, moreRewards: [])
         for usesVerification in [false, true] {
             for usesInterstitial in [false, true] {
                 let state = PromptLifecycleState()
                 state.usesVerification = usesVerification
                 state.usesInterstitial = usesInterstitial
                 let probe = PromptLifecycleProbe()
-                probe.cachedRewards = { rewards }
+                probe.rewards = { rewards }
                 let window = makePromptLifecycleWindow(state: state, probe: probe)
                 defer { window.isHidden = true }
                 await expect { probe.appearances }.toEventually(equal(1))
 
-                XCTAssertEqual(try XCTUnwrap(probe.renderedConfigurations.first), rewards)
-                XCTAssertTrue(probe.renderedConfigurations.allSatisfy { $0 == rewards })
-                XCTAssertEqual(probe.cachedRewardsReadCount, 1)
+                await expect { probe.context?.rewardConfiguration }.toEventually(equal(rewards))
+                XCTAssertNil(probe.renderedConfigurations.first ?? nil)
+                XCTAssertEqual(probe.renderedConfigurations.last, rewards)
+                XCTAssertEqual(probe.rewardsLoadCount, 1)
                 XCTAssertEqual(probe.shownCount, 1)
             }
         }
     }
 
-    func testReplacingAdReadsNewCachedSnapshotWithoutAnIntermediateNilConfiguration() async throws {
+    func testReplacingAdLoadsNewRewardsAfterRenderingGenericContent() async throws {
         let state = PromptLifecycleState()
         let probe = PromptLifecycleProbe()
-        let firstRewards = ConfiguredAdRewards(reward: .unsupportedReward)
-        probe.cachedRewards = { firstRewards }
+        let firstRewards = ConfiguredAdRewards(reward: .unsupportedReward, moreRewards: [])
+        probe.rewards = { firstRewards }
         let window = makePromptLifecycleWindow(state: state, probe: probe)
         defer { window.isHidden = true }
         await expect { probe.appearances }.toEventually(equal(1))
-        XCTAssertEqual(try XCTUnwrap(probe.renderedConfigurations.first), firstRewards)
+        await expect { probe.context?.rewardConfiguration }.toEventually(equal(firstRewards))
 
-        let replacementRewards = ConfiguredAdRewards(reward: nil, moreRewards: [])
-        probe.cachedRewards = { replacementRewards }
+        let replacementRewards = ConfiguredAdRewards.noConfiguredReward
+        probe.rewards = { replacementRewards }
         state.rewardedAd = LifecycleRewardedAd()
         await expect { probe.appearances }.toEventually(equal(2))
+        await expect { probe.context?.rewardConfiguration }.toEventually(equal(replacementRewards))
 
         XCTAssertEqual(probe.context?.rewardConfiguration, replacementRewards)
-        XCTAssertTrue(probe.renderedConfigurations.allSatisfy { $0 != nil })
-        XCTAssertEqual(probe.cachedRewardsReadCount, 2)
+        XCTAssertTrue(probe.renderedConfigurations.contains { $0 == nil })
+        XCTAssertEqual(probe.rewardsLoadCount, 2)
     }
 
     func testParentUpdatesPreserveDefaultSessionAndPresentationState() async throws {
@@ -63,7 +65,7 @@ final class RewardedAdPromptLifecycleTests: AdapterTestCase {
         state.label = "Updated offer"
         await expect { probe.lastLabel }.toEventually(equal("Updated offer"))
         XCTAssertEqual(probe.shownCount, 1)
-        XCTAssertEqual(probe.cachedRewardsReadCount, 1)
+        await expect { probe.rewardsLoadCount }.toEventually(equal(1))
 
         try XCTUnwrap(probe.context).accept()
         await expect { probe.disappearances }.toEventually(equal(1))
@@ -86,7 +88,7 @@ final class RewardedAdPromptLifecycleTests: AdapterTestCase {
 
         state.rewardedAd = LifecycleRewardedAd()
         await expect { probe.appearances }.toEventually(equal(2))
-        await expect { probe.cachedRewardsReadCount }.toEventually(equal(2))
+        await expect { probe.rewardsLoadCount }.toEventually(equal(2))
         try XCTUnwrap(probe.context).accept()
 
         XCTAssertEqual(originalAd.adUnitID, state.rewardedAd.adUnitID)
@@ -195,7 +197,7 @@ final class RewardedAdPromptLifecycleTests: AdapterTestCase {
             XCTAssertEqual(state.rewardedAd.presentationCount, 1)
             XCTAssertEqual(probe.shownCount, 1)
             XCTAssertEqual(probe.acceptedCount, 1)
-            XCTAssertEqual(probe.cachedRewardsReadCount, 1)
+            XCTAssertEqual(probe.rewardsLoadCount, 1)
         }
     }
 
@@ -218,7 +220,7 @@ final class RewardedAdPromptLifecycleTests: AdapterTestCase {
             XCTAssertEqual(state.rewardedAd.presentationCount, 1)
             XCTAssertEqual(probe.shownCount, 1)
             XCTAssertEqual(probe.acceptedCount, 1)
-            XCTAssertEqual(probe.cachedRewardsReadCount, 1)
+            XCTAssertEqual(probe.rewardsLoadCount, 1)
         }
     }
 
@@ -235,7 +237,7 @@ final class RewardedAdPromptLifecycleTests: AdapterTestCase {
                 state.rewardedAd = LifecycleRewardedAd()
                 state.interstitialAd = LifecycleRewardedInterstitialAd()
                 await expect { probe.appearances }.toEventually(equal(2))
-                await expect { probe.cachedRewardsReadCount }.toEventually(equal(2))
+                await expect { probe.rewardsLoadCount }.toEventually(equal(2))
 
                 XCTAssertEqual(probe.shownCount, 2)
                 window.isHidden = true
@@ -257,7 +259,7 @@ final class RewardedAdPromptLifecycleTests: AdapterTestCase {
         await expect { probe.appearances }.toEventually(equal(2))
 
         XCTAssertEqual(probe.shownCount, expectedShownCount)
-        XCTAssertEqual(probe.cachedRewardsReadCount, 2)
+        XCTAssertEqual(probe.rewardsLoadCount, 2)
     }
 
     private func flushUpdates(_ window: UIWindow) async {
