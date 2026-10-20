@@ -35,8 +35,8 @@ public struct FlowResult: @unchecked Sendable {
     public let obtainedProducts: Set<ObtainedProduct>
 
     init(
-        obtainedEntitlements: Set<ObtainedEntitlement> = [],
-        obtainedProducts: Set<ObtainedProduct> = []
+        obtainedEntitlements: Set<ObtainedEntitlement>,
+        obtainedProducts: Set<ObtainedProduct>
     ) {
         self.obtainedEntitlements = obtainedEntitlements
         self.obtainedProducts = obtainedProducts

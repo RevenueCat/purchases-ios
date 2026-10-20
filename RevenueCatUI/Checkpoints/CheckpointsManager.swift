@@ -151,7 +151,7 @@ final class CheckpointsManager {
                 kind: .flowResultSyncFailed
             )
             return .completed(CheckpointResult(
-                flow: FlowResult(obtainedEntitlements: []),
+                flow: FlowResult(obtainedEntitlements: [], obtainedProducts: []),
                 customer: nil
             ))
         }
