@@ -21,9 +21,8 @@ class PackageContext: ObservableObject {
 
     struct VariableContext {
 
-        let mostExpensivePricePerMonth: Double?
-        /// Not truncated to two decimals like `mostExpensivePricePerMonth`, so discount amounts scaled from it
-        /// stay exact.
+        let mostExpensivePricePerMonth: StoreProduct.MonthlyPrice?
+        /// Used by the absolute and offer discount variables without truncating to two decimal places.
         let exactMostExpensivePricePerMonth: Decimal?
         let showZeroDecimalPlacePrices: Bool
 
@@ -36,7 +35,7 @@ class PackageContext: ObservableObject {
         }
 
         init(
-            mostExpensivePricePerMonth: Double? = nil,
+            mostExpensivePricePerMonth: StoreProduct.MonthlyPrice? = nil,
             exactMostExpensivePricePerMonth: Decimal? = nil,
             showZeroDecimalPlacePrices: Bool = true
         ) {
@@ -58,22 +57,11 @@ class PackageContext: ObservableObject {
                 .max()
         }
 
-        private static func mostExpensivePricePerMonth(in packages: [Package]) -> Double? {
+        private static func mostExpensivePricePerMonth(in packages: [Package]) -> StoreProduct.MonthlyPrice? {
             return packages
                 .lazy
-                .map(\.storeProduct)
-                .compactMap { product in
-                    product.pricePerMonth.map {
-                        return (
-                            product: product,
-                            pricePerMonth: $0
-                        )
-                    }
-                }
-                .max { productA, productB in
-                    return productA.pricePerMonth.doubleValue < productB.pricePerMonth.doubleValue
-                }
-                .map(\.pricePerMonth.doubleValue)
+                .compactMap(\.storeProduct.pricePerMonthForDiscount)
+                .max()
         }
 
     }
