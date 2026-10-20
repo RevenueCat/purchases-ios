@@ -241,4 +241,40 @@ class LocaleFinderTest: TestCase {
         let foundLocalizations = localizations.findLocale(locale)
         expect(foundLocalizations).to(equal(Self.expectedTranslations))
     }
+
+    func test_fil_PH() {
+        let localizations = [
+            "fil": Self.expectedTranslations,
+            "en": ["wrong": "this is en"]
+        ]
+
+        let locale = Locale(identifier: "fil_PH")
+
+        let foundLocalizations = localizations.findLocale(locale)
+        expect(foundLocalizations).to(equal(Self.expectedTranslations))
+    }
+
+    func test_tl_PH_canonicalizes_to_fil() {
+        let localizations = [
+            "fil": Self.expectedTranslations,
+            "en": ["wrong": "this is en"]
+        ]
+
+        let locale = Locale(identifier: "tl_PH")
+
+        let foundLocalizations = localizations.findLocale(locale)
+        expect(foundLocalizations).to(equal(Self.expectedTranslations))
+    }
+
+    func test_tl_canonicalizes_to_fil() {
+        let localizations = [
+            "fil": Self.expectedTranslations,
+            "en": ["wrong": "this is en"]
+        ]
+
+        let locale = Locale(identifier: "tl")
+
+        let foundLocalizations = localizations.findLocale(locale)
+        expect(foundLocalizations).to(equal(Self.expectedTranslations))
+    }
 }

@@ -3211,6 +3211,7 @@
 		9D09F3CA2E3A859A0002840E /* sr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sr; path = sr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		9D09F3CB2E3A859A0002840F /* sr_Latn */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sr_Latn; path = sr_Latn.lproj/Localizable.strings; sourceTree = "<group>"; };
 		9D09F3CC2E3A859A00028410 /* sl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sl; path = sl.lproj/Localizable.strings; sourceTree = "<group>"; };
+		9D09F3CD2E3A859A00028411 /* fil */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fil; path = fil.lproj/Localizable.strings; sourceTree = "<group>"; };
 		A0F100000000000000000001 /* PaywallWebViewStaticContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallWebViewStaticContext.swift; sourceTree = "<group>"; };
 		A0F100000000000000000003 /* PaywallWebViewContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallWebViewContextTests.swift; sourceTree = "<group>"; };
 		9D0C57ECDF0E7F1A5B4418FF /* PaywallWebViewValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallWebViewValue.swift; sourceTree = "<group>"; };
@@ -7725,6 +7726,7 @@
 				sr,
 				sr_Latn,
 				sl,
+				fil,
 			);
 			mainGroup = 352629F41F7C4B9100C04F2C;
 			packageReferences = (
@@ -9990,6 +9992,7 @@
 				9D09F3CA2E3A859A0002840E /* sr */,
 				9D09F3CB2E3A859A0002840F /* sr_Latn */,
 				9D09F3CC2E3A859A00028410 /* sl */,
+				9D09F3CD2E3A859A00028411 /* fil */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
