@@ -41,7 +41,7 @@ private extension PaywallComponent.StackComponent {
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, *)
 private extension PaywallComponent {
-    // Only inspect components that belong to the paywall, never a button's inline sheet destination.
+    // Carousel pages and inline sheet destinations keep their own embedded controls.
     func requestsNativeClose(discardRules: Bool) -> Bool {
         if case .button(let button) = self {
             return button.requestsNativeClose(discardRules: discardRules)
@@ -57,10 +57,9 @@ private extension PaywallComponent {
         case .stickyFooter(let footer): return [footer.stack]
         case .tabs(let tabs): return [tabs.control.stack] + tabs.tabs.map { $0.stack }
         case .tabControlButton(let button): return [button.stack]
-        case .carousel(let carousel): return carousel.pages
         case .countdown(let countdown):
             return [countdown.countdownStack, countdown.endStack, countdown.fallback].compactMap { $0 }
-        case .button, .text, .image, .icon, .timeline, .tabControl, .tabControlToggle,
+        case .button, .carousel, .text, .image, .icon, .timeline, .tabControl, .tabControlToggle,
              .video, .webView, .fallbackHeader:
             return []
         @unknown default:
