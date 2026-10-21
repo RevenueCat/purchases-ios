@@ -43,7 +43,7 @@ struct RcMaestroApp: App {
         let forceServerErrorStrategy = Constants.forceServerErrorStrategy
         Purchases.configure(
             with: .builder(withAPIKey: Constants.apiKey)
-                .with(appUserID: Self.appUserID)
+                .with(appUserID: Constants.appUserID)
                 .with(dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(
@@ -91,7 +91,7 @@ struct RcMaestroApp: App {
 
     @ViewBuilder
     private var appContent: some View {
-        switch Self.e2eTestFlow {
+        switch e2eTestFlow {
         case .some(let flow):
             flow.view
         case nil:
@@ -109,19 +109,12 @@ struct RcMaestroApp: App {
     /*
      Parses the launch argument with the e2e test flow to run
      */
-    fileprivate static var e2eTestFlow: E2ETestFlow? {
+    fileprivate var e2eTestFlow: E2ETestFlow? {
         guard let string = UserDefaults.standard.dictionaryRepresentation()["e2e_test_flow"] as? String else {
             return nil
         }
         
         return E2ETestFlow(rawValue: string)
-    }
-
-    // Checkpoint scenarios get a fresh user unless the flow passes one, so no state leaks between runs.
-    private static var appUserID: String? {
-        if let appUserID = Constants.appUserID { return appUserID }
-        guard Self.e2eTestFlow == .checkpointResolution else { return nil }
-        return "maestro_checkpoint_ios_\(UUID().uuidString)"
     }
 }
 
