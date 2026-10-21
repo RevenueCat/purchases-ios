@@ -67,8 +67,8 @@ final class RewardedAdPromptPresentationTests: AdapterTestCase {
         let window = RewardedAdPromptTestWindow(rootViewController: anchor)
         defer { window.isHidden = true }
         let rewardedAd = MockRewardedAdPromptAd()
-        let model = self.makeModel(ad: rewardedAd, resultDispatcherFactory: {
-            UnverifiedRewardResultDispatcher(onResult: { _ in XCTFail("Presentation should succeed") })
+        let model = self.makeModel(ad: rewardedAd, callbackDispatcherFactory: {
+            makeUnverifiedPromptCallbacks(onPresentationFailed: { _ in XCTFail("Presentation should succeed") })
         })
         model.setPresentationAnchor(anchor)
         let modal = UIViewController()
@@ -98,9 +98,9 @@ final class RewardedAdPromptPresentationTests: AdapterTestCase {
 
     func testDismissalIsDeliveredThroughSuppliedAdDelegate() throws {
         let rewardedAd = MockRewardedAdPromptAd()
-        var results: [RewardedAdPromptUnverifiedResult] = []
-        let model = self.makeModel(ad: rewardedAd, resultDispatcherFactory: {
-            UnverifiedRewardResultDispatcher(onResult: { results.append($0) })
+        var dismissalCount = 0
+        let model = self.makeModel(ad: rewardedAd, callbackDispatcherFactory: {
+            makeUnverifiedPromptCallbacks(onDismiss: { dismissalCount += 1 })
         })
         let window = RewardedAdPromptTestWindow(rootViewController: UIViewController())
         defer { window.isHidden = true }
@@ -109,27 +109,26 @@ final class RewardedAdPromptPresentationTests: AdapterTestCase {
 
         rewardedAd.delegate?.adDidDismissFullScreenContent?(PresentedAdStub())
 
-        XCTAssertEqual(results.count, 1)
-        XCTAssertEqual(results.first?.kind, .dismissed)
+        XCTAssertEqual(dismissalCount, 1)
     }
 
-    func testRewardResultSurvivesModelReleaseForBothModesAndVerificationOrders() throws {
+    func testCallbacksSurviveModelReleaseBeforeOrAfterDismissalForBothModes() throws {
         for verified in [false, true] {
-            for verificationFinishesFirst in [false, true] {
+            for rewardFinishesFirst in [false, true] {
                 let rewardedAd = MockRewardedAdPromptAd()
-                var resultCount = 0
-                var model: RewardedAdPromptModel? = self.makeModel(ad: rewardedAd, resultDispatcherFactory: {
+                var rewardCount = 0
+                var dismissalCount = 0
+                let onDismiss: @MainActor () -> Void = { dismissalCount += 1 }
+                var model: RewardedAdPromptModel? = self.makeModel(ad: rewardedAd, callbackDispatcherFactory: {
                     if verified {
-                        return VerifiedRewardResultDispatcher(onResult: { result in
-                            XCTAssertEqual(result.kind, .verificationCompleted)
-                            XCTAssertEqual(result.rewardVerificationResult, .verified(.noReward))
-                            resultCount += 1
-                        })
+                        return makeVerifiedPromptCallbacks(onVerificationCompleted: { result in
+                            XCTAssertEqual(result, .verified(.noReward))
+                            rewardCount += 1
+                        }, onDismiss: onDismiss)
                     } else {
-                        return UnverifiedRewardResultDispatcher(onResult: { result in
-                            XCTAssertEqual(result.kind, .rewardEarned)
-                            resultCount += 1
-                        })
+                        return makeUnverifiedPromptCallbacks(onRewardEarned: {
+                            rewardCount += 1
+                        }, onDismiss: onDismiss)
                     }
                 })
                 let window = RewardedAdPromptTestWindow(rootViewController: UIViewController())
@@ -140,17 +139,23 @@ final class RewardedAdPromptPresentationTests: AdapterTestCase {
                 model = nil
                 XCTAssertNil(releasedModel)
 
-                rewardedAd.verificationStarted?()
-                rewardedAd.rewardEarned?()
-                if verificationFinishesFirst { rewardedAd.verificationCompleted?(.verified(.noReward)) }
-                XCTAssertEqual(resultCount, 0)
+                let earnReward = {
+                    rewardedAd.rewardEarned?()
+                    rewardedAd.verificationCompleted?(.verified(.noReward))
+                }
+                if rewardFinishesFirst { earnReward() }
+                XCTAssertEqual(rewardCount, rewardFinishesFirst ? 1 : 0)
+                XCTAssertEqual(dismissalCount, 0)
 
                 let delegate = try XCTUnwrap(rewardedAd.delegate)
                 delegate.adDidDismissFullScreenContent?(PresentedAdStub())
-                XCTAssertEqual(resultCount, verified && !verificationFinishesFirst ? 0 : 1)
-                if !verificationFinishesFirst { rewardedAd.verificationCompleted?(.verified(.noReward)) }
+                XCTAssertEqual(dismissalCount, 1)
+                XCTAssertEqual(rewardCount, rewardFinishesFirst ? 1 : 0)
+                if !rewardFinishesFirst { earnReward() }
+                earnReward()
                 delegate.adDidDismissFullScreenContent?(PresentedAdStub())
-                XCTAssertEqual(resultCount, 1)
+                XCTAssertEqual(rewardCount, 1)
+                XCTAssertEqual(dismissalCount, 1)
             }
         }
     }
@@ -189,20 +194,15 @@ private extension RewardedAdPromptPresentationTests {
         let rewardedAd = MockRewardedAdPromptAd()
         var errors: [RewardedAdPromptError] = []
         var acceptanceCount = 0
-        let model = self.makeModel(ad: rewardedAd, resultDispatcherFactory: {
+        let onFailure: @MainActor (RewardedAdPromptError) -> Void = {
+            errors.append($0)
+            delivered.fulfill()
+        }
+        let model = self.makeModel(ad: rewardedAd, callbackDispatcherFactory: {
             if verified {
-                return VerifiedRewardResultDispatcher(onResult: { result in
-                    XCTAssertEqual(result.kind, .notPresented)
-                    XCTAssertNil(result.rewardVerificationResult)
-                    if let error = result.presentationError { errors.append(error) }
-                    delivered.fulfill()
-                })
+                return makeVerifiedPromptCallbacks(onPresentationFailed: onFailure)
             } else {
-                return UnverifiedRewardResultDispatcher(onResult: { result in
-                    XCTAssertEqual(result.kind, .notPresented)
-                    if let error = result.presentationError { errors.append(error) }
-                    delivered.fulfill()
-                })
+                return makeUnverifiedPromptCallbacks(onPresentationFailed: onFailure)
             }
         }, trackAccepted: { acceptanceCount += 1 })
         if let anchor { model.setPresentationAnchor(anchor) }
@@ -230,7 +230,7 @@ private extension RewardedAdPromptPresentationTests {
 
     func makeModel(
         ad rewardedAd: MockRewardedAdPromptAd,
-        resultDispatcherFactory: @escaping @MainActor () -> any RewardedAdPromptResultDispatching,
+        callbackDispatcherFactory: @escaping @MainActor () -> any RewardedAdPromptCallbackDispatching,
         trackAccepted: @escaping () -> Void = {}
     ) -> RewardedAdPromptModel {
         return .init(
@@ -238,7 +238,7 @@ private extension RewardedAdPromptPresentationTests {
             ad: rewardedAd,
             placement: nil,
             loadsRewardConfiguration: false,
-            resultDispatcherFactory: resultDispatcherFactory,
+            callbackDispatcherFactory: callbackDispatcherFactory,
             dependencies: .init(
                 isPurchasesConfigured: { true },
                 loadRewards: { _ in nil },

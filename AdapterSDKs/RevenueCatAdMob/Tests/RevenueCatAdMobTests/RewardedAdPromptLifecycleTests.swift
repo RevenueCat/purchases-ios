@@ -103,62 +103,6 @@ final class RewardedAdPromptLifecycleTests: AdapterTestCase {
         XCTAssertEqual(probe.shownCount, 2)
     }
 
-    func testReplacingAcceptedAdRestoresOfferAndUsesNewResultHandler() async throws {
-        let state = PromptLifecycleState()
-        let originalAd = state.rewardedAd
-        let probe = PromptLifecycleProbe()
-        let window = makePromptLifecycleWindow(state: state, probe: probe)
-        defer { window.isHidden = true }
-        await expect { probe.appearances }.toEventually(equal(1))
-        try XCTUnwrap(probe.context).accept()
-        await expect { probe.disappearances }.toEventually(equal(1))
-
-        state.resultLabel = "replacement"
-        state.rewardedAd = LifecycleRewardedAd()
-        await expect { probe.appearances }.toEventually(equal(2))
-        try XCTUnwrap(probe.context).accept()
-        state.rewardedAd.rewardEarned?()
-
-        XCTAssertTrue(probe.resultLabels.isEmpty)
-        state.rewardedAd.fullScreenContentDelegate?.adDidDismissFullScreenContent?(state.rewardedAd)
-
-        XCTAssertEqual(originalAd.presentationCount, 1)
-        XCTAssertEqual(state.rewardedAd.presentationCount, 1)
-        XCTAssertEqual(probe.acceptedCount, 2)
-        XCTAssertEqual(probe.resultLabels, ["replacement"])
-    }
-
-    func testAcceptedRewardWaitsForDismissalAfterPromptRemovalOrReplacement() async throws {
-        for replacesAd in [false, true] {
-            let state = PromptLifecycleState()
-            let originalAd = state.rewardedAd
-            let probe = PromptLifecycleProbe()
-            let window = makePromptLifecycleWindow(state: state, probe: probe)
-            defer { window.isHidden = true }
-            await expect { probe.appearances }.toEventually(equal(1))
-            try XCTUnwrap(probe.context).accept()
-            await expect { probe.disappearances }.toEventually(equal(1))
-
-            state.resultLabel = "replacement"
-            if replacesAd {
-                state.rewardedAd = LifecycleRewardedAd()
-                await expect { probe.appearances }.toEventually(equal(2))
-            } else {
-                state.isVisible = false
-                await self.flushUpdates(window)
-            }
-
-            originalAd.rewardEarned?()
-            XCTAssertTrue(probe.resultLabels.isEmpty)
-
-            let delegate = try XCTUnwrap(originalAd.fullScreenContentDelegate)
-            delegate.adDidDismissFullScreenContent?(originalAd)
-            delegate.adDidDismissFullScreenContent?(originalAd)
-
-            XCTAssertEqual(probe.resultLabels, ["original"])
-        }
-    }
-
     func testReplacingAdPreservesCallerSessionUntilAcceptance() async throws {
         let state = PromptLifecycleState()
         state.session = RewardedAdPromptSession()
@@ -184,50 +128,6 @@ final class RewardedAdPromptLifecycleTests: AdapterTestCase {
 
     func testRemovalAndReinsertionWithRetainedSessionDeduplicatesAppearance() async {
         await self.checkRemovalAndReinsertion(session: RewardedAdPromptSession(), expectedShownCount: 1)
-    }
-
-    func testSameAdUsesUpdatedResultHandlerWhenAccepted() async throws {
-        for usesVerification in [false, true] {
-            let state = PromptLifecycleState(usesVerification: usesVerification)
-            let probe = PromptLifecycleProbe()
-            let window = makePromptLifecycleWindow(state: state, probe: probe)
-            defer { window.isHidden = true }
-            await expect { probe.appearances }.toEventually(equal(1))
-
-            state.resultLabel = "updated"
-            await expect { probe.renderedResultLabel }.toEventually(equal("updated"))
-            try XCTUnwrap(probe.context).accept()
-            state.rewardedAd.fullScreenContentDelegate?.adDidDismissFullScreenContent?(state.rewardedAd)
-
-            XCTAssertEqual(probe.resultLabels, ["updated"])
-            XCTAssertEqual(state.rewardedAd.presentationCount, 1)
-            XCTAssertEqual(probe.shownCount, 1)
-            XCTAssertEqual(probe.acceptedCount, 1)
-            XCTAssertEqual(probe.rewardsLoadCount, usesVerification ? 1 : 0)
-        }
-    }
-
-    func testSameAdKeepsAcceptedResultHandlerAfterFurtherViewUpdates() async throws {
-        for usesVerification in [false, true] {
-            let state = PromptLifecycleState(usesVerification: usesVerification)
-            let probe = PromptLifecycleProbe()
-            let window = makePromptLifecycleWindow(state: state, probe: probe)
-            defer { window.isHidden = true }
-            await expect { probe.appearances }.toEventually(equal(1))
-            try XCTUnwrap(probe.context).accept()
-            await expect { probe.disappearances }.toEventually(equal(1))
-
-            state.resultLabel = "after acceptance"
-            await expect { probe.renderedResultLabel }.toEventually(equal("after acceptance"))
-            state.rewardedAd.fullScreenContentDelegate?.adDidDismissFullScreenContent?(state.rewardedAd)
-            state.rewardedAd.fullScreenContentDelegate?.adDidDismissFullScreenContent?(state.rewardedAd)
-
-            XCTAssertEqual(probe.resultLabels, ["original"])
-            XCTAssertEqual(state.rewardedAd.presentationCount, 1)
-            XCTAssertEqual(probe.shownCount, 1)
-            XCTAssertEqual(probe.acceptedCount, 1)
-            XCTAssertEqual(probe.rewardsLoadCount, usesVerification ? 1 : 0)
-        }
     }
 
     func testBothPromptTypesAndNativeAdFormatsRefreshOnReplacement() async {

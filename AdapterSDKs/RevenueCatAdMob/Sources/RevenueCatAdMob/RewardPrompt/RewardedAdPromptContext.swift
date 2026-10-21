@@ -39,7 +39,7 @@ public struct RewardedAdPromptContext {
     /// Accepts the prompt, tracks the acceptance, and presents the loaded rewarded ad.
     ///
     /// Only the first call for a rendered prompt has an effect.
-    /// If no attached presentation controller is available, `onResult` reports `.notPresented`
+    /// If no attached presentation controller is available, `onPresentationFailed` reports the error
     /// asynchronously after this method returns.
     public func accept() {
         self.acceptAction()

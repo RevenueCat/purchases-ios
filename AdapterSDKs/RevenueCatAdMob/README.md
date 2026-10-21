@@ -210,6 +210,72 @@ When `rewardVerificationCompleted` returns `.verified(.virtualCurrency(...))`, t
 `Purchases.shared.invalidateVirtualCurrenciesCache()` (if Purchases is configured) before delivering the callback.
 You only need to refetch balances (`getVirtualCurrencies` / `virtualCurrencies()`) when your UI needs fresh values.
 
+### SwiftUI rewarded-ad prompts
+
+Preload an ad with `loadAndTrack`, then pass the loaded, unconsumed ad to a prompt. Both prompt types
+accept `RewardedAd` and `RewardedInterstitialAd`. The app owns loading and loading errors; the prompt
+tracks the offer's appearance and acceptance and presents the ad when your content calls `accept()`.
+
+With RevenueCat verification:
+
+```swift
+RewardedAdPrompt(
+    ad: loadedAd,
+    onVerificationCompleted: { result in
+        // Handle the RevenueCat verification outcome, including failure.
+        // RevenueCat grants configured rewards after successful verification.
+    },
+    onDismiss: {
+        // The ad closed; resume the app or preload another ad.
+    },
+    onPresentationFailed: { error in
+        // Handle a missing presenter or an AdMob presentation error.
+    }
+) { context in
+    // rewardConfiguration is nil while loading or when unavailable.
+    Button("Watch an ad for a reward", action: context.accept)
+}
+```
+
+With app-managed rewards:
+
+```swift
+RewardedAdPromptWithoutVerification(
+    ad: loadedAd,
+    onRewardEarned: {
+        // Grant the app-defined reward exactly once.
+    },
+    onDismiss: {
+        // The ad closed; resume the app or preload another ad.
+    },
+    onPresentationFailed: { error in
+        // Handle the presentation error.
+    }
+) { context in
+    Button("Watch an ad for a reward", action: context.accept)
+}
+```
+
+The reward handler is required; `onDismiss` and `onPresentationFailed` are optional. All callbacks
+run on the main actor, at most once each per accepted presentation. Reward delivery does not wait
+for dismissal: `onRewardEarned` runs when AdMob reports the reward, and `onVerificationCompleted`
+runs when RevenueCat verification finishes, successfully or unsuccessfully. Either can arrive
+before or after `onDismiss`. Dismissal does not establish that no reward was earned and never
+suppresses a later reward callback. Closing without earning a reward invokes only `onDismiss`.
+This supports the callback ordering of mediated ads described in the
+[AdMob FAQ](https://developers.google.com/admob/ios/rewarded#faq).
+
+Presentation failure invokes only `onPresentationFailed`, asynchronously after `accept()` returns.
+Callbacks belong to the accepted presentation and survive prompt removal, ad replacement, and view
+updates. Capture your app's originating request ID in each handler before updating current loading
+or offer UI. Keep reward processing independent of that UI guard so a late reward is still handled.
+
+Verified prompts resolve reward configuration asynchronously and update the content context;
+`rewardConfiguration == nil` means loading or unavailable. A non-nil container with no rewards means
+none are configured. Unverified prompts expose only `accept()` and leave reward configuration and
+granting to the app. Each prompt selects its verification mode when accepted, overriding prior
+per-ad verification settings.
+
 ### Rewarded interstitial ads
 
 **AdMob only** ([docs](https://developers.google.com/admob/ios/rewarded-interstitial)):

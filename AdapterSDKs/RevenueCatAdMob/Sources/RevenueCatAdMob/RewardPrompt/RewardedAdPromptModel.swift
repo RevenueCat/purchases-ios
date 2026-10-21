@@ -114,11 +114,11 @@ final class RewardedAdPromptModel: NSObject, ObservableObject {
     @Published private(set) var hasAccepted = false
 
     var context: RewardedAdPromptContext? {
-        return self.context(resultDispatcherFactory: self.resultDispatcherFactory)
+        return self.context(callbackDispatcherFactory: self.callbackDispatcherFactory)
     }
 
     func context(
-        resultDispatcherFactory: @escaping @MainActor () -> any RewardedAdPromptResultDispatching
+        callbackDispatcherFactory: @escaping @MainActor () -> any RewardedAdPromptCallbackDispatching
     ) -> RewardedAdPromptContext? {
         guard !self.hasAccepted, self.dependencies.isPurchasesConfigured() else {
             return nil
@@ -127,7 +127,7 @@ final class RewardedAdPromptModel: NSObject, ObservableObject {
         return RewardedAdPromptContext(
             rewardConfiguration: self.configuredRewards,
             acceptAction: { [weak self] in
-                self?.accept(resultDispatcherFactory: resultDispatcherFactory)
+                self?.accept(callbackDispatcherFactory: callbackDispatcherFactory)
             }
         )
     }
@@ -138,7 +138,7 @@ final class RewardedAdPromptModel: NSObject, ObservableObject {
     private let placement: String?
     private let loadsRewardConfiguration: Bool
     private let rewardedAd: any RewardedAdPromptAd
-    private let resultDispatcherFactory: @MainActor () -> any RewardedAdPromptResultDispatching
+    private let callbackDispatcherFactory: @MainActor () -> any RewardedAdPromptCallbackDispatching
     private let dependencies: RewardedAdPromptDependencies
 
     private weak var presentationAnchor: UIViewController?
@@ -151,7 +151,7 @@ final class RewardedAdPromptModel: NSObject, ObservableObject {
         ad rewardedAd: any RewardedAdPromptAd,
         placement: String?,
         loadsRewardConfiguration: Bool,
-        resultDispatcherFactory: @escaping @MainActor () -> any RewardedAdPromptResultDispatching,
+        callbackDispatcherFactory: @escaping @MainActor () -> any RewardedAdPromptCallbackDispatching,
         dependencies: RewardedAdPromptDependencies
     ) {
         let defaultSession = RewardedAdPromptSession()
@@ -161,7 +161,7 @@ final class RewardedAdPromptModel: NSObject, ObservableObject {
         self.placement = placement
         self.loadsRewardConfiguration = loadsRewardConfiguration
         self.rewardedAd = rewardedAd
-        self.resultDispatcherFactory = resultDispatcherFactory
+        self.callbackDispatcherFactory = callbackDispatcherFactory
         self.dependencies = dependencies
         super.init()
     }
@@ -207,24 +207,24 @@ final class RewardedAdPromptModel: NSObject, ObservableObject {
         self.dependencies.trackPromptShown(self.adUnitID, placement)
     }
 
-    private func accept(resultDispatcherFactory: @MainActor () -> any RewardedAdPromptResultDispatching) {
+    private func accept(callbackDispatcherFactory: @MainActor () -> any RewardedAdPromptCallbackDispatching) {
         guard !self.hasAccepted, self.dependencies.isPurchasesConfigured() else { return }
 
         self.hasAccepted = true
         let placement = self.session.placementForAcceptance(fallback: self.placement)
         self.session.resetAfterAcceptance()
-        let resultDispatcher = resultDispatcherFactory()
+        let callbackDispatcher = callbackDispatcherFactory()
 
         self.dependencies.trackPromptAccepted(self.adUnitID, placement)
         guard let viewController = self.presentationAnchor?.rewardedAdPromptPresentationViewController else {
-            resultDispatcher.notPresented(.init(code: .presentationContextUnavailable, underlyingError: nil))
+            callbackDispatcher.notPresented(.init(code: .presentationContextUnavailable, underlyingError: nil))
             return
         }
 
-        let delegate = RewardedAdPromptPresentationDelegate(resultDispatcher: resultDispatcher)
+        let delegate = RewardedAdPromptPresentationDelegate(callbackDispatcher: callbackDispatcher)
         Self.presentationDelegateStore.set(delegate, for: self.rewardedAd)
         self.rewardedAd.setTrackingFullScreenContentDelegate(delegate)
-        resultDispatcher.present(self.rewardedAd, from: viewController)
+        callbackDispatcher.present(self.rewardedAd, from: viewController)
     }
 
 }
@@ -233,14 +233,14 @@ final class RewardedAdPromptModel: NSObject, ObservableObject {
 @MainActor
 private final class RewardedAdPromptPresentationDelegate: NSObject, GoogleMobileAds.FullScreenContentDelegate {
 
-    private let resultDispatcher: any RewardedAdPromptResultDispatching
+    private let callbackDispatcher: any RewardedAdPromptCallbackDispatching
 
-    init(resultDispatcher: any RewardedAdPromptResultDispatching) {
-        self.resultDispatcher = resultDispatcher
+    init(callbackDispatcher: any RewardedAdPromptCallbackDispatching) {
+        self.callbackDispatcher = callbackDispatcher
     }
 
     func adDidDismissFullScreenContent(_ presentingAd: any GoogleMobileAds.FullScreenPresentingAd) {
-        self.resultDispatcher.dismissed()
+        self.callbackDispatcher.dismissed()
     }
 
     func ad(
@@ -248,7 +248,7 @@ private final class RewardedAdPromptPresentationDelegate: NSObject, GoogleMobile
         didFailToPresentFullScreenContentWithError error: any Error
     ) {
         let promptError = RewardedAdPromptError(code: .adFailedToPresent, underlyingError: error)
-        self.resultDispatcher.notPresented(promptError)
+        self.callbackDispatcher.notPresented(promptError)
     }
 
 }
