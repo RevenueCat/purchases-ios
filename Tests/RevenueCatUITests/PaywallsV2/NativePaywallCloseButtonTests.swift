@@ -20,6 +20,64 @@ import UIKit
 @MainActor
 final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
 
+    func testNativeBackInEveryBadgeLayoutDismissesPaywall() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
+        let styles: [PaywallComponent.BadgeStyle] = [.overlaid, .nested, .edgeToEdge]
+        let alignments: [PaywallComponent.TwoDimensionAlignment] = [
+            .top, .bottom, .topLeading, .topTrailing, .bottomLeading, .bottomTrailing
+        ]
+        let layouts: [(PaywallComponent.BadgeStyle, PaywallComponent.TwoDimensionAlignment)?] =
+            [nil] + styles.flatMap { style in alignments.map { (style, $0) } }
+        for layout in layouts {
+            let back = PaywallComponent.button(.init(
+                name: "badge-back", action: .navigateBack,
+                stack: .init(components: [.text(.init(text: "back", color: .init(light: .hex("#000000"))))]),
+                useNativeIfPossible: true
+            ))
+            let badge = layout.map { style, alignment in
+                PaywallComponent.Badge(style: style, alignment: alignment, stack: .init(components: [back]))
+            }
+            let data = PaywallComponentsData(
+                templateName: "badge-dismissal", assetBaseURL: URL(string: "https://example.com")!,
+                componentsConfig: .init(base: .init(
+                    stack: .init(components: badge == nil ? [back] : [], badge: badge),
+                    stickyFooter: nil, background: .color(.init(light: .hex("#FFFFFF")))
+                )),
+                componentsLocalizations: ["en_US": ["back": .string("Back")]],
+                revision: 1, defaultLocaleIdentifier: "en_US"
+            )
+            let offering = Offering(
+                identifier: "badge-dismissal", serverDescription: "",
+                paywallComponents: .init(uiConfig: PreviewUIConfig.make(), data: data),
+                availablePackages: [TestData.annualPackage], webCheckoutUrl: nil
+            )
+            var dismissals = 0
+            let owner = NativePaywallUIKitOwner()
+            let controller = UIHostingController(rootView:
+                PaywallView(configuration: .init(
+                    offering: offering, introEligibility: .producing(eligibility: .eligible),
+                    purchaseHandler: .mock()
+                ))
+                    .environment(\.nativePaywallNavigationContext, .uiKit(owner))
+                    .onRequestedDismissal { dismissals += 1 }
+            )
+            let navigation = UINavigationController(rootViewController: UIViewController())
+            navigation.pushViewController(controller, animated: false)
+            owner.prepare(controller: controller)
+            let window = self.host(navigation)
+            defer { self.close(window) }
+            await self.waitForPresentation()
+            let item = try XCTUnwrap(controller.navigationItem.rightBarButtonItem)
+            XCTAssertEqual(item.accessibilityIdentifier, NativePaywallUIKitOwner.closeIdentifier)
+            XCTAssertTrue(item.isEnabled)
+            XCTAssertTrue(controller.navigationItem.hidesBackButton)
+            let target = try XCTUnwrap(item.target as? NSObject)
+            target.perform(try XCTUnwrap(item.action), with: item)
+            await self.waitForPresentation()
+            XCTAssertEqual(dismissals, 1, "Native Back must dismiss for \(String(describing: layout))")
+        }
+    }
+
     func testOwnedNativeNavigationDeliversPurchaseAndRestoreCallbacks() async throws {
         let data = PaywallComponentsData(
             templateName: "native-callbacks", assetBaseURL: URL(string: "https://example.com")!,

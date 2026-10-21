@@ -127,7 +127,7 @@ private enum NativeNavigationFixture {
             id: "native-inline-sheet", name: "Inline sheet",
             stack: .init(
                 components: [Self.text("Sheet content"),
-                             Self.button("Designed sheet Close", action: .navigateBack, native: true)],
+                             Self.badgedButton("Designed sheet Close")],
                 size: .init(width: .fill, height: .fit(nil)), spacing: 24,
                 backgroundColor: .init(light: .hex("#ffffff")),
                 padding: .init(top: 32, bottom: 32, leading: 24, trailing: 24)
@@ -140,7 +140,7 @@ private enum NativeNavigationFixture {
             identifier: "native-sheet", serverDescription: "Native sheet",
             paywallComponents: .init(uiConfig: Self.baseUIConfig, data: Self.data(
                 title: "Outer paywall", buttons: [
-                    Self.button("Designed outer Close", action: .navigateBack, native: true),
+                    Self.badgedButton("Designed outer Close"),
                     Self.button("Open inline sheet", action: .navigateTo(destination: .sheet(sheet: Self.inlineSheet)))
                 ]
             )), availablePackages: Self.baseOffering.availablePackages, webCheckoutUrl: nil
@@ -229,6 +229,16 @@ private enum NativeNavigationFixture {
                       stack: .init(components: [Self.text(label)],
                                    padding: .init(top: 12, bottom: 12, leading: 16, trailing: 16)),
                       useNativeIfPossible: native))
+    }
+
+    private static func badgedButton(_ label: String) -> PaywallComponent {
+        let mode = ProcessInfo.processInfo.environment["PAYWALL_BADGE_BUTTONS"]
+        let button = Self.button(label, action: .navigateBack, native: mode != "embedded")
+        guard mode != nil else { return button }
+        return .stack(.init(
+            components: [], size: .init(width: .fill, height: .fixed(64)),
+            badge: .init(style: .nested, alignment: .top, stack: .init(components: [button]))
+        ))
     }
 
     /// `close_workflow` is decode-only, so preserve its actual backend representation.

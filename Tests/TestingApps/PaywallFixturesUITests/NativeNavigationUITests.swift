@@ -221,7 +221,23 @@ final class NativeNavigationUITests: XCTestCase {
     }
 
     func testInlineSheetKeepsItsDesignedCloseAndRestoresOuterNativeClose() {
-        let app = self.launch("native_inline_sheet")
+        self.assertInlineSheetClose(badged: false)
+    }
+
+    func testBadgeBackInInlineSheetDismissesOnlyTheSheet() {
+        self.assertInlineSheetClose(badged: true)
+    }
+
+    func testEmbeddedBadgeBackDismissesPaywall() {
+        let app = self.launch("native_inline_sheet", badgeNative: false)
+        self.assertVisible(app.staticTexts["Outer paywall"], in: app)
+        self.assertNativeControls(in: app, back: false, close: false)
+        app.buttons["Designed outer Close"].tap()
+        self.assertVisible(app.staticTexts["Paywall dismissed"], in: app)
+    }
+
+    private func assertInlineSheetClose(badged: Bool) {
+        let app = self.launch("native_inline_sheet", badgeNative: badged ? true : nil)
         let outerClose = app.buttons[self.closeIdentifier]
         XCTAssertTrue(outerClose.waitForExistence(timeout: 10), app.debugDescription)
         XCTAssertTrue(outerClose.isHittable, app.debugDescription)
@@ -274,13 +290,16 @@ final class NativeNavigationUITests: XCTestCase {
     }
 
     private func launch(
-        _ fixture: String, presentation: String = "push", carouselNative: Bool? = nil
+        _ fixture: String, presentation: String = "push", carouselNative: Bool? = nil, badgeNative: Bool? = nil
     ) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchEnvironment["PAYWALL_FIXTURE"] = fixture
         app.launchEnvironment["PAYWALL_NATIVE_PRESENTATION"] = presentation
         if let carouselNative {
             app.launchEnvironment["PAYWALL_CAROUSEL_BUTTONS"] = carouselNative ? "native" : "embedded"
+        }
+        if let badgeNative {
+            app.launchEnvironment["PAYWALL_BADGE_BUTTONS"] = badgeNative ? "native" : "embedded"
         }
         app.launch()
         let showPaywall = app.buttons["Show native paywall"]
