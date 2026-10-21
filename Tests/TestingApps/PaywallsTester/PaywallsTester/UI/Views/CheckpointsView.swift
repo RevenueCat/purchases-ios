@@ -55,11 +55,11 @@ struct CheckpointsView: View {
     var body: some View {
         NavigationView {
             Form {
+                self.checkpointSection
+                self.recentSection
                 #if DEBUG
                 self.configuredSection
                 #endif
-                self.checkpointSection
-                self.recentSection
                 self.customVariablesSection
                 self.resultSection
             }
@@ -90,17 +90,26 @@ struct CheckpointsView: View {
                 Button(identifier) {
                     self.triggerCheckpoint(identifier)
                 }
+                .contextMenu { self.presentationModeMenu(for: identifier) }
             }
+
+            // The SDK throws for this identifier in Debug builds, to test error presentation.
+            Button("Simulated error") {
+                self.triggerCheckpoint(Self.simulatedErrorIdentifier)
+            }
+            .contextMenu { self.presentationModeMenu(for: Self.simulatedErrorIdentifier) }
         } header: {
             Text("Configured")
         } footer: {
             Text(
                 self.configuredIdentifiers.isEmpty
-                    ? "No checkpoints in this project. Pull to refresh."
-                    : "Checkpoints in this project. Tap one to run it with the custom variables below."
+                    ? "No checkpoints loaded for this project. Pull to refresh."
+                    : "Checkpoints in this project. Tap one to run it, or long press to pick how it is presented."
             )
         }
     }
+
+    private static let simulatedErrorIdentifier = "f0rc3_3rr0r"
 
     private func loadConfiguredIdentifiers() async {
         self.configuredIdentifiers = await Purchases.shared.checkpointIds()
@@ -117,6 +126,7 @@ struct CheckpointsView: View {
                 .onSubmit { self.triggerCheckpoint(self.trimmedIdentifier) }
 
             Button("Trigger checkpoint") { self.triggerCheckpoint(self.trimmedIdentifier) }
+                .contextMenu { self.presentationModeMenu(for: self.trimmedIdentifier) }
                 .disabled(self.trimmedIdentifier.isEmpty)
         } footer: {
             Text("Runs the checkpoint with the custom variables below.")
@@ -178,8 +188,15 @@ struct CheckpointsView: View {
         }
     }
 
+    @ViewBuilder
+    private func presentationModeMenu(for identifier: String) -> some View {
+        Button("Default") { self.triggerCheckpoint(identifier, presentationMode: .default) }
+        Button("Full screen") { self.triggerCheckpoint(identifier, presentationMode: .modalFullScreen) }
+        Button("Sheet") { self.triggerCheckpoint(identifier, presentationMode: .modalSheet) }
+    }
+
     @MainActor
-    private func triggerCheckpoint(_ identifier: String) {
+    private func triggerCheckpoint(_ identifier: String, presentationMode: FlowPresentationMode = .default) {
         guard !identifier.isEmpty else { return }
 
         self.isIdentifierFocused = false
@@ -189,6 +206,7 @@ struct CheckpointsView: View {
         Purchases.shared.checkpoint(
             identifier,
             customVariables: self.customVariables,
+            presentationMode: presentationMode,
             errorPresenter: { params, completion in
                 self.result = .failed(
                     identifier: params.checkpointIdentifier,
