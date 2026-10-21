@@ -116,7 +116,7 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
 
     func testFailedVerificationIfResponseContainsNoSignatureForEndpointWithStaticSignature() {
         // This test relies on a path with static signatures
-        let path: HTTPRequest.Path = .getProductEntitlementMapping
+        let path: HTTPRequest.Path2 = .getProductEntitlementMapping
         expect(path.supportsSignatureVerification) == true
         expect(path.needsNonceForSigning) == false
 

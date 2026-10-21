@@ -29,7 +29,6 @@ class HTTPRequestTests: TestCase {
         .logIn,
         .postRedeemWebPurchase,
         .health,
-        .getProductEntitlementMapping,
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil),
         .remoteConfig(domain: "app"),
         .postExternalPurchaseToken
@@ -46,7 +45,6 @@ class HTTPRequestTests: TestCase {
         .logIn,
         .postRedeemWebPurchase,
         .health,
-        .getProductEntitlementMapping,
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil),
         .remoteConfig(domain: "app")
     ]
@@ -158,9 +156,7 @@ class HTTPRequestTests: TestCase {
             .filter { $0.supportsSignatureVerification }
             .filter { !$0.needsNonceForSigning }
 
-        expect(staticEndpoints) == [
-            .getProductEntitlementMapping
-        ]
+        expect(staticEndpoints) == []
     }
 
     func testPathsEscapeUserID() {
@@ -179,13 +175,7 @@ class HTTPRequestTests: TestCase {
     func testPathsWithFallbackUrls() {
         for path in Self.paths {
             let fallbackUrlsPaths = path.fallbackUrls.map { $0.absoluteString }
-            switch path {
-            case .getProductEntitlementMapping:
-                XCTAssertEqual(fallbackUrlsPaths,
-                               ["https://api-production.8-lives-cat.io/v1/product_entitlement_mapping"])
-            default:
-                XCTAssertTrue(fallbackUrlsPaths.isEmpty)
-            }
+            XCTAssertTrue(fallbackUrlsPaths.isEmpty)
         }
     }
 
@@ -558,7 +548,6 @@ class HTTPRequestTests: TestCase {
     /// relative path it should resolve to when IAM access-token authorization is preferred.
     private static let iamPathComponentsByPath: [HTTPRequest.Path: String] = [
         .health: "health",
-        .getProductEntitlementMapping: "product_entitlement_mapping",
         .getCustomerCenterConfig(appUserID: userID): "customer/customercenter",
         .getVirtualCurrencies(appUserID: userID): "customer/virtual_currencies",
         .postRedeemWebPurchase: "subscribers/redeem_purchase",
@@ -862,7 +851,8 @@ class HTTPRequestTests2: TestCase {
         .postAttributionData(appUserID: userID),
         .postOfferForSigning,
         .postReceiptData,
-        .postSubscriberAttributes(appUserID: userID)
+        .postSubscriberAttributes(appUserID: userID),
+        .getProductEntitlementMapping
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path2> = []
     private static let pathsWithoutETags: Set<HTTPRequest.Path2> = []
@@ -871,7 +861,8 @@ class HTTPRequestTests2: TestCase {
         .getOfferings(appUserID: userID),
         .postReceiptData,
         .appHealthReport(appUserID: userID),
-        .appHealthReportAvailability(appUserID: userID)
+        .appHealthReportAvailability(appUserID: userID),
+        .getProductEntitlementMapping
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path2> = [
         .getCustomerInfo(appUserID: userID),
@@ -1366,7 +1357,8 @@ class HTTPRequestTests2: TestCase {
         .postSubscriberAttributes(appUserID: userID): "customer/attributes",
         .postAdServicesToken(appUserID: userID): "customer/adservices_attribution",
         .appHealthReport(appUserID: userID): "customer/health_report",
-        .appHealthReportAvailability(appUserID: userID): "subscribers/\(userID)/health_report_availability"
+        .appHealthReportAvailability(appUserID: userID): "subscribers/\(userID)/health_report_availability",
+        .getProductEntitlementMapping: "product_entitlement_mapping"
     ]
 
     func testRewardVerificationStatusPathIncludesAdUnitIDQueryParameter() {

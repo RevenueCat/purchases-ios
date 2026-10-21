@@ -288,4 +288,11 @@ extension HTTPRequest.Path2 {
                           pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/health_report_availability")
     }
 
+    static let getProductEntitlementMapping = HTTPRequest.Path2(name: "get_product_entitlement_mapping",
+                                                                etagBehavior: .send,
+                                                                supportsSignatureVerification: true,
+                                                                needsNonceForSigning: false,
+                                                                pathComponent: "product_entitlement_mapping",
+                                                                fallbackRelativePath: "/v1/product_entitlement_mapping")
+
 }

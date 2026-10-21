@@ -177,7 +177,6 @@ extension HTTPRequest {
 
         case logIn
         case health
-        case getProductEntitlementMapping
         case getCustomerCenterConfig(appUserID: String)
         case getVirtualCurrencies(appUserID: String)
         case spendVirtualCurrencies
@@ -219,12 +218,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
     ]
 
     var fallbackRelativePath: String? {
-        switch self {
-        case .getProductEntitlementMapping:
-            return "/v1/product_entitlement_mapping"
-        default:
-            return nil
-        }
+        return nil
     }
 
     var fallbackUrls: [URL] {
@@ -249,7 +243,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .logIn,
                 .postRedeemWebPurchase,
                 .postExternalPurchaseToken,
-                .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .getVirtualCurrencies,
                 .spendVirtualCurrencies,
@@ -271,7 +264,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .logIn,
                 .postRedeemWebPurchase,
-                .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .getVirtualCurrencies,
                 .spendVirtualCurrencies,
@@ -294,7 +286,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .logIn,
                 .postRedeemWebPurchase,
                 .health,
-                .getProductEntitlementMapping,
                 .getVirtualCurrencies,
                 .spendVirtualCurrencies,
                 .isPurchaseAllowedByRestoreBehavior,
@@ -326,7 +317,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .tokenLogOut:
             return true
         case .postExternalPurchaseToken,
-                .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .postCreateTicket:
             return false
@@ -362,9 +352,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .health:
             return "health"
-
-        case .getProductEntitlementMapping:
-            return "product_entitlement_mapping"
 
         case let .getCustomerCenterConfig(appUserID):
             return "customercenter/\(Self.escape(appUserID))"
@@ -421,8 +408,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return self.pathComponent
         case .health:
             return self.pathComponent
-        case .getProductEntitlementMapping:
-            return "product_entitlement_mapping"
         case .getCustomerCenterConfig:
             return "customer/customercenter"
         case .getVirtualCurrencies:
@@ -457,9 +442,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .health:
             return "post_health"
-
-        case .getProductEntitlementMapping:
-            return "get_product_entitlement_mapping"
 
         case .getCustomerCenterConfig:
             return "customer_center"

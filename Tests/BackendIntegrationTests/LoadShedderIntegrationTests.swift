@@ -196,7 +196,7 @@ class BaseLoadShedderStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         try await self.logger.verifyMessageIsEventuallyLogged(
-            Strings.network.request_handled_by_load_shedder(HTTPRequest.Path.getProductEntitlementMapping).description,
+            Strings.network.request_handled_by_load_shedder(HTTPRequest.Path2.getProductEntitlementMapping).description,
             level: .debug,
             timeout: .seconds(5),
             pollInterval: .milliseconds(100)

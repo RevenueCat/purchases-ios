@@ -1134,7 +1134,7 @@ class SigningTests: TestCase {
         let requestDate: UInt64 = 1677005916012
         let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
         let salt = Self.createSalt()
-        let productEntitlementMappingPath = HTTPRequest.Path.getProductEntitlementMapping
+        let productEntitlementMappingPath = HTTPRequest.Path2.getProductEntitlementMapping
 
         // Sign with fallback path
         let signatureWithFallback = try self.sign(

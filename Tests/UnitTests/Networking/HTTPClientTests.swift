@@ -4638,6 +4638,9 @@ extension HTTPRequest.Path {
 
     // Doesn't matter which path this is, we stub requests to it.
     static let mockPath: Self = .logIn
+}
+
+extension HTTPRequest.Path2 {
     static let mockPathWithFallbacks: Self = .getProductEntitlementMapping
 
 }
