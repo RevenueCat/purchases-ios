@@ -548,7 +548,6 @@ class HTTPRequestTests: TestCase {
     /// relative path it should resolve to when IAM access-token authorization is preferred.
     private static let iamPathComponentsByPath: [HTTPRequest.Path: String] = [
         .health: "health",
-        .getVirtualCurrencies(appUserID: userID): "customer/virtual_currencies",
         .postRedeemWebPurchase: "subscribers/redeem_purchase",
         .postCreateTicket: "customercenter/support/create-ticket",
         .isPurchaseAllowedByRestoreBehavior(appUserID: userID): "customer/restore/eligibility",
@@ -1358,7 +1357,8 @@ class HTTPRequestTests2: TestCase {
         .appHealthReport(appUserID: userID): "customer/health_report",
         .appHealthReportAvailability(appUserID: userID): "subscribers/\(userID)/health_report_availability",
         .getProductEntitlementMapping: "product_entitlement_mapping",
-        .getCustomerCenterConfig(appUserID: userID): "customer/customercenter"
+        .getCustomerCenterConfig(appUserID: userID): "customer/customercenter",
+        .getVirtualCurrencies(appUserID: userID): "customer/virtual_currencies"
     ]
 
     func testRewardVerificationStatusPathIncludesAdUnitIDQueryParameter() {

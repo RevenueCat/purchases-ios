@@ -177,7 +177,6 @@ extension HTTPRequest {
 
         case logIn
         case health
-        case getVirtualCurrencies(appUserID: String)
         case spendVirtualCurrencies
         case postRedeemWebPurchase
         case postExternalPurchaseToken
@@ -242,7 +241,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .logIn,
                 .postRedeemWebPurchase,
                 .postExternalPurchaseToken,
-                .getVirtualCurrencies,
                 .spendVirtualCurrencies,
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
@@ -262,7 +260,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .logIn,
                 .postRedeemWebPurchase,
-                .getVirtualCurrencies,
                 .spendVirtualCurrencies,
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
@@ -283,7 +280,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .logIn,
                 .postRedeemWebPurchase,
                 .health,
-                .getVirtualCurrencies,
                 .spendVirtualCurrencies,
                 .isPurchaseAllowedByRestoreBehavior,
                 .remoteConfig,
@@ -302,7 +298,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .logIn,
                 .postRedeemWebPurchase,
-                .getVirtualCurrencies,
                 .spendVirtualCurrencies,
                 .health,
                 .isPurchaseAllowedByRestoreBehavior,
@@ -354,9 +349,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .postExternalPurchaseToken:
             return "external_purchase_tokens"
 
-        case let .getVirtualCurrencies(appUserID):
-            return "subscribers/\(Self.escape(appUserID))/virtual_currencies"
-
         case .spendVirtualCurrencies:
             return "customer/virtual_currencies/spend"
 
@@ -400,8 +392,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return self.pathComponent
         case .health:
             return self.pathComponent
-        case .getVirtualCurrencies:
-            return "customer/virtual_currencies"
         case .spendVirtualCurrencies:
             return "customer/virtual_currencies/spend"
         case .postRedeemWebPurchase:
@@ -438,9 +428,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .postExternalPurchaseToken:
             return "post_external_purchase_token"
-
-        case .getVirtualCurrencies:
-            return "get_virtual_currencies"
 
         case .spendVirtualCurrencies:
             return "spend_virtual_currencies"
