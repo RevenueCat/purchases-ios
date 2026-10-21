@@ -44,7 +44,7 @@ class HTTPResponseTests: TestCase {
     func testResponseVerificationNotRequestedWithPublicKey() throws {
         let key = Curve25519.Signing.PrivateKey().publicKey
 
-        let request = HTTPRequest(method: .get, path: .postOfferForSigning)
+        let request = HTTPRequest(method: .get, requestPath: HTTPRequest.Path2.postOfferForSigning)
         let response = HTTPResponse<Data?>(
             httpStatusCode: .success,
             responseHeaders: [:],

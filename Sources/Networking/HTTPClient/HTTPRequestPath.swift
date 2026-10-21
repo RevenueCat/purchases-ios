@@ -176,7 +176,6 @@ extension HTTPRequest {
     enum Path: Hashable {
 
         case logIn
-        case postOfferForSigning
         case postReceiptData
         case postSubscriberAttributes(appUserID: String)
         case postAdServicesToken(appUserID: String)
@@ -253,7 +252,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
     var authenticated: Bool {
         switch self {
         case .logIn,
-                .postOfferForSigning,
                 .postReceiptData,
                 .postSubscriberAttributes,
                 .postAdServicesToken,
@@ -282,7 +280,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
     var shouldSendEtag: Bool {
         switch self {
         case .logIn,
-                .postOfferForSigning,
                 .postReceiptData,
                 .postSubscriberAttributes,
                 .postAdServicesToken,
@@ -324,7 +321,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return true
         case .postSubscriberAttributes,
                 .postAdServicesToken,
-                .postOfferForSigning,
                 .postExternalPurchaseToken,
                 .getCustomerCenterConfig,
                 .postCreateTicket,
@@ -353,7 +349,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return true
         case .postSubscriberAttributes,
                 .postAdServicesToken,
-                .postOfferForSigning,
                 .postExternalPurchaseToken,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
@@ -397,9 +392,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case let .postAdServicesToken(appUserID):
             return "subscribers/\(Self.escape(appUserID))/adservices_attribution"
-
-        case .postOfferForSigning:
-            return "offers"
 
         case .postReceiptData:
             return "receipts"
@@ -466,8 +458,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
             assertionFailure("The .login endpoint is not allowed when IAM is enabled")
             Logger.error("The .login endpoint is not allowed when IAM is enabled")
             return self.pathComponent
-        case .postOfferForSigning:
-            return "offers"
         case .postReceiptData:
             return "receipts"
         case .postSubscriberAttributes:
@@ -516,9 +506,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .postAdServicesToken:
             return "post_adservices_token"
-
-        case .postOfferForSigning:
-            return "post_offer_for_signing"
 
         case .postReceiptData:
             return "post_receipt"

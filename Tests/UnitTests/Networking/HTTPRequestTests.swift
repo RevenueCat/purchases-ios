@@ -27,7 +27,6 @@ class HTTPRequestTests: TestCase {
 
     private static let paths: [HTTPRequest.Path] = [
         .logIn,
-        .postOfferForSigning,
         .postReceiptData,
         .postSubscriberAttributes(appUserID: userID),
         .postRedeemWebPurchase,
@@ -460,7 +459,7 @@ class HTTPRequestTests: TestCase {
     }
 
     func testAddNonceIfRequiredWithPathWithNoSignatureVerification() throws {
-        let request: HTTPRequest = .init(method: .get, path: .postOfferForSigning)
+        let request: HTTPRequest = .init(method: .get, requestPath: HTTPRequest.Path2.postOfferForSigning)
         let mode = Signing.enforcedVerificationMode()
 
         expect(request.requestAddingNonceIfRequired(with: mode).nonce).to(beNil())
@@ -563,7 +562,6 @@ class HTTPRequestTests: TestCase {
     /// Maps each `HTTPRequest.Path` case (other than `.logIn`, which is disallowed under IAM) to the
     /// relative path it should resolve to when IAM access-token authorization is preferred.
     private static let iamPathComponentsByPath: [HTTPRequest.Path: String] = [
-        .postOfferForSigning: "offers",
         .postReceiptData: "receipts",
         .postSubscriberAttributes(appUserID: userID): "customer/attributes",
         .postAdServicesToken(appUserID: userID): "customer/adservices_attribution",
@@ -871,7 +869,8 @@ class HTTPRequestTests2: TestCase {
         .getCustomerInfo(appUserID: userID),
         .getOfferings(appUserID: userID),
         .getIntroEligibility(appUserID: userID),
-        .postAttributionData(appUserID: userID)
+        .postAttributionData(appUserID: userID),
+        .postOfferForSigning,
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path2> = []
     private static let pathsWithoutETags: Set<HTTPRequest.Path2> = []
@@ -1255,7 +1254,7 @@ class HTTPRequestTests2: TestCase {
     }
 
     func testAddNonceIfRequiredWithPathWithNoSignatureVerification() throws {
-        let request: HTTPRequest = .init(method: .get, path: .postOfferForSigning)
+        let request: HTTPRequest = .init(method: .get, requestPath: HTTPRequest.Path2.postOfferForSigning)
         let mode = Signing.enforcedVerificationMode()
 
         expect(request.requestAddingNonceIfRequired(with: mode).nonce).to(beNil())
@@ -1360,7 +1359,8 @@ class HTTPRequestTests2: TestCase {
     private static let iamPathComponentsByPath: [HTTPRequest.Path2: String] = [
         .getOfferings(appUserID: userID): "customer/offerings",
         .getIntroEligibility(appUserID: userID): "customer/intro_eligibility",
-        .postAttributionData(appUserID: userID): "customer/attribution"
+        .postAttributionData(appUserID: userID): "customer/attribution",
+        .postOfferForSigning: "offers"
     ]
 
     func testRewardVerificationStatusPathIncludesAdUnitIDQueryParameter() {

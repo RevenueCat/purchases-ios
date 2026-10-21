@@ -240,4 +240,10 @@ extension HTTPRequest.Path2 {
                           iamPathComponent: "customer/attribution")
     }
 
+    static let postOfferForSigning = HTTPRequest.Path2(name: "post_offer_for_signing",
+                                                       etagBehavior: .send,
+                                                       supportsSignatureVerification: false,
+                                                       needsNonceForSigning: false,
+                                                       pathComponent: "offers")
+
 }

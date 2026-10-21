@@ -960,7 +960,7 @@ class SigningTests: TestCase {
         let message = "Hello World"
         let requestDate = Date().millisecondsSince1970
 
-        let request = HTTPRequest(method: .get, path: .postOfferForSigning, nonce: nil)
+        let request = HTTPRequest(method: .get, requestPath: HTTPRequest.Path2.postOfferForSigning, nonce: nil)
         let response = HTTPResponse<Data?>(
             httpStatusCode: .success,
             responseHeaders: [
