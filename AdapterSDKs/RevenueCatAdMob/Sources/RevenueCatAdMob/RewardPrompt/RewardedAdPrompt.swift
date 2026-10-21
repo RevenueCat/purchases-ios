@@ -95,16 +95,12 @@ public struct RewardedAdPrompt<Content: View>: View {
 
 /// Displays a prompt for an already-loaded rewarded ad without RevenueCat reward verification.
 ///
-/// The component renders your content immediately, then resolves reward configuration asynchronously
-/// and updates the context without blocking the main thread. It tracks a prompt-shown event when the content appears.
-/// Call ``RewardedAdPromptContext/accept()``
+/// The component renders your content immediately and tracks a prompt-shown event when it appears.
+/// Call ``RewardedAdPromptUnverifiedContext/accept()``
 /// to track acceptance and present the supplied ad.
 ///
-/// The app is responsible for granting the reward when AdMob reports that it was earned.
-///
-/// While reward configuration is loading, or if it could not be loaded, the context's
-/// `rewardConfiguration` is `nil`. Your content can show a generic offer without reward details,
-/// or omit the offer UI.
+/// The app defines the offer and is responsible for granting its own reward when AdMob reports
+/// that it was earned. This component does not load or expose RevenueCat reward configuration.
 ///
 /// After acceptance, `onResult` delivers at most one terminal result on the main actor:
 ///
@@ -133,13 +129,13 @@ public struct RewardedAdPromptWithoutVerification<Content: View>: View {
     ///     event is retained for acceptance; changing the label alone does not start a new session.
     ///   - onResult: Handles the terminal result after acceptance. Updating this closure affects only
     ///     future acceptances, not an offer already accepted.
-    ///   - content: Offer content, with optional reward configuration.
+    ///   - content: App-defined offer content, with an action to accept the offer.
     public init(
         session: RewardedAdPromptSession? = nil,
         ad rewardedAd: GoogleMobileAds.RewardedAd,
         placement: String? = nil,
         onResult: @escaping @MainActor (RewardedAdPromptUnverifiedResult) -> Void,
-        @ViewBuilder content: @escaping (RewardedAdPromptContext) -> Content
+        @ViewBuilder content: @escaping (RewardedAdPromptUnverifiedContext) -> Content
     ) {
         fatalError("Implemented in the next stacked PR.")
     }
@@ -159,13 +155,13 @@ public struct RewardedAdPromptWithoutVerification<Content: View>: View {
     ///     event is retained for acceptance; changing the label alone does not start a new session.
     ///   - onResult: Handles the terminal result after acceptance. Updating this closure affects only
     ///     future acceptances, not an offer already accepted.
-    ///   - content: Offer content, with optional reward configuration.
+    ///   - content: App-defined offer content, with an action to accept the offer.
     public init(
         session: RewardedAdPromptSession? = nil,
         ad rewardedAd: GoogleMobileAds.RewardedInterstitialAd,
         placement: String? = nil,
         onResult: @escaping @MainActor (RewardedAdPromptUnverifiedResult) -> Void,
-        @ViewBuilder content: @escaping (RewardedAdPromptContext) -> Content
+        @ViewBuilder content: @escaping (RewardedAdPromptUnverifiedContext) -> Content
     ) {
         fatalError("Implemented in the next stacked PR.")
     }

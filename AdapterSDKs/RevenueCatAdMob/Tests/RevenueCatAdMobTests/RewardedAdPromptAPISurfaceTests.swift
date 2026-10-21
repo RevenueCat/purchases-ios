@@ -42,7 +42,10 @@ final class RewardedAdPromptAPISurfaceTests: AdapterTestCase {
                     let _: RewardedAdPromptUnverifiedResult.Kind = result.kind
                     let _: RewardedAdPromptError? = result.presentationError
                 },
-                content: { _ in Text("Reward") }
+                content: { (context: RewardedAdPromptUnverifiedContext) in
+                    let _: @MainActor () -> Void = context.accept
+                    return Text("App-defined reward")
+                }
             )
             _ = prompt
         }
@@ -58,7 +61,11 @@ final class RewardedAdPromptAPISurfaceTests: AdapterTestCase {
                 let _: @MainActor () -> Void = context.accept
                 Text("Reward")
             }
-            let unverified = RewardedAdPromptWithoutVerification(ad: rewardedAd, onResult: unverifiedResult) { _ in
+            let unverified = RewardedAdPromptWithoutVerification(
+                ad: rewardedAd, onResult: unverifiedResult
+            ) { context in
+                let _: RewardedAdPromptUnverifiedContext = context
+                let _: @MainActor () -> Void = context.accept
                 Text("Reward")
             }
             let _: RewardedAdPrompt<Text> = verified
@@ -73,7 +80,11 @@ final class RewardedAdPromptAPISurfaceTests: AdapterTestCase {
             let verifiedResult: (RewardedAdPromptVerificationResult) -> Void = { _ in }
             let unverifiedResult: (RewardedAdPromptUnverifiedResult) -> Void = { _ in }
             let verified = RewardedAdPrompt(ad: rewardedAd, onResult: verifiedResult) { _ in Text("Reward") }
-            let unverified = RewardedAdPromptWithoutVerification(ad: rewardedAd, onResult: unverifiedResult) { _ in
+            let unverified = RewardedAdPromptWithoutVerification(
+                ad: rewardedAd, onResult: unverifiedResult
+            ) { context in
+                let _: RewardedAdPromptUnverifiedContext = context
+                let _: @MainActor () -> Void = context.accept
                 Text("Reward")
             }
             let _: RewardedAdPrompt<Text> = verified

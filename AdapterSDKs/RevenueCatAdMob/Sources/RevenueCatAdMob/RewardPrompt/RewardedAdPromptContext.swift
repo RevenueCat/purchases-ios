@@ -20,7 +20,8 @@ import RevenueCat
 @MainActor
 public struct RewardedAdPromptContext {
 
-    /// The locally available reward configuration, or `nil` when it is unavailable.
+    /// Rewards configured for RevenueCat to grant after successful server-side verification,
+    /// or `nil` when the configuration is unavailable.
     /// A non-`nil` container with no primary or additional rewards means configuration is available,
     /// but no rewards were configured. Neither state prevents accepting the prompt or enables verification.
     public let rewardConfiguration: ConfiguredAdRewards?
