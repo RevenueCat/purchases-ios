@@ -45,8 +45,6 @@ extension E2ETestFlowView {
             ScrollView {
                 VStack(spacing: 8) {
                     Text(self.statusDescription)
-                    Text("app user id: \(Purchases.shared.appUserID)")
-                        .font(.caption)
 
                     HStack {
                         TextField("Checkpoint identifier", text: self.$identifier)
