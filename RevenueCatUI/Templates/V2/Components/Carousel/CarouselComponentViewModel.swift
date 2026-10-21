@@ -59,9 +59,6 @@ class CarouselComponentViewModel: OfferEligibilityVisibilityDependency {
         return self.pageContextNames[index]
     }
 
-    /// The page (index into the original pages) the carousel was last showing. The view model
-    /// outlives the carousel view, so a carousel recreated when its tab is shown again resumes on
-    /// this page instead of `initialPageIndex`.
     private(set) var lastPageIndex: Int?
 
     func recordPageIndex(_ pageIndex: Int) {
