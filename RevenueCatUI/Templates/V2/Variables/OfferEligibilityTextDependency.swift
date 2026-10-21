@@ -20,12 +20,12 @@ import SwiftUI
 struct OfferEligibilityAvailability {
 
     /// Standalone component previews have no paywall configuration. Keep their loading overrides intact.
-    static let unknown = Self(offersByProductIdentifier: nil)
+    static let unknown = Self(offersByProductID: nil)
 
-    private let offersByProductIdentifier: [String: OfferEligibilityLoading]?
+    private let offersByProductID: [String: OfferEligibilityLoading]?
 
     init(packageInfos: [(package: Package, promotionalOfferProductCode: String?)]) {
-        var offersByProductIdentifier: [String: OfferEligibilityLoading] = [:]
+        var offersByProductID: [String: OfferEligibilityLoading] = [:]
         for info in packageInfos {
             let product = info.package.storeProduct
             var offers: OfferEligibilityLoading = []
@@ -36,21 +36,21 @@ struct OfferEligibilityAvailability {
                product.discounts.contains(where: { $0.offerIdentifier == code }) {
                 offers.insert(.promo)
             }
-            offersByProductIdentifier[product.productIdentifier, default: []].formUnion(offers)
+            offersByProductID[product.id, default: []].formUnion(offers)
         }
-        self.init(offersByProductIdentifier: offersByProductIdentifier)
+        self.init(offersByProductID: offersByProductID)
     }
 
-    private init(offersByProductIdentifier: [String: OfferEligibilityLoading]?) {
-        self.offersByProductIdentifier = offersByProductIdentifier
+    private init(offersByProductID: [String: OfferEligibilityLoading]?) {
+        self.offersByProductID = offersByProductID
     }
 
     func loading(_ loading: OfferEligibilityLoading, for package: Package?) -> OfferEligibilityLoading {
-        guard let offersByProductIdentifier = self.offersByProductIdentifier else {
+        guard let offersByProductID = self.offersByProductID else {
             return loading
         }
         guard let package else { return [] }
-        return loading.intersection(offersByProductIdentifier[package.storeProduct.productIdentifier] ?? [])
+        return loading.intersection(offersByProductID[package.storeProduct.id] ?? [])
     }
 
     /// Container visibility and selection use `isMostLikelyEligible`, whose subscription-history

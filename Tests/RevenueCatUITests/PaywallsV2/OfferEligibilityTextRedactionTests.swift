@@ -223,6 +223,40 @@ class OfferEligibilityTextRedactionTests: TestCase {
         }
     }
 
+    func testIntroAvailabilityDoesNotLeakBetweenBillingPlans() throws {
+        let productWithOffer = TestData.monthlyProduct
+        var productWithoutOffer = productWithOffer
+        productWithoutOffer.introductoryDiscount = nil
+        let viewModel = try Self.makeViewModel(text: "{{ product.offer_price }}")
+
+        for offerOnBillingPlan in [false, true] {
+            let withOffer = Self.makePackage(product: productWithOffer, hasBillingPlan: offerOnBillingPlan)
+            let withoutOffer = Self.makePackage(product: productWithoutOffer, hasBillingPlan: !offerOnBillingPlan)
+            let availability = OfferEligibilityAvailability(packageInfos: [(withOffer, nil), (withoutOffer, nil)])
+
+            expect(self.redacts(viewModel, package: withOffer, availability: availability)).to(beTrue())
+            expect(self.redacts(viewModel, package: withoutOffer, availability: availability)).to(beFalse())
+            expect(availability.loadingForVisibility(.intro, for: withoutOffer)).to(beEmpty())
+        }
+    }
+
+    func testPromoAvailabilityDoesNotLeakBetweenBillingPlans() throws {
+        let productWithOffer = TestData.productWithPromoOfferPayUpFront
+        var productWithoutOffer = productWithOffer
+        productWithoutOffer.discounts = []
+        let code = try XCTUnwrap(productWithOffer.discounts.first?.offerIdentifier)
+        let viewModel = try Self.makeViewModel(text: "{{ product.offer_price }}")
+
+        for offerOnBillingPlan in [false, true] {
+            let withOffer = Self.makePackage(product: productWithOffer, hasBillingPlan: offerOnBillingPlan)
+            let withoutOffer = Self.makePackage(product: productWithoutOffer, hasBillingPlan: !offerOnBillingPlan)
+            let availability = OfferEligibilityAvailability(packageInfos: [(withOffer, code), (withoutOffer, code)])
+
+            expect(self.redacts(viewModel, package: withOffer, availability: availability)).to(beTrue())
+            expect(self.redacts(viewModel, package: withoutOffer, availability: availability)).to(beFalse())
+        }
+    }
+
     func testPromoCopyRequiresAConfiguredMatchingOffer() throws {
         let package = TestData.packageWithPromoOfferPayUpFront
         let viewModel = try Self.makeViewModel(
@@ -378,6 +412,29 @@ private extension OfferEligibilityTextRedactionTests {
                 )
             ),
             conditionContext: .init()
+        )
+    }
+
+    static func makePackage(product: TestStoreProduct, hasBillingPlan: Bool) -> Package {
+        var product = product
+        if hasBillingPlan {
+            product.installmentsInfo = .init(
+                commitmentInstallmentsCount: 12,
+                commitmentInstallmentPeriod: .init(value: 1, unit: .month),
+                installmentBillingPrice: 1,
+                installmentBillingDisplayPrice: "$1",
+                commitmentTotalPeriod: .init(value: 1, unit: .year),
+                commitmentTotalPrice: 12,
+                commitmentTotalDisplayPrice: "$12",
+                billingPlanType: .monthly
+            )
+        }
+        return Package(
+            identifier: hasBillingPlan ? "installments" : "upfront",
+            packageType: .custom,
+            storeProduct: product.toStoreProduct(),
+            offeringIdentifier: "default",
+            webCheckoutUrl: nil
         )
     }
 
