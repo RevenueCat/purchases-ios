@@ -1,0 +1,187 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  CheckpointDemoModel.swift
+//
+//  Created by Rick van der Linden.
+//
+
+import Combine
+import Foundation
+import RevenueCat
+@_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
+
+enum PaywallPresenterMode: String, CaseIterable, Identifiable {
+    case `default`
+    case global
+    case localOverride
+
+    var id: Self { self }
+
+    var title: String {
+        switch self {
+        case .default: return "Default"
+        case .global: return "Global"
+        case .localOverride: return "Local"
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .default:
+            return "For an offering step, RevenueCat presents its default paywall."
+        case .global:
+            return "For an offering step, Purchases.shared uses the blue global presenter."
+        case .localOverride:
+            return "For an offering step, each checkpoint call uses the purple local override."
+        }
+    }
+}
+
+extension FlowPresentationMode {
+
+    static var testerCases: [Self] { [.default, .modalFullScreen, .modalSheet] }
+
+    var title: String {
+        switch self {
+        case .default: return "Default"
+        case .modalFullScreen: return "Full screen"
+        case .modalSheet: return "Sheet"
+        default: return self.description
+        }
+    }
+
+}
+
+enum ErrorPresenterMode: String, CaseIterable, Identifiable {
+    case `default`
+    case global
+    case localOverride
+
+    var id: Self { self }
+
+    var title: String {
+        switch self {
+        case .default: return "Default"
+        case .global: return "Global"
+        case .localOverride: return "Local"
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .default:
+            return "No custom presenter is configured."
+        case .global:
+            return "Purchases.shared uses the app's global error alert."
+        case .localOverride:
+            return "Each checkpoint call uses its own error alert ahead of the registered global presenter."
+        }
+    }
+}
+
+final class CheckpointDemoModel: ObservableObject {
+
+    struct OutcomeAlert: Identifiable {
+        let id = UUID()
+        let title: String
+        let message: String
+    }
+
+    @Published private(set) var outcomeAlert: OutcomeAlert?
+    @Published var paywallPresenterMode: PaywallPresenterMode = .default
+    @Published var errorPresenterMode: ErrorPresenterMode = .default
+
+    private var pendingOutcomeAlerts: [OutcomeAlert] = []
+
+    func showOutcome(_ result: CheckpointResult, checkpointIdentifier: String) {
+        guard let flow = result.flow else {
+            self.showOutcomeAlert(
+                title: "No completed flow",
+                message: "Checkpoint · \(checkpointIdentifier)\n\n" +
+                    "No matching flow was found, or the flow could not complete."
+            )
+            return
+        }
+
+        let identifiers = flow.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted()
+        self.showOutcomeAlert(
+            title: "Checkpoint completed",
+            message: identifiers.isEmpty
+                ? "Checkpoint · \(checkpointIdentifier)\n\nNo active entitlements reported."
+                : "Checkpoint · \(checkpointIdentifier)\n\nObtained: \(identifiers.joined(separator: ", "))"
+        )
+    }
+
+    func showError(_ error: Error) {
+        self.showOutcomeAlert(
+            title: "Checkpoint failed",
+            message: error.localizedDescription
+        )
+    }
+
+    @MainActor
+    func configurePaywallPresenter() {
+        Purchases.shared.paywallPresenter = switch self.paywallPresenterMode {
+        case .global: GlobalPaywallPresenter.shared
+        case .default, .localOverride: nil
+        }
+    }
+
+    @MainActor
+    var localPaywallPresenter: PaywallPresentationHandler? {
+        guard self.paywallPresenterMode == .localOverride else { return nil }
+        return LocalPaywallPresenter.shared
+    }
+
+    @MainActor
+    func configureErrorPresenter() {
+        Purchases.shared.errorPresenter = switch self.errorPresenterMode {
+        case .default: nil
+        case .global, .localOverride: GlobalErrorPresenter.shared
+        }
+    }
+
+    @MainActor
+    var localErrorPresenter: ErrorPresentationHandler? {
+        guard self.errorPresenterMode == .localOverride else { return nil }
+        return LocalErrorPresenter.shared
+    }
+
+    // MARK: - Demo-only result presentation
+
+    private func showOutcomeAlert(
+        title: String,
+        message: String
+    ) {
+        self.pendingOutcomeAlerts.append(
+            OutcomeAlert(title: title, message: message)
+        )
+        self.presentNextOutcomeAlertIfNeeded()
+    }
+
+    func outcomeAlertDismissed() {
+        guard self.outcomeAlert != nil else {
+            return
+        }
+
+        self.outcomeAlert = nil
+        DispatchQueue.main.async {
+            self.presentNextOutcomeAlertIfNeeded()
+        }
+    }
+
+    private func presentNextOutcomeAlertIfNeeded() {
+        guard self.outcomeAlert == nil, !self.pendingOutcomeAlerts.isEmpty else {
+            return
+        }
+        self.outcomeAlert = self.pendingOutcomeAlerts.removeFirst()
+    }
+
+}
