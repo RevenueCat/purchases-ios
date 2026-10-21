@@ -17,7 +17,7 @@ import StoreKit
 
 // MARK: -
 
-/// Basic implemenation of a `ProductsManagerType`
+/// Fetches Apple products using the configured StoreKit version.
 class ProductsManager: NSObject, ProductsManagerType {
 
     private let productsFetcherSK1: ProductsFetcherSK1
@@ -26,18 +26,11 @@ class ProductsManager: NSObject, ProductsManagerType {
     private let dateProvider: DateProvider
 
     private let _productsFetcherSK2: (any Sendable)?
-    private let _sk2ProductCache: (any Sendable)?
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     private var productsFetcherSK2: ProductsFetcherSK2 {
         // swiftlint:disable:next force_cast force_unwrapping
         return self._productsFetcherSK2! as! ProductsFetcherSK2
-    }
-
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    private var sk2ProductCache: ProductsCache<SK2StoreProduct> {
-        // swiftlint:disable:next force_cast force_unwrapping
-        return self._sk2ProductCache! as! ProductsCache<SK2StoreProduct>
     }
 
     init(
@@ -56,10 +49,8 @@ class ProductsManager: NSObject, ProductsManagerType {
 
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             self._productsFetcherSK2 = ProductsFetcherSK2(installmentsInfoFactory: installmentsInfoFactory)
-            self._sk2ProductCache = ProductsCache<SK2StoreProduct>()
         } else {
             self._productsFetcherSK2 = nil
-            self._sk2ProductCache = nil
         }
     }
 
@@ -88,44 +79,10 @@ class ProductsManager: NSObject, ProductsManagerType {
         }
     }
 
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func sk2Products(withIdentifiers identifiers: Set<String>, completion: @escaping SK2Completion) {
-        // Both product APIs reach this cache, so offerings and eligibility share SK2 work.
-        self.sk2ProductCache.products(withIdentifiers: identifiers, completion: completion) { identifiers, completion in
-            let startTime = self.dateProvider.now()
-            let fetchCompletion: SK2Completion = { result in
-                let notFoundProducts = identifiers.subtracting(result.value?.map(\.id) ?? [])
-                self.trackProductsRequestIfNeeded(startTime,
-                                                  requestedProductIds: identifiers,
-                                                  notFoundProductIds: notFoundProducts,
-                                                  storeKitVersion: .storeKit2,
-                                                  error: result.error)
-                completion(result)
-            }
-            Async.call(with: fetchCompletion) {
-                do {
-                    let products = try await self.productsFetcherSK2.products(identifiers: identifiers)
-                    Logger.debug(Strings.storeKit.store_product_request_finished)
-                    return products
-                } catch let error as NSError {
-                    Logger.debug(Strings.storeKit.store_products_request_failed(error))
-                    throw ErrorUtils.storeProblemError(error: error)
-                }
-            }
-        }
-    }
-
-    func cache(_ product: StoreProductType) {
-        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
-           let sk2Product = StoreProduct.from(product: product).product as? SK2StoreProduct {
-            self.sk2ProductCache.cache([sk2Product])
-        }
-    }
+    // Product caching is owned by `CachingProductsManager`.
+    func cache(_ product: StoreProductType) { }
 
     func clearCache() {
-        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
-            self.sk2ProductCache.clear()
-        }
         self.productsFetcherSK1.clearCache()
     }
 
@@ -138,6 +95,31 @@ class ProductsManager: NSObject, ProductsManagerType {
 // MARK: - private
 
 private extension ProductsManager {
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func sk2Products(withIdentifiers identifiers: Set<String>,
+                     completion: @escaping (Result<Set<SK2StoreProduct>, PurchasesError>) -> Void) {
+        let startTime = self.dateProvider.now()
+        let fetchCompletion: (Result<Set<SK2StoreProduct>, PurchasesError>) -> Void = { result in
+            let notFoundProducts = identifiers.subtracting(result.value?.map(\.id) ?? [])
+            self.trackProductsRequestIfNeeded(startTime,
+                                              requestedProductIds: identifiers,
+                                              notFoundProductIds: notFoundProducts,
+                                              storeKitVersion: .storeKit2,
+                                              error: result.error)
+            completion(result)
+        }
+        Async.call(with: fetchCompletion) {
+            do {
+                let products = try await self.productsFetcherSK2.products(identifiers: identifiers)
+                Logger.debug(Strings.storeKit.store_product_request_finished)
+                return products
+            } catch let error as NSError {
+                Logger.debug(Strings.storeKit.store_products_request_failed(error))
+                throw ErrorUtils.storeProblemError(error: error)
+            }
+        }
+    }
 
     func sk1Products(withIdentifiers identifiers: Set<String>,
                      completion: @escaping (Result<Set<SK1StoreProduct>, PurchasesError>) -> Void) {
@@ -181,16 +163,6 @@ extension ProductsManagerType {
     func products(withIdentifiers identifiers: Set<String>) async throws -> Set<StoreProduct> {
         return try await Async.call { completion in
             self.products(withIdentifiers: identifiers, completion: completion)
-        }
-    }
-
-    /// `async` overload for `sk2Products(withIdentifiers:)`
-    ///
-    /// - Throws: `PurchasesError`.
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func sk2Products(withIdentifiers identifiers: Set<String>) async throws -> Set<SK2StoreProduct> {
-        return try await Async.call { completion in
-            self.sk2Products(withIdentifiers: identifiers, completion: completion)
         }
     }
 

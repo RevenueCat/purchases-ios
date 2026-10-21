@@ -124,103 +124,96 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func testSK2ProductsReuseGeneralProductFetch() async throws {
+    func testEligibilityReusesGeneralProductFetch() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         let manager = Self.createManager(.storeKit2)
-        let products = try await manager.products(withIdentifiers: [Self.productID])
-        let sk2Products = try await manager.sk2Products(withIdentifiers: [Self.productID])
+        let checker = self.createEligibilityChecker(manager: manager)
+        _ = try await manager.products(withIdentifiers: [Self.productID])
 
-        let product = try XCTUnwrap(products.onlyElement)
-        let sk2Product = try XCTUnwrap(sk2Products.onlyElement)
-        expect(product.sk2Product) == sk2Product.underlyingSK2Product
+        let eligibility = try await checker.sk2CheckEligibility([Self.productID])
+
+        expect(eligibility[Self.productID]?.status) == .eligible
         self.verifyStoreProductRequests(count: 1)
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func testGeneralProductsReuseSK2ProductFetch() async throws {
+    func testGeneralProductsReuseEligibilityProductFetch() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         let manager = Self.createManager(.storeKit2)
-        let sk2Products = try await manager.sk2Products(withIdentifiers: [Self.productID])
+        let checker = self.createEligibilityChecker(manager: manager)
+        _ = try await checker.sk2CheckEligibility([Self.productID])
+
         let products = try await manager.products(withIdentifiers: [Self.productID])
 
-        let product = try XCTUnwrap(products.onlyElement)
-        let sk2Product = try XCTUnwrap(sk2Products.onlyElement)
-        expect(product.sk2Product) == sk2Product.underlyingSK2Product
+        expect(products.onlyElement?.sk2Product).toNot(beNil())
         self.verifyStoreProductRequests(count: 1)
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func testGeneralRequestSharesInFlightFetchWithSK2Request() async throws {
-        try await self.verifyInFlightSharing(startWithSK2: false)
+    func testGeneralRequestSharesInFlightFetchWithEligibility() async throws {
+        try await self.verifyInFlightSharing(startWithEligibility: false)
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func testSK2RequestSharesInFlightFetchWithGeneralRequest() async throws {
-        try await self.verifyInFlightSharing(startWithSK2: true)
+    func testEligibilitySharesInFlightFetchWithGeneralRequest() async throws {
+        try await self.verifyInFlightSharing(startWithEligibility: true)
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func testCachedSK1ProductDoesNotSatisfySK2Request() async throws {
+    func testUnexpectedSK1ProductDoesNotProduceSK2Eligibility() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         let manager = Self.createManager(.storeKit2)
         let sk1Product = StoreProduct(sk1Product: MockSK1Product(mockProductIdentifier: Self.productID))
         manager.cache(sk1Product)
-        let sk2Products = try await manager.sk2Products(withIdentifiers: [Self.productID])
-        let generalProducts = try await manager.products(withIdentifiers: [Self.productID])
+        let checker = self.createEligibilityChecker(manager: manager)
 
-        expect(sk2Products.onlyElement?.productIdentifier) == Self.productID
-        expect(generalProducts.onlyElement) === sk1Product
-        self.verifyStoreProductRequests(count: 1)
+        let eligibility = try await checker.sk2CheckEligibility([Self.productID])
+
+        expect(eligibility[Self.productID]?.status) == .unknown
+        self.verifyStoreProductRequests(count: 0)
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func testExplicitlyCachedSK2ProductIsAvailableThroughBothAPIs() async throws {
+    func testExplicitlyCachedSK2ProductIsAvailableToEligibility() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         let product = try await self.fetchSk2StoreProduct()
         let manager = Self.createManager(.storeKit2)
         manager.cache(product)
-        let sk2Products = try await manager.sk2Products(withIdentifiers: [Self.productID])
+        let checker = self.createEligibilityChecker(manager: manager)
+
+        let eligibility = try await checker.sk2CheckEligibility([Self.productID])
         let generalProducts = try await manager.products(withIdentifiers: [Self.productID])
 
-        expect(sk2Products.onlyElement) == product
+        expect(eligibility[Self.productID]?.status) == .eligible
         expect(generalProducts.onlyElement?.sk2Product) == product.underlyingSK2Product
         self.verifyStoreProductRequests(count: 0)
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func testSK1ConfigurationKeepsGeneralProductsSeparateFromSK2() async throws {
-        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
-        let manager = Self.createManager(.storeKit1)
-        let sk2Products = try await manager.sk2Products(withIdentifiers: [Self.productID])
-        let generalProducts = try await manager.products(withIdentifiers: [Self.productID])
-
-        expect(sk2Products.onlyElement?.productIdentifier) == Self.productID
-        expect(generalProducts.onlyElement?.sk1Product).toNot(beNil())
-        expect(generalProducts.onlyElement?.sk2Product).to(beNil())
-        self.verifyStoreProductRequests(count: 2)
-    }
-
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func testClearingCacheInvalidatesBothProductAPIs() async throws {
+    func testClearingCacheInvalidatesProductsUsedByEligibility() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         let manager = Self.createManager(.storeKit2)
+        let checker = self.createEligibilityChecker(manager: manager)
         _ = try await manager.products(withIdentifiers: [Self.productID])
-        _ = try await manager.sk2Products(withIdentifiers: [Self.productID])
+        _ = try await checker.sk2CheckEligibility([Self.productID])
         manager.clearCache()
-        _ = try await manager.sk2Products(withIdentifiers: [Self.productID])
+        _ = try await checker.sk2CheckEligibility([Self.productID])
         _ = try await manager.products(withIdentifiers: [Self.productID])
 
         self.verifyStoreProductRequests(count: 2)
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func testPartialSK2CacheHitFetchesOnlyMissingProductsAcrossAPIs() async throws {
+    func testEligibilityFetchesOnlyProductsMissingFromCache() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         let manager = Self.createManager(.storeKit2)
-        _ = try await manager.sk2Products(withIdentifiers: [Self.productID])
-        let products = try await manager.products(withIdentifiers: [Self.productID, "lifetime"])
+        let checker = self.createEligibilityChecker(manager: manager)
+        _ = try await manager.products(withIdentifiers: [Self.productID])
 
-        expect(Set(products.map(\.id))) == [Self.productID, "lifetime"]
+        let eligibility = try await checker.sk2CheckEligibility([Self.productID, "lifetime"])
+
+        expect(eligibility[Self.productID]?.status) == .eligible
+        expect(eligibility["lifetime"]?.status) == .noIntroOfferExists
         self.verifyStoreProductRequests(count: 2)
         self.logger.verifyMessageWasLogged(
             Strings.storeKit.no_cached_products_starting_store_products_request(identifiers: ["lifetime"]),
@@ -229,21 +222,83 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
         )
     }
 
-    func testSharingSK2ProductsPreservesBillingPlanMetadata() async throws {
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testSharedFetchFailureReachesEligibilityAndProductsAndCanBeRetried() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        let product = StoreProduct(sk2Product: try await self.fetchSk2Product())
+        let fetcher = self.createDeferredFetcher(result: .failure(ErrorUtils.productRequestTimedOutError()))
+        let manager = CachingProductsManager(manager: fetcher)
+        let checker = self.createEligibilityChecker(manager: manager)
+        var generalResult: Result<Set<StoreProduct>, PurchasesError>?
+        manager.products(withIdentifiers: [Self.productID]) { generalResult = $0 }
+        let task = Task { try await checker.sk2CheckEligibility([Self.productID]) }
+        defer { task.cancel() }
+        try await self.waitForSharedRequest()
+
+        fetcher.completeDeferredProductsRequest(at: 0)
+        let eligibilityResult = await task.result
+        expect(generalResult).to(beFailure())
+        expect(eligibilityResult).to(beFailure())
+        expect(fetcher.invokedProductsCount) == 1
+
+        fetcher.stubbedProductsCompletionResult = .success([product])
+        fetcher.shouldDeferProductsCompletion = false
+        let eligibility = try await checker.sk2CheckEligibility([Self.productID])
+        let products = try await manager.products(withIdentifiers: [Self.productID])
+        expect(eligibility[Self.productID]?.status) == .eligible
+        expect(products.onlyElement) === product
+        expect(fetcher.invokedProductsCount) == 2
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testLateEligibilityProductResponseDoesNotRepopulateClearedCache() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        let sk2Product = try await self.fetchSk2Product()
+        let oldProduct = StoreProduct(sk2Product: sk2Product)
+        let newProduct = StoreProduct(sk2Product: sk2Product)
+        let fetcher = self.createDeferredFetcher(result: .success([oldProduct]))
+        let manager = CachingProductsManager(manager: fetcher)
+        let checker = self.createEligibilityChecker(manager: manager)
+        let task = Task { try await checker.sk2CheckEligibility([Self.productID]) }
+        defer { task.cancel() }
+        try await asyncWait(description: "Eligibility product fetch did not start", timeout: .seconds(5)) {
+            fetcher.invokedProductsCount == 1
+        }
+
+        manager.clearCache()
+        fetcher.stubbedProductsCompletionResult = .success([newProduct])
+        var newResult: Result<Set<StoreProduct>, PurchasesError>?
+        manager.products(withIdentifiers: [Self.productID]) { newResult = $0 }
+        expect(fetcher.invokedProductsCount) == 2
+        fetcher.completeDeferredProductsRequest(at: 1)
+        fetcher.completeDeferredProductsRequest(at: 0)
+
+        let eligibility = try await task.value
+        expect(eligibility[Self.productID]?.status) == .eligible
+        expect(try newResult?.get().onlyElement) === newProduct
+        let cached = try await manager.products(withIdentifiers: [Self.productID])
+        expect(cached.onlyElement) === newProduct
+        expect(fetcher.invokedProductsCount) == 2
+    }
+
+    func testSharingProductsPreservesBillingPlanMetadataForEligibility() async throws {
         try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
         guard #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, *) else { return }
         let manager = Self.createManager(.storeKit2)
         let baseID = Self.productIDWithBillingPlans
         let planID = "\(baseID):monthly"
         let products = try await manager.products(withIdentifiers: [baseID, planID])
-        let sk2Products = try await manager.sk2Products(withIdentifiers: [baseID, planID])
         let plan = try XCTUnwrap(products.first { $0.id == planID })
-        let cachedPlan = try XCTUnwrap(sk2Products.first { $0.id == planID })
+        let checker = self.createEligibilityChecker(manager: manager)
 
-        expect(Set(sk2Products.map(\.id))) == [baseID, planID]
-        expect(plan.installmentsInfo).toNot(beNil())
-        expect(cachedPlan.installmentsInfo) == plan.installmentsInfo
-        expect(cachedPlan.introductoryDiscount) == plan.introductoryDiscount
+        let eligibility = try await checker.sk2CheckEligibility([baseID, planID])
+        let cachedProducts = try await manager.products(withIdentifiers: [baseID, planID])
+        let cachedPlan = try XCTUnwrap(cachedProducts.first { $0.id == planID })
+
+        expect(Set(eligibility.keys)) == [baseID, planID]
+        expect(eligibility.values.map(\.status)).toNot(contain(IntroEligibilityStatus.unknown))
+        expect(cachedPlan) === plan
+        expect(cachedPlan.installmentsInfo).toNot(beNil())
         self.verifyStoreProductRequests(count: 1)
     }
 
@@ -253,55 +308,68 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
 private extension CachingProductsManagerIntegrationTests {
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func verifyInFlightSharing(startWithSK2: Bool) async throws {
+    func verifyInFlightSharing(startWithEligibility: Bool) async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
-        let manager = Self.createManager(.storeKit2)
-        let completed = self.expectation(description: "Both product APIs complete")
-        completed.expectedFulfillmentCount = 2
-        let completions = Atomic(0)
-        let starts = Atomic(0)
-        let joined = Atomic(false)
-        let generalCompletion: ProductsManagerType.Completion = { result in
-            expect(try? result.get().onlyElement?.id) == Self.productID
-            completions.modify { $0 += 1 }
-            completed.fulfill()
-        }
-        let sk2Completion: ProductsManagerType.SK2Completion = { result in
-            expect(try? result.get().onlyElement?.id) == Self.productID
-            completions.modify { $0 += 1 }
-            completed.fulfill()
-        }
-        let startMessage = Strings.storeKit.no_cached_products_starting_store_products_request(
-            identifiers: [Self.productID]
-        ).description
-        let joinMessage = Strings.offering.found_existing_product_request(identifiers: [Self.productID]).description
-        let previousLogHandler = Logger.internalLogHandler
-        defer { TestLogHandler.restore() }
-        Logger.internalLogHandler = { level, message, category, file, function, line in
-            previousLogHandler(level, message, category, file, function, line)
-            if message.contains(joinMessage) { joined.value = true }
-            guard message.contains(startMessage) else { return }
-            let count = starts.modify { $0 += 1; return $0 }
-            // General requests pass through the outer cache before reaching the shared SK2 cache.
-            guard count == (startWithSK2 ? 1 : 2) else { return }
-            // The cache registered this request, but its fetch has not started yet.
-            if startWithSK2 {
-                manager.products(withIdentifiers: [Self.productID], completion: generalCompletion)
-            } else {
-                manager.sk2Products(withIdentifiers: [Self.productID], completion: sk2Completion)
-            }
-            expect(joined.value) == true
-            expect(completions.value) == 0
-        }
+        let product = StoreProduct(sk2Product: try await self.fetchSk2Product())
+        let fetcher = self.createDeferredFetcher(result: .success([product]))
+        let manager = CachingProductsManager(manager: fetcher)
+        let checker = self.createEligibilityChecker(manager: manager)
+        var generalResult: Result<Set<StoreProduct>, PurchasesError>?
 
-        if startWithSK2 {
-            manager.sk2Products(withIdentifiers: [Self.productID], completion: sk2Completion)
-        } else {
-            manager.products(withIdentifiers: [Self.productID], completion: generalCompletion)
+        if !startWithEligibility {
+            manager.products(withIdentifiers: [Self.productID]) { generalResult = $0 }
         }
-        await self.fulfillment(of: [completed], timeout: 5)
-        expect(joined.value) == true
-        self.verifyStoreProductRequests(count: 1)
+        let eligibilityTask = Task { try await checker.sk2CheckEligibility([Self.productID]) }
+        defer { eligibilityTask.cancel() }
+        try await asyncWait(description: "Product fetch did not start", timeout: .seconds(5)) {
+            fetcher.invokedProductsCount == 1
+        }
+        if startWithEligibility {
+            manager.products(withIdentifiers: [Self.productID]) { generalResult = $0 }
+        }
+        try await self.waitForSharedRequest()
+
+        expect(generalResult).to(beNil())
+        expect(fetcher.invokedProductsCount) == 1
+        fetcher.completeDeferredProductsRequest(at: 0)
+
+        let eligibility = try await eligibilityTask.value
+        expect(try generalResult?.get().onlyElement) === product
+        expect(eligibility[Self.productID]?.status) == .eligible
+        expect(fetcher.invokedProductsCount) == 1
+    }
+
+    func createDeferredFetcher(result: Result<Set<StoreProduct>, PurchasesError>) -> MockProductsManager {
+        let fetcher = MockProductsManager(
+            diagnosticsTracker: nil,
+            systemInfo: MockSystemInfo(finishTransactions: true, storeKitVersion: .storeKit2),
+            requestTimeout: Self.requestTimeout
+        )
+        fetcher.stubbedProductsCompletionResult = result
+        fetcher.shouldDeferProductsCompletion = true
+        return fetcher
+    }
+
+    func waitForSharedRequest() async throws {
+        let message = Strings.offering.found_existing_product_request(identifiers: [Self.productID]).description
+        try await asyncWait(description: "Eligibility and products did not share their request", timeout: .seconds(5)) {
+            self.logger.messages.contains { $0.message.contains(message) }
+        }
+    }
+
+    func createEligibilityChecker(manager: ProductsManagerType) -> TrialOrIntroPriceEligibilityChecker {
+        let systemInfo = MockSystemInfo(finishTransactions: true, storeKitVersion: .storeKit2)
+        return TrialOrIntroPriceEligibilityChecker(
+            systemInfo: systemInfo,
+            receiptFetcher: MockReceiptFetcher(requestFetcher: MockRequestFetcher(), systemInfo: systemInfo),
+            introEligibilityCalculator: MockIntroEligibilityCalculator(productsManager: manager,
+                                                                       receiptParser: MockReceiptParser()),
+            backend: MockBackend(),
+            currentUserProvider: MockCurrentUserProvider(mockAppUserID: "app_user"),
+            operationDispatcher: MockOperationDispatcher(),
+            productsManager: manager,
+            diagnosticsTracker: nil
+        )
     }
 
     func verifyStoreProductRequests(count: Int, file: FileString = #file, line: UInt = #line) {

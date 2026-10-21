@@ -13,7 +13,7 @@
 
 import Foundation
 
-/// `ProductsManagerType` decorator that adds caching behavior on each request.
+/// Adds product caching and shares in-flight requests for the configured store.
 /// The product results are cached, and it avoids performing concurrent duplicate requests for the same products.
 final class CachingProductsManager {
 
@@ -43,14 +43,8 @@ extension CachingProductsManager: ProductsManagerType {
         }
     }
 
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func sk2Products(withIdentifiers identifiers: Set<String>, completion: @escaping SK2Completion) {
-        self.manager.sk2Products(withIdentifiers: identifiers, completion: completion)
-    }
-
     func cache(_ product: StoreProductType) {
         self.productCache.cache([StoreProduct.from(product: product)])
-        self.manager.cache(product)
     }
 
     var requestTimeout: TimeInterval { return self.manager.requestTimeout }

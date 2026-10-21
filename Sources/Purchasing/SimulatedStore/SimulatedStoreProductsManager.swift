@@ -52,11 +52,6 @@ final class SimulatedStoreProductsManager: ProductsManagerType {
         }
     }
 
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func sk2Products(withIdentifiers identifiers: Set<String>, completion: @escaping SK2Completion) {
-        completion(.success(Set()))
-    }
-
     // This class does not implement caching.
     // See `CachingProductsManager`.
     func cache(_ product: any StoreProductType) { }
