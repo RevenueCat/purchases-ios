@@ -70,7 +70,7 @@ extension E2ETestFlowView {
                     )
                 }
             ) { result in
-                self.callbackDescription = result == nil ? "nil" : "obtained"
+                self.callbackDescription = result.flow == nil ? "nil" : "obtained"
             }
         }
     }
