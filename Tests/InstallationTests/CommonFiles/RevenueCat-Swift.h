@@ -1080,11 +1080,11 @@ SWIFT_CLASS_NAMED("Builder")
 @end
 
 @interface RCConfigurationBuilder (SWIFT_EXTENSION(RevenueCat))
-- (RCConfigurationBuilder * _Nonnull)withUsesStoreKit2IfAvailable:(BOOL)usesStoreKit2IfAvailable SWIFT_WARN_UNUSED_RESULT SWIFT_DEPRECATED_MSG("Use .with(storeKitVersion:) to enable StoreKit 2");
+- (RCConfigurationBuilder * _Nonnull)withObserverMode:(BOOL)observerMode SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(macos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.");
 @end
 
 @interface RCConfigurationBuilder (SWIFT_EXTENSION(RevenueCat))
-- (RCConfigurationBuilder * _Nonnull)withObserverMode:(BOOL)observerMode SWIFT_WARN_UNUSED_RESULT SWIFT_AVAILABILITY(macos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(watchos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(tvos,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.") SWIFT_AVAILABILITY(ios,obsoleted=1,message="'with' has been renamed to 'withPurchasesAreCompletedBy:storeKitVersion:': Observer Mode is now named PurchasesAreCompletedBy.");
+- (RCConfigurationBuilder * _Nonnull)withUsesStoreKit2IfAvailable:(BOOL)usesStoreKit2IfAvailable SWIFT_WARN_UNUSED_RESULT SWIFT_DEPRECATED_MSG("Use .with(storeKitVersion:) to enable StoreKit 2");
 @end
 
 /// Specifies the behavior for a caching API.
@@ -2351,6 +2351,8 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCPurchaseOwnershipType, "PurchaseOwnershipT
   RCPurchaseOwnershipTypeFamilyShared = 1,
 /// The ownership type could not be determined.
   RCPurchaseOwnershipTypeUnknown = 2,
+/// The user has access to the purchase through an organization.
+  RCPurchaseOwnershipTypeAssigned = 3,
 };
 
 /// <code>PurchaseParams</code> can be used to add configuration options when making a purchase.
@@ -3568,6 +3570,13 @@ SWIFT_AVAILABILITY(visionos,introduced=2.0) SWIFT_AVAILABILITY(watchos,introduce
 @end
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
+- (void)getVirtualCurrenciesWithCompletion:(void (^ _Nonnull)(RCVirtualCurrencies * _Nullable, NSError * _Nullable))completion;
+@property (nonatomic, readonly, strong) RCVirtualCurrencies * _Nullable cachedVirtualCurrencies;
+- (void)invalidateVirtualCurrenciesCache;
+- (void)spendVirtualCurrenciesWithAmounts:(NSDictionary<NSString *, NSNumber *> * _Nonnull)amounts reference:(NSString * _Nullable)reference completion:(void (^ _Nonnull)(RCVirtualCurrencies * _Nullable, NSError * _Nullable))completion;
+@end
+
+@interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
 /// Enable debug logging. Useful for debugging issues with the lovely team @RevenueCat.
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DEPRECATED_MSG("use Purchases.logLevel instead");)
 + (BOOL)debugLogsEnabled SWIFT_WARN_UNUSED_RESULT;
@@ -3593,13 +3602,6 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class) BOOL debugLogsEnabled SWIFT_DE
 /// \param networkUserId User Id that should be sent to the network. Default is the current App User Id.
 ///
 + (void)addAttributionData:(NSDictionary<NSString *, id> * _Nonnull)data fromNetwork:(enum RCAttributionNetwork)network forNetworkUserId:(NSString * _Nullable)networkUserId SWIFT_DEPRECATED_MSG("Use the set<NetworkId> functions instead");
-@end
-
-@interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
-- (void)getVirtualCurrenciesWithCompletion:(void (^ _Nonnull)(RCVirtualCurrencies * _Nullable, NSError * _Nullable))completion;
-@property (nonatomic, readonly, strong) RCVirtualCurrencies * _Nullable cachedVirtualCurrencies;
-- (void)invalidateVirtualCurrenciesCache;
-- (void)spendVirtualCurrenciesWithAmounts:(NSDictionary<NSString *, NSNumber *> * _Nonnull)amounts reference:(NSString * _Nullable)reference completion:(void (^ _Nonnull)(RCVirtualCurrencies * _Nullable, NSError * _Nullable))completion;
 @end
 
 @interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
@@ -4531,6 +4533,10 @@ SWIFT_CLASS_NAMED("SubscriptionInfo")
 ///   </li>
 ///   <li>
 ///     <code>PurchaseOwnershipType/familyShared</code>: The Customer has access to the product via their family.
+///   </li>
+///   <li>
+///     <code>PurchaseOwnershipType/assigned</code>: The Customer has been assigned access to this product
+///     through an organization.
 ///   </li>
 /// </ul>
 @property (nonatomic, readonly) enum RCPurchaseOwnershipType ownershipType;
