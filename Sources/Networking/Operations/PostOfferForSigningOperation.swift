@@ -17,24 +17,26 @@ class PostOfferForSigningOperation: NetworkOperation {
 
     typealias SigningData = (signature: String, keyIdentifier: String, nonce: UUID, timestamp: Int)
 
-    struct PostOfferForSigningData {
+    struct PostOfferForSigningData: Hashable {
 
         let offerIdentifier: String
         let productIdentifier: String
         let subscriptionGroup: String
-        let receipt: EncodedAppleReceipt
 
     }
 
     private let configuration: UserSpecificConfiguration
-    private let postOfferData: PostOfferForSigningData
-    private let responseHandler: OfferingsAPI.OfferSigningResponseHandler
+    private let offers: [PostOfferForSigningData]
+    private let receipt: EncodedAppleReceipt
+    private let responseHandler: OfferingsAPI.OffersSigningResponseHandler
 
     init(configuration: UserSpecificConfiguration,
-         postOfferForSigningData: PostOfferForSigningData,
-         responseHandler: @escaping OfferingsAPI.OfferSigningResponseHandler) {
+         offers: [PostOfferForSigningData],
+         receipt: EncodedAppleReceipt,
+         responseHandler: @escaping OfferingsAPI.OffersSigningResponseHandler) {
         self.configuration = configuration
-        self.postOfferData = postOfferForSigningData
+        self.offers = offers
+        self.receipt = receipt
         self.responseHandler = responseHandler
 
         super.init(configuration: configuration)
@@ -46,12 +48,12 @@ class PostOfferForSigningOperation: NetworkOperation {
 
     private func post(completion: @escaping () -> Void) {
         let request = HTTPRequest(
-            method: .post(Body(appUserID: self.configuration.appUserID, data: self.postOfferData)),
+            method: .post(Body(appUserID: self.configuration.appUserID, offers: self.offers, receipt: self.receipt)),
             path: .postOfferForSigning
         )
 
         self.httpClient.perform(request) { (response: VerifiedHTTPResponse<PostOfferResponse>.Result) in
-            let result: Result<PostOfferForSigningOperation.SigningData, BackendError> = response
+            let result = response
                 .mapError { error -> BackendError in
                     if case .decoding = error {
                         return .unexpectedBackendResponse(.postOfferIdSignature,
@@ -60,21 +62,20 @@ class PostOfferForSigningOperation: NetworkOperation {
                         return .networkError(error)
                     }
                 }
-                .flatMap { response in
-                    let (statusCode, response) = (response.httpStatusCode, response.body)
-
-                    let offers = response.offers
-
-                    guard let firstOffer = offers.first else {
-                        Logger.debug(Strings.backendError.offerings_response_no_offerings)
-
+            let results = self.offers.map { requestedOffer in
+                result.flatMap { response -> Result<SigningData, BackendError> in
+                    let matches = response.body.offers.filter {
+                        $0.offerIdentifier == requestedOffer.offerIdentifier &&
+                        $0.productIdentifier == requestedOffer.productIdentifier
+                    }
+                    guard let offer = matches.onlyElement else {
                         return .failure(.unexpectedBackendResponse(.postOfferIdMissingOffersInResponse))
                     }
-
-                    return Self.handleOffer(firstOffer, statusCode: statusCode)
+                    return Self.handleOffer(offer, statusCode: response.httpStatusCode)
                 }
+            }
 
-            self.responseHandler(result)
+            self.responseHandler(results)
             completion()
         }
     }
@@ -128,16 +129,15 @@ private extension PostOfferForSigningOperation {
         let fetchToken: String?
         let generateOffers: [Offer]
 
-        init(appUserID: String, data: PostOfferForSigningData) {
+        init(appUserID: String, offers: [PostOfferForSigningData], receipt: EncodedAppleReceipt) {
             self.appUserID = appUserID
-            self.fetchToken = data.receipt.serialized()
-            self.generateOffers = [
-                .init(
-                    offerID: data.offerIdentifier,
-                    productID: data.productIdentifier,
-                    subscriptionGroup: data.subscriptionGroup
-                )
-            ]
+            self.fetchToken = receipt.serialized()
+            var seen: Set<PostOfferForSigningData> = []
+            self.generateOffers = offers.filter { seen.insert($0).inserted }.map {
+                .init(offerID: $0.offerIdentifier,
+                      productID: $0.productIdentifier,
+                      subscriptionGroup: $0.subscriptionGroup)
+            }
         }
 
     }

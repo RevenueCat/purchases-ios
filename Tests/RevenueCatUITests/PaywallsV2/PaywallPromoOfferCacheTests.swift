@@ -10,7 +10,7 @@
 //  PaywallPromoOfferCacheTests.swift
 //
 
-@_spi(Internal) import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
@@ -128,6 +128,108 @@ final class PaywallPromoOfferCacheTests: TestCase {
         )
     }
 
+    func testFetchesAllMatchingPackagesInOneBatchAndCachesTheirOwnOffers() async throws {
+        let monthly = Self.makePackage(promoDiscountIdentifier: Self.promoCode)
+        let annual = Self.makePackage(promoDiscountIdentifier: "annual-promo", productIdentifier: "annual")
+        let noCode = Self.makePackage(promoDiscountIdentifier: Self.promoCode, productIdentifier: "no-code")
+        let mismatch = Self.makePackage(promoDiscountIdentifier: "other", productIdentifier: "mismatch")
+        var batches: [[PromotionalOfferRequest]] = []
+        let cache = PaywallPromoOfferCache(subscriptionHistoryTracker: nil) { requests in
+            batches.append(requests)
+            return requests.map { Self.result(for: $0) }
+        }
+
+        await cache.computeEligibility(for: [(monthly, Self.promoCode), (annual, "annual-promo"),
+                                              (noCode, nil), (mismatch, Self.promoCode)])
+
+        XCTAssertEqual(batches.count, 1)
+        XCTAssertEqual(batches[0].map { $0.product.productIdentifier },
+                       [monthly.storeProduct.productIdentifier, annual.storeProduct.productIdentifier])
+        XCTAssertEqual(cache.get(for: monthly)?.signedData.identifier, Self.promoCode)
+        XCTAssertEqual(cache.get(for: annual)?.signedData.identifier, "annual-promo")
+        XCTAssertTrue(cache.purchasableOffer(for: monthly) === cache.get(for: monthly))
+        XCTAssertNil(cache.get(for: noCode))
+        XCTAssertNil(cache.get(for: mismatch))
+    }
+
+    func testBatchFailureForOnePackagePreservesSuccessfulPackage() async {
+        let monthly = Self.makePackage(promoDiscountIdentifier: Self.promoCode)
+        let annual = Self.makePackage(promoDiscountIdentifier: Self.promoCode, productIdentifier: "annual")
+        let cache = PaywallPromoOfferCache(subscriptionHistoryTracker: nil) { requests in
+            return [Self.result(for: requests[0]),
+                    PromotionalOfferResult(request: requests[1], result: .failure(ErrorUtils.ineligibleError()))]
+        }
+
+        await cache.computeEligibility(for: [(monthly, Self.promoCode), (annual, Self.promoCode)])
+
+        XCTAssertNotNil(cache.purchasableOffer(for: monthly))
+        XCTAssertNil(cache.purchasableOffer(for: annual))
+        XCTAssertFalse(cache.isMostLikelyEligible(for: annual))
+    }
+
+    func testBatchResultMappingDoesNotDependOnResultOrder() async {
+        let monthly = Self.makePackage(promoDiscountIdentifier: Self.promoCode)
+        let annual = Self.makePackage(promoDiscountIdentifier: "annual-promo", productIdentifier: "annual")
+        let cache = PaywallPromoOfferCache(subscriptionHistoryTracker: nil) { requests in
+            return requests.reversed().map { Self.result(for: $0) }
+        }
+        await cache.computeEligibility(for: [(monthly, Self.promoCode), (annual, "annual-promo")])
+        XCTAssertEqual(cache.get(for: monthly)?.signedData.identifier, Self.promoCode)
+        XCTAssertEqual(cache.get(for: annual)?.signedData.identifier, "annual-promo")
+    }
+
+    func testFailedRefreshRemovesPreviousSignedOffer() async {
+        let package = Self.makePackage(promoDiscountIdentifier: Self.promoCode)
+        var shouldFail = false
+        let cache = PaywallPromoOfferCache(subscriptionHistoryTracker: nil) { requests in
+            return requests.map { request in
+                shouldFail
+                    ? PromotionalOfferResult(request: request, result: .failure(ErrorUtils.ineligibleError()))
+                    : Self.result(for: request)
+            }
+        }
+        await cache.computeEligibility(for: [(package, Self.promoCode)])
+        XCTAssertNotNil(cache.purchasableOffer(for: package))
+
+        shouldFail = true
+        await cache.computeEligibility(for: [(package, Self.promoCode)])
+        XCTAssertNil(cache.get(for: package))
+        XCTAssertNil(cache.purchasableOffer(for: package))
+    }
+
+    func testPublishesOnceForEntireBatch() async {
+        let cache = PaywallPromoOfferCache(subscriptionHistoryTracker: nil) { requests in
+            return requests.map { Self.result(for: $0) }
+        }
+        var updates = 0
+        let observation = cache.objectWillChange.sink { updates += 1 }
+        let packages = [Self.makePackage(promoDiscountIdentifier: Self.promoCode),
+                        Self.makePackage(promoDiscountIdentifier: Self.promoCode, productIdentifier: "annual")]
+        await cache.computeEligibility(for: packages.map { ($0, Self.promoCode) })
+        XCTAssertEqual(updates, 1)
+        withExtendedLifetime(observation) {}
+    }
+
+    func testNoMatchingOffersDoesNotInvokeBatchAPI() async {
+        let cache = PaywallPromoOfferCache(subscriptionHistoryTracker: nil) { _ in
+            XCTFail("No matching offers should require no request")
+            return []
+        }
+        await cache.computeEligibility(for: [])
+        await cache.computeEligibility(for: [(Self.makePackage(promoDiscountIdentifier: "other"), Self.promoCode)])
+    }
+
+    func testSimulatedOffersDoNotInvokeBatchAPI() async {
+        let cache = PaywallPromoOfferCache(subscriptionHistoryTracker: nil, simulatedEligibility: true) { _ in
+            XCTFail("Simulated offers should never contact the backend")
+            return []
+        }
+        let package = Self.makePackage(promoDiscountIdentifier: Self.promoCode)
+        await cache.computeEligibility(for: [(package, Self.promoCode)])
+        XCTAssertNotNil(cache.get(for: package))
+        XCTAssertNil(cache.purchasableOffer(for: package))
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -143,13 +245,22 @@ private extension PaywallPromoOfferCacheTests {
         )
     }
 
-    static func makePackage(promoDiscountIdentifier: String) -> Package {
+    static func result(for request: PromotionalOfferRequest) -> PromotionalOfferResult {
+        let offer = PromotionalOffer(discount: request.discount,
+                                     signedData: .init(identifier: request.discount.offerIdentifier!,
+                                                       keyIdentifier: "key", nonce: UUID(), signature: "signature",
+                                                       timestamp: 12345))
+        return .init(request: request, result: .success(offer))
+    }
+
+    static func makePackage(promoDiscountIdentifier: String,
+                            productIdentifier: String = "com.revenuecat.monthly") -> Package {
         let product = TestStoreProduct(
             localizedTitle: "PRO monthly",
             price: 3.99,
             currencyCode: "USD",
             localizedPriceString: "$3.99",
-            productIdentifier: "com.revenuecat.monthly",
+            productIdentifier: productIdentifier,
             productType: .autoRenewableSubscription,
             localizedDescription: "Monthly subscription",
             subscriptionGroupIdentifier: "group",

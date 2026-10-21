@@ -39,11 +39,20 @@ internal final class PaywallPromoOfferCache: ObservableObject {
     /// (dummy signed offers when `true`, ineligible when `false`), so paywall previews/mocks can
     /// show promo components and pricing without a real subscriber or a backend-signed offer.
     private let simulatedEligibility: Bool?
+    private let promotionalOffers: ([PromotionalOfferRequest]) async -> [PromotionalOfferResult]
 
     // MARK: - Init
 
-    init(subscriptionHistoryTracker: SubscriptionHistoryTracker?, simulatedEligibility: Bool? = nil) {
+    init(subscriptionHistoryTracker: SubscriptionHistoryTracker?,
+         simulatedEligibility: Bool? = nil,
+         promotionalOffers: @escaping ([PromotionalOfferRequest]) async -> [PromotionalOfferResult] = { requests in
+             let purchases = Purchases.shared
+             let appUserID = purchases.appUserID
+             let results = await purchases.promotionalOffers(for: requests)
+             return purchases.appUserID == appUserID ? results : []
+         }) {
         self.simulatedEligibility = simulatedEligibility
+        self.promotionalOffers = promotionalOffers
 
         // Simulate mode passes no tracker: it only ever produces `.signedEligible`/`.ineligible` entries,
         // which never consult `hasAnySubscriptionHistory`, so we skip the tracker's StoreKit work.
@@ -114,6 +123,7 @@ internal final class PaywallPromoOfferCache: ObservableObject {
         // This ensures a single atomic update to the @Published property,
         // which reliably triggers objectWillChange and view updates.
         var newCacheEntries: [ProductID: Status] = [:]
+        var requests: [PromotionalOfferRequest] = []
 
         for packageInfo in packageInfos {
             let storeProduct = packageInfo.package.storeProduct
@@ -127,15 +137,14 @@ internal final class PaywallPromoOfferCache: ObservableObject {
                     continue
                 }
 
-                do {
-                    let promoOffer = try await Purchases.shared.promotionalOffer(
-                        forProductDiscount: discount,
-                        product: storeProduct
-                    )
-                    newCacheEntries[storeProduct.productIdentifier] = .signedEligible(promoOffer)
-                } catch {
-                    newCacheEntries[storeProduct.productIdentifier] = .ineligible
-                }
+                requests.append(.init(discount: discount, product: storeProduct))
+            }
+        }
+
+        if !requests.isEmpty {
+            for result in await self.promotionalOffers(requests) {
+                newCacheEntries[result.request.product.productIdentifier] = result.offer.map(Status.signedEligible)
+                    ?? .ineligible
             }
         }
 

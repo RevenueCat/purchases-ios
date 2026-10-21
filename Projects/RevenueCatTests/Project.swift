@@ -89,6 +89,7 @@ let project = Project(
             infoPlist: .default,
             sources: [
                 "../../Tests/StoreKitUnitTests/**/*.swift",
+                "../../Tests/UnitTests/Networking/Backend/BackendTestInitializers.swift",
                 "../../Tests/UnitTests/TestHelpers/**/*.swift",
                 "../../Tests/UnitTests/Misc/**/TestCase.swift",
                 "../../Tests/UnitTests/Misc/**/CustomerInfo+TestExtensions.swift",

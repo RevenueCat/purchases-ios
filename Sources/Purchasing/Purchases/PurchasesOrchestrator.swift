@@ -454,26 +454,73 @@ final class PurchasesOrchestrator {
             return
         }
 
-        if self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable,
-            #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
-            self.sk2PromotionalOffer(forProductDiscount: productDiscount,
-                                     discountIdentifier: discountIdentifier,
-                                     product: product,
-                                     subscriptionGroupIdentifier: subscriptionGroupIdentifier) { result in
-                self.operationDispatcher.dispatchOnMainActor {
-                    completion(result)
+        self.promotionalOfferReceipt { receiptResult in
+            switch receiptResult {
+            case let .success(receipt):
+                self.handlePromotionalOffer(forProductDiscount: productDiscount,
+                                            discountIdentifier: discountIdentifier,
+                                            product: product,
+                                            subscriptionGroupIdentifier: subscriptionGroupIdentifier,
+                                            receipt: receipt) { result in
+                    self.operationDispatcher.dispatchOnMainActor { completion(result) }
                 }
+            case let .failure(error):
+                self.operationDispatcher.dispatchOnMainActor { completion(.failure(error)) }
             }
-        } else {
-                self.sk1PromotionalOffer(forProductDiscount: productDiscount,
-                                         discountIdentifier: discountIdentifier,
-                                         product: product,
-                                         subscriptionGroupIdentifier: subscriptionGroupIdentifier) { result in
-                    self.operationDispatcher.dispatchOnMainActor {
-                        completion(result)
+        }
+    }
+
+    func promotionalOffers(for requests: [PromotionalOfferRequest],
+                           completion: @escaping @Sendable ([PromotionalOfferResult]) -> Void) {
+        let appUserID = self.appUserID
+        let validated = requests.map { request -> Result<PostOfferForSigningOperation.PostOfferForSigningData,
+                                                         PurchasesError> in
+            guard let identifier = request.discount.offerIdentifier, !identifier.isEmpty else {
+                return .failure(ErrorUtils.productDiscountMissingIdentifierError())
+            }
+            guard let group = request.product.subscriptionGroupIdentifier, !group.isEmpty else {
+                return .failure(ErrorUtils.productDiscountMissingSubscriptionGroupIdentifierError())
+            }
+            guard request.discount.type == .promotional,
+                  request.product.discounts.contains(request.discount) else {
+                return .failure(ErrorUtils.invalidPromotionalOfferError())
+            }
+            return .success(.init(offerIdentifier: identifier,
+                                  productIdentifier: request.product.productIdentifier,
+                                  subscriptionGroup: group))
+        }
+        let offers = validated.compactMap(\.value)
+        typealias SigningResult = Result<PostOfferForSigningOperation.SigningData, PurchasesError>
+        let finish: @Sendable ([SigningResult]) -> Void = { results in
+            var iterator = results.makeIterator()
+            let output = zip(requests, validated).map { request, validation in
+                let result = validation.flatMap { offer in
+                    let signingResult = iterator.next() ?? .failure(
+                        BackendError.unexpectedBackendResponse(.postOfferIdMissingOffersInResponse).asPurchasesError
+                    )
+                    return signingResult.map { data in
+                        Self.signedOffer(discount: request.discount, identifier: offer.offerIdentifier, data: data)
                     }
                 }
-
+                return PromotionalOfferResult(request: request, result: result)
+            }
+            self.operationDispatcher.dispatchOnMainActor { completion(output) }
+        }
+        guard !offers.isEmpty else {
+            finish([])
+            return
+        }
+        self.promotionalOfferReceipt { receiptResult in
+            switch receiptResult {
+            case let .failure(error):
+                finish(offers.map { _ in .failure(error) })
+            case let .success(receipt):
+                self.backend.offerings.post(offersForSigning: offers,
+                                            receipt: receipt,
+                                            appUserID: appUserID) { results in
+                    finish(results.map { $0.mapError { $0.asPurchasesError } })
+                }
+            }
         }
     }
 
@@ -2174,13 +2221,21 @@ private extension PurchasesOrchestrator {
         }
     }
 
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func sk2PromotionalOffer(forProductDiscount productDiscount: StoreProductDiscountType,
-                             discountIdentifier: String,
-                             product: StoreProductType,
-                             subscriptionGroupIdentifier: String,
-                             completion: @escaping @Sendable (Result<PromotionalOffer, PurchasesError>) -> Void) {
+    func promotionalOfferReceipt(
+        completion: @escaping @Sendable (Result<EncodedAppleReceipt, PurchasesError>) -> Void
+    ) {
+        if self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable,
+           #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
+            self.sk2PromotionalOfferReceipt(completion: completion)
+        } else {
+            self.sk1PromotionalOfferReceipt(completion: completion)
+        }
+    }
 
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func sk2PromotionalOfferReceipt(
+        completion: @escaping @Sendable (Result<EncodedAppleReceipt, PurchasesError>) -> Void
+    ) {
         _ = Task<Void, Never> {
             let transaction = await self.transactionFetcher.firstVerifiedAutoRenewableTransaction
             guard let transaction = transaction, let jwsRepresentation = transaction.jwsRepresentation  else {
@@ -2192,21 +2247,13 @@ private extension PurchasesOrchestrator {
 
             let receipt = await self.encodedReceipt(transaction: transaction, jwsRepresentation: jwsRepresentation)
 
-            self.handlePromotionalOffer(forProductDiscount: productDiscount,
-                                        discountIdentifier: discountIdentifier,
-                                        product: product,
-                                        subscriptionGroupIdentifier: subscriptionGroupIdentifier,
-                                        receipt: receipt) { result in
-                completion(result)
-            }
+            completion(.success(receipt))
         }
     }
 
-    func sk1PromotionalOffer(forProductDiscount productDiscount: StoreProductDiscountType,
-                             discountIdentifier: String,
-                             product: StoreProductType,
-                             subscriptionGroupIdentifier: String,
-                             completion: @escaping @Sendable (Result<PromotionalOffer, PurchasesError>) -> Void) {
+    func sk1PromotionalOfferReceipt(
+        completion: @escaping @Sendable (Result<EncodedAppleReceipt, PurchasesError>) -> Void
+    ) {
         self.receiptFetcher.receiptData(refreshPolicy: .onlyIfEmpty) { receiptData, receiptURL in
             guard let receiptData = receiptData, !receiptData.isEmpty else {
                 let underlyingError = ErrorUtils.missingReceiptFileError(receiptURL)
@@ -2226,13 +2273,7 @@ private extension PurchasesOrchestrator {
                     completion(.failure(ErrorUtils.ineligibleError()))
                     return
                 }
-                self.handlePromotionalOffer(forProductDiscount: productDiscount,
-                                            discountIdentifier: discountIdentifier,
-                                            product: product,
-                                            subscriptionGroupIdentifier: subscriptionGroupIdentifier,
-                                            receipt: .receipt(receiptData)) { result in
-                    completion(result)
-                }
+                completion(.success(.receipt(receiptData)))
             }
         }
     }
@@ -2251,18 +2292,23 @@ private extension PurchasesOrchestrator {
                                     appUserID: self.appUserID) { result in
             let result: Result<PromotionalOffer, PurchasesError> = result
                 .map { data in
-                    let signedData = PromotionalOffer.SignedData(identifier: discountIdentifier,
-                                                                 keyIdentifier: data.keyIdentifier,
-                                                                 nonce: data.nonce,
-                                                                 signature: data.signature,
-                                                                 timestamp: data.timestamp)
-
-                    return .init(discount: productDiscount, signedData: signedData)
+                    Self.signedOffer(discount: productDiscount, identifier: discountIdentifier, data: data)
                 }
                 .mapError { $0.asPurchasesError }
 
             completion(result)
         }
+    }
+
+    static func signedOffer(discount: StoreProductDiscountType,
+                            identifier: String,
+                            data: PostOfferForSigningOperation.SigningData) -> PromotionalOffer {
+        return .init(discount: discount,
+                     signedData: .init(identifier: identifier,
+                                       keyIdentifier: data.keyIdentifier,
+                                       nonce: data.nonce,
+                                       signature: data.signature,
+                                       timestamp: data.timestamp))
     }
 
 }
