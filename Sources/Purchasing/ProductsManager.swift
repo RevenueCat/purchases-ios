@@ -64,18 +64,9 @@ class ProductsManager: NSObject, ProductsManagerType {
     }
 
     func products(withIdentifiers identifiers: Set<String>, completion: @escaping Completion) {
-        let startTime = self.dateProvider.now()
-
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
            self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
             self.sk2Products(withIdentifiers: identifiers) { result in
-                let notFoundProducts = identifiers.subtracting(result.value?.map(\.id) ?? [])
-                self.trackProductsRequestIfNeeded(startTime,
-                                                  requestedProductIds: identifiers,
-                                                  notFoundProductIds: notFoundProducts,
-                                                  storeKitVersion: .storeKit2,
-                                                  error: result.error)
-
                 switch result {
                 case .success(let storeProductsFromStoreKit):
                     completion(.success(Set(storeProductsFromStoreKit.map(StoreProduct.from(product:)))))
@@ -84,6 +75,7 @@ class ProductsManager: NSObject, ProductsManagerType {
                 }
             }
         } else {
+            let startTime = self.dateProvider.now()
             self.sk1Products(withIdentifiers: identifiers) { result in
                 let notFoundProducts = identifiers.subtracting(result.value?.map(\.productIdentifier) ?? [])
                 self.trackProductsRequestIfNeeded(startTime,
@@ -100,7 +92,17 @@ class ProductsManager: NSObject, ProductsManagerType {
     func sk2Products(withIdentifiers identifiers: Set<String>, completion: @escaping SK2Completion) {
         // Both product APIs reach this cache, so offerings and eligibility share SK2 work.
         self.sk2ProductCache.products(withIdentifiers: identifiers, completion: completion) { identifiers, completion in
-            Async.call(with: completion) {
+            let startTime = self.dateProvider.now()
+            let fetchCompletion: SK2Completion = { result in
+                let notFoundProducts = identifiers.subtracting(result.value?.map(\.id) ?? [])
+                self.trackProductsRequestIfNeeded(startTime,
+                                                  requestedProductIds: identifiers,
+                                                  notFoundProductIds: notFoundProducts,
+                                                  storeKitVersion: .storeKit2,
+                                                  error: result.error)
+                completion(result)
+            }
+            Async.call(with: fetchCompletion) {
                 do {
                     let products = try await self.productsFetcherSK2.products(identifiers: identifiers)
                     Logger.debug(Strings.storeKit.store_product_request_finished)
