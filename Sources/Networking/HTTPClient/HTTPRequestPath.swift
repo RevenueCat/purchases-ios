@@ -177,7 +177,6 @@ extension HTTPRequest {
 
         case logIn
         case health
-        case appHealthReportAvailability(appUserID: String)
         case getProductEntitlementMapping
         case getCustomerCenterConfig(appUserID: String)
         case getVirtualCurrencies(appUserID: String)
@@ -263,8 +262,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .tokenLogOut:
             return true
 
-        case .health,
-             .appHealthReportAvailability:
+        case .health:
             return false
         }
     }
@@ -286,7 +284,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return true
         case .remoteConfig,
              .health,
-             .appHealthReportAvailability,
              .postExternalPurchaseToken:
             return false
         }
@@ -300,7 +297,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getVirtualCurrencies,
                 .spendVirtualCurrencies,
-                .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior,
                 .remoteConfig,
                 .rewardVerificationStatus:
@@ -322,7 +318,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getVirtualCurrencies,
                 .spendVirtualCurrencies,
                 .health,
-                .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior,
                 .remoteConfig,
                 .rewardVerificationStatus,
@@ -361,9 +356,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var pathComponent: String {
         switch self {
-
-        case let .appHealthReportAvailability(appUserID):
-            return "subscribers/\(Self.escape(appUserID))/health_report_availability"
 
         case .logIn:
             return "subscribers/identify"
@@ -429,8 +421,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return self.pathComponent
         case .health:
             return self.pathComponent
-        case .appHealthReportAvailability:
-            return self.pathComponent
         case .getProductEntitlementMapping:
             return "product_entitlement_mapping"
         case .getCustomerCenterConfig:
@@ -485,9 +475,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .spendVirtualCurrencies:
             return "spend_virtual_currencies"
-
-        case .appHealthReportAvailability:
-            return "get_app_health_report_availability"
 
         case .postCreateTicket:
             return "post_create_ticket"
