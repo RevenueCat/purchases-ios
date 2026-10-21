@@ -144,8 +144,8 @@ class PackageValidator {
     func reconciledSelection(
         current: Package?,
         in context: PackageSelectionContext,
-        offerEligibilityLoading: OfferEligibilityLoading = [],
-        offerEligibilityAvailability: OfferEligibilityAvailability = .unknown
+        offerEligibilityLoading: OfferEligibilityLoading,
+        offerEligibilityAvailability: OfferEligibilityAvailability
     ) -> Package? {
         guard self.hasPageScopedPackages else {
             // Every package lives in a tab, and each tab reconciles its own selection.

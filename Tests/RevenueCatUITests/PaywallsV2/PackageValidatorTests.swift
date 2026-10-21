@@ -246,7 +246,9 @@ final class PackageValidatorTests: TestCase {
 
         let reconciled = validator.reconciledSelection(
             current: seeded,
-            in: Self.context(customVariables: ["can_trial": .bool(false)])
+            in: Self.context(customVariables: ["can_trial": .bool(false)]),
+            offerEligibilityLoading: [],
+            offerEligibilityAvailability: .unknown
         )
         XCTAssertEqual(reconciled?.identifier, TestData.monthlyPackage.identifier)
     }
@@ -259,7 +261,9 @@ final class PackageValidatorTests: TestCase {
         XCTAssertNil(
             validator.reconciledSelection(
                 current: TestData.annualPackage,
-                in: Self.context(customVariables: ["can_trial": .bool(true)])
+                in: Self.context(customVariables: ["can_trial": .bool(true)]),
+                offerEligibilityLoading: [],
+                offerEligibilityAvailability: .unknown
             )
         )
     }
@@ -272,7 +276,9 @@ final class PackageValidatorTests: TestCase {
         XCTAssertNil(
             validator.reconciledSelection(
                 current: TestData.monthlyPackage,
-                in: Self.context(customVariables: ["can_trial": .bool(false)])
+                in: Self.context(customVariables: ["can_trial": .bool(false)]),
+                offerEligibilityLoading: [],
+                offerEligibilityAvailability: .unknown
             )
         )
     }
@@ -303,7 +309,8 @@ final class PackageValidatorTests: TestCase {
             validator.reconciledSelection(
                 current: TestData.annualPackage,
                 in: context,
-                offerEligibilityLoading: [.promo]
+                offerEligibilityLoading: [.promo],
+                offerEligibilityAvailability: .unknown
             )
         )
     }
@@ -331,7 +338,8 @@ final class PackageValidatorTests: TestCase {
             validator.reconciledSelection(
                 current: TestData.annualPackage,
                 in: context,
-                offerEligibilityLoading: [.promo]
+                offerEligibilityLoading: [.promo],
+                offerEligibilityAvailability: .unknown
             )?.identifier,
             TestData.monthlyPackage.identifier
         )
@@ -411,7 +419,9 @@ final class PackageValidatorTests: TestCase {
         XCTAssertNil(
             validator.reconciledSelection(
                 current: TestData.annualPackage,
-                in: Self.context(customVariables: ["can_trial": .bool(false)])
+                in: Self.context(customVariables: ["can_trial": .bool(false)]),
+                offerEligibilityLoading: [],
+                offerEligibilityAvailability: .unknown
             )
         )
     }
@@ -476,7 +486,12 @@ final class PackageValidatorTests: TestCase {
         // so there is nothing to reconcile and the selection stays put. No bug to observe here.
         let seeded = validator.defaultSelectedPackage(in: .provisional)
         XCTAssertEqual(seeded?.identifier, TestData.annualPackage.identifier)
-        XCTAssertNil(validator.reconciledSelection(current: seeded, in: context))
+        XCTAssertNil(validator.reconciledSelection(
+            current: seeded,
+            in: context,
+            offerEligibilityLoading: [],
+            offerEligibilityAvailability: .unknown
+        ))
     }
 
     /// The fixture shape that does reproduce the bug: the group shown when `can_trial=false` shares no
@@ -520,7 +535,12 @@ final class PackageValidatorTests: TestCase {
         XCTAssertEqual(seeded?.identifier, TestData.annualPackage.identifier)
 
         XCTAssertEqual(
-            validator.reconciledSelection(current: seeded, in: context)?.identifier,
+            validator.reconciledSelection(
+                current: seeded,
+                in: context,
+                offerEligibilityLoading: [],
+                offerEligibilityAvailability: .unknown
+            )?.identifier,
             TestData.monthlyPackage.identifier
         )
     }
@@ -647,7 +667,9 @@ final class PackageValidatorTests: TestCase {
         XCTAssertEqual(
             validator.reconciledSelection(
                 current: TestData.annualPackage,
-                in: Self.context(customVariables: ["can_trial": .bool(false)])
+                in: Self.context(customVariables: ["can_trial": .bool(false)]),
+                offerEligibilityLoading: [],
+                offerEligibilityAvailability: .unknown
             )?.identifier,
             TestData.monthlyPackage.identifier
         )
@@ -665,7 +687,9 @@ final class PackageValidatorTests: TestCase {
         XCTAssertNil(
             validator.reconciledSelection(
                 current: TestData.weeklyPackage,
-                in: Self.context(customVariables: ["can_trial": .bool(false)])
+                in: Self.context(customVariables: ["can_trial": .bool(false)]),
+                offerEligibilityLoading: [],
+                offerEligibilityAvailability: .unknown
             )
         )
     }
@@ -689,7 +713,9 @@ final class PackageValidatorTests: TestCase {
         XCTAssertNil(
             validator.reconciledSelection(
                 current: TestData.annualPackage,
-                in: Self.context(customVariables: ["can_trial": .bool(false)])
+                in: Self.context(customVariables: ["can_trial": .bool(false)]),
+                offerEligibilityLoading: [],
+                offerEligibilityAvailability: .unknown
             )
         )
     }
@@ -713,7 +739,9 @@ final class PackageValidatorTests: TestCase {
         XCTAssertNil(
             validator.reconciledSelection(
                 current: TestData.annualPackage,
-                in: Self.context(customVariables: ["can_trial": .bool(false)])
+                in: Self.context(customVariables: ["can_trial": .bool(false)]),
+                offerEligibilityLoading: [],
+                offerEligibilityAvailability: .unknown
             )
         )
     }
@@ -730,7 +758,9 @@ final class PackageValidatorTests: TestCase {
         XCTAssertNil(
             validator.reconciledSelection(
                 current: TestData.annualPackage,
-                in: Self.context(customVariables: ["can_trial": .bool(true)])
+                in: Self.context(customVariables: ["can_trial": .bool(true)]),
+                offerEligibilityLoading: [],
+                offerEligibilityAvailability: .unknown
             )
         )
     }
