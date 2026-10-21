@@ -22,14 +22,18 @@ import SwiftUI
 /// `rewardConfiguration` is `nil`. Your content can show a generic offer without reward details,
 /// or omit the offer UI.
 ///
-/// After acceptance, `onResult` delivers at most one terminal result on the main actor:
+/// After acceptance, callbacks run on the main actor, each at most once per presentation:
 ///
-/// - `.verificationCompleted`: The ad was dismissed and RevenueCat verification finished,
-///   successfully or not. Verification begins when the reward is earned; delivery waits for both.
-/// - `.dismissed`: The ad closed before a reward was earned.
-/// - `.notPresented`: No presentation controller is attached to the prompt's window,
-///   or AdMob failed to present the ad. Inspect `presentationError`. Delivery is deferred
-///   to the main queue, after `accept()` returns.
+/// - `onVerificationCompleted`: RevenueCat verification finished, successfully or not.
+///   Verification begins when AdMob reports an earned reward; delivery does not wait for dismissal.
+/// - `onDismiss`: The ad closed. Dismissal does not indicate whether a reward was earned
+///   and does not prevent a later reward callback.
+/// - `onPresentationFailed`: No presentation controller is attached to the prompt's window,
+///   or AdMob failed to present the ad. Delivery is deferred until after `accept()` returns.
+///
+/// Reward callbacks may arrive before or after dismissal, including for mediated ads.
+/// Closing without earning a reward invokes only `onDismiss`. Accepted presentations retain
+/// their callbacks even if the prompt is removed or updated.
 @available(iOS 15.0, *)
 @MainActor
 public struct RewardedAdPrompt<Content: View>: View {
@@ -47,14 +51,18 @@ public struct RewardedAdPrompt<Content: View>: View {
     ///     automatically, without changing the tracking session you provide.
     ///   - placement: Optional placement label for prompt analytics. The value recorded for the shown
     ///     event is retained for acceptance; changing the label alone does not start a new session.
-    ///   - onResult: Handles the terminal result after acceptance. Updating this closure affects only
-    ///     future acceptances, not an offer already accepted.
+    ///   - onVerificationCompleted: Handles the RevenueCat verification outcome, including failures,
+    ///     independently of dismissal.
+    ///   - onDismiss: Optional notification that the ad closed. A reward callback can still arrive later.
+    ///   - onPresentationFailed: Optional presentation-error handler, deferred until after `accept()` returns.
     ///   - content: Offer content, with optional reward configuration.
     public init(
         session: RewardedAdPromptSession? = nil,
         ad rewardedAd: GoogleMobileAds.RewardedAd,
         placement: String? = nil,
-        onResult: @escaping @MainActor (RewardedAdPromptVerificationResult) -> Void,
+        onVerificationCompleted: @escaping @MainActor (RewardVerificationResult) -> Void,
+        onDismiss: (@MainActor () -> Void)? = nil,
+        onPresentationFailed: (@MainActor (RewardedAdPromptError) -> Void)? = nil,
         @ViewBuilder content: @escaping (RewardedAdPromptContext) -> Content
     ) {
         fatalError("Implemented in the next stacked PR.")
@@ -73,14 +81,18 @@ public struct RewardedAdPrompt<Content: View>: View {
     ///     automatically, without changing the tracking session you provide.
     ///   - placement: Optional placement label for prompt analytics. The value recorded for the shown
     ///     event is retained for acceptance; changing the label alone does not start a new session.
-    ///   - onResult: Handles the terminal result after acceptance. Updating this closure affects only
-    ///     future acceptances, not an offer already accepted.
+    ///   - onVerificationCompleted: Handles the RevenueCat verification outcome, including failures,
+    ///     independently of dismissal.
+    ///   - onDismiss: Optional notification that the ad closed. A reward callback can still arrive later.
+    ///   - onPresentationFailed: Optional presentation-error handler, deferred until after `accept()` returns.
     ///   - content: Offer content, with optional reward configuration.
     public init(
         session: RewardedAdPromptSession? = nil,
         ad rewardedAd: GoogleMobileAds.RewardedInterstitialAd,
         placement: String? = nil,
-        onResult: @escaping @MainActor (RewardedAdPromptVerificationResult) -> Void,
+        onVerificationCompleted: @escaping @MainActor (RewardVerificationResult) -> Void,
+        onDismiss: (@MainActor () -> Void)? = nil,
+        onPresentationFailed: (@MainActor (RewardedAdPromptError) -> Void)? = nil,
         @ViewBuilder content: @escaping (RewardedAdPromptContext) -> Content
     ) {
         fatalError("Implemented in the next stacked PR.")
