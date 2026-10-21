@@ -270,4 +270,13 @@ extension HTTPRequest.Path2 {
                           iamPathComponent: "customer/adservices_attribution")
     }
 
+    static func appHealthReport(appUserID: String) -> Self {
+        HTTPRequest.Path2(name: "get_app_health_report",
+                          etagBehavior: .send,
+                          supportsSignatureVerification: true,
+                          needsNonceForSigning: false,
+                          pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/health_report",
+                          iamPathComponent: "customer/health_report")
+    }
+
 }

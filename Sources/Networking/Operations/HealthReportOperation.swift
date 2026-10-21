@@ -46,8 +46,8 @@ final class HealthReportOperation: CacheableNetworkOperation {
     }
 
     override func begin(completion: @escaping () -> Void) {
-        let request: HTTPRequest = .init(method: .get,
-                                         path: .appHealthReport(appUserID: configuration.appUserID))
+        let path = HTTPRequest.Path2.appHealthReport(appUserID: configuration.appUserID)
+        let request: HTTPRequest = .init(method: .get, requestPath: path)
 
         self.httpClient.perform(
             request

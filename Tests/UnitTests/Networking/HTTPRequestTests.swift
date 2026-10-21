@@ -558,7 +558,6 @@ class HTTPRequestTests: TestCase {
     /// relative path it should resolve to when IAM access-token authorization is preferred.
     private static let iamPathComponentsByPath: [HTTPRequest.Path: String] = [
         .health: "health",
-        .appHealthReport(appUserID: userID): "customer/health_report",
         .appHealthReportAvailability(appUserID: userID): "subscribers/\(userID)/health_report_availability",
         .getProductEntitlementMapping: "product_entitlement_mapping",
         .getCustomerCenterConfig(appUserID: userID): "customer/customercenter",
@@ -871,7 +870,8 @@ class HTTPRequestTests2: TestCase {
     private static let pathsWithSignatureVerification: Set<HTTPRequest.Path2> = [
         .getCustomerInfo(appUserID: userID),
         .getOfferings(appUserID: userID),
-        .postReceiptData
+        .postReceiptData,
+        .appHealthReport(appUserID: userID)
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path2> = [
         .getCustomerInfo(appUserID: userID),
@@ -883,7 +883,8 @@ class HTTPRequestTests2: TestCase {
         .getIntroEligibility(appUserID: anonymousUser),
         .postAttributionData(appUserID: anonymousUser),
         .postSubscriberAttributes(appUserID: anonymousUser),
-        .postAdServicesToken(appUserID: anonymousUser)
+        .postAdServicesToken(appUserID: anonymousUser),
+        .appHealthReport(appUserID: anonymousUser)
     ]
 
     func testPathsDontHaveLeadingSlash() {
@@ -1361,7 +1362,8 @@ class HTTPRequestTests2: TestCase {
         .postOfferForSigning: "offers",
         .postReceiptData: "receipts",
         .postSubscriberAttributes(appUserID: userID): "customer/attributes",
-        .postAdServicesToken(appUserID: userID): "customer/adservices_attribution"
+        .postAdServicesToken(appUserID: userID): "customer/adservices_attribution",
+        .appHealthReport(appUserID: userID): "customer/health_report"
     ]
 
     func testRewardVerificationStatusPathIncludesAdUnitIDQueryParameter() {
