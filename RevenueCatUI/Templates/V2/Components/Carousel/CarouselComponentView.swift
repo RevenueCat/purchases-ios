@@ -91,7 +91,7 @@ struct CarouselComponentView: View {
                         msTransitionTime: style.autoAdvance?.msTransitionTime,
                         autoAdvanceTransitionType: style.autoAdvance?.transitionType,
                         onPageIndexChange: { pageIndex in
-                            self.viewModel.recordPageIndex(pageIndex)
+                            self.viewModel.lastVisiblePageIndex = pageIndex
                         },
                         onUserInitiatedPageIndexChange: { originPageIndex, destinationPageIndex in
                             self.trackCarouselComponentInteraction(
