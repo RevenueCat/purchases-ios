@@ -252,4 +252,13 @@ extension HTTPRequest.Path2 {
                                                    needsNonceForSigning: true,
                                                    pathComponent: "receipts")
 
+    static func postSubscriberAttributes(appUserID: String) -> Self {
+        HTTPRequest.Path2(name: "post_attributes",
+                          etagBehavior: .send,
+                          supportsSignatureVerification: false,
+                          needsNonceForSigning: false,
+                          pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/attributes",
+                          iamPathComponent: "customer/attributes")
+    }
+
 }

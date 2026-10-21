@@ -27,7 +27,6 @@ class HTTPRequestTests: TestCase {
 
     private static let paths: [HTTPRequest.Path] = [
         .logIn,
-        .postSubscriberAttributes(appUserID: userID),
         .postRedeemWebPurchase,
         .health,
         .getProductEntitlementMapping,
@@ -59,7 +58,6 @@ class HTTPRequestTests: TestCase {
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil)
     ]
     private static let pathsWithUserID: [HTTPRequest.Path] = [
-        .postSubscriberAttributes(appUserID: anonymousUser)
     ]
 
     func testPathsDontHaveLeadingSlash() {
@@ -559,7 +557,6 @@ class HTTPRequestTests: TestCase {
     /// Maps each `HTTPRequest.Path` case (other than `.logIn`, which is disallowed under IAM) to the
     /// relative path it should resolve to when IAM access-token authorization is preferred.
     private static let iamPathComponentsByPath: [HTTPRequest.Path: String] = [
-        .postSubscriberAttributes(appUserID: userID): "customer/attributes",
         .postAdServicesToken(appUserID: userID): "customer/adservices_attribution",
         .health: "health",
         .appHealthReport(appUserID: userID): "customer/health_report",
@@ -867,7 +864,8 @@ class HTTPRequestTests2: TestCase {
         .getIntroEligibility(appUserID: userID),
         .postAttributionData(appUserID: userID),
         .postOfferForSigning,
-        .postReceiptData
+        .postReceiptData,
+        .postSubscriberAttributes(appUserID: userID)
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path2> = []
     private static let pathsWithoutETags: Set<HTTPRequest.Path2> = []
@@ -884,7 +882,8 @@ class HTTPRequestTests2: TestCase {
         .getCustomerInfo(appUserID: anonymousUser),
         .getOfferings(appUserID: anonymousUser),
         .getIntroEligibility(appUserID: anonymousUser),
-        .postAttributionData(appUserID: anonymousUser)
+        .postAttributionData(appUserID: anonymousUser),
+        .postSubscriberAttributes(appUserID: anonymousUser)
     ]
 
     func testPathsDontHaveLeadingSlash() {
@@ -1360,7 +1359,8 @@ class HTTPRequestTests2: TestCase {
         .getIntroEligibility(appUserID: userID): "customer/intro_eligibility",
         .postAttributionData(appUserID: userID): "customer/attribution",
         .postOfferForSigning: "offers",
-        .postReceiptData: "receipts"
+        .postReceiptData: "receipts",
+        .postSubscriberAttributes(appUserID: userID): "customer/attributes"
     ]
 
     func testRewardVerificationStatusPathIncludesAdUnitIDQueryParameter() {

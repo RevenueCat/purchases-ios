@@ -176,7 +176,6 @@ extension HTTPRequest {
     enum Path: Hashable {
 
         case logIn
-        case postSubscriberAttributes(appUserID: String)
         case postAdServicesToken(appUserID: String)
         case health
         case appHealthReport(appUserID: String)
@@ -251,7 +250,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
     var authenticated: Bool {
         switch self {
         case .logIn,
-                .postSubscriberAttributes,
                 .postAdServicesToken,
                 .postRedeemWebPurchase,
                 .postExternalPurchaseToken,
@@ -278,7 +276,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
     var shouldSendEtag: Bool {
         switch self {
         case .logIn,
-                .postSubscriberAttributes,
                 .postAdServicesToken,
                 .postRedeemWebPurchase,
                 .getProductEntitlementMapping,
@@ -315,8 +312,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .remoteConfig,
                 .rewardVerificationStatus:
             return true
-        case .postSubscriberAttributes,
-                .postAdServicesToken,
+        case .postAdServicesToken,
                 .postExternalPurchaseToken,
                 .getCustomerCenterConfig,
                 .postCreateTicket,
@@ -342,8 +338,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .tokenRefresh,
                 .tokenLogOut:
             return true
-        case .postSubscriberAttributes,
-                .postAdServicesToken,
+        case .postAdServicesToken,
                 .postExternalPurchaseToken,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
@@ -387,9 +382,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case let .postAdServicesToken(appUserID):
             return "subscribers/\(Self.escape(appUserID))/adservices_attribution"
-
-        case let .postSubscriberAttributes(appUserID):
-            return "subscribers/\(Self.escape(appUserID))/attributes"
 
         case .health:
             return "health"
@@ -450,8 +442,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
             assertionFailure("The .login endpoint is not allowed when IAM is enabled")
             Logger.error("The .login endpoint is not allowed when IAM is enabled")
             return self.pathComponent
-        case .postSubscriberAttributes:
-            return "customer/attributes"
         case .postAdServicesToken:
             return "customer/adservices_attribution"
         case .health:
@@ -496,9 +486,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .postAdServicesToken:
             return "post_adservices_token"
-
-        case .postSubscriberAttributes:
-            return "post_attributes"
 
         case .health:
             return "post_health"
