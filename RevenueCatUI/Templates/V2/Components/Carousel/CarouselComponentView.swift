@@ -385,8 +385,6 @@ private struct CarouselView<Content: View>: View {
                 self.isInitialized = true
             }
         }
-        // Report every page change (drag or auto-advance) in terms of the original pages, so the
-        // carousel can resume on it when recreated, e.g. after switching away from its tab and back.
         .onChangeOf(self.index) { newIndex in
             guard self.originalCount > 0 else { return }
 
