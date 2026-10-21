@@ -1168,4 +1168,8 @@ private final class MockCheckpointsConfigProvider: CheckpointsConfigProviderType
         return snapshot.configGeneration == self.configGeneration
     }
 
+    func checkpointIds() async -> [String] {
+        return []
+    }
+
 }

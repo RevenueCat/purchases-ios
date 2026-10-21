@@ -53,11 +53,19 @@ class DiagnosticsEventEncodingTests: TestCase {
             connectionErrorReason: .noNetwork
         ),
         timestamp: dateFormatter.date(from: "2022-03-08T17:42:58Z")!,
-        appSessionId: UUID(uuidString: "16D1E479-56B7-4AD9-974C-D6CC7C3DB338")!
+        diagnosticsSessionId: UUID(uuidString: "16D1E479-56B7-4AD9-974C-D6CC7C3DB338")!
     )
 
     func testEncoding() {
         assertSnapshot(of: self.exampleEvent, as: .backwardsCompatibleFormattedJson)
+    }
+
+    func testEncodesDiagnosticsSessionIdUnderAppSessionIdKey() throws {
+        let data = try JSONEncoder.default.encode(self.exampleEvent)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+
+        expect(json["app_session_id"] as? String) == "16D1E479-56B7-4AD9-974C-D6CC7C3DB338"
+        expect(json["diagnostics_session_id"]).to(beNil())
     }
 
     func testReencoding() {

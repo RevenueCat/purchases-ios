@@ -116,14 +116,21 @@ enum Localization {
         return path.flatMap(Bundle.init(path:)) ?? containerBundle
     }
 
+    static func discountPercentage(_ discount: Decimal) -> Int {
+        var percentage = discount * 100
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &percentage, 0, .plain)
+        return NSDecimalNumber(decimal: rounded).intValue
+    }
+
     /// - Returns: localized string for a discount. Example: "37% off"
     static func localized(
-        discount: Double,
+        discount: Decimal,
         locale: Locale
     ) -> String {
         assert(discount >= 0, "Invalid discount: \(discount)")
 
-        let number = Int((discount * 100).rounded(.toNearestOrAwayFromZero))
+        let number = Self.discountPercentage(discount)
         let format = self.localizedBundle(locale)
             .localizedString(forKey: "%d%% off", value: nil, table: nil)
 

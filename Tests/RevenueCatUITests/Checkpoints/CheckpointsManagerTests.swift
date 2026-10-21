@@ -301,8 +301,8 @@ final class CheckpointsManagerTests: TestCase {
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
             workflowPresenter: executor,
-            cachedCustomerInfoProvider: {
-                try? Self.customerInfo(activeEntitlements: ["premium", "pro"])
+            customerInfoProvider: {
+                try Self.customerInfo(activeEntitlements: ["premium", "pro"])
             }
         )
 
@@ -314,34 +314,37 @@ final class CheckpointsManagerTests: TestCase {
         )
     }
 
-    func testWorkflowPresentationUsesFreshBaselineWhileResultUsesPreResolutionBaseline() async throws {
+    func testCustomerInfoIsReadOnceAfterResolutionAndIsTheBaselineForPresentationAndResult() async throws {
         let executor = MockWorkflowPresenter()
         executor.execution = .completed(
             customerInfo: try Self.customerInfo(activeEntitlements: ["premium", "pro"])
         )
         var resolutionCompleted = false
-        var cachedCustomerInfoCallCount = 0
+        var customerInfoReadCount = 0
+        var cachedCustomerInfoReadCount = 0
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in
                 resolutionCompleted = true
                 return .matchedWorkflow(Self.workflow())
             },
             workflowPresenter: executor,
+            customerInfoProvider: {
+                XCTAssertTrue(resolutionCompleted)
+                XCTAssertTrue(executor.presentations.isEmpty)
+                customerInfoReadCount += 1
+                return try Self.customerInfo(activeEntitlements: ["pro"])
+            },
             cachedCustomerInfoProvider: {
-                cachedCustomerInfoCallCount += 1
-                return try? Self.customerInfo(
-                    activeEntitlements: resolutionCompleted ? ["premium", "pro"] : ["pro"]
-                )
+                cachedCustomerInfoReadCount += 1
+                return nil
             }
         )
 
         let result = await manager.checkpointForCallback(identifier: "soft_paywall", params: .init())
 
-        XCTAssertEqual(cachedCustomerInfoCallCount, 2)
-        XCTAssertEqual(
-            executor.presentations.first?.initialActiveEntitlementIdentifiers,
-            ["premium", "pro"]
-        )
+        XCTAssertEqual(customerInfoReadCount, 1)
+        XCTAssertEqual(cachedCustomerInfoReadCount, 0)
+        XCTAssertEqual(executor.presentations.first?.initialActiveEntitlementIdentifiers, ["pro"])
         guard case let .completed(checkpointResult) = result else {
             return XCTFail("Expected a completed callback")
         }
@@ -361,6 +364,103 @@ final class CheckpointsManagerTests: TestCase {
             return XCTFail("Expected a completed callback")
         }
         XCTAssertEqual(checkpointResult.flow?.obtainedEntitlements, [])
+    }
+
+    func testDismissedWorkflowDeliversTheCachedCustomerInfoAndWhatItShowsAsObtained() async throws {
+        let product = Self.storeProduct(identifier: "premium-product")
+        let customerInfoBefore = try Self.customerInfo(activeEntitlements: ["pro"])
+        let cachedCustomerInfo = try Self.customerInfo(
+            activeEntitlements: ["premium", "pro"],
+            purchaseDatesByProductId: ["premium-product": Date(timeIntervalSince1970: 10)]
+        )
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow(products: [product])) },
+            workflowPresenter: MockWorkflowPresenter(),
+            customerInfoProvider: { customerInfoBefore },
+            cachedCustomerInfoProvider: { cachedCustomerInfo }
+        )
+
+        let result = await manager.checkpointForCallback(identifier: "soft_paywall", params: .init())
+
+        guard case let .completed(checkpointResult) = result else {
+            return XCTFail("Expected a completed callback")
+        }
+        XCTAssertEqual(checkpointResult.customer, cachedCustomerInfo)
+        XCTAssertEqual(checkpointResult.flow?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
+        XCTAssertEqual(checkpointResult.flow?.obtainedProducts.map(\.product.productIdentifier), ["premium-product"])
+        XCTAssertTrue(checkpointResult.hasEntitlement("premium"))
+        XCTAssertTrue(checkpointResult.hasEntitlement("pro"))
+    }
+
+    func testDismissedWorkflowDeliversTheCustomerInfoReadBeforeWhenTheCacheIsEmpty() async throws {
+        let customerInfoBefore = try Self.customerInfo(activeEntitlements: ["pro"])
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
+            workflowPresenter: MockWorkflowPresenter(),
+            customerInfoProvider: { customerInfoBefore },
+            cachedCustomerInfoProvider: { nil }
+        )
+
+        let result = await manager.checkpointForCallback(identifier: "soft_paywall", params: .init())
+
+        guard case let .completed(checkpointResult) = result else {
+            return XCTFail("Expected a completed callback")
+        }
+        XCTAssertEqual(checkpointResult.customer, customerInfoBefore)
+        XCTAssertEqual(checkpointResult.flow?.obtainedEntitlements, [])
+        XCTAssertEqual(checkpointResult.flow?.obtainedProducts, [])
+        XCTAssertTrue(checkpointResult.hasEntitlement("pro"))
+        XCTAssertFalse(checkpointResult.didObtainEntitlement("pro"))
+    }
+
+    func testPurchaseOutcomeCustomerInfoWinsOverTheCache() async throws {
+        let purchasedCustomerInfo = try Self.customerInfo(activeEntitlements: ["premium"])
+        let executor = MockWorkflowPresenter()
+        executor.execution = .completed(customerInfo: purchasedCustomerInfo)
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
+            workflowPresenter: executor,
+            cachedCustomerInfoProvider: { try? Self.customerInfo(activeEntitlements: ["plus"]) }
+        )
+
+        let result = await manager.checkpointForCallback(identifier: "soft_paywall", params: .init())
+
+        guard case let .completed(checkpointResult) = result else {
+            return XCTFail("Expected a completed callback")
+        }
+        XCTAssertEqual(checkpointResult.customer, purchasedCustomerInfo)
+        XCTAssertEqual(checkpointResult.flow?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
+    }
+
+    func testNoMatchDeliversTheCustomerInfoReadAfterResolution() async throws {
+        let customerInfoBefore = try Self.customerInfo(activeEntitlements: ["pro"])
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .noAction(.noMatch) },
+            workflowPresenter: MockWorkflowPresenter(),
+            customerInfoProvider: { customerInfoBefore }
+        )
+
+        let result = await manager.checkpointForCallback(identifier: "soft_paywall", params: .init())
+
+        guard case let .completed(checkpointResult) = result else {
+            return XCTFail("Expected a completed callback")
+        }
+        XCTAssertNil(checkpointResult.flow)
+        XCTAssertEqual(checkpointResult.customer, customerInfoBefore)
+        XCTAssertTrue(checkpointResult.hasEntitlement("pro"))
+        XCTAssertFalse(checkpointResult.didObtainEntitlement("pro"))
+        XCTAssertFalse(checkpointResult.hasEntitlement("plus"))
+    }
+
+    func testHasEntitlementReadsTheDeliveredCustomerNotTheFlow() throws {
+        let pro = try XCTUnwrap(Self.customerInfo(activeEntitlements: ["pro"]).entitlements.active["pro"])
+        let result = CheckpointResult(
+            flow: FlowResult(obtainedEntitlements: [ObtainedEntitlement(entitlementInfo: pro)], obtainedProducts: []),
+            customer: try Self.customerInfo(activeEntitlements: [])
+        )
+
+        XCTAssertTrue(result.didObtainEntitlement("pro"))
+        XCTAssertFalse(result.hasEntitlement("pro"))
     }
 
     func testCallbackCheckpointIsSuppressedWhenWorkflowBacksOut() async {
@@ -430,6 +530,11 @@ final class CheckpointsManagerTests: TestCase {
             return XCTFail("Expected a completed callback")
         }
         XCTAssertNil(checkpointResult.flow)
+        XCTAssertEqual(checkpointResult.customer, try Self.customerInfo(activeEntitlements: []))
+        XCTAssertNil(checkpointResult.obtainedEntitlement("pro"))
+        XCTAssertFalse(checkpointResult.didObtainEntitlement("pro"))
+        XCTAssertNil(checkpointResult.obtainedProduct("pro-product"))
+        XCTAssertFalse(checkpointResult.didObtainProduct("pro-product"))
         XCTAssertTrue(executor.presentations.isEmpty)
     }
 
@@ -448,28 +553,15 @@ final class CheckpointsManagerTests: TestCase {
         }
     }
 
-    func testCallbackCheckpointOnlyReturnsEntitlementsAbsentFromCachedCustomerInfo() async throws {
+    func testCallbackCheckpointOnlyReturnsEntitlementsAbsentBeforeTheFlow() async throws {
         let executor = MockWorkflowPresenter()
         executor.execution = .completed(
             customerInfo: try Self.customerInfo(activeEntitlements: ["premium", "pro"])
         )
-        var resolutionStarted = false
-        var cachedCustomerInfoCallCount = 0
         let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in
-                resolutionStarted = true
-                return .matchedWorkflow(Self.workflow())
-            },
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
             workflowPresenter: executor,
-            cachedCustomerInfoProvider: {
-                cachedCustomerInfoCallCount += 1
-                if cachedCustomerInfoCallCount == 1 {
-                    XCTAssertFalse(resolutionStarted)
-                } else {
-                    XCTAssertTrue(resolutionStarted)
-                }
-                return try? Self.customerInfo(activeEntitlements: ["pro"])
-            }
+            customerInfoProvider: { try Self.customerInfo(activeEntitlements: ["pro"]) }
         )
 
         let result = await manager.checkpointForCallback(identifier: "purchase", params: .init())
@@ -478,10 +570,9 @@ final class CheckpointsManagerTests: TestCase {
             return XCTFail("Expected a completed callback")
         }
         XCTAssertEqual(checkpointResult.flow?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
-        XCTAssertEqual(cachedCustomerInfoCallCount, 2)
     }
 
-    func testCallbackCheckpointReturnsNoEntitlementsWhenAllWereAlreadyCached() async throws {
+    func testCallbackCheckpointReturnsNoEntitlementsWhenAllWereAlreadyHeld() async throws {
         let executor = MockWorkflowPresenter()
         executor.execution = .completed(
             customerInfo: try Self.customerInfo(activeEntitlements: ["premium", "pro"])
@@ -489,8 +580,8 @@ final class CheckpointsManagerTests: TestCase {
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
             workflowPresenter: executor,
-            cachedCustomerInfoProvider: {
-                try? Self.customerInfo(activeEntitlements: ["premium", "pro"])
+            customerInfoProvider: {
+                try Self.customerInfo(activeEntitlements: ["premium", "pro"])
             }
         )
 
@@ -502,31 +593,116 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(checkpointResult.flow?.obtainedEntitlements, [])
     }
 
-    func testCallbackCheckpointTreatsAllEntitlementsAsObtainedWithoutCachedCustomerInfo() async throws {
+    func testCallbackCheckpointIsSuppressedWhenCustomerInfoCannotBeRead() async {
+        let expectedError = NSError(domain: "test", code: 7)
         let executor = MockWorkflowPresenter()
-        executor.execution = .completed(
-            customerInfo: try Self.customerInfo(activeEntitlements: ["premium", "pro"])
-        )
-        var cachedCustomerInfoCallCount = 0
+        var resolutionCount = 0
+        var presentedParams: ErrorPresentationParams?
         let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
+            resolveCheckpoint: { _, _ in
+                resolutionCount += 1
+                return .matchedWorkflow(Self.workflow())
+            },
             workflowPresenter: executor,
-            cachedCustomerInfoProvider: {
-                cachedCustomerInfoCallCount += 1
-                return nil
-            }
+            customerInfoProvider: { throw expectedError }
         )
 
-        let result = await manager.checkpointForCallback(identifier: "restore", params: .init())
+        let result = await manager.checkpointForCallback(
+            identifier: "restore",
+            params: .init(errorPresenter: { params, completion in
+                presentedParams = params
+                completion.complete()
+            })
+        )
 
-        guard case let .completed(checkpointResult) = result else {
-            return XCTFail("Expected a completed callback")
+        guard case .suppressed = result else {
+            return XCTFail("Expected the callback to be suppressed")
         }
-        XCTAssertEqual(
-            checkpointResult.flow?.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted(),
-            ["premium", "pro"]
+        XCTAssertEqual(resolutionCount, 1)
+        XCTAssertTrue(executor.presentations.isEmpty)
+        XCTAssertEqual(presentedParams?.error as NSError?, expectedError)
+        XCTAssertEqual(presentedParams?.kind, .flowCouldNotBeShown)
+        self.logger.verifyMessageWasLogged(
+            "Checkpoint 'restore': the customer's information could not be read: " + expectedError.localizedDescription,
+            level: .error
         )
-        XCTAssertEqual(cachedCustomerInfoCallCount, 2)
+    }
+
+    func testNoMatchIsSuppressedWhenCustomerInfoCannotBeRead() async {
+        let expectedError = NSError(domain: "test", code: 7)
+        var presentedParams: ErrorPresentationParams?
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .noAction(.noMatch) },
+            workflowPresenter: MockWorkflowPresenter(),
+            customerInfoProvider: { throw expectedError }
+        )
+
+        let result = await manager.checkpointForCallback(
+            identifier: "soft_paywall",
+            params: .init(errorPresenter: { params, completion in
+                presentedParams = params
+                completion.complete()
+            })
+        )
+
+        guard case .suppressed = result else {
+            return XCTFail("Expected the callback to be suppressed")
+        }
+        XCTAssertEqual(presentedParams?.error as NSError?, expectedError)
+        XCTAssertEqual(presentedParams?.kind, .flowCouldNotBeShown)
+    }
+
+    func testUnknownCheckpointIsSuppressedWhenCustomerInfoCannotBeRead() async {
+        let expectedError = NSError(domain: "test", code: 7)
+        var presentedParams: ErrorPresentationParams?
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .noAction(.unknownCheckpoint) },
+            workflowPresenter: MockWorkflowPresenter(),
+            customerInfoProvider: { throw expectedError }
+        )
+
+        let result = await manager.checkpointForCallback(
+            identifier: "soft_paywall",
+            params: .init(errorPresenter: { params, completion in
+                presentedParams = params
+                completion.complete()
+            })
+        )
+
+        guard case .suppressed = result else {
+            return XCTFail("Expected the callback to be suppressed")
+        }
+        XCTAssertEqual(presentedParams?.error as NSError?, expectedError)
+        XCTAssertEqual(presentedParams?.kind, .flowCouldNotBeShown)
+    }
+
+    func testResolvedOfferingDoesNotReachThePaywallPresenterWhenCustomerInfoCannotBeRead() async {
+        let expectedError = NSError(domain: "test", code: 7)
+        var presentedParams: ErrorPresentationParams?
+        var paywallPresentationCount = 0
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering(), traceID: "trace_id") },
+            workflowPresenter: MockWorkflowPresenter(),
+            customerInfoProvider: { throw expectedError }
+        )
+
+        let result = await manager.checkpointForCallback(
+            identifier: "onboarding",
+            params: .init(
+                paywallPresenter: { _, _ in paywallPresentationCount += 1 },
+                errorPresenter: { params, completion in
+                    presentedParams = params
+                    completion.complete()
+                }
+            )
+        )
+
+        guard case .suppressed = result else {
+            return XCTFail("Expected the callback to be suppressed")
+        }
+        XCTAssertEqual(paywallPresentationCount, 0)
+        XCTAssertEqual(presentedParams?.error as NSError?, expectedError)
+        XCTAssertEqual(presentedParams?.kind, .flowCouldNotBeShown)
     }
 
     func testRunCheckpointRecordsBackOutWithoutChangingDismissedOutcome() async throws {
@@ -689,14 +865,14 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(customerInfoSynchronizerCallCount, 1)
     }
 
-    func testDefaultOfferingPurchaseOrRestoreUsesTheCachedEntitlementBaseline() async throws {
+    func testDefaultOfferingPurchaseOrRestoreUsesTheEntitlementBaselineReadBeforeTheFlow() async throws {
         let terminalCustomerInfo = try Self.customerInfo(activeEntitlements: ["premium", "pro"])
         let defaultPresenter = MockDefaultPaywallPresenter(result: .continued)
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering(), traceID: "trace_id") },
             workflowPresenter: MockWorkflowPresenter(),
             defaultPaywallPresenter: defaultPresenter,
-            cachedCustomerInfoProvider: { try? Self.customerInfo(activeEntitlements: ["pro"]) },
+            customerInfoProvider: { try Self.customerInfo(activeEntitlements: ["pro"]) },
             customerInfoSynchronizer: { terminalCustomerInfo }
         )
 
@@ -750,17 +926,20 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(customerInfoSynchronizerCallCount, 0)
     }
 
-    func testContinueSynchronizesCustomerInfoAndReturnsNewEntitlements() async throws {
+    func testContinueReturnsCustomerStateAndEverythingObtainedDuringTheFlow() async throws {
+        let product = Self.storeProduct(identifier: "premium-product")
+        let terminalCustomerInfo = try Self.customerInfo(
+            activeEntitlements: ["premium", "pro"],
+            purchaseDatesByProductId: ["premium-product": Date(timeIntervalSince1970: 10)]
+        )
         var customerInfoSynchronizerCallCount = 0
         let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering(), traceID: "trace_id") },
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering(products: [product]), traceID: "trace_id") },
             workflowPresenter: MockWorkflowPresenter(),
-            cachedCustomerInfoProvider: {
-                try? Self.customerInfo(activeEntitlements: ["pro"])
-            },
+            customerInfoProvider: { try Self.customerInfo(activeEntitlements: ["pro"]) },
             customerInfoSynchronizer: {
                 customerInfoSynchronizerCallCount += 1
-                return try Self.customerInfo(activeEntitlements: ["premium", "pro"])
+                return terminalCustomerInfo
             }
         )
 
@@ -772,19 +951,80 @@ final class CheckpointsManagerTests: TestCase {
         guard case let .completed(checkpointResult) = result else {
             return XCTFail("Expected a completed callback")
         }
-        XCTAssertEqual(checkpointResult.flow?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
+        let flowResult = try XCTUnwrap(checkpointResult.flow)
+        let obtainedEntitlement = try XCTUnwrap(flowResult.obtainedEntitlement("premium"))
+        let obtainedProduct = try XCTUnwrap(flowResult.obtainedProduct("premium-product"))
+
+        XCTAssertEqual(checkpointResult.customer, terminalCustomerInfo)
+        XCTAssertEqual(flowResult.obtainedEntitlements, [obtainedEntitlement])
+        XCTAssertEqual(obtainedEntitlement.entitlementInfo.identifier, "premium")
+        XCTAssertEqual(flowResult.obtainedProducts, [obtainedProduct])
+        XCTAssertEqual(obtainedProduct.product.productIdentifier, "premium-product")
+
+        XCTAssertTrue(flowResult.didObtainEntitlement("premium"))
+        XCTAssertFalse(flowResult.didObtainEntitlement("unknown"))
+        XCTAssertTrue(flowResult.didObtainProduct("premium-product"))
+        XCTAssertFalse(flowResult.didObtainProduct("unknown"))
+
+        XCTAssertNil(flowResult.obtainedEntitlement("unknown"))
+        XCTAssertNil(flowResult.obtainedProduct("unknown"))
+
+        XCTAssertEqual(checkpointResult.obtainedEntitlement("premium"), obtainedEntitlement)
+        XCTAssertNil(checkpointResult.obtainedEntitlement("unknown"))
+        XCTAssertTrue(checkpointResult.didObtainEntitlement("premium"))
+        XCTAssertFalse(checkpointResult.didObtainEntitlement("unknown"))
+        XCTAssertEqual(checkpointResult.obtainedProduct("premium-product"), obtainedProduct)
+        XCTAssertNil(checkpointResult.obtainedProduct("unknown"))
+        XCTAssertTrue(checkpointResult.didObtainProduct("premium-product"))
+        XCTAssertFalse(checkpointResult.didObtainProduct("unknown"))
         XCTAssertEqual(customerInfoSynchronizerCallCount, 1)
     }
 
-    func testCustomerInfoSynchronizationFailurePresentsErrorThenReturnsEmptyResult() async {
+    func testWorkflowCompletionReportsTheProductsItsOfferingsSold() async throws {
+        let monthly = Self.storeProduct(identifier: "monthly")
+        let executor = MockWorkflowPresenter()
+        executor.execution = .completed(
+            customerInfo: try Self.customerInfo(
+                activeEntitlements: ["pro"],
+                purchaseDatesByProductId: [
+                    "monthly": Date(timeIntervalSince1970: 10),
+                    "lifetime": Date(timeIntervalSince1970: 10)
+                ]
+            )
+        )
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow(products: [monthly])) },
+            workflowPresenter: executor,
+            cachedCustomerInfoProvider: { try? Self.customerInfo(activeEntitlements: []) }
+        )
+
+        let result = await manager.checkpointForCallback(identifier: "soft_paywall", params: .init())
+
+        guard case let .completed(checkpointResult) = result else {
+            return XCTFail("Expected a completed callback")
+        }
+        XCTAssertEqual(checkpointResult.flow?.obtainedProducts.map(\.product.productIdentifier), ["monthly"])
+        XCTAssertTrue(checkpointResult.didObtainProduct("monthly"))
+        XCTAssertFalse(checkpointResult.didObtainProduct("lifetime"))
+    }
+
+    func testCustomerInfoSynchronizationFailurePresentsErrorThenReturnsTheLatestKnownCustomer() async throws {
         let expectedError = NSError(domain: "test", code: 42)
+        let product = Self.storeProduct(identifier: "premium-product")
+        let customerInfoBefore = try Self.customerInfo(activeEntitlements: ["pro"])
+        let cachedCustomerInfo = try Self.customerInfo(
+            activeEntitlements: ["premium", "pro"],
+            purchaseDatesByProductId: ["premium-product": Date(timeIntervalSince1970: 10)]
+        )
         let errorPresented = self.expectation(description: "Error is presented")
         var errorPresentationParams: ErrorPresentationParams?
         var errorPresentationCompletion: ErrorPresentationCompletion?
         var checkpointCompleted = false
         let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering(), traceID: "trace_id") },
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering(products: [product]), traceID: "trace_id") },
             workflowPresenter: MockWorkflowPresenter(),
+            customerInfoProvider: { customerInfoBefore },
+            cachedCustomerInfoProvider: { cachedCustomerInfo },
             customerInfoSynchronizer: { throw expectedError }
         )
 
@@ -817,8 +1057,9 @@ final class CheckpointsManagerTests: TestCase {
         guard case let .completed(checkpointResult) = result else {
             return XCTFail("Expected a completed callback")
         }
-        XCTAssertNotNil(checkpointResult.flow)
-        XCTAssertTrue(checkpointResult.flow?.obtainedEntitlements.isEmpty == true)
+        XCTAssertEqual(checkpointResult.customer, cachedCustomerInfo)
+        XCTAssertEqual(checkpointResult.flow?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
+        XCTAssertEqual(checkpointResult.flow?.obtainedProducts.map(\.product.productIdentifier), ["premium-product"])
         XCTAssertTrue(checkpointCompleted)
     }
 
@@ -1075,16 +1316,27 @@ final class CheckpointsManagerTests: TestCase {
         )
     }
 
-    private static func offering() -> Offering {
+    private static func offering(products: [StoreProduct] = []) -> Offering {
         return Offering(
             identifier: "offering-id",
             serverDescription: "Test offering",
-            availablePackages: [],
+            availablePackages: products.map { product in
+                Package(
+                    identifier: product.productIdentifier,
+                    packageType: .custom,
+                    storeProduct: product,
+                    offeringIdentifier: "offering-id",
+                    webCheckoutUrl: nil
+                )
+            },
             webCheckoutUrl: nil
         )
     }
 
-    private static func customerInfo(activeEntitlements: [String]) throws -> CustomerInfo {
+    fileprivate static func customerInfo(
+        activeEntitlements: [String],
+        purchaseDatesByProductId: [String: Date] = [:]
+    ) throws -> CustomerInfo {
         let infos = Dictionary(uniqueKeysWithValues: activeEntitlements.map { identifier in
             (
                 identifier,
@@ -1105,14 +1357,29 @@ final class CheckpointsManagerTests: TestCase {
 
         return CustomerInfo(
             entitlements: EntitlementInfos(entitlements: infos),
+            purchaseDatesByProductId: purchaseDatesByProductId,
+            allPurchasedProductIds: Set(purchaseDatesByProductId.keys),
             requestDate: Date(timeIntervalSince1970: 0),
             firstSeen: Date(timeIntervalSince1970: 0),
             originalAppUserId: "test-user"
         )
     }
 
-    private static func workflow() -> ResolvedCheckpointWorkflow {
-        let offering = Self.offering()
+    private static func storeProduct(identifier: String) -> StoreProduct {
+        return TestStoreProduct(
+            localizedTitle: identifier,
+            price: 1.99,
+            currencyCode: "USD",
+            localizedPriceString: "$1.99",
+            productIdentifier: identifier,
+            productType: .nonConsumable,
+            localizedDescription: identifier,
+            locale: Locale(identifier: "en_US")
+        ).toStoreProduct()
+    }
+
+    private static func workflow(products: [StoreProduct] = []) -> ResolvedCheckpointWorkflow {
+        let offering = Self.offering(products: products)
         return ResolvedCheckpointWorkflow(
             workflow: PublishedWorkflow(
                 id: "workflow-id",
@@ -1152,9 +1419,21 @@ private extension CheckpointsManagerTests {
 private extension CheckpointsManager {
 
     convenience init(
+        resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution
+    ) {
+        self.init(
+            resolveCheckpoint: resolveCheckpoint,
+            customerInfoProvider: { try CheckpointsManagerTests.customerInfo(activeEntitlements: []) }
+        )
+    }
+
+    convenience init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
         workflowPresenter: WorkflowPresenterType,
         defaultPaywallPresenter: PaywallPresenter? = nil,
+        customerInfoProvider: @escaping CustomerInfoProvider = {
+            try CheckpointsManagerTests.customerInfo(activeEntitlements: [])
+        },
         cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil },
         customerInfoSynchronizer: @escaping CustomerInfoSynchronizer = { throw CancellationError() }
     ) {
@@ -1174,6 +1453,7 @@ private extension CheckpointsManager {
         }
         self.init(
             resolveCheckpoint: resolveCheckpoint,
+            customerInfoProvider: customerInfoProvider,
             checkpointPresenter: checkpointPresenter,
             cachedCustomerInfoProvider: cachedCustomerInfoProvider
         )

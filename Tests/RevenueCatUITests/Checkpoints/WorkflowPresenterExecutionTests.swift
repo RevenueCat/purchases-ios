@@ -139,6 +139,7 @@ final class WorkflowPresenterExecutionTests: TestCase {
             workflow: self.workflow(),
             customVariables: customVariables,
             presentationMode: .modalSheet,
+            initialActiveEntitlementIdentifiers: [],
             errorPresentationHandler: { _, completion in completion.complete() }
         )
     }

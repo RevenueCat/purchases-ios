@@ -73,6 +73,25 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
         XCTAssertEqual(errorPresenter.presentations.first?.error as NSError?, expectedError)
     }
 
+    // Customer information read failure: invoke the error presenter and do not invoke the callback.
+    func testCustomerInfoReadFailure() async {
+        let expectedError = NSError(domain: "CheckpointOutcomeBehaviorTests", code: 2)
+        let errorPresenter = ErrorPresentationRecorder()
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
+            customerInfoProvider: { throw expectedError }
+        )
+
+        let result = await manager.checkpointForCallback(
+            identifier: "soft_paywall",
+            params: self.params(errorPresenter: errorPresenter)
+        )
+
+        self.assertSuppressed(result)
+        self.assertTerminalErrorWasPresented(by: errorPresenter, checkpointIdentifier: "soft_paywall")
+        XCTAssertEqual(errorPresenter.presentations.first?.error as NSError?, expectedError)
+    }
+
     // Configuration unavailable: invoke the error presenter and do not invoke the callback.
     func testConfigurationUnavailable() async {
         let errorPresenter = ErrorPresentationRecorder()
@@ -200,8 +219,8 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
                     customerInfo: try Self.customerInfo(activeEntitlements: ["premium", "pro"])
                 )
             ),
-            cachedCustomerInfoProvider: {
-                try? Self.customerInfo(activeEntitlements: ["pro"])
+            customerInfoProvider: {
+                try Self.customerInfo(activeEntitlements: ["pro"])
             }
         )
 
@@ -214,6 +233,7 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
             return XCTFail("Expected the callback to be invoked")
         }
         XCTAssertEqual(checkpointResult.flow?.obtainedEntitlements.map(\.entitlementInfo.identifier), ["premium"])
+        XCTAssertNotNil(checkpointResult.customer)
         XCTAssertTrue(errorPresenter.presentations.isEmpty)
     }
 
@@ -224,7 +244,7 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
             checkpointPresenter: OutcomeCheckpointPresenter(outcome: .completed(customerInfo: customerInfo)),
-            cachedCustomerInfoProvider: { customerInfo }
+            customerInfoProvider: { customerInfo }
         )
 
         let result = await manager.checkpointForCallback(
@@ -236,6 +256,7 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
             return XCTFail("Expected the callback to be invoked")
         }
         XCTAssertTrue(checkpointResult.flow?.obtainedEntitlements.isEmpty == true)
+        XCTAssertEqual(checkpointResult.customer, customerInfo)
         XCTAssertTrue(errorPresenter.presentations.isEmpty)
     }
 
@@ -259,6 +280,8 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
             return XCTFail("Expected the callback to be invoked")
         }
         XCTAssertTrue(checkpointResult.flow?.obtainedEntitlements.isEmpty == true)
+        XCTAssertTrue(checkpointResult.flow?.obtainedProducts.isEmpty == true)
+        XCTAssertEqual(checkpointResult.customer, try Self.customerInfo(activeEntitlements: []))
         XCTAssertEqual(errorPresenter.presentations.count, 1)
         XCTAssertEqual(errorPresenter.presentations.first?.error as NSError?, expectedError)
         XCTAssertEqual(errorPresenter.presentations.first?.kind, .flowResultSyncFailed)
@@ -281,6 +304,7 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
             return XCTFail("Expected the callback to be invoked", file: file, line: line)
         }
         XCTAssertNil(checkpointResult.flow, file: file, line: line)
+        XCTAssertEqual(checkpointResult.customer, try Self.customerInfo(activeEntitlements: []), file: file, line: line)
         XCTAssertTrue(errorPresenter.presentations.isEmpty, file: file, line: line)
     }
 
@@ -350,7 +374,7 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
         )
     }
 
-    private static func customerInfo(activeEntitlements: [String]) throws -> CustomerInfo {
+    fileprivate static func customerInfo(activeEntitlements: [String]) throws -> CustomerInfo {
         let infos = Dictionary(uniqueKeysWithValues: activeEntitlements.map { identifier in
             (
                 identifier,
@@ -374,6 +398,28 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
             requestDate: Date(timeIntervalSince1970: 0),
             firstSeen: Date(timeIntervalSince1970: 0),
             originalAppUserId: "test-user"
+        )
+    }
+
+}
+
+@MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension CheckpointsManager {
+
+    convenience init(
+        resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
+        checkpointPresenter: CheckpointPresenterType? = nil,
+        customerInfoProvider: @escaping CustomerInfoProvider = {
+            try CheckpointOutcomeBehaviorTests.customerInfo(activeEntitlements: [])
+        },
+        cachedCustomerInfoProvider: @escaping CachedCustomerInfoProvider = { nil }
+    ) {
+        self.init(
+            resolveCheckpoint: resolveCheckpoint,
+            customerInfoProvider: customerInfoProvider,
+            checkpointPresenter: checkpointPresenter,
+            cachedCustomerInfoProvider: cachedCustomerInfoProvider
         )
     }
 

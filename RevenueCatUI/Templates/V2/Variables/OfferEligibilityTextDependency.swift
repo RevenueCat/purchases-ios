@@ -162,7 +162,15 @@ extension VariablesV2 {
     /// Every `product.offer_*` case is included. A variable that reads `OfferContext` under another
     /// name has to be added here. `OfferEligibilityTextRedactionTests` pins the resulting set.
     var dependsOnOfferEligibility: Bool {
-        return self.rawValue.hasPrefix("product.offer_")
+        switch self {
+        case .productRelativeDiscountWithOffer,
+             .productAbsoluteDiscountWithOffer,
+             .productRelativeDiscountWithOfferFullPeriod,
+             .productAbsoluteDiscountWithOfferFullPeriod:
+            return true
+        default:
+            return self.rawValue.hasPrefix("product.offer_")
+        }
     }
 
 }
