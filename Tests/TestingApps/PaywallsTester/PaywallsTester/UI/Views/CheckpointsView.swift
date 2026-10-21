@@ -56,12 +56,12 @@ struct CheckpointsView: View {
         NavigationView {
             Form {
                 self.checkpointSection
+                self.resultSection
                 self.recentSection
                 #if DEBUG
                 self.configuredSection
                 #endif
                 self.customVariablesSection
-                self.resultSection
             }
             .navigationTitle("Checkpoints")
             #if DEBUG
@@ -125,7 +125,7 @@ struct CheckpointsView: View {
                 .focused(self.$isIdentifierFocused)
                 .onSubmit { self.triggerCheckpoint(self.trimmedIdentifier) }
 
-            Button("Trigger checkpoint") { self.triggerCheckpoint(self.trimmedIdentifier) }
+            Button("Hit checkpoint") { self.triggerCheckpoint(self.trimmedIdentifier) }
                 .contextMenu { self.presentationModeMenu(for: self.trimmedIdentifier) }
                 .disabled(self.trimmedIdentifier.isEmpty)
         } footer: {
@@ -175,15 +175,27 @@ struct CheckpointsView: View {
 
     @ViewBuilder
     private var resultSection: some View {
-        if let result {
-            Section("Latest result") {
+        Section("Latest result") {
+            if let result {
                 CheckpointResultRow(label: "Identifier", value: result.identifier)
-                CheckpointResultRow(label: "Outcome", value: result.outcome)
+                HStack {
+                    Text("Outcome")
+                    Spacer()
+                    if result.isWaiting {
+                        ProgressView()
+                    }
+                    Text(result.outcome)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.trailing)
+                }
 
                 if let details = result.details {
                     Text(details)
                         .foregroundStyle(.secondary)
                 }
+            } else {
+                Text("Hit a checkpoint to see its result here.")
+                    .foregroundStyle(.secondary)
             }
         }
     }
@@ -201,7 +213,7 @@ struct CheckpointsView: View {
 
         self.isIdentifierFocused = false
         self.recordRecentIdentifier(identifier)
-        self.result = .callbackNotInvoked(identifier: identifier)
+        self.result = .waiting(identifier: identifier)
 
         Purchases.shared.checkpoint(
             identifier,
@@ -276,12 +288,14 @@ private struct CheckpointDisplayResult {
     let identifier: String
     let outcome: String
     let details: String?
+    var isWaiting = false
 
-    static func callbackNotInvoked(identifier: String) -> Self {
+    static func waiting(identifier: String) -> Self {
         return Self(
             identifier: identifier,
-            outcome: "Callback not called",
-            details: nil
+            outcome: "Waiting…",
+            details: "Backing out of a paywall never reports a result. Hit the checkpoint again.",
+            isWaiting: true
         )
     }
 
@@ -291,18 +305,20 @@ private struct CheckpointDisplayResult {
         guard let flowResult = result.flow else {
             return Self(
                 identifier: identifier,
-                outcome: "No action",
-                details: "No matching flow was presented. \(activeNowDetails)"
+                outcome: "Nothing presented",
+                details: "See the logs for the reason. \(activeNowDetails)"
             )
         }
 
-        let identifiers = flowResult.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted()
-        let obtainedDetails = identifiers.isEmpty
-            ? "No new entitlements were granted."
-            : "Granted entitlements: \(identifiers.joined(separator: ", "))."
+        let entitlements = flowResult.obtainedEntitlements.map(\.entitlementInfo.identifier).sorted()
+        let products = flowResult.obtainedProducts.map(\.product.productIdentifier).sorted()
+        let obtainedDetails = entitlements.isEmpty && products.isEmpty
+            ? "Nothing obtained."
+            : "Obtained entitlements: \(entitlements.joined(separator: ", ")), " +
+                "products: \(products.joined(separator: ", "))."
         return Self(
             identifier: identifier,
-            outcome: "Flow completed",
+            outcome: "Flow presented",
             details: "\(obtainedDetails) \(activeNowDetails)"
         )
     }
