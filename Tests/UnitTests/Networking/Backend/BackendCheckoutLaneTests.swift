@@ -77,6 +77,7 @@ final class BackendCheckoutLaneTests: BaseBackendTests {
             backend.externalPurchaseTokenAPI.postExternalPurchaseToken(
                 appUserID: Self.userID,
                 purchaseType: .linkOut,
+                tokenID: Self.tokenID,
                 token: "storekit-token",
                 completion: { _ in completed() }
             )
@@ -172,6 +173,7 @@ final class BackendCheckoutLaneTests: BaseBackendTests {
             backend.externalPurchaseTokenAPI.postExternalPurchaseToken(
                 appUserID: Self.userID,
                 purchaseType: .linkOut,
+                tokenID: Self.tokenID,
                 token: "storekit-token",
                 completion: { _ in completed() }
             )
@@ -203,19 +205,22 @@ final class BackendCheckoutLaneTests: BaseBackendTests {
             response: .init(statusCode: .success, response: Self.hostedCheckoutResponse)
         )
 
-        let tokenResult: Atomic<Result<ExternalPurchaseTokenResponse, BackendError>?> = nil
+        let tokenCompleted: Atomic<Bool> = false
+        let tokenError: Atomic<BackendError?> = nil
         let checkoutResult: Atomic<Result<HostedCheckoutResponse, BackendError>?> = nil
         let callsAtTokenCompletion: Atomic<[String]?> = nil
 
         backend.externalPurchaseTokenAPI.postExternalPurchaseToken(
             appUserID: Self.userID,
             purchaseType: .linkOut,
+            tokenID: Self.tokenID,
             token: "storekit-token"
-        ) { result in
+        ) { error in
             // The operation invokes this closure before calling its internal completion, which is
             // what frees the lane's single queue slot, so hosted checkout cannot have started yet.
             callsAtTokenCompletion.value = laneClient.calls.map(\.request.path.relativePath)
-            tokenResult.value = result
+            tokenError.value = error
+            tokenCompleted.value = true
         }
 
         backend.webBilling.postHostedCheckout(
@@ -227,7 +232,7 @@ final class BackendCheckoutLaneTests: BaseBackendTests {
             previousOperationSessionID: nil
         ) { checkoutResult.value = $0 }
 
-        expect(tokenResult.value).toEventuallyNot(beNil(), timeout: .seconds(5))
+        expect(tokenCompleted.value).toEventually(beTrue(), timeout: .seconds(5))
         expect(checkoutResult.value).toEventuallyNot(beNil(), timeout: .seconds(5))
 
         expect(callsAtTokenCompletion.value) == [externalPurchaseTokenPath]
@@ -236,7 +241,7 @@ final class BackendCheckoutLaneTests: BaseBackendTests {
             externalPurchaseTokenPath,
             hostedCheckoutPath
         ]
-        expect(tokenResult.value).to(beSuccess())
+        expect(tokenError.value).to(beNil())
         expect(checkoutResult.value).to(beSuccess())
         expect(self.httpClient.calls).to(beEmpty())
     }
@@ -307,6 +312,7 @@ final class BackendCheckoutLaneParallelTests: TestCase {
 
     private static let userID = "lane-user"
     private static let packageID = "$rc_monthly"
+    private static let tokenID = "ept13dcbc01adaa44db9b1691a6be2f9929"
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -360,15 +366,17 @@ final class BackendCheckoutLaneParallelTests: TestCase {
             offeringsCompleted.value = true
         }
 
-        let tokenResult: Result<ExternalPurchaseTokenResponse, BackendError>? = waitUntilValue(
-            timeout: .seconds(5)
-        ) { completed in
+        var tokenError: BackendError?
+        waitUntil(timeout: .seconds(5)) { completed in
             backend.externalPurchaseTokenAPI.postExternalPurchaseToken(
                 appUserID: Self.userID,
                 purchaseType: .linkOut,
-                token: "storekit-token",
-                completion: completed
-            )
+                tokenID: Self.tokenID,
+                token: "storekit-token"
+            ) { error in
+                tokenError = error
+                completed()
+            }
         }
 
         let checkoutResult: Result<HostedCheckoutResponse, BackendError>? = waitUntilValue(
@@ -385,7 +393,7 @@ final class BackendCheckoutLaneParallelTests: TestCase {
             )
         }
 
-        expect(tokenResult).to(beSuccess())
+        expect(tokenError).to(beNil())
         expect(checkoutResult).to(beSuccess())
         expect(offeringsDispatched.value).toEventually(beTrue())
         expect(offeringsCompleted.value) == false
