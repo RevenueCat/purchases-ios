@@ -2149,6 +2149,14 @@ jobs:
     steps:
       - checkout
       - install-dependencies
+      - run:
+          name: Install Emerge CLI
+          # mise only shims binaries present at install time, so a gem executable
+          # needs a reshim to land on PATH. bundle exec emerge is the Gemfile's 0.1.0,
+          # which uploads through the old per-image API and hides failures.
+          command: |
+            gem install emerge
+            mise reshim
       - revenuecat/setup-git-credentials
       - revenuecat/trust-github-key
       - run:
