@@ -257,6 +257,46 @@ class OfferEligibilityTextRedactionTests: TestCase {
         }
     }
 
+    @MainActor
+    func testPromoCacheDoesNotChangeBillingPlanWithoutOffer() async throws {
+        let productWithOffer = TestData.productWithPromoOfferPayUpFront
+        var productWithoutOffer = productWithOffer
+        productWithoutOffer.discounts = []
+        let code = try XCTUnwrap(productWithOffer.discounts.first?.offerIdentifier)
+        let viewModel = try Self.makeViewModel(text: "{{ product.offer_price }}")
+
+        for offerOnBillingPlan in [false, true] {
+            let withOffer = Self.makePackage(product: productWithOffer, hasBillingPlan: offerOnBillingPlan)
+            let withoutOffer = Self.makePackage(product: productWithoutOffer, hasBillingPlan: !offerOnBillingPlan)
+            XCTAssertEqual(withOffer.storeProduct.productIdentifier, withoutOffer.storeProduct.productIdentifier)
+            XCTAssertNotEqual(withOffer.storeProduct.id, withoutOffer.storeProduct.id)
+
+            for packages in [[withOffer, withoutOffer], [withoutOffer, withOffer]] {
+                let context = "offerOnBillingPlan=\(offerOnBillingPlan), first=\(packages[0].identifier)"
+                let packageInfos = packages.map { (package: $0, promotionalOfferProductCode: code as String?) }
+                let availability = OfferEligibilityAvailability(packageInfos: packageInfos)
+                // Use the real cache, with simulated signing so no StoreKit or backend request is needed.
+                let cache = PaywallPromoOfferCache(simulateEligible: true)
+
+                XCTAssertNil(cache.get(for: withoutOffer), context)
+                XCTAssertFalse(self.redacts(
+                    viewModel,
+                    isIntroOfferEligibilityLoading: false,
+                    package: withoutOffer,
+                    availability: availability
+                ), context)
+
+                await cache.computeEligibility(for: packageInfos)
+
+                XCTAssertEqual(cache.get(for: withOffer)?.discount.offerIdentifier, code, context)
+                XCTAssertTrue(cache.isMostLikelyEligible(for: withOffer), context)
+                // Text was already readable: completing another variant's check must not give it a promo.
+                XCTAssertNil(cache.get(for: withoutOffer), context)
+                XCTAssertFalse(cache.isMostLikelyEligible(for: withoutOffer), context)
+            }
+        }
+    }
+
     func testPromoCopyRequiresAConfiguredMatchingOffer() throws {
         let package = TestData.packageWithPromoOfferPayUpFront
         let viewModel = try Self.makeViewModel(
