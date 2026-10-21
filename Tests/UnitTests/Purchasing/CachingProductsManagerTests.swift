@@ -303,22 +303,47 @@ class CachingProductsManagerTests: TestCase {
         expect(try subset?.get()) == [second]
     }
 
+    func testEmptyPlanAliasSharesCanonicalRequestAndCache() throws {
+        let product = self.createMockProduct()
+        let alias = "\(product.id):"
+        self.mockManager.stubbedProductsCompletionResult = .success([product])
+        self.mockManager.shouldDeferProductsCompletion = true
+        var aliasResult: Result<Set<StoreProduct>, PurchasesError>?
+        var canonicalResult: Result<Set<StoreProduct>, PurchasesError>?
+
+        self.cachingManager.products(withIdentifiers: [alias]) { aliasResult = $0 }
+        self.cachingManager.products(withIdentifiers: [product.id]) { canonicalResult = $0 }
+        expect(self.mockManager.invokedProductsCount) == 1
+        expect(self.mockManager.invokedProductsParameters) == [product.id]
+
+        self.mockManager.completeDeferredProductsRequest(at: 0)
+        expect(try aliasResult?.get()) == [product]
+        expect(try canonicalResult?.get()) == [product]
+
+        var cached: Result<Set<StoreProduct>, PurchasesError>?
+        self.cachingManager.products(withIdentifiers: [alias, product.id]) { cached = $0 }
+        expect(try cached?.get()) == [product]
+        expect(self.mockManager.invokedProductsCount) == 1
+    }
+
     func testSharedRequestPreservesEachCallersCachedProducts() throws {
-        let cached = self.createMockProduct(identifier: "cached")
+        let firstCached = self.createMockProduct(identifier: "first-cached")
+        let secondCached = self.createMockProduct(identifier: "second-cached")
         let fetched = self.createMockProduct(identifier: "fetched")
-        self.cachingManager.cache(cached)
+        self.cachingManager.cache(firstCached)
+        self.cachingManager.cache(secondCached)
         self.mockManager.stubbedProductsCompletionResult = .success([fetched])
         self.mockManager.shouldDeferProductsCompletion = true
-        var combined: Result<Set<StoreProduct>, PurchasesError>?
-        var fetchedOnly: Result<Set<StoreProduct>, PurchasesError>?
+        var firstResult: Result<Set<StoreProduct>, PurchasesError>?
+        var secondResult: Result<Set<StoreProduct>, PurchasesError>?
 
-        self.cachingManager.products(withIdentifiers: [cached.id, fetched.id]) { combined = $0 }
-        self.cachingManager.products(withIdentifiers: [fetched.id]) { fetchedOnly = $0 }
+        self.cachingManager.products(withIdentifiers: [firstCached.id, fetched.id]) { firstResult = $0 }
+        self.cachingManager.products(withIdentifiers: [secondCached.id, fetched.id]) { secondResult = $0 }
         self.mockManager.completeDeferredProductsRequest(at: 0)
 
         expect(self.mockManager.invokedProductsCount) == 1
-        expect(try combined?.get()) == [cached, fetched]
-        expect(try fetchedOnly?.get()) == [fetched]
+        expect(try firstResult?.get()) == [firstCached, fetched]
+        expect(try secondResult?.get()) == [secondCached, fetched]
     }
 
     func testClearCacheKeepsOldCallersButStartsNewRequest() throws {
