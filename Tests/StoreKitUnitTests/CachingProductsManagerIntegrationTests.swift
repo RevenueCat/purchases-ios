@@ -261,8 +261,8 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
         let checker = self.createEligibilityChecker(manager: manager)
         let task = Task { try await checker.sk2CheckEligibility([Self.productID]) }
         defer { task.cancel() }
-        try await asyncWait(description: "Eligibility product fetch did not start", timeout: .seconds(5)) {
-            fetcher.invokedProductsCount == 1
+        try await asyncWait(description: "Eligibility product response was not captured", timeout: .seconds(5)) {
+            fetcher.deferredProductsRequestCount == 1
         }
 
         manager.clearCache()
@@ -321,8 +321,8 @@ private extension CachingProductsManagerIntegrationTests {
         }
         let eligibilityTask = Task { try await checker.sk2CheckEligibility([Self.productID]) }
         defer { eligibilityTask.cancel() }
-        try await asyncWait(description: "Product fetch did not start", timeout: .seconds(5)) {
-            fetcher.invokedProductsCount == 1
+        try await asyncWait(description: "Product response was not captured", timeout: .seconds(5)) {
+            fetcher.deferredProductsRequestCount == 1
         }
         if startWithEligibility {
             manager.products(withIdentifiers: [Self.productID]) { generalResult = $0 }

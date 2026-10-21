@@ -17,7 +17,13 @@ class MockProductsManager: ProductsManager {
     var productResultDelay: TimeInterval?
     var fetchProductsFromStoreKit = false
     var shouldDeferProductsCompletion = false
-    private(set) var deferredProductsCompletions: [() -> Void] = []
+
+    // A request is ready only after its result and completion have both been captured.
+    var deferredProductsRequestCount: Int {
+        self.deferredProductsCompletions.value.count
+    }
+
+    private let deferredProductsCompletions: Atomic<[() -> Void]> = .init([])
 
     override func products(withIdentifiers identifiers: Set<String>,
                            completion: @escaping (Result<Set<StoreProduct>, PurchasesError>) -> Void) {
@@ -53,7 +59,7 @@ class MockProductsManager: ProductsManager {
 
         let complete = { completion(result) }
         if self.shouldDeferProductsCompletion {
-            self.deferredProductsCompletions.append(complete)
+            self.deferredProductsCompletions.modify { $0.append(complete) }
         } else if let delay = self.productResultDelay {
             DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: complete)
         } else {
@@ -62,7 +68,7 @@ class MockProductsManager: ProductsManager {
     }
 
     func completeDeferredProductsRequest(at index: Int) {
-        self.deferredProductsCompletions[index]()
+        self.deferredProductsCompletions.value[index]()
     }
 
     var invokedCacheProduct = false
@@ -89,7 +95,7 @@ class MockProductsManager: ProductsManager {
         self.invokedProductsParametersList = []
         self.stubbedProductsCompletionResult = nil
         self.shouldDeferProductsCompletion = false
-        self.deferredProductsCompletions = []
+        self.deferredProductsCompletions.value = []
         self.invokedCacheProduct = false
         self.invokedCacheProductCount = 0
         self.invokedCacheProductParameter = nil
