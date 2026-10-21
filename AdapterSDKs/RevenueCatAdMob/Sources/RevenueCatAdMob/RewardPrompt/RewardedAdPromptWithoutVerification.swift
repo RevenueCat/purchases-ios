@@ -32,6 +32,19 @@ import SwiftUI
 /// Reward callbacks may arrive before or after dismissal, including for mediated ads.
 /// Closing without earning a reward invokes only `onDismiss`. Accepted presentations retain
 /// their callbacks even if the prompt is removed or updated.
+///
+/// For example, given an ad preloaded with `loadAndTrack` and an app-defined `retryLevel()` action:
+///
+/// ```swift
+/// RewardedAdPromptWithoutVerification(
+///     ad: loadedAd,
+///     onRewardEarned: {
+///         retryLevel()
+///     }
+/// ) { context in
+///     Button("Watch an ad to retry the level", action: context.accept)
+/// }
+/// ```
 @available(iOS 15.0, *)
 @MainActor
 public struct RewardedAdPromptWithoutVerification<Content: View>: View {
