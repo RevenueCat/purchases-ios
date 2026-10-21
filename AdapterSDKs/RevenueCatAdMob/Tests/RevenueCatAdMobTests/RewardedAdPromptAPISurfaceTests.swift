@@ -17,10 +17,12 @@ final class RewardedAdPromptAPISurfaceTests: AdapterTestCase {
                 session: RewardedAdPromptSession(),
                 ad: rewardedAd,
                 placement: "placement",
-                onResult: { result in
-                    let _: RewardedAdPromptVerificationResult.Kind = result.kind
-                    let _: RewardVerificationResult? = result.rewardVerificationResult
-                    let _: RewardedAdPromptError? = result.presentationError
+                onVerificationCompleted: { result in
+                    let _: RewardVerificationResult = result
+                },
+                onDismiss: {},
+                onPresentationFailed: { error in
+                    let _: RewardedAdPromptError = error
                 },
                 content: { context in
                     let _: ConfiguredAdRewards? = context.rewardConfiguration
@@ -38,9 +40,10 @@ final class RewardedAdPromptAPISurfaceTests: AdapterTestCase {
         let makePrompt: @MainActor (RewardedAd) -> Void = { rewardedAd in
             let prompt: RewardedAdPromptWithoutVerification<Text> = RewardedAdPromptWithoutVerification(
                 ad: rewardedAd,
-                onResult: { result in
-                    let _: RewardedAdPromptUnverifiedResult.Kind = result.kind
-                    let _: RewardedAdPromptError? = result.presentationError
+                onRewardEarned: {},
+                onDismiss: {},
+                onPresentationFailed: { error in
+                    let _: RewardedAdPromptError = error
                 },
                 content: { (context: RewardedAdPromptUnverifiedContext) in
                     let _: @MainActor () -> Void = context.accept
@@ -55,14 +58,14 @@ final class RewardedAdPromptAPISurfaceTests: AdapterTestCase {
 
     func testMinimalEntryPointsSupportTrailingContentClosure() {
         let makePrompt: @MainActor (RewardedAd) -> Void = { rewardedAd in
-            let verifiedResult: (RewardedAdPromptVerificationResult) -> Void = { _ in }
-            let unverifiedResult: (RewardedAdPromptUnverifiedResult) -> Void = { _ in }
-            let verified = RewardedAdPrompt(ad: rewardedAd, onResult: verifiedResult) { context in
+            let verifiedResult: (RewardVerificationResult) -> Void = { _ in }
+            let rewardEarned: () -> Void = {}
+            let verified = RewardedAdPrompt(ad: rewardedAd, onVerificationCompleted: verifiedResult) { context in
                 let _: @MainActor () -> Void = context.accept
                 Text("Reward")
             }
             let unverified = RewardedAdPromptWithoutVerification(
-                ad: rewardedAd, onResult: unverifiedResult
+                ad: rewardedAd, onRewardEarned: rewardEarned
             ) { context in
                 let _: RewardedAdPromptUnverifiedContext = context
                 let _: @MainActor () -> Void = context.accept
@@ -77,11 +80,13 @@ final class RewardedAdPromptAPISurfaceTests: AdapterTestCase {
 
     func testBothEntryPointsAcceptRewardedInterstitialAds() {
         let makePrompt: @MainActor (RewardedInterstitialAd) -> Void = { rewardedAd in
-            let verifiedResult: (RewardedAdPromptVerificationResult) -> Void = { _ in }
-            let unverifiedResult: (RewardedAdPromptUnverifiedResult) -> Void = { _ in }
-            let verified = RewardedAdPrompt(ad: rewardedAd, onResult: verifiedResult) { _ in Text("Reward") }
+            let verifiedResult: (RewardVerificationResult) -> Void = { _ in }
+            let rewardEarned: () -> Void = {}
+            let verified = RewardedAdPrompt(ad: rewardedAd, onVerificationCompleted: verifiedResult) { _ in
+                Text("Reward")
+            }
             let unverified = RewardedAdPromptWithoutVerification(
-                ad: rewardedAd, onResult: unverifiedResult
+                ad: rewardedAd, onRewardEarned: rewardEarned
             ) { context in
                 let _: RewardedAdPromptUnverifiedContext = context
                 let _: @MainActor () -> Void = context.accept
@@ -94,15 +99,9 @@ final class RewardedAdPromptAPISurfaceTests: AdapterTestCase {
         _ = makePrompt
     }
 
-    func testResultKindsRemainAvailableInSwift() {
+    func testPresentationErrorCodesRemainAvailableInSwift() {
         let _: RewardedAdPromptError.Code = .adFailedToPresent
         let _: RewardedAdPromptError.Code = .presentationContextUnavailable
-        let _: RewardedAdPromptVerificationResult.Kind = .verificationCompleted
-        let _: RewardedAdPromptVerificationResult.Kind = .dismissed
-        let _: RewardedAdPromptVerificationResult.Kind = .notPresented
-        let _: RewardedAdPromptUnverifiedResult.Kind = .rewardEarned
-        let _: RewardedAdPromptUnverifiedResult.Kind = .dismissed
-        let _: RewardedAdPromptUnverifiedResult.Kind = .notPresented
     }
 
 }

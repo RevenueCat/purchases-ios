@@ -52,7 +52,9 @@ final class PromptLifecycleProbe {
     var shownPlacements: [String?] = []
     var acceptedPlacements: [String?] = []
     var rewardsLoadCount = 0
-    var resultLabels: [String] = []
+    var rewardLabels: [String] = []
+    var dismissalLabels: [String] = []
+    var failureLabels: [String] = []
     var renderedResultLabel: String?
     var rewards: () -> ConfiguredAdRewards? = {
         .noConfiguredReward
@@ -94,13 +96,19 @@ struct PromptLifecycleHost: View {
                         RewardedAdPrompt(
                             session: self.state.session, ad: self.state.interstitialAd,
                             placement: self.state.placement,
-                            onResult: { _ in self.probe.resultLabels.append(resultLabel) }, content: self.content
+                            onVerificationCompleted: { _ in self.probe.rewardLabels.append(resultLabel) },
+                            onDismiss: { self.probe.dismissalLabels.append(resultLabel) },
+                            onPresentationFailed: { _ in self.probe.failureLabels.append(resultLabel) },
+                            content: self.content
                         )
                     } else {
                         RewardedAdPrompt(
                             session: self.state.session, ad: self.state.rewardedAd,
                             placement: self.state.placement,
-                            onResult: { _ in self.probe.resultLabels.append(resultLabel) }, content: self.content
+                            onVerificationCompleted: { _ in self.probe.rewardLabels.append(resultLabel) },
+                            onDismiss: { self.probe.dismissalLabels.append(resultLabel) },
+                            onPresentationFailed: { _ in self.probe.failureLabels.append(resultLabel) },
+                            content: self.content
                         )
                     }
                 } else {
@@ -108,13 +116,19 @@ struct PromptLifecycleHost: View {
                         RewardedAdPromptWithoutVerification(
                             session: self.state.session, ad: self.state.interstitialAd,
                             placement: self.state.placement,
-                            onResult: { _ in self.probe.resultLabels.append(resultLabel) }, content: self.content
+                            onRewardEarned: { self.probe.rewardLabels.append(resultLabel) },
+                            onDismiss: { self.probe.dismissalLabels.append(resultLabel) },
+                            onPresentationFailed: { _ in self.probe.failureLabels.append(resultLabel) },
+                            content: self.content
                         )
                     } else {
                         RewardedAdPromptWithoutVerification(
                             session: self.state.session, ad: self.state.rewardedAd,
                             placement: self.state.placement,
-                            onResult: { _ in self.probe.resultLabels.append(resultLabel) }, content: self.content
+                            onRewardEarned: { self.probe.rewardLabels.append(resultLabel) },
+                            onDismiss: { self.probe.dismissalLabels.append(resultLabel) },
+                            onPresentationFailed: { _ in self.probe.failureLabels.append(resultLabel) },
+                            content: self.content
                         )
                     }
                 }

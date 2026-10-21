@@ -133,18 +133,33 @@ The sample prints diagnostics in the Xcode console and emits RevenueCat ad event
 All formats in this app use `loadAndTrack` APIs and pass a `placement` value to improve reporting segmentation.
 
 For regular rewarded ads, the dedicated **Load** button calls `loadAndTrack` and passes the loaded ad to
-the prompt. The prompt owns reward-configuration preparation, prompt tracking, and presentation, not ad loading.
-`RewardedAdPrompt` enables RevenueCat reward verification, while `RewardedAdPromptWithoutVerification`
-clears any existing per-ad SSV options and RevenueCat verification state before presentation, leaving
-the app responsible for granting the reward. The custom SwiftUI content reads the configured reward
-and calls `prompt.accept()` when tapped. The **Load** button handles ad-loading failures. The prompt
-reads reward configuration from the local cache without waiting for a fetch. When metadata is unavailable
-or no rewards are configured, the sample uses a generic `Watch an ad to earn a reward` offer;
-presentation and verification outcomes are delivered through `onResult`. If the prompt has no attached
-presentation controller or AdMob cannot present the ad, the result is `.notPresented` with a `presentationError`.
-`onResult` is called once on the main actor: `.rewardEarned` arrives when AdMob reports the reward,
-and `.verificationCompleted` arrives when verification finishes. Neither implies the ad has closed;
-later dismissal produces no second result. Dismissal before earning a reward reports `.dismissed` instead.
+the prompt. The app owns loading and loading errors; the prompt owns reward-configuration preparation,
+prompt tracking, and presentation. `RewardedAdPrompt` selects RevenueCat verification and resolves
+reward configuration asynchronously, updating the content context without blocking the main thread.
+While configuration is loading or unavailable, or when no rewards are configured, the sample shows
+a generic offer. `RewardedAdPromptWithoutVerification` clears existing per-ad verification settings
+before presentation, exposes only `accept()` to its content, and leaves the app responsible for its reward.
+
+Both prompts use separate callbacks on the main actor, each delivered at most once per presentation:
+
+- `onDismiss` reports that the ad closed. It does not establish that no reward was earned.
+- `onPresentationFailed` reports a missing presentation controller or an AdMob presentation error,
+  asynchronously after `accept()` returns. Failed presentations invoke neither dismissal nor reward callbacks.
+- The verified prompt's required `onVerificationCompleted` receives the RevenueCat verification outcome,
+  including failures, as soon as verification finishes.
+- The unverified prompt's required `onRewardEarned` runs when AdMob reports that the reward was earned;
+  the app must grant its own reward in this callback.
+
+`onDismiss` and `onPresentationFailed` are optional. Reward callbacks do not wait for dismissal and
+may arrive before or after it, including with mediated ads. Closing without earning a reward invokes
+only `onDismiss`. Accepted presentations retain their callbacks even if SwiftUI removes or replaces
+the prompt. See the [AdMob callback-ordering FAQ](https://developers.google.com/admob/ios/rewarded#faq).
+
+The sample captures the originating load request ID in each callback. Dismissal clears only that
+request's loaded ad, and a late reward updates its status only if it is still the selected request.
+An earlier presentation cannot clear a newer load, loaded ad, or status message. Reward processing
+belongs outside these UI identity guards; the guards only protect which offer's status is displayed.
+
 Rewarded interstitials continue to demonstrate the lower-level `enableRewardVerification()` and
 `present(..., rewardVerificationStarted:, rewardVerificationCompleted:)` APIs.
 

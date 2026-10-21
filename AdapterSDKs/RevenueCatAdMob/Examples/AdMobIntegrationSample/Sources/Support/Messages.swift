@@ -31,6 +31,11 @@ struct Message: Equatable {
             severity: .warning,
             isLoading: false
         )
+        static let dismissed = Message(
+            text: "Ad dismissed. A reward result may still arrive.",
+            severity: .info,
+            isLoading: false
+        )
         static let dismissedBeforeReward = Message(
             text: "⚠️ Ad dismissed before reward was earned",
             severity: .warning,

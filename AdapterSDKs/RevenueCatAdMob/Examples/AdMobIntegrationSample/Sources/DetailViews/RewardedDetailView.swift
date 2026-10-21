@@ -24,6 +24,7 @@ struct RewardedDetailView: View {
     @State private var loadRequestID: UUID?
     @State private var loadedAd: GoogleMobileAds.RewardedAd?
     @State private var isLoading = false
+    @State private var hasRewardOutcome = false
 
     var body: some View {
         ScrollView {
@@ -51,8 +52,8 @@ struct RewardedDetailView: View {
                         .disabled(self.isLoading)
                         .fixedSize(horizontal: true, vertical: false)
 
-                        if let rewardedAd = self.loadedAd {
-                            self.rewardedAdPrompt(ad: rewardedAd)
+                        if let rewardedAd = self.loadedAd, let requestID = self.loadRequestID {
+                            self.rewardedAdPrompt(ad: rewardedAd, requestID: requestID)
                         }
                     }
                 } else {
@@ -74,14 +75,22 @@ struct RewardedDetailView: View {
     }
 
     @ViewBuilder
-    private func rewardedAdPrompt(ad rewardedAd: GoogleMobileAds.RewardedAd) -> some View {
+    private func rewardedAdPrompt(ad rewardedAd: GoogleMobileAds.RewardedAd, requestID: UUID) -> some View {
         if self.usesRewardVerification {
             RewardedAdPrompt(
                 session: self.promptSession,
                 ad: rewardedAd,
                 placement: "rewarded_main",
-                onResult: { result in
-                    self.finishLoading(with: self.message(for: result))
+                onVerificationCompleted: { result in
+                    self.showRewardMessage(Message.forVerificationResult(result), for: requestID)
+                },
+                onDismiss: {
+                    self.finishLoading(
+                        for: requestID, with: self.hasRewardOutcome ? nil : Message.Rewarded.dismissed
+                    )
+                },
+                onPresentationFailed: { error in
+                    self.finishLoading(for: requestID, with: Message.Rewarded.notPresented(error))
                 },
                 content: { prompt in
                     self.promptButton(title: self.offerTitle(prompt.rewardConfiguration), accept: prompt.accept)
@@ -92,8 +101,17 @@ struct RewardedDetailView: View {
                 session: self.promptSession,
                 ad: rewardedAd,
                 placement: "rewarded_main",
-                onResult: { result in
-                    self.finishLoading(with: self.message(for: result))
+                onRewardEarned: {
+                    // Grant the app-defined reward here, even if another ad has since loaded.
+                    self.showRewardMessage(Message.Rewarded.rewardEarned, for: requestID)
+                },
+                onDismiss: {
+                    self.finishLoading(
+                        for: requestID, with: self.hasRewardOutcome ? nil : Message.Rewarded.dismissed
+                    )
+                },
+                onPresentationFailed: { error in
+                    self.finishLoading(for: requestID, with: Message.Rewarded.notPresented(error))
                 },
                 content: { prompt in
                     self.promptButton(title: "Watch an ad to earn a reward", accept: prompt.accept)
@@ -111,12 +129,6 @@ struct RewardedDetailView: View {
                 .frame(maxWidth: .infinity)
         }
         .buttonStyle(.borderedProminent)
-        .onAppear {
-            self.isLoading = false
-            self.message = self.usesRewardVerification
-                ? Message.Rewarded.readyWithVerification
-                : Message.Rewarded.readyWithoutVerification
-        }
     }
 
     private func loadAd() {
@@ -136,54 +148,36 @@ struct RewardedDetailView: View {
                 guard self.loadRequestID == loadRequestID else { return }
                 self.loadedAd = rewardedAd
                 self.isLoading = false
+                self.message = self.usesRewardVerification
+                    ? Message.Rewarded.readyWithVerification
+                    : Message.Rewarded.readyWithoutVerification
             } catch {
                 guard self.loadRequestID == loadRequestID else { return }
-                self.finishLoading(with: Message.Rewarded.loadFailed(error))
+                self.finishLoading(for: loadRequestID, with: Message.Rewarded.loadFailed(error))
             }
         }
     }
 
-    private func finishLoading(with message: Message) {
-        self.message = message
+    private func finishLoading(for requestID: UUID, with message: Message?) {
+        guard self.loadRequestID == requestID else { return }
+        if let message { self.message = message }
         self.isLoading = false
-        self.loadRequestID = nil
         self.loadedAd = nil
+        // Keep the request identity so a reward arriving after dismissal can update this offer's message.
+    }
+
+    private func showRewardMessage(_ message: Message, for requestID: UUID) {
+        guard self.loadRequestID == requestID else { return }
+        self.hasRewardOutcome = true
+        self.message = message
     }
 
     private func resetPrompt() {
         self.loadRequestID = nil
         self.loadedAd = nil
         self.isLoading = false
+        self.hasRewardOutcome = false
         self.message = nil
-    }
-
-    private func message(for result: RewardedAdPromptVerificationResult) -> Message {
-        switch result.kind {
-        case .verificationCompleted:
-            guard let verificationResult = result.rewardVerificationResult else { return .failed }
-            return Message.forVerificationResult(verificationResult)
-        case .dismissed:
-            return Message.Rewarded.dismissedBeforeReward
-        case .notPresented:
-            guard let error = result.presentationError else { return .failed }
-            return Message.Rewarded.notPresented(error)
-        default:
-            return .failed
-        }
-    }
-
-    private func message(for result: RewardedAdPromptUnverifiedResult) -> Message {
-        switch result.kind {
-        case .rewardEarned:
-            return Message.Rewarded.rewardEarned
-        case .dismissed:
-            return Message.Rewarded.dismissedBeforeReward
-        case .notPresented:
-            guard let error = result.presentationError else { return .failed }
-            return Message.Rewarded.notPresented(error)
-        default:
-            return .failed
-        }
     }
 
     private func offerTitle(_ configuredRewards: ConfiguredAdRewards?) -> String {

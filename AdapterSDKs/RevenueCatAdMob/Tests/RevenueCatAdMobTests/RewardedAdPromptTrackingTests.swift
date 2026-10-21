@@ -52,7 +52,7 @@ final class RewardedAdPromptTrackingTests: AdapterTestCase {
             ad: MockRewardedAdPromptAd(),
             placement: "placement",
             loadsRewardConfiguration: false,
-            resultDispatcherFactory: { UnverifiedRewardResultDispatcher(onResult: { _ in }) },
+            callbackDispatcherFactory: { makeUnverifiedPromptCallbacks() },
             dependencies: dependencies
         )
     }

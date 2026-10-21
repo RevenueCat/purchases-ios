@@ -20,7 +20,7 @@ struct RewardedAdPromptView<Content: View>: View {
     let rewardedAd: any RewardedAdPromptAd
     let placement: String?
     let loadsRewardConfiguration: Bool
-    let resultDispatcherFactory: @MainActor () -> any RewardedAdPromptResultDispatching
+    let callbackDispatcherFactory: @MainActor () -> any RewardedAdPromptCallbackDispatching
     let content: (RewardedAdPromptContext) -> Content
 
     var body: some View {
@@ -29,7 +29,7 @@ struct RewardedAdPromptView<Content: View>: View {
             ad: self.rewardedAd,
             placement: self.placement,
             loadsRewardConfiguration: self.loadsRewardConfiguration,
-            resultDispatcherFactory: self.resultDispatcherFactory,
+            callbackDispatcherFactory: self.callbackDispatcherFactory,
             dependencies: self.dependencies ?? .live,
             content: self.content
         )
@@ -45,7 +45,7 @@ private struct RewardedAdPromptStateView<Content: View>: View {
     @StateObject private var model: RewardedAdPromptModel
 
     private let content: (RewardedAdPromptContext) -> Content
-    private let resultDispatcherFactory: @MainActor () -> any RewardedAdPromptResultDispatching
+    private let callbackDispatcherFactory: @MainActor () -> any RewardedAdPromptCallbackDispatching
     private let session: RewardedAdPromptSession?
     private let placement: String?
 
@@ -54,7 +54,7 @@ private struct RewardedAdPromptStateView<Content: View>: View {
         ad rewardedAd: any RewardedAdPromptAd,
         placement: String?,
         loadsRewardConfiguration: Bool,
-        resultDispatcherFactory: @escaping @MainActor () -> any RewardedAdPromptResultDispatching,
+        callbackDispatcherFactory: @escaping @MainActor () -> any RewardedAdPromptCallbackDispatching,
         dependencies: RewardedAdPromptDependencies,
         @ViewBuilder content: @escaping (RewardedAdPromptContext) -> Content
     ) {
@@ -63,18 +63,18 @@ private struct RewardedAdPromptStateView<Content: View>: View {
             ad: rewardedAd,
             placement: placement,
             loadsRewardConfiguration: loadsRewardConfiguration,
-            resultDispatcherFactory: resultDispatcherFactory,
+            callbackDispatcherFactory: callbackDispatcherFactory,
             dependencies: dependencies
         ))
         self.content = content
-        self.resultDispatcherFactory = resultDispatcherFactory
+        self.callbackDispatcherFactory = callbackDispatcherFactory
         self.session = session
         self.placement = placement
     }
 
     var body: some View {
         Group {
-            if let context = self.model.context(resultDispatcherFactory: self.resultDispatcherFactory) {
+            if let context = self.model.context(callbackDispatcherFactory: self.callbackDispatcherFactory) {
                 self.content(context)
                     .onAppear {
                         self.model.promptDidAppear(session: self.session, placement: self.placement)
