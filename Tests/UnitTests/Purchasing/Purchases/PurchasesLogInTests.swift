@@ -63,13 +63,11 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
     }
 
     func testLogInWithCurrentAppUserIDDoesNotUpdateCaches() {
-        self.systemInfo.stubbedRemoteConfigEnabled = true
+        expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
+        // the mock now reports `appUserID` as the current user
         self.identityManager.mockIsAnonymous = false
-        Purchases.clearSingleton()
-        self.initializePurchasesInstance(appUserId: Self.appUserID)
         self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, false))
 
-        expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
         let baselineOfferingsCount = self.mockOfferingsManager.invokedUpdateOfferingsCacheCount
         let baselineRemoteConfigCount = self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount
 
@@ -88,13 +86,11 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
     }
 
     func testLogInWithUntrimmedCurrentAppUserIDDoesNotUpdateCaches() {
-        self.systemInfo.stubbedRemoteConfigEnabled = true
+        expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
+        // the mock now reports `appUserID` as the current user
         self.identityManager.mockIsAnonymous = false
-        Purchases.clearSingleton()
-        self.initializePurchasesInstance(appUserId: Self.appUserID)
         self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, false))
 
-        expect(self.backend.getCustomerInfoCallCount).toEventually(equal(1))
         let baselineOfferingsCount = self.mockOfferingsManager.invokedUpdateOfferingsCacheCount
         let baselineRemoteConfigCount = self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount
 
