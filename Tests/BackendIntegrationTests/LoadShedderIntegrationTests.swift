@@ -120,7 +120,7 @@ class BaseLoadShedderStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
         let data = try await self.purchaseMonthlyOffering()
 
         self.logger.verifyMessageWasLogged(
-            Strings.network.request_handled_by_load_shedder(HTTPRequest.Path.postReceiptData),
+            Strings.network.request_handled_by_load_shedder(HTTPRequest.Path2.postReceiptData),
             level: .debug
         )
 
@@ -155,7 +155,7 @@ class BaseLoadShedderStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
         expect(purchasedProductId) == "consumable.10_coins"
 
         self.logger.verifyMessageWasLogged(
-            Strings.network.request_handled_by_load_shedder(HTTPRequest.Path.postReceiptData),
+            Strings.network.request_handled_by_load_shedder(HTTPRequest.Path2.postReceiptData),
             level: .debug
         )
 
@@ -173,7 +173,7 @@ class BaseLoadShedderStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
         try await self.verifyEntitlementWentThrough(purchaseData.customerInfo)
 
         self.logger.verifyMessageWasLogged(
-            Strings.network.request_handled_by_load_shedder(HTTPRequest.Path.postReceiptData),
+            Strings.network.request_handled_by_load_shedder(HTTPRequest.Path2.postReceiptData),
             level: .debug
         )
 

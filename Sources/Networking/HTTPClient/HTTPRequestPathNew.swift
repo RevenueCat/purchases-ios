@@ -246,4 +246,10 @@ extension HTTPRequest.Path2 {
                                                        needsNonceForSigning: false,
                                                        pathComponent: "offers")
 
+    static let postReceiptData = HTTPRequest.Path2(name: "post_receipt",
+                                                   etagBehavior: .send,
+                                                   supportsSignatureVerification: true,
+                                                   needsNonceForSigning: true,
+                                                   pathComponent: "receipts")
+
 }

@@ -658,7 +658,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     func testPostRequestWithDisabledSignatureVerificationDoesNotContainPostParametersHeader() {
         let body = BodyWithSignature(key1: "a", key2: "b")
 
-        let request = HTTPRequest(method: .post(body), path: .postReceiptData)
+        let request = HTTPRequest(method: .post(body), requestPath: HTTPRequest.Path2.postReceiptData)
 
         let headers: [String: String]? = waitUntilValue { completion in
             stub(condition: isPath(request.path)) { request in
@@ -3853,7 +3853,7 @@ extension HTTPClientTests {
             return .emptyTooManyRequestsResponse()
         }
 
-        let request = HTTPRequest(method: .get, path: .receiptPath, isRetryable: true)
+        let request = HTTPRequest(method: .get, requestPath: HTTPRequest.Path2.postReceiptData, isRetryable: true)
         let result = waitUntilValue { completion in
             self.client.perform(request) { (response: EmptyResponse) in
                 completion(response)
@@ -3884,7 +3884,7 @@ extension HTTPClientTests {
         let mockOperationDispatcher = MockOperationDispatcher()
         let client = self.createClient(self.systemInfo, operationDispatcher: mockOperationDispatcher)
 
-        let request = HTTPRequest(method: .get, path: .receiptPath, isRetryable: true)
+        let request = HTTPRequest(method: .get, requestPath: HTTPRequest.Path2.postReceiptData, isRetryable: true)
         _ = waitUntilValue { completion in
             client.perform(request) { (response: EmptyResponse) in
                 completion(response)
@@ -3908,7 +3908,7 @@ extension HTTPClientTests {
             return .emptyTooManyRequestsResponse()
         }
 
-        let request = HTTPRequest(method: .get, path: .receiptPath, isRetryable: true)
+        let request = HTTPRequest(method: .get, requestPath: HTTPRequest.Path2.postReceiptData, isRetryable: true)
         _ = waitUntilValue { completion in
             self.client.perform(request) { (response: EmptyResponse) in
                 completion(response)
@@ -4005,7 +4005,7 @@ extension HTTPClientTests {
             }
         }
 
-        let request = HTTPRequest(method: .get, path: .receiptPath, isRetryable: true)
+        let request = HTTPRequest(method: .get, requestPath: HTTPRequest.Path2.postReceiptData, isRetryable: true)
         _ = waitUntilValue { completion in
             self.client.perform(request) { (response: EmptyResponse) in
                 completion(response)
@@ -4025,7 +4025,7 @@ extension HTTPClientTests {
             return .emptyTooManyRequestsResponse()
         }
 
-        let request = HTTPRequest(method: .get, path: .receiptPath, isRetryable: true)
+        let request = HTTPRequest(method: .get, requestPath: HTTPRequest.Path2.postReceiptData, isRetryable: true)
         _ = waitUntilValue { completion in
             self.client.perform(request) { (response: EmptyResponse) in
                 completion(response)
@@ -4048,7 +4048,7 @@ extension HTTPClientTests {
             }
         }
 
-        let request = HTTPRequest(method: .get, path: .receiptPath, isRetryable: true)
+        let request = HTTPRequest(method: .get, requestPath: HTTPRequest.Path2.postReceiptData, isRetryable: true)
         let result = waitUntilValue { completion in
             self.client.perform(request) { (response: EmptyResponse) in
                 completion(response)
@@ -4639,7 +4639,6 @@ extension HTTPRequest.Path {
     // Doesn't matter which path this is, we stub requests to it.
     static let mockPath: Self = .logIn
     static let mockPathWithFallbacks: Self = .getProductEntitlementMapping
-    static let receiptPath: Self = .postReceiptData
 
 }
 

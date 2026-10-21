@@ -50,7 +50,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
     func testGetCustomerInfoIsAppendedToInFlightPostReceiptForSameUser() {
         self.httpClient.disableSnapshotTesting()
         self.httpClient.mock(
-            requestPath: .postReceiptData,
+            requestPath: HTTPRequest.Path2.postReceiptData,
             response: .init(statusCode: .success, response: Self.validCustomerResponse)
         )
 
@@ -63,7 +63,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
 
         expect(getCustomerInfoCompleted.value).toEventually(beTrue())
         expect(self.httpClient.calls).to(haveCount(1))
-        expect(self.httpClient.calls.first?.request.path as? HTTPRequest.Path) == .postReceiptData
+        expect(self.httpClient.calls.first?.request.path as? HTTPRequest.Path2) == .postReceiptData
     }
 
     func testGetCustomerInfoIsNotAppendedToInFlightPostReceiptForDifferentUser() throws {
@@ -76,7 +76,7 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         otherUserResponse["subscriber"] = otherUserSubscriber
 
         self.httpClient.mock(
-            requestPath: .postReceiptData,
+            requestPath: HTTPRequest.Path2.postReceiptData,
             response: .init(statusCode: .success, response: Self.validCustomerResponse)
         )
         self.httpClient.mock(

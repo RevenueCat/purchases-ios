@@ -27,7 +27,6 @@ class HTTPRequestTests: TestCase {
 
     private static let paths: [HTTPRequest.Path] = [
         .logIn,
-        .postReceiptData,
         .postSubscriberAttributes(appUserID: userID),
         .postRedeemWebPurchase,
         .health,
@@ -46,7 +45,6 @@ class HTTPRequestTests: TestCase {
     ]
     private static let pathsWithSignatureVerification: Set<HTTPRequest.Path> = [
         .logIn,
-        .postReceiptData,
         .postRedeemWebPurchase,
         .health,
         .getProductEntitlementMapping,
@@ -55,7 +53,6 @@ class HTTPRequestTests: TestCase {
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path> = [
         .logIn,
-        .postReceiptData,
         .postRedeemWebPurchase,
         .health,
         .remoteConfig(domain: "app"),
@@ -562,7 +559,6 @@ class HTTPRequestTests: TestCase {
     /// Maps each `HTTPRequest.Path` case (other than `.logIn`, which is disallowed under IAM) to the
     /// relative path it should resolve to when IAM access-token authorization is preferred.
     private static let iamPathComponentsByPath: [HTTPRequest.Path: String] = [
-        .postReceiptData: "receipts",
         .postSubscriberAttributes(appUserID: userID): "customer/attributes",
         .postAdServicesToken(appUserID: userID): "customer/adservices_attribution",
         .health: "health",
@@ -871,15 +867,18 @@ class HTTPRequestTests2: TestCase {
         .getIntroEligibility(appUserID: userID),
         .postAttributionData(appUserID: userID),
         .postOfferForSigning,
+        .postReceiptData
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path2> = []
     private static let pathsWithoutETags: Set<HTTPRequest.Path2> = []
     private static let pathsWithSignatureVerification: Set<HTTPRequest.Path2> = [
         .getCustomerInfo(appUserID: userID),
-        .getOfferings(appUserID: userID)
+        .getOfferings(appUserID: userID),
+        .postReceiptData
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path2> = [
-        .getCustomerInfo(appUserID: userID)
+        .getCustomerInfo(appUserID: userID),
+        .postReceiptData
     ]
     private static let pathsWithUserID: [HTTPRequest.Path2] = [
         .getCustomerInfo(appUserID: anonymousUser),
@@ -1360,7 +1359,8 @@ class HTTPRequestTests2: TestCase {
         .getOfferings(appUserID: userID): "customer/offerings",
         .getIntroEligibility(appUserID: userID): "customer/intro_eligibility",
         .postAttributionData(appUserID: userID): "customer/attribution",
-        .postOfferForSigning: "offers"
+        .postOfferForSigning: "offers",
+        .postReceiptData: "receipts"
     ]
 
     func testRewardVerificationStatusPathIncludesAdUnitIDQueryParameter() {
