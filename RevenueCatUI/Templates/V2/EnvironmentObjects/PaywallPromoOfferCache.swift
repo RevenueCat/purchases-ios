@@ -32,7 +32,7 @@ internal final class PaywallPromoOfferCache: ObservableObject {
     @Published
     private var cache: [ProductID: Status] = [:]
     @Published
-    private var hasAnySubscriptionHistory: Bool = false
+    private var subscriptionHistoryStatus: SubscriptionHistoryTracker.Status
     private var cancellable: AnyCancellable?
 
     /// `nil` fetches eligibility from the backend. Otherwise eligibility is fabricated locally
@@ -44,9 +44,10 @@ internal final class PaywallPromoOfferCache: ObservableObject {
 
     init(subscriptionHistoryTracker: SubscriptionHistoryTracker?, simulatedEligibility: Bool? = nil) {
         self.simulatedEligibility = simulatedEligibility
+        self.subscriptionHistoryStatus = subscriptionHistoryTracker == nil ? .noHistory : .unknown
 
         // Simulate mode passes no tracker: it only ever produces `.signedEligible`/`.ineligible` entries,
-        // which never consult `hasAnySubscriptionHistory`, so we skip the tracker's StoreKit work.
+        // which never consult subscription history, so we skip the tracker's StoreKit work.
         guard let subscriptionHistoryTracker else { return }
 
         Task { @MainActor [weak self] in
@@ -54,7 +55,7 @@ internal final class PaywallPromoOfferCache: ObservableObject {
             self.cancellable = await subscriptionHistoryTracker.status
                 .receive(on: DispatchQueue.main)
                 .sink { [weak self] status in
-                    self?.hasAnySubscriptionHistory = status == .hasHistory
+                    self?.subscriptionHistoryStatus = status
                 }
         }
     }
@@ -75,6 +76,10 @@ internal final class PaywallPromoOfferCache: ObservableObject {
 
     // MARK: - Public API
 
+    var isSubscriptionHistoryLoading: Bool {
+        return self.subscriptionHistoryStatus == .unknown
+    }
+
     func computeEligibility(for packageInfos: [PackageInfo]) async {
         await self.checkSignedEligibility(packageInfos: packageInfos)
     }
@@ -82,19 +87,19 @@ internal final class PaywallPromoOfferCache: ObservableObject {
     func isMostLikelyEligible(for package: Package?) -> Bool {
         guard let package else { return false }
 
-        let status = cache[package.storeProduct.productIdentifier] ?? .ineligible
+        let status = cache[package.storeProduct.id] ?? .ineligible
         switch status {
         case .unknown, .signedEligible:
             return true
         case .ineligible:
-            return hasAnySubscriptionHistory
+            return self.subscriptionHistoryStatus == .hasHistory
         }
     }
 
     func get(for package: Package?) -> PromotionalOffer? {
         guard let package else { return nil }
 
-        if case .signedEligible(let promoOffer) = cache[package.storeProduct.productIdentifier] {
+        if case .signedEligible(let promoOffer) = cache[package.storeProduct.id] {
             return promoOffer
         }
 
@@ -121,7 +126,7 @@ internal final class PaywallPromoOfferCache: ObservableObject {
                let discount = storeProduct.discounts.first(where: { $0.offerIdentifier == productCode }) {
 
                 if let simulatedEligibility = self.simulatedEligibility {
-                    newCacheEntries[storeProduct.productIdentifier] = simulatedEligibility
+                    newCacheEntries[storeProduct.id] = simulatedEligibility
                         ? .signedEligible(Self.makeSimulatedOffer(for: discount))
                         : .ineligible
                     continue
@@ -132,9 +137,9 @@ internal final class PaywallPromoOfferCache: ObservableObject {
                         forProductDiscount: discount,
                         product: storeProduct
                     )
-                    newCacheEntries[storeProduct.productIdentifier] = .signedEligible(promoOffer)
+                    newCacheEntries[storeProduct.id] = .signedEligible(promoOffer)
                 } catch {
-                    newCacheEntries[storeProduct.productIdentifier] = .ineligible
+                    newCacheEntries[storeProduct.id] = .ineligible
                 }
             }
         }
