@@ -21,7 +21,9 @@ FAILED_FILE="${4:-/tmp/runtime_failed}"
 CHILD_PID_FILE="/tmp/runtime_child_pid"
 
 MAX_RETRIES=3
-INSTALL_TIMEOUT=180
+# xcodes' output is block-buffered when redirected, so a slow install of a large
+# runtime (iOS 15.5 is ~5.4 GB) shows no progress and can look like a hang.
+INSTALL_TIMEOUT=600
 
 echo "=== Available runtimes ===" > "$LOG"
 xcodes runtimes >> "$LOG" 2>&1
