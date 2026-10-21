@@ -126,7 +126,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
 
     func resolve(identifier: String, params: CheckpointParams) async throws -> ResolvedCheckpoint {
         #if DEBUG
-        // Temporary CheckpointTester escape hatch. Config-backed resolution has no natural throwing case yet.
+        // Temporary PaywallsTester escape hatch. Config-backed resolution has no natural throwing case yet.
         if identifier == Self.simulatedErrorCheckpointIdentifier {
             throw ErrorUtils.configurationError(
                 message: "Simulated error: checkpoint workflow not presentable."
