@@ -25,6 +25,17 @@ class TextComponentViewLoadingTests: BaseSnapshotTest {
     private static let snapshotSize = CGSize(width: 300, height: 60)
 
     func testTextIsRedactedWhileLoading() throws {
+        // The string on screen is still "Hello, world"; an intro-offer override can replace it,
+        // so the placeholder stays until eligibility resolves.
+        try Self.makeTextComponentView(
+            text: "Hello, world",
+            isLoading: true,
+            introOfferText: "Start your free trial"
+        )
+        .snapshot(size: Self.snapshotSize)
+    }
+
+    func testStaticTextIsVisibleWhileLoading() throws {
         try Self.makeTextComponentView(text: "Hello, world", isLoading: true)
             .snapshot(size: Self.snapshotSize)
     }
@@ -39,21 +50,43 @@ class TextComponentViewLoadingTests: BaseSnapshotTest {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension TextComponentViewLoadingTests {
 
-    static func makeTextComponentView(text: String, isLoading: Bool) throws -> some View {
+    static func makeTextComponentView(
+        text: String,
+        isLoading: Bool,
+        introOfferText: String? = nil
+    ) throws -> some View {
+        var localizedStrings: PaywallComponent.LocalizationDictionary = [
+            "text_key": .string(text)
+        ]
+        var overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialTextComponent>?
+        if let introOfferText {
+            localizedStrings["intro_text_key"] = .string(introOfferText)
+            overrides = [
+                .init(
+                    conditions: [.introOffer],
+                    properties: .init(visible: nil, text: "intro_text_key")
+                )
+            ]
+        }
+
         let viewModel = try TextComponentViewModel(
             localizationProvider: LocalizationProvider(
                 locale: Locale(identifier: "en_US"),
-                localizedStrings: ["text_key": .string(text)]
+                localizedStrings: localizedStrings
             ),
             uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()),
             component: PaywallComponent.TextComponent(
                 text: "text_key",
-                color: .init(light: .hex("#000000"))
+                color: .init(light: .hex("#000000")),
+                overrides: overrides
             )
         )
         return TextComponentView(viewModel: viewModel)
             .previewRequiredPaywallsV2Properties()
-            .environment(\.isPaywallLoading, isLoading)
+            .environment(
+                \.offerEligibilityLoading,
+                isLoading ? [.intro, .promo] : []
+            )
     }
 
 }

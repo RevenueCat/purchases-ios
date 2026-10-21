@@ -330,6 +330,24 @@ public extension Offering {
         )
     }
 
+    /// Copies the offering and attributes its packages to the checkpoint that presented it.
+    func withPresentedCheckpointIdentifier(_ checkpointIdentifier: String, traceID: String?) -> Self {
+        return Self(
+            identifier: identifier,
+            serverDescription: serverDescription,
+            metadata: metadata,
+            paywall: paywall,
+            paywallComponents: internalPaywallComponents,
+            hasPaywallComponents: hasPaywallComponents,
+            availablePackages: availablePackages.map {
+                $0.withPresentedOfferingContext(
+                    $0.presentedOfferingContext.withCheckpointIdentifier(checkpointIdentifier, traceID: traceID)
+                )
+            },
+            webCheckoutUrl: webCheckoutUrl
+        )
+    }
+
     /// Copies the Offering, replacing `paywallComponents` with the provided value.
     func withPaywallComponents(_ paywallComponents: PaywallComponents) -> Self {
         return Self(

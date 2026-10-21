@@ -19,6 +19,8 @@ import SwiftUI
 
 #if DEBUG
 
+// swiftlint:disable type_body_length file_length force_unwrapping
+
 private enum ButtonWithSheetPreview {
 
     static let catUrl = URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!
@@ -76,7 +78,13 @@ private enum ButtonWithSheetPreview {
                     text: "package_detail",
                     color: .init(light: .hex("#000000")),
                     padding: .zero,
-                    margin: .zero
+                    margin: .zero,
+                    overrides: [
+                        .init(
+                            conditions: [.introOffer],
+                            properties: .init(visible: nil, text: "package_detail_offer")
+                        )
+                    ]
                 ))
             ],
             dimension: .vertical(.center, .start),
@@ -110,7 +118,6 @@ private enum ButtonWithSheetPreview {
     static let purchaseButton = PaywallComponent.PurchaseButtonComponent(
         stack: .init(
             components: [
-                // WIP: Intro offer state with "cta_intro",
                 .text(.init(
                     text: "cta",
                     fontWeight: .bold,
@@ -119,7 +126,13 @@ private enum ButtonWithSheetPreview {
                     padding: .init(top: 10,
                                    bottom: 10,
                                    leading: 30,
-                                   trailing: 30)
+                                   trailing: 30),
+                    overrides: [
+                        .init(
+                            conditions: [.introOffer],
+                            properties: .init(visible: nil, text: "cta_intro")
+                        )
+                    ]
                 ))
             ],
             shape: .pill
@@ -459,6 +472,7 @@ private enum ButtonWithSheetPreview {
             "body": .string("Get access to all of our educational content trusted by thousands of pet parents."),
             "package_name": .string("Monthly"),
             "package_detail": .string("Some price into"),
+            "package_detail_offer": .string("Then {{ product.offer_price }}"),
             "cta": .string("In-app Checkout"),
             "cta_web": .string("Web Checkout"),
             "cta_web_selection": .string("Web Selection"),
@@ -536,7 +550,7 @@ struct ButtonWithSheetPreview_Previews: PreviewProvider {
             failedToLoadFont: { _ in },
             colorScheme: .light
         )
-        .environment(\.paywallLoadingOverride, true)
+        .environment(\.offerEligibilityLoadingOverride, [.intro, .promo])
         .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 800))
         .previewDisplayName("Template 1 (Loading)")

@@ -29,3 +29,12 @@
 "Your purchase was successful." = "Uw aankoop is gelukt.";
 "Purchase unavailable" = "Aankoop niet beschikbaar";
 "This purchase isn't available in your region." = "Deze aankoop is niet beschikbaar in uw regio.";
+"Couldn't connect. Check your internet connection and try again." = "Kan geen verbinding maken. Controleer je internetverbinding en probeer het opnieuw.";
+"This content couldn't be loaded. Please try again later." = "Deze inhoud kon niet worden geladen. Probeer het later opnieuw.";
+"There was a problem with the store. Please try again later." = "Er is een probleem met de store. Probeer het later opnieuw.";
+"Purchases aren't allowed on this device." = "Aankopen zijn niet toegestaan op dit apparaat.";
+"This product isn't available right now." = "Dit product is momenteel niet beschikbaar.";
+"You already own this product." = "Je hebt dit product al.";
+"Your payment is pending. You'll get access once it's approved." = "Je betaling is in behandeling. Je krijgt toegang zodra deze is goedgekeurd.";
+"Something went wrong. Please try again." = "Er is iets misgegaan. Probeer het opnieuw.";
+"Your purchases couldn't be verified. Please try again later." = "Je aankopen konden niet worden geverifieerd. Probeer het later opnieuw.";

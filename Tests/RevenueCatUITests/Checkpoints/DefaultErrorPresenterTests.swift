@@ -28,51 +28,174 @@ final class DefaultErrorPresenterTests: TestCase {
 
         harness.presenter.present(params: Self.params(), completion: harness.completion)
 
-        XCTAssertEqual(harness.presentedTitles, ["Error"])
-        XCTAssertEqual(harness.presentedMessages, ["boom"])
-        XCTAssertEqual(harness.results, [])
+        XCTAssertNil(harness.presentedTitle)
+        XCTAssertEqual(harness.presentedMessages, ["Something went wrong. Please try again."])
+        XCTAssertEqual(harness.presentedAcknowledgementTitles, ["OK"])
+        XCTAssertEqual(harness.completionCount, 0)
     }
 
-    func testPurchaseErrorUsesExistingPaywallMessageFormatting() {
+    func testPurchaseErrorDoesNotExposeDeveloperFacingDescription() {
         let harness = Harness()
         let error = ErrorCode.storeProblemError as NSError
-        let expectedMessage = LocalizedAlertError.Content(error: error).message
+        let developerFacingMessage = LocalizedAlertError.Content(error: error).message
 
         harness.presenter.present(
             params: .init(
                 checkpointIdentifier: "test_checkpoint",
                 error: error,
                 customVariables: [:],
-                flowCanContinue: true
+                kind: .flowActionFailed
             ),
             completion: harness.completion
         )
 
-        XCTAssertEqual(harness.presentedMessages.first, expectedMessage)
+        XCTAssertEqual(
+            harness.presentedMessages,
+            ["There was a problem with the store. Please try again later."]
+        )
+        XCTAssertNotEqual(harness.presentedMessages.first, developerFacingMessage)
     }
 
-    func testRecoverableErrorAcknowledgementRetries() {
+    func testFlowCouldNotBeShownUsesContentLoadMessage() {
+        let harness = Harness()
+
+        harness.presenter.present(
+            params: Self.params(errorCode: .configurationError, kind: .flowCouldNotBeShown),
+            completion: harness.completion
+        )
+
+        XCTAssertEqual(harness.presentedMessages, ["This content couldn't be loaded. Please try again later."])
+    }
+
+    func testFlowResultSyncFailedUsesPurchaseVerificationMessage() {
+        let harness = Harness()
+
+        harness.presenter.present(
+            params: Self.params(errorCode: .unknownBackendError, kind: .flowResultSyncFailed),
+            completion: harness.completion
+        )
+
+        XCTAssertEqual(harness.presentedMessages, ["Your purchases couldn't be verified. Please try again later."])
+    }
+
+    func testConnectionErrorsUseNetworkMessageForEveryFailureKind() {
+        let expectedMessage = "Couldn't connect. Check your internet connection and try again."
+
+        for errorCode in [ErrorCode.networkError, .offlineConnectionError] {
+            for kind in [
+                CheckpointFailureKind.flowCouldNotBeShown,
+                .flowActionFailed,
+                .flowResultSyncFailed
+            ] {
+                let harness = Harness()
+
+                harness.presenter.present(
+                    params: Self.params(errorCode: errorCode, kind: kind),
+                    completion: harness.completion
+                )
+
+                XCTAssertEqual(harness.presentedMessages, [expectedMessage])
+            }
+        }
+    }
+
+    func testFlowActionFailedUsesPurchaseErrorCodeMessage() {
+        let expectedMessages: [(ErrorCode, String)] = [
+            (.storeProblemError, "There was a problem with the store. Please try again later."),
+            (.purchaseNotAllowedError, "Purchases aren't allowed on this device."),
+            (.productNotAvailableForPurchaseError, "This product isn't available right now."),
+            (.productAlreadyPurchasedError, "You already own this product."),
+            (.paymentPendingError, "Your payment is pending. You'll get access once it's approved."),
+            (.unknownError, "Something went wrong. Please try again."),
+            (.invalidReceiptError, "Something went wrong. Please try again.")
+        ]
+
+        for (errorCode, expectedMessage) in expectedMessages {
+            let harness = Harness()
+
+            harness.presenter.present(
+                params: Self.params(errorCode: errorCode, kind: .flowActionFailed),
+                completion: harness.completion
+            )
+
+            XCTAssertEqual(harness.presentedMessages, [expectedMessage])
+        }
+    }
+
+    func testSimulatedTestStoreFailureUsesOriginalDescription() {
+        let harness = Harness()
+        let message = "Purchase failure simulated successfully in Test Store."
+
+        harness.presenter.present(
+            params: .init(
+                checkpointIdentifier: "test_checkpoint",
+                error: NSError(
+                    domain: ErrorCode.errorDomain,
+                    code: ErrorCode.testStoreSimulatedPurchaseError.rawValue,
+                    userInfo: [NSLocalizedDescriptionKey: message]
+                ),
+                customVariables: [:],
+                kind: .flowActionFailed
+            ),
+            completion: harness.completion
+        )
+
+        XCTAssertEqual(harness.presentedMessages, [message])
+    }
+
+    func testMessageUsesPreferredUILocaleOverride() {
+        let harness = Harness(localeIdentifier: "ja")
+
+        harness.presenter.present(
+            params: Self.params(errorCode: .configurationError, kind: .flowCouldNotBeShown),
+            completion: harness.completion
+        )
+
+        XCTAssertEqual(
+            harness.presentedMessages,
+            ["このコンテンツを読み込めませんでした。しばらくしてからもう一度お試しください。"]
+        )
+        XCTAssertNil(harness.presentedTitle)
+        XCTAssertEqual(harness.presentedAcknowledgementTitles, ["わかりました"])
+    }
+
+    func testMessageUsesSystemLocalizationWithoutPreferredUILocaleOverride() {
+        let harness = Harness(localeIdentifier: nil)
+        let key = "This content couldn't be loaded. Please try again later."
+
+        harness.presenter.present(
+            params: Self.params(errorCode: .configurationError, kind: .flowCouldNotBeShown),
+            completion: harness.completion
+        )
+
+        XCTAssertEqual(
+            harness.presentedMessages,
+            [Bundle.revenueCatUI.localizedString(forKey: key, value: key, table: nil)]
+        )
+    }
+
+    func testFlowActionErrorAcknowledgementCompletes() {
         let harness = Harness()
         harness.presenter.present(
-            params: Self.params(flowCanContinue: true),
+            params: Self.params(kind: .flowActionFailed),
             completion: harness.completion
         )
 
         harness.acknowledgement?()
 
-        XCTAssertEqual(harness.results, ["retry"])
+        XCTAssertEqual(harness.completionCount, 1)
     }
 
     func testTerminalErrorAcknowledgementContinues() {
         let harness = Harness()
         harness.presenter.present(
-            params: Self.params(flowCanContinue: false),
+            params: Self.params(kind: .flowCouldNotBeShown),
             completion: harness.completion
         )
 
         harness.acknowledgement?()
 
-        XCTAssertEqual(harness.results, ["continue"])
+        XCTAssertEqual(harness.completionCount, 1)
     }
 
     func testOnlyFirstAcknowledgementCounts() {
@@ -83,31 +206,31 @@ final class DefaultErrorPresenterTests: TestCase {
         acknowledgement?()
         acknowledgement?()
 
-        XCTAssertEqual(harness.results, ["retry"])
+        XCTAssertEqual(harness.completionCount, 1)
     }
 
-    func testNewErrorReplacesEarlierPresentationWithRetry() {
+    func testNewErrorCompletesEarlierPresentation() {
         let harness = Harness()
-        var secondResults: [String] = []
+        var secondCompletionCount = 0
         harness.presenter.present(params: Self.params(), completion: harness.completion)
         let staleAcknowledgement = harness.acknowledgement
 
         harness.presenter.present(
-            params: Self.params(flowCanContinue: false),
-            completion: .init { secondResults.append(Self.name(of: $0)) }
+            params: Self.params(kind: .flowCouldNotBeShown),
+            completion: .init { secondCompletionCount += 1 }
         )
 
-        XCTAssertEqual(harness.results, ["retry"])
+        XCTAssertEqual(harness.completionCount, 1)
         staleAcknowledgement?()
-        XCTAssertEqual(harness.results, ["retry"])
+        XCTAssertEqual(harness.completionCount, 1)
         harness.acknowledgement?()
-        XCTAssertEqual(secondResults, ["continue"])
+        XCTAssertEqual(secondCompletionCount, 1)
     }
 
     func testNewestErrorWinsWhilePreviousAlertIsDismissing() {
         let harness = Harness(defersDismissal: true)
-        var secondResults: [String] = []
-        var thirdResults: [String] = []
+        var secondCompletionCount = 0
+        var thirdCompletionCount = 0
         harness.presenter.present(
             params: Self.params(message: "first"),
             completion: harness.completion
@@ -115,51 +238,68 @@ final class DefaultErrorPresenterTests: TestCase {
 
         harness.presenter.present(
             params: Self.params(message: "second"),
-            completion: .init { secondResults.append(Self.name(of: $0)) }
+            completion: .init { secondCompletionCount += 1 }
         )
         harness.presenter.present(
-            params: Self.params(message: "third", flowCanContinue: false),
-            completion: .init { thirdResults.append(Self.name(of: $0)) }
+            params: Self.params(message: "third", kind: .flowCouldNotBeShown),
+            completion: .init { thirdCompletionCount += 1 }
         )
 
-        XCTAssertEqual(secondResults, ["retry"])
-        XCTAssertEqual(harness.presentedMessages, ["first"])
+        XCTAssertEqual(secondCompletionCount, 1)
+        XCTAssertEqual(harness.presentedMessages, ["Something went wrong. Please try again."])
 
         harness.completeNextDismissal()
 
-        XCTAssertEqual(harness.results, ["retry"])
-        XCTAssertEqual(harness.presentedMessages, ["first", "third"])
-        XCTAssertEqual(thirdResults, [])
+        XCTAssertEqual(harness.completionCount, 1)
+        XCTAssertEqual(
+            harness.presentedMessages,
+            [
+                "Something went wrong. Please try again.",
+                "This content couldn't be loaded. Please try again later."
+            ]
+        )
+        XCTAssertEqual(thirdCompletionCount, 0)
 
         harness.acknowledgement?()
         harness.completeNextDismissal()
 
-        XCTAssertEqual(harness.results, ["retry"])
-        XCTAssertEqual(secondResults, ["retry"])
-        XCTAssertEqual(thirdResults, ["continue"])
+        XCTAssertEqual(harness.completionCount, 1)
+        XCTAssertEqual(secondCompletionCount, 1)
+        XCTAssertEqual(thirdCompletionCount, 1)
     }
 
     func testMissingPresentationContextDoesNotLeaveFlowWaiting() {
-        var recoverableResults: [String] = []
-        var terminalResults: [String] = []
+        var recoverableCompletionCount = 0
+        var terminalCompletionCount = 0
         let presenter = DefaultErrorPresenter(presentationContextProvider: { nil })
 
         presenter.present(
-            params: Self.params(flowCanContinue: true),
-            completion: .init { recoverableResults.append(Self.name(of: $0)) }
+            params: Self.params(kind: .flowActionFailed),
+            completion: .init { recoverableCompletionCount += 1 }
         )
         presenter.present(
-            params: Self.params(flowCanContinue: false),
-            completion: .init { terminalResults.append(Self.name(of: $0)) }
+            params: Self.params(kind: .flowCouldNotBeShown),
+            completion: .init { terminalCompletionCount += 1 }
         )
 
-        XCTAssertEqual(recoverableResults, ["retry"])
-        XCTAssertEqual(terminalResults, ["continue"])
+        XCTAssertEqual(recoverableCompletionCount, 1)
+        XCTAssertEqual(terminalCompletionCount, 1)
+    }
+
+    func testFailedAlertPresentationDoesNotLeaveFlowWaiting() {
+        let harness = Harness(failsPresentation: true)
+
+        harness.presenter.present(
+            params: Self.params(kind: .flowCouldNotBeShown),
+            completion: harness.completion
+        )
+
+        XCTAssertEqual(harness.completionCount, 1)
     }
 
     private static func params(
         message: String = "boom",
-        flowCanContinue: Bool = true
+        kind: CheckpointFailureKind = .flowActionFailed
     ) -> ErrorPresentationParams {
         return .init(
             checkpointIdentifier: "test_checkpoint",
@@ -169,37 +309,56 @@ final class DefaultErrorPresenterTests: TestCase {
                 userInfo: [NSLocalizedDescriptionKey: message]
             ),
             customVariables: [:],
-            flowCanContinue: flowCanContinue
+            kind: kind
         )
     }
 
-    private static func name(of result: ErrorPresentationCompletion.Result) -> String {
-        switch result.action {
-        case .retry: return "retry"
-        case .continue: return "continue"
-        case .navigateBack: return "navigateBack"
-        }
+    private static func params(
+        errorCode: ErrorCode,
+        kind: CheckpointFailureKind
+    ) -> ErrorPresentationParams {
+        return .init(
+            checkpointIdentifier: "test_checkpoint",
+            error: NSError(
+                domain: ErrorCode.errorDomain,
+                code: errorCode.rawValue,
+                userInfo: [NSLocalizedDescriptionKey: "raw detail"]
+            ),
+            customVariables: [:],
+            kind: kind
+        )
     }
 
     @MainActor
     private final class Harness {
         private let host = UIViewController()
         private let defersDismissal: Bool
-        var presentedTitles: [String] = []
+        private let failsPresentation: Bool
+        private let localeIdentifier: String?
+        var presentedTitle: String?
         var presentedMessages: [String] = []
+        var presentedAcknowledgementTitles: [String] = []
         var acknowledgement: (@MainActor () -> Void)?
-        var results: [String] = []
+        var completionCount = 0
         var deferredAlerts: [DeferredDismissalViewController] = []
 
-        init(defersDismissal: Bool = false) {
+        init(
+            defersDismissal: Bool = false,
+            failsPresentation: Bool = false,
+            localeIdentifier: String? = "en"
+        ) {
             self.defersDismissal = defersDismissal
+            self.failsPresentation = failsPresentation
+            self.localeIdentifier = localeIdentifier
         }
 
         lazy var presenter = DefaultErrorPresenter(
             presentationContextProvider: { [host] in host },
-            alertFactory: { [weak self] _, title, message, acknowledgement in
-                self?.presentedTitles.append(title)
+            preferredUILocaleProvider: { [localeIdentifier] in localeIdentifier },
+            alertFactory: { [weak self] _, title, message, acknowledgementTitle, acknowledgement in
+                self?.presentedTitle = title
                 self?.presentedMessages.append(message)
+                self?.presentedAcknowledgementTitles.append(acknowledgementTitle)
                 self?.acknowledgement = acknowledgement
 
                 if self?.defersDismissal == true {
@@ -208,16 +367,33 @@ final class DefaultErrorPresenterTests: TestCase {
                     return alert
                 }
 
-                return UIViewController()
+                if self?.failsPresentation == true {
+                    return UIViewController()
+                }
+
+                return PresentedViewController()
             }
         )
 
-        lazy var completion = ErrorPresentationCompletion { [weak self] result in
-            self?.results.append(DefaultErrorPresenterTests.name(of: result))
+        lazy var completion = ErrorPresentationCompletion { [weak self] in
+            self?.completionCount += 1
         }
 
         func completeNextDismissal() {
             self.deferredAlerts.first(where: { $0.hasPendingDismissal })?.completeDismissal()
+        }
+    }
+
+    @MainActor
+    private final class PresentedViewController: UIViewController {
+        private let presentingController = UIViewController()
+
+        override var presentingViewController: UIViewController? {
+            return self.presentingController
+        }
+
+        override func dismiss(animated flag: Bool, completion: (() -> Void)? = nil) {
+            completion?()
         }
     }
 

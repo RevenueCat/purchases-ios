@@ -39,13 +39,17 @@ public struct RewardVerificationResult: Sendable, Equatable {
     /// Verification did not complete successfully (rejected, exhausted polling, error, etc.).
     public static let failed = RewardVerificationResult(storage: .failed)
 
-    /// Primary verified reward, if verification succeeded.
+    /// The primary verified reward, or `nil` when verification failed.
+    ///
+    /// When this is `nil`, ``moreRewards`` is guaranteed to be empty.
     public var verifiedReward: AdReward? {
         guard case .verified(let reward, _) = self.storage else { return nil }
         return reward
     }
 
-    /// Additional verified rewards. Empty when verification failed or only one reward was granted.
+    /// Additional verified rewards.
+    ///
+    /// This is guaranteed to be empty when ``verifiedReward`` is `nil` or only one reward was granted.
     public var moreRewards: [AdReward] {
         guard case .verified(_, let moreRewards) = self.storage else { return [] }
         return moreRewards

@@ -19,7 +19,7 @@ import Foundation
 typealias PresentedButtonPartial = PaywallComponent.PartialButtonComponent
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-class ButtonComponentViewModel {
+class ButtonComponentViewModel: OfferEligibilityVisibilityDependency {
 
     /// A mirror of ButtonComponent.Action, with the sole purpose of being able to change the type of urlLid parameters
     /// of some Destination's to actual URLs.
@@ -58,6 +58,7 @@ class ButtonComponentViewModel {
     let localizedBundle: Bundle
     private let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedButtonPartial>?
+    let dependsOnOfferEligibility: Bool
 
     // swiftlint:disable:next cyclomatic_complexity
     init(
@@ -76,7 +77,9 @@ class ButtonComponentViewModel {
         self.sheetStackViewModel = sheetStackViewModel
         self.componentVisible = component.visible
         self.uiConfigProvider = uiConfigProvider
-        self.presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
+        let presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
+        self.presentedOverrides = presentedOverrides
+        self.dependsOnOfferEligibility = presentedOverrides?.contains(where: \.dependsOnOfferEligibility) ?? false
 
         let localizedStrings = localizationProvider.localizedStrings
 

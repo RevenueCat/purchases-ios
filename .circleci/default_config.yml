@@ -1,6 +1,6 @@
 orbs:
   macos: circleci/macos@2.5.1
-  revenuecat: revenuecat/sdks-common-config@4.6.2
+  revenuecat: revenuecat/sdks-common-config@4.7.0
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -157,7 +157,7 @@ commands:
           keys:
             # Bump this key whenever the Ruby version or provider changes: native gem extensions
             # link against a specific libruby path (v5 = rbenv -> mise migration).
-            - v5-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}-macos-{{ checksum ".macos_version" }}-ruby-3.2.0
+            - v5-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}-macos-{{ checksum ".macos_version" }}-ruby-3.3.0
       - run:
           name: Verify Ruby version
           command: ruby -v
@@ -170,7 +170,7 @@ commands:
             bundle install
       - save_cache:
           # This cache key should be updated whenever we change the Ruby version
-          key: v5-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}-macos-{{ checksum ".macos_version" }}-ruby-3.2.0
+          key: v5-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}-macos-{{ checksum ".macos_version" }}-ruby-3.3.0
           paths:
             - vendor/bundle
 
@@ -186,7 +186,7 @@ commands:
         type: boolean
         default: false
     steps:
-      # Ruby 3.2.0 comes from mise (see mise.toml); pinned to avoid a Fastlane crash on 3.2.2 and Ruby 3.3.
+      # Ruby 3.3.0 comes from mise (see mise.toml).
       # rbenv is deprecated here in favor of mise.
       - revenuecat/install-mise-tools:
           tools: ruby
@@ -1984,7 +1984,7 @@ jobs:
 
   danger:
     docker:
-      - image: cimg/ruby:3.2.0
+      - image: cimg/ruby:3.3.0
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
     steps:
@@ -2180,7 +2180,7 @@ jobs:
 
   update-paywall-preview-resources-commit:
     docker:
-      - image: cimg/ruby:3.2.0
+      - image: cimg/ruby:3.3.0
     steps:
       - checkout
       - revenuecat/install-gem-unix-dependencies:
@@ -2263,7 +2263,7 @@ jobs:
 
   make-admob-release:
     docker:
-      - image: cimg/ruby:3.2.0
+      - image: cimg/ruby:3.3.0
     resource_class: small
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail
@@ -2277,7 +2277,7 @@ jobs:
 
   bump-sdk-in-rc-mobile-app:
     docker:
-      - image: cimg/ruby:3.2.0
+      - image: cimg/ruby:3.3.0
     resource_class: small
     working_directory: ~/purchases-ios
     shell: /bin/bash --login -o pipefail

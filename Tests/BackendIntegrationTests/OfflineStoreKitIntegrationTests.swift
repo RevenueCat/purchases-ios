@@ -408,6 +408,9 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         self.enableReceiptFetchRetry = false
         self.setLongestTestSessionTimeRate(self.testSession)
 
+        // Match the restore flag used by CustomerInfoManager when posting unfinished transactions.
+        _ = try await self.purchases.logIn("integration-test-user-\(UUID().uuidString)")
+
         // 1. Make a successful purchase while the server is up
         let result = try await self.purchaseMonthlyProduct()
 
@@ -624,7 +627,7 @@ class OfflineStoreKit1IntegrationTests: BaseOfflineStoreKitIntegrationTests {
         let transactionId = try XCTUnwrap(self.storeKitIdentifier(for: transaction))
         let offeringId = NSRegularExpression.escapedPattern(for: package.presentedOfferingContext.offeringIdentifier)
         let regex = "Enqueing network operation 'PostReceiptDataOperation' with cache key: "
-            + ".*-\(offeringId)-false.*-\(transactionId)'"
+            + ".*-\(offeringId)-\\n--false.*-\(transactionId)'"
         self.logger.verifyMessageWasLogged(regexPattern: regex,
                                            level: .verbose,
                                            expectedCount: 1)

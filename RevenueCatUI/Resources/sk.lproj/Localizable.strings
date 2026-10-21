@@ -29,3 +29,12 @@
 "Your purchase was successful." = "Nákup prebehol úspešne.";
 "Purchase unavailable" = "Nákup nie je k dispozícii";
 "This purchase isn't available in your region." = "Tento nákup nie je vo vašom regióne k dispozícii.";
+"Couldn't connect. Check your internet connection and try again." = "Nepodarilo sa pripojiť. Skontrolujte pripojenie na internet a skúste to znova.";
+"This content couldn't be loaded. Please try again later." = "Tento obsah sa nepodarilo načítať. Skúste to prosím neskôr.";
+"There was a problem with the store. Please try again later." = "Vyskytol sa problém s obchodom. Skúste to prosím neskôr.";
+"Purchases aren't allowed on this device." = "Nákupy nie sú na tomto zariadení povolené.";
+"This product isn't available right now." = "Tento produkt momentálne nie je k dispozícii.";
+"You already own this product." = "Tento produkt už vlastníte.";
+"Your payment is pending. You'll get access once it's approved." = "Vaša platba čaká na spracovanie. Prístup získate po jej schválení.";
+"Something went wrong. Please try again." = "Niečo sa pokazilo. Skúste to prosím znova.";
+"Your purchases couldn't be verified. Please try again later." = "Vaše nákupy sa nepodarilo overiť. Skúste to prosím neskôr.";

@@ -159,15 +159,15 @@ final class MixedTabsDefaultPackageVisibilityTests: TestCase {
         )
     }
 
-    /// The same layout driven through the real loading transition. `isPaywallLoading` going false once
-    /// eligibility resolves fires a second page reconcile, and by then the showing tab has propagated its
-    /// annual card up. Nothing may move: that card is on screen and the user never tapped anything.
+    /// The same layout driven through the real loading transitions. Each eligibility result fires a page
+    /// reconcile, and by then the showing tab has propagated its annual card up. Nothing may move: that
+    /// card is on screen and the user never tapped anything.
     func testEligibilityResolvingDoesNotPullSelectionOffAVisibleTabCard() throws {
         let (paywallState, _) = try Self.mixedLayoutState(tabs: .pageDefaultRepeatedInFirstTab)
         let packageContext = Self.provisionallySeededContext()
-        let flag = PaywallLoadingFlag(isLoading: true)
+        let flag = OfferEligibilityLoadingFlag(loading: [.intro, .promo])
 
-        let dispose = try PaywallLoadingHost(
+        let dispose = try OfferEligibilityLoadingHost(
             flag: flag,
             content: Self.loadedPaywallView(
                 paywallState: paywallState,
@@ -178,7 +178,16 @@ final class MixedTabsDefaultPackageVisibilityTests: TestCase {
 
         Self.settle()
 
-        flag.isLoading = false
+        flag.loading.remove(.intro)
+        Self.settle()
+
+        XCTAssertEqual(
+            packageContext.package?.identifier,
+            TestData.annualPackage.identifier,
+            "Intro eligibility resolving must not move the selection off the visible card"
+        )
+
+        flag.loading.remove(.promo)
         Self.settle()
 
         XCTAssertEqual(
@@ -297,27 +306,27 @@ final class MixedTabsDefaultPackageVisibilityTests: TestCase {
 
 }
 
-/// Drives `\.isPaywallLoading` from `true` to `false`, the transition `PaywallsV2View` makes once intro
-/// and promo eligibility resolve. That flip is what triggers the page's second reconcile in production.
+/// Drives `\.offerEligibilityLoading` through the transitions `PaywallsV2View` makes as intro and promo
+/// eligibility resolve. Each change triggers another reconcile in production.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private final class PaywallLoadingFlag: ObservableObject {
+private final class OfferEligibilityLoadingFlag: ObservableObject {
 
-    @Published var isLoading: Bool
+    @Published var loading: OfferEligibilityLoading
 
-    init(isLoading: Bool) {
-        self.isLoading = isLoading
+    init(loading: OfferEligibilityLoading) {
+        self.loading = loading
     }
 
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct PaywallLoadingHost<Content: View>: View {
+private struct OfferEligibilityLoadingHost<Content: View>: View {
 
-    @ObservedObject var flag: PaywallLoadingFlag
+    @ObservedObject var flag: OfferEligibilityLoadingFlag
     let content: Content
 
     var body: some View {
-        self.content.environment(\.isPaywallLoading, self.flag.isLoading)
+        self.content.environment(\.offerEligibilityLoading, self.flag.loading)
     }
 
 }

@@ -20,73 +20,54 @@ extension Array<CustomerCenterConfigData.HelpPath> {
         allowMissingPurchase: Bool,
         localization: CustomerCenterConfigData.Localization = .default
     ) -> [CustomerCenterConfigData.HelpPath] {
-        guard let purchaseInformation else {
-            return filter {
-                $0.type == .missingPurchase
-                    || $0.type == .customAction
-                    || $0.type == .customUrl
+        filter { $0.hiddenReason(for: purchaseInformation, allowMissingPurchase: allowMissingPurchase) == nil }
+            .map { path in
+                guard let purchaseInformation else { return path }
+                return path.resubscribeVariantIfNeeded(for: purchaseInformation, localization: localization)
             }
-        }
-
-        return filter {
-            // we don't show missing purchase when a purchase is selected
-            if !allowMissingPurchase && $0.type == .missingPurchase {
-                return false
-            }
-
-            // family members can't refund or change a subscription they don't own
-            if purchaseInformation.ownershipType == .familyShared && $0.type.requiresPurchaseOwnership {
-                return false
-            }
-
-            let isNonAppStorePurchase = purchaseInformation.store != .appStore
-            let isAppStoreOnlyPath = $0.type.isAppStoreOnly
-
-            // skip AppStore only paths if the purchase is not from App Store
-            if isNonAppStorePurchase && isAppStoreOnlyPath {
-                return false
-            }
-
-            if $0.type == .cancel {
-                // don't show cancel if there's no URL
-                if isNonAppStorePurchase {
-                    return purchaseInformation.managementURL != nil
-                }
-
-                guard purchaseInformation.isAppStoreRenewableSubscription,
-                      !purchaseInformation.isExpired else {
-                    return false
-                }
-
-                // a cancelled subscription that hasn't lapsed yet keeps the path,
-                // relabelled as resubscribe below
-                return purchaseInformation.isCancelled || purchaseInformation.renewalDate != nil
-            }
-
-            // if it's refundRequest, it cannot be free nor within trial period
-            // if it has a refundDuration, check it's still valid
-            if $0.type == .refundRequest {
-                return purchaseInformation.pricePaid != .free
-                && !purchaseInformation.isTrial
-                && $0.refundWindowDuration?.isWithin(purchaseInformation) ?? true
-            }
-
-            // can't change plans if it's not an active subscription
-            if $0.type == .changePlans {
-                if !purchaseInformation.isAppStoreRenewableSubscription
-                    || purchaseInformation.isLifetime
-                    || purchaseInformation.isExpired {
-                    return false
-                }
-            }
-
-            return true
-        }
-        .map { $0.resubscribeVariantIfNeeded(for: purchaseInformation, localization: localization) }
     }
 }
 
-private extension CustomerCenterConfigData.HelpPath {
+extension CustomerCenterConfigData.HelpPath {
+
+    /// A nil reason means the path is available. Rendering and preview diagnostics share this decision.
+    func hiddenReason(for purchase: PurchaseInformation?, allowMissingPurchase: Bool) -> String? {
+        guard let purchase else {
+            return type == .missingPurchase || type == .customAction || type == .customUrl
+                ? nil : "No purchase selected"
+        }
+        if !allowMissingPurchase && type == .missingPurchase { return "Purchase already selected" }
+        if purchase.ownershipType == .familyShared && type.requiresPurchaseOwnership {
+            return "Family-shared purchase"
+        }
+        if purchase.store != .appStore && type.isAppStoreOnly { return "Requires an App Store purchase" }
+        switch type {
+        case .cancel:
+            return cancellationHiddenReason(for: purchase)
+        case .refundRequest:
+            return refundHiddenReason(for: purchase)
+        case .changePlans:
+            return !purchase.isAppStoreRenewableSubscription || purchase.isLifetime || purchase.isExpired
+                ? "Requires an active renewable subscription" : nil
+        default:
+            return nil
+        }
+    }
+
+    private func cancellationHiddenReason(for purchase: PurchaseInformation) -> String? {
+        if purchase.store != .appStore {
+            return purchase.managementURL == nil ? "No management URL" : nil
+        }
+        if !purchase.isAppStoreRenewableSubscription { return "No renewable subscription" }
+        if purchase.isExpired { return "Subscription expired" }
+        return !purchase.isCancelled && purchase.renewalDate == nil ? "No renewal date" : nil
+    }
+
+    private func refundHiddenReason(for purchase: PurchaseInformation) -> String? {
+        if purchase.pricePaid == .free { return "Free purchase" }
+        if purchase.isTrial { return "Trial purchase" }
+        return refundWindowDuration?.isWithin(purchase) == false ? "Refund window exceeded" : nil
+    }
 
     /// Cancelling is meaningless once the customer already cancelled, so the same path becomes
     /// the way back in. The survey and the offer belong to churn, not to returning.
@@ -131,10 +112,10 @@ private extension CustomerCenterConfigData.HelpPath.PathType {
 
     var isAppStoreOnly: Bool {
         switch self {
-        case .cancel, .customUrl, .customAction:
+        case .cancel, .customUrl, .customAction, .missingPurchase:
             return false
 
-        case .changePlans, .refundRequest, .missingPurchase, .unknown:
+        case .changePlans, .refundRequest, .unknown:
             return true
 
         @unknown default:

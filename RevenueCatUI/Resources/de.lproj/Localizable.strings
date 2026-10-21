@@ -29,3 +29,12 @@
 "Your purchase was successful." = "Ihr Kauf wurde erfolgreich abgeschlossen.";
 "Purchase unavailable" = "Kauf nicht verfügbar";
 "This purchase isn't available in your region." = "Dieser Kauf ist in Ihrer Region nicht verfügbar.";
+"Couldn't connect. Check your internet connection and try again." = "Verbindung fehlgeschlagen. Überprüfe deine Internetverbindung und versuche es erneut.";
+"This content couldn't be loaded. Please try again later." = "Dieser Inhalt konnte nicht geladen werden. Bitte versuche es später erneut.";
+"There was a problem with the store. Please try again later." = "Es gab ein Problem mit dem Store. Bitte versuche es später erneut.";
+"Purchases aren't allowed on this device." = "Käufe sind auf diesem Gerät nicht erlaubt.";
+"This product isn't available right now." = "Dieses Produkt ist derzeit nicht verfügbar.";
+"You already own this product." = "Du besitzt dieses Produkt bereits.";
+"Your payment is pending. You'll get access once it's approved." = "Deine Zahlung ist ausstehend. Du erhältst Zugriff, sobald sie genehmigt wurde.";
+"Something went wrong. Please try again." = "Etwas ist schiefgelaufen. Bitte versuche es erneut.";
+"Your purchases couldn't be verified. Please try again later." = "Deine Käufe konnten nicht überprüft werden. Bitte versuche es später erneut.";

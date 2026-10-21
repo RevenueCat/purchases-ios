@@ -29,3 +29,12 @@
 "Your purchase was successful." = "Your purchase was successful.";
 "Purchase unavailable" = "Purchase unavailable";
 "This purchase isn't available in your region." = "This purchase isn't available in your region.";
+"Couldn't connect. Check your internet connection and try again." = "Couldn't connect. Check your internet connection and try again.";
+"This content couldn't be loaded. Please try again later." = "This content couldn't be loaded. Please try again later.";
+"There was a problem with the store. Please try again later." = "There was a problem with the store. Please try again later.";
+"Purchases aren't allowed on this device." = "Purchases aren't allowed on this device.";
+"This product isn't available right now." = "This product isn't available right now.";
+"You already own this product." = "You already own this product.";
+"Your payment is pending. You'll get access once it's approved." = "Your payment is pending. You'll get access once it's approved.";
+"Something went wrong. Please try again." = "Something went wrong. Please try again.";
+"Your purchases couldn't be verified. Please try again later." = "Your purchases couldn't be verified. Please try again later.";

@@ -29,3 +29,12 @@
 "Your purchase was successful." = "A vásárlás sikeresen megtörtént.";
 "Purchase unavailable" = "A vásárlás nem érhető el";
 "This purchase isn't available in your region." = "Ez a vásárlás nem érhető el az Ön régiójában.";
+"Couldn't connect. Check your internet connection and try again." = "Nem sikerült csatlakozni. Ellenőrizd az internetkapcsolatot, és próbáld újra.";
+"This content couldn't be loaded. Please try again later." = "Ezt a tartalmat nem sikerült betölteni. Kérjük, próbáld újra később.";
+"There was a problem with the store. Please try again later." = "Hiba történt az áruházzal. Kérjük, próbáld újra később.";
+"Purchases aren't allowed on this device." = "Ezen az eszközön nem engedélyezettek a vásárlások.";
+"This product isn't available right now." = "Ez a termék jelenleg nem érhető el.";
+"You already own this product." = "Ez a termék már a tiéd.";
+"Your payment is pending. You'll get access once it's approved." = "A fizetésed függőben van. Jóváhagyás után hozzáférést kapsz.";
+"Something went wrong. Please try again." = "Hiba történt. Kérjük, próbáld újra.";
+"Your purchases couldn't be verified. Please try again later." = "A vásárlásaidat nem sikerült ellenőrizni. Kérjük, próbáld újra később.";

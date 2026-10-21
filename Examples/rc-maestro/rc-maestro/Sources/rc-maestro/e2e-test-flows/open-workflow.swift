@@ -7,7 +7,7 @@
 
 import SwiftUI
 @_spi(Internal) import RevenueCat
-import RevenueCatUI
+@_spi(Internal) import RevenueCatUI
 
 extension E2ETestFlowView {
     struct OpenWorkflow: View {
@@ -28,14 +28,29 @@ extension E2ETestFlowView {
             return ["users_count": .number(value)]
         }
 
+        /// Comma-separated app user ids. Each one gets a button that logs in as it and reloads the offering.
+        static var logInAppUserIDs: [String] {
+            return UserDefaults.standard.string(forKey: "log_in_app_user_ids")?
+                .split(separator: ",")
+                .map(String.init) ?? []
+        }
+
+        /// Opens one workflow by id, bypassing the offering to workflow map. Lets a test target a
+        /// workflow whose offering mapping is not what it needs.
+        static var workflowIdentifier: String? {
+            return UserDefaults.standard.string(forKey: "workflow_id")
+        }
+
         enum GetOfferingsState {
             case loading
             case loaded(Offering)
+            case loadedWorkflow(WorkflowContext)
             case failed(Error)
         }
 
         @State private var offeringsState: GetOfferingsState = .loading
         @State private var presentPaywall = false
+        @State private var loggedInAppUserID: String?
 
         var body: some View {
             VStack {
@@ -54,27 +69,63 @@ extension E2ETestFlowView {
                         PaywallView(offering: offering)
                             .customPaywallVariables(Self.customVariableOverrides)
                     }
+                case .loadedWorkflow(let context):
+                    Button("Present Paywall") {
+                        presentPaywall = true
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .sheet(isPresented: $presentPaywall) {
+                        PaywallView(workflowContext: context)
+                            .customPaywallVariables(Self.customVariableOverrides)
+                    }
                 case .failed(let error):
                     Text("Error: \(error.localizedDescription)")
                         .foregroundColor(.red)
+                }
+
+                ForEach(Self.logInAppUserIDs, id: \.self) { appUserID in
+                    Button("Log In as \(appUserID)") {
+                        Task {
+                            _ = try? await Purchases.shared.logIn(appUserID)
+                            await loadOffering()
+                            loggedInAppUserID = appUserID
+                        }
+                    }
+                }
+                if let loggedInAppUserID {
+                    Text("Logged in as \(loggedInAppUserID)")
                 }
 
                 EntitlementView(identifier: "pro")
 
             }
             .task {
-                do {
-                    let offerings = try await Purchases.shared.offerings()
-                    if let offering = offerings.offering(identifier: Self.offeringIdentifier) {
-                        offeringsState = .loaded(offering)
-                    } else {
-                        offeringsState = .failed(OfferingError.notFound)
-                    }
-                } catch {
-                    offeringsState = .failed(error)
-                }
+                await loadOffering()
             }
             .multilineTextAlignment(.center)
+        }
+
+        private func loadOffering() async {
+            do {
+                let offerings = try await Purchases.shared.offerings()
+                if let workflowId = Self.workflowIdentifier {
+                    let result = try await Purchases.shared.workflow(forWorkflowIdentifier: workflowId)
+                    offeringsState = .loadedWorkflow(
+                        try WorkflowPreview.makeContext(
+                            workflow: result.workflow,
+                            offerings: offerings,
+                            uiConfig: result.uiConfig,
+                            workflowBlobRef: result.workflowBlobRef
+                        )
+                    )
+                } else if let offering = offerings.offering(identifier: Self.offeringIdentifier) {
+                    offeringsState = .loaded(offering)
+                } else {
+                    offeringsState = .failed(OfferingError.notFound)
+                }
+            } catch {
+                offeringsState = .failed(error)
+            }
         }
 
         enum OfferingError: LocalizedError {

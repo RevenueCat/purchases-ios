@@ -29,3 +29,12 @@
 "Your purchase was successful." = "购买成功。";
 "Purchase unavailable" = "无法购买";
 "This purchase isn't available in your region." = "此项购买在您所在的地区不可用。";
+"Couldn't connect. Check your internet connection and try again." = "无法连接。请检查您的网络连接，然后重试。";
+"This content couldn't be loaded. Please try again later." = "无法加载此内容。请稍后重试。";
+"There was a problem with the store. Please try again later." = "商店出现问题。请稍后重试。";
+"Purchases aren't allowed on this device." = "此设备不允许购买。";
+"This product isn't available right now." = "此产品目前不可用。";
+"You already own this product." = "您已拥有此产品。";
+"Your payment is pending. You'll get access once it's approved." = "您的付款正在处理中。审核通过后即可使用。";
+"Something went wrong. Please try again." = "出了点问题。请重试。";
+"Your purchases couldn't be verified. Please try again later." = "无法验证您的购买。请稍后重试。";

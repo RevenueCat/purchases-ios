@@ -418,7 +418,7 @@ private struct MockVariableProvider: VariableDataProvider {
         return self.introductoryOfferPrice
     }
 
-    func localizedRelativeDiscount(_ discount: Double?, _ locale: Locale) -> String? {
+    func localizedRelativeDiscount(_ discount: Decimal?, _ locale: Locale) -> String? {
         return self.relativeDiscount
     }
 

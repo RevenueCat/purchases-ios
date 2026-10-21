@@ -328,11 +328,15 @@ import Foundation
             return self
         }
 
-        /// Enabling diagnostics will send some performance and debugging information from the SDK to our servers.
-        /// Examples of this information include response times, cache hits or error codes.
-        /// This information will be anonymous so it can't be traced back to the end-user
+        /// Enabling diagnostics sends performance and debugging information from the SDK to RevenueCat,
+        /// including response times, cache hits, and error codes.
+        /// This information is anonymous and cannot be traced back to the end user.
         ///
-        /// Defaults to `false`
+        /// Diagnostics are not sent to RevenueCat by default. They can be enabled locally by calling this
+        /// method with `true`, or remotely only at the developer's request or with their explicit approval.
+        /// A remote setting takes precedence over the value configured here.
+        ///
+        /// Defaults to `false`.
         ///
         @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
         @objc public func with(diagnosticsEnabled: Bool) -> Builder {

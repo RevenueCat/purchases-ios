@@ -15,7 +15,7 @@ import Foundation
 import Nimble
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class BackendPostHostedCheckoutTests: BaseBackendTests {
 
@@ -68,6 +68,30 @@ class BackendPostHostedCheckoutTests: BaseBackendTests {
 
         expect(result).to(beSuccess())
         expect(self.httpClient.calls).to(haveCount(1))
+    }
+
+    func testSendsPresentedCheckpointIdentifier() throws {
+        self.httpClient.disableSnapshotTesting()
+        self.httpClient.mock(
+            requestPath: .postHostedCheckout,
+            response: .init(statusCode: .success, response: Self.response)
+        )
+        let context = PresentedOfferingContext(offeringIdentifier: Self.offeringID)
+            .withCheckpointIdentifier("checkout", traceID: nil)
+
+        _ = waitUntilValue { completed in
+            self.postHostedCheckout(
+                appUserID: Self.userID,
+                packageID: Self.packageID,
+                presentedOfferingContext: context,
+                paywall: nil,
+                tokenID: Self.tokenID,
+                completion: completed
+            )
+        }
+
+        let body = try XCTUnwrap(self.httpClient.calls.first?.request.requestBody?.asJSONDictionary())
+        expect(body["presented_checkpoint_identifier"] as? String) == "checkout"
     }
 
     func testIsNotDelayed() {
@@ -166,6 +190,21 @@ class BackendPostHostedCheckoutTests: BaseBackendTests {
                                     offeringID: offeringID,
                                     tokenID: Self.tokenID) { _ in }
         }, from: Self.offeringID, to: "promo")
+    }
+
+    func testRequestsForDifferentCheckpointsAreNotReused() {
+        self.httpClient.disableSnapshotTesting()
+        self.expectTwoCalls(varying: { checkpointIdentifier in
+            let context = PresentedOfferingContext(offeringIdentifier: Self.offeringID)
+                .withCheckpointIdentifier(checkpointIdentifier, traceID: nil)
+            self.postHostedCheckout(
+                appUserID: Self.userID,
+                packageID: Self.packageID,
+                presentedOfferingContext: context,
+                paywall: nil,
+                tokenID: Self.tokenID
+            ) { _ in }
+        }, from: "checkout_a", to: "checkout_c")
     }
 
     func testRequestsForDifferentUsersAreNotReused() {

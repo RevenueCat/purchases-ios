@@ -21,7 +21,9 @@ struct FixtureRootView: View {
 
     var body: some View {
         if let requestedFixture {
-            if requestedFixture == AccessibilityHiddenControlView.fixtureName {
+            if requestedFixture == CustomerCenterPreviewFixture.name {
+                CustomerCenterPreviewFixture()
+            } else if requestedFixture == AccessibilityHiddenControlView.fixtureName {
                 AccessibilityHiddenControlView()
             } else if let fixture = PaywallFixture(rawValue: requestedFixture) {
                 FixturePaywallView(fixture: fixture)
