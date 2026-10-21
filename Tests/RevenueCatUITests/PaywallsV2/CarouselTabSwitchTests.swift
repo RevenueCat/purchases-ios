@@ -96,13 +96,13 @@ final class CarouselTabSwitchTests: TestCase {
             window.rootViewController = nil
         }
 
-        Self.waitUntil { tab1CarouselVM.lastPageIndex == 2 }
-        XCTAssertEqual(tab1CarouselVM.lastPageIndex, 2, "Tab 1 carousel should have advanced to its last page")
+        Self.waitUntil { tab1CarouselVM.lastVisiblePageIndex == 2 }
+        XCTAssertEqual(tab1CarouselVM.lastVisiblePageIndex, 2, "Tab 1 carousel should have advanced to its last page")
 
         Self.switchTab(to: "tab2", in: tabControlContext, window: window)
 
         XCTAssertEqual(
-            tab2CarouselVM.lastPageIndex,
+            tab2CarouselVM.lastVisiblePageIndex,
             1,
             "Tab 2 carousel must start on its own initial page, not on Tab 1's page"
         )

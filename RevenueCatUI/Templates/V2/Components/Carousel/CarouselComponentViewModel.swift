@@ -59,10 +59,10 @@ class CarouselComponentViewModel: OfferEligibilityVisibilityDependency {
         return self.pageContextNames[index]
     }
 
-    private(set) var lastPageIndex: Int?
+    private(set) var lastVisiblePageIndex: Int?
 
     func recordPageIndex(_ pageIndex: Int) {
-        self.lastPageIndex = pageIndex
+        self.lastVisiblePageIndex = pageIndex
         #if DEBUG
         self.onPageIndexChange?(pageIndex)
         #endif
@@ -70,11 +70,11 @@ class CarouselComponentViewModel: OfferEligibilityVisibilityDependency {
 
     /// The page to start on when the carousel view is (re)created.
     func startPageIndex(initialPageIndex: Int) -> Int {
-        guard let lastPageIndex, self.pageStackViewModels.indices.contains(lastPageIndex) else {
+        guard let lastVisiblePageIndex, self.pageStackViewModels.indices.contains(lastVisiblePageIndex) else {
             return initialPageIndex
         }
 
-        return lastPageIndex
+        return lastVisiblePageIndex
     }
 
     /// Invoked each time the carousel's `onAppear` fires. Set in tests to detect that the
