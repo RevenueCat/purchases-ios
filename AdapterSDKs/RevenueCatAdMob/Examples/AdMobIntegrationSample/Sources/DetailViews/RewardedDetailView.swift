@@ -84,7 +84,7 @@ struct RewardedDetailView: View {
                     self.finishLoading(with: self.message(for: result))
                 },
                 content: { prompt in
-                    self.promptButton(prompt)
+                    self.promptButton(title: self.offerTitle(prompt.rewardConfiguration), accept: prompt.accept)
                 }
             )
         } else {
@@ -96,18 +96,18 @@ struct RewardedDetailView: View {
                     self.finishLoading(with: self.message(for: result))
                 },
                 content: { prompt in
-                    self.promptButton(prompt)
+                    self.promptButton(title: "Watch an ad to earn a reward", accept: prompt.accept)
                 }
             )
         }
     }
 
-    private func promptButton(_ prompt: RewardedAdPromptContext) -> some View {
+    private func promptButton(title: String, accept: @escaping @MainActor () -> Void) -> some View {
         Button {
             self.message = Message.Rewarded.waitingForReward
-            prompt.accept()
+            accept()
         } label: {
-            Text(self.offerTitle(prompt.rewardConfiguration))
+            Text(title)
                 .frame(maxWidth: .infinity)
         }
         .buttonStyle(.borderedProminent)
