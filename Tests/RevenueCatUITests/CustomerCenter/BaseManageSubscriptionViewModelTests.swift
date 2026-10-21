@@ -1035,6 +1035,17 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beTrue())
     }
 
+    func testAssignedSubscriptionDoesNotShowCancel() {
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: Self.appStoreSubscription(ownershipType: .assigned),
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
+    }
+
     func testAssignedSubscriptionDoesNotShowRefundRequestOrChangePlans() {
         let viewModel = BaseManageSubscriptionViewModel(
             screen: BaseManageSubscriptionViewModelTests.default,

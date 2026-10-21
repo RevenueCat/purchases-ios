@@ -55,6 +55,7 @@ extension CustomerCenterConfigData.HelpPath {
     }
 
     private func cancellationHiddenReason(for purchase: PurchaseInformation) -> String? {
+        if purchase.ownershipType == .assigned { return purchase.ownershipType?.notOwnedByCustomerReason }
         if purchase.store != .appStore {
             return purchase.managementURL == nil ? "No management URL" : nil
         }
