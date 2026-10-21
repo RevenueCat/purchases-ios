@@ -169,9 +169,9 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
                 .init(eligibilityStatus: .unknown)
         }
 
-        let products = try await self.productsManager.sk2Products(withIdentifiers: compoundProductIdentifiers)
+        let products = try await self.productsManager.products(withIdentifiers: compoundProductIdentifiers)
         var productIdentifiersByGroup: [String: [String]] = [:]
-        for product in products {
+        for product in products.compactMap({ $0.product as? SK2StoreProduct }) {
             if let subscriptionGroupID = product.subscriptionGroupIDForIntroEligibilityCheck {
                 productIdentifiersByGroup[subscriptionGroupID, default: []].append(product.id)
             } else {

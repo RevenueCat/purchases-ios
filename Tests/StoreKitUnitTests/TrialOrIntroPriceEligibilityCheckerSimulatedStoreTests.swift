@@ -26,6 +26,7 @@ class TrialOrIntroPriceEligibilityCheckerSimulatedStoreTests: StoreKitConfigTest
     private let mockBackend = MockBackend()
     private var mockOfferingsAPI: MockOfferingsAPI!
     private var mockProductsManager: MockProductsManager!
+    private var cachingManager: CachingProductsManager!
     private var mockSystemInfo: MockSystemInfo!
 
     private static let productWithFreeTrialID = "com.test.product_with_free_trial"
@@ -41,6 +42,7 @@ class TrialOrIntroPriceEligibilityCheckerSimulatedStoreTests: StoreKitConfigTest
         self.mockProductsManager = MockProductsManager(diagnosticsTracker: nil,
                                                        systemInfo: mockSystemInfo,
                                                        requestTimeout: Configuration.storeKitRequestTimeoutDefault)
+        self.cachingManager = CachingProductsManager(manager: self.mockProductsManager)
         self.mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: mockProductsManager,
                                                                              receiptParser: MockReceiptParser())
 
@@ -54,7 +56,7 @@ class TrialOrIntroPriceEligibilityCheckerSimulatedStoreTests: StoreKitConfigTest
             backend: self.mockBackend,
             currentUserProvider: userProvider,
             operationDispatcher: mockOperationDispatcher,
-            productsManager: self.mockProductsManager,
+            productsManager: self.cachingManager,
             diagnosticsTracker: nil
         )
     }
@@ -180,7 +182,45 @@ class TrialOrIntroPriceEligibilityCheckerSimulatedStoreTests: StoreKitConfigTest
 
         expect(self.receiptFetcher.receiptDataCalled) == false
         expect(self.mockIntroEligibilityCalculator.invokedCheckTrialOrIntroDiscountEligibility) == false
-        expect(self.mockProductsManager.invokedSk2StoreProducts) == false
         expect(self.mockOfferingsAPI.invokedGetIntroEligibility) == false
     }
+
+    func testSimulatedStoreSharesCachedProductsWithEligibilityWhenSK1IsConfigured() async throws {
+        try await self.verifySharingCachedProducts(storeKitVersion: .storeKit1)
+    }
+
+    func testSimulatedStoreSharesCachedProductsWithEligibilityWhenSK2IsConfigured() async throws {
+        try await self.verifySharingCachedProducts(storeKitVersion: .storeKit2)
+    }
+
+}
+
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
+private extension TrialOrIntroPriceEligibilityCheckerSimulatedStoreTests {
+
+    func verifySharingCachedProducts(storeKitVersion: StoreKitVersion) async throws {
+        try self.setupSimulatedStore(storeKitVersion: storeKitVersion)
+        self.stubProducts()
+        let identifiers: Set<String> = [Self.productWithFreeTrialID]
+        _ = try await self.cachingManager.products(withIdentifiers: identifiers)
+
+        let eligibility = await withCheckedContinuation { continuation in
+            self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: identifiers) {
+                continuation.resume(returning: $0)
+            }
+        }
+
+        expect(eligibility[Self.productWithFreeTrialID]?.status) == .eligible
+        expect(self.mockProductsManager.invokedProductsCount) == 1
+        self.cachingManager.clearCache()
+        _ = await withCheckedContinuation { continuation in
+            self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: identifiers) {
+                continuation.resume(returning: $0)
+            }
+        }
+        expect(self.mockProductsManager.invokedProductsCount) == 2
+        expect(self.receiptFetcher.receiptDataCalled) == false
+        expect(self.mockOfferingsAPI.invokedGetIntroEligibility) == false
+    }
+
 }

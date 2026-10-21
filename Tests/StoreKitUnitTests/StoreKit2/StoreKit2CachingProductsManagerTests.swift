@@ -16,12 +16,12 @@ import Nimble
 import StoreKitTest
 import XCTest
 
-/// Exercises the shared product cache with real SK2 product values.
+/// Exercises the configured-store cache with real SK2 product values.
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 class StoreKit2CachingProductsManagerTests: StoreKitConfigTestCase {
 
     private var mockManager: MockProductsManager!
-    private var productsCache: ProductsCache<SK2StoreProduct>!
+    private var cachingManager: CachingProductsManager!
 
     override func setUp() async throws {
         try await super.setUp()
@@ -35,93 +35,93 @@ class StoreKit2CachingProductsManagerTests: StoreKitConfigTestCase {
             systemInfo: systemInfo,
             requestTimeout: Configuration.storeKitRequestTimeoutDefault
         )
-        self.productsCache = ProductsCache<SK2StoreProduct>()
+        self.cachingManager = CachingProductsManager(manager: self.mockManager)
     }
 
     func testFetchesNotCachedProduct() async throws {
-        let product = try await self.fetchSk2StoreProduct()
-        self.mockManager.stubbedSk2StoreProductsResult = .success([product])
+        let product = StoreProduct(sk2Product: try await self.fetchSk2Product())
+        self.mockManager.stubbedProductsCompletionResult = .success([product])
 
-        let result = try await self.products(withIdentifiers: [Self.productID])
+        let result = try await self.cachingManager.products(withIdentifiers: [Self.productID])
         expect(result.onlyElement) == product
 
         self.expectProductsWereFetched(times: 1, for: Self.productID)
     }
 
     func testFetchesNotCachedProductIfOneOfTheRequestedProductsIsNotCached() async throws {
-        let product1 = try await self.fetchSk2StoreProduct()
-        let product2 = try await self.fetchSk2StoreProduct("lifetime")
+        let product1 = StoreProduct(sk2Product: try await self.fetchSk2Product())
+        let product2 = StoreProduct(sk2Product: try await self.fetchSk2Product("lifetime"))
 
         // Cache 1 product
-        self.mockManager.stubbedSk2StoreProductsResult = .success([product1])
-        _ = try await self.products(withIdentifiers: [product1.productIdentifier])
+        self.mockManager.stubbedProductsCompletionResult = .success([product1])
+        _ = try await self.cachingManager.products(withIdentifiers: [product1.productIdentifier])
 
         // Request 2 products
-        self.mockManager.stubbedSk2StoreProductsResult = .success([product1, product2])
+        self.mockManager.stubbedProductsCompletionResult = .success([product1, product2])
 
-        let result = try await self.products(
+        let result = try await self.cachingManager.products(
             withIdentifiers: [product1.productIdentifier, product2.productIdentifier]
         )
         expect(result) == [product1, product2]
 
-        expect(self.mockManager.invokedSk2StoreProductsCount) == 2
-        expect(self.mockManager.invokedSk2StoreProductsParameterList) == [
+        expect(self.mockManager.invokedProductsCount) == 2
+        expect(self.mockManager.invokedProductsParametersList) == [
             Set([product1.productIdentifier]), // First product fetched
             Set([product2.productIdentifier]) // Second product fetched
         ]
     }
 
     func testRefetchesProductIfItFailedTheFirstTime() async throws {
-        self.mockManager.stubbedSk2StoreProductsResult = .failure(ErrorUtils.productRequestTimedOutError())
+        self.mockManager.stubbedProductsCompletionResult = .failure(ErrorUtils.productRequestTimedOutError())
 
         // This will fail
-        let failedResult = try? await self.products(withIdentifiers: [Self.productID])
+        let failedResult = try? await self.cachingManager.products(withIdentifiers: [Self.productID])
         expect(failedResult).to(beNil())
 
-        let product = try await self.fetchSk2StoreProduct()
-        self.mockManager.stubbedSk2StoreProductsResult = .success([product])
+        let product = StoreProduct(sk2Product: try await self.fetchSk2Product())
+        self.mockManager.stubbedProductsCompletionResult = .success([product])
 
-        let result = try await self.products(withIdentifiers: [Self.productID])
+        let result = try await self.cachingManager.products(withIdentifiers: [Self.productID])
 
         expect(result.onlyElement) == product
         self.expectProductsWereFetched(times: 2, for: Self.productID)
     }
 
     func testReturnsCachedProduct() async throws {
-        let product = try await self.fetchSk2StoreProduct()
-        self.mockManager.stubbedSk2StoreProductsResult = .success([product])
+        let product = StoreProduct(sk2Product: try await self.fetchSk2Product())
+        self.mockManager.stubbedProductsCompletionResult = .success([product])
 
-        _ = try await self.products(withIdentifiers: [Self.productID])
-        let result = try await self.products(withIdentifiers: [Self.productID])
+        _ = try await self.cachingManager.products(withIdentifiers: [Self.productID])
+        let result = try await self.cachingManager.products(withIdentifiers: [Self.productID])
 
         expect(result.onlyElement) == product
         self.expectProductsWereFetched(times: 1, for: Self.productID)
     }
 
     func testRefetchesAfterClearingCache() async throws {
-        let product = try await self.fetchSk2StoreProduct()
-        self.mockManager.stubbedSk2StoreProductsResult = .success([product])
+        let product = StoreProduct(sk2Product: try await self.fetchSk2Product())
+        self.mockManager.stubbedProductsCompletionResult = .success([product])
 
-        _ = try await self.products(withIdentifiers: [Self.productID])
-        self.productsCache.clear()
+        _ = try await self.cachingManager.products(withIdentifiers: [Self.productID])
+        self.cachingManager.clearCache()
 
-        let result = try await self.products(withIdentifiers: [Self.productID])
+        let result = try await self.cachingManager.products(withIdentifiers: [Self.productID])
 
         expect(result.onlyElement) == product
         self.expectProductsWereFetched(times: 2, for: Self.productID)
     }
 
     func testReusesProductRequestsIfAlreadyInProgress() async throws {
-        let product = try await self.fetchSk2StoreProduct()
+        let product = StoreProduct(sk2Product: try await self.fetchSk2Product())
 
         self.mockManager.productResultDelay = 0.01
-        self.mockManager.stubbedSk2StoreProductsResult = .success([product])
+        self.mockManager.stubbedProductsCompletionResult = .success([product])
 
-        var tasks: [Task<Set<SK2StoreProduct>, Error>] = []
+        var tasks: [Task<Set<StoreProduct>, Error>] = []
 
         for _ in 0..<5 {
             tasks.append(Task {
-                try await self.products(withIdentifiers: [Self.productID])
+                try await self.cachingManager.products(withIdentifiers: [Self.productID])
             })
         }
 
@@ -140,25 +140,15 @@ class StoreKit2CachingProductsManagerTests: StoreKitConfigTestCase {
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 private extension StoreKit2CachingProductsManagerTests {
 
-    func products(withIdentifiers identifiers: Set<String>) async throws -> Set<SK2StoreProduct> {
-        return try await Async.call { completion in
-            self.productsCache.products(
-                withIdentifiers: identifiers,
-                completion: completion,
-                fetcher: self.mockManager.sk2Products
-            )
-        }
-    }
-
     func expectProductsWereFetched(
         times: Int,
         for identifiers: String...,
         file: FileString = #file,
         line: UInt = #line
     ) {
-        expect(file: file, line: line, self.mockManager.invokedSk2StoreProductsCount)
+        expect(file: file, line: line, self.mockManager.invokedProductsCount)
             .to(equal(times), description: "Products fetched an unexpected number of times")
-        expect(file: file, line: line, self.mockManager.invokedSk2StoreProductsParameter) == Set(identifiers)
+        expect(file: file, line: line, self.mockManager.invokedProductsParameters) == Set(identifiers)
     }
 
 }

@@ -364,21 +364,25 @@ class SK2ProductsManagerDiagnosticsTrackingTests: ProductsManagerTests {
     }
 
     func testSK2CacheHitsDoNotTrackAdditionalAppleRequests() async throws {
-        let manager = self.createManager(storeKitVersion: .storeKit2,
-                                         diagnosticsTracker: self.mockDiagnosticsTracker)
+        let manager = CachingProductsManager(manager: self.createManager(
+            storeKitVersion: .storeKit2,
+            diagnosticsTracker: self.mockDiagnosticsTracker
+        ))
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
-        _ = try await manager.sk2Products(withIdentifiers: [identifier])
+        _ = try await manager.products(withIdentifiers: [identifier])
         expect(self.mockDiagnosticsTracker.trackedProductsRequestParams.value).to(haveCount(1))
         _ = try await manager.products(withIdentifiers: [identifier])
-        _ = try await manager.sk2Products(withIdentifiers: [identifier])
+        _ = try await manager.products(withIdentifiers: [identifier])
         expect(self.mockDiagnosticsTracker.trackedProductsRequestParams.value).to(haveCount(1))
     }
 
     func testSK2PartialCacheHitTracksOnlyFetchedIdentifiers() async throws {
-        let manager = self.createManager(storeKitVersion: .storeKit2,
-                                         diagnosticsTracker: self.mockDiagnosticsTracker)
+        let manager = CachingProductsManager(manager: self.createManager(
+            storeKitVersion: .storeKit2,
+            diagnosticsTracker: self.mockDiagnosticsTracker
+        ))
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
-        _ = try await manager.sk2Products(withIdentifiers: [identifier])
+        _ = try await manager.products(withIdentifiers: [identifier])
         _ = try await manager.products(withIdentifiers: [identifier, "lifetime"])
 
         let requests = self.mockDiagnosticsTracker.trackedProductsRequestParams.value

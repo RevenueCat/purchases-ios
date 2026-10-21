@@ -75,6 +75,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
             systemInfo: mockSystemInfo,
             requestTimeout: Configuration.storeKitRequestTimeoutDefault
         )
+        mockProductsManager.fetchProductsFromStoreKit = true
         mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: mockProductsManager,
                                                                         receiptParser: MockReceiptParser())
         mockBackend = MockBackend()
@@ -166,7 +167,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
                         "com.revenuecat.annual_39.99.2_week_intro": IntroEligibilityStatus.unknown,
                         "lifetime": IntroEligibilityStatus.unknown]
 
-        self.mockProductsManager?.stubbedSk2StoreProductsResult = .failure(ErrorUtils.productRequestTimedOutError())
+        self.mockProductsManager?.stubbedProductsCompletionResult = .failure(ErrorUtils.productRequestTimedOutError())
 
         let eligibilities = waitUntilValue { completed in
             self.trialOrIntroPriceEligibilityChecker.checkEligibility(
@@ -290,7 +291,9 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
         let product1 = try await self.fetchSk2StoreProduct("com.revenuecat.monthly_4.99.1_week_intro")
         let product2 = try await self.fetchSk2StoreProduct("com.revenuecat.annual_39.99.2_week_intro")
         let product3 = try await self.fetchSk2StoreProduct("lifetime")
-        self.mockProductsManager.stubbedSk2StoreProductsResult = .success([product1, product2, product3])
+        self.mockProductsManager.stubbedProductsCompletionResult = .success(
+            Set([product1, product2, product3].map(StoreProduct.from(product:)))
+        )
         self.mockSystemInfo.stubbedStorefront = MockStorefront(countryCode: "USA")
 
         await withCheckedContinuation { continuation in
@@ -324,7 +327,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
                               "lifetime"])
 
         let product = try await self.fetchSk2StoreProduct("com.revenuecat.monthly_4.99.1_week_intro")
-        self.mockProductsManager.stubbedSk2StoreProductsResult = .success([product])
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([StoreProduct.from(product: product)])
 
         await withCheckedContinuation { continuation in
             self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIds) { _ in
@@ -357,7 +360,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
                               "lifetime"])
 
         let purchasesError = ErrorUtils.productRequestTimedOutError()
-        self.mockProductsManager.stubbedSk2StoreProductsResult = .failure(purchasesError)
+        self.mockProductsManager.stubbedProductsCompletionResult = .failure(purchasesError)
 
         await withCheckedContinuation { continuation in
             self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: productIds) { _ in
