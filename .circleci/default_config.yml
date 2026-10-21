@@ -1097,21 +1097,15 @@ jobs:
 
     steps:
       - checkout
+      - install-xcodes
       # iOS 26.4+ simulators don't return StoreKit test products (FB22500243),
       # and the Xcode 26.6 image only ships the iOS 26.5 runtime.
       - run:
-          name: Start iOS 26.2 runtime download (background)
-          background: true
+          name: Start iOS 26.2 runtime installation (background)
           command: |
-            for attempt in 1 2 3; do
-              echo "=== Downloading iOS 26.2 (attempt $attempt/3) ===" >> /tmp/runtime_install.log
-              if xcodebuild -downloadPlatform iOS -buildVersion 26.2 -architectureVariant arm64 >> /tmp/runtime_install.log 2>&1; then
-                touch /tmp/runtime_ready
-                exit 0
-              fi
-              sleep 10
-            done
-            touch /tmp/runtime_failed
+            scripts/install-ios-runtime.sh "iOS 26.2" &
+            disown
+            echo "Started iOS 26.2 runtime installation in background"
       - run:
           name: Validate Package.swift
           command: swift package describe
@@ -1128,7 +1122,7 @@ jobs:
 
       # === iOS 26 tests ===
       - run:
-          name: Wait for iOS 26.2 runtime download
+          name: Wait for iOS 26.2 runtime installation
           command: |
             scripts/wait-for-ios-runtime.sh
             xcrun simctl list devices "iOS 26.2" | grep -q "iPhone 17 (" ||
