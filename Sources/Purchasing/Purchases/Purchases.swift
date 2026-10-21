@@ -299,6 +299,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let customerInfoManager: CustomerInfoManager
     private let eventsManager: EventsManagerType?
     private let remoteConfigManager: RemoteConfigManagerType
+    private let configuredAdRewardsProvider: ConfiguredAdRewardsProvider
     private let checkpointsConfigProvider: CheckpointsConfigProviderType
     private let sdkSettingsConfigProvider: SDKSettingsConfigProviderType
     private let subscriberDimensionsConfigProvider: SubscriberDimensionsConfigProviderType
@@ -995,6 +996,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.remoteConfigManager = systemInfo.remoteConfigEnabled
             ? remoteConfigManager
             : NoOpRemoteConfigManager()
+        self.configuredAdRewardsProvider = ConfiguredAdRewardsProvider(manager: self.remoteConfigManager)
         self.checkpointsConfigProvider = checkpointsConfigProvider
         self.sdkSettingsConfigProvider = sdkSettingsConfigProvider
         self.subscriberDimensionsConfigProvider = subscriberDimensionsConfigProvider
@@ -2086,10 +2088,10 @@ extension Purchases {
     ///
     /// - Parameter adUnitId: The ad network's rewarded ad unit identifier.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func adRewards(
+    public func adRewards(
         forAdUnitId adUnitId: String
     ) async -> ConfiguredAdRewards? {
-        return nil
+        return await self.configuredAdRewardsProvider.rewards(forAdUnitId: adUnitId)
     }
 
 }
