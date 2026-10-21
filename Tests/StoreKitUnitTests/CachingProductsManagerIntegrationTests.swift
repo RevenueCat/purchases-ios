@@ -12,7 +12,7 @@
 //  Created by Nacho Soto on 7/26/23.
 
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import StoreKitTest
 import XCTest
 
@@ -150,17 +150,13 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    func testConcurrentGeneralAndSK2RequestsShareStoreKitFetch() async throws {
-        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
-        let manager = Self.createManager(.storeKit2)
-        async let products = manager.products(withIdentifiers: [Self.productID])
-        async let sk2Products = manager.sk2Products(withIdentifiers: [Self.productID])
-        let results = try await (products, sk2Products)
+    func testGeneralRequestSharesInFlightFetchWithSK2Request() async throws {
+        try await self.verifyInFlightSharing(startWithSK2: false)
+    }
 
-        let product = try XCTUnwrap(results.0.onlyElement)
-        let sk2Product = try XCTUnwrap(results.1.onlyElement)
-        expect(product.sk2Product) == sk2Product.underlyingSK2Product
-        self.verifyStoreProductRequests(count: 1)
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func testSK2RequestSharesInFlightFetchWithGeneralRequest() async throws {
+        try await self.verifyInFlightSharing(startWithSK2: true)
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -255,6 +251,58 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
 
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
 private extension CachingProductsManagerIntegrationTests {
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    func verifyInFlightSharing(startWithSK2: Bool) async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        let manager = Self.createManager(.storeKit2)
+        let completed = self.expectation(description: "Both product APIs complete")
+        completed.expectedFulfillmentCount = 2
+        let completions = Atomic(0)
+        let starts = Atomic(0)
+        let joined = Atomic(false)
+        let generalCompletion: ProductsManagerType.Completion = { result in
+            expect(try? result.get().onlyElement?.id) == Self.productID
+            completions.modify { $0 += 1 }
+            completed.fulfill()
+        }
+        let sk2Completion: ProductsManagerType.SK2Completion = { result in
+            expect(try? result.get().onlyElement?.id) == Self.productID
+            completions.modify { $0 += 1 }
+            completed.fulfill()
+        }
+        let startMessage = Strings.storeKit.no_cached_products_starting_store_products_request(
+            identifiers: [Self.productID]
+        ).description
+        let joinMessage = Strings.offering.found_existing_product_request(identifiers: [Self.productID]).description
+        let previousLogHandler = Logger.internalLogHandler
+        defer { TestLogHandler.restore() }
+        Logger.internalLogHandler = { level, message, category, file, function, line in
+            previousLogHandler(level, message, category, file, function, line)
+            if message.contains(joinMessage) { joined.value = true }
+            guard message.contains(startMessage) else { return }
+            let count = starts.modify { $0 += 1; return $0 }
+            // General requests pass through the outer cache before reaching the shared SK2 cache.
+            guard count == (startWithSK2 ? 1 : 2) else { return }
+            // The cache registered this request, but its fetch has not started yet.
+            if startWithSK2 {
+                manager.products(withIdentifiers: [Self.productID], completion: generalCompletion)
+            } else {
+                manager.sk2Products(withIdentifiers: [Self.productID], completion: sk2Completion)
+            }
+            expect(joined.value) == true
+            expect(completions.value) == 0
+        }
+
+        if startWithSK2 {
+            manager.sk2Products(withIdentifiers: [Self.productID], completion: sk2Completion)
+        } else {
+            manager.products(withIdentifiers: [Self.productID], completion: generalCompletion)
+        }
+        await self.fulfillment(of: [completed], timeout: 5)
+        expect(joined.value) == true
+        self.verifyStoreProductRequests(count: 1)
+    }
 
     func verifyStoreProductRequests(count: Int, file: FileString = #file, line: UInt = #line) {
         let message = Strings.storeKit.store_product_request_received_response
