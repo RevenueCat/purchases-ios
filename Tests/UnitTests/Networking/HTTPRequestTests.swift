@@ -557,7 +557,6 @@ class HTTPRequestTests: TestCase {
     /// Maps each `HTTPRequest.Path` case (other than `.logIn`, which is disallowed under IAM) to the
     /// relative path it should resolve to when IAM access-token authorization is preferred.
     private static let iamPathComponentsByPath: [HTTPRequest.Path: String] = [
-        .postAdServicesToken(appUserID: userID): "customer/adservices_attribution",
         .health: "health",
         .appHealthReport(appUserID: userID): "customer/health_report",
         .appHealthReportAvailability(appUserID: userID): "subscribers/\(userID)/health_report_availability",
@@ -883,7 +882,8 @@ class HTTPRequestTests2: TestCase {
         .getOfferings(appUserID: anonymousUser),
         .getIntroEligibility(appUserID: anonymousUser),
         .postAttributionData(appUserID: anonymousUser),
-        .postSubscriberAttributes(appUserID: anonymousUser)
+        .postSubscriberAttributes(appUserID: anonymousUser),
+        .postAdServicesToken(appUserID: anonymousUser)
     ]
 
     func testPathsDontHaveLeadingSlash() {
@@ -1360,7 +1360,8 @@ class HTTPRequestTests2: TestCase {
         .postAttributionData(appUserID: userID): "customer/attribution",
         .postOfferForSigning: "offers",
         .postReceiptData: "receipts",
-        .postSubscriberAttributes(appUserID: userID): "customer/attributes"
+        .postSubscriberAttributes(appUserID: userID): "customer/attributes",
+        .postAdServicesToken(appUserID: userID): "customer/adservices_attribution"
     ]
 
     func testRewardVerificationStatusPathIncludesAdUnitIDQueryParameter() {

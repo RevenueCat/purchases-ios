@@ -261,4 +261,13 @@ extension HTTPRequest.Path2 {
                           iamPathComponent: "customer/attributes")
     }
 
+    static func postAdServicesToken(appUserID: String) -> Self {
+        HTTPRequest.Path2(name: "post_adservices_token",
+                          etagBehavior: .send,
+                          supportsSignatureVerification: false,
+                          needsNonceForSigning: false,
+                          pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/adservices_attribution",
+                          iamPathComponent: "customer/adservices_attribution")
+    }
+
 }
