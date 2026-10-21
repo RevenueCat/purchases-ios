@@ -35,7 +35,9 @@ final class PurchaseDetailViewModel: ObservableObject {
             return .sharedThroughFamilyMember
         case .assigned:
             return .assignedThroughOrganization
-        default:
+        case .purchased, .unknown, nil:
+            return nil
+        @unknown default:
             return nil
         }
     }
