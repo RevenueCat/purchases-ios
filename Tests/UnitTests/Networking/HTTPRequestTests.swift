@@ -977,7 +977,8 @@ class HTTPRequestTests2: TestCase {
             .filter { !$0.needsNonceForSigning }
 
         expect(staticEndpoints) == [
-            .getOfferings(appUserID: Self.userID)
+            .getOfferings(appUserID: Self.userID),
+            .getProductEntitlementMapping
         ]
     }
 
@@ -1001,6 +1002,9 @@ class HTTPRequestTests2: TestCase {
             case "get_offerings":
                 XCTAssertEqual(fallbackUrlsPaths,
                                ["https://api-production.8-lives-cat.io/v1/offerings"])
+            case "get_product_entitlement_mapping":
+                XCTAssertEqual(fallbackUrlsPaths,
+                               ["https://api-production.8-lives-cat.io/v1/product_entitlement_mapping"])
             default:
                 XCTAssertTrue(fallbackUrlsPaths.isEmpty)
             }
