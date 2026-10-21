@@ -500,6 +500,41 @@ class StoreProductTests: StoreKitConfigTestCase {
         expect(storeProduct.localizedPricePerYear) == "$59.88"
     }
 
+    func testCalculatedPricesMatchDisplayedPriceFormat() {
+        self.continueAfterFailure = true
+
+        let cases: [(currency: String, locale: String, price: Decimal, strings: (display: String, weekly: String))] = [
+            ("EUR", "pt_BR", 29.99, ("29,99 €", "0,57 €")),
+            ("USD", "ro_RO", 29.99, ("$29.99", "$0.57")),
+            ("USD", "ro_RO", 1234.56, ("$1,234.56", "$23.67")),
+            ("JPY", "en_US", 2999, ("￥2,999", "￥58")),
+            ("KWD", "en_US", 29.99, ("29.990 KWD", "0.570 KWD")),
+            ("EUR", "pt_PT", 29.99, ("29,99 €", "0,57 €")),
+            ("EUR", "pt_BR", 29.99, ("Free", "€ 0,57")),
+            ("EUR", "pt_BR", 29.99, ("999,99 €", "€ 0,57"))
+        ]
+
+        for testCase in cases {
+            let product = TestStoreProduct(
+                localizedTitle: "Annual",
+                price: testCase.price,
+                currencyCode: testCase.currency,
+                localizedPriceString: testCase.strings.display,
+                productIdentifier: "annual",
+                productType: .autoRenewableSubscription,
+                localizedDescription: "",
+                subscriptionPeriod: .init(value: 1, unit: .year),
+                locale: Locale(identifier: testCase.locale)
+            ).toStoreProduct()
+
+            let formatter = product.priceFormatter
+            let originalFormatting = formatter?.string(from: testCase.price as NSDecimalNumber)
+
+            XCTAssertEqual(product.localizedPricePerWeek, testCase.strings.weekly, testCase.strings.display)
+            XCTAssertEqual(formatter?.string(from: testCase.price as NSDecimalNumber), originalFormatting)
+        }
+    }
+
     func testPricePerPeriodRounding() async throws {
         let locale: Locale = .init(identifier: "en_US")
         let product = TestStoreProduct(

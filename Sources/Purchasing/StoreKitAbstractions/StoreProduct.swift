@@ -331,7 +331,7 @@ public extension StoreProduct {
     /// - ``localizedPricePerYear``
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     @objc var localizedPricePerDay: String? {
-        return self.formattedString(for: self.pricePerDay)
+        return self.formattedString(for: self.pricePerDay, matching: self.localizedPriceString)
     }
 
     /// The formatted price per week using ``StoreProduct/priceFormatter``.
@@ -341,7 +341,7 @@ public extension StoreProduct {
     /// - ``localizedPricePerYear``
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     @objc var localizedPricePerWeek: String? {
-        return self.formattedString(for: self.pricePerWeek)
+        return self.formattedString(for: self.pricePerWeek, matching: self.localizedPriceString)
     }
 
     /// The formatted price per month using ``StoreProduct/priceFormatter``.
@@ -351,7 +351,7 @@ public extension StoreProduct {
     /// - ``localizedPricePerYear``
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     @objc var localizedPricePerMonth: String? {
-        return self.formattedString(for: self.pricePerMonth)
+        return self.formattedString(for: self.pricePerMonth, matching: self.localizedPriceString)
     }
 
     /// The formatted price per year using ``StoreProduct/priceFormatter``.
@@ -361,7 +361,7 @@ public extension StoreProduct {
     /// - ``localizedPricePerMonth``
     @available(iOS 11.2, macOS 10.13.2, tvOS 11.2, watchOS 6.2, *)
     @objc var localizedPricePerYear: String? {
-        return self.formattedString(for: self.pricePerYear)
+        return self.formattedString(for: self.pricePerYear, matching: self.localizedPriceString)
     }
 
 }
@@ -439,14 +439,47 @@ public extension StoreProduct {
 
 private extension StoreProduct {
 
-    func formattedString(for price: NSDecimalNumber?) -> String? {
+    func formattedString(for price: NSDecimalNumber?, matching displayPrice: String? = nil) -> String? {
         guard let formatter = self.priceFormatter,
               let price = price
         else {
             return nil
         }
 
-        return formatter.string(from: price as NSDecimalNumber)
+        if let displayPrice {
+            return self.displayPriceFormatter(from: formatter, matching: displayPrice).string(from: price)
+        }
+
+        return formatter.string(from: price)
+    }
+
+    func displayPriceFormatter(from formatter: NumberFormatter, matching displayPrice: String) -> NumberFormatter {
+        guard formatter.string(from: self.price as NSDecimalNumber) != displayPrice,
+              let firstDigit = displayPrice.firstIndex(where: \.isNumber),
+              let lastDigit = displayPrice.lastIndex(where: \.isNumber),
+              let matchedFormatter = formatter.copy() as? NumberFormatter else {
+            return formatter
+        }
+
+        matchedFormatter.positivePrefix = String(displayPrice[..<firstDigit])
+        matchedFormatter.positiveSuffix = String(displayPrice[displayPrice.index(after: lastDigit)...])
+
+        let separators = Set(displayPrice[firstDigit...lastDigit].filter { !$0.isNumber }.map(String.init)).sorted()
+        let decimalSeparators = [formatter.currencyDecimalSeparator ?? "."] + separators
+        let groupingSeparators = [formatter.currencyGroupingSeparator ?? ","] + separators + [",", "."]
+
+        for decimalSeparator in decimalSeparators {
+            for groupingSeparator in groupingSeparators where decimalSeparator != groupingSeparator {
+                matchedFormatter.currencyDecimalSeparator = decimalSeparator
+                matchedFormatter.currencyGroupingSeparator = groupingSeparator
+
+                if matchedFormatter.string(from: self.price as NSDecimalNumber) == displayPrice {
+                    return matchedFormatter
+                }
+            }
+        }
+
+        return formatter
     }
 
 }
