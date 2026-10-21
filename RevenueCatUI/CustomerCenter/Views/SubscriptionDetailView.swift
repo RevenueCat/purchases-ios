@@ -35,9 +35,6 @@ struct SubscriptionDetailView: View {
     @Environment(\.navigationOptions)
     var navigationOptions
 
-    @Environment(\.openURL)
-    var openURL
-
     @Environment(\.supportInformation)
     private var support
 
@@ -57,6 +54,7 @@ struct SubscriptionDetailView: View {
         showPurchaseHistory: Bool,
         showVirtualCurrencies: Bool,
         allowsMissingPurchaseAction: Bool,
+        purchaseObservationMode: SubscriptionDetailViewModel.PurchaseObservationMode = .selectedPurchase,
         purchasesProvider: CustomerCenterPurchasesType,
         actionWrapper: CustomerCenterActionWrapper) {
             let viewModel = SubscriptionDetailViewModel(
@@ -65,6 +63,7 @@ struct SubscriptionDetailView: View {
                 showPurchaseHistory: showPurchaseHistory,
                 showVirtualCurrencies: showVirtualCurrencies,
                 allowsMissingPurchaseAction: allowsMissingPurchaseAction,
+                purchaseObservationMode: purchaseObservationMode,
                 actionWrapper: actionWrapper,
                 purchaseInformation: purchaseInformation,
                 purchasesProvider: purchasesProvider,
@@ -86,6 +85,7 @@ struct SubscriptionDetailView: View {
 
     var body: some View {
         content
+            .modifier(CustomerCenterPreviewActionsModifier(actions: viewModel.previewActions))
         // This is needed because `CustomerCenterViewModel` is isolated to @MainActor
         // A bigger refactor is needed, but its already throwing a warning.
             .modifier(self.customerInfoViewModel.purchasesProvider
@@ -109,7 +109,11 @@ struct SubscriptionDetailView: View {
                     productIDs: viewModel.changePlanProductIDs
                 )
             )
-            .onAppear { viewModel.didAppear() }
+            .onAppear {
+                viewModel.didAppear()
+                viewModel.startPublishingPreviewDiagnostics()
+            }
+            .onDisappear { viewModel.stopPublishingPreviewDiagnostics() }
             .onChangeOf(customerInfoViewModel.manageSubscriptionsSheet) { manageSubscriptionsSheet in
                 if !manageSubscriptionsSheet {
                     viewModel.refreshPurchase()
@@ -302,11 +306,24 @@ private extension SubscriptionDetailView {
 
     @ViewBuilder
     func contactSupportView(_ url: URL) -> some View {
+        if let provider = viewModel.purchasesProvider as? CustomerCenterPreviewProvider {
+            contactSupportButton(open: provider.previewURLHandler(for: url))
+        } else if #available(iOS 18.0, *) {
+            OpenURLReader { openURL in
+                contactSupportButton { openURL(url) }
+            }
+        } else {
+            // On iOS 16 and 17, reading `openURL` here loops forever once a screen is pushed on top.
+            contactSupportButton { URLUtilities.openURLIfNotAppExtension(url) }
+        }
+    }
+
+    func contactSupportButton(open: @escaping () -> Void) -> some View {
         AsyncButton {
-            if RuntimeUtils.isSimulator {
+            if RuntimeUtils.isSimulator && !(viewModel.purchasesProvider is CustomerCenterPreviewProvider) {
                 self.showSimulatorAlert = true
             } else {
-                openURL(url)
+                open()
             }
         } label: {
             CompatibilityLabeledContent(localization[.contactSupport])
@@ -337,6 +354,22 @@ private extension SubscriptionDetailView {
         .padding(.horizontal)
         .buttonStyle(.customerCenterButtonStyle(for: colorScheme))
         .tint(colorScheme == .dark ? .white : .black)
+    }
+}
+
+@available(iOS 15.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+private struct OpenURLReader<Content: View>: View {
+
+    @Environment(\.openURL)
+    private var openURL
+
+    let content: (OpenURLAction) -> Content
+
+    var body: some View {
+        content(openURL)
     }
 }
 

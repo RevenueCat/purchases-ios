@@ -485,7 +485,7 @@ private extension BaseLocalizationTests {
     }
 
     func verify(
-        _ discount: Double,
+        _ discount: Decimal,
         _ expected: String,
         file: FileString = #filePath,
         line: UInt = #line

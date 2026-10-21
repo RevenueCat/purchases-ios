@@ -83,6 +83,12 @@
     [a setAppstackAttributionParams:nil completion:^(RCOfferings *offerings, NSError *error) {}];
     NSDictionary *appstackDict = @{};
     [a setAppstackAttributionParams:appstackDict completion:^(RCOfferings *offerings, NSError *error) {}];
+
+    NSArray<RCCustomerAttribute *> *attrs = a.attributesForCurrentUser;
+    RCCustomerAttribute *attr = attrs.firstObject;
+    NSString *k = attr.key;
+    NSString *v = attr.value;
+    NSDate *d = attr.lastUpdatedDate;
 }
 
 @end

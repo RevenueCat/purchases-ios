@@ -122,6 +122,12 @@ public struct CustomerCenterView: View {
         navigationContent
             .task {
                 await loadInformationIfNeeded()
+                await viewModel.observePreviewCustomerInfoUpdates()
+            }
+            .transformEnvironment(\.openURL) { action in
+                if let provider = viewModel.purchasesProvider as? CustomerCenterPreviewProvider {
+                    action = provider.previewOpenURLAction
+                }
             }
             .onAppear {
 #if DEBUG
@@ -242,14 +248,15 @@ private extension CustomerCenterView {
     }
 
     func singlePurchaseView(_ screen: CustomerCenterConfigData.Screen) -> some View {
-        SubscriptionDetailView(
+        let purchase = viewModel.subscriptionsSection.first ?? viewModel.nonSubscriptionsSection.first
+        return SubscriptionDetailView(
             customerInfoViewModel: viewModel,
             screen: screen,
-            purchaseInformation: viewModel.subscriptionsSection.first
-                ?? viewModel.nonSubscriptionsSection.first,
+            purchaseInformation: purchase,
             showPurchaseHistory: viewModel.shouldShowSeeAllPurchases,
             showVirtualCurrencies: viewModel.shouldShowVirtualCurrencies,
             allowsMissingPurchaseAction: true,
+            purchaseObservationMode: .currentPurchase,
             purchasesProvider: self.viewModel.purchasesProvider,
             actionWrapper: self.viewModel.actionWrapper
         )

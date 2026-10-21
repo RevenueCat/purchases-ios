@@ -25,10 +25,10 @@ final class PaywallViewConfigurationTests: TestCase {
         let configuration = PaywallViewConfiguration(
             content: .defaultOffering,
             purchaseHandler: .default(),
-            workflowPresentationErrorHandler: { receivedError = $0 }
+            workflowPresentationErrorHandler: { error, _ in receivedError = error }
         )
 
-        configuration.workflowPresentationErrorHandler?(expectedError)
+        configuration.workflowPresentationErrorHandler?(expectedError, .endFlow)
 
         expect(receivedError) === expectedError
     }
@@ -242,6 +242,51 @@ final class PaywallViewConfigurationTests: TestCase {
         expect(packageContext.targetingContext?.ruleId) == "targeting_rule_offering_a"
     }
 
+    func testResolvePaywallViewDataUsesCheckpointTraceIDForWorkflowOfferingContent() async throws {
+        let initialOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
+            .withPresentedCheckpointIdentifier("app_start", traceID: "hit_trace")
+        let workflowOffering = Self.createOffering(identifier: "offering_b")
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+
+        purchases.offeringsBlock = {
+            Self.createOfferings([initialOffering, workflowOffering])
+        }
+        purchases.workflowBlock = { _ in
+            try Self.createWorkflowDataResult(offeringIdentifier: workflowOffering.identifier)
+        }
+
+        let result = try await handler.resolvePaywallViewData(
+            for: .offering(initialOffering),
+            remoteConfigEnabled: true
+        )
+
+        expect(result.workflowContext?.traceId) == "hit_trace"
+        expect(result.offering.availablePackages.first?.presentedOfferingContext.traceID) == "hit_trace"
+    }
+
+    func testResolvePaywallViewDataLeavesTraceIDUnsetForOfferingWithoutCheckpoint() async throws {
+        let initialOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let workflowOffering = Self.createOffering(identifier: "offering_b")
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+
+        purchases.offeringsBlock = {
+            Self.createOfferings([initialOffering, workflowOffering])
+        }
+        purchases.workflowBlock = { _ in
+            try Self.createWorkflowDataResult(offeringIdentifier: workflowOffering.identifier)
+        }
+
+        let result = try await handler.resolvePaywallViewData(
+            for: .offering(initialOffering),
+            remoteConfigEnabled: true
+        )
+
+        expect(result.workflowContext).toNot(beNil())
+        expect(result.workflowContext?.traceId).to(beNil())
+    }
+
     func testCachedInitialPaywallViewDataReturnsWorkflowContextForCachedWorkflow() throws {
         let initialOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
             .withPresentedOfferingContext(Self.createPresentedOfferingContext(offeringIdentifier: "offering_a"))
@@ -269,6 +314,26 @@ final class PaywallViewConfigurationTests: TestCase {
         expect(result?.offering.internalPaywallComponents).toNot(beNil())
         expect(result?.workflowContext?.initialOffering.identifier) == workflowOffering.identifier
         expect(result?.workflowContext?.presentedOfferingContext?.offeringIdentifier) == initialOffering.identifier
+    }
+
+    func testCachedInitialPaywallViewDataUsesCheckpointTraceIDForCachedWorkflow() throws {
+        let initialOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
+            .withPresentedCheckpointIdentifier("app_start", traceID: "hit_trace")
+        let workflowOffering = Self.createOffering(identifier: "offering_b")
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+        let cachedWorkflow = try Self.createWorkflowDataResult(offeringIdentifier: workflowOffering.identifier)
+
+        purchases.cachedOfferings = Self.createOfferings([initialOffering, workflowOffering])
+        purchases.cachedWorkflowBlock = { _ in cachedWorkflow }
+
+        let result = handler.cachedInitialPaywallViewData(
+            for: .offering(initialOffering),
+            remoteConfigEnabled: true
+        )
+
+        expect(result?.workflowContext?.traceId) == "hit_trace"
+        expect(result?.offering.availablePackages.first?.presentedOfferingContext.traceID) == "hit_trace"
     }
 
     func testResolvePaywallViewDataUsesPassedOfferingWhenWorkflowStepMatchesItsIdentifier() async throws {

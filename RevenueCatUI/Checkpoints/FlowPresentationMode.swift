@@ -30,7 +30,7 @@ public struct FlowPresentationMode: Hashable, CustomStringConvertible, Sendable 
         self.name = name
     }
 
-    /// The SDK chooses the presentation. Currently, this is ``sheet``.
+    /// The SDK chooses the presentation. Currently, this is ``modalSheet``.
     public static let `default` = Self(name: "default")
 
     /// The flow covers the whole screen.

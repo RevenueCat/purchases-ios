@@ -46,14 +46,7 @@ import Foundation
     @Published
     var changePlansSheet = false
 
-    @Published
-    var state: CustomerCenterViewState {
-        didSet {
-            if case let .error(stateError) = state {
-                self.error = stateError
-            }
-        }
-    }
+    @Published var state: CustomerCenterViewState
 
     @Published
     var configuration: CustomerCenterConfigData? {
@@ -81,51 +74,9 @@ import Foundation
     private(set) var purchasesProvider: CustomerCenterPurchasesType
     private(set) var customerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
 
-    /// Whether or not the Customer Center should warn the customer that they're on an outdated version of the app.
-    var shouldShowAppUpdateWarnings: Bool {
-        return !appIsLatestVersion && (configuration?.support.shouldWarnCustomerToUpdate ?? true)
-    }
-
-    /// Whether or not the user has any purchases (subscriptions, non-subscriptions, virtual currencies)
-    var hasAnyPurchases: Bool {
-        !subscriptionsSection.isEmpty
-            || !nonSubscriptionsSection.isEmpty
-            || !(virtualCurrencies?.balanceIsZero ?? true)
-    }
-
-    var shouldShowList: Bool {
-        let virtualCurrenciesCount = virtualCurrencies.map { $0.all.count } ?? 0
-        let nonVirtualCurrencyCount = subscriptionsSection.count + nonSubscriptionsSection.count
-
-        return nonVirtualCurrencyCount + virtualCurrenciesCount > 1
-    }
-
-    var originalAppUserId: String {
-        customerInfo?.originalAppUserId ?? ""
-    }
-
-    var originalPurchaseDate: Date? {
-        customerInfo?.originalPurchaseDate
-    }
-
-    var shouldShowSeeAllPurchases: Bool {
-        configuration?.support.displayPurchaseHistoryLink == true
-        && customerInfo?.shouldShowSeeAllPurchasesButton(
-            maxNonSubscriptions: RelevantPurchasesListViewModel.maxNonSubscriptionsToShow
-        ) ?? false
-    }
-
-    var shouldShowVirtualCurrencies: Bool {
-        configuration?.support.displayVirtualCurrencies == true
-    }
-
-    var shouldShowUserDetailsSection: Bool {
-        configuration?.support.displayUserDetailsSection ?? true
-    }
-
     private let currentVersionFetcher: CurrentVersionFetcher
 
-    internal var customerInfo: CustomerInfo?
+    @Published internal var customerInfo: CustomerInfo?
 
     /// The action wrapper that handles both the deprecated handler and the new preference system
     internal let actionWrapper: CustomerCenterActionWrapper
@@ -133,8 +84,8 @@ import Foundation
     /// Used to make testing easier
     internal var currentTask: Task<Void, Never>?
 
-    private var error: Error?
     private var impressionData: CustomerCenterEvent.Data?
+    private var previewLoadGeneration = 0
 
     init(
         actionWrapper: CustomerCenterActionWrapper,
@@ -187,28 +138,23 @@ import Foundation
 
     #endif
 
-    func publisher(for purchase: PurchaseInformation?) -> AnyPublisher<PurchaseInformation, Never>? {
-        guard let productIdentifier = purchase?.productIdentifier else {
-            return nil
+    func loadScreen(shouldSync: Bool = false) async {
+        if let provider = purchasesProvider as? CustomerCenterPreviewProvider {
+            await loadPreviewScreen(provider: provider, shouldSync: shouldSync)
+            return
         }
 
-        return $subscriptionsSection.combineLatest($nonSubscriptionsSection)
-            .throttle(for: .seconds(0.3), scheduler: DispatchQueue.main, latest: true)
-            .compactMap {
-                $0.first(where: { $0.productIdentifier == productIdentifier })
-                ?? $1.first(where: { $0.productIdentifier == productIdentifier })
-            }
-            .eraseToAnyPublisher()
-    }
-
-    func loadScreen(shouldSync: Bool = false) async {
         do {
-            let customerInfo = shouldSync ?
-            try await self.purchasesProvider.syncPurchases() :
-            try await purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
+            let customerInfo = try await fetchCustomerInfo(shouldSync: shouldSync)
 
             let configuration = try await self.loadCustomerCenterConfig()
-            try await self.loadPurchases(customerInfo: customerInfo, configuration: configuration)
+            self.subscriptionsSection = await loadSubscriptions(
+                customerInfo: customerInfo, configuration: configuration
+            )
+            self.nonSubscriptionsSection = await loadNonSubscriptions(
+                customerInfo: customerInfo, configuration: configuration
+            )
+            self.customerInfo = customerInfo
 
             if shouldShowVirtualCurrencies {
                 purchasesProvider.invalidateVirtualCurrenciesCache()
@@ -222,9 +168,46 @@ import Foundation
         }
     }
 
-    func onDismissRestorePurchasesAlert() {
-        currentTask = Task {
-            await loadScreen()
+    /// Publishes a complete preview update only if this is the latest load and its task is still active.
+    func loadPreviewScreen(
+        provider: CustomerCenterPreviewProvider, shouldSync: Bool = false, customerInfo: CustomerInfo? = nil
+    ) async {
+        guard !Task.isCancelled else { return }
+        previewLoadGeneration += 1
+        let generation = previewLoadGeneration
+
+        do {
+            let resolvedCustomerInfo: CustomerInfo
+            if let customerInfo {
+                resolvedCustomerInfo = customerInfo
+            } else {
+                resolvedCustomerInfo = try await fetchCustomerInfo(shouldSync: shouldSync)
+            }
+
+            let configuration = try await purchasesProvider.loadCustomerCenter()
+            let subscriptions = await loadSubscriptions(
+                customerInfo: resolvedCustomerInfo, configuration: configuration
+            )
+            let nonSubscriptions = await loadNonSubscriptions(
+                customerInfo: resolvedCustomerInfo, configuration: configuration
+            )
+            var virtualCurrencies: VirtualCurrencies?
+            if configuration.support.displayVirtualCurrencies == true {
+                purchasesProvider.invalidateVirtualCurrenciesCache()
+                virtualCurrencies = try? await purchasesProvider.virtualCurrencies()
+            }
+            try Task.checkCancellation()
+            guard generation == previewLoadGeneration else { return }
+            self.updatePreviewConfiguration(configuration, provider: provider)
+            self.subscriptionsSection = subscriptions
+            self.nonSubscriptionsSection = nonSubscriptions
+            self.virtualCurrencies = virtualCurrencies
+            self.customerInfo = resolvedCustomerInfo
+            self.state = .success
+        } catch is CancellationError {
+        } catch {
+            guard !Task.isCancelled, generation == previewLoadGeneration else { return }
+            self.state = .error(error)
         }
     }
 
@@ -244,27 +227,15 @@ import Foundation
     }
 }
 
-private extension VirtualCurrencies {
-
-    var balanceIsZero: Bool {
-        all.map(\.value.balance).reduce(0, +) <= 0
-    }
-}
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(macOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 private extension CustomerCenterViewModel {
 
-    func loadPurchases(customerInfo: CustomerInfo, configuration: CustomerCenterConfigData) async throws {
-        self.customerInfo = customerInfo
-
-        await loadSubscriptionsSection(customerInfo: customerInfo, configuration: configuration)
-        await loadNonSubscriptionsSection(customerInfo: customerInfo, configuration: configuration)
-    }
-
-    func loadNonSubscriptionsSection(customerInfo: CustomerInfo, configuration: CustomerCenterConfigData) async {
+    func loadNonSubscriptions(
+        customerInfo: CustomerInfo, configuration: CustomerCenterConfigData
+    ) async -> [PurchaseInformation] {
         var activeNonSubscriptionPurchases: [PurchaseInformation] = []
         // customerInfo returns these oldest first, and the management screen only shows the first few
         for subscription in customerInfo.nonSubscriptions.sorted(by: { $0.purchaseDate > $1.purchaseDate }) {
@@ -279,10 +250,12 @@ private extension CustomerCenterViewModel {
             )
             activeNonSubscriptionPurchases.append(purchaseInfo)
         }
-        self.nonSubscriptionsSection = activeNonSubscriptionPurchases
+        return activeNonSubscriptionPurchases
     }
 
-    func loadMostRecentExpiredTransaction(customerInfo: CustomerInfo, configuration: CustomerCenterConfigData) async {
+    func loadMostRecentExpiredTransaction(
+        customerInfo: CustomerInfo, configuration: CustomerCenterConfigData
+    ) async -> [PurchaseInformation] {
         let inactive = customerInfo.subscriptionsByProductIdentifier
             .filter { !$0.value.isActive }
             .sorted { sub1, sub2 in
@@ -304,7 +277,7 @@ private extension CustomerCenterViewModel {
             .first
 
         guard let inactiveSub = inactive?.value else {
-            return
+            return []
         }
 
         let purchaseInfo: PurchaseInformation = await .from(
@@ -316,13 +289,13 @@ private extension CustomerCenterViewModel {
             localization: configuration.localization
         )
 
-        self.subscriptionsSection = [purchaseInfo]
+        return [purchaseInfo]
     }
 
-    func loadSubscriptionsSection(
+    func loadSubscriptions(
         customerInfo: CustomerInfo,
         configuration: CustomerCenterConfigData
-    ) async {
+    ) async -> [PurchaseInformation] {
         var activeSubscriptionPurchases: [PurchaseInformation] = []
         let subscriptions = customerInfo.activeSubscriptions
             .compactMap({ id in
@@ -353,10 +326,16 @@ private extension CustomerCenterViewModel {
         }
 
         if activeSubscriptionPurchases.isEmpty {
-            await loadMostRecentExpiredTransaction(customerInfo: customerInfo, configuration: configuration)
-        } else {
-            self.subscriptionsSection = activeSubscriptionPurchases
+            return await loadMostRecentExpiredTransaction(customerInfo: customerInfo, configuration: configuration)
         }
+        return activeSubscriptionPurchases
+    }
+
+    func fetchCustomerInfo(shouldSync: Bool) async throws -> CustomerInfo {
+        if shouldSync {
+            return try await purchasesProvider.syncPurchases()
+        }
+        return try await purchasesProvider.customerInfo(fetchPolicy: .fetchCurrent)
     }
 
     func loadCustomerCenterConfig() async throws -> CustomerCenterConfigData {
@@ -366,15 +345,26 @@ private extension CustomerCenterViewModel {
             self.configuration = configuration
         }
 
-        if let productId = configuration.productId,
-            let url = URL(string: "https://itunes.apple.com/app/id\(productId)") {
+        if let url = configuration.updateAppURL {
             self.onUpdateAppClick = {
-                // productId is a positive integer, so it should be safe to construct a URL from it.
                 URLUtilities.openURLIfNotAppExtension(url)
             }
         }
 
         return configuration
+    }
+
+    func updatePreviewConfiguration(
+        _ configuration: CustomerCenterConfigData, provider: CustomerCenterPreviewProvider
+    ) {
+        self.configuration = configuration
+        self.onUpdateAppClick = configuration.updateAppURL.map(provider.previewURLHandler(for:))
+    }
+}
+
+private extension CustomerCenterConfigData {
+    var updateAppURL: URL? {
+        productId.flatMap { URL(string: "https://itunes.apple.com/app/id\($0)") }
     }
 }
 

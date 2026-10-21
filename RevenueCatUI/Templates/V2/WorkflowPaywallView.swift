@@ -216,34 +216,55 @@ struct WorkflowTransitionGeometry {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct WorkflowPaywallView: View {
+enum WorkflowPresentationState {
+    case active
+    case displayingError(error: NSError, behavior: WorkflowPresentationErrorBehavior)
+    // The alert clears its error before dismissing, but the presentation must remain failed so
+    // an exit offer cannot be restored during dismissal.
+    case failureReported
 
-    private enum PresentationState {
-        case active
-        case failing(error: NSError)
-        // The alert clears its error before dismissing, but the presentation must remain failed so
-        // an exit offer cannot be restored during dismissal.
-        case failureReported
+    var error: NSError? {
+        guard case let .displayingError(error, _) = self else { return nil }
+        return error
+    }
 
-        var error: NSError? {
-            guard case let .failing(error) = self else { return nil }
-            return error
-        }
+    var errorBehavior: WorkflowPresentationErrorBehavior? {
+        guard case let .displayingError(_, behavior) = self else { return nil }
+        return behavior
+    }
 
-        var hasFailed: Bool {
-            switch self {
-            case .active:
-                return false
-            case .failing, .failureReported:
-                return true
-            }
-        }
-
-        var canReportPresentationError: Bool {
-            guard case .failureReported = self else { return true }
+    var hasFailed: Bool {
+        switch self {
+        case .active, .displayingError(_, .keepCurrentScreen):
             return false
+        case .displayingError(_, .endFlow), .failureReported:
+            return true
         }
     }
+
+    var canReportPresentationError: Bool {
+        guard case .failureReported = self else { return true }
+        return false
+    }
+
+    mutating func updateError(_ error: NSError?) {
+        switch (self, error) {
+        case let (.displayingError(_, behavior), error?):
+            self = .displayingError(error: error, behavior: behavior)
+        case (_, let error?):
+            self = .displayingError(error: error, behavior: .endFlow)
+        case (.displayingError(_, .endFlow), nil):
+            self = .failureReported
+        case (.displayingError(_, .keepCurrentScreen), nil):
+            self = .active
+        case (.active, nil), (.failureReported, nil):
+            break
+        }
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct WorkflowPaywallView: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.colorScheme) private var colorScheme
@@ -268,7 +289,7 @@ struct WorkflowPaywallView: View {
     private let showZeroDecimalPlacePrices: Bool
     private let displayCloseButton: Bool
     private let onDismiss: () -> Void
-    private let onPresentationError: ((NSError) -> Void)?
+    private let onPresentationError: WorkflowPresentationErrorHandler?
 
     @ObservedObject private var backNavigationBridge: WorkflowBackNavigationBridge
 
@@ -283,7 +304,7 @@ struct WorkflowPaywallView: View {
     // without subscribing to its @Published changes: body only forwards the cache to children.
     // Observing it directly would re-render the whole page ForEach + header overlay on each update.
     @StateObject private var promoOfferCacheOwner: PromoOfferCacheOwner
-    @State private var presentationState: PresentationState
+    @State private var presentationState: WorkflowPresentationState
     /// Owns the per-impression workflow step event state machine (trace id, fire-once flags, gating).
     /// Created in `init`, so a new presentation (new view identity) yields a fresh `traceId`, unless a
     /// checkpoint passed the one its hit carries. Its sequence/gating is unit tested in
@@ -310,7 +331,7 @@ struct WorkflowPaywallView: View {
         promoOfferCache: PaywallPromoOfferCache?,
         onDismiss: @escaping () -> Void,
         backNavigationBridge: WorkflowBackNavigationBridge = WorkflowBackNavigationBridge(),
-        onPresentationError: ((NSError) -> Void)? = nil
+        onPresentationError: WorkflowPresentationErrorHandler? = nil
     ) {
         self.context = context
         self.purchaseHandler = purchaseHandler
@@ -365,7 +386,7 @@ struct WorkflowPaywallView: View {
         self._skeletonPage = .init(wrappedValue: skeletonPage)
         self._presentationState = .init(
             initialValue: initialPresentationError.map {
-                .failing(error: $0)
+                .displayingError(error: $0, behavior: .endFlow)
             } ?? .active
         )
         self._stepEventCoordinator = .init(
@@ -457,14 +478,14 @@ struct WorkflowPaywallView: View {
         .onAppear {
             self.backNavigationBridge.workflowDidAppear()
             switch self.presentationState {
-            case .failing:
+            case .displayingError(_, .endFlow):
                 self.exitOfferOfferingBinding.wrappedValue = nil
                 self.reportPresentationError(for: self.navigator.currentStepId)
                 return
             case .failureReported:
                 self.exitOfferOfferingBinding.wrappedValue = nil
                 return
-            case .active:
+            case .active, .displayingError(_, .keepCurrentScreen):
                 break
             }
             self.syncExitOfferBinding()
@@ -503,7 +524,15 @@ struct WorkflowPaywallView: View {
         // values every page reads when re-resolving `state` conditions.
         .environment(\.paywallStateValues, self.stateStore.values)
         .environment(\.paywallStateDefaults, self.stateStore.defaults)
-        .displayError(self.workflowPresentationError, onDismiss: self.onDismiss)
+        // The external presenter owns the error, so don't show the built-in alert too.
+        .displayError(
+            self.onPresentationError == nil ? self.workflowPresentationError : .constant(nil),
+            onDismiss: {
+                if self.presentationState.hasFailed {
+                    self.onDismiss()
+                }
+            }
+        )
         .modifier(PaywallURLEventsModifier(purchaseHandler: self.purchaseHandler))
     }
 
@@ -669,9 +698,7 @@ struct WorkflowPaywallView: View {
     }
 
     private func failedToLoadFont(_ fontConfig: UIConfig.FontsConfig) {
-        if Purchases.isConfigured {
-            Purchases.shared.failedToLoadFontWithConfig(fontConfig)
-        }
+        purchaseHandler.failedToLoadFont(fontConfig)
     }
 
     private func handleDismiss(dismissalReason: WorkflowDismissalReason = .close) {
@@ -822,7 +849,7 @@ struct WorkflowPaywallView: View {
         return .navigateBack
     }
 
-    private func handleTriggeredNavigation(componentId: String) -> Bool {
+    func handleTriggeredNavigation(componentId: String) -> Bool {
         guard !self.transitionState.isTransitioning else {
             return false
         }
@@ -1097,42 +1124,54 @@ struct WorkflowPaywallView: View {
     }
 
     private func failWorkflowPresentation(for stepId: String) {
-        guard self.presentationState.canReportPresentationError else { return }
-
         let error = Self.presentationError(for: stepId, in: self.context) ?? ErrorCode.configurationError as NSError
-        self.trackCurrentWorkflowLeft()
-        self.exitOfferOfferingBinding.wrappedValue = nil
-        self.presentationState = .failing(error: error)
-        self.reportPresentationError(for: stepId)
+        let behavior: WorkflowPresentationErrorBehavior = self.transitionState.currentPage == nil
+            ? .endFlow
+            : .keepCurrentScreen
+        switch behavior {
+        case .endFlow:
+            guard self.presentationState.canReportPresentationError else { return }
+            self.trackCurrentWorkflowLeft()
+            self.exitOfferOfferingBinding.wrappedValue = nil
+        case .keepCurrentScreen:
+            break
+        }
+        self.reportPresentationError(error, for: stepId, behavior: behavior)
     }
 
     private var workflowPresentationError: Binding<NSError?> {
         return .init(
             get: { self.presentationState.error },
             set: { error in
-                switch (self.presentationState, error) {
-                case (_, let error?):
-                    self.presentationState = .failing(error: error)
-                case (.failing, nil):
-                    self.presentationState = .failureReported
-                case (.active, nil), (.failureReported, nil):
-                    break
-                }
+                self.presentationState.updateError(error)
             }
         )
     }
 
     private func reportPresentationError(for stepId: String) {
-        guard let error = self.presentationState.error else { return }
+        guard let error = self.presentationState.error,
+              let behavior = self.presentationState.errorBehavior else { return }
 
+        self.reportPresentationError(error, for: stepId, behavior: behavior)
+    }
+
+    private func reportPresentationError(
+        _ error: NSError,
+        for stepId: String,
+        behavior: WorkflowPresentationErrorBehavior
+    ) {
         let message = Strings.workflow_paywall_invalid_state(
             currentStepId: stepId,
             screenId: self.context.workflow.steps[stepId]?.screenId
         )
         Logger.error("\(message): \(error.localizedDescription)")
         if let onPresentationError = self.onPresentationError {
-            self.presentationState = .failureReported
-            onPresentationError(error)
+            if behavior == .endFlow {
+                self.presentationState = .failureReported
+            }
+            onPresentationError(error, behavior)
+        } else {
+            self.presentationState = .displayingError(error: error, behavior: behavior)
         }
     }
 

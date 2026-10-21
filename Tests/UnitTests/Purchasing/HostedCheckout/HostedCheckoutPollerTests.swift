@@ -25,7 +25,7 @@ class HostedCheckoutPollerTests: TestCase {
     // MARK: - Terminal answers
 
     func testSucceedsOnTheFirstAttemptWithoutWaiting() async {
-        let fetcher = StubStatusFetcher(results: [.status(.succeeded)])
+        let fetcher = StubStatusFetcher(results: [.status(.succeeded(nil))])
         let sleeper = RecordingHostedCheckoutSleeper()
 
         let result = await self.makePoller(fetcher: fetcher, sleeper: sleeper).poll(
@@ -33,13 +33,45 @@ class HostedCheckoutPollerTests: TestCase {
             appUserID: Self.appUserID
         )
 
-        expect(result) == .succeeded
+        expect(result) == .succeeded(nil)
         expect(fetcher.receivedIDs) == [Self.operationSessionID]
         expect(sleeper.delays).to(beEmpty())
     }
 
+    func testSucceedsWithTheTransactionTheSessionMade() async {
+        let fetcher = StubStatusFetcher(results: [.status(.succeeded(Self.transaction(isSandbox: true)))])
+
+        let result = await self.makePoller(fetcher: fetcher, sleeper: RecordingHostedCheckoutSleeper()).poll(
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.appUserID
+        )
+
+        guard case let .succeeded(transaction?) = result else {
+            return XCTFail("Expected a transaction, got \(result)")
+        }
+        expect(transaction.transactionIdentifier) == "txn_123"
+        expect(transaction.productIdentifier) == "monthly"
+        expect(transaction.purchaseDate) == Date(timeIntervalSince1970: 1609459200)
+        expect(transaction.quantity) == 1
+        expect(transaction.environment) == .sandbox
+    }
+
+    func testReportsAPurchaseOutsideSandboxAsProduction() async {
+        let fetcher = StubStatusFetcher(results: [.status(.succeeded(Self.transaction(isSandbox: false)))])
+
+        let result = await self.makePoller(fetcher: fetcher, sleeper: RecordingHostedCheckoutSleeper()).poll(
+            operationSessionID: Self.operationSessionID,
+            appUserID: Self.appUserID
+        )
+
+        guard case let .succeeded(transaction?) = result else {
+            return XCTFail("Expected a transaction, got \(result)")
+        }
+        expect(transaction.environment) == .production
+    }
+
     func testKeepsAskingWhileTheSessionIsUnderWay() async {
-        let fetcher = StubStatusFetcher(results: [.status(.pending), .status(.pending), .status(.succeeded)])
+        let fetcher = StubStatusFetcher(results: [.status(.pending), .status(.pending), .status(.succeeded(nil))])
         let sleeper = RecordingHostedCheckoutSleeper()
 
         let result = await self.makePoller(fetcher: fetcher, sleeper: sleeper).poll(
@@ -47,7 +79,7 @@ class HostedCheckoutPollerTests: TestCase {
             appUserID: Self.appUserID
         )
 
-        expect(result) == .succeeded
+        expect(result) == .succeeded(nil)
         expect(fetcher.callCount) == 3
         expect(sleeper.delays) == [1, 1]
     }
@@ -55,7 +87,7 @@ class HostedCheckoutPollerTests: TestCase {
     /// Every attempt asks about the customer the session belongs to. The backend answers for no one else,
     /// so a poll that followed a customer who changed would stop answering.
     func testAsksAboutTheSameCustomerOnEveryAttempt() async {
-        let fetcher = StubStatusFetcher(results: [.status(.pending), .status(.pending), .status(.succeeded)])
+        let fetcher = StubStatusFetcher(results: [.status(.pending), .status(.pending), .status(.succeeded(nil))])
 
         _ = await self.makePoller(fetcher: fetcher, sleeper: RecordingHostedCheckoutSleeper()).poll(
             operationSessionID: Self.operationSessionID,
@@ -155,20 +187,20 @@ class HostedCheckoutPollerTests: TestCase {
     }
 
     func testKeepsAskingThroughAnErrorThatTendsToPass() async {
-        let fetcher = StubStatusFetcher(results: [.failure(.networkError(.serverDown())), .status(.succeeded)])
+        let fetcher = StubStatusFetcher(results: [.failure(.networkError(.serverDown())), .status(.succeeded(nil))])
 
         let result = await self.makePoller(fetcher: fetcher, sleeper: RecordingHostedCheckoutSleeper()).poll(
             operationSessionID: Self.operationSessionID,
             appUserID: Self.appUserID
         )
 
-        expect(result) == .succeeded
+        expect(result) == .succeeded(nil)
         expect(fetcher.callCount) == 2
     }
 
     /// The session cannot be asked about at all, which says nothing about whether the customer paid.
     func testGivesNoAnswerWhenTheSessionIsNotFoundForThisCustomer() async {
-        let fetcher = StubStatusFetcher(results: [.failure(Self.sessionNotFoundError), .status(.succeeded)])
+        let fetcher = StubStatusFetcher(results: [.failure(Self.sessionNotFoundError), .status(.succeeded(nil))])
 
         let result = await self.makePoller(fetcher: fetcher, sleeper: RecordingHostedCheckoutSleeper()).poll(
             operationSessionID: Self.operationSessionID,
@@ -257,6 +289,13 @@ private extension HostedCheckoutPollerTests {
                        .notFoundError)
     )
 
+    static func transaction(isSandbox: Bool) -> HostedCheckoutStatusResponse.Transaction {
+        return .init(storeTransactionIdentifier: "txn_123",
+                     productIdentifier: "monthly",
+                     purchaseDate: Date(timeIntervalSince1970: 1609459200),
+                     isSandbox: isSandbox)
+    }
+
     func makePoller(fetcher: HostedCheckoutStatusFetching,
                     sleeper: AsyncSleeper) -> HostedCheckoutPoller {
         return self.makePoller(fetcher: fetcher, sleeper: sleeper, maxAttempts: 30)
@@ -343,7 +382,7 @@ private final class UnansweredStatusFetcher: HostedCheckoutStatusFetching {
                      appUserID: String) async -> Result<HostedCheckoutStatusResponse, BackendError> {
         self.callCount.modify { $0 += 1 }
         try? await Task.sleep(nanoseconds: 10_000_000_000)
-        return .success(.init(status: .succeeded))
+        return .success(.init(status: .succeeded(nil)))
     }
 
 }

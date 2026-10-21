@@ -139,7 +139,7 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
 
             let annual = packages[0]
             expect(annual.content) === TestData.annualPackage
-            expect(annual.discountRelativeToMostExpensivePerMonth)
+            expect(annual.discountRelativeToMostExpensivePerMonth.map { NSDecimalNumber(decimal: $0).doubleValue })
                 .to(beCloseTo(0.36, within: 0.01))
             Self.verifyLocalizationWasProcessed(annual.localization, for: TestData.annualPackage)
 
@@ -333,7 +333,7 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
 
                 let annual = firstTier.all[1]
                 expect(annual.content) === TestData.annualPackage
-                expect(annual.discountRelativeToMostExpensivePerMonth)
+                expect(annual.discountRelativeToMostExpensivePerMonth.map { NSDecimalNumber(decimal: $0).doubleValue })
                     .to(beCloseTo(0.36, within: 0.01))
                 expect(annual.localization.tierName).to(beNil())
                 Self.verifyLocalizationWasProcessed(annual.localization, for: TestData.annualPackage)

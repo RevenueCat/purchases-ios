@@ -76,6 +76,12 @@ struct RelevantPurchasesListView: View {
 
     var body: some View {
         content
+            .modifier(CustomerCenterPreviewActionsModifier(actions: viewModel.previewActions))
+            .onAppear { self.viewModel.startPublishingPreviewDiagnostics() }
+            .onDisappear { self.viewModel.stopPublishingPreviewDiagnostics() }
+            .onReceive(customerInfoViewModel.$customerInfo) { _ in
+                viewModel.updateSelectedPurchase(using: customerInfoViewModel)
+            }
             .applyIf(self.viewModel.screen.type == .management, apply: {
                 $0.navigationTitle(self.viewModel.screen.title)
                     .navigationBarTitleDisplayMode(.inline)

@@ -46,6 +46,12 @@ import Foundation
     /// The targeting rule this ``Package`` was obtained from.
     @objc public let targetingContext: TargetingContext?
 
+    /// The checkpoint that presented the flow containing this ``Package``.
+    @_spi(Internal) public let checkpointIdentifier: String?
+
+    /// The trace id of the checkpoint hit that presented this ``Package``.
+    @_spi(Internal) public let traceID: String?
+
     /// Initialize a ``PresentedOfferingContext``.
     @objc
     public init(
@@ -56,7 +62,34 @@ import Foundation
         self.offeringIdentifier = offeringIdentifier
         self.placementIdentifier = placementIdentifier
         self.targetingContext = targetingContext
+        self.checkpointIdentifier = nil
+        self.traceID = nil
         super.init()
+    }
+
+    private init(
+        offeringIdentifier: String,
+        placementIdentifier: String?,
+        targetingContext: TargetingContext?,
+        checkpointIdentifier: String?,
+        traceID: String?
+    ) {
+        self.offeringIdentifier = offeringIdentifier
+        self.placementIdentifier = placementIdentifier
+        self.targetingContext = targetingContext
+        self.checkpointIdentifier = checkpointIdentifier
+        self.traceID = traceID
+        super.init()
+    }
+
+    func withCheckpointIdentifier(_ checkpointIdentifier: String?, traceID: String?) -> PresentedOfferingContext {
+        return PresentedOfferingContext(
+            offeringIdentifier: self.offeringIdentifier,
+            placementIdentifier: self.placementIdentifier,
+            targetingContext: self.targetingContext,
+            checkpointIdentifier: checkpointIdentifier,
+            traceID: traceID
+        )
     }
 
     /// Initialize a ``PresentedOfferingContext``.

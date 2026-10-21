@@ -39,6 +39,8 @@ final class PurchaseHandler: ObservableObject {
     private var cancellables: Set<AnyCancellable> = Set()
 
     private let purchases: PaywallPurchasesType
+    private let customerCenterPreviewContext: (@Sendable () -> (appUserID: String, isSandbox: Bool))?
+    private let customerCenterPreviewURLHandler: (@Sendable (URL) async throws -> Void)?
     let resolveBranch: @Sendable (WorkflowBranch) async -> WorkflowStepID
     private let paywallEventTracker: PaywallEventTracker
     private let keyWindowFocusResigner: KeyWindowFocusResigning
@@ -50,6 +52,10 @@ final class PurchaseHandler: ObservableObject {
     /// The checkout this paywall's customer was last given and has not settled. Released with the paywall
     /// session, so a customer who comes back later starts afresh.
     var keptHostedCheckout: HostedCheckout.KeptCheckout?
+
+    /// What the paywall is telling the customer about a hosted checkout, until they acknowledge it.
+    @Published
+    fileprivate(set) var hostedCheckoutResolutionToShow: HostedCheckout.Resolution?
     #endif
 
     /// Where responsibility for completing purchases lies
@@ -71,6 +77,20 @@ final class PurchaseHandler: ObservableObject {
     /// Whether the SDK is running in UI preview mode.
     var isUIPreviewMode: Bool {
         return purchases.isUIPreviewMode
+    }
+
+    /// Only the injected Customer Center provider enables isolated mobile-app preview behavior.
+    var isCustomerCenterPreview: Bool {
+        return customerCenterPreviewContext != nil
+    }
+
+    /// Resolves checkout URL parameters from the isolated preview provider when one is supplied.
+    var webCheckoutContext: (appUserID: String, isSandbox: Bool) {
+        if let customerCenterPreviewContext {
+            return customerCenterPreviewContext()
+        }
+        guard Purchases.isConfigured else { return ("", false) }
+        return (Purchases.shared.appUserID, Purchases.shared.isSandbox)
     }
 
     var preferredLocaleOverride: Locale? {
@@ -197,6 +217,8 @@ final class PurchaseHandler: ObservableObject {
         isConfigured: Bool = true,
         purchases: PaywallPurchasesType,
         resolveBranch: @escaping @Sendable (WorkflowBranch) async -> WorkflowStepID = { $0.fallbackStepId },
+        customerCenterPreviewContext: (@Sendable () -> (appUserID: String, isSandbox: Bool))? = nil,
+        customerCenterPreviewURLHandler: (@Sendable (URL) async throws -> Void)? = nil,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
@@ -207,6 +229,8 @@ final class PurchaseHandler: ObservableObject {
     ) {
         self.isConfigured = isConfigured
         self.purchases = purchases
+        self.customerCenterPreviewContext = customerCenterPreviewContext
+        self.customerCenterPreviewURLHandler = customerCenterPreviewURLHandler
         self.resolveBranch = resolveBranch
         self.paywallEventTracker = eventTracker
         self.keyWindowFocusResigner = keyWindowFocusResigner
@@ -263,6 +287,52 @@ final class PurchaseHandler: ObservableObject {
         )
     }
 
+#if os(iOS)
+    /// Keeps Customer Center previews independent of the configured Purchases instance and its events.
+    static func customerCenterPreview(
+        provider: CustomerCenterPreviewProvider,
+        performPurchase: @escaping PerformPurchase,
+        performRestore: @escaping PerformRestore
+    ) -> PurchaseHandler {
+        let purchases = NotConfiguredPurchases(
+            purchasesAreCompletedBy: .myApp,
+            customerInfoProvider: { try await provider.customerInfo() },
+            isUIPreviewMode: true,
+            storeFrontCountryCode: provider.storeFrontCountryCode
+        )
+        return .init(
+            purchases: purchases,
+            customerCenterPreviewContext: { (provider.appUserID, provider.isSandbox) },
+            customerCenterPreviewURLHandler: { try await provider.handlePreviewAction(.openURL($0)) },
+            performPurchase: performPurchase,
+            performRestore: performRestore,
+            purchaseResultPublisher: Empty().eraseToAnyPublisher(),
+            eventTracker: .init(purchases: purchases)
+        )
+    }
+#endif
+
+    /// Sends the checkout URL to the preview provider.
+    /// Returns `true` when checkout completed, so the caller can dismiss.
+    @MainActor
+    func performCustomerCenterPreviewCheckout(url: URL) async throws -> Bool {
+        guard let customerCenterPreviewURLHandler, !actionInProgress, !Task.isCancelled else { return false }
+        startAction(.externalPurchasePreparation)
+        defer { actionTypeInProgress = nil }
+
+        do {
+            try await customerCenterPreviewURLHandler(url)
+            try Task.checkCancellation()
+            signalWebCheckoutOpened()
+            return true
+        } catch is CancellationError {
+            return false
+        } catch {
+            guard !Task.isCancelled else { return false }
+            throw error
+        }
+    }
+
     private func setResult(_ result: PaywallPurchaseResult) {
         guard result != self.purchaseResult else {
             return
@@ -294,6 +364,7 @@ final class PurchaseHandler: ObservableObject {
         self.activePaywallSessionID = nil
         #if os(iOS) && canImport(WebKit)
         self.keptHostedCheckout = nil
+        self.hostedCheckoutResolutionToShow = nil
         #endif
     }
 
@@ -360,10 +431,16 @@ extension PurchaseHandler {
     /// Asks for a checkout the customer completes without leaving the app, with the paywall marked as busy
     /// throughout so the button they tapped cannot start a second one.
     ///
+    /// `package` is the package being purchased meanwhile, which is what reports the purchase as started.
+    ///
     /// - Parameter previousSession: The checkout this paywall gave the customer before, for the backend to
     /// hand back if they can still carry on with it.
+    @MainActor
     func startHostedCheckout(package: Package,
                              previousSession: HostedCheckoutSession?) async -> HostedCheckoutStartResult {
+        self.packageBeingPurchased = package
+        defer { self.packageBeingPurchased = nil }
+
         // Carried so that the purchase the customer makes on the page is attributed to the paywall that sent
         // them there.
         let paywallEvent = self.createPurchaseInitiatedEvent(package: package)
@@ -415,6 +492,12 @@ extension PurchaseHandler {
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func invalidateCustomerInfoCache() {
         self.purchases.invalidateCustomerInfoCache()
+    }
+#endif
+
+#if !os(tvOS)
+    func failedToLoadFont(_ fontConfig: UIConfig.FontsConfig) {
+        self.purchases.failedToLoadFontWithConfig(fontConfig)
     }
 #endif
 
@@ -504,7 +587,8 @@ extension PurchaseHandler {
                 allOfferings: cachedOfferings,
                 presentedOfferingContext: offering.presentedOfferingContext,
                 developerProvidedOffering: content.passedOffering,
-                workflowBlobRef: fetchResult.workflowBlobRef
+                workflowBlobRef: fetchResult.workflowBlobRef,
+                traceId: offering.presentedOfferingContext?.traceID
               ) else {
             return nil
         }
@@ -733,7 +817,8 @@ extension PurchaseHandler {
                 allOfferings: allOfferings,
                 presentedOfferingContext: presentedOfferingContext,
                 developerProvidedOffering: developerProvidedOffering,
-                workflowBlobRef: fetchResult.workflowBlobRef
+                workflowBlobRef: fetchResult.workflowBlobRef,
+                traceId: presentedOfferingContext?.traceID
             )
         } catch WorkflowError.uiConfigUnavailable(let workflowId) {
             throw PaywallError.workflowUiConfigUnavailable(workflowId: workflowId)
@@ -757,7 +842,8 @@ extension PurchaseHandler {
         presentedOfferingContext: PresentedOfferingContext?,
         developerProvidedOffering: Offering?,
         workflowBlobRef: String? = nil,
-        traceId: String? = nil
+        traceId: String? = nil,
+        checkpointIdentifier: String? = nil
     ) throws -> WorkflowContext {
         guard let step = workflow.steps[workflow.initialStepId] else {
             throw PaywallError.workflowInitialStepNotFound(
@@ -806,7 +892,8 @@ extension PurchaseHandler {
             initialOffering: offering,
             presentedOfferingContext: presentedOfferingContext,
             workflowBlobRef: workflowBlobRef,
-            traceId: traceId
+            traceId: traceId,
+            checkpointIdentifier: checkpointIdentifier
         )
     }
 
@@ -939,14 +1026,34 @@ extension PurchaseHandler {
 
     // MARK: - Hosted checkout
 
+    #if os(iOS) && canImport(WebKit)
+    /// Has the paywall tell the customer how a hosted checkout settled, or why it did not open.
+    @MainActor
+    func showHostedCheckoutResolution(_ resolution: HostedCheckout.Resolution) {
+        self.hostedCheckoutResolutionToShow = resolution
+    }
+
+    /// Called once the customer has acknowledged what the paywall told them about a hosted checkout. A purchase
+    /// is only reported now, since reporting it can close the paywall.
+    @MainActor
+    func acknowledgeHostedCheckoutResolution() {
+        let resolution = self.hostedCheckoutResolutionToShow
+        self.hostedCheckoutResolutionToShow = nil
+
+        if case let .purchased(transaction, customerInfo) = resolution {
+            self.handleHostedCheckoutPurchase(transaction: transaction, customerInfo: customerInfo)
+        }
+    }
+    #endif
+
     /// Reports a checkout the backend confirmed the customer completed on a page presented inside the app, once
     /// the customer has been told the purchase went through.
     ///
-    /// There is no transaction to hand over: what was bought is known to the backend, so the paywall follows
-    /// the `CustomerInfo` fetched when confirming it.
+    /// - Parameter transaction: The transaction the checkout made, absent where the backend gave no detail of it.
+    /// - Parameter customerInfo: The `CustomerInfo` fetched when confirming the purchase.
     @MainActor
-    func handleHostedCheckoutPurchase(customerInfo: CustomerInfo) {
-        self.reportHostedCheckoutOutcome(.purchased(transaction: nil, customerInfo: customerInfo))
+    private func handleHostedCheckoutPurchase(transaction: StoreTransaction?, customerInfo: CustomerInfo) {
+        self.reportHostedCheckoutOutcome(.purchased(transaction: transaction, customerInfo: customerInfo))
     }
 
     /// Reports a checkout that failed, as opposed to one the customer walked away from.
@@ -962,12 +1069,13 @@ extension PurchaseHandler {
         self.purchaseError = error
     }
 
-    /// Reports a checkout the customer closed, on a page presented inside the app, before the page returned.
+    /// Reports a checkout the customer walked away from, by declining Apple's notice or by closing the page presented
+    /// inside the app before it returned.
     ///
-    /// Closing the checkout does not mean the customer cancelled it: they may have paid moments before. The paywall
-    /// still reports a cancelled purchase, as it has no other way to say that no purchase is known. A payment that
-    /// did go through is confirmed and reported as a purchase once the page reaches its success URL, or the customer
-    /// taps buy again.
+    /// Closing the page does not mean the customer cancelled the checkout: they may have paid moments before. The
+    /// paywall still reports a cancelled purchase, as it has no other way to say that no purchase is known. A payment
+    /// that did go through is confirmed and reported as a purchase once the page reaches its success URL, or the
+    /// customer taps buy again.
     ///
     /// - Parameter package: The package the checkout was started for, when it is still known. Only used to
     /// track the cancellation.
@@ -1252,7 +1360,8 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 
     var preferredLocaleOverride: String? { nil }
 
-    var isUIPreviewMode: Bool { false }
+    let isUIPreviewMode: Bool
+    private let customerInfoProvider: (@Sendable () async throws -> CustomerInfo)?
 
     var remoteConfigEnabled: Bool { false }
 
@@ -1260,19 +1369,28 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
         SubscriptionHistoryTracker()
     }
 
-    init(customerInfo: CustomerInfo? = nil, purchasesAreCompletedBy: PurchasesAreCompletedBy) {
+    init(
+        customerInfo: CustomerInfo? = nil,
+        purchasesAreCompletedBy: PurchasesAreCompletedBy,
+        customerInfoProvider: (@Sendable () async throws -> CustomerInfo)? = nil,
+        isUIPreviewMode: Bool = false,
+        storeFrontCountryCode: @autoclosure @escaping @Sendable () -> String? = nil
+    ) {
         self.customerInfo = customerInfo
         self.purchasesAreCompletedBy = purchasesAreCompletedBy
+        self.customerInfoProvider = customerInfoProvider
+        self.isUIPreviewMode = isUIPreviewMode
+        self.configuredStoreEnvironment = ConfiguredStoreEnvironment(
+            apiKey: "test_",
+            storeFrontCountryCode: storeFrontCountryCode()
+        )
     }
 
     func offerings() async throws -> Offerings { throw ErrorCode.configurationError }
 
     var cachedOfferings: Offerings? { nil }
 
-    let configuredStoreEnvironment = ConfiguredStoreEnvironment(
-        apiKey: "test_",
-        storeFrontCountryCode: nil
-    )
+    let configuredStoreEnvironment: ConfiguredStoreEnvironment
 
 #if !os(tvOS)
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
@@ -1285,6 +1403,7 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 #endif
 
     func customerInfo() async throws -> RevenueCat.CustomerInfo {
+        if let customerInfoProvider { return try await customerInfoProvider() }
         guard let info = customerInfo else { throw ErrorCode.configurationError }
         return info
     }

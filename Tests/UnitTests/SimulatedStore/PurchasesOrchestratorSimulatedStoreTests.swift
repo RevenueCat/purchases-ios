@@ -13,7 +13,7 @@
 
 import Foundation
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import XCTest
 
 class PurchasesOrchestratorSimulatedStoreTests: TestCase {
@@ -360,6 +360,37 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
         let appUserID = try XCTUnwrap(self.backend.invokedPostReceiptDataParameters?.appUserID)
         XCTAssertEqual(appUserID, "appUserID")
         XCTAssertEqual(transactionData.storeCountry, Self.mockStorefront.countryCode)
+        XCTAssertNil(transactionData.presentedOfferingContext)
+        XCTAssertNil(transactionData.presentedPaywall)
+    }
+
+    func testSuccessfulTestStorePurchasePreservesOfferingAndPaywallContext() async throws {
+        let context = PresentedOfferingContext(offeringIdentifier: "test_offering",
+                                               placementIdentifier: "test_placement",
+                                               targetingContext: .init(revision: 3, ruleId: "test_rule"))
+        let transactionData = try await self.purchaseTestStoreProduct(
+            presentedOfferingContext: context,
+            paywallEvent: Self.mockPaywallEvent
+        )
+
+        XCTAssertEqual(transactionData.presentedOfferingContext, context)
+        XCTAssertEqual(transactionData.presentedPaywall, Self.mockPaywallEvent)
+        XCTAssertEqual(transactionData.metadata, ["test_key": "test_value"])
+    }
+
+    func testSuccessfulTestStorePurchasePreservesOfferingContextWithoutPaywall() async throws {
+        let context = PresentedOfferingContext(offeringIdentifier: "test_offering")
+        let transactionData = try await self.purchaseTestStoreProduct(presentedOfferingContext: context)
+
+        XCTAssertEqual(transactionData.presentedOfferingContext, context)
+        XCTAssertNil(transactionData.presentedPaywall)
+    }
+
+    func testSuccessfulTestStorePurchasePreservesPaywallContextWithoutPackage() async throws {
+        let transactionData = try await self.purchaseTestStoreProduct(paywallEvent: Self.mockPaywallEvent)
+
+        XCTAssertNil(transactionData.presentedOfferingContext)
+        XCTAssertEqual(transactionData.presentedPaywall, Self.mockPaywallEvent)
     }
 
     func testSuccessfulPurchaseOfTestStoreWithFailedPostReceiptReturnsFailure() async throws {
@@ -401,6 +432,7 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
             orchestrator.purchase(
                 product: testProduct,
                 package: nil,
+                paywallEvent: Self.mockPaywallEvent,
                 trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
@@ -420,6 +452,7 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
             orchestrator.purchase(
                 product: testProduct,
                 package: nil,
+                paywallEvent: Self.mockPaywallEvent,
                 trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
@@ -526,6 +559,48 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
 
         return orchestrator
     }
+
+    private func purchaseTestStoreProduct(
+        presentedOfferingContext: PresentedOfferingContext? = nil,
+        paywallEvent: PaywallEvent? = nil
+    ) async throws -> PurchasedTransactionData {
+        self.backend.stubbedPostReceiptResult = .success(Self.mockCustomerInfo)
+        self.simulatedStorePurchaseHandler.stubbedPurchaseResult.value = .success(
+            StoreTransaction(Self.createMockSimulatedStoreTransaction())
+        )
+        let product = self.createTestStoreProduct()
+        let package = presentedOfferingContext.map {
+            Package(identifier: "test_package", packageType: .monthly, storeProduct: product,
+                    presentedOfferingContext: $0, webCheckoutUrl: nil)
+        }
+        let orchestrator = self.createOrchestrator()
+
+        await withCheckedContinuation { continuation in
+            orchestrator.purchase(product: product, package: package,
+                                  metadata: ["test_key": "test_value"], paywallEvent: paywallEvent,
+                                  trackDiagnostics: false) { _, _, error, _ in
+                XCTAssertNil(error)
+                continuation.resume()
+            }
+        }
+
+        XCTAssertEqual(self.backend.invokedPostReceiptDataCount, 1)
+        return try XCTUnwrap(self.backend.invokedPostReceiptDataParameters?.transactionData)
+    }
+
+    private static let mockPaywallEvent = PaywallEvent.impression(
+        .init(),
+        .init(paywallIdentifier: "test_paywall",
+              offeringIdentifier: "test_offering",
+              paywallRevision: 4,
+              sessionID: .init(),
+              displayMode: .fullScreen,
+              localeIdentifier: "en_US",
+              darkMode: false,
+              workflowId: "test_workflow",
+              stepId: "test_step",
+              traceId: "test_trace")
+    )
 
     private static let mockStorefront = MockStorefront(countryCode: "USA")
 

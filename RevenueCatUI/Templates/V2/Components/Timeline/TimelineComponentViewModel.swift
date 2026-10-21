@@ -22,7 +22,7 @@ typealias PresentedTimelinePartial = PaywallComponent.PartialTimelineComponent
 typealias PresentedTimelineItemPartial = PaywallComponent.PartialTimelineItem
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-class TimelineComponentViewModel {
+class TimelineComponentViewModel: OfferEligibilityVisibilityDependency {
 
     private let component: PaywallComponent.TimelineComponent
     let items: [TimelineItemViewModel]
@@ -30,6 +30,7 @@ class TimelineComponentViewModel {
     let id = UUID()
 
     private let presentedOverrides: PresentedOverrides<PresentedTimelinePartial>?
+    let dependsOnOfferEligibility: Bool
 
     init(
         component: PaywallComponent.TimelineComponent,
@@ -41,7 +42,9 @@ class TimelineComponentViewModel {
         self.items = items
         self.uiConfigProvider = uiConfigProvider
 
-        self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
+        let presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
+        self.presentedOverrides = presentedOverrides
+        self.dependsOnOfferEligibility = presentedOverrides?.contains(where: \.dependsOnOfferEligibility) ?? false
     }
 
     @ViewBuilder
@@ -85,10 +88,37 @@ class TimelineComponentViewModel {
         apply(style)
     }
 
+    // swiftlint:disable:next function_parameter_count
+    func visible(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
+        windowSize: CGSize? = nil
+    ) -> Bool {
+        let conditionContext = self.uiConfigProvider.conditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables,
+            windowSize: windowSize
+        )
+
+        let partial = PresentedTimelinePartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
+            with: self.presentedOverrides
+        )
+        return partial?.visible ?? self.component.visible ?? true
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-class TimelineItemViewModel {
+class TimelineItemViewModel: OfferEligibilityVisibilityDependency {
 
     let id = UUID()
     let component: PaywallComponent.TimelineComponent.Item
@@ -98,6 +128,7 @@ class TimelineItemViewModel {
     let uiConfigProvider: UIConfigProvider
 
     private let presentedOverrides: PresentedOverrides<PresentedTimelineItemPartial>?
+    let dependsOnOfferEligibility: Bool
 
     init(component: PaywallComponent.TimelineComponent.Item,
          title: TextComponentViewModel,
@@ -110,7 +141,9 @@ class TimelineItemViewModel {
         self.description = description
         self.icon = icon
         self.uiConfigProvider = uiConfigProvider
-        self.presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
+        let presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
+        self.presentedOverrides = presentedOverrides
+        self.dependsOnOfferEligibility = presentedOverrides?.contains(where: \.dependsOnOfferEligibility) ?? false
     }
 
     @ViewBuilder
@@ -149,6 +182,33 @@ class TimelineItemViewModel {
         )
 
         apply(style)
+    }
+
+    // swiftlint:disable:next function_parameter_count
+    func visible(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
+        windowSize: CGSize? = nil
+    ) -> Bool {
+        let conditionContext = self.uiConfigProvider.conditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables,
+            windowSize: windowSize
+        )
+
+        let partial = PresentedTimelineItemPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
+            with: self.presentedOverrides
+        )
+        return partial?.visible ?? true
     }
 
 }

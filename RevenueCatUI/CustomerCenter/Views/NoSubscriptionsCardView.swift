@@ -107,14 +107,27 @@ struct NoSubscriptionsCardView: View {
         #endif
         .animation(.easeInOut(duration: 0.3), value: viewModel.isLoadingOffering)
         .sheet(isPresented: $viewModel.showOffering, content: {
-            PaywallView(
-                configuration: .init(
-                    offering: viewModel.offering,
-                    displayCloseButton: false,
-                    purchaseHandler: .default(performPurchase: viewModel.performPurchase(packageToPurchase:),
-                                              performRestore: viewModel.performRestore)
-                )
-            )
+            Group {
+                if let provider = viewModel.previewProvider {
+                    CustomerCenterInjectedPaywall(
+                        provider: provider,
+                        offering: viewModel.offering,
+                        performPurchase: viewModel.performPurchase(packageToPurchase:),
+                        performRestore: viewModel.performRestore,
+                        onClose: viewModel.hidePaywall
+                    )
+                } else {
+                    PaywallView(
+                        configuration: .init(
+                            offering: viewModel.offering,
+                            displayCloseButton: false,
+                            purchaseHandler: .default(performPurchase: viewModel.performPurchase(packageToPurchase:),
+                                                      performRestore: viewModel.performRestore)
+                        )
+                    )
+                    .paywallSource(.customerCenter)
+                }
+            }
             .onRestoreInitiated { resume in
                 Task(priority: .userInitiated) { @MainActor in
                     if let restoreInitiated = self.externalActions.restoreInitiated {
@@ -124,7 +137,6 @@ struct NoSubscriptionsCardView: View {
                     }
                 }
             }
-            .paywallSource(.customerCenter)
         })
         .onAppear {
             viewModel.refreshOffering()

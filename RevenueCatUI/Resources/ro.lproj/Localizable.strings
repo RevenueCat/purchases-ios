@@ -29,3 +29,12 @@
 "Your purchase was successful." = "Achiziția a fost efectuată cu succes.";
 "Purchase unavailable" = "Achiziție indisponibilă";
 "This purchase isn't available in your region." = "Această achiziție nu este disponibilă în regiunea dvs.";
+"Couldn't connect. Check your internet connection and try again." = "Nu s-a putut realiza conexiunea. Verifică conexiunea la internet și încearcă din nou.";
+"This content couldn't be loaded. Please try again later." = "Acest conținut nu a putut fi încărcat. Te rugăm să încerci din nou mai târziu.";
+"There was a problem with the store. Please try again later." = "A apărut o problemă cu magazinul. Te rugăm să încerci din nou mai târziu.";
+"Purchases aren't allowed on this device." = "Achizițiile nu sunt permise pe acest dispozitiv.";
+"This product isn't available right now." = "Acest produs nu este disponibil momentan.";
+"You already own this product." = "Deții deja acest produs.";
+"Your payment is pending. You'll get access once it's approved." = "Plata ta este în așteptare. Vei avea acces după ce va fi aprobată.";
+"Something went wrong. Please try again." = "Ceva nu a funcționat. Te rugăm să încerci din nou.";
+"Your purchases couldn't be verified. Please try again later." = "Achizițiile tale nu au putut fi verificate. Te rugăm să încerci din nou mai târziu.";

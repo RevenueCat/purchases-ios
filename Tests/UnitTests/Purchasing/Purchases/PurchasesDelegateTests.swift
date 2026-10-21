@@ -96,6 +96,7 @@ class PurchasesDelegateTests: BasePurchasesTests {
         }.toEventually(beTrue())
     }
 
+    @MainActor
     func testApplicationDidBecomeActiveSyncsCachedTransactionMetadata() async throws {
         await self.waitForInitialMetadataSyncToComplete()
 
@@ -115,6 +116,7 @@ class PurchasesDelegateTests: BasePurchasesTests {
         expect(self.backend.postedAssociatedTransactionIds).to(contain(transactionId))
     }
 
+    @MainActor
     func testApplicationDidBecomeActiveSyncsMultipleCachedTransactions() async throws {
         await self.waitForInitialMetadataSyncToComplete()
 
@@ -140,6 +142,7 @@ class PurchasesDelegateTests: BasePurchasesTests {
         expect(self.backend.postedAssociatedTransactionIds).to(contain(transactionId2))
     }
 
+    @MainActor
     func testApplicationDidBecomeActiveDoesNotPostWhenNoCachedMetadata() async {
         // No metadata stored
         await self.waitForInitialMetadataSyncToComplete()
@@ -184,6 +187,7 @@ class PurchasesDelegateTests: BasePurchasesTests {
         )
     }
 
+    @MainActor
     func testDelegateIsNotifiedWhenReceiptPostFailsButGetCustomerInfoSucceeds() async throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 

@@ -219,7 +219,7 @@ extension PurchaseStrings: LogMessage {
             return "Purchases synced."
 
         case let .purchasing_product(product, package, discount, metadata):
-            var message = "Purchasing Product '\(product.productIdentifier)'"
+            var message = "Purchasing Product '\(product.id)'"
             if let package = package {
                 message += " from package in Offering " +
                 "'\(package.presentedOfferingContext.offeringIdentifier)'"

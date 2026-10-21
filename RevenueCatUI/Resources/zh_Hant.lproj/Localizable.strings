@@ -29,3 +29,12 @@
 "Your purchase was successful." = "購買成功。";
 "Purchase unavailable" = "無法購買";
 "This purchase isn't available in your region." = "您所在的地區不提供此項購買。";
+"Couldn't connect. Check your internet connection and try again." = "無法連線。請檢查您的網路連線，然後再試一次。";
+"This content couldn't be loaded. Please try again later." = "無法載入此內容。請稍後再試。";
+"There was a problem with the store. Please try again later." = "商店發生問題。請稍後再試。";
+"Purchases aren't allowed on this device." = "此裝置不允許購買。";
+"This product isn't available right now." = "此產品目前無法使用。";
+"You already own this product." = "您已擁有此產品。";
+"Your payment is pending. You'll get access once it's approved." = "您的付款正在處理中。核准後即可使用。";
+"Something went wrong. Please try again." = "發生錯誤。請再試一次。";
+"Your purchases couldn't be verified. Please try again later." = "無法驗證您的購買。請稍後再試。";

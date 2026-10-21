@@ -28,13 +28,7 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
 
     let shouldShowSeeAllPurchases: Bool
 
-    override var relevantPathsForPurchase: [CustomerCenterConfigData.HelpPath] {
-        paths.relevantPaths(
-            for: nil,
-            allowMissingPurchase: allowMissingPurchase,
-            localization: localization
-        )
-    }
+    override var helpPathPurchase: PurchaseInformation? { nil }
 
     init(
         screen: CustomerCenterConfigData.Screen,
@@ -56,6 +50,11 @@ final class RelevantPurchasesListViewModel: BaseManageSubscriptionViewModel {
                 localization: localization
             )
         }
+
+    func updateSelectedPurchase(using customerInfoViewModel: CustomerCenterViewModel) {
+        guard let selected = purchaseInformation else { return }
+        purchaseInformation = customerInfoViewModel.purchase(matching: selected)
+    }
 
     // Used for Previews
     convenience init(
