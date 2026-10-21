@@ -15,7 +15,12 @@
 #if os(iOS) && !targetEnvironment(macCatalyst)
 
 import Foundation
+// The configured checkpoint list reads an internal SDK method, so it's Debug-only.
+#if DEBUG
+@_spi(Internal) @testable import RevenueCat
+#else
 import RevenueCat
+#endif
 @_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
 import SwiftUI
 
@@ -24,6 +29,7 @@ struct CheckpointsView: View {
     @FocusState private var isIdentifierFocused: Bool
     @State private var identifier = ""
     @State private var recentIdentifiers: [String]
+    @State private var configuredIdentifiers: [String] = []
     @State private var variables = [CheckpointVariable()]
     @State private var result: CheckpointDisplayResult?
     @State private var isSubscriberAttributeEditorPresented = false
@@ -49,12 +55,19 @@ struct CheckpointsView: View {
     var body: some View {
         NavigationView {
             Form {
+                #if DEBUG
+                self.configuredSection
+                #endif
                 self.checkpointSection
                 self.recentSection
                 self.customVariablesSection
                 self.resultSection
             }
             .navigationTitle("Checkpoints")
+            #if DEBUG
+            .task { await self.loadConfiguredIdentifiers() }
+            .refreshable { await self.loadConfiguredIdentifiers() }
+            #endif
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
@@ -70,6 +83,30 @@ struct CheckpointsView: View {
         }
     }
 
+    #if DEBUG
+    private var configuredSection: some View {
+        Section {
+            ForEach(self.configuredIdentifiers, id: \.self) { identifier in
+                Button(identifier) {
+                    self.triggerCheckpoint(identifier)
+                }
+            }
+        } header: {
+            Text("Configured")
+        } footer: {
+            Text(
+                self.configuredIdentifiers.isEmpty
+                    ? "No checkpoints in this project. Pull to refresh."
+                    : "Checkpoints in this project. Tap one to run it with the custom variables below."
+            )
+        }
+    }
+
+    private func loadConfiguredIdentifiers() async {
+        self.configuredIdentifiers = await Purchases.shared.checkpointIds()
+    }
+    #endif
+
     private var checkpointSection: some View {
         Section {
             TextField("Checkpoint identifier", text: self.$identifier)
@@ -77,9 +114,9 @@ struct CheckpointsView: View {
                 .autocorrectionDisabled()
                 .submitLabel(.go)
                 .focused(self.$isIdentifierFocused)
-                .onSubmit(self.triggerCheckpoint)
+                .onSubmit { self.triggerCheckpoint(self.trimmedIdentifier) }
 
-            Button("Trigger checkpoint", action: self.triggerCheckpoint)
+            Button("Trigger checkpoint") { self.triggerCheckpoint(self.trimmedIdentifier) }
                 .disabled(self.trimmedIdentifier.isEmpty)
         } footer: {
             Text("Runs the checkpoint with the custom variables below.")
@@ -142,8 +179,7 @@ struct CheckpointsView: View {
     }
 
     @MainActor
-    private func triggerCheckpoint() {
-        let identifier = self.trimmedIdentifier
+    private func triggerCheckpoint(_ identifier: String) {
         guard !identifier.isEmpty else { return }
 
         self.isIdentifierFocused = false

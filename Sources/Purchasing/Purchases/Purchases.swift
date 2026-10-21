@@ -299,6 +299,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let customerInfoManager: CustomerInfoManager
     private let eventsManager: EventsManagerType?
     private let remoteConfigManager: RemoteConfigManagerType
+    private let checkpointsConfigProvider: CheckpointsConfigProviderType
     private let sdkSettingsConfigProvider: SDKSettingsConfigProviderType
     private let subscriberDimensionsConfigProvider: SubscriberDimensionsConfigProviderType
 
@@ -885,6 +886,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   workflowManager: workflowManager,
                   branchResolver: branchResolver,
                   remoteConfigManager: remoteConfigManager,
+                  checkpointsConfigProvider: checkpointsConfigProvider,
                   sdkSettingsConfigProvider: sdkSettingsConfigProvider,
                   subscriberDimensionsConfigProvider: subscriberDimensionsConfigProvider,
                   offlineEntitlementsManager: offlineEntitlementsManager,
@@ -927,6 +929,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          workflowManager: WorkflowManager,
          branchResolver: BranchResolver = DisabledBranchResolver(),
          remoteConfigManager: RemoteConfigManagerType,
+         checkpointsConfigProvider: CheckpointsConfigProviderType,
          sdkSettingsConfigProvider: SDKSettingsConfigProviderType,
          subscriberDimensionsConfigProvider: SubscriberDimensionsConfigProviderType,
          offlineEntitlementsManager: OfflineEntitlementsManager,
@@ -992,6 +995,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.remoteConfigManager = systemInfo.remoteConfigEnabled
             ? remoteConfigManager
             : NoOpRemoteConfigManager()
+        self.checkpointsConfigProvider = checkpointsConfigProvider
         self.sdkSettingsConfigProvider = sdkSettingsConfigProvider
         self.subscriberDimensionsConfigProvider = subscriberDimensionsConfigProvider
         self.offlineEntitlementsManager = offlineEntitlementsManager
@@ -3074,6 +3078,10 @@ internal extension Purchases {
 
     func workflowId(forOfferingIdentifier offeringID: String) async -> String? {
         return await self.workflowManager.workflowId(forOfferingId: offeringID)
+    }
+
+    func checkpointIds() async -> [String] {
+        return await self.checkpointsConfigProvider.checkpointIds()
     }
 
     /// - Returns: the parsed `AppleReceipt`
