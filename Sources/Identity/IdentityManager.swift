@@ -224,16 +224,11 @@ private extension IdentityManager {
         self.backend.token.logIn(currentAppUserID: oldAppUserID, identity: identity) { result in
             switch result {
             case .success(let (_, newAppUserID)):
-                // When migrating a pre-IAM identity, it's possible to not change app user ids.
-                // That can happen when logging in from "Identity A (pre-IAM/no tokens)" to
-                // "Identity A (with tokens)". In such a case, we don't want to clear the user's
-                // caches, because they're still relevant.
-                if oldAppUserID != newAppUserID {
-                    self.remoteConfigManager?.clearCache(forAppUserID: newAppUserID)
-                    self.deviceCache.clearCaches(oldAppUserID: oldAppUserID, andSaveWithNewUserID: newAppUserID)
-                    self.copySubscriberAttributesToNewUserIfOldIsAnonymous(oldAppUserID: oldAppUserID,
-                                                                           newAppUserID: newAppUserID)
-                }
+                self.remoteConfigManager?.clearCache(forAppUserID: newAppUserID)
+                self.deviceCache.clearCaches(oldAppUserID: oldAppUserID, andSaveWithNewUserID: newAppUserID)
+                self.copySubscriberAttributesToNewUserIfOldIsAnonymous(oldAppUserID: oldAppUserID,
+                                                                       newAppUserID: newAppUserID)
+
                 self.customerInfoManager.customerInfo(appUserID: newAppUserID,
                                                       fetchPolicy: .cachedOrFetched,
                                                       completion: { result in

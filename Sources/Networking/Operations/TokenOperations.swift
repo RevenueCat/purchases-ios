@@ -14,27 +14,22 @@ import Foundation
 
 final class TokenLogInOperation: CacheableNetworkOperation {
 
-    enum LinkedIdentity {
-        case appUserID(String)
-        case idToken(String)
-    }
-
     private let tokenCallbackCache: CallbackCache<TokenCallback>
     private let configuration: UserSpecificConfiguration
     private let token: IdentityAuthToken
-    private let linkedIdentity: LinkedIdentity?
+    private let linkToID: String?
 
     static func createFactory(
         configuration: UserSpecificConfiguration,
         token: IdentityAuthToken,
-        linkedIdentity: LinkedIdentity?,
+        linkToIDToken: String?,
         tokenCallbackCache: CallbackCache<TokenCallback>
     ) -> CacheableNetworkOperationFactory<TokenLogInOperation> {
         return .init({
             .init(
                 configuration: configuration,
                 token: token,
-                linkedIdentity: linkedIdentity,
+                linkToIDToken: linkToIDToken,
                 tokenCallbackCache: tokenCallbackCache,
                 cacheKey: $0
             ) },
@@ -44,13 +39,13 @@ final class TokenLogInOperation: CacheableNetworkOperation {
     private init(
         configuration: UserSpecificConfiguration,
         token: IdentityAuthToken,
-        linkedIdentity: LinkedIdentity?,
+        linkToIDToken: String?,
         tokenCallbackCache: CallbackCache<TokenCallback>,
         cacheKey: String
     ) {
         self.configuration = configuration
         self.token = token
-        self.linkedIdentity = linkedIdentity
+        self.linkToID = linkToIDToken
         self.tokenCallbackCache = tokenCallbackCache
 
         super.init(configuration: configuration, cacheKey: cacheKey)
@@ -67,7 +62,6 @@ extension TokenLogInOperation: @unchecked Sendable {}
 
 private extension TokenLogInOperation {
 
-    // swiftlint:disable:next function_body_length
     func logIn(completion: @escaping () -> Void) {
         guard self.token.validate() else {
             self.tokenCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
@@ -78,52 +72,37 @@ private extension TokenLogInOperation {
             return
         }
 
-        let linkedAppUserID: String?
-        let linkedIDToken: String?
-        switch linkedIdentity {
-        case .appUserID(let id):
-            linkedAppUserID = id
-            linkedIDToken = nil
-        case .idToken(let token):
-            linkedAppUserID = nil
-            linkedIDToken = token
-        case .none:
-            linkedAppUserID = nil
-            linkedIDToken = nil
-        }
-
         let body: any HTTPRequestBody
         switch token {
         case .anonymous:
             body = AnonymousBody(method: "anonymous",
-                                 scope: "openid offline_access",
-                                 appUserID: linkedAppUserID)
+                                 scope: "openid offline_access")
         case .oidc(let token):
             body = StandardBody(method: "oidc",
                                 scope: "openid offline_access",
                                 idToken: String(bytes: token, encoding: .utf8) ?? token.base64EncodedString(),
-                                linkToID: linkedIDToken)
+                                linkToID: linkToID)
         case .google(let token):
             body = StandardBody(method: "google",
                                 scope: "openid offline_access",
                                 idToken: String(bytes: token, encoding: .utf8) ?? token.base64EncodedString(),
-                                linkToID: linkedIDToken)
+                                linkToID: linkToID)
         case .signInWithApple(let token):
             body = StandardBody(method: "apple",
                                 scope: "openid offline_access",
                                 idToken: String(bytes: token, encoding: .utf8) ?? token.base64EncodedString(),
-                                linkToID: linkedIDToken)
+                                linkToID: linkToID)
         case .facebook(let token, let email):
             body = FacebookBody(method: "facebook",
                                 scope: "openid offline_access",
                                 idToken: String(bytes: token, encoding: .utf8) ?? token.base64EncodedString(),
                                 email: email,
-                                linkToID: linkedIDToken)
+                                linkToID: linkToID)
         case .firebase(let token):
             body = StandardBody(method: "firebase",
                                 scope: "openid offline_access",
                                 idToken: String(bytes: token, encoding: .utf8) ?? token.base64EncodedString(),
-                                linkToID: linkedIDToken)
+                                linkToID: linkToID)
         }
 
         let request = HTTPRequest(method: .post(body), path: .tokenLogin)
@@ -245,18 +224,15 @@ extension TokenLogInOperation {
         private enum CodingKeys: String, CodingKey {
             case method
             case scope
-            case appUserID = "app_user_id"
         }
 
         let method: String
         let scope: String
-        let appUserID: String?
 
         var contentForSignature: [(key: String, value: String?)] {
             return [
                 (Self.CodingKeys.method.stringValue, self.method),
-                (Self.CodingKeys.scope.stringValue, self.scope),
-                (Self.CodingKeys.appUserID.stringValue, self.appUserID)
+                (Self.CodingKeys.scope.stringValue, self.scope)
             ]
         }
 

@@ -10,12 +10,6 @@ import XCTest
 
 class IdentityManagerTests: TestCase {
 
-    private static let tokenResponse = TokenResponse(accessToken: "access-token",
-                                                     idToken: nil,
-                                                     refreshToken: "refresh-token",
-                                                     scope: "openid offline_access",
-                                                     expiresIn: 3600)
-
     private var mockDeviceCache: MockDeviceCache!
     private let mockBackend = MockBackend()
     private var mockTokenManager = MockTokenManager()
@@ -542,50 +536,6 @@ class IdentityManagerTests: TestCase {
         expect(self.mockDeviceCache.invokedCopySubscriberAttributesCount) == 1
         expect(self.mockDeviceCache.invokedCopySubscriberAttributesParameters?.oldAppUserID) == anonymousUserID
         expect(self.mockDeviceCache.invokedCopySubscriberAttributesParameters?.newAppUserID) == "new_user_id"
-    }
-
-    func testLogInWithIdentityDoesNotClearCachesWhenMigratingToTheSameAppUserID() {
-        let anonymousUserID = "$RCAnonymousID:6b2787de2fb848a8b403a45f695ee74f"
-        self.mockDeviceCache.stubbedAppUserID = anonymousUserID
-        let manager = self.create(appUserID: nil)
-        let remoteConfigManager = MockRemoteConfigManager()
-        manager.remoteConfigManager = remoteConfigManager
-
-        // pre-IAM anonymous user gets tokens, but keeps its app user ID
-        self.mockTokenAPI.stubbedLogInCompletionResult = .success((Self.tokenResponse, anonymousUserID))
-        self.mockCustomerInfoManager.stubbedCustomerInfoResult = .success(mockCustomerInfo)
-
-        let receivedResult = waitUntilValue { completed in
-            manager.logIn(identity: .anonymous, completion: completed)
-        }
-
-        expect(receivedResult?.value?.info) == mockCustomerInfo
-        expect(receivedResult?.value?.created) == false
-        expect(manager.currentAppUserID) == anonymousUserID
-        expect(self.mockDeviceCache.invokedClearCachesForAppUserID) == false
-        expect(self.mockDeviceCache.invokedCopySubscriberAttributes) == false
-        expect(remoteConfigManager.invokedClearCacheCount) == 0
-        expect(self.mockCustomerInfoManager.invokedCustomerInfoParameters?.appUserID) == anonymousUserID
-    }
-
-    func testLogInWithIdentityClearsCachesWhenMigratingToADifferentAppUserID() {
-        let anonymousUserID = "$RCAnonymousID:6b2787de2fb848a8b403a45f695ee74f"
-        self.mockDeviceCache.stubbedAppUserID = anonymousUserID
-        let manager = self.create(appUserID: nil)
-        let remoteConfigManager = MockRemoteConfigManager()
-        manager.remoteConfigManager = remoteConfigManager
-
-        self.mockTokenAPI.stubbedLogInCompletionResult = .success((Self.tokenResponse, "new_user_id"))
-        self.mockCustomerInfoManager.stubbedCustomerInfoResult = .success(mockCustomerInfo)
-
-        waitUntil { completed in
-            manager.logIn(identity: .anonymous) { _ in completed() }
-        }
-
-        expect(self.mockDeviceCache.invokedClearCachesForAppUserID) == true
-        expect(self.mockDeviceCache.invokedCopySubscriberAttributes) == true
-        expect(remoteConfigManager.invokedClearCacheAppUserIDs) == ["new_user_id"]
-        expect(self.mockCustomerInfoManager.invokedCustomerInfoParameters?.appUserID) == "new_user_id"
     }
 
     // MARK: - LogOut with IAM enabled
