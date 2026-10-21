@@ -34,6 +34,29 @@ import SwiftUI
 /// Reward callbacks may arrive before or after dismissal, including for mediated ads.
 /// Closing without earning a reward invokes only `onDismiss`. Accepted presentations retain
 /// their callbacks even if the prompt is removed or updated.
+///
+/// For example, given an ad preloaded with `loadAndTrack` and app-defined UI handlers:
+///
+/// ```swift
+/// RewardedAdPrompt(
+///     ad: loadedAd,
+///     onVerificationCompleted: { result in
+///         displayReward(result.verifiedReward)
+///     },
+///     onDismiss: {
+///         resumeApp()
+///     },
+///     onPresentationFailed: { error in
+///         displayError(error)
+///     }
+/// ) { context in
+///     if let currency = context.rewardConfiguration?.reward?.virtualCurrency {
+///         Button("Watch for \(currency.amount) \(currency.code)", action: context.accept)
+///     } else {
+///         Button("Watch an ad", action: context.accept)
+///     }
+/// }
+/// ```
 @available(iOS 15.0, *)
 @MainActor
 public struct RewardedAdPrompt<Content: View>: View {
