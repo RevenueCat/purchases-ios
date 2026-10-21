@@ -56,6 +56,8 @@ import Foundation
     /// How the Customer received access to this subscription:
     /// - ``PurchaseOwnershipType/purchased``: The customer bought the subscription.
     /// - ``PurchaseOwnershipType/familyShared``: The Customer has access to the product via their family.
+    /// - ``PurchaseOwnershipType/assigned``: The Customer has been assigned access to this product
+    /// through an organization.
     @objc public let ownershipType: PurchaseOwnershipType
 
     /// Type of the current subscription period:
