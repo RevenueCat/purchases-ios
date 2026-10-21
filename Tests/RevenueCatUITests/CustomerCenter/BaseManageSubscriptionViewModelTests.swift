@@ -1035,7 +1035,7 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beTrue())
     }
 
-    func testAssignedSubscriptionDoesNotShowCancel() {
+    func testAssignedSubscriptionOnlyHidesActionsThatRequireOwnershipOrRetention() {
         let viewModel = BaseManageSubscriptionViewModel(
             screen: BaseManageSubscriptionViewModelTests.default,
             actionWrapper: CustomerCenterActionWrapper(),
@@ -1043,20 +1043,13 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             purchasesProvider: MockCustomerCenterPurchases()
         )
 
-        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
-    }
-
-    func testAssignedSubscriptionDoesNotShowRefundRequestOrChangePlans() {
-        let viewModel = BaseManageSubscriptionViewModel(
-            screen: BaseManageSubscriptionViewModelTests.default,
-            actionWrapper: CustomerCenterActionWrapper(),
-            purchaseInformation: Self.appStoreSubscription(ownershipType: .assigned),
-            purchasesProvider: MockCustomerCenterPurchases()
+        Self.expectPaths(
+            of: viewModel,
+            cancel: false,
+            refundRequest: false,
+            changePlans: false,
+            missingPurchase: false
         )
-
-        // The organization owns the purchase, so the assigned user can't request a refund or change plans
-        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
-        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).to(beFalse())
     }
 
     func testAssignedSubscriptionHiddenReasonExplainsOrganizationOwnership() {
@@ -1101,6 +1094,23 @@ private extension BaseManageSubscriptionViewModelTests {
 
     static let `default`: CustomerCenterConfigData.Screen =
     CustomerCenterConfigData.default.screens[.management]!
+
+    static func expectPaths(
+        of viewModel: BaseManageSubscriptionViewModel,
+        cancel: Bool,
+        refundRequest: Bool,
+        changePlans: Bool,
+        missingPurchase: Bool,
+        file: FileString = #filePath,
+        line: UInt = #line
+    ) {
+        let types = viewModel.relevantPathsForPurchase.map(\.type)
+
+        expect(file: file, line: line, types.contains(.cancel)) == cancel
+        expect(file: file, line: line, types.contains(.refundRequest)) == refundRequest
+        expect(file: file, line: line, types.contains(.changePlans)) == changePlans
+        expect(file: file, line: line, types.contains(.missingPurchase)) == missingPurchase
+    }
 
     static func appStoreSubscription(ownershipType: PurchaseOwnershipType) -> PurchaseInformation {
         PurchaseInformation.mock(
