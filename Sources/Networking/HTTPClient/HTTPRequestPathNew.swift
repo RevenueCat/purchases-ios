@@ -295,4 +295,12 @@ extension HTTPRequest.Path2 {
                                                                 pathComponent: "product_entitlement_mapping",
                                                                 fallbackRelativePath: "/v1/product_entitlement_mapping")
 
+    static func getCustomerCenterConfig(appUserID: String) -> Self {
+        HTTPRequest.Path2(name: "customer_center",
+                          etagBehavior: .send,
+                          supportsSignatureVerification: false,
+                          needsNonceForSigning: false,
+                          pathComponent: "customercenter/\(appUserID.trimmedAndEscaped)",
+                          iamPathComponent: "customer/customercenter")
+    }
 }

@@ -177,7 +177,6 @@ extension HTTPRequest {
 
         case logIn
         case health
-        case getCustomerCenterConfig(appUserID: String)
         case getVirtualCurrencies(appUserID: String)
         case spendVirtualCurrencies
         case postRedeemWebPurchase
@@ -243,7 +242,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .logIn,
                 .postRedeemWebPurchase,
                 .postExternalPurchaseToken,
-                .getCustomerCenterConfig,
                 .getVirtualCurrencies,
                 .spendVirtualCurrencies,
                 .postCreateTicket,
@@ -264,7 +262,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .logIn,
                 .postRedeemWebPurchase,
-                .getCustomerCenterConfig,
                 .getVirtualCurrencies,
                 .spendVirtualCurrencies,
                 .postCreateTicket,
@@ -293,7 +290,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .rewardVerificationStatus:
             return true
         case .postExternalPurchaseToken,
-                .getCustomerCenterConfig,
                 .postCreateTicket,
                 .tokenLogin,
                 .tokenRefresh,
@@ -317,7 +313,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .tokenLogOut:
             return true
         case .postExternalPurchaseToken,
-                .getCustomerCenterConfig,
                 .postCreateTicket:
             return false
         }
@@ -352,9 +347,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .health:
             return "health"
-
-        case let .getCustomerCenterConfig(appUserID):
-            return "customercenter/\(Self.escape(appUserID))"
 
         case .postRedeemWebPurchase:
             return "subscribers/redeem_purchase"
@@ -408,8 +400,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return self.pathComponent
         case .health:
             return self.pathComponent
-        case .getCustomerCenterConfig:
-            return "customer/customercenter"
         case .getVirtualCurrencies:
             return "customer/virtual_currencies"
         case .spendVirtualCurrencies:
@@ -442,9 +432,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .health:
             return "post_health"
-
-        case .getCustomerCenterConfig:
-            return "customer_center"
 
         case .postRedeemWebPurchase:
             return "post_redeem_web_purchase"
