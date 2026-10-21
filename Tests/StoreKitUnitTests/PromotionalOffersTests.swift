@@ -190,7 +190,12 @@ class PromotionalOffersSK2Tests: BasePurchasesOrchestratorTests {
         XCTAssertEqual(self.offerings.invokedPostOffersParameters?.receipt, .sk2receipt(receipt))
     }
 
-    private func sign(_ requests: [PromotionalOfferRequest]) async -> [PromotionalOfferResult] {
+}
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+private extension PromotionalOffersSK2Tests {
+
+    func sign(_ requests: [PromotionalOfferRequest]) async -> [PromotionalOfferResult] {
         return await withCheckedContinuation { continuation in
             self.orchestrator.promotionalOffers(for: requests) { results in
                 XCTAssertTrue(Thread.isMainThread)
@@ -199,7 +204,7 @@ class PromotionalOffersSK2Tests: BasePurchasesOrchestratorTests {
         }
     }
 
-    private func assertReceiptPreparationCount(_ count: Int, file: StaticString = #filePath, line: UInt = #line) {
+    func assertReceiptPreparationCount(_ count: Int, file: StaticString = #filePath, line: UInt = #line) {
         if Self.storeKitVersion == .storeKit1 {
             XCTAssertEqual(self.receiptFetcher.receiptDataTimesCalled, count, file: file, line: line)
         } else {
@@ -208,14 +213,14 @@ class PromotionalOffersSK2Tests: BasePurchasesOrchestratorTests {
         }
     }
 
-    private func success(_ signature: String) -> Result<PostOfferForSigningOperation.SigningData, BackendError> {
+    func success(_ signature: String) -> Result<PostOfferForSigningOperation.SigningData, BackendError> {
         return .success((signature, "key", UUID(), 12345))
     }
 
-    private func request(_ productID: String,
-                         offerID: String = "promo",
-                         group: String? = "group",
-                         type: StoreProductDiscount.DiscountType = .promotional) -> PromotionalOfferRequest {
+    func request(_ productID: String,
+                 offerID: String = "promo",
+                 group: String? = "group",
+                 type: StoreProductDiscount.DiscountType = .promotional) -> PromotionalOfferRequest {
         let discount = TestStoreProductDiscount(identifier: offerID, price: 1, localizedPriceString: "$1",
                                                 paymentMode: .payAsYouGo,
                                                 subscriptionPeriod: .init(value: 1, unit: .month),

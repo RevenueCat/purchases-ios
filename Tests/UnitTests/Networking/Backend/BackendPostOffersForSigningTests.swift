@@ -105,6 +105,42 @@ class BackendPostOffersForSigningTests: BaseBackendTests {
         XCTAssertEqual(results[1].value?.signature, "valid")
     }
 
+    func testMalformedSigningPayloadDoesNotDiscardOtherOffer() throws {
+        var invalidNonce = self.offer("monthly", "promo", "unused")
+        invalidNonce["signature_data"] = ["signature": "unused", "nonce": "invalid", "timestamp": 12345]
+        var missingKey = self.offer("monthly", "promo", "unused")
+        missingKey.removeValue(forKey: "key_id")
+        var missingTimestamp = self.offer("monthly", "promo", "unused")
+        missingTimestamp["signature_data"] = ["signature": "unused", "nonce": UUID().uuidString]
+
+        for malformed in [invalidNonce, missingKey, missingTimestamp] {
+            self.mockResponse([malformed, self.offer("annual", "promo", "valid")])
+            let results = try self.sign(self.twoOffers)
+            XCTAssertNotNil(results[0].error)
+            XCTAssertEqual(results[1].value?.signature, "valid")
+        }
+    }
+
+    func testMalformedDuplicateDoesNotMakeResponseUnambiguous() throws {
+        var malformed = self.offer("monthly", "promo", "unused")
+        malformed.removeValue(forKey: "key_id")
+        self.mockResponse([malformed, self.offer("monthly", "promo", "ambiguous"),
+                           self.offer("annual", "promo", "valid")])
+        let results = try self.sign(self.twoOffers)
+        XCTAssertEqual(results[0].error, .unexpectedBackendResponse(.postOfferIdMissingOffersInResponse))
+        XCTAssertEqual(results[1].value?.signature, "valid")
+    }
+
+    func testMalformedUnidentifiedEntryDoesNotDiscardOtherOffer() throws {
+        self.httpClient.mock(requestPath: .postOfferForSigning,
+                             response: .init(statusCode: .success, response: [
+                                "offers": [42, self.offer("annual", "promo", "valid")]
+                             ]))
+        let results = try self.sign(self.twoOffers)
+        XCTAssertNotNil(results[0].error)
+        XCTAssertEqual(results[1].value?.signature, "valid")
+    }
+
     func testNetworkFailureIsReportedForEveryOfferWithoutIndividualRetries() throws {
         let error = NetworkError.unexpectedResponse(nil)
         self.httpClient.mock(requestPath: .postOfferForSigning, response: .init(error: error))
@@ -134,25 +170,29 @@ class BackendPostOffersForSigningTests: BaseBackendTests {
         XCTAssertTrue(self.httpClient.calls.isEmpty)
     }
 
-    private var twoOffers: [Offer] {
+}
+
+private extension BackendPostOffersForSigningTests {
+
+    var twoOffers: [Offer] {
         return ["monthly", "annual"].map {
             .init(offerIdentifier: "promo", productIdentifier: $0, subscriptionGroup: "group")
         }
     }
 
-    private func sign(_ offers: [Offer]) throws -> [SigningResult] {
+    func sign(_ offers: [Offer]) throws -> [SigningResult] {
         return try XCTUnwrap(waitUntilValue { completed in
             self.offerings.post(offersForSigning: offers, receipt: .jws("receipt-jws"),
                                 appUserID: Self.userID, completion: completed)
         })
     }
 
-    private func mockResponse(_ offers: [[String: Any]]) {
+    func mockResponse(_ offers: [[String: Any]]) {
         self.httpClient.mock(requestPath: .postOfferForSigning,
                              response: .init(statusCode: .success, response: ["offers": offers]))
     }
 
-    private func offer(_ productID: String, _ offerID: String, _ signature: String) -> [String: Any] {
+    func offer(_ productID: String, _ offerID: String, _ signature: String) -> [String: Any] {
         return ["offer_id": offerID, "product_id": productID, "key_id": "key",
                 "signature_data": ["signature": signature, "nonce": UUID().uuidString, "timestamp": 12345]]
     }

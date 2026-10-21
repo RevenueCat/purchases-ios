@@ -71,7 +71,12 @@ class PostOfferForSigningOperation: NetworkOperation {
                     guard let offer = matches.onlyElement else {
                         return .failure(.unexpectedBackendResponse(.postOfferIdMissingOffersInResponse))
                     }
-                    return Self.handleOffer(offer, statusCode: response.httpStatusCode)
+                    return offer.result
+                        .mapError {
+                            BackendError.unexpectedBackendResponse(.postOfferIdSignature,
+                                                                   extraContext: $0.localizedDescription)
+                        }
+                        .flatMap { Self.handleOffer($0, statusCode: response.httpStatusCode) }
                 }
             }
 
