@@ -1,0 +1,33 @@
+# `donottouch_sdk_no_match` has only `should_use_custom_ui is "true"` to `no_paywall` and no
+# fallback rule. Without a match nothing is presented and the callback reports nil.
+#
+# Fixtures live in the Automated SDK Tests project (6627e5bc). Do not edit them.
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/checkpoint_no_match.yaml
+
+appId: com.revenuecat.maestro.ios
+name: A checkpoint without a matching rule presents nothing
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- runFlow:
+    file: ../utils/checkpoint_hit.yaml
+    env:
+      CHECKPOINT_ID: donottouch_sdk_no_match
+      ATTRIBUTE: "true"
+      EXPECTED_OFFERING: no_paywall
+
+- runFlow:
+    file: ../utils/checkpoint_hit.yaml
+    env:
+      CHECKPOINT_ID: donottouch_sdk_no_match
+      ATTRIBUTE: "false"
+      EXPECTED_OFFERING: none
+
+- runFlow:
+    file: ../utils/checkpoint_hit.yaml
+    env:
+      CHECKPOINT_ID: donottouch_sdk_no_match
+      ATTRIBUTE: none
+      EXPECTED_OFFERING: none
