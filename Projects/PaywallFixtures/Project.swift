@@ -21,7 +21,8 @@ let project = Project(
             deploymentTargets: .iOS("17.0"),
             infoPlist: "../../Tests/TestingApps/PaywallFixtures/Info.plist",
             sources: [
-                "../../Tests/TestingApps/PaywallFixtures/**/*.swift"
+                "../../Tests/TestingApps/PaywallFixtures/**/*.swift",
+                "../../Tests/RevenueCatUITests/Helpers/PaywallEventTrackerTestDispatcher.swift"
             ],
             resources: [
                 "../../Tests/TestingApps/PaywallFixtures/Resources/**"
