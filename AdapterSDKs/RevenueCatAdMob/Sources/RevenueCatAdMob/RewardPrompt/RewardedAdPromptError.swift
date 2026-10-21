@@ -34,7 +34,7 @@ public struct RewardedAdPromptError: LocalizedError {
         }
     }
 
-    init(code: Code, underlyingError: Error? = nil) {
+    init(code: Code, underlyingError: Error?) {
         self.code = code
         self.underlyingError = underlyingError
     }
