@@ -26,7 +26,7 @@ struct VariableHandlerV2 {
     private let functionCompatibilityMap: [String: String]
 
     private let showZeroDecimalPlacePrices: Bool
-    private let discountRelativeToMostExpensivePerMonth: Double?
+    private let discountRelativeToMostExpensivePerMonth: Decimal?
     private let mostExpensivePricePerMonth: Decimal?
     private let dateProvider: () -> Date
 
@@ -38,7 +38,7 @@ struct VariableHandlerV2 {
     init(
         variableCompatibilityMap: [String: String],
         functionCompatibilityMap: [String: String],
-        discountRelativeToMostExpensivePerMonth: Double?,
+        discountRelativeToMostExpensivePerMonth: Decimal?,
         mostExpensivePricePerMonth: Decimal? = nil,
         showZeroDecimalPlacePrices: Bool,
         customVariables: [String: CustomVariableValue] = [:],
@@ -385,7 +385,7 @@ extension VariablesV2 {
         let package: Package?
         let locale: Locale
         let localizations: [String: String]
-        let discountRelativeToMostExpensivePerMonth: Double?
+        let discountRelativeToMostExpensivePerMonth: Decimal?
         let mostExpensivePricePerMonth: Decimal?
         let showZeroDecimalPlacePrices: Bool
         let isEligibleForIntroOffer: Bool
@@ -1261,10 +1261,16 @@ extension VariablesV2 {
     }
 
     func productRelativeDiscount(
-        discountRelativeToMostExpensivePerMonth: Double?,
+        discountRelativeToMostExpensivePerMonth: Decimal?,
         localizations: [String: String]
     ) -> String {
-        return self.percent(discountRelativeToMostExpensivePerMonth, localizations: localizations)
+        guard let discountRelativeToMostExpensivePerMonth,
+              let localizedFormat = localizations[VariableLocalizationKey.percent.rawValue] else {
+            return ""
+        }
+
+        let percent = Localization.discountPercentage(discountRelativeToMostExpensivePerMonth)
+        return String(format: localizedFormat, percent)
     }
 
     private func percent(_ fraction: Double?, localizations: [String: String]) -> String {
