@@ -55,11 +55,11 @@ struct CheckpointsView: View {
     var body: some View {
         NavigationView {
             Form {
+                self.checkpointSection
+                self.recentSection
                 #if DEBUG
                 self.configuredSection
                 #endif
-                self.checkpointSection
-                self.recentSection
                 self.customVariablesSection
                 self.resultSection
             }
