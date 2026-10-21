@@ -875,6 +875,71 @@ final class ButtonComponentViewTests: TestCase {
         }
     }
 
+    func testEligibilityResolvingPreservesNativeRegistrationAndCarouselState() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
+        for native in [false, true] {
+            let close = PaywallComponent.button(.init(
+                action: .navigateBack, stack: .init(components: [
+                    .carousel(.init(pages: [Self.makeButtonStack(label: "Close")]))
+                ]),
+                overrides: [.init(conditions: [.promoOffer], properties: .init(visible: false))],
+                useNativeIfPossible: native
+            ))
+            let model = try StackComponentViewModel(component: .init(
+                components: [close, .carousel(.init(pages: [Self.makeButtonStack(label: "Close")]))],
+                size: .init(width: .fixed(280), height: .fixed(180)),
+                overrides: [.init(conditions: [.introOffer], properties: .init(visible: false))]
+            ), localizationProvider: .init(
+                locale: Locale(identifier: "en_US"), localizedStrings: ["Close": .string("Close")]
+            ), colorScheme: .light)
+            guard case .carousel(let carousel) = model.viewModels[1],
+                  case .button(let button) = model.viewModels[0],
+                  case .carousel(let labelCarousel) = button.stackViewModel.viewModels[0] else {
+                return XCTFail("Missing carousel fixtures")
+            }
+            var appearances = 0
+            var labelAppearances = 0
+            var dismissals = 0
+            carousel.onViewAppear = { appearances += 1 }
+            labelCarousel.onViewAppear = { labelAppearances += 1 }
+            let coordinator = NativePaywallCloseCoordinator()
+            let state = NativeRegistrationTestState()
+            state.eligibilityLoading = [.intro, .promo]
+            let content = StackComponentView(viewModel: model, onDismiss: { dismissals += 1 })
+                .environment(\.nativePaywallCloseCoordinator, coordinator)
+                .environmentObject(PurchaseHandler.default())
+                .environmentObject(PackageContext(package: nil, variableContext: .init(packages: [])))
+                .environmentObject(IntroOfferEligibilityContext(
+                    introEligibilityChecker: BaseSnapshotTest.eligibleChecker
+                ))
+                .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
+                .environment(\.safeAreaInsets, EdgeInsets())
+            let (window, _) = Self.host(NativePromotionTestView(state: state, content: content))
+            defer { window.isHidden = true; window.rootViewController = nil }
+            let mounted = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+                coordinator.actions.count == (native ? 1 : 0) && appearances == 1
+                    && labelAppearances == (native ? 0 : 1)
+            }, object: nil)
+            await fulfillment(of: [mounted], timeout: 2)
+            let ids = coordinator.actions.map(\.id)
+            // Both components remain visible as their pending checks resolve to ineligible.
+            let resolutions: [OfferEligibilityLoading] = [[.promo], []]
+            for loading in resolutions {
+                state.eligibilityLoading = loading
+                let settled = expectation(description: "Eligibility rendering settled")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { settled.fulfill() }
+                await fulfillment(of: [settled], timeout: 2)
+                XCTAssertEqual(coordinator.actions.map(\.id), ids, "Loading must not replace native actions")
+                XCTAssertEqual(appearances, 1, "Loading must not reset the sibling carousel")
+                XCTAssertEqual(labelAppearances, native ? 0 : 1, "Loading must not remount the button label")
+            }
+            if native {
+                try await coordinator.performAction(id: XCTUnwrap(ids.first))
+                XCTAssertEqual(dismissals, 1)
+            }
+        }
+    }
+
     func testPromotingNativeButtonsDoesNotRemountSiblingCarousel() async throws {
         try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
         let dimensions: [PaywallComponent.Dimension] = [
@@ -1091,7 +1156,9 @@ private struct NativePromotionTestView<Content: View>: View {
     @ObservedObject var state: NativeRegistrationTestState
     let content: Content
     var body: some View {
-        self.content.environment(\.nativePaywallControlsPresented, self.state.showsButton)
+        self.content
+            .environment(\.nativePaywallControlsPresented, self.state.showsButton)
+            .environment(\.offerEligibilityLoading, self.state.eligibilityLoading)
     }
 }
 
@@ -1099,6 +1166,7 @@ private struct NativePromotionTestView<Content: View>: View {
 private final class NativeRegistrationTestState: ObservableObject {
     @Published var value = 1
     @Published var showsButton = true
+    @Published var eligibilityLoading: OfferEligibilityLoading = []
     var performed = 0
 }
 
