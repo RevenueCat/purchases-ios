@@ -1162,6 +1162,7 @@ private struct NativePromotionTestView<Content: View>: View {
     }
 }
 
+@available(iOS 15.0, *)
 @MainActor
 private final class NativeRegistrationTestState: ObservableObject {
     @Published var value = 1
