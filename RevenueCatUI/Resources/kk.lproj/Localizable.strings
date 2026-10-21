@@ -29,3 +29,12 @@
 "Your purchase was successful." = "Сатып алу сәтті аяқталды.";
 "Purchase unavailable" = "Сатып алу қолжетімсіз";
 "This purchase isn't available in your region." = "Бұл сатып алу сіздің аймағыңызда қолжетімсіз.";
+"Couldn't connect. Check your internet connection and try again." = "Қосылу мүмкін болмады. Интернет байланысын тексеріп, қайталап көріңіз.";
+"This content couldn't be loaded. Please try again later." = "Бұл мазмұнды жүктеу мүмкін болмады. Кейінірек қайталап көріңіз.";
+"There was a problem with the store. Please try again later." = "Дүкенде мәселе туындады. Кейінірек қайталап көріңіз.";
+"Purchases aren't allowed on this device." = "Бұл құрылғыда сатып алуға рұқсат жоқ.";
+"This product isn't available right now." = "Бұл өнім қазір қолжетімді емес.";
+"You already own this product." = "Бұл өнім сізде бұрыннан бар.";
+"Your payment is pending. You'll get access once it's approved." = "Төлеміңіз күтуде. Ол мақұлданған соң қол жеткізе аласыз.";
+"Something went wrong. Please try again." = "Бірдеңе дұрыс болмады. Қайталап көріңіз.";
+"Your purchases couldn't be verified. Please try again later." = "Сатып алуларыңызды тексеру мүмкін болмады. Кейінірек қайталап көріңіз.";

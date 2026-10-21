@@ -29,3 +29,12 @@
 "Your purchase was successful." = "Zure erosketa behar bezala egin da.";
 "Purchase unavailable" = "Erosketa ez dago erabilgarri";
 "This purchase isn't available in your region." = "Erosketa hau ez dago erabilgarri zure eskualdean.";
+"Couldn't connect. Check your internet connection and try again." = "Ezin izan da konektatu. Egiaztatu Interneteko konexioa eta saiatu berriro.";
+"This content couldn't be loaded. Please try again later." = "Ezin izan da eduki hau kargatu. Saiatu berriro geroago.";
+"There was a problem with the store. Please try again later." = "Arazo bat izan da dendan. Saiatu berriro geroago.";
+"Purchases aren't allowed on this device." = "Erosketak ez daude baimenduta gailu honetan.";
+"This product isn't available right now." = "Produktu hau ez dago erabilgarri une honetan.";
+"You already own this product." = "Dagoeneko baduzu produktu hau.";
+"Your payment is pending. You'll get access once it's approved." = "Zure ordainketa zain dago. Onartzen denean izango duzu sarbidea.";
+"Something went wrong. Please try again." = "Zerbait gaizki joan da. Saiatu berriro.";
+"Your purchases couldn't be verified. Please try again later." = "Ezin izan dira zure erosketak egiaztatu. Saiatu berriro geroago.";

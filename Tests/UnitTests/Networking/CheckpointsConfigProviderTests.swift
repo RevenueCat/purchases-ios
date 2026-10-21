@@ -77,6 +77,20 @@ class CheckpointsConfigProviderTests: TestCase {
         expect(paywallClose.rules.onlyElement?.workflowId) == "wf-exit"
     }
 
+    func testCheckpointIdsListsEveryCheckpointInTheTopic() async {
+        self.commit(rules: ["paywall_gate": ["wf-b"], "onboarding": ["wf-a"]])
+
+        let checkpointIds = await self.provider.checkpointIds()
+
+        expect(checkpointIds) == ["onboarding", "paywall_gate"]
+    }
+
+    func testCheckpointIdsIsEmptyWithoutTheTopic() async {
+        let checkpointIds = await self.provider.checkpointIds()
+
+        expect(checkpointIds).to(beEmpty())
+    }
+
     func testCachesRulesForTheSameCheckpointAtTheCurrentGeneration() async throws {
         self.commit(rules: ["onboarding": ["wf-a"]])
 

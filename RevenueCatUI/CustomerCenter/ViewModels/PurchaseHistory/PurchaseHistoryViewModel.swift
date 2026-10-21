@@ -95,6 +95,7 @@ private extension PurchaseHistoryViewModel {
                 customerInfo: customerInfo
             )
             await MainActor.run {
+                self.errorMessage = nil
                 self.activeSubscriptions = active
                 self.inactiveSubscriptions = inactive
                 self.nonSubscriptions = nonSubscriptions

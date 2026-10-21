@@ -932,6 +932,33 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         }
     }
 
+    func testPurchasingProductLogUsesStoreProductID() async {
+        let productIdentifier = "com.revenuecat.product"
+        let productWithoutBillingPlan = Self.testStoreProduct(productIdentifier: productIdentifier,
+                                                              installmentsInfo: nil)
+        let monthlyProduct = Self.testStoreProduct(
+            productIdentifier: productIdentifier,
+            installmentsInfo: InstallmentsInfo(
+                commitmentInstallmentsCount: 3,
+                commitmentInstallmentPeriod: SubscriptionPeriod(value: 1, unit: .month),
+                installmentBillingPrice: 3.99,
+                installmentBillingDisplayPrice: "$3.99",
+                commitmentTotalPeriod: SubscriptionPeriod(value: 3, unit: .month),
+                commitmentTotalPrice: 11.97,
+                commitmentTotalDisplayPrice: "$11.97",
+                billingPlanType: .monthly
+            )
+        )
+
+        _ = try? await self.purchases.purchase(product: productWithoutBillingPlan)
+        self.logger.verifyMessageWasLogged("Purchasing Product '\(productIdentifier)'")
+
+        self.logger.clearMessages()
+
+        _ = try? await self.purchases.purchase(product: monthlyProduct)
+        self.logger.verifyMessageWasLogged("Purchasing Product '\(productIdentifier):monthly'")
+    }
+
     // MARK: -
 
     private func performTransaction() {
@@ -943,6 +970,24 @@ class PurchasesPurchasingTests: BasePurchasesTests {
         self.backend.postReceiptResult = .success(CustomerInfo(testData: Self.emptyCustomerInfoData)!)
         transaction.mockState = SKPaymentTransactionState.purchased
         self.storeKit1Wrapper.delegate?.storeKit1Wrapper(self.storeKit1Wrapper, updatedTransaction: transaction)
+    }
+
+    private static func testStoreProduct(
+        productIdentifier: String,
+        installmentsInfo: InstallmentsInfo?
+    ) -> StoreProduct {
+        return TestStoreProduct(
+            localizedTitle: "product",
+            price: 3.99,
+            currencyCode: "USD",
+            localizedPriceString: "$3.99",
+            productIdentifier: productIdentifier,
+            productType: .autoRenewableSubscription,
+            localizedDescription: "",
+            subscriptionPeriod: SubscriptionPeriod(value: 1, unit: .month),
+            locale: Locale(identifier: "en_US"),
+            installmentsInfo: installmentsInfo
+        ).toStoreProduct()
     }
 
 }

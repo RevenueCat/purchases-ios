@@ -29,3 +29,12 @@
 "Your purchase was successful." = "Alışınız uğurla tamamlandı.";
 "Purchase unavailable" = "Satınalma əlçatan deyil";
 "This purchase isn't available in your region." = "Bu satınalma sizin regionunuzda əlçatan deyil.";
+"Couldn't connect. Check your internet connection and try again." = "Qoşulmaq mümkün olmadı. İnternet bağlantınızı yoxlayın və yenidən cəhd edin.";
+"This content couldn't be loaded. Please try again later." = "Bu məzmunu yükləmək mümkün olmadı. Zəhmət olmasa, daha sonra yenidən cəhd edin.";
+"There was a problem with the store. Please try again later." = "Mağaza ilə bağlı problem yarandı. Zəhmət olmasa, daha sonra yenidən cəhd edin.";
+"Purchases aren't allowed on this device." = "Bu cihazda alışlara icazə verilmir.";
+"This product isn't available right now." = "Bu məhsul hazırda mövcud deyil.";
+"You already own this product." = "Bu məhsul artıq sizindir.";
+"Your payment is pending. You'll get access once it's approved." = "Ödənişiniz gözləmədədir. Təsdiqləndikdən sonra girişiniz olacaq.";
+"Something went wrong. Please try again." = "Nəsə səhv getdi. Zəhmət olmasa, yenidən cəhd edin.";
+"Your purchases couldn't be verified. Please try again later." = "Alışlarınızı yoxlamaq mümkün olmadı. Zəhmət olmasa, daha sonra yenidən cəhd edin.";

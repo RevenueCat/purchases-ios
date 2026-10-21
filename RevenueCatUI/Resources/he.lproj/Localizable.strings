@@ -29,3 +29,12 @@
 "Your purchase was successful." = "הרכישה שלך בוצעה בהצלחה.";
 "Purchase unavailable" = "הרכישה אינה זמינה";
 "This purchase isn't available in your region." = "רכישה זו אינה זמינה באזור שלך.";
+"Couldn't connect. Check your internet connection and try again." = "לא ניתן להתחבר. בדקו את חיבור האינטרנט ונסו שוב.";
+"This content couldn't be loaded. Please try again later." = "לא ניתן לטעון את התוכן הזה. נסו שוב מאוחר יותר.";
+"There was a problem with the store. Please try again later." = "אירעה בעיה בחנות. נסו שוב מאוחר יותר.";
+"Purchases aren't allowed on this device." = "רכישות אינן מותרות במכשיר זה.";
+"This product isn't available right now." = "המוצר הזה אינו זמין כרגע.";
+"You already own this product." = "המוצר הזה כבר ברשותכם.";
+"Your payment is pending. You'll get access once it's approved." = "התשלום שלכם ממתין לאישור. תקבלו גישה לאחר שיאושר.";
+"Something went wrong. Please try again." = "משהו השתבש. נסו שוב.";
+"Your purchases couldn't be verified. Please try again later." = "לא ניתן לאמת את הרכישות שלכם. נסו שוב מאוחר יותר.";

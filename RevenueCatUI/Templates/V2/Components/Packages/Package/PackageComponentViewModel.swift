@@ -19,7 +19,7 @@ import Foundation
 typealias PresentedPackagePartial = PaywallComponent.PartialPackageComponent
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-class PackageComponentViewModel {
+class PackageComponentViewModel: OfferEligibilityVisibilityDependency {
 
     let isSelectedByDefault: Bool
     let promotionalOfferProductCode: String?
@@ -30,6 +30,7 @@ class PackageComponentViewModel {
     let hapticFeedbackEnabled: Bool
 
     let visibilityResolver: PackageVisibilityResolver
+    let dependsOnOfferEligibility: Bool
 
     init(
         component: PaywallComponent.PackageComponent,
@@ -39,11 +40,13 @@ class PackageComponentViewModel {
         uiConfigProvider: UIConfigProvider,
         discardRules: Bool = false
     ) {
-        self.visibilityResolver = PackageVisibilityResolver(
+        let visibilityResolver = PackageVisibilityResolver(
             component: component,
             uiConfigProvider: uiConfigProvider,
             discardRules: discardRules
         )
+        self.visibilityResolver = visibilityResolver
+        self.dependsOnOfferEligibility = visibilityResolver.dependsOnOfferEligibility
         self.isSelectedByDefault = component.isSelectedByDefault
         self.promotionalOfferProductCode = component.applePromoOfferProductCode
         self.componentName = component.name

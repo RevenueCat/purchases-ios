@@ -21,7 +21,7 @@ import UIKit
 @available(iOS 15.0, *)
 struct ScrollViewGestureCoordinator: UIViewRepresentable {
     @Binding var translation: CGFloat
-    let onDragEnded: (CGFloat) -> Void
+    let onDragEnded: (_ translation: CGFloat, _ velocity: CGFloat) -> Void
     let onDragStarted: () -> Void
 
     func makeUIView(context: Context) -> GestureCoordinatorHostView {
@@ -34,8 +34,8 @@ struct ScrollViewGestureCoordinator: UIViewRepresentable {
         uiView.onTranslationChanged = { translation in
             self.translation = translation
         }
-        uiView.onDragEnded = { translation in
-            self.onDragEnded(translation)
+        uiView.onDragEnded = { translation, velocity in
+            self.onDragEnded(translation, velocity)
         }
         uiView.onDragStarted = self.onDragStarted
         uiView.attachIfNeeded()
@@ -45,7 +45,7 @@ struct ScrollViewGestureCoordinator: UIViewRepresentable {
 @available(iOS 15.0, *)
 final class GestureCoordinatorHostView: UIView, UIGestureRecognizerDelegate {
     var onTranslationChanged: ((CGFloat) -> Void)?
-    var onDragEnded: ((CGFloat) -> Void)?
+    var onDragEnded: ((_ translation: CGFloat, _ velocity: CGFloat) -> Void)?
     var onDragStarted: (() -> Void)?
 
     private weak var gestureContainerView: UIView?
@@ -157,9 +157,10 @@ final class GestureCoordinatorHostView: UIView, UIGestureRecognizerDelegate {
             }()
 
             if resolvedIsHorizontal {
-                self.onDragEnded?(translation.x)
+                let releaseVelocity = gesture.state == .ended ? velocity.x : 0
+                self.onDragEnded?(translation.x, releaseVelocity)
             } else {
-                self.onDragEnded?(0)
+                self.onDragEnded?(0, 0)
             }
             isHorizontalPan = nil
 

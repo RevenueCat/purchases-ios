@@ -270,6 +270,7 @@ struct Template7View: TemplateViewType {
             .font(self.font(for: .title).weight(.semibold))
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
+            .accessibilityAddTraits(.isHeader)
     }
 
     private var featuresAndPackages: some View {

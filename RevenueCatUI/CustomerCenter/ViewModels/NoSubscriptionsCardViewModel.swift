@@ -24,6 +24,10 @@ final class NoSubscriptionsCardViewModel: ObservableObject {
     private let screenOffering: CustomerCenterConfigData.ScreenOffering?
     private let purchasesProvider: CustomerCenterPurchasesType
 
+    var previewProvider: CustomerCenterPreviewProvider? {
+        purchasesProvider as? CustomerCenterPreviewProvider
+    }
+
     init(
         screenOffering: CustomerCenterConfigData.ScreenOffering?,
         purchasesProvider: CustomerCenterPurchasesType
@@ -78,6 +82,9 @@ final class NoSubscriptionsCardViewModel: ObservableObject {
             let result = try await purchasesProvider.purchase(package: packageToPurchase)
             return (result.userCancelled, nil)
         } catch {
+            if (error as NSError).isPurchaseCancellation {
+                return (true, nil)
+            }
             return (false, error)
         }
     }

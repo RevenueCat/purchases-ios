@@ -263,7 +263,7 @@ final class WorkflowNavigatorTests: TestCase {
         expect(navigator.triggerAction(componentId: "btn_abc")?.id) == "step_2"
     }
 
-    func testWithNoResolverEveryBranchTakesItsFallback() async throws {
+    func testABranchWhoseRouteDoesNotWinTakesItsFallback() async throws {
         let workflow = try Self.makeWorkflow(
             steps: [
                 makeStepWithBranchExit(id: "step_1", componentId: "btn_abc", actionId: "btn_abc"),

@@ -77,16 +77,10 @@ struct ImageComponentView: View {
     @Environment(\.requestSizeCalculation)
     private var requestSizeCalculation
 
-    #if ENABLE_WORKFLOW_BRANCH_LOADING
     @Environment(\.redactionReasons) private var redactionReasons
-    #endif
 
     private var isSkeletonPlaceholder: Bool {
-        #if ENABLE_WORKFLOW_BRANCH_LOADING
         return self.redactionReasons.contains(.placeholder)
-        #else
-        return false
-        #endif
     }
 
     let viewModel: ImageComponentViewModel

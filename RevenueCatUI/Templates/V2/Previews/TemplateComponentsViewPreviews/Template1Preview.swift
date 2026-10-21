@@ -21,6 +21,7 @@ import SwiftUI
 
 private enum Template1Preview {
 
+    // swiftlint:disable:next force_unwrapping
     static let catUrl = URL(string: "https://assets.pawwalls.com/954459_1701163461.jpg")!
 
     static let catImage = PaywallComponent.ImageComponent(
@@ -76,7 +77,13 @@ private enum Template1Preview {
                     text: "package_detail",
                     color: .init(light: .hex("#000000")),
                     padding: .zero,
-                    margin: .zero
+                    margin: .zero,
+                    overrides: [
+                        .init(
+                            conditions: [.introOffer],
+                            properties: .init(visible: nil, text: "package_detail_offer")
+                        )
+                    ]
                 ))
             ],
             dimension: .vertical(.center, .start),
@@ -110,7 +117,6 @@ private enum Template1Preview {
     static let purchaseButton = PaywallComponent.PurchaseButtonComponent(
         stack: .init(
             components: [
-                // WIP: Intro offer state with "cta_intro",
                 .text(.init(
                     text: "cta",
                     fontWeight: .bold,
@@ -119,7 +125,13 @@ private enum Template1Preview {
                     padding: .init(top: 10,
                                    bottom: 10,
                                    leading: 30,
-                                   trailing: 30)
+                                   trailing: 30),
+                    overrides: [
+                        .init(
+                            conditions: [.introOffer],
+                            properties: .init(visible: nil, text: "cta_intro")
+                        )
+                    ]
                 ))
             ],
             shape: .pill
@@ -172,6 +184,7 @@ private enum Template1Preview {
 
     static let data: PaywallComponentsData = .init(
         templateName: "components",
+        // swiftlint:disable:next force_unwrapping
         assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
         componentsConfig: .init(
             base: .init(
@@ -192,6 +205,7 @@ private enum Template1Preview {
             "body": .string("Get access to all of our educational content trusted by thousands of pet parents."),
             "package_name": .string("Monthly"),
             "package_detail": .string("Some price into"),
+            "package_detail_offer": .string("Then {{ product.offer_price }}"),
             "cta": .string("Get Started"),
             "cta_intro": .string("Claim Free Trial")
         ]],
@@ -245,7 +259,7 @@ struct Template1Preview_Previews: PreviewProvider {
             failedToLoadFont: { _ in },
             colorScheme: .light
         )
-        .environment(\.paywallLoadingOverride, true)
+        .environment(\.offerEligibilityLoadingOverride, [.intro, .promo])
         .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 800))
         .previewDisplayName("Template 1 (Loading)")

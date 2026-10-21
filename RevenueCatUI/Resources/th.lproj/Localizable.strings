@@ -29,3 +29,12 @@
 "Your purchase was successful." = "การซื้อของคุณสำเร็จแล้ว";
 "Purchase unavailable" = "ไม่สามารถซื้อได้";
 "This purchase isn't available in your region." = "การซื้อนี้ไม่มีให้บริการในภูมิภาคของคุณ";
+"Couldn't connect. Check your internet connection and try again." = "ไม่สามารถเชื่อมต่อได้ โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วลองอีกครั้ง";
+"This content couldn't be loaded. Please try again later." = "ไม่สามารถโหลดเนื้อหานี้ได้ โปรดลองอีกครั้งในภายหลัง";
+"There was a problem with the store. Please try again later." = "เกิดปัญหากับสโตร์ โปรดลองอีกครั้งในภายหลัง";
+"Purchases aren't allowed on this device." = "ไม่อนุญาตให้ซื้อบนอุปกรณ์นี้";
+"This product isn't available right now." = "สินค้านี้ไม่พร้อมจำหน่ายในขณะนี้";
+"You already own this product." = "คุณมีสินค้านี้อยู่แล้ว";
+"Your payment is pending. You'll get access once it's approved." = "การชำระเงินของคุณอยู่ระหว่างดำเนินการ คุณจะได้รับสิทธิ์เข้าถึงเมื่อได้รับการอนุมัติ";
+"Something went wrong. Please try again." = "เกิดข้อผิดพลาด โปรดลองอีกครั้ง";
+"Your purchases couldn't be verified. Please try again later." = "ไม่สามารถตรวจสอบการซื้อของคุณได้ โปรดลองอีกครั้งในภายหลัง";

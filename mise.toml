@@ -7,7 +7,7 @@ compile = false
 [tools]
 tuist = "4.48.2"
 swiftlint = "0.62.2"
-ruby = "3.2.0"
+ruby = "3.3.0"
 xcbeautify = "2.30.1"
 
 [hooks]

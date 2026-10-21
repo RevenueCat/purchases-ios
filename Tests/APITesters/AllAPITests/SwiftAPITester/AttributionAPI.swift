@@ -6,11 +6,17 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 var attribution: Attribution!
 
 func checkAttributionAPI() {
+    let attrs: [CustomerInfo.Attribute] = attribution.attributesForCurrentUser
+    let attr = attrs[0]
+    let _: String = attr.key
+    let _: String = attr.value
+    let _: Date = attr.lastUpdatedDate
+
     attribution.setAttributes([String: String]())
 
     attribution.setEmail("")

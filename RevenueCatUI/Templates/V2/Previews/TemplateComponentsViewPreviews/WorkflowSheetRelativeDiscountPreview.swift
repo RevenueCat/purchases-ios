@@ -63,7 +63,7 @@ private struct WorkflowDiscountPreviewView: View {
         )
         .bottomSheet(sheet: self.$sheet, safeAreaInsets: .init(), onSheetContentAppear: nil)
         .previewRequiredPaywallsV2Properties(packageContext: self.packageContext)
-        .environment(\.paywallLoadingOverride, false)
+        .environment(\.offerEligibilityLoadingOverride, [])
         .environment(\.locale, Locale(identifier: "en_US"))
         .preferredColorScheme(.dark)
     }

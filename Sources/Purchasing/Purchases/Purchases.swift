@@ -299,6 +299,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let customerInfoManager: CustomerInfoManager
     private let eventsManager: EventsManagerType?
     private let remoteConfigManager: RemoteConfigManagerType
+    private let configuredAdRewardsProvider: ConfiguredAdRewardsProvider
+    private let checkpointsConfigProvider: CheckpointsConfigProviderType
     private let sdkSettingsConfigProvider: SDKSettingsConfigProviderType
     private let subscriberDimensionsConfigProvider: SubscriberDimensionsConfigProviderType
 
@@ -697,7 +699,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             RulesEngine.setLogger(RulesEngineLoggerBridge())
             let localRulesEvaluator = LocalRulesEvaluator(
                 dimensionProviders: [
-                    DeviceDimensionProvider(),
+                    DeviceDimensionProvider(systemInfo: systemInfo),
                     StoreDimensionProvider(),
                     CustomerInfoDimensionProvider(
                         currentAppUserIDProvider: { identityManager.currentAppUserID },
@@ -739,12 +741,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     }
                 }
             )
-            branchResolver = systemInfo.branchingEnabled
-                ? DefaultBranchResolver(
-                    audiencesConfigProvider: audiencesConfigProvider,
-                    localRulesEvaluator: localRulesEvaluator
-                )
-                : DisabledBranchResolver()
+            branchResolver = DefaultBranchResolver(
+                audiencesConfigProvider: audiencesConfigProvider,
+                localRulesEvaluator: localRulesEvaluator
+            )
         } else {
             checkpointResolver = DisabledCheckpointWorkflowResolver()
             branchResolver = DisabledBranchResolver()
@@ -887,6 +887,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   workflowManager: workflowManager,
                   branchResolver: branchResolver,
                   remoteConfigManager: remoteConfigManager,
+                  checkpointsConfigProvider: checkpointsConfigProvider,
                   sdkSettingsConfigProvider: sdkSettingsConfigProvider,
                   subscriberDimensionsConfigProvider: subscriberDimensionsConfigProvider,
                   offlineEntitlementsManager: offlineEntitlementsManager,
@@ -929,6 +930,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          workflowManager: WorkflowManager,
          branchResolver: BranchResolver = DisabledBranchResolver(),
          remoteConfigManager: RemoteConfigManagerType,
+         checkpointsConfigProvider: CheckpointsConfigProviderType,
          sdkSettingsConfigProvider: SDKSettingsConfigProviderType,
          subscriberDimensionsConfigProvider: SubscriberDimensionsConfigProviderType,
          offlineEntitlementsManager: OfflineEntitlementsManager,
@@ -994,6 +996,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.remoteConfigManager = systemInfo.remoteConfigEnabled
             ? remoteConfigManager
             : NoOpRemoteConfigManager()
+        self.configuredAdRewardsProvider = ConfiguredAdRewardsProvider(manager: self.remoteConfigManager)
+        self.checkpointsConfigProvider = checkpointsConfigProvider
         self.sdkSettingsConfigProvider = sdkSettingsConfigProvider
         self.subscriberDimensionsConfigProvider = subscriberDimensionsConfigProvider
         self.offlineEntitlementsManager = offlineEntitlementsManager
@@ -1213,6 +1217,12 @@ public extension Purchases {
         return try await self.workflowManager.getWorkflow(forOfferingId: offeringID)
     }
 
+    /// Bypasses the offering to workflow map, so a test can open one workflow by id.
+    @_spi(Internal)
+    func workflow(forWorkflowIdentifier workflowID: String) async throws -> WorkflowDataResult {
+        return try await self.workflowManager.getWorkflow(workflowId: workflowID)
+    }
+
     @_spi(Internal)
     func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
         return self.workflowManager.cachedWorkflow(forOfferingId: offeringID)
@@ -1221,11 +1231,6 @@ public extension Purchases {
     @_spi(Internal)
     func resolveBranch(_ branch: WorkflowBranch) async -> WorkflowStepID {
         return await self.branchResolver.resolve(branch)
-    }
-
-    @_spi(Internal)
-    var branchingEnabled: Bool {
-        return self.systemInfo.branchingEnabled
     }
 
     @_spi(Internal)
@@ -2069,6 +2074,28 @@ public extension Purchases {
 
 }
 
+// MARK: - Reward Configuration
+
+extension Purchases {
+
+    /// Returns the rewards configured for a rewarded ad unit, loading remote configuration when needed.
+    ///
+    /// This returns immediately when configuration is already cached. Otherwise, it joins any remote-config refresh
+    /// already in progress or starts one when cached configuration is missing or stale. Returns `nil` when
+    /// configuration is still unavailable after that work finishes. Returns
+    /// ``ConfiguredAdRewards/noConfiguredReward`` when configuration is available but no rewards are configured for
+    /// the ad unit.
+    ///
+    /// - Parameter adUnitId: The ad network's rewarded ad unit identifier.
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    public func adRewards(
+        forAdUnitId adUnitId: String
+    ) async -> ConfiguredAdRewards? {
+        return await self.configuredAdRewardsProvider.rewards(forAdUnitId: adUnitId)
+    }
+
+}
+
 // MARK: - Reward Verification
 
 extension Purchases {
@@ -2865,6 +2892,9 @@ func initialDiagnosticsCollectionDecision(
     return remoteConfigEnabled ? .undetermined : .disabled
 }
 
+/// Resolves diagnostics collection using the remote setting when present, otherwise falling back
+/// to ``Configuration/Builder/with(diagnosticsEnabled:)``. The remote setting is enabled only at
+/// the developer's request or with their explicit approval.
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 func resolvedDiagnosticsCollectionDecision(
     remoteDiagnosticsEnabled: Bool?,
@@ -3065,6 +3095,18 @@ internal extension Purchases {
     }
 
     #if DEBUG
+
+    func workflowIds() async -> [String] {
+        return await self.workflowManager.workflowIds()
+    }
+
+    func workflowId(forOfferingIdentifier offeringID: String) async -> String? {
+        return await self.workflowManager.workflowId(forOfferingId: offeringID)
+    }
+
+    func checkpointIds() async -> [String] {
+        return await self.checkpointsConfigProvider.checkpointIds()
+    }
 
     /// - Returns: the parsed `AppleReceipt`
     ///
