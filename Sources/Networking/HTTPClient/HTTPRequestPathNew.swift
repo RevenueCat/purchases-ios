@@ -4,7 +4,6 @@
 //
 //  Created by Dave DeLong on 10/9/26.
 //  Copyright © 2026 RevenueCat, Inc. All rights reserved.
-//
 
 import Foundation
 
@@ -178,7 +177,6 @@ extension HTTPRequest.Path2 {
 
     static func getOfferings(appUserID: String) -> Self {
         HTTPRequest.Path2(name: "get_offerings",
-                          authenticated: true,
                           etagBehavior: .send,
                           supportsSignatureVerification: true,
                           needsNonceForSigning: false,
@@ -189,7 +187,6 @@ extension HTTPRequest.Path2 {
 
     static func getIntroEligibility(appUserID: String) -> Self {
         HTTPRequest.Path2(name: "get_intro_eligibility",
-                          authenticated: true,
                           etagBehavior: .send,
                           supportsSignatureVerification: false,
                           needsNonceForSigning: false,
@@ -233,5 +230,14 @@ extension HTTPRequest.Path2 {
                                                 needsNonceForSigning: false,
                                                 pathComponent: "events",
                                                 usesAPISources: false)
+
+    static func postAttributionData(appUserID: String) -> Self {
+        HTTPRequest.Path2(name: "post_attribution",
+                          etagBehavior: .send,
+                          supportsSignatureVerification: false,
+                          needsNonceForSigning: false,
+                          pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/attribution",
+                          iamPathComponent: "customer/attribution")
+    }
 
 }

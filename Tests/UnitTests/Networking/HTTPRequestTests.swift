@@ -27,7 +27,6 @@ class HTTPRequestTests: TestCase {
 
     private static let paths: [HTTPRequest.Path] = [
         .logIn,
-        .postAttributionData(appUserID: userID),
         .postOfferForSigning,
         .postReceiptData,
         .postSubscriberAttributes(appUserID: userID),
@@ -64,7 +63,6 @@ class HTTPRequestTests: TestCase {
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil)
     ]
     private static let pathsWithUserID: [HTTPRequest.Path] = [
-        .postAttributionData(appUserID: anonymousUser),
         .postSubscriberAttributes(appUserID: anonymousUser)
     ]
 
@@ -565,7 +563,6 @@ class HTTPRequestTests: TestCase {
     /// Maps each `HTTPRequest.Path` case (other than `.logIn`, which is disallowed under IAM) to the
     /// relative path it should resolve to when IAM access-token authorization is preferred.
     private static let iamPathComponentsByPath: [HTTPRequest.Path: String] = [
-        .postAttributionData(appUserID: userID): "customer/attribution",
         .postOfferForSigning: "offers",
         .postReceiptData: "receipts",
         .postSubscriberAttributes(appUserID: userID): "customer/attributes",
@@ -873,7 +870,8 @@ class HTTPRequestTests2: TestCase {
     private static let paths: [HTTPRequest.Path2] = [
         .getCustomerInfo(appUserID: userID),
         .getOfferings(appUserID: userID),
-        .getIntroEligibility(appUserID: userID)
+        .getIntroEligibility(appUserID: userID),
+        .postAttributionData(appUserID: userID)
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path2> = []
     private static let pathsWithoutETags: Set<HTTPRequest.Path2> = []
@@ -887,7 +885,8 @@ class HTTPRequestTests2: TestCase {
     private static let pathsWithUserID: [HTTPRequest.Path2] = [
         .getCustomerInfo(appUserID: anonymousUser),
         .getOfferings(appUserID: anonymousUser),
-        .getIntroEligibility(appUserID: anonymousUser)
+        .getIntroEligibility(appUserID: anonymousUser),
+        .postAttributionData(appUserID: anonymousUser)
     ]
 
     func testPathsDontHaveLeadingSlash() {
@@ -1360,7 +1359,8 @@ class HTTPRequestTests2: TestCase {
     /// relative path it should resolve to when IAM access-token authorization is preferred.
     private static let iamPathComponentsByPath: [HTTPRequest.Path2: String] = [
         .getOfferings(appUserID: userID): "customer/offerings",
-        .getIntroEligibility(appUserID: userID): "customer/intro_eligibility"
+        .getIntroEligibility(appUserID: userID): "customer/intro_eligibility",
+        .postAttributionData(appUserID: userID): "customer/attribution"
     ]
 
     func testRewardVerificationStatusPathIncludesAdUnitIDQueryParameter() {
