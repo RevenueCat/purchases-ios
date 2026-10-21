@@ -1059,6 +1059,16 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).to(beFalse())
     }
 
+    func testAssignedSubscriptionHiddenReasonExplainsOrganizationOwnership() {
+        let purchase = Self.appStoreSubscription(ownershipType: .assigned)
+
+        for type in [CustomerCenterConfigData.HelpPath.PathType.cancel, .refundRequest, .changePlans] {
+            let path = CustomerCenterConfigData.HelpPath(id: "path", title: "Path", type: type, detail: nil)
+
+            expect(path.hiddenReason(for: purchase, allowMissingPurchase: false)) == "Organization-assigned purchase"
+        }
+    }
+
     func testPurchasedSubscriptionShowsRefundRequestAndChangePlans() {
         let viewModel = BaseManageSubscriptionViewModel(
             screen: BaseManageSubscriptionViewModelTests.default,
