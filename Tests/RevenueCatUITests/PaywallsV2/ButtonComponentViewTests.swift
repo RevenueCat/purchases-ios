@@ -1068,7 +1068,7 @@ final class ButtonComponentViewTests: TestCase {
             failedToLoadFont: { _ in }, colorScheme: .light
         )
         .environment(\.workflowRenderingContext, .init(canNavigateBack: true))
-        .environment(\.paywallLoadingOverride, false)
+        .environment(\.offerEligibilityLoadingOverride, [])
         .modifier(NativePaywallNavigationModifier(
             paywallComponents: fixture.paywallComponents, workflowContext: nil
         ))
