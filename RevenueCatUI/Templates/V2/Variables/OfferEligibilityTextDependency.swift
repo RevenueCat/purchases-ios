@@ -53,6 +53,12 @@ struct OfferEligibilityAvailability {
         return loading.intersection(offersByProductIdentifier[package.storeProduct.productIdentifier] ?? [])
     }
 
+    /// Container visibility and selection use `isMostLikelyEligible`, whose subscription-history
+    /// fallback can change even without a configured promo. Only signed-offer text can narrow that wait.
+    func loadingForVisibility(_ loading: OfferEligibilityLoading, for package: Package?) -> OfferEligibilityLoading {
+        return self.loading(loading, for: package).union(loading.intersection(.promo))
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -116,7 +122,9 @@ struct OfferEligibilityState {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct OfferEligibilityAvailabilityKey: EnvironmentKey {
+
     static let defaultValue = OfferEligibilityAvailability.unknown
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -166,7 +174,7 @@ private struct OfferEligibilityRedactionModifier: ViewModifier {
         let offerEligibility = OfferEligibilityState(
             isEligibleForIntroOffer: self.isEligibleForIntroOffer,
             isEligibleForPromoOffer: self.isEligibleForPromoOffer,
-            loading: self.offerEligibilityAvailability.loading(
+            loading: self.offerEligibilityAvailability.loadingForVisibility(
                 self.offerEligibilityLoading,
                 for: self.packageContext.package
             )

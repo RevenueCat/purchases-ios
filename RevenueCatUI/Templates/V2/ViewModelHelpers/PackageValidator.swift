@@ -194,7 +194,7 @@ class PackageValidator {
         let offerEligibility = OfferEligibilityState(
             isEligibleForIntroOffer: context.isEligibleForIntroOffer(info.package),
             isEligibleForPromoOffer: context.isEligibleForPromoOffer(info.package),
-            loading: offerEligibilityAvailability.loading(offerEligibilityLoading, for: info.package)
+            loading: offerEligibilityAvailability.loadingForVisibility(offerEligibilityLoading, for: info.package)
         )
 
         return offerEligibility.unresolvedOutcomes(

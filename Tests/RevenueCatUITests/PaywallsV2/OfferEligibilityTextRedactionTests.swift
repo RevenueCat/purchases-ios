@@ -267,7 +267,7 @@ class OfferEligibilityTextRedactionTests: TestCase {
         }
     }
 
-    func testVisibilityOnlyWaitsForOffersAvailableToThePackage() {
+    func testVisibilityNarrowsIntroLoadingButPreservesSubscriptionHistoryUncertainty() {
         let intro = TestData.monthlyPackage
         let promo = TestData.packageWithPromoOfferPayUpFront
         let lifetime = TestData.lifetimePackage
@@ -279,12 +279,11 @@ class OfferEligibilityTextRedactionTests: TestCase {
             let state = OfferEligibilityState(
                 isEligibleForIntroOffer: false,
                 isEligibleForPromoOffer: false,
-                loading: availability.loading([.intro, .promo], for: package)
+                loading: availability.loadingForVisibility([.intro, .promo], for: package)
             )
             expect(state.visibilityCanChange(variesWithEligibility: true) { intro, _ in !intro }) ==
                 (package == intro)
-            expect(state.visibilityCanChange(variesWithEligibility: true) { _, promo in !promo }) ==
-                (package == promo)
+            expect(state.visibilityCanChange(variesWithEligibility: true) { _, promo in !promo }).to(beTrue())
         }
     }
 

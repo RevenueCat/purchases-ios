@@ -337,35 +337,66 @@ final class PackageValidatorTests: TestCase {
         )
     }
 
-    func testReconcileDoesNotWaitForOffersTheHiddenPackageCannotHave() {
+    func testReconcileDoesNotWaitForIntroOfferTheHiddenPackageCannotHave() {
         let package = TestData.lifetimePackage
         let fallback = TestData.monthlyPackage
         let availability = OfferEligibilityAvailability(packageInfos: [(package, nil), (fallback, nil)])
 
-        for condition in [PaywallComponent.ExtendedCondition.introOffer, .promoOffer] {
-            let validator = PackageValidator()
-            validator.add(Self.makePackageInfo(
-                package: package,
-                isSelectedByDefault: true,
-                visible: false,
-                overrides: [Self.offerVisibilityOverride(condition, visible: true)]
-            ))
-            validator.add(Self.makePackageInfo(
-                package: fallback,
-                isSelectedByDefault: false,
-                visible: true
-            ))
+        let validator = PackageValidator()
+        validator.add(Self.makePackageInfo(
+            package: package,
+            isSelectedByDefault: true,
+            visible: false,
+            overrides: [Self.offerVisibilityOverride(.introOffer, visible: true)]
+        ))
+        validator.add(Self.makePackageInfo(
+            package: fallback,
+            isSelectedByDefault: false,
+            visible: true
+        ))
 
-            XCTAssertEqual(
+        XCTAssertEqual(
+            validator.reconciledSelection(
+                current: package,
+                in: Self.context(),
+                offerEligibilityLoading: [.intro, .promo],
+                offerEligibilityAvailability: availability
+            )?.identifier,
+            fallback.identifier
+        )
+    }
+
+    func testReconcilePreservesSelectionWhileSubscriptionHistoryCanRevealPackageWithoutPromo() {
+        let package = TestData.lifetimePackage
+        let fallback = TestData.monthlyPackage
+        let availability = OfferEligibilityAvailability(packageInfos: [(package, nil), (fallback, nil)])
+        let validator = PackageValidator()
+        validator.add(Self.makePackageInfo(
+            package: package,
+            isSelectedByDefault: true,
+            visible: false,
+            overrides: [Self.offerVisibilityOverride(.promoOffer, visible: true)]
+        ))
+        validator.add(Self.makePackageInfo(package: fallback, isSelectedByDefault: false, visible: true))
+
+        // Visibility uses subscription history even though neither package has a configured promo.
+        for hasHistory in [false, true] {
+            XCTAssertNil(
                 validator.reconciledSelection(
                     current: package,
-                    in: Self.context(),
-                    offerEligibilityLoading: [.intro, .promo],
+                    in: Self.context(isEligibleForPromoOffer: { _ in hasHistory }),
+                    offerEligibilityLoading: hasHistory ? [] : [.promo],
                     offerEligibilityAvailability: availability
-                )?.identifier,
-                fallback.identifier
+                )
             )
         }
+
+        XCTAssertEqual(validator.reconciledSelection(
+            current: package,
+            in: Self.context(),
+            offerEligibilityLoading: [],
+            offerEligibilityAvailability: availability
+        )?.identifier, fallback.identifier)
     }
 
     func testReconcileReturnsNilWhenNothingIsVisible() {
