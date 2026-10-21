@@ -53,7 +53,7 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
             )
             var dismissals = 0
             let owner = NativePaywallUIKitOwner()
-            let controller = UIHostingController(rootView:
+            let contentController = UIHostingController(rootView:
                 PaywallView(configuration: .init(
                     offering: offering, introEligibility: .producing(eligibility: .eligible),
                     purchaseHandler: .mock()
@@ -61,6 +61,13 @@ final class NativePaywallCloseButtonTests: NativePaywallNavigationTestCase {
                     .environment(\.nativePaywallNavigationContext, .uiKit(owner))
                     .onRequestedDismissal { dismissals += 1 }
             )
+            // Match PaywallViewController: UIKit owns navigation, SwiftUI renders in a child.
+            let controller = UIViewController()
+            controller.addChild(contentController)
+            contentController.view.frame = controller.view.bounds
+            contentController.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+            controller.view.addSubview(contentController.view)
+            contentController.didMove(toParent: controller)
             let navigation = UINavigationController(rootViewController: UIViewController())
             navigation.pushViewController(controller, animated: false)
             owner.prepare(controller: controller)
