@@ -59,13 +59,10 @@ class CarouselComponentViewModel: OfferEligibilityVisibilityDependency {
         return self.pageContextNames[index]
     }
 
-    private(set) var lastVisiblePageIndex: Int?
+    private var lastVisiblePageIndex: Int?
 
     func recordPageIndex(_ pageIndex: Int) {
         self.lastVisiblePageIndex = pageIndex
-        #if DEBUG
-        self.onPageIndexChange?(pageIndex)
-        #endif
     }
 
     /// The page to start on when the carousel view is (re)created.
@@ -81,10 +78,6 @@ class CarouselComponentViewModel: OfferEligibilityVisibilityDependency {
     /// carousel view was recreated (and its `@State` reset) after a tab switch.
     #if DEBUG
     var onViewAppear: (() -> Void)?
-
-    /// Invoked each time the carousel records a new active page. Set in tests to observe which
-    /// page a carousel lands on, including the page it resumes on after a tab switch.
-    var onPageIndexChange: ((Int) -> Void)?
     #endif
 
     @ViewBuilder
