@@ -59,8 +59,8 @@ class CarouselComponentViewModel: OfferEligibilityVisibilityDependency {
         return self.pageContextNames[index]
     }
 
-    /// Index into `pageStackViewModels`. Outlives the carousel view, so a carousel recreated
-    /// after a tab switch resumes on this page.
+    /// Index into `pageStackViewModels`.
+    /// Outlives the carousel view, so a carousel recreated after a tab switch resumes on this page.
     var lastVisiblePageIndex: Int?
 
     /// The page to start on when the carousel view is (re)created.
