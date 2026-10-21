@@ -113,7 +113,7 @@ final class ProductsCache<Product: StoreProductType & Hashable>: Sendable {
         completion: @escaping Completion,
         fetcher: (Set<String>, @escaping Completion) -> Void
     ) {
-        let identifiers = Set(identifiers.map(Self.canonicalIdentifier))
+        let identifiers = Set(identifiers.map(CompoundProductIdentifier.canonicalIdentifier))
         let (action, cachedIdentifiers) = self.state.modify { state in
             let cached = state.productsByIdentifier.filter { identifiers.contains($0.key) }
             let missing = identifiers.subtracting(cached.keys)
@@ -168,20 +168,6 @@ final class ProductsCache<Product: StoreProductType & Hashable>: Sendable {
             $0.generation += 1
             $0.productsByIdentifier.removeAll(keepingCapacity: true)
         }
-    }
-
-}
-
-private extension ProductsCache {
-
-    static func canonicalIdentifier(_ identifier: String) -> String {
-        // An empty plan suffix aliases the base product. Leave invalid identifiers to the fetcher's validation.
-        guard identifier.hasSuffix(":"),
-              !identifier.dropLast().contains(":"),
-              let compoundIdentifier = CompoundProductIdentifier(compoundProductIdentifier: identifier) else {
-            return identifier
-        }
-        return compoundIdentifier.compoundProductIdentifier
     }
 
 }
