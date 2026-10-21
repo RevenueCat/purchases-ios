@@ -326,6 +326,18 @@ class CachingProductsManagerTests: TestCase {
         expect(self.mockManager.invokedProductsCount) == 1
     }
 
+    func testInvalidIdentifiersReachFetcherUnchangedWithoutCacheWarnings() async throws {
+        let identifiers: Set<String> = ["", ":monthly", "product::", "product:monthly:extra"]
+        self.mockManager.stubbedProductsCompletionResult = .success([])
+        self.logger.clearMessages()
+
+        let products = try await self.cachingManager.products(withIdentifiers: identifiers)
+
+        expect(products).to(beEmpty())
+        expect(self.mockManager.invokedProductsParameters) == identifiers
+        expect(self.logger.messages.filter { $0.level == .warn }).to(beEmpty())
+    }
+
     func testSharedRequestPreservesEachCallersCachedProducts() throws {
         let firstCached = self.createMockProduct(identifier: "first-cached")
         let secondCached = self.createMockProduct(identifier: "second-cached")
