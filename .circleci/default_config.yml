@@ -1089,11 +1089,25 @@ jobs:
   run-test-ios-26:
     executor:
       name: macos-executor
-      # Not updated: FB22500243 (Xcode 26.3+ breaks this job)
-      xcode_version: "26.3"
+      xcode_version: "26.6"
 
     steps:
       - checkout
+      # iOS 26.4+ simulators don't return StoreKit test products (FB22500243),
+      # and the Xcode 26.6 image only ships the iOS 26.5 runtime.
+      - run:
+          name: Start iOS 26.2 runtime download (background)
+          background: true
+          command: |
+            for attempt in 1 2 3; do
+              echo "=== Downloading iOS 26.2 (attempt $attempt/3) ===" >> /tmp/runtime_install.log
+              if xcodebuild -downloadPlatform iOS -buildVersion 26.2 -architectureVariant arm64 >> /tmp/runtime_install.log 2>&1; then
+                touch /tmp/runtime_ready
+                exit 0
+              fi
+              sleep 10
+            done
+            touch /tmp/runtime_failed
       - run:
           name: Validate Package.swift
           command: swift package describe
@@ -1109,6 +1123,13 @@ jobs:
                 no_output_timeout: 30m
 
       # === iOS 26 tests ===
+      - run:
+          name: Wait for iOS 26.2 runtime download
+          command: |
+            scripts/wait-for-ios-runtime.sh
+            xcrun simctl list devices "iOS 26.2" | grep -q "iPhone 17 (" ||
+              xcrun simctl create "iPhone 17" "iPhone 17" com.apple.CoreSimulator.SimRuntime.iOS-26-2
+          no_output_timeout: 30m
       - run:
           name: Run iOS 26 tests
           command: bundle exec fastlane test_ios
@@ -2377,9 +2398,6 @@ workflows:
           context:
             - slack-secrets-ios
             - slack-secrets
-      - run-test-ios-26:
-          context:
-            - slack-secrets
       - run-test-ios-27:
           context:
             - slack-secrets
@@ -2447,6 +2465,11 @@ workflows:
             - slack-secrets
 
       # Older iOS Version Tests
+      - run-test-ios-26:
+          requires:
+            - approve-full-tests
+          context:
+            - slack-secrets
       - run-test-ios-16:
           requires:
             - approve-full-tests
@@ -2578,7 +2601,6 @@ workflows:
             # Reduced Test Suite
             - lint
             - check-api-changes
-            - run-test-ios-26
             - run-test-ios-27
             - build-checkpoint-tester
             - pod-lib-lint
@@ -2593,6 +2615,7 @@ workflows:
             - backend-integration-tests-custom-entitlements
             - backend-integration-tests-other
             - backend-integration-tests-offline
+            - run-test-ios-26
             - run-test-ios-16
             - run-test-ios-15-and-14
             - run-test-ios-18-and-17
