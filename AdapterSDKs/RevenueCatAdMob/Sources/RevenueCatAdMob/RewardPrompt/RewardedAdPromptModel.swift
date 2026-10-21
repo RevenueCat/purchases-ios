@@ -136,6 +136,7 @@ final class RewardedAdPromptModel: NSObject, ObservableObject {
     private var session: RewardedAdPromptSession
     private let adUnitID: String
     private let placement: String?
+    private let loadsRewardConfiguration: Bool
     private let rewardedAd: any RewardedAdPromptAd
     private let resultDispatcherFactory: @MainActor () -> any RewardedAdPromptResultDispatching
     private let dependencies: RewardedAdPromptDependencies
@@ -149,6 +150,7 @@ final class RewardedAdPromptModel: NSObject, ObservableObject {
         session: RewardedAdPromptSession?,
         ad rewardedAd: any RewardedAdPromptAd,
         placement: String?,
+        loadsRewardConfiguration: Bool,
         resultDispatcherFactory: @escaping @MainActor () -> any RewardedAdPromptResultDispatching,
         dependencies: RewardedAdPromptDependencies
     ) {
@@ -157,6 +159,7 @@ final class RewardedAdPromptModel: NSObject, ObservableObject {
         self.session = session ?? defaultSession
         self.adUnitID = rewardedAd.adUnitID
         self.placement = placement
+        self.loadsRewardConfiguration = loadsRewardConfiguration
         self.rewardedAd = rewardedAd
         self.resultDispatcherFactory = resultDispatcherFactory
         self.dependencies = dependencies
@@ -164,7 +167,10 @@ final class RewardedAdPromptModel: NSObject, ObservableObject {
     }
 
     func loadRewardsIfNeeded() async {
-        guard self.configuredRewards == nil, !self.hasAccepted, !self.isLoadingRewards else { return }
+        guard self.loadsRewardConfiguration,
+              self.configuredRewards == nil,
+              !self.hasAccepted,
+              !self.isLoadingRewards else { return }
         guard self.dependencies.isPurchasesConfigured() else {
             Logger.warn(RewardedAdPromptStrings.purchases_not_configured)
             return

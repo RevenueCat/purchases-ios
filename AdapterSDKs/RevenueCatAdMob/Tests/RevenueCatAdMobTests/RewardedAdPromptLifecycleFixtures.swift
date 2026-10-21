@@ -42,7 +42,7 @@ final class PromptLifecycleState: ObservableObject {
 @MainActor
 final class PromptLifecycleProbe {
 
-    var context: RewardedAdPromptContext?
+    var context: (rewardConfiguration: ConfiguredAdRewards?, accept: @MainActor () -> Void)?
     var renderedConfigurations: [ConfiguredAdRewards?] = []
     var lastLabel: String?
     var appearances = 0
@@ -125,8 +125,19 @@ struct PromptLifecycleHost: View {
     }
 
     private func content(_ context: RewardedAdPromptContext) -> some View {
-        self.probe.context = context
-        self.probe.renderedConfigurations.append(context.rewardConfiguration)
+        return self.content(rewardConfiguration: context.rewardConfiguration, accept: context.accept)
+    }
+
+    private func content(_ context: RewardedAdPromptUnverifiedContext) -> some View {
+        return self.content(rewardConfiguration: nil, accept: context.accept)
+    }
+
+    private func content(
+        rewardConfiguration: ConfiguredAdRewards?,
+        accept: @escaping @MainActor () -> Void
+    ) -> some View {
+        self.probe.context = (rewardConfiguration, accept)
+        self.probe.renderedConfigurations.append(rewardConfiguration)
         self.probe.lastLabel = self.state.label
         return Text(self.state.label)
             .onAppear { self.probe.appearances += 1 }

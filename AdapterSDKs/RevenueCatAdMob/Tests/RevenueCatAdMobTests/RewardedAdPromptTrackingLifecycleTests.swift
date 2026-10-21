@@ -25,7 +25,7 @@ final class RewardedAdPromptTrackingLifecycleTests: AdapterTestCase {
         state.label = "Updated offer"
         await expect { probe.lastLabel }.toEventually(equal("Updated offer"))
         XCTAssertEqual(probe.shownPlacements, ["original"])
-        await expect { probe.rewardsLoadCount }.toEventually(equal(1))
+        XCTAssertEqual(probe.rewardsLoadCount, 0)
         XCTAssertEqual(probe.appearances, 1)
 
         try XCTUnwrap(probe.context).accept()
@@ -56,7 +56,7 @@ final class RewardedAdPromptTrackingLifecycleTests: AdapterTestCase {
 
         XCTAssertEqual(probe.shownPlacements, ["original", "replacement"])
         XCTAssertEqual(probe.acceptedPlacements, ["replacement"])
-        XCTAssertEqual(probe.rewardsLoadCount, 1)
+        XCTAssertEqual(probe.rewardsLoadCount, 0)
         XCTAssertEqual(state.rewardedAd.presentationCount, 1)
         XCTAssertFalse(originalSession.consumePromptShown(), "The previous offer was not accepted")
         XCTAssertTrue(replacement.consumePromptShown(), "Acceptance resets the replacement session")
@@ -79,7 +79,7 @@ final class RewardedAdPromptTrackingLifecycleTests: AdapterTestCase {
 
         XCTAssertEqual(probe.shownPlacements, ["original"])
         XCTAssertEqual(probe.acceptedPlacements, ["original"])
-        XCTAssertEqual(probe.rewardsLoadCount, 1)
+        XCTAssertEqual(probe.rewardsLoadCount, 0)
     }
 
     func testRetainedSessionKeepsShownPlacementAcrossViewRecreation() async throws {
@@ -119,7 +119,7 @@ final class RewardedAdPromptTrackingLifecycleTests: AdapterTestCase {
 
         XCTAssertEqual(probe.shownPlacements, ["original"])
         XCTAssertEqual(probe.acceptedPlacements, ["original"])
-        XCTAssertEqual(probe.rewardsLoadCount, 1)
+        XCTAssertEqual(probe.rewardsLoadCount, 0)
     }
 
     func testReplacingSessionAfterAcceptanceDoesNotRestoreOfferOrCountAnImpression() async throws {

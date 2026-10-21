@@ -11,10 +11,10 @@ import UIKit
 final class RewardedAdPromptModelTests: AdapterTestCase {
 
     func testDoesNotLoadRewardsWhenPurchasesIsNotConfigured() async {
-        var results: [RewardedAdPromptUnverifiedResult] = []
+        var results: [RewardedAdPromptVerificationResult] = []
         let model = self.makeModel(
             resultDispatcherFactory: {
-                UnverifiedRewardResultDispatcher(onResult: { results.append($0) })
+                VerifiedRewardResultDispatcher(onResult: { results.append($0) })
             },
             dependencies: .init(
                 isPurchasesConfigured: { false },
@@ -125,7 +125,7 @@ final class RewardedAdPromptModelTests: AdapterTestCase {
         defer { window.isHidden = true }
         model.setPresentationAnchor(try XCTUnwrap(window.rootViewController))
         try XCTUnwrap(model.context).accept()
-        XCTAssertEqual(rewardedAd.verificationDisabledPresentationCount, 1)
+        XCTAssertEqual(rewardedAd.verificationEnabledPresentationCount, 1)
     }
 
     func testTracksShownAndAcceptedOnceAndPresentsVerificationEnabledAd() async throws {
@@ -187,18 +187,24 @@ final class RewardedAdPromptModelTests: AdapterTestCase {
         var results: [RewardedAdPromptUnverifiedResult] = []
         let model = self.makeModel(
             ad: rewardedAd,
+            loadsRewardConfiguration: false,
             resultDispatcherFactory: {
                 UnverifiedRewardResultDispatcher(onResult: { results.append($0) })
             },
             dependencies: .init(
                 isPurchasesConfigured: { true },
-                loadRewards: { _ in Self.makeConfiguredRewards() },
+                loadRewards: { _ in
+                    XCTFail("Unverified prompts must not load RevenueCat reward configuration")
+                    return Self.makeConfiguredRewards()
+                },
                 trackPromptShown: { _, _ in },
                 trackPromptAccepted: { _, _ in }
             )
         )
 
         await model.loadRewardsIfNeeded()
+        await model.loadRewardsIfNeeded()
+        XCTAssertNil(model.configuredRewards)
         XCTAssertTrue(rewardedAd.isRewardVerificationEnabled)
         let window = RewardedAdPromptTestWindow(rootViewController: UIViewController())
         defer { window.isHidden = true }
@@ -244,7 +250,9 @@ final class RewardedAdPromptModelTests: AdapterTestCase {
     func testUnverifiedPresentationFailureDoesNotLoadRewardsAgain() async throws {
         let delivered = self.expectation(description: "Presentation failure delivered")
         var results: [RewardedAdPromptUnverifiedResult] = []
-        let underlyingError = try await self.assertPresentationFailureDoesNotLoadRewardsAgain {
+        let underlyingError = try await self.assertPresentationFailureDoesNotLoadRewardsAgain(
+            loadsRewardConfiguration: false
+        ) {
             UnverifiedRewardResultDispatcher(onResult: {
                 results.append($0)
                 delivered.fulfill()
@@ -267,12 +275,14 @@ final class RewardedAdPromptModelTests: AdapterTestCase {
 private extension RewardedAdPromptModelTests {
 
     func assertPresentationFailureDoesNotLoadRewardsAgain(
+        loadsRewardConfiguration: Bool = true,
         resultDispatcherFactory: @escaping @MainActor () -> any RewardedAdPromptResultDispatching
     ) async throws -> NSError {
         let rewardedAd = MockRewardedAdPromptAd()
         var rewardsLoadCount = 0
         let model = self.makeModel(
             ad: rewardedAd,
+            loadsRewardConfiguration: loadsRewardConfiguration,
             resultDispatcherFactory: resultDispatcherFactory,
             dependencies: .init(
                 isPurchasesConfigured: { true },
@@ -304,7 +314,7 @@ private extension RewardedAdPromptModelTests {
 
         XCTAssertTrue(model.hasAccepted)
         XCTAssertNil(model.context)
-        XCTAssertEqual(rewardsLoadCount, 1)
+        XCTAssertEqual(rewardsLoadCount, loadsRewardConfiguration ? 1 : 0)
         XCTAssertEqual(
             rewardedAd.verificationEnabledPresentationCount + rewardedAd.verificationDisabledPresentationCount,
             1
@@ -314,8 +324,9 @@ private extension RewardedAdPromptModelTests {
 
     func makeModel(
         ad rewardedAd: MockRewardedAdPromptAd? = nil,
+        loadsRewardConfiguration: Bool = true,
         resultDispatcherFactory: @escaping @MainActor () -> any RewardedAdPromptResultDispatching = {
-            UnverifiedRewardResultDispatcher(onResult: { _ in })
+            VerifiedRewardResultDispatcher(onResult: { _ in })
         },
         dependencies: RewardedAdPromptDependencies
     ) -> RewardedAdPromptModel {
@@ -323,6 +334,7 @@ private extension RewardedAdPromptModelTests {
             session: RewardedAdPromptSession(),
             ad: rewardedAd ?? MockRewardedAdPromptAd(),
             placement: "placement",
+            loadsRewardConfiguration: loadsRewardConfiguration,
             resultDispatcherFactory: resultDispatcherFactory,
             dependencies: dependencies
         )

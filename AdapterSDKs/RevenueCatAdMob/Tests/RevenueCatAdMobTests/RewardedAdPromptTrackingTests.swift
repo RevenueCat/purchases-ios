@@ -51,6 +51,7 @@ final class RewardedAdPromptTrackingTests: AdapterTestCase {
             session: session,
             ad: MockRewardedAdPromptAd(),
             placement: "placement",
+            loadsRewardConfiguration: false,
             resultDispatcherFactory: { UnverifiedRewardResultDispatcher(onResult: { _ in }) },
             dependencies: dependencies
         )

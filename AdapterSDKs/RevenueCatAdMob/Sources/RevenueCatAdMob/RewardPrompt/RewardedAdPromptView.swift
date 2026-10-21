@@ -19,6 +19,7 @@ struct RewardedAdPromptView<Content: View>: View {
     let session: RewardedAdPromptSession?
     let rewardedAd: any RewardedAdPromptAd
     let placement: String?
+    let loadsRewardConfiguration: Bool
     let resultDispatcherFactory: @MainActor () -> any RewardedAdPromptResultDispatching
     let content: (RewardedAdPromptContext) -> Content
 
@@ -27,6 +28,7 @@ struct RewardedAdPromptView<Content: View>: View {
             session: self.session,
             ad: self.rewardedAd,
             placement: self.placement,
+            loadsRewardConfiguration: self.loadsRewardConfiguration,
             resultDispatcherFactory: self.resultDispatcherFactory,
             dependencies: self.dependencies ?? .live,
             content: self.content
@@ -51,6 +53,7 @@ private struct RewardedAdPromptStateView<Content: View>: View {
         session: RewardedAdPromptSession?,
         ad rewardedAd: any RewardedAdPromptAd,
         placement: String?,
+        loadsRewardConfiguration: Bool,
         resultDispatcherFactory: @escaping @MainActor () -> any RewardedAdPromptResultDispatching,
         dependencies: RewardedAdPromptDependencies,
         @ViewBuilder content: @escaping (RewardedAdPromptContext) -> Content
@@ -59,6 +62,7 @@ private struct RewardedAdPromptStateView<Content: View>: View {
             session: session,
             ad: rewardedAd,
             placement: placement,
+            loadsRewardConfiguration: loadsRewardConfiguration,
             resultDispatcherFactory: resultDispatcherFactory,
             dependencies: dependencies
         ))

@@ -237,6 +237,7 @@ private extension RewardedAdPromptPresentationTests {
             session: RewardedAdPromptSession(),
             ad: rewardedAd,
             placement: nil,
+            loadsRewardConfiguration: false,
             resultDispatcherFactory: resultDispatcherFactory,
             dependencies: .init(
                 isPurchasesConfigured: { true },

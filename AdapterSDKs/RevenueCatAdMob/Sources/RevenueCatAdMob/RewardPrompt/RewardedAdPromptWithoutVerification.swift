@@ -61,10 +61,13 @@ public struct RewardedAdPromptWithoutVerification<Content: View>: View {
             session: session,
             rewardedAd: rewardedAd,
             placement: placement,
+            loadsRewardConfiguration: false,
             resultDispatcherFactory: {
                 UnverifiedRewardResultDispatcher(onResult: onResult)
             },
-            content: content
+            content: { context in
+                content(RewardedAdPromptUnverifiedContext(acceptAction: context.accept))
+            }
         )
     }
 
@@ -95,10 +98,13 @@ public struct RewardedAdPromptWithoutVerification<Content: View>: View {
             session: session,
             rewardedAd: rewardedAd,
             placement: placement,
+            loadsRewardConfiguration: false,
             resultDispatcherFactory: {
                 UnverifiedRewardResultDispatcher(onResult: onResult)
             },
-            content: content
+            content: { context in
+                content(RewardedAdPromptUnverifiedContext(acceptAction: context.accept))
+            }
         )
     }
 

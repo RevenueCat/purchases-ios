@@ -63,6 +63,7 @@ public struct RewardedAdPrompt<Content: View>: View {
             session: session,
             rewardedAd: rewardedAd,
             placement: placement,
+            loadsRewardConfiguration: true,
             resultDispatcherFactory: {
                 VerifiedRewardResultDispatcher(onResult: onResult)
             },
@@ -97,6 +98,7 @@ public struct RewardedAdPrompt<Content: View>: View {
             session: session,
             rewardedAd: rewardedAd,
             placement: placement,
+            loadsRewardConfiguration: true,
             resultDispatcherFactory: {
                 VerifiedRewardResultDispatcher(onResult: onResult)
             },
