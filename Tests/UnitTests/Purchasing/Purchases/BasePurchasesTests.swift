@@ -368,6 +368,9 @@ class BasePurchasesTests: TestCase {
                                     operationDispatcher: self.mockOperationDispatcher
                                    ),
                                    remoteConfigManager: self.mockRemoteConfigManager,
+                                   checkpointsConfigProvider: CheckpointsConfigProvider(
+                                    manager: self.mockRemoteConfigManager
+                                   ),
                                    sdkSettingsConfigProvider: sdkSettingsConfigProvider ?? SDKSettingsConfigProvider(
                                     manager: self.mockRemoteConfigManager
                                    ),

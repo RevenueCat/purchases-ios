@@ -13,6 +13,7 @@
 //
 
 import Foundation
+import StoreKit
 
 /// The types used to describe whether a transaction was purchased by the user,
 /// or is available to them through Family Sharing.
@@ -32,6 +33,11 @@ import Foundation
      */
     case unknown = 2
 
+    /**
+     The user has access to the purchase through an organization.
+     */
+    case assigned = 3
+
 }
 
 extension PurchaseOwnershipType: CaseIterable {}
@@ -40,5 +46,23 @@ extension PurchaseOwnershipType: Sendable {}
 extension PurchaseOwnershipType: DefaultValueProvider {
 
     static let defaultValue: Self = .purchased
+
+}
+
+internal extension PurchaseOwnershipType {
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    static func from(storeKitOwnershipType: StoreKit.Transaction.OwnershipType) -> PurchaseOwnershipType {
+        switch storeKitOwnershipType {
+        case .familyShared:
+            return .familyShared
+        #if compiler(>=6.4)
+        case .assigned:
+            return .assigned
+        #endif
+        default:
+            return .purchased
+        }
+    }
 
 }

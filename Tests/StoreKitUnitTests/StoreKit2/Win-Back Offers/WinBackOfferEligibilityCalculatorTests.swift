@@ -93,6 +93,24 @@ final class WinBackOfferEligibilityCalculatorTests: TestCase {
         expect(offers).to(beEmpty())
     }
 
+    func testReturnsEmptyForAssignedOwnershipType() async {
+        let product = MockWinBackEligibilityProduct(
+            subscriptionInfo: MockWinBackEligibilitySubscriptionInfo(
+                statuses: [
+                    MockWinBackEligibilityStatus(
+                        ownershipType: .assigned,
+                        eligibleWinBackOfferIDs: ["winback_offer"]
+                    )
+                ],
+                winBackOffers: [MockWinBackEligibilityOffer.winBack(identifier: "winback_offer")]
+            )
+        )
+
+        let offers = await self.calculator.calculateEligibleWinBackOffers(forProduct: product)
+
+        expect(offers).to(beEmpty())
+    }
+
     func testReturnsEligibleWinBackOffersInOrder() async {
         let product = MockWinBackEligibilityProduct(
             subscriptionInfo: MockWinBackEligibilitySubscriptionInfo(

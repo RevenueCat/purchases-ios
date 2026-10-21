@@ -270,6 +270,152 @@ final class RemoteConfigIntegrationTests: TestCase {
         expect(configuration?.audiences["map_key"]) == Audience(id: "different_id", rules: "{}")
     }
 
+    func testAdRewardsProviderReadsInlineBlobWithMultipleRewardsAndExactLookup() async throws {
+        let payload = Self.adRewardsPayload
+        let ref = RCContainerTestData.blobRef(for: payload)
+        let container = try Self.containerData(
+            topics: .init(entries: [
+                RemoteConfigTopic.adRewards.wireName: Self.adRewardsTopic(ref: ref)
+            ]),
+            contentElements: [(payload, .none)]
+        )
+
+        await self.refresh(with: container)
+        let provider = ConfiguredAdRewardsProvider(manager: self.manager)
+        let maybeRewards = await provider.rewards(forAdUnitId: "rewarded-ad-unit")
+        let differentlyCasedRewards = await provider.rewards(forAdUnitId: "REWARDED-AD-UNIT")
+        let rewards = try XCTUnwrap(maybeRewards)
+        let requestedURLs = await self.downloader.requestedURLs()
+
+        expect(rewards.reward?.virtualCurrency?.code) == "coins"
+        expect(rewards.reward?.virtualCurrency?.amount) == 10
+        expect(rewards.moreRewards.first?.entitlement?.identifier) == "premium"
+        expect(rewards.moreRewards.first?.entitlement?.duration) == 30 * 60
+        expect(differentlyCasedRewards) == .noConfiguredReward
+        expect(requestedURLs).to(beEmpty())
+    }
+
+    func testAdRewardsProviderDownloadsBlobWhenContainerOmitsBinaryElement() async throws {
+        let payload = Self.adRewardsPayload
+        let ref = RCContainerTestData.blobRef(for: payload)
+        let source = Self.blobSource("primary")
+        let container = try Self.containerData(topics: .init(entries: [
+            RemoteConfigTopic.sources.wireName: Self.sourcesTopic(blobSources: [source]),
+            RemoteConfigTopic.adRewards.wireName: Self.adRewardsTopic(ref: ref)
+        ]))
+        await self.downloader.setResponse(.success(payload), for: source, ref: ref)
+
+        await self.refresh(with: container)
+        let rewards = await ConfiguredAdRewardsProvider(manager: self.manager)
+            .rewards(forAdUnitId: "rewarded-ad-unit")
+        let requestedURLStrings = await self.downloader.requestedURLStrings()
+
+        expect(rewards?.reward?.virtualCurrency?.amount) == 10
+        expect(requestedURLStrings) == [Self.url(source, ref: ref)]
+        expect(self.blobStore.read(ref: ref)) == payload
+    }
+
+    func testAdRewardsProviderReturnsNilAfterHashVerificationFailure() async throws {
+        let initialPayload = Self.adRewardsPayload
+        let initialRef = RCContainerTestData.blobRef(for: initialPayload)
+        let initialContainer = try Self.containerData(
+            topics: .init(entries: [
+                RemoteConfigTopic.adRewards.wireName: Self.adRewardsTopic(ref: initialRef)
+            ]),
+            contentElements: [(initialPayload, .none)]
+        )
+        await self.refresh(with: initialContainer)
+        let provider = ConfiguredAdRewardsProvider(manager: self.manager)
+        let initialRewards = await provider.rewards(forAdUnitId: "rewarded-ad-unit")
+
+        let expectedPayload = #"""
+        {"rewarded-ad-unit":{"reward":{"type":"virtual_currency","code":"coins","amount":20}}}
+        """#.asData
+        let invalidPayload = #"{"tampered":true}"#.asData
+        let expectedRef = RCContainerTestData.blobRef(for: expectedPayload)
+        let source = Self.blobSource("primary")
+        let replacementContainer = try Self.containerData(topics: .init(entries: [
+            RemoteConfigTopic.sources.wireName: Self.sourcesTopic(blobSources: [source]),
+            RemoteConfigTopic.adRewards.wireName: Self.adRewardsTopic(ref: expectedRef)
+        ]))
+        await self.downloader.setResponse(.success(invalidPayload), for: source, ref: expectedRef)
+        self.mockRemoteConfigResponse(body: replacementContainer)
+        self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
+        await self.waitForRemoteConfigRequestCount(2)
+        await expect(self.diskCache.read()?.topics.entries[RemoteConfigTopic.adRewards.wireName]?["default"]?.blobRef)
+            .toEventually(equal(expectedRef), timeout: Self.pollTimeout, pollInterval: Self.pollInterval)
+
+        let rewards = await provider.rewards(forAdUnitId: "rewarded-ad-unit")
+
+        expect(initialRewards?.reward?.virtualCurrency?.amount) == 10
+        expect(rewards).to(beNil())
+        expect(self.blobStore.read(ref: expectedRef)).to(beNil())
+    }
+
+    func testAdRewardsProviderKeepsUnchangedTopicOmittedFromIncrementalResponse() async throws {
+        let payload = Self.adRewardsPayload
+        let ref = RCContainerTestData.blobRef(for: payload)
+        let initialContainer = try Self.containerData(
+            topics: .init(entries: [
+                RemoteConfigTopic.adRewards.wireName: Self.adRewardsTopic(ref: ref)
+            ]),
+            contentElements: [(payload, .none)]
+        )
+        await self.refresh(with: initialContainer)
+
+        let unchangedConfiguration = RemoteConfiguration(
+            domain: RemoteConfiguration.defaultDomain,
+            manifest: "v1.1710000200.ad_rewards:etag1",
+            activeTopics: [RemoteConfigTopic.adRewards.wireName]
+        )
+        let unchangedContainer = try RCContainerTestData.compressedContainer(
+            config: JSONEncoder.default.encode(unchangedConfiguration)
+        )
+        self.mockRemoteConfigResponse(body: unchangedContainer)
+        self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
+        await self.waitForRemoteConfigRequestCount(2)
+        await self.waitForPersistedManifest(unchangedConfiguration.manifest)
+
+        let rewards = await ConfiguredAdRewardsProvider(manager: self.manager)
+            .rewards(forAdUnitId: "rewarded-ad-unit")
+
+        expect(rewards?.reward?.virtualCurrency?.amount) == 10
+        expect(self.blobStore.read(ref: ref)) == payload
+    }
+
+    func testAdRewardsProviderClearsCachedConfigurationWhenTopicIsRemoved() async throws {
+        let payload = Self.adRewardsPayload
+        let ref = RCContainerTestData.blobRef(for: payload)
+        let initialContainer = try Self.containerData(
+            topics: .init(entries: [
+                RemoteConfigTopic.adRewards.wireName: Self.adRewardsTopic(ref: ref)
+            ]),
+            contentElements: [(payload, .none)]
+        )
+        await self.refresh(with: initialContainer)
+        let provider = ConfiguredAdRewardsProvider(manager: self.manager)
+        let initialRewards = await provider.rewards(forAdUnitId: "rewarded-ad-unit")
+        expect(initialRewards).toNot(beNil())
+
+        let removedConfiguration = RemoteConfiguration(
+            domain: RemoteConfiguration.defaultDomain,
+            manifest: "v1.1710000200",
+            activeTopics: []
+        )
+        let removedContainer = try RCContainerTestData.compressedContainer(
+            config: JSONEncoder.default.encode(removedConfiguration)
+        )
+        self.mockRemoteConfigResponse(body: removedContainer)
+        self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
+        await self.waitForRemoteConfigRequestCount(2)
+        await self.waitForPersistedManifest(removedConfiguration.manifest)
+
+        let rewards = await provider.rewards(forAdUnitId: "rewarded-ad-unit")
+
+        expect(rewards) == .noConfiguredReward
+        expect(self.diskCache.read()?.topics.entries[RemoteConfigTopic.adRewards.wireName]).to(beNil())
+    }
+
     func testUncompressedConfigAndInlineBlobCanBeReadThroughFacade() async throws {
         let blob = #"{"workflow":"inline"}"#.asData
         let ref = RCContainerTestData.blobRef(for: blob)
@@ -849,6 +995,25 @@ private extension RemoteConfigIntegrationTests {
 
     static let manifest = "v1.1710000100.workflows:etag1,sources:etag1"
 
+    static let adRewardsPayload = #"""
+    {
+      "rewarded-ad-unit": {
+        "reward": {
+          "type": "virtual_currency",
+          "code": "coins",
+          "amount": 10
+        },
+        "more_rewards": [
+          {
+            "type": "entitlement",
+            "identifier": "premium",
+            "duration_in_seconds": 1800
+          }
+        ]
+      }
+    }
+    """#.asData
+
     static var disablingNetworkError: NetworkError {
         return .errorResponse(
             .init(code: .unknownError, originalCode: BackendErrorCode.unknownError.rawValue),
@@ -1088,6 +1253,12 @@ private extension RemoteConfigIntegrationTests {
 
     static func workflowTopic(items: RemoteConfiguration.ConfigTopic) -> RemoteConfiguration.ConfigTopic {
         return items
+    }
+
+    static func adRewardsTopic(ref: String) -> RemoteConfiguration.ConfigTopic {
+        return [
+            "default": .init(blobRef: ref, prefetch: true)
+        ]
     }
 
     static func sourcesTopic(

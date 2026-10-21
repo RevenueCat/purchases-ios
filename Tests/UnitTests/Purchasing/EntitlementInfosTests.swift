@@ -647,6 +647,24 @@ class EntitlementInfosTests: TestCase {
         expect(entitlement.ownershipType) == .unknown
     }
 
+    func testParseAssignedOwnershipTypeInEntitlementInfoAndSubscriptionInfo() throws {
+        stubResponse(entitlements: [
+                        "pro_cat": [
+                            "expires_date": "2200-07-26T23:50:40Z",
+                            "product_identifier": "monthly_freetrial",
+                            "purchase_date": "2019-07-26T23:45:40Z"
+                        ]
+                     ],
+                     subscriptions: mockSubscriptions(ownershipType: "ASSIGNED"))
+
+        let customerInfo = try CustomerInfo(data: response)
+        let entitlement = try XCTUnwrap(customerInfo.entitlements.active["pro_cat"])
+        let subscription = try XCTUnwrap(customerInfo.subscriptionsByProductIdentifier["monthly_freetrial"])
+
+        expect(entitlement.ownershipType) == .assigned
+        expect(subscription.ownershipType) == .assigned
+    }
+
     func testParseOwnershipTypeDefaultsToPurchasedIfMissing() throws {
         let mockEntitlements = [
             "pro_cat": [

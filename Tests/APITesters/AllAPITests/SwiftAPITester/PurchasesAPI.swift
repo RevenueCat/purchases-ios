@@ -65,6 +65,7 @@ func checkPurchasesEnums() {
     switch oType! {
     case .purchased,
          .familyShared,
+         .assigned,
          .unknown:
         print(oType!)
     @unknown default:
@@ -399,6 +400,7 @@ private func checkAsyncMethods(purchases: Purchases) async {
         )
 
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            let _: ConfiguredAdRewards? = await purchases.adRewards(forAdUnitId: "")
             let _: RewardVerificationResult = await purchases.pollRewardVerification(clientTransactionID: "")
             let _: RewardVerificationResult = await purchases.pollRewardVerification(
                 clientTransactionID: "",

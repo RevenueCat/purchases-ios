@@ -224,6 +224,36 @@ public struct AdReward : Swift.Sendable, Swift.Equatable {
   }
   public static func == (a: RevenueCat.AdReward, b: RevenueCat.AdReward) -> Swift.Bool
 }
+public struct ConfiguredAdRewards : Swift.Sendable, Swift.Equatable {
+  public static let noConfiguredReward: RevenueCat.ConfiguredAdRewards
+  public var reward: RevenueCat.AdRewardConfiguration? {
+    get
+  }
+  public var moreRewards: [RevenueCat.AdRewardConfiguration] {
+    get
+  }
+  public static func == (a: RevenueCat.ConfiguredAdRewards, b: RevenueCat.ConfiguredAdRewards) -> Swift.Bool
+}
+public struct AdRewardConfiguration : Swift.Sendable, Swift.Equatable {
+  public var virtualCurrency: RevenueCat.VirtualCurrencyRewardConfiguration? {
+    get
+  }
+  public var entitlement: RevenueCat.EntitlementRewardConfiguration? {
+    get
+  }
+  public static let unsupportedReward: RevenueCat.AdRewardConfiguration
+  public static func == (a: RevenueCat.AdRewardConfiguration, b: RevenueCat.AdRewardConfiguration) -> Swift.Bool
+}
+public struct VirtualCurrencyRewardConfiguration : Swift.Sendable, Swift.Equatable {
+  public let code: Swift.String
+  public let amount: Swift.Int
+  public static func == (a: RevenueCat.VirtualCurrencyRewardConfiguration, b: RevenueCat.VirtualCurrencyRewardConfiguration) -> Swift.Bool
+}
+public struct EntitlementRewardConfiguration : Swift.Sendable, Swift.Equatable {
+  public let identifier: Swift.String
+  public let duration: Foundation.TimeInterval
+  public static func == (a: RevenueCat.EntitlementRewardConfiguration, b: RevenueCat.EntitlementRewardConfiguration) -> Swift.Bool
+}
 public struct EntitlementReward : Swift.Sendable, Swift.Equatable {
   public let identifier: Swift.String
   public let expiresAt: Foundation.Date
@@ -2202,6 +2232,7 @@ extension RevenueCat.PackageType : Swift.Codable {
   case purchased = 0
   case familyShared = 1
   case unknown = 2
+  case assigned = 3
   public init?(rawValue: Swift.Int)
   public typealias RawValue = Swift.Int
   public var rawValue: Swift.Int {
@@ -2440,6 +2471,10 @@ extension RevenueCat.Purchases {
 extension RevenueCat.Purchases {
   @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
   public static let paywallImageDownloadSession: Foundation.URLSession
+}
+extension RevenueCat.Purchases {
+  @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+  final public func adRewards(forAdUnitId adUnitId: Swift.String) async -> RevenueCat.ConfiguredAdRewards?
 }
 extension RevenueCat.Purchases {
   @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
