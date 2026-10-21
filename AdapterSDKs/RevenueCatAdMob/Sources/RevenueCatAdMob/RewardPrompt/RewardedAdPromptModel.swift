@@ -217,7 +217,7 @@ final class RewardedAdPromptModel: NSObject, ObservableObject {
 
         self.dependencies.trackPromptAccepted(self.adUnitID, placement)
         guard let viewController = self.presentationAnchor?.rewardedAdPromptPresentationViewController else {
-            resultDispatcher.notPresented(.init(code: .presentationContextUnavailable))
+            resultDispatcher.notPresented(.init(code: .presentationContextUnavailable, underlyingError: nil))
             return
         }
 

@@ -44,7 +44,7 @@ final class RewardedAdPromptResultTests: AdapterTestCase {
 
             dispatcher.dismissed()
             dispatcher.dismissed()
-            dispatcher.notPresented(.init(code: .adFailedToPresent))
+            dispatcher.notPresented(.init(code: .adFailedToPresent, underlyingError: nil))
 
             XCTAssertEqual(receivedResults.count, 1)
             let result = try XCTUnwrap(receivedResults.first)
@@ -113,7 +113,7 @@ final class RewardedAdPromptResultTests: AdapterTestCase {
             receivedResults.append($0)
             delivered.fulfill()
         })
-        let error = RewardedAdPromptError(code: .presentationContextUnavailable)
+        let error = RewardedAdPromptError(code: .presentationContextUnavailable, underlyingError: nil)
 
         dispatcher?.notPresented(error)
         dispatcher?.notPresented(error)
@@ -170,7 +170,7 @@ final class RewardedAdPromptResultTests: AdapterTestCase {
     }
 
     func testPromptErrorDescriptionExplainsMissingPresentationContext() {
-        let error = RewardedAdPromptError(code: .presentationContextUnavailable)
+        let error = RewardedAdPromptError(code: .presentationContextUnavailable, underlyingError: nil)
 
         XCTAssertEqual(
             error.localizedDescription,
