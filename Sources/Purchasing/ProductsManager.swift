@@ -26,11 +26,18 @@ class ProductsManager: NSObject, ProductsManagerType {
     private let dateProvider: DateProvider
 
     private let _productsFetcherSK2: (any Sendable)?
+    private let _sk2ProductCache: (any Sendable)?
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     private var productsFetcherSK2: ProductsFetcherSK2 {
         // swiftlint:disable:next force_cast force_unwrapping
         return self._productsFetcherSK2! as! ProductsFetcherSK2
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    private var sk2ProductCache: ProductsCache<SK2StoreProduct> {
+        // swiftlint:disable:next force_cast force_unwrapping
+        return self._sk2ProductCache! as! ProductsCache<SK2StoreProduct>
     }
 
     init(
@@ -49,8 +56,10 @@ class ProductsManager: NSObject, ProductsManagerType {
 
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
             self._productsFetcherSK2 = ProductsFetcherSK2(installmentsInfoFactory: installmentsInfoFactory)
+            self._sk2ProductCache = ProductsCache<SK2StoreProduct>()
         } else {
             self._productsFetcherSK2 = nil
+            self._sk2ProductCache = nil
         }
     }
 
@@ -89,22 +98,32 @@ class ProductsManager: NSObject, ProductsManagerType {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func sk2Products(withIdentifiers identifiers: Set<String>, completion: @escaping SK2Completion) {
-        Async.call(with: completion) {
-            do {
-                let products = try await self.productsFetcherSK2.products(identifiers: identifiers)
-                Logger.debug(Strings.storeKit.store_product_request_finished)
-                return products
-            } catch let error as NSError {
-                Logger.debug(Strings.storeKit.store_products_request_failed(error))
-                throw ErrorUtils.storeProblemError(error: error)
+        // Both product APIs reach this cache, so offerings and eligibility share SK2 work.
+        self.sk2ProductCache.products(withIdentifiers: identifiers, completion: completion) { identifiers, completion in
+            Async.call(with: completion) {
+                do {
+                    let products = try await self.productsFetcherSK2.products(identifiers: identifiers)
+                    Logger.debug(Strings.storeKit.store_product_request_finished)
+                    return products
+                } catch let error as NSError {
+                    Logger.debug(Strings.storeKit.store_products_request_failed(error))
+                    throw ErrorUtils.storeProblemError(error: error)
+                }
             }
         }
     }
 
-    // This class does not implement caching.
-    // See `CachingProductsManager`.
-    func cache(_ product: StoreProductType) {}
+    func cache(_ product: StoreProductType) {
+        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
+           let sk2Product = StoreProduct.from(product: product).product as? SK2StoreProduct {
+            self.sk2ProductCache.cache([sk2Product])
+        }
+    }
+
     func clearCache() {
+        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
+            self.sk2ProductCache.clear()
+        }
         self.productsFetcherSK1.clearCache()
     }
 

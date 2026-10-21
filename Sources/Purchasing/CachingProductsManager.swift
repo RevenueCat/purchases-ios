@@ -21,32 +21,14 @@ final class CachingProductsManager {
 
     private let productCache = ProductsCache<StoreProduct>()
 
-    private let _sk2ProductCache: (any Sendable)?
-
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    private var sk2ProductCache: ProductsCache<SK2StoreProduct> {
-        // swiftlint:disable:next force_cast
-        return self._sk2ProductCache as! ProductsCache<SK2StoreProduct>
-    }
-
     init(manager: ProductsManagerType) {
         assert(!(manager is CachingProductsManager), "Decorating CachingProductsManager with itself")
 
         self.manager = manager
-
-        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
-            self._sk2ProductCache = ProductsCache<SK2StoreProduct>()
-        } else {
-            self._sk2ProductCache = nil
-        }
     }
 
     func clearCache() {
         self.productCache.clear()
-        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
-            self.sk2ProductCache.clear()
-        }
-
         self.manager.clearCache()
     }
 
@@ -62,13 +44,12 @@ extension CachingProductsManager: ProductsManagerType {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func sk2Products(withIdentifiers identifiers: Set<String>, completion: @escaping SK2Completion) {
-        self.sk2ProductCache.products(withIdentifiers: identifiers, completion: completion) { identifiers, completion in
-            self.manager.sk2Products(withIdentifiers: identifiers, completion: completion)
-        }
+        self.manager.sk2Products(withIdentifiers: identifiers, completion: completion)
     }
 
     func cache(_ product: StoreProductType) {
         self.productCache.cache([StoreProduct.from(product: product)])
+        self.manager.cache(product)
     }
 
     var requestTimeout: TimeInterval { return self.manager.requestTimeout }
