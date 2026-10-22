@@ -71,6 +71,7 @@
 		03C72FC32D349BAE00297FEC /* IconComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C72FBF2D349BAE00297FEC /* IconComponentView.swift */; };
 		03C7305B2D35985900297FEC /* TextComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C7305A2D35985500297FEC /* TextComponentTests.swift */; };
 		03C730F32D35F14600297FEC /* PaywallV2CacheWarming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C730F22D35F13F00297FEC /* PaywallV2CacheWarming.swift */; };
+		823C2D05ED65DFBCC005A8E8 /* PaywallComponent+ChildStacks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1070F2074ED0A56A6E070E60 /* PaywallComponent+ChildStacks.swift */; };
 		03E37BEA2D30B32200CD9678 /* PaywallTabsComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03E37BE92D30B32200CD9678 /* PaywallTabsComponent.swift */; };
 		03F0B6512DD5700D00E82199 /* LocalizationDictionaryExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F0B6502DD5700D00E82199 /* LocalizationDictionaryExtensions.swift */; };
 		03F0B6712DD6364100E82199 /* NavigatetoURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F0B6702DD6363B00E82199 /* NavigatetoURL.swift */; };
@@ -1858,6 +1859,7 @@
 		03C72FC02D349BAE00297FEC /* IconComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconComponentViewModel.swift; sourceTree = "<group>"; };
 		03C7305A2D35985500297FEC /* TextComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextComponentTests.swift; sourceTree = "<group>"; };
 		03C730F22D35F13F00297FEC /* PaywallV2CacheWarming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallV2CacheWarming.swift; sourceTree = "<group>"; };
+		1070F2074ED0A56A6E070E60 /* PaywallComponent+ChildStacks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PaywallComponent+ChildStacks.swift"; sourceTree = "<group>"; };
 		03CCFC172DE94FF70052B764 /* Paywall-Screenshots.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Paywall-Screenshots.xctestplan"; sourceTree = "<group>"; };
 		03E37BE92D30B32200CD9678 /* PaywallTabsComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallTabsComponent.swift; sourceTree = "<group>"; };
 		03F0B6502DD5700D00E82199 /* LocalizationDictionaryExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationDictionaryExtensions.swift; sourceTree = "<group>"; };
@@ -6875,6 +6877,7 @@
 				14C1ACED1916C08B0E8E2776 /* PaywallWebViewComponent.swift */,
 				16A7F4C02E563B89001F9FC8 /* Transitions */,
 				03C730F22D35F13F00297FEC /* PaywallV2CacheWarming.swift */,
+				1070F2074ED0A56A6E070E60 /* PaywallComponent+ChildStacks.swift */,
 				2CC791612CC0493600FBE120 /* Common */,
 				7707A94B2CAD93AC006E0313 /* PaywallButtonComponent.swift */,
 				E1C0A006BEEF0001CCDD0001 /* PaywallHeaderComponent.swift */,
@@ -8294,6 +8297,7 @@
 				2D00A41D2767C08300FC3DD8 /* ManageSubscriptionsStrings.swift in Sources */,
 				2DD9F4BE274EADC20031AE2C /* Purchases+async.swift in Sources */,
 				03C730F32D35F14600297FEC /* PaywallV2CacheWarming.swift in Sources */,
+				823C2D05ED65DFBCC005A8E8 /* PaywallComponent+ChildStacks.swift in Sources */,
 				FD6D87632FAE79E700CAF0F2 /* InstallmentsInfo.swift in Sources */,
 				167D67092EA151C400B4503F /* SynchronizedLargeItemCache.swift in Sources */,
 				B3C4AAD526B8911300E1B3C8 /* Backend.swift in Sources */,

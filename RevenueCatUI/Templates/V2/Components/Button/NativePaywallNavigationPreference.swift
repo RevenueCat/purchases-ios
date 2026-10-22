@@ -49,45 +49,20 @@ private extension PaywallComponent {
     // Only inspect components that belong to the paywall, never a button's inline sheet destination.
     func requestsNativeClose(discardRules: Bool) -> Bool {
         if case .button(let button) = self {
-            return button.requestsNativeClose(discardRules: discardRules)
+            let overrides = button.overrides?.filter { $0.canApply(discardRules: discardRules) } ?? []
+            guard button.visible != false || overrides.contains(where: { $0.properties.visible == true }) else {
+                return false
+            }
+            let canUseNative = button.useNativeIfPossible
+                || overrides.contains { $0.properties.useNativeIfPossible == true }
+            if canUseNative {
+                if button.isCloseWorkflowAction { return true }
+                if case .navigateBack = button.action { return true }
+            }
         }
-        return self.nativeNavigationStacks.contains { $0.requestsNativeClose(discardRules: discardRules) }
-    }
-
-    var nativeNavigationStacks: [PaywallComponent.StackComponent] {
-        switch self {
-        case .stack(let stack): return [stack]
-        case .package(let package): return [package.stack]
-        case .purchaseButton(let button): return [button.stack]
-        case .stickyFooter(let footer): return [footer.stack]
-        case .tabs(let tabs): return [tabs.control.stack] + tabs.tabs.map { $0.stack }
-        case .tabControlButton(let button): return [button.stack]
-        case .carousel(let carousel): return carousel.pages
-        case .countdown(let countdown):
-            return [countdown.countdownStack, countdown.endStack, countdown.fallback].compactMap { $0 }
-        case .button, .text, .image, .icon, .timeline, .tabControl, .tabControlToggle,
-             .video, .webView, .fallbackHeader:
-            return []
-        @unknown default:
-            return []
+        return self.childStacks(includeSheetDestinations: false).contains {
+            $0.requestsNativeClose(discardRules: discardRules)
         }
-    }
-}
-
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, *)
-private extension PaywallComponent.ButtonComponent {
-    func requestsNativeClose(discardRules: Bool) -> Bool {
-        let overrides = self.overrides?.filter { $0.canApply(discardRules: discardRules) } ?? []
-        guard self.visible != false || overrides.contains(where: { $0.properties.visible == true }) else {
-            return false
-        }
-        let canUseNative = self.useNativeIfPossible
-            || overrides.contains { $0.properties.useNativeIfPossible == true }
-        if canUseNative {
-            if self.isCloseWorkflowAction { return true }
-            if case .navigateBack = self.action { return true }
-        }
-        return self.stack.requestsNativeClose(discardRules: discardRules)
     }
 }
 
