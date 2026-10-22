@@ -20,7 +20,7 @@ protocol ProductsManagerType: Sendable {
     typealias Completion = (Result<Set<StoreProduct>, PurchasesError>) -> Void
 
     /// Fetches the ``StoreProduct``s with the given identifiers
-    /// The returned products are backed by SK1, SK2, or Test Store, depending on the configuration.
+    /// The returned products are backed by SK1, SK2, or Simulated Store, depending on the configuration.
     func products(withIdentifiers identifiers: Set<String>, completion: @escaping Completion)
 
     /// Adds the products to the internal cache
