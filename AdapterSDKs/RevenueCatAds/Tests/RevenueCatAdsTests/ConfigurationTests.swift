@@ -129,18 +129,16 @@ final class AdsConfigureTests: TestCase {
         try await super.setUp()
         let module = FakeAdModule()
         self.module = module
-        RCAds.makeModule = { module }
         RCAds.reset()
     }
 
     override func tearDown() async throws {
-        RCAds.makeModule = { PrebidAdModule() }
         RCAds.reset()
         try await super.tearDown()
     }
 
     func testConfigureInitializesModule() throws {
-        try RCAds.configure(with: AdsConfiguration(apiKey: "appl_key", serverURL: makeURL("http://localhost:8080")))
+        try self.configure(AdsConfiguration(apiKey: "appl_key", serverURL: makeURL("http://localhost:8080")))
 
         XCTAssertTrue(RCAds.module === self.module)
         XCTAssertEqual(self.module.initializedConfigurations, [
@@ -154,20 +152,25 @@ final class AdsConfigureTests: TestCase {
     func testConfigureFailureLeavesAdsUnconfigured() {
         self.module.initializeError = AdsError(code: .invalidConfiguration, message: "rejected")
 
-        XCTAssertThrowsError(try RCAds.configure(with: AdsConfiguration(apiKey: "appl_key"))) {
+        XCTAssertThrowsError(try self.configure(AdsConfiguration(apiKey: "appl_key"))) {
             XCTAssertEqual(($0 as? AdsError)?.code, .invalidConfiguration)
         }
         XCTAssertNil(RCAds.module)
     }
 
     func testInterstitialUsesConfiguredModule() async throws {
-        try RCAds.configure(with: AdsConfiguration(apiKey: "appl_key"))
+        try self.configure(AdsConfiguration(apiKey: "appl_key"))
         self.module.interstitialEvent = .loaded
 
         let interstitial = AdsInterstitial(placementID: "placement")
         try await interstitial.load()
 
         XCTAssertEqual(self.module.lastInterstitial?.placementID, "placement")
+    }
+
+    private func configure(_ configuration: AdsConfiguration) throws {
+        let module: FakeAdModule = self.module
+        try RCAds.configure(with: configuration, makeModule: { module })
     }
 
 }

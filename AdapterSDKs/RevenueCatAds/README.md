@@ -68,7 +68,7 @@ This package exposes its Swift API as experimental via `@_spi(Experimental)`.
   RevenueCat ad serving API
 ```
 
-To swap the ad SDK, add another `AdModule` implementation and return it from `RCAds.makeModule`.
+To swap the ad SDK, add another `AdModule` implementation and create it in `RCAds.configure(with:)`.
 
 ### Ad event tracking
 
