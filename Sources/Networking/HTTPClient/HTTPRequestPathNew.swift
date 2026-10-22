@@ -318,4 +318,10 @@ extension HTTPRequest.Path2 {
                                                           supportsSignatureVerification: true,
                                                           needsNonceForSigning: true,
                                                           pathComponent: "customer/virtual_currencies/spend")
+
+    static let postRedeemWebPurchase = HTTPRequest.Path2(name: "post_redeem_web_purchase",
+                                                         etagBehavior: .send,
+                                                         supportsSignatureVerification: true,
+                                                         needsNonceForSigning: true,
+                                                         pathComponent: "subscribers/redeem_purchase")
 }

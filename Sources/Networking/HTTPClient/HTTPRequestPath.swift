@@ -177,7 +177,6 @@ extension HTTPRequest {
 
         case logIn
         case health
-        case postRedeemWebPurchase
         case postExternalPurchaseToken
         case postCreateTicket
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
@@ -238,7 +237,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
     var authenticated: Bool {
         switch self {
         case .logIn,
-                .postRedeemWebPurchase,
                 .postExternalPurchaseToken,
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
@@ -257,7 +255,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
     var shouldSendEtag: Bool {
         switch self {
         case .logIn,
-                .postRedeemWebPurchase,
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
                 .rewardVerificationStatus,
@@ -275,7 +272,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
     var supportsSignatureVerification: Bool {
         switch self {
         case .logIn,
-                .postRedeemWebPurchase,
                 .health,
                 .isPurchaseAllowedByRestoreBehavior,
                 .remoteConfig,
@@ -293,7 +289,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
     var needsNonceForSigning: Bool {
         switch self {
         case .logIn,
-                .postRedeemWebPurchase,
                 .health,
                 .isPurchaseAllowedByRestoreBehavior,
                 .remoteConfig,
@@ -338,9 +333,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .health:
             return "health"
 
-        case .postRedeemWebPurchase:
-            return "subscribers/redeem_purchase"
-
         case .postExternalPurchaseToken:
             return "external_purchase_tokens"
 
@@ -384,8 +376,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return self.pathComponent
         case .health:
             return self.pathComponent
-        case .postRedeemWebPurchase:
-            return self.pathComponent
         case .postExternalPurchaseToken:
             return self.pathComponent
         case .postCreateTicket:
@@ -412,9 +402,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .health:
             return "post_health"
-
-        case .postRedeemWebPurchase:
-            return "post_redeem_web_purchase"
 
         case .postExternalPurchaseToken:
             return "post_external_purchase_token"

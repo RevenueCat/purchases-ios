@@ -27,7 +27,6 @@ class HTTPRequestTests: TestCase {
 
     private static let paths: [HTTPRequest.Path] = [
         .logIn,
-        .postRedeemWebPurchase,
         .health,
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil),
         .remoteConfig(domain: "app"),
@@ -43,14 +42,12 @@ class HTTPRequestTests: TestCase {
     ]
     private static let pathsWithSignatureVerification: Set<HTTPRequest.Path> = [
         .logIn,
-        .postRedeemWebPurchase,
         .health,
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil),
         .remoteConfig(domain: "app")
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path> = [
         .logIn,
-        .postRedeemWebPurchase,
         .health,
         .remoteConfig(domain: "app"),
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil)
@@ -548,7 +545,6 @@ class HTTPRequestTests: TestCase {
     /// relative path it should resolve to when IAM access-token authorization is preferred.
     private static let iamPathComponentsByPath: [HTTPRequest.Path: String] = [
         .health: "health",
-        .postRedeemWebPurchase: "subscribers/redeem_purchase",
         .postCreateTicket: "customercenter/support/create-ticket",
         .isPurchaseAllowedByRestoreBehavior(appUserID: userID): "customer/restore/eligibility",
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil):
@@ -843,6 +839,7 @@ class HTTPRequestTests2: TestCase {
     private static let clientTransactionID = "AABBCCDD-1111-2222-3333-444455556666"
 
     private static let paths: [HTTPRequest.Path2] = [
+        .postRedeemWebPurchase,
         .getCustomerInfo(appUserID: userID),
         .getOfferings(appUserID: userID),
         .getIntroEligibility(appUserID: userID),
@@ -857,6 +854,7 @@ class HTTPRequestTests2: TestCase {
     private static let unauthenticatedPaths: Set<HTTPRequest.Path2> = []
     private static let pathsWithoutETags: Set<HTTPRequest.Path2> = []
     private static let pathsWithSignatureVerification: Set<HTTPRequest.Path2> = [
+        .postRedeemWebPurchase,
         .getCustomerInfo(appUserID: userID),
         .getOfferings(appUserID: userID),
         .postReceiptData,
@@ -867,6 +865,7 @@ class HTTPRequestTests2: TestCase {
         .spendVirtualCurrencies
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path2> = [
+        .postRedeemWebPurchase,
         .getCustomerInfo(appUserID: userID),
         .postReceiptData,
         .appHealthReportAvailability(appUserID: userID),
@@ -1358,6 +1357,7 @@ class HTTPRequestTests2: TestCase {
     /// Maps each `HTTPRequest.Path` case (other than `.logIn`, which is disallowed under IAM) to the
     /// relative path it should resolve to when IAM access-token authorization is preferred.
     private static let iamPathComponentsByPath: [HTTPRequest.Path2: String] = [
+        .postRedeemWebPurchase: "subscribers/redeem_purchase",
         .getOfferings(appUserID: userID): "customer/offerings",
         .getIntroEligibility(appUserID: userID): "customer/intro_eligibility",
         .postAttributionData(appUserID: userID): "customer/attribution",

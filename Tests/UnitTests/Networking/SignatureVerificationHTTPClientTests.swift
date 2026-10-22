@@ -915,7 +915,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         )
 
         self.mockResponse(
-            path: HTTPRequest.Path.postRedeemWebPurchase,
+            path: HTTPRequest.Path2.postRedeemWebPurchase,
             signature: Self.sampleSignature,
             requestDate: Self.date1,
             body: responseContent,
@@ -942,7 +942,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         )
 
         expect(signingRequest.parameters.path.relativePath)
-            == HTTPRequest.Path.postRedeemWebPurchase.relativePath
+            == HTTPRequest.Path2.postRedeemWebPurchase.relativePath
         expect(signingRequest.parameters.nonce) == request.nonce
         expect(signingBody.appUserID) == requestBody.appUserID
         expect(signingBody.redemptionToken) == requestBody.redemptionToken

@@ -1592,4 +1592,8 @@ extension HTTPRequest {
         return .init(method: method, path: path, nonce: Data.randomNonce())
     }
 
+    static func createWithResponseVerification(method: Method, path: Path2) -> Self {
+        return .init(method: method, path: path, nonce: Data.randomNonce())
+    }
+
 }
