@@ -2267,7 +2267,7 @@ SWIFT_CLASS("_TtC10RevenueCat18ProductsFetcherSK1")
 - (void)request:(SKRequest * _Nonnull)request didFailWithError:(NSError * _Nonnull)error;
 @end
 
-/// Basic implemenation of a <code>ProductsManagerType</code>
+/// Fetches Apple products using the configured StoreKit version.
 SWIFT_CLASS("_TtC10RevenueCat15ProductsManager")
 @interface ProductsManager : NSObject
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
