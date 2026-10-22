@@ -30,7 +30,9 @@ extension HTTPRequest {
         }
 
         /// The base URL for requests to this path.
-        var serverHostURL: URL
+        var serverHostURL: URL { self.customServerHostURL ?? Self.serverHostURL }
+
+        private var customServerHostURL: URL?
 
         /// The fallback URLs to use when the main server is down.
         ///
@@ -104,7 +106,7 @@ extension HTTPRequest {
              responseSignatureContextProvider: ResponseSignatureContextProvider? = nil,
              isIAMPath: Bool = false) {
 
-            self.serverHostURL = serverHostURL ?? Self.serverHostURL
+            self.customServerHostURL = serverHostURL
             self.authenticated = authenticated
             self.etagBehavior = etagBehavior
             self.supportsSignatureVerification = supportsSignatureVerification

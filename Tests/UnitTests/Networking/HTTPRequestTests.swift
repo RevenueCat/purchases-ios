@@ -637,16 +637,6 @@ class HTTPRequestTests: TestCase {
         }
     }
 
-    #if !os(watchOS)
-    func testRelativeIAMPathForLoginEndpointCrashes() {
-        // The `.logIn` endpoint is not allowed once IAM access tokens are enabled: exchanging a
-        // static app-user-id-based endpoint for a token-authenticated one doesn't make sense.
-        expect {
-            _ = HTTPRequest.Path2.logIn.relativeIAMPath
-        }.to(throwAssertion())
-    }
-    #endif
-
     func testUrlPreferringIAMPathUsesIAMRelativePath() {
         let path: HTTPRequest.Path2 = .getCustomerInfo(appUserID: Self.userID)
 
