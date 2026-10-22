@@ -177,7 +177,6 @@ extension HTTPRequest {
 
         case logIn
         case health
-        case rewardVerificationStatus(appUserID: String, clientTransactionID: String, adUnitID: String?)
         case remoteConfig(domain: String)
 
         case tokenLogin
@@ -234,7 +233,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
     var authenticated: Bool {
         switch self {
         case .logIn,
-                .rewardVerificationStatus,
                 .remoteConfig,
                 .tokenLogin,
                 .tokenRefresh,
@@ -249,7 +247,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
     var shouldSendEtag: Bool {
         switch self {
         case .logIn,
-                .rewardVerificationStatus,
                 .tokenLogin,
                 .tokenRefresh,
                 .tokenLogOut:
@@ -264,8 +261,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .logIn,
                 .health,
-                .remoteConfig,
-                .rewardVerificationStatus:
+                .remoteConfig:
             return true
         case .tokenLogin,
                 .tokenRefresh,
@@ -279,7 +275,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .logIn,
                 .health,
                 .remoteConfig,
-                .rewardVerificationStatus,
                 .tokenLogin,
                 .tokenRefresh,
                 .tokenLogOut:
@@ -317,16 +312,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .health:
             return "health"
 
-        case let .rewardVerificationStatus(appUserID, clientTransactionID, adUnitID):
-            let path = "subscribers/\(Self.escape(appUserID))/ads/reward_verifications/"
-                + Self.escape(clientTransactionID)
-            guard let adUnitID = adUnitID?.notEmptyOrWhitespaces,
-                  let encodedAdUnitID = adUnitID.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
-            else {
-                return path
-            }
-            return "\(path)?ad_unit_id=\(encodedAdUnitID)"
-
         case let .remoteConfig(domain):
             return "config/\(Self.escape(domain))"
 
@@ -352,8 +337,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return self.pathComponent
         case .health:
             return self.pathComponent
-        case .rewardVerificationStatus:
-            return self.pathComponent
         case .remoteConfig:
             return self.pathComponent
         case .tokenLogin:
@@ -372,9 +355,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .health:
             return "post_health"
-
-        case .rewardVerificationStatus:
-            return "get_reward_verification_status"
 
         case .remoteConfig:
             return "remote_config"

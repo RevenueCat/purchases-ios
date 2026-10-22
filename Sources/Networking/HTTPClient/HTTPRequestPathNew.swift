@@ -346,4 +346,19 @@ extension HTTPRequest.Path2 {
                           pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/restore/eligibility",
                           iamPathComponent: "customer/restore/eligibility")
     }
+
+    static func rewardVerificationStatus(appUserID: String, clientTransactionID: String, adUnitID: String?) -> Self {
+        let txn = clientTransactionID.trimmedAndEscaped
+        var path = "subscribers/\(appUserID.trimmedAndEscaped)/ads/reward_verifications/\(txn)"
+        if let adUnitID = adUnitID?.notEmptyOrWhitespaces,
+           let encodedAdUnitID = adUnitID.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
+            path += "?ad_unit_id=\(encodedAdUnitID)"
+        }
+
+        return HTTPRequest.Path2(name: "get_reward_verification_status",
+                                 etagBehavior: .send,
+                                 supportsSignatureVerification: true,
+                                 needsNonceForSigning: true,
+                                 pathComponent: path)
+    }
 }

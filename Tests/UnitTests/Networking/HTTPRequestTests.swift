@@ -28,7 +28,6 @@ class HTTPRequestTests: TestCase {
     private static let paths: [HTTPRequest.Path] = [
         .logIn,
         .health,
-        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil),
         .remoteConfig(domain: "app")
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path> = [
@@ -41,14 +40,12 @@ class HTTPRequestTests: TestCase {
     private static let pathsWithSignatureVerification: Set<HTTPRequest.Path> = [
         .logIn,
         .health,
-        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil),
         .remoteConfig(domain: "app")
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path> = [
         .logIn,
         .health,
-        .remoteConfig(domain: "app"),
-        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil)
+        .remoteConfig(domain: "app")
     ]
     private static let pathsWithUserID: [HTTPRequest.Path] = [
     ]
@@ -543,13 +540,11 @@ class HTTPRequestTests: TestCase {
     /// relative path it should resolve to when IAM access-token authorization is preferred.
     private static let iamPathComponentsByPath: [HTTPRequest.Path: String] = [
         .health: "health",
-        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil):
-            "subscribers/\(userID)/ads/reward_verifications/\(clientTransactionID)",
         .remoteConfig(domain: "app"): "config/app"
     ]
 
     func testRewardVerificationStatusPathIncludesAdUnitIDQueryParameter() {
-        let path: HTTPRequest.Path = .rewardVerificationStatus(
+        let path: HTTPRequest.Path2 = .rewardVerificationStatus(
             appUserID: Self.userID,
             clientTransactionID: Self.clientTransactionID,
             adUnitID: "ad_unit"
@@ -562,7 +557,7 @@ class HTTPRequestTests: TestCase {
     }
 
     func testRewardVerificationStatusPathKeepsAdUnitIDSlashAndPercentEncodesUnsafeCharacters() {
-        let path: HTTPRequest.Path = .rewardVerificationStatus(
+        let path: HTTPRequest.Path2 = .rewardVerificationStatus(
             appUserID: Self.userID,
             clientTransactionID: Self.clientTransactionID,
             adUnitID: "ca-app-pub-123/456 é"
@@ -576,7 +571,7 @@ class HTTPRequestTests: TestCase {
         let expected = "/v1/subscribers/\(Self.userID)/ads/reward_verifications/\(Self.clientTransactionID)"
 
         for adUnitID in [nil, "", "  "] {
-            let path: HTTPRequest.Path = .rewardVerificationStatus(
+            let path: HTTPRequest.Path2 = .rewardVerificationStatus(
                 appUserID: Self.userID,
                 clientTransactionID: Self.clientTransactionID,
                 adUnitID: adUnitID
@@ -848,7 +843,8 @@ class HTTPRequestTests2: TestCase {
         .spendVirtualCurrencies,
         .postExternalPurchaseToken,
         .postCreateTicket,
-        .isPurchaseAllowedByRestoreBehavior(appUserID: userID)
+        .isPurchaseAllowedByRestoreBehavior(appUserID: userID),
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil)
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path2> = []
     private static let pathsWithoutETags: Set<HTTPRequest.Path2> = [.postExternalPurchaseToken]
@@ -862,7 +858,8 @@ class HTTPRequestTests2: TestCase {
         .getProductEntitlementMapping,
         .getVirtualCurrencies(appUserID: userID),
         .spendVirtualCurrencies,
-        .isPurchaseAllowedByRestoreBehavior(appUserID: userID)
+        .isPurchaseAllowedByRestoreBehavior(appUserID: userID),
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil)
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path2> = [
         .postRedeemWebPurchase,
@@ -871,7 +868,8 @@ class HTTPRequestTests2: TestCase {
         .appHealthReportAvailability(appUserID: userID),
         .getVirtualCurrencies(appUserID: userID),
         .spendVirtualCurrencies,
-        .isPurchaseAllowedByRestoreBehavior(appUserID: userID)
+        .isPurchaseAllowedByRestoreBehavior(appUserID: userID),
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil)
     ]
     private static let pathsWithUserID: [HTTPRequest.Path2] = [
         .getCustomerInfo(appUserID: anonymousUser),
@@ -1375,11 +1373,13 @@ class HTTPRequestTests2: TestCase {
         .spendVirtualCurrencies: "customer/virtual_currencies/spend",
         .postExternalPurchaseToken: "external_purchase_tokens",
         .postCreateTicket: "customercenter/support/create-ticket",
-        .isPurchaseAllowedByRestoreBehavior(appUserID: userID): "customer/restore/eligibility"
+        .isPurchaseAllowedByRestoreBehavior(appUserID: userID): "customer/restore/eligibility",
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil):
+            "subscribers/\(userID)/ads/reward_verifications/\(clientTransactionID)"
     ]
 
     func testRewardVerificationStatusPathIncludesAdUnitIDQueryParameter() {
-        let path: HTTPRequest.Path = .rewardVerificationStatus(
+        let path: HTTPRequest.Path2 = .rewardVerificationStatus(
             appUserID: Self.userID,
             clientTransactionID: Self.clientTransactionID,
             adUnitID: "ad_unit"
@@ -1392,7 +1392,7 @@ class HTTPRequestTests2: TestCase {
     }
 
     func testRewardVerificationStatusPathKeepsAdUnitIDSlashAndPercentEncodesUnsafeCharacters() {
-        let path: HTTPRequest.Path = .rewardVerificationStatus(
+        let path: HTTPRequest.Path2 = .rewardVerificationStatus(
             appUserID: Self.userID,
             clientTransactionID: Self.clientTransactionID,
             adUnitID: "ca-app-pub-123/456 é"
@@ -1406,7 +1406,7 @@ class HTTPRequestTests2: TestCase {
         let expected = "/v1/subscribers/\(Self.userID)/ads/reward_verifications/\(Self.clientTransactionID)"
 
         for adUnitID in [nil, "", "  "] {
-            let path: HTTPRequest.Path = .rewardVerificationStatus(
+            let path: HTTPRequest.Path2 = .rewardVerificationStatus(
                 appUserID: Self.userID,
                 clientTransactionID: Self.clientTransactionID,
                 adUnitID: adUnitID
