@@ -252,6 +252,41 @@ final class PaywallCacheWarmingTests: TestCase {
         await self.fulfillment(of: [first, second], timeout: 5)
     }
 
+    func testDirectEligibilityRequestCompletesWhileCurrentOfferingWarmupIsPending() async throws {
+        let checker = DelayedIntroEligibilityChecker()
+        self.delayedEligibilityChecker = checker
+        let cachingChecker = CachingTrialOrIntroPriceEligibilityChecker(checker: checker)
+        self.cache = PaywallCacheWarming(
+            introEligibiltyChecker: cachingChecker,
+            webBundleURLBatcher: self.mockWebBundleURLBatcher
+        )
+        let offerings = try Self.eligibilityOfferings(current: "current", other: ["other"])
+        let first = self.startEligibilityWarmup(offerings)
+        await expect(checker.invocations).toEventually(equal([["current"]]))
+
+        let second = self.startEligibilityWarmup(offerings)
+        try await self.waitForWarmupJoins(count: 1)
+
+        // A displayed paywall checks eligibility directly, even when its product is queued for warm-up.
+        let requested: [String: IntroEligibility] = ["other": .init(eligibilityStatus: .eligible)]
+        let requestFinished = self.expectation(description: "Direct eligibility request finished")
+        cachingChecker.checkEligibility(productIdentifiers: ["other"]) { result in
+            expect(result) == requested
+            requestFinished.fulfill()
+        }
+        await expect(checker.invocations).toEventually(equal([["current"], ["other"]]))
+
+        checker.complete(productIdentifiers: ["other"], with: requested)
+        await self.fulfillment(of: [requestFinished], timeout: 5)
+
+        // Only release the current offering after the unrelated request has delivered its result.
+        checker.complete(productIdentifiers: ["current"], with: ["current": .init(eligibilityStatus: .ineligible)])
+        await self.fulfillment(of: [first, second], timeout: 5)
+
+        // The remaining warm-up reuses the result of the direct request without checking it again.
+        expect(checker.invocations) == [["current"], ["other"]]
+    }
+
     func testProductsAddedDuringRemainingCheckAreWarmedInPriorityOrder() async throws {
         let checker = self.useDelayedEligibilityChecker()
         let first = self.startEligibilityWarmup(
