@@ -30,24 +30,10 @@ class TokenAPI {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: currentAppUserID)
 
-        let linkedIdentity: TokenLogInOperation.LinkedIdentity?
-        if identity.authToken.authenticationMethod == .anonymous {
-            // when doing an anonymous login, only link it to an existing app user id if it is also
-            // an anonymous identity
-            if IdentityManager.userIsAnonymous(currentAppUserID) {
-                linkedIdentity = .appUserID(currentAppUserID)
-            } else {
-                linkedIdentity = nil
-            }
-        } else if let linkToID = tokenManager.idToken(for: currentAppUserID) {
-            linkedIdentity = .idToken(linkToID)
-        } else {
-            linkedIdentity = nil
-        }
-
+        let linkToID = tokenManager.idToken(for: currentAppUserID)
         let factory = TokenLogInOperation.createFactory(configuration: config,
                                                         token: identity.authToken,
-                                                        linkedIdentity: linkedIdentity,
+                                                        linkToIDToken: linkToID,
                                                         tokenCallbackCache: self.tokenCallbacksCache)
 
         let tokenCallback = TokenCallback(cacheKey: factory.cacheKey) { result in
