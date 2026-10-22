@@ -36,6 +36,8 @@ struct NativeAnalyticsFixtureView: View {
                     self.paywall
                         .onRequestedDismissal { self.presented = false }
                         .navigationTitle("Analytics paywall")
+                        // Keep the header button's XCTest tap point below the caller's navigation bar.
+                        .navigationBarTitleDisplayMode(.inline)
                 } else {
                     Text("Paywall dismissed")
                 }
