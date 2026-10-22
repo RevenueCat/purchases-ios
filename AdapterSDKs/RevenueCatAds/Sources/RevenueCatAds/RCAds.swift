@@ -14,8 +14,6 @@ import Foundation
 @MainActor
 @_spi(Experimental) public final class RCAds {
 
-    static var makeModule: () -> AdModule = { PrebidAdModule() }
-
     private(set) static var module: AdModule?
 
     private init() {}
@@ -27,11 +25,15 @@ import Foundation
     /// - Throws: ``AdsError`` with code ``AdsError/Code/notConfigured`` or
     ///   ``AdsError/Code/invalidConfiguration``.
     public static func configure(with configuration: AdsConfiguration = AdsConfiguration()) throws {
+        try Self.configure(with: configuration, makeModule: { PrebidAdModule() })
+    }
+
+    static func configure(with configuration: AdsConfiguration, makeModule: () -> AdModule) throws {
         let resolved = try configuration.resolve(
             purchasesAPIKey: Purchases.isConfigured ? Purchases.shared.apiKey : nil,
             purchasesProxyURL: Purchases.proxyURL
         )
-        let module = Self.makeModule()
+        let module = makeModule()
         try module.initialize(with: resolved)
         Self.module = module
     }
