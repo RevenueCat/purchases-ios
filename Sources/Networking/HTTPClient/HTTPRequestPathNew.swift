@@ -361,4 +361,18 @@ extension HTTPRequest.Path2 {
                                  needsNonceForSigning: true,
                                  pathComponent: path)
     }
+
+    static func remoteConfig(domain: String) -> Self {
+        HTTPRequest.Path2(name: "remote_config",
+                          etagBehavior: .ignore,
+                          supportsSignatureVerification: true,
+                          needsNonceForSigning: true,
+                          pathComponent: "config/\(domain.trimmedAndEscaped)",
+                          additionalHeaders: [
+                            HTTPClient.RequestHeader.accept.rawValue: HTTPClient.rcContainerFormatAcceptHeaderValue,
+                            HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue:
+                                HTTPClient.rcContainerFormatElementEncodingHeaderValue
+                          ],
+                          responseSignatureContextProvider: RemoteConfigSignatureContextProvider())
+    }
 }

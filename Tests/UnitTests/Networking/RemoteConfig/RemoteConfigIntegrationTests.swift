@@ -835,7 +835,7 @@ final class RemoteConfigIntegrationTests: TestCase {
 
     func testEnforcedVerificationFailureDoesNotPersistResponse() async throws {
         self.mockRemoteConfigError(.signatureVerificationFailed(
-            path: HTTPRequest.Path.remoteConfig(domain: RemoteConfiguration.defaultDomain),
+            path: HTTPRequest.Path2.remoteConfig(domain: RemoteConfiguration.defaultDomain),
             code: .success
         ))
 
@@ -1087,7 +1087,7 @@ private extension RemoteConfigIntegrationTests {
                 requestDate?.millisecondsSince1970.description
         ].compactMapValues { $0 }
         self.httpClient.mock(
-            requestPath: HTTPRequest.Path.remoteConfig(domain: RemoteConfiguration.defaultDomain),
+            requestPath: .remoteConfig(domain: RemoteConfiguration.defaultDomain),
             response: .init(
                 statusCode: statusCode,
                 body: body,
@@ -1111,7 +1111,7 @@ private extension RemoteConfigIntegrationTests {
 
     func mockRemoteConfigError(_ error: NetworkError) {
         self.httpClient.mock(
-            requestPath: HTTPRequest.Path.remoteConfig(domain: RemoteConfiguration.defaultDomain),
+            requestPath: .remoteConfig(domain: RemoteConfiguration.defaultDomain),
             response: .init(error: error)
         )
     }
@@ -1128,7 +1128,7 @@ private extension RemoteConfigIntegrationTests {
     }
 
     var remoteConfigCalls: [MockHTTPClient.Call] {
-        let url = HTTPRequest.Path.remoteConfig(domain: RemoteConfiguration.defaultDomain).url(preferIAMPath: false)
+        let url = HTTPRequest.Path2.remoteConfig(domain: RemoteConfiguration.defaultDomain).url(preferIAMPath: false)
         return self.httpClient.calls.filter {
             $0.request.path.url(preferIAMPath: false) == url
         }

@@ -27,25 +27,21 @@ class HTTPRequestTests: TestCase {
 
     private static let paths: [HTTPRequest.Path] = [
         .logIn,
-        .health,
-        .remoteConfig(domain: "app")
+        .health
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path> = [
         .health
     ]
     private static let pathsWithoutETags: Set<HTTPRequest.Path> = [
-        .health,
-        .remoteConfig(domain: "app")
+        .health
     ]
     private static let pathsWithSignatureVerification: Set<HTTPRequest.Path> = [
         .logIn,
-        .health,
-        .remoteConfig(domain: "app")
+        .health
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path> = [
         .logIn,
-        .health,
-        .remoteConfig(domain: "app")
+        .health
     ]
     private static let pathsWithUserID: [HTTPRequest.Path] = [
     ]
@@ -172,7 +168,7 @@ class HTTPRequestTests: TestCase {
     }
 
     func testRemoteConfigPathEscapesDomain() {
-        let path = HTTPRequest.Path.remoteConfig(domain: "app workflows/project")
+        let path = HTTPRequest.Path2.remoteConfig(domain: "app workflows/project")
 
         expect(path.relativePath) == "/v1/config/app%20workflows%2Fproject"
         expect(path.fallbackUrls).to(beEmpty())
@@ -194,7 +190,7 @@ class HTTPRequestTests: TestCase {
     }
 
     func testMainPathsAreNotFallbackHostPaths() {
-        expect(HTTPRequest.Path.remoteConfig(domain: "app").isFallbackHostPath).to(beFalse())
+        expect(HTTPRequest.Path2.remoteConfig(domain: "app").isFallbackHostPath).to(beFalse())
         expect(HTTPRequest.Path2.getOfferings(appUserID: "user").isFallbackHostPath).to(beFalse())
         expect(HTTPRequest.Path.logIn.isFallbackHostPath).to(beFalse())
     }
@@ -481,7 +477,7 @@ class HTTPRequestTests: TestCase {
     func testRemoteConfigUsesRCContainerAcceptHeaders() {
         let request: HTTPRequest = .init(
             method: .post(RemoteConfigRequest(fetchContext: .appStart, appUserID: "app-user-id")),
-            path: HTTPRequest.Path.remoteConfig(domain: "app")
+            path: .remoteConfig(domain: "app")
         )
         let headers = request.headers(
             with: [:],
@@ -539,8 +535,7 @@ class HTTPRequestTests: TestCase {
     /// Maps each `HTTPRequest.Path` case (other than `.logIn`, which is disallowed under IAM) to the
     /// relative path it should resolve to when IAM access-token authorization is preferred.
     private static let iamPathComponentsByPath: [HTTPRequest.Path: String] = [
-        .health: "health",
-        .remoteConfig(domain: "app"): "config/app"
+        .health: "health"
     ]
 
     func testRewardVerificationStatusPathIncludesAdUnitIDQueryParameter() {
@@ -844,10 +839,14 @@ class HTTPRequestTests2: TestCase {
         .postExternalPurchaseToken,
         .postCreateTicket,
         .isPurchaseAllowedByRestoreBehavior(appUserID: userID),
-        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil)
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil),
+        .remoteConfig(domain: "app")
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path2> = []
-    private static let pathsWithoutETags: Set<HTTPRequest.Path2> = [.postExternalPurchaseToken]
+    private static let pathsWithoutETags: Set<HTTPRequest.Path2> = [
+        .postExternalPurchaseToken,
+        .remoteConfig(domain: "app")
+    ]
     private static let pathsWithSignatureVerification: Set<HTTPRequest.Path2> = [
         .postRedeemWebPurchase,
         .getCustomerInfo(appUserID: userID),
@@ -859,7 +858,8 @@ class HTTPRequestTests2: TestCase {
         .getVirtualCurrencies(appUserID: userID),
         .spendVirtualCurrencies,
         .isPurchaseAllowedByRestoreBehavior(appUserID: userID),
-        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil)
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil),
+        .remoteConfig(domain: "app")
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path2> = [
         .postRedeemWebPurchase,
@@ -869,7 +869,8 @@ class HTTPRequestTests2: TestCase {
         .getVirtualCurrencies(appUserID: userID),
         .spendVirtualCurrencies,
         .isPurchaseAllowedByRestoreBehavior(appUserID: userID),
-        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil)
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil),
+        .remoteConfig(domain: "app")
     ]
     private static let pathsWithUserID: [HTTPRequest.Path2] = [
         .getCustomerInfo(appUserID: anonymousUser),
@@ -1299,7 +1300,7 @@ class HTTPRequestTests2: TestCase {
     func testRemoteConfigUsesRCContainerAcceptHeaders() {
         let request: HTTPRequest = .init(
             method: .post(RemoteConfigRequest(fetchContext: .appStart, appUserID: "app-user-id")),
-            path: HTTPRequest.Path.remoteConfig(domain: "app")
+            path: .remoteConfig(domain: "app")
         )
         let headers = request.headers(
             with: [:],
@@ -1375,7 +1376,8 @@ class HTTPRequestTests2: TestCase {
         .postCreateTicket: "customercenter/support/create-ticket",
         .isPurchaseAllowedByRestoreBehavior(appUserID: userID): "customer/restore/eligibility",
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil):
-            "subscribers/\(userID)/ads/reward_verifications/\(clientTransactionID)"
+            "subscribers/\(userID)/ads/reward_verifications/\(clientTransactionID)",
+        .remoteConfig(domain: "app"): "config/app"
     ]
 
     func testRewardVerificationStatusPathIncludesAdUnitIDQueryParameter() {

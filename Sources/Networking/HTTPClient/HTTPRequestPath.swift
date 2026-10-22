@@ -177,7 +177,6 @@ extension HTTPRequest {
 
         case logIn
         case health
-        case remoteConfig(domain: String)
 
         case tokenLogin
         case tokenRefresh
@@ -233,7 +232,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
     var authenticated: Bool {
         switch self {
         case .logIn,
-                .remoteConfig,
                 .tokenLogin,
                 .tokenRefresh,
                 .tokenLogOut:
@@ -251,8 +249,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .tokenRefresh,
                 .tokenLogOut:
             return true
-        case .remoteConfig,
-             .health:
+        case .health:
             return false
         }
     }
@@ -260,8 +257,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
     var supportsSignatureVerification: Bool {
         switch self {
         case .logIn,
-                .health,
-                .remoteConfig:
+                .health:
             return true
         case .tokenLogin,
                 .tokenRefresh,
@@ -274,7 +270,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .logIn,
                 .health,
-                .remoteConfig,
                 .tokenLogin,
                 .tokenRefresh,
                 .tokenLogOut:
@@ -283,12 +278,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
     }
 
     var responseSignatureContextProvider: ResponseSignatureContextProvider {
-        switch self {
-        case .remoteConfig:
-            return RemoteConfigSignatureContextProvider()
-        default:
-            return DefaultResponseSignatureContextProvider()
-        }
+        return DefaultResponseSignatureContextProvider()
     }
 
     var relativePath: String {
@@ -312,9 +302,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .health:
             return "health"
 
-        case let .remoteConfig(domain):
-            return "config/\(Self.escape(domain))"
-
         case .tokenLogin:
             return "/auth/login"
 
@@ -337,8 +324,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return self.pathComponent
         case .health:
             return self.pathComponent
-        case .remoteConfig:
-            return self.pathComponent
         case .tokenLogin:
             return "/auth/login"
         case .tokenRefresh:
@@ -356,9 +341,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .health:
             return "post_health"
 
-        case .remoteConfig:
-            return "remote_config"
-
         case .tokenLogin:
             return "token_login"
 
@@ -371,16 +353,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
     }
 
     var additionalHeaders: HTTPRequest.Headers {
-        switch self {
-        case .remoteConfig:
-            return [
-                HTTPClient.RequestHeader.accept.rawValue: HTTPClient.rcContainerFormatAcceptHeaderValue,
-                HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue:
-                    HTTPClient.rcContainerFormatElementEncodingHeaderValue
-            ]
-        default:
-            return [:]
-        }
+        return [:]
     }
 
     var isIAMPath: Bool {
