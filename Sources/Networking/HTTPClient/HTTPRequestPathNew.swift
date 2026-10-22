@@ -7,6 +7,8 @@
 
 import Foundation
 
+// swiftlint:disable file_length
+
 extension HTTPRequest {
 
     struct Path2: Hashable {
@@ -442,14 +444,14 @@ extension HTTPRequest.Path2 {
                                               needsNonceForSigning: true,
                                               pathComponent: "/auth/login",
                                               isIAMPath: true)
-    
+
     static let tokenRefresh = HTTPRequest.Path2(name: "token_refresh",
                                                 etagBehavior: .send,
                                                 supportsSignatureVerification: false,
                                                 needsNonceForSigning: true,
                                                 pathComponent: "/auth/token",
                                                 isIAMPath: true)
-    
+
     static let tokenLogOut = HTTPRequest.Path2(name: "token_logout",
                                                etagBehavior: .send,
                                                supportsSignatureVerification: false,
