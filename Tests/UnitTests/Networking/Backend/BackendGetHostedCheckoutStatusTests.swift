@@ -222,7 +222,7 @@ class BackendGetHostedCheckoutStatusTests: BaseBackendTests {
 
 private extension BackendGetHostedCheckoutStatusTests {
 
-    static let path = HTTPRequest.WebBillingPath.getHostedCheckoutStatus(
+    static let path = HTTPRequest.Path2.getHostedCheckoutStatus(
         operationSessionID: operationSessionID,
         appUserID: userID
     )

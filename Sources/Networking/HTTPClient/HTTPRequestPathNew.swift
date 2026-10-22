@@ -407,4 +407,15 @@ extension HTTPRequest.Path2 {
                                                       supportsSignatureVerification: false,
                                                       needsNonceForSigning: false,
                                                       pathComponent: "/rcbilling/v1/hosted-checkout")
+
+    static func getHostedCheckoutStatus(operationSessionID: String, appUserID: String) -> Self {
+        let path = "/rcbilling/v1/hosted-checkout/\(operationSessionID.trimmedAndEscaped)" +
+        "?app_user_id=\(appUserID.trimmedAndEscapedForQuery)"
+
+        return HTTPRequest.Path2(name: "get_hosted_checkout_status",
+                                 etagBehavior: .ignore,
+                                 supportsSignatureVerification: false,
+                                 needsNonceForSigning: false,
+                                 pathComponent: path)
+    }
 }

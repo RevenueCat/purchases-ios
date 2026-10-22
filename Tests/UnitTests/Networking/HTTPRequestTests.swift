@@ -257,8 +257,7 @@ class HTTPRequestTests: TestCase {
             HTTPRequest.Path2.getWebOfferingProducts(appUserID: Self.userID),
             HTTPRequest.Path2.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"]),
             HTTPRequest.Path2.postHostedCheckout,
-            HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
-                                                               appUserID: Self.userID)
+            HTTPRequest.Path2.getHostedCheckoutStatus(operationSessionID: "opsession_123", appUserID: Self.userID)
         ]
         for path in paths {
             expect(path.usesAPISources).to(beTrue(), description: "Path '\(path)' should use API sources")
@@ -358,7 +357,7 @@ class HTTPRequestTests: TestCase {
     }
 
     func testHostedCheckoutStatusRelativePathNamesTheSessionAndTheCustomer() {
-        let path = HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
+        let path = HTTPRequest.Path2.getHostedCheckoutStatus(operationSessionID: "opsession_123",
                                                                       appUserID: Self.userID)
 
         expect(path.relativePath) == "/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=\(Self.userID)"
@@ -366,7 +365,7 @@ class HTTPRequestTests: TestCase {
 
     /// The backend reads `app_user_id` from the query string, where a literal `+` arrives as a space.
     func testHostedCheckoutStatusEscapesAnAppUserIDThatLooksLikeAnEmail() {
-        let path = HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
+        let path = HTTPRequest.Path2.getHostedCheckoutStatus(operationSessionID: "opsession_123",
                                                                       appUserID: "user+plus@example.com")
 
         expect(path.relativePath) ==
@@ -374,7 +373,7 @@ class HTTPRequestTests: TestCase {
     }
 
     func testHostedCheckoutStatusIsAuthenticatedAndSendsNoEtag() {
-        let path = HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
+        let path = HTTPRequest.Path2.getHostedCheckoutStatus(operationSessionID: "opsession_123",
                                                                       appUserID: Self.userID)
 
         expect(path.authenticated).to(beTrue())
@@ -382,7 +381,7 @@ class HTTPRequestTests: TestCase {
     }
 
     func testHostedCheckoutStatusURL() {
-        let path = HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
+        let path = HTTPRequest.Path2.getHostedCheckoutStatus(operationSessionID: "opsession_123",
                                                                       appUserID: Self.userID)
 
         expect(path.url(preferIAMPath: false)?.absoluteString)
@@ -1080,7 +1079,7 @@ class HTTPRequestTests2: TestCase {
             HTTPRequest.Path2.getWebOfferingProducts(appUserID: Self.userID),
             HTTPRequest.Path2.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"]),
             HTTPRequest.Path2.postHostedCheckout,
-            HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
+            HTTPRequest.Path2.getHostedCheckoutStatus(operationSessionID: "opsession_123",
                                                                appUserID: Self.userID)
         ]
         for path in paths {
@@ -1181,7 +1180,7 @@ class HTTPRequestTests2: TestCase {
     }
 
     func testHostedCheckoutStatusRelativePathNamesTheSessionAndTheCustomer() {
-        let path = HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
+        let path = HTTPRequest.Path2.getHostedCheckoutStatus(operationSessionID: "opsession_123",
                                                                       appUserID: Self.userID)
 
         expect(path.relativePath) == "/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=\(Self.userID)"
@@ -1189,7 +1188,7 @@ class HTTPRequestTests2: TestCase {
 
     /// The backend reads `app_user_id` from the query string, where a literal `+` arrives as a space.
     func testHostedCheckoutStatusEscapesAnAppUserIDThatLooksLikeAnEmail() {
-        let path = HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
+        let path = HTTPRequest.Path2.getHostedCheckoutStatus(operationSessionID: "opsession_123",
                                                                       appUserID: "user+plus@example.com")
 
         expect(path.relativePath) ==
@@ -1197,7 +1196,7 @@ class HTTPRequestTests2: TestCase {
     }
 
     func testHostedCheckoutStatusIsAuthenticatedAndSendsNoEtag() {
-        let path = HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
+        let path = HTTPRequest.Path2.getHostedCheckoutStatus(operationSessionID: "opsession_123",
                                                                       appUserID: Self.userID)
 
         expect(path.authenticated).to(beTrue())
@@ -1205,7 +1204,7 @@ class HTTPRequestTests2: TestCase {
     }
 
     func testHostedCheckoutStatusURL() {
-        let path = HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
+        let path = HTTPRequest.Path2.getHostedCheckoutStatus(operationSessionID: "opsession_123",
                                                                       appUserID: Self.userID)
 
         expect(path.url(preferIAMPath: false)?.absoluteString)

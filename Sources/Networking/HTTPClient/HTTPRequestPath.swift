@@ -181,12 +181,6 @@ extension HTTPRequest {
         case tokenLogOut
     }
 
-    enum WebBillingPath: Hashable {
-
-        case getHostedCheckoutStatus(operationSessionID: String, appUserID: String)
-
-    }
-
 }
 
 extension HTTPRequest.Path: HTTPRequestPath {

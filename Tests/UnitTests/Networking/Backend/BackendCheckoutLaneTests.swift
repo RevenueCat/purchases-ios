@@ -92,7 +92,7 @@ final class BackendCheckoutLaneTests: BaseBackendTests {
         self.httpClient.disableSnapshotTesting()
 
         let backend = self.makeBackend(checkoutClient: laneClient)
-        let statusPath = HTTPRequest.WebBillingPath.getHostedCheckoutStatus(
+        let statusPath = HTTPRequest.Path2.getHostedCheckoutStatus(
             operationSessionID: Self.operationSessionID,
             appUserID: Self.userID
         )
