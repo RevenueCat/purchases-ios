@@ -28,7 +28,7 @@ final class CachingProductsManager {
     }
 
     func clearCache() {
-        // Clear the source first so a concurrent read cannot refill the new generation with its stale products.
+        // Clear the underlying manager's cache first, so stale products cannot refill this cache after invalidation.
         self.manager.clearCache()
         self.productCache.clear()
     }
