@@ -61,6 +61,61 @@ class ButtonComponentCodableTests: TestCase {
 
     }
 
+    func testNativeCloseDecodingAndRoundTrip() throws {
+        for actionType in ["navigate_back", "close_workflow"] {
+            let json = """
+            {
+                "type": "button",
+                "action": { "type": "\(actionType)", "use_native_if_possible": true },
+                "stack": \(jsonStringDefaultStack)
+            }
+            """
+            let original = try JSONDecoder.default.decode(
+                PaywallComponent.ButtonComponent.self, from: Data(json.utf8)
+            )
+            XCTAssertTrue(original.useNativeIfPossible)
+            let encoded = try JSONEncoder.default.encode(original)
+            let payload = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+            let action = try XCTUnwrap(payload["action"] as? [String: Any])
+            XCTAssertEqual(action["type"] as? String, actionType)
+            XCTAssertEqual(action["use_native_if_possible"] as? Bool, true)
+            XCTAssertEqual(
+                original,
+                try JSONDecoder.default.decode(PaywallComponent.ButtonComponent.self, from: encoded)
+            )
+        }
+    }
+
+    func testNativeCloseMissingOrFalseKeepsExistingPayload() throws {
+        for flag in ["", ", \"use_native_if_possible\": false"] {
+            let json = """
+            {
+                "type": "button",
+                "action": { "type": "navigate_back"\(flag) },
+                "stack": \(jsonStringDefaultStack)
+            }
+            """
+            let button = try JSONDecoder.default.decode(
+                PaywallComponent.ButtonComponent.self, from: Data(json.utf8)
+            )
+            XCTAssertFalse(button.useNativeIfPossible)
+            let encoded = try JSONEncoder.default.encode(button)
+            let payload = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+            let action = try XCTUnwrap(payload["action"] as? [String: Any])
+            XCTAssertNil(action["use_native_if_possible"])
+        }
+    }
+
+    func testNativeCloseParticipatesInEqualityAndHashing() {
+        let stack = PaywallComponent.StackComponent(components: [])
+        let custom = PaywallComponent.ButtonComponent(action: .navigateBack, stack: stack)
+        let native = PaywallComponent.ButtonComponent(
+            action: .navigateBack, stack: stack, useNativeIfPossible: true
+        )
+        XCTAssertNotEqual(custom, native)
+        XCTAssertEqual(Set([custom, native]).count, 2)
+    }
+
     func testRestorePurchasesDecoding() throws {
         let jsonString = """
         {
