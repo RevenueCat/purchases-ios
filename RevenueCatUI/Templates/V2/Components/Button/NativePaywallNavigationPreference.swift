@@ -35,7 +35,12 @@ private extension PaywallComponent.StackComponent {
         let canBeVisible = self.visible != false || self.overrides?.contains {
             $0.canApply(discardRules: discardRules) && $0.properties.visible == true
         } == true
-        return canBeVisible && self.components.contains { $0.requestsNativeClose(discardRules: discardRules) }
+        guard canBeVisible else { return false }
+        let badges = [self.badge].compactMap { $0 } + (self.overrides?.compactMap {
+            $0.canApply(discardRules: discardRules) ? $0.properties.badge : nil
+        } ?? [])
+        return self.components.contains { $0.requestsNativeClose(discardRules: discardRules) }
+            || badges.contains { $0.stack.requestsNativeClose(discardRules: discardRules) }
     }
 }
 

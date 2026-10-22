@@ -71,7 +71,8 @@ struct NativeNavigationFixtureView: View {
             )
         } else {
             PaywallView(
-                offering: NativeNavigationFixture.sheetOffering,
+                offering: ProcessInfo.processInfo.environment["PAYWALL_CAROUSEL_BUTTONS"] != nil
+                    ? NativeNavigationFixture.carouselOffering : NativeNavigationFixture.sheetOffering,
                 performPurchase: { _ in (userCancelled: true, error: nil) },
                 performRestore: { (success: false, error: nil) }
             )
@@ -126,7 +127,7 @@ private enum NativeNavigationFixture {
             id: "native-inline-sheet", name: "Inline sheet",
             stack: .init(
                 components: [Self.text("Sheet content"),
-                             Self.button("Designed sheet Close", action: .navigateBack, native: true)],
+                             Self.badgedButton("Designed sheet Close")],
                 size: .init(width: .fill, height: .fit(nil)), spacing: 24,
                 backgroundColor: .init(light: .hex("#ffffff")),
                 padding: .init(top: 32, bottom: 32, leading: 24, trailing: 24)
@@ -139,11 +140,44 @@ private enum NativeNavigationFixture {
             identifier: "native-sheet", serverDescription: "Native sheet",
             paywallComponents: .init(uiConfig: Self.baseUIConfig, data: Self.data(
                 title: "Outer paywall", buttons: [
-                    Self.button("Designed outer Close", action: .navigateBack, native: true),
+                    Self.badgedButton("Designed outer Close"),
                     Self.button("Open inline sheet", action: .navigateTo(destination: .sheet(sheet: Self.inlineSheet)))
                 ]
             )), availablePackages: Self.baseOffering.availablePackages, webCheckoutUrl: nil
         )
+    }
+
+    // Match Catbone's Close-over-hero layout without fetching remote media.
+    static var carouselOffering: Offering {
+        let pages: [PaywallComponent.StackComponent] = (1...5).map { index in
+            let close = PaywallComponent.button(.init(
+                action: .navigateBack, stack: .init(
+                    components: [Self.text("Carousel Close \(index)")],
+                    dimension: .vertical(.center, .center),
+                    size: .init(width: .fixed(32), height: .fixed(32)),
+                    margin: .init(top: 16, bottom: 0, leading: 0, trailing: 16)
+                ), useNativeIfPossible: ProcessInfo.processInfo.environment["PAYWALL_CAROUSEL_BUTTONS"] == "native"
+            ))
+            return .init(components: [
+                .stack(.init(components: [
+                    .stack(.init(components: [], size: .init(width: .fill, height: .fixed(380)),
+                                 backgroundColor: .init(light: .hex("#EEEEFF")))),
+                    .stack(.init(components: [.stack(.init(components: [close]))]))
+                ], dimension: .zlayer(.topTrailing), size: .init(width: .fill, height: .fit(nil)))),
+                Self.text("Carousel page \(index)")
+            ], size: .init(width: .fill, height: .fit(nil)), spacing: 20)
+        }
+        var data = Self.data(title: "Outer paywall", buttons: [.carousel(.init(
+            pages: pages, pageAlignment: .top, pagePeek: 0
+        ))])
+        data.componentsLocalizations["en_US"] = (data.componentsLocalizations["en_US"] ?? [:]).merging(
+            Dictionary(uniqueKeysWithValues: (1...5).flatMap {
+                ["Carousel page \($0)", "Carousel Close \($0)"]
+            }.map { ($0, .string($0)) }), uniquingKeysWith: { _, new in new }
+        )
+        return Offering(identifier: "carousel-close", serverDescription: "Carousel Close",
+                        paywallComponents: .init(uiConfig: Self.baseUIConfig, data: data),
+                        availablePackages: Self.baseOffering.availablePackages, webCheckoutUrl: nil)
     }
 
     private static var baseOffering: Offering { PaywallFixture.sheetOverContent.offering }
@@ -195,6 +229,16 @@ private enum NativeNavigationFixture {
                       stack: .init(components: [Self.text(label)],
                                    padding: .init(top: 12, bottom: 12, leading: 16, trailing: 16)),
                       useNativeIfPossible: native))
+    }
+
+    private static func badgedButton(_ label: String) -> PaywallComponent {
+        let mode = ProcessInfo.processInfo.environment["PAYWALL_BADGE_BUTTONS"]
+        let button = Self.button(label, action: .navigateBack, native: mode != "embedded")
+        guard mode != nil else { return button }
+        return .stack(.init(
+            components: [], size: .init(width: .fill, height: .fixed(64)),
+            badge: .init(style: .nested, alignment: .top, stack: .init(components: [button]))
+        ))
     }
 
     /// `close_workflow` is decode-only, so preserve its actual backend representation.

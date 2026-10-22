@@ -912,56 +912,86 @@ final class ButtonComponentViewTests: TestCase {
         let close = try decoder.decode(
             PaywallComponent.ButtonComponent.self, from: JSONSerialization.data(withJSONObject: json)
         )
-        let backModel = try Self.makeViewModel(component: back)
-        let closeModel = try Self.makeViewModel(component: close)
-        let wentBack = expectation(description: "Workflow navigated back")
-        let closed = expectation(description: "Entire workflow closed")
-        var interactions: [PaywallEvent.ComponentInteractionData] = []
-        let owner = NativePaywallUIKitOwner()
-        let view = VStack {
-            Self.configuredView(viewModel: backModel, onDismiss: { XCTFail("Back must use workflow handler") })
-            Self.configuredView(viewModel: closeModel, onDismiss: { XCTFail("Close must use workflow handler") })
+        for inBadge in [false, true] {
+            let backModel = try Self.makeViewModel(component: back)
+            let closeModel = try Self.makeViewModel(component: close)
+            let wentBack = expectation(description: "Workflow navigated back")
+            let closed = expectation(description: "Entire workflow closed")
+            var interactions: [PaywallEvent.ComponentInteractionData] = []
+            let owner = NativePaywallUIKitOwner()
+            let badgeModel = try StackComponentViewModel(
+                component: .init(components: [], badge: .init(
+                    style: .overlaid, alignment: .top,
+                    stack: .init(components: [.button(back), .button(close)])
+                )),
+                localizationProvider: .init(locale: Locale(identifier: "en_US"),
+                                            localizedStrings: ["Back": .string("Back")]),
+                colorScheme: .light
+            )
+            let view = Group {
+                if inBadge {
+                    StackComponentView(
+                        viewModel: badgeModel,
+                        onDismiss: { XCTFail("Badge buttons must use workflow handlers") }
+                    )
+                    .environmentObject(PurchaseHandler.default())
+                    .environmentObject(PackageContext(package: nil, variableContext: .init(packages: [])))
+                    .environmentObject(IntroOfferEligibilityContext(
+                        introEligibilityChecker: BaseSnapshotTest.eligibleChecker
+                    ))
+                    .environmentObject(PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker()))
+                } else {
+                    VStack {
+                        Self.configuredView(viewModel: backModel, onDismiss: {
+                            XCTFail("Back must use workflow handler")
+                        })
+                        Self.configuredView(viewModel: closeModel, onDismiss: {
+                            XCTFail("Close must use workflow handler")
+                        })
+                    }
+                }
+            }
+            .environment(\.workflowRenderingContext, .init(isHeader: true, canNavigateBack: true))
+            .environment(\.workflowNavigateBackHandler, { wentBack.fulfill() })
+            .environment(\.closeWorkflowAction, { closed.fulfill() })
+            .environment(\.componentInteractionLogger, ComponentInteractionLogger { event in
+                interactions.append(event)
+                return true
+            })
+            .modifier(NativePaywallNavigationModifier(requested: true))
+            .environment(\.nativePaywallNavigationContext, .uiKit(owner))
+            let controller = UIHostingController(rootView: view)
+            let navigation = UINavigationController(rootViewController: controller)
+            owner.prepare(controller: controller)
+            let window: UIWindow
+            if let scene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first {
+                window = UIWindow(windowScene: scene)
+                window.frame = CGRect(x: 0, y: 0, width: 390, height: 844)
+            } else {
+                window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+            }
+            window.rootViewController = navigation
+            window.makeKeyAndVisible()
+            window.layoutIfNeeded()
+            controller.view.layoutIfNeeded()
+            defer {
+                window.isHidden = true
+                window.rootViewController = nil
+            }
+            let installed = expectation(description: "Both native header actions installed")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { installed.fulfill() }
+            await fulfillment(of: [installed], timeout: 2)
+            let items = self.closeItems(in: controller)
+            XCTAssertEqual(items.count, 2)
+            for identifier in [NativePaywallUIKitOwner.backIdentifier, NativePaywallUIKitOwner.closeIdentifier] {
+                let item = try XCTUnwrap(items.first { $0.accessibilityIdentifier == identifier })
+                let target = try XCTUnwrap(item.target as? NSObject)
+                target.perform(try XCTUnwrap(item.action), with: item)
+            }
+            await fulfillment(of: [wentBack, closed], timeout: 2)
+            XCTAssertEqual(interactions.map(\.componentValue), ["navigate_back", "close_workflow"])
+            XCTAssertEqual(interactions.map(\.componentName), ["workflow-back", "workflow-close"])
         }
-        .environment(\.workflowRenderingContext, .init(isHeader: true, canNavigateBack: true))
-        .environment(\.workflowNavigateBackHandler, { wentBack.fulfill() })
-        .environment(\.closeWorkflowAction, { closed.fulfill() })
-        .environment(\.componentInteractionLogger, ComponentInteractionLogger { event in
-            interactions.append(event)
-            return true
-        })
-        .modifier(NativePaywallNavigationModifier(requested: true))
-        .environment(\.nativePaywallNavigationContext, .uiKit(owner))
-        let controller = UIHostingController(rootView: view)
-        let navigation = UINavigationController(rootViewController: controller)
-        owner.prepare(controller: controller)
-        let window: UIWindow
-        if let scene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first {
-            window = UIWindow(windowScene: scene)
-            window.frame = CGRect(x: 0, y: 0, width: 390, height: 844)
-        } else {
-            window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
-        }
-        window.rootViewController = navigation
-        window.makeKeyAndVisible()
-        window.layoutIfNeeded()
-        controller.view.layoutIfNeeded()
-        defer {
-            window.isHidden = true
-            window.rootViewController = nil
-        }
-        let installed = expectation(description: "Both native header actions installed")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { installed.fulfill() }
-        await fulfillment(of: [installed], timeout: 2)
-        let items = self.closeItems(in: controller)
-        XCTAssertEqual(items.count, 2)
-        for identifier in [NativePaywallUIKitOwner.backIdentifier, NativePaywallUIKitOwner.closeIdentifier] {
-            let item = try XCTUnwrap(items.first { $0.accessibilityIdentifier == identifier })
-            let target = try XCTUnwrap(item.target as? NSObject)
-            target.perform(try XCTUnwrap(item.action), with: item)
-        }
-        await fulfillment(of: [wentBack, closed], timeout: 2)
-        XCTAssertEqual(interactions.map(\.componentValue), ["navigate_back", "close_workflow"])
-        XCTAssertEqual(interactions.map(\.componentName), ["workflow-back", "workflow-close"])
     }
 
     func testNativeOnlyHeaderCollapsesButDesignedHeaderRemains() async throws {

@@ -253,7 +253,8 @@ struct StackComponentView: View {
                shape: style.shape,
                background: style.backgroundStyle,
                uiConfigProvider: self.viewModel.uiConfigProvider)
-        .apply(badge: style.badge, border: style.border, shadow: style.shadow, shape: style.shape)
+        .apply(badge: style.badge, border: style.border, shadow: style.shadow, shape: style.shape,
+               onDismiss: self.onDismiss)
         .padding(self.suppressNativeHeaderLayout ? EdgeInsets() : style.margin)
         .environment(\.nativePaywallLayoutButtons, self.layoutButtonIdentifiers)
         .background {
@@ -392,7 +393,8 @@ fileprivate extension View {
     func apply(badge: BadgeModifier.BadgeInfo?,
                border: ShapeModifier.BorderInfo?,
                shadow: ShadowModifier.ShadowInfo?,
-               shape: ShapeModifier.Shape?) -> some View {
+               shape: ShapeModifier.Shape?,
+               onDismiss: @escaping () -> Void) -> some View {
         switch badge?.style {
         case .edgeToEdge:
             switch badge?.alignment {
@@ -403,20 +405,20 @@ fileprivate extension View {
                 // appears behind the shadow.
                 self.shape(border: border, shape: shape)
                     .shadow(shadow: shadow, shape: shape?.toInsettableShape())
-                    .stackBadge(badge)
+                    .stackBadge(badge, onDismiss: onDismiss)
             default:
                 self.shape(border: border, shape: shape)
-                    .stackBadge(badge)
+                    .stackBadge(badge, onDismiss: onDismiss)
                     .shadow(shadow: shadow, shape: shape?.toInsettableShape())
             }
         case .nested:
             // For nested badges, we want the border to be applied last so it appears over the badge.
-            self.stackBadge(badge)
+            self.stackBadge(badge, onDismiss: onDismiss)
                 .shape(border: border, shape: shape)
                 .shadow(shadow: shadow, shape: shape?.toInsettableShape())
         default:
             self.shape(border: border, shape: shape)
-                .stackBadge(badge)
+                .stackBadge(badge, onDismiss: onDismiss)
                 .shadow(shadow: shadow, shape: shape?.toInsettableShape())
         }
     }
