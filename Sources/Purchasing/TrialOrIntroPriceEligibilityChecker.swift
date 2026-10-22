@@ -27,7 +27,7 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
     private let productsManager: ProductsManagerType
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let dateProvider: DateProvider
-    private let groupEligibilityCache: Atomic<IntroEligibilityGroupCache> = .init(.init())
+    private let groupEligibilityCache = IntroEligibilityGroupCache()
 
     init(
         systemInfo: SystemInfo,
@@ -52,9 +52,7 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
     }
 
     func clearCache() {
-        // Requests retain the cache they started with. Replacing it keeps old results and pending
-        // product lookups from populating or joining checks in the new cache generation.
-        self.groupEligibilityCache.value = IntroEligibilityGroupCache()
+        self.groupEligibilityCache.clearCache()
     }
 
     // swiftlint:disable:next function_body_length
@@ -170,7 +168,6 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
             await SK2Product.SubscriptionInfo.isEligibleForIntroOffer(for: $0)
         }
     ) async throws -> [String: IntroEligibility] {
-        let groupEligibilityCache = self.groupEligibilityCache.value
         var introDictionary: [String: IntroEligibility] = compoundProductIdentifiers.dictionaryWithValues { _ in
                 .init(eligibilityStatus: .unknown)
         }
@@ -189,7 +186,7 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         await withTaskGroup(of: (String, Bool).self) { group in
             for subscriptionGroupID in productIdentifiersByGroup.keys {
                 group.addTask {
-                    let isEligible = await groupEligibilityCache.eligibility(
+                    let isEligible = await self.groupEligibilityCache.eligibility(
                         for: subscriptionGroupID, log: log, check: checkSubscriptionGroup
                     )
                     return (subscriptionGroupID, isEligible)
