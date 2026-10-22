@@ -55,9 +55,18 @@ class ProductsManager: NSObject, ProductsManagerType {
     }
 
     func products(withIdentifiers identifiers: Set<String>, completion: @escaping Completion) {
+        let startTime = self.dateProvider.now()
+
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
            self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
             self.sk2Products(withIdentifiers: identifiers) { result in
+                let notFoundProducts = identifiers.subtracting(result.value?.map(\.id) ?? [])
+                self.trackProductsRequestIfNeeded(startTime,
+                                                  requestedProductIds: identifiers,
+                                                  notFoundProductIds: notFoundProducts,
+                                                  storeKitVersion: .storeKit2,
+                                                  error: result.error)
+
                 switch result {
                 case .success(let storeProductsFromStoreKit):
                     completion(.success(Set(storeProductsFromStoreKit.map(StoreProduct.from(product:)))))
@@ -66,7 +75,6 @@ class ProductsManager: NSObject, ProductsManagerType {
                 }
             }
         } else {
-            let startTime = self.dateProvider.now()
             self.sk1Products(withIdentifiers: identifiers) { result in
                 let notFoundProducts = identifiers.subtracting(result.value?.map(\.productIdentifier) ?? [])
                 self.trackProductsRequestIfNeeded(startTime,
@@ -99,17 +107,7 @@ private extension ProductsManager {
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func sk2Products(withIdentifiers identifiers: Set<String>,
                      completion: @escaping (Result<Set<SK2StoreProduct>, PurchasesError>) -> Void) {
-        let startTime = self.dateProvider.now()
-        let fetchCompletion: (Result<Set<SK2StoreProduct>, PurchasesError>) -> Void = { result in
-            let notFoundProducts = identifiers.subtracting(result.value?.map(\.id) ?? [])
-            self.trackProductsRequestIfNeeded(startTime,
-                                              requestedProductIds: identifiers,
-                                              notFoundProductIds: notFoundProducts,
-                                              storeKitVersion: .storeKit2,
-                                              error: result.error)
-            completion(result)
-        }
-        Async.call(with: fetchCompletion) {
+        Async.call(with: completion) {
             do {
                 let products = try await self.productsFetcherSK2.products(identifiers: identifiers)
                 Logger.debug(Strings.storeKit.store_product_request_finished)
