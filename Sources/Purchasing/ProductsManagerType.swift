@@ -27,8 +27,8 @@ protocol ProductsManagerType: Sendable {
     /// If the type implementing this protocol doesn't have a caching mechanism then this method does nothing.
     func cache(_ product: StoreProductType)
 
-    /// Removes all elements from its internal cache
-    /// If the type implementing this protocol doesn't have a caching mechanism then this method does nothing.
+    /// Clears cached products and prevents new callers from joining requests started before invalidation.
+    /// Existing callers still receive their results.
     func clearCache()
 
     var requestTimeout: TimeInterval { get }

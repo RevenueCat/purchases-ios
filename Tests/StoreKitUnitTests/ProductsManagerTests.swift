@@ -229,7 +229,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
 
     func testClearCacheAfterStorefrontChangesSK1() async throws {
         try AvailabilityChecks.switchingStorefrontWithSKTestWorksOrSkipTest()
-        let manager = self.createManager(storeKitVersion: .storeKit1)
+        let manager = CachingProductsManager(manager: self.createManager(storeKitVersion: .storeKit1))
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var receivedProducts: Set<StoreProduct>?
@@ -243,9 +243,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         testSession.locale = Locale(identifier: "es_ES")
         try await changeStorefront("ESP")
 
-        // Note: this test passes only because the method `clearCache`
-        // is manually executed. `ProductsManager` does not detect Storefront changes to invalidate the
-        // cache. The changes are now managed by `StoreKit2StorefrontListenerDelegate`.
+        // The SDK's storefront listener normally clears the product cache.
         manager.clearCache()
 
         receivedProducts = try await manager.products(withIdentifiers: Set([identifier]))
@@ -260,7 +258,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         try AvailabilityChecks.switchingStorefrontWithSKTestWorksOrSkipTest()
 
-        let manager = self.createManager(storeKitVersion: .storeKit2)
+        let manager = CachingProductsManager(manager: self.createManager(storeKitVersion: .storeKit2))
 
         let identifier = "com.revenuecat.monthly_4.99.1_week_intro"
         var receivedProducts: Set<StoreProduct>?
@@ -274,9 +272,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         testSession.locale = Locale(identifier: "es_ES")
         try await changeStorefront("ESP")
 
-        // Note: this test passes only because the method `clearCache`
-        // is manually executed. `ProductsManager` does not detect Storefront changes to invalidate the
-        // cache. The changes are now managed by `StoreKit2StorefrontListenerDelegate`.
+        // The SDK's storefront listener normally clears the product cache.
         manager.clearCache()
 
         receivedProducts = try await manager.products(withIdentifiers: Set([identifier]))

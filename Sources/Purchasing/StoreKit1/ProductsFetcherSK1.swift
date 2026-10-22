@@ -22,9 +22,9 @@ final class ProductsFetcherSK1: NSObject {
     private let productsRequestFactory: ProductsRequestFactory
 
     // Note: these 3 must be used only inside `queue` to be thread-safe.
-    private var cachedProductsByIdentifier: [String: SK1Product] = [:]
+    private var requestIDsByIdentifiers: [Set<String>: UUID] = [:]
     private var productsByRequests: [SKRequest: ProductRequest] = [:]
-    private var completionHandlers: [Set<String>: [Callback]] = [:]
+    private var completionHandlersByRequestID: [UUID: [Callback]] = [:]
 
     private let queue = DispatchQueue(label: "ProductsFetcherSK1")
 
@@ -38,17 +38,6 @@ final class ProductsFetcherSK1: NSObject {
          requestTimeout: TimeInterval) {
         self.productsRequestFactory = productsRequestFactory
         self.requestTimeout = requestTimeout
-    }
-
-    // Note: this isn't thread-safe and must therefore be used inside of `queue` only.
-    @discardableResult
-    private func startRequest(forIdentifiers identifiers: Set<String>, retriesLeft: Int) -> SKProductsRequest {
-        let request = self.productsRequestFactory.request(productIdentifiers: identifiers)
-        request.delegate = self
-        self.productsByRequests[request] = .init(identifiers, retriesLeft: retriesLeft)
-        request.start()
-
-        return request
     }
 
     func products(withIdentifiers identifiers: Set<String>,
@@ -76,38 +65,45 @@ final class ProductsFetcherSK1: NSObject {
         }
     }
 
-    private func sk1Products(withIdentifiers identifiers: Set<String>,
-                             completion: @escaping Callback) {
-        guard identifiers.count > 0 else {
-            completion(.success([]))
-            return
-        }
-
-        self.queue.async { [self] in
-            let productsAlreadyCached = self.cachedProductsByIdentifier.filter { key, _ in identifiers.contains(key) }
-            if productsAlreadyCached.count == identifiers.count {
-                let productsAlreadyCachedSet = Set(productsAlreadyCached.values)
-                Logger.debug(Strings.offering.products_already_cached(identifiers: identifiers))
-                completion(.success(productsAlreadyCachedSet))
-                return
-            }
-
-            if let existingHandlers = self.completionHandlers[identifiers] {
-                Logger.debug(Strings.offering.found_existing_product_request(identifiers: identifiers))
-                self.completionHandlers[identifiers] = existingHandlers + [completion]
-                return
-            }
-
-            self.completionHandlers[identifiers] = [completion]
-
-            let request = self.startRequest(forIdentifiers: identifiers, retriesLeft: Self.numberOfRetries)
-            self.scheduleCancellationInCaseOfTimeout(for: request)
+    /// Stops new callers from joining pending requests. Existing callers still receive their results.
+    func invalidateRequests() {
+        self.queue.async {
+            self.requestIDsByIdentifiers.removeAll(keepingCapacity: true)
         }
     }
 
 }
 
 private extension ProductsFetcherSK1 {
+
+    // Note: this isn't thread-safe and must therefore be used inside of `queue` only.
+    func startRequest(_ productRequest: ProductRequest) {
+        let request = self.productsRequestFactory.request(productIdentifiers: productRequest.identifiers)
+        request.delegate = self
+        self.productsByRequests[request] = productRequest
+        request.start()
+    }
+
+    func sk1Products(withIdentifiers identifiers: Set<String>, completion: @escaping Callback) {
+        guard identifiers.count > 0 else {
+            completion(.success([]))
+            return
+        }
+
+        self.queue.async { [self] in
+            if let requestID = self.requestIDsByIdentifiers[identifiers] {
+                Logger.debug(Strings.offering.found_existing_product_request(identifiers: identifiers))
+                self.completionHandlersByRequestID[requestID, default: []].append(completion)
+                return
+            }
+
+            let request = ProductRequest(id: UUID(), identifiers: identifiers, retriesLeft: Self.numberOfRetries)
+            self.requestIDsByIdentifiers[identifiers] = request.id
+            self.completionHandlersByRequestID[request.id] = [completion]
+            self.startRequest(request)
+            self.scheduleCancellationInCaseOfTimeout(for: request)
+        }
+    }
 
     static func areProductsWithBillingPlansSupported(compoundIdentifier: CompoundProductIdentifier) -> Bool {
         Logger.warn(
@@ -120,13 +116,11 @@ private extension ProductsFetcherSK1 {
     }
 
     struct ProductRequest {
-        let identifiers: Set<String>
-        var retriesLeft: Int
 
-        init(_ identifiers: Set<String>, retriesLeft: Int) {
-            self.identifiers = identifiers
-            self.retriesLeft = retriesLeft
-        }
+        let id: UUID
+        let identifiers: Set<String>
+        let retriesLeft: Int
+
     }
 
 }
@@ -140,16 +134,11 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
                 Logger.error("requested products not found for request: \(request)")
                 return
             }
-            guard let completionBlocks = self.completionHandlers[productRequest.identifiers] else {
+            guard let completionBlocks = self.finishRequest(productRequest) else {
                 Logger.error("callback not found for failing request: \(request)")
-                self.productsByRequests.removeValue(forKey: request)
                 return
             }
 
-            self.completionHandlers.removeValue(forKey: productRequest.identifiers)
-            self.productsByRequests.removeValue(forKey: request)
-
-            self.cacheProducts(response.products)
             for completion in completionBlocks {
                 completion(.success(Set(response.products)))
             }
@@ -169,49 +158,29 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
         self.queue.async { [self] in
             Logger.appleError(Strings.storeKit.store_products_request_failed(error as NSError))
 
-            guard let productRequest = self.productsByRequests[request] else {
+            guard let productRequest = self.productsByRequests.removeValue(forKey: request) else {
                 Logger.error(Strings.purchase.requested_products_not_found(request: request))
                 return
             }
 
             if productRequest.retriesLeft <= 0 {
-                guard let completionBlocks = self.completionHandlers[productRequest.identifiers] else {
+                guard let completionBlocks = self.finishRequest(productRequest) else {
                     Logger.error(Strings.purchase.callback_not_found_for_request(request: request))
-                    self.productsByRequests.removeValue(forKey: request)
                     return
                 }
 
-                self.completionHandlers.removeValue(forKey: productRequest.identifiers)
-                self.productsByRequests.removeValue(forKey: request)
                 for completion in completionBlocks {
                     completion(.failure(ErrorUtils.purchasesError(withSKError: error)))
                 }
             } else {
                 let delayInSeconds = Int((self.requestTimeout / 10).rounded())
                 self.queue.asyncAfter(deadline: .now() + .seconds(delayInSeconds)) { [self] in
-                    self.startRequest(forIdentifiers: productRequest.identifiers,
-                                      retriesLeft: productRequest.retriesLeft - 1)
+                    guard self.completionHandlersByRequestID[productRequest.id] != nil else { return }
+                    self.startRequest(.init(id: productRequest.id,
+                                            identifiers: productRequest.identifiers,
+                                            retriesLeft: productRequest.retriesLeft - 1))
                 }
             }
-        }
-    }
-
-    func cacheProduct(_ product: SK1Product) {
-        self.queue.async {
-            self.cachedProductsByIdentifier[product.productIdentifier] = product
-        }
-    }
-
-    /// - Returns (via callback): The product identifiers that were removed, or empty if there were not
-    ///   cached products.
-    func clearCache(completion: ((Set<String>) -> Void)? = nil) {
-        self.queue.async {
-            let cachedProductIdentifiers = self.cachedProductsByIdentifier.keys
-            if !cachedProductIdentifiers.isEmpty {
-                Logger.debug(Strings.offering.product_cache_invalid_for_storefront_change)
-                self.cachedProductsByIdentifier.removeAll(keepingCapacity: false)
-            }
-            completion?(Set(cachedProductIdentifiers))
         }
     }
 
@@ -219,14 +188,13 @@ extension ProductsFetcherSK1: SKProductsRequestDelegate {
 
 private extension ProductsFetcherSK1 {
 
-    func cacheProducts(_ products: [SK1Product]) {
-        self.queue.async {
-            let productsByIdentifier = products.dictionaryAllowingDuplicateKeys {
-                $0.productIdentifier
-            }
-
-            self.cachedProductsByIdentifier += productsByIdentifier
+    // Must be called on `queue`. Do not remove the identifier entry if it belongs to a newer request.
+    func finishRequest(_ request: ProductRequest) -> [Callback]? {
+        if self.requestIDsByIdentifiers[request.identifiers] == request.id {
+            self.requestIDsByIdentifiers.removeValue(forKey: request.identifiers)
         }
+        self.productsByRequests = self.productsByRequests.filter { $0.value.id != request.id }
+        return self.completionHandlersByRequestID.removeValue(forKey: request.id)
     }
 
     // Even though the request has finished, we've seen instances where
@@ -242,23 +210,18 @@ private extension ProductsFetcherSK1 {
     // without timing out and calling the delegate.
     // So we schedule a cancellation just in case, and skip it if all goes as expected.
     // More information: https://rev.cat/skproductsrequest-hangs
-    func scheduleCancellationInCaseOfTimeout(for request: SKProductsRequest) {
+    func scheduleCancellationInCaseOfTimeout(for request: ProductRequest) {
         self.queue.asyncAfter(deadline: .now() + self.requestTimeout) { [weak self] in
             guard let self = self,
-                  let productRequest = self.productsByRequests[request] else { return }
+                  self.completionHandlersByRequestID[request.id] != nil else { return }
 
-            request.cancel()
+            let attempts = self.productsByRequests.filter { $0.value.id == request.id }.map(\.key)
+            let completionBlocks = self.finishRequest(request) ?? []
+            attempts.forEach { $0.cancel() }
 
             Logger.appleError(Strings.storeKit.skproductsrequest_timed_out(
                 after: Int(self.requestTimeout.rounded())
             ))
-            guard let completionBlocks = self.completionHandlers[productRequest.identifiers] else {
-                Logger.error("callback not found for failing request: \(request)")
-                return
-            }
-
-            self.completionHandlers.removeValue(forKey: productRequest.identifiers)
-            self.productsByRequests.removeValue(forKey: request)
             for completion in completionBlocks {
                 completion(.failure(ErrorUtils.productRequestTimedOutError()))
             }

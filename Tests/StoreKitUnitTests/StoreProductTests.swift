@@ -251,12 +251,6 @@ class StoreProductTests: StoreKitConfigTestCase {
         testSession.locale = Locale(identifier: "en_EN")
         try await self.changeStorefront("USA")
 
-        // Note: this test passes only because the cache is manually
-        // cleared. `ProductsFetcherSK1` does not detect Storefront
-        // changes to invalidate the cache. The changes are now managed by
-        // `StoreKit2StorefrontListenerDelegate`.
-        sk1Fetcher.clearCache()
-
         storeProduct = try await sk1Fetcher.product(withIdentifier: Self.productID)
 
         priceFormatter = try XCTUnwrap(storeProduct.priceFormatter)

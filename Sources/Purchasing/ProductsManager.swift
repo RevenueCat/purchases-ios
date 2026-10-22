@@ -91,7 +91,7 @@ class ProductsManager: NSObject, ProductsManagerType {
     func cache(_ product: StoreProductType) { }
 
     func clearCache() {
-        self.productsFetcherSK1.clearCache()
+        self.productsFetcherSK1.invalidateRequests()
     }
 
     var requestTimeout: TimeInterval {
