@@ -62,21 +62,39 @@ struct StackComponentView: View {
 
     private let viewModel: StackComponentViewModel
     private let isScrollableByDefault: Bool
+    private let resolveHeroFromVisibleStacks: Bool
     private let onDismiss: () -> Void
     /// Used when this stack needs more padding than defined in the component, e.g. to avoid being drawn in the safe
     /// area when displayed as a sticky footer.
     private let additionalPadding: EdgeInsets
     private let showActivityIndicatorOverContent: Bool
 
+    private func isStackVisible(_ stack: StackComponentViewModel) -> Bool {
+        stack.styles(
+            state: self.componentViewState,
+            condition: self.screenCondition,
+            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(package: self.packageContext.package),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(for: self.packageContext.package),
+            selectedPackageId: self.selectedPackageId,
+            customVariables: self.customVariables,
+            stateValues: self.paywallStateValues,
+            stateDefaults: self.paywallStateDefaults,
+            windowSize: self.paywallWindowSize,
+            colorScheme: self.colorScheme
+        ).visible
+    }
+
     init(
         viewModel: StackComponentViewModel,
         isScrollableByDefault: Bool = false,
+        resolveHeroFromVisibleStacks: Bool = false,
         onDismiss: @escaping () -> Void,
         additionalPadding: EdgeInsets? = nil,
         showActivityIndicatorOverContent: Bool = false
     ) {
         self.viewModel = viewModel
         self.isScrollableByDefault = isScrollableByDefault
+        self.resolveHeroFromVisibleStacks = resolveHeroFromVisibleStacks
         self.onDismiss = onDismiss
         self.additionalPadding = additionalPadding ?? EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
         self.showActivityIndicatorOverContent = showActivityIndicatorOverContent
@@ -160,8 +178,10 @@ struct StackComponentView: View {
                 ZStack(alignment: alignment.stackAlignment) {
                     ComponentsView(
                         componentViewModels: self.viewModel.viewModels,
-                        pushNonFirstChildrenBelowSafeArea: self.viewModel.firstChildIsFullWidthMedia,
-                        onDismiss: self.onDismiss
+                        onDismiss: self.onDismiss,
+                        safeAreaExemptChildIndex: self.viewModel.safeAreaExemptChildIndex(
+                            isStackVisible: { !self.resolveHeroFromVisibleStacks || self.isStackVisible($0) }
+                        )
                     )
                 }
                 // These alignments define the position of inner components inside the ZStack

@@ -21,6 +21,87 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class ViewModelFactoryTests: TestCase {
 
+    @MainActor
+    func testHeroDetectionUsesRenderedStackVisibility() throws {
+        let hero = PaywallComponent.image(.init(
+            source: .init(light: .init(
+                width: 400, height: 240,
+                original: Self.sampleURL, heic: Self.sampleURL, heicLowRes: Self.sampleURL
+            )),
+            size: .init(width: .fill, height: .fixed(240))
+        ))
+        let side = PaywallComponent.stack(.init(
+            visible: false, components: [.webView(Self.webViewComponent(width: .fixed(200)))],
+            overrides: [.init(
+                extendedConditions: [.windowWidth(operator: .greaterThanOrEqual, value: 800)],
+                properties: .init(visible: true)
+            )]
+        ))
+        let provider = try Self.createUIConfigProvider()
+        let factory = ViewModelFactory()
+        let stack = try factory.toStackViewModel(
+            component: .init(components: [.fallbackHeader, side, hero], dimension: .zlayer(.top)),
+            packageValidator: factory.packageValidator, purchaseButtonCollector: nil,
+            localizationProvider: .init(locale: .current, localizedStrings: [:]),
+            uiConfigProvider: provider, offering: Self.mockOffering, colorScheme: .light
+        )
+        for width in [400, 900, 400] {
+            let visible: (StackComponentViewModel) -> Bool = { stack in
+                stack.styles(
+                    state: .default, condition: .compact, isEligibleForIntroOffer: false,
+                    isEligibleForPromoOffer: false, selectedPackageId: nil, customVariables: [:],
+                    windowSize: CGSize(width: CGFloat(width), height: 700), colorScheme: .light
+                ).visible
+            }
+            XCTAssertEqual(stack.firstVisibleMedia(isStackVisible: visible) != nil, width < 800)
+            XCTAssertEqual(stack.safeAreaExemptChildIndex(isStackVisible: visible), width < 800 ? 1 : nil)
+        }
+    }
+
+    @MainActor
+    func testHeroDetectionPreservesVisibleLeadingComponents() throws {
+        let hero = PaywallComponent.webView(Self.webViewComponent(width: .fill))
+        let text = PaywallComponent.text(.init(text: "text", color: Self.black))
+        let cases: [([PaywallComponent], Bool, Int?)] = [
+            ([hero], true, 0),
+            ([.fallbackHeader, hero], true, 0),
+            ([.webView(Self.webViewComponent(width: .fixed(200))), hero], false, nil),
+            ([text, hero], false, nil),
+            ([.stack(.init(components: [])), hero], false, nil),
+            ([.stack(.init(components: [hero]))], true, nil),
+            ([.stack(.init(visible: false, components: [text])), hero], true, 1),
+            ([.stack(.init(components: [
+                .stack(.init(visible: false, components: [text])), hero
+            ]))], false, nil),
+            ([.stack(.init(visible: false, components: [text])), .stack(.init(components: [hero]))], true, 1),
+            ([.stack(.init(visible: false, components: [hero])), .stack(.init(components: [hero]))], true, 1),
+            ([.stack(.init(visible: false, components: [text])), .stack(.init(
+                components: [.stack(.init(components: [hero])), text], dimension: .zlayer(.top)
+            ))], false, nil),
+            ([.stack(.init(visible: false, components: [text])), .stack(.init(components: [
+                .stack(.init(visible: false, components: [hero])), text
+            ]))], false, nil)
+        ]
+        let factory = ViewModelFactory()
+        for (components, expectsMedia, directIndex) in cases {
+            let stack = try factory.toStackViewModel(
+                component: .init(components: components, dimension: .zlayer(.top)),
+                packageValidator: factory.packageValidator, purchaseButtonCollector: nil,
+                localizationProvider: .init(locale: .current, localizedStrings: ["text": .string("Text")]),
+                uiConfigProvider: try Self.createUIConfigProvider(), offering: Self.mockOffering, colorScheme: .light
+            )
+            let visible: (StackComponentViewModel) -> Bool = { stack in
+                stack.styles(
+                    state: .default, condition: .compact, isEligibleForIntroOffer: false,
+                    isEligibleForPromoOffer: false, selectedPackageId: nil,
+                    customVariables: [:], colorScheme: .light
+                ).visible
+            }
+            XCTAssertEqual(stack.firstVisibleMedia(isStackVisible: visible) != nil, expectsMedia)
+            XCTAssertEqual(stack.safeAreaExemptChildIndex(isStackVisible: visible), directIndex)
+        }
+    }
+
     // MARK: - Unsupported Condition Tests
 
     @MainActor
@@ -833,7 +914,7 @@ class ViewModelFactoryTests: TestCase {
             colorScheme: .light
         )
 
-        expect(viewModel.firstChildIsFullWidthMedia).to(beTrue())
+        expect(viewModel.safeAreaExemptChildIndex(isStackVisible: { _ in true }) != nil).to(beTrue())
     }
 
     @MainActor
@@ -859,7 +940,7 @@ class ViewModelFactoryTests: TestCase {
             colorScheme: .light
         )
 
-        expect(viewModel.firstChildIsFullWidthMedia).to(beFalse())
+        expect(viewModel.safeAreaExemptChildIndex(isStackVisible: { _ in true }) != nil).to(beFalse())
     }
 
     // MARK: - Layout Tests

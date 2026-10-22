@@ -100,6 +100,7 @@ struct RootView: View {
                 StackComponentView(
                     viewModel: viewModel.stackViewModel,
                     isScrollableByDefault: true,
+                    resolveHeroFromVisibleStacks: viewModel.headerViewModel == nil,
                     onDismiss: onDismiss,
                     additionalPadding: EdgeInsets(top: 0, leading: 0, bottom: overlaidFooterHeight, trailing: 0)
                 )
