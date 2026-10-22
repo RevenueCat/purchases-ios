@@ -158,6 +158,60 @@ class ProductsFetcherSK1Tests: TestCase {
         expect(factory.startedRequests).to(haveCount(3))
     }
 
+    func testTimeoutWhileWaitingForRetryCompletesCallersOnceAndDoesNotStartRetry() {
+        let factory = DeferredProductsRequestFactory(failOnStart: true)
+        // A five-second timeout gives each retry a one-second delay. Immediate failures keep the
+        // request waiting between attempts until its original deadline expires.
+        let fetcher = ProductsFetcherSK1(productsRequestFactory: factory, requestTimeout: 5)
+        let firstResults = Atomic<[Result<Set<SK1StoreProduct>, PurchasesError>]>([])
+        let secondResults = Atomic<[Result<Set<SK1StoreProduct>, PurchasesError>]>([])
+        fetcher.products(withIdentifiers: ["product"]) { result in firstResults.modify { $0.append(result) } }
+        fetcher.products(withIdentifiers: ["product"]) { result in secondResults.modify { $0.append(result) } }
+
+        expect(firstResults.value).toEventually(haveCount(1), timeout: .seconds(6))
+        expect(secondResults.value).toEventually(haveCount(1))
+        expect(firstResults.value.first?.error).to(matchError(ErrorCode.productRequestTimedOut))
+        expect(secondResults.value.first?.error).to(matchError(ErrorCode.productRequestTimedOut))
+        let requestCountAtTimeout = factory.startedRequests.count
+        expect(requestCountAtTimeout).to(beGreaterThan(1))
+        expect(factory.startedRequests.map(\.cancellationCount)).to(allPass(equal(1)))
+
+        // Observe beyond the queued retry's one-second delay, including duplicate completions.
+        expect(factory.startedRequests).toAlways(haveCount(requestCountAtTimeout), until: .seconds(2))
+        expect(firstResults.value).to(haveCount(1))
+        expect(secondResults.value).to(haveCount(1))
+    }
+
+    func testOldRequestCompletionDoesNotPreventNewCallersFromJoiningCurrentRequest() throws {
+        let factory = DeferredProductsRequestFactory()
+        let fetcher = ProductsFetcherSK1(productsRequestFactory: factory, requestTimeout: 4)
+        let oldResults = Atomic<[Result<Set<SK1StoreProduct>, PurchasesError>]>([])
+        let currentResults = Atomic<[Result<Set<SK1StoreProduct>, PurchasesError>]>([])
+        let joiningResults = Atomic<[Result<Set<SK1StoreProduct>, PurchasesError>]>([])
+        fetcher.products(withIdentifiers: ["product"]) { result in oldResults.modify { $0.append(result) } }
+        let oldRequest = try factory.startedRequest(at: 0)
+
+        fetcher.invalidateRequests()
+        fetcher.products(withIdentifiers: ["product"]) { result in currentResults.modify { $0.append(result) } }
+        let currentRequest = try factory.startedRequest(at: 1)
+        let oldProduct = MockSK1Product(mockProductIdentifier: "product")
+        oldRequest.succeed(with: [oldProduct])
+        expect(oldResults.value).toEventually(haveCount(1))
+        expect(currentResults.value).to(beEmpty())
+
+        fetcher.products(withIdentifiers: ["product"]) { result in joiningResults.modify { $0.append(result) } }
+        let currentProduct = MockSK1Product(mockProductIdentifier: "product")
+        currentRequest.succeed(with: [currentProduct])
+
+        expect(currentResults.value).toEventually(haveCount(1))
+        expect(joiningResults.value).toEventually(haveCount(1))
+        expect(try oldResults.value.first?.get().onlyElement?.underlyingSK1Product) === oldProduct
+        expect(try currentResults.value.first?.get().onlyElement?.underlyingSK1Product) === currentProduct
+        expect(try joiningResults.value.first?.get().onlyElement?.underlyingSK1Product) === currentProduct
+        expect(oldResults.value).to(haveCount(1))
+        expect(factory.startedRequests).to(haveCount(2))
+    }
+
     func testSuccessfulRetryDoesNotCompleteAgainAtOriginalTimeout() throws {
         let factory = DeferredProductsRequestFactory()
         let fetcher = ProductsFetcherSK1(productsRequestFactory: factory, requestTimeout: 0.5)
@@ -301,9 +355,15 @@ private final class DeferredProductsRequestFactory: ProductsRequestFactory, @unc
     }
 
     private let requests = Atomic<[DeferredProductsRequest]>([])
+    private let failOnStart: Bool
+
+    init(failOnStart: Bool = false) {
+        self.failOnStart = failOnStart
+        super.init()
+    }
 
     override func request(productIdentifiers: Set<String>) -> SKProductsRequest {
-        let request = DeferredProductsRequest(productIdentifiers: productIdentifiers)
+        let request = DeferredProductsRequest(productIdentifiers: productIdentifiers, failOnStart: self.failOnStart)
         self.requests.modify { $0.append(request) }
         return request
     }
@@ -322,9 +382,18 @@ private final class DeferredProductsRequest: MockProductsRequest, @unchecked Sen
 
     private let started: Atomic<Bool> = false
     private let cancellations = Atomic(0)
+    private let failOnStart: Bool
+
+    init(productIdentifiers: Set<String>, failOnStart: Bool) {
+        self.failOnStart = failOnStart
+        super.init(productIdentifiers: productIdentifiers)
+    }
 
     override func start() {
         self.started.value = true
+        if self.failOnStart {
+            self.fail()
+        }
     }
 
     override func cancel() {
