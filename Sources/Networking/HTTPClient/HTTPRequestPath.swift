@@ -177,7 +177,6 @@ extension HTTPRequest {
 
         case logIn
         case health
-        case isPurchaseAllowedByRestoreBehavior(appUserID: String)
         case rewardVerificationStatus(appUserID: String, clientTransactionID: String, adUnitID: String?)
         case remoteConfig(domain: String)
 
@@ -235,7 +234,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
     var authenticated: Bool {
         switch self {
         case .logIn,
-                .isPurchaseAllowedByRestoreBehavior,
                 .rewardVerificationStatus,
                 .remoteConfig,
                 .tokenLogin,
@@ -251,7 +249,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
     var shouldSendEtag: Bool {
         switch self {
         case .logIn,
-                .isPurchaseAllowedByRestoreBehavior,
                 .rewardVerificationStatus,
                 .tokenLogin,
                 .tokenRefresh,
@@ -267,7 +264,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .logIn,
                 .health,
-                .isPurchaseAllowedByRestoreBehavior,
                 .remoteConfig,
                 .rewardVerificationStatus:
             return true
@@ -282,7 +278,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .logIn,
                 .health,
-                .isPurchaseAllowedByRestoreBehavior,
                 .remoteConfig,
                 .rewardVerificationStatus,
                 .tokenLogin,
@@ -322,9 +317,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .health:
             return "health"
 
-        case let .isPurchaseAllowedByRestoreBehavior(appUserID):
-            return "subscribers/\(Self.escape(appUserID))/restore/eligibility"
-
         case let .rewardVerificationStatus(appUserID, clientTransactionID, adUnitID):
             let path = "subscribers/\(Self.escape(appUserID))/ads/reward_verifications/"
                 + Self.escape(clientTransactionID)
@@ -360,8 +352,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return self.pathComponent
         case .health:
             return self.pathComponent
-        case .isPurchaseAllowedByRestoreBehavior:
-            return "customer/restore/eligibility"
         case .rewardVerificationStatus:
             return self.pathComponent
         case .remoteConfig:
@@ -382,9 +372,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .health:
             return "post_health"
-
-        case .isPurchaseAllowedByRestoreBehavior:
-            return "post_restore_eligibility"
 
         case .rewardVerificationStatus:
             return "get_reward_verification_status"

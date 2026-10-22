@@ -543,7 +543,6 @@ class HTTPRequestTests: TestCase {
     /// relative path it should resolve to when IAM access-token authorization is preferred.
     private static let iamPathComponentsByPath: [HTTPRequest.Path: String] = [
         .health: "health",
-        .isPurchaseAllowedByRestoreBehavior(appUserID: userID): "customer/restore/eligibility",
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil):
             "subscribers/\(userID)/ads/reward_verifications/\(clientTransactionID)",
         .remoteConfig(domain: "app"): "config/app"
@@ -847,7 +846,9 @@ class HTTPRequestTests2: TestCase {
         .getProductEntitlementMapping,
         .getVirtualCurrencies(appUserID: userID),
         .spendVirtualCurrencies,
-        .postExternalPurchaseToken
+        .postExternalPurchaseToken,
+        .postCreateTicket,
+        .isPurchaseAllowedByRestoreBehavior(appUserID: userID)
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path2> = []
     private static let pathsWithoutETags: Set<HTTPRequest.Path2> = [.postExternalPurchaseToken]
@@ -860,7 +861,8 @@ class HTTPRequestTests2: TestCase {
         .appHealthReportAvailability(appUserID: userID),
         .getProductEntitlementMapping,
         .getVirtualCurrencies(appUserID: userID),
-        .spendVirtualCurrencies
+        .spendVirtualCurrencies,
+        .isPurchaseAllowedByRestoreBehavior(appUserID: userID)
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path2> = [
         .postRedeemWebPurchase,
@@ -868,7 +870,8 @@ class HTTPRequestTests2: TestCase {
         .postReceiptData,
         .appHealthReportAvailability(appUserID: userID),
         .getVirtualCurrencies(appUserID: userID),
-        .spendVirtualCurrencies
+        .spendVirtualCurrencies,
+        .isPurchaseAllowedByRestoreBehavior(appUserID: userID)
     ]
     private static let pathsWithUserID: [HTTPRequest.Path2] = [
         .getCustomerInfo(appUserID: anonymousUser),
@@ -879,7 +882,8 @@ class HTTPRequestTests2: TestCase {
         .postAdServicesToken(appUserID: anonymousUser),
         .appHealthReport(appUserID: anonymousUser),
         .appHealthReportAvailability(appUserID: anonymousUser),
-        .getVirtualCurrencies(appUserID: anonymousUser)
+        .getVirtualCurrencies(appUserID: anonymousUser),
+        .isPurchaseAllowedByRestoreBehavior(appUserID: anonymousUser)
     ]
 
     func testPathsDontHaveLeadingSlash() {
@@ -1370,7 +1374,8 @@ class HTTPRequestTests2: TestCase {
         .getVirtualCurrencies(appUserID: userID): "customer/virtual_currencies",
         .spendVirtualCurrencies: "customer/virtual_currencies/spend",
         .postExternalPurchaseToken: "external_purchase_tokens",
-        .postCreateTicket: "customercenter/support/create-ticket"
+        .postCreateTicket: "customercenter/support/create-ticket",
+        .isPurchaseAllowedByRestoreBehavior(appUserID: userID): "customer/restore/eligibility"
     ]
 
     func testRewardVerificationStatusPathIncludesAdUnitIDQueryParameter() {

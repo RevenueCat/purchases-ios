@@ -337,4 +337,13 @@ extension HTTPRequest.Path2 {
                                                     supportsSignatureVerification: false,
                                                     needsNonceForSigning: false,
                                                     pathComponent: "customercenter/support/create-ticket")
+
+    static func isPurchaseAllowedByRestoreBehavior(appUserID: String) -> Self {
+        HTTPRequest.Path2(name: "post_restore_eligibility",
+                          etagBehavior: .send,
+                          supportsSignatureVerification: true,
+                          needsNonceForSigning: true,
+                          pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/restore/eligibility",
+                          iamPathComponent: "customer/restore/eligibility")
+    }
 }
