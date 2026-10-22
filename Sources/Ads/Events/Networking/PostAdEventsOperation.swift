@@ -37,7 +37,7 @@ final class PostAdEventsOperation: NetworkOperation {
     }
 
     override func begin(completion: @escaping () -> Void) {
-        let httpRequest = HTTPRequest(method: .post(self.request), requestPath: self.path)
+        let httpRequest = HTTPRequest(method: .post(self.request), path: self.path)
 
         self.httpClient.perform(httpRequest) { (response: VerifiedHTTPResponse<HTTPEmptyResponseBody>.Result) in
             defer {

@@ -82,10 +82,9 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         expect(info2.isComputedOffline) == false
 
         self.logger.verifyMessageWasLogged(Strings.customerInfo.vending_cache, level: .debug)
-        let path = HTTPRequest.Path.getCustomerInfo(appUserID: try self.purchases.appUserID)
         self.logger.verifyMessageWasNotLogged(
             Strings.network.api_request_started(
-                .init(method: .get, requestPath: path)
+                .init(method: .get, path: .getCustomerInfo(appUserID: try self.purchases.appUserID))
             )
         )
     }
@@ -114,8 +113,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         )
         self.logger.verifyMessageWasLogged(
             Strings.network.api_request_completed(
-                .init(method: .get,
-                      requestPath: HTTPRequest.Path.getOfferings(appUserID: try self.purchases.appUserID)),
+                .init(method: .get, path: .getOfferings(appUserID: try self.purchases.appUserID)),
                 httpCode: .notModified,
                 metadata: nil
             ),
@@ -132,7 +130,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         // 2. Verify only one CustomerInfo request was done
         let path = HTTPRequest.Path.getCustomerInfo(appUserID: try self.purchases.appUserID)
         self.logger.verifyMessageWasLogged(
-            Strings.network.api_request_started(.init(method: .get, requestPath: path)),
+            Strings.network.api_request_started(.init(method: .get, path: path)),
             level: .debug,
             expectedCount: 1
         )
@@ -145,10 +143,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         // 2. Verify only one Offerings request was done
         try self.logger.verifyMessageWasLogged(
             Strings.network.api_request_started(
-                .init(
-                    method: .get,
-                    requestPath: HTTPRequest.Path.getOfferings(appUserID: self.purchases.appUserID)
-                )
+                .init(method: .get, path: .getOfferings(appUserID: self.purchases.appUserID))
             ),
             level: .debug,
             expectedCount: 1
@@ -163,7 +158,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         let info2 = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
 
         let path = HTTPRequest.Path.getCustomerInfo(appUserID: try self.purchases.appUserID)
-        let expectedRequest = HTTPRequest(method: .get, requestPath: path)
+        let expectedRequest = HTTPRequest(method: .get, path: path)
 
         // 3. Verify response was 304
         self.logger.verifyMessageWasLogged(
@@ -184,7 +179,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
         let info3 = try await self.purchases.customerInfo(fetchPolicy: .fetchCurrent)
 
         let path = HTTPRequest.Path.getCustomerInfo(appUserID: try self.purchases.appUserID)
-        let expectedRequest = HTTPRequest(method: .get, requestPath: path)
+        let expectedRequest = HTTPRequest(method: .get, path: path)
 
         // 4. Verify response was 304
         self.logger.verifyMessageWasLogged(
@@ -281,7 +276,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
     func testHandledByProductionServer() async throws {
         try await self.purchases.healthRequest(signatureVerification: false)
 
-        self.logger.verifyMessageWasNotLogged(Strings.network.request_handled_by_load_shedder(HTTPRequest.Path.health))
+        self.logger.verifyMessageWasNotLogged(Strings.network.request_handled_by_load_shedder(.health))
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

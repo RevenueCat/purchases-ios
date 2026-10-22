@@ -818,8 +818,8 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         expect(updatedSubscriberInfo.value) != originalSubscriberInfo.value
 
         expect(self.httpClient.calls.count) == 2
-        expect(self.httpClient.calls.first?.request.path as? HTTPRequest.Path) == getCustomerInfoPath
-        expect(self.httpClient.calls.last?.request.path as? HTTPRequest.Path) == .postReceiptData
+        expect(self.httpClient.calls.first?.request.path) == getCustomerInfoPath
+        expect(self.httpClient.calls.last?.request.path) == .postReceiptData
     }
 
     func testPostingReceiptCreatesACustomerInfoObject() {
@@ -1030,7 +1030,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         let customerInfo = try CustomerInfo(data: Self.validCustomerResponse)
 
         self.httpClient.mock(
-            requestPath: HTTPRequest.Path.postReceiptData,
+            requestPath: .postReceiptData,
             response: .init(error: .serverDown())
         )
         self.mockOfflineCustomerInfoCreator.stubbedCreatedResult = .success(customerInfo)

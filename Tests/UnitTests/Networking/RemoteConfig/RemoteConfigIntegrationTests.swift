@@ -835,7 +835,7 @@ final class RemoteConfigIntegrationTests: TestCase {
 
     func testEnforcedVerificationFailureDoesNotPersistResponse() async throws {
         self.mockRemoteConfigError(.signatureVerificationFailed(
-            path: HTTPRequest.Path.remoteConfig(domain: RemoteConfiguration.defaultDomain),
+            path: .remoteConfig(domain: RemoteConfiguration.defaultDomain),
             code: .success
         ))
 
@@ -1104,7 +1104,7 @@ private extension RemoteConfigIntegrationTests {
         verificationResult: SignatureVerificationResult = .verified
     ) {
         self.httpClient.mock(
-            requestPath: HTTPRequest.Path.remoteConfigFallback(domain: RemoteConfiguration.defaultDomain),
+            requestPath: .remoteConfigFallback(domain: RemoteConfiguration.defaultDomain),
             response: .init(statusCode: statusCode, body: body, verificationResult: verificationResult)
         )
     }
@@ -1118,7 +1118,7 @@ private extension RemoteConfigIntegrationTests {
 
     func mockRemoteConfigFallbackError(_ error: NetworkError) {
         self.httpClient.mock(
-            requestPath: HTTPRequest.Path.remoteConfigFallback(domain: RemoteConfiguration.defaultDomain),
+            requestPath: .remoteConfigFallback(domain: RemoteConfiguration.defaultDomain),
             response: .init(error: error)
         )
     }

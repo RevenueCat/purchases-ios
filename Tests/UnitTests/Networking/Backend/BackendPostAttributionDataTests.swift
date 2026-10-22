@@ -25,7 +25,7 @@ class BackendPostAttributionDataTests: BaseBackendTests {
 
     func testPostAttributesPutsDataInDataKey() throws {
         self.httpClient.mock(
-            requestPath: HTTPRequest.Path.postAttributionData(appUserID: Self.userID),
+            requestPath: .postAttributionData(appUserID: Self.userID),
             response: .init(statusCode: .success)
         )
 

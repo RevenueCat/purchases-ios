@@ -519,7 +519,7 @@ class TokenManagerTests: TestCase {
             fail("Expected .refresh, got \(action)")
             return
         }
-        expect(refreshRequest.path as? HTTPRequest.Path) == .tokenRefresh
+        expect(refreshRequest.path) == .tokenRefresh
         expect(refreshRequest.isRetryable) == false
         let body = try XCTUnwrap(refreshRequest.requestBody as? TokenRefreshOperation.Body)
         expect(body.refreshToken) == "current-refresh-token"
@@ -536,7 +536,7 @@ class TokenManagerTests: TestCase {
 
         var duplicateHandlerResult: Bool?
         let secondAction = manager.tokenRefreshRequest(
-            for: Self.makeRequest(path: HTTPRequest.Path.getOfferings(appUserID: "user")),
+            for: Self.makeRequest(path: .getOfferings(appUserID: "user")),
             response: Self.unauthorizedResponse
         ) { wasSuccessful in
             duplicateHandlerResult = wasSuccessful
@@ -664,7 +664,7 @@ class TokenManagerTests: TestCase {
 
         _ = manager.tokenRefreshRequest(for: Self.makeRequest(), response: Self.unauthorizedResponse) { _ in }
         var duplicateResult: Bool?
-        _ = manager.tokenRefreshRequest(for: Self.makeRequest(path: HTTPRequest.Path.getOfferings(appUserID: "user")),
+        _ = manager.tokenRefreshRequest(for: Self.makeRequest(path: .getOfferings(appUserID: "user")),
                                         response: Self.unauthorizedResponse) { wasSuccessful in
             duplicateResult = wasSuccessful
         }
@@ -723,7 +723,7 @@ private extension TokenManagerTests {
     /// Builds a minimal `HTTPClient.Request` for exercising `TokenManager` methods that take one,
     /// without needing to spin up a full `HTTPClient`.
     static func makeRequest(path: HTTPRequest.Path) -> HTTPClient.Request {
-        let httpRequest = HTTPRequest(method: .get, requestPath: path)
+        let httpRequest = HTTPRequest(method: .get, path: path)
         return HTTPClient.Request(httpRequest: httpRequest,
                                   authHeaders: [:],
                                   defaultHeaders: [:],
@@ -734,7 +734,7 @@ private extension TokenManagerTests {
     }
 
     static func makeRequest() -> HTTPClient.Request {
-        self.makeRequest(path: HTTPRequest.Path.getCustomerInfo(appUserID: "user"))
+        self.makeRequest(path: .getCustomerInfo(appUserID: "user"))
     }
 
     static func makeTokenResponse(

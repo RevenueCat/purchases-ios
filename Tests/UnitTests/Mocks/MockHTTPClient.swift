@@ -160,11 +160,7 @@ class MockHTTPClient: HTTPClient {
     }
 
     func mock(requestPath: HTTPRequest.Path, response: Response) {
-        self.mock(path: requestPath, response: response)
-    }
-
-    private func mock(path: HTTPRequest.Path, response: Response) {
-        self.mocks[path.url(preferIAMPath: false)!] = response
+        self.mocks[requestPath.url(preferIAMPath: false)!] = response
     }
 
     /// Override headers that depend on the environment to make them stable.

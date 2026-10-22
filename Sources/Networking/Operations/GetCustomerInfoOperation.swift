@@ -85,8 +85,7 @@ private extension GetCustomerInfoOperation {
             return
         }
 
-        let path = HTTPRequest.Path.getCustomerInfo(appUserID: appUserID)
-        let request = HTTPRequest(method: .get, requestPath: path)
+        let request = HTTPRequest(method: .get, path: .getCustomerInfo(appUserID: appUserID))
 
         self.httpClient.perform(
             request

@@ -287,10 +287,10 @@ class HTTPRequestTests: TestCase {
 
     func testWebBillingPathsUseAPISources() {
         let paths: [HTTPRequest.Path] = [
-            HTTPRequest.Path.getWebOfferingProducts(appUserID: Self.userID),
-            HTTPRequest.Path.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"]),
-            HTTPRequest.Path.postHostedCheckout,
-            HTTPRequest.Path.getHostedCheckoutStatus(operationSessionID: "opsession_123", appUserID: Self.userID)
+            .getWebOfferingProducts(appUserID: Self.userID),
+            .getWebBillingProducts(userId: Self.userID, productIds: ["product_1"]),
+            .postHostedCheckout,
+            .getHostedCheckoutStatus(operationSessionID: "opsession_123", appUserID: Self.userID)
         ]
         for path in paths {
             expect(path.usesAPISources).to(beTrue(), description: "Path '\(path)' should use API sources")
@@ -443,7 +443,7 @@ class HTTPRequestTests: TestCase {
 
     func testNonMainPathsDoNotUseAPISources() {
         let paths: [HTTPRequest.Path] = [
-            HTTPRequest.Path.postDiagnostics
+            .postDiagnostics
         ]
         for path in paths {
             expect(path.usesAPISources).to(beFalse(), description: "Path '\(path)' should not use API sources")
@@ -464,45 +464,40 @@ class HTTPRequestTests: TestCase {
     }
 
     func testAddNonceIfRequiredWithPathWithNoSignatureVerification() throws {
-        let request: HTTPRequest = .init(method: .get, requestPath: HTTPRequest.Path.postOfferForSigning)
+        let request: HTTPRequest = .init(method: .get, path: .postOfferForSigning)
         let mode = Signing.enforcedVerificationMode()
 
         expect(request.requestAddingNonceIfRequired(with: mode).nonce).to(beNil())
     }
 
     func testAddNonceIfRequiredWithPathNotRequiringNonce() throws {
-        let request: HTTPRequest = .init(method: .get,
-                                         requestPath: HTTPRequest.Path.getOfferings(appUserID: Self.userID))
+        let request: HTTPRequest = .init(method: .get, path: .getOfferings(appUserID: Self.userID))
         let mode = Signing.enforcedVerificationMode()
 
         expect(request.requestAddingNonceIfRequired(with: mode).nonce).to(beNil())
     }
 
     func testAddNonceIfRequiredForPathWithSignatureVerificationWhenEnforced() throws {
-        let path = HTTPRequest.Path.getCustomerInfo(appUserID: "user")
-        let request: HTTPRequest = .init(method: .get, requestPath: path)
+        let request: HTTPRequest = .init(method: .get, path: .getCustomerInfo(appUserID: "user"))
         let mode = Signing.enforcedVerificationMode()
 
         expect(request.requestAddingNonceIfRequired(with: mode).nonce).toNot(beNil())
     }
 
     func testAddNonceIfRequiredForPathWithSignatureVerificationWhenModeInformational() throws {
-        let path = HTTPRequest.Path.getCustomerInfo(appUserID: "user")
-        let request: HTTPRequest = .init(method: .get, requestPath: path)
+        let request: HTTPRequest = .init(method: .get, path: .getCustomerInfo(appUserID: "user"))
         let mode = Signing.verificationMode(with: .informational)
 
         expect(request.requestAddingNonceIfRequired(with: mode).nonce).toNot(beNil())
     }
 
     func testRequestIsNotRetryableByDefault() {
-        let path = HTTPRequest.Path.getCustomerInfo(appUserID: "user")
-        let request: HTTPRequest = .init(method: .get, requestPath: path)
+        let request: HTTPRequest = .init(method: .get, path: .getCustomerInfo(appUserID: "user"))
         expect(request.isRetryable).to(beFalse())
     }
 
     func testRequestIsRetryableIfSet() {
-        let path = HTTPRequest.Path.getCustomerInfo(appUserID: "user")
-        let request: HTTPRequest = .init(method: .get, requestPath: path, isRetryable: true)
+        let request: HTTPRequest = .init(method: .get, path: .getCustomerInfo(appUserID: "user"), isRetryable: true)
         expect(request.isRetryable).to(beTrue())
     }
 
@@ -525,10 +520,7 @@ class HTTPRequestTests: TestCase {
     }
 
     func testFallbackConfigDoesNotRequestRCContainerFormat() {
-        let request: HTTPRequest = .init(
-            method: .get,
-            requestPath: HTTPRequest.Path.remoteConfigFallback(domain: "app")
-        )
+        let request: HTTPRequest = .init(method: .get, path: .remoteConfigFallback(domain: "app"))
         let headers = request.headers(
             with: [:],
             defaultHeaders: [:],
@@ -545,7 +537,7 @@ class HTTPRequestTests: TestCase {
         let sandboxHeader = HTTPClient.RequestHeader.sandbox.rawValue
         let request = HTTPRequest(
             method: .get,
-            requestPath: HTTPRequest.Path.getCustomerInfo(appUserID: "user"),
+            path: .getCustomerInfo(appUserID: "user"),
             additionalHeaders: [sandboxHeader: "false"]
         )
 

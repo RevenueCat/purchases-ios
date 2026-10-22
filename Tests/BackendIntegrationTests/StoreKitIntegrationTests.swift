@@ -1262,7 +1262,7 @@ private extension StoreKit1IntegrationTests {
     ) throws {
         let request = HTTPRequest(
             method: .post(EmptyRequestBody()),
-            requestPath: HTTPRequest.Path.getIntroEligibility(appUserID: "test-app-user-id")
+            path: .getIntroEligibility(appUserID: "test-app-user-id")
         )
         let message = Strings.network.api_request_started(request).description
         let regex = try NSRegularExpression(pattern: Self.introEligibilityRequestStartedLogRegex)

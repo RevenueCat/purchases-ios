@@ -437,7 +437,7 @@ class SigningTests: TestCase {
         expect(
             self.signing.verificationResult(
                 for: expectedSignature,
-                with: .init(path: HTTPRequest.Path.getCustomerInfo(appUserID: "login"),
+                with: .init(path: .getCustomerInfo(appUserID: "login"),
                             iamEnabled: false,
                             message: response.asData,
                             requestHeaders: [:],
@@ -473,7 +473,7 @@ class SigningTests: TestCase {
             self.signing.verificationResult(
                 for: expectedSignature,
                 with: .init(
-                    path: HTTPRequest.Path.getOfferings(appUserID: "test"),
+                    path: .getOfferings(appUserID: "test"),
                     iamEnabled: false,
                     message: response.asData,
                     requestHeaders: [:],
@@ -508,7 +508,7 @@ class SigningTests: TestCase {
             self.signing.verificationResult(
                 for: expectedSignature,
                 with: .init(
-                    path: HTTPRequest.Path.health,
+                    path: .health,
                     iamEnabled: false,
                     message: response.asData,
                     requestHeaders: [:],
@@ -545,7 +545,7 @@ class SigningTests: TestCase {
             self.signing.verificationResult(
                 for: expectedSignature,
                 with: .init(
-                    path: HTTPRequest.Path.getCustomerInfo(appUserID: "login"),
+                    path: .getCustomerInfo(appUserID: "login"),
                     iamEnabled: false,
                     message: nil, // 304 response
                     requestHeaders: [:],
@@ -626,7 +626,7 @@ class SigningTests: TestCase {
             self.signing.verificationResult(
                 for: expectedSignature,
                 with: .init(
-                    path: HTTPRequest.Path.logIn,
+                    path: .logIn,
                     iamEnabled: false,
                     message: response.asData,
                     requestHeaders: [:],
@@ -714,7 +714,7 @@ class SigningTests: TestCase {
             self.signing.verificationResult(
                 for: expectedSignature,
                 with: .init(
-                    path: HTTPRequest.Path.logIn,
+                    path: .logIn,
                     iamEnabled: false,
                     message: response.asData,
                     requestHeaders: [
@@ -960,7 +960,7 @@ class SigningTests: TestCase {
         let message = "Hello World"
         let requestDate = Date().millisecondsSince1970
 
-        let request = HTTPRequest(method: .get, requestPath: HTTPRequest.Path.postOfferForSigning, nonce: nil)
+        let request = HTTPRequest(method: .get, path: .postOfferForSigning, nonce: nil)
         let response = HTTPResponse<Data?>(
             httpStatusCode: .success,
             responseHeaders: [
@@ -993,7 +993,7 @@ class SigningTests: TestCase {
         let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
         let salt = Self.createSalt()
         let request = HTTPRequest(method: .get,
-                                  requestPath: HTTPRequest.Path.getOfferings(appUserID: "userId"),
+                                  path: .getOfferings(appUserID: "userId"),
                                   nonce: nonce.asData)
         let requestHeaders: HTTPRequest.Headers = [
             HTTPClient.RequestHeader.sandbox.rawValue: "\(Bool.random())"
@@ -1042,7 +1042,7 @@ class SigningTests: TestCase {
         let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
         let salt = Self.createSalt()
         let request = HTTPRequest(method: .get,
-                                  requestPath: HTTPRequest.Path.getOfferings(appUserID: "userId"),
+                                  path: .getOfferings(appUserID: "userId"),
                                   nonce: nonce.asData)
         let requestHeaders: HTTPRequest.Headers = [
             HTTPClient.RequestHeader.sandbox.rawValue: "\(Bool.random())"
@@ -1315,7 +1315,7 @@ class SigningTests: TestCase {
         let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
         let salt = Self.createSalt()
         let request = HTTPRequest(method: .get,
-                                  requestPath: HTTPRequest.Path.getCustomerInfo(appUserID: "user"),
+                                  path: .getCustomerInfo(appUserID: "user"),
                                   nonce: nonce.asData)
         let requestHeaders: HTTPRequest.Headers = [:]
 
@@ -1379,7 +1379,7 @@ class SigningTests: TestCase {
         // `.getCustomerInfo` is an authenticated path: unlike `.health`, the auth value is actually
         // folded into the signed bytes, so this test can tell bearer-token from API-key signing apart.
         let request = HTTPRequest(method: .get,
-                                  requestPath: HTTPRequest.Path.getCustomerInfo(appUserID: "user"),
+                                  path: .getCustomerInfo(appUserID: "user"),
                                   nonce: nonce.asData)
         let accessToken = "iam-access-token-123"
         let requestHeaders: HTTPRequest.Headers = [
@@ -1438,7 +1438,7 @@ class SigningTests: TestCase {
         // `.getCustomerInfo` is an authenticated path: unlike `.health`, the auth value is actually
         // folded into the signed bytes, so this test can tell bearer-token from API-key signing apart.
         let request = HTTPRequest(method: .get,
-                                  requestPath: HTTPRequest.Path.getCustomerInfo(appUserID: "user"),
+                                  path: .getCustomerInfo(appUserID: "user"),
                                   nonce: nonce.asData)
         let requestHeaders: HTTPRequest.Headers = [
             HTTPClient.RequestHeader.authorization.rawValue: "Bearer some-access-token"
@@ -1490,7 +1490,7 @@ class SigningTests: TestCase {
 
     func testDebugDescriptionUsesIAMRelativePathWhenIAMEnabled() {
         let parameters: Signing.SignatureParameters = .init(
-            path: HTTPRequest.Path.getCustomerInfo(appUserID: "user"),
+            path: .getCustomerInfo(appUserID: "user"),
             iamEnabled: true,
             message: nil,
             requestHeaders: [:],
@@ -1506,7 +1506,7 @@ class SigningTests: TestCase {
 
     func testDebugDescriptionUsesRegularRelativePathWhenIAMDisabled() {
         let parameters: Signing.SignatureParameters = .init(
-            path: HTTPRequest.Path.getCustomerInfo(appUserID: "user"),
+            path: .getCustomerInfo(appUserID: "user"),
             iamEnabled: false,
             message: nil,
             requestHeaders: [:],
@@ -1567,7 +1567,7 @@ private extension SigningTests {
     )
 
     static let apiKey = "appl_fFVBVAoYujMZJnepIziGKVjnZBz"
-    static let mockPath: HTTPRequest.Path = HTTPRequest.Path.getCustomerInfo(appUserID: "user")
+    static let mockPath: HTTPRequest.Path = .getCustomerInfo(appUserID: "user")
 
     // 2023-07-07: The hardcoded signatures have an intermediate signature that expires
     // 2 weeks after that date.

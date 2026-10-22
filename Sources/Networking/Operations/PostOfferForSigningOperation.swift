@@ -47,7 +47,7 @@ class PostOfferForSigningOperation: NetworkOperation {
     private func post(completion: @escaping () -> Void) {
         let request = HTTPRequest(
             method: .post(Body(appUserID: self.configuration.appUserID, data: self.postOfferData)),
-            requestPath: HTTPRequest.Path.postOfferForSigning
+            path: .postOfferForSigning
         )
 
         self.httpClient.perform(request) { (response: VerifiedHTTPResponse<PostOfferResponse>.Result) in

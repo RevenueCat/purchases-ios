@@ -64,8 +64,7 @@ private extension GetOfferingsOperation {
             return
         }
 
-        let request = HTTPRequest(method: .get,
-                                  requestPath: HTTPRequest.Path.getOfferings(appUserID: appUserID))
+        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: appUserID))
 
         httpClient.perform(request) { (response: VerifiedHTTPResponse<Data>.Result) in
             defer {

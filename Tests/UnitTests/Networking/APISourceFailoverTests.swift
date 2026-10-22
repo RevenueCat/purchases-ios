@@ -12,7 +12,7 @@ import XCTest
 
 final class APISourceFailoverTests: TestCase {
 
-    private static let eligiblePath: HTTPRequest.Path = HTTPRequest.Path.getCustomerInfo(appUserID: "test-user-id")
+    private static let eligiblePath: HTTPRequest.Path = .getCustomerInfo(appUserID: "test-user-id")
 
     // MARK: - currentSource eligibility
 
@@ -40,7 +40,7 @@ final class APISourceFailoverTests: TestCase {
 
     func testCurrentSourceIsNilForPathsThatDoNotUseAPISources() {
         let provider = RecordingSourceProvider(urls: ["https://a.revenuecat.com/"])
-        let path: HTTPRequest.Path = HTTPRequest.Path.postDiagnostics
+        let path: HTTPRequest.Path = .postDiagnostics
 
         expect(Self.failover(provider).currentSource(for: path, isFallbackAttempt: false)).to(beNil())
     }

@@ -89,7 +89,7 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
 
     func testEligibilityUnknownIfMissingAppUserID() {
         self.httpClient.mock(
-            requestPath: HTTPRequest.Path.getIntroEligibility(appUserID: ""),
+            requestPath: .getIntroEligibility(appUserID: ""),
             response: .init(error: .unexpectedResponse(nil))
         )
 
@@ -127,7 +127,7 @@ class BackendGetIntroEligibilityTests: BaseBackendTests {
     func testEligibilityUnknownIfUnknownError() {
         let error: NetworkError = .networkError(NSError(domain: "myhouse", code: 12, userInfo: nil))
         self.httpClient.mock(
-            requestPath: HTTPRequest.Path.getIntroEligibility(appUserID: Self.userID),
+            requestPath: .getIntroEligibility(appUserID: Self.userID),
             response: .init(error: error)
         )
 

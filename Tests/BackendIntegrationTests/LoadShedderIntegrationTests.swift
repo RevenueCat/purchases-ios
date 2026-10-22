@@ -120,7 +120,7 @@ class BaseLoadShedderStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
         let data = try await self.purchaseMonthlyOffering()
 
         self.logger.verifyMessageWasLogged(
-            Strings.network.request_handled_by_load_shedder(HTTPRequest.Path.postReceiptData),
+            Strings.network.request_handled_by_load_shedder(.postReceiptData),
             level: .debug
         )
 
@@ -155,7 +155,7 @@ class BaseLoadShedderStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
         expect(purchasedProductId) == "consumable.10_coins"
 
         self.logger.verifyMessageWasLogged(
-            Strings.network.request_handled_by_load_shedder(HTTPRequest.Path.postReceiptData),
+            Strings.network.request_handled_by_load_shedder(.postReceiptData),
             level: .debug
         )
 
@@ -173,7 +173,7 @@ class BaseLoadShedderStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
         try await self.verifyEntitlementWentThrough(purchaseData.customerInfo)
 
         self.logger.verifyMessageWasLogged(
-            Strings.network.request_handled_by_load_shedder(HTTPRequest.Path.postReceiptData),
+            Strings.network.request_handled_by_load_shedder(.postReceiptData),
             level: .debug
         )
 
@@ -196,7 +196,7 @@ class BaseLoadShedderStoreKitIntegrationTests: BaseStoreKitIntegrationTests {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         try await self.logger.verifyMessageIsEventuallyLogged(
-            Strings.network.request_handled_by_load_shedder(HTTPRequest.Path.getProductEntitlementMapping).description,
+            Strings.network.request_handled_by_load_shedder(.getProductEntitlementMapping).description,
             level: .debug,
             timeout: .seconds(5),
             pollInterval: .milliseconds(100)

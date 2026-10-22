@@ -28,23 +28,9 @@ struct HTTPRequest {
     /// Whether or not this request should be retried by the HTTPClient for certain status codes.
     var isRetryable: Bool
 
-    init(
-        method: Method,
-        path: HTTPRequest.Path,
-        additionalHeaders: Headers = [:],
-        nonce: Data? = nil,
-        isRetryable: Bool = false
-    ) {
-        self.init(method: method,
-                  requestPath: path,
-                  additionalHeaders: additionalHeaders,
-                  nonce: nonce,
-                  isRetryable: isRetryable)
-    }
-
     internal init(
         method: Method,
-        requestPath: HTTPRequest.Path,
+        path: HTTPRequest.Path,
         additionalHeaders: Headers = [:],
         nonce: Data? = nil,
         isRetryable: Bool = false
@@ -53,7 +39,7 @@ struct HTTPRequest {
                "Invalid nonce: \(nonce?.description ?? "")")
 
         self.method = method
-        self.path = requestPath
+        self.path = path
         self.additionalHeaders = additionalHeaders
         self.nonce = nonce
         self.isRetryable = isRetryable
