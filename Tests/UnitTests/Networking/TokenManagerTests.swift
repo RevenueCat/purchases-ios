@@ -733,10 +733,6 @@ private extension TokenManagerTests {
                                   completionHandler: { (_: VerifiedHTTPResponse<Data>.Result) in })
     }
 
-    static func makeRequest(path: HTTPRequest.Path) -> HTTPClient.Request {
-        self.makeRequest(path: path as any HTTPRequestPath)
-    }
-
     static func makeRequest(path: HTTPRequest.Path2) -> HTTPClient.Request {
         self.makeRequest(path: path as any HTTPRequestPath)
     }

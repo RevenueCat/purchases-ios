@@ -198,7 +198,7 @@ class SystemInfo {
     }
 
     /*
-     Allows for updating the base URL for API calls that use `HTTPRequest.Path`.
+     Allows for updating the base URL for API calls that use `HTTPRequest.Path2`.
      Useful for testing in case we want to perform tests against another instance of our backend.
      
      We've decided not to use the proxy URL for this, because it's behavior is slightly different. 

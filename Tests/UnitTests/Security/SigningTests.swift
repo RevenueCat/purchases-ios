@@ -508,7 +508,7 @@ class SigningTests: TestCase {
             self.signing.verificationResult(
                 for: expectedSignature,
                 with: .init(
-                    path: HTTPRequest.Path.health,
+                    path: HTTPRequest.Path2.health,
                     iamEnabled: false,
                     message: response.asData,
                     requestHeaders: [:],
@@ -626,7 +626,7 @@ class SigningTests: TestCase {
             self.signing.verificationResult(
                 for: expectedSignature,
                 with: .init(
-                    path: HTTPRequest.Path.logIn,
+                    path: HTTPRequest.Path2.logIn,
                     iamEnabled: false,
                     message: response.asData,
                     requestHeaders: [:],
@@ -714,7 +714,7 @@ class SigningTests: TestCase {
             self.signing.verificationResult(
                 for: expectedSignature,
                 with: .init(
-                    path: HTTPRequest.Path.logIn,
+                    path: HTTPRequest.Path2.logIn,
                     iamEnabled: false,
                     message: response.asData,
                     requestHeaders: [
@@ -1588,10 +1588,6 @@ private extension Date {
 extension HTTPRequest {
 
     /// Creates an `HTTPRequest` with a `nonce`.
-    static func createWithResponseVerification(method: Method, path: Path) -> Self {
-        return .init(method: method, path: path, nonce: Data.randomNonce())
-    }
-
     static func createWithResponseVerification(method: Method, path: Path2) -> Self {
         return .init(method: method, path: path, nonce: Data.randomNonce())
     }

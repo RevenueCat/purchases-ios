@@ -30,22 +30,6 @@ struct HTTPRequest {
 
     init(
         method: Method,
-        path: HTTPRequest.Path,
-        additionalHeaders: Headers = [:],
-        nonce: Data? = nil,
-        isRetryable: Bool = false
-    ) {
-        self.init(
-            method: method,
-            requestPath: path,
-            additionalHeaders: additionalHeaders,
-            nonce: nonce,
-            isRetryable: isRetryable
-        )
-    }
-
-    init(
-        method: Method,
         path: HTTPRequest.Path2,
         additionalHeaders: Headers = [:],
         nonce: Data? = nil,

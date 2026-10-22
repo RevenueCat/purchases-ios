@@ -166,6 +166,19 @@ extension HTTPRequest.Path2 {
     // swiftlint:disable:next force_unwrapping
     private static let postAdEventsHost = URL(string: "https://a.revenue.cat")!
 
+    static let logIn = HTTPRequest.Path2(name: "log_in",
+                                         etagBehavior: .send,
+                                         supportsSignatureVerification: true,
+                                         needsNonceForSigning: true,
+                                         pathComponent: "subscribers/identify")
+
+    static let health = HTTPRequest.Path2(name: "post_health",
+                                          authenticated: false,
+                                          etagBehavior: .ignore,
+                                          supportsSignatureVerification: true,
+                                          needsNonceForSigning: true,
+                                          pathComponent: "health")
+
     static func getCustomerInfo(appUserID: String) -> Self {
         HTTPRequest.Path2(name: "get_customer",
                           etagBehavior: .send,

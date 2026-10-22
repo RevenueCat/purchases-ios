@@ -241,7 +241,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
 
         // Verify the anonymous request only started after logIn completed, otherwise the race was not reproduced.
         let anonymousPath = HTTPRequest.Path2.getCustomerInfo(appUserID: anonymousUserID).relativePath
-        let logInCompleted = "API request completed: POST '\(HTTPRequest.Path.logIn.relativePath)'"
+        let logInCompleted = "API request completed: POST '\(HTTPRequest.Path2.logIn.relativePath)'"
         let anonymousFetchStarted = Strings.network.starting_request(httpMethod: "GET", path: anonymousPath).description
         let messages = self.logger.messages.map(\.message)
         let logInIndex = try XCTUnwrap(messages.lastIndex { $0.contains(logInCompleted) })
@@ -281,7 +281,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
     func testHandledByProductionServer() async throws {
         try await self.purchases.healthRequest(signatureVerification: false)
 
-        self.logger.verifyMessageWasNotLogged(Strings.network.request_handled_by_load_shedder(HTTPRequest.Path.health))
+        self.logger.verifyMessageWasNotLogged(Strings.network.request_handled_by_load_shedder(HTTPRequest.Path2.health))
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -342,7 +342,7 @@ class OtherIntegrationTests: BaseBackendIntegrationTests {
     func testDoesntRetryUnsupportedURLPaths() async throws {
         // Ensure that the each time POST /receipt is called, we mock a 429 error
         var stubbedRequestCount = 0
-        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
+        let host = try XCTUnwrap(HTTPRequest.Path2.serverHostURL.host)
         stub(condition: isHost(host) && isPath("/v1/subscribers/identify")) { _ in
             stubbedRequestCount += 1
             return Self.emptyTooManyRequestsResponse()

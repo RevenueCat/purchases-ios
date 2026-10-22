@@ -465,7 +465,7 @@ class NetworkErrorTests: TestCase {
     private static let unexpectedResponseError: NetworkError = .unexpectedResponse(nil)
 
     private static let signatureVerificationFailed: NetworkError = .signatureVerificationFailed(
-        path: HTTPRequest.Path.health,
+        path: HTTPRequest.Path2.health,
         code: .success
     )
 

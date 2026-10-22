@@ -46,7 +46,7 @@ class BaseSignatureVerificationHTTPClientTests: BaseHTTPClientTests<ETagManager,
         super.tearDown()
     }
 
-    fileprivate static let path: HTTPRequest.Path = .mockPath
+    fileprivate static let path: HTTPRequest.Path2 = .mockPath
     fileprivate static let eTag = "etag"
     fileprivate static let sampleSignature = "signature"
     fileprivate static let date1 = Date().addingTimeInterval(-30000000)

@@ -548,7 +548,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             return .emptySuccessResponse()
         }
 
-        let firstRequestPath = HTTPRequest.Path.mockPath.relativePath
+        let firstRequestPath = HTTPRequest.Path2.mockPath.relativePath
         let queuedRequestPath = HTTPRequest.Path2.getCustomerInfo(appUserID: "queued-user").relativePath
 
         let firstRequestCompleted: Atomic<Bool> = false
@@ -2624,7 +2624,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testPerformSerialRequestPerformsAllRequestsInTheCorrectOrder() {
-        let path: HTTPRequest.Path = .mockPath
+        let path: HTTPRequest.Path2 = .mockPath
 
         let completionCallCount: Atomic<Int> = .init(0)
 
@@ -2654,7 +2654,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testPerformSerialRequestWaitsUntilFirstRequestIsDoneBeforeStartingSecond() {
-        let path: HTTPRequest.Path = .mockPath
+        let path: HTTPRequest.Path2 = .mockPath
 
         let firstRequestFinished: Atomic<Bool> = false
         let secondRequestFinished: Atomic<Bool> = false
@@ -2695,7 +2695,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testPerformSerialRequestWaitsUntilRequestsAreDoneBeforeStartingNext() {
-        let path: HTTPRequest.Path = .mockPath
+        let path: HTTPRequest.Path2 = .mockPath
 
         let firstRequestFinished: Atomic<Bool> = false
         let secondRequestFinished: Atomic<Bool> = false
@@ -2760,11 +2760,11 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         }
 
         let error = try XCTUnwrap(response?.error)
-        expect(error) == .unableToCreateRequest(HTTPRequest.Path.mockPath)
+        expect(error) == .unableToCreateRequest(HTTPRequest.Path2.mockPath)
     }
 
     func testPerformRequestDoesntPerformRequestIfBodyCouldntBeParsedIntoJSON() {
-        let path: HTTPRequest.Path = .mockPath
+        let path: HTTPRequest.Path2 = .mockPath
 
         let httpCallMade: Atomic<Bool> = false
 
@@ -2783,7 +2783,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testRequestIsRetriedIfResponseFromETagManagerIsNil() {
-        let path: HTTPRequest.Path = .mockPath
+        let path: HTTPRequest.Path2 = .mockPath
 
         let requests: Atomic<Int> = .init(0)
 
@@ -2811,7 +2811,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testGetsResponseFromETagManagerWhenStatusCodeIsNotModified() throws {
-        let path: HTTPRequest.Path = .mockPath
+        let path: HTTPRequest.Path2 = .mockPath
 
         let mockedCachedResponse = try JSONSerialization.data(withJSONObject: [
             "test": "data"
@@ -2862,7 +2862,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testDNSCheckerIsCalledWhenGETRequestFailedWithUnknownError() {
-        let path: HTTPRequest.Path = .mockPath
+        let path: HTTPRequest.Path2 = .mockPath
 
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
         MockDNSChecker.stubbedIsBlockedAPIErrorResult.value = false
@@ -2884,7 +2884,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testDNSCheckerIsCalledWhenPOSTRequestFailedWithUnknownError() {
-        let path: HTTPRequest.Path = .mockPath
+        let path: HTTPRequest.Path2 = .mockPath
 
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
         MockDNSChecker.stubbedIsBlockedAPIErrorResult.value = false
@@ -2906,7 +2906,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testDNSCheckedIsCalledWhenPOSTRequestFailedWithDNSError() {
-        let path: HTTPRequest.Path = .mockPath
+        let path: HTTPRequest.Path2 = .mockPath
 
         let fakeSubscribersURL = URL(string: "https://0.0.0.0/subscribers")!
         let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: fakeSubscribersURL]
@@ -2932,7 +2932,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testDNSCheckedIsCalledWhenGETRequestFailedWithDNSError() {
-        let path: HTTPRequest.Path = .mockPath
+        let path: HTTPRequest.Path2 = .mockPath
 
         let fakeSubscribersURL = URL(string: "https://0.0.0.0/subscribers")!
         let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: fakeSubscribersURL]
@@ -2957,7 +2957,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testOfflineConnectionError() {
-        let path: HTTPRequest.Path = .mockPath
+        let path: HTTPRequest.Path2 = .mockPath
 
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorNotConnectedToInternet)
         let expectedError: NetworkError = .networkError(error)
@@ -2980,7 +2980,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testErrorIsLoggedAndReturnsDNSErrorWhenGETRequestFailedWithDNSError() {
-        let path: HTTPRequest.Path = .mockPath
+        let path: HTTPRequest.Path2 = .mockPath
 
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
         let expectedDNSError: NetworkError = .dnsError(
@@ -3011,7 +3011,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testErrorIsntLoggedWhenGETRequestFailedWithUnknownError() {
-        let path: HTTPRequest.Path = .mockPath
+        let path: HTTPRequest.Path2 = .mockPath
 
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
         let unexpectedDNSError: NetworkError = .dnsError(
@@ -3039,7 +3039,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testResponseFromServerUpdatesRequestDate() throws {
-        let path: HTTPRequest.Path = .mockPath
+        let path: HTTPRequest.Path2 = .mockPath
         let mockedResponse = BodyWithDate(data: "test", requestDate: Date().addingTimeInterval(-3000000))
         let encodedResponse = try mockedResponse.jsonEncodedData
         let requestDate = Date().addingTimeInterval(-100000)
@@ -3063,7 +3063,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testCachedResponseUpdatesRequestDate() throws {
-        let path: HTTPRequest.Path = .mockPath
+        let path: HTTPRequest.Path2 = .mockPath
         let eTag = "etag"
         let mockedResponse = BodyWithDate(data: "test", requestDate: Date().addingTimeInterval(-30000000))
         let encodedResponse = try mockedResponse.jsonEncodedData
@@ -3103,7 +3103,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testforceServerErrorStrategyAllServersDownCallsForceServerFailurePath() {
-        let path: HTTPRequest.Path = .mockPath
+        let path: HTTPRequest.Path2 = .mockPath
 
         stub(condition: isPath(path)) { _ in
             fail("Should not perform request to path \(path)")
@@ -3139,7 +3139,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testNilforceServerErrorStrategyCallsTheOriginalPath() throws {
-        let path: HTTPRequest.Path = .logIn
+        let path: HTTPRequest.Path2 = .logIn
 
         let mockedResponse = BodyWithDate(data: "test", requestDate: Date())
         let encodedResponse = try mockedResponse.jsonEncodedData
@@ -3177,7 +3177,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testforceServerErrorStrategyPerformingRequestCallsTheOriginalPath() throws {
-        let path: HTTPRequest.Path = .logIn
+        let path: HTTPRequest.Path2 = .logIn
 
         let mockedResponse = BodyWithDate(data: "test", requestDate: Date())
         let encodedResponse = try mockedResponse.jsonEncodedData
@@ -3220,8 +3220,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         // Task delegate is only available after iOS 15.
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let pathA: HTTPRequest.Path = .logIn
-        let pathB: HTTPRequest.Path = .health
+        let pathA: HTTPRequest.Path2 = .logIn
+        let pathB: HTTPRequest.Path2 = .health
 
         let responseData = "{\"message\": \"something is great up in the cloud\"}".asData
 
@@ -3258,7 +3258,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testNormalResponsesAreNotDetectedAsLoadSheddder() throws {
-        let path: HTTPRequest.Path = .logIn
+        let path: HTTPRequest.Path2 = .logIn
 
         stub(condition: isPath(path)) { _ in
             return HTTPStubsResponse(
@@ -3277,7 +3277,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testLoadShedderResponsesAreLogged() throws {
-        let path: HTTPRequest.Path = .logIn
+        let path: HTTPRequest.Path2 = .logIn
 
         stub(condition: isPath(path)) { _ in
             return HTTPStubsResponse(
@@ -4634,7 +4634,7 @@ extension BaseHTTPClientTests {
 
 }
 
-extension HTTPRequest.Path {
+extension HTTPRequest.Path2 {
 
     // Doesn't matter which path this is, we stub requests to it.
     static let mockPath: Self = .logIn
