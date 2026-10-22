@@ -331,4 +331,10 @@ extension HTTPRequest.Path2 {
                                                              supportsSignatureVerification: false,
                                                              needsNonceForSigning: false,
                                                              pathComponent: "external_purchase_tokens")
+
+    static let postCreateTicket = HTTPRequest.Path2(name: "post_create_ticket",
+                                                    etagBehavior: .send,
+                                                    supportsSignatureVerification: false,
+                                                    needsNonceForSigning: false,
+                                                    pathComponent: "customercenter/support/create-ticket")
 }

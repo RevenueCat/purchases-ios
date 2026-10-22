@@ -177,7 +177,6 @@ extension HTTPRequest {
 
         case logIn
         case health
-        case postCreateTicket
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
         case rewardVerificationStatus(appUserID: String, clientTransactionID: String, adUnitID: String?)
         case remoteConfig(domain: String)
@@ -236,7 +235,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
     var authenticated: Bool {
         switch self {
         case .logIn,
-                .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
                 .rewardVerificationStatus,
                 .remoteConfig,
@@ -253,7 +251,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
     var shouldSendEtag: Bool {
         switch self {
         case .logIn,
-                .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
                 .rewardVerificationStatus,
                 .tokenLogin,
@@ -274,8 +271,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .remoteConfig,
                 .rewardVerificationStatus:
             return true
-        case .postCreateTicket,
-                .tokenLogin,
+        case .tokenLogin,
                 .tokenRefresh,
                 .tokenLogOut:
             return false
@@ -293,8 +289,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .tokenRefresh,
                 .tokenLogOut:
             return true
-        case .postCreateTicket:
-            return false
         }
     }
 
@@ -328,8 +322,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .health:
             return "health"
 
-        case .postCreateTicket:
-            return "customercenter/support/create-ticket"
         case let .isPurchaseAllowedByRestoreBehavior(appUserID):
             return "subscribers/\(Self.escape(appUserID))/restore/eligibility"
 
@@ -368,8 +360,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return self.pathComponent
         case .health:
             return self.pathComponent
-        case .postCreateTicket:
-            return self.pathComponent
         case .isPurchaseAllowedByRestoreBehavior:
             return "customer/restore/eligibility"
         case .rewardVerificationStatus:
@@ -393,8 +383,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .health:
             return "post_health"
 
-        case .postCreateTicket:
-            return "post_create_ticket"
         case .isPurchaseAllowedByRestoreBehavior:
             return "post_restore_eligibility"
 
