@@ -17,16 +17,3 @@ Before you add a test:
 4. Assert results after the relevant action. For carousels, check the visible page rather than an offscreen label's existence.
 5. Cover each event source that needs separate proof, such as manual swipes and automatic page advance.
 6. For a bug fix, confirm failure without the fix and success with it for the intended reason.
-
-For PaywallFixtures, generate the test target from the repository root:
-
-```bash
-tuist generate PaywallFixturesUITests --no-open
-xcodebuild test -workspace RevenueCat-Tuist.xcworkspace -scheme PaywallFixturesUITests \
-  -destination 'platform=iOS Simulator,id=<SIMULATOR_UUID>' \
-  '-only-testing:PaywallFixturesUITests/<TestClass>'
-```
-
-Replace the placeholders with an available simulator UUID and the test class.
-Wait for a condition with a time limit instead of a fixed delay.
-Confirm that the run executed the intended tests and report test counts and failures.
