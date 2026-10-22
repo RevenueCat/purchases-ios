@@ -24,8 +24,7 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
 
     var authenticated: Bool {
         switch self {
-        case .getWebBillingProducts,
-             .postHostedCheckout,
+        case .postHostedCheckout,
              .getHostedCheckoutStatus:
             return true
         }
@@ -33,8 +32,6 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
 
     var shouldSendEtag: Bool {
         switch self {
-        case .getWebBillingProducts:
-            return true
         case .postHostedCheckout,
              .getHostedCheckoutStatus:
             return false
@@ -43,8 +40,7 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
 
     var supportsSignatureVerification: Bool {
         switch self {
-        case .getWebBillingProducts,
-             .postHostedCheckout,
+        case .postHostedCheckout,
              .getHostedCheckoutStatus:
             return false
         }
@@ -52,8 +48,7 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
 
     var needsNonceForSigning: Bool {
         switch self {
-        case .getWebBillingProducts,
-             .postHostedCheckout,
+        case .postHostedCheckout,
              .getHostedCheckoutStatus:
             return false
         }
@@ -61,12 +56,6 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
 
     var relativePath: String {
         switch self {
-        case let .getWebBillingProducts(userId, productIds):
-            let encodedUserId = userId.trimmedAndEscaped
-            let encodedProductIds = productIds.map { productId in
-                "id=\(productId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? productId)"
-            }.joined(separator: "&")
-            return "/rcbilling/v1/subscribers/\(encodedUserId)/products?\(encodedProductIds)"
         case .postHostedCheckout:
             return "/rcbilling/v1/hosted-checkout"
         case let .getHostedCheckoutStatus(operationSessionID, appUserID):
@@ -77,11 +66,6 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
 
     var relativeIAMPath: String {
         switch self {
-        case let .getWebBillingProducts(userId: _, productIds: productIds):
-            let encodedProductIds = productIds.map { productId in
-                "id=\(productId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? productId)"
-            }.joined(separator: "&")
-            return "/rcbilling/v1/customer/products?\(encodedProductIds)"
         case .postHostedCheckout,
              .getHostedCheckoutStatus:
             return self.relativePath
@@ -90,8 +74,6 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
 
     var name: String {
         switch self {
-        case .getWebBillingProducts:
-            return "get_web_products"
         case .postHostedCheckout:
             return "post_hosted_checkout"
         case .getHostedCheckoutStatus:

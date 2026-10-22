@@ -384,4 +384,21 @@ extension HTTPRequest.Path2 {
                           pathComponent: "/rcbilling/v1/subscribers/\(appUserID.trimmedAndEscaped)/offering_products",
                           iamPathComponent: "/rcbilling/v1/customer/offering_products")
     }
+
+    static func getWebBillingProducts(userId: String, productIds: Set<String>) -> Self {
+        let encodedUserId = userId.trimmedAndEscaped
+        let encodedProductIds = productIds.map { productId in
+            "id=\(productId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? productId)"
+        }.joined(separator: "&")
+
+        let path = "/rcbilling/v1/subscribers/\(encodedUserId)/products?\(encodedProductIds)"
+        let iamPath = "/rcbilling/v1/customer/products?\(encodedProductIds)"
+
+        return HTTPRequest.Path2(name: "get_web_products",
+                                 etagBehavior: .send,
+                                 supportsSignatureVerification: false,
+                                 needsNonceForSigning: false,
+                                 pathComponent: path,
+                                 iamPathComponent: iamPath)
+    }
 }

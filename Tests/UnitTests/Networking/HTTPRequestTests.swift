@@ -255,7 +255,7 @@ class HTTPRequestTests: TestCase {
     func testWebBillingPathsUseAPISources() {
         let paths: [any HTTPRequestPath] = [
             HTTPRequest.Path2.getWebOfferingProducts(appUserID: Self.userID),
-            HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"]),
+            HTTPRequest.Path2.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"]),
             HTTPRequest.WebBillingPath.postHostedCheckout,
             HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
                                                                appUserID: Self.userID)
@@ -280,13 +280,13 @@ class HTTPRequestTests: TestCase {
     }
 
     func testWebBillingProductsRelativePathIncludesUserIDAndProductIDs() {
-        let path = HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"])
+        let path = HTTPRequest.Path2.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"])
 
         expect(path.relativePath) == "/rcbilling/v1/subscribers/\(Self.userID)/products?id=product_1"
     }
 
     func testWebBillingProductsRelativeIAMPathOmitsUserID() {
-        let path = HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"])
+        let path = HTTPRequest.Path2.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"])
 
         expect(path.relativeIAMPath) == "/rcbilling/v1/customer/products?id=product_1"
         expect(path.relativeIAMPath).toNot(contain(Self.userID))
@@ -297,7 +297,7 @@ class HTTPRequestTests: TestCase {
         // `productIds` is a `Set`, so its iteration order isn't guaranteed: compare the
         // resulting query items as an unordered set of `id=` tokens instead of an exact string.
         let productIds: Set<String> = ["product_1", "product_2", "product_3"]
-        let path = HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: productIds)
+        let path = HTTPRequest.Path2.getWebBillingProducts(userId: Self.userID, productIds: productIds)
 
         expect(path.relativeIAMPath).to(beginWith("/rcbilling/v1/customer/products?"))
 
@@ -313,7 +313,7 @@ class HTTPRequestTests: TestCase {
 
     func testWebBillingProductsRelativeIAMPathPercentEncodesProductIDs() {
         let productIdWithSpace = "product with space"
-        let path = HTTPRequest.WebBillingPath.getWebBillingProducts(
+        let path = HTTPRequest.Path2.getWebBillingProducts(
             userId: Self.userID,
             productIds: [productIdWithSpace]
         )
@@ -323,7 +323,7 @@ class HTTPRequestTests: TestCase {
     }
 
     func testWebBillingProductsRelativeIAMPathWithNoProductIDsHasEmptyQuery() {
-        let path = HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: [])
+        let path = HTTPRequest.Path2.getWebBillingProducts(userId: Self.userID, productIds: [])
 
         expect(path.relativeIAMPath) == "/rcbilling/v1/customer/products?"
     }
@@ -393,7 +393,7 @@ class HTTPRequestTests: TestCase {
 
     func testWebBillingPathsURLPreferringIAMPathUsesIAMRelativePath() {
         let offeringProductsPath = HTTPRequest.Path2.getWebOfferingProducts(appUserID: Self.userID)
-        let productsPath = HTTPRequest.WebBillingPath.getWebBillingProducts(
+        let productsPath = HTTPRequest.Path2.getWebBillingProducts(
             userId: Self.userID,
             productIds: ["product_1"]
         )
@@ -1078,7 +1078,7 @@ class HTTPRequestTests2: TestCase {
     func testWebBillingPathsUseAPISources() {
         let paths: [any HTTPRequestPath] = [
             HTTPRequest.Path2.getWebOfferingProducts(appUserID: Self.userID),
-            HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"]),
+            HTTPRequest.Path2.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"]),
             HTTPRequest.WebBillingPath.postHostedCheckout,
             HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
                                                                appUserID: Self.userID)
@@ -1103,13 +1103,13 @@ class HTTPRequestTests2: TestCase {
     }
 
     func testWebBillingProductsRelativePathIncludesUserIDAndProductIDs() {
-        let path = HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"])
+        let path = HTTPRequest.Path2.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"])
 
         expect(path.relativePath) == "/rcbilling/v1/subscribers/\(Self.userID)/products?id=product_1"
     }
 
     func testWebBillingProductsRelativeIAMPathOmitsUserID() {
-        let path = HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"])
+        let path = HTTPRequest.Path2.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"])
 
         expect(path.relativeIAMPath) == "/rcbilling/v1/customer/products?id=product_1"
         expect(path.relativeIAMPath).toNot(contain(Self.userID))
@@ -1120,7 +1120,7 @@ class HTTPRequestTests2: TestCase {
         // `productIds` is a `Set`, so its iteration order isn't guaranteed: compare the
         // resulting query items as an unordered set of `id=` tokens instead of an exact string.
         let productIds: Set<String> = ["product_1", "product_2", "product_3"]
-        let path = HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: productIds)
+        let path = HTTPRequest.Path2.getWebBillingProducts(userId: Self.userID, productIds: productIds)
 
         expect(path.relativeIAMPath).to(beginWith("/rcbilling/v1/customer/products?"))
 
@@ -1136,7 +1136,7 @@ class HTTPRequestTests2: TestCase {
 
     func testWebBillingProductsRelativeIAMPathPercentEncodesProductIDs() {
         let productIdWithSpace = "product with space"
-        let path = HTTPRequest.WebBillingPath.getWebBillingProducts(
+        let path = HTTPRequest.Path2.getWebBillingProducts(
             userId: Self.userID,
             productIds: [productIdWithSpace]
         )
@@ -1146,7 +1146,7 @@ class HTTPRequestTests2: TestCase {
     }
 
     func testWebBillingProductsRelativeIAMPathWithNoProductIDsHasEmptyQuery() {
-        let path = HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: [])
+        let path = HTTPRequest.Path2.getWebBillingProducts(userId: Self.userID, productIds: [])
 
         expect(path.relativeIAMPath) == "/rcbilling/v1/customer/products?"
     }
@@ -1216,7 +1216,7 @@ class HTTPRequestTests2: TestCase {
 
     func testWebBillingPathsURLPreferringIAMPathUsesIAMRelativePath() {
         let offeringProductsPath = HTTPRequest.Path2.getWebOfferingProducts(appUserID: Self.userID)
-        let productsPath = HTTPRequest.WebBillingPath.getWebBillingProducts(
+        let productsPath = HTTPRequest.Path2.getWebBillingProducts(
             userId: Self.userID,
             productIds: ["product_1"]
         )
