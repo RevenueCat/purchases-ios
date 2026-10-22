@@ -750,7 +750,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
 
     func testRemoteConfigInvalidSignatureFailsInEnforcedMode() throws {
         self.changeClientToEnforced()
-        self.mockResponse(path: .remoteConfig(domain: "app"),
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: Self.rcContainer())

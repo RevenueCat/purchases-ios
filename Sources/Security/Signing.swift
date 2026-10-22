@@ -40,12 +40,12 @@ final class Signing: SigningType {
         var path: HTTPRequest.Path
         var iamEnabled: Bool
         var message: Data?
-        var requestHeaders: HTTPRequest.Headers
-        var requestBody: HTTPRequestBody?
+        var requestHeaders: HTTPRequest.Headers = [:]
+        var requestBody: HTTPRequestBody? = nil
         var nonce: Data?
         var etag: String?
         var requestDate: UInt64
-        var useFallbackPath: Bool
+        var useFallbackPath: Bool = false
 
     }
 

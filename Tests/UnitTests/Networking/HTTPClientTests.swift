@@ -4631,6 +4631,7 @@ extension HTTPRequest.Path {
     static let mockPath: Self = .logIn
     static let mockPathWithFallbacks: Self = .getProductEntitlementMapping
     static let receiptPath: Self = .postReceiptData
+
 }
 
 extension HTTPRequest.Method {

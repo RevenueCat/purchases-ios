@@ -539,7 +539,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
     func testGetRemoteConfigNoContentResponseSucceedsWithNoContainer() throws {
         self.httpClient.mock(
-            requestPath: .remoteConfig(domain: "app"),
+            requestPath: HTTPRequest.Path.remoteConfig(domain: "app"),
             response: .init(statusCode: .noContent, body: Data(), verificationResult: .verified)
         )
 
@@ -602,7 +602,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         let mockedError: NetworkError = .errorResponse(errorResponse, .internalServerError)
 
         self.httpClient.mock(
-            requestPath: .remoteConfig(domain: "app"),
+            requestPath: HTTPRequest.Path.remoteConfig(domain: "app"),
             response: .init(error: mockedError)
         )
 
