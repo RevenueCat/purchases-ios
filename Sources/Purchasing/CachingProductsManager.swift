@@ -13,7 +13,7 @@
 
 import Foundation
 
-/// `ProductsManagerType` decorator that adds caching behavior on each request.
+/// Adds product caching and shares in-flight requests for the configured store.
 /// The product results are cached, and it avoids performing concurrent duplicate requests for the same products.
 final class CachingProductsManager {
 
@@ -21,33 +21,16 @@ final class CachingProductsManager {
 
     private let productCache = ProductsCache<StoreProduct>()
 
-    private let _sk2ProductCache: (any Sendable)?
-
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    private var sk2ProductCache: ProductsCache<SK2StoreProduct> {
-        // swiftlint:disable:next force_cast
-        return self._sk2ProductCache as! ProductsCache<SK2StoreProduct>
-    }
-
     init(manager: ProductsManagerType) {
         assert(!(manager is CachingProductsManager), "Decorating CachingProductsManager with itself")
 
         self.manager = manager
-
-        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
-            self._sk2ProductCache = ProductsCache<SK2StoreProduct>()
-        } else {
-            self._sk2ProductCache = nil
-        }
     }
 
     func clearCache() {
-        self.productCache.clear()
-        if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
-            self.sk2ProductCache.clear()
-        }
-
+        // Clear the underlying manager's cache first, so stale products cannot refill this cache after invalidation.
         self.manager.clearCache()
+        self.productCache.clear()
     }
 
 }
@@ -57,13 +40,6 @@ extension CachingProductsManager: ProductsManagerType {
     func products(withIdentifiers identifiers: Set<String>, completion: @escaping Completion) {
         self.productCache.products(withIdentifiers: identifiers, completion: completion) { identifiers, completion in
             self.manager.products(withIdentifiers: identifiers, completion: completion)
-        }
-    }
-
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func sk2Products(withIdentifiers identifiers: Set<String>, completion: @escaping SK2Completion) {
-        self.sk2ProductCache.products(withIdentifiers: identifiers, completion: completion) { identifiers, completion in
-            self.manager.sk2Products(withIdentifiers: identifiers, completion: completion)
         }
     }
 

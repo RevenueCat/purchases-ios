@@ -358,6 +358,26 @@ class CachingProductsManagerTests: TestCase {
         expect(try secondResult?.get()) == [secondCached, fetched]
     }
 
+    func testRequestDuringUnderlyingInvalidationDoesNotRestoreStaleProducts() throws {
+        let oldProduct = self.createMockProduct()
+        let newProduct = self.createMockProduct()
+        self.cachingManager.cache(oldProduct)
+        self.mockManager.stubbedProductsCompletionResult = .success([oldProduct])
+        var interleaved: Result<Set<StoreProduct>, PurchasesError>?
+        self.mockManager.clearCacheHandler = {
+            self.cachingManager.products(withIdentifiers: [Self.productID]) { interleaved = $0 }
+            self.mockManager.stubbedProductsCompletionResult = .success([newProduct])
+        }
+        defer { self.mockManager.clearCacheHandler = nil }
+
+        self.cachingManager.clearCache()
+        expect(try interleaved?.get().onlyElement) === oldProduct
+
+        var afterClear: Result<Set<StoreProduct>, PurchasesError>?
+        self.cachingManager.products(withIdentifiers: [Self.productID]) { afterClear = $0 }
+        expect(try afterClear?.get().onlyElement) === newProduct
+    }
+
     func testClearCacheKeepsOldCallersButStartsNewRequest() throws {
         try self.verifyClearingCacheDuringRequest(completeOldRequestFirst: true)
     }
