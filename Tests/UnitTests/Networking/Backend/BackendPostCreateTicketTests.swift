@@ -184,8 +184,7 @@ final class BackendPostCreateTicketTests: BaseBackendTests {
         expect(self.httpClient.calls).to(haveCount(1))
 
         if let call = self.httpClient.calls.first {
-            let path = try XCTUnwrap(call.request.path)
-            expect(path) == .postCreateTicket
+            expect(call.request.path) == .postCreateTicket
             expect(call.request.method.httpMethod) == "POST"
         } else {
             fail("Expected HTTP call to be made")

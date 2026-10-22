@@ -2168,9 +2168,15 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             static let serverHostURL = URL(string: "http://this-is-a-main-host.com")!
         }
 
-        let firstRequest = HTTPRequest(method: .get, path: MainBackendTimeoutRequestPath.first)
+        let firstRequest = HTTPRequest(
+            method: .get,
+            path: MainBackendTimeoutRequestPath.first
+        )
 
-        let secondRequest = HTTPRequest(method: .get, path: MainBackendTimeoutRequestPath.second)
+        let secondRequest = HTTPRequest(
+            method: .get,
+            path: MainBackendTimeoutRequestPath.second
+        )
 
         let host = MainBackendTimeoutRequestPath.serverHostURL.host!
 

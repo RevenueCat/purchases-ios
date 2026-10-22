@@ -44,8 +44,7 @@ final class BackendIsPurchaseAllowedByRestoreBehaviorTests: BaseBackendTests {
         expect(self.httpClient.calls).toEventually(haveCount(1))
 
         let call = try XCTUnwrap(self.httpClient.calls.first)
-        let path = try XCTUnwrap(call.request.path)
-        expect(path) == .isPurchaseAllowedByRestoreBehavior(appUserID: Self.userID)
+        expect(call.request.path) == .isPurchaseAllowedByRestoreBehavior(appUserID: Self.userID)
         expect(call.request.method.httpMethod) == "POST"
 
         let bodyDict = try XCTUnwrap(call.request.requestBody?.asJSONDictionary())
