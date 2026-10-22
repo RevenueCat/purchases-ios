@@ -90,7 +90,7 @@ extension EligibilityStrings: LogMessage {
                 "Results: \(Self.describe(result))"
 
         case let .delivering_intro_eligibility(result, duration):
-            return "Delivering intro eligibility results to waiting callers after \(duration)s on the main queue. " +
+            return "Delivering intro eligibility results after \(duration)s waiting for the main queue. " +
                 "Results: \(Self.describe(result))"
         }
     }

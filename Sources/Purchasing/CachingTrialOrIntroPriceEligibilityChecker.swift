@@ -140,11 +140,7 @@ extension CachingTrialOrIntroPriceEligibilityChecker {
                         )
                     }
 
-                    let deliveryStart = Clock.default.currentTime
                     Task { @MainActor in
-                        Logger.debug(Strings.eligibility.delivering_intro_eligibility(
-                            result: result, duration: Clock.default.durationSince(deliveryStart)
-                        ))
                         completions.forEach { $0(result) }
                     }
                 }

@@ -26,6 +26,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
     var mockBackend: MockBackend!
     var mockProductsManager: MockProductsManager!
     var mockSystemInfo: MockSystemInfo!
+    private var mockOperationDispatcher: MockOperationDispatcher!
 
     private var diagnosticsTracker: DiagnosticsTrackerType?
 
@@ -78,7 +79,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
         mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: mockProductsManager,
                                                                         receiptParser: MockReceiptParser())
         mockBackend = MockBackend()
-        let mockOperationDispatcher = MockOperationDispatcher()
+        self.mockOperationDispatcher = MockOperationDispatcher()
         let currentUserProvider = MockCurrentUserProvider(mockAppUserID: "app_user")
 
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
@@ -155,6 +156,36 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
         for (product, receivedEligibility) in receivedEligibilities {
             expect(receivedEligibility.status) == expected[product]
         }
+    }
+
+    @MainActor
+    @available(iOS 16.0, tvOS 16.0, macOS 13.0, watchOS 9.0, *)
+    func testDeliveryTimingIncludesFirstMainActorDispatchDelay() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        let clock = try XCTUnwrap(self.mockSystemInfo.clock as? TestClock)
+        self.mockOperationDispatcher.shouldHoldDispatchOnMainActorBlocks = true
+        self.mockProductsManager.stubbedSk2StoreProductsResult = .success([])
+        var receivedResult: [String: IntroEligibility]?
+
+        self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: ["missing"]) {
+            expect(Thread.isMainThread).to(beTrue())
+            receivedResult = $0
+        }
+
+        let heldBlocks = self.mockOperationDispatcher.heldMainActorBlocks
+        try await asyncWait { heldBlocks.value.count == 1 }
+        expect(receivedResult).to(beNil())
+        self.logger.verifyMessageWasNotLogged("Delivering intro eligibility results")
+        clock.advance(by: .seconds(7))
+        clock.now = .distantPast
+        self.mockOperationDispatcher.performHeldMainActorBlocks()
+
+        expect(receivedResult?["missing"]?.status) == .unknown
+        expect(self.mockOperationDispatcher.pendingMainActorDispatches.value) == 0
+        self.logger.verifyMessageWasLogged(
+            "Delivering intro eligibility results after 7.0s waiting for the main queue.",
+            level: .debug, expectedCount: 1
+        )
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

@@ -22,6 +22,16 @@ struct IntroEligibilityLog: Sendable {
         self.startTime = clock.currentTime
     }
 
+    /// Starts timing before dispatch; invoke the returned logger immediately before delivering the result.
+    static func deliveryLogger(clock: ClockType) -> @Sendable ([String: IntroEligibility]) -> Void {
+        let startTime = clock.currentTime
+        return { result in
+            Logger.debug(Strings.eligibility.delivering_intro_eligibility(
+                result: result, duration: clock.durationSince(startTime)
+            ))
+        }
+    }
+
     func products<Product: StoreProductType & Hashable>(
         identifiers: Set<String>,
         fetch: (Set<String>) async throws -> Set<Product>
@@ -49,8 +59,9 @@ struct IntroEligibilityLog: Sendable {
         let startTime = self.clock.currentTime
         Logger.debug(Strings.eligibility.subscription_group_check_started(requestID: self.requestID, groupID: groupID))
         let eligible = await TimingUtil.measureAndLogIfTooSlow(
-            threshold: .introEligibility,
-            message: Strings.eligibility.sk2_intro_eligibility_too_slow.description
+            threshold: Configuration.TimingThreshold.introEligibility.rawValue,
+            message: Strings.eligibility.sk2_intro_eligibility_too_slow.description,
+            clock: self.clock
         ) {
             await check(groupID)
         }

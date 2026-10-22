@@ -47,6 +47,8 @@ class IntroEligibilityLogTests: TestCase {
         self.logger.verifyMessageWasLogged("missing products: [\"missing\"]", expectedCount: 1)
         self.logger.verifyMessageWasLogged("finished in 3.0s; eligible=false", expectedCount: 1)
         self.logger.verifyMessageWasLogged("check finished in 5.0s", expectedCount: 1)
+        self.logger.verifyMessageWasLogged(Strings.eligibility.sk2_intro_eligibility_too_slow,
+                                           level: .warn, expectedCount: 1)
         for status in IntroEligibilityStatus.allCases {
             self.logger.verifyMessageWasLogged(status.description, expectedCount: 1)
         }
