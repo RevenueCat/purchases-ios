@@ -632,23 +632,11 @@ class HTTPRequestTests: TestCase {
 
     // MARK: - Token (IAM auth) paths
 
-    private static let tokenPaths: [HTTPRequest.Path] = [
-        .tokenLogin,
-        .tokenRefresh,
-        .tokenLogOut
-    ]
+    private static let tokenPaths: [HTTPRequest.Path] = []
 
-    private static let expectedTokenPathComponents: [HTTPRequest.Path: String] = [
-        .tokenLogin: "/auth/login",
-        .tokenRefresh: "/auth/token",
-        .tokenLogOut: "/auth/revoke"
-    ]
+    private static let expectedTokenPathComponents: [HTTPRequest.Path: String] = [:]
 
-    private static let expectedTokenPathNames: [HTTPRequest.Path: String] = [
-        .tokenLogin: "token_login",
-        .tokenRefresh: "token_refresh",
-        .tokenLogOut: "token_logout"
-    ]
+    private static let expectedTokenPathNames: [HTTPRequest.Path: String] = [:]
 
     func testTokenPathsHaveALeadingSlashUnlikeOtherPaths() {
         // Unlike the rest of `HTTPRequest.Path`, the token (IAM auth) endpoints live outside `/v1`,
@@ -745,7 +733,7 @@ class HTTPRequestTests: TestCase {
     }
 
     func testTokenLoginURLResolvesOutsideOfTheV1Namespace() {
-        let url = HTTPRequest.Path.tokenLogin.url(preferIAMPath: false)
+        let url = HTTPRequest.Path2.tokenLogin.url(preferIAMPath: false)
 
         expect(url?.absoluteString) == "https://api.revenuecat.com/auth/login"
     }
@@ -1474,19 +1462,19 @@ class HTTPRequestTests2: TestCase {
 
     // MARK: - Token (IAM auth) paths
 
-    private static let tokenPaths: [HTTPRequest.Path] = [
+    private static let tokenPaths: [HTTPRequest.Path2] = [
         .tokenLogin,
         .tokenRefresh,
         .tokenLogOut
     ]
 
-    private static let expectedTokenPathComponents: [HTTPRequest.Path: String] = [
+    private static let expectedTokenPathComponents: [HTTPRequest.Path2: String] = [
         .tokenLogin: "/auth/login",
         .tokenRefresh: "/auth/token",
         .tokenLogOut: "/auth/revoke"
     ]
 
-    private static let expectedTokenPathNames: [HTTPRequest.Path: String] = [
+    private static let expectedTokenPathNames: [HTTPRequest.Path2: String] = [
         .tokenLogin: "token_login",
         .tokenRefresh: "token_refresh",
         .tokenLogOut: "token_logout"
@@ -1587,7 +1575,7 @@ class HTTPRequestTests2: TestCase {
     }
 
     func testTokenLoginURLResolvesOutsideOfTheV1Namespace() {
-        let url = HTTPRequest.Path.tokenLogin.url(preferIAMPath: false)
+        let url = HTTPRequest.Path2.tokenLogin.url(preferIAMPath: false)
 
         expect(url?.absoluteString) == "https://api.revenuecat.com/auth/login"
     }

@@ -175,10 +175,6 @@ extension HTTPRequest {
 
         case logIn
         case health
-
-        case tokenLogin
-        case tokenRefresh
-        case tokenLogOut
     }
 
 }
@@ -220,10 +216,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var authenticated: Bool {
         switch self {
-        case .logIn,
-                .tokenLogin,
-                .tokenRefresh,
-                .tokenLogOut:
+        case .logIn:
             return true
 
         case .health:
@@ -233,10 +226,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var shouldSendEtag: Bool {
         switch self {
-        case .logIn,
-                .tokenLogin,
-                .tokenRefresh,
-                .tokenLogOut:
+        case .logIn:
             return true
         case .health:
             return false
@@ -248,20 +238,13 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .logIn,
                 .health:
             return true
-        case .tokenLogin,
-                .tokenRefresh,
-                .tokenLogOut:
-            return false
         }
     }
 
     var needsNonceForSigning: Bool {
         switch self {
         case .logIn,
-                .health,
-                .tokenLogin,
-                .tokenRefresh,
-                .tokenLogOut:
+                .health:
             return true
         }
     }
@@ -290,15 +273,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .health:
             return "health"
-
-        case .tokenLogin:
-            return "/auth/login"
-
-        case .tokenRefresh:
-            return "/auth/token"
-
-        case .tokenLogOut:
-            return "/auth/revoke"
         }
     }
 
@@ -313,12 +287,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return self.pathComponent
         case .health:
             return self.pathComponent
-        case .tokenLogin:
-            return "/auth/login"
-        case .tokenRefresh:
-            return "/auth/token"
-        case .tokenLogOut:
-            return "/auth/revoke"
         }
     }
 
@@ -329,15 +297,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .health:
             return "post_health"
-
-        case .tokenLogin:
-            return "token_login"
-
-        case .tokenRefresh:
-            return "token_refresh"
-
-        case .tokenLogOut:
-            return "token_logout"
         }
     }
 
@@ -346,11 +305,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
     }
 
     var isIAMPath: Bool {
-        switch self {
-        case .tokenLogin, .tokenRefresh, .tokenLogOut:
-            return true
-        default: return false
-        }
+        return false
     }
 
     private static func escape(_ appUserID: String) -> String {

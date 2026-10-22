@@ -376,6 +376,8 @@ extension HTTPRequest.Path2 {
                           responseSignatureContextProvider: RemoteConfigSignatureContextProvider())
     }
 
+    // MARK: - Web Billing Paths
+
     static func getWebOfferingProducts(appUserID: String) -> Self {
         HTTPRequest.Path2(name: "get_web_offering_products",
                           etagBehavior: .send,
@@ -418,4 +420,27 @@ extension HTTPRequest.Path2 {
                                  needsNonceForSigning: false,
                                  pathComponent: path)
     }
+
+    // MARK: - IAM Token Paths
+
+    static let tokenLogin = HTTPRequest.Path2(name: "token_login",
+                                              etagBehavior: .send,
+                                              supportsSignatureVerification: false,
+                                              needsNonceForSigning: true,
+                                              pathComponent: "/auth/login",
+                                              isIAMPath: true)
+    
+    static let tokenRefresh = HTTPRequest.Path2(name: "token_refresh",
+                                                etagBehavior: .send,
+                                                supportsSignatureVerification: false,
+                                                needsNonceForSigning: true,
+                                                pathComponent: "/auth/token",
+                                                isIAMPath: true)
+    
+    static let tokenLogOut = HTTPRequest.Path2(name: "token_logout",
+                                               etagBehavior: .send,
+                                               supportsSignatureVerification: false,
+                                               needsNonceForSigning: true,
+                                               pathComponent: "/auth/revoke",
+                                               isIAMPath: true)
 }
