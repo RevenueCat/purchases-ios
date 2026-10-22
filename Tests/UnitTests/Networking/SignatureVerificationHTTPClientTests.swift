@@ -46,7 +46,7 @@ class BaseSignatureVerificationHTTPClientTests: BaseHTTPClientTests<ETagManager,
         super.tearDown()
     }
 
-    fileprivate static let path: HTTPRequest.Path2 = .mockPath
+    fileprivate static let path: HTTPRequest.Path = .mockPath
     fileprivate static let eTag = "etag"
     fileprivate static let sampleSignature = "signature"
     fileprivate static let date1 = Date().addingTimeInterval(-30000000)
@@ -60,7 +60,7 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
         self.changeClient(.informational)
 
         let request = HTTPRequest(method: .get,
-                                  requestPath: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"))
+                                  requestPath: HTTPRequest.Path.getCustomerInfo(appUserID: "user"))
 
         let headers: [String: String]? = waitUntilValue { completion in
             stub(condition: isPath(request.path)) { request in
@@ -116,7 +116,7 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
 
     func testFailedVerificationIfResponseContainsNoSignatureForEndpointWithStaticSignature() {
         // This test relies on a path with static signatures
-        let path: HTTPRequest.Path2 = .getProductEntitlementMapping
+        let path: HTTPRequest.Path = .getProductEntitlementMapping
         expect(path.supportsSignatureVerification) == true
         expect(path.needsNonceForSigning) == false
 
@@ -255,7 +255,7 @@ final class SignatureVerificationHTTPClientTests: BaseSignatureVerificationHTTPC
         self.changeClient(.informational)
 
         let request = HTTPRequest(method: .get,
-                                  requestPath: HTTPRequest.Path2.getOfferings(appUserID: "test"))
+                                  requestPath: HTTPRequest.Path.getOfferings(appUserID: "test"))
 
         let result: [String: String]? = waitUntilValue { completion in
             stub(condition: isPath(request.path)) { request in
@@ -351,7 +351,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     func testValidRemoteConfigSignatureUsesConfigPayloadAsSignedMessage() throws {
         let config = "config".asData
         let body = Self.rcContainer(config: config, contentElements: ["content".asData])
-        self.mockResponse(path: HTTPRequest.Path2.remoteConfig(domain: "app"),
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: body)
@@ -382,7 +382,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
             configEncoding: .gzip,
             contentElements: [(payload: "content".asData, encoding: .none)]
         )
-        self.mockResponse(path: HTTPRequest.Path2.remoteConfig(domain: "app"),
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: body)
@@ -404,7 +404,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
             config: config,
             contentElements: [(payload: content, encoding: .gzip)]
         )
-        self.mockResponse(path: HTTPRequest.Path2.remoteConfig(domain: "app"),
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: body)
@@ -420,7 +420,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     }
 
     func testRemoteConfigSignatureIncludesETagIfBackendSendsIt() throws {
-        self.mockResponse(path: HTTPRequest.Path2.remoteConfig(domain: "app"),
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           eTag: Self.eTag,
@@ -436,7 +436,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     }
 
     func testRemoteConfigNoContentResponseVerifiesRequestContextWithEmptyResponseMessage() throws {
-        self.mockResponse(path: HTTPRequest.Path2.remoteConfig(domain: "app"),
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: "not an RC Container".asData,
@@ -458,7 +458,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
 
     func testRemoteConfigNoContentResponseWithDisabledVerificationIsNotRequested() throws {
         self.changeClient(.disabled)
-        self.mockResponse(path: HTTPRequest.Path2.remoteConfig(domain: "app"),
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig(domain: "app"),
                           signature: nil,
                           requestDate: nil,
                           body: Data(),
@@ -475,7 +475,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     }
 
     func testRemoteConfigNoContentResponseMissingSignatureReturnsFailedVerification() throws {
-        self.mockResponse(path: HTTPRequest.Path2.remoteConfig(domain: "app"),
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig(domain: "app"),
                           signature: nil,
                           requestDate: Self.date2,
                           body: Data(),
@@ -493,7 +493,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
 
     func testRemoteConfigNoContentResponseMissingSignatureFailsInEnforcedMode() throws {
         self.changeClientToEnforced()
-        self.mockResponse(path: HTTPRequest.Path2.remoteConfig(domain: "app"),
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig(domain: "app"),
                           signature: nil,
                           requestDate: Self.date2,
                           body: Data(),
@@ -506,14 +506,14 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(response).to(beFailure())
         expect(response?.error)
             .to(matchError(NetworkError.signatureVerificationFailed(
-                path: HTTPRequest.Path2.remoteConfig(domain: "app"),
+                path: HTTPRequest.Path.remoteConfig(domain: "app"),
                 code: .noContent
             )))
         expect(self.signing.requests).to(beEmpty())
     }
 
     func testRemoteConfigNoContentResponseInvalidSignatureReturnsFailedVerification() throws {
-        self.mockResponse(path: HTTPRequest.Path2.remoteConfig(domain: "app"),
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: Data(),
@@ -534,7 +534,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
 
     func testRemoteConfigNoContentResponseInvalidSignatureFailsInEnforcedMode() throws {
         self.changeClientToEnforced()
-        self.mockResponse(path: HTTPRequest.Path2.remoteConfig(domain: "app"),
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: Data(),
@@ -548,7 +548,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(response).to(beFailure())
         expect(response?.error)
             .to(matchError(NetworkError.signatureVerificationFailed(
-                path: HTTPRequest.Path2.remoteConfig(domain: "app"),
+                path: HTTPRequest.Path.remoteConfig(domain: "app"),
                 code: .noContent
             )))
         expect(self.signing.requests).to(haveCount(1))
@@ -558,7 +558,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
 
     func testFallbackConfigSignatureUsesRawJSONPayloadWithoutNonceOrRequestBody() throws {
         let body = Self.remoteConfigFallbackBody
-        self.mockResponse(path: HTTPRequest.Path2.remoteConfigFallback(domain: "app"),
+        self.mockResponse(path: HTTPRequest.Path.remoteConfigFallback(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: body)
@@ -582,7 +582,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     }
 
     func testFallbackConfigSignatureIncludesETagIfBackendSendsIt() throws {
-        self.mockResponse(path: HTTPRequest.Path2.remoteConfigFallback(domain: "app"),
+        self.mockResponse(path: HTTPRequest.Path.remoteConfigFallback(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           eTag: Self.eTag,
@@ -599,7 +599,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
 
     func testFallbackConfigInvalidSignatureReturnsFailedVerification() throws {
         let body = Self.remoteConfigFallbackBody
-        self.mockResponse(path: HTTPRequest.Path2.remoteConfigFallback(domain: "app"),
+        self.mockResponse(path: HTTPRequest.Path.remoteConfigFallback(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: body)
@@ -619,7 +619,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
 
     func testFallbackConfigInvalidSignatureFailsInEnforcedMode() throws {
         self.changeClientToEnforced()
-        self.mockResponse(path: HTTPRequest.Path2.remoteConfigFallback(domain: "app"),
+        self.mockResponse(path: HTTPRequest.Path.remoteConfigFallback(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: Self.remoteConfigFallbackBody)
@@ -632,7 +632,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(response).to(beFailure())
         expect(response?.error)
             .to(matchError(NetworkError.signatureVerificationFailed(
-                path: HTTPRequest.Path2.remoteConfigFallback(domain: "app"),
+                path: HTTPRequest.Path.remoteConfigFallback(domain: "app"),
                 code: .success
             )))
         expect(self.signing.requests).to(haveCount(1))
@@ -648,7 +648,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
 
     func testRemoteConfigInvalidResponsePayloadReturnsFailureReason() {
         self.mockResponse(
-            path: HTTPRequest.Path2.remoteConfig(domain: "app"),
+            path: HTTPRequest.Path.remoteConfig(domain: "app"),
             signature: Self.sampleSignature,
             requestDate: Self.date2,
             body: "not an RC Container".asData
@@ -665,7 +665,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
 
     func testRemoteConfigMissingSignatureTakesPrecedenceOverInvalidResponsePayload() {
         self.mockResponse(
-            path: HTTPRequest.Path2.remoteConfig(domain: "app"),
+            path: HTTPRequest.Path.remoteConfig(domain: "app"),
             signature: nil,
             requestDate: Self.date2,
             body: "not an RC Container".asData
@@ -682,7 +682,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
 
     func testRemoteConfigMissingRequestTimeTakesPrecedenceOverInvalidResponsePayload() {
         self.mockResponse(
-            path: HTTPRequest.Path2.remoteConfig(domain: "app"),
+            path: HTTPRequest.Path.remoteConfig(domain: "app"),
             signature: Self.sampleSignature,
             requestDate: nil,
             body: "not an RC Container".asData
@@ -698,7 +698,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     }
 
     func testRemoteConfigMissingSignatureReturnsFailedVerification() throws {
-        self.mockResponse(path: HTTPRequest.Path2.remoteConfig(domain: "app"),
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig(domain: "app"),
                           signature: nil,
                           requestDate: Self.date2,
                           body: Self.rcContainer())
@@ -715,7 +715,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
 
     func testRemoteConfigMissingSignatureFailsInEnforcedMode() throws {
         self.changeClientToEnforced()
-        self.mockResponse(path: HTTPRequest.Path2.remoteConfig(domain: "app"),
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig(domain: "app"),
                           signature: nil,
                           requestDate: Self.date2,
                           body: Self.rcContainer())
@@ -728,14 +728,14 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(response).to(beFailure())
         expect(response?.error)
             .to(matchError(NetworkError.signatureVerificationFailed(
-                path: HTTPRequest.Path2.remoteConfig(domain: "app"),
+                path: HTTPRequest.Path.remoteConfig(domain: "app"),
                 code: .success
             )))
         expect(self.signing.requests).to(beEmpty())
     }
 
     func testRemoteConfigInvalidSignatureReturnsFailedVerification() throws {
-        self.mockResponse(path: HTTPRequest.Path2.remoteConfig(domain: "app"),
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: Self.rcContainer())
@@ -752,7 +752,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
 
     func testRemoteConfigInvalidSignatureFailsInEnforcedMode() throws {
         self.changeClientToEnforced()
-        self.mockResponse(path: HTTPRequest.Path2.remoteConfig(domain: "app"),
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: Self.rcContainer())
@@ -765,7 +765,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         expect(response).to(beFailure())
         expect(response?.error)
             .to(matchError(NetworkError.signatureVerificationFailed(
-                path: HTTPRequest.Path2.remoteConfig(domain: "app"),
+                path: HTTPRequest.Path.remoteConfig(domain: "app"),
                 code: .success
             )))
         expect(self.signing.requests).to(haveCount(1))
@@ -780,7 +780,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
                 return index == 0 ? Array(checksum.reversed()) : checksum
             }
         )
-        self.mockResponse(path: HTTPRequest.Path2.remoteConfig(domain: "app"),
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: body)
@@ -802,7 +802,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         let content = "content".asData
         var body = Self.rcContainer(config: config, contentElements: [content])
         body[Self.contentPayloadOffset(config: config)] = UInt8(ascii: "x")
-        self.mockResponse(path: HTTPRequest.Path2.remoteConfig(domain: "app"),
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: body)
@@ -915,7 +915,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         )
 
         self.mockResponse(
-            path: HTTPRequest.Path2.postRedeemWebPurchase,
+            path: HTTPRequest.Path.postRedeemWebPurchase,
             signature: Self.sampleSignature,
             requestDate: Self.date1,
             body: responseContent,
@@ -942,7 +942,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
         )
 
         expect(signingRequest.parameters.path.relativePath)
-            == HTTPRequest.Path2.postRedeemWebPurchase.relativePath
+            == HTTPRequest.Path.postRedeemWebPurchase.relativePath
         expect(signingRequest.parameters.nonce) == request.nonce
         expect(signingBody.appUserID) == requestBody.appUserID
         expect(signingBody.redemptionToken) == requestBody.redemptionToken
@@ -1190,7 +1190,7 @@ final class InformationalSignatureVerificationHTTPClientTests: BaseSignatureVeri
     }
 
     func testNoCachedResponseAndNotVerifiedResponse() throws {
-        let path: HTTPRequest.Path2 = .getCustomerInfo(appUserID: "user")
+        let path: HTTPRequest.Path = .getCustomerInfo(appUserID: "user")
 
         self.mockPath(path, statusCode: .success, requestDate: Self.date2, signature: nil)
 
@@ -1350,7 +1350,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
     }
 
     func testFallbackRemoteConfigNotModifiedResponseUsesVerifiedCachedResponse() {
-        let path = HTTPRequest.Path2.remoteConfigFallback(domain: "app")
+        let path = HTTPRequest.Path.remoteConfigFallback(domain: "app")
         let cachedResponse = "cached fallback config".asData
 
         self.mockPath(
@@ -1387,7 +1387,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
     func testDiagnosticsUseCachedResponseCodeForNotModifiedResponse() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let path = HTTPRequest.Path2.remoteConfigFallback(domain: "app")
+        let path = HTTPRequest.Path.remoteConfigFallback(domain: "app")
         self.mockPath(
             path,
             statusCode: .notModified,
@@ -1424,7 +1424,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
     func testFallbackRemoteConfigNotModifiedResponseWithInvalidSignatureFailsInEnforcedMode() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let path = HTTPRequest.Path2.remoteConfigFallback(domain: "app")
+        let path = HTTPRequest.Path.remoteConfigFallback(domain: "app")
 
         self.mockPath(
             path,
@@ -1500,7 +1500,7 @@ final class EnforcedSignatureVerificationHTTPClientTests: BaseSignatureVerificat
                 return index == 0 ? Array(checksum.reversed()) : checksum
             }
         )
-        self.mockResponse(path: HTTPRequest.Path2.remoteConfig(domain: "app"),
+        self.mockResponse(path: HTTPRequest.Path.remoteConfig(domain: "app"),
                           signature: Self.sampleSignature,
                           requestDate: Self.date2,
                           body: body)
@@ -1540,14 +1540,14 @@ private extension BaseSignatureVerificationHTTPClientTests {
     static var remoteConfigRequest: HTTPRequest {
         return .init(
             method: .post(RemoteConfigRequest(fetchContext: .appStart, appUserID: "app-user-id")),
-            path: HTTPRequest.Path2.remoteConfig(domain: "app")
+            path: HTTPRequest.Path.remoteConfig(domain: "app")
         )
     }
 
     static var remoteConfigFallbackRequest: HTTPRequest {
         return .init(
             method: .get,
-            requestPath: HTTPRequest.Path2.remoteConfigFallback(domain: "app")
+            requestPath: HTTPRequest.Path.remoteConfigFallback(domain: "app")
         )
     }
 

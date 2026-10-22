@@ -35,7 +35,7 @@ class BackendPostExternalPurchaseTokenTests: BaseBackendTests {
         expect(self.httpClient.calls).to(haveCount(1))
 
         let call = try XCTUnwrap(self.httpClient.calls.first)
-        let path = try XCTUnwrap(call.request.path as? HTTPRequest.Path2)
+        let path = try XCTUnwrap(call.request.path as? HTTPRequest.Path)
         expect(path) == .postExternalPurchaseToken
         expect(path.relativePath) == "/v1/external_purchase_tokens"
         expect(call.request.method.httpMethod) == "POST"

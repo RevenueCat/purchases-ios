@@ -55,7 +55,7 @@ class NetworkErrorAsPurchasesErrorTests: BaseErrorTests {
     }
 
     func testUnableToCreateRequest() {
-        let path: HTTPRequest.Path2 = .getCustomerInfo(appUserID: "user ID")
+        let path: HTTPRequest.Path = .getCustomerInfo(appUserID: "user ID")
         let error: NetworkError = .unableToCreateRequest(path)
 
         verifyPurchasesError(error,
@@ -459,13 +459,13 @@ class NetworkErrorTests: TestCase {
     private static let dnsError: NetworkError = .dnsError(failedURL: URL(string: "https://google.com")!,
                                                           resolvedHost: "https://google.com")
     private static let unableToCreateRequestError: NetworkError = .unableToCreateRequest(
-        HTTPRequest.Path2.getCustomerInfo(appUserID: "user ID")
+        HTTPRequest.Path.getCustomerInfo(appUserID: "user ID")
     )
 
     private static let unexpectedResponseError: NetworkError = .unexpectedResponse(nil)
 
     private static let signatureVerificationFailed: NetworkError = .signatureVerificationFailed(
-        path: HTTPRequest.Path2.health,
+        path: HTTPRequest.Path.health,
         code: .success
     )
 

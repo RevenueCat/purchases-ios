@@ -27,7 +27,7 @@ class DiagnosticsEventEncodingTests: TestCase {
             verificationResult: "FAILED",
             verificationFailureReason: "PAYLOAD_SIGNATURE_MISMATCH",
             verificationDeviceClockOffsetMinutes: -120,
-            endpointName: HTTPRequest.Path2.logIn.name,
+            endpointName: HTTPRequest.Path.logIn.name,
             host: "api.revenuecat.com",
             responseTime: 3,
             storeKitVersion: .storeKit1,

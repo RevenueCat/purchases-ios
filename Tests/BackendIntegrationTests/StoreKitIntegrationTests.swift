@@ -1132,7 +1132,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testVerifyPurchaseGrantsEntitlementsThroughOnRetryAfter429() async throws {
         // Ensure that the first two times POST /receipt is called, we mock a 429 error
         // and then proceed normally with the backend on subsequent requests
-        let host = try XCTUnwrap(HTTPRequest.Path2.serverHostURL.host)
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
         var stubbedRequestCount = 0
         stub(condition: isHost(host) && isPath("/v1/receipts")) { _ in
             stubbedRequestCount += 1
@@ -1162,7 +1162,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     func testVerifyPurchaseDoesntGrantEntitlementsAfter429RetriesExhausted() async throws {
         // Ensure that the each time POST /receipt is called, we mock a 429 error
         var stubbedRequestCount = 0
-        let host = try XCTUnwrap(HTTPRequest.Path2.serverHostURL.host)
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
         stub(condition: isHost(host) && isPath("/v1/receipts")) { _ in
             stubbedRequestCount += 1
             return Self.emptyTooManyRequestsResponse()
@@ -1183,7 +1183,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         // Ensure that the each time POST /receipt is called, we mock a 429 error with the 
         // Is-Retryable header as "false"
         var stubbedRequestCount = 0
-        let host = try XCTUnwrap(HTTPRequest.Path2.serverHostURL.host)
+        let host = try XCTUnwrap(HTTPRequest.Path.serverHostURL.host)
         stub(condition: isHost(host) && isPath("/v1/receipts")) { _ in
             stubbedRequestCount += 1
             return Self.emptyTooManyRequestsResponse(
@@ -1262,7 +1262,7 @@ private extension StoreKit1IntegrationTests {
     ) throws {
         let request = HTTPRequest(
             method: .post(EmptyRequestBody()),
-            requestPath: HTTPRequest.Path2.getIntroEligibility(appUserID: "test-app-user-id")
+            requestPath: HTTPRequest.Path.getIntroEligibility(appUserID: "test-app-user-id")
         )
         let message = Strings.network.api_request_started(request).description
         let regex = try NSRegularExpression(pattern: Self.introEligibilityRequestStartedLogRegex)

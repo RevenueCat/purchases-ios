@@ -226,8 +226,8 @@ private extension BaseBackendLoginTests {
         statusCode: HTTPStatusCode = .success,
         response: [String: Any] = [:],
         verificationResult: SignatureVerificationResult = .notRequested
-    ) -> HTTPRequest.Path2 {
-        let path: HTTPRequest.Path2 = .logIn
+    ) -> HTTPRequest.Path {
+        let path: HTTPRequest.Path = .logIn
         let response = MockHTTPClient.Response(statusCode: statusCode,
                                                response: response,
                                                verificationResult: verificationResult)
@@ -238,8 +238,8 @@ private extension BaseBackendLoginTests {
     }
 
     func mockLoginRequest(appUserID: String,
-                          error: NetworkError) -> HTTPRequest.Path2 {
-        let path: HTTPRequest.Path2 = .logIn
+                          error: NetworkError) -> HTTPRequest.Path {
+        let path: HTTPRequest.Path = .logIn
         let response =  MockHTTPClient.Response(error: error)
 
         self.httpClient.mock(requestPath: path, response: response)

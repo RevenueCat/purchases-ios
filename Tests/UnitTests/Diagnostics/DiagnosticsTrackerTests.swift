@@ -468,7 +468,7 @@ class DiagnosticsTrackerTests: TestCase {
     }
 
     func testConnectionErrorReasonFromUnableToCreateRequest() {
-        let path: HTTPRequest.Path2 = .getCustomerInfo(appUserID: "user_id")
+        let path: HTTPRequest.Path = .getCustomerInfo(appUserID: "user_id")
         let unableToCreateRequestError = NetworkError.unableToCreateRequest(path)
         let connectionErrorReason = ConnectionErrorReason(from: unableToCreateRequestError)
 
@@ -486,7 +486,7 @@ class DiagnosticsTrackerTests: TestCase {
     }
 
     func testConnectionErrorReasonFromSignatureVerificationFailed() {
-        let signatureError = NetworkError.signatureVerificationFailed(path: HTTPRequest.Path2.health, code: .success)
+        let signatureError = NetworkError.signatureVerificationFailed(path: HTTPRequest.Path.health, code: .success)
         let connectionErrorReason = ConnectionErrorReason(from: signatureError)
 
         expect(connectionErrorReason) == .other

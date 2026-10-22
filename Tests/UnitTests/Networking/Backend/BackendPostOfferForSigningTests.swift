@@ -40,7 +40,7 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
             ]
         ]
 
-        let path: HTTPRequest.Path2 = .postOfferForSigning
+        let path: HTTPRequest.Path = .postOfferForSigning
         let response = MockHTTPClient.Response(statusCode: .success, response: validSigningResponse)
 
         self.httpClient.mock(requestPath: path, response: response)
@@ -66,7 +66,7 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         let mockedError = NetworkError.unexpectedResponse(nil)
 
         self.httpClient.mock(
-            requestPath: HTTPRequest.Path2.postOfferForSigning,
+            requestPath: HTTPRequest.Path.postOfferForSigning,
             response: .init(error: mockedError)
         )
 
@@ -94,7 +94,7 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         ]
 
         self.httpClient.mock(
-            requestPath: HTTPRequest.Path2.postOfferForSigning,
+            requestPath: HTTPRequest.Path.postOfferForSigning,
             response: .init(statusCode: .success, response: validSigningResponse)
         )
 
@@ -137,7 +137,7 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         ]
 
         self.httpClient.mock(
-            requestPath: HTTPRequest.Path2.postOfferForSigning,
+            requestPath: HTTPRequest.Path.postOfferForSigning,
             response: .init(statusCode: .success, response: validSigningResponse)
         )
 
@@ -173,7 +173,7 @@ class BackendPostOfferForSigningTests: BaseBackendTests {
         ]
 
         self.httpClient.mock(
-            requestPath: HTTPRequest.Path2.postOfferForSigning,
+            requestPath: HTTPRequest.Path.postOfferForSigning,
             response: .init(statusCode: .success, response: validSigningResponse)
         )
 

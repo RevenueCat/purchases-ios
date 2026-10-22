@@ -548,8 +548,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             return .emptySuccessResponse()
         }
 
-        let firstRequestPath = HTTPRequest.Path2.mockPath.relativePath
-        let queuedRequestPath = HTTPRequest.Path2.getCustomerInfo(appUserID: "queued-user").relativePath
+        let firstRequestPath = HTTPRequest.Path.mockPath.relativePath
+        let queuedRequestPath = HTTPRequest.Path.getCustomerInfo(appUserID: "queued-user").relativePath
 
         let firstRequestCompleted: Atomic<Bool> = false
         client.perform(.init(method: .get, path: .mockPath)) { (_: EmptyResponse) in
@@ -557,7 +557,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         }
         // Enqueued while the first request's attempt/probe is in flight.
         let queuedResult: EmptyResponse? = waitUntilValue(timeout: .seconds(5)) { completion in
-            let path = HTTPRequest.Path2.getCustomerInfo(appUserID: "queued-user")
+            let path = HTTPRequest.Path.getCustomerInfo(appUserID: "queued-user")
             client.perform(.init(method: .get, requestPath: path)) {
                 completion($0)
             }
@@ -658,7 +658,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     func testPostRequestWithDisabledSignatureVerificationDoesNotContainPostParametersHeader() {
         let body = BodyWithSignature(key1: "a", key2: "b")
 
-        let request = HTTPRequest(method: .post(body), requestPath: HTTPRequest.Path2.postReceiptData)
+        let request = HTTPRequest(method: .post(body), requestPath: HTTPRequest.Path.postReceiptData)
 
         let headers: [String: String]? = waitUntilValue { completion in
             stub(condition: isPath(request.path)) { request in
@@ -1263,7 +1263,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testRemoteConfigFallbackSendsETagHeaders() {
-        let path = HTTPRequest.Path2.remoteConfigFallback(domain: "app")
+        let path = HTTPRequest.Path.remoteConfigFallback(domain: "app")
         let request = HTTPRequest(method: .get, requestPath: path)
         let responseData = "{\"domain\":\"app\",\"manifest\":\"test\",\"active_topics\":[],\"topics\":{}}".asData
         let eTag = "fallback-etag"
@@ -1298,7 +1298,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testRemoteConfigFallbackGetsCachedResponseWhenStatusCodeIsNotModified() {
-        let path = HTTPRequest.Path2.remoteConfigFallback(domain: "app")
+        let path = HTTPRequest.Path.remoteConfigFallback(domain: "app")
         let request = HTTPRequest(method: .get, requestPath: path)
         let cachedResponseData = """
         {"domain":"app","manifest":"cached","active_topics":[],"topics":{}}
@@ -1802,7 +1802,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
     func testRecordsSuccessOnMainBackendAfterSuccessfulRequestToMainBackend() throws {
         let request = HTTPRequest(method: .get,
-                                  requestPath: HTTPRequest.Path2.getOfferings(appUserID: "test_user_id"))
+                                  requestPath: HTTPRequest.Path.getOfferings(appUserID: "test_user_id"))
         let host = try XCTUnwrap(SystemInfo.apiBaseURL.host)
 
         timeoutManager.recordRequestResult(host: host, .mainSourceTimedOut)
@@ -1845,7 +1845,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
     func testRecordsTimeoutOnMainBackendWithFallbackWhenTimeoutOccursOnMainBackendWithFallback() throws {
         let request = HTTPRequest(method: .get,
-                                  requestPath: HTTPRequest.Path2.getOfferings(appUserID: "test_user_id"))
+                                  requestPath: HTTPRequest.Path.getOfferings(appUserID: "test_user_id"))
 
         // main request
         let url = try XCTUnwrap(request.path.url(preferIAMPath: self.tokenManager.enabled)?.absoluteString)
@@ -1878,7 +1878,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     func testUsesReTieredFlatTimeoutForFallbackHostRequestWhenAPISourcesEnabled() throws {
         let client = self.createClient(self.systemInfoUsingAPISources())
         let request = HTTPRequest(method: .get,
-                                  requestPath: HTTPRequest.Path2.getOfferings(appUserID: "test_user_id"))
+                                  requestPath: HTTPRequest.Path.getOfferings(appUserID: "test_user_id"))
 
         let url = try XCTUnwrap(request.path.url(preferIAMPath: self.tokenManager.enabled)?.absoluteString)
         stub(condition: isAbsoluteURLString(url)) { _ in
@@ -1973,7 +1973,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         // The domain layer aims this path at a fallback host, so even with API sources enabled it must
         // get the flat fallback tier rather than the aggressive main-source tiers.
         let client = self.createClient(self.systemInfoUsingAPISources())
-        let path = HTTPRequest.Path2.remoteConfigFallback(domain: "app")
+        let path = HTTPRequest.Path.remoteConfigFallback(domain: "app")
         let request = HTTPRequest(method: .get, requestPath: path)
         let host = try XCTUnwrap(path.serverHostURL.host)
 
@@ -2003,7 +2003,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
     func testRemoteConfigFallbackSuccessDoesNotClearMainSourceMemory() throws {
         let client = self.createClient(self.systemInfoUsingAPISources())
-        let path = HTTPRequest.Path2.remoteConfigFallback(domain: "app")
+        let path = HTTPRequest.Path.remoteConfigFallback(domain: "app")
         let request = HTTPRequest(method: .get, requestPath: path)
         let host = try XCTUnwrap(path.serverHostURL.host)
 
@@ -2268,7 +2268,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         self.client = self.createClient()
 
         let request = HTTPRequest(method: .get,
-                                  requestPath: HTTPRequest.Path2.getOfferings(appUserID: "test_user_id"))
+                                  requestPath: HTTPRequest.Path.getOfferings(appUserID: "test_user_id"))
 
         stub(condition: isHost("proxy.revenuecat.com")) { request in
             // With a proxy URL, the request should use a flat timeout because fallback URLs are
@@ -2301,7 +2301,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         timeoutManager.recordRequestResult(host: "proxy.revenuecat.com", .mainSourceTimedOut)
 
         let request = HTTPRequest(method: .get,
-                                  requestPath: HTTPRequest.Path2.getOfferings(appUserID: "test_user_id"))
+                                  requestPath: HTTPRequest.Path.getOfferings(appUserID: "test_user_id"))
 
         stub(condition: isHost("proxy.revenuecat.com")) { request in
             // Even after a previous timeout, with a proxy URL set the request should use a flat timeout,
@@ -2330,7 +2330,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         timeoutManager.recordRequestResult(host: "proxy.revenuecat.com", .mainSourceTimedOut)
 
         let request = HTTPRequest(method: .get,
-                                  requestPath: HTTPRequest.Path2.getOfferings(appUserID: "test_user_id"))
+                                  requestPath: HTTPRequest.Path.getOfferings(appUserID: "test_user_id"))
 
         stub(condition: isHost("proxy.revenuecat.com")) { request in
             XCTAssertEqual(request.timeoutInterval, HTTPRequestTimeoutManager.Timeout.flat)
@@ -2624,7 +2624,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testPerformSerialRequestPerformsAllRequestsInTheCorrectOrder() {
-        let path: HTTPRequest.Path2 = .mockPath
+        let path: HTTPRequest.Path = .mockPath
 
         let completionCallCount: Atomic<Int> = .init(0)
 
@@ -2654,7 +2654,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testPerformSerialRequestWaitsUntilFirstRequestIsDoneBeforeStartingSecond() {
-        let path: HTTPRequest.Path2 = .mockPath
+        let path: HTTPRequest.Path = .mockPath
 
         let firstRequestFinished: Atomic<Bool> = false
         let secondRequestFinished: Atomic<Bool> = false
@@ -2695,7 +2695,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testPerformSerialRequestWaitsUntilRequestsAreDoneBeforeStartingNext() {
-        let path: HTTPRequest.Path2 = .mockPath
+        let path: HTTPRequest.Path = .mockPath
 
         let firstRequestFinished: Atomic<Bool> = false
         let secondRequestFinished: Atomic<Bool> = false
@@ -2760,11 +2760,11 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         }
 
         let error = try XCTUnwrap(response?.error)
-        expect(error) == .unableToCreateRequest(HTTPRequest.Path2.mockPath)
+        expect(error) == .unableToCreateRequest(HTTPRequest.Path.mockPath)
     }
 
     func testPerformRequestDoesntPerformRequestIfBodyCouldntBeParsedIntoJSON() {
-        let path: HTTPRequest.Path2 = .mockPath
+        let path: HTTPRequest.Path = .mockPath
 
         let httpCallMade: Atomic<Bool> = false
 
@@ -2783,7 +2783,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testRequestIsRetriedIfResponseFromETagManagerIsNil() {
-        let path: HTTPRequest.Path2 = .mockPath
+        let path: HTTPRequest.Path = .mockPath
 
         let requests: Atomic<Int> = .init(0)
 
@@ -2811,7 +2811,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testGetsResponseFromETagManagerWhenStatusCodeIsNotModified() throws {
-        let path: HTTPRequest.Path2 = .mockPath
+        let path: HTTPRequest.Path = .mockPath
 
         let mockedCachedResponse = try JSONSerialization.data(withJSONObject: [
             "test": "data"
@@ -2862,7 +2862,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testDNSCheckerIsCalledWhenGETRequestFailedWithUnknownError() {
-        let path: HTTPRequest.Path2 = .mockPath
+        let path: HTTPRequest.Path = .mockPath
 
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
         MockDNSChecker.stubbedIsBlockedAPIErrorResult.value = false
@@ -2884,7 +2884,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testDNSCheckerIsCalledWhenPOSTRequestFailedWithUnknownError() {
-        let path: HTTPRequest.Path2 = .mockPath
+        let path: HTTPRequest.Path = .mockPath
 
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
         MockDNSChecker.stubbedIsBlockedAPIErrorResult.value = false
@@ -2906,7 +2906,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testDNSCheckedIsCalledWhenPOSTRequestFailedWithDNSError() {
-        let path: HTTPRequest.Path2 = .mockPath
+        let path: HTTPRequest.Path = .mockPath
 
         let fakeSubscribersURL = URL(string: "https://0.0.0.0/subscribers")!
         let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: fakeSubscribersURL]
@@ -2932,7 +2932,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testDNSCheckedIsCalledWhenGETRequestFailedWithDNSError() {
-        let path: HTTPRequest.Path2 = .mockPath
+        let path: HTTPRequest.Path = .mockPath
 
         let fakeSubscribersURL = URL(string: "https://0.0.0.0/subscribers")!
         let userInfo: [String: Any] = [NSURLErrorFailingURLErrorKey: fakeSubscribersURL]
@@ -2957,7 +2957,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testOfflineConnectionError() {
-        let path: HTTPRequest.Path2 = .mockPath
+        let path: HTTPRequest.Path = .mockPath
 
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorNotConnectedToInternet)
         let expectedError: NetworkError = .networkError(error)
@@ -2980,7 +2980,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testErrorIsLoggedAndReturnsDNSErrorWhenGETRequestFailedWithDNSError() {
-        let path: HTTPRequest.Path2 = .mockPath
+        let path: HTTPRequest.Path = .mockPath
 
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
         let expectedDNSError: NetworkError = .dnsError(
@@ -3011,7 +3011,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testErrorIsntLoggedWhenGETRequestFailedWithUnknownError() {
-        let path: HTTPRequest.Path2 = .mockPath
+        let path: HTTPRequest.Path = .mockPath
 
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorUnknown, userInfo: nil)
         let unexpectedDNSError: NetworkError = .dnsError(
@@ -3039,7 +3039,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testResponseFromServerUpdatesRequestDate() throws {
-        let path: HTTPRequest.Path2 = .mockPath
+        let path: HTTPRequest.Path = .mockPath
         let mockedResponse = BodyWithDate(data: "test", requestDate: Date().addingTimeInterval(-3000000))
         let encodedResponse = try mockedResponse.jsonEncodedData
         let requestDate = Date().addingTimeInterval(-100000)
@@ -3063,7 +3063,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testCachedResponseUpdatesRequestDate() throws {
-        let path: HTTPRequest.Path2 = .mockPath
+        let path: HTTPRequest.Path = .mockPath
         let eTag = "etag"
         let mockedResponse = BodyWithDate(data: "test", requestDate: Date().addingTimeInterval(-30000000))
         let encodedResponse = try mockedResponse.jsonEncodedData
@@ -3103,7 +3103,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testforceServerErrorStrategyAllServersDownCallsForceServerFailurePath() {
-        let path: HTTPRequest.Path2 = .mockPath
+        let path: HTTPRequest.Path = .mockPath
 
         stub(condition: isPath(path)) { _ in
             fail("Should not perform request to path \(path)")
@@ -3139,7 +3139,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testNilforceServerErrorStrategyCallsTheOriginalPath() throws {
-        let path: HTTPRequest.Path2 = .logIn
+        let path: HTTPRequest.Path = .logIn
 
         let mockedResponse = BodyWithDate(data: "test", requestDate: Date())
         let encodedResponse = try mockedResponse.jsonEncodedData
@@ -3177,7 +3177,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testforceServerErrorStrategyPerformingRequestCallsTheOriginalPath() throws {
-        let path: HTTPRequest.Path2 = .logIn
+        let path: HTTPRequest.Path = .logIn
 
         let mockedResponse = BodyWithDate(data: "test", requestDate: Date())
         let encodedResponse = try mockedResponse.jsonEncodedData
@@ -3220,8 +3220,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         // Task delegate is only available after iOS 15.
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
-        let pathA: HTTPRequest.Path2 = .logIn
-        let pathB: HTTPRequest.Path2 = .health
+        let pathA: HTTPRequest.Path = .logIn
+        let pathB: HTTPRequest.Path = .health
 
         let responseData = "{\"message\": \"something is great up in the cloud\"}".asData
 
@@ -3258,7 +3258,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testNormalResponsesAreNotDetectedAsLoadSheddder() throws {
-        let path: HTTPRequest.Path2 = .logIn
+        let path: HTTPRequest.Path = .logIn
 
         stub(condition: isPath(path)) { _ in
             return HTTPStubsResponse(
@@ -3277,7 +3277,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testLoadShedderResponsesAreLogged() throws {
-        let path: HTTPRequest.Path2 = .logIn
+        let path: HTTPRequest.Path = .logIn
 
         stub(condition: isPath(path)) { _ in
             return HTTPStubsResponse(
@@ -3587,13 +3587,13 @@ extension HTTPClientTests {
 
         let path: any HTTPRequestPath
         if hasFallbackUrls {
-            path = HTTPRequest.Path2.getOfferings(appUserID: "abc123")
+            path = HTTPRequest.Path.getOfferings(appUserID: "abc123")
             expect(path.fallbackUrls).toNot(
                 beEmpty(),
                 description: "This test requires a path that has at least 1 fallback host"
             )
         } else {
-            path = HTTPRequest.Path2.getCustomerInfo(appUserID: "abc123")
+            path = HTTPRequest.Path.getCustomerInfo(appUserID: "abc123")
         }
 
         let request: HTTPClient.Request = .init(
@@ -3853,7 +3853,7 @@ extension HTTPClientTests {
             return .emptyTooManyRequestsResponse()
         }
 
-        let request = HTTPRequest(method: .get, requestPath: HTTPRequest.Path2.postReceiptData, isRetryable: true)
+        let request = HTTPRequest(method: .get, requestPath: HTTPRequest.Path.postReceiptData, isRetryable: true)
         let result = waitUntilValue { completion in
             self.client.perform(request) { (response: EmptyResponse) in
                 completion(response)
@@ -3884,7 +3884,7 @@ extension HTTPClientTests {
         let mockOperationDispatcher = MockOperationDispatcher()
         let client = self.createClient(self.systemInfo, operationDispatcher: mockOperationDispatcher)
 
-        let request = HTTPRequest(method: .get, requestPath: HTTPRequest.Path2.postReceiptData, isRetryable: true)
+        let request = HTTPRequest(method: .get, requestPath: HTTPRequest.Path.postReceiptData, isRetryable: true)
         _ = waitUntilValue { completion in
             client.perform(request) { (response: EmptyResponse) in
                 completion(response)
@@ -3908,7 +3908,7 @@ extension HTTPClientTests {
             return .emptyTooManyRequestsResponse()
         }
 
-        let request = HTTPRequest(method: .get, requestPath: HTTPRequest.Path2.postReceiptData, isRetryable: true)
+        let request = HTTPRequest(method: .get, requestPath: HTTPRequest.Path.postReceiptData, isRetryable: true)
         _ = waitUntilValue { completion in
             self.client.perform(request) { (response: EmptyResponse) in
                 completion(response)
@@ -4005,7 +4005,7 @@ extension HTTPClientTests {
             }
         }
 
-        let request = HTTPRequest(method: .get, requestPath: HTTPRequest.Path2.postReceiptData, isRetryable: true)
+        let request = HTTPRequest(method: .get, requestPath: HTTPRequest.Path.postReceiptData, isRetryable: true)
         _ = waitUntilValue { completion in
             self.client.perform(request) { (response: EmptyResponse) in
                 completion(response)
@@ -4025,7 +4025,7 @@ extension HTTPClientTests {
             return .emptyTooManyRequestsResponse()
         }
 
-        let request = HTTPRequest(method: .get, requestPath: HTTPRequest.Path2.postReceiptData, isRetryable: true)
+        let request = HTTPRequest(method: .get, requestPath: HTTPRequest.Path.postReceiptData, isRetryable: true)
         _ = waitUntilValue { completion in
             self.client.perform(request) { (response: EmptyResponse) in
                 completion(response)
@@ -4048,7 +4048,7 @@ extension HTTPClientTests {
             }
         }
 
-        let request = HTTPRequest(method: .get, requestPath: HTTPRequest.Path2.postReceiptData, isRetryable: true)
+        let request = HTTPRequest(method: .get, requestPath: HTTPRequest.Path.postReceiptData, isRetryable: true)
         let result = waitUntilValue { completion in
             self.client.perform(request) { (response: EmptyResponse) in
                 completion(response)
@@ -4634,13 +4634,13 @@ extension BaseHTTPClientTests {
 
 }
 
-extension HTTPRequest.Path2 {
+extension HTTPRequest.Path {
 
     // Doesn't matter which path this is, we stub requests to it.
     static let mockPath: Self = .logIn
 }
 
-extension HTTPRequest.Path2 {
+extension HTTPRequest.Path {
     static let mockPathWithFallbacks: Self = .getProductEntitlementMapping
 
 }
@@ -4698,7 +4698,7 @@ final class HTTPClientTimeoutManagerTests: BaseHTTPClientTests<MockETagManager, 
     /// the HTTPClient records the correct events
     func testRecordsTimeoutOnMainBackendAndOtherOnFallbackSuccessWithFallbackEvent() throws {
         let request = HTTPRequest(method: .get,
-                                  requestPath: HTTPRequest.Path2.getOfferings(appUserID: "test_user_id"))
+                                  requestPath: HTTPRequest.Path.getOfferings(appUserID: "test_user_id"))
 
         // main request times out
         let url = try XCTUnwrap(request.path.url(preferIAMPath: self.tokenManager.enabled)?.absoluteString)

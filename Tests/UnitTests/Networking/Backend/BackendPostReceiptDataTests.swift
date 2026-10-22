@@ -28,7 +28,7 @@ class BaseBackendPostReceiptDataTests: BaseBackendTests {
 class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
 
     func testPostsReceiptDataCorrectly() throws {
-        let path: HTTPRequest.Path2 = .postReceiptData
+        let path: HTTPRequest.Path = .postReceiptData
         var response = Self.validCustomerResponse
         response["dimensions"] = ["country": "NL"]
         response["as_of"] = 1_000
@@ -67,7 +67,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
     }
 
     func testPostsReceiptDataWithProductDataCorrectly() throws {
-        let path: HTTPRequest.Path2 = .postReceiptData
+        let path: HTTPRequest.Path = .postReceiptData
 
         httpClient.mock(
             requestPath: path,
@@ -102,7 +102,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
     func testPostsReceiptDataWithAppTransactionCorrectly() throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
-        let path: HTTPRequest.Path2 = .postReceiptData
+        let path: HTTPRequest.Path = .postReceiptData
 
         httpClient.mock(
             requestPath: path,
@@ -139,7 +139,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
     func testPostsReceiptDataWithAppTransactionAndNoReceiptCorrectly() throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
-        let path: HTTPRequest.Path2 = .postReceiptData
+        let path: HTTPRequest.Path = .postReceiptData
 
         httpClient.mock(
             requestPath: path,
@@ -173,7 +173,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
     }
 
     func testPostsReceiptDataWithTransactionIdCorrectly() throws {
-        let path: HTTPRequest.Path2 = .postReceiptData
+        let path: HTTPRequest.Path = .postReceiptData
 
         httpClient.mock(
             requestPath: path,
@@ -216,7 +216,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             internalSettings: DangerousSettings.Internal(testReceiptIdentifier: identifier)
         ))
 
-        let path: HTTPRequest.Path2 = .postReceiptData
+        let path: HTTPRequest.Path = .postReceiptData
 
         self.httpClient.mock(
             requestPath: path,
@@ -732,7 +732,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         let futureDateString = ISO8601DateFormatter()
             .string(from: Calendar.current.date(byAdding: dateComponent, to: today)!)
 
-        let getCustomerInfoPath: HTTPRequest.Path2 = .getCustomerInfo(appUserID: Self.userID)
+        let getCustomerInfoPath: HTTPRequest.Path = .getCustomerInfo(appUserID: Self.userID)
 
         let validCustomerResponse: [String: Any] = [
             "request_date": "2019-08-16T10:30:42Z",
@@ -818,8 +818,8 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         expect(updatedSubscriberInfo.value) != originalSubscriberInfo.value
 
         expect(self.httpClient.calls.count) == 2
-        expect(self.httpClient.calls.first?.request.path as? HTTPRequest.Path2) == getCustomerInfoPath
-        expect(self.httpClient.calls.last?.request.path as? HTTPRequest.Path2) == .postReceiptData
+        expect(self.httpClient.calls.first?.request.path as? HTTPRequest.Path) == getCustomerInfoPath
+        expect(self.httpClient.calls.last?.request.path as? HTTPRequest.Path) == .postReceiptData
     }
 
     func testPostingReceiptCreatesACustomerInfoObject() {
@@ -933,7 +933,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
 
     @available(iOS 11.2, *)
     func testPostsReceiptDataWithDiscountInfoCorrectly() throws {
-        let path: HTTPRequest.Path2 = .postReceiptData
+        let path: HTTPRequest.Path = .postReceiptData
         let response = MockHTTPClient.Response(statusCode: .success, response: Self.validCustomerResponse)
 
         self.httpClient.mock(requestPath: path, response: response)
@@ -1030,7 +1030,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         let customerInfo = try CustomerInfo(data: Self.validCustomerResponse)
 
         self.httpClient.mock(
-            requestPath: HTTPRequest.Path2.postReceiptData,
+            requestPath: HTTPRequest.Path.postReceiptData,
             response: .init(error: .serverDown())
         )
         self.mockOfflineCustomerInfoCreator.stubbedCreatedResult = .success(customerInfo)
@@ -1096,7 +1096,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
     }
 
     func testPostsJWSTokenWithProductDataCorrectly() throws {
-        let path: HTTPRequest.Path2 = .postReceiptData
+        let path: HTTPRequest.Path = .postReceiptData
 
         httpClient.mock(
             requestPath: path,
@@ -1129,7 +1129,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
     }
 
     func testPostsSK2XcodeReceiptWithProductDataCorrectly() throws {
-        let path: HTTPRequest.Path2 = .postReceiptData
+        let path: HTTPRequest.Path = .postReceiptData
 
         httpClient.mock(
             requestPath: path,
@@ -1240,7 +1240,7 @@ class BackendPostReceiptCustomEntitlementsTests: BaseBackendPostReceiptDataTests
     }
 
     func testDoesNotPostConsentStatus() throws {
-        let path: HTTPRequest.Path2 = .postReceiptData
+        let path: HTTPRequest.Path = .postReceiptData
 
         self.httpClient.mock(
             requestPath: path,

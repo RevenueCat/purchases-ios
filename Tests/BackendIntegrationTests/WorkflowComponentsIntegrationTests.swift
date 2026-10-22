@@ -23,7 +23,7 @@ final class WorkflowComponentsIntegrationTests: BaseStoreKitIntegrationTests {
 
     override func setUp() async throws {
         self.forceServerErrorStrategy = ForceServerErrorStrategy { request in
-            guard request.httpRequest.path.name == HTTPRequest.Path2.remoteConfig(domain: "app").name,
+            guard request.httpRequest.path.name == HTTPRequest.Path.remoteConfig(domain: "app").name,
                   let url = request.httpRequest.path.url(preferIAMPath: false),
                   let response = HTTPURLResponse(url: url,
                                                  statusCode: 204,

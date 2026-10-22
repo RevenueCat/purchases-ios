@@ -114,7 +114,7 @@ final class PostReceiptDataOperation: CacheableNetworkOperation {
 
     private func post(completion: @escaping () -> Void) {
         let request = HTTPRequest(method: .post(self.postData),
-                                  requestPath: HTTPRequest.Path2.postReceiptData,
+                                  requestPath: HTTPRequest.Path.postReceiptData,
                                   isRetryable: true)
 
         self.httpClient.perform(

@@ -47,7 +47,7 @@ class PostAttributionDataOperation: NetworkOperation {
         }
 
         let request = HTTPRequest(method: .post(Body(network: self.network, attributionData: self.attributionData)),
-                                  requestPath: HTTPRequest.Path2.postAttributionData(appUserID: appUserID))
+                                  requestPath: HTTPRequest.Path.postAttributionData(appUserID: appUserID))
 
         self.httpClient.perform(request) { (response: VerifiedHTTPResponse<HTTPEmptyResponseBody>.Result) in
             defer {

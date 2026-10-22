@@ -50,7 +50,7 @@ extension GetProductEntitlementMappingOperation: @unchecked Sendable {}
 private extension GetProductEntitlementMappingOperation {
 
     func getResponse(completion: @escaping () -> Void) {
-        let request = HTTPRequest(method: .get, requestPath: HTTPRequest.Path2.getProductEntitlementMapping)
+        let request = HTTPRequest(method: .get, requestPath: HTTPRequest.Path.getProductEntitlementMapping)
 
         self.httpClient.perform(request) { (response: VerifiedHTTPResponse<ProductEntitlementMappingResponse>.Result) in
             defer {

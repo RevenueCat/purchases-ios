@@ -159,7 +159,7 @@ class MockHTTPClient: HTTPClient {
         }
     }
 
-    func mock(requestPath: HTTPRequest.Path2, response: Response) {
+    func mock(requestPath: HTTPRequest.Path, response: Response) {
         self.mock(path: requestPath, response: response)
     }
 

@@ -234,7 +234,7 @@ final class EnforcedProductionRemoteConfigIntegrationTests: BaseProductionRemote
 
         let expectedRequest = HTTPRequest(
             method: .get,
-            requestPath: HTTPRequest.Path2.remoteConfigFallback(domain: RemoteConfiguration.defaultDomain)
+            requestPath: HTTPRequest.Path.remoteConfigFallback(domain: RemoteConfiguration.defaultDomain)
         )
         self.logger.verifyMessageWasLogged(
             Strings.network.api_request_completed(expectedRequest, httpCode: .notModified, metadata: nil)

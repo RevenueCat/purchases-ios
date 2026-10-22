@@ -92,7 +92,7 @@ final class BackendCheckoutLaneTests: BaseBackendTests {
         self.httpClient.disableSnapshotTesting()
 
         let backend = self.makeBackend(checkoutClient: laneClient)
-        let statusPath = HTTPRequest.Path2.getHostedCheckoutStatus(
+        let statusPath = HTTPRequest.Path.getHostedCheckoutStatus(
             operationSessionID: Self.operationSessionID,
             appUserID: Self.userID
         )
@@ -189,8 +189,8 @@ final class BackendCheckoutLaneTests: BaseBackendTests {
 
         let backend = self.makeBackend(checkoutClient: laneClient)
 
-        let externalPurchaseTokenPath = HTTPRequest.Path2.postExternalPurchaseToken.relativePath
-        let hostedCheckoutPath = HTTPRequest.Path2.postHostedCheckout.relativePath
+        let externalPurchaseTokenPath = HTTPRequest.Path.postExternalPurchaseToken.relativePath
+        let hostedCheckoutPath = HTTPRequest.Path.postHostedCheckout.relativePath
 
         laneClient.mock(
             requestPath: .postExternalPurchaseToken,
@@ -339,8 +339,8 @@ final class BackendCheckoutLaneParallelTests: TestCase {
             subscriberDimensionsStore: MockSubscriberDimensionsStore()
         )
 
-        let hostedCheckoutPath = HTTPRequest.Path2.postHostedCheckout.relativePath
-        let externalPurchaseTokenPath = HTTPRequest.Path2.postExternalPurchaseToken.relativePath
+        let hostedCheckoutPath = HTTPRequest.Path.postHostedCheckout.relativePath
+        let externalPurchaseTokenPath = HTTPRequest.Path.postExternalPurchaseToken.relativePath
         let offeringsDispatched: Atomic<Bool> = false
         let offeringsCompleted: Atomic<Bool> = false
 
@@ -415,7 +415,7 @@ final class BackendCheckoutLaneParallelTests: TestCase {
         let offeringsHits: Atomic<Int> = .init(0)
         let hostedCheckoutHits: Atomic<Int> = .init(0)
         let tokenRefreshHits: Atomic<Int> = .init(0)
-        let hostedCheckoutPath = HTTPRequest.Path2.postHostedCheckout.relativePath
+        let hostedCheckoutPath = HTTPRequest.Path.postHostedCheckout.relativePath
 
         stub(condition: pathEndsWith("/offerings")) { _ in
             let hitCount = offeringsHits.increment()

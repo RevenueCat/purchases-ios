@@ -519,7 +519,7 @@ class TokenManagerTests: TestCase {
             fail("Expected .refresh, got \(action)")
             return
         }
-        expect(refreshRequest.path as? HTTPRequest.Path2) == .tokenRefresh
+        expect(refreshRequest.path as? HTTPRequest.Path) == .tokenRefresh
         expect(refreshRequest.isRetryable) == false
         let body = try XCTUnwrap(refreshRequest.requestBody as? TokenRefreshOperation.Body)
         expect(body.refreshToken) == "current-refresh-token"
@@ -536,7 +536,7 @@ class TokenManagerTests: TestCase {
 
         var duplicateHandlerResult: Bool?
         let secondAction = manager.tokenRefreshRequest(
-            for: Self.makeRequest(path: HTTPRequest.Path2.getOfferings(appUserID: "user")),
+            for: Self.makeRequest(path: HTTPRequest.Path.getOfferings(appUserID: "user")),
             response: Self.unauthorizedResponse
         ) { wasSuccessful in
             duplicateHandlerResult = wasSuccessful
@@ -664,7 +664,7 @@ class TokenManagerTests: TestCase {
 
         _ = manager.tokenRefreshRequest(for: Self.makeRequest(), response: Self.unauthorizedResponse) { _ in }
         var duplicateResult: Bool?
-        _ = manager.tokenRefreshRequest(for: Self.makeRequest(path: HTTPRequest.Path2.getOfferings(appUserID: "user")),
+        _ = manager.tokenRefreshRequest(for: Self.makeRequest(path: HTTPRequest.Path.getOfferings(appUserID: "user")),
                                         response: Self.unauthorizedResponse) { wasSuccessful in
             duplicateResult = wasSuccessful
         }
@@ -733,12 +733,12 @@ private extension TokenManagerTests {
                                   completionHandler: { (_: VerifiedHTTPResponse<Data>.Result) in })
     }
 
-    static func makeRequest(path: HTTPRequest.Path2) -> HTTPClient.Request {
+    static func makeRequest(path: HTTPRequest.Path) -> HTTPClient.Request {
         self.makeRequest(path: path as any HTTPRequestPath)
     }
 
     static func makeRequest() -> HTTPClient.Request {
-        self.makeRequest(path: HTTPRequest.Path2.getCustomerInfo(appUserID: "user"))
+        self.makeRequest(path: HTTPRequest.Path.getCustomerInfo(appUserID: "user"))
     }
 
     static func makeTokenResponse(
