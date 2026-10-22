@@ -168,8 +168,9 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         var introDictionary: [String: IntroEligibility] = compoundProductIdentifiers.dictionaryWithValues { _ in
                 .init(eligibilityStatus: .unknown)
         }
-
-        let products = try await self.productsManager.sk2Products(withIdentifiers: compoundProductIdentifiers)
+        let log = IntroEligibilityLog()
+        let products = try await log.products(identifiers: compoundProductIdentifiers,
+                                              fetch: self.productsManager.sk2Products(withIdentifiers:))
         var productIdentifiersByGroup: [String: [String]] = [:]
         for product in products {
             if let subscriptionGroupID = product.subscriptionGroupIDForIntroEligibilityCheck {
@@ -182,12 +183,10 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         await withTaskGroup(of: (String, Bool).self) { group in
             for subscriptionGroupID in productIdentifiersByGroup.keys {
                 group.addTask {
-                    let isEligible = await TimingUtil.measureAndLogIfTooSlow(
-                        threshold: .introEligibility,
-                        message: Strings.eligibility.sk2_intro_eligibility_too_slow.description
-                    ) {
-                        await SK2Product.SubscriptionInfo.isEligibleForIntroOffer(for: subscriptionGroupID)
-                    }
+                    let isEligible = await log.eligibility(
+                        forSubscriptionGroup: subscriptionGroupID,
+                        check: SK2Product.SubscriptionInfo.isEligibleForIntroOffer(for:)
+                    )
                     return (subscriptionGroupID, isEligible)
                 }
             }
@@ -198,6 +197,7 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
                 }
             }
         }
+        log.finished(introDictionary)
         return introDictionary
     }
 

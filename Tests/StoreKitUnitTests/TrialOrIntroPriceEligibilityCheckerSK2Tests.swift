@@ -122,6 +122,10 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
         for (product, receivedEligibility) in eligibilities {
             expect(receivedEligibility.status) == expected[product]
         }
+        self.logger.verifyMessageWasLogged("starting product lookup", level: .debug, expectedCount: 1)
+        // Both subscriptions share a group, so StoreKit is checked once.
+        self.logger.verifyMessageWasLogged("eligible=true", level: .debug, expectedCount: 1)
+        self.logger.verifyMessageWasLogged("check finished in", level: .debug, expectedCount: 1)
     }
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

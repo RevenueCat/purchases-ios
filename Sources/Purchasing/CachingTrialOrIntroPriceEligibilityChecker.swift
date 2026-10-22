@@ -118,6 +118,7 @@ extension CachingTrialOrIntroPriceEligibilityChecker {
         case .complete(let cached):
             completion(cached)
         case .wait:
+            Logger.debug(Strings.eligibility.waiting_for_intro_eligibility(productIdentifiers))
             return
         case .start(let requestKey):
             self.checker.checkEligibility(
@@ -139,7 +140,11 @@ extension CachingTrialOrIntroPriceEligibilityChecker {
                         )
                     }
 
+                    let deliveryStart = Clock.default.currentTime
                     Task { @MainActor in
+                        Logger.debug(Strings.eligibility.delivering_intro_eligibility(
+                            result: result, duration: Clock.default.durationSince(deliveryStart)
+                        ))
                         completions.forEach { $0(result) }
                     }
                 }

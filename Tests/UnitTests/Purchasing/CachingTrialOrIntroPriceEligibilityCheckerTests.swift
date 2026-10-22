@@ -222,6 +222,12 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
         expect(checker.invocations) == [productIDs]
         expect(receivedFirstResult) == expected
         expect(receivedSecondResult) == expected
+        self.logger.verifyMessageWasLogged(
+            Strings.eligibility.waiting_for_intro_eligibility(productIDs), level: .debug, expectedCount: 1
+        )
+        self.logger.verifyMessageWasLogged(
+            "Delivering intro eligibility results to waiting callers", level: .debug, expectedCount: 1
+        )
     }
 
     func testRequestSharesInFlightCheckContainingAllItsProducts() async {
