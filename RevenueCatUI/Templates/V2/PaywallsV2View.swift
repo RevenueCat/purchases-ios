@@ -270,6 +270,7 @@ struct PaywallsV2View: View {
                 }
             }
         )
+        .environment(\.nativePaywallButtonRegistrationEnabled, self.isActiveWorkflowPage != false)
         .modifier(PaywallURLEventsModifier(purchaseHandler: self.purchaseHandler))
         // Only publish the state-store environment when this paywall owns the store (standalone).
         // Inside a workflow the store is injected and observed by `WorkflowPaywallView`;
