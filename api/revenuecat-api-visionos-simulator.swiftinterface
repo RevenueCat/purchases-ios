@@ -2265,6 +2265,7 @@ extension RevenueCat.PackageType : Swift.Codable {
   case purchased = 0
   case familyShared = 1
   case unknown = 2
+  case assigned = 3
   public init?(rawValue: Swift.Int)
   public typealias RawValue = Swift.Int
   public var rawValue: Swift.Int {

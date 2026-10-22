@@ -136,6 +136,7 @@ public final class Authentication: NSObject {
             return
         }
 
+        let originalAppUserID = self.identityManager.currentAppUserID
         let normalizedAppUserID = appUserID.trimmingWhitespacesAndNewLines
 
         self.ongoingUserInitiatedRequestCount.increment()
@@ -145,7 +146,7 @@ public final class Authentication: NSObject {
             self.operationDispatcher.dispatchOnMainThread {
                 switch result {
                 case .success(let values):
-                    if let delegate = self.internalDelegate {
+                    if let delegate = self.internalDelegate, normalizedAppUserID != originalAppUserID {
                         delegate.authenticatorDidChangeIdentity(reason: .identified) { _ in
                             completion(values.info, values.created, nil)
                         }

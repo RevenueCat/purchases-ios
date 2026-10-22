@@ -119,6 +119,7 @@ import Foundation
             case userId = "screen_purchase_history_user_id"
             case purchaseHistory = "screen_purchase_history_title"
             case sharedThroughFamilyMember = "shared_through_family_member"
+            case assignedThroughOrganization = "assigned_through_organization"
             case active = "active"
             case inactive = "inactive"
             case introductoryPrice = "introductory_price"
@@ -318,6 +319,8 @@ import Foundation
                     return "Purchase History"
                 case .sharedThroughFamilyMember:
                     return "Shared through family member"
+                case .assignedThroughOrganization:
+                    return "Assigned through your organization"
                 case .active:
                     return "Active"
                 case .inactive:

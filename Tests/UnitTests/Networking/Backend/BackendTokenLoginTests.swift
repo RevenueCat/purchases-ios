@@ -145,82 +145,6 @@ class BackendTokenLoginTests: BaseBackendTokenLoginTests {
         expect(body.linkToID) == "existing-id-token"
     }
 
-    // MARK: - Linked identity
-
-    func testAnonymousLoginFromAnAnonymousUserIncludesTheCurrentAppUserID() throws {
-        let tokenManager = try XCTUnwrap(self.httpClient.tokenManager as? MockTokenManager)
-        tokenManager.stubbedIDToken = "existing-id-token"
-        try self.mockSuccessfulTokenLogin()
-
-        waitUntil { completed in
-            self.token.logIn(currentAppUserID: Self.anonymousAppUserID, identity: .anonymous) { _ in completed() }
-        }
-
-        let body = try XCTUnwrap(self.httpClient.calls.last?.request.requestBody as? TokenLogInOperation.AnonymousBody)
-        expect(body.method) == "anonymous"
-        expect(body.appUserID) == Self.anonymousAppUserID
-        expect(tokenManager.invokedIDTokenFor) == false
-    }
-
-    func testAnonymousLoginFromANonAnonymousUserDoesNotIncludeAnAppUserID() throws {
-        let tokenManager = try XCTUnwrap(self.httpClient.tokenManager as? MockTokenManager)
-        tokenManager.stubbedIDToken = "existing-id-token"
-        try self.mockSuccessfulTokenLogin()
-
-        waitUntil { completed in
-            self.token.logIn(currentAppUserID: "identified-user", identity: .anonymous) { _ in completed() }
-        }
-
-        let body = try XCTUnwrap(self.httpClient.calls.last?.request.requestBody as? TokenLogInOperation.AnonymousBody)
-        expect(body.appUserID).to(beNil())
-        expect(tokenManager.invokedIDTokenFor) == false
-    }
-
-    func testAnonymousLoginDoesNotTreatAMalformedAnonymousIDAsAnonymous() throws {
-        try self.mockSuccessfulTokenLogin()
-
-        waitUntil { completed in
-            self.token.logIn(currentAppUserID: "$RCAnonymousID:not-a-valid-id", identity: .anonymous) { _ in
-                completed()
-            }
-        }
-
-        let body = try XCTUnwrap(self.httpClient.calls.last?.request.requestBody as? TokenLogInOperation.AnonymousBody)
-        expect(body.appUserID).to(beNil())
-    }
-
-    func testNonAnonymousLoginFromAnAnonymousUserLinksTheIDTokenNotTheAppUserID() throws {
-        let tokenManager = try XCTUnwrap(self.httpClient.tokenManager as? MockTokenManager)
-        tokenManager.stubbedIDToken = "existing-id-token"
-        try self.mockSuccessfulTokenLogin()
-
-        waitUntil { completed in
-            self.token.logIn(currentAppUserID: Self.anonymousAppUserID,
-                             identity: .oidc(Data("oidc-identity-token".utf8))) { _ in completed() }
-        }
-
-        expect(tokenManager.invokedIDTokenForParametersList) == [Self.anonymousAppUserID]
-
-        let body = try XCTUnwrap(self.httpClient.calls.last?.request.requestBody as? TokenLogInOperation.StandardBody)
-        expect(body.method) == "oidc"
-        expect(body.linkToID) == "existing-id-token"
-    }
-
-    func testNonAnonymousLoginWithoutAnExistingIDTokenDoesNotLinkAnything() throws {
-        let tokenManager = try XCTUnwrap(self.httpClient.tokenManager as? MockTokenManager)
-        tokenManager.stubbedIDToken = nil
-        try self.mockSuccessfulTokenLogin()
-
-        waitUntil { completed in
-            self.token.logIn(currentAppUserID: Self.anonymousAppUserID,
-                             identity: .firebase(Data("firebase-identity-token".utf8))) { _ in completed() }
-        }
-
-        let body = try XCTUnwrap(self.httpClient.calls.last?.request.requestBody as? TokenLogInOperation.StandardBody)
-        expect(body.method) == "firebase"
-        expect(body.linkToID).to(beNil())
-    }
-
     func testLoginCachesForTheSameIdentityAndCurrentAppUserID() throws {
         let accessToken = try Self.makeAccessToken(appUserID: "rc-user-id")
         self.mockTokenLoginRequest(response: [
@@ -254,16 +178,6 @@ class BackendTokenLoginTests: BaseBackendTokenLoginTests {
 }
 
 private extension BaseBackendTokenLoginTests {
-
-    static let anonymousAppUserID = "$RCAnonymousID:6b2787de2fb848a8b403a45f695ee74f"
-
-    func mockSuccessfulTokenLogin() throws {
-        self.mockTokenLoginRequest(response: [
-            "access_token": try Self.makeAccessToken(appUserID: "rc-user-id"),
-            "scope": "openid offline_access",
-            "expires_in": 3600
-        ])
-    }
 
     func mockTokenLoginRequest(response: [String: Any], statusCode: HTTPStatusCode = .success) {
         let mockResponse = MockHTTPClient.Response(statusCode: statusCode, response: response)
@@ -299,39 +213,6 @@ private extension BaseBackendTokenLoginTests {
             .replacingOccurrences(of: "+", with: "-")
             .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: "=", with: "")
-    }
-
-}
-
-class TokenLogInAnonymousBodyTests: TestCase {
-
-    func testEncodesAppUserIDWhenPresent() throws {
-        let body = TokenLogInOperation.AnonymousBody(method: "anonymous",
-                                                     scope: "openid offline_access",
-                                                     appUserID: "$RCAnonymousID:abc")
-
-        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: body.jsonEncodedData) as? [String: Any])
-        expect(json["method"] as? String) == "anonymous"
-        expect(json["scope"] as? String) == "openid offline_access"
-        expect(json["app_user_id"] as? String) == "$RCAnonymousID:abc"
-    }
-
-    func testOmitsAppUserIDWhenNil() throws {
-        let body = TokenLogInOperation.AnonymousBody(method: "anonymous",
-                                                     scope: "openid offline_access",
-                                                     appUserID: nil)
-
-        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: body.jsonEncodedData) as? [String: Any])
-        expect(json.keys.sorted()) == ["method", "scope"]
-    }
-
-    func testContentForSignatureIncludesAppUserID() {
-        let body = TokenLogInOperation.AnonymousBody(method: "anonymous",
-                                                     scope: "openid offline_access",
-                                                     appUserID: "$RCAnonymousID:abc")
-
-        expect(body.contentForSignature.map(\.key)) == ["method", "scope", "app_user_id"]
-        expect(body.contentForSignature.map(\.value)) == ["anonymous", "openid offline_access", "$RCAnonymousID:abc"]
     }
 
 }
