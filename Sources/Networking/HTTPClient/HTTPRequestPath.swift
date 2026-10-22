@@ -183,7 +183,6 @@ extension HTTPRequest {
 
     enum WebBillingPath: Hashable {
 
-        case postHostedCheckout
         case getHostedCheckoutStatus(operationSessionID: String, appUserID: String)
 
     }

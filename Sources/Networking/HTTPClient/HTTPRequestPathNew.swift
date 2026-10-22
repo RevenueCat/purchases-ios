@@ -401,4 +401,10 @@ extension HTTPRequest.Path2 {
                                  pathComponent: path,
                                  iamPathComponent: iamPath)
     }
+
+    static let postHostedCheckout = HTTPRequest.Path2(name: "post_hosted_checkout",
+                                                      etagBehavior: .ignore,
+                                                      supportsSignatureVerification: false,
+                                                      needsNonceForSigning: false,
+                                                      pathComponent: "/rcbilling/v1/hosted-checkout")
 }

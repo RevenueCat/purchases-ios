@@ -24,40 +24,34 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
 
     var authenticated: Bool {
         switch self {
-        case .postHostedCheckout,
-             .getHostedCheckoutStatus:
+        case .getHostedCheckoutStatus:
             return true
         }
     }
 
     var shouldSendEtag: Bool {
         switch self {
-        case .postHostedCheckout,
-             .getHostedCheckoutStatus:
+        case .getHostedCheckoutStatus:
             return false
         }
     }
 
     var supportsSignatureVerification: Bool {
         switch self {
-        case .postHostedCheckout,
-             .getHostedCheckoutStatus:
+        case .getHostedCheckoutStatus:
             return false
         }
     }
 
     var needsNonceForSigning: Bool {
         switch self {
-        case .postHostedCheckout,
-             .getHostedCheckoutStatus:
+        case .getHostedCheckoutStatus:
             return false
         }
     }
 
     var relativePath: String {
         switch self {
-        case .postHostedCheckout:
-            return "/rcbilling/v1/hosted-checkout"
         case let .getHostedCheckoutStatus(operationSessionID, appUserID):
             return "/rcbilling/v1/hosted-checkout/\(operationSessionID.trimmedAndEscaped)" +
             "?app_user_id=\(appUserID.trimmedAndEscapedForQuery)"
@@ -66,16 +60,13 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
 
     var relativeIAMPath: String {
         switch self {
-        case .postHostedCheckout,
-             .getHostedCheckoutStatus:
+        case .getHostedCheckoutStatus:
             return self.relativePath
         }
     }
 
     var name: String {
         switch self {
-        case .postHostedCheckout:
-            return "post_hosted_checkout"
         case .getHostedCheckoutStatus:
             return "get_hosted_checkout_status"
         }

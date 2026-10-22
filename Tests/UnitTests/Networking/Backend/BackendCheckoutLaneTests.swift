@@ -190,7 +190,7 @@ final class BackendCheckoutLaneTests: BaseBackendTests {
         let backend = self.makeBackend(checkoutClient: laneClient)
 
         let externalPurchaseTokenPath = HTTPRequest.Path2.postExternalPurchaseToken.relativePath
-        let hostedCheckoutPath = HTTPRequest.WebBillingPath.postHostedCheckout.relativePath
+        let hostedCheckoutPath = HTTPRequest.Path2.postHostedCheckout.relativePath
 
         laneClient.mock(
             requestPath: .postExternalPurchaseToken,
@@ -339,7 +339,7 @@ final class BackendCheckoutLaneParallelTests: TestCase {
             subscriberDimensionsStore: MockSubscriberDimensionsStore()
         )
 
-        let hostedCheckoutPath = HTTPRequest.WebBillingPath.postHostedCheckout.relativePath
+        let hostedCheckoutPath = HTTPRequest.Path2.postHostedCheckout.relativePath
         let externalPurchaseTokenPath = HTTPRequest.Path2.postExternalPurchaseToken.relativePath
         let offeringsDispatched: Atomic<Bool> = false
         let offeringsCompleted: Atomic<Bool> = false
@@ -415,7 +415,7 @@ final class BackendCheckoutLaneParallelTests: TestCase {
         let offeringsHits: Atomic<Int> = .init(0)
         let hostedCheckoutHits: Atomic<Int> = .init(0)
         let tokenRefreshHits: Atomic<Int> = .init(0)
-        let hostedCheckoutPath = HTTPRequest.WebBillingPath.postHostedCheckout.relativePath
+        let hostedCheckoutPath = HTTPRequest.Path2.postHostedCheckout.relativePath
 
         stub(condition: pathEndsWith("/offerings")) { _ in
             let hitCount = offeringsHits.increment()

@@ -256,7 +256,7 @@ class HTTPRequestTests: TestCase {
         let paths: [any HTTPRequestPath] = [
             HTTPRequest.Path2.getWebOfferingProducts(appUserID: Self.userID),
             HTTPRequest.Path2.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"]),
-            HTTPRequest.WebBillingPath.postHostedCheckout,
+            HTTPRequest.Path2.postHostedCheckout,
             HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
                                                                appUserID: Self.userID)
         ]
@@ -329,27 +329,27 @@ class HTTPRequestTests: TestCase {
     }
 
     func testHostedCheckoutRelativePathNamesTheEndpoint() {
-        let path = HTTPRequest.WebBillingPath.postHostedCheckout
+        let path = HTTPRequest.Path2.postHostedCheckout
 
         expect(path.relativePath) == "/rcbilling/v1/hosted-checkout"
     }
 
     /// The customer is named in the body, so there is nothing for the IAM path to leave out.
     func testHostedCheckoutRelativeIAMPathIsTheSameAsTheRelativePath() {
-        let path = HTTPRequest.WebBillingPath.postHostedCheckout
+        let path = HTTPRequest.Path2.postHostedCheckout
 
         expect(path.relativeIAMPath) == path.relativePath
     }
 
     func testHostedCheckoutIsAuthenticatedAndSendsNoEtag() {
-        let path = HTTPRequest.WebBillingPath.postHostedCheckout
+        let path = HTTPRequest.Path2.postHostedCheckout
 
         expect(path.authenticated).to(beTrue())
         expect(path.shouldSendEtag).to(beFalse())
     }
 
     func testHostedCheckoutURL() {
-        let path = HTTPRequest.WebBillingPath.postHostedCheckout
+        let path = HTTPRequest.Path2.postHostedCheckout
 
         expect(path.url(preferIAMPath: false)?.absoluteString)
             == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout"
@@ -1079,7 +1079,7 @@ class HTTPRequestTests2: TestCase {
         let paths: [any HTTPRequestPath] = [
             HTTPRequest.Path2.getWebOfferingProducts(appUserID: Self.userID),
             HTTPRequest.Path2.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"]),
-            HTTPRequest.WebBillingPath.postHostedCheckout,
+            HTTPRequest.Path2.postHostedCheckout,
             HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
                                                                appUserID: Self.userID)
         ]
@@ -1152,27 +1152,27 @@ class HTTPRequestTests2: TestCase {
     }
 
     func testHostedCheckoutRelativePathNamesTheEndpoint() {
-        let path = HTTPRequest.WebBillingPath.postHostedCheckout
+        let path = HTTPRequest.Path2.postHostedCheckout
 
         expect(path.relativePath) == "/rcbilling/v1/hosted-checkout"
     }
 
     /// The customer is named in the body, so there is nothing for the IAM path to leave out.
     func testHostedCheckoutRelativeIAMPathIsTheSameAsTheRelativePath() {
-        let path = HTTPRequest.WebBillingPath.postHostedCheckout
+        let path = HTTPRequest.Path2.postHostedCheckout
 
         expect(path.relativeIAMPath) == path.relativePath
     }
 
     func testHostedCheckoutIsAuthenticatedAndSendsNoEtag() {
-        let path = HTTPRequest.WebBillingPath.postHostedCheckout
+        let path = HTTPRequest.Path2.postHostedCheckout
 
         expect(path.authenticated).to(beTrue())
         expect(path.shouldSendEtag).to(beFalse())
     }
 
     func testHostedCheckoutURL() {
-        let path = HTTPRequest.WebBillingPath.postHostedCheckout
+        let path = HTTPRequest.Path2.postHostedCheckout
 
         expect(path.url(preferIAMPath: false)?.absoluteString)
             == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout"
