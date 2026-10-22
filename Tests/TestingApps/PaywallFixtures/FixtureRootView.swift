@@ -25,6 +25,10 @@ struct FixtureRootView: View {
                 CustomerCenterPreviewFixture()
             } else if requestedFixture == AccessibilityHiddenControlView.fixtureName {
                 AccessibilityHiddenControlView()
+            } else if requestedFixture == NativeNavigationFixtureView.workflowName {
+                NativeNavigationFixtureView(workflow: true)
+            } else if requestedFixture == NativeNavigationFixtureView.sheetName {
+                NativeNavigationFixtureView(workflow: false)
             } else if let fixture = PaywallFixture(rawValue: requestedFixture) {
                 FixturePaywallView(fixture: fixture)
             } else {

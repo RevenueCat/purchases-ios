@@ -109,12 +109,10 @@ extension NativePaywallNavigationModifier {
         paywallComponents: Offering.PaywallComponents,
         workflowContext: WorkflowContext?
     ) {
-        // Workflow integration is added in the final layer; retain its existing presentation.
-        guard workflowContext == nil else {
-            self.init(requested: false)
-            return
-        }
-        self.init(requested: paywallComponents.data.componentsConfig.base.requestsNativeClose)
+        let configs = workflowContext.map { context in
+            context.workflow.screens.values.map { $0.componentsConfig.base }
+        } ?? [paywallComponents.data.componentsConfig.base]
+        self.init(requested: configs.contains { $0.requestsNativeClose })
     }
 }
 
