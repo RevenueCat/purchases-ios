@@ -525,4 +525,3 @@ extension HTTPRequest.Path {
                                               pathComponent: "/auth/revoke",
                                               isIAMPath: true)
 }
-
