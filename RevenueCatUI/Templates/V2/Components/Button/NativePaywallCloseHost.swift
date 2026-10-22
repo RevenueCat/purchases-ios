@@ -34,11 +34,21 @@ struct NativePaywallCloseHost: ViewModifier {
     var ownsNavigation = false
     var detectNavigation = false
     @State private var mountedControls: Set<UUID> = []
+    #if os(iOS)
+    var uiKitOwner: NativePaywallUIKitOwner?
+    #endif
     @StateObject private var coordinator = NativePaywallCloseCoordinator()
 
     @ViewBuilder func body(content: Content) -> some View {
         #if os(iOS)
-        self.nativeNavigation(content)
+        if let owner = self.uiKitOwner {
+            self.surface(content)
+                .onAppear { owner.activate(self.coordinator) }
+                .onReceive(self.coordinator.$actions) { owner.install($0, from: self.coordinator) }
+                .onDisappear { owner.removeClose(from: self.coordinator) }
+        } else {
+            self.nativeNavigation(content)
+        }
         #else
         content
         #endif
@@ -179,6 +189,121 @@ private struct NativePaywallToolbarClose<Probe: View>: View {
             .accessibilityLabel(action.label)
             .accessibilityIdentifier(NativePaywallCloseHost.closeIdentifier)
     }
+}
+#endif
+
+#if os(iOS)
+/// Passed by PaywallViewController. Never discovers or observes SwiftUI's private controllers.
+@available(iOS 15.0, *)
+@MainActor
+final class NativePaywallUIKitOwner: NSObject, ObservableObject {
+    static let closeIdentifier = NativePaywallCloseHost.closeIdentifier
+    static let backIdentifier = NativePaywallCloseHost.backIdentifier
+    weak var controller: UIViewController?
+    @Published private var isStandalone: Bool?
+    var context: NativePaywallNavigationContext? {
+        self.isStandalone.map { $0 ? .standalone : .uiKit(self) }
+    }
+    private var items: [UIBarButtonItem] = []
+    private var originalSupplementBackButton: Bool?
+    private weak var activeSource: NativePaywallCloseCoordinator?
+    private var backAction: NativePaywallCloseCoordinator.CloseAction?
+    private var closeAction: NativePaywallCloseCoordinator.CloseAction?
+
+    func prepare(controller: UIViewController) {
+        self.controller = controller
+        let isStandalone = controller.parent == nil && controller.navigationController == nil
+        guard self.isStandalone != isStandalone else { return }
+        self.isStandalone = isStandalone
+    }
+
+    func activate(_ source: NativePaywallCloseCoordinator) {
+        self.activeSource = source
+        self.install(source.actions)
+    }
+
+    func install(_ actions: [NativePaywallCloseCoordinator.CloseAction], from source: NativePaywallCloseCoordinator) {
+        guard self.activeSource === source else { return }
+        self.install(actions)
+    }
+
+    func removeClose(from source: NativePaywallCloseCoordinator) {
+        guard self.activeSource === source else { return }
+        self.activeSource = nil
+        self.removeClose()
+    }
+
+    func install(_ action: NativePaywallCloseCoordinator.CloseAction?) {
+        self.install(action.map { [$0] } ?? [])
+    }
+
+    func install(_ actions: [NativePaywallCloseCoordinator.CloseAction]) {
+        self.removeClose()
+        guard let controller = self.controller else { return }
+        let back = actions.first { $0.role == .back }
+        let close = actions.first { $0.role == .close && $0.isWorkflowClose }
+            ?? actions.first { $0.role == .close }
+        if let back {
+            self.originalSupplementBackButton = controller.navigationItem.leftItemsSupplementBackButton
+            controller.navigationItem.leftItemsSupplementBackButton = false
+            self.backAction = back
+            let item = UIBarButtonItem(
+                image: UIImage(systemName: "chevron.backward"), style: .plain,
+                target: self, action: #selector(self.backTapped)
+            )
+            item.accessibilityIdentifier = Self.backIdentifier
+            item.accessibilityLabel = back.label
+            item.isEnabled = back.isEnabled
+            controller.navigationItem.leftBarButtonItems =
+                (controller.navigationItem.leftBarButtonItems ?? []) + [item]
+            self.items.append(item)
+        }
+        if let close {
+            self.closeAction = close
+            let item = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(self.closeTapped))
+            item.accessibilityIdentifier = Self.closeIdentifier
+            item.accessibilityLabel = close.label
+            item.isEnabled = close.isEnabled
+            controller.navigationItem.rightBarButtonItems =
+                (controller.navigationItem.rightBarButtonItems ?? []) + [item]
+            self.items.append(item)
+        }
+    }
+
+    @objc private func backTapped() {
+        guard let action = self.backAction else { return }
+        Task {
+            guard self.backAction?.id == action.id, self.backAction?.isEnabled == true else { return }
+            await performNativePaywallAction(action.perform)
+        }
+    }
+
+    @objc private func closeTapped() {
+        guard let action = self.closeAction else { return }
+        Task {
+            guard self.closeAction?.id == action.id, self.closeAction?.isEnabled == true else { return }
+            await performNativePaywallAction(action.perform)
+        }
+    }
+
+    func removeClose() {
+        if let navigationItem = self.controller?.navigationItem {
+            if let originalSupplementBackButton {
+                navigationItem.leftItemsSupplementBackButton = originalSupplementBackButton
+            }
+            for path in [\UINavigationItem.leftBarButtonItems, \UINavigationItem.rightBarButtonItems] {
+                guard let existing = navigationItem[keyPath: path],
+                      existing.contains(where: { item in self.items.contains { $0 === item } }) else { continue }
+                let remaining = existing.filter { item in !self.items.contains { $0 === item } }
+                navigationItem[keyPath: path] = remaining.isEmpty ? nil : remaining
+            }
+        }
+        self.items = []
+        self.originalSupplementBackButton = nil
+        self.backAction = nil
+        self.closeAction = nil
+    }
+
 }
 #endif
 
