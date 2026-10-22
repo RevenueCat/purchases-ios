@@ -486,7 +486,7 @@ class DiagnosticsTrackerTests: TestCase {
     }
 
     func testConnectionErrorReasonFromSignatureVerificationFailed() {
-        let signatureError = NetworkError.signatureVerificationFailed(path: .health, code: .success)
+        let signatureError = NetworkError.signatureVerificationFailed(path: HTTPRequest.Path.health, code: .success)
         let connectionErrorReason = ConnectionErrorReason(from: signatureError)
 
         expect(connectionErrorReason) == .other

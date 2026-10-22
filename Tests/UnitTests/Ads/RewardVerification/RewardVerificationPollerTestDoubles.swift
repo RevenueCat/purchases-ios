@@ -192,7 +192,7 @@ func makeConnectivityError() -> BackendError {
 
 /// A terminal `BackendError` that is not worth retrying (no transient signal).
 func makeTerminalBackendError() -> BackendError {
-    .networkError(.signatureVerificationFailed(path: .health, code: .success))
+    .networkError(.signatureVerificationFailed(path: HTTPRequest.Path.health, code: .success))
 }
 
 // MARK: - Single-reward conveniences

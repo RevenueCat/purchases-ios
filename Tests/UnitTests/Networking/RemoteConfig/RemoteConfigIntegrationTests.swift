@@ -835,7 +835,7 @@ final class RemoteConfigIntegrationTests: TestCase {
 
     func testEnforcedVerificationFailureDoesNotPersistResponse() async throws {
         self.mockRemoteConfigError(.signatureVerificationFailed(
-            path: .remoteConfig(domain: RemoteConfiguration.defaultDomain),
+            path: HTTPRequest.Path.remoteConfig(domain: RemoteConfiguration.defaultDomain),
             code: .success
         ))
 
@@ -1087,7 +1087,7 @@ private extension RemoteConfigIntegrationTests {
                 requestDate?.millisecondsSince1970.description
         ].compactMapValues { $0 }
         self.httpClient.mock(
-            requestPath: .remoteConfig(domain: RemoteConfiguration.defaultDomain),
+            requestPath: HTTPRequest.Path.remoteConfig(domain: RemoteConfiguration.defaultDomain),
             response: .init(
                 statusCode: statusCode,
                 body: body,
@@ -1104,21 +1104,21 @@ private extension RemoteConfigIntegrationTests {
         verificationResult: SignatureVerificationResult = .verified
     ) {
         self.httpClient.mock(
-            requestPath: .remoteConfigFallback(domain: RemoteConfiguration.defaultDomain),
+            requestPath: HTTPRequest.Path.remoteConfigFallback(domain: RemoteConfiguration.defaultDomain),
             response: .init(statusCode: statusCode, body: body, verificationResult: verificationResult)
         )
     }
 
     func mockRemoteConfigError(_ error: NetworkError) {
         self.httpClient.mock(
-            requestPath: .remoteConfig(domain: RemoteConfiguration.defaultDomain),
+            requestPath: HTTPRequest.Path.remoteConfig(domain: RemoteConfiguration.defaultDomain),
             response: .init(error: error)
         )
     }
 
     func mockRemoteConfigFallbackError(_ error: NetworkError) {
         self.httpClient.mock(
-            requestPath: .remoteConfigFallback(domain: RemoteConfiguration.defaultDomain),
+            requestPath: HTTPRequest.Path.remoteConfigFallback(domain: RemoteConfiguration.defaultDomain),
             response: .init(error: error)
         )
     }

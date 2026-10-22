@@ -475,7 +475,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
             }
         )
         self.httpClient.mock(
-            requestPath: .remoteConfig(domain: "app"),
+            requestPath: HTTPRequest.Path.remoteConfig(domain: "app"),
             response: .init(statusCode: .success, body: data)
         )
 
@@ -502,7 +502,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
             checksumOverride: { _, _ in Array(repeating: 0, count: RCContainerTestData.checksumSize) }
         )
         self.httpClient.mock(
-            requestPath: .remoteConfig(domain: "app"),
+            requestPath: HTTPRequest.Path.remoteConfig(domain: "app"),
             response: .init(statusCode: .success, body: data)
         )
 
@@ -562,7 +562,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
     func testGetRemoteConfigFailSendsError() {
         self.httpClient.mock(
-            requestPath: .remoteConfig(domain: "app"),
+            requestPath: HTTPRequest.Path.remoteConfig(domain: "app"),
             response: .init(error: .unexpectedResponse(nil))
         )
 
@@ -581,7 +581,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         let mockedError: NetworkError = .unexpectedResponse(nil)
 
         self.httpClient.mock(
-            requestPath: .remoteConfig(domain: "app"),
+            requestPath: HTTPRequest.Path.remoteConfig(domain: "app"),
             response: .init(error: mockedError)
         )
 
@@ -620,7 +620,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
     func testGetRemoteConfigInvalidRCContainerSendsDecodingError() {
         self.httpClient.mock(
-            requestPath: .remoteConfig(domain: "app"),
+            requestPath: HTTPRequest.Path.remoteConfig(domain: "app"),
             response: .init(statusCode: .success, body: "not an rc container".asData)
         )
 
@@ -642,7 +642,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
     func testGetRemoteConfigSuccessfulEmptyResponseSendsDecodingError() {
         self.httpClient.mock(
-            requestPath: .remoteConfig(domain: "app"),
+            requestPath: HTTPRequest.Path.remoteConfig(domain: "app"),
             response: .init(statusCode: .success, body: Data())
         )
 
@@ -664,7 +664,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
     func testGetRemoteConfigSuccessfulJSONResponseSendsDecodingError() {
         self.httpClient.mock(
-            requestPath: .remoteConfig(domain: "app"),
+            requestPath: HTTPRequest.Path.remoteConfig(domain: "app"),
             response: .init(statusCode: .success, body: #"{"api_sources":[]}"#.asData)
         )
 
@@ -767,7 +767,7 @@ private extension BackendGetRemoteConfigTests {
         delay: DispatchTimeInterval = .never
     ) {
         self.httpClient.mock(
-            requestPath: .remoteConfig(domain: domain),
+            requestPath: HTTPRequest.Path.remoteConfig(domain: domain),
             response: .init(
                 statusCode: .success,
                 body: Self.containerData,

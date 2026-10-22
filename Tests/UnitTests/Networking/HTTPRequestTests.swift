@@ -26,40 +26,40 @@ class HTTPRequestTests: TestCase {
     private static let clientTransactionID = "AABBCCDD-1111-2222-3333-444455556666"
 
     private static let paths: [HTTPRequest.Path] = [
-        .logIn,
-        .health,
-        .postRedeemWebPurchase,
         .getCustomerInfo(appUserID: userID),
         .getOfferings(appUserID: userID),
         .getIntroEligibility(appUserID: userID),
+        .logIn,
         .postAttributionData(appUserID: userID),
         .postOfferForSigning,
         .postReceiptData,
         .postSubscriberAttributes(appUserID: userID),
+        .postRedeemWebPurchase,
+        .health,
         .getProductEntitlementMapping,
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil),
+        .remoteConfig(domain: "app"),
+        .postExternalPurchaseToken,
         .getVirtualCurrencies(appUserID: userID),
         .spendVirtualCurrencies,
-        .postExternalPurchaseToken,
         .postCreateTicket,
-        .isPurchaseAllowedByRestoreBehavior(appUserID: userID),
-        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil),
-        .remoteConfig(domain: "app")
+        .isPurchaseAllowedByRestoreBehavior(appUserID: userID)
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path> = [
         .health
     ]
     private static let pathsWithoutETags: Set<HTTPRequest.Path> = [
         .health,
-        .postExternalPurchaseToken,
-        .remoteConfig(domain: "app")
+        .remoteConfig(domain: "app"),
+        .postExternalPurchaseToken
     ]
     private static let pathsWithSignatureVerification: Set<HTTPRequest.Path> = [
-        .logIn,
-        .health,
-        .postRedeemWebPurchase,
         .getCustomerInfo(appUserID: userID),
-        .getOfferings(appUserID: userID),
+        .logIn,
         .postReceiptData,
+        .postRedeemWebPurchase,
+        .health,
+        .getOfferings(appUserID: userID),
         .appHealthReport(appUserID: userID),
         .appHealthReportAvailability(appUserID: userID),
         .getProductEntitlementMapping,
@@ -70,17 +70,17 @@ class HTTPRequestTests: TestCase {
         .remoteConfig(domain: "app")
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path> = [
-        .logIn,
-        .health,
-        .postRedeemWebPurchase,
         .getCustomerInfo(appUserID: userID),
+        .logIn,
         .postReceiptData,
+        .postRedeemWebPurchase,
+        .health,
+        .remoteConfig(domain: "app"),
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil),
         .appHealthReportAvailability(appUserID: userID),
         .getVirtualCurrencies(appUserID: userID),
         .spendVirtualCurrencies,
-        .isPurchaseAllowedByRestoreBehavior(appUserID: userID),
-        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil),
-        .remoteConfig(domain: "app")
+        .isPurchaseAllowedByRestoreBehavior(appUserID: userID)
     ]
     private static let pathsWithUserID: [HTTPRequest.Path] = [
         .getCustomerInfo(appUserID: anonymousUser),
@@ -216,16 +216,44 @@ class HTTPRequestTests: TestCase {
         for path in Self.paths {
             let fallbackUrlsPaths = path.fallbackUrls.map { $0.absoluteString }
             switch path.name {
-            case "get_offerings":
-                XCTAssertEqual(fallbackUrlsPaths,
-                               ["https://api-production.8-lives-cat.io/v1/offerings"])
             case "get_product_entitlement_mapping":
                 XCTAssertEqual(fallbackUrlsPaths,
                                ["https://api-production.8-lives-cat.io/v1/product_entitlement_mapping"])
+            case "get_offerings":
+                XCTAssertEqual(fallbackUrlsPaths,
+                               ["https://api-production.8-lives-cat.io/v1/offerings"])
             default:
                 XCTAssertTrue(fallbackUrlsPaths.isEmpty)
             }
         }
+    }
+
+    func testRemoteConfigPathEscapesDomain() {
+        let path = HTTPRequest.Path.remoteConfig(domain: "app workflows/project")
+
+        expect(path.relativePath) == "/v1/config/app%20workflows%2Fproject"
+        expect(path.fallbackUrls).to(beEmpty())
+    }
+
+    func testFallbackConfigPathUsesFallbackHostAndEscapesDomain() {
+        let path = HTTPRequest.Path.remoteConfigFallback(domain: "app workflows/project")
+
+        expect(path.relativePath) == "/v1/config/app%20workflows%2Fproject"
+        expect(path.url(preferIAMPath: false)?.absoluteString)
+            == "https://api-production.8-lives-cat.io/v1/config/app%20workflows%2Fproject"
+        expect(path.fallbackUrls).to(beEmpty())
+        expect(path.authenticated).to(beTrue())
+        expect(path.shouldSendEtag).to(beTrue())
+        expect(path.supportsSignatureVerification).to(beTrue())
+        expect(path.needsNonceForSigning).to(beFalse())
+        expect(path.name) == "remote_config_fallback"
+        expect(path.isFallbackHostPath).to(beTrue())
+    }
+
+    func testMainPathsAreNotFallbackHostPaths() {
+        expect(HTTPRequest.Path.remoteConfig(domain: "app").isFallbackHostPath).to(beFalse())
+        expect(HTTPRequest.Path.getOfferings(appUserID: "user").isFallbackHostPath).to(beFalse())
+        expect(HTTPRequest.Path.logIn.isFallbackHostPath).to(beFalse())
     }
 
     func testUserIDEscaping() {
@@ -260,7 +288,7 @@ class HTTPRequestTests: TestCase {
     func testURLWithAPISource() {
         let path: HTTPRequest.Path = .health
         expect(path.url(apiSourceURL: URL(string: "https://api.rc-backup.com/"), preferIAMPath: false)?.absoluteString)
-        == "https://api.rc-backup.com/v1/health"
+            == "https://api.rc-backup.com/v1/health"
     }
 
     func testURLProxyTakesPrecedenceOverAPISource() {
@@ -276,7 +304,7 @@ class HTTPRequestTests: TestCase {
         expect(path.url(apiSourceURL: URL(string: "https://api.rc-backup.com/"),
                         fallbackUrlIndex: 0,
                         preferIAMPath: false)?.absoluteString)
-        == path.fallbackUrls.first?.absoluteString
+            == path.fallbackUrls.first?.absoluteString
     }
 
     func testMainPathsUseAPISources() {
@@ -384,9 +412,9 @@ class HTTPRequestTests: TestCase {
         let path = HTTPRequest.Path.postHostedCheckout
 
         expect(path.url(preferIAMPath: false)?.absoluteString)
-        == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout"
+            == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout"
         expect(path.url(preferIAMPath: true)?.absoluteString)
-        == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout"
+            == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout"
     }
 
     func testHostedCheckoutStatusRelativePathNamesTheSessionAndTheCustomer() {
@@ -418,9 +446,9 @@ class HTTPRequestTests: TestCase {
                                                             appUserID: Self.userID)
 
         expect(path.url(preferIAMPath: false)?.absoluteString)
-        == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=\(Self.userID)"
+            == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=\(Self.userID)"
         expect(path.url(preferIAMPath: true)?.absoluteString)
-        == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=\(Self.userID)"
+            == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=\(Self.userID)"
     }
 
     func testWebBillingPathsURLPreferringIAMPathUsesIAMRelativePath() {
@@ -431,14 +459,14 @@ class HTTPRequestTests: TestCase {
         )
 
         expect(offeringProductsPath.url(preferIAMPath: true)?.absoluteString)
-        == "https://api.revenuecat.com/rcbilling/v1/customer/offering_products"
+            == "https://api.revenuecat.com/rcbilling/v1/customer/offering_products"
         expect(offeringProductsPath.url(preferIAMPath: false)?.absoluteString)
-        == "https://api.revenuecat.com/rcbilling/v1/subscribers/\(Self.userID)/offering_products"
+            == "https://api.revenuecat.com/rcbilling/v1/subscribers/\(Self.userID)/offering_products"
 
         expect(productsPath.url(preferIAMPath: true)?.absoluteString)
-        == "https://api.revenuecat.com/rcbilling/v1/customer/products?id=product_1"
+            == "https://api.revenuecat.com/rcbilling/v1/customer/products?id=product_1"
         expect(productsPath.url(preferIAMPath: false)?.absoluteString)
-        == "https://api.revenuecat.com/rcbilling/v1/subscribers/\(Self.userID)/products?id=product_1"
+            == "https://api.revenuecat.com/rcbilling/v1/subscribers/\(Self.userID)/products?id=product_1"
     }
 
     func testNonMainPathsDoNotUseAPISources() {
@@ -504,7 +532,7 @@ class HTTPRequestTests: TestCase {
     func testRemoteConfigUsesRCContainerAcceptHeaders() {
         let request: HTTPRequest = .init(
             method: .post(RemoteConfigRequest(fetchContext: .appStart, appUserID: "app-user-id")),
-            path: .remoteConfig(domain: "app")
+            path: HTTPRequest.Path.remoteConfig(domain: "app")
         )
         let headers = request.headers(
             with: [:],
@@ -515,12 +543,15 @@ class HTTPRequestTests: TestCase {
 
         expect(headers[HTTPClient.RequestHeader.accept.rawValue]) == HTTPClient.rcContainerFormatAcceptHeaderValue
         expect(headers[HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue])
-        == HTTPClient.rcContainerFormatElementEncodingHeaderValue
+            == HTTPClient.rcContainerFormatElementEncodingHeaderValue
         expect(headers["Accept-Encoding"]).to(beNil())
     }
 
     func testFallbackConfigDoesNotRequestRCContainerFormat() {
-        let request: HTTPRequest = .init(method: .get, path: .remoteConfigFallback(domain: "app"))
+        let request: HTTPRequest = .init(
+            method: .get,
+            path: .remoteConfigFallback(domain: "app")
+        )
         let headers = request.headers(
             with: [:],
             defaultHeaders: [:],
@@ -551,7 +582,7 @@ class HTTPRequestTests: TestCase {
         let expectedHash = HTTPRequest.signingParameterHash(["false"])
         expect(headers[sandboxHeader]) == "false"
         expect(headers[HTTPClient.RequestHeader.headerParametersForSignature.rawValue])
-        == HTTPRequest.signatureHashHeader(keys: [sandboxHeader], hash: expectedHash)
+            == HTTPRequest.signatureHashHeader(keys: [sandboxHeader], hash: expectedHash)
     }
 
     // MARK: - IAM paths
@@ -559,7 +590,7 @@ class HTTPRequestTests: TestCase {
     /// Maps each `HTTPRequest.Path` case (other than `.logIn`, which is disallowed under IAM) to the
     /// relative path it should resolve to when IAM access-token authorization is preferred.
     private static let iamPathComponentsByPath: [HTTPRequest.Path: String] = [
-        .postRedeemWebPurchase: "subscribers/redeem_purchase",
+        .getCustomerInfo(appUserID: userID): "customer",
         .getOfferings(appUserID: userID): "customer/offerings",
         .getIntroEligibility(appUserID: userID): "customer/intro_eligibility",
         .postAttributionData(appUserID: userID): "customer/attribution",
@@ -567,11 +598,13 @@ class HTTPRequestTests: TestCase {
         .postReceiptData: "receipts",
         .postSubscriberAttributes(appUserID: userID): "customer/attributes",
         .postAdServicesToken(appUserID: userID): "customer/adservices_attribution",
+        .health: "health",
         .appHealthReport(appUserID: userID): "customer/health_report",
         .appHealthReportAvailability(appUserID: userID): "subscribers/\(userID)/health_report_availability",
         .getProductEntitlementMapping: "product_entitlement_mapping",
         .getCustomerCenterConfig(appUserID: userID): "customer/customercenter",
         .getVirtualCurrencies(appUserID: userID): "customer/virtual_currencies",
+        .postRedeemWebPurchase: "subscribers/redeem_purchase",
         .spendVirtualCurrencies: "customer/virtual_currencies/spend",
         .postExternalPurchaseToken: "external_purchase_tokens",
         .postCreateTicket: "customercenter/support/create-ticket",
@@ -588,7 +621,7 @@ class HTTPRequestTests: TestCase {
             adUnitID: "ad_unit"
         )
         let expected = "/v1/subscribers/\(Self.userID)/ads/reward_verifications/\(Self.clientTransactionID)"
-        + "?ad_unit_id=ad_unit"
+            + "?ad_unit_id=ad_unit"
 
         expect(path.relativePath) == expected
         expect(path.relativeIAMPath) == expected
@@ -602,7 +635,7 @@ class HTTPRequestTests: TestCase {
         )
 
         expect(path.relativePath) == "/v1/subscribers/\(Self.userID)/ads/reward_verifications/"
-        + "\(Self.clientTransactionID)?ad_unit_id=ca-app-pub-123/456%20%C3%A9"
+            + "\(Self.clientTransactionID)?ad_unit_id=ca-app-pub-123/456%20%C3%A9"
     }
 
     func testRewardVerificationStatusPathOmitsAdUnitIDWhenMissingOrEmpty() {

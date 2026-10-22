@@ -459,13 +459,13 @@ class NetworkErrorTests: TestCase {
     private static let dnsError: NetworkError = .dnsError(failedURL: URL(string: "https://google.com")!,
                                                           resolvedHost: "https://google.com")
     private static let unableToCreateRequestError: NetworkError = .unableToCreateRequest(
-        .getCustomerInfo(appUserID: "user ID")
+        HTTPRequest.Path.getCustomerInfo(appUserID: "user ID")
     )
 
     private static let unexpectedResponseError: NetworkError = .unexpectedResponse(nil)
 
     private static let signatureVerificationFailed: NetworkError = .signatureVerificationFailed(
-        path: .health,
+        path: HTTPRequest.Path.health,
         code: .success
     )
 

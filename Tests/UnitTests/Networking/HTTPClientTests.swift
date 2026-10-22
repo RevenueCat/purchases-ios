@@ -1676,7 +1676,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     func testRemoteConfigDoesNotUseETagCacheEvenIfResponseIncludesETagHeader() {
         let request = HTTPRequest(
             method: .post(RemoteConfigRequest(fetchContext: .appStart, appUserID: "app-user-id")),
-            path: .remoteConfig(domain: "app")
+            path: HTTPRequest.Path.remoteConfig(domain: "app")
         )
         let headerPresent: Atomic<Bool?> = nil
 
@@ -1800,8 +1800,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     // MARK: Dynamic timeout management
 
     func testRecordsSuccessOnMainBackendAfterSuccessfulRequestToMainBackend() throws {
-        let request = HTTPRequest(method: .get,
-                                  path: .getOfferings(appUserID: "test_user_id"))
+        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
         let host = try XCTUnwrap(SystemInfo.apiBaseURL.host)
 
         timeoutManager.recordRequestResult(host: host, .mainSourceTimedOut)
@@ -1843,8 +1842,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testRecordsTimeoutOnMainBackendWithFallbackWhenTimeoutOccursOnMainBackendWithFallback() throws {
-        let request = HTTPRequest(method: .get,
-                                  path: .getOfferings(appUserID: "test_user_id"))
+        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
 
         // main request
         let url = try XCTUnwrap(request.path.url(preferIAMPath: self.tokenManager.enabled)?.absoluteString)
@@ -1876,8 +1874,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     /// legacy network timeout.
     func testUsesReTieredFlatTimeoutForFallbackHostRequestWhenAPISourcesEnabled() throws {
         let client = self.createClient(self.systemInfoUsingAPISources())
-        let request = HTTPRequest(method: .get,
-                                  path: .getOfferings(appUserID: "test_user_id"))
+        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
 
         let url = try XCTUnwrap(request.path.url(preferIAMPath: self.tokenManager.enabled)?.absoluteString)
         stub(condition: isAbsoluteURLString(url)) { _ in
@@ -3581,13 +3578,13 @@ extension HTTPClientTests {
 
         let path: HTTPRequest.Path
         if hasFallbackUrls {
-            path = HTTPRequest.Path.getOfferings(appUserID: "abc123")
+            path = .getOfferings(appUserID: "abc123")
             expect(path.fallbackUrls).toNot(
                 beEmpty(),
                 description: "This test requires a path that has at least 1 fallback host"
             )
         } else {
-            path = HTTPRequest.Path.getCustomerInfo(appUserID: "abc123")
+            path = .getCustomerInfo(appUserID: "abc123")
         }
 
         let request: HTTPClient.Request = .init(
@@ -3847,7 +3844,7 @@ extension HTTPClientTests {
             return .emptyTooManyRequestsResponse()
         }
 
-        let request = HTTPRequest(method: .get, path: .postReceiptData, isRetryable: true)
+        let request = HTTPRequest(method: .get, path: .receiptPath, isRetryable: true)
         let result = waitUntilValue { completion in
             self.client.perform(request) { (response: EmptyResponse) in
                 completion(response)
@@ -3878,7 +3875,7 @@ extension HTTPClientTests {
         let mockOperationDispatcher = MockOperationDispatcher()
         let client = self.createClient(self.systemInfo, operationDispatcher: mockOperationDispatcher)
 
-        let request = HTTPRequest(method: .get, path: .postReceiptData, isRetryable: true)
+        let request = HTTPRequest(method: .get, path: .receiptPath, isRetryable: true)
         _ = waitUntilValue { completion in
             client.perform(request) { (response: EmptyResponse) in
                 completion(response)
@@ -3902,7 +3899,7 @@ extension HTTPClientTests {
             return .emptyTooManyRequestsResponse()
         }
 
-        let request = HTTPRequest(method: .get, path: .postReceiptData, isRetryable: true)
+        let request = HTTPRequest(method: .get, path: .receiptPath, isRetryable: true)
         _ = waitUntilValue { completion in
             self.client.perform(request) { (response: EmptyResponse) in
                 completion(response)
@@ -3999,7 +3996,7 @@ extension HTTPClientTests {
             }
         }
 
-        let request = HTTPRequest(method: .get, path: .postReceiptData, isRetryable: true)
+        let request = HTTPRequest(method: .get, path: .receiptPath, isRetryable: true)
         _ = waitUntilValue { completion in
             self.client.perform(request) { (response: EmptyResponse) in
                 completion(response)
@@ -4019,7 +4016,7 @@ extension HTTPClientTests {
             return .emptyTooManyRequestsResponse()
         }
 
-        let request = HTTPRequest(method: .get, path: .postReceiptData, isRetryable: true)
+        let request = HTTPRequest(method: .get, path: .receiptPath, isRetryable: true)
         _ = waitUntilValue { completion in
             self.client.perform(request) { (response: EmptyResponse) in
                 completion(response)
@@ -4042,7 +4039,7 @@ extension HTTPClientTests {
             }
         }
 
-        let request = HTTPRequest(method: .get, path: .postReceiptData, isRetryable: true)
+        let request = HTTPRequest(method: .get, path: .receiptPath, isRetryable: true)
         let result = waitUntilValue { completion in
             self.client.perform(request) { (response: EmptyResponse) in
                 completion(response)
@@ -4632,11 +4629,8 @@ extension HTTPRequest.Path {
 
     // Doesn't matter which path this is, we stub requests to it.
     static let mockPath: Self = .logIn
-}
-
-extension HTTPRequest.Path {
     static let mockPathWithFallbacks: Self = .getProductEntitlementMapping
-
+    static let receiptPath: Self = .postReceiptData
 }
 
 extension HTTPRequest.Method {

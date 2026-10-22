@@ -817,9 +817,10 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
         expect(updatedSubscriberInfo.value) == postSubscriberInfo.value
         expect(updatedSubscriberInfo.value) != originalSubscriberInfo.value
 
-        expect(self.httpClient.calls.count) == 2
-        expect(self.httpClient.calls.first?.request.path) == getCustomerInfoPath
-        expect(self.httpClient.calls.last?.request.path) == .postReceiptData
+        expect(self.httpClient.calls.map(\.request.path)) == [
+            getCustomerInfoPath,
+            .postReceiptData
+        ]
     }
 
     func testPostingReceiptCreatesACustomerInfoObject() {

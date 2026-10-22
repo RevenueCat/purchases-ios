@@ -437,15 +437,17 @@ class SigningTests: TestCase {
         expect(
             self.signing.verificationResult(
                 for: expectedSignature,
-                with: .init(path: .getCustomerInfo(appUserID: "login"),
-                            iamEnabled: false,
-                            message: response.asData,
-                            requestHeaders: [:],
-                            requestBody: nil,
-                            nonce: nonce,
-                            etag: etag,
-                            requestDate: requestDate,
-                            useFallbackPath: false),
+                with: .init(
+                    path: .getCustomerInfo(appUserID: "login"),
+                    iamEnabled: false,
+                    message: response.asData,
+                    requestHeaders: [:],
+                    requestBody: nil,
+                    nonce: nonce,
+                    etag: etag,
+                    requestDate: requestDate,
+                    useFallbackPath: false
+                ),
                 publicKey: Signing.loadPublicKey()
             )
         ) == .verified
@@ -579,13 +581,12 @@ class SigningTests: TestCase {
         let nonce = try XCTUnwrap(Data(base64Encoded: "MTIzNDU2Nzg5MGFi"))
         let requestDate: UInt64 = 1688671515638
         let etag = "a896a69e4b31304d"
-        let path = HTTPRequest.Path.getCustomerInfo(appUserID: "$RCAnonymousID:1af512a3b9c848899fe427f39dd69f2b")
 
         expect(
             self.signing.verificationResult(
                 for: expectedSignature,
                 with: .init(
-                    path: path,
+                    path: .getCustomerInfo(appUserID: "$RCAnonymousID:1af512a3b9c848899fe427f39dd69f2b"),
                     iamEnabled: false,
                     message: response.asData,
                     requestHeaders: [:],
@@ -664,12 +665,11 @@ class SigningTests: TestCase {
 
         let nonce = try XCTUnwrap(Data(base64Encoded: "MTIzNDU2Nzg5MGFi"))
         let requestDate: UInt64 = 1702063024732
-        let path = HTTPRequest.Path.getCustomerInfo(appUserID: "$RCAnonymousID:6ca4535c42714f88abc99c563703f113")
         expect(
             self.signing.verificationResult(
                 for: expectedSignature,
                 with: .init(
-                    path: path,
+                    path: .getCustomerInfo(appUserID: "$RCAnonymousID:6ca4535c42714f88abc99c563703f113"),
                     iamEnabled: false,
                     message: response.asData,
                     requestHeaders: [
@@ -992,9 +992,7 @@ class SigningTests: TestCase {
         let requestDate = Date().millisecondsSince1970
         let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
         let salt = Self.createSalt()
-        let request = HTTPRequest(method: .get,
-                                  path: .getOfferings(appUserID: "userId"),
-                                  nonce: nonce.asData)
+        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "userId"), nonce: nonce.asData)
         let requestHeaders: HTTPRequest.Headers = [
             HTTPClient.RequestHeader.sandbox.rawValue: "\(Bool.random())"
         ]
@@ -1041,9 +1039,7 @@ class SigningTests: TestCase {
         let requestDate = Date().millisecondsSince1970
         let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
         let salt = Self.createSalt()
-        let request = HTTPRequest(method: .get,
-                                  path: .getOfferings(appUserID: "userId"),
-                                  nonce: nonce.asData)
+        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "userId"), nonce: nonce.asData)
         let requestHeaders: HTTPRequest.Headers = [
             HTTPClient.RequestHeader.sandbox.rawValue: "\(Bool.random())"
         ]
@@ -1314,9 +1310,7 @@ class SigningTests: TestCase {
         let requestDate = Date().millisecondsSince1970
         let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
         let salt = Self.createSalt()
-        let request = HTTPRequest(method: .get,
-                                  path: .getCustomerInfo(appUserID: "user"),
-                                  nonce: nonce.asData)
+        let request = HTTPRequest(method: .get, path: .getCustomerInfo(appUserID: "user"), nonce: nonce.asData)
         let requestHeaders: HTTPRequest.Headers = [:]
 
         // The backend signs using the IAM relative path ("/v1/customer") once IAM is enabled,
@@ -1378,9 +1372,7 @@ class SigningTests: TestCase {
         let salt = Self.createSalt()
         // `.getCustomerInfo` is an authenticated path: unlike `.health`, the auth value is actually
         // folded into the signed bytes, so this test can tell bearer-token from API-key signing apart.
-        let request = HTTPRequest(method: .get,
-                                  path: .getCustomerInfo(appUserID: "user"),
-                                  nonce: nonce.asData)
+        let request = HTTPRequest(method: .get, path: .getCustomerInfo(appUserID: "user"), nonce: nonce.asData)
         let accessToken = "iam-access-token-123"
         let requestHeaders: HTTPRequest.Headers = [
             HTTPClient.RequestHeader.authorization.rawValue: "Bearer \(accessToken)"
@@ -1437,9 +1429,7 @@ class SigningTests: TestCase {
         let salt = Self.createSalt()
         // `.getCustomerInfo` is an authenticated path: unlike `.health`, the auth value is actually
         // folded into the signed bytes, so this test can tell bearer-token from API-key signing apart.
-        let request = HTTPRequest(method: .get,
-                                  path: .getCustomerInfo(appUserID: "user"),
-                                  nonce: nonce.asData)
+        let request = HTTPRequest(method: .get, path: .getCustomerInfo(appUserID: "user"), nonce: nonce.asData)
         let requestHeaders: HTTPRequest.Headers = [
             HTTPClient.RequestHeader.authorization.rawValue: "Bearer some-access-token"
         ]

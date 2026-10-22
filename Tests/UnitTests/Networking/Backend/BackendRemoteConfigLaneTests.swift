@@ -43,7 +43,7 @@ final class BackendRemoteConfigLaneTests: BaseBackendTests {
         let backend = Backend(lanes: lanes, attributionFetcher: self.makeAttributionFetcher())
 
         laneClient.mock(
-            requestPath: .remoteConfig(domain: "app"),
+            requestPath: HTTPRequest.Path.remoteConfig(domain: "app"),
             response: .init(statusCode: .noContent, body: Data(), verificationResult: .verified)
         )
 
@@ -68,7 +68,7 @@ final class BackendRemoteConfigLaneTests: BaseBackendTests {
         )
 
         self.httpClient.mock(
-            requestPath: .remoteConfig(domain: "app"),
+            requestPath: HTTPRequest.Path.remoteConfig(domain: "app"),
             response: .init(statusCode: .noContent, body: Data(), verificationResult: .verified)
         )
 
