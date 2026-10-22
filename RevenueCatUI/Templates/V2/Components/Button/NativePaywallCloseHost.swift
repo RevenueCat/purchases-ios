@@ -56,8 +56,9 @@ struct NativePaywallCloseHost: ViewModifier {
 
     #if os(iOS)
     @ViewBuilder private func nativeNavigation(_ content: Content) -> some View {
+        // Both native Back and native Close replace the caller's automatic Back button.
         let view = self.surface(content)
-            .navigationBarBackButtonHidden(self.enabled && self.coordinator.action(for: .back) != nil)
+            .navigationBarBackButtonHidden(self.enabled && !self.coordinator.actions.isEmpty)
         #if compiler(>=6.2)
         if #available(iOS 26.0, *) {
             view.toolbar {
@@ -206,6 +207,7 @@ final class NativePaywallUIKitOwner: NSObject, ObservableObject {
     }
     private var items: [UIBarButtonItem] = []
     private var originalSupplementBackButton: Bool?
+    private var originalHidesBackButton: Bool?
     private weak var activeSource: NativePaywallCloseCoordinator?
     private var backAction: NativePaywallCloseCoordinator.CloseAction?
     private var closeAction: NativePaywallCloseCoordinator.CloseAction?
@@ -243,6 +245,10 @@ final class NativePaywallUIKitOwner: NSObject, ObservableObject {
         let back = actions.first { $0.role == .back }
         let close = actions.first { $0.role == .close && $0.isWorkflowClose }
             ?? actions.first { $0.role == .close }
+        if back != nil || close != nil {
+            self.originalHidesBackButton = controller.navigationItem.hidesBackButton
+            controller.navigationItem.hidesBackButton = true
+        }
         if let back {
             self.originalSupplementBackButton = controller.navigationItem.leftItemsSupplementBackButton
             controller.navigationItem.leftItemsSupplementBackButton = false
@@ -288,6 +294,9 @@ final class NativePaywallUIKitOwner: NSObject, ObservableObject {
 
     func removeClose() {
         if let navigationItem = self.controller?.navigationItem {
+            if let originalHidesBackButton {
+                navigationItem.hidesBackButton = originalHidesBackButton
+            }
             if let originalSupplementBackButton {
                 navigationItem.leftItemsSupplementBackButton = originalSupplementBackButton
             }
@@ -300,6 +309,7 @@ final class NativePaywallUIKitOwner: NSObject, ObservableObject {
         }
         self.items = []
         self.originalSupplementBackButton = nil
+        self.originalHidesBackButton = nil
         self.backAction = nil
         self.closeAction = nil
     }
