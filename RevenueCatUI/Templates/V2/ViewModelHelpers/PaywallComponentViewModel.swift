@@ -42,4 +42,43 @@ enum PaywallComponentViewModel {
     case webView(WebViewComponentViewModel)
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension Array where Element == PaywallComponentViewModel {
+    /// Filter original indices so promoting a button preserves every sibling's view identity.
+    func indicesExcludingNativeButtons(
+        _ hiddenButtons: Set<ObjectIdentifier>, invisibleButtons: Set<ObjectIdentifier>
+    ) -> [Int] {
+        self.indices.filter { index in
+            if case .button(let button) = self[index] {
+                return !hiddenButtons.contains(ObjectIdentifier(button))
+            }
+            if case .stack(let stack) = self[index], let buttons = stack.nativeButtonContainerIdentifiers {
+                // Only promotion can remove an authored wrapper. Hidden secondary buttons do not keep it alive.
+                return buttons.isDisjoint(with: hiddenButtons)
+                    || !buttons.isSubset(of: hiddenButtons.union(invisibleButtons))
+            }
+            return true
+        }
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension PaywallComponentViewModel {
+    var nativeMediaIdentifier: ObjectIdentifier? {
+        switch self {
+        case .image(let model): return ObjectIdentifier(model)
+        case .video(let model): return ObjectIdentifier(model)
+        case .webView(let model): return ObjectIdentifier(model)
+        default: return nil
+        }
+    }
+
+    var firstNativeMediaIdentifier: ObjectIdentifier? {
+        if case .stack(let model) = self {
+            return model.viewModels.first?.firstNativeMediaIdentifier
+        }
+        return self.nativeMediaIdentifier
+    }
+}
+
 #endif

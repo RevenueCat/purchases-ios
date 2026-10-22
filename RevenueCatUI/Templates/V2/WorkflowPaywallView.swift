@@ -293,6 +293,8 @@ struct WorkflowPaywallView: View {
 
     @ObservedObject private var backNavigationBridge: WorkflowBackNavigationBridge
 
+    @Environment(\.nativePaywallCloseCoordinator) private var nativeButtonCoordinator
+
     @StateObject private var navigator: WorkflowNavigator
     /// One paywall state store per workflow presentation: all screens read and write the same
     /// store, so values survive screen navigation and reset only when the presentation ends
@@ -450,6 +452,8 @@ struct WorkflowPaywallView: View {
             .transitionClipMask(geometry: geometry)
         }
         .allowsHitTesting(!self.transitionState.isTransitioning && !self.presentationState.hasFailed)
+        .environment(\.nativePaywallInteractionEnabled,
+                     !self.transitionState.isTransitioning && !self.presentationState.hasFailed)
         .workflowTransitionAnimationCompletion(
             progress: self.transitionState.progress,
             activeTransitionID: self.activeTransitionID,
@@ -498,7 +502,15 @@ struct WorkflowPaywallView: View {
         // post-purchase auto-dismiss, swipe-to-dismiss on a sheet, and programmatic parent dismiss.
         // A late configuration failure tracks the same lifecycle immediately before showing its error;
         // the coordinator's fire-once guards prevent this hook from duplicating those events later.
+        .onChangeOf(self.transitionState.currentPage?.id) { pageID in
+            self.nativeButtonCoordinator?.activatePage(pageID)
+        }
+        .task(id: self.nativeButtonCoordinator.map(ObjectIdentifier.init)) {
+            // Activate after SwiftUI connects the page state, including a host attached later.
+            self.nativeButtonCoordinator?.activatePage(self.transitionState.currentPage?.id)
+        }
         .onDisappear {
+            self.nativeButtonCoordinator?.activatePage(nil)
             self.backNavigationBridge.workflowDidDisappear()
             self.trackCurrentWorkflowLeft()
         }
@@ -594,6 +606,7 @@ struct WorkflowPaywallView: View {
         )
 
         self.pageView(for: page, isActive: isCurrent)
+            .environment(\.nativePaywallPageID, page.id)
             .environment(
                 \.workflowRenderingContext,
                 WorkflowRenderingContext(
@@ -1370,6 +1383,7 @@ private struct WorkflowHeaderOverlayPageView: View {
             .fixMacButtons()
             .frame(maxWidth: .infinity, alignment: .top)
             .opacity(self.headerOpacity)
+            .environment(\.nativePaywallButtonRegistrationEnabled, false)
             .environment(\.locale, contentLocale)
             .environment(\.layoutDirection, contentLocale.swiftUILayoutDirection)
             .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))

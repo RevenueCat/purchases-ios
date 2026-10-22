@@ -20,6 +20,7 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 internal final class PaywallPromoOfferCache: ObservableObject {
 
+    // Includes the billing plan: variants of the same App Store product can have different offers.
     typealias ProductID = String
     typealias PackageInfo = (package: Package, promotionalOfferProductCode: String?)
 
@@ -82,7 +83,7 @@ internal final class PaywallPromoOfferCache: ObservableObject {
     func isMostLikelyEligible(for package: Package?) -> Bool {
         guard let package else { return false }
 
-        let status = cache[package.storeProduct.productIdentifier] ?? .ineligible
+        let status = cache[package.storeProduct.id] ?? .ineligible
         switch status {
         case .unknown, .signedEligible:
             return true
@@ -94,7 +95,7 @@ internal final class PaywallPromoOfferCache: ObservableObject {
     func get(for package: Package?) -> PromotionalOffer? {
         guard let package else { return nil }
 
-        if case .signedEligible(let promoOffer) = cache[package.storeProduct.productIdentifier] {
+        if case .signedEligible(let promoOffer) = cache[package.storeProduct.id] {
             return promoOffer
         }
 
@@ -121,7 +122,7 @@ internal final class PaywallPromoOfferCache: ObservableObject {
                let discount = storeProduct.discounts.first(where: { $0.offerIdentifier == productCode }) {
 
                 if let simulatedEligibility = self.simulatedEligibility {
-                    newCacheEntries[storeProduct.productIdentifier] = simulatedEligibility
+                    newCacheEntries[storeProduct.id] = simulatedEligibility
                         ? .signedEligible(Self.makeSimulatedOffer(for: discount))
                         : .ineligible
                     continue
@@ -132,9 +133,9 @@ internal final class PaywallPromoOfferCache: ObservableObject {
                         forProductDiscount: discount,
                         product: storeProduct
                     )
-                    newCacheEntries[storeProduct.productIdentifier] = .signedEligible(promoOffer)
+                    newCacheEntries[storeProduct.id] = .signedEligible(promoOffer)
                 } catch {
-                    newCacheEntries[storeProduct.productIdentifier] = .ineligible
+                    newCacheEntries[storeProduct.id] = .ineligible
                 }
             }
         }

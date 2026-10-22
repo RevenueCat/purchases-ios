@@ -24,6 +24,15 @@ enum EligibilityStrings {
     case check_eligibility_no_identifiers
     case check_eligibility_failed(productIdentifier: String, error: Error)
     case sk2_intro_eligibility_too_slow
+    case waiting_for_intro_eligibility(_ identifiers: Set<String>)
+    case product_lookup_started(requestID: String, identifiers: Set<String>)
+    case product_lookup_finished(requestID: String, identifiers: Set<String>, missingIdentifiers: Set<String>,
+                                 duration: TimeInterval)
+    case product_lookup_failed(requestID: String, error: Error, duration: TimeInterval)
+    case subscription_group_check_started(requestID: String, groupID: String)
+    case subscription_group_check_finished(requestID: String, groupID: String, eligible: Bool, duration: TimeInterval)
+    case check_finished(requestID: String, result: [String: IntroEligibility], duration: TimeInterval)
+    case delivering_intro_eligibility(result: [String: IntroEligibility], duration: TimeInterval)
 
 }
 
@@ -53,9 +62,47 @@ extension EligibilityStrings: LogMessage {
 
         case .sk2_intro_eligibility_too_slow:
             return "StoreKit 2 intro eligibility took longer than expected to determine"
+
+        case let .waiting_for_intro_eligibility(identifiers):
+            return "Waiting for an in-flight intro eligibility check for products: \(identifiers.sorted())"
+
+        case let .product_lookup_started(requestID, identifiers):
+            return "Intro eligibility (\(requestID)): starting product lookup for \(identifiers.sorted())"
+
+        case let .product_lookup_finished(requestID, identifiers, missingIdentifiers, duration):
+            return "Intro eligibility (\(requestID)): product lookup finished in \(duration)s. " +
+                "Products: \(identifiers.sorted()); missing products: \(missingIdentifiers.sorted())"
+
+        case let .product_lookup_failed(requestID, error, duration):
+            let nsError = error as NSError
+            return "Intro eligibility (\(requestID)): product lookup failed after \(duration)s. " +
+                "Error: \(nsError.domain) (\(nsError.code)): \(nsError.localizedDescription)"
+
+        case let .subscription_group_check_started(requestID, groupID):
+            return "Intro eligibility (\(requestID)): starting StoreKit check for subscription group '\(groupID)'"
+
+        case let .subscription_group_check_finished(requestID, groupID, eligible, duration):
+            return "Intro eligibility (\(requestID)): StoreKit check for subscription group '\(groupID)' " +
+                "finished in \(duration)s; eligible=\(eligible)"
+
+        case let .check_finished(requestID, result, duration):
+            return "Intro eligibility (\(requestID)): check finished in \(duration)s. " +
+                "Results: \(Self.describe(result))"
+
+        case let .delivering_intro_eligibility(result, duration):
+            return "Delivering intro eligibility results after \(duration)s waiting for the main queue. " +
+                "Results: \(Self.describe(result))"
         }
     }
 
     var category: String { return "eligibility" }
+
+}
+
+private extension EligibilityStrings {
+
+    static func describe(_ result: [String: IntroEligibility]) -> [String] {
+        return result.map { "\($0.key): \($0.value.status.description)" }.sorted()
+    }
 
 }

@@ -25,6 +25,12 @@ class InstallmentsInfoFactoryTests: TestCase {
 
     private let factory = InstallmentsInfoFactory()
 
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        try AvailabilityChecks.iOS264APIAvailableOrSkipTest()
+    }
+
     func testBuildInstallmentsInfoForMonthlyBillingPlanAndMonthlyCommitment() throws {
         let installmentsInfo = try XCTUnwrap(
             self.buildInstallmentsInfo(commitmentPeriod: .monthly, commitmentTotalDisplayPrice: "$4.99")

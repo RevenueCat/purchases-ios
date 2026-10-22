@@ -964,12 +964,21 @@ platform :ios do
 
   desc "Runs all RevenueCatUI tests"
   lane :test_revenuecatui do |options|
-    generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS"] == "true"
+    hosted = options[:hosted].to_s == "true"
+    generate_snapshots = !hosted && ENV["CIRCLECI_TESTS_GENERATE_REVENUECAT_UI_SNAPSHOTS"] == "true"
     platform = ENV['PLATFORM'] || 'iOS Simulator'
     destination = ENV['DEVICE'] || "iPhone 14,OS=16.4"
     sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
     test_plan = generate_snapshots ? "CI-Snapshots" : "CI-RevenueCatUI"
-    xcargs = "-testPlan #{test_plan}"
+    xcargs = if hosted
+      "-only-testing:RevenueCatUITests/NativePaywallCloseButtonTests " \
+        "-only-testing:RevenueCatUITests/NativePaywallUIKitTests " \
+        "-only-testing:RevenueCatUITests/NativePaywallWorkflowTests " \
+        "-only-testing:RevenueCatUITests/ButtonComponentViewTests"
+    else
+      "-testPlan #{test_plan}"
+    end
+    output_name = hosted ? 'revenuecatui-hosted' : 'revenuecatui'
     # Xcode 27 can hang in `simctl diagnose` after all tests pass, so jobs running on it
     # opt out of diagnostics collection. watchOS has always needed this.
     collect_test_diagnostics = ENV['RC_COLLECT_TEST_DIAGNOSTICS'] ||
@@ -977,16 +986,16 @@ platform :ios do
     xcargs += " -collect-test-diagnostics #{collect_test_diagnostics}" if collect_test_diagnostics
     begin
       # See https://forums.swift.org/t/i-made-a-little-spm-package-that-uses-uikit-how-can-i-run-tests-from-command-line/50399/2
-      # Note: We use xcodebuild instead of scan because this is an SPM package (workspace: '.')
-      # and scan doesn't properly detect schemes defined in Package.swift
+      # Use xcodebuild because scan doesn't properly detect the SPM scheme. The hosted
+      # pass uses the existing Tuist test target to exercise real modal presentations.
       xcodebuild(
-        workspace: '.',
-        scheme: 'RevenueCatUI',
+        workspace: hosted ? 'RevenueCat-Tuist.xcworkspace' : '.',
+        scheme: hosted ? 'RevenueCatUITests' : 'RevenueCatUI',
         destination: platform == 'macOS' ? "platform=macOS" : "platform=" + platform + ",name=" + destination,
         sdk: sdk,
-        result_bundle_path: 'fastlane/test_output/revenuecatui.xcresult',
+        result_bundle_path: "fastlane/test_output/#{output_name}.xcresult",
         report_formats: [:junit],
-        report_path: 'fastlane/test_output/revenuecatui/tests.xml',
+        report_path: "fastlane/test_output/#{output_name}/tests.xml",
         test: true,
         xcargs: xcargs
       )

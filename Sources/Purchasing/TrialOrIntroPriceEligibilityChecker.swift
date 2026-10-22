@@ -101,17 +101,18 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
 
         let startTime = self.dateProvider.now()
 
-        // Extracting and wrapping the completion block from the async call
-        // to avoid having to mark ReceiveIntroEligibilityBlock as @Sendable
-        // up to the public API thus making a breaking change.
+        // Wrap the async completion to avoid making the public completion handler @Sendable.
         let completionBlock: ([String: IntroEligibility], Error?, StoreKitVersion) -> Void =
         { [weak self] (result, error, storeKitVersion) in
-            self?.trackTrialOrIntroEligibilityRequestIfNeeded(startTime: startTime,
-                                                              requestedProductIds: productIdentifiers,
-                                                              result: result,
-                                                              error: error,
-                                                              storeKitVersion: storeKitVersion)
-            self?.operationDispatcher.dispatchOnMainActor {
+            guard let self = self else { return }
+            self.trackTrialOrIntroEligibilityRequestIfNeeded(startTime: startTime,
+                                                             requestedProductIds: productIdentifiers,
+                                                             result: result,
+                                                             error: error,
+                                                             storeKitVersion: storeKitVersion)
+            let logDelivery = IntroEligibilityLog.deliveryLogger(clock: self.systemInfo.clock)
+            self.operationDispatcher.dispatchOnMainActor {
+                logDelivery(result)
                 completion(result)
             }
         }
@@ -168,10 +169,11 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         var introDictionary: [String: IntroEligibility] = compoundProductIdentifiers.dictionaryWithValues { _ in
                 .init(eligibilityStatus: .unknown)
         }
-
-        let products = try await self.productsManager.sk2Products(withIdentifiers: compoundProductIdentifiers)
+        let log = IntroEligibilityLog(clock: self.systemInfo.clock)
+        let products = try await log.products(identifiers: compoundProductIdentifiers,
+                                              fetch: self.productsManager.products(withIdentifiers:))
         var productIdentifiersByGroup: [String: [String]] = [:]
-        for product in products {
+        for product in products.compactMap({ $0.product as? SK2StoreProduct }) {
             if let subscriptionGroupID = product.subscriptionGroupIDForIntroEligibilityCheck {
                 productIdentifiersByGroup[subscriptionGroupID, default: []].append(product.id)
             } else {
@@ -182,11 +184,8 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         await withTaskGroup(of: (String, Bool).self) { group in
             for subscriptionGroupID in productIdentifiersByGroup.keys {
                 group.addTask {
-                    let isEligible = await TimingUtil.measureAndLogIfTooSlow(
-                        threshold: .introEligibility,
-                        message: Strings.eligibility.sk2_intro_eligibility_too_slow.description
-                    ) {
-                        await SK2Product.SubscriptionInfo.isEligibleForIntroOffer(for: subscriptionGroupID)
+                    let isEligible = await log.eligibility(forSubscriptionGroup: subscriptionGroupID) {
+                        await SK2Product.SubscriptionInfo.isEligibleForIntroOffer(for: $0)
                     }
                     return (subscriptionGroupID, isEligible)
                 }
@@ -198,6 +197,7 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
                 }
             }
         }
+        log.finished(introDictionary)
         return introDictionary
     }
 

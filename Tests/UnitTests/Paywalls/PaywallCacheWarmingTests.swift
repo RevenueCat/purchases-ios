@@ -277,10 +277,11 @@ final class PaywallCacheWarmingTests: TestCase {
     func testTraversesContainersAndMarksSheetAssetsForSynchronousRendering() {
         let sheetImage = Self.imageComponent("sheet")
         let sheetVideo = PaywallComponent.VideoComponent(source: Self.video("sheet-video"))
+        let sheetContent = PaywallComponent.StackComponent(components: [.image(sheetImage), .video(sheetVideo)])
         let sheet = PaywallComponent.ButtonComponent.Sheet(
             id: "sheet",
             name: nil,
-            stack: .init(components: [.image(sheetImage), .video(sheetVideo)]),
+            stack: .init(components: [.carousel(.init(pages: [.init(components: [.stack(sheetContent)])]))]),
             backgroundBlur: false,
             size: nil
         )
@@ -352,13 +353,13 @@ final class PaywallCacheWarmingTests: TestCase {
         )
 
         let expectedContainerImages = [
-            "outside", "sheet", "sheet-button", "stack", "package", "purchase",
+            "outside", "sheet-button", "sheet", "stack", "package", "purchase",
             "footer-component", "tab", "tab-button", "carousel",
             "countdown", "countdown-end", "countdown-fallback"
         ]
         XCTAssertEqual(
-            Set(assets.images.map(\.highResURL.url.lastPathComponent)),
-            Set(expectedContainerImages.map { "\($0)-high.heic" })
+            assets.images.map(\.highResURL.url.lastPathComponent),
+            expectedContainerImages.map { "\($0)-high.heic" }
         )
         XCTAssertTrue(data.allImageURLs.contains(Self.assetURL("sheet-high.heic")))
         XCTAssertTrue(data.allImageURLs.contains(Self.assetURL("sheet-low.heic")))

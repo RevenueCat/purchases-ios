@@ -118,6 +118,7 @@ extension CachingTrialOrIntroPriceEligibilityChecker {
         case .complete(let cached):
             completion(cached)
         case .wait:
+            Logger.debug(Strings.eligibility.waiting_for_intro_eligibility(productIdentifiers))
             return
         case .start(let requestKey):
             self.checker.checkEligibility(
