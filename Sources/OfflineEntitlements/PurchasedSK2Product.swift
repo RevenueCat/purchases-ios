@@ -62,7 +62,7 @@ extension PurchasedSK2Product {
             expiresDate: transaction.expirationDate,
             store: .appStore,
             isSandbox: sandboxEnvironmentDetector.isSandbox,
-            ownershipType: transaction.ownershipType.type,
+            ownershipType: PurchaseOwnershipType.from(storeKitOwnershipType: transaction.ownershipType),
             productPlanIdentifier: self.productPlanIdentifier
         )
         self.entitlement = .init(
@@ -91,20 +91,6 @@ private extension StoreKit.Transaction.OfferType {
             return .trial
         default:
             return .normal
-        }
-    }
-
-}
-
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-private extension StoreKit.Transaction.OwnershipType {
-
-    var type: PurchaseOwnershipType {
-        switch self {
-        case .familyShared:
-            return  .familyShared
-        default:
-            return .purchased
         }
     }
 
