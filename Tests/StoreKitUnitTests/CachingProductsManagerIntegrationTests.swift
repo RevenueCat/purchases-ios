@@ -123,7 +123,7 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
         )
     }
 
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    @available(iOS 16.0, tvOS 16.0, macOS 13.0, watchOS 9.0, *)
     func testEligibilityReusesGeneralProductFetch() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         let manager = Self.createManager(.storeKit2)
@@ -136,7 +136,7 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
         self.verifyStoreProductRequests(count: 1)
     }
 
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    @available(iOS 16.0, tvOS 16.0, macOS 13.0, watchOS 9.0, *)
     func testGeneralProductsReuseEligibilityProductFetch() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         let manager = Self.createManager(.storeKit2)
@@ -149,17 +149,17 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
         self.verifyStoreProductRequests(count: 1)
     }
 
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    @available(iOS 16.0, tvOS 16.0, macOS 13.0, watchOS 9.0, *)
     func testGeneralRequestSharesInFlightFetchWithEligibility() async throws {
         try await self.verifyInFlightSharing(startWithEligibility: false)
     }
 
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    @available(iOS 16.0, tvOS 16.0, macOS 13.0, watchOS 9.0, *)
     func testEligibilitySharesInFlightFetchWithGeneralRequest() async throws {
         try await self.verifyInFlightSharing(startWithEligibility: true)
     }
 
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    @available(iOS 16.0, tvOS 16.0, macOS 13.0, watchOS 9.0, *)
     func testUnexpectedSK1ProductDoesNotProduceSK2Eligibility() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         let manager = Self.createManager(.storeKit2)
@@ -173,7 +173,7 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
         self.verifyStoreProductRequests(count: 0)
     }
 
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    @available(iOS 16.0, tvOS 16.0, macOS 13.0, watchOS 9.0, *)
     func testExplicitlyCachedSK2ProductIsAvailableToEligibility() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         let product = try await self.fetchSk2StoreProduct()
@@ -189,7 +189,7 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
         self.verifyStoreProductRequests(count: 0)
     }
 
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    @available(iOS 16.0, tvOS 16.0, macOS 13.0, watchOS 9.0, *)
     func testClearingCacheInvalidatesProductsUsedByEligibility() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         let manager = Self.createManager(.storeKit2)
@@ -203,7 +203,7 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
         self.verifyStoreProductRequests(count: 2)
     }
 
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    @available(iOS 16.0, tvOS 16.0, macOS 13.0, watchOS 9.0, *)
     func testEligibilityFetchesOnlyProductsMissingFromCache() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         let manager = Self.createManager(.storeKit2)
@@ -222,7 +222,7 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
         )
     }
 
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    @available(iOS 16.0, tvOS 16.0, macOS 13.0, watchOS 9.0, *)
     func testSharedFetchFailureReachesEligibilityAndProductsAndCanBeRetried() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         let product = StoreProduct(sk2Product: try await self.fetchSk2Product())
@@ -250,7 +250,7 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
         expect(fetcher.invokedProductsCount) == 2
     }
 
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    @available(iOS 16.0, tvOS 16.0, macOS 13.0, watchOS 9.0, *)
     func testLateEligibilityProductResponseDoesNotRepopulateClearedCache() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         let sk2Product = try await self.fetchSk2Product()
@@ -307,7 +307,7 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
 @available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
 private extension CachingProductsManagerIntegrationTests {
 
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    @available(iOS 16.0, tvOS 16.0, macOS 13.0, watchOS 9.0, *)
     func verifyInFlightSharing(startWithEligibility: Bool) async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         let product = StoreProduct(sk2Product: try await self.fetchSk2Product())
