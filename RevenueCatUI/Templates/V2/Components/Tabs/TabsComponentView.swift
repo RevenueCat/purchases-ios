@@ -123,6 +123,9 @@ struct LoadedTabsComponentView: View {
     @Environment(\.offerEligibilityLoading)
     private var offerEligibilityLoading
 
+    @Environment(\.offerEligibilityAvailability)
+    private var offerEligibilityAvailability
+
     private let viewModel: TabsComponentViewModel
     private let workflowDefaultPackage: Package?
     private let onDismiss: () -> Void
@@ -260,7 +263,8 @@ struct LoadedTabsComponentView: View {
         guard let resolved = tabViewModel.reconciledSelection(
             current: context.package,
             in: self.packageSelectionContext,
-            offerEligibilityLoading: self.offerEligibilityLoading
+            offerEligibilityLoading: self.offerEligibilityLoading,
+            offerEligibilityAvailability: self.offerEligibilityAvailability
         ) else {
             return
         }
