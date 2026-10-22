@@ -212,7 +212,7 @@ private extension TrialOrIntroPriceEligibilityCheckerSimulatedStoreTests {
 
         expect(eligibility[Self.productWithFreeTrialID]?.status) == .eligible
         expect(self.mockProductsManager.invokedProductsCount) == 1
-        self.cachingManager.clearCache()
+        self.cachingManager.invalidate()
         _ = await withCheckedContinuation { continuation in
             self.trialOrIntroPriceEligibilityChecker.checkEligibility(productIdentifiers: identifiers) {
                 continuation.resume(returning: $0)

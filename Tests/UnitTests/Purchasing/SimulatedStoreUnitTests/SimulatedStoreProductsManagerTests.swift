@@ -157,7 +157,7 @@ private extension SimulatedStoreProductsManagerTests {
         expect(product) === first.onlyElement
         expect(self.webBilling.invokedGetWebBillingProductsCount) == 1
 
-        manager.clearCache()
+        manager.invalidate()
         _ = try await manager.products(withIdentifiers: identifiers)
         expect(self.webBilling.invokedGetWebBillingProductsCount) == 2
     }

@@ -227,7 +227,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         })
     }
 
-    func testClearCacheAfterStorefrontChangesSK1() async throws {
+    func testInvalidateAfterStorefrontChangesSK1() async throws {
         try AvailabilityChecks.switchingStorefrontWithSKTestWorksOrSkipTest()
         let manager = CachingProductsManager(manager: self.createManager(storeKitVersion: .storeKit1))
 
@@ -244,7 +244,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         try await changeStorefront("ESP")
 
         // The SDK's storefront listener normally clears the product cache.
-        manager.clearCache()
+        manager.invalidate()
 
         receivedProducts = try await manager.products(withIdentifiers: Set([identifier]))
 
@@ -273,7 +273,7 @@ class ProductsManagerTests: StoreKitConfigTestCase {
         try await changeStorefront("ESP")
 
         // The SDK's storefront listener normally clears the product cache.
-        manager.clearCache()
+        manager.invalidate()
 
         receivedProducts = try await manager.products(withIdentifiers: Set([identifier]))
 

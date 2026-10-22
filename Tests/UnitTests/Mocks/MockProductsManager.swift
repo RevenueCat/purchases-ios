@@ -81,11 +81,11 @@ class MockProductsManager: ProductsManager {
         invokedCacheProductParameter = product
     }
 
-    var invokedClearCacheCount = 0
-    var clearCacheHandler: (() -> Void)?
-    override func clearCache() {
-        self.invokedClearCacheCount += 1
-        self.clearCacheHandler?()
+    var invokedInvalidateCount = 0
+    var invalidateHandler: (() -> Void)?
+    override func invalidate() {
+        self.invokedInvalidateCount += 1
+        self.invalidateHandler?()
     }
 
     func resetMock() {
@@ -99,8 +99,8 @@ class MockProductsManager: ProductsManager {
         self.invokedCacheProduct = false
         self.invokedCacheProductCount = 0
         self.invokedCacheProductParameter = nil
-        self.invokedClearCacheCount = 0
-        self.clearCacheHandler = nil
+        self.invokedInvalidateCount = 0
+        self.invalidateHandler = nil
     }
 }
 

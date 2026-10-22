@@ -27,9 +27,9 @@ final class CachingProductsManager {
         self.manager = manager
     }
 
-    func clearCache() {
+    func invalidate() {
         // Invalidate the underlying manager first, so new callers cannot join its pre-invalidation requests.
-        self.manager.clearCache()
+        self.manager.invalidate()
         self.productCache.clear()
     }
 

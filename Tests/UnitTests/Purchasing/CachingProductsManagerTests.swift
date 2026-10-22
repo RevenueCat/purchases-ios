@@ -254,7 +254,7 @@ class CachingProductsManagerTests: TestCase {
         self.mockManager.stubbedProductsCompletionResult = .success([product])
 
         _ = try await self.cachingManager.products(withIdentifiers: [Self.productID])
-        self.cachingManager.clearCache()
+        self.cachingManager.invalidate()
 
         let result = try await self.cachingManager.products(withIdentifiers: [Self.productID])
 
@@ -364,13 +364,13 @@ class CachingProductsManagerTests: TestCase {
         self.cachingManager.cache(oldProduct)
         self.mockManager.stubbedProductsCompletionResult = .success([oldProduct])
         var interleaved: Result<Set<StoreProduct>, PurchasesError>?
-        self.mockManager.clearCacheHandler = {
+        self.mockManager.invalidateHandler = {
             self.cachingManager.products(withIdentifiers: [Self.productID]) { interleaved = $0 }
             self.mockManager.stubbedProductsCompletionResult = .success([newProduct])
         }
-        defer { self.mockManager.clearCacheHandler = nil }
+        defer { self.mockManager.invalidateHandler = nil }
 
-        self.cachingManager.clearCache()
+        self.cachingManager.invalidate()
         expect(try interleaved?.get().onlyElement) === oldProduct
 
         var afterClear: Result<Set<StoreProduct>, PurchasesError>?
@@ -378,7 +378,7 @@ class CachingProductsManagerTests: TestCase {
         expect(try afterClear?.get().onlyElement) === newProduct
     }
 
-    func testClearCacheKeepsOldCallersButStartsNewRequest() throws {
+    func testInvalidateKeepsOldCallersButStartsNewRequest() throws {
         try self.verifyClearingCacheDuringRequest(completeOldRequestFirst: true)
     }
 
@@ -435,11 +435,11 @@ private extension CachingProductsManagerTests {
         var newResult: Result<Set<StoreProduct>, PurchasesError>?
 
         self.cachingManager.products(withIdentifiers: [Self.productID]) { oldResult = $0 }
-        self.cachingManager.clearCache()
+        self.cachingManager.invalidate()
         self.mockManager.stubbedProductsCompletionResult = .success([newProduct])
         self.cachingManager.products(withIdentifiers: [Self.productID]) { newResult = $0 }
         expect(self.mockManager.invokedProductsCount) == 2
-        expect(self.mockManager.invokedClearCacheCount) == 1
+        expect(self.mockManager.invokedInvalidateCount) == 1
 
         for index in completeOldRequestFirst ? [0, 1] : [1, 0] {
             self.mockManager.completeDeferredProductsRequest(at: index)

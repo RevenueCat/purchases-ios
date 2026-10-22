@@ -102,7 +102,7 @@ class ProductsFetcherSK1Tests: TestCase {
         manager.products(withIdentifiers: ["product"]) { result in oldResults.modify { $0.append(result) } }
         let oldRequest = try factory.startedRequest(at: 0)
 
-        manager.clearCache()
+        manager.invalidate()
         let newResults = Atomic<[Result<Set<StoreProduct>, PurchasesError>]>([])
         manager.products(withIdentifiers: ["product"]) { result in newResults.modify { $0.append(result) } }
         let newRequest = try factory.startedRequest(at: 1)
@@ -189,7 +189,7 @@ extension ProductsFetcherSK1Tests {
         manager.products(withIdentifiers: ["product"]) { oldResult.value = $0 }
         let oldRequest = try factory.startedRequest(at: 0)
 
-        manager.clearCache()
+        manager.invalidate()
         oldRequest.succeed(with: [oldProduct])
         expect(oldResult.value).toEventuallyNot(beNil())
 
@@ -220,7 +220,7 @@ extension ProductsFetcherSK1Tests {
         manager.products(withIdentifiers: ["product"]) { result in oldResults.modify { $0.append(result) } }
         let oldRequest = try factory.startedRequest(at: 0)
 
-        manager.clearCache()
+        manager.invalidate()
         let newResults = Atomic<[Result<Set<StoreProduct>, PurchasesError>]>([])
         manager.products(withIdentifiers: ["product"]) { result in newResults.modify { $0.append(result) } }
         let newRequest = try factory.startedRequest(at: 1)
@@ -264,7 +264,7 @@ private extension ProductsFetcherSK1Tests {
         manager.products(withIdentifiers: ["product"]) { result in oldResults.modify { $0.append(result) } }
         let oldRequest = try factory.startedRequest(at: 0)
 
-        manager.clearCache()
+        manager.invalidate()
         let newResults = Atomic<[Result<Set<StoreProduct>, PurchasesError>]>([])
         manager.products(withIdentifiers: ["product"]) { result in newResults.modify { $0.append(result) } }
         let newRequest = try factory.startedRequest(at: 1)

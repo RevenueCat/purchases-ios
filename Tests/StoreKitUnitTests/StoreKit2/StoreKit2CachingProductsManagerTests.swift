@@ -103,7 +103,7 @@ class StoreKit2CachingProductsManagerTests: StoreKitConfigTestCase {
         self.mockManager.stubbedProductsCompletionResult = .success([product])
 
         _ = try await self.cachingManager.products(withIdentifiers: [Self.productID])
-        self.cachingManager.clearCache()
+        self.cachingManager.invalidate()
 
         let result = try await self.cachingManager.products(withIdentifiers: [Self.productID])
 

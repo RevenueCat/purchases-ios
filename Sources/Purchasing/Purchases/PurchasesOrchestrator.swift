@@ -2113,7 +2113,7 @@ private extension PurchasesOrchestrator {
     }
 
     func handleStorefrontChange() {
-        self.productsManager.clearCache()
+        self.productsManager.invalidate()
         self.offeringsManager.invalidateAndReFetchCachedOfferingsIfAppropiate(appUserID: self.appUserID)
     }
 

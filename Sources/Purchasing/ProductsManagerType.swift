@@ -29,7 +29,7 @@ protocol ProductsManagerType: Sendable {
 
     /// Clears cached products and prevents new callers from joining requests started before invalidation.
     /// Existing callers still receive their results.
-    func clearCache()
+    func invalidate()
 
     var requestTimeout: TimeInterval { get }
 

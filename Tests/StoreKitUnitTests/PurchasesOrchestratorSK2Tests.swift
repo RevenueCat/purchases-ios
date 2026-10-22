@@ -44,7 +44,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.orchestrator.storefrontValuesUpdated(with: MockStorefront(countryCode: "ESP"))
 
         expect(self.mockOfferingsManager.invokedInvalidateAndReFetchCachedOfferingsIfAppropiateCount) == 1
-        expect(self.productsManager.invokedClearCacheCount) == 1
+        expect(self.productsManager.invokedInvalidateCount) == 1
     }
 
     // MARK: - Purchasing

@@ -56,7 +56,6 @@ final class SimulatedStoreProductsManager: ProductsManagerType {
     // See `CachingProductsManager`.
     func cache(_ product: any StoreProductType) { }
 
-    // This class does not implement caching.
-    // See `CachingProductsManager`.
-    func clearCache() { }
+    // This class does not cache products or share in-flight requests.
+    func invalidate() { }
 }
