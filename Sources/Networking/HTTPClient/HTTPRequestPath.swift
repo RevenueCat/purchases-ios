@@ -11,8 +11,6 @@
 //
 //  Created by Nacho Soto on 8/8/23.
 
-// swiftlint:disable file_length
-
 import Foundation
 
 protocol HTTPRequestPath {
