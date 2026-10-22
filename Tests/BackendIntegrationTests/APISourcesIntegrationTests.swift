@@ -13,24 +13,16 @@
 
 import Nimble
 @testable import RevenueCat
+import StoreKit
 import XCTest
 
 private enum APISources {
 
     static let primary = "https://api.revenuecat.com/"
     static let backup = "https://api.rc-backup.com/"
-    /// `.invalid` is a reserved TLD that never resolves, so this source is always unreachable.
+    /// `.invalid` is a reserved TLD that never resolves, so these sources are always unreachable.
     static let unreachable = "https://api.revenuecat.invalid/"
-
-}
-
-private extension ForceServerErrorStrategy {
-
-    /// Fails requests that target the primary API source with a real 5xx. Source health checks don't go
-    /// through `HTTPClient`, so the primary still reports itself as healthy.
-    static let primaryAPISourceDown: ForceServerErrorStrategy = .init { (request: HTTPClient.Request) in
-        return request.apiSourceState.source?.handle.url == APISources.primary ? .defaultServerError : .performRequest
-    }
+    static let otherUnreachable = "https://api-backup.revenuecat.invalid/"
 
 }
 
@@ -39,78 +31,214 @@ private extension ForceServerErrorStrategy {
 class APISourceFailoverBackendIntegrationTests: BaseBackendIntegrationTests {
 
     private let appUserID = IdentityManager.generateRandomID()
+    private let apiSourceRecorder = APISourceRecorder()
 
-    // A proxy pins every request to itself, bypassing API sources.
-    override var proxyURL: String? { return nil }
+    override var configuresPurchasesOnSetUp: Bool { return false }
+
+    override func setUp() async throws {
+        try await super.setUp()
+
+        // `configurePurchases()` normally sets these globals. A proxy pins every request to itself,
+        // bypassing API sources.
+        Purchases.proxyURL = nil
+        Purchases.logLevel = .verbose
+    }
 
     func testRequestsStayOnTheHealthyPrimarySource() async throws {
-        let backend = self.createBackend(sources: [APISources.primary, APISources.backup],
-                                         forceServerErrorStrategy: nil)
+        let backend = self.createBackend(sources: [APISources.primary, APISources.backup])
 
-        let customerInfo = try await self.customerInfo(from: backend).get()
+        let customerInfo = try await backend.customerInfo(appUserID: self.appUserID).get()
 
         expect(customerInfo.entitlements.verification) == .verified
+        expect(self.apiSourceRecorder.sources) == [APISources.primary]
         self.logger.verifyMessageWasNotLogged("Health check for")
-        self.logger.verifyMessageWasNotLogged("using next API source host")
     }
 
     func testFailsOverToTheBackupSourceWhenThePrimaryIsUnreachable() async throws {
-        let backend = self.createBackend(sources: [APISources.unreachable, APISources.backup],
-                                         forceServerErrorStrategy: nil)
+        let backend = self.createBackend(sources: [APISources.unreachable, APISources.backup])
 
-        let customerInfo = try await self.customerInfo(from: backend).get()
+        let customerInfo = try await backend.customerInfo(appUserID: self.appUserID).get()
 
         expect(customerInfo.entitlements.verification) == .verified
+        expect(self.apiSourceRecorder.sources) == [APISources.unreachable, APISources.backup]
         self.logger.verifyMessageWasLogged("Health check for \(APISources.unreachable)v1/health/connectivity " +
                                            "failed to connect")
-        self.logger.verifyMessageWasLogged("using next API source host \(APISources.backup)", expectedCount: 1)
-
-        self.logger.clearMessages()
 
         // The source list advanced, so later requests go straight to the backup source.
-        let secondCustomerInfo = try await self.customerInfo(from: backend).get()
+        let secondCustomerInfo = try await backend.customerInfo(appUserID: self.appUserID).get()
 
         expect(secondCustomerInfo.entitlements.verification) == .verified
-        self.logger.verifyMessageWasNotLogged("Health check for")
-        self.logger.verifyMessageWasNotLogged("using next API source host")
+        expect(self.apiSourceRecorder.sources) == [APISources.unreachable, APISources.backup, APISources.backup]
     }
 
     func testBackupSourceServesVerifiedResponses() async throws {
-        let backend = self.createBackend(sources: [APISources.backup], forceServerErrorStrategy: nil)
+        let backend = self.createBackend(sources: [APISources.backup])
 
-        let customerInfo = try await self.customerInfo(from: backend).get()
+        let customerInfo = try await backend.customerInfo(appUserID: self.appUserID).get()
         expect(customerInfo.entitlements.verification) == .verified
 
-        let logInResult = try await self.logIn(backend, newAppUserID: UUID().uuidString).get()
+        let logInResult = try await backend.logIn(currentAppUserID: self.appUserID,
+                                                  newAppUserID: UUID().uuidString).get()
         expect(logInResult.info.entitlements.verification) == .verified
 
-        let offerings = try await self.offerings(from: backend).get()
+        let offerings = try await backend.offerings(appUserID: self.appUserID).get()
         expect(offerings.contents.response.offerings).toNot(beEmpty())
-        // Offerings also support the static fallback host; make sure it wasn't what served them.
         expect(offerings.contents.originalSource) != .fallbackUrl
+
+        expect(Set(self.apiSourceRecorder.sources)) == [APISources.backup]
+    }
+
+    func testBackupSourceServesVerifiedRemoteConfig() async throws {
+        let backend = self.createBackend(sources: [APISources.backup])
+
+        let result = try await backend.remoteConfig(appUserID: self.appUserID).get()
+
+        expect(result.verificationResult) == .verified
+        expect(result.container).toNot(beNil())
+        expect(self.apiSourceRecorder.sources) == [APISources.backup]
+    }
+
+    func testRemoteConfigFailsOverToTheBackupSourceWhenThePrimaryIsUnreachable() async throws {
+        let backend = self.createBackend(sources: [APISources.unreachable, APISources.backup])
+
+        let result = try await backend.remoteConfig(appUserID: self.appUserID).get()
+
+        expect(result.verificationResult) == .verified
+        expect(result.container).toNot(beNil())
+        expect(self.apiSourceRecorder.sources) == [APISources.unreachable, APISources.backup]
     }
 
     func testServerErrorFromAHealthySourceDoesNotFailOver() async throws {
         let backend = self.createBackend(sources: [APISources.primary, APISources.backup],
-                                         forceServerErrorStrategy: .primaryAPISourceDown)
+                                         failingRequestsTo: APISources.primary)
 
-        let result = await self.customerInfo(from: backend)
+        let result = await backend.customerInfo(appUserID: self.appUserID)
 
         guard case let .failure(.networkError(networkError)) = result else {
             fail("Expected a network error, got \(result)")
             return
         }
         expect(networkError.isServerDown) == true
+        expect(Set(self.apiSourceRecorder.sources)) == [APISources.primary]
         self.logger.verifyMessageWasLogged(
             Strings.network.api_source_healthy_despite_failure(host: APISources.primary)
         )
-        self.logger.verifyMessageWasNotLogged("using next API source host")
+    }
+
+    func testOfferingsUseTheStaticFallbackOnceEverySourceIsUnreachable() async throws {
+        let backend = self.createBackend(sources: [APISources.unreachable, APISources.otherUnreachable])
+
+        let offerings = try await backend.offerings(appUserID: self.appUserID).get()
+
+        expect(offerings.contents.response.offerings).toNot(beEmpty())
+        expect(offerings.contents.originalSource) == .fallbackUrl
+        // The fallback attempt pins its own host, so it resolves no API source.
+        expect(self.apiSourceRecorder.sources) == [APISources.unreachable, APISources.otherUnreachable, nil]
+    }
+
+    func testCustomerInfoSurfacesTheErrorOnceEverySourceIsUnreachable() async throws {
+        let backend = self.createBackend(sources: [APISources.unreachable, APISources.otherUnreachable])
+
+        let result = await backend.customerInfo(appUserID: self.appUserID)
+
+        guard case .failure(.networkError) = result else {
+            fail("Expected a network error, got \(result)")
+            return
+        }
+        expect(self.apiSourceRecorder.sources) == [APISources.unreachable, APISources.otherUnreachable]
     }
 
     // MARK: - Helpers
 
-    private func createBackend(sources: [String],
-                               forceServerErrorStrategy: ForceServerErrorStrategy?) -> Backend {
+    private func createBackend(sources: [String]) -> Backend {
+        return self.createBackend(sources: sources, failingRequestsTo: nil)
+    }
+
+    private func createBackend(sources: [String], failingRequestsTo failingSource: String?) -> Backend {
+        return self.createBackend(
+            sources: sources,
+            forceServerErrorStrategy: self.apiSourceRecorder.strategy(failingRequestsTo: failingSource)
+        )
+    }
+
+}
+
+class APISourcesStoreKit1IntegrationTests: APISourcesStoreKit2IntegrationTests {
+
+    override class var storeKitVersion: StoreKitVersion { .storeKit1 }
+
+}
+
+/// Runs core SDK flows against the real backend with the `usesRemoteConfigAPISources` dangerous setting
+/// enabled, so eligible requests resolve their host through the remote config API sources.
+class APISourcesStoreKit2IntegrationTests: BaseStoreKitIntegrationTests {
+
+    private let apiSourceRecorder = APISourceRecorder()
+
+    override class var storeKitVersion: StoreKitVersion { .storeKit2 }
+
+    override var usesRemoteConfigAPISources: Bool { return true }
+
+    // A proxy pins every request to itself, bypassing API sources.
+    override var proxyURL: String? { return nil }
+
+    override func setUp() async throws {
+        self.forceServerErrorStrategy = self.apiSourceRecorder.strategy(failingRequestsTo: nil)
+
+        try await super.setUp()
+    }
+
+    func testCanGetOfferings() async throws {
+        let offerings = try await self.purchases.offerings()
+
+        expect(offerings.all).toNot(beEmpty())
+        expect(offerings.contents.originalSource) != .fallbackUrl
+        expect(Set(self.apiSourceRecorder.sources(for: HTTPRequest.Path.getOfferings(appUserID: ""))))
+            == [APISources.primary]
+    }
+
+    func testCanPurchaseSubscription() async throws {
+        try await self.purchaseMonthlyOffering()
+
+        expect(Set(self.apiSourceRecorder.sources(for: HTTPRequest.Path.postReceiptData))) == [APISources.primary]
+    }
+
+    func testCanLogIn() async throws {
+        let (customerInfo, created) = try await self.purchases.logIn(UUID().uuidString)
+
+        expect(created) == true
+        expect(customerInfo.entitlements.verification) == .verified
+        expect(self.apiSourceRecorder.sources(for: HTTPRequest.Path.logIn)) == [APISources.primary]
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testBackupSourceAcceptsPurchasedTransactions() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+
+        let purchase = try await self.purchaseMonthlyOffering()
+        let productIdentifier = try XCTUnwrap(purchase.transaction?.productIdentifier)
+        let transaction = try await XCTAsyncUnwrap(await StoreKit.Transaction.latest(for: productIdentifier))
+
+        let backupRecorder = APISourceRecorder()
+        let backend = self.createBackend(sources: [APISources.backup],
+                                         forceServerErrorStrategy: backupRecorder.strategy(failingRequestsTo: nil))
+
+        let customerInfo = try await backend.postReceipt(.jws(transaction.jwsRepresentation),
+                                                         appUserID: try self.purchases.appUserID).get()
+
+        try await self.verifyEntitlementWentThrough(customerInfo)
+        expect(customerInfo.entitlements.verification) == .verified
+        expect(backupRecorder.sources) == [APISources.backup]
+    }
+
+}
+
+// MARK: - Helpers
+
+private extension BaseBackendIntegrationTests {
+
+    /// A `Backend` wired like the SDK's, with API sources enabled and fed the fixed `sources` list.
+    func createBackend(sources: [String], forceServerErrorStrategy: ForceServerErrorStrategy) -> Backend {
         let systemInfo = SystemInfo(
             platformInfo: nil,
             finishTransactions: true,
@@ -141,32 +269,64 @@ class APISourceFailoverBackendIntegrationTests: BaseBackendIntegrationTests {
             apiSourceProvider: RemoteConfigSourceProvider(topicStore: FixedAPISourcesTopicStore(urls: sources)),
             timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .default),
             subscriberDimensionsStore: SubscriberDimensionsStore(
-                deviceCache: DeviceCache(systemInfo: systemInfo, userDefaults: .standard)
+                deviceCache: DeviceCache(systemInfo: systemInfo, userDefaults: self.userDefaults)
             )
         )
     }
 
-    private func customerInfo(from backend: Backend) async -> Result<CustomerInfo, BackendError> {
+}
+
+private extension Backend {
+
+    func customerInfo(appUserID: String) async -> Result<CustomerInfo, BackendError> {
         return await withCheckedContinuation { continuation in
-            backend.getCustomerInfo(appUserID: self.appUserID,
-                                    isAppBackgrounded: false,
-                                    allowComputingOffline: false) {
+            self.getCustomerInfo(appUserID: appUserID, isAppBackgrounded: false, allowComputingOffline: false) {
                 continuation.resume(returning: $0)
             }
         }
     }
 
-    private func logIn(_ backend: Backend, newAppUserID: String) async -> IdentityAPI.LogInResponse {
+    func logIn(currentAppUserID: String, newAppUserID: String) async -> IdentityAPI.LogInResponse {
         return await withCheckedContinuation { continuation in
-            backend.identity.logIn(currentAppUserID: self.appUserID, newAppUserID: newAppUserID) {
+            self.identity.logIn(currentAppUserID: currentAppUserID, newAppUserID: newAppUserID) {
                 continuation.resume(returning: $0)
             }
         }
     }
 
-    private func offerings(from backend: Backend) async -> Result<OfferingsFetchResult, BackendError> {
+    func offerings(appUserID: String) async -> Result<OfferingsFetchResult, BackendError> {
         return await withCheckedContinuation { continuation in
-            backend.offerings.getOfferings(appUserID: self.appUserID, isAppBackgrounded: false) {
+            self.offerings.getOfferings(appUserID: appUserID, isAppBackgrounded: false) {
+                continuation.resume(returning: $0)
+            }
+        }
+    }
+
+    func remoteConfig(appUserID: String) async -> Result<RemoteConfigFetchResult, BackendError> {
+        return await withCheckedContinuation { continuation in
+            self.remoteConfigAPI.getRemoteConfig(
+                request: .init(fetchContext: .appStart,
+                               appUserID: appUserID,
+                               domain: RemoteConfiguration.defaultDomain,
+                               manifest: nil,
+                               prefetchedBlobs: [],
+                               lastRefreshTime: nil),
+                isAppBackgrounded: false
+            ) {
+                continuation.resume(returning: $0)
+            }
+        }
+    }
+
+    func postReceipt(_ receipt: EncodedAppleReceipt, appUserID: String) async -> Result<CustomerInfo, BackendError> {
+        return await withCheckedContinuation { continuation in
+            self.post(receipt: receipt,
+                      productData: nil,
+                      transactionData: PurchasedTransactionData(),
+                      postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
+                      observerMode: false,
+                      originalPurchaseCompletedBy: nil,
+                      appUserID: appUserID) {
                 continuation.resume(returning: $0)
             }
         }
@@ -174,53 +334,31 @@ class APISourceFailoverBackendIntegrationTests: BaseBackendIntegrationTests {
 
 }
 
-class APISourcesStoreKit1IntegrationTests: APISourcesStoreKit2IntegrationTests {
+/// Records the API source each request attempt resolved (`nil` when it used its static host), and can fail
+/// the attempts targeting one source with a real 5xx. Source health checks don't go through `HTTPClient`, so
+/// they're neither recorded nor failed.
+private final class APISourceRecorder {
 
-    override class var storeKitVersion: StoreKitVersion { .storeKit1 }
+    private let attempts: Atomic<[(pathName: String, source: String?)]> = .init([])
 
-}
-
-/// Runs core SDK flows against the real backend with the `usesRemoteConfigAPISources` dangerous setting
-/// enabled, so eligible requests resolve their host through the remote config API sources.
-class APISourcesStoreKit2IntegrationTests: BaseStoreKitIntegrationTests {
-
-    override class var storeKitVersion: StoreKitVersion { .storeKit2 }
-
-    override var usesRemoteConfigAPISources: Bool { return true }
-
-    // A proxy pins every request to itself, bypassing API sources.
-    override var proxyURL: String? { return nil }
-
-    func testCanGetOfferings() async throws {
-        let offerings = try await self.purchases.offerings()
-
-        expect(offerings.all).toNot(beEmpty())
-        expect(offerings.contents.originalSource) != .fallbackUrl
+    var sources: [String?] {
+        return self.attempts.value.map(\.source)
     }
 
-    func testCanPurchaseSubscription() async throws {
-        try await self.purchaseMonthlyOffering()
+    func sources(for path: HTTPRequestPath) -> [String?] {
+        return self.attempts.value.filter { $0.pathName == path.name }.map(\.source)
     }
 
-    func testCanLogIn() async throws {
-        let (customerInfo, created) = try await self.purchases.logIn(UUID().uuidString)
+    func strategy(failingRequestsTo failingSource: String?) -> ForceServerErrorStrategy {
+        return .init { [attempts = self.attempts] request in
+            let source = request.apiSourceState.source?.handle.url
+            attempts.modify { $0.append((pathName: request.httpRequest.path.name, source: source)) }
 
-        expect(created) == true
-        expect(customerInfo.entitlements.verification) == .verified
-    }
-
-    func testRequestsGoThroughAPISources() async throws {
-        self.forceServerErrorStrategy = .primaryAPISourceDown
-
-        do {
-            _ = try await self.purchases.logIn(UUID().uuidString)
-            fail("Expected logIn to fail while the primary API source is down")
-        } catch {}
-
-        // Only requests that resolved an API source can log this, so the SDK isn't using the static base URL.
-        self.logger.verifyMessageWasLogged(
-            Strings.network.api_source_healthy_despite_failure(host: APISources.primary)
-        )
+            if let failingSource, source == failingSource {
+                return .defaultServerError
+            }
+            return .performRequest
+        }
     }
 
 }
