@@ -254,7 +254,7 @@ class HTTPRequestTests: TestCase {
 
     func testWebBillingPathsUseAPISources() {
         let paths: [any HTTPRequestPath] = [
-            HTTPRequest.WebBillingPath.getWebOfferingProducts(appUserID: Self.userID),
+            HTTPRequest.Path2.getWebOfferingProducts(appUserID: Self.userID),
             HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"]),
             HTTPRequest.WebBillingPath.postHostedCheckout,
             HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
@@ -266,13 +266,13 @@ class HTTPRequestTests: TestCase {
     }
 
     func testWebBillingOfferingProductsRelativePathIncludesAppUserID() {
-        let path = HTTPRequest.WebBillingPath.getWebOfferingProducts(appUserID: Self.userID)
+        let path = HTTPRequest.Path2.getWebOfferingProducts(appUserID: Self.userID)
 
         expect(path.relativePath) == "/rcbilling/v1/subscribers/\(Self.userID)/offering_products"
     }
 
     func testWebBillingOfferingProductsRelativeIAMPathOmitsAppUserID() {
-        let path = HTTPRequest.WebBillingPath.getWebOfferingProducts(appUserID: Self.userID)
+        let path = HTTPRequest.Path2.getWebOfferingProducts(appUserID: Self.userID)
 
         expect(path.relativeIAMPath) == "/rcbilling/v1/customer/offering_products"
         expect(path.relativeIAMPath).toNot(contain(Self.userID))
@@ -392,7 +392,7 @@ class HTTPRequestTests: TestCase {
     }
 
     func testWebBillingPathsURLPreferringIAMPathUsesIAMRelativePath() {
-        let offeringProductsPath = HTTPRequest.WebBillingPath.getWebOfferingProducts(appUserID: Self.userID)
+        let offeringProductsPath = HTTPRequest.Path2.getWebOfferingProducts(appUserID: Self.userID)
         let productsPath = HTTPRequest.WebBillingPath.getWebBillingProducts(
             userId: Self.userID,
             productIds: ["product_1"]
@@ -1077,7 +1077,7 @@ class HTTPRequestTests2: TestCase {
 
     func testWebBillingPathsUseAPISources() {
         let paths: [any HTTPRequestPath] = [
-            HTTPRequest.WebBillingPath.getWebOfferingProducts(appUserID: Self.userID),
+            HTTPRequest.Path2.getWebOfferingProducts(appUserID: Self.userID),
             HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"]),
             HTTPRequest.WebBillingPath.postHostedCheckout,
             HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
@@ -1089,13 +1089,13 @@ class HTTPRequestTests2: TestCase {
     }
 
     func testWebBillingOfferingProductsRelativePathIncludesAppUserID() {
-        let path = HTTPRequest.WebBillingPath.getWebOfferingProducts(appUserID: Self.userID)
+        let path = HTTPRequest.Path2.getWebOfferingProducts(appUserID: Self.userID)
 
         expect(path.relativePath) == "/rcbilling/v1/subscribers/\(Self.userID)/offering_products"
     }
 
     func testWebBillingOfferingProductsRelativeIAMPathOmitsAppUserID() {
-        let path = HTTPRequest.WebBillingPath.getWebOfferingProducts(appUserID: Self.userID)
+        let path = HTTPRequest.Path2.getWebOfferingProducts(appUserID: Self.userID)
 
         expect(path.relativeIAMPath) == "/rcbilling/v1/customer/offering_products"
         expect(path.relativeIAMPath).toNot(contain(Self.userID))
@@ -1215,7 +1215,7 @@ class HTTPRequestTests2: TestCase {
     }
 
     func testWebBillingPathsURLPreferringIAMPathUsesIAMRelativePath() {
-        let offeringProductsPath = HTTPRequest.WebBillingPath.getWebOfferingProducts(appUserID: Self.userID)
+        let offeringProductsPath = HTTPRequest.Path2.getWebOfferingProducts(appUserID: Self.userID)
         let productsPath = HTTPRequest.WebBillingPath.getWebBillingProducts(
             userId: Self.userID,
             productIds: ["product_1"]

@@ -375,4 +375,13 @@ extension HTTPRequest.Path2 {
                           ],
                           responseSignatureContextProvider: RemoteConfigSignatureContextProvider())
     }
+
+    static func getWebOfferingProducts(appUserID: String) -> Self {
+        HTTPRequest.Path2(name: "get_web_offering_products",
+                          etagBehavior: .send,
+                          supportsSignatureVerification: false,
+                          needsNonceForSigning: false,
+                          pathComponent: "/rcbilling/v1/subscribers/\(appUserID.trimmedAndEscaped)/offering_products",
+                          iamPathComponent: "/rcbilling/v1/customer/offering_products")
+    }
 }
