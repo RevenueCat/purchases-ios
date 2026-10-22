@@ -1567,7 +1567,7 @@ private extension SigningTests {
     )
 
     static let apiKey = "appl_fFVBVAoYujMZJnepIziGKVjnZBz"
-    static let mockPath: any HTTPRequestPath = HTTPRequest.Path.getCustomerInfo(appUserID: "user")
+    static let mockPath: HTTPRequest.Path = HTTPRequest.Path.getCustomerInfo(appUserID: "user")
 
     // 2023-07-07: The hardcoded signatures have an intermediate signature that expires
     // 2 weeks after that date.

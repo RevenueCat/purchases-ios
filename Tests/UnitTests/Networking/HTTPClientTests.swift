@@ -2145,27 +2145,32 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
     func testFullHTTPRequestTimeoutFlow() async {
 
-        enum MainBackendTimeoutRequestPath: HTTPRequestPath {
+        enum MainBackendTimeoutRequestPath {
+
+            static let first = HTTPRequest.Path(name: "Test",
+                                                serverHostURL: serverHostURL,
+                                                authenticated: false,
+                                                etagBehavior: .ignore,
+                                                supportsSignatureVerification: false,
+                                                needsNonceForSigning: false,
+                                                pathComponent: "/first",
+                                                fallbackURLs: [
+                                                    URL(string: "https://this-is-a-fallback.com/first-fallback")!
+                                                ])
+
+
+            static let second = HTTPRequest.Path(name: "Test",
+                                                 serverHostURL: serverHostURL,
+                                                 authenticated: false,
+                                                 etagBehavior: .ignore,
+                                                 supportsSignatureVerification: false,
+                                                 needsNonceForSigning: false,
+                                                 pathComponent: "/second",
+                                                 fallbackURLs: [
+                                                     URL(string: "https://this-is-a-fallback.com/second-fallback")!
+                                                 ])
+
             static let serverHostURL = URL(string: "http://this-is-a-main-host.com")!
-
-            case first
-            case second
-
-            var authenticated: Bool { false }
-            var shouldSendEtag: Bool { false }
-            var supportsSignatureVerification: Bool { false }
-            var needsNonceForSigning: Bool { false }
-            var name: String { "Test" }
-            var relativePath: String {
-                switch self {
-                case .first: return "/first"
-                case .second: return "/second"
-                }
-            }
-
-            var fallbackUrls: [URL] {
-                [URL(string: "https://this-is-a-fallback.com/\(relativePath)-fallback")!]
-            }
         }
 
         let firstRequest = HTTPRequest(
@@ -3585,7 +3590,7 @@ extension HTTPClientTests {
     ) -> HTTPClient.Request {
         let completionHandler: HTTPClient.Completion<CustomerInfo> = { _ in return }
 
-        let path: any HTTPRequestPath
+        let path: HTTPRequest.Path
         if hasFallbackUrls {
             path = HTTPRequest.Path.getOfferings(appUserID: "abc123")
             expect(path.fallbackUrls).toNot(
@@ -4537,7 +4542,7 @@ private func matchTrackParams(
 // swiftlint:enable large_tuple
 // swiftlint:enable line_length
 
-func isPath(_ path: HTTPRequestPath) -> HTTPStubsTestBlock {
+func isPath(_ path: HTTPRequest.Path) -> HTTPStubsTestBlock {
     return isPath(path.relativePath)
 }
 

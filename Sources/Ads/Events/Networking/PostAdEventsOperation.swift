@@ -19,13 +19,13 @@ final class PostAdEventsOperation: NetworkOperation {
 
     private let configuration: Configuration
     private let request: AdEventsRequest
-    private let path: HTTPRequestPath
+    private let path: HTTPRequest.Path
     private let responseHandler: CustomerAPI.SimpleResponseHandler?
 
     init(
         configuration: Configuration,
         request: AdEventsRequest,
-        path: HTTPRequestPath,
+        path: HTTPRequest.Path,
         responseHandler: CustomerAPI.SimpleResponseHandler?
     ) {
         self.request = request

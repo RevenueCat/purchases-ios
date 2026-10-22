@@ -18,13 +18,13 @@ final class PostFeatureEventsOperation: NetworkOperation {
 
     private let configuration: Configuration
     private let request: FeatureEventsRequest
-    private let path: HTTPRequestPath
+    private let path: HTTPRequest.Path
     private let responseHandler: CustomerAPI.SimpleResponseHandler?
 
     init(
         configuration: Configuration,
         request: FeatureEventsRequest,
-        path: HTTPRequestPath,
+        path: HTTPRequest.Path,
         responseHandler: CustomerAPI.SimpleResponseHandler?
     ) {
         self.request = request

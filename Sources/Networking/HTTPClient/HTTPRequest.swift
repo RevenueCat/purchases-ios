@@ -19,7 +19,7 @@ struct HTTPRequest {
     typealias Headers = [String: String]
 
     var method: Method
-    var path: HTTPRequestPath
+    var path: HTTPRequest.Path
     /// Headers that are specific to this request.
     /// These override default and path headers, and their final values are included when computing header signatures.
     let additionalHeaders: Headers
@@ -44,7 +44,7 @@ struct HTTPRequest {
 
     internal init(
         method: Method,
-        requestPath: HTTPRequestPath,
+        requestPath: HTTPRequest.Path,
         additionalHeaders: Headers = [:],
         nonce: Data? = nil,
         isRetryable: Bool = false

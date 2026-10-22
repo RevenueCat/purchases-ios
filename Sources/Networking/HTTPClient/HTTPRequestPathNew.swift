@@ -29,6 +29,8 @@ extension HTTPRequest {
                    lhs.relativePath == rhs.relativePath
         }
 
+        static var serverHostURL: URL { SystemInfo.apiBaseURL }
+
         /// The base URL for requests to this path.
         var serverHostURL: URL { self.customServerHostURL ?? Self.serverHostURL }
 
@@ -39,11 +41,15 @@ extension HTTPRequest {
         /// Not all endpoints have a fallback URL, but some do.
         var fallbackUrls: [URL]
 
+        var supportsFallbackURLs: Bool { !fallbackUrls.isEmpty }
+
         /// Whether requests to this path are authenticated.
         var authenticated: Bool
 
         /// Whether requests to this path can be cached using `ETagManager`.
         var etagBehavior: ETagBehavior
+
+        var shouldSendEtag: Bool { etagBehavior == .send }
 
         /// Whether the endpoint will perform signature verification.
         var supportsSignatureVerification: Bool
@@ -100,6 +106,7 @@ extension HTTPRequest {
              pathComponent: String,
              iamPathComponent: String? = nil,
              fallbackRelativePath: String? = nil,
+             fallbackURLs: [URL]? = nil,
              usesAPISources: Bool = true,
              isFallbackHostPath: Bool = false,
              additionalHeaders: HTTPRequest.Headers = [:],
@@ -124,7 +131,9 @@ extension HTTPRequest {
 
             self.isIAMPath = isIAMPath
 
-            if let fallbackRelativePath {
+            if let fallbackURLs {
+                self.fallbackUrls = fallbackURLs
+            } else if let fallbackRelativePath {
                 self.fallbackUrls = Self.fallbackServerHostURLs.compactMap { baseURL in
                     guard let baseURL = baseURL,
                           let fallbackUrl = URL(string: fallbackRelativePath, relativeTo: baseURL) else {
@@ -147,13 +156,33 @@ extension HTTPRequest {
             hasher.combine(pathComponent)
         }
 
+        func url(proxyURL: URL? = nil,
+                 apiSourceURL: URL? = nil,
+                 fallbackUrlIndex: Int? = nil,
+                 preferIAMPath: Bool) -> URL? {
+            let baseURL: URL
+            if let proxyURL {
+                // When a Proxy URL is set, we don't support API sources or fallback URLs
+                guard fallbackUrlIndex == nil, apiSourceURL == nil else {
+                    // This is to safe guard against a potential infinite loop if the caller mistakenly
+                    // passes a proxyURL together with an apiSourceURL or a fallbackUrlIndex.
+                    return nil
+                }
+                baseURL = proxyURL
+            } else if let fallbackUrlIndex {
+                return self.fallbackUrls[safe: fallbackUrlIndex]
+            } else if let apiSourceURL {
+                baseURL = apiSourceURL
+            } else {
+                baseURL = self.serverHostURL
+            }
+
+            let path = preferIAMPath ? self.relativeIAMPath : self.relativePath
+            return URL(string: path, relativeTo: baseURL)
+        }
+
     }
 
-}
-
-extension HTTPRequest.Path: HTTPRequestPath {
-    static var serverHostURL: URL { SystemInfo.apiBaseURL }
-    var shouldSendEtag: Bool { etagBehavior == .send }
 }
 
 extension HTTPRequest.Path {

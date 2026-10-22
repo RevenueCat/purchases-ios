@@ -18,7 +18,7 @@ extension HTTPRequest {
 
     static func headerParametersForSignatureHeader(
         headers: Headers,
-        path: HTTPRequestPath
+        path: HTTPRequest.Path
     ) -> String? {
         guard path.needsNonceForSigning else {
             // Static signatures cannot sign header parameters

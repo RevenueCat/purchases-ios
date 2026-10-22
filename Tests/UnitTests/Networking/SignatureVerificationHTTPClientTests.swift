@@ -1623,7 +1623,7 @@ private extension BaseSignatureVerificationHTTPClientTests {
     }
 
     final func mockResponse(
-        path: HTTPRequestPath = BaseSignatureVerificationHTTPClientTests.path,
+        path: HTTPRequest.Path = BaseSignatureVerificationHTTPClientTests.path,
         signature: String?,
         requestDate: Date?,
         eTag: String? = nil,
@@ -1650,7 +1650,7 @@ private extension BaseSignatureVerificationHTTPClientTests {
     }
 
     final func mockPath(
-        _ path: HTTPRequestPath = BaseSignatureVerificationHTTPClientTests.path,
+        _ path: HTTPRequest.Path = BaseSignatureVerificationHTTPClientTests.path,
         statusCode: HTTPStatusCode,
         requestDate: Date,
         signature: String? = BaseSignatureVerificationHTTPClientTests.sampleSignature,

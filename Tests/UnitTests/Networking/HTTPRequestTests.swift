@@ -286,7 +286,7 @@ class HTTPRequestTests: TestCase {
     }
 
     func testWebBillingPathsUseAPISources() {
-        let paths: [any HTTPRequestPath] = [
+        let paths: [HTTPRequest.Path] = [
             HTTPRequest.Path.getWebOfferingProducts(appUserID: Self.userID),
             HTTPRequest.Path.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"]),
             HTTPRequest.Path.postHostedCheckout,
@@ -442,7 +442,7 @@ class HTTPRequestTests: TestCase {
     }
 
     func testNonMainPathsDoNotUseAPISources() {
-        let paths: [any HTTPRequestPath] = [
+        let paths: [HTTPRequest.Path] = [
             HTTPRequest.Path.postDiagnostics
         ]
         for path in paths {

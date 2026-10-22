@@ -37,7 +37,7 @@ final class Signing: SigningType {
     /// Parameters used for signature creation / verification.
     struct SignatureParameters {
 
-        var path: HTTPRequestPath
+        var path: HTTPRequest.Path
         var iamEnabled: Bool
         var message: Data?
         var requestHeaders: HTTPRequest.Headers
