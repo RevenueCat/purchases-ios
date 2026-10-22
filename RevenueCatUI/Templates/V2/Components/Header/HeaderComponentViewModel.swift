@@ -35,4 +35,24 @@ class HeaderComponentViewModel {
 
 }
 
+struct NativePaywallHeaderContentKey: PreferenceKey {
+    struct Value: Equatable {
+        var hasNativeButtons = false
+        var hasVisibleContent = false
+    }
+    static let defaultValue = Value()
+    static func reduce(value: inout Value, nextValue: () -> Value) {
+        let next = nextValue()
+        value.hasNativeButtons = value.hasNativeButtons || next.hasNativeButtons
+        value.hasVisibleContent = value.hasVisibleContent || next.hasVisibleContent
+    }
+}
+
+struct NativePaywallCollapsedHeaderKey: PreferenceKey {
+    static let defaultValue = false
+    static func reduce(value: inout Bool, nextValue: () -> Bool) {
+        value = value || nextValue()
+    }
+}
+
 #endif

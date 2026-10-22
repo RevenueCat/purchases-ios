@@ -60,6 +60,14 @@ struct StackComponentView: View {
     @Environment(\.paywallAncestorScrollsVertically)
     private var paywallAncestorScrollsVertically
 
+    @Environment(\.nativePaywallCloseCoordinator) private var nativeCoordinator
+    @Environment(\.nativePaywallRegistrationOnly) private var registrationOnly
+    @Environment(\.nativePaywallStackRegistrationHandled) private var registrationHandled
+    @Environment(\.nativePaywallRegisteredLayoutButtons) private var registeredLayoutButtons
+    @Environment(\.nativePaywallInvisibleLayoutButtons) private var registeredInvisibleButtons
+    @State private var hiddenNativeButtons: Set<ObjectIdentifier> = []
+    @State private var invisibleButtons: Set<ObjectIdentifier> = []
+
     private let viewModel: StackComponentViewModel
     private let isScrollableByDefault: Bool
     private let onDismiss: () -> Void
@@ -67,19 +75,54 @@ struct StackComponentView: View {
     /// area when displayed as a sticky footer.
     private let additionalPadding: EdgeInsets
     private let showActivityIndicatorOverContent: Bool
+    private let isHeaderContainer: Bool
+    @Environment(\.nativePaywallHeaderCollapsed) private var suppressNativeHeaderLayout
 
     init(
         viewModel: StackComponentViewModel,
         isScrollableByDefault: Bool = false,
         onDismiss: @escaping () -> Void,
         additionalPadding: EdgeInsets? = nil,
-        showActivityIndicatorOverContent: Bool = false
+        showActivityIndicatorOverContent: Bool = false,
+        isHeaderContainer: Bool = false
     ) {
         self.viewModel = viewModel
         self.isScrollableByDefault = isScrollableByDefault
         self.onDismiss = onDismiss
         self.additionalPadding = additionalPadding ?? EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
         self.showActivityIndicatorOverContent = showActivityIndicatorOverContent
+        self.isHeaderContainer = isHeaderContainer
+    }
+
+    private var layoutButtonIdentifiers: Set<ObjectIdentifier> {
+        self.viewModel.viewModels.reduce(into: Set<ObjectIdentifier>()) { identifiers, item in
+            if case .button(let button) = item { identifiers.insert(ObjectIdentifier(button)) }
+            if case .stack(let stack) = item, let nested = stack.nativeButtonContainerIdentifiers {
+                identifiers.formUnion(nested)
+            }
+        }
+    }
+
+    private var hiddenLayoutButtons: Set<ObjectIdentifier> {
+        self.registrationHandled ? self.registeredLayoutButtons : self.hiddenNativeButtons
+    }
+
+    private var invisibleLayoutButtons: Set<ObjectIdentifier> {
+        self.registrationHandled ? self.registeredInvisibleButtons : self.invisibleButtons
+    }
+
+    private var nativeButtonRegistrations: AnyView {
+        AnyView(ForEach(Array(self.viewModel.viewModels.enumerated()), id: \.offset) { _, item in
+            switch item {
+            case .button(let button):
+                ButtonComponentView(viewModel: button, onDismiss: self.onDismiss)
+                    .environment(\.nativePaywallRegistrationOnly, true)
+            case .stack(let stack) where stack.nativeButtonContainerIdentifiers != nil:
+                StackComponentView(viewModel: stack, onDismiss: self.onDismiss)
+                    .environment(\.nativePaywallRegistrationOnly, true)
+            default: EmptyView()
+            }
+        })
     }
 
     var body: some View {
@@ -102,34 +145,44 @@ struct StackComponentView: View {
             colorScheme: colorScheme
         ) { style in
             if style.visible {
-                self.make(style: style)
-                    .redactedWhileOfferEligibilityLoads(
-                        self.viewModel,
-                        isEligibleForIntroOffer: isEligibleForIntroOffer,
-                        isEligibleForPromoOffer: isEligibleForPromoOffer
-                    ) { intro, promo in
-                        self.viewModel.visible(
-                            state: self.componentViewState,
-                            condition: self.screenCondition,
-                            isEligibleForIntroOffer: intro,
-                            isEligibleForPromoOffer: promo,
-                            conditionContext: self.viewModel.uiConfigProvider.conditionContext(
-                                selectedPackageId: self.selectedPackageId,
-                                customVariables: self.customVariables,
-                                stateValues: self.paywallStateValues,
-                                stateDefaults: self.paywallStateDefaults,
-                                windowSize: self.paywallWindowSize
+                if self.registrationOnly {
+                    self.nativeButtonRegistrations
+                } else {
+                    self.make(style: style)
+                        .redactedWhileOfferEligibilityLoads(
+                            self.viewModel,
+                            isEligibleForIntroOffer: isEligibleForIntroOffer,
+                            isEligibleForPromoOffer: isEligibleForPromoOffer
+                        ) { intro, promo in
+                            self.viewModel.visible(
+                                state: self.componentViewState,
+                                condition: self.screenCondition,
+                                isEligibleForIntroOffer: intro,
+                                isEligibleForPromoOffer: promo,
+                                conditionContext: self.viewModel.uiConfigProvider.conditionContext(
+                                    selectedPackageId: self.selectedPackageId,
+                                    customVariables: self.customVariables,
+                                    stateValues: self.paywallStateValues,
+                                    stateDefaults: self.paywallStateDefaults,
+                                    windowSize: self.paywallWindowSize
+                                )
                             )
-                        )
-                    }
+                        }
+                }
+            } else if self.registrationOnly, let identifiers = self.viewModel.nativeButtonContainerIdentifiers {
+                Color.clear.frame(width: 0, height: 0)
+                    .preference(key: NativePaywallInvisibleButtonsKey.self, value: identifiers)
             }
         }
     }
 
-    @ViewBuilder
     // swiftlint:disable:next function_body_length
-    private func make(style: StackComponentStyle) -> some View {
-        Group {
+    private func make(style: StackComponentStyle) -> AnyView {
+        let layoutSize: PaywallComponent.Size = self.suppressNativeHeaderLayout
+            ? .init(width: .fixed(0), height: .fit(nil)) : style.size
+        // Hide the recursive layout's concrete type from callers before Swift substitutes opaque types.
+        // An opaque return type can still crash Release compilation even when the caller wraps it in AnyView.
+        return AnyView(AnyView(Group {
             switch style.dimension {
             case .vertical(let horizontalAlignment, let distribution):
                 VerticalStack(
@@ -140,7 +193,8 @@ struct StackComponentView: View {
                     onDismiss: self.onDismiss
                 )
                 // This alignment positions the inner VStack horizontally and vertically
-                .size(style.size,
+                .fixedSize(horizontal: self.suppressNativeHeaderLayout, vertical: self.suppressNativeHeaderLayout)
+                .size(layoutSize,
                       horizontalAlignment: horizontalAlignment.frameAlignment,
                       verticalAlignment: distribution.verticalFrameAlignment)
             case .horizontal(let verticalAlignment, let distribution):
@@ -152,7 +206,8 @@ struct StackComponentView: View {
                     onDismiss: self.onDismiss
                 )
                 // This alignment positions the inner VStack horizontally and vertically
-                .size(style.size,
+                .fixedSize(horizontal: self.suppressNativeHeaderLayout, vertical: self.suppressNativeHeaderLayout)
+                .size(layoutSize,
                       horizontalAlignment: distribution.horizontalFrameAlignment,
                       verticalAlignment: verticalAlignment.frameAlignment)
             case .zlayer(let alignment):
@@ -165,13 +220,19 @@ struct StackComponentView: View {
                     )
                 }
                 // These alignments define the position of inner components inside the ZStack
-                .size(style.size,
+                .fixedSize(horizontal: self.suppressNativeHeaderLayout, vertical: self.suppressNativeHeaderLayout)
+                .size(layoutSize,
                       horizontalAlignment: alignment.stackAlignment,
                       verticalAlignment: alignment.stackAlignment)
             }
-        }
+        })
+        .environment(
+            \.nativePaywallHiddenLayoutButtons, self.hiddenLayoutButtons.intersection(self.layoutButtonIdentifiers)
+        )
+        .environment(\.nativePaywallRegisteredLayoutButtons, self.hiddenLayoutButtons)
+        .environment(\.nativePaywallInvisibleLayoutButtons, self.invisibleLayoutButtons)
         .hidden(if: self.showActivityIndicatorOverContent)
-        .padding(style.padding.extend(by: style.border?.width ?? 0))
+        .padding(self.suppressNativeHeaderLayout ? EdgeInsets() : style.padding.extend(by: style.border?.width ?? 0))
         .padding(additionalPadding)
         .applyIf(self.showActivityIndicatorOverContent, apply: { view in
             view.progressOverlay(for: style.backgroundStyle)
@@ -180,7 +241,7 @@ struct StackComponentView: View {
         .environment(\.paywallRootStackIsZLayer, self.paywallRootStackIsZLayer && style.scrollable != false)
         .scrollableIfEnabled(
             style.dimension,
-            size: style.size,
+            size: layoutSize,
             enabled: style.scrollable ?? self.isScrollableByDefault,
             zLayerShouldScroll: PaywallZLayerScrollPolicy.shouldApplyScroll(
                 stackScrollPreference: style.scrollable,
@@ -192,10 +253,50 @@ struct StackComponentView: View {
                shape: style.shape,
                background: style.backgroundStyle,
                uiConfigProvider: self.viewModel.uiConfigProvider)
-        .apply(badge: style.badge, border: style.border, shadow: style.shadow, shape: style.shape)
-        .padding(style.margin)
+        .apply(badge: style.badge, border: style.border, shadow: style.shadow, shape: style.shape,
+               onDismiss: self.onDismiss)
+        .padding(self.suppressNativeHeaderLayout ? EdgeInsets() : style.margin)
+        .environment(\.nativePaywallLayoutButtons, self.layoutButtonIdentifiers)
+        .background {
+            if self.nativeCoordinator != nil && !self.registrationHandled {
+                // Keep registration mounted even when a purely structural wrapper leaves the layout.
+                self.nativeButtonRegistrations
+                .frame(width: 0, height: 0)
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
+            }
+        }
+        .onPreferenceChange(NativePaywallHiddenButtonsKey.self) { self.hiddenNativeButtons = $0 }
+        .onPreferenceChange(NativePaywallInvisibleButtonsKey.self) { self.invisibleButtons = $0 }
+        .transformPreference(NativePaywallHeaderContentKey.self) { content in
+            // Header chrome belongs to its controls; descendant decoration is independent content.
+            let hasDecoration = style.backgroundStyle != nil || style.border != nil || style.shadow != nil
+            content.hasVisibleContent = content.hasVisibleContent || style.badge != nil
+                || (!self.isHeaderContainer && hasDecoration)
+        }
+        )
     }
 
+}
+
+private struct NativePaywallStackRegistrationHandledKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
+private struct NativePaywallRegisteredLayoutButtonsKey: EnvironmentKey {
+    static let defaultValue: Set<ObjectIdentifier> = []
+}
+
+extension EnvironmentValues {
+    var nativePaywallStackRegistrationHandled: Bool {
+        get { self[NativePaywallStackRegistrationHandledKey.self] }
+        set { self[NativePaywallStackRegistrationHandledKey.self] = newValue }
+    }
+
+    var nativePaywallRegisteredLayoutButtons: Set<ObjectIdentifier> {
+        get { self[NativePaywallRegisteredLayoutButtonsKey.self] }
+        set { self[NativePaywallRegisteredLayoutButtonsKey.self] = newValue }
+    }
 }
 
 private extension PaywallComponent.SizeConstraint {
@@ -292,7 +393,8 @@ fileprivate extension View {
     func apply(badge: BadgeModifier.BadgeInfo?,
                border: ShapeModifier.BorderInfo?,
                shadow: ShadowModifier.ShadowInfo?,
-               shape: ShapeModifier.Shape?) -> some View {
+               shape: ShapeModifier.Shape?,
+               onDismiss: @escaping () -> Void) -> some View {
         switch badge?.style {
         case .edgeToEdge:
             switch badge?.alignment {
@@ -303,20 +405,20 @@ fileprivate extension View {
                 // appears behind the shadow.
                 self.shape(border: border, shape: shape)
                     .shadow(shadow: shadow, shape: shape?.toInsettableShape())
-                    .stackBadge(badge)
+                    .stackBadge(badge, onDismiss: onDismiss)
             default:
                 self.shape(border: border, shape: shape)
-                    .stackBadge(badge)
+                    .stackBadge(badge, onDismiss: onDismiss)
                     .shadow(shadow: shadow, shape: shape?.toInsettableShape())
             }
         case .nested:
             // For nested badges, we want the border to be applied last so it appears over the badge.
-            self.stackBadge(badge)
+            self.stackBadge(badge, onDismiss: onDismiss)
                 .shape(border: border, shape: shape)
                 .shadow(shadow: shadow, shape: shape?.toInsettableShape())
         default:
             self.shape(border: border, shape: shape)
-                .stackBadge(badge)
+                .stackBadge(badge, onDismiss: onDismiss)
                 .shadow(shadow: shadow, shape: shape?.toInsettableShape())
         }
     }

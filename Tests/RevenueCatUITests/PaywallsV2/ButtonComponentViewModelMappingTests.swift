@@ -104,30 +104,124 @@ final class ButtonComponentViewModelMappingTests: TestCase {
         XCTAssertEqual(viewModel.action.paywallComponentInteractionValue, "navigate_back")
     }
 
+    func testDecodedNativePreferenceOverridesPreserveBothActionTypes() throws {
+        let cases: [(Bool?, Bool)] = [(nil, true), (false, true), (true, false)]
+        for actionType in ["navigate_back", "close_workflow"] {
+            for (base, override) in cases {
+                let component = try self.decodeButton(
+                    actionType: actionType, overrideConditions: ["selected"],
+                    nativePreference: base, overrideNativePreference: override
+                )
+                let viewModel = try self.makeViewModel(for: component)
+                for selected in [false, true, false] {
+                    let preference = viewModel.useNativeIfPossible(
+                        state: selected ? .selected : .default, condition: .compact,
+                        isEligibleForIntroOffer: false, isEligibleForPromoOffer: false,
+                        selectedPackageId: nil, customVariables: [:]
+                    )
+                    let expected = selected ? override : (base ?? false)
+                    XCTAssertEqual(preference, expected, "\(actionType), selected=\(selected)")
+                    let expectedRole: NativePaywallCloseCoordinator.Role? = expected
+                        ? (actionType == "navigate_back" ? .back : .close) : nil
+                    XCTAssertEqual(viewModel.nativeNavigationRole(
+                        dismissesPaywall: false, useNativeIfPossible: preference
+                    ), expectedRole)
+                    XCTAssertEqual(viewModel.action.paywallComponentInteractionValue, actionType)
+                    XCTAssertEqual(component.isCloseWorkflowAction, actionType == "close_workflow")
+                }
+            }
+        }
+    }
+
+    func testDecodedFalseNativeOverrideSurvivesPayloadRoundTrip() throws {
+        for actionType in ["navigate_back", "close_workflow"] {
+            let component = try self.decodeButton(
+                actionType: actionType, overrideConditions: ["selected"],
+                nativePreference: true, overrideNativePreference: false
+            )
+            let encoded = try JSONEncoder.default.encode(component)
+            let json = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+            let overrides = try XCTUnwrap(json["overrides"] as? [[String: Any]])
+            let properties = try XCTUnwrap(overrides.first?["properties"] as? [String: Any])
+            let action = try XCTUnwrap(properties["action"] as? [String: Any])
+            XCTAssertEqual(action["use_native_if_possible"] as? Bool, false)
+            let roundTrip = try JSONDecoder.default.decode(PaywallComponent.ButtonComponent.self, from: encoded)
+            XCTAssertEqual(roundTrip, component)
+            let viewModel = try self.makeViewModel(for: roundTrip)
+            XCTAssertFalse(viewModel.useNativeIfPossible(
+                state: .selected, condition: .compact,
+                isEligibleForIntroOffer: false, isEligibleForPromoOffer: false,
+                selectedPackageId: nil, customVariables: [:]
+            ))
+            XCTAssertEqual(viewModel.action.paywallComponentInteractionValue, actionType)
+        }
+    }
+
+    func testNativeNavigationRoleMatchesWorkflowAction() throws {
+        let cases: [(PaywallComponent.ButtonComponent.Action, Bool, Bool, NativePaywallCloseCoordinator.Role?)] = [
+            (.navigateBack, true, true, .close),
+            (.navigateBack, false, true, nil),
+            (.navigateBack, true, false, .back),
+            (.restorePurchases, true, true, nil),
+            (.workflowTrigger, true, true, nil),
+            (.unknown, true, true, nil)
+        ]
+        for (action, enabled, dismisses, expected) in cases {
+            let component = PaywallComponent.ButtonComponent(
+                action: action, stack: .init(components: []), useNativeIfPossible: enabled
+            )
+            let viewModel = try self.makeViewModel(for: component)
+            XCTAssertEqual(viewModel.nativeNavigationRole(dismissesPaywall: dismisses), expected)
+        }
+    }
+
+    func testNativeCloseWorkflowStillClosesWhenBackIsAvailable() throws {
+        let component = try self.decodeButton(actionType: "close_workflow")
+        let encoded = try JSONEncoder.default.encode(component)
+        var json = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+        var action = try XCTUnwrap(json["action"] as? [String: Any])
+        action["use_native_if_possible"] = true
+        json["action"] = action
+        let native = try JSONDecoder.default.decode(
+            PaywallComponent.ButtonComponent.self, from: JSONSerialization.data(withJSONObject: json)
+        )
+        let viewModel = try self.makeViewModel(for: native)
+        XCTAssertTrue(viewModel.nativeNavigationRole(dismissesPaywall: false) == .close)
+    }
+
     // MARK: - Helpers
 
     private func decodeButton(
         actionType: String,
         visible: Bool? = nil,
         overrideConditions: [String]? = nil,
-        overrideVisible: Bool? = nil
+        overrideVisible: Bool? = nil,
+        nativePreference: Bool? = nil,
+        overrideNativePreference: Bool? = nil
     ) throws -> PaywallComponent.ButtonComponent {
         var visibleField = ""
         if let visible {
             visibleField = "\"visible\": \(visible),"
         }
         var overridesField = ""
-        if let overrideConditions, let overrideVisible {
+        if let overrideConditions {
             let conditions = overrideConditions.map { "{\"type\": \"\($0)\"}" }.joined(separator: ",")
+            var properties: [String] = []
+            if let overrideVisible { properties.append("\"visible\": \(overrideVisible)") }
+            if let overrideNativePreference {
+                properties.append("\"action\": {\"type\": \"\(actionType)\", "
+                                  + "\"use_native_if_possible\": \(overrideNativePreference)}")
+            }
             overridesField = """
-            ,"overrides": [{"conditions": [\(conditions)], "properties": {"visible": \(overrideVisible)}}]
+            ,"overrides": [{"conditions": [\(conditions)], "properties": {\(properties.joined(separator: ","))}}]
             """
         }
+        let nativeField = nativePreference.map { ", \"use_native_if_possible\": \($0)" } ?? ""
         let json = """
         {
             "type": "button",
             \(visibleField)
-            "action": { "type": "\(actionType)" },
+            "action": { "type": "\(actionType)"\(nativeField) },
             "stack": {
                 "type": "stack",
                 "dimension": {"type": "vertical", "alignment": "center", "distribution": "start"},

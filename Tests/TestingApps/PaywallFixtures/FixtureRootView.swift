@@ -25,6 +25,18 @@ struct FixtureRootView: View {
                 CustomerCenterPreviewFixture()
             } else if requestedFixture == AccessibilityHiddenControlView.fixtureName {
                 AccessibilityHiddenControlView()
+            } else if requestedFixture == NativeNavigationFixtureView.workflowName {
+                #if DEBUG
+                if ProcessInfo.processInfo.environment["PAYWALL_ANALYTICS"] != nil {
+                    NativeAnalyticsFixtureView()
+                } else {
+                    NativeNavigationFixtureView(workflow: true)
+                }
+                #else
+                NativeNavigationFixtureView(workflow: true)
+                #endif
+            } else if requestedFixture == NativeNavigationFixtureView.sheetName {
+                NativeNavigationFixtureView(workflow: false)
             } else if let fixture = PaywallFixture(rawValue: requestedFixture) {
                 FixturePaywallView(fixture: fixture)
             } else {

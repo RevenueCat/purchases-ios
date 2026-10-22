@@ -10,7 +10,11 @@
 
 import Foundation
 
-/// Correlates the product lookup and concurrent subscription-group checks for one eligibility request.
+/// Gives intro eligibility logs consistent timing, results, and request context.
+/// Each instance uses one request ID for product lookup and concurrent subscription-group checks,
+/// so related messages can be matched even when logs from different requests are interleaved.
+/// Separate stage timings show time spent retrieving products and checking eligibility with StoreKit.
+/// An injected monotonic clock keeps elapsed times independent of changes to the device's date.
 struct IntroEligibilityLog: Sendable {
 
     private let requestID = UUID().uuidString
@@ -22,7 +26,10 @@ struct IntroEligibilityLog: Sendable {
         self.startTime = clock.currentTime
     }
 
-    /// Starts timing before dispatch; invoke the returned logger immediately before delivering the result.
+    /// Measures the wait between scheduling the completion on the main actor and beginning its delivery.
+    /// This reports callback scheduling delay separately from the completed eligibility work.
+    /// Invoke the returned logger inside the dispatched block, immediately before calling the completion.
+    /// The duration excludes execution of the completion and subsequent UI rendering.
     static func deliveryLogger(clock: ClockType) -> @Sendable ([String: IntroEligibility]) -> Void {
         let startTime = clock.currentTime
         return { result in

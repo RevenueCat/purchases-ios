@@ -171,9 +171,9 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         }
         let log = IntroEligibilityLog(clock: self.systemInfo.clock)
         let products = try await log.products(identifiers: compoundProductIdentifiers,
-                                              fetch: self.productsManager.sk2Products(withIdentifiers:))
+                                              fetch: self.productsManager.products(withIdentifiers:))
         var productIdentifiersByGroup: [String: [String]] = [:]
-        for product in products {
+        for product in products.compactMap({ $0.product as? SK2StoreProduct }) {
             if let subscriptionGroupID = product.subscriptionGroupIDForIntroEligibilityCheck {
                 productIdentifiersByGroup[subscriptionGroupID, default: []].append(product.id)
             } else {

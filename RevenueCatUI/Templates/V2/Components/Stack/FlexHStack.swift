@@ -18,6 +18,9 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct FlexHStack: View {
 
+    @Environment(\.nativePaywallHiddenLayoutButtons) private var hiddenNativeButtons
+    @Environment(\.nativePaywallInvisibleLayoutButtons) private var invisibleButtons
+
     let alignment: VerticalAlignment
     let justifyContent: JustifyContent
     let spacing: CGFloat?
@@ -38,16 +41,22 @@ struct FlexHStack: View {
         self.onDismiss = onDismiss
     }
 
+    private var visibleIndices: [Int] {
+        self.componentViewModels.indicesExcludingNativeButtons(
+            self.hiddenNativeButtons, invisibleButtons: self.invisibleButtons
+        )
+    }
+
     var body: some View {
         HStack(alignment: self.alignment, spacing: 0) {
             switch justifyContent {
             case .start:
-                ForEach(0..<componentViewModels.count, id: \.self) { index in
+                ForEach(self.visibleIndices, id: \.self) { index in
                     ComponentsView(
                         componentViewModels: [self.componentViewModels[index]],
                         onDismiss: self.onDismiss
                     )
-                    if index < self.componentViewModels.count - 1 {
+                    if index != self.visibleIndices.last {
                         if let spacing = self.spacing {
                             Spacer().frame(width: spacing)
                         }
@@ -57,12 +66,12 @@ struct FlexHStack: View {
 
             case .center:
                 Spacer(minLength: 0)
-                ForEach(0..<componentViewModels.count, id: \.self) { index in
+                ForEach(self.visibleIndices, id: \.self) { index in
                     ComponentsView(
                         componentViewModels: [self.componentViewModels[index]],
                         onDismiss: self.onDismiss
                     )
-                    if index < self.componentViewModels.count - 1 {
+                    if index != self.visibleIndices.last {
                         if let spacing = self.spacing {
                             Spacer().frame(width: spacing)
                         }
@@ -72,12 +81,12 @@ struct FlexHStack: View {
 
             case .end:
                 Spacer(minLength: 0)
-                ForEach(0..<componentViewModels.count, id: \.self) { index in
+                ForEach(self.visibleIndices, id: \.self) { index in
                     ComponentsView(
                         componentViewModels: [self.componentViewModels[index]],
                         onDismiss: self.onDismiss
                     )
-                    if index < self.componentViewModels.count - 1 {
+                    if index != self.visibleIndices.last {
                         if let spacing = self.spacing {
                             Spacer().frame(width: spacing)
                         }
@@ -85,12 +94,12 @@ struct FlexHStack: View {
                 }
 
             case .spaceBetween:
-                ForEach(0..<componentViewModels.count, id: \.self) { index in
+                ForEach(self.visibleIndices, id: \.self) { index in
                     ComponentsView(
                         componentViewModels: [self.componentViewModels[index]],
                         onDismiss: self.onDismiss
                     )
-                    if index < self.componentViewModels.count - 1 {
+                    if index != self.visibleIndices.last {
                         if let spacing = self.spacing {
                             Spacer().frame(width: spacing)
                         }
@@ -99,15 +108,15 @@ struct FlexHStack: View {
                 }
 
             case .spaceAround:
-                ForEach(0..<componentViewModels.count, id: \.self) { index in
-                    if index == 0 {
+                ForEach(self.visibleIndices, id: \.self) { index in
+                    if index == self.visibleIndices.first {
                         FlexSpacer(weight: 1)
                     }
                     ComponentsView(
                         componentViewModels: [self.componentViewModels[index]],
                         onDismiss: self.onDismiss
                     )
-                    if index < self.componentViewModels.count - 1 {
+                    if index != self.visibleIndices.last {
                         if let spacing = self.spacing {
                             Spacer().frame(width: spacing)
                         }
@@ -118,13 +127,13 @@ struct FlexHStack: View {
                 }
 
             case .spaceEvenly:
-                ForEach(0..<componentViewModels.count, id: \.self) { index in
+                ForEach(self.visibleIndices, id: \.self) { index in
                     FlexSpacer(weight: 1)
                     ComponentsView(
                         componentViewModels: [self.componentViewModels[index]],
                         onDismiss: self.onDismiss
                     )
-                    if index < self.componentViewModels.count - 1 {
+                    if index != self.visibleIndices.last {
                         if let spacing = self.spacing {
                             Spacer().frame(width: spacing)
                         }
