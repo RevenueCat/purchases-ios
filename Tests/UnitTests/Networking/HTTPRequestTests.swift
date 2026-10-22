@@ -260,7 +260,7 @@ class HTTPRequestTests: TestCase {
     func testURLWithAPISource() {
         let path: HTTPRequest.Path = .health
         expect(path.url(apiSourceURL: URL(string: "https://api.rc-backup.com/"), preferIAMPath: false)?.absoluteString)
-            == "https://api.rc-backup.com/v1/health"
+        == "https://api.rc-backup.com/v1/health"
     }
 
     func testURLProxyTakesPrecedenceOverAPISource() {
@@ -276,7 +276,7 @@ class HTTPRequestTests: TestCase {
         expect(path.url(apiSourceURL: URL(string: "https://api.rc-backup.com/"),
                         fallbackUrlIndex: 0,
                         preferIAMPath: false)?.absoluteString)
-            == path.fallbackUrls.first?.absoluteString
+        == path.fallbackUrls.first?.absoluteString
     }
 
     func testMainPathsUseAPISources() {
@@ -384,14 +384,14 @@ class HTTPRequestTests: TestCase {
         let path = HTTPRequest.Path.postHostedCheckout
 
         expect(path.url(preferIAMPath: false)?.absoluteString)
-            == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout"
+        == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout"
         expect(path.url(preferIAMPath: true)?.absoluteString)
-            == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout"
+        == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout"
     }
 
     func testHostedCheckoutStatusRelativePathNamesTheSessionAndTheCustomer() {
         let path = HTTPRequest.Path.getHostedCheckoutStatus(operationSessionID: "opsession_123",
-                                                             appUserID: Self.userID)
+                                                            appUserID: Self.userID)
 
         expect(path.relativePath) == "/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=\(Self.userID)"
     }
@@ -399,15 +399,15 @@ class HTTPRequestTests: TestCase {
     /// The backend reads `app_user_id` from the query string, where a literal `+` arrives as a space.
     func testHostedCheckoutStatusEscapesAnAppUserIDThatLooksLikeAnEmail() {
         let path = HTTPRequest.Path.getHostedCheckoutStatus(operationSessionID: "opsession_123",
-                                                             appUserID: "user+plus@example.com")
+                                                            appUserID: "user+plus@example.com")
 
         expect(path.relativePath) ==
-            "/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=user%2Bplus@example.com"
+        "/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=user%2Bplus@example.com"
     }
 
     func testHostedCheckoutStatusIsAuthenticatedAndSendsNoEtag() {
         let path = HTTPRequest.Path.getHostedCheckoutStatus(operationSessionID: "opsession_123",
-                                                             appUserID: Self.userID)
+                                                            appUserID: Self.userID)
 
         expect(path.authenticated).to(beTrue())
         expect(path.shouldSendEtag).to(beFalse())
@@ -415,12 +415,12 @@ class HTTPRequestTests: TestCase {
 
     func testHostedCheckoutStatusURL() {
         let path = HTTPRequest.Path.getHostedCheckoutStatus(operationSessionID: "opsession_123",
-                                                             appUserID: Self.userID)
+                                                            appUserID: Self.userID)
 
         expect(path.url(preferIAMPath: false)?.absoluteString)
-            == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=\(Self.userID)"
+        == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=\(Self.userID)"
         expect(path.url(preferIAMPath: true)?.absoluteString)
-            == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=\(Self.userID)"
+        == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=\(Self.userID)"
     }
 
     func testWebBillingPathsURLPreferringIAMPathUsesIAMRelativePath() {
@@ -431,14 +431,14 @@ class HTTPRequestTests: TestCase {
         )
 
         expect(offeringProductsPath.url(preferIAMPath: true)?.absoluteString)
-            == "https://api.revenuecat.com/rcbilling/v1/customer/offering_products"
+        == "https://api.revenuecat.com/rcbilling/v1/customer/offering_products"
         expect(offeringProductsPath.url(preferIAMPath: false)?.absoluteString)
-            == "https://api.revenuecat.com/rcbilling/v1/subscribers/\(Self.userID)/offering_products"
+        == "https://api.revenuecat.com/rcbilling/v1/subscribers/\(Self.userID)/offering_products"
 
         expect(productsPath.url(preferIAMPath: true)?.absoluteString)
-            == "https://api.revenuecat.com/rcbilling/v1/customer/products?id=product_1"
+        == "https://api.revenuecat.com/rcbilling/v1/customer/products?id=product_1"
         expect(productsPath.url(preferIAMPath: false)?.absoluteString)
-            == "https://api.revenuecat.com/rcbilling/v1/subscribers/\(Self.userID)/products?id=product_1"
+        == "https://api.revenuecat.com/rcbilling/v1/subscribers/\(Self.userID)/products?id=product_1"
     }
 
     func testNonMainPathsDoNotUseAPISources() {
@@ -520,7 +520,7 @@ class HTTPRequestTests: TestCase {
 
         expect(headers[HTTPClient.RequestHeader.accept.rawValue]) == HTTPClient.rcContainerFormatAcceptHeaderValue
         expect(headers[HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue])
-            == HTTPClient.rcContainerFormatElementEncodingHeaderValue
+        == HTTPClient.rcContainerFormatElementEncodingHeaderValue
         expect(headers["Accept-Encoding"]).to(beNil())
     }
 
@@ -559,7 +559,7 @@ class HTTPRequestTests: TestCase {
         let expectedHash = HTTPRequest.signingParameterHash(["false"])
         expect(headers[sandboxHeader]) == "false"
         expect(headers[HTTPClient.RequestHeader.headerParametersForSignature.rawValue])
-            == HTTPRequest.signatureHashHeader(keys: [sandboxHeader], hash: expectedHash)
+        == HTTPRequest.signatureHashHeader(keys: [sandboxHeader], hash: expectedHash)
     }
 
     // MARK: - IAM paths
@@ -596,7 +596,7 @@ class HTTPRequestTests: TestCase {
             adUnitID: "ad_unit"
         )
         let expected = "/v1/subscribers/\(Self.userID)/ads/reward_verifications/\(Self.clientTransactionID)"
-            + "?ad_unit_id=ad_unit"
+        + "?ad_unit_id=ad_unit"
 
         expect(path.relativePath) == expected
         expect(path.relativeIAMPath) == expected
@@ -610,7 +610,7 @@ class HTTPRequestTests: TestCase {
         )
 
         expect(path.relativePath) == "/v1/subscribers/\(Self.userID)/ads/reward_verifications/"
-            + "\(Self.clientTransactionID)?ad_unit_id=ca-app-pub-123/456%20%C3%A9"
+        + "\(Self.clientTransactionID)?ad_unit_id=ca-app-pub-123/456%20%C3%A9"
     }
 
     func testRewardVerificationStatusPathOmitsAdUnitIDWhenMissingOrEmpty() {

@@ -25,8 +25,8 @@ extension HTTPRequest {
 
         static func == (lhs: Self, rhs: Self) -> Bool {
             return lhs.name == rhs.name &&
-                   lhs.serverHostURL == rhs.serverHostURL &&
-                   lhs.relativePath == rhs.relativePath
+            lhs.serverHostURL == rhs.serverHostURL &&
+            lhs.relativePath == rhs.relativePath
         }
 
         static var serverHostURL: URL { SystemInfo.apiBaseURL }
@@ -200,197 +200,197 @@ extension HTTPRequest.Path {
     private static let postAdEventsHost = URL(string: "https://a.revenue.cat")!
 
     static let logIn = HTTPRequest.Path(name: "log_in",
-                                         etagBehavior: .send,
-                                         supportsSignatureVerification: true,
-                                         needsNonceForSigning: true,
-                                         pathComponent: "subscribers/identify")
+                                        etagBehavior: .send,
+                                        supportsSignatureVerification: true,
+                                        needsNonceForSigning: true,
+                                        pathComponent: "subscribers/identify")
 
     static let health = HTTPRequest.Path(name: "post_health",
-                                          authenticated: false,
-                                          etagBehavior: .ignore,
-                                          supportsSignatureVerification: true,
-                                          needsNonceForSigning: true,
-                                          pathComponent: "health")
+                                         authenticated: false,
+                                         etagBehavior: .ignore,
+                                         supportsSignatureVerification: true,
+                                         needsNonceForSigning: true,
+                                         pathComponent: "health")
 
     static func getCustomerInfo(appUserID: String) -> Self {
         HTTPRequest.Path(name: "get_customer",
-                          etagBehavior: .send,
-                          supportsSignatureVerification: true,
-                          needsNonceForSigning: true,
-                          pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)",
-                          iamPathComponent: "customer")
+                         etagBehavior: .send,
+                         supportsSignatureVerification: true,
+                         needsNonceForSigning: true,
+                         pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)",
+                         iamPathComponent: "customer")
     }
 
     static func getOfferings(appUserID: String) -> Self {
         HTTPRequest.Path(name: "get_offerings",
-                          etagBehavior: .send,
-                          supportsSignatureVerification: true,
-                          needsNonceForSigning: false,
-                          pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/offerings",
-                          iamPathComponent: "customer/offerings",
-                          fallbackRelativePath: "/v1/offerings")
+                         etagBehavior: .send,
+                         supportsSignatureVerification: true,
+                         needsNonceForSigning: false,
+                         pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/offerings",
+                         iamPathComponent: "customer/offerings",
+                         fallbackRelativePath: "/v1/offerings")
     }
 
     static func getIntroEligibility(appUserID: String) -> Self {
         HTTPRequest.Path(name: "get_intro_eligibility",
-                          etagBehavior: .send,
-                          supportsSignatureVerification: false,
-                          needsNonceForSigning: false,
-                          pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/intro_eligibility",
-                          iamPathComponent: "customer/intro_eligibility")
+                         etagBehavior: .send,
+                         supportsSignatureVerification: false,
+                         needsNonceForSigning: false,
+                         pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/intro_eligibility",
+                         iamPathComponent: "customer/intro_eligibility")
     }
 
     static func remoteConfigFallback(domain: String) -> Self {
         HTTPRequest.Path(name: "remote_config_fallback",
-                          serverHostURL: remoteConfigFallbackHost,
-                          etagBehavior: .send,
-                          supportsSignatureVerification: true,
-                          needsNonceForSigning: false,
-                          pathComponent: "config/\(domain.trimmedAndEscaped)",
-                          fallbackRelativePath: nil,
-                          usesAPISources: false,
-                          isFallbackHostPath: true,
-                          responseSignatureContextProvider: FallbackSignatureContextProvider())
+                         serverHostURL: remoteConfigFallbackHost,
+                         etagBehavior: .send,
+                         supportsSignatureVerification: true,
+                         needsNonceForSigning: false,
+                         pathComponent: "config/\(domain.trimmedAndEscaped)",
+                         fallbackRelativePath: nil,
+                         usesAPISources: false,
+                         isFallbackHostPath: true,
+                         responseSignatureContextProvider: FallbackSignatureContextProvider())
     }
 
     static let postDiagnostics = HTTPRequest.Path(name: "post_diagnostics",
-                                                   serverHostURL: apiDiagnosticsHost,
-                                                   etagBehavior: .ignore,
-                                                   supportsSignatureVerification: false,
-                                                   needsNonceForSigning: false,
-                                                   pathComponent: "diagnostics",
-                                                   usesAPISources: false)
+                                                  serverHostURL: apiDiagnosticsHost,
+                                                  etagBehavior: .ignore,
+                                                  supportsSignatureVerification: false,
+                                                  needsNonceForSigning: false,
+                                                  pathComponent: "diagnostics",
+                                                  usesAPISources: false)
 
     static let postFeatureEvents = HTTPRequest.Path(name: "post_paywall_events",
-                                                     serverHostURL: postFeatureEventsHost,
-                                                     etagBehavior: .ignore,
-                                                     supportsSignatureVerification: false,
-                                                     needsNonceForSigning: false,
-                                                     pathComponent: "events",
-                                                     usesAPISources: false)
+                                                    serverHostURL: postFeatureEventsHost,
+                                                    etagBehavior: .ignore,
+                                                    supportsSignatureVerification: false,
+                                                    needsNonceForSigning: false,
+                                                    pathComponent: "events",
+                                                    usesAPISources: false)
 
     static let postAdEvents = HTTPRequest.Path(name: "post_ad_events",
-                                                serverHostURL: postAdEventsHost,
-                                                etagBehavior: .ignore,
-                                                supportsSignatureVerification: false,
-                                                needsNonceForSigning: false,
-                                                pathComponent: "events",
-                                                usesAPISources: false)
+                                               serverHostURL: postAdEventsHost,
+                                               etagBehavior: .ignore,
+                                               supportsSignatureVerification: false,
+                                               needsNonceForSigning: false,
+                                               pathComponent: "events",
+                                               usesAPISources: false)
 
     static func postAttributionData(appUserID: String) -> Self {
         HTTPRequest.Path(name: "post_attribution",
-                          etagBehavior: .send,
-                          supportsSignatureVerification: false,
-                          needsNonceForSigning: false,
-                          pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/attribution",
-                          iamPathComponent: "customer/attribution")
+                         etagBehavior: .send,
+                         supportsSignatureVerification: false,
+                         needsNonceForSigning: false,
+                         pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/attribution",
+                         iamPathComponent: "customer/attribution")
     }
 
     static let postOfferForSigning = HTTPRequest.Path(name: "post_offer_for_signing",
-                                                       etagBehavior: .send,
-                                                       supportsSignatureVerification: false,
-                                                       needsNonceForSigning: false,
-                                                       pathComponent: "offers")
+                                                      etagBehavior: .send,
+                                                      supportsSignatureVerification: false,
+                                                      needsNonceForSigning: false,
+                                                      pathComponent: "offers")
 
     static let postReceiptData = HTTPRequest.Path(name: "post_receipt",
-                                                   etagBehavior: .send,
-                                                   supportsSignatureVerification: true,
-                                                   needsNonceForSigning: true,
-                                                   pathComponent: "receipts")
+                                                  etagBehavior: .send,
+                                                  supportsSignatureVerification: true,
+                                                  needsNonceForSigning: true,
+                                                  pathComponent: "receipts")
 
     static func postSubscriberAttributes(appUserID: String) -> Self {
         HTTPRequest.Path(name: "post_attributes",
-                          etagBehavior: .send,
-                          supportsSignatureVerification: false,
-                          needsNonceForSigning: false,
-                          pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/attributes",
-                          iamPathComponent: "customer/attributes")
+                         etagBehavior: .send,
+                         supportsSignatureVerification: false,
+                         needsNonceForSigning: false,
+                         pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/attributes",
+                         iamPathComponent: "customer/attributes")
     }
 
     static func postAdServicesToken(appUserID: String) -> Self {
         HTTPRequest.Path(name: "post_adservices_token",
-                          etagBehavior: .send,
-                          supportsSignatureVerification: false,
-                          needsNonceForSigning: false,
-                          pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/adservices_attribution",
-                          iamPathComponent: "customer/adservices_attribution")
+                         etagBehavior: .send,
+                         supportsSignatureVerification: false,
+                         needsNonceForSigning: false,
+                         pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/adservices_attribution",
+                         iamPathComponent: "customer/adservices_attribution")
     }
 
     static func appHealthReport(appUserID: String) -> Self {
         HTTPRequest.Path(name: "get_app_health_report",
-                          etagBehavior: .send,
-                          supportsSignatureVerification: true,
-                          needsNonceForSigning: false,
-                          pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/health_report",
-                          iamPathComponent: "customer/health_report")
+                         etagBehavior: .send,
+                         supportsSignatureVerification: true,
+                         needsNonceForSigning: false,
+                         pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/health_report",
+                         iamPathComponent: "customer/health_report")
     }
 
     static func appHealthReportAvailability(appUserID: String) -> Self {
         HTTPRequest.Path(name: "get_app_health_report_availability",
-                          authenticated: false,
-                          etagBehavior: .ignore,
-                          supportsSignatureVerification: true,
-                          needsNonceForSigning: true,
-                          pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/health_report_availability")
+                         authenticated: false,
+                         etagBehavior: .ignore,
+                         supportsSignatureVerification: true,
+                         needsNonceForSigning: true,
+                         pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/health_report_availability")
     }
 
     static let getProductEntitlementMapping = HTTPRequest.Path(name: "get_product_entitlement_mapping",
-                                                                etagBehavior: .send,
-                                                                supportsSignatureVerification: true,
-                                                                needsNonceForSigning: false,
-                                                                pathComponent: "product_entitlement_mapping",
-                                                                fallbackRelativePath: "/v1/product_entitlement_mapping")
+                                                               etagBehavior: .send,
+                                                               supportsSignatureVerification: true,
+                                                               needsNonceForSigning: false,
+                                                               pathComponent: "product_entitlement_mapping",
+                                                               fallbackRelativePath: "/v1/product_entitlement_mapping")
 
     static func getCustomerCenterConfig(appUserID: String) -> Self {
         HTTPRequest.Path(name: "customer_center",
-                          etagBehavior: .send,
-                          supportsSignatureVerification: false,
-                          needsNonceForSigning: false,
-                          pathComponent: "customercenter/\(appUserID.trimmedAndEscaped)",
-                          iamPathComponent: "customer/customercenter")
+                         etagBehavior: .send,
+                         supportsSignatureVerification: false,
+                         needsNonceForSigning: false,
+                         pathComponent: "customercenter/\(appUserID.trimmedAndEscaped)",
+                         iamPathComponent: "customer/customercenter")
     }
 
     static func getVirtualCurrencies(appUserID: String) -> Self {
         HTTPRequest.Path(name: "get_virtual_currencies",
-                          etagBehavior: .send,
-                          supportsSignatureVerification: true,
-                          needsNonceForSigning: true,
-                          pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/virtual_currencies",
-                          iamPathComponent: "customer/virtual_currencies")
+                         etagBehavior: .send,
+                         supportsSignatureVerification: true,
+                         needsNonceForSigning: true,
+                         pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/virtual_currencies",
+                         iamPathComponent: "customer/virtual_currencies")
     }
 
     static let spendVirtualCurrencies = HTTPRequest.Path(name: "spend_virtual_currencies",
-                                                          etagBehavior: .send,
-                                                          supportsSignatureVerification: true,
-                                                          needsNonceForSigning: true,
-                                                          pathComponent: "customer/virtual_currencies/spend")
-
-    static let postRedeemWebPurchase = HTTPRequest.Path(name: "post_redeem_web_purchase",
                                                          etagBehavior: .send,
                                                          supportsSignatureVerification: true,
                                                          needsNonceForSigning: true,
-                                                         pathComponent: "subscribers/redeem_purchase")
+                                                         pathComponent: "customer/virtual_currencies/spend")
+
+    static let postRedeemWebPurchase = HTTPRequest.Path(name: "post_redeem_web_purchase",
+                                                        etagBehavior: .send,
+                                                        supportsSignatureVerification: true,
+                                                        needsNonceForSigning: true,
+                                                        pathComponent: "subscribers/redeem_purchase")
 
     static let postExternalPurchaseToken = HTTPRequest.Path(name: "post_external_purchase_token",
-                                                             authenticated: true,
-                                                             etagBehavior: .ignore,
-                                                             supportsSignatureVerification: false,
-                                                             needsNonceForSigning: false,
-                                                             pathComponent: "external_purchase_tokens")
+                                                            authenticated: true,
+                                                            etagBehavior: .ignore,
+                                                            supportsSignatureVerification: false,
+                                                            needsNonceForSigning: false,
+                                                            pathComponent: "external_purchase_tokens")
 
     static let postCreateTicket = HTTPRequest.Path(name: "post_create_ticket",
-                                                    etagBehavior: .send,
-                                                    supportsSignatureVerification: false,
-                                                    needsNonceForSigning: false,
-                                                    pathComponent: "customercenter/support/create-ticket")
+                                                   etagBehavior: .send,
+                                                   supportsSignatureVerification: false,
+                                                   needsNonceForSigning: false,
+                                                   pathComponent: "customercenter/support/create-ticket")
 
     static func isPurchaseAllowedByRestoreBehavior(appUserID: String) -> Self {
         HTTPRequest.Path(name: "post_restore_eligibility",
-                          etagBehavior: .send,
-                          supportsSignatureVerification: true,
-                          needsNonceForSigning: true,
-                          pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/restore/eligibility",
-                          iamPathComponent: "customer/restore/eligibility")
+                         etagBehavior: .send,
+                         supportsSignatureVerification: true,
+                         needsNonceForSigning: true,
+                         pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/restore/eligibility",
+                         iamPathComponent: "customer/restore/eligibility")
     }
 
     static func rewardVerificationStatus(appUserID: String, clientTransactionID: String, adUnitID: String?) -> Self {
@@ -402,35 +402,35 @@ extension HTTPRequest.Path {
         }
 
         return HTTPRequest.Path(name: "get_reward_verification_status",
-                                 etagBehavior: .send,
-                                 supportsSignatureVerification: true,
-                                 needsNonceForSigning: true,
-                                 pathComponent: path)
+                                etagBehavior: .send,
+                                supportsSignatureVerification: true,
+                                needsNonceForSigning: true,
+                                pathComponent: path)
     }
 
     static func remoteConfig(domain: String) -> Self {
         HTTPRequest.Path(name: "remote_config",
-                          etagBehavior: .ignore,
-                          supportsSignatureVerification: true,
-                          needsNonceForSigning: true,
-                          pathComponent: "config/\(domain.trimmedAndEscaped)",
-                          additionalHeaders: [
+                         etagBehavior: .ignore,
+                         supportsSignatureVerification: true,
+                         needsNonceForSigning: true,
+                         pathComponent: "config/\(domain.trimmedAndEscaped)",
+                         additionalHeaders: [
                             HTTPClient.RequestHeader.accept.rawValue: HTTPClient.rcContainerFormatAcceptHeaderValue,
                             HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue:
                                 HTTPClient.rcContainerFormatElementEncodingHeaderValue
-                          ],
-                          responseSignatureContextProvider: RemoteConfigSignatureContextProvider())
+                         ],
+                         responseSignatureContextProvider: RemoteConfigSignatureContextProvider())
     }
 
     // MARK: - Web Billing Paths
 
     static func getWebOfferingProducts(appUserID: String) -> Self {
         HTTPRequest.Path(name: "get_web_offering_products",
-                          etagBehavior: .send,
-                          supportsSignatureVerification: false,
-                          needsNonceForSigning: false,
-                          pathComponent: "/rcbilling/v1/subscribers/\(appUserID.trimmedAndEscaped)/offering_products",
-                          iamPathComponent: "/rcbilling/v1/customer/offering_products")
+                         etagBehavior: .send,
+                         supportsSignatureVerification: false,
+                         needsNonceForSigning: false,
+                         pathComponent: "/rcbilling/v1/subscribers/\(appUserID.trimmedAndEscaped)/offering_products",
+                         iamPathComponent: "/rcbilling/v1/customer/offering_products")
     }
 
     static func getWebBillingProducts(userId: String, productIds: Set<String>) -> Self {
@@ -443,50 +443,50 @@ extension HTTPRequest.Path {
         let iamPath = "/rcbilling/v1/customer/products?\(encodedProductIds)"
 
         return HTTPRequest.Path(name: "get_web_products",
-                                 etagBehavior: .send,
-                                 supportsSignatureVerification: false,
-                                 needsNonceForSigning: false,
-                                 pathComponent: path,
-                                 iamPathComponent: iamPath)
+                                etagBehavior: .send,
+                                supportsSignatureVerification: false,
+                                needsNonceForSigning: false,
+                                pathComponent: path,
+                                iamPathComponent: iamPath)
     }
 
     static let postHostedCheckout = HTTPRequest.Path(name: "post_hosted_checkout",
-                                                      etagBehavior: .ignore,
-                                                      supportsSignatureVerification: false,
-                                                      needsNonceForSigning: false,
-                                                      pathComponent: "/rcbilling/v1/hosted-checkout")
+                                                     etagBehavior: .ignore,
+                                                     supportsSignatureVerification: false,
+                                                     needsNonceForSigning: false,
+                                                     pathComponent: "/rcbilling/v1/hosted-checkout")
 
     static func getHostedCheckoutStatus(operationSessionID: String, appUserID: String) -> Self {
         let path = "/rcbilling/v1/hosted-checkout/\(operationSessionID.trimmedAndEscaped)" +
         "?app_user_id=\(appUserID.trimmedAndEscapedForQuery)"
 
         return HTTPRequest.Path(name: "get_hosted_checkout_status",
-                                 etagBehavior: .ignore,
-                                 supportsSignatureVerification: false,
-                                 needsNonceForSigning: false,
-                                 pathComponent: path)
+                                etagBehavior: .ignore,
+                                supportsSignatureVerification: false,
+                                needsNonceForSigning: false,
+                                pathComponent: path)
     }
 
     // MARK: - IAM Token Paths
 
     static let tokenLogin = HTTPRequest.Path(name: "token_login",
-                                              etagBehavior: .send,
-                                              supportsSignatureVerification: false,
-                                              needsNonceForSigning: true,
-                                              pathComponent: "/auth/login",
-                                              isIAMPath: true)
+                                             etagBehavior: .send,
+                                             supportsSignatureVerification: false,
+                                             needsNonceForSigning: true,
+                                             pathComponent: "/auth/login",
+                                             isIAMPath: true)
 
     static let tokenRefresh = HTTPRequest.Path(name: "token_refresh",
-                                                etagBehavior: .send,
-                                                supportsSignatureVerification: false,
-                                                needsNonceForSigning: true,
-                                                pathComponent: "/auth/token",
-                                                isIAMPath: true)
-
-    static let tokenLogOut = HTTPRequest.Path(name: "token_logout",
                                                etagBehavior: .send,
                                                supportsSignatureVerification: false,
                                                needsNonceForSigning: true,
-                                               pathComponent: "/auth/revoke",
+                                               pathComponent: "/auth/token",
                                                isIAMPath: true)
+
+    static let tokenLogOut = HTTPRequest.Path(name: "token_logout",
+                                              etagBehavior: .send,
+                                              supportsSignatureVerification: false,
+                                              needsNonceForSigning: true,
+                                              pathComponent: "/auth/revoke",
+                                              isIAMPath: true)
 }

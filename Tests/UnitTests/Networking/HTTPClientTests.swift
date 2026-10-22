@@ -2158,7 +2158,6 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
                                                     URL(string: "https://this-is-a-fallback.com/first-fallback")!
                                                 ])
 
-
             static let second = HTTPRequest.Path(name: "Test",
                                                  serverHostURL: serverHostURL,
                                                  authenticated: false,
