@@ -850,7 +850,9 @@ class HTTPRequestTests2: TestCase {
         .postOfferForSigning,
         .postReceiptData,
         .postSubscriberAttributes(appUserID: userID),
-        .getProductEntitlementMapping
+        .getProductEntitlementMapping,
+        .getVirtualCurrencies(appUserID: userID),
+        .spendVirtualCurrencies
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path2> = []
     private static let pathsWithoutETags: Set<HTTPRequest.Path2> = []
@@ -860,12 +862,16 @@ class HTTPRequestTests2: TestCase {
         .postReceiptData,
         .appHealthReport(appUserID: userID),
         .appHealthReportAvailability(appUserID: userID),
-        .getProductEntitlementMapping
+        .getProductEntitlementMapping,
+        .getVirtualCurrencies(appUserID: userID),
+        .spendVirtualCurrencies
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path2> = [
         .getCustomerInfo(appUserID: userID),
         .postReceiptData,
-        .appHealthReportAvailability(appUserID: userID)
+        .appHealthReportAvailability(appUserID: userID),
+        .getVirtualCurrencies(appUserID: userID),
+        .spendVirtualCurrencies
     ]
     private static let pathsWithUserID: [HTTPRequest.Path2] = [
         .getCustomerInfo(appUserID: anonymousUser),
@@ -875,7 +881,8 @@ class HTTPRequestTests2: TestCase {
         .postSubscriberAttributes(appUserID: anonymousUser),
         .postAdServicesToken(appUserID: anonymousUser),
         .appHealthReport(appUserID: anonymousUser),
-        .appHealthReportAvailability(appUserID: anonymousUser)
+        .appHealthReportAvailability(appUserID: anonymousUser),
+        .getVirtualCurrencies(appUserID: anonymousUser)
     ]
 
     func testPathsDontHaveLeadingSlash() {
@@ -1362,7 +1369,8 @@ class HTTPRequestTests2: TestCase {
         .appHealthReportAvailability(appUserID: userID): "subscribers/\(userID)/health_report_availability",
         .getProductEntitlementMapping: "product_entitlement_mapping",
         .getCustomerCenterConfig(appUserID: userID): "customer/customercenter",
-        .getVirtualCurrencies(appUserID: userID): "customer/virtual_currencies"
+        .getVirtualCurrencies(appUserID: userID): "customer/virtual_currencies",
+        .spendVirtualCurrencies: "customer/virtual_currencies/spend"
     ]
 
     func testRewardVerificationStatusPathIncludesAdUnitIDQueryParameter() {

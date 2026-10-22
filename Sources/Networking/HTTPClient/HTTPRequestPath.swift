@@ -177,7 +177,6 @@ extension HTTPRequest {
 
         case logIn
         case health
-        case spendVirtualCurrencies
         case postRedeemWebPurchase
         case postExternalPurchaseToken
         case postCreateTicket
@@ -241,7 +240,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .logIn,
                 .postRedeemWebPurchase,
                 .postExternalPurchaseToken,
-                .spendVirtualCurrencies,
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
                 .rewardVerificationStatus,
@@ -260,7 +258,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .logIn,
                 .postRedeemWebPurchase,
-                .spendVirtualCurrencies,
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
                 .rewardVerificationStatus,
@@ -280,7 +277,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .logIn,
                 .postRedeemWebPurchase,
                 .health,
-                .spendVirtualCurrencies,
                 .isPurchaseAllowedByRestoreBehavior,
                 .remoteConfig,
                 .rewardVerificationStatus:
@@ -298,7 +294,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         switch self {
         case .logIn,
                 .postRedeemWebPurchase,
-                .spendVirtualCurrencies,
                 .health,
                 .isPurchaseAllowedByRestoreBehavior,
                 .remoteConfig,
@@ -349,9 +344,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .postExternalPurchaseToken:
             return "external_purchase_tokens"
 
-        case .spendVirtualCurrencies:
-            return "customer/virtual_currencies/spend"
-
         case .postCreateTicket:
             return "customercenter/support/create-ticket"
         case let .isPurchaseAllowedByRestoreBehavior(appUserID):
@@ -392,8 +384,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return self.pathComponent
         case .health:
             return self.pathComponent
-        case .spendVirtualCurrencies:
-            return "customer/virtual_currencies/spend"
         case .postRedeemWebPurchase:
             return self.pathComponent
         case .postExternalPurchaseToken:
@@ -428,9 +418,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .postExternalPurchaseToken:
             return "post_external_purchase_token"
-
-        case .spendVirtualCurrencies:
-            return "spend_virtual_currencies"
 
         case .postCreateTicket:
             return "post_create_ticket"

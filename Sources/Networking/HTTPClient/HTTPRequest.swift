@@ -56,6 +56,7 @@ struct HTTPRequest {
     init(
         method: Method,
         path: HTTPRequest.Path2,
+        additionalHeaders: Headers = [:],
         nonce: Data? = nil,
         isRetryable: Bool = false
     ) {

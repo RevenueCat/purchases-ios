@@ -312,4 +312,10 @@ extension HTTPRequest.Path2 {
                           pathComponent: "subscribers/\(appUserID.trimmedAndEscaped)/virtual_currencies",
                           iamPathComponent: "customer/virtual_currencies")
     }
+
+    static let spendVirtualCurrencies = HTTPRequest.Path2(name: "spend_virtual_currencies",
+                                                          etagBehavior: .send,
+                                                          supportsSignatureVerification: true,
+                                                          needsNonceForSigning: true,
+                                                          pathComponent: "customer/virtual_currencies/spend")
 }
