@@ -29,16 +29,14 @@ class HTTPRequestTests: TestCase {
         .logIn,
         .health,
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil),
-        .remoteConfig(domain: "app"),
-        .postExternalPurchaseToken
+        .remoteConfig(domain: "app")
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path> = [
         .health
     ]
     private static let pathsWithoutETags: Set<HTTPRequest.Path> = [
         .health,
-        .remoteConfig(domain: "app"),
-        .postExternalPurchaseToken
+        .remoteConfig(domain: "app")
     ]
     private static let pathsWithSignatureVerification: Set<HTTPRequest.Path> = [
         .logIn,
@@ -849,10 +847,11 @@ class HTTPRequestTests2: TestCase {
         .postSubscriberAttributes(appUserID: userID),
         .getProductEntitlementMapping,
         .getVirtualCurrencies(appUserID: userID),
-        .spendVirtualCurrencies
+        .spendVirtualCurrencies,
+        .postExternalPurchaseToken
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path2> = []
-    private static let pathsWithoutETags: Set<HTTPRequest.Path2> = []
+    private static let pathsWithoutETags: Set<HTTPRequest.Path2> = [.postExternalPurchaseToken]
     private static let pathsWithSignatureVerification: Set<HTTPRequest.Path2> = [
         .postRedeemWebPurchase,
         .getCustomerInfo(appUserID: userID),

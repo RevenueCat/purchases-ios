@@ -324,4 +324,11 @@ extension HTTPRequest.Path2 {
                                                          supportsSignatureVerification: true,
                                                          needsNonceForSigning: true,
                                                          pathComponent: "subscribers/redeem_purchase")
+
+    static let postExternalPurchaseToken = HTTPRequest.Path2(name: "post_external_purchase_token",
+                                                             authenticated: true,
+                                                             etagBehavior: .ignore,
+                                                             supportsSignatureVerification: false,
+                                                             needsNonceForSigning: false,
+                                                             pathComponent: "external_purchase_tokens")
 }
