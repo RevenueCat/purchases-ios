@@ -19,6 +19,8 @@ import XCTest
 
 private final class HeldEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType {
 
+    func clearCache() { }
+
     let requests: Atomic<[Set<String>]> = .init([])
     private let completions: Atomic<[ReceiveIntroEligibilityBlock]> = .init([])
 

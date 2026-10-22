@@ -88,6 +88,8 @@ class CachingTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCh
         Logger.debug(Strings.eligibility.clearing_intro_eligibility_cache)
 
         self.state.modify {
+            // Invalidate group results before allowing requests into the new product-cache generation.
+            self.checker.clearCache()
             $0.cacheGeneration += 1
             $0.cachedEligibilities.removeAll(keepingCapacity: false)
         }

@@ -382,6 +382,7 @@ class ExistingUserPurchasesLogInTests: BasePurchasesLogInTests {
         }
 
         expect(self.cachingTrialOrIntroPriceEligibilityChecker.invokedClearCacheCount).toEventually(equal(2))
+        expect(self.trialOrIntroPriceEligibilityChecker.invokedClearCacheCount.value).toEventually(equal(2))
     }
 
     func testLogInClearsPurchasedProductsFetcherCache() {

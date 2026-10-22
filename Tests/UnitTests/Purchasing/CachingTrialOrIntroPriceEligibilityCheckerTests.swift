@@ -345,6 +345,7 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
         // 2. Clear cache
 
         self.caching.clearCache()
+        expect(self.mockChecker.invokedClearCacheCount.value) == 1
 
         // 3. Request again
 
@@ -362,6 +363,8 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
 
 private final class DelayedTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType,
                                                                 @unchecked Sendable {
+
+    func clearCache() { }
 
     private struct State {
         var invocations: [Set<String>] = []

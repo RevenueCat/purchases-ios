@@ -14,14 +14,6 @@
 import Foundation
 import StoreKit
 
-typealias ReceiveIntroEligibilityBlock = ([String: IntroEligibility]) -> Void
-
-/// A type that can determine `IntroEligibility` for products.
-protocol TrialOrIntroPriceEligibilityCheckerType: Sendable {
-
-    func checkEligibility(productIdentifiers: Set<String>, completion: @escaping ReceiveIntroEligibilityBlock)
-}
-
 class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType {
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
@@ -35,6 +27,7 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
     private let productsManager: ProductsManagerType
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let dateProvider: DateProvider
+    private let groupEligibilityCache: Atomic<IntroEligibilityGroupCache> = .init(.init())
 
     init(
         systemInfo: SystemInfo,
@@ -56,6 +49,12 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         self.productsManager = productsManager
         self.diagnosticsTracker = diagnosticsTracker
         self.dateProvider = dateProvider
+    }
+
+    func clearCache() {
+        // Requests retain the cache they started with. Replacing it keeps old results and pending
+        // product lookups from populating or joining checks in the new cache generation.
+        self.groupEligibilityCache.value = IntroEligibilityGroupCache()
     }
 
     // swiftlint:disable:next function_body_length
@@ -165,7 +164,13 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         }
     }
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func sk2CheckEligibility(_ compoundProductIdentifiers: Set<String>) async throws -> [String: IntroEligibility] {
+    func sk2CheckEligibility(
+        _ compoundProductIdentifiers: Set<String>,
+        checkSubscriptionGroup: @escaping @Sendable (String) async -> Bool = {
+            await SK2Product.SubscriptionInfo.isEligibleForIntroOffer(for: $0)
+        }
+    ) async throws -> [String: IntroEligibility] {
+        let groupEligibilityCache = self.groupEligibilityCache.value
         var introDictionary: [String: IntroEligibility] = compoundProductIdentifiers.dictionaryWithValues { _ in
                 .init(eligibilityStatus: .unknown)
         }
@@ -184,9 +189,9 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         await withTaskGroup(of: (String, Bool).self) { group in
             for subscriptionGroupID in productIdentifiersByGroup.keys {
                 group.addTask {
-                    let isEligible = await log.eligibility(forSubscriptionGroup: subscriptionGroupID) {
-                        await SK2Product.SubscriptionInfo.isEligibleForIntroOffer(for: $0)
-                    }
+                    let isEligible = await groupEligibilityCache.eligibility(
+                        for: subscriptionGroupID, log: log, check: checkSubscriptionGroup
+                    )
                     return (subscriptionGroupID, isEligible)
                 }
             }
@@ -217,17 +222,6 @@ private extension SK2StoreProduct {
         #endif
         return subscription.introductoryOffer == nil ? nil : subscription.subscriptionGroupID
     }
-}
-
-/// Default overload implementation that takes a single `StoreProductType`.
-extension TrialOrIntroPriceEligibilityCheckerType {
-
-    func checkEligibility(product: StoreProductType, completion: @escaping (IntroEligibilityStatus) -> Void) {
-        self.checkEligibility(productIdentifiers: [product.id]) { eligibility in
-            completion(eligibility[product.id]?.status ?? .unknown)
-        }
-    }
-
 }
 
 // MARK: - Implementations

@@ -41,6 +41,12 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
     var invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList: [Set<String>] = []
     var stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult: [String: IntroEligibility] = [:]
     private let checkEligibilityLock = Lock()
+    let invokedClearCacheCount: Atomic<Int> = .init(0)
+
+    override func clearCache() {
+        self.invokedClearCacheCount.modify { $0 += 1 }
+        super.clearCache()
+    }
 
     override func checkEligibility(productIdentifiers: Set<String>,
                                    completion: @escaping ReceiveIntroEligibilityBlock) {
@@ -77,7 +83,10 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
     var stubbedSk2checkTrialOrIntroPriceEligibilityReceiveEligibilityResult: [String: IntroEligibility] = [:]
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    override func sk2CheckEligibility(_ productIdentifiers: Set<String>) async -> [String: IntroEligibility] {
+    override func sk2CheckEligibility(
+        _ productIdentifiers: Set<String>,
+        checkSubscriptionGroup: @escaping @Sendable (String) async -> Bool
+    ) async -> [String: IntroEligibility] {
         invokedSk2checkTrialOrIntroPriceEligibility = true
         invokedSk2checkTrialOrIntroPriceEligibilityCount += 1
         invokedSk2checkTrialOrIntroPriceEligibilityParameters = (productIdentifiers, ())

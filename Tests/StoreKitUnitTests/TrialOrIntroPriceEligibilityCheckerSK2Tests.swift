@@ -12,7 +12,7 @@
 //  Created by César de la Vega on 9/1/21.
 
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import StoreKitTest
 import XCTest
 
@@ -57,7 +57,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
                 let subscription = try XCTUnwrap(product.subscription)
                 try await asyncWait(description: "Intro eligibility did not reset for \(product.id)",
                                     timeout: .seconds(30)) {
-                    await subscription.isEligibleForIntroOffer
+                    await SK2Product.SubscriptionInfo.isEligibleForIntroOffer(for: subscription.subscriptionGroupID)
                 }
             }
         }
@@ -256,9 +256,10 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
 
         let sk2Product = try await self.fetchSk2Product()
         let storeProduct = StoreProduct(sk2Product: sk2Product)
+        let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: self.trialOrIntroPriceEligibilityChecker)
 
         let prePurchaseStatus: IntroEligibilityStatus = await withCheckedContinuation { continuation in
-            self.trialOrIntroPriceEligibilityChecker.checkEligibility(product: storeProduct) { status in
+            caching.checkEligibility(product: storeProduct) { status in
                 continuation.resume(returning: status)
             }
         }
@@ -267,12 +268,20 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
 
         _ = try await sk2Product.purchase()
 
-        // Delay added to reduce flakiness on iOS 26, where eligibility may be checked too soon after purchase.
-        // Allows StoreKit time to register the purchase before checking eligibility.
-        try await Task.sleep(nanoseconds: 100_000_000)
+        // StoreKitTest can update eligibility after purchase() returns. Wait for that state change
+        // before testing the SDK's cache invalidation, rather than relying on a fixed delay.
+        let groupID = try XCTUnwrap(sk2Product.subscription?.subscriptionGroupID)
+        try await asyncWait(description: "StoreKit intro eligibility did not update after purchase",
+                            timeout: .seconds(10)) {
+            await !SK2Product.SubscriptionInfo.isEligibleForIntroOffer(for: groupID)
+        }
+
+        // Purchases invalidates eligibility when it receives updated CustomerInfo after a purchase.
+        // This test uses the checker directly, so perform that invalidation explicitly.
+        caching.clearCache()
 
         let postPurchaseStatus: IntroEligibilityStatus = await withCheckedContinuation { continuation in
-            self.trialOrIntroPriceEligibilityChecker.checkEligibility(product: storeProduct) { status in
+            caching.checkEligibility(product: storeProduct) { status in
                 continuation.resume(returning: status)
             }
         }
@@ -297,6 +306,193 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
 
         expect(fakeStatus) == .unknown
     }
+}
+
+// MARK: - Subscription group caching
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
+
+    @MainActor
+    func testDisjointProductRequestsReuseGroupResultButStillRequireAnIntroOffer() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        let monthly = StoreProduct(sk2Product: try await self.fetchSk2Product())
+        let annual = StoreProduct(
+            sk2Product: try await self.fetchSk2Product("com.revenuecat.annual_39.99.2_week_intro")
+        )
+        let noIntro = StoreProduct(sk2Product: try await self.fetchSk2Product("com.revenuecat.annual_39.99_no_trial"))
+        let calls = Atomic<[String]>([])
+        let check: @Sendable (String) async -> Bool = { groupID in
+            calls.modify { $0.append(groupID) }
+            return true
+        }
+
+        for product in [monthly, annual, noIntro] {
+            self.mockProductsManager.stubbedProductsCompletionResult = .success([product])
+            let result = try await self.trialOrIntroPriceEligibilityChecker.sk2CheckEligibility(
+                [product.id], checkSubscriptionGroup: check
+            )
+            let expected: IntroEligibilityStatus = product == noIntro ? .noIntroOfferExists : .eligible
+            expect(result[product.id]?.status) == expected
+        }
+
+        expect(calls.value) == [try XCTUnwrap(monthly.subscriptionGroupIdentifier)]
+        self.logger.verifyMessageWasLogged("reusing cached result", expectedCount: 1)
+    }
+
+    @MainActor
+    func testInvalidationDuringGroupCheckDoesNotReuseOrOverwriteNewResult() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        let monthly = StoreProduct(sk2Product: try await self.fetchSk2Product())
+        let annual = StoreProduct(
+            sk2Product: try await self.fetchSk2Product("com.revenuecat.annual_39.99.2_week_intro")
+        )
+        let check = HeldSubscriptionGroupEligibilityCheck()
+        defer { check.completeAll() }
+        let checker = try XCTUnwrap(self.trialOrIntroPriceEligibilityChecker)
+        let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: checker)
+
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([monthly])
+        let oldRequest = Task {
+            try await checker.sk2CheckEligibility([monthly.id], checkSubscriptionGroup: check.call)
+        }
+        try await asyncWait { check.invocations.count == 1 }
+
+        caching.clearCache()
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([annual])
+        let newRequest = Task {
+            try await checker.sk2CheckEligibility([annual.id], checkSubscriptionGroup: check.call)
+        }
+        try await asyncWait { check.invocations.count == 2 }
+        expect(Set(check.invocations).count) == 1
+
+        check.complete(at: 1, eligible: false)
+        let newResult = try await newRequest.value
+        check.complete(at: 0, eligible: true)
+        let oldResult = try await oldRequest.value
+
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([monthly])
+        let cachedResult = try await checker.sk2CheckEligibility(
+            [monthly.id], checkSubscriptionGroup: check.call
+        )
+        expect(oldResult[monthly.id]?.status) == .eligible
+        expect(newResult[annual.id]?.status) == .ineligible
+        expect(cachedResult[monthly.id]?.status) == .ineligible
+        expect(check.invocations.count) == 2
+    }
+
+    @MainActor
+    func testInvalidationDuringProductLookupKeepsOldRequestOutOfNewGroupCache() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        let monthly = StoreProduct(sk2Product: try await self.fetchSk2Product())
+        let annual = StoreProduct(
+            sk2Product: try await self.fetchSk2Product("com.revenuecat.annual_39.99.2_week_intro")
+        )
+        let checker = try XCTUnwrap(self.trialOrIntroPriceEligibilityChecker)
+        let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: checker)
+        let calls = Atomic(0)
+        let check: @Sendable (String) async -> Bool = { _ in
+            // The new request reaches StoreKit first; the old lookup must not reuse its result.
+            calls.modify {
+                $0 += 1
+                return $0 > 1
+            }
+        }
+
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([monthly])
+        self.mockProductsManager.shouldDeferProductsCompletion = true
+        let oldRequest = Task {
+            try await checker.sk2CheckEligibility([monthly.id], checkSubscriptionGroup: check)
+        }
+        var needsCompletion = true
+        defer {
+            if needsCompletion, self.mockProductsManager.deferredProductsRequestCount == 1 {
+                self.mockProductsManager.completeDeferredProductsRequest(at: 0)
+            }
+        }
+        try await asyncWait { self.mockProductsManager.deferredProductsRequestCount == 1 }
+
+        caching.clearCache()
+        self.mockProductsManager.shouldDeferProductsCompletion = false
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([annual])
+        let newResult = try await checker.sk2CheckEligibility(
+            [annual.id], checkSubscriptionGroup: check
+        )
+
+        needsCompletion = false
+        self.mockProductsManager.completeDeferredProductsRequest(at: 0)
+        let oldResult = try await oldRequest.value
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([monthly])
+        let cachedResult = try await checker.sk2CheckEligibility(
+            [monthly.id], checkSubscriptionGroup: check
+        )
+
+        expect(oldResult[monthly.id]?.status) == .eligible
+        expect(newResult[annual.id]?.status) == .ineligible
+        expect(cachedResult[monthly.id]?.status) == .ineligible
+        expect(calls.value) == 2
+    }
+
+    @MainActor
+    func testConcurrentDisjointProductRequestsShareSubscriptionGroupCheck() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        let monthly = StoreProduct(sk2Product: try await self.fetchSk2Product())
+        let annual = StoreProduct(
+            sk2Product: try await self.fetchSk2Product("com.revenuecat.annual_39.99.2_week_intro")
+        )
+        let checker = try XCTUnwrap(self.trialOrIntroPriceEligibilityChecker)
+        let check = HeldSubscriptionGroupEligibilityCheck()
+        defer { check.completeAll() }
+
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([monthly])
+        let monthlyRequest = Task {
+            try await checker.sk2CheckEligibility([monthly.id], checkSubscriptionGroup: check.call)
+        }
+        try await asyncWait { check.invocations.count == 1 }
+
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([annual])
+        let annualRequest = Task {
+            try await checker.sk2CheckEligibility([annual.id], checkSubscriptionGroup: check.call)
+        }
+        try await asyncWait {
+            self.logger.messages.contains { $0.message.contains("reusing in-flight check") }
+        }
+        check.complete(at: 0, eligible: true)
+
+        let monthlyResult = try await monthlyRequest.value
+        let annualResult = try await annualRequest.value
+        expect(Set(monthlyResult.keys)) == [monthly.id]
+        expect(Set(annualResult.keys)) == [annual.id]
+        expect(monthlyResult[monthly.id]?.status) == .eligible
+        expect(annualResult[annual.id]?.status) == .eligible
+        expect(check.invocations.count) == 1
+    }
+
+    @MainActor
+    func testInvalidationAllowsIneligibleGroupToBecomeEligible() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        let monthly = StoreProduct(sk2Product: try await self.fetchSk2Product())
+        let annual = StoreProduct(
+            sk2Product: try await self.fetchSk2Product("com.revenuecat.annual_39.99.2_week_intro")
+        )
+        let checker = try XCTUnwrap(self.trialOrIntroPriceEligibilityChecker)
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([monthly])
+        let before = try await checker.sk2CheckEligibility([monthly.id], checkSubscriptionGroup: { _ in false })
+
+        CachingTrialOrIntroPriceEligibilityChecker(checker: checker).clearCache()
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([annual])
+        let after = try await checker.sk2CheckEligibility([annual.id], checkSubscriptionGroup: { _ in true })
+
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([monthly])
+        let cached = try await checker.sk2CheckEligibility([monthly.id], checkSubscriptionGroup: { _ in
+            XCTFail("Expected the new group result to be cached")
+            return false
+        })
+        expect(before[monthly.id]?.status) == .ineligible
+        expect(after[annual.id]?.status) == .eligible
+        expect(cached[monthly.id]?.status) == .eligible
+    }
+
 }
 
 // MARK: - Diagnostics
