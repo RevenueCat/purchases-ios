@@ -13,7 +13,7 @@ import Foundation
     ///
     /// Modeled as a struct with static constants (not an enum) so new codes can be added
     /// without breaking exhaustive `switch` statements in client code.
-    public struct Code: Hashable, CustomStringConvertible {
+    public struct Code: Hashable, Sendable, CustomStringConvertible {
 
         private let rawValue: String
 
