@@ -1,0 +1,33 @@
+# `donottouch_sdk_attribute`: `should_use_custom_ui is "true"` goes to `no_paywall`, all other
+# users to `default`. Each case is a new user.
+#
+# Fixtures live in the Automated SDK Tests project (6627e5bc). Do not edit them.
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/checkpoint_attribute.yaml
+
+appId: com.revenuecat.maestro.ios
+name: A checkpoint rule on a subscriber attribute
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- runFlow:
+    file: ../utils/checkpoint_hit.yaml
+    env:
+      CHECKPOINT_ID: donottouch_sdk_attribute
+      ATTRIBUTE: "true"
+      EXPECTED_OFFERING: no_paywall
+
+- runFlow:
+    file: ../utils/checkpoint_hit.yaml
+    env:
+      CHECKPOINT_ID: donottouch_sdk_attribute
+      ATTRIBUTE: "false"
+      EXPECTED_OFFERING: default
+
+- runFlow:
+    file: ../utils/checkpoint_hit.yaml
+    env:
+      CHECKPOINT_ID: donottouch_sdk_attribute
+      ATTRIBUTE: none
+      EXPECTED_OFFERING: default

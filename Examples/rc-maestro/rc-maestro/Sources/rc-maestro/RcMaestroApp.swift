@@ -147,6 +147,7 @@ enum E2ETestFlow: String {
     case openWorkflowUIKit = "open_workflow_uikit"
     case openDefaultPackageVisibility = "open_default_package_visibility"
     case openDeveloperProvidedOffering = "open_developer_provided_offering"
+    case checkpointResolution = "checkpoint_resolution"
 
     @ViewBuilder
     var view: some View {
@@ -167,6 +168,8 @@ enum E2ETestFlow: String {
             E2ETestFlowView.OpenDefaultPackageVisibility()
         case .openDeveloperProvidedOffering:
             E2ETestFlowView.OpenDeveloperProvidedOffering()
+        case .checkpointResolution:
+            E2ETestFlowView.CheckpointResolution()
         }
     }
 }
