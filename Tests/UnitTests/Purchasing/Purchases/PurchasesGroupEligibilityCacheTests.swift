@@ -24,7 +24,7 @@ class PurchasesGroupEligibilityCacheTests: BasePurchasesTests {
     }
 
     @MainActor
-    func testCustomerInfoChangeClearsCompletedGroupsAndPreservesPendingGroupChecks() async throws {
+    func testCustomerInfoChangeClearsCompletedAndPendingGroupChecks() async throws {
         await expect(self.purchasesDelegate.customerInfo).toEventually(equal(CustomerInfo.emptyInfo))
         let initialClearCount = self.cachingTrialOrIntroPriceEligibilityChecker.invokedClearCacheCount
         let cache = try XCTUnwrap(self.groupEligibilityCache)
@@ -41,16 +41,15 @@ class PurchasesGroupEligibilityCacheTests: BasePurchasesTests {
 
         let refreshed = await cache.eligibility(for: "completed", log: IntroEligibilityLog(), check: { _ in true })
         expect(refreshed) == true
-        let joined = Task { await cache.eligibility(for: "pending", log: IntroEligibilityLog(), check: check.call) }
-        try await asyncWait {
-            self.logger.messages.contains { $0.message.contains("reusing in-flight check") }
-        }
-        expect(check.invocations) == ["pending"]
+        let fresh = Task { await cache.eligibility(for: "pending", log: IntroEligibilityLog(), check: check.call) }
+        try await asyncWait { check.invocations == ["pending", "pending"] }
+        check.complete(at: 1, eligible: false)
+        let freshResult = await fresh.value
         check.complete(at: 0, eligible: true)
         let pendingResult = await pending.value
-        let joinedResult = await joined.value
         expect(pendingResult) == true
-        expect(joinedResult) == true
+        expect(freshResult) == false
+        expect(check.wasCancelled.value) == false
     }
 
 }

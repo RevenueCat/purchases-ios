@@ -466,7 +466,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
     }
 
     @MainActor
-    func testInvalidationDuringGroupCheckPreservesSharingAndCachesItsResult() async throws {
+    func testInvalidationDuringGroupCheckStartsFreshCheckAndCachesOnlyItsResult() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         let monthly = StoreProduct(sk2Product: try await self.fetchSk2Product())
         let annual = StoreProduct(
@@ -492,23 +492,21 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
                 [annual.id], checkSubscriptionGroup: check.call
             )
         }
-        try await asyncWait {
-            self.logger.messages.contains { $0.message.contains("reusing in-flight check") }
-        }
-        expect(check.invocations.count) == 1
+        try await asyncWait { check.invocations.count == 2 }
 
+        check.complete(at: 1, eligible: false)
+        let newResult = try await newRequest.value
         check.complete(at: 0, eligible: true)
         let oldResult = try await oldRequest.value
-        let newResult = try await newRequest.value
 
         self.mockProductsManager.stubbedProductsCompletionResult = .success([monthly])
         let cachedResult = try await checker.sk2CheckEligibility(
             [monthly.id], checkSubscriptionGroup: check.call
         )
         expect(oldResult[monthly.id]?.status) == .eligible
-        expect(newResult[annual.id]?.status) == .eligible
-        expect(cachedResult[monthly.id]?.status) == .eligible
-        expect(check.invocations.count) == 1
+        expect(newResult[annual.id]?.status) == .ineligible
+        expect(cachedResult[monthly.id]?.status) == .ineligible
+        expect(check.invocations.count) == 2
     }
 
     @MainActor

@@ -11,24 +11,19 @@
 import Foundation
 
 /// Shares SK2 eligibility checks across products in the same subscription group.
-/// The caching wrapper controls invalidation of both product results and completed group results.
-/// Pending checks remain shared across invalidation and store their result when they finish.
+/// The caching wrapper controls invalidation of both product and group results.
+/// Invalidated checks still finish for existing callers, but cannot populate the cache or serve new callers.
 final class SubscriptionGroupEligibilityCache: Sendable {
 
     private enum Entry {
-        case pending(Task<Bool, Never>)
+        case pending(id: UUID, task: Task<Bool, Never>)
         case cached(Bool)
     }
 
     private let entriesByGroupID: Atomic<[String: Entry]> = .init([:])
 
     func clearCache() {
-        self.entriesByGroupID.modify { entries in
-            entries = entries.filter {
-                if case .pending = $0.value { return true }
-                return false
-            }
-        }
+        self.entriesByGroupID.modify { $0.removeAll() }
     }
 
     func eligibility(
@@ -41,14 +36,18 @@ final class SubscriptionGroupEligibilityCache: Sendable {
                 return (entry, true)
             }
 
+            let id = UUID()
             let task = Task {
                 let eligible = await log.eligibility(forSubscriptionGroup: groupID, check: check)
-                // Publish once before returning to any waiter. Delayed waiters cannot restore an
-                // invalidated result or overwrite the answer from a newer check.
-                self.entriesByGroupID.modify { $0[groupID] = .cached(eligible) }
+                // Only the current check may publish. Clearing the cache does not cancel this task,
+                // but its result must not restore an invalidated entry or replace a newer check.
+                self.entriesByGroupID.modify { entries in
+                    guard case .pending(let currentID, _) = entries[groupID], currentID == id else { return }
+                    entries[groupID] = .cached(eligible)
+                }
                 return eligible
             }
-            let entry = Entry.pending(task)
+            let entry = Entry.pending(id: id, task: task)
             entries[groupID] = entry
             return (entry, false)
         }
@@ -57,7 +56,7 @@ final class SubscriptionGroupEligibilityCache: Sendable {
         case .cached(let eligible):
             log.reusedEligibility(forSubscriptionGroup: groupID, isPending: false)
             return eligible
-        case .pending(let task):
+        case .pending(_, let task):
             if reused {
                 log.reusedEligibility(forSubscriptionGroup: groupID, isPending: true)
             }
