@@ -82,7 +82,7 @@ struct CarouselComponentView: View {
                                 onDismiss: self.onDismiss
                             )
                         }),
-                        initialIndex: style.initialPageIndex,
+                        initialIndex: self.viewModel.startPageIndex(initialPageIndex: style.initialPageIndex),
                         loop: style.loop,
                         spacing: style.pageSpacing,
                         cardWidth: reader.size.width - (style.pagePeek * 2) - (style.pageSpacing * 2),
@@ -90,6 +90,9 @@ struct CarouselComponentView: View {
                         msTimePerSlide: style.autoAdvance?.msTimePerPage,
                         msTransitionTime: style.autoAdvance?.msTransitionTime,
                         autoAdvanceTransitionType: style.autoAdvance?.transitionType,
+                        onPageIndexChange: { pageIndex in
+                            self.viewModel.lastVisiblePageIndex = pageIndex
+                        },
                         onUserInitiatedPageIndexChange: { originPageIndex, destinationPageIndex in
                             self.trackCarouselComponentInteraction(
                                 originPageIndex: originPageIndex,
@@ -192,6 +195,7 @@ private struct CarouselView<Content: View>: View {
 
     private let pageControl: DisplayablePageControl?
 
+    private let onPageIndexChange: ((Int) -> Void)?
     private let onUserInitiatedPageIndexChange: ((Int, Int) -> Void)?
 
     /// Optional auto-play timings (in milliseconds).
@@ -244,6 +248,7 @@ private struct CarouselView<Content: View>: View {
         msTimePerSlide: Int?,
         msTransitionTime: Int?,
         autoAdvanceTransitionType: PaywallComponent.CarouselComponent.AutoAdvanceTransitionType?,
+        onPageIndexChange: ((Int) -> Void)? = nil,
         onUserInitiatedPageIndexChange: ((Int, Int) -> Void)? = nil
     ) {
         self.width = width
@@ -254,6 +259,7 @@ private struct CarouselView<Content: View>: View {
         self.spacing = spacing
         self.cardWidth = cardWidth
         self.pageControl = pageControl
+        self.onPageIndexChange = onPageIndexChange
         self.onUserInitiatedPageIndexChange = onUserInitiatedPageIndexChange
         self.msTimePerSlide = msTimePerSlide
         self.msTransitionTime = msTransitionTime
@@ -378,6 +384,11 @@ private struct CarouselView<Content: View>: View {
             DispatchQueue.main.async {
                 self.isInitialized = true
             }
+        }
+        .onChangeOf(self.index) { newIndex in
+            guard self.originalCount > 0 else { return }
+
+            self.onPageIndexChange?(self.loop ? newIndex % self.originalCount : newIndex)
         }
         .onDisappear {
             // Stop the timer if view disappears
