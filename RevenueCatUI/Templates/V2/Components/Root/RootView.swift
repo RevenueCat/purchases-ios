@@ -235,6 +235,7 @@ struct RootView: View {
             StackComponentView(
                 viewModel: footer.stackViewModel,
                 isScrollableByDefault: true,
+                fillsAvailableHeight: true,
                 onDismiss: onDismiss,
                 additionalPadding: EdgeInsets(
                     top: safeAreaInsets.top, leading: 0,

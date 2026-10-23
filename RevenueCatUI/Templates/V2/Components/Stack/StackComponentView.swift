@@ -70,6 +70,7 @@ struct StackComponentView: View {
 
     private let viewModel: StackComponentViewModel
     private let isScrollableByDefault: Bool
+    private let fillsAvailableHeight: Bool
     private let onDismiss: () -> Void
     /// Used when this stack needs more padding than defined in the component, e.g. to avoid being drawn in the safe
     /// area when displayed as a sticky footer.
@@ -81,6 +82,7 @@ struct StackComponentView: View {
     init(
         viewModel: StackComponentViewModel,
         isScrollableByDefault: Bool = false,
+        fillsAvailableHeight: Bool = false,
         onDismiss: @escaping () -> Void,
         additionalPadding: EdgeInsets? = nil,
         showActivityIndicatorOverContent: Bool = false,
@@ -88,6 +90,7 @@ struct StackComponentView: View {
     ) {
         self.viewModel = viewModel
         self.isScrollableByDefault = isScrollableByDefault
+        self.fillsAvailableHeight = fillsAvailableHeight
         self.onDismiss = onDismiss
         self.additionalPadding = additionalPadding ?? EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
         self.showActivityIndicatorOverContent = showActivityIndicatorOverContent
@@ -144,6 +147,7 @@ struct StackComponentView: View {
             windowSize: self.paywallWindowSize,
             colorScheme: colorScheme
         ) { style in
+            let style = self.fillsAvailableHeight ? style.fillingAvailableHeight() : style
             if style.visible {
                 if self.registrationOnly {
                     self.nativeButtonRegistrations
