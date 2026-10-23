@@ -9,14 +9,14 @@ import Foundation
 /// Configuration passed to ``RCAds/configure(with:)``.
 ///
 /// Both values are optional: when omitted they are taken from the configured `Purchases` instance.
-@_spi(Experimental) public struct AdsConfiguration {
+@_spi(Experimental) public struct AdsConfiguration: Sendable {
 
     /// The RevenueCat public API key. Defaults to the key `Purchases` was configured with.
-    public var apiKey: String?
+    public let apiKey: String?
 
     /// Base URL of the RevenueCat ad-serving backend.
     /// Defaults to `Purchases.proxyURL`, or the RevenueCat API host when no proxy is set.
-    public var serverURL: URL?
+    public let serverURL: URL?
 
     /// Creates a configuration. `nil` values fall back to the configured `Purchases` instance.
     public init(apiKey: String? = nil, serverURL: URL? = nil) {
@@ -27,7 +27,7 @@ import Foundation
 }
 
 /// The fully resolved values an ad module is initialized with.
-struct ResolvedAdsConfiguration: Equatable {
+struct ResolvedAdsConfiguration: Equatable, Sendable {
 
     let apiKey: String
     let auctionURL: URL
