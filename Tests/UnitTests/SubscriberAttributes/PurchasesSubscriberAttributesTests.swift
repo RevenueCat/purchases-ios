@@ -277,8 +277,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               offlineEntitlementsManager: mockOfflineEntitlementsManager,
                               purchasesOrchestrator: purchasesOrchestrator,
                               purchasedProductsFetcher: mockPurchasedProductsFetcher,
-                              trialOrIntroPriceEligibilityChecker: .create(
-                                with: trialOrIntroductoryPriceEligibilityChecker
+                              trialOrIntroPriceEligibilityChecker: .init(
+                                checker: trialOrIntroductoryPriceEligibilityChecker
                               ),
                               storeMessagesHelper: self.mockStoreMessagesHelper,
                               diagnosticsTracker: nil,

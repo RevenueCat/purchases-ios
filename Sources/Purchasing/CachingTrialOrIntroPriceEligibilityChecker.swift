@@ -73,22 +73,10 @@ class CachingTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCh
         }
     }
 
-    private let checker: TrialOrIntroPriceEligibilityCheckerType
+    private let checker: TrialOrIntroPriceEligibilityChecker
     private let state: Atomic<State> = .init(.init())
 
-    /// Creates a `CachingTrialOrIntroPriceEligibilityChecker` wrapping the underlying checker,
-    /// or returns `checker` if it already is this type.
-    static func create(
-        with checker: TrialOrIntroPriceEligibilityCheckerType
-    ) -> CachingTrialOrIntroPriceEligibilityChecker {
-        if let checker = checker as? Self {
-            return checker
-        } else {
-            return CachingTrialOrIntroPriceEligibilityChecker(checker: checker)
-        }
-    }
-
-    init(checker: TrialOrIntroPriceEligibilityCheckerType) {
+    init(checker: TrialOrIntroPriceEligibilityChecker) {
         self.checker = checker
     }
 
@@ -119,12 +107,11 @@ extension CachingTrialOrIntroPriceEligibilityChecker {
             return
         }
 
-        if let checker = self.checker as? GroupAwareTrialOrIntroEligibilityChecker,
-           checker.usesSubscriptionGroupEligibility {
+        if self.checker.usesSubscriptionGroupEligibility {
             // Cache the group answer only. Product metadata is already cached by the products manager.
-            checker.checkEligibility(productIdentifiers: productIdentifiers,
-                                     groupEligibilityChecker: self,
-                                     completion: completion)
+            self.checker.checkEligibility(productIdentifiers: productIdentifiers,
+                                          groupEligibilityChecker: self,
+                                          completion: completion)
             return
         }
 

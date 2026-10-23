@@ -360,7 +360,7 @@ class CachingTrialOrIntroPriceEligibilityCheckerTests: TestCase {
 
 }
 
-private final class DelayedTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType,
+private final class DelayedTrialOrIntroPriceEligibilityChecker: MockTrialOrIntroPriceEligibilityChecker,
                                                                 @unchecked Sendable {
 
     private struct State {
@@ -374,7 +374,7 @@ private final class DelayedTrialOrIntroPriceEligibilityChecker: TrialOrIntroPric
         return self.state.value.invocations
     }
 
-    func checkEligibility(
+    override func checkEligibility(
         productIdentifiers: Set<String>,
         completion: @escaping ReceiveIntroEligibilityBlock
     ) {

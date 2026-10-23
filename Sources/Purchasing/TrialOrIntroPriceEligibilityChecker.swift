@@ -11,7 +11,7 @@
 import Foundation
 import StoreKit
 
-class TrialOrIntroPriceEligibilityChecker: GroupAwareTrialOrIntroEligibilityChecker {
+class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType {
 
     private let systemInfo: SystemInfo
     private let receiptFetcher: ReceiptFetcher

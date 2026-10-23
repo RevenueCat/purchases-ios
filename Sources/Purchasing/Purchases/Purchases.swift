@@ -603,15 +603,15 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                systemInfo: systemInfo)
         let introCalculator = IntroEligibilityCalculator(productsManager: productsManager, receiptParser: receiptParser)
 
-        let trialOrIntroPriceChecker = CachingTrialOrIntroPriceEligibilityChecker.create(
-            with: TrialOrIntroPriceEligibilityChecker(systemInfo: systemInfo,
-                                                      receiptFetcher: receiptFetcher,
-                                                      introEligibilityCalculator: introCalculator,
-                                                      backend: backend,
-                                                      currentUserProvider: identityManager,
-                                                      operationDispatcher: operationDispatcher,
-                                                      productsManager: productsManager,
-                                                      diagnosticsTracker: diagnosticsTracker)
+        let trialOrIntroPriceChecker = CachingTrialOrIntroPriceEligibilityChecker(
+            checker: TrialOrIntroPriceEligibilityChecker(systemInfo: systemInfo,
+                                                         receiptFetcher: receiptFetcher,
+                                                         introEligibilityCalculator: introCalculator,
+                                                         backend: backend,
+                                                         currentUserProvider: identityManager,
+                                                         operationDispatcher: operationDispatcher,
+                                                         productsManager: productsManager,
+                                                         diagnosticsTracker: diagnosticsTracker)
         )
 
         let paywallCache: PaywallCacheWarmingType?

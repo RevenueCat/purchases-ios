@@ -17,19 +17,6 @@ protocol TrialOrIntroPriceEligibilityCheckerType: Sendable {
 
 }
 
-/// A checker whose StoreKit 2 requests can share eligibility work by subscription group.
-protocol GroupAwareTrialOrIntroEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType {
-
-    var usesSubscriptionGroupEligibility: Bool { get }
-
-    func checkEligibility(
-        productIdentifiers: Set<String>,
-        groupEligibilityChecker: SubscriptionGroupEligibilityChecker?,
-        completion: @escaping ReceiveIntroEligibilityBlock
-    )
-
-}
-
 /// Resolves a StoreKit group check, allowing the caching wrapper to reuse its work and result.
 protocol SubscriptionGroupEligibilityChecker: Sendable {
 
