@@ -243,6 +243,28 @@ final class ButtonComponentViewTests: TestCase {
         XCTAssertEqual(fallbackAppearances, 0)
     }
 
+    func testNativeBackRegistrationWaitsForConfiguredTransitionDelay() async throws {
+        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
+        let coordinator = NativePaywallCloseCoordinator()
+        let viewModel = try Self.makeViewModel(component: .init(
+            action: .navigateBack,
+            stack: Self.makeButtonStack(label: "Close"),
+            transition: .init(animation: .init(type: .linear, msDelay: 500, msDuration: 0)),
+            useNativeIfPossible: true
+        ))
+        let view = Self.nativeTestView(viewModel: viewModel, onDismiss: {})
+            .environment(\.workflowRenderingContext, .init(canNavigateBack: true))
+            .environment(\.nativePaywallCloseCoordinator, coordinator)
+        let (window, _) = Self.host(view)
+        defer { window.isHidden = true; window.rootViewController = nil }
+
+        XCTAssertTrue(coordinator.actions.isEmpty)
+        let registered = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+            coordinator.action(for: .back) != nil
+        }, object: nil)
+        await fulfillment(of: [registered], timeout: 2)
+    }
+
     func testNativeButtonsDoNotLeaveFlexStackSpacers() async throws {
         try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
         let markers: [PaywallComponent] = ["#FF0000", "#0000FF"].map { color in
