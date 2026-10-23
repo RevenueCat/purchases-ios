@@ -1,0 +1,24 @@
+# A valid checkpoint with no matching action presents no UI and invokes its callback exactly once with nil.
+
+appId: com.revenuecat.maestro.ios
+name: No-match checkpoint invokes its callback once without presenting UI
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+- pressKey: home
+- launchApp:
+    arguments:
+      e2e_test_flow: checkpoint_no_match
+- extendedWaitUntil:
+    visible: "Hit checkpoint"
+    timeout: 15000
+- tapOn: "Hit checkpoint"
+
+- extendedWaitUntil:
+    visible: "Callback: nil (call #1)"
+    timeout: 15000
+- assertNotVisible: "First screen loaded"
+- assertNotVisible: ".*call #2.*"
+- takeScreenshot: "checkpoint_no_match - callback"

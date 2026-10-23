@@ -1,0 +1,34 @@
+# The invalid identifier is handled by the E2E app's custom ErrorPresenter. Its UI exposes the received failure kind
+# and context, and the checkpoint callback remains suppressed.
+
+appId: com.revenuecat.maestro.ios
+name: Custom error presenter receives an invalid checkpoint identifier failure
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+- pressKey: home
+- launchApp:
+    arguments:
+      e2e_test_flow: checkpoint_invalid_identifier_custom_error_presenter
+- extendedWaitUntil:
+    visible: "Using custom error presenter"
+    timeout: 15000
+- tapOn:
+    text: "Hit checkpoint"
+
+- extendedWaitUntil:
+    visible: "Custom error presenter: flowCouldNotBeShown"
+    timeout: 15000
+- assertVisible: ".*Checkpoint: bad id!.*"
+- assertVisible: ".*Custom variable keys: source.*"
+- takeScreenshot: "checkpoint_invalid_identifier_custom_error_presenter - context"
+- tapOn:
+    text: "Dismiss custom error"
+
+- extendedWaitUntil:
+    visible: "Callback: not invoked"
+    timeout: 15000
+- waitForAnimationToEnd
+- assertNotVisible: ".*call #.*"
