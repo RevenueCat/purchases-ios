@@ -43,8 +43,19 @@ final class AdsConfigurationResolutionTests: TestCase {
         XCTAssertThrowsError(try AdsConfiguration().resolve(purchasesAPIKey: nil, purchasesProxyURL: nil)) {
             XCTAssertEqual(($0 as? AdsError)?.code, .notConfigured)
         }
-        XCTAssertThrowsError(try AdsConfiguration(apiKey: "").resolve(purchasesAPIKey: nil, purchasesProxyURL: nil)) {
+        XCTAssertThrowsError(try AdsConfiguration().resolve(purchasesAPIKey: "", purchasesProxyURL: nil)) {
             XCTAssertEqual(($0 as? AdsError)?.code, .notConfigured)
+        }
+    }
+
+    func testExplicitlyEmptyAPIKeyThrowsInvalidConfiguration() {
+        let configuration = AdsConfiguration(apiKey: "")
+
+        XCTAssertThrowsError(try configuration.resolve(purchasesAPIKey: "appl_purchases", purchasesProxyURL: nil)) {
+            XCTAssertEqual(($0 as? AdsError)?.code, .invalidConfiguration)
+        }
+        XCTAssertThrowsError(try configuration.resolve(purchasesAPIKey: nil, purchasesProxyURL: nil)) {
+            XCTAssertEqual(($0 as? AdsError)?.code, .invalidConfiguration)
         }
     }
 
