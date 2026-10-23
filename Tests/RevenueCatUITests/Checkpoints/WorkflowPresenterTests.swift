@@ -26,6 +26,74 @@ import UIKit
 // swiftlint:disable:next type_body_length
 final class WorkflowPresenterTests: TestCase {
 
+    func testErrorContextBelongsToPaywallAndEndsOnCompletion() throws {
+        var receivedParams: ErrorPresentationParams?
+        var completion: ErrorPresentationCompletion?
+        let presentation = try Self.renderablePresentation(customVariables: [:]) { params, value in
+            receivedParams = params
+            completion = value
+        }
+        let presenter = WorkflowPresenter { _ in true }
+        try presenter.startPresentation(presentation)
+        let controller = try presenter.makePaywallViewController(for: presentation)
+        presenter.paywallViewController(controller, didFailPurchasingWith: NSError(domain: "test", code: 1))
+
+        let context = try XCTUnwrap(receivedParams?.presentationContext)
+        XCTAssertTrue(context.viewController === controller)
+        var invalidations = 0
+        context.onInvalidated = { invalidations += 1 }
+        completion?.complete()
+        completion?.complete()
+
+        XCTAssertFalse(context.isValid)
+        XCTAssertNil(context.viewController)
+        XCTAssertEqual(invalidations, 1)
+        XCTAssertNotNil(presenter.presentationDidDismiss())
+    }
+
+    func testDismissalInvalidatesPendingErrorContext() throws {
+        var receivedParams: ErrorPresentationParams?
+        let presentation = try Self.renderablePresentation(customVariables: [:]) { params, _ in
+            receivedParams = params
+        }
+        let presenter = WorkflowPresenter { _ in true }
+        try presenter.startPresentation(presentation)
+        let controller = try presenter.makePaywallViewController(for: presentation)
+        presenter.paywallViewController(controller, didFailPurchasingWith: NSError(domain: "test", code: 1))
+        let context = try XCTUnwrap(receivedParams?.presentationContext)
+
+        _ = presenter.presentationDidDismiss()
+
+        XCTAssertFalse(context.isValid)
+        XCTAssertNil(context.viewController)
+    }
+
+    func testInvalidatingOldErrorCanCompleteItWithoutConsumingNewError() throws {
+        var contexts: [ErrorPresentationContext] = []
+        var completions: [ErrorPresentationCompletion] = []
+        let presentation = try Self.renderablePresentation(customVariables: [:]) { params, completion in
+            if let context = params.presentationContext { contexts.append(context) }
+            completions.append(completion)
+        }
+        let presenter = WorkflowPresenter { _ in true }
+        try presenter.startPresentation(presentation)
+        let controller = try presenter.makePaywallViewController(for: presentation)
+        let error = NSError(domain: "test", code: 1)
+        presenter.paywallViewController(controller, didFailPurchasingWith: error)
+        let first = try XCTUnwrap(contexts.first)
+        first.onInvalidated = { completions[0].complete() }
+
+        presenter.paywallViewController(controller, didFailPurchasingWith: error)
+
+        XCTAssertEqual(contexts.count, 2)
+        XCTAssertFalse(first.isValid)
+        let second = try XCTUnwrap(contexts.last)
+        XCTAssertTrue(second.isValid)
+        completions[1].complete()
+        XCTAssertFalse(second.isValid)
+        _ = presenter.presentationDidDismiss()
+    }
+
     func testPresenterStagesOutcomeUntilPresentationFinishesDismissing() throws {
         let presenter = WorkflowPresenter { _ in true }
         try presenter.startPresentation(Self.presentation())
@@ -744,6 +812,26 @@ final class WorkflowPresenterTests: TestCase {
 @available(iOS 15.0, macOS 12.0, *)
 @MainActor
 final class DefaultPaywallPresenterTests: TestCase {
+
+    func testErrorContextBelongsToPaywallAndEndsOnDismissal() throws {
+        var receivedParams: ErrorPresentationParams?
+        let presenter = DefaultPaywallPresenter()
+        let controller = self.makePaywallViewController()
+        let params = PaywallPresentationParams(
+            checkpointIdentifier: "test_checkpoint",
+            offering: Self.offering(),
+            errorPresentationHandler: { params, _ in receivedParams = params }
+        )
+        presenter.prepareForPresentation(params: params, presentedViewController: controller)
+        presenter.paywallViewController(controller, didFailPurchasingWith: NSError(domain: "test", code: 1))
+        let context = try XCTUnwrap(receivedParams?.presentationContext)
+        XCTAssertTrue(context.viewController === controller)
+
+        presenter.paywallViewControllerWasDismissed(controller)
+
+        XCTAssertFalse(context.isValid)
+        XCTAssertNil(context.viewController)
+    }
 
     // Missing presentation context: route the startup error before reporting presentation failure.
     func testMissingPresentationContextRoutesErrorBeforeReportingFailure() throws {
