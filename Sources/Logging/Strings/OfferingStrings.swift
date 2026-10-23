@@ -117,7 +117,7 @@ extension OfferingStrings: LogMessage {
                 "cached: \(identifiers)"
 
         case .product_cache_invalid_for_storefront_change:
-            return "Storefront change detected. Invalidating and re-fetching product cache."
+            return "Storefront change detected. Invalidating cached products and offerings."
 
         case .vending_offerings_cache_from_memory:
             return "Vending Offerings from memory cache"

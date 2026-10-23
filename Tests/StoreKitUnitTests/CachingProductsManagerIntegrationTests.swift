@@ -196,7 +196,7 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
         let checker = self.createEligibilityChecker(manager: manager)
         _ = try await manager.products(withIdentifiers: [Self.productID])
         _ = try await checker.sk2CheckEligibility([Self.productID])
-        manager.clearCache()
+        manager.invalidate()
         _ = try await checker.sk2CheckEligibility([Self.productID])
         _ = try await manager.products(withIdentifiers: [Self.productID])
 
@@ -265,7 +265,7 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
             fetcher.deferredProductsRequestCount == 1
         }
 
-        manager.clearCache()
+        manager.invalidate()
         fetcher.stubbedProductsCompletionResult = .success([newProduct])
         var newResult: Result<Set<StoreProduct>, PurchasesError>?
         manager.products(withIdentifiers: [Self.productID]) { newResult = $0 }

@@ -90,8 +90,8 @@ class ProductsManager: NSObject, ProductsManagerType {
     // Product caching is owned by `CachingProductsManager`.
     func cache(_ product: StoreProductType) { }
 
-    func clearCache() {
-        self.productsFetcherSK1.clearCache()
+    func invalidate() {
+        self.productsFetcherSK1.invalidateRequests()
     }
 
     var requestTimeout: TimeInterval {

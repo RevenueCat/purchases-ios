@@ -28,7 +28,7 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         self.orchestrator.storeKit1WrapperDidChangeStorefront(storeKit1Wrapper)
 
         expect(self.mockOfferingsManager.invokedInvalidateAndReFetchCachedOfferingsIfAppropiateCount) == 1
-        expect(self.productsManager.invokedClearCacheCount) == 1
+        expect(self.productsManager.invokedInvalidateCount) == 1
     }
 
     // MARK: - Purchasing
