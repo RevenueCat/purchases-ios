@@ -109,6 +109,23 @@ final class SheetPresentationPlanTests: TestCase {
         XCTAssertGreaterThan(whitePixels, 390 * 40 / 4, "Sheet content should be visible on the first frame")
     }
 
+    /// Real hosting-controller insets let backgrounds ignore the safe area, unlike environment-only insets.
+    /// Sample the sheet, both side safe areas, and the home-indicator area independently.
+    @MainActor
+    func testSheetBackgroundStaysInsideHorizontalSafeArea() throws {
+        try Self.assertSheetSafeArea(rounded: false, nested: false)
+    }
+
+    @MainActor
+    func testRoundedSheetBackgroundStaysInsideHorizontalSafeArea() throws {
+        try Self.assertSheetSafeArea(rounded: true, nested: false)
+    }
+
+    @MainActor
+    func testNestedSheetBackgroundStaysInsideHorizontalSafeArea() throws {
+        try Self.assertSheetSafeArea(rounded: false, nested: true)
+    }
+
     /// A relative sheet height is a fraction of the parent's height, which must follow the parent when the
     /// window is resized or rotated instead of sticking to the size seen on first appearance.
     @MainActor
@@ -254,6 +271,73 @@ private extension SheetPresentationPlanTests {
         return SheetViewModel(sheet: sheet, sheetStackViewModel: stackViewModel)
     }
 
+    @MainActor
+    static func assertSheetSafeArea(
+        rounded: Bool, nested: Bool, file: StaticString = #filePath, line: UInt = #line
+    ) throws {
+        let yellow = PaywallComponent.ColorScheme(light: .hex("#FFFF00"))
+        let inner = PaywallComponent.StackComponent(
+            components: [],
+            size: .init(width: .fixed(600), height: .fixed(80)),
+            backgroundColor: yellow
+        )
+        let stack = PaywallComponent.StackComponent(
+            components: nested ? [.stack(inner)] : [],
+            size: .init(width: .fill, height: nested ? .fit(nil) : .fixed(80)),
+            backgroundColor: nested ? nil : yellow,
+            shape: rounded ? .rectangle(.init(topLeading: 24, topTrailing: 24,
+                                              bottomLeading: 24, bottomTrailing: 24)) : nil,
+            border: rounded ? .init(color: .init(light: .hex("#FF0000")), width: 4) : nil
+        )
+        let sheet = PaywallComponent.ButtonComponent.Sheet(
+            id: "safe-area-sheet", name: nil, stack: stack, backgroundBlur: false,
+            size: .init(width: .fill, height: .fit(nil))
+        )
+        let viewModel = try StackComponentViewModel(
+            component: stack,
+            localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [:]),
+            colorScheme: .light
+        )
+        let host = SafeAreaSheetHost(sheet: .init(sheet: sheet, sheetStackViewModel: viewModel))
+        let (window, render) = Self.hostForResizing(
+            host, size: CGSize(width: 466, height: 678),
+            safeArea: UIEdgeInsets(top: 0, left: 40, bottom: 34, right: 84)
+        )
+        defer {
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+        let insets = try XCTUnwrap(window.rootViewController?.view.safeAreaInsets)
+        XCTAssertGreaterThanOrEqual(insets.left, 40)
+        XCTAssertGreaterThanOrEqual(insets.right, 84)
+        let pixels = try Self.rgbaBytes(of: render())
+        let center = (Int(insets.left) + pixels.width - Int(insets.right)) / 2
+        let yellowRows = (0..<pixels.height).filter { row in
+            let offset = (row * pixels.width + center) * 4
+            return Array(pixels.bytes[offset..<(offset + 3)]) == [255, 255, 0]
+        }
+        XCTAssertGreaterThan(yellowRows.count, 40, "The sheet must actually render", file: file, line: line)
+        let row = try XCTUnwrap(yellowRows.dropFirst(yellowRows.count / 2).first)
+        func assertColor(_ color: [UInt8], column: Int, row: Int) {
+            let offset = (row * pixels.width + column) * 4
+            XCTAssertEqual(Array(pixels.bytes[offset..<(offset + 3)]), color, file: file, line: line)
+        }
+        // The root background still draws under both side safe areas, including beside the sheet.
+        let safeColumns = Int(insets.left)..<(pixels.width - Int(insets.right))
+        for column in 0..<pixels.width where !safeColumns.contains(column) {
+            assertColor([0, 0, 255], column: column, row: row)
+            assertColor([0, 0, 255], column: column, row: pixels.height / 2)
+        }
+        assertColor([255, 255, 0], column: center, row: row)
+        let edgeColor: [UInt8] = rounded ? [255, 0, 0] : [255, 255, 0]
+        assertColor(edgeColor, column: safeColumns.lowerBound + 2, row: row)
+        assertColor(edgeColor, column: safeColumns.upperBound - 2, row: row)
+        if !rounded && !nested {
+            // Horizontal containment must not clip off the ordinary bottom background extension.
+            assertColor([255, 255, 0], column: center, row: pixels.height - 2)
+        }
+    }
+
     /// Rows of the red carousel page, sampled at the horizontal center.
     static func countRedRows(in image: UIImage) throws -> Int {
         let pixels = try Self.rgbaBytes(of: image)
@@ -282,10 +366,13 @@ private extension SheetPresentationPlanTests {
 
     /// Hosts the view in a window and returns it with a renderer, so the caller can resize and re-render.
     @MainActor
-    static func hostForResizing(_ view: some View, size: CGSize) -> (UIWindow, () -> UIImage) {
+    static func hostForResizing(
+        _ view: some View, size: CGSize, safeArea: UIEdgeInsets = .zero
+    ) -> (UIWindow, () -> UIImage) {
         UIView.setAnimationsEnabled(false)
 
         let controller = UIHostingController(rootView: view)
+        controller.additionalSafeAreaInsets = safeArea
         let window = UIWindow(frame: CGRect(origin: .zero, size: size))
         window.isHidden = false
         window.rootViewController = controller
@@ -378,6 +465,22 @@ private extension SheetPresentationPlanTests {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class SheetHolder: ObservableObject {
     @Published var sheet: SheetViewModel?
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct SafeAreaSheetHost: View {
+
+    @State var sheet: SheetViewModel?
+
+    var body: some View {
+        GeometryReader { proxy in
+            Color.clear
+                .bottomSheet(sheet: self.$sheet, safeAreaInsets: proxy.safeAreaInsets)
+                .backgroundStyle(.color(.init(light: .hex("#0000FF"))))
+        }
+        .previewRequiredPaywallsV2Properties()
+    }
+
 }
 
 /// Blue backdrop with no sheet at first; the test assigns one later, like a button tap would.
