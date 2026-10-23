@@ -117,6 +117,8 @@ When logging to the debug console, follow the pattern with the strings in Revenu
 
 Tests use **XCTest**, **Nimble**, **swift-snapshot-testing**, and **OHHTTPStubs**. Test targets live under `Tests/` — explore subdirectories directly for the current layout.
 
+Before you add or change a test, read [Contributing/TESTING.md](Contributing/TESTING.md).
+
 ## Development Workflow
 
 For environment setup, see **`Contributing/CONTRIBUTING.md`**. For code style, see **`Contributing/SwiftStyleGuide.swift`**.
