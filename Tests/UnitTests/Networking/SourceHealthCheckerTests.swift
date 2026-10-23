@@ -29,7 +29,7 @@ final class SourceHealthCheckerTests: TestCase {
         #endif
 
         self.dateProvider = MockCurrentDateProvider()
-        self.checker = SourceHealthChecker(dateProvider: self.dateProvider)
+        self.checker = self.createChecker()
     }
 
     override func tearDown() {
@@ -41,7 +41,7 @@ final class SourceHealthCheckerTests: TestCase {
     func test2xxResponsesAreHealthy() {
         for statusCode in [200, 204, 299] as [Int32] {
             HTTPStubs.removeAllStubs()
-            let checker = SourceHealthChecker(dateProvider: self.dateProvider)
+            let checker = self.createChecker()
             self.stubHealthEndpoint { HTTPStubsResponse(data: Data(), statusCode: statusCode, headers: nil) }
 
             expect(self.checkHealth(with: checker))
@@ -52,7 +52,7 @@ final class SourceHealthCheckerTests: TestCase {
     func testNon2xxResponsesAreNotHealthy() {
         for statusCode in [301, 404, 500, 503] as [Int32] {
             HTTPStubs.removeAllStubs()
-            let checker = SourceHealthChecker(dateProvider: self.dateProvider)
+            let checker = self.createChecker()
             self.stubHealthEndpoint { HTTPStubsResponse(data: Data(), statusCode: statusCode, headers: nil) }
 
             expect(self.checkHealth(with: checker))
@@ -161,7 +161,78 @@ final class SourceHealthCheckerTests: TestCase {
         expect(requestCount.value) == 1
     }
 
+    // MARK: - ForceServerErrorStrategy
+
+    func testForcedHealthyResultSkipsTheProbe() {
+        let requestCount = self.stubHealthEndpointCountingRequests(statusCode: 503)
+        let checker = self.createChecker(healthCheckResult: { _ in true })
+
+        expect(self.checkHealth(with: checker)) == true
+        expect(requestCount.value) == 0
+    }
+
+    func testForcedUnhealthyResultSkipsTheProbe() {
+        let requestCount = self.stubHealthEndpointCountingRequests(statusCode: 200)
+        let checker = self.createChecker(healthCheckResult: { _ in false })
+
+        expect(self.checkHealth(with: checker)) == false
+        expect(requestCount.value) == 0
+    }
+
+    func testNilForcedResultPerformsTheProbe() {
+        let requestCount = self.stubHealthEndpointCountingRequests(statusCode: 503)
+        let checker = self.createChecker(healthCheckResult: { _ in nil })
+
+        expect(self.checkHealth(with: checker)) == false
+        expect(requestCount.value) == 1
+    }
+
+    func testForcedResultReceivesTheSourceBaseURL() {
+        let receivedURLs: Atomic<[URL]> = .init([])
+        let checker = self.createChecker(healthCheckResult: { url in
+            receivedURLs.modify { $0.append(url) }
+            return true
+        })
+
+        expect(self.checkHealth(with: checker)) == true
+        expect(receivedURLs.value) == [Self.sourceBaseURL]
+    }
+
+    func testForcedResultsAreCached() {
+        let callCount: Atomic<Int> = .init(0)
+        let checker = self.createChecker(healthCheckResult: { _ in
+            callCount.modify { $0 += 1 }
+            return false
+        })
+
+        expect(self.checkHealth(with: checker)) == false
+        self.dateProvider.advance(by: 9)
+        expect(self.checkHealth(with: checker)) == false
+        expect(callCount.value) == 1
+    }
+
     // MARK: - Helpers
+
+    private func createChecker() -> SourceHealthChecker {
+        return SourceHealthChecker(internalSettings: DangerousSettings.Internal.default,
+                                   dateProvider: self.dateProvider)
+    }
+
+    private func createChecker(healthCheckResult: @escaping (URL) -> Bool?) -> SourceHealthChecker {
+        let strategy = ForceServerErrorStrategy(action: { _ in .performRequest },
+                                                healthCheckResult: healthCheckResult)
+        return SourceHealthChecker(internalSettings: DangerousSettings.Internal(forceServerErrorStrategy: strategy),
+                                   dateProvider: self.dateProvider)
+    }
+
+    private func stubHealthEndpointCountingRequests(statusCode: Int32) -> Atomic<Int> {
+        let requestCount: Atomic<Int> = .init(0)
+        self.stubHealthEndpoint {
+            requestCount.modify { $0 += 1 }
+            return HTTPStubsResponse(data: Data(), statusCode: statusCode, headers: nil)
+        }
+        return requestCount
+    }
 
     private func stubHealthEndpoint(_ response: @escaping () -> HTTPStubsResponse) {
         stub(condition: isHost("api.revenuecat.com") && isPath(Self.healthPath)) { _ in response() }

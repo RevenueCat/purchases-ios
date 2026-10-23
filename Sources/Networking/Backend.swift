@@ -47,11 +47,11 @@ class Backend {
     ) {
         // A single `apiSourceFailover` shared by every lane's HTTPClient, so they all walk one source
         // list and one health-check cache; handle tokens keep concurrent unhealthy reports from double-advancing it.
+        let internalSettings = systemInfo.dangerousSettings.internalSettings
         let apiSourceFailover = apiSourceProvider.map {
-            APISourceFailover(usesRemoteConfigAPISources:
-                                systemInfo.dangerousSettings.internalSettings.usesRemoteConfigAPISources,
+            APISourceFailover(usesRemoteConfigAPISources: internalSettings.usesRemoteConfigAPISources,
                               sourceProvider: $0,
-                              healthChecker: SourceHealthChecker())
+                              healthChecker: SourceHealthChecker(internalSettings: internalSettings))
         }
         let factory = BackendLanesFactory(systemInfo: systemInfo,
                                           eTagManager: eTagManager,

@@ -226,19 +226,51 @@ final class BackendAPISourceFailoverIntegrationTests: TestCase {
         expect(sourceB.value.last).to(beginWith("/v1/config"))
     }
 
+    func testGetCustomerInfoFailsOverWhenTheForceServerErrorStrategyReportsTheSourceUnhealthy() {
+        // The real probe would report source A healthy, so failing over proves the forced result was used.
+        let sourceA = self.stubSource(host: Self.sourceAHost,
+                                      endpoint: { Self.response(500) },
+                                      health: { Self.response(200) })
+        let sourceB = self.stubSource(host: Self.sourceBHost, endpoint: Self.customerInfoResponse)
+        let strategy = ForceServerErrorStrategy(action: { _ in .performRequest },
+                                                healthCheckResult: { $0.host == Self.sourceAHost ? false : nil })
+        let backend = Self.createBackend(sources: [Self.sourceAHost, Self.sourceBHost],
+                                         forceServerErrorStrategy: strategy)
+
+        let result = self.fetchCustomerInfo(backend)
+
+        expect(result).to(beSuccess())
+        expect(sourceA.value) == [Self.customerInfoPath]
+        expect(sourceB.value) == [Self.customerInfoPath]
+    }
+
     // MARK: - Helpers
 
     /// Wires the production stack: the `Backend` convenience init builds the real `HTTPClient`s, the
     /// shared `APISourceFailover` and the real `SourceHealthChecker`; sources come from an in-memory
     /// `sources` topic pointing at `sources` in order.
     private static func createBackend(sources: [String], usesRemoteConfigAPISources: Bool = true) -> Backend {
+        return Self.createBackend(
+            sources: sources,
+            internalSettings: DangerousSettings.Internal(usesRemoteConfigAPISources: usesRemoteConfigAPISources)
+        )
+    }
+
+    private static func createBackend(sources: [String],
+                                      forceServerErrorStrategy: ForceServerErrorStrategy) -> Backend {
+        return Self.createBackend(
+            sources: sources,
+            internalSettings: DangerousSettings.Internal(usesRemoteConfigAPISources: true,
+                                                         forceServerErrorStrategy: forceServerErrorStrategy)
+        )
+    }
+
+    private static func createBackend(sources: [String], internalSettings: DangerousSettings.Internal) -> Backend {
         let systemInfo = MockSystemInfo(
             finishTransactions: true,
             dangerousSettings: DangerousSettings(
                 autoSyncPurchases: true,
-                internalSettings: DangerousSettings.Internal(
-                    usesRemoteConfigAPISources: usesRemoteConfigAPISources
-                )
+                internalSettings: internalSettings
             )
         )
         return Backend(
