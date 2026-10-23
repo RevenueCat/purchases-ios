@@ -15,8 +15,29 @@ protocol TrialOrIntroPriceEligibilityCheckerType: Sendable {
 
     func checkEligibility(productIdentifiers: Set<String>, completion: @escaping ReceiveIntroEligibilityBlock)
 
-    /// Discards cached results for subsequent requests, without cancelling existing callers.
-    func clearCache()
+}
+
+/// A checker whose StoreKit 2 requests can share eligibility work by subscription group.
+protocol GroupAwareTrialOrIntroEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType {
+
+    var usesSubscriptionGroupEligibility: Bool { get }
+
+    func checkEligibility(
+        productIdentifiers: Set<String>,
+        groupEligibilityChecker: SubscriptionGroupEligibilityChecker?,
+        completion: @escaping ReceiveIntroEligibilityBlock
+    )
+
+}
+
+/// Resolves a StoreKit group check, allowing the caching wrapper to reuse its work and result.
+protocol SubscriptionGroupEligibilityChecker: Sendable {
+
+    func eligibility(
+        for groupID: String,
+        log: IntroEligibilityLog,
+        check: @escaping @Sendable (String) async -> Bool
+    ) async -> Bool
 
 }
 

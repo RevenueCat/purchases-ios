@@ -12,11 +12,13 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-class IntroEligibilityGroupCacheTests: TestCase {
+// swiftlint:disable type_name
+
+class CachingTrialOrIntroPriceEligibilityCheckerGroupTests: TestCase {
 
     func testCachesBothEligibleAndIneligibleResults() async {
         for eligible in [true, false] {
-            let cache = IntroEligibilityGroupCache()
+            let cache = CachingTrialOrIntroPriceEligibilityChecker(checker: MockTrialOrIntroPriceEligibilityChecker())
             let invocations = Atomic(0)
             let check: @Sendable (String) async -> Bool = { groupID in
                 expect(groupID) == "group"
@@ -36,7 +38,7 @@ class IntroEligibilityGroupCacheTests: TestCase {
     }
 
     func testConcurrentChecksShareWorkEvenWhenFirstCallerIsCancelled() async throws {
-        let cache = IntroEligibilityGroupCache()
+        let cache = CachingTrialOrIntroPriceEligibilityChecker(checker: MockTrialOrIntroPriceEligibilityChecker())
         let check = HeldSubscriptionGroupEligibilityCheck()
         defer { check.completeAll() }
         let first = Task { await cache.eligibility(for: "group", log: IntroEligibilityLog(), check: check.call) }
@@ -63,7 +65,7 @@ class IntroEligibilityGroupCacheTests: TestCase {
     }
 
     func testInvalidationClearsCompletedResultsWhilePreservingPendingChecks() async throws {
-        let cache = IntroEligibilityGroupCache()
+        let cache = CachingTrialOrIntroPriceEligibilityChecker(checker: MockTrialOrIntroPriceEligibilityChecker())
         let check = HeldSubscriptionGroupEligibilityCheck()
         defer { check.completeAll() }
         let first = Task { await cache.eligibility(for: "pending", log: IntroEligibilityLog(), check: check.call) }
@@ -100,7 +102,7 @@ class IntroEligibilityGroupCacheTests: TestCase {
     }
 
     func testInvalidationAfterSharedCheckCompletesStartsFreshCheck() async throws {
-        let cache = IntroEligibilityGroupCache()
+        let cache = CachingTrialOrIntroPriceEligibilityChecker(checker: MockTrialOrIntroPriceEligibilityChecker())
         let check = HeldSubscriptionGroupEligibilityCheck()
         defer { check.completeAll() }
         let first = Task { await cache.eligibility(for: "group", log: IntroEligibilityLog(), check: check.call) }
@@ -126,7 +128,7 @@ class IntroEligibilityGroupCacheTests: TestCase {
     }
 
     func testUnrelatedGroupStartsAndCompletesWhileFirstGroupIsPending() async throws {
-        let cache = IntroEligibilityGroupCache()
+        let cache = CachingTrialOrIntroPriceEligibilityChecker(checker: MockTrialOrIntroPriceEligibilityChecker())
         let check = HeldSubscriptionGroupEligibilityCheck()
         defer { check.completeAll() }
         let firstFinished = Atomic(false)

@@ -460,7 +460,6 @@
 		3592E8902C2ED5C100D7F91D /* CustomerCenterConfigAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3592E88F2C2ED5C100D7F91D /* CustomerCenterConfigAPI.swift */; };
 		359E8E3F26DEBEEB00B869F9 /* TrialOrIntroPriceEligibilityChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359E8E3E26DEBEEB00B869F9 /* TrialOrIntroPriceEligibilityChecker.swift */; };
 		FF8F669CD5B2DD5539CAF6D8 /* IntroEligibilityLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18356FB54CCB1D5994F15784 /* IntroEligibilityLog.swift */; };
-		D07ACC6DC9E8469DAA15F08B /* IntroEligibilityGroupCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5D73CC061F24C87884C003F /* IntroEligibilityGroupCache.swift */; };
 		564FB263CBFA48839F9D25F8 /* TrialOrIntroPriceEligibilityCheckerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7559772FBF8047D4B8300F17 /* TrialOrIntroPriceEligibilityCheckerType.swift */; };
 		35AAEB452BBB14D000A12548 /* DiagnosticsFileHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35AAEB442BBB14D000A12548 /* DiagnosticsFileHandler.swift */; };
 		35AAEB492BBB17B500A12548 /* DiagnosticsEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35AAEB482BBB17B500A12548 /* DiagnosticsEvent.swift */; };
@@ -1005,7 +1004,7 @@
 		57E9CF0F290B2A4B00EE12D1 /* CachingTrialOrIntroPriceEligibilityChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E9CF0E290B2A4B00EE12D1 /* CachingTrialOrIntroPriceEligibilityChecker.swift */; };
 		57E9CF11290B2ADC00EE12D1 /* CachingTrialOrIntroPriceEligibilityCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E9CF10290B2ADC00EE12D1 /* CachingTrialOrIntroPriceEligibilityCheckerTests.swift */; };
 		43F450DBB8AA640DD5708BCB /* IntroEligibilityLogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1AF9E0261895621CBBC5BD0 /* IntroEligibilityLogTests.swift */; };
-		35A04E059E4541C0B62B899B /* IntroEligibilityGroupCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDB70D050D134A1485BF4FEB /* IntroEligibilityGroupCacheTests.swift */; };
+		35A04E059E4541C0B62B899B /* CachingTrialOrIntroPriceEligibilityCheckerGroupTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDB70D050D134A1485BF4FEB /* CachingTrialOrIntroPriceEligibilityCheckerGroupTests.swift */; };
 		57EAE527274324C60060EB74 /* Lock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57EAE526274324C60060EB74 /* Lock.swift */; };
 		57EAE52B274332830060EB74 /* Obsoletions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57EAE52A274332830060EB74 /* Obsoletions.swift */; };
 		57EAE52D274468900060EB74 /* RawDataContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57EAE52C274468900060EB74 /* RawDataContainer.swift */; };
@@ -2323,7 +2322,6 @@
 		3597021124BF6AAC0010506E /* TransactionsFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsFactoryTests.swift; sourceTree = "<group>"; };
 		359E8E3E26DEBEEB00B869F9 /* TrialOrIntroPriceEligibilityChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialOrIntroPriceEligibilityChecker.swift; sourceTree = "<group>"; };
 		18356FB54CCB1D5994F15784 /* IntroEligibilityLog.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IntroEligibilityLog.swift; sourceTree = "<group>"; };
-		D5D73CC061F24C87884C003F /* IntroEligibilityGroupCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroEligibilityGroupCache.swift; sourceTree = "<group>"; };
 		7559772FBF8047D4B8300F17 /* TrialOrIntroPriceEligibilityCheckerType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialOrIntroPriceEligibilityCheckerType.swift; sourceTree = "<group>"; };
 		35A99C802CCB8D530074AB41 /* PurchaseInformationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseInformationTests.swift; sourceTree = "<group>"; };
 		35AAEB442BBB14D000A12548 /* DiagnosticsFileHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsFileHandler.swift; sourceTree = "<group>"; };
@@ -2877,7 +2875,7 @@
 		57E9CF0E290B2A4B00EE12D1 /* CachingTrialOrIntroPriceEligibilityChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachingTrialOrIntroPriceEligibilityChecker.swift; sourceTree = "<group>"; };
 		57E9CF10290B2ADC00EE12D1 /* CachingTrialOrIntroPriceEligibilityCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachingTrialOrIntroPriceEligibilityCheckerTests.swift; sourceTree = "<group>"; };
 		D1AF9E0261895621CBBC5BD0 /* IntroEligibilityLogTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IntroEligibilityLogTests.swift; sourceTree = "<group>"; };
-		EDB70D050D134A1485BF4FEB /* IntroEligibilityGroupCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroEligibilityGroupCacheTests.swift; sourceTree = "<group>"; };
+		EDB70D050D134A1485BF4FEB /* CachingTrialOrIntroPriceEligibilityCheckerGroupTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachingTrialOrIntroPriceEligibilityCheckerGroupTests.swift; sourceTree = "<group>"; };
 		57EAE526274324C60060EB74 /* Lock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lock.swift; sourceTree = "<group>"; };
 		57EAE52A274332830060EB74 /* Obsoletions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Obsoletions.swift; sourceTree = "<group>"; };
 		57EAE52C274468900060EB74 /* RawDataContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawDataContainer.swift; sourceTree = "<group>"; };
@@ -5271,7 +5269,6 @@
 				F56E2E7627622B5E009FED5B /* TransactionsManager.swift */,
 				359E8E3E26DEBEEB00B869F9 /* TrialOrIntroPriceEligibilityChecker.swift */,
 				18356FB54CCB1D5994F15784 /* IntroEligibilityLog.swift */,
-				D5D73CC061F24C87884C003F /* IntroEligibilityGroupCache.swift */,
 				7559772FBF8047D4B8300F17 /* TrialOrIntroPriceEligibilityCheckerType.swift */,
 				57BB070D28D27A2B007F5DF0 /* CachingProductsManager.swift */,
 				57E9CF0E290B2A4B00EE12D1 /* CachingTrialOrIntroPriceEligibilityChecker.swift */,
@@ -5362,7 +5359,7 @@
 				BR0000000000000000000202 /* BranchResolverTests.swift */,
 				57E9CF10290B2ADC00EE12D1 /* CachingTrialOrIntroPriceEligibilityCheckerTests.swift */,
 				D1AF9E0261895621CBBC5BD0 /* IntroEligibilityLogTests.swift */,
-				EDB70D050D134A1485BF4FEB /* IntroEligibilityGroupCacheTests.swift */,
+				EDB70D050D134A1485BF4FEB /* CachingTrialOrIntroPriceEligibilityCheckerGroupTests.swift */,
 				4FE0685E2A5F54C500B8F56C /* PackageTypeTests.swift */,
 				FDC4B60A2FCE1122001E5F96 /* InstallmentsInfoTests.swift */,
 			);
@@ -8539,7 +8536,6 @@
 				B372EC56268FEF020099171E /* ProductRequestData.swift in Sources */,
 				359E8E3F26DEBEEB00B869F9 /* TrialOrIntroPriceEligibilityChecker.swift in Sources */,
 				FF8F669CD5B2DD5539CAF6D8 /* IntroEligibilityLog.swift in Sources */,
-				D07ACC6DC9E8469DAA15F08B /* IntroEligibilityGroupCache.swift in Sources */,
 				564FB263CBFA48839F9D25F8 /* TrialOrIntroPriceEligibilityCheckerType.swift in Sources */,
 				166B9F3A302A133B0037DDCB /* WebBundleEventBus.swift in Sources */,
 				166B9F41302F01010037DDCB /* WebBundleURLBatcher.swift in Sources */,
@@ -8825,7 +8821,7 @@
 				4F2A91D82B05675B00FED622 /* MockStoreMessagesHelper.swift in Sources */,
 				57E9CF11290B2ADC00EE12D1 /* CachingTrialOrIntroPriceEligibilityCheckerTests.swift in Sources */,
 				43F450DBB8AA640DD5708BCB /* IntroEligibilityLogTests.swift in Sources */,
-				35A04E059E4541C0B62B899B /* IntroEligibilityGroupCacheTests.swift in Sources */,
+				35A04E059E4541C0B62B899B /* CachingTrialOrIntroPriceEligibilityCheckerGroupTests.swift in Sources */,
 				5757EDF82DEE092900AC4BE1 /* ClockTests.swift in Sources */,
 				D012440C2FD02DC90043B43B /* RewardVerificationResultTests.swift in Sources */,
 				AAE17E010000000000000003 /* RewardVerificationStatusResponseTests.swift in Sources */,

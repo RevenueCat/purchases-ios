@@ -7,16 +7,11 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  IntroTrialOrIntroductoryPriceEligibilityChecker.swift
-//
-//  Created by César de la Vega on 8/31/21.
 
 import Foundation
 import StoreKit
 
-class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType {
-
-    private var appUserID: String { self.currentUserProvider.currentAppUserID }
+class TrialOrIntroPriceEligibilityChecker: GroupAwareTrialOrIntroEligibilityChecker {
 
     private let systemInfo: SystemInfo
     private let receiptFetcher: ReceiptFetcher
@@ -27,7 +22,12 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
     private let productsManager: ProductsManagerType
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let dateProvider: DateProvider
-    private let groupEligibilityCache = IntroEligibilityGroupCache()
+
+    var usesSubscriptionGroupEligibility: Bool {
+        guard #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) else { return false }
+        return self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable
+            && !self.systemInfo.isSimulatedStoreAPIKey && !self.systemInfo.dangerousSettings.uiPreviewMode
+    }
 
     init(
         systemInfo: SystemInfo,
@@ -51,16 +51,18 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         self.dateProvider = dateProvider
     }
 
-    func clearCache() {
-        self.groupEligibilityCache.clearCache()
+    func checkEligibility(productIdentifiers: Set<String>, completion: @escaping ReceiveIntroEligibilityBlock) {
+        self.checkEligibility(productIdentifiers: productIdentifiers,
+                              groupEligibilityChecker: nil,
+                              completion: completion)
     }
 
     // swiftlint:disable:next function_body_length
     func checkEligibility(productIdentifiers: Set<String>,
+                          groupEligibilityChecker: SubscriptionGroupEligibilityChecker?,
                           completion: @escaping ReceiveIntroEligibilityBlock) {
         guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
-            // No check eligibility request should happen in UI preview mode.
-            // Thus, the eligibility status for all product identifiers are set to `.unknown`
+            // Preview mode skips eligibility checks and reports `.unknown` for each product.
             let result = productIdentifiers.reduce(into: [:]) { resultDict, productId in
                 resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.unknown)
             }
@@ -75,9 +77,8 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         }
 
         guard !self.systemInfo.isSimulatedStoreAPIKey else {
-            // The backend computes intro/trial eligibility for Simulated Store products. If a product
-            // carries an introductory discount (a free trial or an intro price), the user is eligible
-            // for it. Products without an introductory discount have no intro offer to be eligible for.
+            // Simulated Store products carry backend-computed eligibility in their introductory discount.
+            // Products without that discount have no introductory offer.
             self.productsManager.products(withIdentifiers: productIdentifiers) { result in
                 let productsByID = (result.value ?? []).dictionaryAllowingDuplicateKeys { $0.productIdentifier }
                 let eligibility = productIdentifiers.reduce(into: [String: IntroEligibility]()) { dict, productId in
@@ -120,7 +121,9 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
                 let result: [String: IntroEligibility]
                 let checkError: Error?
                 do {
-                    result = try await self.sk2CheckEligibility(productIdentifiers)
+                    result = try await self.sk2CheckEligibility(
+                        productIdentifiers, groupEligibilityChecker: groupEligibilityChecker
+                    )
                     checkError = nil
                 } catch {
                     Logger.appleError(Strings.eligibility.unable_to_get_intro_eligibility_for_user(error: error))
@@ -164,12 +167,13 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func sk2CheckEligibility(
         _ compoundProductIdentifiers: Set<String>,
+        groupEligibilityChecker: SubscriptionGroupEligibilityChecker? = nil,
         checkSubscriptionGroup: @escaping @Sendable (String) async -> Bool = {
             await SK2Product.SubscriptionInfo.isEligibleForIntroOffer(for: $0)
         }
     ) async throws -> [String: IntroEligibility] {
-        var introDictionary: [String: IntroEligibility] = compoundProductIdentifiers.dictionaryWithValues { _ in
-                .init(eligibilityStatus: .unknown)
+        var introDictionary = compoundProductIdentifiers.dictionaryWithValues { _ in
+            IntroEligibility(eligibilityStatus: .unknown)
         }
         let log = IntroEligibilityLog(clock: self.systemInfo.clock)
         let products = try await log.products(identifiers: compoundProductIdentifiers,
@@ -186,9 +190,16 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         await withTaskGroup(of: (String, Bool).self) { group in
             for subscriptionGroupID in productIdentifiersByGroup.keys {
                 group.addTask {
-                    let isEligible = await self.groupEligibilityCache.eligibility(
-                        for: subscriptionGroupID, log: log, check: checkSubscriptionGroup
-                    )
+                    let isEligible: Bool
+                    if let groupEligibilityChecker {
+                        isEligible = await groupEligibilityChecker.eligibility(
+                            for: subscriptionGroupID, log: log, check: checkSubscriptionGroup
+                        )
+                    } else {
+                        isEligible = await log.eligibility(
+                            forSubscriptionGroup: subscriptionGroupID, check: checkSubscriptionGroup
+                        )
+                    }
                     return (subscriptionGroupID, isEligible)
                 }
             }
@@ -220,8 +231,6 @@ private extension SK2StoreProduct {
         return subscription.introductoryOffer == nil ? nil : subscription.subscriptionGroupID
     }
 }
-
-// MARK: - Implementations
 
 private extension TrialOrIntroPriceEligibilityChecker {
 
@@ -301,7 +310,7 @@ extension TrialOrIntroPriceEligibilityChecker {
             return
         }
 
-        self.backend.offerings.getIntroEligibility(appUserID: self.appUserID,
+        self.backend.offerings.getIntroEligibility(appUserID: self.currentUserProvider.currentAppUserID,
                                                    receiptData: receiptData,
                                                    productIdentifiers: productIdentifiers) { backendResult, error in
             let result: [String: IntroEligibility] = {

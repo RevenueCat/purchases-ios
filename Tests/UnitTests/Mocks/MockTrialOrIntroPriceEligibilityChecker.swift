@@ -16,6 +16,8 @@
 // swiftlint:disable identifier_name line_length
 class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityChecker {
 
+    override var usesSubscriptionGroupEligibility: Bool { false }
+
     convenience init() {
         let platformInfo = Purchases.PlatformInfo(flavor: "xyz", version: "123")
         let systemInfo = MockSystemInfo(platformInfo: platformInfo, finishTransactions: true)
@@ -41,12 +43,6 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
     var invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList: [Set<String>] = []
     var stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult: [String: IntroEligibility] = [:]
     private let checkEligibilityLock = Lock()
-    let invokedClearCacheCount: Atomic<Int> = .init(0)
-
-    override func clearCache() {
-        self.invokedClearCacheCount.modify { $0 += 1 }
-        super.clearCache()
-    }
 
     override func checkEligibility(productIdentifiers: Set<String>,
                                    completion: @escaping ReceiveIntroEligibilityBlock) {
@@ -85,6 +81,7 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     override func sk2CheckEligibility(
         _ productIdentifiers: Set<String>,
+        groupEligibilityChecker: SubscriptionGroupEligibilityChecker?,
         checkSubscriptionGroup: @escaping @Sendable (String) async -> Bool
     ) async -> [String: IntroEligibility] {
         invokedSk2checkTrialOrIntroPriceEligibility = true
