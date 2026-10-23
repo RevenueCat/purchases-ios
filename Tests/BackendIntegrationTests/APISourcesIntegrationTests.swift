@@ -374,7 +374,7 @@ private final class APISourceRecorder {
     func strategy(simulatingAnOutageOf downSource: String) -> ForceServerErrorStrategy {
         let downHost = URL(string: downSource)?.host
         return .init(action: self.strategy(failingRequestsTo: downSource).action,
-                     healthCheckResult: { $0.host == downHost ? false : nil })
+                     healthCheckAction: { $0.host == downHost ? .fakeUnhealthy : .performHealthCheck })
     }
 
 }
