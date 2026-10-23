@@ -37,7 +37,9 @@ struct WorkflowSkeleton {
         copy.componentsConfig = .init(base: .init(
             stack: transform.stack(base.stack),
             header: base.header.map { .init(stack: transform.stack($0.stack)) },
-            stickyFooter: base.stickyFooter.map { .init(stack: transform.stack($0.stack)) },
+            stickyFooter: base.stickyFooter.map {
+                .init(stack: transform.stack($0.stack), layout: $0.layout, overrides: $0.overrides)
+            },
             background: .color(background)
         ))
         return copy

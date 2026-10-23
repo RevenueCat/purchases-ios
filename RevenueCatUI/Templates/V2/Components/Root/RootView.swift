@@ -90,74 +90,21 @@ struct RootView: View {
     }
 
     var body: some View {
-        VStack(alignment: .center, spacing: 0) {
-            if let headerViewModel = viewModel.headerViewModel,
-               !viewModel.shouldOverlayHeader {
-                HeaderComponentView(
-                    viewModel: headerViewModel,
-                    onDismiss: onDismiss
-                )
-                .fixedSize(horizontal: false, vertical: true)
-                .opacity(self.workflowRenderingContext.pageHeaderSuppressed ? 0 : 1)
-            }
-
-            ZStack(alignment: .top) {
-                fillVerticalBounds
-
-                StackComponentView(
-                    viewModel: viewModel.stackViewModel,
-                    isScrollableByDefault: true,
-                    onDismiss: onDismiss,
-                    additionalPadding: EdgeInsets(top: 0, leading: 0, bottom: overlaidFooterHeight, trailing: 0)
-                )
-                .environment(\.overlaidHeaderHeight, overlaidHeaderHeight)
-                .environment(\.nativePaywallBodyHeroIdentifier,
-                             viewModel.firstItemIsFullWidthMedia
-                                 ? viewModel.stackViewModel.viewModels.first?.firstNativeMediaIdentifier : nil)
-                .environment(\.nativePaywallBodySafeAreaRestored, self.restoresBodyTopInset)
-                .onPreferenceChange(NativePaywallVisibleBodyHeroKey.self) { self.visibleBodyHero = $0 }
-                // An authored hero can be hidden by a rule. Once its native-only header collapses,
-                // the body must reclaim the inset that the original overlay configuration removed.
-                .padding(.top, self.restoresBodyTopInset ? self.safeAreaInsets.top : 0)
-
-                if let headerViewModel = viewModel.headerViewModel,
-                   viewModel.shouldOverlayHeader {
-                    HeaderComponentView(
-                        viewModel: headerViewModel,
-                        onDismiss: onDismiss
-                    )
-                    .fixedSize(horizontal: false, vertical: true)
-                    .opacity(self.workflowRenderingContext.pageHeaderSuppressed ? 0 : 1)
-                    .overlay(GeometryReader { proxy in
-                        Color.clear.preference(
-                            key: OverlaidHeaderHeightKey.self,
-                            value: proxy.size.height
-                        )
-                    })
+        FooterLayoutReader(viewModel: viewModel.stickyFooterViewModel) { layout in
+            if layout == .splitLeading || layout == .splitTrailing {
+                GeometryReader { geometry in
+                    HStack(spacing: 0) {
+                        if layout == .splitLeading {
+                            splitFooter.frame(width: geometry.size.width / 2)
+                        }
+                        mainContent(footerLayout: layout).frame(width: geometry.size.width / 2)
+                        if layout == .splitTrailing {
+                            splitFooter.frame(width: geometry.size.width / 2)
+                        }
+                    }
                 }
-            }
-            .onPreferenceChange(OverlaidHeaderHeightKey.self) { height in
-                overlaidHeaderHeight = height
-            }
-            // Overlay the footer while reserving its measured height in the main content.
-            .overlay(alignment: .bottom) {
-                if let stickyFooterViewModel = viewModel.stickyFooterViewModel {
-                    StackComponentView(
-                        viewModel: stickyFooterViewModel.stackViewModel,
-                        onDismiss: onDismiss,
-                        additionalPadding: EdgeInsets(
-                            top: 0,
-                            leading: 0,
-                            bottom: Self.stickyFooterBottomPadding(
-                                safeAreaBottom: safeAreaInsets.bottom,
-                                idiom: self.userInterfaceIdiom
-                            ),
-                            trailing: 0
-                        )
-                    )
-                    .fixedSize(horizontal: false, vertical: true)
-                    .onSizeChange { overlaidFooterHeight = $0.height }
-                }
+            } else {
+                mainContent(footerLayout: layout)
             }
         }
         .environment(\.paywallRootStackIsZLayer, self.paywallRootStackIsZLayer)
@@ -204,6 +151,100 @@ struct RootView: View {
                     )
                 )
             }
+        }
+    }
+
+    private func mainContent(footerLayout: PaywallComponent.StickyFooterComponent.Layout) -> some View {
+        VStack(alignment: .center, spacing: 0) {
+            if let headerViewModel = viewModel.headerViewModel,
+               !viewModel.shouldOverlayHeader {
+                HeaderComponentView(
+                    viewModel: headerViewModel,
+                    onDismiss: onDismiss
+                )
+                .fixedSize(horizontal: false, vertical: true)
+                .opacity(self.workflowRenderingContext.pageHeaderSuppressed ? 0 : 1)
+            }
+
+            ZStack(alignment: .top) {
+                fillVerticalBounds
+
+                StackComponentView(
+                    viewModel: viewModel.stackViewModel,
+                    isScrollableByDefault: true,
+                    onDismiss: onDismiss,
+                    additionalPadding: EdgeInsets(
+                        top: 0, leading: 0,
+                        bottom: footerLayout == .normal ? overlaidFooterHeight : 0, trailing: 0
+                    )
+                )
+                .environment(\.overlaidHeaderHeight, overlaidHeaderHeight)
+                .environment(\.nativePaywallBodyHeroIdentifier,
+                             viewModel.firstItemIsFullWidthMedia
+                                 ? viewModel.stackViewModel.viewModels.first?.firstNativeMediaIdentifier : nil)
+                .environment(\.nativePaywallBodySafeAreaRestored, self.restoresBodyTopInset)
+                .onPreferenceChange(NativePaywallVisibleBodyHeroKey.self) { self.visibleBodyHero = $0 }
+                // An authored hero can be hidden by a rule. Once its native-only header collapses,
+                // the body must reclaim the inset that the original overlay configuration removed.
+                .padding(.top, self.restoresBodyTopInset ? self.safeAreaInsets.top : 0)
+
+                if let headerViewModel = viewModel.headerViewModel,
+                   viewModel.shouldOverlayHeader {
+                    HeaderComponentView(
+                        viewModel: headerViewModel,
+                        onDismiss: onDismiss
+                    )
+                    .fixedSize(horizontal: false, vertical: true)
+                    .opacity(self.workflowRenderingContext.pageHeaderSuppressed ? 0 : 1)
+                    .overlay(GeometryReader { proxy in
+                        Color.clear.preference(
+                            key: OverlaidHeaderHeightKey.self,
+                            value: proxy.size.height
+                        )
+                    })
+                }
+            }
+            .onPreferenceChange(OverlaidHeaderHeightKey.self) { height in
+                overlaidHeaderHeight = height
+            }
+            // Overlay the footer while reserving its measured height in the main content.
+            .overlay(alignment: .bottom) {
+                if footerLayout == .normal, let stickyFooterViewModel = viewModel.stickyFooterViewModel {
+                    StackComponentView(
+                        viewModel: stickyFooterViewModel.stackViewModel,
+                        onDismiss: onDismiss,
+                        additionalPadding: EdgeInsets(
+                            top: 0,
+                            leading: 0,
+                            bottom: Self.stickyFooterBottomPadding(
+                                safeAreaBottom: safeAreaInsets.bottom,
+                                idiom: self.userInterfaceIdiom
+                            ),
+                            trailing: 0
+                        )
+                    )
+                    .fixedSize(horizontal: false, vertical: true)
+                    .onSizeChange { overlaidFooterHeight = $0.height }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var splitFooter: some View {
+        if let footer = viewModel.stickyFooterViewModel {
+            StackComponentView(
+                viewModel: footer.stackViewModel,
+                isScrollableByDefault: true,
+                onDismiss: onDismiss,
+                additionalPadding: EdgeInsets(
+                    top: safeAreaInsets.top, leading: 0,
+                    bottom: Self.stickyFooterBottomPadding(
+                        safeAreaBottom: safeAreaInsets.bottom, idiom: userInterfaceIdiom
+                    ),
+                    trailing: 0
+                )
+            )
+            .frame(maxHeight: .infinity)
         }
     }
 
