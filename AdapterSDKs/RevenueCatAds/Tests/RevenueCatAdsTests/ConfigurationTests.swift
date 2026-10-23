@@ -117,4 +117,3 @@ final class AdsConfigurationResolutionTests: TestCase {
     }
 
 }
-
