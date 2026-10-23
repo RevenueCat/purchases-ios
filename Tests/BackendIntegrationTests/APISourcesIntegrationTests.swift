@@ -13,7 +13,6 @@
 
 import Nimble
 @testable import RevenueCat
-import StoreKit
 import XCTest
 
 private enum APISources {
@@ -211,24 +210,47 @@ class APISourcesStoreKit2IntegrationTests: BaseStoreKitIntegrationTests {
         expect(self.apiSourceRecorder.sources(for: HTTPRequest.Path.logIn)) == [APISources.primary]
     }
 
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func testBackupSourceAcceptsPurchasedTransactions() async throws {
-        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+}
 
+class APISourceOutageStoreKit1IntegrationTests: APISourceOutageStoreKit2IntegrationTests {
+
+    override class var storeKitVersion: StoreKitVersion { .storeKit1 }
+
+}
+
+/// Runs core SDK flows against the real backend while the primary API source is down, so the SDK fails over
+/// to the backup source from its embedded defaults.
+class APISourceOutageStoreKit2IntegrationTests: BaseStoreKitIntegrationTests {
+
+    private let apiSourceRecorder = APISourceRecorder()
+
+    override class var storeKitVersion: StoreKitVersion { .storeKit2 }
+
+    override var usesRemoteConfigAPISources: Bool { return true }
+
+    // A proxy pins every request to itself, bypassing API sources.
+    override var proxyURL: String? { return nil }
+
+    override func setUp() async throws {
+        self.forceServerErrorStrategy = self.apiSourceRecorder.strategy(simulatingAnOutageOf: APISources.primary)
+
+        try await super.setUp()
+    }
+
+    func testCanGetOfferingsFromTheBackupSource() async throws {
+        let offerings = try await self.purchases.offerings()
+
+        expect(offerings.all).toNot(beEmpty())
+        expect(offerings.contents.originalSource) != .fallbackUrl
+        expect(self.apiSourceRecorder.sources(for: HTTPRequest.Path.getOfferings(appUserID: "")).last)
+            == APISources.backup
+    }
+
+    func testCanPurchaseSubscriptionThroughTheBackupSource() async throws {
         let purchase = try await self.purchaseMonthlyOffering()
-        let productIdentifier = try XCTUnwrap(purchase.transaction?.productIdentifier)
-        let transaction = try await XCTAsyncUnwrap(await StoreKit.Transaction.latest(for: productIdentifier))
 
-        let backupRecorder = APISourceRecorder()
-        let backend = self.createBackend(sources: [APISources.backup],
-                                         forceServerErrorStrategy: backupRecorder.strategy(failingRequestsTo: nil))
-
-        let customerInfo = try await backend.postReceipt(.jws(transaction.jwsRepresentation),
-                                                         appUserID: try self.purchases.appUserID).get()
-
-        try await self.verifyEntitlementWentThrough(customerInfo)
-        expect(customerInfo.entitlements.verification) == .verified
-        expect(backupRecorder.sources) == [APISources.backup]
+        expect(purchase.customerInfo.entitlements.verification) == .verified
+        expect(self.apiSourceRecorder.sources(for: HTTPRequest.Path.postReceiptData).last) == APISources.backup
     }
 
 }
@@ -318,25 +340,11 @@ private extension Backend {
         }
     }
 
-    func postReceipt(_ receipt: EncodedAppleReceipt, appUserID: String) async -> Result<CustomerInfo, BackendError> {
-        return await withCheckedContinuation { continuation in
-            self.post(receipt: receipt,
-                      productData: nil,
-                      transactionData: PurchasedTransactionData(),
-                      postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
-                      observerMode: false,
-                      originalPurchaseCompletedBy: nil,
-                      appUserID: appUserID) {
-                continuation.resume(returning: $0)
-            }
-        }
-    }
-
 }
 
 /// Records the API source each request attempt resolved (`nil` when it used its static host), and can fail
 /// the attempts targeting one source with a real 5xx. Source health checks don't go through `HTTPClient`, so
-/// they're neither recorded nor failed.
+/// they're never recorded.
 private final class APISourceRecorder {
 
     private let attempts: Atomic<[(pathName: String, source: String?)]> = .init([])
@@ -359,6 +367,14 @@ private final class APISourceRecorder {
             }
             return .performRequest
         }
+    }
+
+    /// Like `strategy(failingRequestsTo:)`, but `downSource`'s health checks also report it unhealthy, so the
+    /// SDK fails over as if it were down.
+    func strategy(simulatingAnOutageOf downSource: String) -> ForceServerErrorStrategy {
+        let downHost = URL(string: downSource)?.host
+        return .init(action: self.strategy(failingRequestsTo: downSource).action,
+                     healthCheckResult: { $0.host == downHost ? false : nil })
     }
 
 }
