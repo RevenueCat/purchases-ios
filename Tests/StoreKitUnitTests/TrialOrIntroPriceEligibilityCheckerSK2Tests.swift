@@ -117,7 +117,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
                         "lifetime": IntroEligibilityStatus.noIntroOfferExists]
 
         let eligibilities = try await XCTAsyncUnwrap(
-            try await trialOrIntroPriceEligibilityChecker.sk2CheckEligibility(products)
+            try await trialOrIntroPriceEligibilityChecker.sk2CheckEligibility(products, groupEligibilityChecker: nil)
         )
         expect(eligibilities.count) == expected.count
 
@@ -364,10 +364,10 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
         let monthly = StoreProduct(sk2Product: try await self.fetchSk2Product())
         self.mockProductsManager.stubbedProductsCompletionResult = .success([monthly])
         let first = try await self.trialOrIntroPriceEligibilityChecker.sk2CheckEligibility(
-            [monthly.id], checkSubscriptionGroup: { _ in false }
+            [monthly.id], groupEligibilityChecker: nil, checkSubscriptionGroup: { _ in false }
         )
         let second = try await self.trialOrIntroPriceEligibilityChecker.sk2CheckEligibility(
-            [monthly.id], checkSubscriptionGroup: { _ in true }
+            [monthly.id], groupEligibilityChecker: nil, checkSubscriptionGroup: { _ in true }
         )
         expect(first[monthly.id]?.status) == .ineligible
         expect(second[monthly.id]?.status) == .eligible

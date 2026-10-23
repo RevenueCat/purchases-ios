@@ -167,7 +167,7 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func sk2CheckEligibility(
         _ compoundProductIdentifiers: Set<String>,
-        groupEligibilityChecker: SubscriptionGroupEligibilityChecker? = nil,
+        groupEligibilityChecker: SubscriptionGroupEligibilityChecker?,
         checkSubscriptionGroup: @escaping @Sendable (String) async -> Bool = {
             await SK2Product.SubscriptionInfo.isEligibleForIntroOffer(for: $0)
         }
