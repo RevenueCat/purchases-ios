@@ -23,14 +23,14 @@ final class AdsConfigurationResolutionTests: TestCase {
         XCTAssertEqual(resolved.auctionURL.absoluteString, "http://localhost:8080/v1/ads/openrtb2/auction")
     }
 
-    func testFallsBackToPurchasesValues() throws {
+    func testFallsBackToPurchasesValuesAndDropsProxyPathLikeCore() throws {
         let resolved = try AdsConfiguration().resolve(
             purchasesAPIKey: "appl_purchases",
             purchasesProxyURL: makeURL("https://proxy.example.com/base")
         )
 
         XCTAssertEqual(resolved.apiKey, "appl_purchases")
-        XCTAssertEqual(resolved.auctionURL.absoluteString, "https://proxy.example.com/base/v1/ads/openrtb2/auction")
+        XCTAssertEqual(resolved.auctionURL.absoluteString, "https://proxy.example.com/v1/ads/openrtb2/auction")
     }
 
     func testFallsBackToDefaultHost() throws {

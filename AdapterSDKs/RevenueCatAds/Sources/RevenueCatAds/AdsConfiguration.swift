@@ -40,7 +40,7 @@ extension AdsConfiguration {
 
     // swiftlint:disable:next force_unwrapping
     static let defaultServerURL = URL(string: "https://api.revenuecat.com")!
-    static let auctionPath = "v1/ads/openrtb2/auction"
+    static let auctionPath = "/v1/ads/openrtb2/auction"
 
     func resolve(purchasesAPIKey: String?, purchasesProxyURL: URL?) throws -> ResolvedAdsConfiguration {
         guard let apiKey = (self.apiKey ?? purchasesAPIKey), !apiKey.isEmpty else {
@@ -55,10 +55,11 @@ extension AdsConfiguration {
             throw AdsError(code: .invalidConfiguration, message: "Server URL must be http(s): \(serverURL)")
         }
 
-        return ResolvedAdsConfiguration(
-            apiKey: apiKey,
-            auctionURL: serverURL.appendingPathComponent(Self.auctionPath)
-        )
+        guard let auctionURL = URL(string: Self.auctionPath, relativeTo: serverURL)?.absoluteURL else {
+            throw AdsError(code: .invalidConfiguration, message: "Invalid server URL: \(serverURL)")
+        }
+
+        return ResolvedAdsConfiguration(apiKey: apiKey, auctionURL: auctionURL)
     }
 
 }
