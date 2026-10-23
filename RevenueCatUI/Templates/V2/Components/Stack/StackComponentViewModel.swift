@@ -295,7 +295,7 @@ struct StackComponentStyle {
 
     let visible: Bool
     let dimension: PaywallComponent.Dimension
-    let size: PaywallComponent.Size
+    private(set) var size: PaywallComponent.Size
     let spacing: CGFloat?
     let backgroundStyle: BackgroundStyle?
     let padding: EdgeInsets
@@ -348,6 +348,12 @@ struct StackComponentStyle {
                 return true
             }
         })
+    }
+
+    func fillingAvailableHeight() -> Self {
+        var copy = self
+        copy.size = .init(width: copy.size.width, height: .fill)
+        return copy
     }
 
     var vstackStrategy: StackStrategy {
