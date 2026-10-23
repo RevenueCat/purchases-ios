@@ -107,6 +107,20 @@ final class BackendAPISourceFailoverIntegrationTests: TestCase {
         expect(sourceB.value) == [Self.customerInfoPath]
     }
 
+    func testGetCustomerInfoFailsOverOnABadURLErrorWhenTheSourceIsUnreachable() {
+        let sourceA = self.stubSource(host: Self.sourceAHost,
+                                      endpoint: { HTTPStubsResponse(error: URLError(.badURL)) },
+                                      health: Self.connectionRefused)
+        let sourceB = self.stubSource(host: Self.sourceBHost, endpoint: Self.customerInfoResponse)
+        let backend = Self.createBackend(sources: [Self.sourceAHost, Self.sourceBHost])
+
+        let result = self.fetchCustomerInfo(backend)
+
+        expect(result).to(beSuccess())
+        expect(sourceA.value) == [Self.customerInfoPath, Self.healthPath]
+        expect(sourceB.value) == [Self.customerInfoPath]
+    }
+
     func testGetCustomerInfoSurfacesAConnectionErrorWithoutFailingOverWhenTheSourceIsHealthy() {
         let sourceA = self.stubSource(host: Self.sourceAHost,
                                       endpoint: Self.connectionRefused,
