@@ -227,13 +227,14 @@ final class BackendAPISourceFailoverIntegrationTests: TestCase {
     }
 
     func testGetCustomerInfoFailsOverWhenTheForceServerErrorStrategyReportsTheSourceUnhealthy() {
-        // The real probe would report source A healthy, so failing over proves the forced result was used.
+        // The real probe would report source A healthy, so failing over proves the faked result was used.
         let sourceA = self.stubSource(host: Self.sourceAHost,
                                       endpoint: { Self.response(500) },
                                       health: { Self.response(200) })
         let sourceB = self.stubSource(host: Self.sourceBHost, endpoint: Self.customerInfoResponse)
-        let strategy = ForceServerErrorStrategy(action: { _ in .performRequest },
-                                                healthCheckResult: { $0.host == Self.sourceAHost ? false : nil })
+        let strategy = ForceServerErrorStrategy(action: { _ in .performRequest }, healthCheckAction: { url in
+            url.host == Self.sourceAHost ? .fakeUnhealthy : .performHealthCheck
+        })
         let backend = Self.createBackend(sources: [Self.sourceAHost, Self.sourceBHost],
                                          forceServerErrorStrategy: strategy)
 
