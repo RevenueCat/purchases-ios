@@ -656,8 +656,10 @@ jobs:
           install_xcbeautify: false
       - update-spm-installation-commit
       - run:
-          name: SPM RevenueCatAds Release Build
-          command: cd AdapterSDKs/RevenueCatAds && swift build -c release
+          name: SPM RevenueCatAds iOS Release Build
+          command: >-
+            cd AdapterSDKs/RevenueCatAds &&
+            swift build -c release --triple arm64-apple-ios15.0 --sdk "$(xcrun --sdk iphoneos --show-sdk-path)"
           no_output_timeout: 30m
       - run:
           name: RevenueCatAds unit tests
