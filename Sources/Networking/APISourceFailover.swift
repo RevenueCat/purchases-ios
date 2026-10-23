@@ -10,7 +10,7 @@ import Foundation
 protocol APISourceFailoverType: AnyObject, Sendable {
 
     /// The source a request to `path` should target, or `nil` to keep using the path's default host.
-    func currentSource(for path: HTTPRequestPath, isFallbackAttempt: Bool) -> APISourceFailover.ResolvedSource?
+    func currentSource(for path: HTTPRequest.Path, isFallbackAttempt: Bool) -> APISourceFailover.ResolvedSource?
 
     /// Decides what to do after a request to `source` failed in a way that may indicate a source
     /// outage, health-checking the source to tell an outage apart from anything else.
@@ -70,7 +70,7 @@ final class APISourceFailover: APISourceFailoverType {
     /// proxy is configured (a proxy pins every request to itself), this is not an endpoint
     /// fallback-host attempt, the path opts in via `usesAPISources`, and `SystemInfo.apiBaseURL`
     /// still holds its default (an override pins the host, e.g. in tests).
-    func currentSource(for path: HTTPRequestPath, isFallbackAttempt: Bool) -> ResolvedSource? {
+    func currentSource(for path: HTTPRequest.Path, isFallbackAttempt: Bool) -> ResolvedSource? {
         guard self.usesRemoteConfigAPISources,
               SystemInfo.proxyURL == nil,
               !isFallbackAttempt,
