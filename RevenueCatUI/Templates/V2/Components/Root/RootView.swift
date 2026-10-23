@@ -175,7 +175,7 @@ struct RootView: View {
                     onDismiss: onDismiss,
                     additionalPadding: EdgeInsets(
                         top: 0, leading: 0,
-                        bottom: footerLayout == .normal ? overlaidFooterHeight : 0, trailing: 0
+                        bottom: footerLayout == .normal ? overlaidFooterHeight : safeAreaInsets.bottom, trailing: 0
                     )
                 )
                 .environment(\.overlaidHeaderHeight, overlaidHeaderHeight)
