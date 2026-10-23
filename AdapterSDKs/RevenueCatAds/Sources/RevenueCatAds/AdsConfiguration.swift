@@ -43,7 +43,10 @@ extension AdsConfiguration {
     static let auctionPath = "/v1/ads/openrtb2/auction"
 
     func resolve(purchasesAPIKey: String?, purchasesProxyURL: URL?) throws -> ResolvedAdsConfiguration {
-        guard let apiKey = (self.apiKey ?? purchasesAPIKey), !apiKey.isEmpty else {
+        if let explicitAPIKey = self.apiKey, explicitAPIKey.isEmpty {
+            throw AdsError(code: .invalidConfiguration, message: "apiKey must not be empty.")
+        }
+        guard let apiKey = self.apiKey ?? purchasesAPIKey, !apiKey.isEmpty else {
             throw AdsError(
                 code: .notConfigured,
                 message: "No API key: pass one in AdsConfiguration or configure Purchases first."
