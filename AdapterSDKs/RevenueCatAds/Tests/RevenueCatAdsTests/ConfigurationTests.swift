@@ -6,7 +6,6 @@
 
 import XCTest
 
-#if os(iOS) && canImport(PrebidMobile)
 @_spi(Experimental) @testable import RevenueCatAds
 
 final class AdsConfigurationResolutionTests: TestCase {
@@ -77,4 +76,3 @@ final class AdsConfigurationResolutionTests: TestCase {
 
 }
 
-#endif
