@@ -32,6 +32,48 @@ final class AdsConfigurationResolutionTests: TestCase {
         XCTAssertEqual(resolved.auctionURL.absoluteString, "https://proxy.example.com/v1/ads/openrtb2/auction")
     }
 
+    func testExplicitServerURLWithPurchasesAPIKey() throws {
+        let configuration = AdsConfiguration(serverURL: makeURL("http://localhost:8080"))
+
+        let resolved = try configuration.resolve(
+            purchasesAPIKey: "appl_purchases",
+            purchasesProxyURL: makeURL("https://proxy.example.com")
+        )
+
+        XCTAssertEqual(resolved.apiKey, "appl_purchases")
+        XCTAssertEqual(resolved.auctionURL.absoluteString, "http://localhost:8080/v1/ads/openrtb2/auction")
+    }
+
+    func testExplicitAPIKeyWithPurchasesProxyURL() throws {
+        let configuration = AdsConfiguration(apiKey: "appl_explicit")
+
+        let resolved = try configuration.resolve(
+            purchasesAPIKey: "appl_purchases",
+            purchasesProxyURL: makeURL("https://proxy.example.com")
+        )
+
+        XCTAssertEqual(resolved.apiKey, "appl_explicit")
+        XCTAssertEqual(resolved.auctionURL.absoluteString, "https://proxy.example.com/v1/ads/openrtb2/auction")
+    }
+
+    func testUppercaseSchemeIsAccepted() throws {
+        let configuration = AdsConfiguration(apiKey: "appl_key", serverURL: makeURL("HTTPS://proxy.example.com"))
+
+        let resolved = try configuration.resolve(purchasesAPIKey: nil, purchasesProxyURL: nil)
+
+        XCTAssertEqual(resolved.auctionURL.scheme?.lowercased(), "https")
+        XCTAssertEqual(resolved.auctionURL.host, "proxy.example.com")
+        XCTAssertEqual(resolved.auctionURL.path, "/v1/ads/openrtb2/auction")
+    }
+
+    func testTrailingSlashServerURLDoesNotDoubleTheSlash() throws {
+        let configuration = AdsConfiguration(apiKey: "appl_key", serverURL: makeURL("https://proxy.example.com/"))
+
+        let resolved = try configuration.resolve(purchasesAPIKey: nil, purchasesProxyURL: nil)
+
+        XCTAssertEqual(resolved.auctionURL.absoluteString, "https://proxy.example.com/v1/ads/openrtb2/auction")
+    }
+
     func testFallsBackToDefaultHost() throws {
         let resolved = try AdsConfiguration().resolve(purchasesAPIKey: "appl_purchases", purchasesProxyURL: nil)
 
