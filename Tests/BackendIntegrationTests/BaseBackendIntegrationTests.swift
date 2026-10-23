@@ -42,7 +42,7 @@ final class TestPurchaseDelegate: NSObject, PurchasesDelegate, Sendable {
 @MainActor
 class BaseBackendIntegrationTests: TestCase {
 
-    private(set) var userDefaults: UserDefaults!
+    private var userDefaults: UserDefaults!
     private var applicationSupportDirectory: URL!
     private var testUUID: UUID!
 
@@ -70,9 +70,6 @@ class BaseBackendIntegrationTests: TestCase {
     }
     var enableReceiptFetchRetry: Bool = true
     var usesRemoteConfigAPISources: Bool { return false }
-    /// Tests that drive their own `Backend` can opt out, so no `Purchases` instance sends requests
-    /// and logs in the background.
-    var configuresPurchasesOnSetUp: Bool { return true }
 
     var apiKey: String { return Constants.apiKey }
     var proxyURL: String? { return Constants.proxyURL }
@@ -133,10 +130,8 @@ class BaseBackendIntegrationTests: TestCase {
         self.addTeardownBlock {
             self.eligibilityWarmups.uninstall()
         }
-        if self.configuresPurchasesOnSetUp {
-            await self.createPurchases()
-            self.verifyPurchasesDoesNotLeak()
-        }
+        await self.createPurchases()
+        self.verifyPurchasesDoesNotLeak()
     }
 
     override func tearDown() {

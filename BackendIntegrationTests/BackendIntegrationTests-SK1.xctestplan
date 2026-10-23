@@ -62,11 +62,13 @@
   "testTargets" : [
     {
       "skippedTests" : [
-        "APISourceFailoverBackendIntegrationTests",
         "APISourceOutageStoreKit1IntegrationTests",
         "APISourceOutageStoreKit2IntegrationTests",
+        "APISourceServerErrorIntegrationTests",
+        "APISourcesExhaustedIntegrationTests",
         "APISourcesStoreKit1IntegrationTests",
         "APISourcesStoreKit2IntegrationTests",
+        "BaseAPISourcesIntegrationTests",
         "BaseBackendIntegrationTests",
         "BaseLoadShedderStoreKitIntegrationTests",
         "BaseLoadShedderStoreKitIntegrationTests\/testCanGetOfferings()",
