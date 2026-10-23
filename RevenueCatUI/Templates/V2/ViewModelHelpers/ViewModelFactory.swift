@@ -510,9 +510,11 @@ struct ViewModelFactory {
             return .countdown(
                 CountdownComponentViewModel(
                     component: component,
+                    uiConfigProvider: uiConfigProvider,
                     countdownStackViewModel: countdownStackViewModel,
                     endStackViewModel: endStackViewModel,
-                    fallbackStackViewModel: fallbackStackViewModel
+                    fallbackStackViewModel: fallbackStackViewModel,
+                    discardRules: discardRules
                 )
             )
         case .webView(let component):
