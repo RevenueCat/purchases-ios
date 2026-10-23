@@ -736,6 +736,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                     ],
                     dimension: .horizontal(.center, .start),
                     size: .init(width: .fit(nil), height: .fit(nil)),
+                    spacing: 8,
                     backgroundColor: .init(light: .hex("#dedede")),
                     padding: .init(top: 3, bottom: 3, leading: 3, trailing: 3),
                     shape: .pill
@@ -756,7 +757,8 @@ struct TabsComponentView_Previews: PreviewProvider {
                             color: .init(light: .hex("#000000")),
                             size: .init(width: .fit(nil), height: .fit(nil))
                         ))
-                    ]
+                    ],
+                    spacing: 8
                 )),
                 // Tab 2
                 .init(id: "2", stack: .init(
@@ -772,7 +774,8 @@ struct TabsComponentView_Previews: PreviewProvider {
                             color: .init(light: .hex("#000000")),
                             size: .init(width: .fit(nil), height: .fit(nil))
                         ))
-                    ]
+                    ],
+                    spacing: 8
                 )),
                 // Tab 3
                 .init(id: "3", stack: .init(
@@ -788,7 +791,8 @@ struct TabsComponentView_Previews: PreviewProvider {
                             color: .init(light: .hex("#000000")),
                             size: .init(width: .fit(nil), height: .fit(nil))
                         ))
-                    ]
+                    ],
+                    spacing: 8
                 ))
             ]
         )
@@ -907,7 +911,8 @@ struct TabsComponentView_Previews: PreviewProvider {
                         )
                     ],
                     dimension: .horizontal(.center, .start),
-                    size: .init(width: .fit(nil), height: .fit(nil))
+                    size: .init(width: .fit(nil), height: .fit(nil)),
+                    spacing: 8
                 )
             ),
             tabs: [
@@ -925,7 +930,8 @@ struct TabsComponentView_Previews: PreviewProvider {
                             color: .init(light: .hex("#000000")),
                             size: .init(width: .fit(nil), height: .fit(nil))
                         ))
-                    ]
+                    ],
+                    spacing: 8
                 )),
                 // Tab 2
                 .init(id: "2", stack: .init(
@@ -941,7 +947,8 @@ struct TabsComponentView_Previews: PreviewProvider {
                             color: .init(light: .hex("#000000")),
                             size: .init(width: .fit(nil), height: .fit(nil))
                         ))
-                    ]
+                    ],
+                    spacing: 8
                 )),
                 // Tab 3
                 .init(id: "3", stack: .init(
@@ -957,7 +964,8 @@ struct TabsComponentView_Previews: PreviewProvider {
                             color: .init(light: .hex("#000000")),
                             size: .init(width: .fit(nil), height: .fit(nil))
                         ))
-                    ]
+                    ],
+                    spacing: 8
                 ))
             ]
         )
@@ -983,7 +991,8 @@ struct TabsComponentView_Previews: PreviewProvider {
                         ))
                     ],
                     dimension: .horizontal(.center, .start),
-                    size: .init(width: .fit(nil), height: .fit(nil))
+                    size: .init(width: .fit(nil), height: .fit(nil)),
+                    spacing: 8
                 )
             ),
             tabs: [
@@ -1001,7 +1010,8 @@ struct TabsComponentView_Previews: PreviewProvider {
                             color: .init(light: .hex("#000000")),
                             size: .init(width: .fit(nil), height: .fit(nil))
                         ))
-                    ]
+                    ],
+                    spacing: 8
                 )),
                 // Tab 2
                 .init(id: "2", stack: .init(
@@ -1017,7 +1027,8 @@ struct TabsComponentView_Previews: PreviewProvider {
                             color: .init(light: .hex("#000000")),
                             size: .init(width: .fit(nil), height: .fit(nil))
                         ))
-                    ]
+                    ],
+                    spacing: 8
                 )),
                 // Tab 3
                 .init(id: "3", stack: .init(
@@ -1033,7 +1044,8 @@ struct TabsComponentView_Previews: PreviewProvider {
                             color: .init(light: .hex("#000000")),
                             size: .init(width: .fit(nil), height: .fit(nil))
                         ))
-                    ]
+                    ],
+                    spacing: 8
                 ))
             ]
         )
