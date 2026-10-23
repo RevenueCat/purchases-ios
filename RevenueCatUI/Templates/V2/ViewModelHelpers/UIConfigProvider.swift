@@ -26,6 +26,10 @@ final class UIConfigProvider {
     /// Dashboard flag: Dynamic Type only when `automatically_scale_font_size` is true on paywall components.
     private let automaticallyScaleFontSize: Bool
     private var loggedMessages: Set<LogMessage> = []
+    // Memoized `getLocalizations(for:)` results, keyed by `Locale.identifier`.
+    // `findLocale` builds a `Locale` and queries ICU for every key, and every text component
+    // calls `getLocalizations(for:)` on each body evaluation.
+    private var localizationsByLocaleIdentifier: [String: [String: String]] = [:]
 
     init(uiConfig: UIConfig, failedToLoadFont: FailedToLoadFont? = nil, automaticallyScaleFontSize: Bool = true) {
         self.uiConfig = uiConfig
@@ -97,11 +101,19 @@ final class UIConfigProvider {
     }
 
     func getLocalizations(for locale: Locale) -> [String: String] {
-        guard let localizations = self.uiConfig.localizations.findLocale(locale) else {
-            self.logMessageIfNeeded(.localizationNotFound(identifier: locale.identifier))
-            return [:]
+        if let cached = self.localizationsByLocaleIdentifier[locale.identifier] {
+            return cached
         }
 
+        let localizations: [String: String]
+        if let found = self.uiConfig.localizations.findLocale(locale) {
+            localizations = found
+        } else {
+            self.logMessageIfNeeded(.localizationNotFound(identifier: locale.identifier))
+            localizations = [:]
+        }
+
+        self.localizationsByLocaleIdentifier[locale.identifier] = localizations
         return localizations
     }
 
