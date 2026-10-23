@@ -16,6 +16,7 @@ import Foundation
 
     /// Base URL of the RevenueCat ad-serving backend.
     /// Defaults to `Purchases.proxyURL`, or the RevenueCat API host when no proxy is set.
+    /// Only its scheme, host and port are used; any path is dropped.
     public let serverURL: URL?
 
     /// Creates a configuration. `nil` values fall back to the configured `Purchases` instance.
