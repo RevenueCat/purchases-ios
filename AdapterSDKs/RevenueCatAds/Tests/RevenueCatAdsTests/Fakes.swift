@@ -15,4 +15,3 @@ func makeURL(_ string: String) -> URL {
     guard let url = URL(string: string) else { fatalError("Invalid URL \(string)") }
     return url
 }
-
