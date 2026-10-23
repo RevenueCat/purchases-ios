@@ -74,7 +74,9 @@ class BaseHTTPClientTests<ETag: ETagManager, TimeoutManager: HTTPRequestTimeoutM
         _ systemInfo: SystemInfo,
         operationDispatcher: OperationDispatcher = MockOperationDispatcher(),
         apiSourceProvider: RemoteConfigSourceProviderType? = nil,
-        sourceHealthChecker: SourceHealthCheckerType = SourceHealthChecker()
+        sourceHealthChecker: SourceHealthCheckerType = SourceHealthChecker(
+            internalSettings: DangerousSettings.Internal.default
+        )
     ) -> HTTPClient {
         // The real `SourceHealthChecker` default keeps health probes visible to OHHTTPStubs; tests
         // that need a fixed health result inject a `MockSourceHealthChecker` instead.
