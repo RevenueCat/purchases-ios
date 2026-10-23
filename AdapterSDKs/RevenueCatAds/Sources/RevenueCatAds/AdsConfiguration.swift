@@ -54,6 +54,9 @@ extension AdsConfiguration {
         guard let scheme = serverURL.scheme?.lowercased(), ["http", "https"].contains(scheme) else {
             throw AdsError(code: .invalidConfiguration, message: "Server URL must be http(s): \(serverURL)")
         }
+        guard serverURL.host?.isEmpty == false else {
+            throw AdsError(code: .invalidConfiguration, message: "Server URL has no host: \(serverURL)")
+        }
 
         guard let auctionURL = URL(string: Self.auctionPath, relativeTo: serverURL)?.absoluteURL else {
             throw AdsError(code: .invalidConfiguration, message: "Invalid server URL: \(serverURL)")

@@ -48,6 +48,14 @@ final class AdsConfigurationResolutionTests: TestCase {
         }
     }
 
+    func testHostlessServerURLThrowsInvalidConfiguration() {
+        let configuration = AdsConfiguration(apiKey: "appl_key", serverURL: makeURL("https://"))
+
+        XCTAssertThrowsError(try configuration.resolve(purchasesAPIKey: nil, purchasesProxyURL: nil)) {
+            XCTAssertEqual(($0 as? AdsError)?.code, .invalidConfiguration)
+        }
+    }
+
     func testNonHTTPServerURLThrowsInvalidConfiguration() {
         let configuration = AdsConfiguration(apiKey: "appl_key", serverURL: makeURL("ftp://example.com"))
 
