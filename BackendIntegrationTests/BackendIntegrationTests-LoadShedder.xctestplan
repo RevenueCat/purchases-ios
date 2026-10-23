@@ -39,6 +39,8 @@
     {
       "skippedTests" : [
         "APISourceFailoverBackendIntegrationTests",
+        "APISourceOutageStoreKit1IntegrationTests",
+        "APISourceOutageStoreKit2IntegrationTests",
         "APISourcesStoreKit1IntegrationTests",
         "APISourcesStoreKit2IntegrationTests",
         "BaseBackendIntegrationTests",
