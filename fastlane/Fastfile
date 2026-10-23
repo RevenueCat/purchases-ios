@@ -305,11 +305,21 @@ platform :ios do
     platform = options[:platform] || UI.user_error!("No platform provided")
     output_dir = options[:output_dir] || UI.user_error!("No output_dir provided")
 
-    upload_snapshots_to_emerge(
-      name: "Paywall Rendering Validation (#{platform})",
-      id: "com.revenuecat.paywall-rendering-validation.#{platform}",
-      images_path: "#{output_dir}/images"
-    )
+    # Same invocation as purchases-android's Paparazzi upload: current `emerge` on PATH,
+    # --debug, --pr-number only when we have one, and no --base-sha. An empty base sha
+    # is treated as a real sha and fails the main-branch comparison.
+    pr_number = detect_pr_number
+    args = [
+      "emerge", "upload", "snapshots",
+      "--name", "Paywall Rendering Validation (#{platform})",
+      "--id", "com.revenuecat.paywall-rendering-validation.#{platform}",
+      "--repo-name", "RevenueCat/purchases-ios",
+      "--debug"
+    ]
+    args.push("--pr-number", pr_number) if pr_number
+    args.push("#{output_dir}/images")
+
+    sh(*args)
   end
 
   # Apple platforms we render Paywalls V2 template screenshots for.
