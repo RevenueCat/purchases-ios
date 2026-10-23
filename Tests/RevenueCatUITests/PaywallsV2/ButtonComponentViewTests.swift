@@ -244,12 +244,23 @@ final class ButtonComponentViewTests: TestCase {
     }
 
     func testNativeBackRegistrationWaitsForConfiguredTransitionDelay() async throws {
-        try XCTSkipIf(UIApplication.shared.connectedScenes.isEmpty, "Requires UnitTestsHostApp")
         let coordinator = NativePaywallCloseCoordinator()
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        let transition = try decoder.decode(
+            PaywallComponent.Transition.self,
+            from: Data("""
+            {
+                "type": "fade",
+                "displacement_strategy": "greedy",
+                "animation": { "ms_delay": 500, "ms_duration": 0, "type": "linear" }
+            }
+            """.utf8)
+        )
         let viewModel = try Self.makeViewModel(component: .init(
             action: .navigateBack,
             stack: Self.makeButtonStack(label: "Close"),
-            transition: .init(animation: .init(type: .linear, msDelay: 500, msDuration: 0)),
+            transition: transition,
             useNativeIfPossible: true
         ))
         let view = Self.nativeTestView(viewModel: viewModel, onDismiss: {})
