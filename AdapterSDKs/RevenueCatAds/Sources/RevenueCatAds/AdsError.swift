@@ -42,8 +42,7 @@ import Foundation
     /// The error reported by the underlying ad SDK or system, if any.
     public let underlyingError: Error?
 
-    /// Creates an error.
-    public init(code: Code, message: String, underlyingError: Error? = nil) {
+    init(code: Code, message: String, underlyingError: Error? = nil) {
         self.code = code
         self.message = message
         self.underlyingError = underlyingError
