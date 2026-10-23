@@ -223,7 +223,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
             currentUserProvider: mockIdentityManager,
             operationDispatcher: mockOperationDispatcher,
             productsManager: mockProductsManager,
-            diagnosticsTracker: nil
+            diagnosticsTracker: nil,
+            groupEligibilityCache: .init()
         )
         let healthManager = SDKHealthManager(
             backend: self.mockBackend,

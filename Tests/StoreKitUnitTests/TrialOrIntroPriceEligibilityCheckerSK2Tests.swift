@@ -28,6 +28,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
     var mockSystemInfo: MockSystemInfo!
     private var mockOperationDispatcher: MockOperationDispatcher!
 
+    private var groupEligibilityCache: SubscriptionGroupEligibilityCache!
     private var diagnosticsTracker: DiagnosticsTrackerType?
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -89,6 +90,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
             self.diagnosticsTracker = nil
         }
 
+        self.groupEligibilityCache = .init()
         trialOrIntroPriceEligibilityChecker = TrialOrIntroPriceEligibilityChecker(
             systemInfo: mockSystemInfo,
             receiptFetcher: receiptFetcher,
@@ -98,6 +100,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
             operationDispatcher: mockOperationDispatcher,
             productsManager: mockProductsManager,
             diagnosticsTracker: self.diagnosticsTracker,
+            groupEligibilityCache: self.groupEligibilityCache,
             dateProvider: self.mockDateProvider
         )
     }
@@ -117,7 +120,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
                         "lifetime": IntroEligibilityStatus.noIntroOfferExists]
 
         let eligibilities = try await XCTAsyncUnwrap(
-            try await trialOrIntroPriceEligibilityChecker.sk2CheckEligibility(products, groupEligibilityChecker: nil)
+            try await trialOrIntroPriceEligibilityChecker.sk2CheckEligibility(products)
         )
         expect(eligibilities.count) == expected.count
 
@@ -330,11 +333,11 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
         }
 
         self.logger.verifyMessageWasLogged("starting StoreKit check", expectedCount: 1)
-        self.logger.verifyMessageWasLogged("reusing cached result", expectedCount: 2)
+        self.logger.verifyMessageWasLogged("reusing cached result", expectedCount: 1)
     }
 
     @MainActor
-    func testProductLookupFailureDoesNotDiscardCachedGroupResult() async throws {
+    func testCachedProductEligibilitySurvivesProductLookupFailure() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: self.trialOrIntroPriceEligibilityChecker)
         let monthly = StoreProduct(sk2Product: try await self.fetchSk2Product())
@@ -348,7 +351,8 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
         let failed: IntroEligibilityStatus = await withCheckedContinuation { continuation in
             caching.checkEligibility(product: monthly) { continuation.resume(returning: $0) }
         }
-        expect(failed) == .unknown
+        expect(failed) == .eligible
+        expect(self.mockProductsManager.invokedProductsCount) == 1
 
         self.mockProductsManager.stubbedProductsCompletionResult = .success([monthly])
         let retried: IntroEligibilityStatus = await withCheckedContinuation { continuation in
@@ -359,19 +363,79 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
     }
 
     @MainActor
-    func testUnderlyingCheckerDoesNotCacheGroupResults() async throws {
+    func testCachedSK2ProductCompletesSynchronouslyOnCallersThread() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: self.trialOrIntroPriceEligibilityChecker)
         let monthly = StoreProduct(sk2Product: try await self.fetchSk2Product())
+        let primed: IntroEligibilityStatus = await withCheckedContinuation { continuation in
+            caching.checkEligibility(product: monthly) { continuation.resume(returning: $0) }
+        }
+        expect(primed) == .eligible
+
+        let finished = self.expectation(description: "Background cache lookup finished")
+        DispatchQueue(label: "eligibility-cache-caller").async {
+            let returned = Atomic(false)
+            let received = Atomic<IntroEligibilityStatus?>(nil)
+            caching.checkEligibility(product: monthly) { status in
+                expect(Thread.isMainThread) == false
+                expect(returned.value) == false
+                received.value = status
+            }
+            returned.value = true
+            expect(received.value) == .eligible
+            finished.fulfill()
+        }
+        await self.fulfillment(of: [finished], timeout: 1)
+    }
+
+    @MainActor
+    func testSK2CachedGroupForAnotherProductDoesNotTrackDiagnostics() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: self.trialOrIntroPriceEligibilityChecker)
+        let monthly = StoreProduct(sk2Product: try await self.fetchSk2Product())
+        let annual = StoreProduct(
+            sk2Product: try await self.fetchSk2Product("com.revenuecat.annual_39.99.2_week_intro")
+        )
+        for product in [monthly, annual, monthly] {
+            let status: IntroEligibilityStatus = await withCheckedContinuation { continuation in
+                caching.checkEligibility(product: product) { continuation.resume(returning: $0) }
+            }
+            expect(status) == .eligible
+        }
+
+        let tracked = try self.mockDiagnosticsTracker.trackedAppleTrialOrIntroEligibilityRequestParams.value
+        expect(tracked).to(haveCount(1))
+        expect(tracked.first?.requestedProductIds) == [monthly.id]
+        self.logger.verifyMessageWasLogged("starting StoreKit check", expectedCount: 1)
+        self.logger.verifyMessageWasLogged("reusing cached result", expectedCount: 1)
+    }
+
+    @MainActor
+    func testProductLookupFailureForNewProductRetainsCachedGroupAnswer() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: self.trialOrIntroPriceEligibilityChecker)
+        let monthly = StoreProduct(sk2Product: try await self.fetchSk2Product())
+        let annual = StoreProduct(
+            sk2Product: try await self.fetchSk2Product("com.revenuecat.annual_39.99.2_week_intro")
+        )
         self.mockProductsManager.stubbedProductsCompletionResult = .success([monthly])
-        let first = try await self.trialOrIntroPriceEligibilityChecker.sk2CheckEligibility(
-            [monthly.id], groupEligibilityChecker: nil, checkSubscriptionGroup: { _ in false }
-        )
-        let second = try await self.trialOrIntroPriceEligibilityChecker.sk2CheckEligibility(
-            [monthly.id], groupEligibilityChecker: nil, checkSubscriptionGroup: { _ in true }
-        )
-        expect(first[monthly.id]?.status) == .ineligible
-        expect(second[monthly.id]?.status) == .eligible
-        self.logger.verifyMessageWasLogged("starting StoreKit check", expectedCount: 2)
+        let first: IntroEligibilityStatus = await withCheckedContinuation { continuation in
+            caching.checkEligibility(product: monthly) { continuation.resume(returning: $0) }
+        }
+        expect(first) == .eligible
+
+        self.mockProductsManager.stubbedProductsCompletionResult = .failure(ErrorUtils.productRequestTimedOutError())
+        let failed: IntroEligibilityStatus = await withCheckedContinuation { continuation in
+            caching.checkEligibility(product: annual) { continuation.resume(returning: $0) }
+        }
+        expect(failed) == .unknown
+
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([annual])
+        let retried: IntroEligibilityStatus = await withCheckedContinuation { continuation in
+            caching.checkEligibility(product: annual) { continuation.resume(returning: $0) }
+        }
+        expect(retried) == .eligible
+        self.logger.verifyMessageWasLogged("starting StoreKit check", expectedCount: 1)
     }
 
     @MainActor
@@ -382,7 +446,6 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
             sk2Product: try await self.fetchSk2Product("com.revenuecat.annual_39.99.2_week_intro")
         )
         let noIntro = StoreProduct(sk2Product: try await self.fetchSk2Product("com.revenuecat.annual_39.99_no_trial"))
-        let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: self.trialOrIntroPriceEligibilityChecker)
         let calls = Atomic<[String]>([])
         let check: @Sendable (String) async -> Bool = { groupID in
             calls.modify { $0.append(groupID) }
@@ -392,7 +455,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
         for product in [monthly, annual, noIntro] {
             self.mockProductsManager.stubbedProductsCompletionResult = .success([product])
             let result = try await self.trialOrIntroPriceEligibilityChecker.sk2CheckEligibility(
-                [product.id], groupEligibilityChecker: caching, checkSubscriptionGroup: check
+                [product.id], checkSubscriptionGroup: check
             )
             let expected: IntroEligibilityStatus = product == noIntro ? .noIntroOfferExists : .eligible
             expect(result[product.id]?.status) == expected
@@ -417,7 +480,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
         self.mockProductsManager.stubbedProductsCompletionResult = .success([monthly])
         let oldRequest = Task {
             try await checker.sk2CheckEligibility(
-                [monthly.id], groupEligibilityChecker: caching, checkSubscriptionGroup: check.call
+                [monthly.id], checkSubscriptionGroup: check.call
             )
         }
         try await asyncWait { check.invocations.count == 1 }
@@ -426,7 +489,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
         self.mockProductsManager.stubbedProductsCompletionResult = .success([annual])
         let newRequest = Task {
             try await checker.sk2CheckEligibility(
-                [annual.id], groupEligibilityChecker: caching, checkSubscriptionGroup: check.call
+                [annual.id], checkSubscriptionGroup: check.call
             )
         }
         try await asyncWait {
@@ -440,7 +503,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
 
         self.mockProductsManager.stubbedProductsCompletionResult = .success([monthly])
         let cachedResult = try await checker.sk2CheckEligibility(
-            [monthly.id], groupEligibilityChecker: caching, checkSubscriptionGroup: check.call
+            [monthly.id], checkSubscriptionGroup: check.call
         )
         expect(oldResult[monthly.id]?.status) == .eligible
         expect(newResult[annual.id]?.status) == .eligible
@@ -470,7 +533,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
         self.mockProductsManager.shouldDeferProductsCompletion = true
         let oldRequest = Task {
             try await checker.sk2CheckEligibility(
-                [monthly.id], groupEligibilityChecker: caching, checkSubscriptionGroup: check
+                [monthly.id], checkSubscriptionGroup: check
             )
         }
         var needsCompletion = true
@@ -485,7 +548,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
         self.mockProductsManager.shouldDeferProductsCompletion = false
         self.mockProductsManager.stubbedProductsCompletionResult = .success([annual])
         let newResult = try await checker.sk2CheckEligibility(
-            [annual.id], groupEligibilityChecker: caching, checkSubscriptionGroup: check
+            [annual.id], checkSubscriptionGroup: check
         )
 
         needsCompletion = false
@@ -493,7 +556,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
         let oldResult = try await oldRequest.value
         self.mockProductsManager.stubbedProductsCompletionResult = .success([monthly])
         let cachedResult = try await checker.sk2CheckEligibility(
-            [monthly.id], groupEligibilityChecker: caching, checkSubscriptionGroup: check
+            [monthly.id], checkSubscriptionGroup: check
         )
 
         expect(oldResult[monthly.id]?.status) == .ineligible
@@ -517,7 +580,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
         self.mockProductsManager.stubbedProductsCompletionResult = .success([monthly])
         let monthlyRequest = Task {
             try await checker.sk2CheckEligibility(
-                [monthly.id], groupEligibilityChecker: caching, checkSubscriptionGroup: check.call
+                [monthly.id], checkSubscriptionGroup: check.call
             )
         }
         try await asyncWait { check.invocations.count == 1 }
@@ -525,7 +588,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
         self.mockProductsManager.stubbedProductsCompletionResult = .success([annual])
         let annualRequest = Task {
             try await checker.sk2CheckEligibility(
-                [annual.id], groupEligibilityChecker: caching, checkSubscriptionGroup: check.call
+                [annual.id], checkSubscriptionGroup: check.call
             )
         }
         try await asyncWait {
@@ -553,18 +616,18 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
         let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: checker)
         self.mockProductsManager.stubbedProductsCompletionResult = .success([monthly])
         let before = try await checker.sk2CheckEligibility(
-            [monthly.id], groupEligibilityChecker: caching, checkSubscriptionGroup: { _ in false }
+            [monthly.id], checkSubscriptionGroup: { _ in false }
         )
 
         caching.clearCache()
         self.mockProductsManager.stubbedProductsCompletionResult = .success([annual])
         let after = try await checker.sk2CheckEligibility(
-            [annual.id], groupEligibilityChecker: caching, checkSubscriptionGroup: { _ in true }
+            [annual.id], checkSubscriptionGroup: { _ in true }
         )
 
         self.mockProductsManager.stubbedProductsCompletionResult = .success([monthly])
         let cached = try await checker.sk2CheckEligibility(
-            [monthly.id], groupEligibilityChecker: caching, checkSubscriptionGroup: { _ in
+            [monthly.id], checkSubscriptionGroup: { _ in
                 XCTFail("Expected the new group result to be cached")
                 return false
             }

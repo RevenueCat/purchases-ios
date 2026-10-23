@@ -57,7 +57,8 @@ class TrialOrIntroPriceEligibilityCheckerSimulatedStoreTests: StoreKitConfigTest
             currentUserProvider: userProvider,
             operationDispatcher: mockOperationDispatcher,
             productsManager: self.cachingManager,
-            diagnosticsTracker: nil
+            diagnosticsTracker: nil,
+            groupEligibilityCache: .init()
         )
     }
 

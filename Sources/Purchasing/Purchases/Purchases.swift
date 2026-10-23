@@ -611,7 +611,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                          currentUserProvider: identityManager,
                                                          operationDispatcher: operationDispatcher,
                                                          productsManager: productsManager,
-                                                         diagnosticsTracker: diagnosticsTracker)
+                                                         diagnosticsTracker: diagnosticsTracker,
+                                                         groupEligibilityCache: .init())
         )
 
         let paywallCache: PaywallCacheWarmingType?

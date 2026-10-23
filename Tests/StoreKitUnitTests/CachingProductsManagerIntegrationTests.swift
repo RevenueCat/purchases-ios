@@ -130,7 +130,7 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
         let checker = self.createEligibilityChecker(manager: manager)
         _ = try await manager.products(withIdentifiers: [Self.productID])
 
-        let eligibility = try await checker.sk2CheckEligibility([Self.productID], groupEligibilityChecker: nil)
+        let eligibility = try await checker.sk2CheckEligibility([Self.productID])
 
         expect(eligibility[Self.productID]?.status) == .eligible
         self.verifyStoreProductRequests(count: 1)
@@ -141,7 +141,7 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         let manager = Self.createManager(.storeKit2)
         let checker = self.createEligibilityChecker(manager: manager)
-        _ = try await checker.sk2CheckEligibility([Self.productID], groupEligibilityChecker: nil)
+        _ = try await checker.sk2CheckEligibility([Self.productID])
 
         let products = try await manager.products(withIdentifiers: [Self.productID])
 
@@ -167,7 +167,7 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
         manager.cache(sk1Product)
         let checker = self.createEligibilityChecker(manager: manager)
 
-        let eligibility = try await checker.sk2CheckEligibility([Self.productID], groupEligibilityChecker: nil)
+        let eligibility = try await checker.sk2CheckEligibility([Self.productID])
 
         expect(eligibility[Self.productID]?.status) == .unknown
         self.verifyStoreProductRequests(count: 0)
@@ -181,7 +181,7 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
         manager.cache(product)
         let checker = self.createEligibilityChecker(manager: manager)
 
-        let eligibility = try await checker.sk2CheckEligibility([Self.productID], groupEligibilityChecker: nil)
+        let eligibility = try await checker.sk2CheckEligibility([Self.productID])
         let generalProducts = try await manager.products(withIdentifiers: [Self.productID])
 
         expect(eligibility[Self.productID]?.status) == .eligible
@@ -195,9 +195,9 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
         let manager = Self.createManager(.storeKit2)
         let checker = self.createEligibilityChecker(manager: manager)
         _ = try await manager.products(withIdentifiers: [Self.productID])
-        _ = try await checker.sk2CheckEligibility([Self.productID], groupEligibilityChecker: nil)
+        _ = try await checker.sk2CheckEligibility([Self.productID])
         manager.clearCache()
-        _ = try await checker.sk2CheckEligibility([Self.productID], groupEligibilityChecker: nil)
+        _ = try await checker.sk2CheckEligibility([Self.productID])
         _ = try await manager.products(withIdentifiers: [Self.productID])
 
         self.verifyStoreProductRequests(count: 2)
@@ -211,7 +211,7 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
         _ = try await manager.products(withIdentifiers: [Self.productID])
 
         let eligibility = try await checker.sk2CheckEligibility(
-            [Self.productID, "lifetime"], groupEligibilityChecker: nil
+            [Self.productID, "lifetime"]
         )
 
         expect(eligibility[Self.productID]?.status) == .eligible
@@ -233,7 +233,7 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
         let checker = self.createEligibilityChecker(manager: manager)
         var generalResult: Result<Set<StoreProduct>, PurchasesError>?
         manager.products(withIdentifiers: [Self.productID]) { generalResult = $0 }
-        let task = Task { try await checker.sk2CheckEligibility([Self.productID], groupEligibilityChecker: nil) }
+        let task = Task { try await checker.sk2CheckEligibility([Self.productID]) }
         defer { task.cancel() }
         try await self.waitForSharedRequest()
 
@@ -245,7 +245,7 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
 
         fetcher.stubbedProductsCompletionResult = .success([product])
         fetcher.shouldDeferProductsCompletion = false
-        let eligibility = try await checker.sk2CheckEligibility([Self.productID], groupEligibilityChecker: nil)
+        let eligibility = try await checker.sk2CheckEligibility([Self.productID])
         let products = try await manager.products(withIdentifiers: [Self.productID])
         expect(eligibility[Self.productID]?.status) == .eligible
         expect(products.onlyElement) === product
@@ -261,7 +261,7 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
         let fetcher = self.createDeferredFetcher(result: .success([oldProduct]))
         let manager = CachingProductsManager(manager: fetcher)
         let checker = self.createEligibilityChecker(manager: manager)
-        let task = Task { try await checker.sk2CheckEligibility([Self.productID], groupEligibilityChecker: nil) }
+        let task = Task { try await checker.sk2CheckEligibility([Self.productID]) }
         defer { task.cancel() }
         try await asyncWait(description: "Eligibility product response was not captured", timeout: .seconds(5)) {
             fetcher.deferredProductsRequestCount == 1
@@ -293,7 +293,7 @@ class CachingProductsManagerIntegrationTests: StoreKitConfigTestCase {
         let plan = try XCTUnwrap(products.first { $0.id == planID })
         let checker = self.createEligibilityChecker(manager: manager)
 
-        let eligibility = try await checker.sk2CheckEligibility([baseID, planID], groupEligibilityChecker: nil)
+        let eligibility = try await checker.sk2CheckEligibility([baseID, planID])
         let cachedProducts = try await manager.products(withIdentifiers: [baseID, planID])
         let cachedPlan = try XCTUnwrap(cachedProducts.first { $0.id == planID })
 
@@ -322,7 +322,7 @@ private extension CachingProductsManagerIntegrationTests {
             manager.products(withIdentifiers: [Self.productID]) { generalResult = $0 }
         }
         let eligibilityTask = Task {
-            try await checker.sk2CheckEligibility([Self.productID], groupEligibilityChecker: nil)
+            try await checker.sk2CheckEligibility([Self.productID])
         }
         defer { eligibilityTask.cancel() }
         try await asyncWait(description: "Product response was not captured", timeout: .seconds(5)) {
@@ -372,7 +372,8 @@ private extension CachingProductsManagerIntegrationTests {
             currentUserProvider: MockCurrentUserProvider(mockAppUserID: "app_user"),
             operationDispatcher: MockOperationDispatcher(),
             productsManager: manager,
-            diagnosticsTracker: nil
+            diagnosticsTracker: nil,
+            groupEligibilityCache: .init()
         )
     }
 

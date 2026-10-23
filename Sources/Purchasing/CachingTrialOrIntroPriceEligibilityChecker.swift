@@ -15,15 +15,9 @@ import Foundation
 
 // swiftlint:disable type_name
 
-/// Owns eligibility caching and request sharing. SK2 results are cached per subscription group;
-/// SK1 and Simulated Store results remain cached per product. Product metadata comes from the
-/// products manager, so offer availability is still evaluated for each product and billing plan.
+/// Owns per-product eligibility caching and request sharing, preserving synchronous cache hits.
+/// Also invalidates the injected SK2 group cache used by the underlying checker.
 class CachingTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType {
-
-    private enum GroupEntry {
-        case pending(Task<Bool, Never>)
-        case cached(Bool)
-    }
 
     private struct RequestKey: Hashable, Sendable {
         let productIdentifiers: Set<String>
@@ -40,7 +34,6 @@ class CachingTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCh
         var cachedEligibilities: [String: IntroEligibility] = [:]
         var cacheGeneration = 0
         var inFlightRequests: [RequestKey: [ReceiveIntroEligibilityBlock]] = [:]
-        var eligibilitiesByGroupID: [String: GroupEntry] = [:]
 
         mutating func prepareRequest(
             productIdentifiers: Set<String>,
@@ -84,13 +77,9 @@ class CachingTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCh
         Logger.debug(Strings.eligibility.clearing_intro_eligibility_cache)
 
         self.state.modify {
+            self.checker.clearCache()
             $0.cacheGeneration += 1
             $0.cachedEligibilities.removeAll(keepingCapacity: false)
-            // A pending StoreKit check stays shared and caches its result when it finishes.
-            $0.eligibilitiesByGroupID = $0.eligibilitiesByGroupID.filter {
-                if case .pending = $0.value { return true }
-                return false
-            }
         }
     }
 
@@ -104,14 +93,6 @@ extension CachingTrialOrIntroPriceEligibilityChecker {
     ) {
         guard !productIdentifiers.isEmpty else {
             completion([:])
-            return
-        }
-
-        if self.checker.usesSubscriptionGroupEligibility {
-            // Cache the group answer only. Product metadata is already cached by the products manager.
-            self.checker.checkEligibility(productIdentifiers: productIdentifiers,
-                                          groupEligibilityChecker: self,
-                                          completion: completion)
             return
         }
 
@@ -154,44 +135,6 @@ extension CachingTrialOrIntroPriceEligibilityChecker {
                     }
                 }
             )
-        }
-    }
-
-}
-
-extension CachingTrialOrIntroPriceEligibilityChecker: SubscriptionGroupEligibilityChecker {
-
-    func eligibility(
-        for groupID: String,
-        log: IntroEligibilityLog,
-        check: @escaping @Sendable (String) async -> Bool
-    ) async -> Bool {
-        let (entry, reused) = self.state.modify { state -> (GroupEntry, Bool) in
-            if let entry = state.eligibilitiesByGroupID[groupID] {
-                return (entry, true)
-            }
-
-            let task = Task {
-                let eligible = await log.eligibility(forSubscriptionGroup: groupID, check: check)
-                // Write before returning to any waiter, so delayed waiters cannot restore a result
-                // after a later invalidation or overwrite a newer check's answer.
-                self.state.modify { $0.eligibilitiesByGroupID[groupID] = .cached(eligible) }
-                return eligible
-            }
-            let entry = GroupEntry.pending(task)
-            state.eligibilitiesByGroupID[groupID] = entry
-            return (entry, false)
-        }
-
-        switch entry {
-        case .cached(let eligible):
-            log.reusedEligibility(forSubscriptionGroup: groupID, isPending: false)
-            return eligible
-        case .pending(let task):
-            if reused {
-                log.reusedEligibility(forSubscriptionGroup: groupID, isPending: true)
-            }
-            return await task.value
         }
     }
 

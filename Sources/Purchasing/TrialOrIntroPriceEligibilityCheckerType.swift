@@ -17,17 +17,6 @@ protocol TrialOrIntroPriceEligibilityCheckerType: Sendable {
 
 }
 
-/// Resolves a StoreKit group check, allowing the caching wrapper to reuse its work and result.
-protocol SubscriptionGroupEligibilityChecker: Sendable {
-
-    func eligibility(
-        for groupID: String,
-        log: IntroEligibilityLog,
-        check: @escaping @Sendable (String) async -> Bool
-    ) async -> Bool
-
-}
-
 /// Default overload implementation that takes a single `StoreProductType`.
 extension TrialOrIntroPriceEligibilityCheckerType {
 
