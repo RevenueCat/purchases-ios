@@ -163,46 +163,46 @@ final class SourceHealthCheckerTests: TestCase {
 
     // MARK: - ForceServerErrorStrategy
 
-    func testForcedHealthyResultSkipsTheProbe() {
+    func testFakeHealthyActionSkipsTheProbe() {
         let requestCount = self.stubHealthEndpointCountingRequests(statusCode: 503)
-        let checker = self.createChecker(healthCheckResult: { _ in true })
+        let checker = self.createChecker(healthCheckAction: { _ in .fakeHealthy })
 
         expect(self.checkHealth(with: checker)) == true
         expect(requestCount.value) == 0
     }
 
-    func testForcedUnhealthyResultSkipsTheProbe() {
+    func testFakeUnhealthyActionSkipsTheProbe() {
         let requestCount = self.stubHealthEndpointCountingRequests(statusCode: 200)
-        let checker = self.createChecker(healthCheckResult: { _ in false })
+        let checker = self.createChecker(healthCheckAction: { _ in .fakeUnhealthy })
 
         expect(self.checkHealth(with: checker)) == false
         expect(requestCount.value) == 0
     }
 
-    func testNilForcedResultPerformsTheProbe() {
+    func testPerformHealthCheckActionPerformsTheProbe() {
         let requestCount = self.stubHealthEndpointCountingRequests(statusCode: 503)
-        let checker = self.createChecker(healthCheckResult: { _ in nil })
+        let checker = self.createChecker(healthCheckAction: { _ in .performHealthCheck })
 
         expect(self.checkHealth(with: checker)) == false
         expect(requestCount.value) == 1
     }
 
-    func testForcedResultReceivesTheSourceBaseURL() {
+    func testHealthCheckActionReceivesTheSourceBaseURL() {
         let receivedURLs: Atomic<[URL]> = .init([])
-        let checker = self.createChecker(healthCheckResult: { url in
+        let checker = self.createChecker(healthCheckAction: { url in
             receivedURLs.modify { $0.append(url) }
-            return true
+            return .fakeHealthy
         })
 
         expect(self.checkHealth(with: checker)) == true
         expect(receivedURLs.value) == [Self.sourceBaseURL]
     }
 
-    func testForcedResultsAreCached() {
+    func testFakedResultsAreCached() {
         let callCount: Atomic<Int> = .init(0)
-        let checker = self.createChecker(healthCheckResult: { _ in
+        let checker = self.createChecker(healthCheckAction: { _ in
             callCount.modify { $0 += 1 }
-            return false
+            return .fakeUnhealthy
         })
 
         expect(self.checkHealth(with: checker)) == false
@@ -218,9 +218,11 @@ final class SourceHealthCheckerTests: TestCase {
                                    dateProvider: self.dateProvider)
     }
 
-    private func createChecker(healthCheckResult: @escaping (URL) -> Bool?) -> SourceHealthChecker {
+    private func createChecker(
+        healthCheckAction: @escaping (URL) -> ForceServerErrorStrategy.HealthCheckAction
+    ) -> SourceHealthChecker {
         let strategy = ForceServerErrorStrategy(action: { _ in .performRequest },
-                                                healthCheckResult: healthCheckResult)
+                                                healthCheckAction: healthCheckAction)
         return SourceHealthChecker(internalSettings: DangerousSettings.Internal(forceServerErrorStrategy: strategy),
                                    dateProvider: self.dateProvider)
     }

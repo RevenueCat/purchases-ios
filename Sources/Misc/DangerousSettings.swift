@@ -248,29 +248,38 @@ struct ForceServerErrorStrategy {
     // swiftlint:disable:next force_unwrapping
     static let defaultServerErrorURL = URL(string: "https://api.revenuecat.com/force-server-failure")!
 
+    /// What `SourceHealthChecker` does when checking a source's health.
+    ///
+    /// Faked outcomes are cached like real ones.
+    enum HealthCheckAction {
+
+        /// The source is reported healthy without performing the health check.
+        case fakeHealthy
+
+        /// The source is reported unhealthy without performing the health check.
+        /// Combined with an `action` that fails the source's requests, this simulates the source being down.
+        case fakeUnhealthy
+
+        /// The health check is performed as usual.
+        case performHealthCheck
+
+    }
+
     let action: (HTTPClient.Request) -> Action
 
-    /// Overrides the outcome of `SourceHealthChecker` probes, which don't go through `HTTPClient`
-    /// and therefore never consult `action`.
-    ///
-    /// Receives the base URL of the source being checked (e.g. `https://api.revenuecat.com/`) and returns:
-    /// - `true`: the source is reported healthy, without performing the probe.
-    /// - `false`: the source is reported unhealthy, without performing the probe. Combined with an `action`
-    ///   that fails the source's requests, this simulates the source being down.
-    /// - `nil`: the real probe is performed.
-    ///
-    /// Overridden outcomes are cached like real ones.
-    let healthCheckResult: (URL) -> Bool?
+    /// Decides what `SourceHealthChecker` does for each source, given its base URL.
+    /// Health checks don't go through `HTTPClient`, so they never consult `action`.
+    let healthCheckAction: (URL) -> HealthCheckAction
 
-    /// Creates a strategy that performs every health check probe.
+    /// Creates a strategy that performs every health check.
     init(action: @escaping (HTTPClient.Request) -> Action) {
-        self.init(action: action, healthCheckResult: { _ in nil })
+        self.init(action: action, healthCheckAction: { _ in .performHealthCheck })
     }
 
     init(action: @escaping (HTTPClient.Request) -> Action,
-         healthCheckResult: @escaping (URL) -> Bool?) {
+         healthCheckAction: @escaping (URL) -> HealthCheckAction) {
         self.action = action
-        self.healthCheckResult = healthCheckResult
+        self.healthCheckAction = healthCheckAction
     }
 
 }

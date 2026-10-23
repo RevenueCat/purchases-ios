@@ -89,9 +89,16 @@ final class SourceHealthChecker: SourceHealthCheckerType {
 
     private func performProbe(sourceBaseURL: URL, healthURL: URL) {
         #if DEBUG
-        if let isHealthy = self.internalSettings.forceServerErrorStrategy?.healthCheckResult(sourceBaseURL) {
-            self.completeProbe(healthURL: healthURL, isHealthy: isHealthy)
+        // Faked outcomes complete asynchronously, like real probes.
+        switch self.internalSettings.forceServerErrorStrategy?.healthCheckAction(sourceBaseURL) {
+        case .fakeHealthy:
+            DispatchQueue.global().async { self.completeProbe(healthURL: healthURL, isHealthy: true) }
             return
+        case .fakeUnhealthy:
+            DispatchQueue.global().async { self.completeProbe(healthURL: healthURL, isHealthy: false) }
+            return
+        case .performHealthCheck, nil:
+            break
         }
         #endif
 
