@@ -42,14 +42,16 @@ final class SourceHealthChecker: SourceHealthCheckerType {
 
     private let state: Atomic<State> = .init(.init())
     private let session: URLSession
+    private let internalSettings: InternalDangerousSettingsType
     private let dateProvider: DateProvider
 
-    init(dateProvider: DateProvider = DateProvider()) {
+    init(internalSettings: InternalDangerousSettingsType, dateProvider: DateProvider = DateProvider()) {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.timeoutIntervalForRequest = Self.requestTimeout
         configuration.timeoutIntervalForResource = Self.requestTimeout
         configuration.urlCache = nil
         self.session = URLSession(configuration: configuration)
+        self.internalSettings = internalSettings
         self.dateProvider = dateProvider
     }
 
@@ -81,11 +83,18 @@ final class SourceHealthChecker: SourceHealthCheckerType {
         case .joined:
             break
         case .probe:
-            self.performProbe(healthURL: healthURL)
+            self.performProbe(sourceBaseURL: url, healthURL: healthURL)
         }
     }
 
-    private func performProbe(healthURL: URL) {
+    private func performProbe(sourceBaseURL: URL, healthURL: URL) {
+        #if DEBUG
+        if let isHealthy = self.internalSettings.forceServerErrorStrategy?.healthCheckResult(sourceBaseURL) {
+            self.completeProbe(healthURL: healthURL, isHealthy: isHealthy)
+            return
+        }
+        #endif
+
         let task = self.session.dataTask(with: healthURL) { _, response, error in
             let isHealthy: Bool
             if let error = error {
@@ -100,14 +109,18 @@ final class SourceHealthChecker: SourceHealthCheckerType {
                                                                                  isHealthy: isHealthy))
             }
 
-            let completions: [@Sendable (Bool) -> Void] = self.state.modify { state in
-                state.cachedResults[healthURL] = CachedResult(timestamp: self.dateProvider.now(),
-                                                              isHealthy: isHealthy)
-                return state.pendingCompletions.removeValue(forKey: healthURL) ?? []
-            }
-            completions.forEach { $0(isHealthy) }
+            self.completeProbe(healthURL: healthURL, isHealthy: isHealthy)
         }
         task.resume()
+    }
+
+    private func completeProbe(healthURL: URL, isHealthy: Bool) {
+        let completions: [@Sendable (Bool) -> Void] = self.state.modify { state in
+            state.cachedResults[healthURL] = CachedResult(timestamp: self.dateProvider.now(),
+                                                          isHealthy: isHealthy)
+            return state.pendingCompletions.removeValue(forKey: healthURL) ?? []
+        }
+        completions.forEach { $0(isHealthy) }
     }
 
     /// `https://host/` and `https://host` both map to `https://host/v1/health/connectivity`.

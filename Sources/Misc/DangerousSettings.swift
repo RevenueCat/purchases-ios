@@ -199,8 +199,8 @@ internal protocol InternalDangerousSettingsType: Sendable {
     var usesRemoteConfigAPISources: Bool { get }
 
     #if DEBUG
-    /// The strategy for the `HTTPClient` to fake server errors. Meant for tests only.
-    /// `nil` means no server errors are forced.
+    /// The strategy for the `HTTPClient` to fake server errors, and for `SourceHealthChecker` to fake
+    /// health check outcomes. Meant for tests only. `nil` means no server errors are forced.
     ///
     /// See `ForceServerErrorStrategy.Action` for the ways a request can be intercepted.
     var forceServerErrorStrategy: ForceServerErrorStrategy? { get }
@@ -249,6 +249,29 @@ struct ForceServerErrorStrategy {
     static let defaultServerErrorURL = URL(string: "https://api.revenuecat.com/force-server-failure")!
 
     let action: (HTTPClient.Request) -> Action
+
+    /// Overrides the outcome of `SourceHealthChecker` probes, which don't go through `HTTPClient`
+    /// and therefore never consult `action`.
+    ///
+    /// Receives the base URL of the source being checked (e.g. `https://api.revenuecat.com/`) and returns:
+    /// - `true`: the source is reported healthy, without performing the probe.
+    /// - `false`: the source is reported unhealthy, without performing the probe. Combined with an `action`
+    ///   that fails the source's requests, this simulates the source being down.
+    /// - `nil`: the real probe is performed.
+    ///
+    /// Overridden outcomes are cached like real ones.
+    let healthCheckResult: (URL) -> Bool?
+
+    /// Creates a strategy that performs every health check probe.
+    init(action: @escaping (HTTPClient.Request) -> Action) {
+        self.init(action: action, healthCheckResult: { _ in nil })
+    }
+
+    init(action: @escaping (HTTPClient.Request) -> Action,
+         healthCheckResult: @escaping (URL) -> Bool?) {
+        self.action = action
+        self.healthCheckResult = healthCheckResult
+    }
 
 }
 
