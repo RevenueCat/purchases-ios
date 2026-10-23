@@ -34,7 +34,12 @@ extension UIApplication {
         }
         #endif
 
-        return scenes.first as? UIWindowScene
+        return Self.firstWindowScene(in: scenes)
+    }
+
+    @MainActor
+    static func firstWindowScene<S: Sequence>(in scenes: S) -> UIWindowScene? where S.Element == UIScene {
+        return scenes.lazy.compactMap { $0 as? UIWindowScene }.first
     }
 
     /// The topmost view controller in the current foreground window scene.
