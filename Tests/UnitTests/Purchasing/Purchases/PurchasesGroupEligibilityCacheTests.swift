@@ -24,6 +24,48 @@ class PurchasesGroupEligibilityCacheTests: BasePurchasesTests {
     }
 
     @MainActor
+    func testPaywallRequestEscalatesPendingBackgroundCheckThroughProductCache() async throws {
+        await expect(self.purchasesDelegate.customerInfo).toEventually(equal(CustomerInfo.emptyInfo))
+        let cache = try XCTUnwrap(self.groupEligibilityCache)
+        let check = PriorityRecordingGroupCheck()
+        defer { check.release() }
+        self.trialOrIntroPriceEligibilityChecker.asyncCheckEligibility = { productIDs in
+            let eligible = await cache.eligibility(for: "group", log: IntroEligibilityLog(), check: check.call)
+            return productIDs.dictionaryWithValues { _ in
+                IntroEligibility(eligibilityStatus: eligible ? .eligible : .ineligible)
+            }
+        }
+        let purchases = try XCTUnwrap(self.purchases)
+        let warmupFinished = self.expectation(description: "Background callback received result")
+        // The completion API and async API must join the same task, including subset requests.
+        let warmup = Task.detached(priority: .background) {
+            purchases.checkTrialOrIntroDiscountEligibility(productIdentifiers: ["monthly", "annual"]) { result in
+                expect(Thread.isMainThread).to(beTrue())
+                expect(result.keys).to(haveCount(2))
+                warmupFinished.fulfill()
+            }
+        }
+        try await asyncWait { check.initialPriority.value != nil }
+        expect(check.initialPriority.value) == .background
+
+        let package = Package(identifier: "monthly", packageType: .monthly,
+                              storeProduct: .init(sk1Product: MockSK1Product(mockProductIdentifier: "monthly")),
+                              offeringIdentifier: "offering", webCheckoutUrl: nil)
+        let paywall = Task.detached(priority: .userInitiated) {
+            await purchases.checkTrialOrIntroDiscountEligibility(packages: [package])
+        }
+        // Do not await either task until escalation is observed: the test itself must not donate priority.
+        try await asyncWait { check.currentPriority.value == .userInitiated }
+        self.logger.verifyMessageWasLogged("Waiting for an in-flight intro eligibility", expectedCount: 1)
+        expect(check.invocations.value) == 1
+        check.release()
+        let result = await paywall.value
+        await warmup.value
+        await self.fulfillment(of: [warmupFinished], timeout: 1)
+        expect(result) == [package: IntroEligibility(eligibilityStatus: .eligible)]
+    }
+
+    @MainActor
     func testCustomerInfoChangeClearsCompletedAndPendingGroupChecks() async throws {
         await expect(self.purchasesDelegate.customerInfo).toEventually(equal(CustomerInfo.emptyInfo))
         let initialClearCount = self.cachingTrialOrIntroPriceEligibilityChecker.invokedClearCacheCount

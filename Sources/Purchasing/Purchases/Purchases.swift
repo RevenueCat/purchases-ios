@@ -1639,7 +1639,9 @@ public extension Purchases {
     }
 
     func checkTrialOrIntroDiscountEligibility(productIdentifiers: [String]) async -> [String: IntroEligibility] {
-        return await checkTrialOrIntroductoryDiscountEligibilityAsync(productIdentifiers)
+        return await self.trialOrIntroPriceEligibilityChecker.checkEligibility(
+            productIdentifiers: Set(productIdentifiers)
+        )
     }
 
     func checkTrialOrIntroDiscountEligibility(packages: [Package]) async -> [Package: IntroEligibility] {
@@ -1660,7 +1662,8 @@ public extension Purchases {
     }
 
     func checkTrialOrIntroDiscountEligibility(product: StoreProduct) async -> IntroEligibilityStatus {
-        return await checkTrialOrIntroductoryDiscountEligibilityAsync(product)
+        let result = await self.checkTrialOrIntroDiscountEligibility(productIdentifiers: [product.id])
+        return result[product.id]?.status ?? .unknown
     }
 
 #if os(iOS) || targetEnvironment(macCatalyst) || VISION_OS

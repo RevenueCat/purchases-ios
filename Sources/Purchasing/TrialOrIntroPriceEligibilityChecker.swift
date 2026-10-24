@@ -53,92 +53,82 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         self.groupEligibilityCache.clearCache()
     }
 
-    // swiftlint:disable:next function_body_length
     func checkEligibility(productIdentifiers: Set<String>,
                           completion: @escaping ReceiveIntroEligibilityBlock) {
-        guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
-            // Preview mode skips eligibility checks and reports `.unknown` for each product.
-            let result = productIdentifiers.reduce(into: [:]) { resultDict, productId in
-                resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.unknown)
-            }
+        if let result = self.immediateEligibility(for: productIdentifiers) {
             completion(result)
             return
         }
 
-        guard !productIdentifiers.isEmpty else {
-            Logger.warn(Strings.eligibility.check_eligibility_no_identifiers)
-            completion([:])
-            return
-        }
-
-        guard !self.systemInfo.isSimulatedStoreAPIKey else {
-            // Simulated Store products carry backend-computed eligibility in their introductory discount.
-            // Products without that discount have no introductory offer.
-            self.productsManager.products(withIdentifiers: productIdentifiers) { result in
-                let productsByID = (result.value ?? []).dictionaryAllowingDuplicateKeys { $0.productIdentifier }
-                let eligibility = productIdentifiers.reduce(into: [String: IntroEligibility]()) { dict, productId in
-                    let status: IntroEligibilityStatus
-                    if let product = productsByID[productId] {
-                        status = product.introductoryDiscount != nil ? .eligible : .noIntroOfferExists
-                    } else {
-                        status = .unknown
-                    }
-                    dict[productId] = IntroEligibility(eligibilityStatus: status)
-                }
-                self.operationDispatcher.dispatchOnMainActor {
-                    completion(eligibility)
-                }
-            }
-            return
-        }
-
-        let startTime = self.dateProvider.now()
-        let didCheckStoreKit = Atomic(false)
-
-        // Wrap the async completion to avoid making the public completion handler @Sendable.
-        let completionBlock: ([String: IntroEligibility], Error?, StoreKitVersion) -> Void =
-        { [weak self] (result, error, storeKitVersion) in
-            guard let self = self else { return }
-            if storeKitVersion == .storeKit1 || didCheckStoreKit.value || error != nil {
-                self.trackTrialOrIntroEligibilityRequestIfNeeded(startTime: startTime,
-                                                                 requestedProductIds: productIdentifiers,
-                                                                 result: result,
-                                                                 error: error,
-                                                                 storeKitVersion: storeKitVersion)
-            }
+        // Keep the completion API on the main actor; async callers await the work directly.
+        let deliver: ReceiveIntroEligibilityBlock = { result in
             let logDelivery = IntroEligibilityLog.deliveryLogger(clock: self.systemInfo.clock)
             self.operationDispatcher.dispatchOnMainActor {
                 logDelivery(result)
                 completion(result)
             }
         }
+        Async.call(with: deliver) {
+            await self.checkEligibility(productIdentifiers: productIdentifiers)
+        }
+    }
+
+    func checkEligibility(productIdentifiers: Set<String>) async -> [String: IntroEligibility] {
+        if let result = self.immediateEligibility(for: productIdentifiers) {
+            return result
+        }
+
+        guard !self.systemInfo.isSimulatedStoreAPIKey else {
+            // Simulated Store products carry backend-computed eligibility in their introductory discount.
+            // Products without that discount have no introductory offer.
+            let products = (try? await self.productsManager.products(withIdentifiers: productIdentifiers)) ?? []
+            let productsByID = products.dictionaryAllowingDuplicateKeys { $0.productIdentifier }
+            return productIdentifiers.dictionaryWithValues { productID in
+                let status: IntroEligibilityStatus
+                if let product = productsByID[productID] {
+                    status = product.introductoryDiscount != nil ? .eligible : .noIntroOfferExists
+                } else {
+                    status = .unknown
+                }
+                return IntroEligibility(eligibilityStatus: status)
+            }
+        }
+
+        let startTime = self.dateProvider.now()
+        let didCheckStoreKit = Atomic(false)
+        let result: [String: IntroEligibility]
+        let checkError: Error?
+        let storeKitVersion: StoreKitVersion
 
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
            self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
-            Async.call(with: completionBlock) {
-                let result: [String: IntroEligibility]
-                let checkError: Error?
-                do {
-                    result = try await self.sk2CheckEligibility(productIdentifiers) { groupID in
-                        didCheckStoreKit.value = true
-                        return await SK2Product.SubscriptionInfo.isEligibleForIntroOffer(for: groupID)
-                    }
-                    checkError = nil
-                } catch {
-                    Logger.appleError(Strings.eligibility.unable_to_get_intro_eligibility_for_user(error: error))
-
-                    result = productIdentifiers.reduce(into: [:]) { resultDict, productId in
-                        resultDict[productId] = IntroEligibility(eligibilityStatus: IntroEligibilityStatus.unknown)
-                    }
-                    checkError = error
+            storeKitVersion = .storeKit2
+            do {
+                result = try await self.sk2CheckEligibility(productIdentifiers) { groupID in
+                    didCheckStoreKit.value = true
+                    return await SK2Product.SubscriptionInfo.isEligibleForIntroOffer(for: groupID)
                 }
-                return (result, checkError, .storeKit2)
+                checkError = nil
+            } catch {
+                Logger.appleError(Strings.eligibility.unable_to_get_intro_eligibility_for_user(error: error))
+                result = productIdentifiers.dictionaryWithValues { _ in IntroEligibility(eligibilityStatus: .unknown) }
+                checkError = error
             }
         } else {
-            self.sk1CheckEligibility(productIdentifiers) { eligibility, error in
-                completionBlock(eligibility, error, .storeKit1)
+            storeKitVersion = .storeKit1
+            (result, checkError) = await Async.call { completion in
+                self.sk1CheckEligibility(productIdentifiers) { completion(($0, $1)) }
             }
         }
+
+        if storeKitVersion == .storeKit1 || didCheckStoreKit.value || checkError != nil {
+            self.trackTrialOrIntroEligibilityRequestIfNeeded(startTime: startTime,
+                                                             requestedProductIds: productIdentifiers,
+                                                             result: result,
+                                                             error: checkError,
+                                                             storeKitVersion: storeKitVersion)
+        }
+        return result
     }
 
     func sk1CheckEligibility(_ productIdentifiers: Set<String>,
@@ -224,6 +214,18 @@ private extension SK2StoreProduct {
 }
 
 private extension TrialOrIntroPriceEligibilityChecker {
+
+    func immediateEligibility(for productIdentifiers: Set<String>) -> [String: IntroEligibility]? {
+        guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
+            // Preview mode skips eligibility checks and reports `.unknown` for each product.
+            return productIdentifiers.dictionaryWithValues { _ in IntroEligibility(eligibilityStatus: .unknown) }
+        }
+        guard !productIdentifiers.isEmpty else {
+            Logger.warn(Strings.eligibility.check_eligibility_no_identifiers)
+            return [:]
+        }
+        return nil
+    }
 
     func sk1CheckEligibility(with receiptData: Data,
                              productIdentifiers: Set<String>,

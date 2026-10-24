@@ -106,6 +106,40 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
     }
 
     @MainActor
+    func testAsyncProductRequestEscalatesStoreKitGroupTask() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        let monthly = StoreProduct(sk2Product: try await self.fetchSk2Product())
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([monthly])
+        let checker = PriorityRecordingSK2EligibilityChecker(
+            systemInfo: self.mockSystemInfo, receiptFetcher: self.receiptFetcher,
+            introEligibilityCalculator: self.mockIntroEligibilityCalculator, backend: self.mockBackend,
+            currentUserProvider: MockCurrentUserProvider(mockAppUserID: "app_user"),
+            operationDispatcher: self.mockOperationDispatcher, productsManager: self.mockProductsManager,
+            diagnosticsTracker: self.diagnosticsTracker, groupEligibilityCache: self.groupEligibilityCache
+        )
+        let check = checker.check
+        defer { check.release() }
+        let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: checker)
+        let warmup = Task.detached(priority: .background) {
+            await caching.checkEligibility(productIdentifiers: [monthly.id])
+        }
+        try await asyncWait { check.initialPriority.value != nil }
+        expect(check.initialPriority.value) == .background
+
+        let paywall = Task.detached(priority: .userInitiated) {
+            await caching.checkEligibility(productIdentifiers: [monthly.id])
+        }
+        try await asyncWait { check.currentPriority.value == .userInitiated }
+        self.logger.verifyMessageWasLogged("Waiting for an in-flight intro eligibility", expectedCount: 1)
+        expect(check.invocations.value) == 1
+        check.release()
+        let warmupResult = await warmup.value
+        let paywallResult = await paywall.value
+        expect(warmupResult[monthly.id]?.status) == .eligible
+        expect(paywallResult) == warmupResult
+    }
+
+    @MainActor
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testSK2CheckEligibilityAsync() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
@@ -757,4 +791,18 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
         expect(params.storefront).to(beNil())
         expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)
     }
+}
+
+private final class PriorityRecordingSK2EligibilityChecker: TrialOrIntroPriceEligibilityChecker, @unchecked Sendable {
+
+    let check = PriorityRecordingGroupCheck()
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    override func sk2CheckEligibility(
+        _ productIdentifiers: Set<String>,
+        checkSubscriptionGroup: @escaping @Sendable (String) async -> Bool
+    ) async throws -> [String: IntroEligibility] {
+        return try await super.sk2CheckEligibility(productIdentifiers, checkSubscriptionGroup: self.check.call)
+    }
+
 }

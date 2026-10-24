@@ -13,6 +13,8 @@ typealias ReceiveIntroEligibilityBlock = ([String: IntroEligibility]) -> Void
 /// A type that can determine `IntroEligibility` for products.
 protocol TrialOrIntroPriceEligibilityCheckerType: Sendable {
 
+    func checkEligibility(productIdentifiers: Set<String>) async -> [String: IntroEligibility]
+
     func checkEligibility(productIdentifiers: Set<String>, completion: @escaping ReceiveIntroEligibilityBlock)
 
 }

@@ -55,6 +55,17 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
         completion(result)
     }
 
+    var asyncCheckEligibility: (@Sendable (Set<String>) async -> [String: IntroEligibility])?
+
+    override func checkEligibility(productIdentifiers: Set<String>) async -> [String: IntroEligibility] {
+        if let check = self.asyncCheckEligibility {
+            return await check(productIdentifiers)
+        }
+        return await Async.call { completion in
+            self.checkEligibility(productIdentifiers: productIdentifiers, completion: completion)
+        }
+    }
+
     var invokedSk1checkTrialOrIntroPriceEligibility = false
     var invokedSk1checkTrialOrIntroPriceEligibilityCount = 0
     var invokedSk1checkTrialOrIntroPriceEligibilityParameters: (productIdentifiers: Set<String>, Void)?

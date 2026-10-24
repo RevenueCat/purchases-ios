@@ -29,6 +29,12 @@ private final class HeldEligibilityChecker: TrialOrIntroPriceEligibilityCheckerT
         self.requests.modify { $0.append(productIdentifiers) }
     }
 
+    func checkEligibility(productIdentifiers: Set<String>) async -> [String: IntroEligibility] {
+        return await Async.call { completion in
+            self.checkEligibility(productIdentifiers: productIdentifiers, completion: completion)
+        }
+    }
+
     func completeNext() {
         let completion = self.completions.modify { $0.isEmpty ? nil : $0.removeFirst() }
         completion?([:])

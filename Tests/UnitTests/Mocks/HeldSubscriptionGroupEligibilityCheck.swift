@@ -55,3 +55,27 @@ final class HeldSubscriptionGroupEligibilityCheck: Sendable {
     }
 
 }
+
+/// Samples priority inside the shared worker without awaiting it from the test and escalating it accidentally.
+final class PriorityRecordingGroupCheck: Sendable {
+
+    let initialPriority = Atomic<TaskPriority?>(nil)
+    let currentPriority = Atomic<TaskPriority?>(nil)
+    let invocations = Atomic(0)
+    private let released = Atomic(false)
+
+    func call(_ groupID: String) async -> Bool {
+        self.invocations.modify { $0 += 1 }
+        self.initialPriority.value = Task.currentPriority
+        while !self.released.value {
+            self.currentPriority.value = Task.currentPriority
+            try? await Task.sleep(nanoseconds: 1_000_000)
+        }
+        return true
+    }
+
+    func release() {
+        self.released.value = true
+    }
+
+}
