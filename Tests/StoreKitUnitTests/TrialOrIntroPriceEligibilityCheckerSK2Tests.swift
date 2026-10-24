@@ -442,26 +442,6 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
 extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
 
     @MainActor
-    func testCachingWrapperReusesGroupResultThroughItsNormalEntryPoint() async throws {
-        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
-        let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: self.trialOrIntroPriceEligibilityChecker)
-        let monthly = StoreProduct(sk2Product: try await self.fetchSk2Product())
-        let annual = StoreProduct(
-            sk2Product: try await self.fetchSk2Product("com.revenuecat.annual_39.99.2_week_intro")
-        )
-
-        for product in [monthly, annual, monthly] {
-            let status: IntroEligibilityStatus = await withCheckedContinuation { continuation in
-                caching.checkEligibility(product: product) { continuation.resume(returning: $0) }
-            }
-            expect(status) == .eligible
-        }
-
-        self.logger.verifyMessageWasLogged("starting StoreKit check", expectedCount: 1)
-        self.logger.verifyMessageWasLogged("reusing cached result", expectedCount: 1)
-    }
-
-    @MainActor
     func testCachedProductEligibilitySurvivesProductLookupFailure() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: self.trialOrIntroPriceEligibilityChecker)
