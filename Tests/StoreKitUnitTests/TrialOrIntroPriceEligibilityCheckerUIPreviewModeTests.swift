@@ -52,7 +52,8 @@ class TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests: StoreKitConfigTestC
             currentUserProvider: userProvider,
             operationDispatcher: mockOperationDispatcher,
             productsManager: self.mockProductsManager,
-            diagnosticsTracker: nil
+            diagnosticsTracker: nil,
+            groupEligibilityCache: .init()
         )
     }
 
@@ -89,5 +90,21 @@ class TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests: StoreKitConfigTestC
         expect(self.receiptFetcher.receiptDataCalled) == false
         expect(self.mockIntroEligibilityCalculator.invokedCheckTrialOrIntroDiscountEligibility) == false
         expect(self.mockOfferingsAPI.invokedGetIntroEligibility) == false
+    }
+
+    func testCachingWrapperInSK2PreviewModeSkipsProductAndGroupLookups() async throws {
+        try self.setupUIPreviewMode(storeKitVersion: .storeKit2)
+        let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: self.trialOrIntroPriceEligibilityChecker)
+        for _ in 0..<2 {
+            let result = await withCheckedContinuation { continuation in
+                caching.checkEligibility(productIdentifiers: ["product_id"]) { continuation.resume(returning: $0) }
+            }
+            expect(result["product_id"]?.status) == .unknown
+        }
+        expect(self.mockProductsManager.invokedProductsCount) == 0
+        expect(self.receiptFetcher.receiptDataCalled) == false
+        expect(self.mockIntroEligibilityCalculator.invokedCheckTrialOrIntroDiscountEligibility) == false
+        expect(self.mockOfferingsAPI.invokedGetIntroEligibility) == false
+        self.logger.verifyMessageWasNotLogged("starting StoreKit check")
     }
 }

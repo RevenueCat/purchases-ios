@@ -32,7 +32,8 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
                   productsManager: MockProductsManager(diagnosticsTracker: nil,
                                                        systemInfo: systemInfo,
                                                        requestTimeout: Configuration.storeKitRequestTimeoutDefault),
-                  diagnosticsTracker: nil)
+                  diagnosticsTracker: nil,
+                  groupEligibilityCache: .init())
     }
 
     var invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore = false
@@ -52,6 +53,17 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
             return stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult
         }
         completion(result)
+    }
+
+    var asyncCheckEligibility: (@Sendable (Set<String>) async -> [String: IntroEligibility])?
+
+    override func checkEligibility(productIdentifiers: Set<String>) async -> [String: IntroEligibility] {
+        if let check = self.asyncCheckEligibility {
+            return await check(productIdentifiers)
+        }
+        return await Async.call { completion in
+            self.checkEligibility(productIdentifiers: productIdentifiers, completion: completion)
+        }
     }
 
     var invokedSk1checkTrialOrIntroPriceEligibility = false
@@ -77,7 +89,10 @@ class MockTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheck
     var stubbedSk2checkTrialOrIntroPriceEligibilityReceiveEligibilityResult: [String: IntroEligibility] = [:]
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    override func sk2CheckEligibility(_ productIdentifiers: Set<String>) async -> [String: IntroEligibility] {
+    override func sk2CheckEligibility(
+        _ productIdentifiers: Set<String>,
+        checkSubscriptionGroup: @escaping @Sendable (String) async -> Bool
+    ) async -> [String: IntroEligibility] {
         invokedSk2checkTrialOrIntroPriceEligibility = true
         invokedSk2checkTrialOrIntroPriceEligibilityCount += 1
         invokedSk2checkTrialOrIntroPriceEligibilityParameters = (productIdentifiers, ())

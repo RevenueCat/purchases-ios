@@ -22,9 +22,11 @@ private final class HeldEligibilityChecker: TrialOrIntroPriceEligibilityCheckerT
     let requests: Atomic<[Set<String>]> = .init([])
     private let completions: Atomic<[ReceiveIntroEligibilityBlock]> = .init([])
 
-    func checkEligibility(productIdentifiers: Set<String>, completion: @escaping ReceiveIntroEligibilityBlock) {
-        self.completions.modify { $0.append(completion) }
-        self.requests.modify { $0.append(productIdentifiers) }
+    func checkEligibility(productIdentifiers: Set<String>) async -> [String: IntroEligibility] {
+        return await Async.call { completion in
+            self.completions.modify { $0.append(completion) }
+            self.requests.modify { $0.append(productIdentifiers) }
+        }
     }
 
     func completeNext() {

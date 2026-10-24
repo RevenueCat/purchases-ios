@@ -75,6 +75,7 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
             operationDispatcher: mockOperationDispatcher,
             productsManager: self.mockProductsManager,
             diagnosticsTracker: self.diagnosticsTracker,
+            groupEligibilityCache: .init(),
             dateProvider: self.mockDateProvider
         )
     }
@@ -111,6 +112,34 @@ class TrialOrIntroPriceEligibilityCheckerSK1Tests: StoreKitConfigTestCase {
         }
 
         expect(eligibilities).to(haveCount(1))
+    }
+
+    func testSK1ConfiguredOnModernOSKeepsPerProductCaching() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: self.trialOrIntroPriceEligibilityChecker)
+        let productID = "product_id"
+        self.mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroDiscountEligibilityResult = .success([
+            productID: .eligible
+        ])
+        let first = await withCheckedContinuation { continuation in
+            caching.checkEligibility(productIdentifiers: [productID]) { continuation.resume(returning: $0) }
+        }
+        expect(first[productID]?.status) == .eligible
+
+        self.mockIntroEligibilityCalculator.stubbedCheckTrialOrIntroDiscountEligibilityResult = .success([
+            productID: .ineligible
+        ])
+        let cached = await withCheckedContinuation { continuation in
+            caching.checkEligibility(productIdentifiers: [productID]) { continuation.resume(returning: $0) }
+        }
+        expect(cached[productID]?.status) == .eligible
+        caching.clearCache()
+        let refreshed = await withCheckedContinuation { continuation in
+            caching.checkEligibility(productIdentifiers: [productID]) { continuation.resume(returning: $0) }
+        }
+        expect(refreshed[productID]?.status) == .ineligible
+        expect(self.mockProductsManager.invokedProductsCount) == 0
+        self.logger.verifyMessageWasNotLogged("starting StoreKit check")
     }
 
     func testSK1EligibilityProductsWithKnownIntroEligibilityStatus() throws {

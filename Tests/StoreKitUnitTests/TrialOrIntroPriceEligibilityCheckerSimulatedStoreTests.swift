@@ -57,7 +57,8 @@ class TrialOrIntroPriceEligibilityCheckerSimulatedStoreTests: StoreKitConfigTest
             currentUserProvider: userProvider,
             operationDispatcher: mockOperationDispatcher,
             productsManager: self.cachingManager,
-            diagnosticsTracker: nil
+            diagnosticsTracker: nil,
+            groupEligibilityCache: .init()
         )
     }
 
@@ -191,6 +192,32 @@ class TrialOrIntroPriceEligibilityCheckerSimulatedStoreTests: StoreKitConfigTest
 
     func testSimulatedStoreSharesCachedProductsWithEligibilityWhenSK2IsConfigured() async throws {
         try await self.verifySharingCachedProducts(storeKitVersion: .storeKit2)
+    }
+
+    func testSimulatedStoreRetainsPerProductEligibilityCachingWithSK2Configured() async throws {
+        try self.setupSimulatedStore(storeKitVersion: .storeKit2)
+        self.stubProducts()
+        let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: self.trialOrIntroPriceEligibilityChecker)
+        let identifiers: Set<String> = [Self.productWithFreeTrialID]
+        let first = await withCheckedContinuation { continuation in
+            caching.checkEligibility(productIdentifiers: identifiers) { continuation.resume(returning: $0) }
+        }
+
+        self.cachingManager.clearCache()
+        self.mockProductsManager.stubbedProductsCompletionResult = .failure(ErrorUtils.productRequestTimedOutError())
+        let cached = await withCheckedContinuation { continuation in
+            caching.checkEligibility(productIdentifiers: identifiers) { continuation.resume(returning: $0) }
+        }
+        expect(first[Self.productWithFreeTrialID]?.status) == .eligible
+        expect(cached) == first
+        expect(self.mockProductsManager.invokedProductsCount) == 1
+
+        caching.clearCache()
+        let refreshed = await withCheckedContinuation { continuation in
+            caching.checkEligibility(productIdentifiers: identifiers) { continuation.resume(returning: $0) }
+        }
+        expect(refreshed[Self.productWithFreeTrialID]?.status) == .unknown
+        expect(self.mockProductsManager.invokedProductsCount) == 2
     }
 
 }
