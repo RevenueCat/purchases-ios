@@ -12,11 +12,11 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-class SubscriptionGroupEligibilityCacheTests: TestCase {
+class SubscriptionGroupIntroEligibilityTests: TestCase {
 
     func testCachesBothEligibleAndIneligibleResults() async {
         for eligible in [true, false] {
-            let cache = SubscriptionGroupEligibilityCache()
+            let cache = SubscriptionGroupIntroEligibilityCache()
             let invocations = Atomic(0)
             let check: @Sendable (String) async -> Bool = { groupID in
                 expect(groupID) == "group"
@@ -36,7 +36,7 @@ class SubscriptionGroupEligibilityCacheTests: TestCase {
     }
 
     func testConcurrentChecksShareWorkEvenWhenFirstCallerIsCancelled() async throws {
-        let cache = SubscriptionGroupEligibilityCache()
+        let cache = SubscriptionGroupIntroEligibilityCache()
         let check = HeldSubscriptionGroupEligibilityCheck()
         defer { check.completeAll() }
         let first = Task { await cache.eligibility(for: "group", log: IntroEligibilityLog(), check: check.call) }
@@ -63,7 +63,7 @@ class SubscriptionGroupEligibilityCacheTests: TestCase {
     }
 
     func testInvalidationClearsCompletedAndPendingChecksWithoutCancellingExistingCallers() async throws {
-        let cache = SubscriptionGroupEligibilityCache()
+        let cache = SubscriptionGroupIntroEligibilityCache()
         let check = HeldSubscriptionGroupEligibilityCheck()
         defer { check.completeAll() }
         let first = Task { await cache.eligibility(for: "pending", log: IntroEligibilityLog(), check: check.call) }
@@ -116,7 +116,7 @@ class SubscriptionGroupEligibilityCacheTests: TestCase {
     }
 
     func testInvalidatedCheckCannotRefillEmptyCache() async throws {
-        let cache = SubscriptionGroupEligibilityCache()
+        let cache = SubscriptionGroupIntroEligibilityCache()
         let check = HeldSubscriptionGroupEligibilityCheck()
         defer { check.completeAll() }
         let first = Task { await cache.eligibility(for: "group", log: IntroEligibilityLog(), check: check.call) }
@@ -141,7 +141,7 @@ class SubscriptionGroupEligibilityCacheTests: TestCase {
     }
 
     func testInvalidatedCheckCannotOverwriteNewerCachedResult() async throws {
-        let cache = SubscriptionGroupEligibilityCache()
+        let cache = SubscriptionGroupIntroEligibilityCache()
         let check = HeldSubscriptionGroupEligibilityCheck()
         defer { check.completeAll() }
         let first = Task { await cache.eligibility(for: "group", log: IntroEligibilityLog(), check: check.call) }
@@ -168,7 +168,7 @@ class SubscriptionGroupEligibilityCacheTests: TestCase {
     }
 
     func testUnrelatedGroupCompletesAfterInvalidationWhileFirstGroupRemainsPending() async throws {
-        let cache = SubscriptionGroupEligibilityCache()
+        let cache = SubscriptionGroupIntroEligibilityCache()
         let check = HeldSubscriptionGroupEligibilityCheck()
         defer { check.completeAll() }
         let firstFinished = Atomic(false)

@@ -10,10 +10,10 @@
 
 import Foundation
 
-/// Shares SK2 eligibility checks across products in the same subscription group.
+/// Shares SK2 introductory offer eligibility checks across products in the same subscription group.
 /// The caching wrapper controls invalidation of both product and group results.
 /// Invalidated checks still finish for existing callers, but cannot populate the cache or serve new callers.
-final class SubscriptionGroupEligibilityCache: Sendable {
+final class SubscriptionGroupIntroEligibilityCache: Sendable {
 
     private enum Entry {
         case pending(id: UUID, task: Task<Bool, Never>)

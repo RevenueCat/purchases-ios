@@ -28,7 +28,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
     var mockSystemInfo: MockSystemInfo!
     private var mockOperationDispatcher: MockOperationDispatcher!
 
-    private var groupEligibilityCache: SubscriptionGroupEligibilityCache!
+    private var groupEligibilityCache: SubscriptionGroupIntroEligibilityCache!
     private var diagnosticsTracker: DiagnosticsTrackerType?
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

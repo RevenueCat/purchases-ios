@@ -197,7 +197,7 @@ class BasePurchasesTests: TestCase {
     var mockPurchasedProductsFetcher: MockPurchasedProductsFetcher!
     var mockTransactionFetcher: MockStoreKit2TransactionFetcher!
     var purchasesOrchestrator: PurchasesOrchestrator!
-    var groupEligibilityCache: SubscriptionGroupEligibilityCache!
+    var groupEligibilityCache: SubscriptionGroupIntroEligibilityCache!
     var trialOrIntroPriceEligibilityChecker: MockTrialOrIntroPriceEligibilityChecker!
     var cachingTrialOrIntroPriceEligibilityChecker: MockCachingTrialOrIntroPriceEligibilityChecker!
     var mockManageSubsHelper: MockManageSubscriptionsHelper!

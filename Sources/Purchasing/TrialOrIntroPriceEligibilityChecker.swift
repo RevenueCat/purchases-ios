@@ -23,7 +23,7 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let dateProvider: DateProvider
 
-    private let groupEligibilityCache: SubscriptionGroupEligibilityCache
+    private let groupEligibilityCache: SubscriptionGroupIntroEligibilityCache
 
     init(
         systemInfo: SystemInfo,
@@ -34,7 +34,7 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
         operationDispatcher: OperationDispatcher,
         productsManager: ProductsManagerType,
         diagnosticsTracker: DiagnosticsTrackerType?,
-        groupEligibilityCache: SubscriptionGroupEligibilityCache,
+        groupEligibilityCache: SubscriptionGroupIntroEligibilityCache,
         dateProvider: DateProvider = DateProvider()
     ) {
         self.systemInfo = systemInfo
