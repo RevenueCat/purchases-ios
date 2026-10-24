@@ -112,6 +112,7 @@ private extension CachingTrialOrIntroPriceEligibilityChecker {
 
             let key = RequestKey(productIdentifiers: missingProducts, cacheGeneration: state.cacheGeneration)
             // Keep an awaitable task at both cache layers so joining async callers can raise the work's priority.
+            // Propagation through already-waiting tasks requires the Swift 5.9 runtime (iOS 17 and equivalents).
             let task = Task {
                 let result = await self.checker.checkEligibility(productIdentifiers: missingProducts)
                 self.cache(result, for: key)

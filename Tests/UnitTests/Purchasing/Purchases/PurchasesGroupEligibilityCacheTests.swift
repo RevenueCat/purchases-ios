@@ -54,8 +54,15 @@ class PurchasesGroupEligibilityCacheTests: BasePurchasesTests {
         let paywall = Task.detached(priority: .userInitiated) {
             await purchases.checkTrialOrIntroDiscountEligibility(packages: [package])
         }
-        // Do not await either task until escalation is observed: the test itself must not donate priority.
-        try await asyncWait { check.currentPriority.value == .userInitiated }
+        try await asyncWait {
+            self.logger.messages.contains { $0.message.contains("Waiting for an in-flight intro eligibility") }
+        }
+        // Swift 5.9 added propagation through an already-waiting task: https://github.com/swiftlang/swift/pull/63019.
+        // Keep verifying sharing and delivery on older runtimes, which only escalate the directly awaited task.
+        if #available(iOS 17.0, tvOS 17.0, macOS 14.0, watchOS 10.0, *) {
+            // Awaiting either handle here would let the test itself donate priority.
+            try await asyncWait { check.currentPriority.value == .userInitiated }
+        }
         self.logger.verifyMessageWasLogged("Waiting for an in-flight intro eligibility", expectedCount: 1)
         expect(check.invocations.value) == 1
         check.release()
