@@ -106,6 +106,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
     }
 
     @MainActor
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testAsyncProductRequestEscalatesStoreKitGroupTask() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         let monthly = StoreProduct(sk2Product: try await self.fetchSk2Product())
@@ -134,6 +135,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
     }
 
     @MainActor
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func testDisjointProductRequestEscalatesExistingSubscriptionGroupTask() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         let monthly = StoreProduct(sk2Product: try await self.fetchSk2Product())
