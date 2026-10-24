@@ -30,6 +30,16 @@ final class PaywallPromoOfferCacheTests: TestCase {
         XCTAssertNil(PaywallPromoOfferCache.simulated(if: false))
     }
 
+    func testRealCacheWaitsForSubscriptionHistory() {
+        let cache = PaywallPromoOfferCache(subscriptionHistoryTracker: SubscriptionHistoryTracker())
+
+        XCTAssertTrue(cache.isSubscriptionHistoryLoading)
+    }
+
+    func testSimulatedCacheDoesNotWaitForSubscriptionHistory() {
+        XCTAssertFalse(PaywallPromoOfferCache(simulateEligible: true).isSubscriptionHistoryLoading)
+    }
+
     func testSimulatedCacheFabricatesOffersInsteadOfFetchingThem() async throws {
         let package = Self.makePackage(promoDiscountIdentifier: Self.promoCode)
         let cache = try XCTUnwrap(PaywallPromoOfferCache.simulated(if: true))
@@ -128,6 +138,25 @@ final class PaywallPromoOfferCacheTests: TestCase {
         )
     }
 
+    func testSignedOfferDoesNotLeakToAnotherBillingPlan() async {
+        let upFront = Self.makePackage(identifier: "up_front", promoDiscountIdentifier: Self.promoCode)
+        let installments = Self.makePackage(
+            identifier: "installments",
+            promoDiscountIdentifier: Self.promoCode,
+            installmentsInfo: Self.monthlyInstallments
+        )
+        let cache = PaywallPromoOfferCache(simulateEligible: true)
+
+        XCTAssertEqual(upFront.storeProduct.productIdentifier, installments.storeProduct.productIdentifier)
+        XCTAssertNotEqual(upFront.storeProduct.id, installments.storeProduct.id)
+
+        await cache.computeEligibility(for: [(upFront, Self.promoCode)])
+
+        XCTAssertNotNil(cache.get(for: upFront))
+        XCTAssertNil(cache.get(for: installments))
+        XCTAssertFalse(cache.isMostLikelyEligible(for: installments))
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -143,7 +172,22 @@ private extension PaywallPromoOfferCacheTests {
         )
     }
 
-    static func makePackage(promoDiscountIdentifier: String) -> Package {
+    static let monthlyInstallments = InstallmentsInfo(
+        commitmentInstallmentsCount: 12,
+        commitmentInstallmentPeriod: SubscriptionPeriod(value: 1, unit: .month),
+        installmentBillingPrice: 1.99,
+        installmentBillingDisplayPrice: "$1.99",
+        commitmentTotalPeriod: SubscriptionPeriod(value: 1, unit: .year),
+        commitmentTotalPrice: 23.88,
+        commitmentTotalDisplayPrice: "$23.88",
+        billingPlanType: .monthly
+    )
+
+    static func makePackage(
+        identifier: String = "monthly",
+        promoDiscountIdentifier: String,
+        installmentsInfo: InstallmentsInfo? = nil
+    ) -> Package {
         let product = TestStoreProduct(
             localizedTitle: "PRO monthly",
             price: 3.99,
@@ -165,11 +209,12 @@ private extension PaywallPromoOfferCacheTests {
                     type: .promotional
                 )
             ],
-            locale: Locale(identifier: "en_US")
+            locale: Locale(identifier: "en_US"),
+            installmentsInfo: installmentsInfo
         )
 
         return Package(
-            identifier: "monthly",
+            identifier: identifier,
             packageType: .monthly,
             storeProduct: product.toStoreProduct(),
             offeringIdentifier: "default",

@@ -28,14 +28,12 @@ import StoreKit
     private var transactionUpdateTask: Task<Void, Never>?
 
     @_spi(Internal) public init() {
-        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-            self.statusSubject = CurrentValueSubject(.noHistory)
+        self.statusSubject = CurrentValueSubject(.unknown)
 
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
             Task {
                 await self.initializeIfAvailable()
             }
-        } else {
-            self.statusSubject = CurrentValueSubject(.unknown)
         }
     }
 
