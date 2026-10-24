@@ -15,17 +15,4 @@ protocol TrialOrIntroPriceEligibilityCheckerType: Sendable {
 
     func checkEligibility(productIdentifiers: Set<String>) async -> [String: IntroEligibility]
 
-    func checkEligibility(productIdentifiers: Set<String>, completion: @escaping ReceiveIntroEligibilityBlock)
-
-}
-
-/// Default overload implementation that takes a single `StoreProductType`.
-extension TrialOrIntroPriceEligibilityCheckerType {
-
-    func checkEligibility(product: StoreProductType, completion: @escaping (IntroEligibilityStatus) -> Void) {
-        self.checkEligibility(productIdentifiers: [product.id]) { eligibility in
-            completion(eligibility[product.id]?.status ?? .unknown)
-        }
-    }
-
 }

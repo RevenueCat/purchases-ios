@@ -344,9 +344,10 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let storeProduct = try await self.fetchSk2StoreProduct()
+        let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: self.trialOrIntroPriceEligibilityChecker)
 
         let status: IntroEligibilityStatus = await withCheckedContinuation { continuation in
-            self.trialOrIntroPriceEligibilityChecker.checkEligibility(product: storeProduct) { status in
+            caching.checkEligibility(product: storeProduct) { status in
                 continuation.resume(returning: status)
             }
         }
@@ -359,9 +360,10 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let storeProduct = try await self.fetchSk2StoreProduct("lifetime")
+        let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: self.trialOrIntroPriceEligibilityChecker)
 
         let status: IntroEligibilityStatus = await withCheckedContinuation { continuation in
-            self.trialOrIntroPriceEligibilityChecker.checkEligibility(product: storeProduct) { status in
+            caching.checkEligibility(product: storeProduct) { status in
                 continuation.resume(returning: status)
             }
         }
@@ -413,17 +415,17 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
         let storeProduct = try await self.fetchSk2StoreProduct()
+        let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: self.trialOrIntroPriceEligibilityChecker)
+        // Simulate product lookup no longer returning this product.
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([])
 
-        // We can't fetch an invalid StoreProduct to pass into the
-        // eligibility checker so this just fakes an unknown response,
-        // regardless of the real status from the checker
-        let fakeStatus: IntroEligibilityStatus = await withCheckedContinuation { continuation in
-            self.trialOrIntroPriceEligibilityChecker.checkEligibility(product: storeProduct) { _ in
-                continuation.resume(returning: .unknown)
+        let status: IntroEligibilityStatus = await withCheckedContinuation { continuation in
+            caching.checkEligibility(product: storeProduct) { status in
+                continuation.resume(returning: status)
             }
         }
 
-        expect(fakeStatus) == .unknown
+        expect(status) == .unknown
     }
 }
 

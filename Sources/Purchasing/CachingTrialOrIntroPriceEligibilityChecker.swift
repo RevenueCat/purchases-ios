@@ -68,6 +68,12 @@ class CachingTrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCh
 
 extension CachingTrialOrIntroPriceEligibilityChecker {
 
+    func checkEligibility(product: StoreProductType, completion: @escaping (IntroEligibilityStatus) -> Void) {
+        self.checkEligibility(productIdentifiers: [product.id]) { eligibility in
+            completion(eligibility[product.id]?.status ?? .unknown)
+        }
+    }
+
     func checkEligibility(
         productIdentifiers: Set<String>,
         completion: @escaping ReceiveIntroEligibilityBlock
