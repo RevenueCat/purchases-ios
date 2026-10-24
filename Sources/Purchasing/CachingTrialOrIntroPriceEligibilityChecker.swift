@@ -76,8 +76,9 @@ extension CachingTrialOrIntroPriceEligibilityChecker {
         if case .complete(let cached) = request {
             completion(cached)
         } else {
-            _ = Task<Void, Never> { @MainActor in
-                completion(await request.value)
+            _ = Task<Void, Never> {
+                let result = await request.value
+                self.checker.deliverEligibility(result, completion: completion)
             }
         }
     }

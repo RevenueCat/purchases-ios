@@ -62,14 +62,20 @@ class TrialOrIntroPriceEligibilityChecker: TrialOrIntroPriceEligibilityCheckerTy
 
         // Keep the completion API on the main actor; async callers await the work directly.
         let deliver: ReceiveIntroEligibilityBlock = { result in
-            let logDelivery = IntroEligibilityLog.deliveryLogger(clock: self.systemInfo.clock)
-            self.operationDispatcher.dispatchOnMainActor {
-                logDelivery(result)
-                completion(result)
-            }
+            self.deliverEligibility(result, completion: completion)
         }
         Async.call(with: deliver) {
             await self.checkEligibility(productIdentifiers: productIdentifiers)
+        }
+    }
+
+    /// Shared by the raw checker and caching wrapper after their asynchronous eligibility work completes.
+    /// Start timing before the main-actor hop so callback delivery logs exclude the eligibility check itself.
+    func deliverEligibility(_ result: [String: IntroEligibility], completion: @escaping ReceiveIntroEligibilityBlock) {
+        let logDelivery = IntroEligibilityLog.deliveryLogger(clock: self.systemInfo.clock)
+        self.operationDispatcher.dispatchOnMainActor {
+            logDelivery(result)
+            completion(result)
         }
     }
 

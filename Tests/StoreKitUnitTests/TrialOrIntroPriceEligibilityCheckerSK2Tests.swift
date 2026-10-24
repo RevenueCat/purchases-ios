@@ -110,13 +110,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         let monthly = StoreProduct(sk2Product: try await self.fetchSk2Product())
         self.mockProductsManager.stubbedProductsCompletionResult = .success([monthly])
-        let checker = PriorityRecordingSK2EligibilityChecker(
-            systemInfo: self.mockSystemInfo, receiptFetcher: self.receiptFetcher,
-            introEligibilityCalculator: self.mockIntroEligibilityCalculator, backend: self.mockBackend,
-            currentUserProvider: MockCurrentUserProvider(mockAppUserID: "app_user"),
-            operationDispatcher: self.mockOperationDispatcher, productsManager: self.mockProductsManager,
-            diagnosticsTracker: self.diagnosticsTracker, groupEligibilityCache: self.groupEligibilityCache
-        )
+        let checker = self.makePriorityRecordingChecker()
         let check = checker.check
         defer { check.release() }
         let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: checker)
@@ -137,6 +131,47 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
         let paywallResult = await paywall.value
         expect(warmupResult[monthly.id]?.status) == .eligible
         expect(paywallResult) == warmupResult
+    }
+
+    @MainActor
+    func testDisjointProductRequestEscalatesExistingSubscriptionGroupTask() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        let monthly = StoreProduct(sk2Product: try await self.fetchSk2Product())
+        let annual = StoreProduct(
+            sk2Product: try await self.fetchSk2Product("com.revenuecat.annual_39.99.2_week_intro")
+        )
+        let groupID = try XCTUnwrap(monthly.subscriptionGroupIdentifier)
+        expect(annual.subscriptionGroupIdentifier) == groupID
+        let checker = self.makePriorityRecordingChecker()
+        let check = checker.check
+        defer { check.release() }
+        let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: checker)
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([monthly])
+
+        let warmup = Task.detached(priority: .background) {
+            await caching.checkEligibility(productIdentifiers: [monthly.id])
+        }
+        try await asyncWait { check.initialPriority.value != nil }
+        expect(check.initialPriority.value) == .background
+
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([annual])
+        let paywall = Task.detached(priority: .userInitiated) {
+            await caching.checkEligibility(productIdentifiers: [annual.id])
+        }
+        // Awaiting the handles here would donate the test's priority and could hide a broken join path.
+        try await asyncWait { check.currentPriority.value == .userInitiated }
+        self.logger.verifyMessageWasLogged(
+            "reusing in-flight check for subscription group '\(groupID)'", expectedCount: 1
+        )
+        self.logger.verifyMessageWasNotLogged("Waiting for an in-flight intro eligibility")
+        expect(check.invocations.value) == 1
+        expect(self.mockProductsManager.invokedProductsParametersList) == [[monthly.id], [annual.id]]
+
+        check.release()
+        let warmupResult = await warmup.value
+        let paywallResult = await paywall.value
+        expect(warmupResult) == [monthly.id: IntroEligibility(eligibilityStatus: .eligible)]
+        expect(paywallResult) == [annual.id: IntroEligibility(eligibilityStatus: .eligible)]
     }
 
     @MainActor
@@ -220,6 +255,51 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
 
         expect(receivedResult?["missing"]?.status) == .unknown
         expect(self.mockOperationDispatcher.pendingMainActorDispatches.value) == 0
+        self.logger.verifyMessageWasLogged(
+            "Delivering intro eligibility results after 7.0s waiting for the main queue.",
+            level: .debug, expectedCount: 1
+        )
+    }
+
+    @MainActor
+    func testCachingWrapperDeliveryTimingExcludesProductLookup() async throws {
+        try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
+        let clock = try XCTUnwrap(self.mockSystemInfo.clock as? TestClock)
+        let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: self.trialOrIntroPriceEligibilityChecker)
+        self.mockOperationDispatcher.shouldHoldDispatchOnMainActorBlocks = true
+        self.mockProductsManager.stubbedProductsCompletionResult = .success([])
+        self.mockProductsManager.shouldDeferProductsCompletion = true
+        var productLookupCompleted = false
+        defer {
+            if !productLookupCompleted, self.mockProductsManager.deferredProductsRequestCount == 1 {
+                self.mockProductsManager.completeDeferredProductsRequest(at: 0)
+            }
+            self.mockOperationDispatcher.performHeldMainActorBlocks()
+        }
+        var receivedResult: [String: IntroEligibility]?
+
+        caching.checkEligibility(productIdentifiers: ["missing"]) {
+            expect(Thread.isMainThread).to(beTrue())
+            receivedResult = $0
+        }
+        try await asyncWait { self.mockProductsManager.deferredProductsRequestCount == 1 }
+        clock.advance(by: .seconds(5))
+        productLookupCompleted = true
+        self.mockProductsManager.completeDeferredProductsRequest(at: 0)
+
+        let heldBlocks = self.mockOperationDispatcher.heldMainActorBlocks
+        try await asyncWait(description: "Caching wrapper did not schedule callback delivery") {
+            heldBlocks.value.count == 1
+        }
+        expect(receivedResult).to(beNil())
+        self.logger.verifyMessageWasNotLogged("Delivering intro eligibility results")
+        clock.advance(by: .seconds(7))
+        clock.now = .distantPast
+        self.mockOperationDispatcher.performHeldMainActorBlocks()
+
+        expect(receivedResult?["missing"]?.status) == .unknown
+        expect(self.mockOperationDispatcher.pendingMainActorDispatches.value) == 0
+        self.logger.verifyMessageWasLogged("Delivering intro eligibility results", expectedCount: 1)
         self.logger.verifyMessageWasLogged(
             "Delivering intro eligibility results after 7.0s waiting for the main queue.",
             level: .debug, expectedCount: 1
@@ -791,6 +871,21 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
         expect(params.storefront).to(beNil())
         expect(params.responseTime) == Self.eventTimestamp2.timeIntervalSince(Self.eventTimestamp1)
     }
+}
+
+@available(iOS 14.0, tvOS 14.0, macOS 11.0, watchOS 7.0, *)
+private extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
+
+    func makePriorityRecordingChecker() -> PriorityRecordingSK2EligibilityChecker {
+        return PriorityRecordingSK2EligibilityChecker(
+            systemInfo: self.mockSystemInfo, receiptFetcher: self.receiptFetcher,
+            introEligibilityCalculator: self.mockIntroEligibilityCalculator, backend: self.mockBackend,
+            currentUserProvider: MockCurrentUserProvider(mockAppUserID: "app_user"),
+            operationDispatcher: self.mockOperationDispatcher, productsManager: self.mockProductsManager,
+            diagnosticsTracker: self.diagnosticsTracker, groupEligibilityCache: self.groupEligibilityCache
+        )
+    }
+
 }
 
 private final class PriorityRecordingSK2EligibilityChecker: TrialOrIntroPriceEligibilityChecker, @unchecked Sendable {
