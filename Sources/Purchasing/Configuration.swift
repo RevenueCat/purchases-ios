@@ -51,6 +51,8 @@ import Foundation
         let observerMode: Bool
         let userDefaults: UserDefaults?
         let storeKitVersion: StoreKitVersion
+        // TaskPriority is not Hashable, so store its raw value for configuration equality and hashing.
+        let introEligibilityWarmupPriorityRawValue: UInt8
         let dangerousSettings: DangerousSettings?
         let networkTimeout: NetworkTimeout
         let storeKit1Timeout: TimeInterval
@@ -76,6 +78,9 @@ import Foundation
     var observerMode: Bool { self.storage.observerMode }
     var userDefaults: UserDefaults? { self.storage.userDefaults }
     var storeKitVersion: StoreKitVersion { self.storage.storeKitVersion }
+    var introEligibilityWarmupPriority: TaskPriority {
+        TaskPriority(rawValue: self.storage.introEligibilityWarmupPriorityRawValue)
+    }
     var dangerousSettings: DangerousSettings? { self.storage.dangerousSettings }
     var networkTimeout: NetworkTimeout { self.storage.networkTimeout }
     var storeKit1Timeout: TimeInterval { self.storage.storeKit1Timeout }
@@ -98,6 +103,7 @@ import Foundation
             observerMode: builder.observerMode,
             userDefaults: builder.userDefaults,
             storeKitVersion: builder.storeKitVersion,
+            introEligibilityWarmupPriorityRawValue: builder.introEligibilityWarmupPriority.rawValue,
             dangerousSettings: builder.dangerousSettings,
             networkTimeout: builder.networkTimeout,
             storeKit1Timeout: builder.storeKit1Timeout,
@@ -164,6 +170,7 @@ import Foundation
         private(set) var iamEnabled: Bool = false
         private(set) var keychainAccessGroup: String?
         private(set) var storeKitVersion: StoreKitVersion = .default
+        private(set) var introEligibilityWarmupPriority: TaskPriority = .background
         private(set) var useExternalPurchaseCustomLinks: Bool = false
         private(set) var enableExternalPurchasesInSimulator: Bool = true
 
@@ -358,6 +365,21 @@ import Foundation
         /// - ``StoreKitVersion``
         @objc public func with(storeKitVersion version: StoreKitVersion) -> Builder {
             self.storeKitVersion = version
+            return self
+        }
+
+        /// Sets the initial task priority for automatic introductory-offer eligibility warm-up.
+        ///
+        /// Defaults to `.background`. Apps that present a paywall immediately after configuration can
+        /// choose `.userInitiated` to give this work a higher initial priority. This is a scheduling
+        /// preference and does not guarantee a particular response time from StoreKit.
+        ///
+        /// This setting only affects eligibility warm-up. Asset and font warm-ups remain at `.background`.
+        ///
+        /// - Note: This method is available only in Swift because `TaskPriority` is not Objective-C compatible.
+        @discardableResult
+        public func with(introEligibilityWarmupPriority: TaskPriority) -> Builder {
+            self.introEligibilityWarmupPriority = introEligibilityWarmupPriority
             return self
         }
 

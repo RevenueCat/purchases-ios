@@ -12,6 +12,7 @@ func checkConfigurationAPI() {
     let configuration = Configuration
         .builder(withAPIKey: "", appUserID: "")
         .with(apiKey: "")
+        .with(introEligibilityWarmupPriority: .utility)
         .build()
 
     print(configuration)
