@@ -55,7 +55,6 @@ extension IntroEligibilityViewModel {
 
             self.allEligibility = await self.introEligibilityChecker.eligibility(for: packages)
         }
-        Logger.debug(Strings.intro_eligibility_received(result: self.allEligibility, priority: Task.currentPriority))
     }
 
 }

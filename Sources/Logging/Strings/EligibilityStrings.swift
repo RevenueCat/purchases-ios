@@ -29,9 +29,8 @@ enum EligibilityStrings {
     case product_lookup_finished(requestID: String, identifiers: Set<String>, missingIdentifiers: Set<String>,
                                  duration: TimeInterval)
     case product_lookup_failed(requestID: String, error: Error, duration: TimeInterval)
-    case subscription_group_check_started(requestID: String, groupID: String, priority: TaskPriority)
-    case subscription_group_check_finished(requestID: String, groupID: String, eligible: Bool,
-                                          duration: TimeInterval, priority: TaskPriority)
+    case subscription_group_check_started(requestID: String, groupID: String)
+    case subscription_group_check_finished(requestID: String, groupID: String, eligible: Bool, duration: TimeInterval)
     case reusing_subscription_group_check(requestID: String, groupID: String, isPending: Bool)
     case check_finished(requestID: String, result: [String: IntroEligibility], duration: TimeInterval)
     case delivering_intro_eligibility(result: [String: IntroEligibility], duration: TimeInterval)
@@ -80,13 +79,12 @@ extension EligibilityStrings: LogMessage {
             return "Intro eligibility (\(requestID)): product lookup failed after \(duration)s. " +
                 "Error: \(nsError.domain) (\(nsError.code)): \(nsError.localizedDescription)"
 
-        case let .subscription_group_check_started(requestID, groupID, priority):
-            return "Intro eligibility (\(requestID)): starting StoreKit check for subscription group '\(groupID)'; " +
-                "task priority=\(priority.rawValue)"
+        case let .subscription_group_check_started(requestID, groupID):
+            return "Intro eligibility (\(requestID)): starting StoreKit check for subscription group '\(groupID)'"
 
-        case let .subscription_group_check_finished(requestID, groupID, eligible, duration, priority):
+        case let .subscription_group_check_finished(requestID, groupID, eligible, duration):
             return "Intro eligibility (\(requestID)): StoreKit check for subscription group '\(groupID)' " +
-                "finished in \(duration)s; eligible=\(eligible); task priority=\(priority.rawValue)"
+                "finished in \(duration)s; eligible=\(eligible)"
 
         case let .reusing_subscription_group_check(requestID, groupID, isPending):
             let source = isPending ? "in-flight check" : "cached result"

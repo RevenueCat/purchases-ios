@@ -29,7 +29,6 @@ enum Strings {
     case displaying_paywall
     case not_displaying_paywall
     case dismissing_paywall
-    case intro_eligibility_received(result: [Package: IntroEligibilityStatus], priority: TaskPriority)
     case tier_has_no_available_products_for_paywall(String)
 
     case attempted_to_track_event_with_missing_data
@@ -180,13 +179,6 @@ extension Strings: CustomStringConvertible {
 
         case .dismissing_paywall:
             return "Dismissing PaywallView"
-
-        case let .intro_eligibility_received(result, priority):
-            let statuses = result.map { package, status in
-                "\(package.identifier)/\(package.storeProduct.productIdentifier): \(status)"
-            }.sorted()
-            return "Paywall received intro eligibility results; task priority=\(priority.rawValue). " +
-                "Results: \(statuses)"
 
         case let .tier_has_no_available_products_for_paywall(tierName):
             return "Tier '\(tierName)' has no available products and will be removed from the paywall."

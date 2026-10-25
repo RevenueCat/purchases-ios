@@ -15,7 +15,7 @@ import Nimble
 import StoreKit
 import XCTest
 
-@testable import RevenueCat
+@testable @_spi(Experimental) import RevenueCat
 
 private final class HeldEligibilityChecker: TrialOrIntroPriceEligibilityCheckerType {
 

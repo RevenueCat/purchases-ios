@@ -64,9 +64,7 @@ struct IntroEligibilityLog: Sendable {
 
     func eligibility(forSubscriptionGroup groupID: String, check: @Sendable (String) async -> Bool) async -> Bool {
         let startTime = self.clock.currentTime
-        Logger.debug(Strings.eligibility.subscription_group_check_started(
-            requestID: self.requestID, groupID: groupID, priority: Task.currentPriority
-        ))
+        Logger.debug(Strings.eligibility.subscription_group_check_started(requestID: self.requestID, groupID: groupID))
         let eligible = await TimingUtil.measureAndLogIfTooSlow(
             threshold: Configuration.TimingThreshold.introEligibility.rawValue,
             message: Strings.eligibility.sk2_intro_eligibility_too_slow.description,
@@ -78,8 +76,7 @@ struct IntroEligibilityLog: Sendable {
             requestID: self.requestID,
             groupID: groupID,
             eligible: eligible,
-            duration: self.clock.durationSince(startTime),
-            priority: Task.currentPriority
+            duration: self.clock.durationSince(startTime)
         ))
         return eligible
     }
