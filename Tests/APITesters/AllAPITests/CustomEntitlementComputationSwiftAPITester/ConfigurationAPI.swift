@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import RevenueCat_CustomEntitlementComputation
+@_spi(Experimental) import RevenueCat_CustomEntitlementComputation
 
 func checkConfigurationAPI() {
     let configuration = Configuration

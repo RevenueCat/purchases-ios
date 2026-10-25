@@ -378,6 +378,7 @@ import Foundation
         ///
         /// - Note: This method is available only in Swift because `TaskPriority` is not Objective-C compatible.
         @discardableResult
+        @_spi(Experimental)
         public func with(introEligibilityWarmupPriority: TaskPriority) -> Builder {
             self.introEligibilityWarmupPriority = introEligibilityWarmupPriority
             return self
