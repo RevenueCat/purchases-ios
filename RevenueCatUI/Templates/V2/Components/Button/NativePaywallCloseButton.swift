@@ -23,6 +23,7 @@ struct NativePaywallCloseButton<Content: View>: View {
     var isWorkflowClose = false
     var componentIdentifier: ObjectIdentifier?
     var interactionEnabled = true
+    var registrationDelayMilliseconds = 0
     let action: () async throws -> Void
     @ViewBuilder var content: () -> Content
     var availabilityChanged: ((Bool) -> Void)?
@@ -42,6 +43,7 @@ struct NativePaywallCloseButton<Content: View>: View {
                     accessibilityLabel: self.accessibilityLabel, role: self.role,
                     isWorkflowClose: self.isWorkflowClose, registrationEnabled: self.registrationEnabled,
                     interactionEnabled: self.interactionEnabled,
+                    registrationDelayMilliseconds: self.registrationDelayMilliseconds,
                     componentIdentifier: self.componentIdentifier, pageID: self.pageID, action: self.action,
                     availabilityChanged: self.availabilityChanged
                 )
@@ -62,10 +64,13 @@ private struct RegisteredNativePaywallButton: View {
     let isWorkflowClose: Bool
     let registrationEnabled: Bool
     let interactionEnabled: Bool
+    let registrationDelayMilliseconds: Int
     @Environment(\.nativePaywallControlsPresented) private var controlsPresented
     @Environment(\.carouselState) private var carouselState
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.nativePaywallInteractionEnabled) private var workflowInteractionEnabled
+    @Environment(\.workflowRenderingContext) private var workflowRenderingContext
+    @State private var registrationDelayElapsed = false
     let componentIdentifier: ObjectIdentifier?
     let pageID: UUID?
     let action: () async throws -> Void
@@ -81,10 +86,17 @@ private struct RegisteredNativePaywallButton: View {
     }
 
     private var registration: Registration {
-        .init(enabled: self.registrationEnabled && (self.carouselState?.distanceFromActive ?? 0) == 0,
+        .init(enabled: self.registrationEnabled && !self.shouldDelayRegistration
+                  && (self.carouselState?.distanceFromActive ?? 0) == 0,
               isEnabled: self.isEnabled && self.interactionEnabled && self.workflowInteractionEnabled,
               label: self.accessibilityLabel,
               role: self.role, isWorkflowClose: self.isWorkflowClose, pageID: self.pageID)
+    }
+
+    private var shouldDelayRegistration: Bool {
+        return self.registrationDelayMilliseconds > 0
+            && !self.registrationDelayElapsed
+            && !self.workflowRenderingContext.pageTransition.isTransitioning
     }
 
     var body: some View {
@@ -104,6 +116,19 @@ private struct RegisteredNativePaywallButton: View {
         .onChangeOf(self.controlsPresented) { self.availabilityChanged?($0) }
         // Refresh closures without publishing observable state during a body update.
         .onReceive(Just(self.action)) { self.coordinator.refreshAction(id: self.identifier, action: $0) }
+        .task(id: self.shouldDelayRegistration) {
+            guard self.registrationDelayMilliseconds > 0 else { return }
+            guard self.shouldDelayRegistration else {
+                self.registrationDelayElapsed = true
+                return
+            }
+            do {
+                try await Task.sleep(nanoseconds: UInt64(self.registrationDelayMilliseconds) * 1_000_000)
+            } catch {
+                return
+            }
+            self.registrationDelayElapsed = true
+        }
         .onDisappear {
             self.coordinator.unregister(id: self.identifier)
             self.availabilityChanged?(false)

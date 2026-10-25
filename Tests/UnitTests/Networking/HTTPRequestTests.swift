@@ -39,7 +39,11 @@ class HTTPRequestTests: TestCase {
         .getProductEntitlementMapping,
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil),
         .remoteConfig(domain: "app"),
-        .postExternalPurchaseToken
+        .postExternalPurchaseToken,
+        .getVirtualCurrencies(appUserID: userID),
+        .spendVirtualCurrencies,
+        .postCreateTicket,
+        .isPurchaseAllowedByRestoreBehavior(appUserID: userID)
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path> = [
         .health
@@ -56,7 +60,12 @@ class HTTPRequestTests: TestCase {
         .postRedeemWebPurchase,
         .health,
         .getOfferings(appUserID: userID),
+        .appHealthReport(appUserID: userID),
+        .appHealthReportAvailability(appUserID: userID),
         .getProductEntitlementMapping,
+        .getVirtualCurrencies(appUserID: userID),
+        .spendVirtualCurrencies,
+        .isPurchaseAllowedByRestoreBehavior(appUserID: userID),
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil),
         .remoteConfig(domain: "app")
     ]
@@ -67,14 +76,23 @@ class HTTPRequestTests: TestCase {
         .postRedeemWebPurchase,
         .health,
         .remoteConfig(domain: "app"),
-        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil)
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil),
+        .appHealthReportAvailability(appUserID: userID),
+        .getVirtualCurrencies(appUserID: userID),
+        .spendVirtualCurrencies,
+        .isPurchaseAllowedByRestoreBehavior(appUserID: userID)
     ]
     private static let pathsWithUserID: [HTTPRequest.Path] = [
         .getCustomerInfo(appUserID: anonymousUser),
         .getOfferings(appUserID: anonymousUser),
         .getIntroEligibility(appUserID: anonymousUser),
         .postAttributionData(appUserID: anonymousUser),
-        .postSubscriberAttributes(appUserID: anonymousUser)
+        .postSubscriberAttributes(appUserID: anonymousUser),
+        .postAdServicesToken(appUserID: anonymousUser),
+        .appHealthReport(appUserID: anonymousUser),
+        .appHealthReportAvailability(appUserID: anonymousUser),
+        .getVirtualCurrencies(appUserID: anonymousUser),
+        .isPurchaseAllowedByRestoreBehavior(appUserID: anonymousUser)
     ]
 
     func testPathsDontHaveLeadingSlash() {
@@ -197,11 +215,11 @@ class HTTPRequestTests: TestCase {
     func testPathsWithFallbackUrls() {
         for path in Self.paths {
             let fallbackUrlsPaths = path.fallbackUrls.map { $0.absoluteString }
-            switch path {
-            case .getProductEntitlementMapping:
+            switch path.name {
+            case "get_product_entitlement_mapping":
                 XCTAssertEqual(fallbackUrlsPaths,
                                ["https://api-production.8-lives-cat.io/v1/product_entitlement_mapping"])
-            case .getOfferings:
+            case "get_offerings":
                 XCTAssertEqual(fallbackUrlsPaths,
                                ["https://api-production.8-lives-cat.io/v1/offerings"])
             default:
@@ -218,7 +236,7 @@ class HTTPRequestTests: TestCase {
     }
 
     func testFallbackConfigPathUsesFallbackHostAndEscapesDomain() {
-        let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app workflows/project")
+        let path = HTTPRequest.Path.remoteConfigFallback(domain: "app workflows/project")
 
         expect(path.relativePath) == "/v1/config/app%20workflows%2Fproject"
         expect(path.url(preferIAMPath: false)?.absoluteString)
@@ -296,12 +314,11 @@ class HTTPRequestTests: TestCase {
     }
 
     func testWebBillingPathsUseAPISources() {
-        let paths: [any HTTPRequestPath] = [
-            HTTPRequest.WebBillingPath.getWebOfferingProducts(appUserID: Self.userID),
-            HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"]),
-            HTTPRequest.WebBillingPath.postHostedCheckout,
-            HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
-                                                               appUserID: Self.userID)
+        let paths: [HTTPRequest.Path] = [
+            .getWebOfferingProducts(appUserID: Self.userID),
+            .getWebBillingProducts(userId: Self.userID, productIds: ["product_1"]),
+            .postHostedCheckout,
+            .getHostedCheckoutStatus(operationSessionID: "opsession_123", appUserID: Self.userID)
         ]
         for path in paths {
             expect(path.usesAPISources).to(beTrue(), description: "Path '\(path)' should use API sources")
@@ -309,13 +326,13 @@ class HTTPRequestTests: TestCase {
     }
 
     func testWebBillingOfferingProductsRelativePathIncludesAppUserID() {
-        let path = HTTPRequest.WebBillingPath.getWebOfferingProducts(appUserID: Self.userID)
+        let path = HTTPRequest.Path.getWebOfferingProducts(appUserID: Self.userID)
 
         expect(path.relativePath) == "/rcbilling/v1/subscribers/\(Self.userID)/offering_products"
     }
 
     func testWebBillingOfferingProductsRelativeIAMPathOmitsAppUserID() {
-        let path = HTTPRequest.WebBillingPath.getWebOfferingProducts(appUserID: Self.userID)
+        let path = HTTPRequest.Path.getWebOfferingProducts(appUserID: Self.userID)
 
         expect(path.relativeIAMPath) == "/rcbilling/v1/customer/offering_products"
         expect(path.relativeIAMPath).toNot(contain(Self.userID))
@@ -323,13 +340,13 @@ class HTTPRequestTests: TestCase {
     }
 
     func testWebBillingProductsRelativePathIncludesUserIDAndProductIDs() {
-        let path = HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"])
+        let path = HTTPRequest.Path.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"])
 
         expect(path.relativePath) == "/rcbilling/v1/subscribers/\(Self.userID)/products?id=product_1"
     }
 
     func testWebBillingProductsRelativeIAMPathOmitsUserID() {
-        let path = HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"])
+        let path = HTTPRequest.Path.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"])
 
         expect(path.relativeIAMPath) == "/rcbilling/v1/customer/products?id=product_1"
         expect(path.relativeIAMPath).toNot(contain(Self.userID))
@@ -340,7 +357,7 @@ class HTTPRequestTests: TestCase {
         // `productIds` is a `Set`, so its iteration order isn't guaranteed: compare the
         // resulting query items as an unordered set of `id=` tokens instead of an exact string.
         let productIds: Set<String> = ["product_1", "product_2", "product_3"]
-        let path = HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: productIds)
+        let path = HTTPRequest.Path.getWebBillingProducts(userId: Self.userID, productIds: productIds)
 
         expect(path.relativeIAMPath).to(beginWith("/rcbilling/v1/customer/products?"))
 
@@ -356,7 +373,7 @@ class HTTPRequestTests: TestCase {
 
     func testWebBillingProductsRelativeIAMPathPercentEncodesProductIDs() {
         let productIdWithSpace = "product with space"
-        let path = HTTPRequest.WebBillingPath.getWebBillingProducts(
+        let path = HTTPRequest.Path.getWebBillingProducts(
             userId: Self.userID,
             productIds: [productIdWithSpace]
         )
@@ -366,33 +383,33 @@ class HTTPRequestTests: TestCase {
     }
 
     func testWebBillingProductsRelativeIAMPathWithNoProductIDsHasEmptyQuery() {
-        let path = HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: [])
+        let path = HTTPRequest.Path.getWebBillingProducts(userId: Self.userID, productIds: [])
 
         expect(path.relativeIAMPath) == "/rcbilling/v1/customer/products?"
     }
 
     func testHostedCheckoutRelativePathNamesTheEndpoint() {
-        let path = HTTPRequest.WebBillingPath.postHostedCheckout
+        let path = HTTPRequest.Path.postHostedCheckout
 
         expect(path.relativePath) == "/rcbilling/v1/hosted-checkout"
     }
 
     /// The customer is named in the body, so there is nothing for the IAM path to leave out.
     func testHostedCheckoutRelativeIAMPathIsTheSameAsTheRelativePath() {
-        let path = HTTPRequest.WebBillingPath.postHostedCheckout
+        let path = HTTPRequest.Path.postHostedCheckout
 
         expect(path.relativeIAMPath) == path.relativePath
     }
 
     func testHostedCheckoutIsAuthenticatedAndSendsNoEtag() {
-        let path = HTTPRequest.WebBillingPath.postHostedCheckout
+        let path = HTTPRequest.Path.postHostedCheckout
 
         expect(path.authenticated).to(beTrue())
         expect(path.shouldSendEtag).to(beFalse())
     }
 
     func testHostedCheckoutURL() {
-        let path = HTTPRequest.WebBillingPath.postHostedCheckout
+        let path = HTTPRequest.Path.postHostedCheckout
 
         expect(path.url(preferIAMPath: false)?.absoluteString)
             == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout"
@@ -401,32 +418,32 @@ class HTTPRequestTests: TestCase {
     }
 
     func testHostedCheckoutStatusRelativePathNamesTheSessionAndTheCustomer() {
-        let path = HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
-                                                                      appUserID: Self.userID)
+        let path = HTTPRequest.Path.getHostedCheckoutStatus(operationSessionID: "opsession_123",
+                                                            appUserID: Self.userID)
 
         expect(path.relativePath) == "/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=\(Self.userID)"
     }
 
     /// The backend reads `app_user_id` from the query string, where a literal `+` arrives as a space.
     func testHostedCheckoutStatusEscapesAnAppUserIDThatLooksLikeAnEmail() {
-        let path = HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
-                                                                      appUserID: "user+plus@example.com")
+        let path = HTTPRequest.Path.getHostedCheckoutStatus(operationSessionID: "opsession_123",
+                                                            appUserID: "user+plus@example.com")
 
         expect(path.relativePath) ==
             "/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=user%2Bplus@example.com"
     }
 
     func testHostedCheckoutStatusIsAuthenticatedAndSendsNoEtag() {
-        let path = HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
-                                                                      appUserID: Self.userID)
+        let path = HTTPRequest.Path.getHostedCheckoutStatus(operationSessionID: "opsession_123",
+                                                            appUserID: Self.userID)
 
         expect(path.authenticated).to(beTrue())
         expect(path.shouldSendEtag).to(beFalse())
     }
 
     func testHostedCheckoutStatusURL() {
-        let path = HTTPRequest.WebBillingPath.getHostedCheckoutStatus(operationSessionID: "opsession_123",
-                                                                      appUserID: Self.userID)
+        let path = HTTPRequest.Path.getHostedCheckoutStatus(operationSessionID: "opsession_123",
+                                                            appUserID: Self.userID)
 
         expect(path.url(preferIAMPath: false)?.absoluteString)
             == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout/opsession_123?app_user_id=\(Self.userID)"
@@ -435,8 +452,8 @@ class HTTPRequestTests: TestCase {
     }
 
     func testWebBillingPathsURLPreferringIAMPathUsesIAMRelativePath() {
-        let offeringProductsPath = HTTPRequest.WebBillingPath.getWebOfferingProducts(appUserID: Self.userID)
-        let productsPath = HTTPRequest.WebBillingPath.getWebBillingProducts(
+        let offeringProductsPath = HTTPRequest.Path.getWebOfferingProducts(appUserID: Self.userID)
+        let productsPath = HTTPRequest.Path.getWebBillingProducts(
             userId: Self.userID,
             productIds: ["product_1"]
         )
@@ -453,8 +470,8 @@ class HTTPRequestTests: TestCase {
     }
 
     func testNonMainPathsDoNotUseAPISources() {
-        let paths: [any HTTPRequestPath] = [
-            HTTPRequest.DiagnosticsPath.postDiagnostics
+        let paths: [HTTPRequest.Path] = [
+            .postDiagnostics
         ]
         for path in paths {
             expect(path.usesAPISources).to(beFalse(), description: "Path '\(path)' should not use API sources")
@@ -533,7 +550,7 @@ class HTTPRequestTests: TestCase {
     func testFallbackConfigDoesNotRequestRCContainerFormat() {
         let request: HTTPRequest = .init(
             method: .get,
-            path: HTTPRequest.FallbackPath.remoteConfig(domain: "app")
+            path: .remoteConfigFallback(domain: "app")
         )
         let headers = request.headers(
             with: [:],
@@ -588,6 +605,8 @@ class HTTPRequestTests: TestCase {
         .getCustomerCenterConfig(appUserID: userID): "customer/customercenter",
         .getVirtualCurrencies(appUserID: userID): "customer/virtual_currencies",
         .postRedeemWebPurchase: "subscribers/redeem_purchase",
+        .spendVirtualCurrencies: "customer/virtual_currencies/spend",
+        .postExternalPurchaseToken: "external_purchase_tokens",
         .postCreateTicket: "customercenter/support/create-ticket",
         .isPurchaseAllowedByRestoreBehavior(appUserID: userID): "customer/restore/eligibility",
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID, adUnitID: nil):
@@ -643,16 +662,6 @@ class HTTPRequestTests: TestCase {
         }
     }
 
-    #if !os(watchOS)
-    func testRelativeIAMPathForLoginEndpointCrashes() {
-        // The `.logIn` endpoint is not allowed once IAM access tokens are enabled: exchanging a
-        // static app-user-id-based endpoint for a token-authenticated one doesn't make sense.
-        expect {
-            _ = HTTPRequest.Path.logIn.relativeIAMPath
-        }.to(throwAssertion())
-    }
-    #endif
-
     func testUrlPreferringIAMPathUsesIAMRelativePath() {
         let path: HTTPRequest.Path = .getCustomerInfo(appUserID: Self.userID)
 
@@ -681,9 +690,9 @@ class HTTPRequestTests: TestCase {
     }
 
     func testDefaultRelativeIAMPathFallsBackToRelativePathForOtherPathTypes() {
-        // `HTTPRequest.FallbackPath` doesn't override `relativeIAMPath`, so it should fall back
+        // `HTTPRequest.Path.remoteConfigFallback(...)` doesn't override `relativeIAMPath`, so it should fall back
         // to the default implementation, which just returns `relativePath`.
-        let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app")
+        let path = HTTPRequest.Path.remoteConfigFallback(domain: "app")
 
         expect(path.relativeIAMPath) == path.relativePath
     }

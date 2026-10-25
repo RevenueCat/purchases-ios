@@ -54,7 +54,7 @@ enum NetworkStrings {
     case blocked_network(url: URL, newHost: String?)
     case api_request_redirect(from: URL, to: URL)
     case operation_state(NetworkOperation.Type, state: String)
-    case request_handled_by_load_shedder(HTTPRequestPath)
+    case request_handled_by_load_shedder(HTTPRequest.Path)
     case missing_dedicated_lane_configuration(laneName: String)
 
     #if DEBUG

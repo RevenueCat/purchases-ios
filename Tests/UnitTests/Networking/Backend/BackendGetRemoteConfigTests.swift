@@ -53,7 +53,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
             ) { _ in completed() }
         }
 
-        expect(self.httpClient.calls.map { $0.request.path as? HTTPRequest.Path }) == [.remoteConfig(domain: "app")]
+        expect(self.httpClient.calls.map { $0.request.path }) == [.remoteConfig(domain: "app")]
         expect(self.httpClient.calls.first?.request.path.relativePath) == "/v1/config/app"
     }
 
@@ -134,8 +134,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(result).to(beSuccess())
         expect(self.httpClient.calls).to(haveCount(1))
         expect(self.httpClient.calls.first?.request.method.httpMethod) == "GET"
-        expect(self.httpClient.calls.first?.request.path as? HTTPRequest.FallbackPath)
-            == HTTPRequest.FallbackPath.remoteConfig(domain: "app")
+        expect(self.httpClient.calls.first?.request.path) == .remoteConfigFallback(domain: "app")
         expect(self.httpClient.calls.first?.request.path.url(preferIAMPath: false)?.absoluteString)
             == "https://api-production.8-lives-cat.io/v1/config/app"
         expect(self.httpClient.calls.first?.request.requestBody).to(beNil())
@@ -707,7 +706,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
 
     func testGetRemoteConfigFallbackInvalidJSONSendsDecodingError() {
         self.httpClient.mock(
-            requestPath: HTTPRequest.FallbackPath.remoteConfig(domain: "app"),
+            requestPath: .remoteConfigFallback(domain: "app"),
             response: .init(statusCode: .success, body: "not json".asData)
         )
 
@@ -783,7 +782,7 @@ private extension BackendGetRemoteConfigTests {
         verificationResult: SignatureVerificationResult = .notRequested
     ) {
         self.httpClient.mock(
-            requestPath: HTTPRequest.FallbackPath.remoteConfig(domain: domain),
+            requestPath: .remoteConfigFallback(domain: domain),
             response: .init(
                 statusCode: .success,
                 body: Self.remoteConfigFallback,
