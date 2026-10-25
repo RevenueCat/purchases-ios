@@ -12,14 +12,14 @@ import GoogleMobileAds
 @_spi(InviteOnlyCheckpointsApi) import RevenueCatUI
 import UIKit
 
-/// Presents an AdMob rewarded interstitial ad when a checkpoint resolves to an ad step, and reports the
-/// verified reward.
+/// Presents an AdMob rewarded interstitial ad when a checkpoint resolves to an ad step, and completes the
+/// checkpoint once any reward has been verified.
 ///
 /// Register an instance on `Purchases.shared.adPresenter` so a resolved ad step loads the
 /// configured ad unit through `RewardedInterstitialAd.loadAndTrack` (so the usual RevenueCat ad events are
 /// tracked), enables RevenueCat reward verification, and presents it from the topmost view controller. Once
 /// the customer earns the reward, RevenueCat verifies it server-side and grants the configured virtual
-/// currency or entitlement before the checkpoint completes with `CheckpointAdOutcome.Rewarded`.
+/// currency or entitlement before the checkpoint completes, so its result reflects what was granted.
 ///
 /// The checkpoint identifier is used as the tracking placement. Failures are reported as `NSError`s in
 /// the `RevenueCatAdMob.RewardedPresentationError` domain, or as the underlying AdMob error.

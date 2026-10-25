@@ -108,15 +108,14 @@ internal final class RewardedPresentation: NSObject, GoogleMobileAds.FullScreenC
         case rewardVerificationFailed
         case failed(NSError)
 
+        /// A verified reward reaches the app through the checkpoint result, as whatever it granted. A reward that
+        /// failed verification is only logged: the customer watched the ad in full, so the checkpoint still passes
+        /// rather than presenting an error for an ad that was shown.
         @MainActor
         var presentationResult: AdPresentationResult {
             switch self {
-            case .shown:
+            case .shown, .rewarded, .rewardVerificationFailed:
                 return .shown
-            case let .rewarded(reward, moreRewards):
-                return .rewarded(reward: reward, moreRewards: moreRewards)
-            case .rewardVerificationFailed:
-                return .rewardVerificationFailed
             case let .failed(error):
                 return .failed(error: error)
             }

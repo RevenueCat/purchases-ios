@@ -258,17 +258,20 @@ final class RewardedPresentationTests: AdapterTestCase {
     func testOutcomeMapsToAdPresentationResult() {
         XCTAssertEqual(RewardedPresentation.Outcome.shown.presentationResult, AdPresentationResult.shown)
         XCTAssertEqual(
+            RewardedPresentation.Outcome.rewarded(.noReward, moreRewards: []).presentationResult,
+            AdPresentationResult.shown
+        )
+        XCTAssertEqual(
             RewardedPresentation.Outcome.rewardVerificationFailed.presentationResult,
-            AdPresentationResult.rewardVerificationFailed
+            AdPresentationResult.shown
         )
 
-        let rewarded = RewardedPresentation.Outcome.rewarded(.noReward, moreRewards: []).presentationResult
-        XCTAssertNotEqual(rewarded, AdPresentationResult.shown)
-        XCTAssertNotEqual(rewarded, AdPresentationResult.rewardVerificationFailed)
-
-        let failed = RewardedPresentation.Outcome.failed(NSError(domain: "gma", code: 1)).presentationResult
-        XCTAssertNotEqual(failed, AdPresentationResult.shown)
-        XCTAssertNotEqual(failed, AdPresentationResult.rewardVerificationFailed)
+        let error = NSError(domain: "gma", code: 1)
+        XCTAssertEqual(
+            RewardedPresentation.Outcome.failed(error).presentationResult,
+            AdPresentationResult.failed(error: error)
+        )
+        XCTAssertNotEqual(RewardedPresentation.Outcome.failed(error).presentationResult, AdPresentationResult.shown)
     }
 
     // MARK: - Helpers
