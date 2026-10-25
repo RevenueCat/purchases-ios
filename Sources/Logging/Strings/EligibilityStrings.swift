@@ -31,7 +31,6 @@ enum EligibilityStrings {
     case product_lookup_failed(requestID: String, error: Error, duration: TimeInterval)
     case subscription_group_check_started(requestID: String, groupID: String)
     case subscription_group_check_finished(requestID: String, groupID: String, eligible: Bool, duration: TimeInterval)
-    case reusing_subscription_group_check(requestID: String, groupID: String, isPending: Bool)
     case check_finished(requestID: String, result: [String: IntroEligibility], duration: TimeInterval)
     case delivering_intro_eligibility(result: [String: IntroEligibility], duration: TimeInterval)
 
@@ -85,10 +84,6 @@ extension EligibilityStrings: LogMessage {
         case let .subscription_group_check_finished(requestID, groupID, eligible, duration):
             return "Intro eligibility (\(requestID)): StoreKit check for subscription group '\(groupID)' " +
                 "finished in \(duration)s; eligible=\(eligible)"
-
-        case let .reusing_subscription_group_check(requestID, groupID, isPending):
-            let source = isPending ? "in-flight check" : "cached result"
-            return "Intro eligibility (\(requestID)): reusing \(source) for subscription group '\(groupID)'"
 
         case let .check_finished(requestID, result, duration):
             return "Intro eligibility (\(requestID)): check finished in \(duration)s. " +

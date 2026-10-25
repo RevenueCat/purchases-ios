@@ -31,23 +31,25 @@ class SubscriptionGroupIntroEligibilityTests: TestCase {
             expect(second) == eligible
             expect(invocations.value) == 1
         }
-        self.logger.verifyMessageWasLogged("reusing cached result for subscription group 'group'", expectedCount: 2)
         self.logger.verifyMessageWasLogged("starting StoreKit check", expectedCount: 2)
     }
 
     func testConcurrentChecksShareWorkEvenWhenFirstCallerIsCancelled() async throws {
         let cache = SubscriptionGroupIntroEligibilityCache()
-        let check = HeldSubscriptionGroupEligibilityCheck()
-        defer { check.completeAll() }
-        let first = Task { await cache.eligibility(for: "group", log: IntroEligibilityLog(), check: check.call) }
-        try await asyncWait { check.invocations == ["group"] }
-
-        let second = Task { await cache.eligibility(for: "group", log: IntroEligibilityLog(), check: check.call) }
-        try await asyncWait {
-            self.logger.messages.contains { $0.message.contains("reusing in-flight check") }
+        let check = PriorityRecordingGroupCheck()
+        defer { check.release() }
+        let first = Task.detached(priority: .background) {
+            await cache.eligibility(for: "group", log: IntroEligibilityLog(), check: check.call)
         }
+        try await asyncWait { check.currentPriority.value == .background }
+
+        let second = Task.detached(priority: .userInitiated) {
+            await cache.eligibility(for: "group", log: IntroEligibilityLog(), check: check.call)
+        }
+        // Priority donation confirms the second caller is awaiting the pending check.
+        try await asyncWait { check.currentPriority.value == .userInitiated }
         first.cancel()
-        check.complete(at: 0, eligible: true)
+        check.release()
 
         let firstResult = await first.value
         let secondResult = await second.value
@@ -56,53 +58,57 @@ class SubscriptionGroupIntroEligibilityTests: TestCase {
         expect(firstResult) == true
         expect(secondResult) == true
         expect(cachedResult) == true
-        expect(check.invocations) == ["group"]
+        expect(check.invocations.value) == 1
         expect(check.wasCancelled.value) == false
         self.logger.verifyMessageWasLogged("starting StoreKit check", expectedCount: 1)
-        self.logger.verifyMessageWasLogged("reusing in-flight check", expectedCount: 1)
     }
 
     func testInvalidationClearsCompletedAndPendingChecksWithoutCancellingExistingCallers() async throws {
         let cache = SubscriptionGroupIntroEligibilityCache()
-        let check = HeldSubscriptionGroupEligibilityCheck()
-        defer { check.completeAll() }
-        let first = Task { await cache.eligibility(for: "pending", log: IntroEligibilityLog(), check: check.call) }
-        try await asyncWait { check.invocations == ["pending"] }
-        let firstJoined = Task {
-            await cache.eligibility(for: "pending", log: IntroEligibilityLog(), check: check.call)
+        let firstCheck = PriorityRecordingGroupCheck()
+        let secondCheck = PriorityRecordingGroupCheck()
+        defer {
+            firstCheck.release()
+            secondCheck.release()
         }
-        try await asyncWait {
-            self.logger.messages.contains { $0.message.contains("reusing in-flight check") }
+        let first = Task.detached(priority: .background) {
+            await cache.eligibility(for: "pending", log: IntroEligibilityLog(), check: firstCheck.call)
         }
+        try await asyncWait { firstCheck.currentPriority.value == .background }
+        let firstJoined = Task.detached(priority: .userInitiated) {
+            await cache.eligibility(for: "pending", log: IntroEligibilityLog(), check: firstCheck.call)
+        }
+        // Wait until the caller has joined before invalidating its pending check.
+        try await asyncWait { firstCheck.currentPriority.value == .userInitiated }
 
         let completed = await cache.eligibility(for: "completed", log: IntroEligibilityLog(), check: { _ in true })
         expect(completed) == true
         cache.clearCache()
         cache.clearCache()
 
-        let second = Task { await cache.eligibility(for: "pending", log: IntroEligibilityLog(), check: check.call) }
-        try await asyncWait { check.invocations == ["pending", "pending"] }
+        let second = Task.detached(priority: .background) {
+            await cache.eligibility(for: "pending", log: IntroEligibilityLog(), check: secondCheck.call)
+        }
+        try await asyncWait { secondCheck.currentPriority.value == .background }
         let refreshedResult = await cache.eligibility(for: "completed", log: IntroEligibilityLog()) { _ in false }
         expect(refreshedResult) == false
 
-        check.complete(at: 0, eligible: true)
+        firstCheck.release()
         let firstResult = await first.value
         let firstJoinedResult = await firstJoined.value
         expect(firstResult) == true
         expect(firstJoinedResult) == true
-        expect(check.wasCancelled.value) == false
+        expect(firstCheck.wasCancelled.value) == false
 
         // Completing the invalidated check must not replace the fresh pending check.
-        let secondJoined = Task {
+        let secondJoined = Task.detached(priority: .userInitiated) {
             await cache.eligibility(for: "pending", log: IntroEligibilityLog(), check: { _ in
                 XCTFail("Expected to join the fresh check")
                 return true
             })
         }
-        try await asyncWait {
-            self.logger.messages.filter { $0.message.contains("reusing in-flight check") }.count == 2
-        }
-        check.complete(at: 1, eligible: false)
+        try await asyncWait { secondCheck.currentPriority.value == .userInitiated }
+        secondCheck.release(eligible: false)
         let secondResult = await second.value
         let secondJoinedResult = await secondJoined.value
         let cached = await cache.eligibility(for: "pending", log: IntroEligibilityLog(), check: { _ in
@@ -112,7 +118,8 @@ class SubscriptionGroupIntroEligibilityTests: TestCase {
         expect(secondResult) == false
         expect(secondJoinedResult) == false
         expect(cached) == false
-        expect(check.invocations) == ["pending", "pending"]
+        expect(firstCheck.invocations.value) == 1
+        expect(secondCheck.invocations.value) == 1
     }
 
     func testInvalidatedCheckCannotRefillEmptyCache() async throws {

@@ -169,9 +169,6 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
         }
         // Awaiting the handles here would donate the test's priority and could hide a broken join path.
         try await asyncWait { check.currentPriority.value == .userInitiated }
-        self.logger.verifyMessageWasLogged(
-            "reusing in-flight check for subscription group '\(groupID)'", expectedCount: 1
-        )
         self.logger.verifyMessageWasNotLogged("Waiting for an in-flight intro eligibility")
         expect(check.invocations.value) == 1
         expect(self.mockProductsManager.invokedProductsParametersList) == [[monthly.id], [annual.id]]
@@ -512,7 +509,6 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
         expect(tracked).to(haveCount(1))
         expect(tracked.first?.requestedProductIds) == [monthly.id]
         self.logger.verifyMessageWasLogged("starting StoreKit check", expectedCount: 1)
-        self.logger.verifyMessageWasLogged("reusing cached result", expectedCount: 1)
     }
 
     @MainActor
@@ -567,7 +563,6 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
         }
 
         expect(calls.value) == [try XCTUnwrap(monthly.subscriptionGroupIdentifier)]
-        self.logger.verifyMessageWasLogged("reusing cached result", expectedCount: 1)
     }
 
     @MainActor
@@ -677,27 +672,26 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
         )
         let checker = try XCTUnwrap(self.trialOrIntroPriceEligibilityChecker)
         let caching = CachingTrialOrIntroPriceEligibilityChecker(checker: checker)
-        let check = HeldSubscriptionGroupEligibilityCheck()
-        defer { check.completeAll() }
+        let check = PriorityRecordingGroupCheck()
+        defer { check.release() }
 
         self.mockProductsManager.stubbedProductsCompletionResult = .success([monthly])
-        let monthlyRequest = Task {
+        let monthlyRequest = Task.detached(priority: .background) {
             try await checker.sk2CheckEligibility(
                 [monthly.id], checkSubscriptionGroup: check.call
             )
         }
-        try await asyncWait { check.invocations.count == 1 }
+        try await asyncWait { check.currentPriority.value == .background }
 
         self.mockProductsManager.stubbedProductsCompletionResult = .success([annual])
-        let annualRequest = Task {
+        let annualRequest = Task.detached(priority: .userInitiated) {
             try await checker.sk2CheckEligibility(
                 [annual.id], checkSubscriptionGroup: check.call
             )
         }
-        try await asyncWait {
-            self.logger.messages.contains { $0.message.contains("reusing in-flight check") }
-        }
-        check.complete(at: 0, eligible: true)
+        // Confirm that the annual request joined the monthly request before completing the check.
+        try await asyncWait { check.currentPriority.value == .userInitiated }
+        check.release()
 
         let monthlyResult = try await monthlyRequest.value
         let annualResult = try await annualRequest.value
@@ -705,7 +699,7 @@ extension TrialOrIntroPriceEligibilityCheckerSK2Tests {
         expect(Set(annualResult.keys)) == [annual.id]
         expect(monthlyResult[monthly.id]?.status) == .eligible
         expect(annualResult[annual.id]?.status) == .eligible
-        expect(check.invocations.count) == 1
+        expect(check.invocations.value) == 1
     }
 
     @MainActor
