@@ -62,18 +62,32 @@ final class CheckpointPresenter: CheckpointPresenterType {
         } catch CheckpointError.presentationContextUnavailable {
             throw CheckpointError.presentationContextUnavailable
         } catch {
-            await withCheckedContinuation { continuation in
-                presentation.errorPresentationHandler(
-                    .init(
-                        checkpointIdentifier: presentation.checkpointIdentifier,
-                        error: error,
-                        customVariables: presentation.customVariables,
-                        kind: .flowCouldNotBeShown
-                    ),
-                    .init { continuation.resume() }
-                )
-            }
+            await self.presentStartupError(
+                error,
+                checkpointIdentifier: presentation.checkpointIdentifier,
+                customVariables: presentation.customVariables,
+                handler: presentation.errorPresentationHandler
+            )
             return .failed
+        }
+    }
+
+    private func presentStartupError(
+        _ error: any Error,
+        checkpointIdentifier: String,
+        customVariables: [String: CustomVariableValue],
+        handler: ErrorPresentationHandler
+    ) async {
+        await withCheckedContinuation { continuation in
+            handler(
+                .init(
+                    checkpointIdentifier: checkpointIdentifier,
+                    error: error,
+                    customVariables: customVariables,
+                    kind: .flowCouldNotBeShown
+                ),
+                .init { continuation.resume() }
+            )
         }
     }
 
@@ -111,7 +125,7 @@ final class CheckpointPresenter: CheckpointPresenterType {
     }
 
     func presentAd(
-        params: AdPresentationParams,
+        _ presentation: AdPresentationRequest,
         adPresenter: AdPresenter
     ) async throws -> CheckpointPresentationOutcome {
         guard let token = self.slot.claim() else {
@@ -119,10 +133,21 @@ final class CheckpointPresenter: CheckpointPresenterType {
         }
         defer { self.slot.release(token) }
 
-        return await AdPresentation(slot: self.slot, token: token).present(
-            params: params,
+        let result = await AdPresentation(slot: self.slot, token: token).present(
+            params: presentation.params,
             presenter: adPresenter
         )
+        guard let error = result.error else {
+            return .completed(customerInfo: nil)
+        }
+
+        await self.presentStartupError(
+            error,
+            checkpointIdentifier: presentation.params.checkpointIdentifier,
+            customVariables: presentation.customVariables,
+            handler: presentation.errorPresentationHandler
+        )
+        return .failed
     }
 
     /// Bridges an ad presenter's completion callback into the checkpoint lifecycle.
@@ -131,7 +156,7 @@ final class CheckpointPresenter: CheckpointPresenterType {
 
         private let slot: CheckpointPresentationSlot
         private let token: CheckpointPresentationSlot.Token
-        private var pendingContinuation: CheckedContinuation<CheckpointPresentationOutcome, Never>?
+        private var pendingContinuation: CheckedContinuation<AdPresentationResult, Never>?
 
         init(slot: CheckpointPresentationSlot, token: CheckpointPresentationSlot.Token) {
             self.slot = slot
@@ -141,7 +166,7 @@ final class CheckpointPresenter: CheckpointPresenterType {
         func present(
             params: AdPresentationParams,
             presenter: AdPresenter
-        ) async -> CheckpointPresentationOutcome {
+        ) async -> AdPresentationResult {
             return await withCheckedContinuation { continuation in
                 self.pendingContinuation = continuation
                 presenter.present(params: params) { [weak self] result in
@@ -153,11 +178,10 @@ final class CheckpointPresenter: CheckpointPresenterType {
         private func completed(_ result: AdPresentationResult) {
             guard self.slot.contains(self.token),
                   let continuation = self.takeContinuation() else { return }
-            self.slot.release(self.token)
-            continuation.resume(returning: result.error.map { .adFailed($0) } ?? .completed(customerInfo: nil))
+            continuation.resume(returning: result)
         }
 
-        private func takeContinuation() -> CheckedContinuation<CheckpointPresentationOutcome, Never>? {
+        private func takeContinuation() -> CheckedContinuation<AdPresentationResult, Never>? {
             defer { self.pendingContinuation = nil }
             return self.pendingContinuation
         }
@@ -253,7 +277,7 @@ protocol CheckpointPresenterType: AnyObject {
     ) async throws -> CheckpointPresentationOutcome
 
     func presentAd(
-        params: AdPresentationParams,
+        _ presentation: AdPresentationRequest,
         adPresenter: AdPresenter
     ) async throws -> CheckpointPresentationOutcome
 

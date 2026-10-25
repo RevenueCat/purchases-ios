@@ -44,11 +44,30 @@ struct WorkflowPresentationRequest {
 
 }
 
+/// Everything needed to present a checkpoint ad step.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct AdPresentationRequest {
+
+    let params: AdPresentationParams
+    let customVariables: [String: CustomVariableValue]
+    let errorPresentationHandler: ErrorPresentationHandler
+
+    init(
+        params: AdPresentationParams,
+        customVariables: [String: CustomVariableValue],
+        errorPresentationHandler: @escaping ErrorPresentationHandler
+    ) {
+        self.params = params
+        self.customVariables = customVariables
+        self.errorPresentationHandler = errorPresentationHandler
+    }
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum CheckpointPresentationOutcome {
     case nothingPresented
     case completed(customerInfo: CustomerInfo?)
-    case adFailed(any Error)
     case backedOut
     case failed
     case synchronizationFailed(any Error)

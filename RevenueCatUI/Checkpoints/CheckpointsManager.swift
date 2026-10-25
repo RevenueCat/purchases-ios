@@ -140,16 +140,16 @@ final class CheckpointsManager {
                 Logger.warning(Strings.checkpoint_ad_step_without_ad_presenter(checkpointIdentifier: identifier))
                 return .init(outcome: .nothingPresented)
             }
-            return .init(
-                outcome: try await self.checkpointPresenter.presentAd(
-                    params: .init(
-                        checkpointIdentifier: identifier,
-                        adIdentifier: adStep.adIdentifier,
-                        mediator: adStep.mediator
-                    ),
-                    adPresenter: adPresenter
-                )
+            let request = AdPresentationRequest(
+                params: .init(
+                    checkpointIdentifier: identifier,
+                    adIdentifier: adStep.adIdentifier,
+                    mediator: adStep.mediator
+                ),
+                customVariables: params.customVariables,
+                errorPresentationHandler: errorPresentationHandler
             )
+            return .init(outcome: try await self.checkpointPresenter.presentAd(request, adPresenter: adPresenter))
         case .noAction:
             return .init(outcome: .nothingPresented)
         }
@@ -178,14 +178,6 @@ final class CheckpointsManager {
                 identifier: identifier,
                 params: params,
                 kind: .flowResultSyncFailed
-            )
-            return .completed(fallback)
-        case let .adFailed(error, fallback):
-            await self.presentCheckpointError(
-                error,
-                identifier: identifier,
-                params: params,
-                kind: .flowCouldNotBeShown
             )
             return .completed(fallback)
         }
@@ -260,8 +252,6 @@ final class CheckpointsManager {
                     customerInfoBefore: customerInfoBefore,
                     availableProducts: execution.availableProducts
                 ))
-            case let .adFailed(error):
-                return .adFailed(error, fallback: CheckpointResult(flow: nil, customer: customerInfoBefore))
             case .nothingPresented:
                 return .completed(CheckpointResult(flow: nil, customer: customerInfoBefore))
             case .backedOut, .failed:
@@ -427,7 +417,4 @@ private enum CheckpointOutcome {
     case failed(any Error)
     /// The flow passed but its sync failed: `fallback` is delivered once the error has been presented.
     case synchronizationFailed(any Error, fallback: CheckpointResult)
-    /// The ad step's ad could not be shown. The checkpoint still passes, with `fallback` delivered once the error
-    /// has been presented, since no fill is routine and not a reason to hold the customer back.
-    case adFailed(any Error, fallback: CheckpointResult)
 }

@@ -287,28 +287,26 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
         XCTAssertEqual(errorPresenter.presentations.first?.kind, .flowResultSyncFailed)
     }
 
-    // Ad that could not be shown: invoke the error presenter, then callback with no flow, like nothing presented.
+    // Ad that could not be shown: invoke the error presenter and do not invoke the callback, like a flow that
+    // could not be shown.
     func testAdPresentationFailure() async {
         let expectedError = NSError(domain: "CheckpointOutcomeBehaviorTests", code: 6)
         let errorPresenter = ErrorPresentationRecorder()
         let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
-            checkpointPresenter: OutcomeCheckpointPresenter(outcome: .adFailed(expectedError))
+            resolveCheckpoint: { _, _ in
+                .matchedAd(ResolvedAdStep(adIdentifier: "ad-unit", mediator: MediatorName(rawValue: "admob")))
+            }
         )
+        manager.adPresenter = FailingAdPresenter(error: expectedError)
 
         let result = await manager.checkpointForCallback(
             identifier: "soft_paywall",
             params: self.params(errorPresenter: errorPresenter)
         )
 
-        guard case let .completed(checkpointResult) = result else {
-            return XCTFail("Expected the callback to be invoked")
-        }
-        XCTAssertNil(checkpointResult.flow)
-        XCTAssertEqual(checkpointResult.customer, try Self.customerInfo(activeEntitlements: []))
-        XCTAssertEqual(errorPresenter.presentations.count, 1)
+        self.assertSuppressed(result)
+        self.assertTerminalErrorWasPresented(by: errorPresenter, checkpointIdentifier: "soft_paywall")
         XCTAssertEqual(errorPresenter.presentations.first?.error as NSError?, expectedError)
-        XCTAssertEqual(errorPresenter.presentations.first?.kind, .flowCouldNotBeShown)
     }
 
     private func assertCompletedWithNil(
@@ -456,6 +454,22 @@ private final class ErrorPresentationRecorder: @unchecked Sendable {
 
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class FailingAdPresenter: AdPresenter {
+
+    private let error: NSError
+
+    init(error: NSError) {
+        self.error = error
+    }
+
+    func present(params: AdPresentationParams, completion: @escaping AdPresentationCompletion) {
+        completion(.failed(error: self.error))
+    }
+
+}
+
+@MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class FailingCheckpointPresenter: CheckpointPresenterType {
 
     private let error: any Error
@@ -477,7 +491,7 @@ private final class FailingCheckpointPresenter: CheckpointPresenterType {
     }
 
     func presentAd(
-        params: AdPresentationParams,
+        _ presentation: AdPresentationRequest,
         adPresenter: AdPresenter
     ) async throws -> CheckpointPresentationOutcome {
         throw self.error
@@ -508,7 +522,7 @@ private final class OutcomeCheckpointPresenter: CheckpointPresenterType {
     }
 
     func presentAd(
-        params: AdPresentationParams,
+        _ presentation: AdPresentationRequest,
         adPresenter: AdPresenter
     ) async throws -> CheckpointPresentationOutcome {
         return self.outcome
@@ -550,7 +564,7 @@ private final class TerminalErrorCheckpointPresenter: CheckpointPresenterType {
     }
 
     func presentAd(
-        params: AdPresentationParams,
+        _ presentation: AdPresentationRequest,
         adPresenter: AdPresenter
     ) async throws -> CheckpointPresentationOutcome {
         return .failed
