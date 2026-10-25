@@ -452,6 +452,13 @@ private final class FailingCheckpointPresenter: CheckpointPresenterType {
         throw self.error
     }
 
+    func presentAd(
+        params: AdPresentationParams,
+        adPresenter: AdPresenter
+    ) async throws -> CheckpointPresentationOutcome {
+        throw self.error
+    }
+
 }
 
 @MainActor
@@ -472,6 +479,13 @@ private final class OutcomeCheckpointPresenter: CheckpointPresenterType {
         params: PaywallPresentationParams,
         globalPaywallPresenter: PaywallPresenter?,
         localPaywallPresentationHandler: PaywallPresentationHandler?
+    ) async throws -> CheckpointPresentationOutcome {
+        return self.outcome
+    }
+
+    func presentAd(
+        params: AdPresentationParams,
+        adPresenter: AdPresenter
     ) async throws -> CheckpointPresentationOutcome {
         return self.outcome
     }
@@ -507,6 +521,13 @@ private final class TerminalErrorCheckpointPresenter: CheckpointPresenterType {
         params: PaywallPresentationParams,
         globalPaywallPresenter: PaywallPresenter?,
         localPaywallPresentationHandler: PaywallPresentationHandler?
+    ) async throws -> CheckpointPresentationOutcome {
+        return .failed
+    }
+
+    func presentAd(
+        params: AdPresentationParams,
+        adPresenter: AdPresenter
     ) async throws -> CheckpointPresentationOutcome {
         return .failed
     }
