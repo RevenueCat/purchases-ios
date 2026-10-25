@@ -845,10 +845,9 @@ final class CheckpointsManagerTests: TestCase {
             params: .init(customVariables: ["source": "test"])
         )
 
-        guard case let .adPresented(outcome) = execution else {
-            return XCTFail("Expected a presented-ad execution")
+        guard case .completed(customerInfo: .none) = execution else {
+            return XCTFail("Expected a completed execution with no customer information of its own")
         }
-        XCTAssertTrue(outcome is CheckpointAdOutcome.Shown)
         XCTAssertEqual(presenter.callCount, 1)
         XCTAssertEqual(presenter.receivedParams?.checkpointIdentifier, "onboarding")
         XCTAssertEqual(presenter.receivedParams?.adIdentifier, "test-ad-identifier")

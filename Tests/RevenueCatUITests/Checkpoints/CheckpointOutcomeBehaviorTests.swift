@@ -287,6 +287,30 @@ final class CheckpointOutcomeBehaviorTests: TestCase {
         XCTAssertEqual(errorPresenter.presentations.first?.kind, .flowResultSyncFailed)
     }
 
+    // Ad that could not be shown: invoke the error presenter, then callback with no flow, like nothing presented.
+    func testAdPresentationFailure() async {
+        let expectedError = NSError(domain: "CheckpointOutcomeBehaviorTests", code: 6)
+        let errorPresenter = ErrorPresentationRecorder()
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
+            checkpointPresenter: OutcomeCheckpointPresenter(outcome: .adFailed(expectedError))
+        )
+
+        let result = await manager.checkpointForCallback(
+            identifier: "soft_paywall",
+            params: self.params(errorPresenter: errorPresenter)
+        )
+
+        guard case let .completed(checkpointResult) = result else {
+            return XCTFail("Expected the callback to be invoked")
+        }
+        XCTAssertNil(checkpointResult.flow)
+        XCTAssertEqual(checkpointResult.customer, try Self.customerInfo(activeEntitlements: []))
+        XCTAssertEqual(errorPresenter.presentations.count, 1)
+        XCTAssertEqual(errorPresenter.presentations.first?.error as NSError?, expectedError)
+        XCTAssertEqual(errorPresenter.presentations.first?.kind, .flowCouldNotBeShown)
+    }
+
     private func assertCompletedWithNil(
         _ resolution: CheckpointResolution,
         file: StaticString = #filePath,

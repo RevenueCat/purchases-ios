@@ -154,7 +154,7 @@ final class CheckpointPresenter: CheckpointPresenterType {
             guard self.slot.contains(self.token),
                   let continuation = self.takeContinuation() else { return }
             self.slot.release(self.token)
-            continuation.resume(returning: .adPresented(result.outcome))
+            continuation.resume(returning: result.error.map { .adFailed($0) } ?? .completed(customerInfo: nil))
         }
 
         private func takeContinuation() -> CheckedContinuation<CheckpointPresentationOutcome, Never>? {

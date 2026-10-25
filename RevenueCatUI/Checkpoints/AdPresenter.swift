@@ -74,38 +74,25 @@ public struct AdPresentationParams {
 }
 
 /// A terminal result reported by a custom checkpoint ad presenter.
+///
+/// Whatever a shown ad granted, such as a verified reward, reaches the app through the checkpoint's
+/// ``CheckpointResult`` like the outcome of any other flow.
 @_spi(InviteOnlyCheckpointsApi)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@MainActor
-public struct AdPresentationResult: Equatable {
+public struct AdPresentationResult: Equatable, Sendable {
 
-    /// The ad was shown and dismissed, with no reward earned.
-    public static let shown = AdPresentationResult(outcome: CheckpointAdOutcome.Shown.shared)
-
-    /// The customer earned the ad's reward and RevenueCat verified it.
-    public static func rewarded(reward: AdReward, moreRewards: [AdReward] = []) -> AdPresentationResult {
-        return AdPresentationResult(outcome: CheckpointAdOutcome.Rewarded(reward: reward, moreRewards: moreRewards))
-    }
-
-    /// The customer earned the ad's reward, but RevenueCat could not verify it, so nothing was granted.
-    public static let rewardVerificationFailed = AdPresentationResult(
-        outcome: CheckpointAdOutcome.RewardVerificationFailed.shared
-    )
+    /// The ad was shown and dismissed.
+    public static let shown = AdPresentationResult(error: nil)
 
     /// The ad could not be shown, for example because it failed to load or the mediator had no fill.
     public static func failed(error: PublicError) -> AdPresentationResult {
-        return AdPresentationResult(outcome: CheckpointAdOutcome.Failed(error: error))
+        return AdPresentationResult(error: error)
     }
 
-    let outcome: CheckpointAdOutcome
+    let error: PublicError?
 
-    private init(outcome: CheckpointAdOutcome) {
-        self.outcome = outcome
-    }
-
-    /// Returns whether two results carry the same ad outcome.
-    public static nonisolated func == (lhs: AdPresentationResult, rhs: AdPresentationResult) -> Bool {
-        return lhs.outcome == rhs.outcome
+    private init(error: PublicError?) {
+        self.error = error
     }
 
 }

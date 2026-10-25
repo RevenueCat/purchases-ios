@@ -180,6 +180,14 @@ final class CheckpointsManager {
                 kind: .flowResultSyncFailed
             )
             return .completed(fallback)
+        case let .adFailed(error, fallback):
+            await self.presentCheckpointError(
+                error,
+                identifier: identifier,
+                params: params,
+                kind: .flowCouldNotBeShown
+            )
+            return .completed(fallback)
         }
     }
 
@@ -252,11 +260,8 @@ final class CheckpointsManager {
                     customerInfoBefore: customerInfoBefore,
                     availableProducts: execution.availableProducts
                 ))
-            case let .adPresented(adOutcome):
-                return .completed(self.adCheckpointResult(
-                    adOutcome: adOutcome,
-                    customerInfoBefore: customerInfoBefore
-                ))
+            case let .adFailed(error):
+                return .adFailed(error, fallback: CheckpointResult(flow: nil, customer: customerInfoBefore))
             case .nothingPresented:
                 return .completed(CheckpointResult(flow: nil, customer: customerInfoBefore))
             case .backedOut, .failed:
@@ -315,24 +320,6 @@ private extension CheckpointsManager {
                 obtainedProducts: Set(obtainedProducts)
             ),
             customer: customer
-        )
-    }
-
-    /// The result of a passed ad step. An ad that could not be shown passes with no flow, like a checkpoint with
-    /// nothing to present. Otherwise the latest cached customer is delivered, which already reflects anything a
-    /// verified reward granted.
-    func adCheckpointResult(
-        adOutcome: CheckpointAdOutcome,
-        customerInfoBefore: CustomerInfo
-    ) -> CheckpointResult {
-        guard !(adOutcome is CheckpointAdOutcome.Failed) else {
-            return CheckpointResult(flow: nil, customer: customerInfoBefore)
-        }
-
-        return self.checkpointResult(
-            customerInfo: nil,
-            customerInfoBefore: customerInfoBefore,
-            availableProducts: []
         )
     }
 
@@ -440,4 +427,7 @@ private enum CheckpointOutcome {
     case failed(any Error)
     /// The flow passed but its sync failed: `fallback` is delivered once the error has been presented.
     case synchronizationFailed(any Error, fallback: CheckpointResult)
+    /// The ad step's ad could not be shown. The checkpoint still passes, with `fallback` delivered once the error
+    /// has been presented, since no fill is routine and not a reason to hold the customer back.
+    case adFailed(any Error, fallback: CheckpointResult)
 }

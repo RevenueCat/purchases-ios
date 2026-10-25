@@ -142,9 +142,6 @@ private func checkAdPresentationAPI(
 
     let error: PublicError = NSError(domain: "", code: 0)
     let _: AdPresentationResult = .shown
-    let _: AdPresentationResult = .rewarded(reward: .noReward)
-    let _: AdPresentationResult = .rewarded(reward: .noReward, moreRewards: [.unsupportedReward])
-    let _: AdPresentationResult = .rewardVerificationFailed
     let _: AdPresentationResult = .failed(error: error)
     let _: Bool = AdPresentationResult.shown == AdPresentationResult.shown
 }
