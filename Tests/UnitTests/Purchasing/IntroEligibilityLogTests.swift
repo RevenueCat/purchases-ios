@@ -46,6 +46,7 @@ class IntroEligibilityLogTests: TestCase {
         self.logger.verifyMessageWasLogged("product lookup finished in 2.0s", expectedCount: 1)
         self.logger.verifyMessageWasLogged("missing products: [\"missing\"]", expectedCount: 1)
         self.logger.verifyMessageWasLogged("finished in 3.0s; eligible=false", expectedCount: 1)
+        self.logger.verifyMessageWasLogged("task priority=\(Task.currentPriority.rawValue)", expectedCount: 2)
         self.logger.verifyMessageWasLogged("check finished in 5.0s", expectedCount: 1)
         self.logger.verifyMessageWasLogged(Strings.eligibility.sk2_intro_eligibility_too_slow,
                                            level: .warn, expectedCount: 1)

@@ -3487,7 +3487,8 @@ private extension Purchases {
         #if DEBUG
         let warmupFinished = Self.eligibilityCacheWarmupStarted.value?()
         #endif
-        let warmupTask = self.operationDispatcher.dispatchOnWorkerThread {
+        // A paywall can immediately depend on eligibility, so start at UI priority before it joins the work.
+        let warmupTask = self.operationDispatcher.dispatchOnWorkerThread(priority: .userInitiated) {
             #if DEBUG
             defer { warmupFinished?() }
             #endif

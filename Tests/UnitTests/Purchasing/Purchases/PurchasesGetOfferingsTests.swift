@@ -209,6 +209,24 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         expect(self.paywallCache.invokedWarmUpEligibilityCacheOfferings) === offerings
     }
 
+    @MainActor
+    func testEligibilityWarmupStartsAtUserInitiatedPriorityWithoutAPaywallRequest() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        self.systemInfo.stubbedIsApplicationBackgrounded = true
+        self.setupPurchases()
+        self.mockOperationDispatcher.forwardToOriginalDispatchOnWorkerThread = true
+        self.mockOfferingsManager.stubbedOfferingsCompletionResult = .success(try XCTUnwrap(
+            self.offeringsFactory.createOfferings(from: [:], contents: .mockContents, loadedFromDiskCache: false)
+        ))
+
+        _ = try await self.purchases.offerings()
+
+        // Poll instead of awaiting the warm-up task, which would donate this test's priority.
+        await expect { self.paywallCache.eligibilityWarmupPriority.value }.toEventually(equal(.userInitiated))
+        await expect { self.paywallCache.assetsWarmupPriority.value }.toEventually(equal(.background))
+        await expect { self.paywallCache.fontsWarmupPriority.value }.toEventually(equal(.background))
+    }
+
     // MARK: - overridePreferredUILocale
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

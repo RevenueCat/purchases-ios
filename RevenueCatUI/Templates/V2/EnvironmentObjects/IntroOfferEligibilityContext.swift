@@ -31,6 +31,7 @@ class IntroOfferEligibilityContext: ObservableObject {
     func computeEligibility(for packages: [Package]) async {
         let result = await self.introEligibilityChecker.eligibility(for: packages)
         self.all = result
+        Logger.debug(Strings.intro_eligibility_received(result: result, priority: Task.currentPriority))
     }
 
 }
