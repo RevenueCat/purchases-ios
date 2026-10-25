@@ -64,9 +64,10 @@ final class AdMobPresenterTests: AdapterTestCase {
         }
         XCTAssertTrue(results.isEmpty)
 
-        try XCTUnwrap(self.rewarded.completions.first)(.rewardVerificationFailed)
+        let error = NSError(domain: "gma", code: 3)
+        try XCTUnwrap(self.rewarded.completions.first)(.failed(error: error))
 
-        XCTAssertEqual(results, [.rewardVerificationFailed])
+        XCTAssertEqual(results, [.failed(error: error)])
     }
 
     // MARK: - Unsupported formats
@@ -84,7 +85,6 @@ final class AdMobPresenterTests: AdapterTestCase {
         XCTAssertEqual(results.count, 5)
         for result in results {
             XCTAssertNotEqual(result, AdPresentationResult.shown)
-            XCTAssertNotEqual(result, AdPresentationResult.rewardVerificationFailed)
         }
         XCTAssertTrue(self.interstitial.params.isEmpty)
         XCTAssertTrue(self.rewarded.params.isEmpty)
